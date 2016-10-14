@@ -268,7 +268,7 @@ public class TableMergeSyncSupport implements Serializable {
     private String targetPartitionsWhereClause(List<PartitionBatch> batches) {
         List<String> targetPartitionsItems = new Vector<>();
         for (PartitionBatch batch : batches) {
-            targetPartitionsItems.add("(" + batch.getPartitionSpec().toTargetSQLWhere(batch.getPartionValues()) + ")");
+            targetPartitionsItems.add("(" + batch.getPartitionSpec().toTargetSQLWhere(batch.getPartitionValues()) + ")");
         }
         return (targetPartitionsItems.size() == 0 ? null : StringUtils.join(targetPartitionsItems.toArray(new String[0]), " or "));
     }

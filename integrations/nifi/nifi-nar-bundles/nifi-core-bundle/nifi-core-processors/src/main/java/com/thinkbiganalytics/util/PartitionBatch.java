@@ -14,13 +14,13 @@ public class PartitionBatch implements Cloneable {
 
     private Long records;
 
-    private String[] partionValues;
+    private String[] partitionValues;
 
     private PartitionSpec partitionSpec;
 
-    public PartitionBatch(Long records, PartitionSpec partitionSpec, String[] partionValues) {
+    public PartitionBatch(Long records, PartitionSpec partitionSpec, String[] partitionValues) {
         this.records = records;
-        this.partionValues = partionValues;
+        this.partitionValues = partitionValues;
         this.partitionSpec = partitionSpec;
     }
 
@@ -28,8 +28,8 @@ public class PartitionBatch implements Cloneable {
         return records;
     }
 
-    public String[] getPartionValues() {
-        return partionValues;
+    public String[] getPartitionValues() {
+        return partitionValues;
     }
 
     public PartitionSpec getPartitionSpec() {
@@ -41,7 +41,7 @@ public class PartitionBatch implements Cloneable {
     }
 
     public String getBatchDescription() {
-        return partitionSpec.toPartitionSpec(partionValues);
+        return partitionSpec.toPartitionSpec(partitionValues);
     }
 
     public PartitionBatch newForAlias(String alias) {
