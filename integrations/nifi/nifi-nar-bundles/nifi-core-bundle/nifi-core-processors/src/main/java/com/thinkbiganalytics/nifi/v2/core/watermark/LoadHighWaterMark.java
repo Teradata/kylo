@@ -60,6 +60,14 @@ public class LoadHighWaterMark extends HighWaterMarkProcessor {
                     .expressionLanguageSupported(true)
                     .build();
 
+    protected static final PropertyDescriptor INITIAL_VALUE = new PropertyDescriptor.Builder()
+                    .name("Initial Value")
+                    .description("The initial value for the water mark if none currently exists for the feed.")
+                    .required(false)
+                    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+                    .expressionLanguageSupported(true)
+                    .build();
+    
     public static final Relationship ACTIVE_FAILURE = new Relationship.Builder()
                     .name("activeFailure")
                     .description("The water mark is actively being processed and has not yet been committed or rejected")
@@ -72,34 +80,47 @@ public class LoadHighWaterMark extends HighWaterMarkProcessor {
      */
     @Override
     public void onTrigger(ProcessContext context, ProcessSession session) throws ProcessException {
-        FlowFile ff = session.get();
-        FlowFile resultFF = ff;
+        FlowFile inputFF = session.get();
+        FlowFile outputFF = inputFF;
+        boolean createdFlowfile = false;
         
-        if (ff != null) {
+        // Create the flow file if we are the start of the flow.
+        if (outputFF == null && ! context.hasNonLoopConnection()) {
+            outputFF = session.create();
+            createdFlowfile = true;
+        }
+        
+        if (outputFF != null) {
             MetadataRecorder recorder = context.getProperty(CommonProperties.METADATA_SERVICE).asControllerService(MetadataProviderService.class).getRecorder();
             String waterMark = context.getProperty(HIGH_WATER_MARK).getValue();
             String propName = context.getProperty(PROPERTY_NAME).getValue();
+            String initialValue = context.getProperty(INITIAL_VALUE).getValue();
 
             try {
-                resultFF = recorder.loadWaterMark(session, resultFF, getFeedId(), waterMark, propName, "");
+                outputFF = recorder.loadWaterMark(session, outputFF, getFeedId(), waterMark, propName, initialValue);
                 this.yieldCount.set(0);
-                session.transfer(resultFF, CommonProperties.REL_SUCCESS);
+                session.transfer(outputFF, CommonProperties.REL_SUCCESS);
             } catch (WaterMarkActiveException e) {
-                PropertyValue value = context.getProperty("");
-                int maxCount = value.isSet() ? value.asInteger() : -1;
+                PropertyValue value = context.getProperty(MAX_YIELD_COUNT);
+                int maxCount = value.isSet() ? value.asInteger() : Integer.MAX_VALUE - 1;
                 int count = this.yieldCount.incrementAndGet();
                 
                 if (maxCount > 0 && count > maxCount) {
                     getLogger().debug("Water mark {} is active - routing to \"activeFailure\"", new Object[] { waterMark });
-                    session.transfer(resultFF, ACTIVE_FAILURE);
+                    session.transfer(outputFF, ACTIVE_FAILURE);
                 } else {
                     getLogger().debug("Yielding because water mark {} is active - attempt {} of {}", new Object[] { waterMark, count, maxCount });
+                    // Remove the flow file before yielding if we create the flow file
+                    if (createdFlowfile) {
+                        session.remove(outputFF);
+                    }
                     context.yield();
                 }
             }
         }
         
     }
+
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.nifi.v2.common.BaseProcessor#addProperties(java.util.List)
@@ -109,6 +130,7 @@ public class LoadHighWaterMark extends HighWaterMarkProcessor {
         super.addProperties(list);
         list.add(ACTIVE_WATER_MARK_STRATEGY);
         list.add(MAX_YIELD_COUNT);
+        list.add(INITIAL_VALUE);
     }
     
     /* (non-Javadoc)

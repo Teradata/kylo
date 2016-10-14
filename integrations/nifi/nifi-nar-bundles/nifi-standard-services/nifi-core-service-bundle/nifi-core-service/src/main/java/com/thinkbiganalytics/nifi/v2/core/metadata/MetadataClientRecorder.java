@@ -4,6 +4,7 @@
 package com.thinkbiganalytics.nifi.v2.core.metadata;
 
 import java.net.URI;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -31,11 +32,13 @@ import com.thinkbiganalytics.nifi.core.api.metadata.WaterMarkActiveException;
 public class MetadataClientRecorder implements MetadataRecorder {
     
     private static final Logger log = LoggerFactory.getLogger(MetadataClientRecorder.class);
-    private final ObjectReader WATER_MARKS_READER = new ObjectMapper().reader().forType(Map.class);
-    private final ObjectWriter WATER_MARKS_WRITER = new ObjectMapper().writer().forType(Map.class);
+    
+    private static final String CURRENT_WATER_MARKS_ATTR = "activeWaterMarks";
+    private static final ObjectReader WATER_MARKS_READER = new ObjectMapper().reader().forType(Map.class);
+    private static final ObjectWriter WATER_MARKS_WRITER = new ObjectMapper().writer().forType(Map.class);
     
     private MetadataClient client;
-//    private Set<String> activeWaterMarks = Collections.synchronizedSet(new HashSet<>());
+    private Set<String> activeWaterMarks = Collections.synchronizedSet(new HashSet<>());
     // TODO: Remove this
     public Map<String, String> waterMarkValues = new HashMap<>();
     
@@ -62,49 +65,29 @@ public class MetadataClientRecorder implements MetadataRecorder {
      */
     @Override
     public FlowFile loadWaterMark(ProcessSession session, FlowFile ff, String feedId, String waterMarkName, String parameterName, String defaultValue) throws WaterMarkActiveException {
-        FlowFile resultFF = addActiveWaterMark(session, ff, waterMarkName, parameterName);
-        String value = getHighWaterMarkValue(feedId, waterMarkName).orElse(defaultValue);
-        return session.putAttribute(resultFF, parameterName, value);
-    }
-    
-    private FlowFile addActiveWaterMark(ProcessSession session, FlowFile ff, String waterMarkName, String parameterName) throws WaterMarkActiveException {
-        Map<String, String> actives = getActiveWaterMarks(ff);
+        recordActiveWaterMark(feedId, waterMarkName);
         
-        if (actives.containsKey(waterMarkName)) {
-            throw new WaterMarkActiveException(waterMarkName);
-        } else {
-            actives.put(waterMarkName, parameterName);
-            return setActiveWaterMarks(session, ff, actives);
-        }
+        String value = getHighWaterMarkValue(feedId, waterMarkName).orElse(defaultValue);
+        FlowFile resultFF = addCurrentWaterMarksAttr(session, ff, waterMarkName, parameterName);
+        resultFF = session.putAttribute(resultFF, parameterName, value);
+        return session.putAttribute(resultFF, initValueParameterName(parameterName), value);
     }
-
-    public FlowFile setActiveWaterMarks(ProcessSession session, FlowFile ff, Map<String, String> actives) {
-        try {
-            return session.putAttribute(ff, "activeWaterMarks", WATER_MARKS_WRITER.writeValueAsString(actives));
-        } catch (Exception e) {
-            // Should never happen.
-            throw new IllegalStateException(e);
+    
+    private void recordActiveWaterMark(String feedId, String waterMarkName) throws WaterMarkActiveException {
+        String feedWaterMarkName = asFeedWaterMarkName(feedId, waterMarkName);
+        boolean added = this.activeWaterMarks.add(feedWaterMarkName);
+        
+        if (! added) {
+            throw new WaterMarkActiveException(waterMarkName);
         }
     }
     
-    private Map<String, String> getActiveWaterMarks(FlowFile ff) {
-        try {
-            String activeStr = ff.getAttribute("activeWaterMarks");
-            
-            if (activeStr == null) {
-                return new HashMap<>();
-            } else {
-                return WATER_MARKS_READER.readValue(activeStr);
-            }
-        } catch (Exception e) {
-            // Should never happen.
-            throw new IllegalStateException(e);
-        }
+    private boolean releaseActiveWaterMark(String feedId, String waterMarkName) {
+        return this.activeWaterMarks.remove(asFeedWaterMarkName(feedId, waterMarkName));
     }
-
-    private Optional<String> getHighWaterMarkValue(String feedId, String waterMarkName) {
-        return Optional.ofNullable(this.waterMarkValues.get(waterMarkName));
-//        return Optional.ofNullable(this.client.getHighWaterMark(feedId, waterMarkName));
+    
+    private String asFeedWaterMarkName(String feedId, String waterMarkName) {
+        return feedId + "." + waterMarkName;
     }
 
     /* (non-Javadoc)
@@ -112,7 +95,7 @@ public class MetadataClientRecorder implements MetadataRecorder {
      */
     @Override
     public FlowFile recordWaterMark(ProcessSession session, FlowFile ff, String feedId, String waterMarkName, String parameterName, String newValue) {
-        Map<String, String> actives = getActiveWaterMarks(ff);
+        Map<String, String> actives = getCurrentWaterMarksAttr(ff);
         
         if (actives.containsKey(waterMarkName)) {
             return session.putAttribute(ff, parameterName, newValue);
@@ -126,22 +109,20 @@ public class MetadataClientRecorder implements MetadataRecorder {
      */
     @Override
     public FlowFile commitWaterMark(ProcessSession session, FlowFile ff, String feedId, String waterMarkName) {
-        Map<String, String> actives = getActiveWaterMarks(ff);
+        Map<String, String> actives = getCurrentWaterMarksAttr(ff);
+        FlowFile resultFF = ff;
         
         if (actives.containsKey(waterMarkName)) {
             String parameterName = actives.remove(waterMarkName);
             String value = ff.getAttribute(parameterName);
             
             updateHighWaterMarkValue(feedId, waterMarkName, value);
-            return setActiveWaterMarks(session, ff, actives);
+            resultFF = setCurrentWaterMarksAttr(session, resultFF, actives);
+            releaseActiveWaterMark(feedId, waterMarkName);
+            return resultFF;
         } else {
             throw new IllegalStateException("No active high-water mark named \"" + waterMarkName + "\"");
         }
-    }
-
-    public void updateHighWaterMarkValue(String feedId, String waterMarkName, String value) {
-        this.waterMarkValues.put(waterMarkName, value);
-//        this.client.updateHighWaterMark(feedId, waterMarkName, value);
     }
 
     /* (non-Javadoc)
@@ -149,7 +130,7 @@ public class MetadataClientRecorder implements MetadataRecorder {
      */
     @Override
     public FlowFile commitAllWaterMarks(ProcessSession session, FlowFile ff, String feedId) {
-        Map<String, String> actives = getActiveWaterMarks(ff);
+        Map<String, String> actives = getCurrentWaterMarksAttr(ff);
         FlowFile resultFF = ff;
         
         // TODO do more efficiently
@@ -165,27 +146,21 @@ public class MetadataClientRecorder implements MetadataRecorder {
      */
     @Override
     public FlowFile releaseWaterMark(ProcessSession session, FlowFile ff, String feedId, String waterMarkName) {
-        Map<String, String> actives = getActiveWaterMarks(ff);
+        Map<String, String> actives = getCurrentWaterMarksAttr(ff);
         FlowFile resultFF = ff;
         
         if (actives.containsKey(waterMarkName)) {
             String parameterName = actives.remove(waterMarkName);
             String value = getHighWaterMarkValue(feedId, waterMarkName)
-                            .orElse(actives.get(defaultName(parameterName)));
+                            .orElse(ff.getAttribute(initValueParameterName(parameterName)));
             
             resultFF = session.putAttribute(resultFF, parameterName, value);
-            return setActiveWaterMarks(session, resultFF, actives);
+            resultFF = setCurrentWaterMarksAttr(session, resultFF, actives);
+            releaseActiveWaterMark(feedId, waterMarkName);
+            return resultFF;
         } else {
             throw new IllegalStateException("No active high-water mark named \"" + waterMarkName + "\"");
         }
-    }
-
-    /**
-     * @param parameterName
-     * @return
-     */
-    private Object defaultName(String parameterName) {
-        return parameterName + ".default";
     }
 
     /* (non-Javadoc)
@@ -193,7 +168,7 @@ public class MetadataClientRecorder implements MetadataRecorder {
      */
     @Override
     public FlowFile releaseAllWaterMarks(ProcessSession session, FlowFile ff, String feedId) {
-        Map<String, String> actives = getActiveWaterMarks(ff);
+        Map<String, String> actives = getCurrentWaterMarksAttr(ff);
         FlowFile resultFF = ff;
         
         for (String waterMarkName : new HashSet<String>(actives.keySet())) {
@@ -277,6 +252,51 @@ public class MetadataClientRecorder implements MetadataRecorder {
 //        DateTime dt =  workaroundWatermark.get(key);
 //        return (dt == null ? new DateTime(0L) : dt);
 //    }
+
+    private Map<String, String> getCurrentWaterMarksAttr(FlowFile ff) {
+        try {
+            String activeStr = ff.getAttribute(CURRENT_WATER_MARKS_ATTR);
+            
+            if (activeStr == null) {
+                return new HashMap<>();
+            } else {
+                return WATER_MARKS_READER.readValue(activeStr);
+            }
+        } catch (Exception e) {
+            // Should never happen.
+            throw new IllegalStateException(e);
+        }
+    }
+    
+    private FlowFile addCurrentWaterMarksAttr(ProcessSession session, FlowFile ff, String waterMarkName, String parameterName) throws WaterMarkActiveException {
+        Map<String, String> actives = getCurrentWaterMarksAttr(ff);
+        
+        actives.put(waterMarkName, parameterName);
+        return setCurrentWaterMarksAttr(session, ff, actives);
+    }
+
+    private FlowFile setCurrentWaterMarksAttr(ProcessSession session, FlowFile ff, Map<String, String> actives) {
+        try {
+            return session.putAttribute(ff, CURRENT_WATER_MARKS_ATTR, WATER_MARKS_WRITER.writeValueAsString(actives));
+        } catch (Exception e) {
+            // Should never happen.
+            throw new IllegalStateException(e);
+        }
+    }
+
+    private Optional<String> getHighWaterMarkValue(String feedId, String waterMarkName) {
+            return Optional.ofNullable(this.waterMarkValues.get(feedId+"."+waterMarkName));
+    //        return Optional.ofNullable(this.client.getHighWaterMark(feedId, waterMarkName));
+        }
+
+    private void updateHighWaterMarkValue(String feedId, String waterMarkName, String value) {
+            this.waterMarkValues.put(feedId+"."+waterMarkName, value);
+    //        this.client.updateHighWaterMark(feedId, waterMarkName, value);
+        }
+
+    private String initValueParameterName(String parameterName) {
+        return parameterName + ".original";
+    }
 
     // TODO: Remove workaround
     private String feedKey(String systemCategory, String feedName) {

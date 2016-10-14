@@ -25,6 +25,7 @@ public abstract class HighWaterMarkProcessor extends BaseProcessor {
     protected static final PropertyDescriptor HIGH_WATER_MARK = new PropertyDescriptor.Builder()
                     .name("High-Water Mark")
                     .description("Name of the high-water mark managed for this feed")
+                    .defaultValue("highWaterMark")
                     .required(true)
                     .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
                     .expressionLanguageSupported(true)
@@ -33,7 +34,7 @@ public abstract class HighWaterMarkProcessor extends BaseProcessor {
     protected static final PropertyDescriptor PROPERTY_NAME = new PropertyDescriptor.Builder()
                     .name("High-Water Mark Value Property Name")
                     .description("Name of the property that should be set to the current high-water mark value")
-                    .defaultValue("highWaterMark")
+                    .defaultValue("water.mark")
                     .required(true)
                     .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
                     .expressionLanguageSupported(true)
@@ -58,6 +59,9 @@ public abstract class HighWaterMarkProcessor extends BaseProcessor {
     @Override
     protected void addProperties(List<PropertyDescriptor> list) {
         super.addProperties(list);
+        list.add(CommonProperties.METADATA_SERVICE);
+        list.add(CommonProperties.FEED_CATEGORY);
+        list.add(CommonProperties.FEED_NAME);
         list.add(HIGH_WATER_MARK);
         list.add(PROPERTY_NAME);
     }

@@ -14,3 +14,6 @@ com.thinkbiganalytics.nifi.v2.metadata.TriggerFeed
 com.thinkbiganalytics.nifi.v2.metadata.TriggerCleanup
 com.thinkbiganalytics.nifi.v2.metadata.PutFeedMetadata
 com.thinkbiganalytics.nifi.v2.ingest.StripHeader
+com.thinkbiganalytics.nifi.v2.core.watermark.LoadHighWaterMark
+com.thinkbiganalytics.nifi.v2.core.watermark.ReleaseHighWaterMark
+

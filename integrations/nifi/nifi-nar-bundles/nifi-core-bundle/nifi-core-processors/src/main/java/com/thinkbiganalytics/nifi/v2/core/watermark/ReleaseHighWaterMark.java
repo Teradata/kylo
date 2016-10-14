@@ -16,7 +16,6 @@ import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.exception.ProcessException;
 
-import com.sun.tools.internal.ws.processor.ProcessorException;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder;
 import com.thinkbiganalytics.nifi.v2.common.CommonProperties;
@@ -83,8 +82,8 @@ public class ReleaseHighWaterMark extends HighWaterMarkProcessor {
                 
                 session.transfer(ff, CommonProperties.REL_SUCCESS);
             } catch (Exception e) {
-                getLogger().warn("Failure to release water mark(s)", e);
-                throw new ProcessorException(e);
+                getLogger().warn("Failure to release high-water mark(s)", e);
+                throw new ProcessException("Failure to release high-water mark(s)", e);
             }
         }
         
