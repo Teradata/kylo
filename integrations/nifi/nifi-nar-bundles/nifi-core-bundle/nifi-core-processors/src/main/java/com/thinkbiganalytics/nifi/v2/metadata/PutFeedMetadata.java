@@ -15,6 +15,9 @@ import org.apache.nifi.annotation.behavior.InputRequirement;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.components.PropertyDescriptor;
+import org.apache.nifi.components.ValidationContext;
+import org.apache.nifi.components.ValidationResult;
+import org.apache.nifi.components.Validator;
 import org.apache.nifi.expression.AttributeExpression;
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.logging.ComponentLog;
@@ -28,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nonnull;
 
@@ -41,6 +45,7 @@ import javax.annotation.Nonnull;
 public class PutFeedMetadata extends AbstractProcessor {
 
     private static final String METADATA_FIELD_PREFIX = "nifi";
+    private static final Pattern DYNAMIC_ATTRIBUTE_NAME_REGEX = Pattern.compile("^[a-zA-Z0-9][a-zA-Z0-9:_]+");
 
     public static final Relationship REL_SUCCESS = new Relationship.Builder()
         .description("All FlowFiles are routed to this relationship on success").name("success").build();
@@ -85,6 +90,29 @@ public class PutFeedMetadata extends AbstractProcessor {
 
     private static final Set<Relationship> relationships = ImmutableSet.of(REL_SUCCESS, REL_FAILURE);
 
+    public static final Validator ATTRIBUTE_KEY_DYANMIC_PROPERTY_NAME_VALIDATOR = new Validator() {
+        @Override
+        public ValidationResult validate(final String subject, final String input, final ValidationContext context) {
+            final ValidationResult.Builder builder = new ValidationResult.Builder();
+            builder.subject("Property Name").input(subject);
+
+            try {
+                if(DYNAMIC_ATTRIBUTE_NAME_REGEX.matcher(subject).matches()) {
+                    builder.valid(true);
+                }
+                else {
+                    builder.valid(false).explanation("Invalid character. The field name must start with a letter or number. The remaining characters may also contain a colon and underscore");
+                }
+
+
+            } catch (final IllegalArgumentException e) {
+                builder.valid(false).explanation(e.getMessage());
+            }
+
+            return builder.build();
+        }
+    };
+
     @Override
     public Set<Relationship> getRelationships() {
         return relationships;
@@ -101,7 +129,8 @@ public class PutFeedMetadata extends AbstractProcessor {
             .name(propertyDescriptorName)
             .required(false)
             .addValidator(StandardValidators.createAttributeExpressionLanguageValidator(AttributeExpression.ResultType.STRING, true))
-            .addValidator(StandardValidators.ATTRIBUTE_KEY_PROPERTY_NAME_VALIDATOR)
+            .addValidator(ATTRIBUTE_KEY_DYANMIC_PROPERTY_NAME_VALIDATOR)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .expressionLanguageSupported(true)
             .dynamic(true)
             .build();
