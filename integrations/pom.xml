@@ -14,7 +14,6 @@
         <module>nifi</module>
         <module>spark</module>
         <module>input-format</module>
-        <module>ranger</module>
     </modules>
 
 </project>
