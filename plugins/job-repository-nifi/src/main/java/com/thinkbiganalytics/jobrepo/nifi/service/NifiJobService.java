@@ -77,7 +77,7 @@ public class NifiJobService extends AbstractJobService {
                     execution.setEndTime(DateTimeUtil.getNowUTCTime());
                 }
                 String msg = execution.getExitMessage() != null ? execution.getExitMessage() + "\n" : "";
-                msg += " Job Manually Abandonded @ " + utcDateTimeFormat.print(DateTimeUtil.getNowUTCTime());
+                msg += " Job manually abandoned @ " + utcDateTimeFormat.print(DateTimeUtil.getNowUTCTime());
                 execution.setExitMessage(msg);
                 //also stop any running steps??
                 this.nifiJobExecutionProvider.save(execution);
@@ -98,7 +98,7 @@ public class NifiJobService extends AbstractJobService {
                         step.setStatus(BatchStepExecution.StepStatus.FAILED);
                         step.setExitCode(ExecutionConstants.ExitCode.FAILED);
                         String msg = step.getExitMessage() != null ? step.getExitMessage() + "\n" : "";
-                        msg += " Step Manually failed @ " + utcDateTimeFormat.print(DateTimeUtil.getNowUTCTime());
+                        msg += " Step manually failed @ " + utcDateTimeFormat.print(DateTimeUtil.getNowUTCTime());
                         step.setExitMessage(msg);
                         execution.setExitMessage(msg);
                     }
@@ -111,7 +111,7 @@ public class NifiJobService extends AbstractJobService {
                     execution.setEndTime(DateTimeUtil.getNowUTCTime());
                 }
                 String msg = execution.getExitMessage() != null ? execution.getExitMessage() + "\n" : "";
-                msg += " Job Manually failed @ " + utcDateTimeFormat.print(DateTimeUtil.getNowUTCTime());
+                msg += " Job manually failed @ " + utcDateTimeFormat.print(DateTimeUtil.getNowUTCTime());
                 execution.setExitMessage(msg);
                 this.nifiJobExecutionProvider.save(execution);
             }
