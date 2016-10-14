@@ -141,6 +141,9 @@
                 if(property.selected == undefined){
                     property.selected = false;
                 }
+                if(property.renderOptions == undefined){
+                    property.renderOptions = {};
+                }
                // if(property.propertyDescriptor.required == true && ( property.value =='' || property.value ==undefined)) {
                //     property.selected = true;
               //  }

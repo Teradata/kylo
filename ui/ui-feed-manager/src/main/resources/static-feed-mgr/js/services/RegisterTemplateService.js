@@ -13,8 +13,9 @@ angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($ht
 
   var data = {
     codemirrorTypes: null,
-    propertyRenderTypes: [{type: 'text', 'label': 'Text'}, {type: 'number', 'label': 'number', codemirror: false},
-      {type: 'textarea', 'label': 'Textarea', codemirror: false}, {type: 'select', label: 'Select', codemirror: false}],
+    propertyRenderTypes: [{type: 'text', 'label': 'Text'}, {type: 'number', 'label': 'Number', codemirror: false},
+      {type: 'textarea', 'label': 'Textarea', codemirror: false}, {type: 'select', label: 'Select', codemirror: false},
+      {type: 'checkbox-custom', 'label': 'Checkbox', codemirror: false}],
     trueFalseRenderTypes: [{type: 'checkbox-true-false', 'label': 'Checkbox', codemirror: false},
       {type: 'select', label: 'Select', codemirror: false}],
     selectRenderType: [{type: 'select', 'label': 'Select', codemirror: false},
