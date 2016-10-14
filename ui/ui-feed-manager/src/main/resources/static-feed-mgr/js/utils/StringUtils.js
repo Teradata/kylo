@@ -35,5 +35,13 @@ var StringUtils = (function() {
         return str.replace(/`/g, "``");
     };
 
+    /**
+     *
+     * @param str
+     * @returns {boolean}
+     */
+    StringUtils.isBlank = function(str) {
+        return (!str || str.length === 0 || !str.trim());
+    }
     return StringUtils;
 })();

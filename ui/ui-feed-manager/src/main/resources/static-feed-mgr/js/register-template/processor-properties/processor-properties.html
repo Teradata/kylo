@@ -96,7 +96,7 @@
                                                         style="height:30px;margin-bottom:5px; padding-left:10px;"
                                                         class="md-block" ng-if="property.userEditable">
                                                     <label>Render as</label>
-                                                    <md-select ng-model="property.renderType" name="renderType"
+                                                    <md-select ng-model="property.renderType" name="renderType" ng-change="vm.onRenderTypeChange(property)"
                                                                placeholder="Render Input As...">
                                                         <md-option
                                                                 ng-repeat="renderType in property.renderTypes  | orderBy:'label' track by renderType.type"
@@ -105,6 +105,24 @@
                                                         </md-option>
                                                     </md-select>
                                                 </md-input-container>
+                                              <md-input-container
+                                                  style="height:30px;margin-bottom:5px; padding-left:10px;"
+                                                  class="md-block" ng-if="property.userEditable && property.renderType == 'checkbox-custom'">
+                                                <label>True Value</label>
+                                                <input name="property"
+                                                       placeholder="true"
+                                                       type="text"
+                                                       ng-model="property.renderOptions['trueValue']" size="20"/>
+                                                </md-input-container>
+                                              <md-input-container
+                                                  style="height:30px;margin-bottom:5px; padding-left:10px;"
+                                                  class="md-block" ng-if="property.userEditable && property.renderType == 'checkbox-custom'">
+                                                <label>False Value</label>
+                                                <input name="property"
+                                                       placeholder="false"
+                                                       type="text"
+                                                       ng-model="property.renderOptions['falseValue']" size="20"/>
+                                              </md-input-container>
                                             </div>
                                         </ng-form>
 

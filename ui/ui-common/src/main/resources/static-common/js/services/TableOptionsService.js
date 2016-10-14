@@ -39,14 +39,25 @@ angular.module(COMMON_APP_MODULE_NAME).service('TableOptionsService', ['Paginati
         var sortOptions = self.sortOptions[key];
         var defaultSortOption = null;
         if(sortOptions) {
-            angular.forEach(sortOptions,function(sortOption,i) {
-                if(sortOption.default) {
-                    defaultSortOption = sortOption;
-                    return false;
-                }
+            defaultSortOption = _.find(sortOptions, function (opt) {
+                return opt.default
             });
         }
         return defaultSortOption;
+    }
+
+    /**
+     * Sets the sort option to either the saved value from the PaginationDataService or the default value.
+     * @param key
+     */
+    this.initializeSortOption = function (key) {
+        var currentOption = PaginationDataService.sort(key);
+        if (currentOption) {
+            self.setSortOption(key, currentOption)
+        }
+        else {
+            self.saveSortOption(key, getDefaultSortOption(key))
+        }
     }
 
     this.saveSortOption = function(key,sortOption) {

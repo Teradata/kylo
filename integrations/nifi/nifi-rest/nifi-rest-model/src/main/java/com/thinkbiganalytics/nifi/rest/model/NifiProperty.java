@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.apache.nifi.web.api.dto.PropertyDescriptorDTO;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -34,8 +35,11 @@ public class NifiProperty {
 
     private String renderType; // checkbox, input, editor-hive, editor-sql, editor-pig, etc
 
+    private Map<String,String> renderOptions;
+
     private boolean selected;
     private boolean inputProperty;
+
 
 
     private NifiProperty templateProperty; // a copy of the Template Property so it can be referenced back to when displaying data between the Feed and the template used;
@@ -217,5 +221,13 @@ public class NifiProperty {
 
     public void setProcessorType(String processorType) {
         this.processorType = processorType;
+    }
+
+    public Map<String, String> getRenderOptions() {
+        return renderOptions;
+    }
+
+    public void setRenderOptions(Map<String, String> renderOptions) {
+        this.renderOptions = renderOptions;
     }
 }

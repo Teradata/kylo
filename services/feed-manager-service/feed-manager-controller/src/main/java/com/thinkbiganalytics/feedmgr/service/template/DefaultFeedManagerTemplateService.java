@@ -1,18 +1,18 @@
 package com.thinkbiganalytics.feedmgr.service.template;
 
-import java.util.List;
-
-import javax.inject.Inject;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.security.AccessController;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.List;
+
+import javax.inject.Inject;
 
 /**
  * Created by sr186054 on 5/4/16.
@@ -42,6 +42,9 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
             //ensure that the incoming template name doesnt already exist.
             //if so remove and replace with this one
             RegisteredTemplate template = getRegisteredTemplateByName(registeredTemplate.getTemplateName());
+            if(registeredTemplate.getId() == null && template != null){
+                registeredTemplate.setId(template.getId());
+            }
             if (template != null && !template.getId().equalsIgnoreCase(registeredTemplate.getId())) {
                 //Warning cant save.. duplicate Name
                 log.error("Unable to save template {}.  There is already a template with this name registered in the system", registeredTemplate.getTemplateName());

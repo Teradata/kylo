@@ -27,6 +27,20 @@
                     }
                 }
 
+                if( $scope.property.renderType == 'checkbox-custom' ) {
+                    if($scope.property.renderOptions == null || $scope.property.renderOptions == undefined){
+                       $scope.property.renderOptions ={};
+                    }
+                    var trueValue =  $scope.property.renderOptions['trueValue'];
+                  if(StringUtils.isBlank(trueValue)){
+                      $scope.property.renderOptions['trueValue'] = 'true';
+                  }
+                    var falseValue =  $scope.property.renderOptions['falseValue'];
+                    if(StringUtils.isBlank(falseValue)){
+                        $scope.property.renderOptions['falseValue'] = 'false';
+                    }
+                }
+
             }
 
         };

@@ -15,4 +15,6 @@ import java.io.Serializable;
 public interface ValidationPolicy<T> extends Serializable, FieldPolicyItem {
 
   boolean validate(T value);
+
+
 }

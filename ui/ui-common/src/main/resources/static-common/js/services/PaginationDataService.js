@@ -130,7 +130,7 @@ angular.module(COMMON_APP_MODULE_NAME).service('PaginationDataService',function(
      */
     this.sort = function(pageName, value){
         if(value) {
-            this.paginationData(pageName).sort = value;
+            self.paginationData(pageName).sort = value;
             if(value.indexOf('-') == 0){
                 self.paginationData(pageName).sortDesc = true;
             }

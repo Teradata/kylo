@@ -294,6 +294,7 @@ if(properties != null) {
         propertyToUpdate.setUserEditable(nifiProperty.isUserEditable());
         propertyToUpdate.setSelected(nifiProperty.isSelected());
         propertyToUpdate.setRenderType(nifiProperty.getRenderType());
+        propertyToUpdate.setRenderOptions(nifiProperty.getRenderOptions());
     }
 
     public static NifiProperty findPropertyByIdKey(Collection<NifiProperty> properties,final NifiProperty nifiProperty){
