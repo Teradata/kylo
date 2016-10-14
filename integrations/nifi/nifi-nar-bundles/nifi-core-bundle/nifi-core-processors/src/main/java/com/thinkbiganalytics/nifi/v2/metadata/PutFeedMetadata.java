@@ -97,10 +97,9 @@ public class PutFeedMetadata extends AbstractProcessor {
             builder.subject("Property Name").input(subject);
 
             try {
-                if(DYNAMIC_ATTRIBUTE_NAME_REGEX.matcher(subject).matches()) {
+                if (DYNAMIC_ATTRIBUTE_NAME_REGEX.matcher(subject).matches()) {
                     builder.valid(true);
-                }
-                else {
+                } else {
                     builder.valid(false).explanation("Invalid character. The field name must start with a letter or number. The remaining characters may also contain a colon and underscore");
                 }
 
@@ -182,7 +181,7 @@ public class PutFeedMetadata extends AbstractProcessor {
             metadataProvider.updateFeedProperties(feedId, metadataProperties);
 
             session.transfer(flowFile, REL_SUCCESS);
-        } catch(Exception e) {
+        } catch (Exception e) {
             logger.error("Error processing custom feed metadata", e);
             session.transfer(flowFile, REL_FAILURE);
         }

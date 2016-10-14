@@ -496,8 +496,6 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
                     feed.removeProperty((String)k);
                 });
             }, MetadataAccess.SERVICE) ;
-
-            System.out.println("bla");
         }
 
     }
