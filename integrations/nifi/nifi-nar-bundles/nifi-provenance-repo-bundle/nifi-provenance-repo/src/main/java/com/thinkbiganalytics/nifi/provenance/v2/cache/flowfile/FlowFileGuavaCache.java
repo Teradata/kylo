@@ -4,6 +4,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.CacheStats;
 import com.google.common.cache.LoadingCache;
+import com.thinkbiganalytics.nifi.provenance.AggregationEventProcessingStats;
 import com.thinkbiganalytics.nifi.provenance.model.ActiveFlowFile;
 import com.thinkbiganalytics.nifi.provenance.model.IdReferenceFlowFile;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
@@ -184,6 +185,7 @@ public class FlowFileGuavaCache {
         List<ActiveFlowFile> rootFiles = getRootFlowFiles();
         cacheUtil.logStats();
         log.info("FLOW FILE Cache Size: {} , root files {}, processorNameMapSize: {} ", map.size(), rootFiles.size(), nifiFlowCache.processorNameMapSize());
+        log.info("JMS Stats:  Sent {} streaming events to JMS.  Sent {} batch events to JMS ", AggregationEventProcessingStats.getStreamingEventsSent(), AggregationEventProcessingStats.getBatchEventsSent());
         flowFileMapDbCache.summary();
 
 
