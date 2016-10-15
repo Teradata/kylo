@@ -199,6 +199,7 @@
 
 [tba:sla] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied
     - tba:defaultGroup (REFERENCE)
+    - tba:enabled (BOOLEAN) = 'true'
     + tba:groups (tba:obligationGroup) sns
     + tba:slaChecks (tba:slaCheck) sns
 

@@ -13,4 +13,12 @@ public interface ServiceLevelAgreementScheduler {
 
     boolean unscheduleServiceLevelAgreement(ServiceLevelAgreement.ID slaId);
 
+    void enableServiceLevelAgreement(ServiceLevelAgreement sla);
+
+    void disableServiceLevelAgreement(ServiceLevelAgreement sla);
+
+
+
+
+
 }

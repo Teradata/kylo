@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.databind.deser.impl.PropertyValue;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.thinkbiganalytics.classnameregistry.ClassNameChangeRegistry;
 import com.thinkbiganalytics.metadata.api.MissingUserPropertyException;
@@ -23,6 +22,7 @@ import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensiblePropertyC
 import com.thinkbiganalytics.metadata.modeshape.extension.JcrUserFieldDescriptor;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.joda.time.DateTime;
@@ -101,6 +101,25 @@ public class JcrPropertyUtil {
             return prop.getString();
         } catch (PathNotFoundException e) {
             return null;
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to access property: " + name, e);
+        }
+    }
+
+    /**
+     * Returns the boolean value of the property. if the property is a String type it will try to determine the boolean value. If it cannot get a boolean value, it will return false.
+     */
+    public static boolean getBoolean(Node node, String name) {
+        try {
+            Property prop = node.getProperty(name);
+            if (PropertyType.STRING == prop.getType()) {
+                return BooleanUtils.toBoolean(prop.getString());
+            } else if (PropertyType.BOOLEAN == prop.getType()) {
+                return prop.getBoolean();
+            }
+            return false;
+        } catch (PathNotFoundException e) {
+            return false;
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to access property: " + name, e);
         }

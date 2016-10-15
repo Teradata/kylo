@@ -13,6 +13,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
 import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
 import com.thinkbiganalytics.feedmgr.service.UserPropertyTransform;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
+import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
 import com.thinkbiganalytics.jobrepo.repository.FeedRepository;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.OperationalMetadataAccess;
@@ -30,7 +31,6 @@ import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
-import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.rest.model.sla.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
@@ -88,6 +88,9 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
 
     @Inject
     ServiceLevelAgreementProvider slaProvider;
+
+    @Inject
+    ServiceLevelAgreementService serviceLevelAgreementService;
 
 
     /** Operations manager feed repository */
@@ -396,8 +399,12 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
                 //re fetch it
                 if (enabled) {
                     feedMetadata.setState(Feed.State.ENABLED.name());
+                    serviceLevelAgreementService.enableServiceLevelAgreementSchedule(domainId);
+
                 }
                 FeedSummary feedSummary = new FeedSummary(feedMetadata);
+                //start any Slas
+
                 return feedSummary;
             }
             return null;
@@ -413,10 +420,11 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
             if (StringUtils.isNotBlank(feedId)) {
                 FeedMetadata feedMetadata = getFeedById(feedId);
                 Feed.ID domainId = feedProvider.resolveFeed(feedId);
-                boolean enabled = disableFeed(domainId);
+                boolean disabled = disableFeed(domainId);
                 //re fetch it
-                if (enabled) {
+                if (disabled) {
                     feedMetadata.setState(Feed.State.DISABLED.name());
+                    serviceLevelAgreementService.disableServiceLevelAgreementSchedule(domainId);
                 }
                 FeedSummary feedSummary = new FeedSummary(feedMetadata);
                 return feedSummary;
@@ -435,7 +443,8 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
             List<FeedSummary> feedSummaries = getFeedSummaryData();
             List<LabelValue> feedSelection = new ArrayList<>();
             for (FeedSummary feedSummary : feedSummaries) {
-                feedSelection.add(new LabelValue(feedSummary.getCategoryAndFeedDisplayName(), feedSummary.getCategoryAndFeedSystemName()));
+                boolean isDisabled = feedSummary.getState() == Feed.State.DISABLED.name();
+                feedSelection.add(new LabelValue(feedSummary.getCategoryAndFeedDisplayName() + (isDisabled ? " (DISABLED) ": ""), feedSummary.getCategoryAndFeedSystemName(), isDisabled ? "This feed is currently disabled" : ""));
             }
             for (FieldRuleProperty property : properties) {
                 property.setSelectableValues(feedSelection);

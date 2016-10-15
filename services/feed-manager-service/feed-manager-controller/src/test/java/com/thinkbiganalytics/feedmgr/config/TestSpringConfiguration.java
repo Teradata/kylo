@@ -74,6 +74,16 @@ public class TestSpringConfiguration {
             }
 
             @Override
+            public void enableServiceLevelAgreement(ServiceLevelAgreement sla) {
+
+            }
+
+            @Override
+            public void disableServiceLevelAgreement(ServiceLevelAgreement sla) {
+
+            }
+
+            @Override
             public boolean unscheduleServiceLevelAgreement(ServiceLevelAgreement.ID slaId) {
                 return false;
             }

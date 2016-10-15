@@ -94,6 +94,28 @@ public class ServiceLevelAgreementService implements ServicesApplicationStartupL
         });
     }
 
+    public void enableServiceLevelAgreementSchedule(Feed.ID feedId) {
+        metadataAccess.read(() -> {
+            List<FeedServiceLevelAgreement> agreements = feedSlaProvider.findFeedServiceLevelAgreements(feedId);
+            if (agreements != null) {
+                for (com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement sla : agreements) {
+                    serviceLevelAgreementScheduler.enableServiceLevelAgreement(sla);
+                }
+            }
+        });
+    }
+
+    public void disableServiceLevelAgreementSchedule(Feed.ID feedId) {
+        metadataAccess.read(() -> {
+            List<FeedServiceLevelAgreement> agreements = feedSlaProvider.findFeedServiceLevelAgreements(feedId);
+            if (agreements != null) {
+                for (com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement sla : agreements) {
+                    serviceLevelAgreementScheduler.disableServiceLevelAgreement(sla);
+                }
+            }
+        });
+    }
+
 
     public List<com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement> getFeedServiceLevelAgreements(String feedId) {
         return metadataAccess.read(() -> {

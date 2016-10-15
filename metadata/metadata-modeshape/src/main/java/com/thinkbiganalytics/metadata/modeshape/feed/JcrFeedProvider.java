@@ -53,7 +53,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
@@ -394,6 +393,14 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         Feed feed = getFeed(id);
         if (!feed.getState().equals(Feed.State.ENABLED)) {
             feed.setState(Feed.State.ENABLED);
+            //Enable any SLAs on this feed
+            List<ServiceLevelAgreement> serviceLevelAgreements = feed.getServiceLevelAgreements();
+            if (serviceLevelAgreements != null) {
+                for (ServiceLevelAgreement sla : serviceLevelAgreements) {
+                    JcrServiceLevelAgreement jcrSla = (JcrServiceLevelAgreement) sla;
+                    jcrSla.enable();
+                }
+            }
             return true;
         }
         return false;
@@ -404,6 +411,14 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         Feed feed = getFeed(id);
         if (!feed.getState().equals(Feed.State.DISABLED)) {
             feed.setState(Feed.State.DISABLED);
+            //disable any SLAs on this feed
+            List<ServiceLevelAgreement> serviceLevelAgreements = feed.getServiceLevelAgreements();
+            if (serviceLevelAgreements != null) {
+                for (ServiceLevelAgreement sla : serviceLevelAgreements) {
+                    JcrServiceLevelAgreement jcrSla = (JcrServiceLevelAgreement) sla;
+                    jcrSla.disabled();
+                }
+            }
             return true;
         }
         return false;
