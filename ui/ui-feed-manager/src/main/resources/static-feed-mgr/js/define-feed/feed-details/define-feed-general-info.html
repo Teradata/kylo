@@ -2,7 +2,8 @@
 
     <header-section>
         <div layout="row" layout-align="space-between-center" flex>
-            <h2 class="md-title" flex>General Info</h2><h2 class="md-subheader">{{vm.stepNumber}} of {{vm.totalSteps}}</h2>
+          <div class="card-title" flex>General Info</div>
+          <h2 class="md-subheader">{{vm.stepNumber}} of {{vm.totalSteps}}</h2>
         </div>
         <thinkbig-feed-errors-card-header></thinkbig-feed-errors-card-header>
     </header-section>
@@ -28,7 +29,7 @@
                         <div class="hint">Auto generated from the Feed Name</div>
                     </md-input-container>
                 </div>
-            <div layout="row" layout-align="space-between start" style="height:90px;">
+          <div layout="row" layout-align="space-between start">
                     <md-autocomplete flex="45" required ng-disabled="vm.model.id != null"
                                      md-input-name="category"
                             md-selected-item="vm.category"
@@ -54,32 +55,16 @@
                         <md-not-found>
                             No categories matching "{{vm.categorySearchText}}" were found.
                         </md-not-found>
+                      <div ng-messages="defineFeedForm.category.$error">
+                        <div ng-message="required">Required.</div>
+                      </div>
                   </md-autocomplete>
                </div>
-
-
-
 
                 <md-input-container class="md-block condensed">
                     <label>Description</label>
                     <textarea ng-model="vm.model.description"></textarea>
                 </md-input-container>
-            <!--
-            <div layout="row" layout-align="space-between start" class="layout-padding-top">
-                <md-input-container  flex="45" class="condensed">
-                    <label>Feed Type</label>
-                    <md-select required ng-model="vm.model.templateId" name="templateId" >
-                        <md-option ng-repeat="template in vm.templates | orderBy:templateName" value="{{template.templateId}}">
-                            {{template.templateName}}
-                        </md-option>
-                    </md-select>
-                        <div ng-show="defineFeedForm.templateId.$touched && defineFeedForm.templateId.$invalid" ng-messages="defineFeedForm.templateId.$error">
-                            <div ng-show="defineFeedForm.templateId.$error.required" ng-message="required">Required.</div>
-                        </div>
-                </md-input-container>
-                <span flex></span>
-                </div>
-                -->
 
         </div>
 

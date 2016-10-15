@@ -37,7 +37,7 @@
         <div ng-if="!vm.loading" flex="80" flex-xs="100" class="layout-padding-left profile">
             <div layout="column">
                 <header-section flex="100">
-                    <h2 class="md-title">{{vm.selectedRow.columnname}} <span ng-show="vm.selectedRow.columnname != '(ALL)'" class="md-caption">({{vm.selectedRow.type}})</span></h2>
+                    <div class="card-title">{{vm.selectedRow.columnname}} <span ng-show="vm.selectedRow.columnname != '(ALL)'" class="md-caption">({{vm.selectedRow.type}})</span></div>
                 </header-section>
 
                 <div ng-if="vm.selectedRow.columnname == '(ALL)'" layout="row" flex="100">

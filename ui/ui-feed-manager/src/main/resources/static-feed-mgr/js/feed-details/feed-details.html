@@ -2,7 +2,7 @@
 
     <card-layout class="not-centered" style="max-width:980px;width:980px;" flex="initial">
         <header-section>
-            <h2 class="md-title" flex>Feed Details</h2>
+            <div class="card-title" flex>Feed Details</div>
         </header-section>
 
         <body-section transclude-to="body" class="md-padding">
@@ -59,7 +59,7 @@
 
     <card-layout style="max-width:250px;width:250px;min-width:250px;" flex="initial" body-css="md-padding">
         <header-section>
-            <h2 class="md-title" flex>Feed Summary</h2>
+            <div class="card-title" flex>Feed Summary</div>
             <span class="md-subhead" ng-if="!vm.loadingFeedData">{{vm.model.feedName}}</span>
         </header-section>
 

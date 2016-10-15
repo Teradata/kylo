@@ -6,6 +6,7 @@ package com.thinkbiganalytics.rest.model;
 public class LabelValue {
     private String label;
     private String value;
+    private String hint;
 
     public LabelValue(){
 
@@ -15,6 +16,13 @@ public class LabelValue {
         this.label = label;
         this.value = value;
     }
+
+    public LabelValue(String label, String value, String hint) {
+        this.label = label;
+        this.value = value;
+        this.hint = hint;
+    }
+
 
     public String getLabel() {
         return label;
@@ -30,5 +38,13 @@ public class LabelValue {
 
     public void setValue(String value) {
         this.value = value;
+    }
+
+    public String getHint() {
+        return hint;
+    }
+
+    public void setHint(String hint) {
+        this.hint = hint;
     }
 }

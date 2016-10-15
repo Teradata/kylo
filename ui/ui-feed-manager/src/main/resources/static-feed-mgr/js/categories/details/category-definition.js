@@ -116,6 +116,7 @@
             self.editModel = angular.copy(self.model);
         };
 
+
         /**
          * Check for duplicate system names.
          */
@@ -124,8 +125,12 @@
             FeedService.getSystemName(newVal)
                 .then(function (response) {
                             var systemName = response.data;
+                    if (self.editModel.id == undefined) {
+                        self.editModel.systemName = systemName;
+                    }
                     exists = _.some(CategoriesService.categories, function (category) {
-                        return (category.systemName === systemName || (newVal && category.name == newVal));
+                        return (self.editModel.id == null || (self.editModel.id != null && category.id != self.editModel.id) && (category.systemName === systemName || (newVal && category.name
+                                                                                                                                                                                  == newVal)));
                             });
 
                     var reservedCategoryName = newVal && _.indexOf(reservedCategoryNames, newVal.toLowerCase()) >= 0;

@@ -1,7 +1,7 @@
 <ng-form name="vm.slaForm" ng-if="vm.editSla != null" class="layout-padding-left-right layout-padding-top">
-  <md-button class="md-raised" ng-click="vm.onBackToList($event)">Back to List</md-button>
+  <md-button ng-click="vm.onBackToList($event)">Back to List</md-button>
 
-  <div layout="column" class="layout-padding-top">
+  <div layout="column" class="layout-padding-top" style="padding-top:16px;">
     <md-input-container class="md-block condensed">
       <label>Name</label>
       <input name="slaName" type="text" ng-model="vm.editSla.name" md-placeholder="SLA name"
@@ -75,11 +75,11 @@
     <div>
       <span class="md-body-2">SLA Actions</span>
 
-      <div ng-if="vm.editSla.actionConfigurations.length ==0" layout="column">
+      <div ng-if="vm.editSla.actionConfigurations.length ==0" layout="column" class="layout-padding-left">
         <span>All SLA violations will generate an Alert.</span>
         <span ng-if="vm.showActionOptions">Click the 'Add Action' button to add additional actions when an SLA is violated</span>
       </div>
-      <div ng-if="vm.editSla.actionErrors != null && vm.editSla.actionErrors.length >0" layout="column">
+      <div ng-if="vm.editSla.actionErrors != null && vm.editSla.actionErrors.length >0" layout="column" class="layout-padding-left-right">
         <div class="error md-title bold layout-padding-left" layout="row">
           <div class="layout-padding-left">
             <ng-md-icon icon="warning" size="20" class="error">WARNING</ng-md-icon>
@@ -87,7 +87,7 @@
           <span>Errors found. Saving this SLA will result in loss of configuration data.</span>
         </div>
 
-        <div ng-repeat="error in vm.editSla.actionErrors" layout="column" class="layout-padding-left-right">
+        <div ng-repeat="error in vm.editSla.actionErrors" layout="column" class="layout-padding-left">
           <span class="error">{{error}}</span>
         </div>
       </div>
@@ -126,17 +126,17 @@
         </md-button>
       </div>
       <div ng-if="vm.addingSlaAction == false" flex layout="row">
-        <md-button class="md-primary" ng-click="vm.addingSlaAction = true" ng-if="vm.showActionOptions">Add Action</md-button>
+        <md-button class="md-primary" ng-click="vm.addingSlaAction = true" ng-if="vm.showActionOptions" ng-disabled="vm.editSla.rules.length ==0">Add Action</md-button>
         <span flex></span>
       </div>
     </div>
 
 
     <div class="layout-padding-top-bottom" flex layout="row">
-      <md-button class="md-raised md-warn" ng-click="vm.onDeleteSla($event)" ng-if="vm.editSla != null && vm.editSlaIndex != null">Delete</md-button>
+      <md-button ng-click="vm.onDeleteSla($event)" ng-if="vm.editSla != null && vm.editSlaIndex != null">Delete</md-button>
       <span flex></span>
-      <md-button class="md-raised" ng-click="vm.cancelEditSla()" ng-if="vm.editSla != null">Cancel</md-button>
-      <md-button class="md-primary md-raised" ng-click="vm.saveSla()" ng-if="vm.editSla != null && vm.editSla.rules.length >0">Save SLA</md-button>
+      <md-button  ng-click="vm.cancelEditSla()" ng-if="vm.editSla != null">Cancel</md-button>
+      <md-button class="md-primary md-raised" ng-click="vm.saveSla()" ng-if="vm.editSla != null " ng-disabled="vm.editSla.rules.length ==0 || vm.slaForm.$invalid">Save SLA</md-button>
     </div>
 
   </div>

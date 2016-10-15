@@ -2,7 +2,7 @@
     <md-progress-linear md-mode="indeterminate" ng-if="vm.loading"></md-progress-linear>
     <card-layout body-css="md-padding" class="centered" ng-if="!vm.loading">
         <header-section>
-            <h2 class="md-title">Business Metadata</h2>
+            <div class="card-title">Business Metadata</div>
         </header-section>
         <body-section>
             <vertical-section-layout section-title="Category Fields" on-save-edit="vm.onCategorySave()" on-edit="vm.onCategoryEdit()" editable="vm.isCategoryEditable" is-valid="vm.isCategoryValid"
