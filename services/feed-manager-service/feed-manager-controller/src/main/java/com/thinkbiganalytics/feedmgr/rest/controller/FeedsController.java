@@ -26,6 +26,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.lang3.StringUtils;
@@ -111,7 +112,7 @@ public class FeedsController {
     
     @GET
     @Path("{id}/watermark/{name}")
-    @Produces(MediaType.TEXT_PLAIN)
+    @Produces({ MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON } )
     public String getHighWaterMark(@PathParam("id") String feedIdStr,
                                    @PathParam("name") String waterMarkName) {
         LOG.debug("Get feed watermark {}: {}", feedIdStr, waterMarkName);

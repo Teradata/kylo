@@ -47,13 +47,7 @@ public abstract class HighWaterMarkProcessor extends BaseProcessor {
         String category = context.getProperty(CommonProperties.FEED_CATEGORY).getValue();
         String feedName = context.getProperty(CommonProperties.FEED_NAME).getValue();
         MetadataProviderService metadataController = context.getProperty(CommonProperties.METADATA_SERVICE).asControllerService(MetadataProviderService.class);
-        
-        try {
-            this.feedId = metadataController.getProvider().getFeedId(category, feedName);
-        } catch (Exception e) {
-            getLogger().warn("Failure retrieving feed metadata" + category + "/" + feedName, e);
-            // TODO Swallowing for now until metadata client is working again
-        }
+        this.feedId = metadataController.getProvider().getFeedId(category, feedName);
     }
     
     @Override

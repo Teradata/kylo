@@ -39,6 +39,17 @@ cat << EOF > /etc/init.d/thinkbig-ui
 # processname: thinkbig-ui
 RUN_AS_USER=thinkbig
 
+debug() {
+    if pgrep -f thinkbig-ui-pgrep-marker >/dev/null 2>&1
+      then
+        echo Already running.
+      else
+        echo Starting thinkbig-ui in debug mode...
+        grep 'address=' /opt/thinkbig/run-thinkbig-ui-with-debug.sh
+        su - $RUN_AS_USER -c "/opt/thinkbig/run-thinkbig-ui-with-debug.sh"
+    fi
+}
+
 start() {
     if pgrep -f $pgrepMarkerThinkbigUi >/dev/null 2>&1
       then
@@ -70,6 +81,9 @@ status() {
 }
 
 case "\$1" in
+    debug)
+        debug
+    ;;
     start)
         start
     ;;
@@ -134,6 +148,17 @@ cat << EOF > /etc/init.d/thinkbig-services
 # processname: thinkbig-services
 RUN_AS_USER=thinkbig
 
+debug() {
+    if pgrep -f thinkbig-services-pgrep-marker >/dev/null 2>&1
+      then
+        echo Already running.
+      else
+        echo Starting thinkbig-services in debug mode...
+        grep 'address=' /opt/thinkbig/thinkbig-services/bin/run-thinkbig-services-with-debug.sh
+        su - $RUN_AS_USER -c "/opt/thinkbig/thinkbig-services/bin/run-thinkbig-services-with-debug.sh"
+    fi
+}
+
 start() {
     if pgrep -f $pgrepMarkerThinkbigServices >/dev/null 2>&1
       then
@@ -165,6 +190,9 @@ status() {
 }
 
 case "\$1" in
+    debug)
+        debug
+    ;;
     start)
         start
     ;;

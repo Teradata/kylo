@@ -13,8 +13,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import javax.annotation.Nonnull;
 
@@ -29,12 +31,14 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -66,7 +70,7 @@ import com.thinkbiganalytics.metadata.sla.api.Metric;
  */
 public class MetadataClient {
     
-    public static final List<MediaType> ACCEPT_TYPES = Collections.unmodifiableList(Arrays.asList(MediaType.APPLICATION_JSON));
+    public static final List<MediaType> ACCEPT_TYPES = Collections.unmodifiableList(Arrays.asList(MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN));
     
     public static final ParameterizedTypeReference<List<ExtensibleTypeDescriptor>> TYPE_LIST = new ParameterizedTypeReference<List<ExtensibleTypeDescriptor>>() { };
     public static final ParameterizedTypeReference<List<Feed>> FEED_LIST = new ParameterizedTypeReference<List<Feed>>() { };
@@ -131,6 +135,13 @@ public class MetadataClient {
     }
     
     
+    public Optional<String> getHighWaterMarkValue(String feedId, String waterMarkName) {
+        return optinal(() -> get(path("feed", feedId, "watermark", waterMarkName), String.class));
+    }
+
+    public void updateHighWaterMarkValue(String feedId, String waterMarkName, String value) {
+        put(path("feed", feedId, "watermark", waterMarkName), value, MediaType.TEXT_PLAIN);
+    }
     
     public Feed addSource(String feedId, String datasourceId) {
         Form form = new Form();
@@ -147,7 +158,7 @@ public class MetadataClient {
     }
     
     public ServiceLevelAgreement createSla(ServiceLevelAgreement sla) {
-        return post(path("sla"), sla, ServiceLevelAgreement.class);
+        return post(path("sla"), sla, MediaType.APPLICATION_JSON, ServiceLevelAgreement.class);
     }
 
     public Feed setPrecondition(String feedId, Metric... metrics) {
@@ -160,7 +171,7 @@ public class MetadataClient {
     }
     
     public Feed setPrecondition(String feedId, FeedPrecondition precond) {
-        return post(path("feed", feedId, "precondition"), precond, Feed.class);
+        return post(path("feed", feedId, "precondition"), precond, MediaType.APPLICATION_JSON, Feed.class);
     }
 
     public FeedCriteria feedCriteria() {
@@ -197,7 +208,7 @@ public class MetadataClient {
 
     public Feed updateFeed(Feed feed) {
         // Using POST here in since it behaves more like a PATCH than a PUT, and PATCH is not supported in jersey.
-        return post(path("feed", feed.getId()), feed, Feed.class);
+        return post(path("feed", feed.getId()), feed, MediaType.APPLICATION_JSON, Feed.class);
     }
 
     /**
@@ -211,11 +222,11 @@ public class MetadataClient {
     }
     
     public Properties mergeFeedProperties(String id, Properties props) {
-        return post(path("feed", id, "props"), props, Properties.class);
+        return post(path("feed", id, "props"), props, MediaType.APPLICATION_JSON, Properties.class);
     }
     
     public Properties replaceFeedProperties(String id, Properties props) {
-        return put(path("feed", id), props, Properties.class);
+        return put(path("feed", id), props, MediaType.APPLICATION_JSON, Properties.class);
     }
 
     public DirectoryDatasourceBuilder buildDirectoryDatasource(String name) {
@@ -251,7 +262,7 @@ public class MetadataClient {
     }
     
     public DataOperation updateDataOperation(DataOperation op) {
-        return put(path("dataop", op.getId()), op, DataOperation.class);
+        return put(path("dataop", op.getId()), op, MediaType.APPLICATION_JSON, DataOperation.class);
     }
     
     public DataOperation getDataOperation(String id) {
@@ -272,6 +283,18 @@ public class MetadataClient {
         mapper.setSerializationInclusion(Include.NON_NULL);
         return mapper;
     }
+    
+    private <R> Optional<R> optinal(Supplier<R> supplier) {
+        try {
+            return Optional.ofNullable(supplier.get());
+        } catch (HttpClientErrorException e) {
+            if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
+                return Optional.empty();
+            } else {
+                throw e;
+            }
+        }
+    }
 
     private FeedPrecondition createTrigger(List<Metric> metrics) {
         if (! metrics.isEmpty()) {
@@ -285,15 +308,15 @@ public class MetadataClient {
 
 
     private Feed postFeed(Feed feed) {
-        return post(path("feed"), feed, Feed.class);
+        return post(path("feed"), feed, MediaType.APPLICATION_JSON, Feed.class);
     }
     
     private HiveTableDatasource postDatasource(HiveTableDatasource ds) {
-        return post(path("datasource", "hivetable"), ds, HiveTableDatasource.class);
+        return post(path("datasource", "hivetable"), ds, MediaType.APPLICATION_JSON, HiveTableDatasource.class);
     }
     
     private DirectoryDatasource postDatasource(DirectoryDatasource ds) {
-        return post(path("datasource", "directory"), ds, DirectoryDatasource.class);
+        return post(path("datasource", "directory"), ds, MediaType.APPLICATION_JSON, DirectoryDatasource.class);
     }
     
     private UriComponentsBuilder base(Path path) {
@@ -331,9 +354,9 @@ public class MetadataClient {
         return this.template.postForObject(base(path).build().toUri(), form, resultType);
     }
     
-    private <R> R post(Path path, Object body, Class<R> resultType) {
+    private <R> R post(Path path, Object body, MediaType mediaType, Class<R> resultType) {
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setContentType(mediaType);
         headers.setAccept(ACCEPT_TYPES);
         
         return this.template.postForObject(base(path).build().toUri(), 
@@ -341,15 +364,23 @@ public class MetadataClient {
                                            resultType);
     }
     
-    private <R> R put(Path path, Object body, Class<R> resultType) {
+    private void put(Path path, Object body, MediaType mediaType) {
+        put(path, body, mediaType, null);
+    }
+    
+    private <R> R put(Path path, Object body, MediaType mediaType, Class<R> resultType) {
         URI uri = base(path).build().toUri();
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setContentType(mediaType);
         headers.setAccept(ACCEPT_TYPES);
         
         this.template.put(uri, new HttpEntity<>(body, headers));
         // Silly that put() doesn't return an object.
-        return get(path, resultType);
+        if (resultType != null) {
+            return get(path, resultType);
+        } else {
+            return null;
+        }
     }
     
 

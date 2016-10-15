@@ -39,8 +39,6 @@ public class MetadataClientRecorder implements MetadataRecorder {
     
     private MetadataClient client;
     private Set<String> activeWaterMarks = Collections.synchronizedSet(new HashSet<>());
-    // TODO: Remove this
-    public Map<String, String> waterMarkValues = new HashMap<>();
     
     // TODO: Remove this
     public Map<String, Boolean> workaroundRegistration = new HashMap<>();
@@ -285,14 +283,12 @@ public class MetadataClientRecorder implements MetadataRecorder {
     }
 
     private Optional<String> getHighWaterMarkValue(String feedId, String waterMarkName) {
-            return Optional.ofNullable(this.waterMarkValues.get(feedId+"."+waterMarkName));
-    //        return Optional.ofNullable(this.client.getHighWaterMark(feedId, waterMarkName));
-        }
+        return this.client.getHighWaterMarkValue(feedId, waterMarkName);
+    }
 
     private void updateHighWaterMarkValue(String feedId, String waterMarkName, String value) {
-            this.waterMarkValues.put(feedId+"."+waterMarkName, value);
-    //        this.client.updateHighWaterMark(feedId, waterMarkName, value);
-        }
+        this.client.updateHighWaterMarkValue(feedId, waterMarkName, value);
+    }
 
     private String initValueParameterName(String parameterName) {
         return parameterName + ".original";
