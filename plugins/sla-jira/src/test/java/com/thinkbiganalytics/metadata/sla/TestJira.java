@@ -90,6 +90,11 @@ public class TestJira {
                     public List<ServiceLevelAgreementCheck> getSlaChecks() {
                         return null;
                     }
+
+                    @Override
+                    public boolean isEnabled() {
+                        return false;
+                    }
                 };
             }
 
