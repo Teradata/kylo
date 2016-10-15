@@ -1,13 +1,13 @@
 package com.thinkbiganalytics.metadata.modeshape.feed;
 
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrFeedManagerCategory;
 import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplate;
-
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
 
 /**
  * Created by sr186054 on 6/8/16.

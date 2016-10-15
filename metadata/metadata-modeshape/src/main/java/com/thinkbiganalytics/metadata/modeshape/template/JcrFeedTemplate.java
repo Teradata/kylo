@@ -1,16 +1,16 @@
 package com.thinkbiganalytics.metadata.modeshape.template;
 
-import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
-import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
-import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
-
 import java.io.Serializable;
 import java.util.List;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+
+import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
+import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 
 /**
  * Created by sr186054 on 6/8/16.

@@ -4,8 +4,9 @@
 package com.thinkbiganalytics.metadata.rest.client;
 
 import java.net.URI;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -86,6 +87,13 @@ public class MetadataClient {
         return credsProvider;
     }
     
+    private static final FileSystem FS = FileSystems.getFileSystem(URI.create("jar:/"));
+    
+    public static Path path(String first, String... more) {
+        return FS.getPath(first, more);
+    }
+
+    
     public MetadataClient(URI base) {
         this(base, null);
     }
@@ -118,11 +126,11 @@ public class MetadataClient {
     }
 
     public List<ExtensibleTypeDescriptor> getExtensibleTypes() {
-        return get(Paths.get("extension", "type"), null, TYPE_LIST);
+        return get(path("extension", "type"), null, TYPE_LIST);
     }
 
     public ExtensibleTypeDescriptor getExtensibleType(String nameOrId) {
-        return get(Paths.get("extension", "type", nameOrId), ExtensibleTypeDescriptor.class);
+        return get(path("extension", "type", nameOrId), ExtensibleTypeDescriptor.class);
     }
 
     public FeedBuilder buildFeed(String categoryName, String name) {
@@ -133,18 +141,18 @@ public class MetadataClient {
         Form form = new Form();
         form.add("datasourceId", datasourceId);
         
-        return post(Paths.get("feed", feedId, "source"), form, Feed.class);
+        return post(path("feed", feedId, "source"), form, Feed.class);
     }
     
     public Feed addDestination(String feedId, String datasourceId) {
         Form form = new Form();
         form.add("datasourceId", datasourceId);
         
-        return post(Paths.get("feed", feedId, "destination"), form, Feed.class);
+        return post(path("feed", feedId, "destination"), form, Feed.class);
     }
     
     public ServiceLevelAgreement createSla(ServiceLevelAgreement sla) {
-        return post(Paths.get("sla"), sla, ServiceLevelAgreement.class);
+        return post(path("sla"), sla, ServiceLevelAgreement.class);
     }
 
     public Feed setPrecondition(String feedId, Metric... metrics) {
@@ -157,7 +165,7 @@ public class MetadataClient {
     }
     
     public Feed setPrecondition(String feedId, FeedPrecondition precond) {
-        return post(Paths.get("feed", feedId, "precondition"), precond, Feed.class);
+        return post(path("feed", feedId, "precondition"), precond, Feed.class);
     }
 
     public FeedCriteria feedCriteria() {
@@ -170,31 +178,31 @@ public class MetadataClient {
     
     public List<Feed> getFeeds(FeedCriteria criteria) {
         try {
-            return get(Paths.get("feed"), (TargetFeedCriteria) criteria, FEED_LIST);
+            return get(path("feed"), (TargetFeedCriteria) criteria, FEED_LIST);
         } catch (ClassCastException e) {
             throw new IllegalThreadStateException("Unknown criteria type: " + criteria.getClass());
         }
     }
     
     public Feed getFeed(String id) {
-        return get(Paths.get("feed", id), Feed.class);
+        return get(path("feed", id), Feed.class);
     }
 
     public Feed getFeed(String categoryName, String feedName) {
-        return get(Paths.get("feed"), Feed.class);
+        return get(path("feed"), Feed.class);
     }
     
     public FeedDependencyGraph getFeedDependency(String id) {
-        return get(Paths.get("feed", id, "depfeeds"), FeedDependencyGraph.class);
+        return get(path("feed", id, "depfeeds"), FeedDependencyGraph.class);
     }
     
     public Map<DateTime, Map<String, String>> getFeedDependencyDeltas(String feedId) {
-        return get(Paths.get("feed", feedId, "depfeeds", "delta"), FEED_RESULT_DELTAS);
+        return get(path("feed", feedId, "depfeeds", "delta"), FEED_RESULT_DELTAS);
     }
 
     public Feed updateFeed(Feed feed) {
         // Using POST here in since it behaves more like a PATCH than a PUT, and PATCH is not supported in jersey.
-        return post(Paths.get("feed", feed.getId()), feed, Feed.class);
+        return post(path("feed", feed.getId()), feed, Feed.class);
     }
 
     /**
@@ -204,15 +212,15 @@ public class MetadataClient {
      * @return the metadata properties
      */
     public Properties getFeedProperties(@Nonnull final String id) {
-        return get(Paths.get("feed", id, "props"), Properties.class);
+        return get(path("feed", id, "props"), Properties.class);
     }
     
     public Properties mergeFeedProperties(String id, Properties props) {
-        return post(Paths.get("feed", id, "props"), props, Properties.class);
+        return post(path("feed", id, "props"), props, Properties.class);
     }
     
     public Properties replaceFeedProperties(String id, Properties props) {
-        return put(Paths.get("feed", id), props, Properties.class);
+        return put(path("feed", id), props, Properties.class);
     }
 
     public DirectoryDatasourceBuilder buildDirectoryDatasource(String name) {
@@ -228,12 +236,12 @@ public class MetadataClient {
     }
 
     public List<Datasource> getDatasources() {
-        return get(Paths.get("datasource"), ALL_DATASOURCES, DATASOURCE_LIST);
+        return get(path("datasource"), ALL_DATASOURCES, DATASOURCE_LIST);
     }
     
     public List<Datasource> getDatasources(DatasourceCriteria criteria) {
         try {
-            return get(Paths.get("datasource"), (TargetDatasourceCriteria) criteria, DATASOURCE_LIST);
+            return get(path("datasource"), (TargetDatasourceCriteria) criteria, DATASOURCE_LIST);
         } catch (ClassCastException e) {
             throw new IllegalThreadStateException("Unknown criteria type: " + criteria.getClass());
         }
@@ -244,23 +252,23 @@ public class MetadataClient {
         form.add("feedDestinationId", feedDestinationId);
         form.add("status", status);
         
-        return post(Paths.get("dataop"), form, DataOperation.class);
+        return post(path("dataop"), form, DataOperation.class);
     }
     
     public DataOperation updateDataOperation(DataOperation op) {
-        return put(Paths.get("dataop", op.getId()), op, DataOperation.class);
+        return put(path("dataop", op.getId()), op, DataOperation.class);
     }
     
     public DataOperation getDataOperation(String id) {
-        return get(Paths.get("dataop", id), DataOperation.class);
+        return get(path("dataop", id), DataOperation.class);
     }
 
     public ServiceLevelAssessment assessPrecondition(String id) {
-        return get(Paths.get("feed", id, "precondition", "assessment"), ServiceLevelAssessment.class);
+        return get(path("feed", id, "precondition", "assessment"), ServiceLevelAssessment.class);
     }
     
     public String getPreconditionResult(String id) {
-        return get(Paths.get("feed", id, "precondition", "assessment", "result"), String.class);
+        return get(path("feed", id, "precondition", "assessment", "result"), String.class);
     }
 
     private FeedPrecondition createTrigger(List<Metric> metrics) {
@@ -275,15 +283,15 @@ public class MetadataClient {
 
 
     private Feed postFeed(Feed feed) {
-        return post(Paths.get("feed"), feed, Feed.class);
+        return post(path("feed"), feed, Feed.class);
     }
     
     private HiveTableDatasource postDatasource(HiveTableDatasource ds) {
-        return post(Paths.get("datasource", "hivetable"), ds, HiveTableDatasource.class);
+        return post(path("datasource", "hivetable"), ds, HiveTableDatasource.class);
     }
     
     private DirectoryDatasource postDatasource(DirectoryDatasource ds) {
-        return post(Paths.get("datasource", "directory"), ds, DirectoryDatasource.class);
+        return post(path("datasource", "directory"), ds, DirectoryDatasource.class);
     }
     
     private UriComponentsBuilder base(Path path) {

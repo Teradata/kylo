@@ -1,5 +1,18 @@
 package com.thinkbiganalytics.metadata.modeshape.user;
 
+import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.Optional;
+
+import javax.annotation.Nonnull;
+import javax.jcr.ItemNotFoundException;
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+
+import org.apache.commons.lang.StringEscapeUtils;
+
 import com.thinkbiganalytics.metadata.api.user.GroupAlreadyExistsException;
 import com.thinkbiganalytics.metadata.api.user.User;
 import com.thinkbiganalytics.metadata.api.user.UserAlreadyExistsException;
@@ -11,19 +24,6 @@ import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.UsersPaths;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
-
-import org.apache.commons.lang.StringEscapeUtils;
-
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.Optional;
-
-import javax.annotation.Nonnull;
-import javax.jcr.ItemNotFoundException;
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
 
 /**
  * Provides access to {@link User} objects stored in a JCR repository.

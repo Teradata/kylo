@@ -3,16 +3,6 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.sla;
 
-import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrPropertyConstants;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfig;
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfiguration;
-import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementCheck;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -22,6 +12,16 @@ import java.util.stream.Collectors;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
+
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrPropertyConstants;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfig;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfiguration;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementCheck;
 
 
 public class JcrServiceLevelAgreementCheck extends AbstractJcrAuditableSystemEntity implements ServiceLevelAgreementCheck, Serializable {

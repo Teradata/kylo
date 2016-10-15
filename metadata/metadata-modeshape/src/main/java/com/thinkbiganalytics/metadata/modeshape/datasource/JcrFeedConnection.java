@@ -9,7 +9,6 @@ import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedConnection;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
-import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
 
 /**
  * Created by sr186054 on 6/7/16.

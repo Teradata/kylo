@@ -1,9 +1,5 @@
 package com.thinkbiganalytics.metadata.modeshape.support;
 
-import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-
-import org.modeshape.jcr.api.JcrTools;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -18,6 +14,10 @@ import javax.jcr.query.Query;
 import javax.jcr.query.QueryResult;
 import javax.jcr.query.Row;
 import javax.jcr.query.RowIterator;
+
+import org.modeshape.jcr.api.JcrTools;
+
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 
 /**
  * Created by sr186054 on 6/13/16.

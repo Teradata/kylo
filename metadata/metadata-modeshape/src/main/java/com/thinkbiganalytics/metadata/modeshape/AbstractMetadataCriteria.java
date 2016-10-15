@@ -1,9 +1,5 @@
 package com.thinkbiganalytics.metadata.modeshape;
 
-import com.thinkbiganalytics.metadata.api.MetadataCriteria;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +7,10 @@ import java.util.Map;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.query.QueryResult;
+
+import com.thinkbiganalytics.metadata.api.MetadataCriteria;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
 
 /**
  * Created by sr186054 on 6/7/16.

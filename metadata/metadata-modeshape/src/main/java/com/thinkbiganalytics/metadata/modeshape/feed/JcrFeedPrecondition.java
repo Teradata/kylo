@@ -3,6 +3,9 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.feed;
 
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
@@ -10,9 +13,6 @@ import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
-
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
 
 /**
  *

@@ -1,5 +1,13 @@
 package com.thinkbiganalytics.metadata.modeshape.datasource;
 
+import java.io.Serializable;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
@@ -10,15 +18,6 @@ import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedDestination;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedSource;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
-
-import java.io.Serializable;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
 
 /**
  * Created by sr186054 on 6/5/16.

@@ -1,14 +1,14 @@
 package com.thinkbiganalytics.metadata.modeshape.security;
 
-import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
-import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
-
 import java.io.Serializable;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+
+import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 
 /**
  * Created by Jeremy Merrifield on 9/20/16.

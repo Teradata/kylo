@@ -1,5 +1,14 @@
 package com.thinkbiganalytics.metadata.modeshape.feed;
 
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.inject.Inject;
+import javax.jcr.RepositoryException;
+import javax.jcr.query.QueryResult;
+
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
@@ -12,15 +21,6 @@ import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
-
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.inject.Inject;
-import javax.jcr.RepositoryException;
-import javax.jcr.query.QueryResult;
 
 /**
  * Created by sr186054 on 6/8/16.

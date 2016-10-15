@@ -4,7 +4,8 @@
 package com.thinkbiganalytics.metadata.modeshape.common;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
+
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
 /**
  * Defines and resolves security-related paths within the JCR repository.
@@ -13,7 +14,7 @@ import java.nio.file.Paths;
  */
 public interface SecurityPaths {
 
-    public static final Path METADATA = Paths.get("metadata");
+    public static final Path METADATA = JcrUtil.path("metadata");
     public static final Path SECURITY = METADATA.resolve("security");
     public static final Path PROTOTYPES = SECURITY.resolve("prototypes");
     

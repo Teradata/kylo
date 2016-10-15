@@ -3,8 +3,14 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.support;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
+import java.net.URL;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -16,7 +22,6 @@ import java.util.stream.StreamSupport;
 
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
-import javax.jcr.PathNotFoundException;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
@@ -38,6 +43,15 @@ import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
  */
 public class JcrUtil {
 
+    /**
+     * Creates a Path out of the arguments appropriate for JCR.
+     * @param first the first element
+     * @param more any remaining elements
+     * @return a path string
+     */
+    public static Path path(String first, String... more) {
+        return JcrPath.get(first, more);
+    }
 
     /**
      * Checks whether the given mixin node type is in effect for the given node.
