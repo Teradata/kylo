@@ -40,6 +40,25 @@ public class RangerAuthorizationService extends BaseHadoopAuthorizationService {
     private RangerConnection rangerConnection;
 
     /**
+     * @return : comma separated string
+     */
+    public static String convertListToString(List<String> list, String delim) {
+
+        StringBuilder sb = new StringBuilder();
+
+        String loopDelim = "";
+
+        for (String input : list) {
+
+            sb.append(loopDelim);
+            sb.append(input);
+
+            loopDelim = delim;
+        }
+        return sb.toString();
+    }
+
+    /**
      * Implement Ranger Authentication Service. Initiate RangerClient and RangerClientConfig for initializing service and invoke different methods of it.
      */
     @Override
@@ -49,7 +68,6 @@ public class RangerAuthorizationService extends BaseHadoopAuthorizationService {
         rangerClientConfiguration.setPort(rangerConnection.getPort());
         rangerRestClient = new RangerRestClient(rangerClientConfiguration);
     }
-
 
     @Override
     public RangerGroup getGroupByName(String groupName) {
@@ -273,26 +291,6 @@ public class RangerAuthorizationService extends BaseHadoopAuthorizationService {
     public List<HadoopAuthorizationPolicy> searchPolicy(Map<String, Object> searchCriteria) {
         return rangerRestClient.searchPolicies(searchCriteria);
     }
-
-    /**
-     * @return : comma separated string
-     */
-    public static String convertListToString(List<String> list, String delim) {
-
-        StringBuilder sb = new StringBuilder();
-
-        String loopDelim = "";
-
-        for (String input : list) {
-
-            sb.append(loopDelim);
-            sb.append(input);
-
-            loopDelim = delim;
-        }
-        return sb.toString();
-    }
-
 
     @Override
     public void deletePolicy(String categoryName, String feedName, String repositoryType) throws Exception {

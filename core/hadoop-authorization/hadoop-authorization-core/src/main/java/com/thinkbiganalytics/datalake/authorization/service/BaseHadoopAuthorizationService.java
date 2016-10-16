@@ -19,6 +19,7 @@ import javax.inject.Inject;
  * Created by Jeremy Merrifield on 10/14/16.
  */
 public abstract class BaseHadoopAuthorizationService implements HadoopAuthorizationService {
+
     private static final Logger log = LoggerFactory.getLogger(BaseHadoopAuthorizationService.class);
 
     private static final String REGISTRATION_HDFS_FOLDERS = "nifi:registration:hdfsFolders";

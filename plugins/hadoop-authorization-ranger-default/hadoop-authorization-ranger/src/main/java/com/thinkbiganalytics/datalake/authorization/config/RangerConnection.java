@@ -24,28 +24,24 @@ public class RangerConnection implements AuthorizationConfiguration {
         return password;
     }
 
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
     public String getHdfsRepositoryName() {
         return hdfsRepositoryName;
     }
-
 
     public void setHdfsRepositoryName(String hdfsRepositoryName) {
         this.hdfsRepositoryName = hdfsRepositoryName;
     }
 
-
     public String getHiveRepositoryName() {
         return hiveRepositoryName;
     }
 
-
     public void setHiveRepositoryName(String hiveRepositoryName) {
         this.hiveRepositoryName = hiveRepositoryName;
-    }
-
-
-    public void setPassword(String password) {
-        this.password = password;
     }
 
     public int getPort() {

@@ -21,21 +21,21 @@ public interface HadoopAuthorizationService {
 
     List<HadoopAuthorizationGroup> getAllGroups();
 
-    void createOrUpdateReadOnlyHivePolicy(String categoryName, String feedName , List<String> hadoopAuthorizationGroups, String datebaseName, List<String> tableNames);
+    void createOrUpdateReadOnlyHivePolicy(String categoryName, String feedName, List<String> hadoopAuthorizationGroups, String datebaseName, List<String> tableNames);
 
-    void createOrUpdateReadOnlyHdfsPolicy(String categoryName, String feedName , List<String> hadoopAuthorizationGroups, List<String> hdfsPaths);
+    void createOrUpdateReadOnlyHdfsPolicy(String categoryName, String feedName, List<String> hadoopAuthorizationGroups, List<String> hdfsPaths);
 
-    void createReadOnlyHivePolicy(String categoryName, String feedName , List<String> hadoopAuthorizationGroups, String datebaseName, List<String> tableNames);
+    void createReadOnlyHivePolicy(String categoryName, String feedName, List<String> hadoopAuthorizationGroups, String datebaseName, List<String> tableNames);
 
-    void createReadOnlyHdfsPolicy(String categoryName, String feedName , List<String> hadoopAuthorizationGroups, List<String> hdfsPaths);
+    void createReadOnlyHdfsPolicy(String categoryName, String feedName, List<String> hadoopAuthorizationGroups, List<String> hdfsPaths);
 
-    void deletePolicy(String categoryName, String feedName , String repositoryType) throws Exception;
+    void deletePolicy(String categoryName, String feedName, String repositoryType) throws Exception;
 
     List<HadoopAuthorizationPolicy> searchPolicy(Map<String, Object> searchCriteria);
 
-    void updateReadOnlyHivePolicy(String categoryName, String feedName , List<String> groups, String datebaseName, List<String> tableNames) throws Exception;
+    void updateReadOnlyHivePolicy(String categoryName, String feedName, List<String> groups, String datebaseName, List<String> tableNames) throws Exception;
 
-    void updateReadOnlyHdfsPolicy(String categoryName, String feedName , List<String> groups, List<String> hdfsPaths) throws Exception;
+    void updateReadOnlyHdfsPolicy(String categoryName, String feedName, List<String> groups, List<String> hdfsPaths) throws Exception;
 
     String getType();
 
