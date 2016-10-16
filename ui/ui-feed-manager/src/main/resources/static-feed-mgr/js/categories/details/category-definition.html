@@ -1,4 +1,5 @@
-<vertical-section-layout section-title="Category Definition" on-delete="vm.onDelete()" allow-delete="vm.canDelete()" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancel()"
+<vertical-section-layout section-title="Category Definition" on-delete="vm.onDelete()" allow-delete="vm.canDelete()" is-delete-visible="vm.model.id != null" on-save-edit="vm.onSave()"
+                         on-edit="vm.onEdit()" on-cancel-edit="vm.onCancel()"
                          editable="vm.isEditable" allow-edit="vm.allowEdit" the-form="vm.categoryForm">
   <readonly-section>
     <div layout="row" class="layout-padding-top-bottom" flex>

@@ -129,8 +129,8 @@
                         self.editModel.systemName = systemName;
                     }
                     exists = _.some(CategoriesService.categories, function (category) {
-                        return (self.editModel.id == null || (self.editModel.id != null && category.id != self.editModel.id) && (category.systemName === systemName || (newVal && category.name
-                                                                                                                                                                                  == newVal)));
+                        return ((self.editModel.id == null || (self.editModel.id != null && category.id != self.editModel.id)) && (category.systemName === systemName || (newVal && category.name
+                                                                                                                                                                                    == newVal)));
                             });
 
                     var reservedCategoryName = newVal && _.indexOf(reservedCategoryNames, newVal.toLowerCase()) >= 0;
