@@ -1,7 +1,5 @@
 package com.thinkbiganalytics.datalake.authorization.config;
 
-import com.thinkbiganalytics.datalake.authorization.AuthorizationConfiguration;
-
 /**
  * Created by Jeremy Merrifield on 9/10/16.
  */

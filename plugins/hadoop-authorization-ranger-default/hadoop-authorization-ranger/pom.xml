@@ -29,11 +29,6 @@
       <version>${project.version}</version>
       <groupId>com.thinkbiganalytics.datalake</groupId>
     </dependency>
-    <dependency>
-      <artifactId>thinkbig-metadata-api</artifactId>
-      <version>${project.version}</version>
-      <groupId>com.thinkbiganalytics.metadata</groupId>
-    </dependency>
 
     <!-- Hadoop Dependency -->
 

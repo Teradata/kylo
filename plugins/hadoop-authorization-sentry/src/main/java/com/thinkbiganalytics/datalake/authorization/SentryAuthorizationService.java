@@ -9,9 +9,11 @@ import org.slf4j.LoggerFactory;
 import com.thinkbiganalytics.datalake.authorization.client.SentryClient;
 import com.thinkbiganalytics.datalake.authorization.client.SentryClientConfig;
 import com.thinkbiganalytics.datalake.authorization.client.SentryClientException;
+import com.thinkbiganalytics.datalake.authorization.config.AuthorizationConfiguration;
 import com.thinkbiganalytics.datalake.authorization.config.SentryConnection;
 import com.thinkbiganalytics.datalake.authorization.model.HadoopAuthorizationGroup;
 import com.thinkbiganalytics.datalake.authorization.model.HadoopAuthorizationPolicy;
+import com.thinkbiganalytics.datalake.authorization.service.HadoopAuthorizationService;
 
 /**
  * Sentry Authorization Service
@@ -28,7 +30,7 @@ public class SentryAuthorizationService implements HadoopAuthorizationService {
     SentryClient sentryClientObject;
 
     @Override
-    public void initialize(AuthorizationConfiguration config) 
+    public void initialize(AuthorizationConfiguration config)
     {
 
         SentryConnection sentryConnection = (SentryConnection) config;
@@ -52,21 +54,37 @@ public class SentryAuthorizationService implements HadoopAuthorizationService {
         }
         return null;
     }
-    
 
     @Override
-    public void createReadOnlyPolicy(String categoryName, String feedName, List<String> hadoopAuthorizationGroups, List<String> hdfsPaths, String datebaseName, List<String> tableNames) {
-
-        /**
-         * Create Read Only Policy for Hive - Beeline Approach
-         */
-
-
-        /**
-         * Create Read Only Policy for HDFS - ACL Approach
-         */
+    public void createOrUpdateReadOnlyHivePolicy(String categoryName, String feedName, List<String> hadoopAuthorizationGroups, String datebaseName, List<String> tableNames) {
 
     }
+
+    @Override
+    public void createOrUpdateReadOnlyHdfsPolicy(String categoryName, String feedName, List<String> hadoopAuthorizationGroups, List<String> hdfsPaths) {
+
+    }
+
+    @Override
+    public void createReadOnlyHivePolicy(String categoryName, String feedName, List<String> hadoopAuthorizationGroups, String datebaseName, List<String> tableNames) {
+
+    }
+
+    @Override
+    public void createReadOnlyHdfsPolicy(String categoryName, String feedName, List<String> hadoopAuthorizationGroups, List<String> hdfsPaths) {
+
+    }
+
+    @Override
+    public void updateReadOnlyHivePolicy(String categoryName, String feedName, List<String> groups, String datebaseName, List<String> tableNames) throws Exception {
+
+    }
+
+    @Override
+    public void updateReadOnlyHdfsPolicy(String categoryName, String feedName, List<String> groups, List<String> hdfsPaths) throws Exception {
+
+    }
+
 
     @Override
     public void deletePolicy(String categoryName, String feedName, String repositoryType) throws Exception {
@@ -80,20 +98,6 @@ public class SentryAuthorizationService implements HadoopAuthorizationService {
         return null;
     }
 
-    @Override
-    public void updateReadOnlyPolicy(String categoryName, String feedName, List<String> group_List, List<String> hdfs_paths, String datebaseName, List<String> tableName) throws Exception {
-        // TODO Auto-generated method stub
-
-        /**
-         * Update Read Only Policy for Hive - Beeline Approach
-         */
-
-
-        /**
-         * Update Read Only Policy for HDFS - ACL Approach
-         */
-
-    }
 
     @Override
     public String getType() {

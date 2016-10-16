@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
-import com.thinkbiganalytics.datalake.authorization.HadoopAuthorizationService;
+import com.thinkbiganalytics.datalake.authorization.service.HadoopAuthorizationService;
 import com.thinkbiganalytics.datalake.authorization.SentryAuthorizationService;
 
 /**

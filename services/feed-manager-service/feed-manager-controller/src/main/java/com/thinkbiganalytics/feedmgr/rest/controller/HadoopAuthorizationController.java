@@ -1,6 +1,6 @@
 package com.thinkbiganalytics.feedmgr.rest.controller;
 
-import com.thinkbiganalytics.datalake.authorization.HadoopAuthorizationService;
+import com.thinkbiganalytics.datalake.authorization.service.HadoopAuthorizationService;
 import com.thinkbiganalytics.datalake.authorization.model.HadoopAuthorizationGroup;
 
 import org.slf4j.Logger;
@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;

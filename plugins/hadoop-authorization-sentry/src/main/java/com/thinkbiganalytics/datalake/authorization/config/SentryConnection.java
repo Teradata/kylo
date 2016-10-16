@@ -2,8 +2,6 @@ package com.thinkbiganalytics.datalake.authorization.config;
 
 import javax.sql.DataSource;
 
-import com.thinkbiganalytics.datalake.authorization.AuthorizationConfiguration;
-
 /**
  * Created by Shashi Vishwakarma on 20/9/16.
  */

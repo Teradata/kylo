@@ -3,6 +3,7 @@ package com.thinkbiganalytics.datalake.authorization;
 import com.thinkbiganalytics.datalake.authorization.config.RangerConnection;
 import com.thinkbiganalytics.datalake.authorization.model.HadoopAuthorizationGroup;
 import com.thinkbiganalytics.datalake.authorization.rest.model.RangerGroup;
+import com.thinkbiganalytics.datalake.authorization.service.HadoopAuthorizationService;
 
 import org.junit.Before;
 import org.junit.Ignore;
