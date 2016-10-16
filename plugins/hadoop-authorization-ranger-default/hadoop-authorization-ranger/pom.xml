@@ -3,7 +3,7 @@
          xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
-    <artifactId>thinkbig-plugins</artifactId>
+    <artifactId>thinkbig-hadoop-authorization-ranger-default</artifactId>
     <groupId>com.thinkbiganalytics.datalake</groupId>
     <version>0.4.1-SNAPSHOT</version>
   </parent>
@@ -28,11 +28,6 @@
       <artifactId>thinkbig-commons-util</artifactId>
       <version>${project.version}</version>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-    </dependency>
-    <dependency>
-      <artifactId>thinkbig-metadata-api</artifactId>
-      <version>${project.version}</version>
-      <groupId>com.thinkbiganalytics.metadata</groupId>
     </dependency>
 
     <!-- Hadoop Dependency -->

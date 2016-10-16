@@ -1,6 +1,6 @@
 package com.thinkbiganalytics.datalake.authorization.config;
 
-import com.thinkbiganalytics.datalake.authorization.HadoopAuthorizationService;
+import com.thinkbiganalytics.datalake.authorization.service.HadoopAuthorizationService;
 import com.thinkbiganalytics.datalake.authorization.RangerAuthorizationService;
 
 import org.springframework.beans.factory.annotation.Value;

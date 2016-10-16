@@ -21,7 +21,7 @@
         <module>sla-metrics-default</module>
         <module>sla-email</module>
         <module>sla-jira</module>
-        <module>hadoop-authorization-ranger</module>
+        <module>hadoop-authorization-ranger-default</module>
         <module>hadoop-authorization-sentry</module>
     </modules>
 </project>

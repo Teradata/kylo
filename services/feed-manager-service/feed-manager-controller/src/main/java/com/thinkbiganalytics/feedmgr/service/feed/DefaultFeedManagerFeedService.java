@@ -2,7 +2,7 @@ package com.thinkbiganalytics.feedmgr.service.feed;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
-import com.thinkbiganalytics.datalake.authorization.HadoopAuthorizationService;
+import com.thinkbiganalytics.datalake.authorization.service.HadoopAuthorizationService;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
@@ -505,8 +505,6 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
                     feed.removeProperty((String)k);
                 });
             }, MetadataAccess.SERVICE) ;
-
-            System.out.println("bla");
         }
 
     }
