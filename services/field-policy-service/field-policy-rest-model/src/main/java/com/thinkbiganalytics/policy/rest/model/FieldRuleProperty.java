@@ -29,6 +29,8 @@ public class FieldRuleProperty {
     private Integer groupOrder;
     private String layout = "column";
     private boolean hidden;
+    private String pattern;
+    private String patternInvalidMessage;
 
     public String getName() {
         return name;
@@ -170,5 +172,21 @@ public class FieldRuleProperty {
 
     public void setHidden(boolean hidden) {
         this.hidden = hidden;
+    }
+
+    public String getPattern() {
+        return pattern;
+    }
+
+    public void setPattern(String pattern) {
+        this.pattern = pattern;
+    }
+
+    public String getPatternInvalidMessage() {
+        return patternInvalidMessage;
+    }
+
+    public void setPatternInvalidMessage(String patternInvalidMessage) {
+        this.patternInvalidMessage = patternInvalidMessage;
     }
 }
