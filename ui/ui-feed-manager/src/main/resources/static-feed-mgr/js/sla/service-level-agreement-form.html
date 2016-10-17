@@ -6,11 +6,19 @@
       <label>Name</label>
       <input name="slaName" type="text" ng-model="vm.editSla.name" md-placeholder="SLA name"
              required/>
+
+      <div ng-messages="vm.slaForm.slaName.$error " md-auto-hide="false">
+        <div ng-message="required">This field is required.</div>
+      </div>
     </md-input-container>
     <md-input-container class="md-block condensed">
       <label>Description</label>
       <input name="slaDescription" type="text" ng-model="vm.editSla.description" md-placeholder="SLA Description"
              required/>
+
+      <div ng-messages="vm.slaForm.slaDescription.$error " md-auto-hide="false">
+        <div ng-message="required">This field is required.</div>
+      </div>
     </md-input-container>
   </div>
 
