@@ -15,6 +15,9 @@ import com.thinkbiganalytics.util.ColumnSpec;
 import com.thinkbiganalytics.util.TableType;
 
 import org.apache.commons.collections.MapUtils;
+import org.apache.nifi.dbcp.DBCPService;
+import org.apache.nifi.util.TestRunner;
+import org.apache.nifi.util.TestRunners;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,6 +25,7 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -36,6 +40,7 @@ import static org.junit.Assert.assertNotNull;
 @RunWith(StandaloneHiveRunner.class)
 public class TableRegisterSupportTest {
 
+    final Connection connection = Mockito.mock(Connection.class);
     /**
      * Explicit test class configuration of the HiveRunner runtime. See {@link HiveRunnerConfig} for further details.
      */
@@ -93,7 +98,7 @@ public class TableRegisterSupportTest {
         ColumnSpec[] specs = ColumnSpec.createFromString("id|bigint|my comment\nname|string\ncompany|string|some description\nzip|string\nphone|string\nemail|string\ncountry|string\nhired|date");
         ColumnSpec[] parts = ColumnSpec.createFromString("year|int\ncountry|string");
 
-        TableRegisterSupport support = new TableRegisterSupport();
+        TableRegisterSupport support = new TableRegisterSupport(connection);
         TableType[] tableTypes = new TableType[]{TableType.FEED, TableType.INVALID, TableType.VALID, TableType.MASTER};
         for (TableType tableType : tableTypes) {
             String
@@ -122,7 +127,6 @@ public class TableRegisterSupportTest {
             }
         });
 
-        final Connection connection = Mockito.mock(Connection.class);
         Mockito.when(connection.createStatement()).thenReturn(statement);
 
         // Test dropping table with success
@@ -137,7 +141,7 @@ public class TableRegisterSupportTest {
     /** Verify exception if the connection is null. */
     @Test(expected = NullPointerException.class)
     public void testDropTableWithNullConnection() {
-        new TableRegisterSupport().dropTable("invalid");
+        new TableRegisterSupport(null).dropTable("invalid");
     }
 
     /** Verify dropping multiple tables. */
@@ -171,4 +175,5 @@ public class TableRegisterSupportTest {
         Assert.assertFalse(support.dropTables("invalid", "feed", EnumSet.allOf(TableType.class), ImmutableSet.of()));
         Assert.assertFalse(support.dropTables("cat", "feed", ImmutableSet.of(), ImmutableSet.of("invalid")));
     }
+
 }

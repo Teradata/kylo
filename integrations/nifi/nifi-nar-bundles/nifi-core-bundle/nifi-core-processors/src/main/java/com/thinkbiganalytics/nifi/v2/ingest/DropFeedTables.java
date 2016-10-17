@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.thinkbiganalytics.ingest.TableRegisterSupport;
 import com.thinkbiganalytics.nifi.v2.thrift.ThriftService;
+import com.thinkbiganalytics.util.TableRegisterConfiguration;
 import com.thinkbiganalytics.util.TableType;
 
 import org.apache.nifi.annotation.behavior.EventDriven;

@@ -5,7 +5,9 @@
 package com.thinkbiganalytics.util;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 
+import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -14,14 +16,14 @@ Specifications for managed Hive tables
  */
 public enum TableType {
 
-    FEED("/model.db/", "/etl/", "feed", true, false, true, false),
-    VALID("/model.db/", "/etl/", "valid", true, true, false, false),
-    INVALID("/model.db/", "/etl", "invalid", true, true, true, true),
-    MASTER("/app/warehouse/", "/app/warehouse/", "", false, true, false, false),
-    PROFILE("/model.db/", "/etl/", "profile", true, true, true, false);
+    FEED("feed", true, false, true, false),
+    VALID("valid", true, true, false, false),
+    INVALID("invalid", true, true, true, true),
+    MASTER("", false, true, false, false),
+    PROFILE("profile", true, true, true, false);
 
-    private String tableLocation;
-    private String partitionLocation;
+    //private String tableLocation;
+    //private String partitionLocation;
     private String tableSuffix;
     private boolean useTargetStorageSpec;
     private boolean strings;
@@ -29,9 +31,7 @@ public enum TableType {
     private boolean addReasonCode;
 
 
-    TableType(String tableRoot, String dataRoot, String suffix, boolean feedPartition, boolean useTargetStorageSpec, boolean strings, boolean addReasonCode) {
-        this.tableLocation = tableRoot;
-        this.partitionLocation = dataRoot;
+    TableType(String suffix, boolean feedPartition, boolean useTargetStorageSpec, boolean strings, boolean addReasonCode) {
         this.tableSuffix = suffix;
         this.feedPartition = feedPartition;
         this.useTargetStorageSpec = useTargetStorageSpec;
@@ -47,13 +47,17 @@ public enum TableType {
         return source + "." + deriveTablename(entity);
     }
 
-    public String deriveLocationSpecification(String source, String entity) {
+    public String deriveLocationSpecification(Path tableLocation, String source, String entity) {
+
+        Validate.notNull(tableLocation, "tableLocation expected");
+        Validate.notNull(source, "source expected");
+        Validate.notNull(entity, "entity expected");
+
+        Path path = tableLocation.resolve(source).resolve(entity).resolve(tableSuffix);
+
         StringBuffer sb = new StringBuffer();
         sb.append(" LOCATION '")
-                .append(tableLocation)
-                .append(source).append("/")
-                .append(entity).append("/")
-                .append(tableSuffix).append("'");
+            .append(path.toAbsolutePath().toString()).append("'");
         return sb.toString();
     }
 
@@ -68,7 +72,9 @@ public enum TableType {
         int i = 0;
         for (ColumnSpec spec : columns) {
             if (!partitionSet.contains(spec.getName())) {
-                if (i++ > 0) sb.append(", ");
+                if (i++ > 0) {
+                    sb.append(", ");
+                }
                 sb.append(spec.toCreateSQL(isStrings()));
             }
         }
@@ -81,7 +87,8 @@ public enum TableType {
 
     /**
      * Derive the STORED AS clause for the table
-     * @param rawSpecification the clause for the raw specification
+     *
+     * @param rawSpecification    the clause for the raw specification
      * @param targetSpecification the target specification
      */
     public String deriveFormatSpecification(String rawSpecification, String targetSpecification) {

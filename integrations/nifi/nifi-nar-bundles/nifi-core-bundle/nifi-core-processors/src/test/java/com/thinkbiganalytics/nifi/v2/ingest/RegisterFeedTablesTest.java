@@ -79,7 +79,7 @@ public class RegisterFeedTablesTest {
                                                         + "PARTITIONED BY (`processing_dttm` string)  STORED AS ORC LOCATION '/model.db/movies/artists/valid'");
         inOrder.verify(thriftService.statement).close();
         inOrder.verify(thriftService.statement).execute("CREATE EXTERNAL TABLE IF NOT EXISTS `movies.artists` (`id` int, `first_name` string, `last_name` string)  STORED AS ORC "
-                                                        + "LOCATION '/app/warehouse/movies/artists/'");
+                                                        + "LOCATION '/app/warehouse/movies/artists'");
         inOrder.verify(thriftService.statement).close();
         inOrder.verify(thriftService.statement).execute("CREATE EXTERNAL TABLE IF NOT EXISTS `movies.artists_profile` ( `columnname` string,`metrictype` string,`metricvalue` string)   "
                                                         + "PARTITIONED BY (`processing_dttm` string)  STORED AS ORC LOCATION '/model.db/movies/artists/profile'");
@@ -115,7 +115,7 @@ public class RegisterFeedTablesTest {
                                                         + "TBLPROPERTIES (\"comment\"=\"Movie Actors\")");
         inOrder.verify(thriftService.statement).close();
         inOrder.verify(thriftService.statement).execute("CREATE EXTERNAL TABLE IF NOT EXISTS `movies.artists` (`id` int, `first_name` string, `last_name` string)   PARTITIONED BY (`year` int)  "
-                                                        + "STORED AS PARQUET LOCATION '/app/warehouse/movies/artists/' TBLPROPERTIES (\"comment\"=\"Movie Actors\")");
+                                                        + "STORED AS PARQUET LOCATION '/app/warehouse/movies/artists' TBLPROPERTIES (\"comment\"=\"Movie Actors\")");
         inOrder.verify(thriftService.statement).close();
         inOrder.verify(thriftService.statement).execute("CREATE EXTERNAL TABLE IF NOT EXISTS `movies.artists_profile` ( `columnname` string,`metrictype` string,`metricvalue` string)   "
                                                         + "PARTITIONED BY (`processing_dttm` string)  STORED AS PARQUET LOCATION '/model.db/movies/artists/profile'");
@@ -208,7 +208,41 @@ public class RegisterFeedTablesTest {
         inOrder.verify(thriftService.statement).execute("CREATE DATABASE IF NOT EXISTS `movies`");
         inOrder.verify(thriftService.statement).close();
         inOrder.verify(thriftService.statement).execute("CREATE EXTERNAL TABLE IF NOT EXISTS `movies.artists` (`id` int, `first_name` string, `last_name` string)  STORED AS ORC "
-                                                        + "LOCATION '/app/warehouse/movies/artists/'");
+                                                        + "LOCATION '/app/warehouse/movies/artists'");
+        inOrder.verify(thriftService.statement).close();
+        inOrder.verifyNoMoreInteractions();
+    }
+
+    /** Verify registering a single table. */
+    @Test
+    public void testRegisterTablesWithConfig() throws Exception {
+        runner.setProperty(ComponentProperties.FIELD_SPECIFICATION, "id|int\nfirst_name|string\nlast_name|string");
+
+        runner.setProperty(RegisterFeedTables.TABLE_TYPE, "ALL");
+        runner.enqueue(new byte[0], ImmutableMap
+            .of("metadata.category.systemName", "movies", "metadata.systemFeedName", "artists", "config.hive.ingest.root", "/var/ingest", "config.hive.profile.root", "/var/profile/",
+                "config.hive.master.root", "/master"));
+        runner.run();
+
+        Assert.assertEquals(0, runner.getFlowFilesForRelationship(ComponentProperties.REL_FAILURE).size());
+        Assert.assertEquals(1, runner.getFlowFilesForRelationship(ComponentProperties.REL_SUCCESS).size());
+
+        final InOrder inOrder = Mockito.inOrder(thriftService.statement);
+        inOrder.verify(thriftService.statement).execute(
+            "CREATE EXTERNAL TABLE IF NOT EXISTS `movies.artists_feed` (`id` string, `first_name` string, `last_name` string)   PARTITIONED BY (`processing_dttm` string)  ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n"
+            + "' STORED AS TEXTFILE LOCATION '/var/ingest/movies/artists/feed'");
+        inOrder.verify(thriftService.statement).close();
+
+        inOrder.verify(thriftService.statement).execute("CREATE EXTERNAL TABLE IF NOT EXISTS `movies.artists_invalid` (`id` string, `first_name` string, `last_name` string, dlp_reject_reason string )   PARTITIONED BY (`processing_dttm` string)  STORED AS ORC LOCATION '/var/ingest/movies/artists/invalid'");
+        inOrder.verify(thriftService.statement).close();
+
+        inOrder.verify(thriftService.statement).execute("CREATE EXTERNAL TABLE IF NOT EXISTS `movies.artists_valid` (`id` int, `first_name` string, `last_name` string)   PARTITIONED BY (`processing_dttm` string)  STORED AS ORC LOCATION '/var/ingest/movies/artists/valid'");
+        inOrder.verify(thriftService.statement).close();
+
+        inOrder.verify(thriftService.statement).execute("CREATE EXTERNAL TABLE IF NOT EXISTS `movies.artists` (`id` int, `first_name` string, `last_name` string)  STORED AS ORC LOCATION '/master/movies/artists'");
+        inOrder.verify(thriftService.statement).close();
+
+        inOrder.verify(thriftService.statement).execute("CREATE EXTERNAL TABLE IF NOT EXISTS `movies.artists_profile` ( `columnname` string,`metrictype` string,`metricvalue` string)   PARTITIONED BY (`processing_dttm` string)  STORED AS ORC LOCATION '/var/profile/movies/artists/profile'");
         inOrder.verify(thriftService.statement).close();
         inOrder.verifyNoMoreInteractions();
     }

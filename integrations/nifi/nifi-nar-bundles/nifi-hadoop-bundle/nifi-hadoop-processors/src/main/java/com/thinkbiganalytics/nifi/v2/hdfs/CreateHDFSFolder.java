@@ -37,17 +37,13 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
- * This processor copies FlowFiles to HDFS.
+ * This processor creates an HDFS folder
  */
 @EventDriven
 @InputRequirement(InputRequirement.Requirement.INPUT_REQUIRED)
-@Tags({"hadoop", "HDFS", "folder", "filesystem"})
+@Tags({"hadoop", "HDFS", "folder"})
 @CapabilityDescription("Create a folder in Hadoop Distributed File System (HDFS)")
 public class CreateHDFSFolder extends AbstractHadoopProcessor {
-
-    //public static final String REPLACE_RESOLUTION = "replace";
-    public static final String IGNORE_RESOLUTION = "ignore";
-    public static final String FAIL_RESOLUTION = "fail";
 
     // relationships
     public static final Relationship REL_SUCCESS = new Relationship.Builder()
@@ -69,15 +65,7 @@ public class CreateHDFSFolder extends AbstractHadoopProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
-    /*
-        public static final PropertyDescriptor CONFLICT_RESOLUTION = new PropertyDescriptor.Builder()
-                .name("Conflict Resolution Strategy")
-                .description("Indicates what should happen when a file with the same name already exists in the output directory")
-                .required(true)
-                .defaultValue(FAIL_RESOLUTION)
-                .allowableValues(REPLACE_RESOLUTION, IGNORE_RESOLUTION, FAIL_RESOLUTION)
-                .build();
-    */
+
     public static final PropertyDescriptor UMASK = new PropertyDescriptor.Builder()
         .name("Permissions umask")
         .description(
@@ -112,7 +100,6 @@ public class CreateHDFSFolder extends AbstractHadoopProcessor {
 
         List<PropertyDescriptor> props = new ArrayList<>(properties);
         props.add(DIRECTORY);
-        //props.add(CONFLICT_RESOLUTION);
         props.add(UMASK);
         props.add(REMOTE_OWNER);
         props.add(REMOTE_GROUP);
@@ -144,7 +131,9 @@ public class CreateHDFSFolder extends AbstractHadoopProcessor {
     @Override
     public void onTrigger(ProcessContext context, ProcessSession session) throws ProcessException {
         FlowFile flowFile = session.get();
-        if (flowFile == null) return;
+        if (flowFile == null) {
+            return;
+        }
 
         final StopWatch stopWatch = new StopWatch(true);
         try {
@@ -154,25 +143,20 @@ public class CreateHDFSFolder extends AbstractHadoopProcessor {
             String keyTab = context.getProperty(KERBEROS_KEYTAB).getValue();
             String hadoopConfigurationResources = context.getProperty(HADOOP_CONFIGURATION_RESOURCES).getValue();
 
-            if(SecurityUtil.isSecurityEnabled(configuration))
-            {
-                if(principal.equals("") && keyTab.equals("") )
-                {
-                    getLogger().error("Kerberos Principal and Kerberos KeyTab information missing in Kerboeros enabled cluster.");
+            if (SecurityUtil.isSecurityEnabled(configuration)) {
+                if (principal.equals("") && keyTab.equals("")) {
+                    getLogger().error("Kerberos Principal and Kerberos KeyTab information missing in Kerberos enabled cluster.");
                     session.transfer(flowFile, REL_FAILURE);
                     return;
                 }
 
                 try {
-                    getLogger().info("User anuthentication initiated");
+                    getLogger().info("User authentication initiated");
                     ApplySecurityPolicy applySecurityObject = new ApplySecurityPolicy();
-                    boolean authenticationStatus = applySecurityObject.validateUserWithKerberos(getLogger(),hadoopConfigurationResources,principal,keyTab);
-                    if (authenticationStatus)
-                    {
+                    boolean authenticationStatus = applySecurityObject.validateUserWithKerberos(getLogger(), hadoopConfigurationResources, principal, keyTab);
+                    if (authenticationStatus) {
                         getLogger().info("User authenticated successfully.");
-                    }
-                    else
-                    {
+                    } else {
                         getLogger().info("User authentication failed.");
                         session.transfer(flowFile, REL_FAILURE);
                         return;

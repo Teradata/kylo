@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.ingest;
 
 import com.thinkbiganalytics.util.ColumnSpec;
+import com.thinkbiganalytics.util.TableRegisterConfiguration;
 import com.thinkbiganalytics.util.TableType;
 
 import org.apache.commons.lang3.StringUtils;
@@ -26,9 +27,17 @@ public class TableRegisterSupport {
 
     private Connection conn;
 
-    public TableRegisterSupport(Connection conn) {
-        Validate.notNull(conn);
+    private TableRegisterConfiguration config;
+
+    public TableRegisterSupport(Connection conn, TableRegisterConfiguration configuration) {
+        Validate.notNull(conn, "connection required");
+        Validate.notNull(configuration, "configuration required");
         this.conn = conn;
+        this.config = configuration;
+    }
+
+    public TableRegisterSupport(Connection conn) {
+        this(conn, new TableRegisterConfiguration());
     }
 
     protected TableRegisterSupport() {
@@ -53,15 +62,15 @@ public class TableRegisterSupport {
     /**
      * Registers the specified table by generating and executing a {@code CREATE TABLE} query.
      *
-     * @param source the name of the database
-     * @param tableEntity the name of the table
-     * @param feedFormatOptions the format for the feed table
-     * @param targetFormatOptions the format for the target table
-     * @param partitions the partitions for the target table
-     * @param columnSpecs the columns for the table
+     * @param source                the name of the database
+     * @param tableEntity           the name of the table
+     * @param feedFormatOptions     the format for the feed table
+     * @param targetFormatOptions   the format for the target table
+     * @param partitions            the partitions for the target table
+     * @param columnSpecs           the columns for the table
      * @param targetTableProperties the properties for the target table
-     * @param tableType the type of table
-     * @param registerDatabase {@code true} to create the database if it does not exist, or {@code false} to require an existing database
+     * @param tableType             the type of table
+     * @param registerDatabase      {@code true} to create the database if it does not exist, or {@code false} to require an existing database
      * @return {@code true} if the table was registered, or {@code false} if there was an error
      */
     public boolean registerTable(String source, String tableEntity, String feedFormatOptions, String targetFormatOptions, ColumnSpec[] partitions, ColumnSpec[] columnSpecs,
@@ -111,13 +120,14 @@ public class TableRegisterSupport {
         String columnSQL = " `columnname` string,`metrictype` string,`metricvalue` string";
         String formatSQL = TableType.PROFILE.deriveFormatSpecification("NOT_USED", targetFormatOptions);
         String partitionSQL = TableType.PROFILE.derivePartitionSpecification(null);
-        String locationSQL = TableType.PROFILE.deriveLocationSpecification(source, tableEntity);
+        String locationSQL = TableType.PROFILE.deriveLocationSpecification(config.pathForTableType(TableType.PROFILE), source, tableEntity);
 
         String ddl = createDDL(tableName, columnSQL, partitionSQL, formatSQL, locationSQL, "");
         return createTable(ddl);
     }
 
-    public boolean registerStandardTables(String source, String tableEntity, String feedFormatOptions, String targetFormatOptions, ColumnSpec[] partitions, ColumnSpec[] columnSpecs, String tblProperties) {
+    public boolean registerStandardTables(String source, String tableEntity, String feedFormatOptions, String targetFormatOptions, ColumnSpec[] partitions, ColumnSpec[] columnSpecs,
+                                          String tblProperties) {
         boolean result = true;
         registerDatabase(source);
         Set<String> existingTables = fetchExisting(source, tableEntity);
@@ -144,7 +154,7 @@ public class TableRegisterSupport {
         String tableName = tableType.deriveQualifiedName(source, entity);
         String partitionSQL = tableType.derivePartitionSpecification(partitions);
         String columnsSQL = tableType.deriveColumnSpecification(columnSpecs, partitions);
-        String locationSQL = tableType.deriveLocationSpecification(source, entity);
+        String locationSQL = tableType.deriveLocationSpecification(config.pathForTableType(tableType), source, entity);
         String formatOptionsSQL = tableType.deriveFormatSpecification(feedFormatOptions, targetFormatOptions);
         String tblPropertiesSQL = tableType.deriveTableProperties(targetTableProperties);
 
@@ -196,9 +206,9 @@ public class TableRegisterSupport {
     /**
      * Drops the specified Hive tables.
      *
-     * @param source the category system name or the database name
-     * @param entity the feed system name or the table prefix
-     * @param tableTypes the standard table types to drop
+     * @param source           the category system name or the database name
+     * @param entity           the feed system name or the table prefix
+     * @param tableTypes       the standard table types to drop
      * @param additionalTables the identifiers of additional tables to drop
      * @return {@code true} on success or {@code false} on failure
      */
