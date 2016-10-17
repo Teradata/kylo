@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.nifi.rest.client;
 
 import com.google.common.util.concurrent.Uninterruptibles;
+import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 
 import org.apache.nifi.web.api.dto.DropRequestDTO;
 
@@ -17,24 +18,8 @@ public abstract class AbstractNiFiConnectionsRestClient implements NiFiConnectio
     @Override
     public boolean deleteQueue(@Nonnull final String processGroupId, @Nonnull final String connectionId) {
         try {
-            // Drop the queue contents
-            DropRequestDTO dropRequest = createDropRequest(processGroupId, connectionId);
-
-            while (!dropRequest.isFinished()) {
-                Uninterruptibles.sleepUninterruptibly(300L, TimeUnit.MILLISECONDS);
-
-                // Get status
-                final Optional<DropRequestDTO> update = getDropRequest(processGroupId, connectionId, dropRequest.getId());
-                if (update.isPresent()) {
-                    dropRequest = update.get();
-                } else {
-                    return false;
-                }
-            }
-
-            // Cleanup
-            final Optional<DropRequestDTO> delete = deleteDropRequest(processGroupId, connectionId, dropRequest.getId());
-            return delete.isPresent();
+            deleteQueueWithRetries(processGroupId, connectionId, 3, 300, TimeUnit.MILLISECONDS);
+            return true;
         } catch (final NifiComponentNotFoundException e) {
             return false;
         }
@@ -61,6 +46,38 @@ public abstract class AbstractNiFiConnectionsRestClient implements NiFiConnectio
      */
     @Nonnull
     protected abstract Optional<DropRequestDTO> deleteDropRequest(@Nonnull String processGroupId, @Nonnull String connectionId, @Nonnull String dropRequestId);
+
+    /**
+     * Sends a request to drop the contents of a queue and waits for it to finish.
+     *
+     * @param processGroupId the process group id
+     * @param connectionId the connection id
+     * @param retries number of retries, at least 0; will try {@code retries} + 1 times
+     * @param timeout duration to wait between retries
+     * @param timeUnit unit of time for {@code timeout}
+     * @return the drop request, if finished
+     * @throws NifiClientRuntimeException if the operation times out
+     * @throws NifiComponentNotFoundException if the process group or connection does not exist
+     */
+    protected DropRequestDTO deleteQueueWithRetries(@Nonnull final String processGroupId, @Nonnull final String connectionId, final int retries, final int timeout, @Nonnull final TimeUnit timeUnit) {
+        // Request queue drop
+        DropRequestDTO dropRequest = createDropRequest(processGroupId, connectionId);
+
+        // Wait for finished
+        for (int count=0; !dropRequest.isFinished() && count < retries; ++count) {
+            Uninterruptibles.sleepUninterruptibly(timeout, timeUnit);
+            dropRequest = getDropRequest(processGroupId, connectionId, dropRequest.getId())
+                    .orElseThrow(() -> new NifiComponentNotFoundException(connectionId, NifiConstants.NIFI_COMPONENT_TYPE.CONNECTION, null));
+        }
+
+        if (!dropRequest.isFinished()) {
+            throw new NifiClientRuntimeException("Timeout waiting for queue to delete for connection: " + connectionId);
+        }
+
+        // Cleanup
+        return deleteDropRequest(processGroupId, connectionId, dropRequest.getId())
+                .orElseThrow(() -> new NifiComponentNotFoundException(connectionId, NifiConstants.NIFI_COMPONENT_TYPE.CONNECTION, null));
+    }
 
     /**
      * Gets the current status of the specified drop request for a connection.

@@ -66,6 +66,7 @@ public interface NiFiProcessGroupsRestClient {
      *
      * @param processGroup the process group to delete
      * @return the deleted process group, if found
+     * @throws NifiClientRuntimeException if the operation times out
      */
     @Nonnull
     Optional<ProcessGroupDTO> delete(@Nonnull ProcessGroupDTO processGroup);

@@ -18,6 +18,7 @@ public interface NiFiConnectionsRestClient {
      * @param processGroupId the process group id
      * @param connectionId the connection id
      * @return the connection, if found
+     * @throws NifiClientRuntimeException if the operation times out
      */
     @Nonnull
     Optional<ConnectionDTO> delete(@Nonnull String processGroupId, @Nonnull String connectionId);
