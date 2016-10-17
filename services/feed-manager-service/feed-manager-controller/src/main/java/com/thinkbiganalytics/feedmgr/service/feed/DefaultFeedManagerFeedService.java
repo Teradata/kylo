@@ -348,6 +348,8 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_FEEDS);
 
             Feed feed = feedProvider.getFeed(feedProvider.resolveFeed(feedId));
+            //unschedule any SLAs
+            serviceLevelAgreementService.unscheduleServiceLevelAgreement(feed.getId());
             feedRepository.deleteFeed(feed.getCategory().getName(), feed.getName());
             feedProvider.deleteFeed(feed.getId());
             operationalMetadataAccess.commit(() -> {
