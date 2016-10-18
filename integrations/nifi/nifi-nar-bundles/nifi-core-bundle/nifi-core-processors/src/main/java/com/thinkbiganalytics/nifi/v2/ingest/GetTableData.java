@@ -4,13 +4,28 @@
 
 package com.thinkbiganalytics.nifi.v2.ingest;
 
-import com.thinkbiganalytics.ingest.GetTableDataSupport;
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder;
-import com.thinkbiganalytics.nifi.thrift.api.AbstractRowVisitor;
-import com.thinkbiganalytics.nifi.v2.common.CommonProperties;
-import com.thinkbiganalytics.util.ComponentAttributes;
-import com.thinkbiganalytics.util.JdbcCommon;
+import static com.thinkbiganalytics.nifi.v2.common.CommonProperties.FEED_CATEGORY;
+import static com.thinkbiganalytics.nifi.v2.common.CommonProperties.FEED_NAME;
+import static com.thinkbiganalytics.nifi.v2.common.CommonProperties.METADATA_SERVICE;
+import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.REL_FAILURE;
+import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.REL_SUCCESS;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.Vector;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.Validate;
 import org.apache.nifi.annotation.behavior.InputRequirement;
@@ -18,7 +33,6 @@ import org.apache.nifi.annotation.behavior.InputRequirement.Requirement;
 import org.apache.nifi.annotation.behavior.TriggerWhenEmpty;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
-import org.apache.nifi.annotation.lifecycle.OnScheduled;
 import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.dbcp.DBCPService;
 import org.apache.nifi.flowfile.FlowFile;
@@ -33,34 +47,14 @@ import org.apache.nifi.processor.util.StandardValidators;
 import org.apache.nifi.util.LongHolder;
 import org.apache.nifi.util.StopWatch;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Vector;
-import java.util.concurrent.TimeUnit;
-
-import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.FEED_CATEGORY;
-import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.FEED_NAME;
-import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.METADATA_SERVICE;
-import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.REL_FAILURE;
-import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.REL_SUCCESS;
+import com.thinkbiganalytics.ingest.GetTableDataSupport;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
+import com.thinkbiganalytics.nifi.thrift.api.AbstractRowVisitor;
+import com.thinkbiganalytics.util.ComponentAttributes;
+import com.thinkbiganalytics.util.JdbcCommon;
 
 @TriggerWhenEmpty
-@InputRequirement(Requirement.INPUT_FORBIDDEN)
+@InputRequirement(Requirement.INPUT_ALLOWED)
 @Tags({"thinkbig", "table", "jdbc", "query", "database"})
 @CapabilityDescription(
     "Extracts data from a JDBC source table and can optional extract incremental data if provided criteria. Query result will be converted to CSV format. Streaming is used so arbitrarily large result sets are supported. This processor can be scheduled to run on a timer, or cron expression, using the standard scheduling methods, or it can be triggered by an incoming FlowFile. If it is triggered by an incoming FlowFile, then attributes of that FlowFile will be available when evaluating the select query. FlowFile attribute \'source.row.count\' indicates how many rows were selected.")
@@ -200,6 +194,7 @@ public class GetTableData extends AbstractProcessor {
         pds.add(TABLE_NAME);
         pds.add(TABLE_SPECS);
         pds.add(LOAD_STRATEGY);
+        pds.add(HIGH_WATER_MARK_PROP);
         pds.add(DATE_FIELD);
         pds.add(OVERLAP_TIME);
         pds.add(QUERY_TIMEOUT);
@@ -261,11 +256,9 @@ public class GetTableData extends AbstractProcessor {
         final String unitSize = context.getProperty(UNIT_SIZE).evaluateAttributeExpressions(incoming).getValue();
 
         final String[] selectFields = parseFields(fieldSpecs);
-        final MetadataRecorder recorder = metadataService.getRecorder();
 
         final LoadStrategy strategy = LoadStrategy.valueOf(loadStrategy);
         final StopWatch stopWatch = new StopWatch(true);
-//        final Map<String, Object> metadata = new HashMap<>();
 
         try (final Connection conn = dbcpService.getConnection()) {
 

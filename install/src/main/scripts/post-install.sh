@@ -45,8 +45,8 @@ debug() {
         echo Already running.
       else
         echo Starting thinkbig-ui in debug mode...
-        grep 'address=' /opt/thinkbig/run-thinkbig-ui-with-debug.sh
-        su - $RUN_AS_USER -c "/opt/thinkbig/run-thinkbig-ui-with-debug.sh"
+        grep 'address=' $rpmInstallDir/thinkbig-ui/bin/run-thinkbig-ui-with-debug.sh
+        su - \$RUN_AS_USER -c "$rpmInstallDir/thinkbig-ui/bin/run-thinkbig-ui-with-debug.sh"
     fi
 }
 
@@ -154,8 +154,8 @@ debug() {
         echo Already running.
       else
         echo Starting thinkbig-services in debug mode...
-        grep 'address=' /opt/thinkbig/thinkbig-services/bin/run-thinkbig-services-with-debug.sh
-        su - $RUN_AS_USER -c "/opt/thinkbig/thinkbig-services/bin/run-thinkbig-services-with-debug.sh"
+        grep 'address=' $rpmInstallDir/thinkbig-services/bin/run-thinkbig-services-with-debug.sh
+        su - \$RUN_AS_USER -c "$rpmInstallDir/thinkbig-services/bin/run-thinkbig-services-with-debug.sh"
     fi
 }
 
