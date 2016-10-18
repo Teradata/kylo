@@ -117,6 +117,7 @@
             copy.nonInputProcessors = self.editModel.nonInputProcessors;
             copy.inputProcessorId = self.editModel.inputProcessorId;
             copy.inputProcessor = self.editModel.inputProcessor;
+            copy.inputProcessorType = self.editModel.inputProcessorType;
             copy.userProperties = null;
 
             //table type is edited here so need tup update that prop as well
