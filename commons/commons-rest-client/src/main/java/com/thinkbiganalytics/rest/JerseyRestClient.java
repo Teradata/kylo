@@ -138,10 +138,10 @@ public class JerseyRestClient {
 
         clientConfig.register(MultiPartFeature.class);
         if (sslContext != null) {
-            LOG.info("Created new Jersey Client with SSL");
+            LOG.info("Created new Jersey Client with SSL connecting to {} ", config.getUrl());
             client = new JerseyClientBuilder().withConfig(clientConfig).sslContext(sslContext).build();
         } else {
-            LOG.info("Created new Jersey Client without SSL");
+            LOG.info("Created new Jersey Client without SSL connecting to {} ", config.getUrl());
             client = JerseyClientBuilder.createClient(clientConfig);
 
         }
