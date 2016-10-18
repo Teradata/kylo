@@ -68,15 +68,16 @@
                 Loading Feed ...
             </div>
             <div layout="column" class="layout-padding-top" ng-if="!vm.loadingFeedData">
-                <md-button ng-if="vm.model.state == 'ENABLED' && vm.allowAdmin" ng-click="vm.disableFeed()" class="border-btn">
+                <md-button ng-if="vm.model.state == 'ENABLED' && vm.allowAdmin" ng-disabled="vm.disabling" ng-click="vm.disableFeed()" class="border-btn">
                     DISABLE FEED
                 </md-button>
-                <md-button ng-if="vm.model.state != 'ENABLED' && vm.allowAdmin" ng-click="vm.enableFeed()" class="border-btn">
+                <md-button ng-if="vm.model.state != 'ENABLED' && vm.allowAdmin" ng-disabled="vm.enabling" ng-click="vm.enableFeed()" class="border-btn">
                     ENABLE FEED
                 </md-button>
                 <md-button ng-if="vm.model.state != 'ENABLED' && vm.allowAdmin" ng-click="vm.confirmDeleteFeed()" class="border-btn-warn">
                     DELETE FEED
                 </md-button>
+                <md-progress-linear md-mode="indeterminate" ng-if="vm.enabling || vm.disabling"></md-progress-linear>
                 <div layout="column" class="layout-padding-top-bottom">
                     <span ng-class="{'enabled':vm.model.state == 'ENABLED','disabled':vm.model.state == 'DISABLED'}"> <ng-md-icon icon="{{vm.model.stateIcon}}" size="20"></ng-md-icon> {{vm.model.state}}</span>
                     <span class="hint">State</span>
