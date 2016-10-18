@@ -95,6 +95,12 @@
 
       </div>
 
+      <div layout="column">
+        <md-checkbox ng-model="vm.model.active"> Enable Feed Immediately</md-checkbox>
+        <span class="hint fade" ng-show="vm.model.active" ng-hide="!vm.model.active">The feed will be scheduled and running when it is saved.</span>
+        <span class="hint fade" ng-show="!vm.model.active" ng-hide="vm.model.active">The feed will be disabled when it is saved.  You will need to enable the feed later.</span>
+      </div>
+
 
       <thinkbig-step-buttons can-continue="vm.isValid" step-index="{{::vm.stepIndex}}" final-step="Create" on-click-final-button="vm.createFeed()"></thinkbig-step-buttons>
 

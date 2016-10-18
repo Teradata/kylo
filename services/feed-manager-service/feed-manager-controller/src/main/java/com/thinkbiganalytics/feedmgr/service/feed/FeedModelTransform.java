@@ -127,10 +127,11 @@ public class FeedModelTransform {
             }
             domain = feedManagerFeedProvider.ensureFeed(category.getId(), feedMetadata.getSystemFeedName());
             domainId = domain.getId();
-            domain.setState(Feed.State.ENABLED);
+            Feed.State state = Feed.State.valueOf(feedMetadata.getState());
+            domain.setState(state);
             //reassign the domain data back to the ui model....
             feedMetadata.setFeedId(domainId.toString());
-            feedMetadata.setState(Feed.State.ENABLED.name());
+            feedMetadata.setState(state.name());
 
         }
         domain.setDisplayName(feedMetadata.getFeedName());
@@ -140,7 +141,6 @@ public class FeedModelTransform {
 
         RegisteredTemplate template = feedMetadata.getRegisteredTemplate();
         if (template != null) {
-            //TODO is this needed, or should it just be looked up and assigned
             FeedManagerTemplate domainTemplate = templateModelTransform.REGISTERED_TEMPLATE_TO_DOMAIN.apply(template);
             domain.setTemplate(domainTemplate);
         }
@@ -150,6 +150,7 @@ public class FeedModelTransform {
         }
         domain.setNifiProcessGroupId(feedMetadata.getNifiProcessGroupId());
 
+        //clear out the state as that
         domain.setJson(ObjectMapperSerializer.serialize(feedMetadata));
         // if (feedMetadata.getVersion() == null) {
         //     feedMetadata.setVersion(1L);
@@ -211,6 +212,13 @@ public class FeedModelTransform {
         return domain.stream().map(f -> domainToFeedMetadata(f, userFieldMap)).collect(Collectors.toList());
     }
 
+    public FeedMetadata deserializeFeedMetadata(FeedManagerFeed domain) {
+        String json = domain.getJson();
+        FeedMetadata feedMetadata = ObjectMapperSerializer.deserialize(json, FeedMetadata.class);
+        return feedMetadata;
+    }
+
+
     /**
      * Transforms the specified Metadata feed to a Feed Manager feed.
      *
@@ -220,8 +228,8 @@ public class FeedModelTransform {
      */
     @Nonnull
     private FeedMetadata domainToFeedMetadata(@Nonnull final FeedManagerFeed domain, @Nullable final Map<Category, Set<UserFieldDescriptor>> userFieldMap) {
-        String json = domain.getJson();
-        FeedMetadata feed = ObjectMapperSerializer.deserialize(json, FeedMetadata.class);
+
+        FeedMetadata feed = deserializeFeedMetadata(domain);
         feed.setId(domain.getId().toString());
         feed.setFeedId(domain.getId().toString());
         feed.setTemplateId(domain.getTemplate().getId().toString());
