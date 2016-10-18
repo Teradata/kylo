@@ -45,6 +45,7 @@ public class CreateFeedBuilder {
     private String templateId;
     private String category;
     private String feedName;
+    private boolean enabled = true;
     private FeedMetadata feedMetadata;
     private PropertyExpressionResolver propertyExpressionResolver;
     private String inputProcessorType;
@@ -93,6 +94,11 @@ public class CreateFeedBuilder {
 
     public CreateFeedBuilder reusableTemplateCategoryName(String reusableTemplateCategoryName) {
         this.reusableTemplateCategoryName = reusableTemplateCategoryName;
+        return this;
+    }
+
+    public CreateFeedBuilder enabled(boolean enabled) {
+        this.enabled = enabled;
         return this;
     }
 
@@ -211,15 +217,26 @@ public class CreateFeedBuilder {
                         //update the input schedule
                         updateFeedSchedule(newProcessGroup, input);
 
-                        if (input != null) {
-                            markInputAsRunning(newProcessGroup, input);
-                        }
-
+                        //disable all inputs
+                       restClient.disableInputProcessors(newProcessGroup.getProcessGroupEntity().getProcessGroup().getId());
+                       //mark everything else as running
                         templateCreationHelper.markProcessorsAsRunning(newProcessGroup);
-
-                        ///make the input/output ports in the category group as running
-                        if (hasConnectionPorts()) {
-                            templateCreationHelper.markConnectionPortsAsRunning(entity);
+                       //if desired start the input processor
+                        if (input != null) {
+                            if(enabled) {
+                                markInputAsRunning(newProcessGroup, input);
+                                ///make the input/output ports in the category group as running
+                                if (hasConnectionPorts()) {
+                                    templateCreationHelper.markConnectionPortsAsRunning(entity);
+                                }
+                            }
+                            else {
+                                ///make the input/output ports in the category group as running
+                                if (hasConnectionPorts()) {
+                                    templateCreationHelper.markConnectionPortsAsRunning(entity);
+                                }
+                                markInputAsStopped(newProcessGroup,input);
+                            }
                         }
 
                         if (newProcessGroup.hasFatalErrors()) {
@@ -321,14 +338,25 @@ public class CreateFeedBuilder {
                             entity = restClient.updateProcessGroup(entity);
 
                             updatePortConnectionsForProcessGroup(entity.getProcessGroup().getId());
+
+                            //disable all inputs
+                            restClient.disableInputProcessors(entity.getProcessGroup().getId());
+
+                            //mark everything else as running
+                            restClient.markProcessorGroupAsRunning(entity.getProcessGroup());
                             if (hasConnectionPorts()) {
                                 templateCreationHelper.markConnectionPortsAsRunning(entity);
                             }
-                            //mark the input as running
-                            restClient.setInputAsRunningByProcessorMatchingType(entity.getProcessGroup().getId(),
-                                                                                inputProcessorType);
-                            //mark the processors as running
-                            restClient.markProcessorGroupAsRunning(entity.getProcessGroup());
+
+                            //Set the state correctly for the inputs
+                            if(enabled) {
+                                restClient.setInputProcessorState(entity.getProcessGroup().getId(),
+                                                                  inputProcessorType, NifiProcessUtil.PROCESS_STATE.RUNNING);
+                            }
+                            else {
+                                restClient.setInputProcessorState(entity.getProcessGroup().getId(),
+                                                                  inputProcessorType, NifiProcessUtil.PROCESS_STATE.STOPPED);
+                            }
                             return entity;
                         }
                     }
@@ -400,8 +428,8 @@ public class CreateFeedBuilder {
         // now apply any of the incoming metadata properties to this
 
         List<NifiProperty> modifiedFeedMetadataProperties = NifiPropertyUtil.matchAndSetPropertyValues(rootProcessGroup.getProcessGroup().getName(),
-                                                                        activeProcessGroupName.getProcessGroup().getName(),
-                                                                        propertiesToUpdate, properties);
+                                                                                                       activeProcessGroupName.getProcessGroup().getName(),
+                                                                                                       propertiesToUpdate, properties);
         modifiedProperties.addAll(modifiedStaticProperties);
         modifiedProperties.addAll(modifiedFeedMetadataProperties);
         restClient.updateProcessGroupProperties(modifiedProperties);
@@ -411,25 +439,48 @@ public class CreateFeedBuilder {
 
 
     private void markInputAsRunning(NifiProcessGroup newProcessGroup, ProcessorDTO input) {
+        setInputProcessorState(newProcessGroup,input, NifiProcessUtil.PROCESS_STATE.RUNNING);
+    }
+    private void markInputAsStopped(NifiProcessGroup newProcessGroup, ProcessorDTO input) {
+        setInputProcessorState(newProcessGroup,input, NifiProcessUtil.PROCESS_STATE.STOPPED);
+    }
+
+    private void setInputProcessorState(NifiProcessGroup newProcessGroup, ProcessorDTO input, NifiProcessUtil.PROCESS_STATE state) {
+
+            setInputProcessorState(newProcessGroup.getProcessGroupEntity().getProcessGroup(),
+                                              input,state);
+    }
+
+    /**
+     * Sets the First processors in the {@code processGroup} matching the passed in {@code input} ProcessorType to the passed in {@code state}
+     * If the input ins null it will use the default {@code inputType} supplied from the builder
+     * @param processGroup the group which should be inspected for the input processors
+     * @param input the processor type to match when finding the correct input
+     * @param state the state to set the matched input processor
+     */
+    private void setInputProcessorState(ProcessGroupDTO processGroup, ProcessorDTO input, NifiProcessUtil.PROCESS_STATE state) {
         try {
             if(input != null && (StringUtils.isBlank(inputProcessorType) || !inputProcessorType.equalsIgnoreCase(input.getType()))){
                 inputProcessorType = input.getType();
             }
 
-            restClient.setInputAsRunningByProcessorMatchingType(newProcessGroup.getProcessGroupEntity().getProcessGroup().getId(),
-                                                                inputProcessorType);
+            restClient.setInputProcessorState(processGroup.getId(),
+                                              inputProcessorType,state);
         } catch (Exception error) {
             String
                 errorMsg =
-                "Unable to mark group as " + NifiProcessUtil.PROCESS_STATE.RUNNING + " for " + input.getName() + "("
+                "Unable to mark group as " + state + " for " + input.getName() + "("
                 + inputProcessorType + ").";
             newProcessGroup
                 .addError(newProcessGroup.getProcessGroupEntity().getProcessGroup().getId(), input.getId(), NifiError.SEVERITY.WARN,
                           errorMsg, "Process State");
             newProcessGroup.setSuccess(false);
-
         }
     }
+
+
+
+
 
     private void updateFeedSchedule(NifiProcessGroup newProcessGroup, ProcessorDTO input) {
         if (feedSchedule != null && input != null) {

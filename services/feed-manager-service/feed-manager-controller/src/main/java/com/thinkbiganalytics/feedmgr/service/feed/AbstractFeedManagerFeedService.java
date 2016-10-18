@@ -85,9 +85,19 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
         updatedProperties.addAll(resolvedProperties);
         updatedProperties.addAll(inputProperties);
         feedMetadata.setProperties(new ArrayList<NifiProperty>(updatedProperties));
+        
+        FeedMetadata.STATE state = FeedMetadata.STATE.NEW;
+        try {
+            state = FeedMetadata.STATE.valueOf(feedMetadata.getState());
+        }catch (Exception e){
+
+        }
+
+
+        boolean enabled = (FeedMetadata.STATE.NEW.equals(state) && feedMetadata.isActive()) || FeedMetadata.STATE.ENABLED.equals(state);
 
         CreateFeedBuilder
-            feedBuilder = CreateFeedBuilder.newFeed(nifiRestClient, feedMetadata, registeredTemplate.getNifiTemplateId(), propertyExpressionResolver);
+            feedBuilder = CreateFeedBuilder.newFeed(nifiRestClient, feedMetadata, registeredTemplate.getNifiTemplateId(), propertyExpressionResolver).enabled(enabled);
 
         if (registeredTemplate.isReusableTemplate()) {
             feedBuilder.setReusableTemplate(true);

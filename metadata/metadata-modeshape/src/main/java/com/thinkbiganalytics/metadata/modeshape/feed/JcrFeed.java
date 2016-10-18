@@ -2,10 +2,13 @@ package com.thinkbiganalytics.metadata.modeshape.feed;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.jcr.Node;
@@ -51,6 +54,8 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
     public static final String SOURCE_NAME = "tba:sources";
     public static final String DESTINATION_NAME = "tba:destinations";
     public static final String CATEGORY = "tba:category";
+    public static final String HIGH_WATER_MARKS = "tba:highWaterMarks";
+    public static final String WATER_MARKS_TYPE = "tba:waterMarks";
 
     public static final String STATE = "tba:state";
 
@@ -59,6 +64,8 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
     public static final String SCHEDULE_STRATEGY = "tba:schedulingStrategy"; //CRON_DRIVEN, TIMER_DRIVEN
     public static final String SLA = "tba:slas";
     public static final String HADOOP_SECURITY_GROUPS = "tba:securityGroups";
+
+    public static final String USR_PREFIX = "usr:";
 
 
     public static void addSecurity(Node feedNode) {
@@ -172,6 +179,45 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the feed precondition", e);
         }
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.feed.Feed#getWaterMarkNames()
+     */
+    @Override
+    public Set<String> getWaterMarkNames() {
+        if (JcrUtil.hasNode(getNode(), HIGH_WATER_MARKS)) {
+            Node wmNode = JcrUtil.getNode(getNode(), HIGH_WATER_MARKS);
+            return JcrPropertyUtil.streamProperties(wmNode)
+                .map(JcrPropertyUtil::getName)
+                .filter(name -> name.startsWith(USR_PREFIX))
+                .map(name -> name.replace(USR_PREFIX, ""))
+                .collect(Collectors.toSet());
+        } else {
+            return Collections.emptySet();
+        }
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.feed.Feed#getWaterMarkValue(java.lang.String)
+     */
+    @Override
+    public Optional<String> getWaterMarkValue(String waterMarkName) {
+        if (JcrUtil.hasNode(getNode(), HIGH_WATER_MARKS)) {
+            Node wmNode = JcrUtil.getNode(getNode(), HIGH_WATER_MARKS);
+            return JcrPropertyUtil.findProperty(wmNode, USR_PREFIX + waterMarkName).map(JcrPropertyUtil::toString);
+        } else {
+            return Optional.empty();
+        }
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.feed.Feed#setWaterMarkValue(java.lang.String, java.lang.String)
+     */
+    @Override
+    public void setWaterMarkValue(String waterMarkName, String value) {
+        Node wmNode = JcrUtil.getOrCreateNode(getNode(), HIGH_WATER_MARKS, WATER_MARKS_TYPE);
+        JcrPropertyUtil.setProperty(wmNode, USR_PREFIX + waterMarkName, value);;
     }
 
     @Override

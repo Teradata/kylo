@@ -122,7 +122,8 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
                 reusableFeed: false,
                 dataTransformation: {chartViewModel: null, dataTransformScript: null, sql: null, states: []},
                 userProperties: [],
-                options: {skipHeader: false}
+                options: {skipHeader: false},
+                active: true
             };
         },
         /**

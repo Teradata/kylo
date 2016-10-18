@@ -86,7 +86,10 @@
         self.securityGroupChips.searchText = null;
 
         this.fieldDataTypeDisplay = function (columnDef) {
-            return FeedService.getDataTypeDisplay(columnDef);
+            if (columnDef != undefined) {
+                return FeedService.getDataTypeDisplay(columnDef);
+            }
+
         }
 
 

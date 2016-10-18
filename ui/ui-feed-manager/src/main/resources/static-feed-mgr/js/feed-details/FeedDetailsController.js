@@ -118,15 +118,19 @@
         };
 
         this.enableFeed = function() {
+            self.enabling = true;
             $http.post(RestUrlService.ENABLE_FEED_URL(self.feedId)).then(function(response) {
                 self.model.state = response.data.state;
                 FeedService.updateEditModelStateIcon();
+                self.enabling = false;
             });
         }
         this.disableFeed = function() {
+            self.disabling = true;
             $http.post(RestUrlService.DISABLE_FEED_URL(self.feedId)).then(function(response) {
                 self.model.state = response.data.state;
                 FeedService.updateEditModelStateIcon();
+                self.disabling = false;
             });
         }
 

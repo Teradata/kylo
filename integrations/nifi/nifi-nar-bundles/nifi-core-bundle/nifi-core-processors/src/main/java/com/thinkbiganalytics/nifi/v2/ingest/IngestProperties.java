@@ -4,28 +4,21 @@
 
 package com.thinkbiganalytics.nifi.v2.ingest;
 
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
-import com.thinkbiganalytics.nifi.v2.thrift.ThriftService;
-
 import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.util.StandardValidators;
 
+import com.thinkbiganalytics.nifi.v2.common.CommonProperties;
+import com.thinkbiganalytics.nifi.v2.thrift.ThriftService;
+
 /**
  * Properties shared by ingest components
  */
-public interface ComponentProperties {
+public interface IngestProperties extends CommonProperties {
 
     /**
      * Common Controller services
      **/
-
-    PropertyDescriptor METADATA_SERVICE = new PropertyDescriptor.Builder()
-        .name("Metadata Service")
-        .description("Think Big metadata service")
-        .required(true)
-        .identifiesControllerService(MetadataProviderService.class)
-        .build();
 
     PropertyDescriptor THRIFT_SERVICE = new PropertyDescriptor.Builder()
         .name("Database Connection Pooling Service")
@@ -37,24 +30,6 @@ public interface ComponentProperties {
     /**
      * Common component properties
      **/
-    PropertyDescriptor FEED_CATEGORY = new PropertyDescriptor.Builder()
-        .name("System feed category")
-        .description("System category of feed this processor supports")
-        .required(true)
-        .defaultValue("${metadata.category.systemName}")
-        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .expressionLanguageSupported(true)
-        .build();
-
-    PropertyDescriptor FEED_NAME = new PropertyDescriptor.Builder()
-        .name("System feed name")
-        .description("Name of feed this processor supports")
-        .defaultValue("${metadata.systemFeedName}")
-        .required(true)
-        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .expressionLanguageSupported(true)
-        .build();
-
     PropertyDescriptor TARGET_TABLE = new PropertyDescriptor.Builder()
         .name("Target table")
         .description("Fully qualified name of the target table")

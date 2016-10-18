@@ -3,37 +3,53 @@
  */
 package com.thinkbiganalytics.nifi.core.api.metadata;
 
+import java.io.Serializable;
+
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.processor.ProcessSession;
-import org.joda.time.DateTime;
 
 /**
- *
+ * Records metadata that will eventually be committed to the metadata store; sometimes only 
+ * upon a flow's successful completion.
+ * 
  * @author Sean Felten
  */
 public interface MetadataRecorder {
     
+    FlowFile loadWaterMark(ProcessSession session, 
+                           FlowFile ff, 
+                           String feedId, 
+                           String waterMarkName, 
+                           String parameterName, 
+                           String defaultValue) throws WaterMarkActiveException;
     
-    FlowFile recordLastLoadTime(ProcessSession session, FlowFile ff, String destId, DateTime time);
+    FlowFile recordWaterMark(ProcessSession session,
+                             FlowFile ff,
+                             String feedId,
+                             String waterMarkName,
+                             String parameterName, 
+                             String newValue);
     
-    DateTime getLastLoadTime(ProcessSession session, FlowFile ff, String destId);
+    FlowFile commitWaterMark(ProcessSession session, FlowFile ff, String feedId, String waterMarkName);
     
-    // TODO Other forms or high-water mark recording besides time-based (last file, record ID, etc.)?
+    FlowFile commitAllWaterMarks(ProcessSession session, FlowFile ff, String feedId);
+    
+    FlowFile releaseWaterMark(ProcessSession session, FlowFile ff, String feedId, String waterMarkName);
+    
+    FlowFile releaseAllWaterMarks(ProcessSession session, FlowFile ff, String feedId);
+
+    
+    
+    void updateFeedStatus(ProcessSession session, FlowFile ff, String statusMsg);
     
     boolean isFeedInitialized(FlowFile ff);
     
     void recordFeedInitialization(ProcessSession session, FlowFile ff, boolean flag);
-    
-    void updateFeedStatus(ProcessSession session, FlowFile ff, String statusMsg);
 
     // TODO: Remove all following when working
 
     void recordFeedInitialization(String systemCategory, String feedName);
 
     boolean isFeedInitialized(String systemCategory, String feedName);
-
-    void recordLastLoadTime(String systemCategory, String feedName, DateTime time);
-
-    DateTime getLastLoadTime(String systemCategory, String feedName);
 
 }

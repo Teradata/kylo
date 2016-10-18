@@ -26,10 +26,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.FEED_CATEGORY;
-import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.FEED_NAME;
-import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.METADATA_SERVICE;
-import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.REL_SUCCESS;
+import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.FEED_CATEGORY;
+import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.FEED_NAME;
+import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.METADATA_SERVICE;
+import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.REL_SUCCESS;
 
 @EventDriven
 @InputRequirement(InputRequirement.Requirement.INPUT_REQUIRED)

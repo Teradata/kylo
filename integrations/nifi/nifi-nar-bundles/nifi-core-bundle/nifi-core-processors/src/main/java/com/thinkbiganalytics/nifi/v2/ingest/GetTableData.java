@@ -4,12 +4,28 @@
 
 package com.thinkbiganalytics.nifi.v2.ingest;
 
-import com.thinkbiganalytics.ingest.GetTableDataSupport;
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder;
-import com.thinkbiganalytics.nifi.thrift.api.AbstractRowVisitor;
-import com.thinkbiganalytics.util.ComponentAttributes;
-import com.thinkbiganalytics.util.JdbcCommon;
+import static com.thinkbiganalytics.nifi.v2.common.CommonProperties.FEED_CATEGORY;
+import static com.thinkbiganalytics.nifi.v2.common.CommonProperties.FEED_NAME;
+import static com.thinkbiganalytics.nifi.v2.common.CommonProperties.METADATA_SERVICE;
+import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.REL_FAILURE;
+import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.REL_SUCCESS;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.Vector;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.Validate;
 import org.apache.nifi.annotation.behavior.InputRequirement;
@@ -30,33 +46,15 @@ import org.apache.nifi.processor.io.OutputStreamCallback;
 import org.apache.nifi.processor.util.StandardValidators;
 import org.apache.nifi.util.LongHolder;
 import org.apache.nifi.util.StopWatch;
-import org.joda.time.DateTime;
-import org.joda.time.format.ISODateTimeFormat;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Vector;
-import java.util.concurrent.TimeUnit;
-
-import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.FEED_CATEGORY;
-import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.FEED_NAME;
-import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.METADATA_SERVICE;
-import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.REL_FAILURE;
-import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.REL_SUCCESS;
+import com.thinkbiganalytics.ingest.GetTableDataSupport;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
+import com.thinkbiganalytics.nifi.thrift.api.AbstractRowVisitor;
+import com.thinkbiganalytics.util.ComponentAttributes;
+import com.thinkbiganalytics.util.JdbcCommon;
 
 @TriggerWhenEmpty
-@InputRequirement(Requirement.INPUT_FORBIDDEN)
+@InputRequirement(Requirement.INPUT_ALLOWED)
 @Tags({"thinkbig", "table", "jdbc", "query", "database"})
 @CapabilityDescription(
     "Extracts data from a JDBC source table and can optional extract incremental data if provided criteria. Query result will be converted to CSV format. Streaming is used so arbitrarily large result sets are supported. This processor can be scheduled to run on a timer, or cron expression, using the standard scheduling methods, or it can be triggered by an incoming FlowFile. If it is triggered by an incoming FlowFile, then attributes of that FlowFile will be available when evaluating the select query. FlowFile attribute \'source.row.count\' indicates how many rows were selected.")
@@ -64,6 +62,7 @@ import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.REL_SUCCE
 // Implements strategies outlined by https://thebibackend.wordpress.com/2011/05/18/incremental-load-part-i-overview/
 public class GetTableData extends AbstractProcessor {
 
+    public static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter.ISO_DATE_TIME;
     public static final String RESULT_ROW_COUNT = "source.row.count";
 
     public enum LoadStrategy {
@@ -113,6 +112,16 @@ public class GetTableData extends AbstractProcessor {
             "Field names (in order) to read from the source table. ie. the select fields. The format is separated by newline. Inconsistent order will cause corruption of the downstream Hive data.")
         .required(true)
         .defaultValue("${metadata.table.sourceFields}")
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .build();
+    
+    public static final PropertyDescriptor HIGH_WATER_MARK_PROP = new PropertyDescriptor.Builder()
+        .name("High-Water Mark Property Name")
+        .description("Name of the flow file attribute that should contain the current hig-water mark date, and which this processord will update with new values.  "
+                        + "Required if the load strategy is set to INCREMENTAL.")
+        .required(false)
+        .defaultValue(ComponentAttributes.HIGH_WATER_DATE.key())
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
@@ -166,7 +175,10 @@ public class GetTableData extends AbstractProcessor {
         .allowableValues(GetTableDataSupport.UnitSizes.values()).required(true).defaultValue(GetTableDataSupport.UnitSizes.NONE.toString()).build();
 
     private final List<PropertyDescriptor> propDescriptors;
+    
+    private transient String waterMarkPropertyName;
 
+    
     public GetTableData() {
         HashSet r = new HashSet();
 
@@ -182,6 +194,7 @@ public class GetTableData extends AbstractProcessor {
         pds.add(TABLE_NAME);
         pds.add(TABLE_SPECS);
         pds.add(LOAD_STRATEGY);
+        pds.add(HIGH_WATER_MARK_PROP);
         pds.add(DATE_FIELD);
         pds.add(OVERLAP_TIME);
         pds.add(QUERY_TIMEOUT);
@@ -231,6 +244,7 @@ public class GetTableData extends AbstractProcessor {
         final DBCPService dbcpService = context.getProperty(JDBC_SERVICE).asControllerService(DBCPService.class);
         final MetadataProviderService metadataService = context.getProperty(METADATA_SERVICE).asControllerService(MetadataProviderService.class);
         final String loadStrategy = context.getProperty(LOAD_STRATEGY).evaluateAttributeExpressions(incoming).getValue();
+        final String waterMarkPropName = context.getProperty(HIGH_WATER_MARK_PROP).evaluateAttributeExpressions(incoming).getValue();
         final String categoryName = context.getProperty(FEED_CATEGORY).evaluateAttributeExpressions(incoming).getValue();
         final String feedName = context.getProperty(FEED_NAME).evaluateAttributeExpressions(incoming).getValue();
         final String tableName = context.getProperty(TABLE_NAME).evaluateAttributeExpressions(incoming).getValue();
@@ -242,43 +256,34 @@ public class GetTableData extends AbstractProcessor {
         final String unitSize = context.getProperty(UNIT_SIZE).evaluateAttributeExpressions(incoming).getValue();
 
         final String[] selectFields = parseFields(fieldSpecs);
-        final MetadataRecorder recorder = metadataService.getRecorder();
 
         final LoadStrategy strategy = LoadStrategy.valueOf(loadStrategy);
         final StopWatch stopWatch = new StopWatch(true);
-        final Map<String, Object> metadata = new HashMap<>();
 
         try (final Connection conn = dbcpService.getConnection()) {
 
-            final LongHolder nrOfRows = new LongHolder(0L);
             FlowFile outgoing = (incoming == null ? session.create() : incoming);
+            final LongHolder nrOfRows = new LongHolder(0L);
+            final LastFieldVisitor visitor = new LastFieldVisitor(dateField, null);
+            final FlowFile current = outgoing;
 
             outgoing = session.write(outgoing, new OutputStreamCallback() {
                 @Override
                 public void process(final OutputStream out) throws IOException {
                     ResultSet rs = null;
                     try {
-                        Date lastLoadDate = null;
-                        LastFieldVisitor visitor = null;
                         GetTableDataSupport support = new GetTableDataSupport(conn, queryTimeout);
                         if (strategy == LoadStrategy.FULL_LOAD) {
                             rs = support.selectFullLoad(tableName, selectFields);
                         } else if (strategy == LoadStrategy.INCREMENTAL) {
-
-                            // TODO: restore when working
-                            //lastLoadDate = recorder.getLastLoadTime(session, incoming, categoryName).toDate();
-                            lastLoadDate = recorder.getLastLoadTime(categoryName, feedName).toDate();
-                            visitor = new LastFieldVisitor(dateField, lastLoadDate);
+                            LocalDateTime waterMarkTime = LocalDateTime.parse(current.getAttribute(waterMarkPropName), DATE_TIME_FORMAT);
+                            Date lastLoadDate = toDate(waterMarkTime);
+                            visitor.setLastModifyDate(lastLoadDate);
                             rs = support.selectIncremental(tableName, selectFields, dateField, overlapTime, lastLoadDate, backoffTime, GetTableDataSupport.UnitSizes.valueOf(unitSize));
                         } else {
                             throw new RuntimeException("Unsupported loadStrategy [" + loadStrategy + "]");
                         }
                         nrOfRows.set(JdbcCommon.convertToCSVStream(rs, out, visitor));
-                        if (strategy == LoadStrategy.INCREMENTAL) {
-                            metadata.put(ComponentAttributes.PREVIOUS_HIGHWATER_DATE.key(), lastLoadDate);
-                            metadata.put(ComponentAttributes.NEW_HIGHWATER_DATE.key(), visitor.getLastModifyDate());
-                        }
-
                     } catch (final SQLException e) {
                         throw new IOException("SQL execution failure", e);
                     } finally {
@@ -313,15 +318,10 @@ public class GetTableData extends AbstractProcessor {
                 logger.info("{} contains {} records; transferring to 'success'", new Object[]{outgoing, nrOfRows.get()});
 
                 if (strategy == LoadStrategy.INCREMENTAL) {
-                    Date previousHighwater = (Date) metadata.get(ComponentAttributes.PREVIOUS_HIGHWATER_DATE.key());
-                    Date newHighwater = (Date) metadata.get(ComponentAttributes.NEW_HIGHWATER_DATE.key());
-                    outgoing = session.putAttribute(outgoing, ComponentAttributes.PREVIOUS_HIGHWATER_DATE.key(), prettyDate(previousHighwater));
-                    outgoing = session.putAttribute(outgoing, ComponentAttributes.NEW_HIGHWATER_DATE.key(), prettyDate(newHighwater));
+                    String newWaterMarkStr = format(visitor.getLastModifyDate());
+                    outgoing = session.putAttribute(outgoing, ComponentAttributes.HIGH_WATER_DATE.key(), newWaterMarkStr);
 
-                    //recorder.recordLastLoadTime(session, incoming, categoryName, new DateTime(newHighwater));
-                    recorder.recordLastLoadTime(categoryName, feedName, new DateTime(newHighwater));
-
-                    logger.info("Recorded load status feed {} date {}", new Object[]{feedName, newHighwater});
+                    logger.info("Recorded load status feed {} date {}", new Object[]{feedName, newWaterMarkStr});
                 }
                 session.transfer(outgoing, REL_SUCCESS);
             }
@@ -334,9 +334,17 @@ public class GetTableData extends AbstractProcessor {
             }
         }
     }
+    
+    private static LocalDateTime toDateTime(Date date) {
+        return date == null ? LocalDateTime.MIN : LocalDateTime.ofInstant(date.toInstant(), ZoneOffset.UTC.normalized());
+    }
+    
+    private static Date toDate(LocalDateTime dateTime) {
+        return dateTime == null ? new Date(0L) : Date.from(dateTime.toInstant(ZoneOffset.UTC));
+    }
 
-    private static String prettyDate(Date date) {
-        return (date == null ? "" : ISODateTimeFormat.dateTime().print(date.getTime()));
+    private static String format(Date date) {
+        return (date == null ? "" : DATE_TIME_FORMAT.format(toDateTime(date)));
     }
 
     /**
@@ -353,6 +361,7 @@ public class GetTableData extends AbstractProcessor {
             this.lastModifyDate = (lastModifyDate == null ? new Date(0L) : lastModifyDate);
         }
 
+
         @Override
         public void visitColumn(String columnName, int colType, Date value) {
             if (colName.equals(columnName)) {
@@ -366,6 +375,10 @@ public class GetTableData extends AbstractProcessor {
 
         public Date getLastModifyDate() {
             return lastModifyDate;
+        }
+        
+        public void setLastModifyDate(Date date) {
+            lastModifyDate = date;
         }
     }
 }

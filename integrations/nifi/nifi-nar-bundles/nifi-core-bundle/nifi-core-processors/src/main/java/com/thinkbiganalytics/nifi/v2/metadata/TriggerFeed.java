@@ -3,14 +3,15 @@
  */
 package com.thinkbiganalytics.nifi.v2.metadata;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.thinkbiganalytics.metadata.rest.model.Formatters;
-import com.thinkbiganalytics.metadata.rest.model.event.FeedPreconditionTriggerEvent;
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants;
-import com.thinkbiganalytics.nifi.core.api.precondition.FeedPreconditionEventService;
-import com.thinkbiganalytics.nifi.core.api.precondition.PreconditionListener;
-import com.thinkbiganalytics.util.ComponentAttributes;
+import static com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants.OPERATON_START_PROP;
+import static com.thinkbiganalytics.nifi.v2.common.CommonProperties.FEED_CATEGORY;
+import static com.thinkbiganalytics.nifi.v2.common.CommonProperties.FEED_NAME;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.nifi.annotation.behavior.EventDriven;
 import org.apache.nifi.annotation.behavior.InputRequirement;
@@ -24,18 +25,17 @@ import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.ProcessorInitializationContext;
 import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.exception.ProcessException;
-import org.apache.nifi.processor.util.StandardValidators;
 import org.joda.time.DateTime;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
-import java.util.concurrent.LinkedBlockingQueue;
-
-import static com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants.OPERATON_START_PROP;
-import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.FEED_CATEGORY;
-import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.FEED_NAME;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thinkbiganalytics.metadata.rest.model.Formatters;
+import com.thinkbiganalytics.metadata.rest.model.event.FeedPreconditionTriggerEvent;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants;
+import com.thinkbiganalytics.nifi.core.api.precondition.FeedPreconditionEventService;
+import com.thinkbiganalytics.nifi.core.api.precondition.PreconditionListener;
+import com.thinkbiganalytics.nifi.v2.common.CommonProperties;
+import com.thinkbiganalytics.util.ComponentAttributes;
 
 /**
  * @author Sean Felten
@@ -55,28 +55,8 @@ public class TriggerFeed extends AbstractFeedProcessor {
     public static final PropertyDescriptor PRECONDITION_SERVICE = new PropertyDescriptor.Builder()
             .name("Feed Precondition Event Service")
             .description("Service that manages preconditions which trigger feed execution")
-        .required(true)
+            .required(true)
             .identifiesControllerService(FeedPreconditionEventService.class)
-            .build();
-
-    PropertyDescriptor META_FEED_CATEGORY = new PropertyDescriptor.Builder()
-            .name("System feed category")
-            .description("The category name of this feed.  The default is to have this name automatically set when the feed is created.  "
-                            + "Normally you do not need to change the default value.")
-            .required(true)
-            .defaultValue("${metadata.category.systemName}")
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .expressionLanguageSupported(true)
-            .build();
-
-    PropertyDescriptor META_FEED_NAME = new PropertyDescriptor.Builder()
-            .name("System feed name")
-            .description("The system name of this feed.  The default is to have this name automatically set when the feed is created.  "
-                            + "Normally you do not need to change the default value.")
-            .defaultValue("${metadata.systemFeedName}")
-            .required(true)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .expressionLanguageSupported(true)
             .build();
 
     public static final Relationship SUCCESS = new Relationship.Builder()
@@ -94,8 +74,8 @@ public class TriggerFeed extends AbstractFeedProcessor {
 
     @OnScheduled
     public void scheduled(ProcessContext context) {
-        String category = context.getProperty(META_FEED_CATEGORY).getValue();
-        String feedName = context.getProperty(META_FEED_NAME).getValue();
+        String category = context.getProperty(CommonProperties.FEED_CATEGORY).getValue();
+        String feedName = context.getProperty(CommonProperties.FEED_NAME).getValue();
         
         try {
             this.feedId = getProviderService(context).getProvider().getFeedId(category, feedName);

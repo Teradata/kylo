@@ -39,7 +39,7 @@ public class DropFeedTablesTest {
         // Setup test runner
         runner.addControllerService(THRIFT_SERVICE_IDENTIFIER, thriftService);
         runner.enableControllerService(thriftService);
-        runner.setProperty(ComponentProperties.THRIFT_SERVICE, THRIFT_SERVICE_IDENTIFIER);
+        runner.setProperty(IngestProperties.THRIFT_SERVICE, THRIFT_SERVICE_IDENTIFIER);
     }
 
     /** Verify property validators. */
@@ -66,8 +66,8 @@ public class DropFeedTablesTest {
         runner.enqueue(new byte[0], ImmutableMap.of("metadata.category.systemName", "movies", "metadata.systemFeedName", "artists"));
         runner.run();
 
-        Assert.assertEquals(0, runner.getFlowFilesForRelationship(ComponentProperties.REL_FAILURE).size());
-        Assert.assertEquals(1, runner.getFlowFilesForRelationship(ComponentProperties.REL_SUCCESS).size());
+        Assert.assertEquals(0, runner.getFlowFilesForRelationship(IngestProperties.REL_FAILURE).size());
+        Assert.assertEquals(1, runner.getFlowFilesForRelationship(IngestProperties.REL_SUCCESS).size());
 
         Mockito.verify(thriftService.statement).execute("DROP TABLE IF EXISTS movies.artists_feed");
         Mockito.verify(thriftService.statement).execute("DROP TABLE IF EXISTS movies.artists_valid");
@@ -87,8 +87,8 @@ public class DropFeedTablesTest {
         runner.enqueue(new byte[0], ImmutableMap.of("metadata.category.systemName", "movies", "metadata.systemFeedName", "artists"));
         runner.run();
 
-        Assert.assertEquals(0, runner.getFlowFilesForRelationship(ComponentProperties.REL_FAILURE).size());
-        Assert.assertEquals(1, runner.getFlowFilesForRelationship(ComponentProperties.REL_SUCCESS).size());
+        Assert.assertEquals(0, runner.getFlowFilesForRelationship(IngestProperties.REL_FAILURE).size());
+        Assert.assertEquals(1, runner.getFlowFilesForRelationship(IngestProperties.REL_SUCCESS).size());
 
         Mockito.verify(thriftService.statement).execute("DROP TABLE IF EXISTS movies.artists");
         Mockito.verify(thriftService.statement).execute("DROP TABLE IF EXISTS test.sample_07");
@@ -104,8 +104,8 @@ public class DropFeedTablesTest {
         runner.enqueue(new byte[0], ImmutableMap.of("feed", "artists"));
         runner.run();
 
-        Assert.assertEquals(1, runner.getFlowFilesForRelationship(ComponentProperties.REL_FAILURE).size());
-        Assert.assertEquals(0, runner.getFlowFilesForRelationship(ComponentProperties.REL_SUCCESS).size());
+        Assert.assertEquals(1, runner.getFlowFilesForRelationship(IngestProperties.REL_FAILURE).size());
+        Assert.assertEquals(0, runner.getFlowFilesForRelationship(IngestProperties.REL_SUCCESS).size());
     }
 
     /** Verify exception for missing feed name. */
@@ -115,8 +115,8 @@ public class DropFeedTablesTest {
         runner.enqueue(new byte[0], ImmutableMap.of("category", "movies"));
         runner.run();
 
-        Assert.assertEquals(1, runner.getFlowFilesForRelationship(ComponentProperties.REL_FAILURE).size());
-        Assert.assertEquals(0, runner.getFlowFilesForRelationship(ComponentProperties.REL_SUCCESS).size());
+        Assert.assertEquals(1, runner.getFlowFilesForRelationship(IngestProperties.REL_FAILURE).size());
+        Assert.assertEquals(0, runner.getFlowFilesForRelationship(IngestProperties.REL_SUCCESS).size());
     }
 
     /** Verify dropping tables with a single table type. */
@@ -127,8 +127,8 @@ public class DropFeedTablesTest {
         runner.enqueue(new byte[0], ImmutableMap.of("metadata.category.systemName", "movies", "metadata.systemFeedName", "artists"));
         runner.run();
 
-        Assert.assertEquals(0, runner.getFlowFilesForRelationship(ComponentProperties.REL_FAILURE).size());
-        Assert.assertEquals(1, runner.getFlowFilesForRelationship(ComponentProperties.REL_SUCCESS).size());
+        Assert.assertEquals(0, runner.getFlowFilesForRelationship(IngestProperties.REL_FAILURE).size());
+        Assert.assertEquals(1, runner.getFlowFilesForRelationship(IngestProperties.REL_SUCCESS).size());
 
         Mockito.verify(thriftService.statement).execute("DROP TABLE IF EXISTS movies.artists");
         Mockito.verify(thriftService.statement).close();

@@ -15,6 +15,7 @@ import com.thinkbiganalytics.feedmgr.service.UserPropertyTransform;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
 import com.thinkbiganalytics.jobrepo.repository.FeedRepository;
+import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.OperationalMetadataAccess;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventListener;
@@ -281,7 +282,11 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     // @Transactional(transactionManager = "metadataTransactionManager")
     public NifiFeed createFeed(final FeedMetadata feedMetadata) {
         if (feedMetadata.getState() == null) {
-            feedMetadata.setState(Feed.State.ENABLED.name());
+            if (feedMetadata.isActive()) {
+                feedMetadata.setState(Feed.State.ENABLED.name());
+            } else {
+                feedMetadata.setState(Feed.State.DISABLED.name());
+            }
         }
         return super.createFeed(feedMetadata);
 
@@ -391,8 +396,16 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     private boolean enableFeed(final Feed.ID feedId) {
         return metadataAccess.commit(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ADMIN_FEEDS);
+            boolean enabled = feedProvider.enableFeed(feedId);
+            FeedManagerFeed domainFeed = feedManagerFeedProvider.findById(feedId);
+            if (domainFeed != null) {
+                FeedMetadata feedMetadata = feedModelTransform.deserializeFeedMetadata(domainFeed);
+                feedMetadata.setState(FeedMetadata.STATE.ENABLED.name());
+                domainFeed.setJson(ObjectMapperSerializer.serialize(feedMetadata));
+                feedManagerFeedProvider.update(domainFeed);
+            }
 
-            return feedProvider.enableFeed(feedId);
+            return enabled;
         });
 
     }
@@ -402,7 +415,16 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
         return metadataAccess.commit(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ADMIN_FEEDS);
 
-            return feedProvider.disableFeed(feedId);
+            boolean disabled = feedProvider.disableFeed(feedId);
+            FeedManagerFeed domainFeed = feedManagerFeedProvider.findById(feedId);
+            if (domainFeed != null) {
+                FeedMetadata feedMetadata = feedModelTransform.deserializeFeedMetadata(domainFeed);
+                feedMetadata.setState(FeedMetadata.STATE.DISABLED.name());
+                domainFeed.setJson(ObjectMapperSerializer.serialize(feedMetadata));
+                feedManagerFeedProvider.update(domainFeed);
+            }
+
+            return disabled;
         });
 
     }

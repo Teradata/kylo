@@ -34,13 +34,13 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.FEED_PARTITION;
-import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.FIELD_SPECIFICATION;
-import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.PARTITION_SPECIFICATION;
-import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.REL_FAILURE;
-import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.REL_SUCCESS;
-import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.TARGET_TABLE;
-import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.THRIFT_SERVICE;
+import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.FEED_PARTITION;
+import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.FIELD_SPECIFICATION;
+import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.PARTITION_SPECIFICATION;
+import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.REL_FAILURE;
+import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.REL_SUCCESS;
+import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.TARGET_TABLE;
+import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.THRIFT_SERVICE;
 
 @EventDriven
 @InputRequirement(InputRequirement.Requirement.INPUT_ALLOWED)
@@ -146,7 +146,7 @@ public class MergeTable extends AbstractProcessor {
 
         if (STRATEGY_PK_MERGE.equals(mergeStrategyValue) && (columnSpecs == null || columnSpecs.length == 0)) {
             getLogger().error("Missing required field specification for PK merge feature");
-            session.transfer(flowFile, ComponentProperties.REL_FAILURE);
+            session.transfer(flowFile, IngestProperties.REL_FAILURE);
             return;
         }
 

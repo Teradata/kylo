@@ -93,6 +93,14 @@ public class JcrUtil {
             throw new MetadataRepositoryException("Unable to check if versionable for Node " + name, e);
         }
     }
+    
+    public static String getName(Node node) {
+        try {
+            return node.getName();
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to get name of Node " + node, e);
+        }
+    }
 
     public static boolean isNodeType(Node node, String typeName) {
         try {

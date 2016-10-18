@@ -7,9 +7,10 @@
  */
 package com.thinkbiganalytics.nifi.v2.core.metadata;
 
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProvider;
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.annotation.lifecycle.OnEnabled;
@@ -21,10 +22,10 @@ import org.apache.nifi.controller.ConfigurationContext;
 import org.apache.nifi.processor.util.StandardValidators;
 import org.apache.nifi.reporting.InitializationException;
 
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import com.thinkbiganalytics.metadata.rest.client.MetadataClient;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProvider;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder;
 
 /**
  * @author Sean Felten
@@ -97,18 +98,21 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
     @OnEnabled
     public void onConfigured(final ConfigurationContext context) throws InitializationException {
         PropertyValue impl = context.getProperty(IMPLEMENTATION);
-        this.recorder = new MetadataClientRecorder();
 
         if (impl.getValue().equalsIgnoreCase("REMOTE")) {
             URI uri = URI.create(context.getProperty(CLIENT_URL).getValue());
             String user = context.getProperty(CLIENT_USERNAME).getValue();
             String password = context.getProperty(CLIENT_PASSWORD).getValue();
+            MetadataClient client;
             
             if (StringUtils.isEmpty(user)) {
-                this.provider = new MetadataClientProvider(uri);
+                client = new MetadataClient(uri);
             } else {
-                this.provider = new MetadataClientProvider(uri, user, password);
+                client = new MetadataClient(uri, user, password);
             }
+            
+            this.provider = new MetadataClientProvider(client);
+            this.recorder = new MetadataClientRecorder(client);
         } else {
             throw new UnsupportedOperationException("Provider implementations not currently supported: " + impl.getValue());
         }
