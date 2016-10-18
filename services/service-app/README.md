@@ -89,5 +89,5 @@ nifi.service.hive_thrift_service.database_connection_url=jdbc:hive2://localhost:
 nifi.service.think_big_metadata_service.rest_client_url=http://localhost:8400/proxy/metadata
 ```
 
-*NOTE:* Kylo will only do this replacement when the controller service is intially created by Kylo upon Feed or Reusable Template creation.  If the service already exists in NiFi then it will not do this replacement. 
+*NOTE:* Kylo will only do this replacement when the controller service is initially created by Kylo upon Feed or Reusable Template creation.  If the service already exists in NiFi then it will not do this replacement. 
    
