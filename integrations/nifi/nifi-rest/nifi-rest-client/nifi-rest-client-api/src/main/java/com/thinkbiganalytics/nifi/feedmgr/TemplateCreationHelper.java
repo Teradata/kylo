@@ -3,11 +3,13 @@ package com.thinkbiganalytics.nifi.feedmgr;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
-import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.ControllerServiceProperty;
 import com.thinkbiganalytics.nifi.rest.model.ControllerServicePropertyHolder;
+import com.thinkbiganalytics.nifi.rest.model.NiFiAllowableValue;
+import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptorTransform;
 import com.thinkbiganalytics.nifi.rest.model.NifiError;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
@@ -24,7 +26,6 @@ import org.apache.nifi.web.api.dto.FlowSnippetDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.PropertyDescriptorDTO;
-import org.apache.nifi.web.api.entity.ControllerServiceEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,8 +36,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
+import javax.inject.Inject;
 
 /**
  * Created by sr186054 on 5/6/16.
@@ -60,6 +63,9 @@ public class TemplateCreationHelper {
     private Set<ControllerServiceDTO> newlyCreatedControllerServices;
 
     Map<String, Integer> controllerServiceEnableAttempts = new ConcurrentHashMap<>();
+
+    @Inject
+    private NiFiPropertyDescriptorTransform propertyDescriptorTransform;
 
     private Integer MAX_ENABLE_ATTEMPTS = 5;
     private Long ENABLE_CONTROLLER_SERVICE_WAIT_TIME = 2000L;
@@ -303,7 +309,7 @@ public class TemplateCreationHelper {
                     groupDTO.setName(dto.getParentGroupId());
                     processGroupDTOMap.put(dto.getParentGroupId(), groupDTO);
                 }
-                properties.addAll(NifiPropertyUtil.getPropertiesForProcessor(groupDTO, dto));
+                properties.addAll(NifiPropertyUtil.getPropertiesForProcessor(groupDTO, dto, propertyDescriptorTransform));
             }
 
             enableServices(controllerServiceProperties, enabledServices, allServices, properties);
@@ -329,7 +335,7 @@ public class TemplateCreationHelper {
                     ControllerServiceDTO dto = allServices.get(property.getValue());
 
                     //if service depends on other services lets enable those upstream services first
-                    List<NifiProperty> serviceProperties = NifiPropertyUtil.getPropertiesForService(dto);
+                    List<NifiProperty> serviceProperties = NifiPropertyUtil.getPropertiesForService(dto, propertyDescriptorTransform);
                     enableServices(controllerServiceProperties, enabledServices, allServices, serviceProperties);
 
                     ControllerServiceDTO entity = tryToEnableControllerService(dto.getId(), dto.getName(), controllerServiceProperties);
@@ -346,15 +352,13 @@ public class TemplateCreationHelper {
                     boolean controllerServiceSet = false;
                     String controllerServiceName = "";
                     // match a allowable service and enable it
-                    List<PropertyDescriptorDTO.AllowableValueDTO>
-                        allowableValueDTOs =
-                        property.getPropertyDescriptor().getAllowableValues();
+                    List<NiFiAllowableValue> allowableValueDTOs = property.getPropertyDescriptor().getAllowableValues();
                     //if any of the allowable values are enabled already use that and continue
-                    List<PropertyDescriptorDTO.AllowableValueDTO>
-                        enabledValues =
-                        Lists.newArrayList(Iterables.filter(allowableValueDTOs, allowableValueDTO -> enabledServices.containsKey(allowableValueDTO.getValue()) || enabledServices.containsKey(allowableValueDTO.getDisplayName())));
+                    List<NiFiAllowableValue> enabledValues = allowableValueDTOs.stream()
+                            .filter(allowableValueDTO -> enabledServices.containsKey(allowableValueDTO.getValue()) || enabledServices.containsKey(allowableValueDTO.getDisplayName()))
+                            .collect(Collectors.toList());
                     if (enabledValues != null && !enabledValues.isEmpty()) {
-                        PropertyDescriptorDTO.AllowableValueDTO enabledService = enabledValues.get(0);
+                        NiFiAllowableValue enabledService = enabledValues.get(0);
                         ControllerServiceDTO dto = enabledServices.get(enabledService.getValue());
                         if (dto == null) {
                             dto = enabledServices.get(enabledService.getDisplayName());
@@ -376,7 +380,7 @@ public class TemplateCreationHelper {
                     } else {
                         //try to enable the service
                         //match the service by Name...
-                        for (PropertyDescriptorDTO.AllowableValueDTO allowableValueDTO : allowableValueDTOs) {
+                        for (NiFiAllowableValue allowableValueDTO : allowableValueDTOs) {
                             ControllerServiceDTO dto = allServices.get(allowableValueDTO.getValue());
                             if (StringUtils.isBlank(controllerServiceName)) {
                                 controllerServiceName = dto.getName();

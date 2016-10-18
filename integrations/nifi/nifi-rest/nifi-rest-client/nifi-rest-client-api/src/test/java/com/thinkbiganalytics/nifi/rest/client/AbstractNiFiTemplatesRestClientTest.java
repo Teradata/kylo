@@ -29,9 +29,11 @@ public class AbstractNiFiTemplatesRestClientTest {
 
         // Mock templates with port info
         final PortDTO port1 = new PortDTO();
+        port1.setId("ee77fc99-2f19-43d3-ae26-091f9caa1401");
         port1.setName("to-other-template");
 
         final PortDTO port2 = new PortDTO();
+        port2.setId("1b2a3c92-1964-4f87-9835-b8a19f024249");
         port2.setName("to-standard-ingest");
 
         final FlowSnippetDTO flow1 = new FlowSnippetDTO();

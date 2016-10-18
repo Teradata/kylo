@@ -315,7 +315,19 @@
       <artifactId>reflections</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>org.apache.nifi</groupId>
+      <artifactId>nifi-client-dto</artifactId>
+      <version>0.6.0</version>
+      <scope>test</scope>
+    </dependency>
 
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>thinkbig-nifi-rest-client-v0</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
 
   </dependencies>
 

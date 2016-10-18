@@ -7,6 +7,8 @@ package com.thinkbiganalytics.nifi.rest.support;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptor;
+import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptorTransform;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 
 import org.apache.commons.lang3.StringUtils;
@@ -44,11 +46,12 @@ public class NifiPropertyUtil {
         return map;
     }
 
-    public static List<NifiProperty> getPropertiesForTemplate(ProcessGroupDTO parentProcessGroup, TemplateDTO dto){
-        return getPropertiesForTemplate(parentProcessGroup,dto,false);
+    public static List<NifiProperty> getPropertiesForTemplate(ProcessGroupDTO parentProcessGroup, TemplateDTO dto, NiFiPropertyDescriptorTransform propertyDescriptorTransform){
+        return getPropertiesForTemplate(parentProcessGroup,dto, propertyDescriptorTransform, false);
     }
 
-    public static List<NifiProperty> getPropertiesForTemplate(ProcessGroupDTO parentProcessGroup, TemplateDTO dto, boolean excludeInputProcessors){
+    public static List<NifiProperty> getPropertiesForTemplate(ProcessGroupDTO parentProcessGroup, TemplateDTO dto, NiFiPropertyDescriptorTransform propertyDescriptorTransform,
+                                                              boolean excludeInputProcessors){
         List<NifiProperty> properties = new ArrayList<NifiProperty>();
         if(dto != null){
              List<ProcessorDTO> inputs = NifiTemplateUtil.getInputProcessorsForTemplate(dto);
@@ -60,7 +63,7 @@ public class NifiPropertyUtil {
                 if(group == null) {
                     group = parentProcessGroup;
                 }
-                List<NifiProperty> propertyList = getPropertiesForProcessor(group, processor);
+                List<NifiProperty> propertyList = getPropertiesForProcessor(group, processor, propertyDescriptorTransform);
                 //assign the property as an input property if it is one
                 if(NifiProcessUtil.findFirstProcessorsById(inputs,processor.getId()) != null) {
                     for(NifiProperty property: propertyList){
@@ -92,17 +95,20 @@ public class NifiPropertyUtil {
     }
 
 
-    public static List<NifiProperty> getPropertiesForService(ControllerServiceDTO service) {
+    public static List<NifiProperty> getPropertiesForService(ControllerServiceDTO service, NiFiPropertyDescriptorTransform propertyDescriptorTransform) {
         return service.getProperties().entrySet().stream()
-                .map(entry -> new NifiProperty(service.getParentGroupId(), service.getId(), entry.getKey(),
-                        entry.getValue(), service.getDescriptors().get(entry.getKey())))
+                .map(entry -> {
+                    final NiFiPropertyDescriptor propertyDescriptor = propertyDescriptorTransform.toNiFiPropertyDescriptor(service.getDescriptors().get(entry.getKey()));
+                    return new NifiProperty(service.getParentGroupId(), service.getId(), entry.getKey(), entry.getValue(), propertyDescriptor);
+                })
                 .collect(Collectors.toList());
     }
 
-    public static List<NifiProperty> getPropertiesForProcessor(ProcessGroupDTO processGroup, ProcessorDTO processor) {
+    public static List<NifiProperty> getPropertiesForProcessor(ProcessGroupDTO processGroup, ProcessorDTO processor, NiFiPropertyDescriptorTransform propertyDescriptorTransform) {
         List<NifiProperty> properties = new ArrayList<>();
         for(Map.Entry<String,String> entry : processor.getConfig().getProperties().entrySet()) {
-            NifiProperty property = new NifiProperty(processor.getParentGroupId(),processor.getId(),entry.getKey(),entry.getValue(),processor.getConfig().getDescriptors().get(entry.getKey()));
+            final NiFiPropertyDescriptor propertyDescriptor = propertyDescriptorTransform.toNiFiPropertyDescriptor(processor.getConfig().getDescriptors().get(entry.getKey()));
+            final NifiProperty property = new NifiProperty(processor.getParentGroupId(),processor.getId(),entry.getKey(),entry.getValue(), propertyDescriptor);
            // property.setProcessor(processor);
             property.setProcessGroupName(processGroup.getName());
             property.setProcessorName(processor.getName());
@@ -112,19 +118,19 @@ public class NifiPropertyUtil {
         return properties;
     }
 
-    public static List<NifiProperty> getProperties(ProcessGroupDTO processGroupDTO) {
+    public static List<NifiProperty> getProperties(ProcessGroupDTO processGroupDTO, NiFiPropertyDescriptorTransform propertyDescriptorTransform) {
         List<NifiProperty> properties = new ArrayList<NifiProperty>();
         if (processGroupDTO != null) {
 
             if (processGroupDTO.getContents().getProcessors() != null && !processGroupDTO.getContents().getProcessors().isEmpty()) {
                 for (ProcessorDTO processorDTO : processGroupDTO.getContents().getProcessors()) {
-                    properties.addAll(NifiPropertyUtil.getPropertiesForProcessor(processGroupDTO, processorDTO));
+                    properties.addAll(NifiPropertyUtil.getPropertiesForProcessor(processGroupDTO, processorDTO, propertyDescriptorTransform));
                 }
             }
 
             if (processGroupDTO.getContents().getProcessGroups() != null && !processGroupDTO.getContents().getProcessGroups().isEmpty()) {
                 for (ProcessGroupDTO groupDTO : processGroupDTO.getContents().getProcessGroups()) {
-                    properties.addAll(NifiPropertyUtil.getProperties(groupDTO));
+                    properties.addAll(NifiPropertyUtil.getProperties(groupDTO, propertyDescriptorTransform));
                 }
             }
         }

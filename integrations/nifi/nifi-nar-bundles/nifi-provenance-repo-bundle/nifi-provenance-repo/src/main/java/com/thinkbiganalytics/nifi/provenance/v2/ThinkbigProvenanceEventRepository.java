@@ -23,7 +23,7 @@ public class ThinkbigProvenanceEventRepository extends PersistentProvenanceRepos
     /**
      * Default no arg constructor for service loading only.
      */
-    public ThinkbigProvenanceEventRepository() {
+    public ThinkbigProvenanceEventRepository() throws IOException {
         super();
         log.info("New ThinkbigProvenanceEventRepository");
         SpringApplicationContext.getInstance().initializeSpring();

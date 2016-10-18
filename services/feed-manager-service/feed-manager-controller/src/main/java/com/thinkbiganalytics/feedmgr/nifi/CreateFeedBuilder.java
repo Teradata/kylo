@@ -21,7 +21,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
-import org.apache.nifi.web.api.entity.ProcessGroupEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +56,7 @@ public class CreateFeedBuilder {
     private List<InputOutputPort> inputOutputPorts = Lists.newArrayList();
 
     private NifiProcessGroup newProcessGroup = null;
-    private ProcessGroupEntity previousFeedProcessGroup = null;
+    private ProcessGroupDTO previousFeedProcessGroup = null;
 
 
     private String version;
@@ -314,7 +313,7 @@ public class CreateFeedBuilder {
         String
             parentGroupId =
             newProcessGroup != null ? newProcessGroup.getProcessGroupEntity().getParentGroupId()
-                                    : (previousFeedProcessGroup != null ? previousFeedProcessGroup.getProcessGroup().getParentGroupId() : null);
+                                    : (previousFeedProcessGroup != null ? previousFeedProcessGroup.getParentGroupId() : null);
         try {
             if (StringUtils.isNotBlank(parentGroupId)) {
                 ProcessGroupDTO feedGroup = restClient.getProcessGroupByName(parentGroupId, feedName);
@@ -330,7 +329,7 @@ public class CreateFeedBuilder {
                 if (feedGroup == null) {
                     if (previousFeedProcessGroup != null) {
 
-                        ProcessGroupDTO entity = restClient.getProcessGroup(previousFeedProcessGroup.getProcessGroup().getId(), false, false);
+                        ProcessGroupDTO entity = restClient.getProcessGroup(previousFeedProcessGroup.getId(), false, false);
                         if (entity != null) {
                             entity.setName(feedName);
                             entity = restClient.updateProcessGroup(entity);
@@ -392,8 +391,7 @@ public class CreateFeedBuilder {
         ProcessGroupDTO feedGroup = restClient.getProcessGroupByName(categoryGroup.getId(), feedName);
         if (feedGroup != null) {
             try {
-                previousFeedProcessGroup = new ProcessGroupEntity();
-                previousFeedProcessGroup.setProcessGroup(feedGroup);
+                previousFeedProcessGroup = feedGroup;
                 templateCreationHelper.versionProcessGroup(feedGroup);
             } catch (Exception e) {
                 throw new FeedCreationException("Previous version of the feed " + feedName

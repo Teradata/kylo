@@ -143,7 +143,6 @@ public class NifiRestTest {
                     PropertyDescriptorDTO descriptorDTO = dto.getDescriptors().get(key);
                     NifiProperty nifiProperty = new NifiProperty();
                     nifiProperty.setKey(key);
-                    nifiProperty.setPropertyDescriptor(descriptorDTO);
                 }
 
             }

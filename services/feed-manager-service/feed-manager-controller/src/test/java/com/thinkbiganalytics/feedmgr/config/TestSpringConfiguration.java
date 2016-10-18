@@ -26,7 +26,11 @@ import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementScheduler;
 import com.thinkbiganalytics.metadata.sla.spi.core.InMemorySLAProvider;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
+import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClientConfig;
+import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptorTransform;
+import com.thinkbiganalytics.nifi.v0.rest.client.NiFiRestClientV0;
+import com.thinkbiganalytics.nifi.v0.rest.model.NiFiPropertyDescriptorTransformV0;
 import com.thinkbiganalytics.security.AccessController;
 
 import org.mockito.Mockito;
@@ -255,9 +259,17 @@ public class TestSpringConfiguration {
     }
 
     @Bean
-    public LegacyNifiRestClient nifiRestClient() {
+    public LegacyNifiRestClient legacyNifiRestClient() {
         return new LegacyNifiRestClient();
     }
 
+    @Bean
+    NiFiRestClient niFiRestClient() {
+        return new NiFiRestClientV0(nifiRestClientConfig());
+    }
 
+    @Bean
+    NiFiPropertyDescriptorTransform propertyDescriptorTransform() {
+        return new NiFiPropertyDescriptorTransformV0();
+    }
 }

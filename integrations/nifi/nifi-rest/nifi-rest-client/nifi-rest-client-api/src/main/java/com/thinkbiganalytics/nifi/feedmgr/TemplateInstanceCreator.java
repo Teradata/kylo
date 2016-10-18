@@ -2,6 +2,7 @@ package com.thinkbiganalytics.nifi.feedmgr;
 
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
+import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptorTransform;
 import com.thinkbiganalytics.nifi.rest.model.NifiError;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
@@ -21,6 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.inject.Inject;
+
 /**
  * Created by sr186054 on 5/6/16.
  */
@@ -36,6 +39,9 @@ public class TemplateInstanceCreator {
     private Map<String, Object> staticConfigPropertyMap;
 
     private Map<String, String> staticConfigPropertyStringMap;
+
+    @Inject
+    private NiFiPropertyDescriptorTransform propertyDescriptorTransform;
 
     public TemplateInstanceCreator(LegacyNifiRestClient restClient, String templateId, Map<String, Object> staticConfigPropertyMap, boolean createReusableFlow) {
         this.restClient = restClient;
@@ -115,7 +121,7 @@ public class TemplateInstanceCreator {
 
                     //replace static properties and inject values into the flow
 
-                    List<NifiProperty> processorProperties = NifiPropertyUtil.getProperties(entity);
+                    List<NifiProperty> processorProperties = NifiPropertyUtil.getProperties(entity, propertyDescriptorTransform);
                     if (processorProperties != null) {
                         boolean didReplace = false;
                         for (NifiProperty property : processorProperties) {

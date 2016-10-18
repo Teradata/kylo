@@ -7,6 +7,7 @@ import com.thinkbiganalytics.nifi.feedmgr.ConfigurationPropertyReplacer;
 import com.thinkbiganalytics.nifi.feedmgr.NifiEnvironmentProperties;
 import com.thinkbiganalytics.nifi.feedmgr.TemplateCreationHelper;
 import com.thinkbiganalytics.nifi.feedmgr.TemplateInstanceCreator;
+import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptorTransform;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
@@ -34,7 +35,6 @@ import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
 import org.apache.nifi.web.api.dto.search.ComponentSearchResultDTO;
 import org.apache.nifi.web.api.dto.search.SearchResultsDTO;
-import org.apache.nifi.web.api.entity.ProcessorEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,6 +58,9 @@ public class LegacyNifiRestClient implements NifiFlowVisitorClient {
 
     @Inject
     private NiFiRestClient client;
+
+    @Inject
+    private NiFiPropertyDescriptorTransform propertyDescriptorTransform;
 
     /**
      * Gets Template data, either a quick view or including all its content
@@ -179,7 +182,7 @@ public class LegacyNifiRestClient implements NifiFlowVisitorClient {
     public List<NifiProperty> getPropertiesForTemplate(String templateId) {
         TemplateDTO dto = getTemplateById(templateId);
         ProcessGroupDTO rootProcessGroup = getProcessGroup("root", false, false);
-        return NifiPropertyUtil.getPropertiesForTemplate(rootProcessGroup, dto);
+        return NifiPropertyUtil.getPropertiesForTemplate(rootProcessGroup, dto, propertyDescriptorTransform);
     }
 
 
@@ -217,7 +220,7 @@ public class LegacyNifiRestClient implements NifiFlowVisitorClient {
     public List<NifiProperty> getPropertiesForTemplateByName(String templateName) {
         TemplateDTO dto = getTemplateByName(templateName);
         ProcessGroupDTO rootProcessGroup = getProcessGroup("root", false, false);
-        return NifiPropertyUtil.getPropertiesForTemplate(rootProcessGroup, dto);
+        return NifiPropertyUtil.getPropertiesForTemplate(rootProcessGroup, dto, propertyDescriptorTransform);
     }
 
     /**
@@ -225,13 +228,13 @@ public class LegacyNifiRestClient implements NifiFlowVisitorClient {
      */
     public List<NifiProperty> getAllProperties() throws NifiComponentNotFoundException {
         ProcessGroupDTO root = getRootProcessGroup();
-        return NifiPropertyUtil.getProperties(root);
+        return NifiPropertyUtil.getProperties(root, propertyDescriptorTransform);
     }
 
 
     public List<NifiProperty> getPropertiesForProcessGroup(String processGroupId) throws NifiComponentNotFoundException {
         ProcessGroupDTO processGroup = getProcessGroup(processGroupId, true, true);
-        return NifiPropertyUtil.getProperties(processGroup);
+        return NifiPropertyUtil.getProperties(processGroup, propertyDescriptorTransform);
     }
 
     public ProcessGroupDTO createProcessGroup(String name) {
@@ -257,23 +260,19 @@ public class LegacyNifiRestClient implements NifiFlowVisitorClient {
     }
 
     public void stopProcessor(String processorGroupId, String processorId) {
-        ProcessorEntity entity = new ProcessorEntity();
         ProcessorDTO dto = new ProcessorDTO();
         dto.setId(processorId);
         dto.setParentGroupId(processorGroupId);
         dto.setState(NifiProcessUtil.PROCESS_STATE.STOPPED.name());
-        entity.setProcessor(dto);
-        updateProcessor(entity);
+        updateProcessor(dto);
     }
 
     public void startProcessor(String processorGroupId, String processorId) {
-        ProcessorEntity entity = new ProcessorEntity();
         ProcessorDTO dto = new ProcessorDTO();
         dto.setId(processorId);
         dto.setParentGroupId(processorGroupId);
         dto.setState(NifiProcessUtil.PROCESS_STATE.RUNNING.name());
-        entity.setProcessor(dto);
-        updateProcessor(entity);
+        updateProcessor(dto);
     }
 
     public void stopInputs(ProcessGroupDTO groupDTO) {
@@ -721,14 +720,12 @@ public class LegacyNifiRestClient implements NifiFlowVisitorClient {
                     stopProcessor(processor.getParentGroupId(), processor.getId());
                 }
 
-                processor.setState(NifiProcessUtil.PROCESS_STATE.DISABLED.name());
-                ProcessorEntity entity = new ProcessorEntity();
+                // Set final state
                 ProcessorDTO updateDto = new ProcessorDTO();
                 updateDto.setId(processor.getId());
                 updateDto.setParentGroupId(processor.getParentGroupId());
-                updateDto.setState(processor.getState());
-                entity.setProcessor(updateDto);
-                updateProcessor(entity);
+                updateDto.setState(NifiProcessUtil.PROCESS_STATE.DISABLED.name());
+                updateProcessor(updateDto);
                 updated = true;
             }
         }
@@ -773,14 +770,6 @@ public class LegacyNifiRestClient implements NifiFlowVisitorClient {
     public ProcessorDTO getProcessor(String processGroupId, String processorId) throws NifiComponentNotFoundException {
         return client.processors().findById(processGroupId, processorId)
                 .orElseThrow(() -> new NifiComponentNotFoundException(processorId, NifiConstants.NIFI_COMPONENT_TYPE.PROCESSOR, null));
-    }
-
-    /**
-     * Saves the Processor
-     */
-    @Deprecated
-    public ProcessorDTO updateProcessor(ProcessorEntity processorEntity) {
-        return client.processors().update(processorEntity.getProcessor());
     }
 
     @Deprecated

@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.feedmgr.rest.controller;
 
+import com.google.common.collect.ImmutableMap;
 import com.thinkbiganalytics.db.model.schema.TableSchema;
 import com.thinkbiganalytics.feedmgr.nifi.DBCPConnectionPoolTableInfo;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
@@ -9,11 +10,10 @@ import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowDeserializer;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
 
+import org.apache.nifi.web.api.dto.ControllerServiceDTO;
 import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.entity.ControllerServiceTypesEntity;
-import org.apache.nifi.web.api.entity.ControllerServicesEntity;
-import org.apache.nifi.web.api.entity.InputPortsEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -124,9 +124,8 @@ public class NifiIntegrationRestController {
     @Path("/controller-services")
     @Produces({MediaType.APPLICATION_JSON})
     public Response getServices() {
-        final ControllerServicesEntity entity = new ControllerServicesEntity();
-        entity.setControllerServices(nifiRestClient.getControllerServices("NODE"));
-        return Response.ok(entity).build();
+        final Set<ControllerServiceDTO> controllerServices = nifiRestClient.getControllerServices("NODE");
+        return Response.ok(ImmutableMap.of("controllerServices", controllerServices)).build();
     }
 
 
