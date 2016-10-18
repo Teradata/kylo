@@ -193,14 +193,18 @@ public class HDFSUtil {
                      * Create HDFS ACL for each for each Path on HDFS
                      */
 
-                    AclEntry aclEntry = new AclEntry.Builder().setName(groupListForPermission[groupCounter])
-                        .setPermission(fsActionObject).setScope(AclEntryScope.ACCESS).setType(AclEntryType.GROUP).build();
+                    AclEntry aclEntryOwner = new AclEntry.Builder().setName(groupListForPermission[groupCounter])
+                                    .setPermission(fsActionObject).setScope(AclEntryScope.ACCESS).setType(AclEntryType.GROUP).build();
+
+                    AclEntry aclEntryOther = new AclEntry.Builder().setPermission(FsAction.NONE).setScope(AclEntryScope.ACCESS).setType(AclEntryType.OTHER).build();
 
                     /**
                      * Apply ACL on Path
                      */
 
-                    applyAcl(fileSystem, status.getPath(), aclEntry);
+                    applyAcl(fileSystem, status.getPath(), aclEntryOwner);
+                    applyAcl(fileSystem, status.getPath(), aclEntryOther);
+
 
                 }
 
@@ -216,14 +220,17 @@ public class HDFSUtil {
                      * Create HDFS ACL for each for each Path on HDFS
                      */
 
-                    AclEntry aclEntry = new AclEntry.Builder().setName(groupListForPermission[groupCounter])
-                        .setPermission(fsActionObject).setScope(AclEntryScope.ACCESS).setType(AclEntryType.GROUP).build();
+                    AclEntry aclEntryOwner = new AclEntry.Builder().setName(groupListForPermission[groupCounter])
+                                    .setPermission(fsActionObject).setScope(AclEntryScope.ACCESS).setType(AclEntryType.GROUP).build();
+
+                    AclEntry aclEntryOther = new AclEntry.Builder().setPermission(FsAction.NONE).setScope(AclEntryScope.ACCESS).setType(AclEntryType.OTHER).build();
 
                     /**
                      * Apply ACL on Path
                      */
 
-                    applyAcl(fileSystem, status.getPath(), aclEntry);
+                    applyAcl(fileSystem, status.getPath(), aclEntryOwner);
+                    applyAcl(fileSystem, status.getPath(), aclEntryOther);
 
                 }
             }
@@ -239,8 +246,6 @@ public class HDFSUtil {
         try {
             log.info("Creating ACL for Path - " + path.toString());
             fileSystem.modifyAclEntries(path, Lists.newArrayList(aclEntry));
-            log.info("Sucessfully created ACL for Path - " + path.toString());
-
         } catch (IOException e) {
             throw new IOException("Unable to apply HDFS Policy for " + path.toString() + " " + e.getMessage());
         }
@@ -253,7 +258,6 @@ public class HDFSUtil {
     public void flushAcl(FileSystem fileSystem, Path path) throws IOException {
         try {
             fileSystem.removeAcl(path);
-
         } catch (IOException e) {
             throw new IOException("Unable to flush HDFS Policy for " + path.toString() + " " + e.getMessage());
         }
