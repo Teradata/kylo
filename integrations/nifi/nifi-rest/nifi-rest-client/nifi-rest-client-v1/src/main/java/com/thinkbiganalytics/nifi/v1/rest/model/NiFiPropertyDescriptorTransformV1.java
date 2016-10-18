@@ -1,10 +1,12 @@
-package com.thinkbiganalytics.nifi.v0.rest.model;
+package com.thinkbiganalytics.nifi.v1.rest.model;
 
 import com.thinkbiganalytics.nifi.rest.model.NiFiAllowableValue;
 import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptor;
 import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptorTransform;
 
+import org.apache.nifi.web.api.dto.AllowableValueDTO;
 import org.apache.nifi.web.api.dto.PropertyDescriptorDTO;
+import org.apache.nifi.web.api.entity.AllowableValueEntity;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -12,18 +14,18 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 
 /**
- * Transforms {@link NiFiPropertyDescriptor} objects for NiFi v0.6.
+ * Transforms {@link NiFiPropertyDescriptor} objects for NiFi v1.0.
  */
-public class NiFiPropertyDescriptorTransformV0 implements NiFiPropertyDescriptorTransform {
+public class NiFiPropertyDescriptorTransformV1 implements NiFiPropertyDescriptorTransform {
 
     /**
-     * Transforms the specified {@link PropertyDescriptorDTO.AllowableValueDTO} to a {@link NiFiAllowableValue}.
+     * Transforms the specified {@link AllowableValueDTO} to a {@link NiFiAllowableValue}.
      *
      * @param dto the allowable value DTO
      * @return the NiFi allowable value
      */
     @Nonnull
-    public NiFiAllowableValue toNiFiAllowableValue(@Nonnull final PropertyDescriptorDTO.AllowableValueDTO dto) {
+    public NiFiAllowableValue toNiFiAllowableValue(@Nonnull final AllowableValueDTO dto) {
         final NiFiAllowableValue nifi = new NiFiAllowableValue();
         nifi.setDisplayName(dto.getDisplayName());
         nifi.setValue(dto.getValue());
@@ -45,9 +47,12 @@ public class NiFiPropertyDescriptorTransformV0 implements NiFiPropertyDescriptor
         nifi.setSupportsEl(dto.getSupportsEl());
         nifi.setIdentifiesControllerService(dto.getIdentifiesControllerService());
 
-        final List<PropertyDescriptorDTO.AllowableValueDTO> allowableValues = dto.getAllowableValues();
+        final List<AllowableValueEntity> allowableValues = dto.getAllowableValues();
         if (allowableValues != null) {
-            nifi.setAllowableValues(allowableValues.stream().map(this::toNiFiAllowableValue).collect(Collectors.toList()));
+            nifi.setAllowableValues(allowableValues.stream()
+                    .map(AllowableValueEntity::getAllowableValue)
+                    .map(this::toNiFiAllowableValue)
+                    .collect(Collectors.toList()));
         }
 
         return nifi;

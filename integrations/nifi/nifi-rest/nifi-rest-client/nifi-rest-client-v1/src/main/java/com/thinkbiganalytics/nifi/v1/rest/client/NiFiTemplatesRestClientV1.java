@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.nifi.v0.rest.client;
+package com.thinkbiganalytics.nifi.v1.rest.client;
 
 import com.thinkbiganalytics.nifi.rest.client.AbstractNiFiTemplatesRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiTemplatesRestClient;
@@ -10,36 +10,37 @@ import org.glassfish.jersey.media.multipart.MultiPart;
 
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.ws.rs.NotFoundException;
 
 /**
- * Implements a {@link NiFiTemplatesRestClient} for communicating with NiFi v0.6.
+ * Implements a {@link NiFiTemplatesRestClient} for communicating with NiFi v1.0.
  */
-public class NiFiTemplatesRestClientV0 extends AbstractNiFiTemplatesRestClient {
+public class NiFiTemplatesRestClientV1 extends AbstractNiFiTemplatesRestClient {
 
     /** Base path for template requests */
-    private static final String BASE_PATH = "/controller/templates";
+    private static final String BASE_PATH = "/templates/";
 
     /** REST client for communicating with NiFi */
-    private final NiFiRestClientV0 client;
+    private final NiFiRestClientV1 client;
 
     /**
-     * Constructs a {@code NiFiTemplatesRestClientV0} with the specified NiFi REST client.
+     * Constructs a {@code NiFiTemplatesRestClientV1} with the specified NiFi REST client.
      *
      * @param client the REST client
      */
-    public NiFiTemplatesRestClientV0(@Nonnull final NiFiRestClientV0 client) {
+    public NiFiTemplatesRestClientV1(@Nonnull final NiFiRestClientV1 client) {
         this.client = client;
     }
 
     @Override
     public boolean delete(@Nonnull final String id) {
         try {
-            client.delete(BASE_PATH + "/" + id, null, TemplateEntity.class);
+            client.delete(BASE_PATH + id, null, TemplateEntity.class);
             return true;
-        } catch (NotFoundException e) {
+        } catch (final NotFoundException e) {
             return false;
         }
     }
@@ -48,8 +49,8 @@ public class NiFiTemplatesRestClientV0 extends AbstractNiFiTemplatesRestClient {
     @Override
     public Optional<String> download(@Nonnull final String id) {
         try {
-            return Optional.of(client.get(BASE_PATH + "/" + id, null, String.class));
-        } catch (NotFoundException e) {
+            return Optional.of(client.get(BASE_PATH + id + "/download", null, String.class));
+        } catch (final NotFoundException e) {
             return Optional.empty();
         }
     }
@@ -57,16 +58,18 @@ public class NiFiTemplatesRestClientV0 extends AbstractNiFiTemplatesRestClient {
     @Nonnull
     @Override
     public Set<TemplateDTO> findAll() {
-        return client.get(BASE_PATH, null, TemplatesEntity.class)
-                .getTemplates();
+        return client.get("/flow/templates", null, TemplatesEntity.class)
+                .getTemplates().stream()
+                .map(TemplateEntity::getTemplate)
+                .collect(Collectors.toSet());
     }
 
     @Nonnull
     @Override
     public Optional<TemplateDTO> findById(@Nonnull final String id) {
         try {
-            return Optional.of(client.get(BASE_PATH + "/" + id, null, TemplateDTO.class));
-        } catch (NotFoundException e) {
+            return Optional.of(client.get(BASE_PATH + id + "/download", null, TemplateDTO.class));
+        } catch (final NotFoundException e) {
             return Optional.empty();
         }
     }
@@ -74,7 +77,6 @@ public class NiFiTemplatesRestClientV0 extends AbstractNiFiTemplatesRestClient {
     @Nonnull
     @Override
     protected TemplateDTO upload(@Nonnull final MultiPart template) {
-        return client.postMultiPart(BASE_PATH, template, TemplateEntity.class)
-                .getTemplate();
+        return client.postMultiPart("/process-groups/root/templates/upload", template, TemplateEntity.class).getTemplate();
     }
 }

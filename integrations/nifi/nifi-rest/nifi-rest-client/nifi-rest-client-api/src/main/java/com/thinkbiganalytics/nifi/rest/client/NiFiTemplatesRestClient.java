@@ -27,10 +27,9 @@ public interface NiFiTemplatesRestClient {
      * Deletes a template.
      *
      * @param id the template id
-     * @return the template, if found
+     * @return {@code true} if the template was found, or {@code false} otherwise
      */
-    @Nonnull
-    Optional<TemplateDTO> delete(@Nonnull String id);
+    boolean delete(@Nonnull String id);
 
     /**
      * Exports a template.

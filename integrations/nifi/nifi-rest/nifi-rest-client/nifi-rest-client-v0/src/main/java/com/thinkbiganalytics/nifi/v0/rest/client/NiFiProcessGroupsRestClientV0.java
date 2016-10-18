@@ -205,14 +205,14 @@ public class NiFiProcessGroupsRestClientV0 extends AbstractNiFiProcessGroupsRest
 
     @Nonnull
     @Override
-    public ProcessGroupDTO update(@Nonnull final ProcessGroupDTO processGroupEntity) {
+    public ProcessGroupDTO update(@Nonnull final ProcessGroupDTO processGroup) {
         try {
             final ProcessGroupEntity entity = new ProcessGroupEntity();
-            entity.setProcessGroup(processGroupEntity);
+            entity.setProcessGroup(processGroup);
 
-            return client.put(BASE_PATH + "/" + processGroupEntity.getId(), processGroupEntity, ProcessGroupEntity.class).getProcessGroup();
+            return client.put(BASE_PATH + "/" + processGroup.getId(), processGroup, ProcessGroupEntity.class).getProcessGroup();
         } catch (NotFoundException e) {
-            throw new NifiComponentNotFoundException(processGroupEntity.getId(), NifiConstants.NIFI_COMPONENT_TYPE.PROCESS_GROUP, e);
+            throw new NifiComponentNotFoundException(processGroup.getId(), NifiConstants.NIFI_COMPONENT_TYPE.PROCESS_GROUP, e);
         }
     }
 

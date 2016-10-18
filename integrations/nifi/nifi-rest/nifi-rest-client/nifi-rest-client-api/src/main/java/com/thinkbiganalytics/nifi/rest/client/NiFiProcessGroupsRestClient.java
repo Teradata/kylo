@@ -167,10 +167,10 @@ public interface NiFiProcessGroupsRestClient {
     /**
      * Updates a process group.
      *
-     * @param processGroupEntity the process group
+     * @param processGroup the process group
      * @return the updated process group
      * @throws NifiComponentNotFoundException if the process group does not exist
      */
     @Nonnull
-    ProcessGroupDTO update(@Nonnull ProcessGroupDTO processGroupEntity);
+    ProcessGroupDTO update(@Nonnull ProcessGroupDTO processGroup);
 }

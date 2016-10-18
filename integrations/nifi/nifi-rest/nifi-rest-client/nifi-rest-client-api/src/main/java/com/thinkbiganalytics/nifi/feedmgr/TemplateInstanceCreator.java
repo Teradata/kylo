@@ -2,7 +2,6 @@ package com.thinkbiganalytics.nifi.feedmgr;
 
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
-import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptorTransform;
 import com.thinkbiganalytics.nifi.rest.model.NifiError;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
@@ -13,7 +12,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
-import org.apache.nifi.web.api.entity.ProcessGroupEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,7 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
 
 /**
  * Created by sr186054 on 5/6/16.
@@ -39,9 +38,6 @@ public class TemplateInstanceCreator {
     private Map<String, Object> staticConfigPropertyMap;
 
     private Map<String, String> staticConfigPropertyStringMap;
-
-    @Inject
-    private NiFiPropertyDescriptorTransform propertyDescriptorTransform;
 
     public TemplateInstanceCreator(LegacyNifiRestClient restClient, String templateId, Map<String, Object> staticConfigPropertyMap, boolean createReusableFlow) {
         this.restClient = restClient;
@@ -121,7 +117,7 @@ public class TemplateInstanceCreator {
 
                     //replace static properties and inject values into the flow
 
-                    List<NifiProperty> processorProperties = NifiPropertyUtil.getProperties(entity, propertyDescriptorTransform);
+                    List<NifiProperty> processorProperties = NifiPropertyUtil.getProperties(entity, restClient.getPropertyDescriptorTransform());
                     if (processorProperties != null) {
                         boolean didReplace = false;
                         for (NifiProperty property : processorProperties) {
@@ -195,7 +191,11 @@ public class TemplateInstanceCreator {
 
                 }
             }
-        } catch (Exception e) {
+        } catch (final Exception e) {
+            if (log.isDebugEnabled() && e instanceof WebApplicationException) {
+                final Response response = ((WebApplicationException)e).getResponse();
+                log.debug("NiFi server returned error: {}", response.readEntity(String.class), e);
+            }
             throw new TemplateCreationException("Unable to create the template for the Id of [" + templateId + "]. " + e.getMessage(), e);
         }
 

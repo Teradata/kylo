@@ -12,6 +12,7 @@ import org.apache.nifi.web.api.entity.ConnectionEntity;
 import org.apache.nifi.web.api.entity.DropRequestEntity;
 import org.apache.nifi.web.api.entity.ListingRequestEntity;
 
+import java.util.HashMap;
 import java.util.Optional;
 
 import javax.annotation.Nonnull;
@@ -37,7 +38,11 @@ public class NiFiConnectionsRestClientV0 extends AbstractNiFiConnectionsRestClie
     @Nonnull
     @Override
     public Optional<ConnectionDTO> delete(@Nonnull final String processGroupId, @Nonnull final String connectionId) {
-        return null;
+        try {
+            return Optional.of(client.delete("/controller/process-groups/" + processGroupId + "/connections/" + connectionId, new HashMap<>(), ConnectionEntity.class).getConnection());
+        } catch (final NotFoundException e) {
+            return Optional.empty();
+        }
     }
 
     @Nonnull

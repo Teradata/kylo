@@ -7,6 +7,7 @@ import com.thinkbiganalytics.nifi.feedmgr.ConfigurationPropertyReplacer;
 import com.thinkbiganalytics.nifi.feedmgr.NifiEnvironmentProperties;
 import com.thinkbiganalytics.nifi.feedmgr.TemplateCreationHelper;
 import com.thinkbiganalytics.nifi.feedmgr.TemplateInstanceCreator;
+import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptor;
 import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptorTransform;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
@@ -32,6 +33,7 @@ import org.apache.nifi.web.api.dto.ListingRequestDTO;
 import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
+import org.apache.nifi.web.api.dto.PropertyDescriptorDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
 import org.apache.nifi.web.api.dto.search.ComponentSearchResultDTO;
 import org.apache.nifi.web.api.dto.search.SearchResultsDTO;
@@ -71,8 +73,8 @@ public class LegacyNifiRestClient implements NifiFlowVisitorClient {
     }
 
     @Deprecated
-    public TemplateDTO deleteTemplate(String templateId) {
-        return client.templates().delete(templateId).get();
+    public boolean deleteTemplate(String templateId) {
+        return client.templates().delete(templateId);
     }
 
     @Deprecated
@@ -1230,5 +1232,14 @@ public class LegacyNifiRestClient implements NifiFlowVisitorClient {
         }
 
         return failureProcessors;
+    }
+
+    /**
+     * Gets a transform for converting {@link NiFiPropertyDescriptor} objects to {@link PropertyDescriptorDTO}.
+     *
+     * @return the transform
+     */
+    public NiFiPropertyDescriptorTransform getPropertyDescriptorTransform() {
+        return propertyDescriptorTransform;
     }
 }

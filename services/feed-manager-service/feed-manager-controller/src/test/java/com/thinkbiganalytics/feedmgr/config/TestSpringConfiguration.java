@@ -29,8 +29,8 @@ import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClientConfig;
 import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptorTransform;
-import com.thinkbiganalytics.nifi.v0.rest.client.NiFiRestClientV0;
-import com.thinkbiganalytics.nifi.v0.rest.model.NiFiPropertyDescriptorTransformV0;
+import com.thinkbiganalytics.nifi.v1.rest.client.NiFiRestClientV1;
+import com.thinkbiganalytics.nifi.v1.rest.model.NiFiPropertyDescriptorTransformV1;
 import com.thinkbiganalytics.security.AccessController;
 
 import org.mockito.Mockito;
@@ -265,11 +265,11 @@ public class TestSpringConfiguration {
 
     @Bean
     NiFiRestClient niFiRestClient() {
-        return new NiFiRestClientV0(nifiRestClientConfig());
+        return new NiFiRestClientV1(nifiRestClientConfig());
     }
 
     @Bean
     NiFiPropertyDescriptorTransform propertyDescriptorTransform() {
-        return new NiFiPropertyDescriptorTransformV0();
+        return new NiFiPropertyDescriptorTransformV1();
     }
 }

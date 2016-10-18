@@ -64,9 +64,6 @@ public class TemplateCreationHelper {
 
     Map<String, Integer> controllerServiceEnableAttempts = new ConcurrentHashMap<>();
 
-    @Inject
-    private NiFiPropertyDescriptorTransform propertyDescriptorTransform;
-
     private Integer MAX_ENABLE_ATTEMPTS = 5;
     private Long ENABLE_CONTROLLER_SERVICE_WAIT_TIME = 2000L;
 
@@ -309,7 +306,7 @@ public class TemplateCreationHelper {
                     groupDTO.setName(dto.getParentGroupId());
                     processGroupDTOMap.put(dto.getParentGroupId(), groupDTO);
                 }
-                properties.addAll(NifiPropertyUtil.getPropertiesForProcessor(groupDTO, dto, propertyDescriptorTransform));
+                properties.addAll(NifiPropertyUtil.getPropertiesForProcessor(groupDTO, dto, restClient.getPropertyDescriptorTransform()));
             }
 
             enableServices(controllerServiceProperties, enabledServices, allServices, properties);
@@ -335,7 +332,7 @@ public class TemplateCreationHelper {
                     ControllerServiceDTO dto = allServices.get(property.getValue());
 
                     //if service depends on other services lets enable those upstream services first
-                    List<NifiProperty> serviceProperties = NifiPropertyUtil.getPropertiesForService(dto, propertyDescriptorTransform);
+                    List<NifiProperty> serviceProperties = NifiPropertyUtil.getPropertiesForService(dto, restClient.getPropertyDescriptorTransform());
                     enableServices(controllerServiceProperties, enabledServices, allServices, serviceProperties);
 
                     ControllerServiceDTO entity = tryToEnableControllerService(dto.getId(), dto.getName(), controllerServiceProperties);
