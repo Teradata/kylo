@@ -1,7 +1,5 @@
 package com.thinkbiganalytics.feedmgr.service.feed;
 
-import com.thinkbiganalytics.datalake.authorization.HadoopAuthorizationService;
-import com.thinkbiganalytics.datalake.authorization.model.HadoopAuthorizationGroup;
 import com.thinkbiganalytics.feedmgr.nifi.CreateFeedBuilder;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
@@ -9,9 +7,6 @@ import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
 import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
-import com.thinkbiganalytics.metadata.api.event.MetadataEventListener;
-import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
-import com.thinkbiganalytics.metadata.api.event.feed.FeedPropertyChangeEvent;
 import com.thinkbiganalytics.nifi.feedmgr.FeedRollbackException;
 import com.thinkbiganalytics.nifi.feedmgr.InputOutputPort;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
@@ -20,23 +15,15 @@ import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 import com.thinkbiganalytics.security.AccessController;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import javax.annotation.Nonnull;
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 
 /**
@@ -98,9 +85,19 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
         updatedProperties.addAll(resolvedProperties);
         updatedProperties.addAll(inputProperties);
         feedMetadata.setProperties(new ArrayList<NifiProperty>(updatedProperties));
+        
+        FeedMetadata.STATE state = FeedMetadata.STATE.NEW;
+        try {
+            state = FeedMetadata.STATE.valueOf(feedMetadata.getState());
+        }catch (Exception e){
+
+        }
+
+
+        boolean enabled = (FeedMetadata.STATE.NEW.equals(state) && feedMetadata.isActive()) || FeedMetadata.STATE.ENABLED.equals(state);
 
         CreateFeedBuilder
-            feedBuilder = CreateFeedBuilder.newFeed(nifiRestClient, feedMetadata, registeredTemplate.getNifiTemplateId(), propertyExpressionResolver);
+            feedBuilder = CreateFeedBuilder.newFeed(nifiRestClient, feedMetadata, registeredTemplate.getNifiTemplateId(), propertyExpressionResolver).enabled(enabled);
 
         if (registeredTemplate.isReusableTemplate()) {
             feedBuilder.setReusableTemplate(true);

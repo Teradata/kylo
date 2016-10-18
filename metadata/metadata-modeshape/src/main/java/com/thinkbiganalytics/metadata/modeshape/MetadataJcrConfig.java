@@ -3,6 +3,11 @@
  */
 package com.thinkbiganalytics.metadata.modeshape;
 
+import java.util.List;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
 import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
@@ -31,11 +36,6 @@ import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreementProv
 import com.thinkbiganalytics.metadata.modeshape.tag.TagProvider;
 import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplateProvider;
 import com.thinkbiganalytics.metadata.modeshape.user.JcrUserProvider;
-
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
-import java.util.List;
 
 /**
  *

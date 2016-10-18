@@ -1,11 +1,10 @@
 package com.thinkbiganalytics.metadata.modeshape.common;
 
 
-import com.thinkbiganalytics.metadata.modeshape.extension.ExtensionsConstants;
-
 import org.apache.commons.lang3.StringUtils;
 
-import java.nio.file.Paths;
+import com.thinkbiganalytics.metadata.modeshape.extension.ExtensionsConstants;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
 /**
  * Utility to get basic Paths for schema
@@ -13,40 +12,40 @@ import java.nio.file.Paths;
 public class EntityUtil {
 
     public static String pathForCategory() {
-        return Paths.get("/metadata", "feeds").toString();
+        return JcrUtil.path("/metadata", "feeds").toString();
     }
 
     public static String pathForCategory(String categorySystemName) {
-        return Paths.get("/metadata", "feeds", categorySystemName).toString();
+        return JcrUtil.path("/metadata", "feeds", categorySystemName).toString();
     }
 
     public static String pathForFeed(String categorySystemName, String feedSystemName) {
-        return Paths.get("/metadata", "feeds", categorySystemName, feedSystemName).toString();
+        return JcrUtil.path("/metadata", "feeds", categorySystemName, feedSystemName).toString();
     }
 
     public static String pathForFeedSource(String categorySystemName, String feedSystemName) {
-        return Paths.get(pathForFeed(categorySystemName, feedSystemName), "feedSource").toString();
+        return JcrUtil.path(pathForFeed(categorySystemName, feedSystemName), "feedSource").toString();
     }
 
     public static String pathForFeedDestination(String categorySystemName, String feedSystemName) {
-        return Paths.get(pathForFeed(categorySystemName, feedSystemName), "feedDestination").toString();
+        return JcrUtil.path(pathForFeed(categorySystemName, feedSystemName), "feedDestination").toString();
     }
 
     public static String pathForDataSource() {
-        return Paths.get("/metadata", "datasources").toString();
+        return JcrUtil.path("/metadata", "datasources").toString();
     }
 
     public static String pathForTemplates() {
-        return Paths.get("/metadata", "templates").toString();
+        return JcrUtil.path("/metadata", "templates").toString();
     }
 
     public static String pathForHadoopSecurityGroups() {
-        return Paths.get("/metadata", "hadoopSecurityGroups").toString();
+        return JcrUtil.path("/metadata", "hadoopSecurityGroups").toString();
     }
 
 
     public static String pathForAccessibleFunctions() {
-        return Paths.get("/metadata", "accessibleFunctions").toString();
+        return JcrUtil.path("/metadata", "accessibleFunctions").toString();
     }
 
     public static String pathForExtensibleEntity() {
@@ -55,9 +54,9 @@ public class EntityUtil {
 
     public static String pathForExtensibleEntity(String typeName) {
         if (StringUtils.isNotBlank(typeName)) {
-            return Paths.get("/", ExtensionsConstants.ENTITIES, typeName).toString();
+            return JcrUtil.path("/", ExtensionsConstants.ENTITIES, typeName).toString();
         } else {
-            return Paths.get("/", ExtensionsConstants.ENTITIES).toString();
+            return JcrUtil.path("/", ExtensionsConstants.ENTITIES).toString();
         }
     }
 

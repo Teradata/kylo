@@ -2,7 +2,7 @@ package com.thinkbiganalytics.feedmgr.service.feed;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
-import com.thinkbiganalytics.datalake.authorization.HadoopAuthorizationService;
+import com.thinkbiganalytics.datalake.authorization.service.HadoopAuthorizationService;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
@@ -13,7 +13,9 @@ import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
 import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
 import com.thinkbiganalytics.feedmgr.service.UserPropertyTransform;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
+import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
 import com.thinkbiganalytics.jobrepo.repository.FeedRepository;
+import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.OperationalMetadataAccess;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventListener;
@@ -30,7 +32,7 @@ import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
-import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
+import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
 import com.thinkbiganalytics.metadata.rest.model.sla.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
@@ -42,6 +44,7 @@ import com.thinkbiganalytics.rest.model.LabelValue;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
+import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -51,9 +54,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
@@ -88,6 +93,9 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
 
     @Inject
     ServiceLevelAgreementProvider slaProvider;
+
+    @Inject
+    ServiceLevelAgreementService serviceLevelAgreementService;
 
 
     /** Operations manager feed repository */
@@ -274,7 +282,11 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     // @Transactional(transactionManager = "metadataTransactionManager")
     public NifiFeed createFeed(final FeedMetadata feedMetadata) {
         if (feedMetadata.getState() == null) {
-            feedMetadata.setState(Feed.State.ENABLED.name());
+            if (feedMetadata.isActive()) {
+                feedMetadata.setState(Feed.State.ENABLED.name());
+            } else {
+                feedMetadata.setState(Feed.State.DISABLED.name());
+            }
         }
         return super.createFeed(feedMetadata);
 
@@ -289,11 +301,18 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
         metadataAccess.commit(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_FEEDS);
 
+            // Store the old security groups before saving beccause we need to compare afterward
+            FeedManagerFeed previousStateBeforeSaving = feedManagerFeedProvider.findById(feedManagerFeedProvider.resolveId(feed.getId()));
+            Map<String,String> userProperties = previousStateBeforeSaving.getUserProperties();
+            List<HadoopSecurityGroup> previousSavedSecurityGroups = previousStateBeforeSaving.getSecurityGroups();
+
             //if this is the first time saving this feed create a new one
             FeedManagerFeed domainFeed = feedModelTransform.feedToDomain(feed);
+
             if (domainFeed.getState() == null) {
                 domainFeed.setState(Feed.State.ENABLED);
             }
+
             domainFeed = feedManagerFeedProvider.update(domainFeed);
 
             //call out to operations to make the connection to modeshape for the feeds
@@ -323,6 +342,12 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
             //sync the feed information to ops manager
             operationalMetadataAccess.commit(() -> opsManagerFeedProvider.save(opsManagerFeedProvider.resolveId(domainId), feedName));
 
+            // Update hadoop security group polices if the groups changed
+            if(!feed.isNew() && !ListUtils.isEqualList(previousSavedSecurityGroups, domainFeed.getSecurityGroups())) {
+                List<HadoopSecurityGroup> securityGroups = domainFeed.getSecurityGroups();
+                List<String> groupsAsCommaList = securityGroups.stream().map(group -> group.getName()).collect(Collectors.toList());
+                hadoopAuthorizationService.updateSecurityGroupsForAllPolicies(feed.getCategoryName(), feed.getFeedName(), groupsAsCommaList, domainFeed.getUserProperties());
+            }
 
             // Return result
             return feed;
@@ -345,6 +370,8 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_FEEDS);
 
             Feed feed = feedProvider.getFeed(feedProvider.resolveFeed(feedId));
+            //unschedule any SLAs
+            serviceLevelAgreementService.unscheduleServiceLevelAgreement(feed.getId());
             feedRepository.deleteFeed(feed.getCategory().getName(), feed.getName());
             feedProvider.deleteFeed(feed.getId());
             operationalMetadataAccess.commit(() -> {
@@ -369,8 +396,16 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     private boolean enableFeed(final Feed.ID feedId) {
         return metadataAccess.commit(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ADMIN_FEEDS);
+            boolean enabled = feedProvider.enableFeed(feedId);
+            FeedManagerFeed domainFeed = feedManagerFeedProvider.findById(feedId);
+            if (domainFeed != null) {
+                FeedMetadata feedMetadata = feedModelTransform.deserializeFeedMetadata(domainFeed);
+                feedMetadata.setState(FeedMetadata.STATE.ENABLED.name());
+                domainFeed.setJson(ObjectMapperSerializer.serialize(feedMetadata));
+                feedManagerFeedProvider.update(domainFeed);
+            }
 
-            return feedProvider.enableFeed(feedId);
+            return enabled;
         });
 
     }
@@ -380,7 +415,16 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
         return metadataAccess.commit(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ADMIN_FEEDS);
 
-            return feedProvider.disableFeed(feedId);
+            boolean disabled = feedProvider.disableFeed(feedId);
+            FeedManagerFeed domainFeed = feedManagerFeedProvider.findById(feedId);
+            if (domainFeed != null) {
+                FeedMetadata feedMetadata = feedModelTransform.deserializeFeedMetadata(domainFeed);
+                feedMetadata.setState(FeedMetadata.STATE.DISABLED.name());
+                domainFeed.setJson(ObjectMapperSerializer.serialize(feedMetadata));
+                feedManagerFeedProvider.update(domainFeed);
+            }
+
+            return disabled;
         });
 
     }
@@ -396,8 +440,12 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
                 //re fetch it
                 if (enabled) {
                     feedMetadata.setState(Feed.State.ENABLED.name());
+                    serviceLevelAgreementService.enableServiceLevelAgreementSchedule(domainId);
+
                 }
                 FeedSummary feedSummary = new FeedSummary(feedMetadata);
+                //start any Slas
+
                 return feedSummary;
             }
             return null;
@@ -413,10 +461,11 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
             if (StringUtils.isNotBlank(feedId)) {
                 FeedMetadata feedMetadata = getFeedById(feedId);
                 Feed.ID domainId = feedProvider.resolveFeed(feedId);
-                boolean enabled = disableFeed(domainId);
+                boolean disabled = disableFeed(domainId);
                 //re fetch it
-                if (enabled) {
+                if (disabled) {
                     feedMetadata.setState(Feed.State.DISABLED.name());
+                    serviceLevelAgreementService.disableServiceLevelAgreementSchedule(domainId);
                 }
                 FeedSummary feedSummary = new FeedSummary(feedMetadata);
                 return feedSummary;
@@ -435,7 +484,8 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
             List<FeedSummary> feedSummaries = getFeedSummaryData();
             List<LabelValue> feedSelection = new ArrayList<>();
             for (FeedSummary feedSummary : feedSummaries) {
-                feedSelection.add(new LabelValue(feedSummary.getCategoryAndFeedDisplayName(), feedSummary.getCategoryAndFeedSystemName()));
+                boolean isDisabled = feedSummary.getState() == Feed.State.DISABLED.name();
+                feedSelection.add(new LabelValue(feedSummary.getCategoryAndFeedDisplayName() + (isDisabled ? " (DISABLED) ": ""), feedSummary.getCategoryAndFeedSystemName(), isDisabled ? "This feed is currently disabled" : ""));
             }
             for (FieldRuleProperty property : properties) {
                 property.setSelectableValues(feedSelection);
@@ -496,8 +546,6 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
                     feed.removeProperty((String)k);
                 });
             }, MetadataAccess.SERVICE) ;
-
-            System.out.println("bla");
         }
 
     }

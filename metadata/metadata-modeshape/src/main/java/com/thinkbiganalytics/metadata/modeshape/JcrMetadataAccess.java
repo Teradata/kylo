@@ -3,25 +3,6 @@
  */
 package com.thinkbiganalytics.metadata.modeshape;
 
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.MetadataAccessException;
-import com.thinkbiganalytics.metadata.api.MetadataAction;
-import com.thinkbiganalytics.metadata.api.MetadataCommand;
-import com.thinkbiganalytics.metadata.api.MetadataExecutionException;
-import com.thinkbiganalytics.metadata.api.MetadataRollbackAction;
-import com.thinkbiganalytics.metadata.api.MetadataRollbackCommand;
-import com.thinkbiganalytics.metadata.modeshape.security.ModeShapeReadOnlyPrincipal;
-import com.thinkbiganalytics.metadata.modeshape.security.OverrideCredentials;
-import com.thinkbiganalytics.metadata.modeshape.security.SpringAuthenticationCredentials;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrVersionUtil;
-
-import org.modeshape.jcr.api.txn.TransactionManagerLookup;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -40,6 +21,25 @@ import javax.jcr.Session;
 import javax.transaction.NotSupportedException;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
+
+import org.modeshape.jcr.api.txn.TransactionManagerLookup;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.MetadataAccessException;
+import com.thinkbiganalytics.metadata.api.MetadataAction;
+import com.thinkbiganalytics.metadata.api.MetadataCommand;
+import com.thinkbiganalytics.metadata.api.MetadataExecutionException;
+import com.thinkbiganalytics.metadata.api.MetadataRollbackAction;
+import com.thinkbiganalytics.metadata.api.MetadataRollbackCommand;
+import com.thinkbiganalytics.metadata.modeshape.security.ModeShapeReadOnlyPrincipal;
+import com.thinkbiganalytics.metadata.modeshape.security.OverrideCredentials;
+import com.thinkbiganalytics.metadata.modeshape.security.SpringAuthenticationCredentials;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrVersionUtil;
 
 
 /**
@@ -107,9 +107,13 @@ public class JcrMetadataAccess implements MetadataAccess {
      *
      */
     public static void ensureCheckoutNode(Node n) throws RepositoryException {
-        if (JcrUtil.isVersionable(n) && (!n.isCheckedOut() || (n.isNew() && !checkedOutNodes.get().contains(n)))) {
+        if (n.getSession().getRootNode().equals(n.getParent())) {
+            return;
+        } else if (JcrUtil.isVersionable(n) && (!n.isCheckedOut() || (n.isNew() && !checkedOutNodes.get().contains(n)))) {
             JcrVersionUtil.checkout(n);
             checkedOutNodes.get().add(n);
+        } else {
+            ensureCheckoutNode(n.getParent());
         }
     }
 

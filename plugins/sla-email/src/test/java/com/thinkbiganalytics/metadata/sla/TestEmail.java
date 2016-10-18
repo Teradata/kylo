@@ -92,6 +92,11 @@ public class TestEmail {
                     public List<ServiceLevelAgreementCheck> getSlaChecks() {
                         return null;
                     }
+
+                    @Override
+                    public boolean isEnabled() {
+                        return false;
+                    }
                 };
             }
 

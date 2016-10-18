@@ -76,6 +76,8 @@ public abstract class BasePolicyAnnotationTransformer<U extends BaseUiPolicyRule
                     .required(prop.required())
                     .group(group)
                     .groupOrder(order)
+                    .pattern(prop.pattern())
+                    .patternInvalidMessage(prop.patternInvalidMessage())
                     .hidden(prop.hidden())
                     .addSelectableValues(convertToLabelValue(prop.selectableValues()))
                     .addSelectableValues(convertToLabelValue(prop.labelValues())).build();
@@ -128,6 +130,8 @@ public abstract class BasePolicyAnnotationTransformer<U extends BaseUiPolicyRule
                     .group(group)
                     .groupOrder(order)
                     .hidden(prop.hidden())
+                    .pattern(prop.pattern())
+                    .patternInvalidMessage(prop.patternInvalidMessage())
                     .addSelectableValues(convertToLabelValue(prop.selectableValues()))
                     .addSelectableValues(convertToLabelValue(prop.labelValues())).build();
                 properties.add(rule);

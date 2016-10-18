@@ -3,13 +3,13 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.extension;
 
-import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor;
-import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-
 import javax.jcr.Node;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.PropertyDefinition;
+
+import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 
 /**
  *

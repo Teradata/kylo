@@ -1,16 +1,5 @@
 package com.thinkbiganalytics.metadata.modeshape.extension;
 
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleType.ID;
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeBuilder;
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
-import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor;
-import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor.Type;
-import com.thinkbiganalytics.metadata.api.extension.FieldDescriptorBuilder;
-import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
-import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.TypeAlreadyExistsException;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,6 +23,17 @@ import javax.jcr.nodetype.NodeTypeManager;
 import javax.jcr.nodetype.NodeTypeTemplate;
 import javax.jcr.nodetype.PropertyDefinition;
 import javax.jcr.nodetype.PropertyDefinitionTemplate;
+
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleType.ID;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeBuilder;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
+import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor;
+import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor.Type;
+import com.thinkbiganalytics.metadata.api.extension.FieldDescriptorBuilder;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.TypeAlreadyExistsException;
 
 public class JcrExtensibleTypeProvider implements ExtensibleTypeProvider {
 

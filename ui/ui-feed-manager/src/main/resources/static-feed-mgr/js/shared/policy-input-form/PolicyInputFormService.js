@@ -12,10 +12,18 @@ angular.module(MODULE_FEED_MGR).factory('PolicyInputFormService', function ($htt
             var newGroup = {group: groupName, layout: groupName != '' ? 'row' : 'column', properties: sortedProps}
             groupedProperties.push(newGroup);
         });
-        //replace the metric.properties with these newly orderd props?
+
         var allProps = [];
         _.each(groupedProperties, function (group) {
             _.each(group.properties, function (property) {
+                //make the RegExp if it is supplied as a string
+                if (property.pattern != null && property.pattern != undefined && property.pattern != "") {
+                    try {
+                        property.pattern = new RegExp(property.pattern);
+                    } catch (err) {
+
+                    }
+                }
                 allProps.push(property);
             });
         });

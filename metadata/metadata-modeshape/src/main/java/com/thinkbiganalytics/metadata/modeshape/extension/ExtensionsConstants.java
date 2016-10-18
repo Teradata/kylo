@@ -1,12 +1,12 @@
 package com.thinkbiganalytics.metadata.modeshape.extension;
 
-import com.google.common.collect.Sets;
-
 import java.util.Collections;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 import javax.annotation.Nonnull;
+
+import com.google.common.collect.Sets;
 
 /**
  * Constants for extensible entities and types.

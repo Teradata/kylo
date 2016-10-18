@@ -347,6 +347,7 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
         private String description;
         private ObligationGroupImpl defaultGroup;
         private List<ObligationGroup> obligationGroups;
+        boolean enabled = true;
 
         public SLAImpl() {
             this.defaultGroup = new ObligationGroupImpl(this, Condition.REQUIRED);
@@ -378,6 +379,11 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
         @Override
         public String getDescription() {
             return description;
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return enabled;
         }
 
         protected void setDescription(String description) {

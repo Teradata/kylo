@@ -115,7 +115,7 @@ public class PartitionSpec implements Cloneable {
     public String toDynamicSelectSQLSpec() {
         String[] parts = new String[keys.size()];
         for (int i = 0; i < keys.size(); i++) {
-            parts[i] = keys.get(i).getFormulaWithAlias() + " " + keys.get(i).getKey();
+            parts[i] = keys.get(i).getFormulaWithAlias() + " " + keys.get(i).getKeyForSql();
         }
         return StringUtils.join(parts, ",");
     }

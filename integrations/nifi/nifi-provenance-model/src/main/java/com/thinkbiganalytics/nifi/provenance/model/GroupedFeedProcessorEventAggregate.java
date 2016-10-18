@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.nifi.provenance.model;
 
+import com.thinkbiganalytics.nifi.provenance.AggregationEventProcessingStats;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedProcessorStatistics;
 import com.thinkbiganalytics.nifi.provenance.model.stats.ProvenanceEventStats;
 import com.thinkbiganalytics.nifi.provenance.model.util.ProvenanceEventUtil;
@@ -183,10 +184,10 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
      */
     private String suppressedStreamEventsKey(ProvenanceEventRecordDTO event) {
         StringBuffer sb = new StringBuffer();
-        if (event.isEndOfJob()) {
+        //  if (event.isEndOfJob()) {
             //always send the end of job
-            sb.append(event.getJobFlowFileId()).append("_");
-        }
+        //       sb.append(event.getJobFlowFileId()).append("_");
+        //   }
         sb.append(event.isEndOfJob()).append("_")
             .append(event.isStartOfJob())
             .append(event.isFailure());
@@ -200,10 +201,10 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
         if (!lastStreamEventByJob.isEmpty()) {
             Map<String,ProvenanceEventRecordDTO> suppressedEvents = new HashMap<>();
             lastStreamEventByJob.values().stream().forEach(e -> {
-                suppressedEvents.put(suppressedStreamEventsKey(e),e);
+                suppressedEvents.put(suppressedStreamEventsKey(e), e);
             });
 
-            //   log.info("About to add {} stream events to the queue ",lastStreamEventByJob.size());
+            AggregationEventProcessingStats.addStreamingEvents(suppressedEvents.size());
             jmsEvents.addAll(suppressedEvents.values());
         }
 
@@ -456,6 +457,7 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
              * if the First Event was a Batch event we should send on those in the {@code lastStreamEventByJob} this event through so it gets reconciled in the Ops Manager
              */
             addStreamingEventsWhoseFirstEventWasABatchToQueue();
+            AggregationEventProcessingStats.addBatchEvents(jmsEvents.size());
             //suppress and add in any lastStreamEventByJob events and push them into the queue
             addStreamEventsToQueue();
 

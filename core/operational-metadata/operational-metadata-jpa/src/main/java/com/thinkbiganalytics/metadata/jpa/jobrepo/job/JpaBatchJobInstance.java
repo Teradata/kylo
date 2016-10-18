@@ -3,6 +3,9 @@ package com.thinkbiganalytics.metadata.jpa.jobrepo.job;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobInstance;
 
+import org.hibernate.annotations.Parameter;
+import org.hibernate.annotations.Type;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,6 +44,7 @@ public class JpaBatchJobInstance implements BatchJobInstance {
     @Column(name = "VERSION")
     private Long version = 0L;
     @Column(name = "JOB_NAME")
+    @Type(type = "com.thinkbiganalytics.jpa.TruncateStringUserType", parameters = {@Parameter(name = "length", value = "255")})
     private String jobName;
     @Column(name = "JOB_KEY")
     private String jobKey;

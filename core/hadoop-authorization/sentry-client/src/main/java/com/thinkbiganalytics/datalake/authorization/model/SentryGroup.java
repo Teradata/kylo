@@ -1,7 +1,5 @@
 package com.thinkbiganalytics.datalake.authorization.model;
 
-import com.thinkbiganalytics.datalake.authorization.model.HadoopAuthorizationGroup;
-
 /**
  * Created by Jeremy Merrifield on 9/12/16.
  */

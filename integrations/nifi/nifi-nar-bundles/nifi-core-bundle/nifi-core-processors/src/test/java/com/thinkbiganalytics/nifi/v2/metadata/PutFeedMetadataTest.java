@@ -40,12 +40,22 @@ public class PutFeedMetadataTest {
     }
 
     @Test
-    public void testTriggered() {
+    public void testValidationPasses() {
         runner.setProperty(PutFeedMetadata.CATEGORY_NAME, "cat");
         runner.setProperty(PutFeedMetadata.FEED_NAME, "feed");
         runner.setProperty(PutFeedMetadata.NAMESPACE, "registration");
         runner.setProperty("testProperty1", "myValue1");
         runner.setProperty("testProperty2", "myValue2");
+        runner.run();
+
+    }
+
+    @Test(expected = AssertionError.class)
+    public void testValidationFailsForInvalidCharacterInFieldName() {
+        runner.setProperty(PutFeedMetadata.CATEGORY_NAME, "cat");
+        runner.setProperty(PutFeedMetadata.FEED_NAME, "feed");
+        runner.setProperty(PutFeedMetadata.NAMESPACE, "registration");
+        runner.setProperty("$testProperty1", "myValue1");
         runner.run();
 
     }

@@ -8,7 +8,10 @@ import org.junit.Test;
 
 import java.io.IOException;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class ColumnSpecTest {
 
@@ -56,6 +59,33 @@ public class ColumnSpecTest {
         System.out.println(sb.toString());
         assertNotNull(sb.toString());
     }
+
+    @Test
+    public void testPartitionKeyAndQuery() {
+        PartitionKey key1 = new PartitionKey("country", "string", "country");
+        PartitionKey key2 = new PartitionKey("year", "int", "year(hired_date)");
+        PartitionKey key3 = new PartitionKey("reg date month", "int", "month(reg date)");
+        PartitionKey key4 = new PartitionKey("`reg date day`", "int", "day(`reg date`)");
+
+        PartitionSpec spec = new PartitionSpec(key1, key2, key3, key4);
+
+        String sql = spec.toDistinctSelectSQL("sourceTable", "11111111");
+        System.out.println(sql);
+        String
+            expected =
+            "select country,year(hired_date),month(`reg date`),day(`reg date`) , count(0) as tb_cnt from sourceTable where processing_dttm = '11111111' group by country,year(hired_date),month(`reg date`),day(`reg date`)";
+        assertEquals(expected, sql);
+
+        assertEquals(key1.getKeyForSql(), "country");
+        assertEquals(key2.getKeyForSql(), "year");
+        assertEquals(key3.getKeyForSql(), "`reg date month`");
+        assertEquals(key4.getKeyForSql(), "`reg date day`");
+
+    }
+
+
+
+
 }
 
 

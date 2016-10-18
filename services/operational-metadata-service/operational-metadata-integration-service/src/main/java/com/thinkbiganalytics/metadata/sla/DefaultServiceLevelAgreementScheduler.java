@@ -156,6 +156,32 @@ public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreem
         return jobIdentifier;
     }
 
+    public void disableServiceLevelAgreement(ServiceLevelAgreement sla){
+
+    ServiceLevelAgreement.ID slaId = sla.getId();
+        if (scheduledJobNames.containsKey(slaId)) {
+            JobIdentifier  scheduledJobId = jobIdentifierForName(scheduledJobNames.get(slaId));
+            try {
+                jobScheduler.pauseTriggersOnJob(scheduledJobId);
+            }catch (JobSchedulerException e){
+                log.error("Unable to pause the schedule for the disabled SLA {} ",sla.getName());
+            }
+        }
+    }
+
+    public void enableServiceLevelAgreement(ServiceLevelAgreement sla){
+
+        ServiceLevelAgreement.ID slaId = sla.getId();
+        if (scheduledJobNames.containsKey(slaId)) {
+            JobIdentifier  scheduledJobId = jobIdentifierForName(scheduledJobNames.get(slaId));
+            try {
+                jobScheduler.resumeTriggersOnJob(scheduledJobId);
+            }catch (JobSchedulerException e){
+                log.error("Unable to resume the schedule for the enabled SLA {} ",sla.getName());
+            }
+        }
+    }
+
 
     public void scheduleServiceLevelAgreement(ServiceLevelAgreement sla) {
         try {
@@ -178,19 +204,30 @@ public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreem
                             unscheduleServiceLevelAgreement(slaId);
 
                         }
-                        operationalMetadataAccess.commit(() -> {
-                            slaChecker.checkAgreement(sla);
-                            return null;
-                        });
-                    }, MetadataAccess.SERVICE);
-
-
+                        if (sla.isEnabled()) {
+                            operationalMetadataAccess.commit(() -> {
+                                slaChecker.checkAgreement(sla);
+                                return null;
+                            });
+                        }
+                        else {
+                            log.info("SLA {} will not fire since it is disabled ",sla.getName());
+                        }
                 }
-            }, (StringUtils.isBlank(defaultCron) ? DEFAULT_CRON : defaultCron));
+
+                ,MetadataAccess.SERVICE);
+
+
+            }
+        }, (StringUtils.isBlank(defaultCron) ? DEFAULT_CRON : defaultCron));
             log.debug("Schedule sla job " + jobIdentifier.getName());
             scheduledJobNames.put(sla.getId(), jobIdentifier.getName());
         } catch (JobSchedulerException e) {
             throw new RuntimeException(e);
+        }
+
+        if(!sla.isEnabled()){
+            disableServiceLevelAgreement(sla);
         }
 
 

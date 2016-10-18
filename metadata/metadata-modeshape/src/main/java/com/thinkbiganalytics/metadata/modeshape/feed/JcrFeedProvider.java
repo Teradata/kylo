@@ -1,5 +1,20 @@
 package com.thinkbiganalytics.metadata.modeshape.feed;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.Nonnull;
+import javax.inject.Inject;
+import javax.jcr.Node;
+import javax.jcr.NodeIterator;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+
 import com.google.common.base.Predicate;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.category.Category;
@@ -45,22 +60,6 @@ import com.thinkbiganalytics.metadata.sla.spi.ObligationGroupBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 import com.thinkbiganalytics.security.AccessController;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nonnull;
-import javax.inject.Inject;
-import javax.jcr.Node;
-import javax.jcr.NodeIterator;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
 
 /**
  * A JCR provider for {@link Feed} objects.
@@ -394,6 +393,14 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         Feed feed = getFeed(id);
         if (!feed.getState().equals(Feed.State.ENABLED)) {
             feed.setState(Feed.State.ENABLED);
+            //Enable any SLAs on this feed
+            List<ServiceLevelAgreement> serviceLevelAgreements = feed.getServiceLevelAgreements();
+            if (serviceLevelAgreements != null) {
+                for (ServiceLevelAgreement sla : serviceLevelAgreements) {
+                    JcrServiceLevelAgreement jcrSla = (JcrServiceLevelAgreement) sla;
+                    jcrSla.enable();
+                }
+            }
             return true;
         }
         return false;
@@ -404,6 +411,14 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         Feed feed = getFeed(id);
         if (!feed.getState().equals(Feed.State.DISABLED)) {
             feed.setState(Feed.State.DISABLED);
+            //disable any SLAs on this feed
+            List<ServiceLevelAgreement> serviceLevelAgreements = feed.getServiceLevelAgreements();
+            if (serviceLevelAgreements != null) {
+                for (ServiceLevelAgreement sla : serviceLevelAgreements) {
+                    JcrServiceLevelAgreement jcrSla = (JcrServiceLevelAgreement) sla;
+                    jcrSla.disabled();
+                }
+            }
             return true;
         }
         return false;

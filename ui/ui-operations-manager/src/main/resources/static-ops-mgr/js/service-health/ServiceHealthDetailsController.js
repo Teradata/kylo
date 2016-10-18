@@ -65,7 +65,6 @@
         this.onPaginationChange = function (page, limit) {
             PaginationDataService.currentPage(self.pageName,null,page);
             self.currentPage = page;
-            // return loadJobs(true).promise;
         };
 
 
@@ -75,15 +74,10 @@
          * @returns {*[]}
          */
         function loadSortOptions() {
-            var options = {'Component Name':'componentName','Components':'componentsCount','Alerts':'alertsCount','Update Date':'latestAlertTimestamp'};
-
+            var options = {'Component Name': 'name', 'Components': 'componentsCount', 'Alerts': 'alertsCount', 'Update Date': 'latestAlertTimestamp'};
             var sortOptions = TableOptionsService.newSortOptions(self.pageName,options,'serviceName','asc');
-            var currentOption = TableOptionsService.getCurrentSort(self.pageName);
-            if(currentOption) {
-                TableOptionsService.saveSortOption(self.pageName,currentOption)
-            }
+            TableOptionsService.initializeSortOption(self.pageName);
             return sortOptions;
-
         }
 
         this.serviceComponentDetails = function(event,component) {
@@ -97,9 +91,9 @@
          */
         this.selectedTableOption = function(option) {
             var sortString = TableOptionsService.toSortString(option);
-            PaginationDataService.sort(self.pageName,sortString);
-            var updatedOption = TableOptionsService.toggleSort(self.pageName,option);
-            TableOptionsService.setSortOption(self.pageName,sortString);
+            var savedSort = PaginationDataService.sort(self.pageName, sortString);
+            var updatedOption = TableOptionsService.toggleSort(self.pageName, option);
+            TableOptionsService.setSortOption(self.pageName, sortString);
         }
 
     };

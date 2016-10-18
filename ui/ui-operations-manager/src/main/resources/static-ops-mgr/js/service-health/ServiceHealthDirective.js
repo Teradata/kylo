@@ -104,10 +104,7 @@
             var options = {'Service Name':'serviceName','Components':'componentsCount','Alerts':'alertsCount','Update Date':'latestAlertTimestamp'};
 
             var sortOptions = TableOptionsService.newSortOptions(self.pageName,options,'serviceName','asc');
-            var currentOption = TableOptionsService.getCurrentSort(self.pageName);
-            if(currentOption) {
-                TableOptionsService.saveSortOption(self.pageName,currentOption)
-            }
+            TableOptionsService.initializeSortOption(self.pageName);
             return sortOptions;
 
         }

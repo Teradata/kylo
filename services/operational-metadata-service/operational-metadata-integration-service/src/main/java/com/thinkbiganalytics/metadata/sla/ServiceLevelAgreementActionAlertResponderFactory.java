@@ -75,6 +75,7 @@ public class ServiceLevelAgreementActionAlertResponderFactory implements AlertRe
             if (agreement != null && agreement.getSlaChecks() != null && !agreement.getSlaChecks().isEmpty()) {
                 for (ServiceLevelAgreementCheck check : agreement.getSlaChecks()) {
 
+
                     for (ServiceLevelAgreementActionConfiguration configuration : ((JcrServiceLevelAgreementCheck) check).getActionConfigurations(true)) {
                         List<Class<? extends ServiceLevelAgreementAction>> responders = configuration.getActionClasses();
 

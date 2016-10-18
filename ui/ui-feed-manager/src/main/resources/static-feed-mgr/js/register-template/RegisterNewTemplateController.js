@@ -42,7 +42,7 @@
                 .then(function(actionSet) {
                     if (AccessControlService.hasAction(AccessControlService.FEEDS_IMPORT, actionSet.actions)) {
                         self.registrationMethods.push({
-                            name: "Import from file", description: "Register a new template that you exported from a different Pipeline Controller Environment", icon: "file_upload",
+                            name: "Import from file", description: "Register a new template that you exported from a different Kylo environment", icon: "file_upload",
                             iconColor: "#F08C38", onClick: self.importFromFile
                         });
                     }

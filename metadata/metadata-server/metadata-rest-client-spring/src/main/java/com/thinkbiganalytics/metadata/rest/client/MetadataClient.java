@@ -4,16 +4,19 @@
 package com.thinkbiganalytics.metadata.rest.client;
 
 import java.net.URI;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import javax.annotation.Nonnull;
 
@@ -28,12 +31,14 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -65,7 +70,7 @@ import com.thinkbiganalytics.metadata.sla.api.Metric;
  */
 public class MetadataClient {
     
-    public static final List<MediaType> ACCEPT_TYPES = Collections.unmodifiableList(Arrays.asList(MediaType.APPLICATION_JSON));
+    public static final List<MediaType> ACCEPT_TYPES = Collections.unmodifiableList(Arrays.asList(MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN));
     
     public static final ParameterizedTypeReference<List<ExtensibleTypeDescriptor>> TYPE_LIST = new ParameterizedTypeReference<List<ExtensibleTypeDescriptor>>() { };
     public static final ParameterizedTypeReference<List<Feed>> FEED_LIST = new ParameterizedTypeReference<List<Feed>>() { };
@@ -85,6 +90,13 @@ public class MetadataClient {
         credsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password));
         return credsProvider;
     }
+    
+    private static final FileSystem FS = FileSystems.getFileSystem(URI.create("jar:/"));
+    
+    public static Path path(String first, String... more) {
+        return FS.getPath(first, more);
+    }
+
     
     public MetadataClient(URI base) {
         this(base, null);
@@ -110,41 +122,43 @@ public class MetadataClient {
         this.template.getMessageConverters().add(new MappingJackson2HttpMessageConverter(mapper));
     }
     
-    private ObjectMapper createObjectMapper() {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JodaModule());
-        mapper.setSerializationInclusion(Include.NON_NULL);
-        return mapper;
-    }
-
     public List<ExtensibleTypeDescriptor> getExtensibleTypes() {
-        return get(Paths.get("extension", "type"), null, TYPE_LIST);
+        return get(path("extension", "type"), null, TYPE_LIST);
     }
 
     public ExtensibleTypeDescriptor getExtensibleType(String nameOrId) {
-        return get(Paths.get("extension", "type", nameOrId), ExtensibleTypeDescriptor.class);
+        return get(path("extension", "type", nameOrId), ExtensibleTypeDescriptor.class);
     }
 
     public FeedBuilder buildFeed(String categoryName, String name) {
         return new FeedBuilderImpl(categoryName, name);
     }
     
+    
+    public Optional<String> getHighWaterMarkValue(String feedId, String waterMarkName) {
+        return optinal(() -> get(path("feed", feedId, "watermark", waterMarkName), String.class));
+    }
+
+    public void updateHighWaterMarkValue(String feedId, String waterMarkName, String value) {
+        put(path("feed", feedId, "watermark", waterMarkName), value, MediaType.TEXT_PLAIN);
+    }
+    
     public Feed addSource(String feedId, String datasourceId) {
         Form form = new Form();
         form.add("datasourceId", datasourceId);
         
-        return post(Paths.get("feed", feedId, "source"), form, Feed.class);
+        return post(path("feed", feedId, "source"), form, Feed.class);
     }
     
     public Feed addDestination(String feedId, String datasourceId) {
         Form form = new Form();
         form.add("datasourceId", datasourceId);
         
-        return post(Paths.get("feed", feedId, "destination"), form, Feed.class);
+        return post(path("feed", feedId, "destination"), form, Feed.class);
     }
     
     public ServiceLevelAgreement createSla(ServiceLevelAgreement sla) {
-        return post(Paths.get("sla"), sla, ServiceLevelAgreement.class);
+        return post(path("sla"), sla, MediaType.APPLICATION_JSON, ServiceLevelAgreement.class);
     }
 
     public Feed setPrecondition(String feedId, Metric... metrics) {
@@ -157,7 +171,7 @@ public class MetadataClient {
     }
     
     public Feed setPrecondition(String feedId, FeedPrecondition precond) {
-        return post(Paths.get("feed", feedId, "precondition"), precond, Feed.class);
+        return post(path("feed", feedId, "precondition"), precond, MediaType.APPLICATION_JSON, Feed.class);
     }
 
     public FeedCriteria feedCriteria() {
@@ -170,31 +184,31 @@ public class MetadataClient {
     
     public List<Feed> getFeeds(FeedCriteria criteria) {
         try {
-            return get(Paths.get("feed"), (TargetFeedCriteria) criteria, FEED_LIST);
+            return get(path("feed"), (TargetFeedCriteria) criteria, FEED_LIST);
         } catch (ClassCastException e) {
             throw new IllegalThreadStateException("Unknown criteria type: " + criteria.getClass());
         }
     }
     
     public Feed getFeed(String id) {
-        return get(Paths.get("feed", id), Feed.class);
+        return get(path("feed", id), Feed.class);
     }
 
     public Feed getFeed(String categoryName, String feedName) {
-        return get(Paths.get("feed"), Feed.class);
+        return get(path("feed"), Feed.class);
     }
     
     public FeedDependencyGraph getFeedDependency(String id) {
-        return get(Paths.get("feed", id, "depfeeds"), FeedDependencyGraph.class);
+        return get(path("feed", id, "depfeeds"), FeedDependencyGraph.class);
     }
     
     public Map<DateTime, Map<String, String>> getFeedDependencyDeltas(String feedId) {
-        return get(Paths.get("feed", feedId, "depfeeds", "delta"), FEED_RESULT_DELTAS);
+        return get(path("feed", feedId, "depfeeds", "delta"), FEED_RESULT_DELTAS);
     }
 
     public Feed updateFeed(Feed feed) {
         // Using POST here in since it behaves more like a PATCH than a PUT, and PATCH is not supported in jersey.
-        return post(Paths.get("feed", feed.getId()), feed, Feed.class);
+        return post(path("feed", feed.getId()), feed, MediaType.APPLICATION_JSON, Feed.class);
     }
 
     /**
@@ -204,15 +218,15 @@ public class MetadataClient {
      * @return the metadata properties
      */
     public Properties getFeedProperties(@Nonnull final String id) {
-        return get(Paths.get("feed", id, "props"), Properties.class);
+        return get(path("feed", id, "props"), Properties.class);
     }
     
     public Properties mergeFeedProperties(String id, Properties props) {
-        return post(Paths.get("feed", id, "props"), props, Properties.class);
+        return post(path("feed", id, "props"), props, MediaType.APPLICATION_JSON, Properties.class);
     }
     
     public Properties replaceFeedProperties(String id, Properties props) {
-        return put(Paths.get("feed", id), props, Properties.class);
+        return put(path("feed", id), props, MediaType.APPLICATION_JSON, Properties.class);
     }
 
     public DirectoryDatasourceBuilder buildDirectoryDatasource(String name) {
@@ -228,12 +242,12 @@ public class MetadataClient {
     }
 
     public List<Datasource> getDatasources() {
-        return get(Paths.get("datasource"), ALL_DATASOURCES, DATASOURCE_LIST);
+        return get(path("datasource"), ALL_DATASOURCES, DATASOURCE_LIST);
     }
     
     public List<Datasource> getDatasources(DatasourceCriteria criteria) {
         try {
-            return get(Paths.get("datasource"), (TargetDatasourceCriteria) criteria, DATASOURCE_LIST);
+            return get(path("datasource"), (TargetDatasourceCriteria) criteria, DATASOURCE_LIST);
         } catch (ClassCastException e) {
             throw new IllegalThreadStateException("Unknown criteria type: " + criteria.getClass());
         }
@@ -244,23 +258,42 @@ public class MetadataClient {
         form.add("feedDestinationId", feedDestinationId);
         form.add("status", status);
         
-        return post(Paths.get("dataop"), form, DataOperation.class);
+        return post(path("dataop"), form, DataOperation.class);
     }
     
     public DataOperation updateDataOperation(DataOperation op) {
-        return put(Paths.get("dataop", op.getId()), op, DataOperation.class);
+        return put(path("dataop", op.getId()), op, MediaType.APPLICATION_JSON, DataOperation.class);
     }
     
     public DataOperation getDataOperation(String id) {
-        return get(Paths.get("dataop", id), DataOperation.class);
+        return get(path("dataop", id), DataOperation.class);
     }
 
     public ServiceLevelAssessment assessPrecondition(String id) {
-        return get(Paths.get("feed", id, "precondition", "assessment"), ServiceLevelAssessment.class);
+        return get(path("feed", id, "precondition", "assessment"), ServiceLevelAssessment.class);
     }
     
     public String getPreconditionResult(String id) {
-        return get(Paths.get("feed", id, "precondition", "assessment", "result"), String.class);
+        return get(path("feed", id, "precondition", "assessment", "result"), String.class);
+    }
+
+    private ObjectMapper createObjectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JodaModule());
+        mapper.setSerializationInclusion(Include.NON_NULL);
+        return mapper;
+    }
+    
+    private <R> Optional<R> optinal(Supplier<R> supplier) {
+        try {
+            return Optional.ofNullable(supplier.get());
+        } catch (HttpClientErrorException e) {
+            if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
+                return Optional.empty();
+            } else {
+                throw e;
+            }
+        }
     }
 
     private FeedPrecondition createTrigger(List<Metric> metrics) {
@@ -275,15 +308,15 @@ public class MetadataClient {
 
 
     private Feed postFeed(Feed feed) {
-        return post(Paths.get("feed"), feed, Feed.class);
+        return post(path("feed"), feed, MediaType.APPLICATION_JSON, Feed.class);
     }
     
     private HiveTableDatasource postDatasource(HiveTableDatasource ds) {
-        return post(Paths.get("datasource", "hivetable"), ds, HiveTableDatasource.class);
+        return post(path("datasource", "hivetable"), ds, MediaType.APPLICATION_JSON, HiveTableDatasource.class);
     }
     
     private DirectoryDatasource postDatasource(DirectoryDatasource ds) {
-        return post(Paths.get("datasource", "directory"), ds, DirectoryDatasource.class);
+        return post(path("datasource", "directory"), ds, MediaType.APPLICATION_JSON, DirectoryDatasource.class);
     }
     
     private UriComponentsBuilder base(Path path) {
@@ -321,9 +354,9 @@ public class MetadataClient {
         return this.template.postForObject(base(path).build().toUri(), form, resultType);
     }
     
-    private <R> R post(Path path, Object body, Class<R> resultType) {
+    private <R> R post(Path path, Object body, MediaType mediaType, Class<R> resultType) {
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setContentType(mediaType);
         headers.setAccept(ACCEPT_TYPES);
         
         return this.template.postForObject(base(path).build().toUri(), 
@@ -331,15 +364,23 @@ public class MetadataClient {
                                            resultType);
     }
     
-    private <R> R put(Path path, Object body, Class<R> resultType) {
+    private void put(Path path, Object body, MediaType mediaType) {
+        put(path, body, mediaType, null);
+    }
+    
+    private <R> R put(Path path, Object body, MediaType mediaType, Class<R> resultType) {
         URI uri = base(path).build().toUri();
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setContentType(mediaType);
         headers.setAccept(ACCEPT_TYPES);
         
         this.template.put(uri, new HttpEntity<>(body, headers));
         // Silly that put() doesn't return an object.
-        return get(path, resultType);
+        if (resultType != null) {
+            return get(path, resultType);
+        } else {
+            return null;
+        }
     }
     
 

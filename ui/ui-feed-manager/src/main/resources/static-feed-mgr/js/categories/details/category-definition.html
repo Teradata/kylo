@@ -1,86 +1,99 @@
-    <vertical-section-layout section-title="Category Definition" on-delete="vm.onDelete()" allow-delete="vm.canDelete()" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancel()"
-                             editable="vm.isEditable" allow-edit="vm.allowEdit" the-form="vm.categoryForm">
-        <readonly-section>
-            <div layout="row" class="layout-padding-top-bottom">
-                <span flex="25" class="property-name">Category Name</span>
+<vertical-section-layout section-title="Category Definition" on-delete="vm.onDelete()" allow-delete="vm.canDelete()" is-delete-visible="vm.model.id != null" on-save-edit="vm.onSave()"
+                         on-edit="vm.onEdit()" on-cancel-edit="vm.onCancel()"
+                         editable="vm.isEditable" allow-edit="vm.allowEdit" the-form="vm.categoryForm">
+  <readonly-section>
+    <div layout="row" class="layout-padding-top-bottom" flex>
+      <span flex="25" class="property-name">Category Name</span>
 
-                <div flex>
-                    {{vm.model.name}}
-                </div>
-            </div>
-            <div layout="row" class="layout-padding-top-bottom">
-                <span flex="25" class="property-name">Description</span>
+      <div flex="25"> {{vm.model.name}}</div>
+      <span flex="5"></span>
+      <span flex="25" class="property-name">System Name</span>
 
-                <div flex>
-                    {{vm.model.description}}
-                </div>
-            </div>
-            <div layout="row" class="layout-padding-top-bottom">
-                <span flex="25" class="property-name">Hadoop Security Groups</span>
-                <div flex>
-                    {{vm.splitSecurityGroups()}}
-                </div>
-            </div>
-            <div layout="row" class="layout-padding-top-bottom" layout-align="start start">
-                <span flex="25" class="property-name">Icon</span>
+      <div flex>{{vm.model.systemName}}</div>
+    </div>
+    <div layout="row" class="layout-padding-top-bottom">
+      <span flex="25" class="property-name">Description</span>
 
-                <div layout="column">
-                    <ng-md-icon icon="{{vm.model.icon}}" style="fill:{{vm.model.iconColor}};margin:inherit" size="45"></ng-md-icon>
-                </div>
-            </div>
-        </readonly-section>
-        <editable-section>
-            <ng-form name="vm.categoryForm">
-            <md-input-container class="md-block">
-                <label>Name</label>
-                <input name="categoryName" ng-model="vm.editModel.name" required/>
+      <div flex>
+        {{vm.model.description}}
+      </div>
+    </div>
+    <div layout="row" class="layout-padding-top-bottom">
+      <span flex="25" class="property-name">Hadoop Security Groups</span>
 
-                <div ng-messages="vm.categoryForm.categoryName.$error" md-auto-hide="false">
-                    <div ng-message="required">A category name is required.</div>
-                    <div ng-message="duplicateName">There is an existing category with that name.</div>
-                    <div ng-message="reservedCategoryName">That category is reserved. Please choose another category.</div>
+      <div flex>
+        {{vm.splitSecurityGroups()}}
+      </div>
+    </div>
+    <div layout="row" class="layout-padding-top-bottom" layout-align="start start">
+      <span flex="25" class="property-name">Icon</span>
 
-                </div>
-            </md-input-container>
+      <div layout="column">
+        <ng-md-icon icon="{{vm.model.icon}}" style="fill:{{vm.model.iconColor}};margin:inherit" size="45"></ng-md-icon>
+      </div>
+    </div>
+  </readonly-section>
+  <editable-section>
+    <ng-form name="vm.categoryForm">
+      <div layout="row" flex="100">
+        <md-input-container class="md-block" flex="40">
+          <label>Name</label>
+          <input name="categoryName" ng-model="vm.editModel.name" required/>
 
-            <md-input-container class="md-block">
-                <label>Description</label>
-                <textarea ng-model="vm.editModel.description"></textarea>
-            </md-input-container>
+          <div ng-messages="vm.categoryForm.categoryName.$error" md-auto-hide="false">
+            <div ng-message="required">A category name is required.</div>
+            <div ng-message="duplicateName">There is an existing category with that name.</div>
+            <div ng-message="reservedCategoryName">That category is reserved. Please choose another category.</div>
+          </div>
+        </md-input-container>
+        <div flex="10"></div>
+        <md-input-container flex="40">
+          <label>System Name</label>
+          <input readonly ng-model="vm.editModel.systemName"/>
 
-            <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="">
-                <label class="label-small md-container-ignore">Hadoop Security Groups</label>
-                <md-chips ng-model="vm.editModel.securityGroups" md-autocomplete-snap
-                          md-transform-chip="vm.transformChip($chip)"
-                          md-require-match="true" class="layout-padding-top-bottom">
-                    <md-autocomplete
-                        md-min-length="0"
-                        md-selected-item="vm.securityGroupChips.selectedItem"
-                        md-search-text="vm.securityGroupChips.searchText"
-                        md-items="item in vm.categorySecurityGroups.querySearch(vm.securityGroupChips.searchText)"
-                        md-item-text="item.name"
-                        md-no-cache="true"
-                        placeholder="Add a Hadoop Security Group">
-                        <span md-highlight-text="vm.securityGroupChips.searchText">{{item.name}}</span>
-                    </md-autocomplete>
-                    <md-chip-template>
+          <div class="hint">Auto generated from the Category Name</div>
+        </md-input-container>
+
+      </div>
+
+      <md-input-container class="md-block">
+        <label>Description</label>
+        <textarea ng-model="vm.editModel.description"></textarea>
+      </md-input-container>
+
+      <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="">
+        <label class="label-small md-container-ignore">Hadoop Security Groups</label>
+        <md-chips ng-model="vm.editModel.securityGroups" md-autocomplete-snap
+                  md-transform-chip="vm.transformChip($chip)"
+                  md-require-match="true" class="layout-padding-top-bottom">
+          <md-autocomplete
+              md-min-length="0"
+              md-selected-item="vm.securityGroupChips.selectedItem"
+              md-search-text="vm.securityGroupChips.searchText"
+              md-items="item in vm.categorySecurityGroups.querySearch(vm.securityGroupChips.searchText)"
+              md-item-text="item.name"
+              md-no-cache="true"
+              placeholder="Add a Hadoop Security Group">
+            <span md-highlight-text="vm.securityGroupChips.searchText">{{item.name}}</span>
+          </md-autocomplete>
+          <md-chip-template>
                             <span>
                               <strong>{{$chip.name}}</strong>
                             </span>
-                    </md-chip-template>
-                </md-chips>
-            </md-input-container>
+          </md-chip-template>
+        </md-chips>
+      </md-input-container>
 
-            <div layout="column">
-                <div layout="row" layout-align="start start" class="layout-padding-top-bottom">
-                    <span class="md-input-label" style="font-size: 11px;" flex="25">Icon </span>
-                    <ng-md-icon icon="{{vm.editModel.icon}}" size="45" style="margin:inherit; fill:{{vm.editModel.iconColor}}"></ng-md-icon>
-                    <md-button class="md-primary" ng-click="vm.showIconPicker()" style="margin-left:35px;">Change Icon</md-button>
-                </div>
-            </div>
+      <div layout="column">
+        <div layout="row" layout-align="start start" class="layout-padding-top-bottom">
+          <span class="md-input-label" style="font-size: 11px;" flex="25">Icon </span>
+          <ng-md-icon icon="{{vm.editModel.icon}}" size="45" style="margin:inherit; fill:{{vm.editModel.iconColor}}"></ng-md-icon>
+          <md-button class="md-primary" ng-click="vm.showIconPicker()" style="margin-left:35px;">Change Icon</md-button>
+        </div>
+      </div>
 
-            <thinkbig-property-list-editor properties="vm.editModel.userProperties" is-valid="vm.isValid" ng-if="vm.model.id == null"></thinkbig-property-list-editor>
-            </ng-form>
-        </editable-section>
-    </vertical-section-layout>
+      <thinkbig-property-list-editor properties="vm.editModel.userProperties" is-valid="vm.isValid" ng-if="vm.model.id == null"></thinkbig-property-list-editor>
+    </ng-form>
+  </editable-section>
+</vertical-section-layout>
 

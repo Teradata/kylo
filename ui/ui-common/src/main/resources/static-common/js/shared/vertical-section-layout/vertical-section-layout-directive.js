@@ -8,6 +8,7 @@ angular.module(COMMON_APP_MODULE_NAME).directive("verticalSectionLayout", functi
             sectionTitle: '@',
             formName: '@',
             onDelete: '&?',
+            isDeleteVisible: '=?',
             allowDelete: '=?',
             onEdit: '&',
             onSaveEdit: '&',
@@ -23,7 +24,12 @@ angular.module(COMMON_APP_MODULE_NAME).directive("verticalSectionLayout", functi
         },
         templateUrl:'js/shared/vertical-section-layout/vertical-section-layout-template.html',
         link: function ($scope, iElem, iAttrs, ctrl, transcludeFn) {
-
+            /**
+             * Delete button is visible if this flag is true and if the method onDelete is set
+             */
+            if ($scope.isDeleteVisible == undefined) {
+                $scope.isDeleteVisible = true;
+            }
 
              if($scope.editable == undefined ) {
                  $scope.editable = false;

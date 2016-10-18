@@ -980,6 +980,18 @@ public class NifiRestClient extends JerseyRestClient implements NifiFlowVisitorC
      */
     public boolean setInputAsRunningByProcessorMatchingType(@Nonnull final String processGroupId, @Nullable final String type) {
         // Get the processor list and the processor to be run
+       return setInputProcessorState(processGroupId, type, NifiProcessUtil.PROCESS_STATE.RUNNING);
+    }
+
+    /**
+     * Finds an input processor of the specified type within the specified process group and sets it to the passed in {@code state}. Other input processors are set to {@code DISABLED}.
+     * @param processGroupId the id of the NiFi process group to be searched
+     * @param type the type (or Java class) of processor to set to {@code state}, or {@code null} to use the first processor
+     * @param state the state to set the matched input processor
+     * @return {@code true} if the processor was found, or {@code false} otherwise
+     */
+    public boolean setInputProcessorState(@Nonnull final String processGroupId, @Nullable final String type,NifiProcessUtil.PROCESS_STATE state ) {
+        // Get the processor list and the processor to be run
         final List<ProcessorDTO> processors = getInputProcessors(processGroupId);
         if (processors.isEmpty()) {
             return false;
@@ -992,28 +1004,94 @@ public class NifiRestClient extends JerseyRestClient implements NifiFlowVisitorC
 
         // Set selected processor to RUNNING and others to DISABLED
         for (final ProcessorDTO processor : processors) {
-            boolean update = false;
-
             // Verify state of processor
-            if (!processor.equals(selected)) {
-                if (!NifiProcessUtil.PROCESS_STATE.DISABLED.name().equals(processor.getState())) {
-                    processor.setState(NifiProcessUtil.PROCESS_STATE.DISABLED.name());
-                    update = true;
-                }
+            if (processor.equals(selected)) {
+                updateProcessorState(processor, state);
             }
-            else if (!NifiProcessUtil.PROCESS_STATE.RUNNING.name().equals(processor.getState())) {
-                processor.setState(NifiProcessUtil.PROCESS_STATE.RUNNING.name());
-                update = true;
+            else {
+                updateProcessorState(processor, NifiProcessUtil.PROCESS_STATE.DISABLED);
             }
+        }
 
-            // Update state of processor
-            if (update) {
+        return true;
+    }
+
+
+    /**
+     * Update the Processor state
+     * @param processor
+     * @param state
+     */
+    private ProcessorDTO setProcessorState(ProcessorDTO processor, NifiProcessUtil.PROCESS_STATE state)
+    {
+        ProcessorEntity entity = new ProcessorEntity();
+        ProcessorDTO updateDto = new ProcessorDTO();
+        updateDto.setId(processor.getId());
+        updateDto.setParentGroupId(processor.getParentGroupId());
+        updateDto.setState(state.name());
+        entity.setProcessor(updateDto);
+        ProcessorEntity updatedProcessor = updateProcessor(entity);
+        return updatedProcessor.getProcessor();
+    }
+
+    /**
+     * Transitions the Processor into the correct state:  {@code DISABLED, RUNNING, STOPPED}
+     * @param processorDTO the processor to update
+     * @param state the State which the processor should be set to
+     * @return
+     */
+    private ProcessorDTO updateProcessorState(ProcessorDTO processorDTO, NifiProcessUtil.PROCESS_STATE state){
+        NifiProcessUtil.PROCESS_STATE currentState = NifiProcessUtil.PROCESS_STATE.valueOf(processorDTO.getState());
+        if(NifiProcessUtil.PROCESS_STATE.DISABLED.equals(state) && !NifiProcessUtil.PROCESS_STATE.DISABLED.equals(currentState)){
+            //disable it
+            //first stop it
+           ProcessorDTO updatedProcessor = updateProcessorState(processorDTO, NifiProcessUtil.PROCESS_STATE.STOPPED);
+            // then disable it
+          return  setProcessorState(updatedProcessor, NifiProcessUtil.PROCESS_STATE.DISABLED);
+        }
+        if(NifiProcessUtil.PROCESS_STATE.RUNNING.equals(state) && !NifiProcessUtil.PROCESS_STATE.RUNNING.equals(currentState)){
+            //run it
+           //first make sure its enabled
+            ProcessorDTO updatedProcessor = updateProcessorState(processorDTO, NifiProcessUtil.PROCESS_STATE.ENABLED);
+           return setProcessorState(updatedProcessor, NifiProcessUtil.PROCESS_STATE.RUNNING);
+
+        }
+        if(NifiProcessUtil.PROCESS_STATE.STOPPED.equals(state) && !NifiProcessUtil.PROCESS_STATE.STOPPED.equals(currentState)){
+            //stop it
+            //first make sure its enabled
+            ProcessorDTO updatedProcessor = updateProcessorState(processorDTO, NifiProcessUtil.PROCESS_STATE.ENABLED);
+            setProcessorState(updatedProcessor, NifiProcessUtil.PROCESS_STATE.STOPPED);
+        }
+        if(NifiProcessUtil.PROCESS_STATE.ENABLED.equals(state) && !NifiProcessUtil.PROCESS_STATE.ENABLED.equals(currentState)){
+            //enable it
+            //if disabled, enable it
+            if(NifiProcessUtil.PROCESS_STATE.DISABLED.equals(currentState)){
+               return setProcessorState(processorDTO, NifiProcessUtil.PROCESS_STATE.STOPPED);
+            }
+            return processorDTO;
+        }
+        return processorDTO;
+
+    }
+
+
+
+    public boolean disableInputProcessors(@Nonnull final String processGroupId) {
+        // Get the processor list
+        boolean updated = false;
+        final List<ProcessorDTO> processors = getInputProcessors(processGroupId);
+        if (processors.isEmpty()) {
+            return false;
+        }
+        for (final ProcessorDTO processor : processors) {
+            // Verify state of processor
+            if (!NifiProcessUtil.PROCESS_STATE.DISABLED.name().equals(processor.getState())) {
                 // Stop processor before setting final state
                 if (!NifiProcessUtil.PROCESS_STATE.STOPPED.name().equals(processor.getState())) {
                     stopProcessor(processor.getParentGroupId(), processor.getId());
                 }
 
-                // Set final state
+                processor.setState(NifiProcessUtil.PROCESS_STATE.DISABLED.name());
                 ProcessorEntity entity = new ProcessorEntity();
                 ProcessorDTO updateDto = new ProcessorDTO();
                 updateDto.setId(processor.getId());
@@ -1021,11 +1099,12 @@ public class NifiRestClient extends JerseyRestClient implements NifiFlowVisitorC
                 updateDto.setState(processor.getState());
                 entity.setProcessor(updateDto);
                 updateProcessor(entity);
+                updated = true;
             }
         }
-
-        return true;
+        return updated;
     }
+
 
     /**
      * return the Source Processors for a given group

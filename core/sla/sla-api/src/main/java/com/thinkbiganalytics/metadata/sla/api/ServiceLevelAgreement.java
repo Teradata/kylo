@@ -55,4 +55,6 @@ public interface ServiceLevelAgreement {
 
     List<ServiceLevelAgreementCheck> getSlaChecks();
 
+    boolean isEnabled();
+
 }

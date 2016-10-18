@@ -1,7 +1,9 @@
 package com.thinkbiganalytics.nifi.v2.ingest;
 
-import com.google.common.collect.ImmutableMap;
-import com.thinkbiganalytics.nifi.v2.thrift.ThriftService;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.Collection;
 
 import org.apache.nifi.components.ValidationResult;
 import org.apache.nifi.controller.AbstractControllerService;
@@ -15,10 +17,8 @@ import org.junit.Test;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.Statement;
-import java.util.Collection;
+import com.google.common.collect.ImmutableMap;
+import com.thinkbiganalytics.nifi.v2.thrift.ThriftService;
 
 public class RegisterFeedTablesTest {
 
@@ -40,7 +40,7 @@ public class RegisterFeedTablesTest {
         // Setup test runner
         runner.addControllerService(THRIFT_SERVICE_IDENTIFIER, thriftService);
         runner.enableControllerService(thriftService);
-        runner.setProperty(ComponentProperties.THRIFT_SERVICE, THRIFT_SERVICE_IDENTIFIER);
+        runner.setProperty(IngestProperties.THRIFT_SERVICE, THRIFT_SERVICE_IDENTIFIER);
     }
 
     /** Verify no properties are required. */
@@ -55,12 +55,12 @@ public class RegisterFeedTablesTest {
     @Test
     public void testRegisterTables() throws Exception {
         // Test with only required properties
-        runner.setProperty(ComponentProperties.FIELD_SPECIFICATION, "id|int\nfirst_name|string\nlast_name|string");
+        runner.setProperty(IngestProperties.FIELD_SPECIFICATION, "id|int\nfirst_name|string\nlast_name|string");
         runner.enqueue(new byte[0], ImmutableMap.of("metadata.category.systemName", "movies", "metadata.systemFeedName", "artists"));
         runner.run();
 
-        Assert.assertEquals(0, runner.getFlowFilesForRelationship(ComponentProperties.REL_FAILURE).size());
-        Assert.assertEquals(1, runner.getFlowFilesForRelationship(ComponentProperties.REL_SUCCESS).size());
+        Assert.assertEquals(0, runner.getFlowFilesForRelationship(IngestProperties.REL_FAILURE).size());
+        Assert.assertEquals(1, runner.getFlowFilesForRelationship(IngestProperties.REL_SUCCESS).size());
 
         final InOrder inOrder = Mockito.inOrder(thriftService.statement);
         inOrder.verify(thriftService.statement).execute("CREATE DATABASE IF NOT EXISTS `movies`");
@@ -87,15 +87,15 @@ public class RegisterFeedTablesTest {
         inOrder.verifyNoMoreInteractions();
 
         // Test with all properties
-        runner.setProperty(ComponentProperties.PARTITION_SPECS, "year|int");
-        runner.setProperty(ComponentProperties.FEED_FORMAT_SPECS, "ROW FORMAT DELIMITED LINES TERMINATED BY '\n' STORED AS TEXTFILE");
-        runner.setProperty(ComponentProperties.TARGET_FORMAT_SPECS, "STORED AS PARQUET");
-        runner.setProperty(ComponentProperties.TARGET_TBLPROPERTIES, "TBLPROPERTIES (\"comment\"=\"Movie Actors\")");
+        runner.setProperty(IngestProperties.PARTITION_SPECS, "year|int");
+        runner.setProperty(IngestProperties.FEED_FORMAT_SPECS, "ROW FORMAT DELIMITED LINES TERMINATED BY '\n' STORED AS TEXTFILE");
+        runner.setProperty(IngestProperties.TARGET_FORMAT_SPECS, "STORED AS PARQUET");
+        runner.setProperty(IngestProperties.TARGET_TBLPROPERTIES, "TBLPROPERTIES (\"comment\"=\"Movie Actors\")");
         runner.enqueue(new byte[0], ImmutableMap.of("metadata.category.systemName", "movies", "metadata.systemFeedName", "artists"));
         runner.run();
 
-        Assert.assertEquals(0, runner.getFlowFilesForRelationship(ComponentProperties.REL_FAILURE).size());
-        Assert.assertEquals(2, runner.getFlowFilesForRelationship(ComponentProperties.REL_SUCCESS).size());
+        Assert.assertEquals(0, runner.getFlowFilesForRelationship(IngestProperties.REL_FAILURE).size());
+        Assert.assertEquals(2, runner.getFlowFilesForRelationship(IngestProperties.REL_SUCCESS).size());
 
         inOrder.verify(thriftService.statement).execute("CREATE DATABASE IF NOT EXISTS `movies`");
         inOrder.verify(thriftService.statement).close();
@@ -136,12 +136,12 @@ public class RegisterFeedTablesTest {
         Mockito.when(thriftService.artistsTablesResults.next()).thenReturn(false);
 
         // Run flow
-        runner.setProperty(ComponentProperties.FIELD_SPECIFICATION, "id|int\nfirst_name|string\nlast_name|string");
+        runner.setProperty(IngestProperties.FIELD_SPECIFICATION, "id|int\nfirst_name|string\nlast_name|string");
         runner.enqueue(new byte[0], ImmutableMap.of("metadata.category.systemName", "movies", "metadata.systemFeedName", "artists"));
         runner.run();
 
-        Assert.assertEquals(0, runner.getFlowFilesForRelationship(ComponentProperties.REL_FAILURE).size());
-        Assert.assertEquals(1, runner.getFlowFilesForRelationship(ComponentProperties.REL_SUCCESS).size());
+        Assert.assertEquals(0, runner.getFlowFilesForRelationship(IngestProperties.REL_FAILURE).size());
+        Assert.assertEquals(1, runner.getFlowFilesForRelationship(IngestProperties.REL_SUCCESS).size());
 
         // Verify SQL
         final InOrder inOrder = Mockito.inOrder(thriftService.statement);
@@ -163,24 +163,24 @@ public class RegisterFeedTablesTest {
     /** Verify error for missing category name. */
     @Test
     public void testRegisterTablesWithMissingCategory() {
-        runner.setProperty(ComponentProperties.FIELD_SPECIFICATION, "data|string");
+        runner.setProperty(IngestProperties.FIELD_SPECIFICATION, "data|string");
         runner.enqueue(new byte[0], ImmutableMap.of("metadata.systemFeedName", "artists"));
         runner.run();
 
-        Assert.assertEquals(1, runner.getFlowFilesForRelationship(ComponentProperties.REL_FAILURE).size());
-        Assert.assertEquals(0, runner.getFlowFilesForRelationship(ComponentProperties.REL_SUCCESS).size());
+        Assert.assertEquals(1, runner.getFlowFilesForRelationship(IngestProperties.REL_FAILURE).size());
+        Assert.assertEquals(0, runner.getFlowFilesForRelationship(IngestProperties.REL_SUCCESS).size());
     }
 
     /** Verify error for missing feed name. */
     @Test
     public void testRegisterTablesWithMissingFeed() {
-        runner.setProperty(ComponentProperties.FIELD_SPECIFICATION, "data|string");
+        runner.setProperty(IngestProperties.FIELD_SPECIFICATION, "data|string");
         runner.enqueue(new byte[0], ImmutableMap.of("metadata.category.systemName", "movies"));
         runner.enqueue(new byte[0], ImmutableMap.of("feed", "artists"));
         runner.run();
 
-        Assert.assertEquals(1, runner.getFlowFilesForRelationship(ComponentProperties.REL_FAILURE).size());
-        Assert.assertEquals(0, runner.getFlowFilesForRelationship(ComponentProperties.REL_SUCCESS).size());
+        Assert.assertEquals(1, runner.getFlowFilesForRelationship(IngestProperties.REL_FAILURE).size());
+        Assert.assertEquals(0, runner.getFlowFilesForRelationship(IngestProperties.REL_SUCCESS).size());
     }
 
     /** Verify error for missing field specification. */
@@ -189,20 +189,20 @@ public class RegisterFeedTablesTest {
         runner.enqueue(new byte[0], ImmutableMap.of("metadata.category.systemName", "movies", "metadata.systemFeedName", "artists"));
         runner.run();
 
-        Assert.assertEquals(1, runner.getFlowFilesForRelationship(ComponentProperties.REL_FAILURE).size());
-        Assert.assertEquals(0, runner.getFlowFilesForRelationship(ComponentProperties.REL_SUCCESS).size());
+        Assert.assertEquals(1, runner.getFlowFilesForRelationship(IngestProperties.REL_FAILURE).size());
+        Assert.assertEquals(0, runner.getFlowFilesForRelationship(IngestProperties.REL_SUCCESS).size());
     }
 
     /** Verify registering a single table. */
     @Test
     public void testRegisterTablesWithTableType() throws Exception {
-        runner.setProperty(ComponentProperties.FIELD_SPECIFICATION, "id|int\nfirst_name|string\nlast_name|string");
+        runner.setProperty(IngestProperties.FIELD_SPECIFICATION, "id|int\nfirst_name|string\nlast_name|string");
         runner.setProperty(RegisterFeedTables.TABLE_TYPE, "MASTER");
         runner.enqueue(new byte[0], ImmutableMap.of("metadata.category.systemName", "movies", "metadata.systemFeedName", "artists"));
         runner.run();
 
-        Assert.assertEquals(0, runner.getFlowFilesForRelationship(ComponentProperties.REL_FAILURE).size());
-        Assert.assertEquals(1, runner.getFlowFilesForRelationship(ComponentProperties.REL_SUCCESS).size());
+        Assert.assertEquals(0, runner.getFlowFilesForRelationship(IngestProperties.REL_FAILURE).size());
+        Assert.assertEquals(1, runner.getFlowFilesForRelationship(IngestProperties.REL_SUCCESS).size());
 
         final InOrder inOrder = Mockito.inOrder(thriftService.statement);
         inOrder.verify(thriftService.statement).execute("CREATE DATABASE IF NOT EXISTS `movies`");

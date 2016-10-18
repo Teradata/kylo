@@ -46,7 +46,6 @@
         function onActiveStep(event, index) {
             if (index == parseInt(self.stepIndex)) {
                 validateMergeStrategies();
-                console.log(self.model);
             }
         }
 

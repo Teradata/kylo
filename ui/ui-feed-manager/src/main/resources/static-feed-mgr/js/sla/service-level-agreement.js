@@ -41,7 +41,19 @@
 
         self.cardTitle = "Service Level Agreements";
 
+        /**
+         * show a progress bar indicating loading SLA list or individual SLA for edit
+         * @type {boolean}
+         */
         self.loading = true;
+
+        var loadingListMessage = "Loading Service Level Agreements";
+        var loadingSingleMessage = "Loading Service Level Agreement";
+
+        /**
+         * Loading message
+         */
+        self.loadingMessage = loadingListMessage;
 
         //if the newSLA flag is tripped then show the new SLA form and then reset it
 
@@ -69,16 +81,21 @@
                     }
                 });
 
-        function showList() {
+        function showList(requery) {
             self.editSla = null;
             self.creatingNewSla = null;
             self.editSlaId = null;
             self.addingSlaCondition = false;
             self.editSlaIndex = null;
+            if(requery && requery == true){
+                console.log('requery!!!')
+                loadSlas();
+            }
             //Requery?
             if (self.feed == null) {
                 AddButtonService.showAddButton();
             }
+
         }
 
         //   this.feed = FeedService.editFeedModel;
@@ -230,41 +247,51 @@
             var options = {'Name': 'name', 'Description': 'description'};
 
             var sortOptions = TableOptionsService.newSortOptions(self.pageName, options, 'name', 'asc');
-            var currentOption = TableOptionsService.getCurrentSort(self.pageName);
-            if (currentOption) {
-                TableOptionsService.saveSortOption(self.pageName, currentOption)
-            }
+            TableOptionsService.initializeSortOption(self.pageName);
             return sortOptions;
         }
 
         /**
-         * Load and copy the serviceLevelAgreements from the feed if available
-         * @type {Array|*}
+         * Fetch the SLAs and populate the list.
+         * If there is a Feed using this page it will only get the SLAs related for this feed
+         * otherwise it will get all the SLas
          */
-        if (self.feed) {
+        function loadSlas() {
+            self.loadingMessage = loadingListMessage;
+            self.loading = true;
+            /**
+             * Load and copy the serviceLevelAgreements from the feed if available
+             * @type {Array|*}
+             */
+            if (self.feed) {
+                var arr = self.feed.serviceLevelAgreements;
+                if (arr != null && arr != undefined) {
+                    self.serviceLevelAgreements = angular.copy(arr);
+                }
+            }
 
-            var arr = self.feed.serviceLevelAgreements;
-
-            if (arr != null && arr != undefined) {
-                self.serviceLevelAgreements = angular.copy(arr);
+            if (self.feed != null) {
+                SlaService.getFeedSlas(self.feed.feedId).then(function(response) {
+                    if (response.data && response.data != undefined && response.data.length > 0) {
+                        self.serviceLevelAgreements = response.data;
+                    }
+                    self.loading = false;
+                });
+            }
+            else {
+                //get All Slas
+                SlaService.getAllSlas().then(function(response) {
+                    self.serviceLevelAgreements = response.data;
+                    self.loading = false;
+                });
             }
         }
 
-        if (this.feed != null) {
-            SlaService.getFeedSlas(self.feed.feedId).then(function(response) {
-                if (response.data && response.data != undefined && response.data.length > 0) {
-                    self.serviceLevelAgreements = response.data;
-                }
-                self.loading = false;
-            });
-        }
-        else {
-            //get All Slas
-            SlaService.getAllSlas().then(function(response) {
-                self.serviceLevelAgreements = response.data;
-                self.loading = false;
-            });
-        }
+        /**
+         * Initiall load the SLA list
+         */
+        loadSlas();
+
 
         /**
          * Load up the Metric Options for defining SLAs
@@ -279,6 +306,9 @@
 
         });
 
+        /**
+         * Get all possible SLA Action Options
+         */
         SlaService.getPossibleSlaActionOptions().then(function(response) {
             var currentFeedValue = null;
             if (self.feed != null) {
@@ -299,6 +329,9 @@
             }
         })
 
+        /**
+         * Callend when the user cancels a specific SLA
+         */
         self.cancelEditSla = function() {
             showList();
         }
@@ -336,7 +369,7 @@
                     else {
                         self.serviceLevelAgreements.push(self.editSla);
                     }
-                    showList();
+                    showList(true);
 
                     $mdDialog.show(
                             $mdDialog.alert()
@@ -355,8 +388,18 @@
 
         }
         function saveSla(successFn, failureFn) {
+
+            $mdDialog.show(
+                $mdDialog.alert()
+                    .parent(angular.element(document.body))
+                    .clickOutsideToClose(false)
+                    .title('Saving SLA')
+                    .textContent('Saving the Sla')
+                    .ariaLabel('Saving Sla')
+            );
             if (self.feed != null) {
                 SlaService.saveFeedSla(self.feed.feedId, self.editSla).then(function(response) {
+                    $mdDialog.hide();
                     if (successFn) {
                         successFn(response);
                     }
@@ -368,6 +411,7 @@
             }
             else {
                 SlaService.saveSla(self.editSla).then(function() {
+                    $mdDialog.hide();
                     if (successFn) {
                         successFn();
                     }
@@ -417,6 +461,8 @@
             self.editSlaId = slaId;
             self.ruleType = EMPTY_RULE_TYPE;
             self.addingSlaCondition = false;
+            self.loadingMessage = loadingSingleMessage;
+            self.loading = true;
 
             //fetch the SLA
             SlaService.getSlaForEditForm(slaId).then(function(response) {
@@ -441,6 +487,7 @@
                 sla.editable = true;
                 self.editSla = sla;
 
+                self.loading = false;
             });
         }
 

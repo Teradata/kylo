@@ -27,7 +27,7 @@ import javax.annotation.Nullable;
 public class NifiProcessUtil {
 
     public static enum PROCESS_STATE {
-        RUNNING,STOPPED,DISABLED;
+        RUNNING,STOPPED,DISABLED,ENABLED;
     }
 
     public static enum SERVICE_STATE {

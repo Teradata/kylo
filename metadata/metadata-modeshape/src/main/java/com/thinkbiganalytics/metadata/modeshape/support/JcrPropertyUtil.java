@@ -1,32 +1,5 @@
 package com.thinkbiganalytics.metadata.modeshape.support;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.databind.deser.impl.PropertyValue;
-import com.fasterxml.jackson.datatype.joda.JodaModule;
-import com.thinkbiganalytics.classnameregistry.ClassNameChangeRegistry;
-import com.thinkbiganalytics.metadata.api.MissingUserPropertyException;
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeBuilder;
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
-import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor;
-import com.thinkbiganalytics.metadata.api.extension.FieldDescriptorBuilder;
-import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
-import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
-import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.UnknownPropertyException;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
-import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensiblePropertyCollection;
-import com.thinkbiganalytics.metadata.modeshape.extension.JcrUserFieldDescriptor;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.joda.time.DateTime;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -43,8 +16,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import javax.annotation.Nonnull;
 import javax.jcr.Binary;
@@ -60,6 +36,33 @@ import javax.jcr.Value;
 import javax.jcr.ValueFactory;
 import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.PropertyDefinition;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.joda.time.DateTime;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.datatype.joda.JodaModule;
+import com.thinkbiganalytics.classnameregistry.ClassNameChangeRegistry;
+import com.thinkbiganalytics.metadata.api.MissingUserPropertyException;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeBuilder;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
+import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor;
+import com.thinkbiganalytics.metadata.api.extension.FieldDescriptorBuilder;
+import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.UnknownPropertyException;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
+import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensiblePropertyCollection;
+import com.thinkbiganalytics.metadata.modeshape.extension.JcrUserFieldDescriptor;
 
 /**
  * Utility functions for JCR properties.
@@ -95,12 +98,39 @@ public class JcrPropertyUtil {
         }
     }
     
+    public static String getName(Property prop) {
+        try {
+            return prop.getName();
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to get the name of property: " + prop, e);
+        }
+    }
+    
     public static String getString(Node node, String name) {
         try {
             Property prop = node.getProperty(name);
             return prop.getString();
         } catch (PathNotFoundException e) {
             return null;
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to access property: " + name, e);
+        }
+    }
+
+    /**
+     * Returns the boolean value of the property. if the property is a String type it will try to determine the boolean value. If it cannot get a boolean value, it will return false.
+     */
+    public static boolean getBoolean(Node node, String name) {
+        try {
+            Property prop = node.getProperty(name);
+            if (PropertyType.STRING == prop.getType()) {
+                return BooleanUtils.toBoolean(prop.getString());
+            } else if (PropertyType.BOOLEAN == prop.getType()) {
+                return prop.getBoolean();
+            }
+            return false;
+        } catch (PathNotFoundException e) {
+            return false;
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to access property: " + name, e);
         }
@@ -168,6 +198,18 @@ public class JcrPropertyUtil {
             setProperty(node, name, json);
         } catch (IOException e) {
             throw new MetadataRepositoryException("Failed to serialize JSON property: " + value, e);
+        }
+    }
+    
+    public static Optional<Property> findProperty(Node node, String name) {
+        try {
+            if (node.hasProperty(name)) {
+                return Optional.of(node.getProperty(name));
+            } else {
+                return Optional.empty();
+            }
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed attempting to locate a property: " + name, e);
         }
     }
 
@@ -293,6 +335,14 @@ public class JcrPropertyUtil {
 //    public static <T> T asValue(Property prop) {
 //        return asValue(prop, null);
 //    }
+    
+    public static String toString(Property prop) {
+        try {
+            return prop.getString();
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to get string value of property: " + prop, e);
+        }
+    }
 
     @SuppressWarnings("unchecked")
     public static <T> T asValue(Property prop) {
@@ -901,6 +951,24 @@ public class JcrPropertyUtil {
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to get the parent node of the property: " + prop, e);
         }
+    }
+    
+    @SuppressWarnings("unchecked")
+    public static Iterable<Property> propertiesIterable(Node node) {
+        return () -> {
+            try {
+                return node.getProperties();
+            } catch (RepositoryException e) {
+                throw new MetadataRepositoryException("Failed to get the properties of node: " + node, e);
+            }
+        };
+    }
+    
+    /**
+     * @param wmNode
+     */
+    public static Stream<Property> streamProperties(Node node) {
+        return StreamSupport.stream(propertiesIterable(node).spliterator(), false);
     }
 
     /**

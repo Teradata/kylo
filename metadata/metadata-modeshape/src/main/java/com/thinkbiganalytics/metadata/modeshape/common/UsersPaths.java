@@ -4,7 +4,8 @@
 package com.thinkbiganalytics.metadata.modeshape.common;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
+
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
 /**
  * Defines and resolves paths of users and user groups within the JCR repository.
@@ -13,8 +14,8 @@ import java.nio.file.Paths;
  */
 public interface UsersPaths {
 
-    public static final Path USERS = Paths.get("users");
-    public static final Path GROUPS = Paths.get("groups");
+    public static final Path USERS = JcrUtil.path("users");
+    public static final Path GROUPS = JcrUtil.path("groups");
     
     static Path userPath(String name) {
         return USERS.resolve(name);

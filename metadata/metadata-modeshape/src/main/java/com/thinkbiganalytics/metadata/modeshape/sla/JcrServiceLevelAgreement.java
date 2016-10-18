@@ -3,6 +3,14 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.sla;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
@@ -14,14 +22,6 @@ import com.thinkbiganalytics.metadata.sla.api.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementCheck;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
 
 /**
  *
@@ -42,6 +42,7 @@ public class JcrServiceLevelAgreement extends AbstractJcrAuditableSystemEntity i
 
     public static final String JSON = "tba:json";
 
+    public static final String ENABLED = "tba:enabled";
 
     public static final String SLA_CHECKS = "tba:slaChecks";
 
@@ -83,10 +84,26 @@ public class JcrServiceLevelAgreement extends AbstractJcrAuditableSystemEntity i
         return JcrPropertyUtil.getString(this.node, DESCRIPTION);
     }
 
+    @Override
+    public boolean isEnabled() {
+        return JcrPropertyUtil.getBoolean(this.node, ENABLED);
+    }
+
+    public void setEnabled(boolean enabled) {
+        JcrPropertyUtil.setProperty(this.node, ENABLED, enabled);
+    }
+
+    public void enable() {
+        setEnabled(true);
+    }
+
+    public void disabled() {
+        setEnabled(false);
+    }
 
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement#getObligationGroups()
-     */
+         * @see com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement#getObligationGroups()
+         */
     @Override
     public List<ObligationGroup> getObligationGroups() {
         try {

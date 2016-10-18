@@ -1,11 +1,5 @@
 package com.thinkbiganalytics.metadata.modeshape.extension;
 
-import com.google.common.base.MoreObjects;
-import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
-import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
-import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
-
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.Objects;
@@ -16,6 +10,12 @@ import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.PropertyDefinition;
+
+import com.google.common.base.MoreObjects;
+import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 
 /**
  * A {@link UserFieldDescriptor} backed by a JCR {@link PropertyDefinition}.

@@ -67,14 +67,11 @@
         this.onOrderChange = function (order) {
             PaginationDataService.sort(self.pageName,order);
             TableOptionsService.setSortOption(self.pageName,order);
-            //   return loadJobs(true).promise;
-            //return self.deferred.promise;
         };
 
         this.onPaginationChange = function (page, limit) {
             PaginationDataService.currentPage(self.pageName,null,page);
             self.currentPage = page;
-            // return loadJobs(true).promise;
         };
 
 
@@ -87,10 +84,7 @@
             var options = {'Component Name':'componentName','Alert':'alert','Update Date':'latestAlertTimestamp'};
 
             var sortOptions = TableOptionsService.newSortOptions(self.pageName,options,'latestAlertTimestamp','asc');
-            var currentOption = TableOptionsService.getCurrentSort(self.pageName);
-            if(currentOption) {
-                TableOptionsService.saveSortOption(self.pageName,currentOption)
-            }
+            TableOptionsService.initializeSortOption(self.pageName);
             return sortOptions;
 
         }
@@ -102,10 +96,12 @@
          * @param option
          */
         this.selectedTableOption = function(option) {
+            console.log('SET SORT TO BE ', option, self.pageName)
             var sortString = TableOptionsService.toSortString(option);
-            PaginationDataService.sort(self.pageName,sortString);
-            var updatedOption = TableOptionsService.toggleSort(self.pageName,option);
-            TableOptionsService.setSortOption(self.pageName,sortString);
+            var savedSort = PaginationDataService.sort(self.pageName, sortString);
+            var updatedOption = TableOptionsService.toggleSort(self.pageName, option);
+            TableOptionsService.setSortOption(self.pageName, sortString);
+            console.log('SET SORT TO BE ', option, sortString, self.pageName)
         }
 
 

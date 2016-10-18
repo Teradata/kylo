@@ -58,11 +58,11 @@ public class DropFeedTables extends AbstractProcessor {
             .build();
 
     /** Configuration fields */
-    private static final List<PropertyDescriptor> properties = ImmutableList.of(ComponentProperties.THRIFT_SERVICE, ComponentProperties.FEED_CATEGORY, ComponentProperties.FEED_NAME, TABLE_TYPE,
+    private static final List<PropertyDescriptor> properties = ImmutableList.of(IngestProperties.THRIFT_SERVICE, IngestProperties.FEED_CATEGORY, IngestProperties.FEED_NAME, TABLE_TYPE,
                                                                                 ADDITIONAL_TABLES);
 
     /** Output paths to other NiFi processors */
-    private static final Set<Relationship> relationships = ImmutableSet.of(ComponentProperties.REL_SUCCESS, ComponentProperties.REL_FAILURE);
+    private static final Set<Relationship> relationships = ImmutableSet.of(IngestProperties.REL_SUCCESS, IngestProperties.REL_FAILURE);
 
     @Nonnull
     @Override
@@ -88,17 +88,17 @@ public class DropFeedTables extends AbstractProcessor {
         String additionalTablesValue = context.getProperty(ADDITIONAL_TABLES).evaluateAttributeExpressions(flowFile).getValue();
         Set<String> additionalTables = (additionalTablesValue != null) ? ImmutableSet.copyOf(additionalTablesValue.split(",")) : ImmutableSet.of();
 
-        String entity = context.getProperty(ComponentProperties.FEED_NAME).evaluateAttributeExpressions(flowFile).getValue();
+        String entity = context.getProperty(IngestProperties.FEED_NAME).evaluateAttributeExpressions(flowFile).getValue();
         if (entity == null || entity.isEmpty()) {
             getLogger().error("Missing feed name");
-            session.transfer(flowFile, ComponentProperties.REL_FAILURE);
+            session.transfer(flowFile, IngestProperties.REL_FAILURE);
             return;
         }
 
-        String source = context.getProperty(ComponentProperties.FEED_CATEGORY).evaluateAttributeExpressions(flowFile).getValue();
+        String source = context.getProperty(IngestProperties.FEED_CATEGORY).evaluateAttributeExpressions(flowFile).getValue();
         if (source == null || source.isEmpty()) {
             getLogger().error("Missing category name");
-            session.transfer(flowFile, ComponentProperties.REL_FAILURE);
+            session.transfer(flowFile, IngestProperties.REL_FAILURE);
             return;
         }
 
@@ -111,14 +111,14 @@ public class DropFeedTables extends AbstractProcessor {
         }
 
         // Drop the tables
-        final ThriftService thriftService = context.getProperty(ComponentProperties.THRIFT_SERVICE).asControllerService(ThriftService.class);
+        final ThriftService thriftService = context.getProperty(IngestProperties.THRIFT_SERVICE).asControllerService(ThriftService.class);
 
         try (final Connection conn = thriftService.getConnection()) {
             boolean result = new TableRegisterSupport(conn).dropTables(source, entity, tableTypes, additionalTables);
-            session.transfer(flowFile, result ? ComponentProperties.REL_SUCCESS : ComponentProperties.REL_FAILURE);
+            session.transfer(flowFile, result ? IngestProperties.REL_SUCCESS : IngestProperties.REL_FAILURE);
         } catch (final Exception e) {
             getLogger().error("Unable drop tables", e);
-            session.transfer(flowFile, ComponentProperties.REL_FAILURE);
+            session.transfer(flowFile, IngestProperties.REL_FAILURE);
         }
     }
 }

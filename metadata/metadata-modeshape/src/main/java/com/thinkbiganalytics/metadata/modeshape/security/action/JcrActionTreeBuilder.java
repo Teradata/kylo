@@ -12,7 +12,6 @@ import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.security.action.config.ActionBuilder;
-import com.thinkbiganalytics.security.action.config.ModuleActionsBuilder;
 import com.thinkbiganalytics.security.action.config.ActionsTreeBuilder;
 
 /**

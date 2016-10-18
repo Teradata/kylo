@@ -4,6 +4,8 @@ package com.thinkbiganalytics.policy.rest.model;
 import com.thinkbiganalytics.policy.PolicyPropertyTypes;
 import com.thinkbiganalytics.rest.model.LabelValue;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +28,8 @@ public class FieldRulePropertyBuilder {
     private Integer groupOrder;
     private String layout;
     private boolean hidden;
+    private String pattern;
+    private String patternInvalidMessage;
 
     public FieldRulePropertyBuilder(String name){
         this.name = name;
@@ -51,6 +55,15 @@ public class FieldRulePropertyBuilder {
         return this;
     }
 
+    public FieldRulePropertyBuilder pattern(String pattern) {
+        this.pattern = pattern;
+        return this;
+    }
+
+    public FieldRulePropertyBuilder patternInvalidMessage(String patternInvalidMessage) {
+        this.patternInvalidMessage = patternInvalidMessage;
+        return this;
+    }
     public FieldRulePropertyBuilder type(PolicyPropertyTypes.PROPERTY_TYPE type) {
         this.type = type.name();
         return this;
@@ -119,6 +132,7 @@ public class FieldRulePropertyBuilder {
         return  this;
     }
 
+
     public FieldRuleProperty build(){
         FieldRuleProperty property = new FieldRuleProperty();
         property.setName(this.name);
@@ -133,6 +147,9 @@ public class FieldRulePropertyBuilder {
         property.setGroup(this.group);
         property.setGroupOrder(this.groupOrder);
         property.setHidden(this.hidden);
+        property.setPattern(pattern);
+        String invalidPatternMessage = StringUtils.isNotBlank(patternInvalidMessage) ? patternInvalidMessage : "Invalid Input";
+        property.setPatternInvalidMessage(invalidPatternMessage);
         return property;
     }
 }

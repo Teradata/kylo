@@ -1,5 +1,5 @@
 <vertical-section-layout section-title="Table Schema & Data Policies" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancelEdit()"
-                         allow-edit="vm.model.state == 'ENABLED' && vm.allowEdit" editable="vm.editableSection" keep-editable-after-save="true"
+                         allow-edit="vm.allowEdit" editable="vm.editableSection" keep-editable-after-save="true"
                          ng-if="vm.model.registeredTemplate.defineTable || vm.model.registeredTemplate.dataTransformation" the-form="vm.editFeedDataPoliciesForm">
 
   <readonly-section>
@@ -225,7 +225,7 @@
       <span flex="25" class="property-name">Security Groups</span>
 
       <div flex>
-        {{vm.model.table.securityGroups | join: ',':'name'}}
+        {{vm.model.securityGroups | join: ',':'name'}}
       </div>
     </div>
 

@@ -86,7 +86,10 @@
         self.securityGroupChips.searchText = null;
 
         this.fieldDataTypeDisplay = function (columnDef) {
-            return FeedService.getDataTypeDisplay(columnDef);
+            if (columnDef != undefined) {
+                return FeedService.getDataTypeDisplay(columnDef);
+            }
+
         }
 
 
@@ -164,9 +167,9 @@
             if (self.editModel.table.options.compressionFormat === undefined) {
                 self.editModel.options.compressionFormat = 'NONE'
             }
-            self.editModel.table.securityGroups = angular.copy(FeedService.editFeedModel.table.securityGroups);
-            if (self.editModel.table.securityGroups == undefined) {
-                self.editModel.table.securityGroups = [];
+            self.editModel.securityGroups = angular.copy(FeedService.editFeedModel.securityGroups);
+            if (self.editModel.securityGroups == undefined) {
+                self.editModel.securityGroups = [];
             }
             $timeout(validateMergeStrategies, 400);
         }
@@ -203,7 +206,7 @@
 
             copy.table.targetMergeStrategy = self.editModel.table.targetMergeStrategy;
             copy.table.options = self.editModel.table.options;
-            copy.table.securityGroups = self.editModel.table.securityGroups;
+            copy.securityGroups = self.editModel.securityGroups;
             copy.userProperties = null;
 
             FeedService.saveFeedModel(copy).then(function (response) {
@@ -215,7 +218,7 @@
                 self.model.table.fieldPolicies = self.editModel.fieldPolicies;
                 self.model.table.targetMergeStrategy = self.editModel.table.targetMergeStrategy;
                 self.model.table.options = self.editModel.table.options;
-                self.model.table.securityGroups = self.editModel.table.securityGroups;
+                self.model.securityGroups = self.editModel.securityGroups;
                 populateFieldNameMap();
             }, function (response) {
                 FeedService.hideFeedSavingDialog();

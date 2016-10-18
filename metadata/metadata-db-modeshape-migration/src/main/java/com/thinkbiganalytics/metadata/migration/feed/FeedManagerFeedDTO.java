@@ -17,8 +17,11 @@ import org.joda.time.DateTime;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
@@ -59,6 +62,8 @@ public class FeedManagerFeedDTO implements FeedManagerFeed {
     private FeedManagerTemplate template;
 
     private Set<Feed<?>> dependentFeeds;
+    
+    private Map<String, String> waterMarkValues = new HashMap<>();
 
     //template
 
@@ -301,6 +306,21 @@ public class FeedManagerFeedDTO implements FeedManagerFeed {
     @Override
     public void setSecurityGroups(List securityGroups) {
 
+    }
+
+    @Override
+    public Optional<String> getWaterMarkValue(String waterMarkName) {
+        return Optional.ofNullable(this.waterMarkValues.get(waterMarkName));
+    }
+
+    @Override
+    public Set<String> getWaterMarkNames() {
+        return new HashSet<>(this.waterMarkValues.keySet());
+    }
+
+    @Override
+    public void setWaterMarkValue(String waterMarkName, String value) {
+        this.waterMarkValues.put(waterMarkName, waterMarkName);
     }
 
 }

@@ -113,6 +113,11 @@
             <artifactId>thinkbig-security-auth-ldap</artifactId>
             <version>${project.version}</version>
         </dependency>
+      <dependency>
+        <groupId>com.thinkbiganalytics.datalake</groupId>
+        <artifactId>thinkbig-hadoop-authorization-core</artifactId>
+        <version>${project.version}</version>
+      </dependency>
 
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>

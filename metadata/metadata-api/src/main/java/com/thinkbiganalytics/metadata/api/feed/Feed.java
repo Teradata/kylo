@@ -3,6 +3,7 @@ package com.thinkbiganalytics.metadata.api.feed;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
@@ -93,21 +94,33 @@ public interface Feed<C extends Category> extends Propertied, AccessControlled, 
      */
     void setUserProperties(@Nonnull Map<String, String> userProperties, @Nonnull Set<UserFieldDescriptor> userFields);
 
-    // -==-=-=-=- Deprecated -=-=-=-=-=-
 
-    @Deprecated
     List<? extends FeedSource> getSources();
 
-    @Deprecated
     FeedSource getSource(Datasource.ID id);
 
-    @Deprecated
     List<? extends FeedDestination> getDestinations();
 
-    @Deprecated
     FeedDestination getDestination(Datasource.ID id);
 
     List<? extends HadoopSecurityGroup> getSecurityGroups();
 
     void setSecurityGroups(List<? extends HadoopSecurityGroup> securityGroups);
+
+    /**
+     * @param waterMarkName the name of the high water mark
+     * @return an optional string value of the high water mark
+     */
+    Optional<String> getWaterMarkValue(String waterMarkName);
+    
+    /**
+     * @return the set of existing high water mark names
+     */
+    Set<String> getWaterMarkNames();
+    
+    /**
+     * @param waterMarkName the name of the high water mark
+     * @param value the current value of the water mark
+     */
+    void setWaterMarkValue(String waterMarkName, String value);
 }

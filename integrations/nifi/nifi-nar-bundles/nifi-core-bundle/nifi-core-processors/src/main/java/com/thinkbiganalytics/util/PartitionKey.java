@@ -38,8 +38,12 @@ public class PartitionKey implements Cloneable {
         return key;
     }
 
+    public String getKeyForSql() {
+        return HiveColumnUtil.surroundWithTick(key);
+    }
+
     public String getKeyWithAlias() {
-        return toAliasSQL() + key;
+        return toAliasSQL() + getKeyForSql();
     }
 
     public String getFormula() {
@@ -47,6 +51,7 @@ public class PartitionKey implements Cloneable {
     }
 
     public String getFormulaWithAlias() {
+        surroundFormulaColumnWithTick();
         if (alias != null) {
             int idx = formula.indexOf("(");
             if (idx > -1) {
@@ -58,6 +63,23 @@ public class PartitionKey implements Cloneable {
         }
         return getFormula();
     }
+
+    /**
+     * if column in formula has a space, surround it with a tick mark
+     */
+    private void surroundFormulaColumnWithTick() {
+        int idx = formula.indexOf("(");
+        String column = StringUtils.substringBetween(formula, "(", ")");
+        if (StringUtils.isNotBlank(column)) {
+            column = HiveColumnUtil.surroundWithTick(column);
+            StringBuffer sb = new StringBuffer();
+            sb.append(StringUtils.substringBefore(formula, "(")).append("(").append(column).append(")");
+            formula = sb.toString();
+        }
+
+    }
+
+
 
     /**
      * Generates the where statement against the source table using the provided value
@@ -86,9 +108,9 @@ public class PartitionKey implements Cloneable {
      */
     public String toPartitionNameValue(String value) {
         if ("string".equalsIgnoreCase(type)) {
-            return toAliasSQL() + key + "='" + value + "'";
+            return toAliasSQL() + getKeyForSql() + "='" + value + "'";
         } else {
-            return toAliasSQL() + key + "=" + value;
+            return toAliasSQL() + getKeyForSql() + "=" + value;
         }
     }
 

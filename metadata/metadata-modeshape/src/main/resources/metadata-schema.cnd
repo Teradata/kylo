@@ -123,6 +123,9 @@
 [tba:properties] > nt:hierarchyNode
 	- * (UNDEFINED) COPY
 
+[tba:waterMarks] > nt:hierarchyNode
+	- * (UNDEFINED) COPY
+
 [tba:entity] > nt:hierarchyNode, mix:lastModified, tba:taggable
 
 [tba:extensibleEntity] > tba:entity
@@ -149,6 +152,7 @@
 	+ tba:sources (tba:feedSource) sns
 	+ tba:destinations (tba:feedDestination) sns
     + tba:precondition (tba:feedPrecondition)
+    + tba:highWaterMarks (tba:waterMarks)
 	- tba:systemName (STRING) mandatory
 	- tba:state (STRING) = 'ENABLED'
 	- tba:initialized (BOOLEAN) = 'false'
@@ -199,6 +203,7 @@
 
 [tba:sla] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied
     - tba:defaultGroup (REFERENCE)
+    - tba:enabled (BOOLEAN) = 'true'
     + tba:groups (tba:obligationGroup) sns
     + tba:slaChecks (tba:slaCheck) sns
 

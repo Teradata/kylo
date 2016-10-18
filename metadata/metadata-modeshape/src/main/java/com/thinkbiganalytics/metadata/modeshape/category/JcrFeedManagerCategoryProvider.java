@@ -1,5 +1,12 @@
 package com.thinkbiganalytics.metadata.modeshape.category;
 
+import java.io.Serializable;
+import java.util.Optional;
+import java.util.Set;
+
+import javax.annotation.Nonnull;
+import javax.inject.Inject;
+
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
@@ -7,13 +14,6 @@ import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryProvider;
 import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
-
-import java.io.Serializable;
-import java.util.Optional;
-import java.util.Set;
-
-import javax.annotation.Nonnull;
-import javax.inject.Inject;
 
 /**
  * A JCR provider for {@link FeedManagerCategory} objects.
