@@ -1,13 +1,11 @@
 package com.thinkbiganalytics.datalake.authorization.rest.client;
 
 import com.thinkbiganalytics.datalake.authorization.model.HadoopAuthorizationGroup;
-import com.thinkbiganalytics.datalake.authorization.model.HadoopAuthorizationPolicy;
-import com.thinkbiganalytics.datalake.authorization.rest.model.RangerCreatePolicy;
+import com.thinkbiganalytics.datalake.authorization.rest.model.RangerCreateOrUpdatePolicy;
 import com.thinkbiganalytics.datalake.authorization.rest.model.RangerGroup;
 import com.thinkbiganalytics.datalake.authorization.rest.model.RangerGroups;
 import com.thinkbiganalytics.datalake.authorization.rest.model.RangerPolicies;
 import com.thinkbiganalytics.datalake.authorization.rest.model.RangerPolicy;
-import com.thinkbiganalytics.datalake.authorization.rest.model.RangerUpdatePolicy;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.rest.JerseyRestClient;
 
@@ -50,7 +48,7 @@ public class RangerRestClient extends JerseyRestClient {
             throw new RangerRestClientException("Unable to get policy .", e);
         }
     }*/
-    public void createPolicy(RangerCreatePolicy policy) {
+    public void createPolicy(RangerCreateOrUpdatePolicy policy) {
         try {
             post("/public/api/policy/", policy, String.class);
         } catch (Exception e) {
@@ -58,7 +56,7 @@ public class RangerRestClient extends JerseyRestClient {
         }
     }
 
-    public void updatePolicy(RangerUpdatePolicy obj, int policyId) throws RangerRestClientException {
+    public void updatePolicy(RangerCreateOrUpdatePolicy obj, int policyId) throws RangerRestClientException {
         try {
             put("/public/api/policy/" + policyId, obj, String.class);
         } catch (Exception e) {
@@ -74,12 +72,12 @@ public class RangerRestClient extends JerseyRestClient {
         }
     }
 
-    public List<HadoopAuthorizationPolicy> searchPolicies(Map<String, Object> searchCriteria) throws RangerRestClientException {
+    public List<RangerPolicy> searchPolicies(Map<String, Object> searchCriteria) throws RangerRestClientException {
         try {
             String results = get("/public/api/policy/", searchCriteria, String.class);
             RangerPolicies rangerPoliciesfromJson = ObjectMapperSerializer.deserialize(results, RangerPolicies.class);
 
-            List<HadoopAuthorizationPolicy> rangerPolicies = new ArrayList<>();
+            List<RangerPolicy> rangerPolicies = new ArrayList<>();
             for (RangerPolicy rangerPolicy : rangerPoliciesfromJson.getvXPolicies()) {
                 rangerPolicies.add(rangerPolicy);
             }

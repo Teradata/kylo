@@ -3,21 +3,23 @@ package com.thinkbiganalytics.datalake.authorization;
 import com.thinkbiganalytics.datalake.authorization.config.AuthorizationConfiguration;
 import com.thinkbiganalytics.datalake.authorization.config.RangerConnection;
 import com.thinkbiganalytics.datalake.authorization.model.HadoopAuthorizationGroup;
-import com.thinkbiganalytics.datalake.authorization.model.HadoopAuthorizationPolicy;
 import com.thinkbiganalytics.datalake.authorization.rest.client.RangerRestClient;
 import com.thinkbiganalytics.datalake.authorization.rest.client.RangerRestClientConfig;
-import com.thinkbiganalytics.datalake.authorization.rest.model.RangerCreatePolicy;
+import com.thinkbiganalytics.datalake.authorization.rest.model.RangerCreateOrUpdatePolicy;
 import com.thinkbiganalytics.datalake.authorization.rest.model.RangerGroup;
-import com.thinkbiganalytics.datalake.authorization.rest.model.RangerUpdatePolicy;
+import com.thinkbiganalytics.datalake.authorization.rest.model.RangerPolicy;
 import com.thinkbiganalytics.datalake.authorization.service.BaseHadoopAuthorizationService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class RangerAuthorizationService extends BaseHadoopAuthorizationService {
 
@@ -81,12 +83,12 @@ public class RangerAuthorizationService extends BaseHadoopAuthorizationService {
 
     @Override
     public void createOrUpdateReadOnlyHivePolicy(String categoryName, String feedName, List<String> securityGroupNames, String datebaseName, List<String> tableNames) {
-        String rangerHivePolicyName = KYLO_POLICY_PREFIX + "_" + categoryName + "_" + feedName + "_" + HIVE_REPOSITORY_TYPE;
+        String rangerHivePolicyName = getHivePolicyName(categoryName, feedName);
 
         Map<String, Object> searchHiveCriteria = new HashMap<>();
         searchHiveCriteria.put(POLICY_NAME, rangerHivePolicyName);
         searchHiveCriteria.put(REPOSITORY_TYPE, HIVE_REPOSITORY_TYPE);
-        List<HadoopAuthorizationPolicy> hadoopPolicyList = this.searchPolicy(searchHiveCriteria);
+        List<RangerPolicy> hadoopPolicyList = this.searchPolicy(searchHiveCriteria);
 
         if (hadoopPolicyList.size() > 1) {
             throw new RuntimeException("More than 1 unique Hive policy was found for " + rangerHivePolicyName);
@@ -99,12 +101,12 @@ public class RangerAuthorizationService extends BaseHadoopAuthorizationService {
 
     @Override
     public void createOrUpdateReadOnlyHdfsPolicy(String categoryName, String feedName, List<String> securityGroupNames, List<String> hdfsPaths) {
-        String rangerHdfsPolicyName = KYLO_POLICY_PREFIX + "_" + categoryName + "_" + feedName + "_" + HDFS_REPOSITORY_TYPE;
+        String rangerHdfsPolicyName = getHdfsPolicyName(categoryName, feedName);
 
         Map<String, Object> searchHDFSCriteria = new HashMap<>();
         searchHDFSCriteria.put(POLICY_NAME, rangerHdfsPolicyName);
         searchHDFSCriteria.put(REPOSITORY_TYPE, HDFS_REPOSITORY_TYPE);
-        List<HadoopAuthorizationPolicy> hadoopPolicyList = this.searchPolicy(searchHDFSCriteria);
+        List<RangerPolicy> hadoopPolicyList = this.searchPolicy(searchHDFSCriteria);
 
         if (hadoopPolicyList.size() > 1) {
             throw new RuntimeException("More than 1 unique HDFS policy was found for " + rangerHdfsPolicyName);
@@ -118,31 +120,31 @@ public class RangerAuthorizationService extends BaseHadoopAuthorizationService {
     @Override
     public void createReadOnlyHivePolicy(String categoryName, String feedName, List<String> securityGroupNames, String datebaseName, List<String> tableNames) {
 
-        RangerCreatePolicy rangerCreatePolicy = new RangerCreatePolicy();
+        RangerCreateOrUpdatePolicy rangerCreateOrUpdatePolicy = new RangerCreateOrUpdatePolicy();
 
         List<String> hivePermissions = new ArrayList();
         hivePermissions.add(HIVE_READ_ONLY_PERMISSION);
-        String rangerHivePolicyName = KYLO_POLICY_PREFIX + "_" + categoryName + "_" + feedName + "_" + HIVE_REPOSITORY_TYPE;
+        String rangerHivePolicyName = getHivePolicyName(categoryName, feedName);
         String hiveDescription = "Ranger policy created for group list " + securityGroupNames.toString() + " for resource " + tableNames.toString();
         String hiveDatabases = datebaseName;
         String hiveTables = convertListToString(tableNames, ",");
 
-        rangerCreatePolicy = new RangerCreatePolicy();
+        rangerCreateOrUpdatePolicy = new RangerCreateOrUpdatePolicy();
 
-        rangerCreatePolicy.setPolicyName(rangerHivePolicyName);
-        rangerCreatePolicy.setDatabases(hiveDatabases);
-        rangerCreatePolicy.setTables(hiveTables);
-        rangerCreatePolicy.setColumns(HIVE_COLUMN_PERMISSION);
-        rangerCreatePolicy.setUdfs("");
-        rangerCreatePolicy.setDescription(hiveDescription);
-        rangerCreatePolicy.setRepositoryName(rangerConnection.getHiveRepositoryName());
-        rangerCreatePolicy.setRepositoryType(HIVE_REPOSITORY_TYPE);
-        rangerCreatePolicy.setIsAuditEnabled(IsAuditable);
-        rangerCreatePolicy.setIsEnabled(IsEnable);
-        rangerCreatePolicy.setPermMapList(securityGroupNames, hivePermissions);
+        rangerCreateOrUpdatePolicy.setPolicyName(rangerHivePolicyName);
+        rangerCreateOrUpdatePolicy.setDatabases(hiveDatabases);
+        rangerCreateOrUpdatePolicy.setTables(hiveTables);
+        rangerCreateOrUpdatePolicy.setColumns(HIVE_COLUMN_PERMISSION);
+        rangerCreateOrUpdatePolicy.setUdfs("");
+        rangerCreateOrUpdatePolicy.setDescription(hiveDescription);
+        rangerCreateOrUpdatePolicy.setRepositoryName(rangerConnection.getHiveRepositoryName());
+        rangerCreateOrUpdatePolicy.setRepositoryType(HIVE_REPOSITORY_TYPE);
+        rangerCreateOrUpdatePolicy.setIsAuditEnabled(IsAuditable);
+        rangerCreateOrUpdatePolicy.setIsEnabled(IsEnable);
+        rangerCreateOrUpdatePolicy.setPermMapList(securityGroupNames, hivePermissions);
 
         try {
-            rangerRestClient.createPolicy(rangerCreatePolicy);
+            rangerRestClient.createPolicy(rangerCreateOrUpdatePolicy);
         } catch (Exception e) {
             log.error("Error creating Hive Ranger policy", e);
             throw new RuntimeException("Error creating Hive Ranger policy", e);
@@ -153,29 +155,29 @@ public class RangerAuthorizationService extends BaseHadoopAuthorizationService {
     @Override
     public void createReadOnlyHdfsPolicy(String categoryName, String feedName, List<String> securityGroupNames, List<String> hdfsPaths) {
 
-        RangerCreatePolicy rangerCreatePolicy = new RangerCreatePolicy();
+        RangerCreateOrUpdatePolicy rangerCreateOrUpdatePolicy = new RangerCreateOrUpdatePolicy();
 
         /**
          * Create HDFS Policy
          */
         List<String> hdfsPermissions = new ArrayList();
         hdfsPermissions.add(HDFS_READ_ONLY_PERMISSION);
-        String rangerHdfsPolicyName = KYLO_POLICY_PREFIX + "_" + categoryName + "_" + feedName + "_" + HDFS_REPOSITORY_TYPE;
+        String rangerHdfsPolicyName = getHdfsPolicyName(categoryName, feedName);
         String description = "Ranger policy created for group list " + securityGroupNames.toString() + " for resource " + hdfsPaths.toString();
         String hdfsResource = convertListToString(hdfsPaths, ",");
 
-        rangerCreatePolicy.setPolicyName(rangerHdfsPolicyName);
-        rangerCreatePolicy.setResourceName(hdfsResource);
-        rangerCreatePolicy.setDescription(description);
-        rangerCreatePolicy.setRepositoryName(rangerConnection.getHdfsRepositoryName());
-        rangerCreatePolicy.setRepositoryType(HDFS_REPOSITORY_TYPE);
-        rangerCreatePolicy.setIsEnabled(IsEnable);
-        rangerCreatePolicy.setIsRecursive(IsRecursive);
-        rangerCreatePolicy.setIsAuditEnabled(IsAuditable);
-        rangerCreatePolicy.setPermMapList(securityGroupNames, hdfsPermissions);
+        rangerCreateOrUpdatePolicy.setPolicyName(rangerHdfsPolicyName);
+        rangerCreateOrUpdatePolicy.setResourceName(hdfsResource);
+        rangerCreateOrUpdatePolicy.setDescription(description);
+        rangerCreateOrUpdatePolicy.setRepositoryName(rangerConnection.getHdfsRepositoryName());
+        rangerCreateOrUpdatePolicy.setRepositoryType(HDFS_REPOSITORY_TYPE);
+        rangerCreateOrUpdatePolicy.setIsEnabled(IsEnable);
+        rangerCreateOrUpdatePolicy.setIsRecursive(IsRecursive);
+        rangerCreateOrUpdatePolicy.setIsAuditEnabled(IsAuditable);
+        rangerCreateOrUpdatePolicy.setPermMapList(securityGroupNames, hdfsPermissions);
 
         try {
-            rangerRestClient.createPolicy(rangerCreatePolicy);
+            rangerRestClient.createPolicy(rangerCreateOrUpdatePolicy);
         } catch (Exception e) {
             log.error("Error creating HDFS Ranger policy", e);
             throw new RuntimeException("Error creating HDFS Ranger policy", e);
@@ -187,11 +189,11 @@ public class RangerAuthorizationService extends BaseHadoopAuthorizationService {
 
         int policyId = 0;
 
-        String rangerHivePolicyName = KYLO_POLICY_PREFIX + "_" + categoryName + "_" + feedName + "_" + HIVE_REPOSITORY_TYPE;
+        String rangerHivePolicyName = getHivePolicyName(categoryName, feedName);
         Map<String, Object> searchHiveCriteria = new HashMap<>();
         searchHiveCriteria.put(POLICY_NAME, rangerHivePolicyName);
         searchHiveCriteria.put(REPOSITORY_TYPE, HIVE_REPOSITORY_TYPE);
-        List<HadoopAuthorizationPolicy> hadoopPolicyList = this.searchPolicy(searchHiveCriteria);
+        List<RangerPolicy> hadoopPolicyList = this.searchPolicy(searchHiveCriteria);
 
         policyId = 0;
         if (hadoopPolicyList.size() == 0) {
@@ -201,8 +203,8 @@ public class RangerAuthorizationService extends BaseHadoopAuthorizationService {
                 throw new RuntimeException("Unable to find Hive unique policy.");
             } else {
 
-                for (HadoopAuthorizationPolicy hadoopPolicy : hadoopPolicyList) {
-                    policyId = hadoopPolicy.getPolicyId();
+                for (RangerPolicy hadoopPolicy : hadoopPolicyList) {
+                    policyId = hadoopPolicy.getId();
                 }
             }
         }
@@ -212,7 +214,7 @@ public class RangerAuthorizationService extends BaseHadoopAuthorizationService {
         String hiveDescription = "Ranger policy updated for group list " + groups.toString() + " for resource " + datebaseNames.toString();
         String hiveTables = convertListToString(tableNames, ",");
 
-        RangerUpdatePolicy rangerUpdatePolicy = new RangerUpdatePolicy();
+        RangerCreateOrUpdatePolicy rangerUpdatePolicy = new RangerCreateOrUpdatePolicy();
         rangerUpdatePolicy.setPolicyName(rangerHivePolicyName);
         rangerUpdatePolicy.setDatabases(datebaseNames);
         rangerUpdatePolicy.setTables(hiveTables);
@@ -238,12 +240,12 @@ public class RangerAuthorizationService extends BaseHadoopAuthorizationService {
     public void updateReadOnlyHdfsPolicy(String categoryName, String feedName, List<String> groups, List<String> hdfsPaths) {
 
         int policyId = 0;
-        String rangerHdfsPolicyName = KYLO_POLICY_PREFIX + "_" + categoryName + "_" + feedName + "_" + HDFS_REPOSITORY_TYPE;
+        String rangerHdfsPolicyName = getHdfsPolicyName(categoryName, feedName);
 
         Map<String, Object> searchHDFSCriteria = new HashMap<>();
         searchHDFSCriteria.put(POLICY_NAME, rangerHdfsPolicyName);
         searchHDFSCriteria.put(REPOSITORY_TYPE, HDFS_REPOSITORY_TYPE);
-        List<HadoopAuthorizationPolicy> hadoopPolicyList = this.searchPolicy(searchHDFSCriteria);
+        List<RangerPolicy> hadoopPolicyList = this.searchPolicy(searchHDFSCriteria);
 
         if (hadoopPolicyList.size() == 0) {
             throw new UnsupportedOperationException("Ranger Plugin : Unable to get ID for Ranger HDFS Policy");
@@ -252,13 +254,13 @@ public class RangerAuthorizationService extends BaseHadoopAuthorizationService {
                 throw new RuntimeException("Unable to find HDFS unique policy.");
             } else {
 
-                for (HadoopAuthorizationPolicy hadoopPolicy : hadoopPolicyList) {
-                    policyId = hadoopPolicy.getPolicyId();
+                for (RangerPolicy hadoopPolicy : hadoopPolicyList) {
+                    policyId = hadoopPolicy.getId();
                 }
             }
         }
 
-        RangerUpdatePolicy rangerUpdatePolicy = new RangerUpdatePolicy();
+        RangerCreateOrUpdatePolicy rangerUpdatePolicy = new RangerCreateOrUpdatePolicy();
 
         /**
          * Update HDFS Policy
@@ -288,32 +290,117 @@ public class RangerAuthorizationService extends BaseHadoopAuthorizationService {
     }
 
     @Override
-    public List<HadoopAuthorizationPolicy> searchPolicy(Map<String, Object> searchCriteria) {
+    /**
+     * If no security policy exists it will be created. If a policy exists it will be updated
+     */
+    public void updateSecurityGroupsForAllPolicies(String categoryName, String feedName, List<String> securityGroupNames, Map<String, String> feedProperties) {
+        String rangerHdfsPolicyName = getHdfsPolicyName(categoryName, feedName);
+        RangerPolicy hdfsPolicy = (RangerPolicy) searchHdfsPolicy(rangerHdfsPolicyName);
+
+        if (securityGroupNames == null) {
+            deleteHivePolicy(categoryName, feedName);
+            deleteHdfsPolicy(categoryName, feedName);
+        } else {
+            if (hdfsPolicy == null) {
+                String hdfsFoldersWithCommas = feedProperties.get(REGISTRATION_HDFS_FOLDERS).replace("\n", ",");
+                List<String> hdfsFolders = Stream.of(hdfsFoldersWithCommas).collect(Collectors.toList());
+
+                createReadOnlyHdfsPolicy(categoryName, feedName, securityGroupNames, hdfsFolders);
+            } else {
+                List<String> hdfsPermissions = new ArrayList();
+                hdfsPermissions.add(HDFS_READ_ONLY_PERMISSION);
+
+                RangerCreateOrUpdatePolicy updatePolicy = new RangerCreateOrUpdatePolicy();
+                BeanUtils.copyProperties(hdfsPolicy, updatePolicy);
+                updatePolicy.setPermMapList(securityGroupNames, hdfsPermissions);
+
+                rangerRestClient.updatePolicy(updatePolicy, hdfsPolicy.getId());
+            }
+
+            String rangerHivePolicyName = getHivePolicyName(categoryName, feedName);
+            RangerPolicy hivePolicy = (RangerPolicy) searchHivePolicy(rangerHivePolicyName);
+
+            if (hivePolicy == null) {
+                String hiveTablesWithCommas = feedProperties.get(REGISTRATION_HIVE_TABLES).replace("\n", ",");
+                List<String> hiveTables = Stream.of(hiveTablesWithCommas).collect(Collectors.toList());
+                String hiveSchema = feedProperties.get(REGISTRATION_HIVE_SCHEMA);
+
+                createOrUpdateReadOnlyHivePolicy(categoryName, feedName, securityGroupNames, hiveSchema, hiveTables);
+            } else {
+                List<String> hivePermissions = new ArrayList();
+                hivePermissions.add(HIVE_READ_ONLY_PERMISSION);
+                RangerCreateOrUpdatePolicy updatePolicy = new RangerCreateOrUpdatePolicy();
+                BeanUtils.copyProperties(hivePolicy, updatePolicy);
+                updatePolicy.setPermMapList(securityGroupNames, hivePermissions);
+                rangerRestClient.updatePolicy(updatePolicy, hivePolicy.getId());
+            }
+        }
+    }
+
+    private String getHdfsPolicyName(String categoryName, String feedName) {
+        return KYLO_POLICY_PREFIX + "_" + categoryName + "_" + feedName + "_" + HDFS_REPOSITORY_TYPE;
+    }
+
+    private String getHivePolicyName(String categoryName, String feedName) {
+        return KYLO_POLICY_PREFIX + "_" + categoryName + "_" + feedName + "_" + HIVE_REPOSITORY_TYPE;
+    }
+
+    private RangerPolicy searchHdfsPolicy(String hdfsPolicyName) {
+        RangerPolicy result = null;
+
+        Map<String, Object> searchHDFSCriteria = new HashMap<>();
+        searchHDFSCriteria.put(POLICY_NAME, hdfsPolicyName);
+        searchHDFSCriteria.put(REPOSITORY_TYPE, HDFS_REPOSITORY_TYPE);
+        List<RangerPolicy> hadoopPolicyList = this.searchPolicy(searchHDFSCriteria);
+        if (hadoopPolicyList.size() > 1) {
+            throw new RuntimeException("More than 1 unique HDFS policy was found for " + hdfsPolicyName);
+        } else if (hadoopPolicyList != null) {
+            result = hadoopPolicyList.get(0);
+        }
+        return result;
+    }
+
+    private RangerPolicy searchHivePolicy(String hivePolicyName) {
+        RangerPolicy result = null;
+
+        Map<String, Object> searchHiveCriteria = new HashMap<>();
+        searchHiveCriteria.put(POLICY_NAME, hivePolicyName);
+        searchHiveCriteria.put(REPOSITORY_TYPE, HIVE_REPOSITORY_TYPE);
+        List<RangerPolicy> hadoopPolicyList = this.searchPolicy(searchHiveCriteria);
+        if (hadoopPolicyList.size() > 1) {
+            throw new RuntimeException("More than 1 unique Hive policy was found for " + hivePolicyName);
+        } else if (hadoopPolicyList != null) {
+            result = hadoopPolicyList.get(0);
+        }
+        return result;
+
+
+    }
+
+    public List<RangerPolicy> searchPolicy(Map<String, Object> searchCriteria) {
         return rangerRestClient.searchPolicies(searchCriteria);
     }
 
     @Override
-    public void deletePolicy(String categoryName, String feedName, String repositoryType) throws Exception {
+    public void deleteHivePolicy(String categoryName, String feedName) {
 
         int policyId = 0;
+        String rangerHivePolicyName = getHivePolicyName(categoryName, feedName);
 
-        repositoryType = repositoryType.toLowerCase();
-        String rangerHDFSPolicyName = KYLO_POLICY_PREFIX + "_" + categoryName + "_" + feedName + "_" + repositoryType;
-
-        Map<String, Object> searchHDFSCriteria = new HashMap<>();
-        searchHDFSCriteria.put(POLICY_NAME, rangerHDFSPolicyName);
-        searchHDFSCriteria.put(REPOSITORY_TYPE, repositoryType);
-        List<HadoopAuthorizationPolicy> hadoopPolicyList = this.searchPolicy(searchHDFSCriteria);
+        Map<String, Object> searchHiveCriteria = new HashMap<>();
+        searchHiveCriteria.put(POLICY_NAME, rangerHivePolicyName);
+        searchHiveCriteria.put(REPOSITORY_TYPE, HIVE_REPOSITORY_TYPE);
+        List<RangerPolicy> hadoopPolicyList = this.searchPolicy(searchHiveCriteria);
 
         if (hadoopPolicyList.size() == 0) {
-            throw new UnsupportedOperationException("Ranger Plugin : Unable to get ID for Ranger " + rangerHDFSPolicyName + " Policy");
+            throw new UnsupportedOperationException("Ranger Plugin : Unable to get ID for Ranger " + rangerHivePolicyName + " Policy");
         } else {
             if (hadoopPolicyList.size() > 1) {
-                throw new Exception("Unable to find HDFS unique policy.");
+                throw new RuntimeException("Unable to find Hive unique policy.");
             } else {
 
-                for (HadoopAuthorizationPolicy hadoopPolicy : hadoopPolicyList) {
-                    policyId = hadoopPolicy.getPolicyId();
+                for (RangerPolicy hadoopPolicy : hadoopPolicyList) {
+                    policyId = hadoopPolicy.getId();
                 }
             }
         }
@@ -322,7 +409,39 @@ public class RangerAuthorizationService extends BaseHadoopAuthorizationService {
             rangerRestClient.deletePolicy(policyId);
         } catch (Exception e) {
             log.error("Unable to delete policy", e);
-            throw new RuntimeException("Unable to delete policy", e);
+            throw new RuntimeException("Unable to delete policy for " + rangerHivePolicyName, e);
+        }
+
+    }
+
+    @Override
+    public void deleteHdfsPolicy(String categoryName, String feedName) {
+
+        int policyId = 0;
+        String rangerHdfsPolicyName = getHdfsPolicyName(categoryName, feedName);
+
+        Map<String, Object> searchHdfsCriteria = new HashMap<>();
+        searchHdfsCriteria.put(POLICY_NAME, rangerHdfsPolicyName);
+        searchHdfsCriteria.put(REPOSITORY_TYPE, HIVE_REPOSITORY_TYPE);
+        List<RangerPolicy> hadoopPolicyList = this.searchPolicy(searchHdfsCriteria);
+
+        if (hadoopPolicyList.size() == 0) {
+            throw new UnsupportedOperationException("Ranger Plugin : Unable to get ID for Ranger " + rangerHdfsPolicyName + " Policy");
+        } else {
+            if (hadoopPolicyList.size() > 1) {
+                throw new RuntimeException("Unable to find HDFS unique policy.");
+            } else {
+                for (RangerPolicy hadoopPolicy : hadoopPolicyList) {
+                    policyId = hadoopPolicy.getId();
+                }
+            }
+        }
+
+        try {
+            rangerRestClient.deletePolicy(policyId);
+        } catch (Exception e) {
+            log.error("Unable to delete policy", e);
+            throw new RuntimeException("Unable to delete policy for " + rangerHdfsPolicyName, e);
         }
 
     }

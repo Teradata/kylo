@@ -1,12 +1,11 @@
 package com.thinkbiganalytics.datalake.authorization.rest.model;
 
-import com.thinkbiganalytics.datalake.authorization.model.HadoopAuthorizationPolicy;
 
 /**
  * Created by Shashi Vishwakarma on 10/05/16.
  */
 
-public class RangerPolicy implements HadoopAuthorizationPolicy {
+public class RangerPolicy {
 
     private int id;
     private String owner;
@@ -133,18 +132,6 @@ public class RangerPolicy implements HadoopAuthorizationPolicy {
 
     public void setIsAuditEnabled(String isAuditEnabled) {
         this.isAuditEnabled = isAuditEnabled;
-    }
-
-    @Override
-    public int getPolicyId() {
-        // TODO Auto-generated method stub
-        return this.id;
-    }
-
-    @Override
-    public int getPolicyCount() {
-        // TODO Auto-generated method stub
-        return 0;
     }
 
 }

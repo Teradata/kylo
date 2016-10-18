@@ -6,7 +6,6 @@ import com.thinkbiganalytics.datalake.authorization.client.SentryClientException
 import com.thinkbiganalytics.datalake.authorization.config.AuthorizationConfiguration;
 import com.thinkbiganalytics.datalake.authorization.config.SentryConnection;
 import com.thinkbiganalytics.datalake.authorization.model.HadoopAuthorizationGroup;
-import com.thinkbiganalytics.datalake.authorization.model.HadoopAuthorizationPolicy;
 import com.thinkbiganalytics.datalake.authorization.service.HadoopAuthorizationService;
 
 import org.slf4j.Logger;
@@ -74,27 +73,36 @@ public class SentryAuthorizationService implements HadoopAuthorizationService {
     }
 
     @Override
-    public void updateReadOnlyHivePolicy(String categoryName, String feedName, List<String> groups, String datebaseName, List<String> tableNames) throws Exception {
+    public void updateReadOnlyHivePolicy(String categoryName, String feedName, List<String> groups, String datebaseName, List<String> tableNames) {
 
     }
 
     @Override
-    public void updateReadOnlyHdfsPolicy(String categoryName, String feedName, List<String> groups, List<String> hdfsPaths) throws Exception {
+    public void updateReadOnlyHdfsPolicy(String categoryName, String feedName, List<String> groups, List<String> hdfsPaths) {
 
     }
 
+    @Override
+    public void updateSecurityGroupsForAllPolicies(String categoryName, String feedName,List<String> hadoopAuthorizationGroups, Map<String,String> feedProperties) {
+
+    }
 
     @Override
-    public void deletePolicy(String categoryName, String feedName, String repositoryType) throws Exception {
+    public void deleteHivePolicy(String categoryName, String feedName) {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public List<HadoopAuthorizationPolicy> searchPolicy(Map<String, Object> searchCriteria) {
+    public void deleteHdfsPolicy(String categoryName, String feedName) {
+        // TODO Auto-generated method stub
+
+    }
+
+    /*public List<HadoopAuthorizationPolicy> searchPolicy(Map<String, Object> searchCriteria) {
         // TODO Auto-generated method stub
         return null;
-    }
+    }*/
 
 
     @Override

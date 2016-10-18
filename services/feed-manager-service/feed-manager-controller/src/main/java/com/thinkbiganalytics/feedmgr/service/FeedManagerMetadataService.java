@@ -12,7 +12,10 @@ import javax.inject.Inject;
 import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.entity.ProcessGroupEntity;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
+import com.thinkbiganalytics.datalake.authorization.service.HadoopAuthorizationService;
 import com.thinkbiganalytics.feedmgr.InvalidOperationException;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
@@ -59,6 +62,11 @@ public class FeedManagerMetadataService implements MetadataService {
     // Metadata event service
     @Inject
     private MetadataEventService eventService;
+
+    // I had to use autowired instead of Inject to allow null values.
+    @Autowired(required = false)
+    @Qualifier("hadoopAuthorizationService")
+    private HadoopAuthorizationService hadoopAuthorizationService;
 
     @Override
     public void registerTemplate(RegisteredTemplate registeredTemplate) {
@@ -163,6 +171,12 @@ public class FeedManagerMetadataService implements MetadataService {
 
         // Step 5: Delete database entries
         feedProvider.deleteFeed(feedId);
+
+        // Step 6: Delete ranger/sentry security policies if they exists
+        if(hadoopAuthorizationService != null) {
+            hadoopAuthorizationService.deleteHivePolicy(feed.getCategoryName(), feed.getFeedName());
+            hadoopAuthorizationService.deleteHdfsPolicy(feed.getCategoryName(), feed.getFeedName());
+        }
     }
 
     private boolean updateNifiFeedRunningStatus(FeedSummary feedSummary, Feed.State state) {

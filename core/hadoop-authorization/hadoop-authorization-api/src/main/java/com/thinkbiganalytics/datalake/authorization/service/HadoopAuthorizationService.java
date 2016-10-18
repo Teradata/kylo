@@ -2,7 +2,6 @@ package com.thinkbiganalytics.datalake.authorization.service;
 
 import com.thinkbiganalytics.datalake.authorization.config.AuthorizationConfiguration;
 import com.thinkbiganalytics.datalake.authorization.model.HadoopAuthorizationGroup;
-import com.thinkbiganalytics.datalake.authorization.model.HadoopAuthorizationPolicy;
 
 import java.util.List;
 import java.util.Map;
@@ -29,13 +28,15 @@ public interface HadoopAuthorizationService {
 
     void createReadOnlyHdfsPolicy(String categoryName, String feedName, List<String> hadoopAuthorizationGroups, List<String> hdfsPaths);
 
-    void deletePolicy(String categoryName, String feedName, String repositoryType) throws Exception;
+    void deleteHivePolicy(String categoryName, String feedName);
 
-    List<HadoopAuthorizationPolicy> searchPolicy(Map<String, Object> searchCriteria);
+    void deleteHdfsPolicy(String categoryName, String feedName);
 
-    void updateReadOnlyHivePolicy(String categoryName, String feedName, List<String> groups, String datebaseName, List<String> tableNames) throws Exception;
+    void updateReadOnlyHivePolicy(String categoryName, String feedName, List<String> groups, String datebaseName, List<String> tableNames);
 
-    void updateReadOnlyHdfsPolicy(String categoryName, String feedName, List<String> groups, List<String> hdfsPaths) throws Exception;
+    void updateReadOnlyHdfsPolicy(String categoryName, String feedName, List<String> groups, List<String> hdfsPaths);
+
+    void updateSecurityGroupsForAllPolicies(String categoryName, String feedName,List<String> hadoopAuthorizationGroups, Map<String,String> feedProperties);
 
     String getType();
 

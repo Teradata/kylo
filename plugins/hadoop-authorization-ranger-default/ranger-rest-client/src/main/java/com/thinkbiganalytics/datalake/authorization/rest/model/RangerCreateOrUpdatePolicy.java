@@ -9,7 +9,7 @@ import java.util.Map;
  * Created by Shashi Vishwakarma on 10/05/16.
  */
 
-public class RangerCreatePolicy {
+public class RangerCreateOrUpdatePolicy {
 
 
     final private String groupList = "groupList";

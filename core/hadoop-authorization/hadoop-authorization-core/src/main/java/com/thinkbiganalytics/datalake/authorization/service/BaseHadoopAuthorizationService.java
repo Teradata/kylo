@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -19,12 +20,11 @@ import javax.inject.Inject;
  * Created by Jeremy Merrifield on 10/14/16.
  */
 public abstract class BaseHadoopAuthorizationService implements HadoopAuthorizationService {
-
     private static final Logger log = LoggerFactory.getLogger(BaseHadoopAuthorizationService.class);
 
-    private static final String REGISTRATION_HDFS_FOLDERS = "nifi:registration:hdfsFolders";
-    private static final String REGISTRATION_HIVE_SCHEMA = "nifi:registration:hiveSchema";
-    private static final String REGISTRATION_HIVE_TABLES = "nifi:registration:hiveTableNames";
+    protected static final String REGISTRATION_HDFS_FOLDERS = "nifi:registration:hdfsFolders";
+    protected static final String REGISTRATION_HIVE_SCHEMA = "nifi:registration:hiveSchema";
+    protected static final String REGISTRATION_HIVE_TABLES = "nifi:registration:hiveTableNames";
 
     /**
      * Event listener for precondition events
@@ -52,10 +52,6 @@ public abstract class BaseHadoopAuthorizationService implements HadoopAuthorizat
 
     private class FeedPropertyChangeDispatcher implements MetadataEventListener<FeedPropertyChangeEvent> {
 
-        private static final String REGISTRATION_HDFS_FOLDERS = "nifi:registration:hdfsFolders";
-        private static final String REGISTRATION_HIVE_SCHEMA = "nifi:registration:hiveSchema";
-        private static final String REGISTRATION_HIVE_TABLES = "nifi:registration:hiveTableNames";
-
         @Override
         public void notify(final FeedPropertyChangeEvent metadataEvent) {
             if (metadataEvent.getHadoopSecurityGroupNames() != null && hadoopAuthorizationChangesRequired(metadataEvent)) {
@@ -64,19 +60,19 @@ public abstract class BaseHadoopAuthorizationService implements HadoopAuthorizat
                                           metadataEvent.getNewProperties().getProperty(REGISTRATION_HDFS_FOLDERS));
 
                     String hdfsFoldersWithCommas = metadataEvent.getNewProperties().getProperty(REGISTRATION_HDFS_FOLDERS).replace("\n", ",");
-                    Stream<String> hdfsFolders = Stream.of(hdfsFoldersWithCommas);
+                    List<String> hdfsFolders = Stream.of(hdfsFoldersWithCommas).collect(Collectors.toList());
 
                     String hiveTablesWithCommas = metadataEvent.getNewProperties().getProperty(REGISTRATION_HIVE_TABLES).replace("\n", ",");
-                    Stream<String> hiveTables = Stream.of(hiveTablesWithCommas);
+                    List<String> hiveTables = Stream.of(hiveTablesWithCommas).collect(Collectors.toList());
                     String hiveSchema = metadataEvent.getNewProperties().getProperty(REGISTRATION_HIVE_SCHEMA);
 
                     createOrUpdateReadOnlyHivePolicy(metadataEvent.getFeedCategory(), metadataEvent.getFeedName()
                         , metadataEvent.getHadoopSecurityGroupNames()
                         , hiveSchema
-                        , hiveTables.collect(Collectors.toList()));
+                        , hiveTables);
                     createOrUpdateReadOnlyHdfsPolicy(metadataEvent.getFeedCategory(), metadataEvent.getFeedName()
                         , metadataEvent.getHadoopSecurityGroupNames()
-                        , hdfsFolders.collect(Collectors.toList()));
+                        , hdfsFolders);
                 } catch (Exception e) {
                     log.error("Error creating Ranger policy after metadata property change event", e);
                     throw new RuntimeException("Error creating Ranger policy after metadata property change event");

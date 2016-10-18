@@ -31,6 +31,7 @@ import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
+import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
 import com.thinkbiganalytics.metadata.rest.model.sla.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
@@ -42,6 +43,7 @@ import com.thinkbiganalytics.rest.model.LabelValue;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
+import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -51,9 +53,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
@@ -292,11 +296,18 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
         metadataAccess.commit(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_FEEDS);
 
+            // Store the old security groups before saving beccause we need to compare afterward
+            FeedManagerFeed previousStateBeforeSaving = feedManagerFeedProvider.findById(feedManagerFeedProvider.resolveId(feed.getId()));
+            Map<String,String> userProperties = previousStateBeforeSaving.getUserProperties();
+            List<HadoopSecurityGroup> previousSavedSecurityGroups = previousStateBeforeSaving.getSecurityGroups();
+
             //if this is the first time saving this feed create a new one
             FeedManagerFeed domainFeed = feedModelTransform.feedToDomain(feed);
+
             if (domainFeed.getState() == null) {
                 domainFeed.setState(Feed.State.ENABLED);
             }
+
             domainFeed = feedManagerFeedProvider.update(domainFeed);
 
             //call out to operations to make the connection to modeshape for the feeds
@@ -326,6 +337,12 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
             //sync the feed information to ops manager
             operationalMetadataAccess.commit(() -> opsManagerFeedProvider.save(opsManagerFeedProvider.resolveId(domainId), feedName));
 
+            // Update hadoop security group polices if the groups changed
+            if(!feed.isNew() && !ListUtils.isEqualList(previousSavedSecurityGroups, domainFeed.getSecurityGroups())) {
+                List<HadoopSecurityGroup> securityGroups = domainFeed.getSecurityGroups();
+                List<String> groupsAsCommaList = securityGroups.stream().map(group -> group.getName()).collect(Collectors.toList());
+                hadoopAuthorizationService.updateSecurityGroupsForAllPolicies(feed.getCategoryName(), feed.getFeedName(), groupsAsCommaList, domainFeed.getUserProperties());
+            }
 
             // Return result
             return feed;
