@@ -7,7 +7,7 @@
             <md-divider></md-divider>
             <div ng-hide="vm.viewType != 'list'" ng-show="vm.viewType == 'list'">
                <md-list flex layout-fill ng-show="vm.loading == false" ng-hide class="list-item-table">
-                    <md-list-item layout="row" dir-paginate="alert in vm.component.alerts |orderBy:vm.paginationData.sort |filter:vm.filter|itemsPerPage:vm.paginationData.rowsPerPage" pagination-id="vm.paginationId()">
+                    <md-list-item layout="row" dir-paginate="alert in vm.component.alerts |orderBy:vm.paginationData.sort |filter:vm.filter|itemsPerPage:vm.paginationData.rowsPerPage" pagination-id="service-component-details"   current-page="vm.currentPage">
                         <div flex="20" layout="column" style="overflow:hidden; text-overflow:ellipsis;"  class="item-column md-list-item-text">
                                    <span class="item-title">
                                       {{alert.label}}
@@ -34,13 +34,12 @@
                     </md-list-item >
                     <md-divider></md-divider>
                     <md-list-item   layout-align="end center"  layout-row class="pagination-list-item">
-                        <dir-pagination-controls pagination-id="vm.paginationId()"
+                        <dir-pagination-controls pagination-id="service-component-details"
                                                  auto-hide="false"
                                                  max-size="5"
                                                  direction-links="true"
                                                  boundary-links="false"
                                                  template-url="js/vendor/dirPagination/dirPagination.tpl.html"
-                                                 current-page="vm.currentPage"
                                                  on-page-change="vm.onPaginationChange(newPageNumber)"
                                                  label="Rows per page"
                                                  rows-per-page="vm.paginationData.rowsPerPage"
@@ -58,10 +57,10 @@
                     <table md-table md-progress="vm.deferred.promise">
                         <thead md-head md-order="vm.paginationData.sort" md-trigger="vm.onOrderChange" >
                         <tr md-row>
-                            <th md-column name="Name" order-by="label">Name</th>
-                            <th md-column name="Status" order-by="state">Status</th>
-                            <th md-column name="Message" order-by="message">Message</th>
-                            <th md-column name="Time" order-by="latestTimestamp"  hide show-gt-md >Time</th>
+                            <th md-column name="Name" md-order-by="label">Name</th>
+                            <th md-column name="Status" md-order-by="state">Status</th>
+                            <th md-column name="Message" md-order-by="message">Message</th>
+                            <th md-column name="Time" md-order-by="latestTimestamp"  hide show-gt-md >Time</th>
                         </tr>
                         </thead>
                         <tbody md-body >
