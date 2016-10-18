@@ -189,7 +189,7 @@ public class SentryAuthorizationService implements HadoopAuthorizationService {
     }
 
     @Override
-    public void updateSecurityGroupsForAllPolicies(String categoryName, String feedName,List<String> hadoopAuthorizationGroups, Map<String,String> feedProperties) {
+    public void updateSecurityGroupsForAllPolicies(String categoryName, String feedName,List<String> hadoopAuthorizationGroups, Map<String,Object> feedProperties) {
 
     }
 

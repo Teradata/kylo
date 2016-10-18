@@ -293,16 +293,16 @@ public class RangerAuthorizationService extends BaseHadoopAuthorizationService {
     /**
      * If no security policy exists it will be created. If a policy exists it will be updated
      */
-    public void updateSecurityGroupsForAllPolicies(String categoryName, String feedName, List<String> securityGroupNames, Map<String, String> feedProperties) {
+    public void updateSecurityGroupsForAllPolicies(String categoryName, String feedName, List<String> securityGroupNames, Map<String, Object> feedProperties) {
         String rangerHdfsPolicyName = getHdfsPolicyName(categoryName, feedName);
         RangerPolicy hdfsPolicy = (RangerPolicy) searchHdfsPolicy(rangerHdfsPolicyName);
 
-        if (securityGroupNames == null) {
+        if (securityGroupNames == null || securityGroupNames.isEmpty()) {
             deleteHivePolicy(categoryName, feedName);
             deleteHdfsPolicy(categoryName, feedName);
         } else {
             if (hdfsPolicy == null) {
-                String hdfsFoldersWithCommas = feedProperties.get(REGISTRATION_HDFS_FOLDERS).replace("\n", ",");
+                String hdfsFoldersWithCommas = ((String)feedProperties.get(REGISTRATION_HDFS_FOLDERS)).replace("\n", ",");
                 List<String> hdfsFolders = Stream.of(hdfsFoldersWithCommas).collect(Collectors.toList());
 
                 createReadOnlyHdfsPolicy(categoryName, feedName, securityGroupNames, hdfsFolders);
@@ -321,9 +321,9 @@ public class RangerAuthorizationService extends BaseHadoopAuthorizationService {
             RangerPolicy hivePolicy = (RangerPolicy) searchHivePolicy(rangerHivePolicyName);
 
             if (hivePolicy == null) {
-                String hiveTablesWithCommas = feedProperties.get(REGISTRATION_HIVE_TABLES).replace("\n", ",");
+                String hiveTablesWithCommas = ((String)feedProperties.get(REGISTRATION_HIVE_TABLES)).replace("\n", ",");
                 List<String> hiveTables = Stream.of(hiveTablesWithCommas).collect(Collectors.toList());
-                String hiveSchema = feedProperties.get(REGISTRATION_HIVE_SCHEMA);
+                String hiveSchema = ((String)feedProperties.get(REGISTRATION_HIVE_SCHEMA));
 
                 createOrUpdateReadOnlyHivePolicy(categoryName, feedName, securityGroupNames, hiveSchema, hiveTables);
             } else {
@@ -354,7 +354,7 @@ public class RangerAuthorizationService extends BaseHadoopAuthorizationService {
         List<RangerPolicy> hadoopPolicyList = this.searchPolicy(searchHDFSCriteria);
         if (hadoopPolicyList.size() > 1) {
             throw new RuntimeException("More than 1 unique HDFS policy was found for " + hdfsPolicyName);
-        } else if (hadoopPolicyList != null) {
+        } else if (hadoopPolicyList != null && !hadoopPolicyList.isEmpty()) {
             result = hadoopPolicyList.get(0);
         }
         return result;
@@ -369,7 +369,7 @@ public class RangerAuthorizationService extends BaseHadoopAuthorizationService {
         List<RangerPolicy> hadoopPolicyList = this.searchPolicy(searchHiveCriteria);
         if (hadoopPolicyList.size() > 1) {
             throw new RuntimeException("More than 1 unique Hive policy was found for " + hivePolicyName);
-        } else if (hadoopPolicyList != null) {
+        } else if (hadoopPolicyList != null && !hadoopPolicyList.isEmpty()) {
             result = hadoopPolicyList.get(0);
         }
         return result;
@@ -422,7 +422,7 @@ public class RangerAuthorizationService extends BaseHadoopAuthorizationService {
 
         Map<String, Object> searchHdfsCriteria = new HashMap<>();
         searchHdfsCriteria.put(POLICY_NAME, rangerHdfsPolicyName);
-        searchHdfsCriteria.put(REPOSITORY_TYPE, HIVE_REPOSITORY_TYPE);
+        searchHdfsCriteria.put(REPOSITORY_TYPE, HDFS_REPOSITORY_TYPE);
         List<RangerPolicy> hadoopPolicyList = this.searchPolicy(searchHdfsCriteria);
 
         if (hadoopPolicyList.size() == 0) {
