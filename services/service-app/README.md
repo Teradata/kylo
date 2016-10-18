@@ -62,9 +62,9 @@ nifi.all_processors.<PROPERTY_KEY>=value
 Examples:
 
 ```properties
-#nifi.all_processors.kerberos_principal=nifi
-#nifi.all_processors.kerberos_keytab=/etc/security/keytabs/nifi.headless.keytab
-#nifi.all_processors.hadoop_configuration_resources=/etc/hadoop/conf/core-site.xml,/etc/hadoop/conf/hdfs-site.xml
+nifi.all_processors.kerberos_principal=nifi
+nifi.all_processors.kerberos_keytab=/etc/security/keytabs/nifi.headless.keytab
+nifi.all_processors.hadoop_configuration_resources=/etc/hadoop/conf/core-site.xml,/etc/hadoop/conf/hdfs-site.xml
 ```
 
 *NOTE:*  This will globally replace all properties matching the defined property key!  Use this strategy wisely   
