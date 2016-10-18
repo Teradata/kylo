@@ -167,6 +167,10 @@ md-autocomplete.md-default-theme, md-autocomplete {
   background:rgb(255,255,255);
 }
 
+.md-chips .md-chip-input-container md-autocomplete input {
+  width: 400px;
+}
+
 .hint {
   /* Position the hint */
   left: 2px;
