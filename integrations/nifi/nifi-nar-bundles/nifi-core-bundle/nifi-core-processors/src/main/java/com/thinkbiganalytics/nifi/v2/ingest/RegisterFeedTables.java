@@ -78,7 +78,7 @@ public class RegisterFeedTables extends AbstractProcessor {
         .name("Feed Root Path")
         .description("Specify the full HDFS root path for the feed,valid,invalid tables.")
         .required(true)
-        .defaultValue("${config.hive.ingest.root}")
+        .defaultValue("${hive.ingest.root}")
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
@@ -87,7 +87,7 @@ public class RegisterFeedTables extends AbstractProcessor {
         .name("Master Root Path")
         .description("Specify the HDFS folder root path for creating the master table")
         .required(true)
-        .defaultValue("${config.hive.master.root}")
+        .defaultValue("${hive.master.root}")
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
@@ -96,7 +96,7 @@ public class RegisterFeedTables extends AbstractProcessor {
         .name("Profile Root Path")
         .description("Specify the HDFS folder root path for creating the profile table")
         .required(true)
-        .defaultValue("${config.hive.profile.root}")
+        .defaultValue("${hive.profile.root}")
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
