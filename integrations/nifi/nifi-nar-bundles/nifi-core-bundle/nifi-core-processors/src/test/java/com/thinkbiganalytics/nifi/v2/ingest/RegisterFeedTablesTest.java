@@ -216,16 +216,16 @@ public class RegisterFeedTablesTest {
     /** Verify registering a single table. */
     @Test
     public void testRegisterTablesWithConfig() throws Exception {
-        runner.setProperty(ComponentProperties.FIELD_SPECIFICATION, "id|int\nfirst_name|string\nlast_name|string");
+        runner.setProperty(IngestProperties.FIELD_SPECIFICATION, "id|int\nfirst_name|string\nlast_name|string");
 
         runner.setProperty(RegisterFeedTables.TABLE_TYPE, "ALL");
         runner.enqueue(new byte[0], ImmutableMap
-            .of("metadata.category.systemName", "movies", "metadata.systemFeedName", "artists", "config.hive.ingest.root", "/var/ingest", "config.hive.profile.root", "/var/profile/",
-                "config.hive.master.root", "/master"));
+            .of("metadata.category.systemName", "movies", "metadata.systemFeedName", "artists", "hive.ingest.root", "/var/ingest", "hive.profile.root", "/var/profile/",
+                "hive.master.root", "/master"));
         runner.run();
 
-        Assert.assertEquals(0, runner.getFlowFilesForRelationship(ComponentProperties.REL_FAILURE).size());
-        Assert.assertEquals(1, runner.getFlowFilesForRelationship(ComponentProperties.REL_SUCCESS).size());
+        Assert.assertEquals(0, runner.getFlowFilesForRelationship(IngestProperties.REL_FAILURE).size());
+        Assert.assertEquals(1, runner.getFlowFilesForRelationship(IngestProperties.REL_SUCCESS).size());
 
         final InOrder inOrder = Mockito.inOrder(thriftService.statement);
         inOrder.verify(thriftService.statement).execute(
