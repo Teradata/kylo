@@ -301,10 +301,13 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
         metadataAccess.commit(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_FEEDS);
 
+            List<HadoopSecurityGroup> previousSavedSecurityGroups = null;
             // Store the old security groups before saving beccause we need to compare afterward
-            FeedManagerFeed previousStateBeforeSaving = feedManagerFeedProvider.findById(feedManagerFeedProvider.resolveId(feed.getId()));
-            Map<String,String> userProperties = previousStateBeforeSaving.getUserProperties();
-            List<HadoopSecurityGroup> previousSavedSecurityGroups = previousStateBeforeSaving.getSecurityGroups();
+            if(!feed.isNew()) {
+                FeedManagerFeed previousStateBeforeSaving = feedManagerFeedProvider.findById(feedManagerFeedProvider.resolveId(feed.getId()));
+                Map<String, String> userProperties = previousStateBeforeSaving.getUserProperties();
+                previousSavedSecurityGroups = previousStateBeforeSaving.getSecurityGroups();
+            }
 
             //if this is the first time saving this feed create a new one
             FeedManagerFeed domainFeed = feedModelTransform.feedToDomain(feed);
