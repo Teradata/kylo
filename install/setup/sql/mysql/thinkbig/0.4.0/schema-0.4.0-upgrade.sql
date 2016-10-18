@@ -225,8 +225,8 @@ CREATE TABLE IF NOT EXISTS `FEED` (
   `name` varchar(100) NOT NULL,
 `description` varchar(255) DEFAULT NULL,
 FEED_TYPE varchar(45) NULL,
-`created_time` timestamp,
-  `modified_time` timestamp,
+`created_time` timestamp DEFAULT CURRENT_TIMESTAMP,
+  `modified_time` timestamp DEFAULT CURRENT_TIMESTAMP,
  PRIMARY KEY (`id`)
  ) ENGINE=InnoDB;
 
