@@ -7,6 +7,7 @@ import java.net.URI;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -91,10 +92,8 @@ public class MetadataClient {
         return credsProvider;
     }
     
-    private static final FileSystem FS = FileSystems.getFileSystem(URI.create("jar:/"));
-    
     public static Path path(String first, String... more) {
-        return FS.getPath(first, more);
+        return Paths.get(first, more);
     }
 
     
