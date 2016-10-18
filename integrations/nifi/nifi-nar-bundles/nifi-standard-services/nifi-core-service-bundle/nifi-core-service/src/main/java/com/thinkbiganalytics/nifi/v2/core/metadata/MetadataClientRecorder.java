@@ -20,8 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.thinkbiganalytics.metadata.rest.client.MetadataClient;
-import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants;
+import com.thinkbiganalytics.nifi.core.api.metadata.FeedInitializationStatus;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder;
 import com.thinkbiganalytics.nifi.core.api.metadata.WaterMarkActiveException;
 
@@ -39,6 +38,7 @@ public class MetadataClientRecorder implements MetadataRecorder {
     
     private MetadataClient client;
     private Set<String> activeWaterMarks = Collections.synchronizedSet(new HashSet<>());
+    private Map<String, FeedInitializationStatus> feedInitStatusMap = Collections.synchronizedMap(new HashMap<>());
     
     // TODO: Remove this
     public Map<String, Boolean> workaroundRegistration = new HashMap<>();
@@ -176,50 +176,57 @@ public class MetadataClientRecorder implements MetadataRecorder {
         return resultFF;
     }
 
-
     
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder#getFeedInitializationStatus(java.lang.String)
+     */
     @Override
-    public boolean isFeedInitialized(FlowFile ff) {
-        String feedId = ff.getAttribute(MetadataConstants.FEED_ID_PROP);
-        
-        if (feedId != null) {
-            Feed feed = this.client.getFeed(feedId);
-            
-            if (feed != null) {
-                return feed.isInitialized();
-            } else {
-                log.info("Could not confirm feed initialization - no feed exists with ID: {}", feedId);
-                return false;
-            } 
-        } else {
-            log.info("Could not confirm feed initialization - no feed ID in flow file", feedId);
-            return false;
-        } 
+    public Optional<FeedInitializationStatus> getFeedInitializationStatus(String feedId) {
+        return Optional.ofNullable(this.feedInitStatusMap.get(feedId));
     }
 
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder#startFeedInitialization(java.lang.String)
+     */
     @Override
-    public void recordFeedInitialization(ProcessSession session, FlowFile ff, boolean flag) {
-        String feedId = ff.getAttribute(MetadataConstants.FEED_ID_PROP);
-        
-        if (feedId != null) {
-            Feed feed = this.client.getFeed(feedId);
-            
-            if (feed != null) {
-                feed.setInitialized(flag);
-                this.client.updateFeed(feed);
-            }
-        }
+    public FeedInitializationStatus startFeedInitialization(String feedId) {
+        FeedInitializationStatus status = new FeedInitializationStatus(FeedInitializationStatus.State.IN_PROGRESS);
+        this.feedInitStatusMap.put(feedId, status);
+        return status;
     }
 
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder#completeFeedInitialization(java.lang.String)
+     */
+    @Override
+    public FeedInitializationStatus completeFeedInitialization(String feedId) {
+        FeedInitializationStatus status = new FeedInitializationStatus(FeedInitializationStatus.State.SUCCESS);
+        this.feedInitStatusMap.put(feedId, status);
+        return status;
+    }
 
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder#failFeedInitialization(java.lang.String)
+     */
+    @Override
+    public FeedInitializationStatus failFeedInitialization(String feedId) {
+        FeedInitializationStatus status = new FeedInitializationStatus(FeedInitializationStatus.State.FAILED);
+        this.feedInitStatusMap.put(feedId, status);
+        return status;
+    }
 
     @Override
     public void updateFeedStatus(ProcessSession session, FlowFile ff, String statusMsg) {
         // TODO Auto-generated method stub
         
-    }
+    }    
+    
+    //-=-=-=-=-=-=-=-
+    
 
     @Override
+	@Deprecated
     // TODO: Remove workaroundRegistration
     public void recordFeedInitialization(String systemCategory, String feedName) {
         String key = feedKey(systemCategory, feedName);
@@ -228,6 +235,7 @@ public class MetadataClientRecorder implements MetadataRecorder {
     }
 
     @Override
+	@Deprecated
     // TODO: Remove workaroundRegistration
     public boolean isFeedInitialized(String systemCategory, String feedName) {
         String key = feedKey(systemCategory,feedName);
@@ -235,21 +243,6 @@ public class MetadataClientRecorder implements MetadataRecorder {
         log.warn("isFeedInitialized feed {} size {} result {}", key, workaroundRegistration.size(), result);
         return (result == null ? false : result);
     }
-
-//    @Override
-//    // TODO: Remove workaroundwatermark
-//    public void recordLastLoadTime(String systemCategory, String feedName, DateTime time) {
-//        String key = feedKey(systemCategory,feedName);
-//        workaroundWatermark.put(key, time);
-//    }
-//
-//    @Override
-//    // TODO: Remove workaroundwatermark
-//    public DateTime getLastLoadTime(String systemCategory, String feedName) {
-//        String key = feedKey(systemCategory,feedName);
-//        DateTime dt =  workaroundWatermark.get(key);
-//        return (dt == null ? new DateTime(0L) : dt);
-//    }
 
     private Map<String, String> getCurrentWaterMarksAttr(FlowFile ff) {
         try {
