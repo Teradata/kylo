@@ -190,23 +190,29 @@ public class SentryAuthorizationService implements HadoopAuthorizationService {
 
     @Override
     public void deleteHivePolicy(String categoryName, String feedName) {
-        // TODO Auto-generated method stub
+      
+        String sentryPolicyName = getHivePolicyName(categoryName, feedName);
+        
+        if(sentryClientObject.checkIfRoleExists(sentryPolicyName)) {
+            try {
+                sentryClientObject.dropRole(sentryPolicyName);
+            } catch (SentryClientException e) {
+                throw new RuntimeException("Unable to delete policy  "+ sentryPolicyName+" in Sentry  "  +e.getMessage());
+            }
+        }
 
     }
 
     @Override
-    public void deleteHdfsPolicy(String categoryName, String feedName) {
-        // TODO Auto-generated method stub
-        /**
-         * Implementation not required for Sentry
-         */
+    public void deleteHdfsPolicy(String categoryName, String feedName ) {
+      
+     /**
+      * Implement Delete ACL    
+      */
+        
     }
 
-    /*public List<HadoopAuthorizationPolicy> searchPolicy(Map<String, Object> searchCriteria) {
-        // TODO Auto-generated method stub
-        return null;
-    }*/
-
+   
 
     @Override
     public String getType() {
