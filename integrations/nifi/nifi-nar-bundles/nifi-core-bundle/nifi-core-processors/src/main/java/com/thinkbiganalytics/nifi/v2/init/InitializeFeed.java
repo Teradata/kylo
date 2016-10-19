@@ -83,6 +83,7 @@ public class InitializeFeed extends FeedProcessor {
     
     @OnScheduled
     public void scheduled(ProcessContext context) {
+        super.scheduled(context);
         this.retryCounts.clear();
     }
 
@@ -93,8 +94,8 @@ public class InitializeFeed extends FeedProcessor {
     public void onTrigger(ProcessContext context, ProcessSession session) throws ProcessException {
         FlowFile inputFF = session.get();
         if (inputFF != null) {
-            initialize(context, inputFF);
-            FeedInitializationStatus status = getMetadataRecorder().getFeedInitializationStatus(getFeedId())
+            inputFF = initialize(context, session, inputFF);
+            FeedInitializationStatus status = getMetadataRecorder().getFeedInitializationStatus(getFeedId(context, inputFF))
                             .orElse(new FeedInitializationStatus(State.PENDING));
             
             switch (status.getState()) {
@@ -130,7 +131,7 @@ public class InitializeFeed extends FeedProcessor {
     }
 
     private void pending(ProcessContext context, ProcessSession session, FlowFile inputFF) {
-        beginInitialization(session, inputFF);
+        beginInitialization(context, session, inputFF);
         rejectFlowFile(session, inputFF);
     }
 
@@ -145,13 +146,13 @@ public class InitializeFeed extends FeedProcessor {
             int delay = context.getProperty(RETRY_DELAY).asInteger();
             PropertyValue maxValue = context.getProperty(MAX_INIT_ATTEMPTS);
             int max = maxValue.isSet() ? maxValue.asInteger() : Integer.MAX_VALUE;
-            AtomicInteger count = getRetryCount();
+            AtomicInteger count = getRetryCount(context, inputFF);
             
             if (count.getAndIncrement() >= max) {
                 count.set(max);
                 session.transfer(inputFF, CommonProperties.REL_FAILURE);
             } else if (failTime.plus(delay, ChronoUnit.SECONDS).isBefore(LocalDateTime.now())) {
-                beginInitialization(session, inputFF);
+                beginInitialization(context, session, inputFF);
                 rejectFlowFile(session, inputFF);
             } else {
                 session.transfer(inputFF, CommonProperties.REL_FAILURE);
@@ -165,9 +166,9 @@ public class InitializeFeed extends FeedProcessor {
         session.transfer(inputFF, CommonProperties.REL_SUCCESS);
     }
 
-    private void beginInitialization(ProcessSession session, FlowFile inputFF) {
-        getMetadataRecorder().startFeedInitialization(getFeedId());
-        getRetryCount().set(0);
+    private void beginInitialization(ProcessContext context, ProcessSession session, FlowFile inputFF) {
+        getMetadataRecorder().startFeedInitialization(getFeedId(context, inputFF));
+        getRetryCount(context, inputFF).set(0);
         FlowFile initFF = session.create(inputFF);
         session.transfer(initFF, REL_INITIALIZE);
     }
@@ -177,8 +178,8 @@ public class InitializeFeed extends FeedProcessor {
         session.transfer(penalizedFF);
     }
 
-    private AtomicInteger getRetryCount() {
-        return this.retryCounts.computeIfAbsent(getFeedId(), k -> new AtomicInteger(0));
+    private AtomicInteger getRetryCount(ProcessContext context, FlowFile inputFF) {
+        return this.retryCounts.computeIfAbsent(getFeedId(context, inputFF), k -> new AtomicInteger(0));
     }
 
 }

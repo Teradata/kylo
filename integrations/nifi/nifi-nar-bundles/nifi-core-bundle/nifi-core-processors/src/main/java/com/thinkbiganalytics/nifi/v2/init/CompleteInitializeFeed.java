@@ -37,7 +37,7 @@ public class CompleteInitializeFeed extends FeedProcessor {
                           };
 
     protected static final PropertyDescriptor FAILURE_STRATEGY = new PropertyDescriptor.Builder()
-                    .name("Initialization Failure Strategy")
+                    .name("Initialization Result")
                     .description("Indicates how this processor should behave when a flow file arrives after feed initialization has failed.")
                     .allowableValues(MODE_VALUES)
                     .required(true)
@@ -59,7 +59,7 @@ public class CompleteInitializeFeed extends FeedProcessor {
                 getMetadataRecorder().failFeedInitialization(getFeedId(context, inputFF));
             } 
             
-            session.remove(inputFF);
+            session.transfer(inputFF, CommonProperties.REL_SUCCESS);
         }
     }
     

@@ -85,13 +85,13 @@ public class LoadHighWaterMark extends HighWaterMarkProcessor {
         FlowFile outputFF = inputFF;
         boolean createdFlowfile = false;
 
-        initialize(context, session, inputFF);
-
         // Create the flow file if we are the start of the flow.
         if (outputFF == null && ! context.hasNonLoopConnection()) {
             outputFF = session.create();
             createdFlowfile = true;
         }
+        
+        outputFF = initialize(context, session, outputFF);
         
         if (outputFF != null) {
             MetadataRecorder recorder = context.getProperty(CommonProperties.METADATA_SERVICE).asControllerService(MetadataProviderService.class).getRecorder();
