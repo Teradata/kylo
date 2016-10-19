@@ -3,4 +3,5 @@
 #
 
 com.thinkbiganalytics.nifi.v2.thrift.ThriftConnectionPool
+com.thinkbiganalytics.nifi.v2.sqoop.StandardSqoopConnectionService
 
