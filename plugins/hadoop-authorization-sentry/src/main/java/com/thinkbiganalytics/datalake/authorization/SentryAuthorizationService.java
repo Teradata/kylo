@@ -1,18 +1,21 @@
 package com.thinkbiganalytics.datalake.authorization;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.thinkbiganalytics.datalake.authorization.client.SentryClient;
 import com.thinkbiganalytics.datalake.authorization.client.SentryClientConfig;
 import com.thinkbiganalytics.datalake.authorization.client.SentryClientException;
 import com.thinkbiganalytics.datalake.authorization.config.AuthorizationConfiguration;
 import com.thinkbiganalytics.datalake.authorization.config.SentryConnection;
 import com.thinkbiganalytics.datalake.authorization.model.HadoopAuthorizationGroup;
-import com.thinkbiganalytics.datalake.authorization.service.HadoopAuthorizationService;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.List;
-import java.util.Map;
+import com.thinkbiganalytics.datalake.authorization.service.BaseHadoopAuthorizationService;
 
 /**
  * Sentry Authorization Service
@@ -20,7 +23,7 @@ import java.util.Map;
  * Created by Shashi Vishwakarma on 19/9/2016.
  * 
  */
-public class SentryAuthorizationService implements HadoopAuthorizationService {
+public class SentryAuthorizationService  extends BaseHadoopAuthorizationService {
 
     private static final Logger log = LoggerFactory.getLogger(SentryAuthorizationService.class);
 
@@ -57,7 +60,7 @@ public class SentryAuthorizationService implements HadoopAuthorizationService {
 
     @Override
     public void createOrUpdateReadOnlyHivePolicy(String categoryName, String feedName, List<String> hadoopAuthorizationGroups, String datebaseName, List<String> tableNames) {
-      
+
         String sentryPolicyName = getHivePolicyName(categoryName, feedName);
         if(!(sentryClientObject.checkIfRoleExists(sentryPolicyName)))
         {
@@ -183,16 +186,49 @@ public class SentryAuthorizationService implements HadoopAuthorizationService {
 
     }
 
+    /**
+     * If no security policy exists it will be created. If a policy exists it will be updated
+     */
     @Override
-    public void updateSecurityGroupsForAllPolicies(String categoryName, String feedName,List<String> hadoopAuthorizationGroups, Map<String,Object> feedProperties) {
+    public void updateSecurityGroupsForAllPolicies(String categoryName, String feedName,List<String> securityGroupNames, Map<String,Object> feedProperties) {
 
+        if (securityGroupNames == null || securityGroupNames.isEmpty()) {
+            deleteHivePolicy(categoryName, feedName);
+            deleteHdfsPolicy(categoryName, feedName);
+        } else {
+
+            String hdfsFoldersWithCommas = ((String)feedProperties.get(REGISTRATION_HDFS_FOLDERS)).replace("\n", ",");
+            List<String> hdfsFolders = Stream.of(hdfsFoldersWithCommas).collect(Collectors.toList());
+            createReadOnlyHdfsPolicy(categoryName, feedName, securityGroupNames, hdfsFolders);
+
+            String sentryHivePolicyName = getHivePolicyName(categoryName, feedName);
+            if(!sentryClientObject.checkIfRoleExists(sentryHivePolicyName)) {
+                String hiveTablesWithCommas = ((String)feedProperties.get(REGISTRATION_HIVE_TABLES)).replace("\n", ",");
+                List<String> hiveTables = Stream.of(hiveTablesWithCommas).collect(Collectors.toList());
+                String hiveSchema = ((String)feedProperties.get(REGISTRATION_HIVE_SCHEMA));
+
+                createOrUpdateReadOnlyHivePolicy(categoryName, feedName, securityGroupNames, hiveSchema, hiveTables);
+            } else {
+                try {
+                    sentryClientObject.dropRole(sentryHivePolicyName);
+                } catch (SentryClientException e) {
+                    throw new RuntimeException("Unable to delete policy  "+ sentryHivePolicyName+" in Sentry  "  +e.getMessage());
+                }
+                String hiveTablesWithCommas = ((String)feedProperties.get(REGISTRATION_HIVE_TABLES)).replace("\n", ",");
+                List<String> hiveTables = Stream.of(hiveTablesWithCommas).collect(Collectors.toList());
+                String hiveSchema = ((String)feedProperties.get(REGISTRATION_HIVE_SCHEMA));
+                List<String> hivePermissions = new ArrayList();
+                hivePermissions.add(HIVE_READ_ONLY_PERMISSION);
+                createOrUpdateReadOnlyHivePolicy(categoryName, feedName, securityGroupNames, hiveSchema, hiveTables);
+            }
+        }
     }
+
 
     @Override
     public void deleteHivePolicy(String categoryName, String feedName) {
-      
+
         String sentryPolicyName = getHivePolicyName(categoryName, feedName);
-        
         if(sentryClientObject.checkIfRoleExists(sentryPolicyName)) {
             try {
                 sentryClientObject.dropRole(sentryPolicyName);
@@ -205,14 +241,14 @@ public class SentryAuthorizationService implements HadoopAuthorizationService {
 
     @Override
     public void deleteHdfsPolicy(String categoryName, String feedName ) {
-      
-     /**
-      * Implement Delete ACL    
-      */
-        
+
+        /**
+         * Implement Delete ACL    
+         */
+
     }
 
-   
+
 
     @Override
     public String getType() {
