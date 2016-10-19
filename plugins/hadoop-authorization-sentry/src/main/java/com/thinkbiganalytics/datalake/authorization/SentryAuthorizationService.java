@@ -18,6 +18,7 @@ import java.util.Map;
  * Sentry Authorization Service
  *
  * Created by Shashi Vishwakarma on 19/9/2016.
+ * 
  */
 public class SentryAuthorizationService implements HadoopAuthorizationService {
 
@@ -56,8 +57,8 @@ public class SentryAuthorizationService implements HadoopAuthorizationService {
 
     @Override
     public void createOrUpdateReadOnlyHivePolicy(String categoryName, String feedName, List<String> hadoopAuthorizationGroups, String datebaseName, List<String> tableNames) {
-        String sentryPolicyName = KYLO_POLICY_PREFIX+"_"+categoryName+"_"+feedName+"_"+HIVE_REPOSITORY_TYPE;
-
+      
+        String sentryPolicyName = getHivePolicyName(categoryName, feedName);
         if(!(sentryClientObject.checkIfRoleExists(sentryPolicyName)))
         {
             createReadOnlyHivePolicy(categoryName, feedName, hadoopAuthorizationGroups, datebaseName, tableNames);
@@ -84,9 +85,7 @@ public class SentryAuthorizationService implements HadoopAuthorizationService {
         /**
          * Create Read Only Policy for Hive - Beeline Approach
          */
-
-        String sentryPolicyName = KYLO_POLICY_PREFIX+"_"+categoryName+"_"+feedName+"_"+HIVE_REPOSITORY_TYPE;
-
+        String sentryPolicyName = getHivePolicyName(categoryName, feedName);
         if(sentryClientObject.checkIfRoleExists(sentryPolicyName))
             try {
                 sentryClientObject.dropRole(sentryPolicyName);
@@ -119,10 +118,8 @@ public class SentryAuthorizationService implements HadoopAuthorizationService {
         /**
          * Create Read Only Policy for HDFS - ACL Approach
          */
-
         String hdfsPathForACLCreation =  convertListToString(hdfsPaths, ",");
         String groupListStringyfied = convertListToString(hadoopAuthorizationGroups, ",");
-
         try 
         {
             sentryClientObject.createAcl(sentryConnection.getHadoopConfiguration(), groupListStringyfied,hdfsPathForACLCreation, HDFS_READ_ONLY_PERMISSION);
@@ -138,9 +135,7 @@ public class SentryAuthorizationService implements HadoopAuthorizationService {
         /**
          * Create Read Only Policy for Hive - Beeline Approach
          */
-
-        String sentryPolicyName = KYLO_POLICY_PREFIX+"_"+categoryName+"_"+feedName+"_"+HIVE_REPOSITORY_TYPE;
-
+        String sentryPolicyName = getHivePolicyName(categoryName, feedName);
         try {
             /**
              * Drop Role if exists in Sentry
@@ -219,10 +214,14 @@ public class SentryAuthorizationService implements HadoopAuthorizationService {
         return HADOOP_AUTHORIZATION_TYPE_SENTRY;
     }
 
+    private String getHivePolicyName(String categoryName, String feedName) {
+        return KYLO_POLICY_PREFIX + "_" + categoryName + "_" + feedName + "_" + HIVE_REPOSITORY_TYPE;
+    }
+
     /**
      * @return : comma separated string
      */
-    public static String convertListToString(List<String> list, String delim) {
+    private static String convertListToString(List<String> list, String delim) {
 
         StringBuilder sb = new StringBuilder();
 
