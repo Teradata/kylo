@@ -60,7 +60,7 @@ public class ReleaseHighWaterMark extends HighWaterMarkProcessor {
         MetadataRecorder recorder = context.getProperty(CommonProperties.METADATA_SERVICE).asControllerService(MetadataProviderService.class).getRecorder();
         FlowFile ff = session.get();
         if (ff != null) {
-            initialize(context, session);
+            initialize(context, ff);
             String mode = context.getProperty(MODE).evaluateAttributeExpressions(ff).toString();
             
             try {

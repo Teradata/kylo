@@ -92,8 +92,8 @@ public class InitializeFeed extends FeedProcessor {
     @Override
     public void onTrigger(ProcessContext context, ProcessSession session) throws ProcessException {
         FlowFile inputFF = session.get();
-        initialize(context, session);
         if (inputFF != null) {
+            initialize(context, inputFF);
             FeedInitializationStatus status = getMetadataRecorder().getFeedInitializationStatus(getFeedId())
                             .orElse(new FeedInitializationStatus(State.PENDING));
             

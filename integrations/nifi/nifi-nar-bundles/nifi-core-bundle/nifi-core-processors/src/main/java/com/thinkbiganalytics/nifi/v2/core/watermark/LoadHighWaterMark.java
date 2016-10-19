@@ -84,7 +84,7 @@ public class LoadHighWaterMark extends HighWaterMarkProcessor {
         FlowFile outputFF = inputFF;
         boolean createdFlowfile = false;
 
-        initialize(context, session);
+        initialize(context, inputFF);
 
         // Create the flow file if we are the start of the flow.
         if (outputFF == null && ! context.hasNonLoopConnection()) {

@@ -37,7 +37,7 @@ public interface CommonProperties {
         .name("System feed category")
         .description("System category of the feed this processor supports")
         .required(true)
-        .defaultValue("${category.systemName}")
+        .defaultValue("${metadata.category.systemName}")
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
