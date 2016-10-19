@@ -33,7 +33,7 @@ import com.thinkbiganalytics.nifi.v2.common.CommonProperties;
 @EventDriven
 @InputRequirement(InputRequirement.Requirement.INPUT_ALLOWED)
 @Tags({"load", "high-water", "mark", "thinkbig"})
-@CapabilityDescription("Loadeds and makes active a watermark associated with a feed.")
+@CapabilityDescription("Loads and makes active a watermark associated with a feed.")
 public class LoadHighWaterMark extends HighWaterMarkProcessor {
 
     protected static final AllowableValue[] ACTIVE_STRATEGY_VALUES = new AllowableValue[] { 
@@ -83,7 +83,9 @@ public class LoadHighWaterMark extends HighWaterMarkProcessor {
         FlowFile inputFF = session.get();
         FlowFile outputFF = inputFF;
         boolean createdFlowfile = false;
-        
+
+        initialize(context, inputFF);
+
         // Create the flow file if we are the start of the flow.
         if (outputFF == null && ! context.hasNonLoopConnection()) {
             outputFF = session.create();

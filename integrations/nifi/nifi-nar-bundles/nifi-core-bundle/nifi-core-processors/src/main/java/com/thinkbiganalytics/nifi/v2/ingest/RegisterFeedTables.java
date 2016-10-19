@@ -7,6 +7,7 @@ package com.thinkbiganalytics.nifi.v2.ingest;
 import com.thinkbiganalytics.ingest.TableRegisterSupport;
 import com.thinkbiganalytics.nifi.v2.thrift.ThriftService;
 import com.thinkbiganalytics.util.ColumnSpec;
+import com.thinkbiganalytics.util.TableRegisterConfiguration;
 import com.thinkbiganalytics.util.TableType;
 
 import org.apache.commons.lang3.StringUtils;
@@ -21,6 +22,7 @@ import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.exception.ProcessException;
+import org.apache.nifi.processor.util.StandardValidators;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -61,14 +63,43 @@ public class RegisterFeedTables extends AbstractProcessor {
     // Relationships
     private final Set<Relationship> relationships;
 
-    /** Property indicating which tables to register */
+    /**
+     * Property indicating which tables to register
+     */
     public static final PropertyDescriptor TABLE_TYPE = new PropertyDescriptor.Builder()
-            .name("Table Type")
-            .description("Specifies the standard table type to create or ALL for standard set.")
-            .required(true)
-            .allowableValues(TableType.FEED.toString(), TableType.VALID.toString(), TableType.INVALID.toString(), TableType.PROFILE.toString(), TableType.MASTER.toString(), ALL_TABLES)
-            .defaultValue("ALL")
-            .build();
+        .name("Table Type")
+        .description("Specifies the standard table type to create or ALL for standard set.")
+        .required(true)
+        .allowableValues(TableType.FEED.toString(), TableType.VALID.toString(), TableType.INVALID.toString(), TableType.PROFILE.toString(), TableType.MASTER.toString(), ALL_TABLES)
+        .defaultValue(ALL_TABLES)
+        .build();
+
+    public static final PropertyDescriptor FEED_ROOT = new PropertyDescriptor.Builder()
+        .name("Feed Root Path")
+        .description("Specify the full HDFS root path for the feed,valid,invalid tables.")
+        .required(true)
+        .defaultValue("${hive.ingest.root}")
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .build();
+
+    public static final PropertyDescriptor MASTER_ROOT = new PropertyDescriptor.Builder()
+        .name("Master Root Path")
+        .description("Specify the HDFS folder root path for creating the master table")
+        .required(true)
+        .defaultValue("${hive.master.root}")
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .build();
+
+    public static final PropertyDescriptor PROFILE_ROOT = new PropertyDescriptor.Builder()
+        .name("Profile Root Path")
+        .description("Specify the HDFS folder root path for creating the profile table")
+        .required(true)
+        .defaultValue("${hive.profile.root}")
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .build();
 
     private final List<PropertyDescriptor> propDescriptors;
 
@@ -88,6 +119,9 @@ public class RegisterFeedTables extends AbstractProcessor {
         pds.add(FEED_FORMAT_SPECS);
         pds.add(TARGET_FORMAT_SPECS);
         pds.add(TARGET_TBLPROPERTIES);
+        pds.add(FEED_ROOT);
+        pds.add(PROFILE_ROOT);
+        pds.add(MASTER_ROOT);
 
         propDescriptors = Collections.unmodifiableList(pds);
     }
@@ -113,22 +147,22 @@ public class RegisterFeedTables extends AbstractProcessor {
 
         // Verify properties and attributes
         final String feedFormatOptions = Optional.ofNullable(context.getProperty(FEED_FORMAT_SPECS).evaluateAttributeExpressions(flowFile).getValue())
-                .filter(StringUtils::isNotEmpty)
-                .orElse(DEFAULT_FEED_FORMAT_OPTIONS);
+            .filter(StringUtils::isNotEmpty)
+            .orElse(DEFAULT_FEED_FORMAT_OPTIONS);
         final String targetFormatOptions = Optional.ofNullable(context.getProperty(TARGET_FORMAT_SPECS).evaluateAttributeExpressions(flowFile).getValue())
-                .filter(StringUtils::isNotEmpty)
-                .orElse(DEFAULT_STORAGE_FORMAT);
+            .filter(StringUtils::isNotEmpty)
+            .orElse(DEFAULT_STORAGE_FORMAT);
         final String targetTableProperties = context.getProperty(TARGET_TBLPROPERTIES).evaluateAttributeExpressions(flowFile).getValue();
         final ColumnSpec[] partitions = Optional.ofNullable(context.getProperty(PARTITION_SPECS).evaluateAttributeExpressions(flowFile).getValue())
-                .filter(StringUtils::isNotEmpty)
-                .map(ColumnSpec::createFromString)
-                .orElse(new ColumnSpec[0]);
+            .filter(StringUtils::isNotEmpty)
+            .map(ColumnSpec::createFromString)
+            .orElse(new ColumnSpec[0]);
         final String tableType = context.getProperty(TABLE_TYPE).getValue();
 
         final ColumnSpec[] columnSpecs = Optional.ofNullable(context.getProperty(FIELD_SPECIFICATION).evaluateAttributeExpressions(flowFile).getValue())
-                .filter(StringUtils::isNotEmpty)
-                .map(ColumnSpec::createFromString)
-                .orElse(new ColumnSpec[0]);
+            .filter(StringUtils::isNotEmpty)
+            .map(ColumnSpec::createFromString)
+            .orElse(new ColumnSpec[0]);
         if (columnSpecs == null || columnSpecs.length == 0) {
             getLogger().error("Missing field specification");
             session.transfer(flowFile, IngestProperties.REL_FAILURE);
@@ -149,11 +183,17 @@ public class RegisterFeedTables extends AbstractProcessor {
             return;
         }
 
+        final String feedRoot = context.getProperty(FEED_ROOT).evaluateAttributeExpressions(flowFile).getValue();
+        final String profileRoot = context.getProperty(PROFILE_ROOT).evaluateAttributeExpressions(flowFile).getValue();
+        final String masterRoot = context.getProperty(MASTER_ROOT).evaluateAttributeExpressions(flowFile).getValue();
+        final TableRegisterConfiguration config = new TableRegisterConfiguration(feedRoot, profileRoot, masterRoot);
+
         // Register the tables
         final ThriftService thriftService = context.getProperty(THRIFT_SERVICE).asControllerService(ThriftService.class);
 
         try (final Connection conn = thriftService.getConnection()) {
-            final TableRegisterSupport register = new TableRegisterSupport(conn);
+
+            final TableRegisterSupport register = new TableRegisterSupport(conn, config);
 
             final boolean result;
             if (ALL_TABLES.equals(tableType)) {

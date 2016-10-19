@@ -3,7 +3,7 @@
  */
 package com.thinkbiganalytics.nifi.core.api.metadata;
 
-import java.io.Serializable;
+import java.util.Optional;
 
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.processor.ProcessSession;
@@ -39,12 +39,17 @@ public interface MetadataRecorder {
     FlowFile releaseAllWaterMarks(ProcessSession session, FlowFile ff, String feedId);
 
     
+    Optional<FeedInitializationStatus> getFeedInitializationStatus(String feedId);
+    
+    FeedInitializationStatus startFeedInitialization(String feedId);
+    
+    FeedInitializationStatus completeFeedInitialization(String feedId);
+    
+    FeedInitializationStatus failFeedInitialization(String feedId);
+    
     
     void updateFeedStatus(ProcessSession session, FlowFile ff, String statusMsg);
     
-    boolean isFeedInitialized(FlowFile ff);
-    
-    void recordFeedInitialization(ProcessSession session, FlowFile ff, boolean flag);
 
     // TODO: Remove all following when working
 

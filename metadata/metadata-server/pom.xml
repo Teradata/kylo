@@ -15,8 +15,6 @@
     <modules>
         <module>metadata-rest-service</module>
         <module>metadata-rest-model</module>
-        <module>metadata-rest-client</module>
-        <module>metadata-rest-client1</module>
         <module>metadata-jms</module>
         <module>metadata-rest-client-spring</module>
         <module>metadata-server-app</module>
