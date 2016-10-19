@@ -102,6 +102,14 @@ link:./deployment/cloudera-docker-sandbox{outfilesuffix}[Cloudera EC2 Docker San
 
 == Configuration
 
+=== Ranger / Sentry
+
+If you've changed the default Ranger or Sentry permissions then you will need to add permissions for Kylo and NiFi.
+
+link:./security/authorization/ranger/EnableRangerAuthorization{outfilesuffix}[Ranger Authorization Guide]
+
+link:./security/authorization/sentry/EnableSentryAuthorization{outfilesuffix}[Sentry Authorization Guide]
+
 === Kerberos
 
     If you are installing Kylo on a kerberos cluster you will need to configure the applications before certain features will work
@@ -141,7 +149,7 @@ You can adjust the memory setting for each services using the below environment 
 
     /opt/thinkbig/thinkbig-services/bin/run-thinkbig-services.sh
     export THINKBIG_SERVICES_OPTS= -Xmx4g
-    
+
 The setting above would set the Java maximum heap size to 4 GB.
 
 === Change the Java Home
@@ -250,7 +258,7 @@ In addition there is a script for cleaning up the hive schema and HDFS folders t
 == Appendix: Postgres Integration
 
 TBD
-	
+
 == Icons and Icon Colors
 Icons and the colors can be configured using 2 JSON files found in the /opt/thinkbig/thinkbig-services/conf directory
 
@@ -259,4 +267,3 @@ Icons and the colors can be configured using 2 JSON files found in the /opt/thin
 
 
 
-    
