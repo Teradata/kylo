@@ -30,17 +30,20 @@
                     </div>
             </div>
         <div ng-if="vm.model.inputProcessor != null && vm.model.inputProcessor.feedPropertiesUrl != null">
-            <ng-include src="vm.model.inputProcessor.feedPropertiesUrl"/>
+          <custom-processor-rendering template-url="{{vm.model.inputProcessor.feedPropertiesUrl}}" processor="vm.model.inputProcessor" ></custom-processor-rendering>
         </div>
 
 
-            <div ng-repeat="processor in vm.model.nonInputProcessors | filter:{userEditable:true} track by processor.processorId" flex>
+            <div ng-repeat="processor in vm.model.nonInputProcessors track by processor.processorId" flex ng-if="processor.userEditable">
                 <div class="md-subhead">{{processor.name}}</div>
-                <div class="layout-padding-indent">
+                <div class="layout-padding-indent" ng-if="processor.feedPropertiesUrl == null  || processor.feedPropertiesUrl == undefined">
                     <div ng-repeat="property in processor.properties | filter:{userEditable:true} track by property.key">
                          <md-input-container ng-class="{'condensed':property.renderType == 'radio' }" nifi-property-input property="property" class="md-block layout-padding-top-bottom" flex-gt-sm />
                     </div>
                 </div>
+              <div ng-if="processor.feedPropertiesUrl != null">
+                <custom-processor-rendering template-url="{{processor.feedPropertiesUrl}}" processor="processor" ></custom-processor-rendering>
+              </div>
 
             </div>
 

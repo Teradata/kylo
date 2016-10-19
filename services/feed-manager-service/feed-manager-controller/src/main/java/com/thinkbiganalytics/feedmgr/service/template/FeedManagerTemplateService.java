@@ -28,5 +28,10 @@ public interface FeedManagerTemplateService {
 
     List<RegisteredTemplate> getRegisteredTemplates();
 
+    /**
+     * Ensures the RegisteredTemplate#inputProcessors contains processors that both have properties exposed for the end user and those that dont
+     */
+    public void ensureRegisteredTemplateInputProcessors(RegisteredTemplate registeredTemplate);
+
 
 }

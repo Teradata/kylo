@@ -5,13 +5,19 @@
 /**
  *
  */
-angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($http, RestUrlService) {
+angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($http, RestUrlService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper) {
 
   function escapeRegExp(str) {
     return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
   }
 
   var data = {
+    /**
+     * Properties that require custom Rendering, separate from the standard Nifi Property (key  value) rendering
+     * This is used in conjunction with the method {@code this.isCustomPropertyRendering(key)} to determine how to render the property to the end user
+     */
+    customPropertyRendering: ["metadata.table.targetFormat", "metadata.table.feedFormat"],
+
     codemirrorTypes: null,
     propertyRenderTypes: [{type: 'text', 'label': 'Text'}, {type: 'number', 'label': 'Number', codemirror: false},
       {type: 'textarea', 'label': 'Textarea', codemirror: false}, {type: 'select', label: 'Select', codemirror: false},
@@ -88,6 +94,7 @@ angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($ht
     getSelectedProperties: function () {
       var self = this;
       var selectedProperties = [];
+
       angular.forEach(self.model.inputProperties, function (property) {
         if (data.isSelectedProperty(property)) {
           selectedProperties.push(property)
@@ -96,6 +103,7 @@ angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($ht
           }
         }
       });
+
 
       angular.forEach(self.model.additionalProperties, function (property) {
         if (data.isSelectedProperty(property)) {
@@ -248,6 +256,132 @@ angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($ht
     },
     isRenderPropertyWithCodeMirror: function (property) {
       return this.codemirrorTypes[property.renderType] !== undefined;
+    },
+    /**
+     * Feed Processors can setup separate Templates to have special rendering done for a processors properties.
+     * @see /js/define-feed/feed-details/get-table-data-properties.
+     *  This
+     * @param key
+     * @returns {boolean}
+     */
+    isCustomPropertyRendering: function (key) {
+      var self = this;
+      var custom = _.find(this.customPropertyRendering, function (customKey) {
+        return key == customKey;
+      });
+      return custom !== undefined;
+    },
+    removeNonUserEditableProperties: function (processorArray, keepProcessorIfEmpty) {
+      //only keep those that are userEditable:true
+      var validProcessors = [];
+      var processorsToRemove = [];
+      //temp placeholder until Register Templates allows for user defined input processor selection
+
+      _.each(processorArray, function (processor, i) {
+        var validProperties = _.reject(processor.properties, function (property) {
+          return !property.userEditable;
+        });
+        processor.allProperties = processor.properties;
+
+        processor.properties = validProperties;
+        if (validProperties != null && validProperties.length > 0) {
+          validProcessors.push(processor);
+        }
+        if (FeedDetailsProcessorRenderingHelper.isGetTableDataProcessor(processor) || FeedDetailsProcessorRenderingHelper.isWatermarkProcessor(processor)) {
+          processor.sortIndex = 0;
+        }
+        else {
+          processor.sortIndex = i;
+        }
+      });
+      var arr = null;
+
+      if (keepProcessorIfEmpty != undefined && keepProcessorIfEmpty == true) {
+        arr = processorArray;
+      }
+      else {
+        arr = validProcessors;
+      }
+      // sort it
+      return _.sortBy(arr, 'sortIndex');
+
+    },
+    /**
+     * Setup the inputProcessor and nonInputProcessor and their properties on the registeredTemplate object
+     * used in Feed creation and feed details to render the nifi input fields
+     * @param template
+     */
+    initializeProperties: function (template, mode, feedProperties) {
+      //get the saved properties
+
+      var savedProperties = {};
+      if (feedProperties) {
+        _.each(feedProperties, function (property) {
+          if (property.userEditable && property.templateProperty) {
+            savedProperties[property.templateProperty.idKey] = property;
+          }
+        });
+      }
+
+      function setRenderTemplateForProcessor(processor) {
+        if (processor.feedPropertiesUrl == undefined) {
+          processor.feedPropertiesUrl = null;
+        }
+        if (processor.feedPropertiesUrl == null) {
+          processor.feedPropertiesUrl = FeedInputProcessorOptionsFactory.templateForProcessor(processor, mode);
+
+        }
+      }
+
+      function updateProperties(processor, properties) {
+
+        _.each(properties, function (property) {
+          //set the value if its saved
+          if (savedProperties[property.idKey] != undefined) {
+            property.value == savedProperties[property.idKey]
+          }
+          //mark as not selected
+          property.selected = false;
+
+          property.value = data.deriveExpression(property.value, false);
+          property.renderWithCodeMirror = data.isRenderPropertyWithCodeMirror(property);
+
+          //if it is a custom render property then dont allow the default editing.
+          //the other fields are coded to look for these specific properties
+          //otherwise check to see if it is editable
+          if (data.isCustomPropertyRendering(property.key)) {
+            property.customProperty = true;
+            property.userEditable = false;
+          } else if (property.userEditable == true) {
+            processor.userEditable = true;
+          }
+          property.displayValue = property.value;
+          if (property.key == "Source Database Connection" && property.propertyDescriptor != undefined && property.propertyDescriptor.allowableValues) {
+            var descriptorOption = _.find(property.propertyDescriptor.allowableValues, function (option) {
+              return option.value == property.value;
+            });
+            if (descriptorOption != undefined && descriptorOption != null) {
+              property.displayValue = descriptorOption.displayName;
+            }
+          }
+
+        })
+
+      }
+
+      _.each(template.inputProcessors, function (processor) {
+        //ensure the processorId attr is set
+        processor.processorId = processor.id
+        updateProperties(processor, processor.properties)
+        setRenderTemplateForProcessor(processor);
+      });
+      _.each(template.nonInputProcessors, function (processor) {
+        //ensure the processorId attr is set
+        processor.processorId = processor.id
+        updateProperties(processor, processor.properties)
+        setRenderTemplateForProcessor(processor);
+      });
+
     }
 
   };

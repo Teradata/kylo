@@ -2,7 +2,11 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
 
 import com.thinkbiganalytics.db.model.query.QueryResult;
 import com.thinkbiganalytics.db.model.schema.TableSchema;
-import com.thinkbiganalytics.feedmgr.rest.model.*;
+import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
+import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
+import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
+import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
+import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
 import com.thinkbiganalytics.feedmgr.service.FeedCleanupFailedException;
 import com.thinkbiganalytics.feedmgr.service.FeedCleanupTimeoutException;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
@@ -58,7 +62,6 @@ import javax.ws.rs.core.Response;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
 
 @Api(value = "feed-manager-feeds", produces = "application/json")
 @Path("/v1/feedmgr/feeds")
@@ -241,6 +244,8 @@ public class FeedRestController {
                     .matchAndSetPropertyByProcessorName(registeredTemplate.getProperties(), feed.getProperties(), NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_NON_EXPRESSION_PROPERTIES);
             feed.setProperties(registeredTemplate.getProperties());
         }
+        registeredTemplate.initializeProcessors();
+        feed.setRegisteredTemplate(registeredTemplate);
 
         return Response.ok(feed).build();
     }

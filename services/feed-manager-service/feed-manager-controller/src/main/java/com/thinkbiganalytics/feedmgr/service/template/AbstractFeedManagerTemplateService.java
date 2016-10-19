@@ -9,6 +9,7 @@ import com.thinkbiganalytics.nifi.rest.support.NifiFeedConstants;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 import com.thinkbiganalytics.security.AccessController;
 
+import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,6 +51,22 @@ public abstract class AbstractFeedManagerTemplateService {
             list = template.getProperties();
         }
         return list;
+    }
+
+    public List<RegisteredTemplate.Processor> getInputProcessorsInNifTemplate(String nifiTemplateId) {
+        List<RegisteredTemplate.Processor> processors = new ArrayList<>();
+        List<ProcessorDTO> inputProcessors = nifiRestClient.getInputProcessorsForTemplate(nifiRestClient.getTemplateById(nifiTemplateId));
+        if (inputProcessors != null) {
+            inputProcessors.stream().forEach(processorDTO -> {
+                RegisteredTemplate.Processor p = new RegisteredTemplate.Processor(processorDTO.getId());
+                p.setInputProcessor(true);
+                p.setGroupId(processorDTO.getParentGroupId());
+                p.setName(processorDTO.getName());
+                p.setType(processorDTO.getType());
+                processors.add(p);
+            });
+        }
+        return processors;
     }
 
 

@@ -5,9 +5,6 @@ import com.google.common.collect.Iterables;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.service.FileObjectPersistence;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService;
-import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
-
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -60,6 +57,11 @@ public class InMemoryFeedManagerTemplateService extends AbstractFeedManagerTempl
 
     }
     saveRegisteredTemplate(registeredTemplate);
+
+  }
+
+  @Override
+  public void ensureRegisteredTemplateInputProcessors(RegisteredTemplate registeredTemplate) {
 
   }
 

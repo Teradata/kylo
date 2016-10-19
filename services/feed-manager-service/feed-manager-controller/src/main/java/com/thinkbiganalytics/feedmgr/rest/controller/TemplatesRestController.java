@@ -11,6 +11,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
 import com.thinkbiganalytics.feedmgr.rest.model.TemplateDtoWrapper;
 import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
+import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
 import com.thinkbiganalytics.feedmgr.support.Constants;
 import com.thinkbiganalytics.nifi.feedmgr.TemplateCreationHelper;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
@@ -56,6 +57,10 @@ public class TemplatesRestController {
 
     @Autowired
     MetadataService metadataService;
+
+    @Autowired
+    FeedManagerTemplateService feedManagerTemplateService;
+
 
     public TemplatesRestController() {
 
@@ -185,6 +190,10 @@ public class TemplatesRestController {
 
         log.info("Returning Registered template for id {} as {} ", templateId, (registeredTemplate != null ? registeredTemplate.getTemplateName() : null));
 
+
+
+
+
         //if savedFeedId is passed in merge the properties with the saved values
         if(feedName != null) {
             //TODO pass in the Category to this method
@@ -243,6 +252,8 @@ public class TemplatesRestController {
         }
 
         registeredTemplate.setReusableTemplateConnections(updatedConnectionInfo);
+        registeredTemplate.initializeProcessors();
+        feedManagerTemplateService.ensureRegisteredTemplateInputProcessors(registeredTemplate);
 
         return Response.ok(registeredTemplate).build();
     }

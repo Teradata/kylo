@@ -341,6 +341,10 @@ public class TemplateCreationHelper {
                         set = true;
                     }
                 }
+                if(enabledServices.containsKey(property.getValue())){
+                    set = true;
+                }
+
                 if (!set) {
                     boolean controllerServiceSet = false;
                     String controllerServiceName = "";

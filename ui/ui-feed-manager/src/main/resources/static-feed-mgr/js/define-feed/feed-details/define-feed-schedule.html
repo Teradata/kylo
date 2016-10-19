@@ -42,12 +42,12 @@
         <div ng-if="vm.model.schedule.schedulingStrategy == 'TIMER_DRIVEN'" layout="row">
           <md-input-container class="md-block" flex-gt-sm>
             <label>Run Schedule</label>
-            <input ng-model="vm.timerAmount" required string-to-number type="number" ng-change="vm.timerChanged()"/>
+            <input ng-model="vm.timerAmount" required string-to-number type="number" ng-change="vm.timerChanged()"  ng-model-options="{ updateOn: 'default blur', debounce: {'default': 500, 'blur': 0} }"/>
           </md-input-container>
 
           <md-input-container class="md-block" flex-gt-sm>
             <label>Units</label>
-            <md-select ng-model="vm.timerUnits" ng-change="vm.timerChanged()">
+            <md-select ng-model="vm.timerUnits" ng-change="vm.timerChanged()" >
               <md-option value="days">Days</md-option>
               <md-option value="hrs">Hours</md-option>
               <md-option value="min">Minutes</md-option>

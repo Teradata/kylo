@@ -1,7 +1,7 @@
 /**
  *
  */
-angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdToast,$mdDialog, RestUrlService, VisualQueryService,FeedCreationErrorService) {
+angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdToast,$mdDialog, RestUrlService, VisualQueryService,FeedCreationErrorService, RegisterTemplateService, FeedInputProcessorOptionsFactory,FeedDetailsProcessorRenderingHelper) {
 
 
     function trim(str) {
@@ -29,11 +29,7 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
 
     var data = {
 
-        /**
-         * Properties that require custom Rendering, separate from the standard Nifi Property (key  value) rendering
-         * This is used in conjunction with the method {@code this.isCustomPropertyRendering(key)} to determine how to render the property to the end user
-         */
-        customPropertyRendering:["metadata.table.targetFormat","metadata.table.feedFormat"],
+
 
         /**
          * The Feed model in the Create Feed Stepper
@@ -148,10 +144,12 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
             if(this.editFeedModel.table != null && this.editFeedModel.table.fieldPolicies != null) {
                 angular.forEach(this.editFeedModel.table.fieldPolicies, function (policy, i) {
                     var field = self.editFeedModel.table.tableSchema.fields[i];
-                    policy.name = field.name;
-                    policy.dataType = field.dataType;
-                    policy.nullable = field.nullable;
-                    policy.primaryKey = field.primaryKey;
+                    if(field != null && field != undefined) {
+                        policy.name = field.name;
+                        policy.dataType = field.dataType;
+                        policy.nullable = field.nullable;
+                        policy.primaryKey = field.primaryKey;
+                    }
                 });
             }
 
@@ -178,20 +176,7 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
         hasFeedCreationErrors: function() {
             return FeedCreationErrorService.hasErrors();
         },
-        /**
-         * Feed Processors can setup separate Templates to have special rendering done for a processors properties.
-         * @see /js/define-feed/feed-details/get-table-data-properties.
-         *  This
-         * @param key
-         * @returns {boolean}
-         */
-        isCustomPropertyRendering:function(key){
-            var self = this;
-           var custom = _.find(this.customPropertyRendering,function(customKey){
-                return key == customKey;
-            });
-            return custom !== undefined;
-        },
+
         /**
          * For a Feed find the first property for a given processor name
          * @param model
@@ -399,6 +384,8 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
                 });
             });
             model.properties = properties;
+
+
         },
         /**
          * Show a dialog indicating that the feed is saving
@@ -464,12 +451,16 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
             var errorFn = function (err) {
                deferred.reject(err);
             }
+            var copy = angular.copy(model);
+            if(copy.registeredTemplate){
+                copy.registeredTemplate = undefined;
+            }
 
 
             var promise = $http({
                 url: RestUrlService.CREATE_FEED_FROM_TEMPLATE_URL,
                 method: "POST",
-                data: angular.toJson(model),
+                data: angular.toJson(copy),
                 headers: {
                     'Content-Type': 'application/json; charset=UTF-8'
                 }
@@ -561,6 +552,10 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
                     return response.data;
                 });
     }
+
+
+
+
 };
     data.init();
 return data;

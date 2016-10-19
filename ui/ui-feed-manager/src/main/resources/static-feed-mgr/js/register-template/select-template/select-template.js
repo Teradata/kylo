@@ -121,8 +121,11 @@
             }
         }
 
-
-
+        /**
+         * groups properties into processor groups
+         * TODO fix to reference Java collections instead of in Javascript
+         * @param properties
+         */
         function transformPropertiesToArray(properties) {
             var inputProperties = [];
             var additionalProperties = [];

@@ -37,7 +37,7 @@
 
       <md-list-item>
         <div layout="row" layout-fill>
-          <div flex="15" class="md-list-item-text hint">
+          <div flex="30" class="md-list-item-text hint">
             Field Name
           </div>
           <div flex="10" class="md-list-item-text hint">
@@ -92,7 +92,7 @@
 
       <md-list-item ng-repeat="policy in vm.model.table.fieldPolicies">
         <div layout="row" layout-fill>
-          <div flex="15" class="md-list-item-text">
+          <div flex="30" class="md-list-item-text">
             <div>{{policy.name}}</div>
             <div class="hint">{{vm.fieldDataTypeDisplay(vm.fieldNameMap[policy.name])}}</div>
           </div>
@@ -260,7 +260,7 @@
 
       <md-list-item>
         <div layout="row" layout-fill>
-          <div flex="15" class="md-list-item-text hint">
+          <div flex="30" class="md-list-item-text hint">
             Field Name
           </div>
           <div flex="10" class="md-list-item-text hint">
@@ -315,7 +315,7 @@
 
       <md-list-item ng-repeat="policy in vm.editModel.fieldPolicies">
         <div layout="row" layout-fill>
-          <div flex="15" class="md-list-item-text">
+          <div flex="30" class="md-list-item-text">
             <md-input-container class="md-block" flex-gt-sm>
               <div>{{policy.name}}</div>
               <div class="hint">{{vm.fieldDataTypeDisplay(policy.columnDef)}}</div>

@@ -34,8 +34,8 @@
                ng-false-value="'{{property.renderOptions['falseValue']}}'">{{property.key}}
   </md-checkbox>
     <md-radio-group ng-model="property.value" ng-if="property.renderType == 'radio' && property.propertyDescriptor.allowableValues != null " layout="row" layout-wrap="true">
-        <md-radio-button ng-repeat="allowableValue in ::property.propertyDescriptor.allowableValues" value="{{::allowableValue.value}}" ng-disabled="propertyDisabled">
-            {{::allowableValue.displayName}}
+        <md-radio-button ng-repeat="allowableValue in property.propertyDescriptor.allowableValues" value="{{allowableValue.value}}" ng-disabled="propertyDisabled">
+            {{allowableValue.displayName}}
             </md-radio-button>
     </md-radio-group>
 

@@ -15,7 +15,7 @@
         };
     }
 
-    var controller = function ($scope, AccessControlService, FeedService, EditFeedNifiPropertiesService, FeedInputProcessorOptionsFactory) {
+    var controller = function ($scope, AccessControlService, FeedService, EditFeedNifiPropertiesService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper) {
 
         var self = this;
 
@@ -36,7 +36,10 @@
             //only update the model if it is not set yet
             if (self.model == null) {
                 self.model = angular.copy(FeedService.editFeedModel);
+
             }
+            //tell the ui what properties to show/hide
+            var renderGetTableData = FeedDetailsProcessorRenderingHelper.updateGetTableDataRendering(self.model.inputProcessor, self.model.nonInputProcessors);
         })
 
         var inputProcessorIdWatch = $scope.$watch(function () {
@@ -60,9 +63,18 @@
             angular.forEach(self.editModel.inputProcessors, function (processor) {
                 if (processor.processorId == newVal) {
                     //check the type and return the custom form if there is one via a factory
+                    var renderGetTableData = FeedDetailsProcessorRenderingHelper.updateGetTableDataRendering(processor, self.editModel.nonInputProcessors);
+
+                    if (renderGetTableData) {
+                        self.model.table.method = 'EXISTING_TABLE';
+                    }
+                    else {
+                        self.model.table.method = 'MANUAL';
+                    }
+
                     self.editModel.inputProcessor = processor;
                     self.editModel.inputProcessorType = processor.type;
-                    setInputProcessorFeedPropertiesUrl(processor);
+                    //  setInputProcessorFeedPropertiesUrl(processor);
                     return false;
                 }
             })
