@@ -27,7 +27,7 @@ import com.thinkbiganalytics.nifi.v2.common.CommonProperties;
 @EventDriven
 @InputRequirement(InputRequirement.Requirement.INPUT_ALLOWED)
 @Tags({"release", "high-water", "mark", "thinkbig"})
-@CapabilityDescription("Loadeds and makes active a watermark associated with a feed.")
+@CapabilityDescription("Releases the watermark claim associated with a feed.")
 public class ReleaseHighWaterMark extends HighWaterMarkProcessor {
 
     protected static final AllowableValue[] MODE_VALUES = new AllowableValue[] { 
@@ -59,8 +59,8 @@ public class ReleaseHighWaterMark extends HighWaterMarkProcessor {
     public void onTrigger(ProcessContext context, ProcessSession session) throws ProcessException {
         MetadataRecorder recorder = context.getProperty(CommonProperties.METADATA_SERVICE).asControllerService(MetadataProviderService.class).getRecorder();
         FlowFile ff = session.get();
-        
         if (ff != null) {
+            initialize(context, session);
             String mode = context.getProperty(MODE).evaluateAttributeExpressions(ff).toString();
             
             try {

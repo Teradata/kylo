@@ -83,7 +83,6 @@ public class InitializeFeed extends FeedProcessor {
     
     @OnScheduled
     public void scheduled(ProcessContext context) {
-        super.scheduled(context);
         this.retryCounts.clear();
     }
 
@@ -93,7 +92,7 @@ public class InitializeFeed extends FeedProcessor {
     @Override
     public void onTrigger(ProcessContext context, ProcessSession session) throws ProcessException {
         FlowFile inputFF = session.get();
-
+        initialize(context, session);
         if (inputFF != null) {
             FeedInitializationStatus status = getMetadataRecorder().getFeedInitializationStatus(getFeedId())
                             .orElse(new FeedInitializationStatus(State.PENDING));

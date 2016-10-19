@@ -49,8 +49,8 @@ public class CompleteInitializeFeed extends FeedProcessor {
     @Override
     public void onTrigger(ProcessContext context, ProcessSession session) throws ProcessException {
         FlowFile inputFF = session.get();
-        
         if (inputFF != null) {
+            initialize(context, session);
             String mode = context.getProperty(FAILURE_STRATEGY).getValue();
             
             if ("SUCCESSFUL".equals(mode)) {
