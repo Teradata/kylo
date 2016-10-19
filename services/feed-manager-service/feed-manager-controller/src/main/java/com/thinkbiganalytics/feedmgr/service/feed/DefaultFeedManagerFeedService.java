@@ -301,10 +301,13 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
         metadataAccess.commit(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_FEEDS);
 
+            List<HadoopSecurityGroup> previousSavedSecurityGroups = null;
             // Store the old security groups before saving beccause we need to compare afterward
-            FeedManagerFeed previousStateBeforeSaving = feedManagerFeedProvider.findById(feedManagerFeedProvider.resolveId(feed.getId()));
-            Map<String,String> userProperties = previousStateBeforeSaving.getUserProperties();
-            List<HadoopSecurityGroup> previousSavedSecurityGroups = previousStateBeforeSaving.getSecurityGroups();
+            if(!feed.isNew()) {
+                FeedManagerFeed previousStateBeforeSaving = feedManagerFeedProvider.findById(feedManagerFeedProvider.resolveId(feed.getId()));
+                Map<String, String> userProperties = previousStateBeforeSaving.getUserProperties();
+                previousSavedSecurityGroups = previousStateBeforeSaving.getSecurityGroups();
+            }
 
             //if this is the first time saving this feed create a new one
             FeedManagerFeed domainFeed = feedModelTransform.feedToDomain(feed);
@@ -346,7 +349,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
             if(!feed.isNew() && !ListUtils.isEqualList(previousSavedSecurityGroups, domainFeed.getSecurityGroups())) {
                 List<HadoopSecurityGroup> securityGroups = domainFeed.getSecurityGroups();
                 List<String> groupsAsCommaList = securityGroups.stream().map(group -> group.getName()).collect(Collectors.toList());
-                hadoopAuthorizationService.updateSecurityGroupsForAllPolicies(feed.getCategoryName(), feed.getFeedName(), groupsAsCommaList, domainFeed.getUserProperties());
+                hadoopAuthorizationService.updateSecurityGroupsForAllPolicies(feed.getCategoryName(), feed.getFeedName(), groupsAsCommaList, domainFeed.getProperties());
             }
 
             // Return result

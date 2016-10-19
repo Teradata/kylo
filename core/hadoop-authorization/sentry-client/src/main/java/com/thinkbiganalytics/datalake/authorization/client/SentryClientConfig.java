@@ -1,15 +1,15 @@
 package com.thinkbiganalytics.datalake.authorization.client;
 
+import javax.sql.DataSource;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import javax.sql.DataSource;
-
 /**
  * Sentry Client configuration class for setting sentry connection information.
  *
- * @author sv186029
+ *  Created by Shashi Vishwakarma on 19/9/2016.
  */
 public class SentryClientConfig {
 
@@ -23,12 +23,16 @@ public class SentryClientConfig {
     private FileSystem fileSystem;
     private DataSource dataSrouce;
     private JdbcTemplate sentryJdbcTemplate;
+    private String sentryGroups ;
+
+    public SentryClientConfig() {
+
+    }
 
     public SentryClientConfig(String driverName, String connectionString) {
         this.driverName = driverName;
         this.connectionString = connectionString;
     }
-
 
     public SentryClientConfig(String driverName, String connectionString, String username, String password) {
         this.username = driverName;
@@ -37,25 +41,22 @@ public class SentryClientConfig {
         this.setPassword(password);
     }
 
-
-    public SentryClientConfig(DataSource dataSrouce) {
+    public SentryClientConfig(DataSource dataSrouce)
+    {
         this.dataSrouce = dataSrouce;
-        this.sentryJdbcTemplate = new JdbcTemplate(this.dataSrouce);
-        setSentryJdbcTemplate(this.sentryJdbcTemplate);
-    }
-
-
-    public SentryClientConfig() {
-
+        setSentryJdbcTemplate(new JdbcTemplate(this.dataSrouce));
     }
 
     public JdbcTemplate getSentryJdbcTemplate() {
         return sentryJdbcTemplate;
     }
 
+
     public void setSentryJdbcTemplate(JdbcTemplate sentryJdbcTemplate) {
         this.sentryJdbcTemplate = sentryJdbcTemplate;
     }
+
+
 
     public String getDriverName() {
         return driverName;
@@ -127,6 +128,14 @@ public class SentryClientConfig {
 
     public void setDataSrouce(DataSource dataSrouce) {
         this.dataSrouce = dataSrouce;
+    }
+
+    public String getSentryGroups() {
+        return sentryGroups;
+    }
+
+    public void setSentryGroups(String sentryGroups) {
+        this.sentryGroups = sentryGroups;
     }
 
 

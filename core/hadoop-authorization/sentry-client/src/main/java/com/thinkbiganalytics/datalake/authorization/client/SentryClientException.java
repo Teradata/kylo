@@ -3,7 +3,7 @@ package com.thinkbiganalytics.datalake.authorization.client;
 /**
  * SentryClientException : Exception Supporting Class
  *
- * @author sv186029
+ *  Created by Shashi Vishwakarma on 19/9/2016.
  */
 
 public class SentryClientException extends Exception {

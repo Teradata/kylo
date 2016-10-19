@@ -36,7 +36,7 @@ public interface HadoopAuthorizationService {
 
     void updateReadOnlyHdfsPolicy(String categoryName, String feedName, List<String> groups, List<String> hdfsPaths);
 
-    void updateSecurityGroupsForAllPolicies(String categoryName, String feedName,List<String> hadoopAuthorizationGroups, Map<String,String> feedProperties);
+    void updateSecurityGroupsForAllPolicies(String categoryName, String feedName,List<String> hadoopAuthorizationGroups, Map<String,Object> feedProperties);
 
     String getType();
 

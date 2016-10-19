@@ -2,6 +2,8 @@ package com.thinkbiganalytics.datalake.authorization.config;
 
 import javax.sql.DataSource;
 
+import com.thinkbiganalytics.datalake.authorization.config.AuthorizationConfiguration;
+
 /**
  * Created by Shashi Vishwakarma on 20/9/16.
  */
@@ -13,6 +15,8 @@ public class SentryConnection implements AuthorizationConfiguration {
     private String username;
     private String password;
     private DataSource dataSource;
+    private String hadoopConfiguration;
+    private String sentryGroups;
 
     public DataSource getDataSource() {
         return dataSource;
@@ -52,6 +56,22 @@ public class SentryConnection implements AuthorizationConfiguration {
 
     public void setDriverName(String driverName) {
         this.driverName = driverName;
+    }
+
+    public String getHadoopConfiguration() {
+        return hadoopConfiguration;
+    }
+
+    public void setHadoopConfiguration(String hadoopConfiguration) {
+        this.hadoopConfiguration = hadoopConfiguration;
+    }
+
+    public String getSentryGroups() {
+        return sentryGroups;
+    }
+
+    public void setSentryGroups(String sentryGroups) {
+        this.sentryGroups = sentryGroups;
     }
 
 }

@@ -6,8 +6,6 @@ package com.thinkbiganalytics.datalake.authorization.model;
 public class SentryGroup implements HadoopAuthorizationGroup {
 
     private String id;
-    //private DateTime createDate;
-    //private DateTime updateDate;
     private String owner;
     private String name;
     private String description;
@@ -21,22 +19,6 @@ public class SentryGroup implements HadoopAuthorizationGroup {
     public void setId(String id) {
         this.id = id;
     }
-
-    /*public DateTime getCreateDate() {
-        return createDate;
-    }
-
-    public void setCreateDate(DateTime createDate) {
-        this.createDate = createDate;
-    }
-
-    public DateTime getUpdateDate() {
-        return updateDate;
-    }
-
-    public void setUpdateDate(DateTime updateDate) {
-        this.updateDate = updateDate;
-    }*/
 
     public String getOwner() {
         return owner;
