@@ -28,5 +28,16 @@ public interface FeedManagerTemplateService {
 
     List<RegisteredTemplate> getRegisteredTemplates();
 
+    /**
+     * Ensures the RegisteredTemplate#inputProcessors contains processors that both have properties exposed for the end user and those that dont
+     */
+    public void ensureRegisteredTemplateInputProcessors(RegisteredTemplate registeredTemplate);
+
+    /**
+     * Synchronize the Nifitemplate Ids to make sure its in sync with the id stored in our metadata store for the RegisteredTemplate
+     * @param template
+     */
+    RegisteredTemplate syncTemplateId(RegisteredTemplate template);
+
 
 }

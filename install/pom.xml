@@ -186,6 +186,19 @@
                     ../metadata/metadata-modeshape/src/main/resources/metadata-repository.json
                   </location>
                 </source>
+                <source>
+                  <location>../plugins/sla-email/src/main/resources/conf</location>
+                  <includes>
+                    <include>sla.email.properties</include>
+                  </includes>
+                </source>
+                <source>
+                  <location>../plugins/sla-jira/src/main/resources/conf</location>
+                  <includes>
+                    <include>thinkbig_jira.jks</include>
+                    <include>jira.properties</include>
+                  </includes>
+                </source>
               </sources>
             </mapping>
             <mapping>
@@ -207,22 +220,9 @@
                   </includes>
                 </source>
                 <source>
-                  <location>../plugins/sla-email/src/main/resources/conf</location>
-                  <includes>
-                    <include>sla.email.properties</include>
-                  </includes>
-                </source>
-                <source>
                   <location>../plugins/sla-jira/target</location>
                   <includes>
                     <include>thinkbig-sla-jira-${project.version}.jar</include>
-                  </includes>
-                </source>
-                <source>
-                  <location>../plugins/sla-jira/src/main/resources/conf</location>
-                  <includes>
-                    <include>thinkbig_jira.jks</include>
-                    <include>jira.properties</include>
                   </includes>
                 </source>
                 <source>
@@ -243,12 +243,6 @@
                   <include>com.thinkbiganalytics.datalake:thinkbig-jira-rest-client</include>
                 </includes>
               </dependency>
-            </mapping>
-            <mapping>
-              <directory>${rpm.install.dir}/thinkbig-services/plugin/conf</directory>
-              <filemode>${file.permissions}</filemode>
-              <username>${rpm.user}</username>
-              <groupname>${rpm.user}</groupname>
             </mapping>
             <!-- thinkbig spark shell mappings -->
             <mapping>

@@ -195,7 +195,6 @@
                     mergeTemplateProperties(response.data).then(function(updatedFeedResponse) {
                         //merge in the template properties
                         //this will update teh self.model as they point to the same object
-
                         if (updatedFeedResponse == undefined || updatedFeedResponse.data == undefined) {
                             self.loadingFeedData = false;
                             var loadMessage = 'Unable to load Feed Details.  Please ensure that Apache Nifi is up and running and then refresh this page.';
@@ -215,6 +214,18 @@
                             if (tabIndex != null && tabIndex != undefined && tabIndex != self.selectedTabIndex) {
                                 self.selectedTabIndex = tabIndex;
                             }
+
+
+                            RegisterTemplateService.initializeProperties(updatedFeedResponse.data.registeredTemplate,'edit');
+                            self.model.inputProcessors = RegisterTemplateService.removeNonUserEditableProperties(updatedFeedResponse.data.registeredTemplate.inputProcessors,true);
+                            self.model.inputProcessor = _.find(self.model.inputProcessors,function(processor){
+                                return self.model.inputProcessorType == processor.type;
+                            });
+                            self.model.nonInputProcessors = RegisterTemplateService.removeNonUserEditableProperties(updatedFeedResponse.data.registeredTemplate.nonInputProcessors,false);
+                            self.loadingFeedData = false;
+                            FeedService.updateEditModelStateIcon();
+
+                            /*
 
                             //get those properties that are Input properties
                             var processors = {};
@@ -255,6 +266,7 @@
                             self.model.nonInputProcessors = nonInputProcessors;
                             self.loadingFeedData = false;
                             FeedService.updateEditModelStateIcon();
+                            */
                         }
                     }, function(err) {
                         //handle err

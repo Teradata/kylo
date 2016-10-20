@@ -22,7 +22,8 @@
         };
     }
 
-    var controller =  function($scope, $http,$mdToast,RestUrlService,FeedTagService, FeedService,RegisterTemplateService,FeedInputProcessorOptionsFactory, BroadcastService, StepperService) {
+    var controller = function ($scope, $http, $mdToast, RestUrlService, FeedTagService, FeedService, RegisterTemplateService, FeedInputProcessorOptionsFactory, BroadcastService, StepperService,
+                               FeedDetailsProcessorRenderingHelper) {
 
         function DefineFeedDetailsControllerTag() {
         }
@@ -55,83 +56,26 @@
             }
         }
 
+        function initializeProperties(template) {
+            RegisterTemplateService.initializeProperties(template, 'create', self.model.properties);
+            self.inputProcessors = RegisterTemplateService.removeNonUserEditableProperties(template.inputProcessors, true);
+            //self.model.inputProcessor = _.find(self.model.inputProcessors,function(processor){
+            //    return self.model.inputProcessorType == processor.type;
+            // });
+            self.model.nonInputProcessors = RegisterTemplateService.removeNonUserEditableProperties(template.nonInputProcessors, false);
 
-        function groupProperties(properties){
-            var processors = {};
-            //merge in any data that is saved on the model for the processors
-            var savedProperties = {};
-            angular.forEach(self.model.properties,function(property) {
-                if(property.userEditable && property.templateProperty){
-                    savedProperties[property.templateProperty.idKey] = property;
-                }
-            });
-
-      angular.forEach(properties,function(property){
-
-                    //set the value if its saved
-                    if(savedProperties[property.idKey] != undefined){
-                        property.value == savedProperties[property.idKey]
-                    }
-
-                    //mark as not selected
-                    property.selected = false;
-                    if (processors[property.processorId] === undefined) {
-                        processors[property.processorId] = {
-                            name: property.processorName,
-                            properties: [],
-                            processorId: property.processorId,
-                            inputProcessor: property.inputProcessor,
-                            type: property.processorType
-                        }
-                    }
-
-
-                    processors[property.processorId].properties.push(property);
-                    if (property.inputProperty && property.processorType !== "com.thinkbiganalytics.nifi.v2.metadata.TriggerCleanup") {
-                        processors[property.processorId].inputProcessor = true;
-                    }
-                property.value = RegisterTemplateService.deriveExpression(property.value, false);
-                property.renderWithCodeMirror = RegisterTemplateService.isRenderPropertyWithCodeMirror(property);
-
-            });
-
-            var processorDataArray = [];
-
-            var inputProcessors = [];
-            var nonInputProcessors = [];
-            for(var processorId in processors) {
-                processorDataArray.push( processors[processorId]);
-                if(processors[processorId].inputProcessor) {
-                    inputProcessors.push(processors[processorId]);
-                }
-                else {
-                    nonInputProcessors.push(processors[processorId]);
-                }
-                angular.forEach(processors[processorId].properties,function(property) {
-                    //if it is a custom render property then dont allow the default editing.
-                    //the other fields are coded to look for these specific properties
-                    //otherwise check to see if it is editable
-                    if(FeedService.isCustomPropertyRendering(property.key)){
-                        property.customProperty = true;
-                        property.userEditable = false;
-                    } else if(property.userEditable == true){
-                        processors[processorId].userEditable = true;
-                        return false;
-                    }
-                })
-                //set userEditable at processor level
-            }
-            self.inputProcessors = inputProcessors;
-            self.model.nonInputProcessors = nonInputProcessors;
             if(self.inputProcessorId == null && self.inputProcessors != null && self.inputProcessors.length >0){
-                self.inputProcessorId  = self.inputProcessors[0].processorId;
+                self.inputProcessorId = self.inputProcessors[0].id;
             }
-
             // Skip this step if it's empty
-            if (inputProcessors.length === 0 && !_.some(nonInputProcessors, function(processor) {return processor.userEditable})) {
+            if (self.inputProcessors.length === 0 && !_.some(self.nonInputProcessors, function (processor) {
+                    return processor.userEditable
+                })) {
                 StepperService.getStep("DefineFeedStepper", parseInt(self.stepIndex)).skip = true;
             }
+
         }
+
 
         /**
          * gets the Registered Template
@@ -141,7 +85,7 @@
         function getRegisteredTemplate() {
             if(self.model.templateId != null && self.model.templateId != '') {
                 var successFn = function (response) {
-                    groupProperties(response.data.properties);
+                    initializeProperties(response.data);
                 }
                 var errorFn = function (err) {
 
@@ -180,21 +124,7 @@
             getRegisteredTemplate();
         })
 
-        /*
-        var inputProcessorTypeWatch = $scope.$watch(function(){
-            return self.model.inputProcessorType
-        },function(newVal,oldVal){
-            if(oldVal != null) {
-                if (_.contains(inputDatabaseType, oldVal)) {
-                    //reset the table model
-                    FeedService.clearTableData();
-                }
-            }
-        })
-        */
-
-
-        function setInputProcessorFeedPropertiesUrl(processor){
+        function setRenderTemplateForProcessor(processor) {
             if(processor.feedPropertiesUrl == undefined){
                 processor.feedPropertiesUrl = null;
             }
@@ -208,11 +138,20 @@
         function updateInputProcessor(newVal){
             angular.forEach(self.inputProcessors,function(processor) {
                 if(processor.processorId == newVal){
+                    var renderGetTableData = FeedDetailsProcessorRenderingHelper.updateGetTableDataRendering(processor, self.model.nonInputProcessors);
+                    var renderSqoop = FeedDetailsProcessorRenderingHelper.updateSqoopProcessorRendering(processor, self.model.nonInputProcessors);
+
+                    if (renderGetTableData) {
+                        self.model.table.method = 'EXISTING_TABLE';
+                    }
+                    else {
+                        self.model.table.method = 'MANUAL';
+                    }
                     //check the type and return the custom form if there is one via a factory
-                    self.model.table.method = 'MANUAL';
+                    // self.model.table.method = 'MANUAL';
                     self.model.inputProcessor = processor;
                     self.model.inputProcessorType = processor.type;
-                    setInputProcessorFeedPropertiesUrl(processor);
+                    // setRenderTemplateForProcessor(processor);
                     return false;
                 }
 
@@ -223,7 +162,6 @@
     systemFeedNameWatch();
     templateIdWatch();
     inputProcessorIdWatch();
-  //  inputProcessorTypeWatch();
 })
 
     };

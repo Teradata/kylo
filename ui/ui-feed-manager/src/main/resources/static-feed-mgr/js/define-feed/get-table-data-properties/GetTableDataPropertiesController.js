@@ -5,14 +5,14 @@
         return {
             restrict: "EA",
             bindToController: {
-                mode:'@'
+                mode: '@',
+                processor: '='
             },
             controllerAs: 'ctl',
             scope: {},
             templateUrl: 'js/define-feed/get-table-data-properties/get-table-data-properties.html',
             controller: "GetTableDataPropertiesController",
-            link: function ($scope, element, attrs, controller) {
-
+            link: function ($scope, element, attrs, controllers) {
             }
 
         };
@@ -25,11 +25,16 @@
         this.selectedTable = null;
         this.tableSchema = null;
         if(this.mode == 'create') {
-            this.processor = FeedService.createFeedModel.inputProcessor;
+            if (this.processor == undefined) {
+                this.processor = FeedService.createFeedModel.inputProcessor;
+            }
+
             this.model = FeedService.createFeedModel;
         }
         else {
-            this.processor = EditFeedNifiPropertiesService.editFeedModel.inputProcessor;
+            if (this.processor == undefined) {
+                this.processor = EditFeedNifiPropertiesService.editFeedModel.inputProcessor;
+            }
             this.model = EditFeedNifiPropertiesService.editFeedModel;
 
         }
@@ -45,11 +50,7 @@
         this.RETENTION_PERIOD_PROPERTY_KEY = 'Backoff Period';
         this.ARCHIVE_UNIT_PROPERTY_KEY = 'Minimum Time Unit';
 
-
-
-
-
-        this.dbConnectionProperty = findProperty(self.DB_CONNECTION_SERVICE_PROPERTY_KEY)
+        this.dbConnectionProperty = findProperty(self.DB_CONNECTION_SERVICE_PROPERTY_KEY, false)
 
 
 
@@ -107,12 +108,16 @@
             self.tableFields = angular.copy(self.originalTableFields);
         }
 
-        function findProperty(key){
+        function findProperty(key, clone) {
             //get all the props for this input
 
-            var matchingProperty = _.find(self.processor.properties,function(property){
+            if (clone == undefined) {
+                clone = false;
+            }
+            var matchingProperty = _.find(self.processor.allProperties, function (property) {
                 return property.key == key;
             });
+
             //on edit mode the model only has the props saved for that type.
             //need to find the prop associated against the other input type
             if((matchingProperty == undefined || matchingProperty == null)&& self.model.allInputProcessorProperties != undefined){
@@ -123,6 +128,14 @@
                     });
                 }
             }
+            if (matchingProperty == null) {
+                //  console.log('UNABLE TO GET MATCHING PROPERTY FOR ',key,'model ',self.model, self.processor)
+            } else {
+                if (clone) {
+                    return angular.copy(matchingProperty);
+                }
+            }
+
             return matchingProperty;
         }
 
@@ -229,6 +242,7 @@
             var dbcpProperty = self.dbConnectionProperty;
             if(dbcpProperty != null && dbcpProperty.value != null && self.selectedTable != null) {
                 var successFn = function (response) {
+
                     self.tableSchema = response.data;
                     self.tableFields = self.tableSchema.fields;
                     self.originalTableFields = angular.copy(self.tableSchema.fields);
@@ -250,7 +264,7 @@
 
                 var serviceId = dbcpProperty.value;
                 var serviceNameValue = _.find(dbcpProperty.propertyDescriptor.allowableValues,function(allowableValue) {
-                    return allowableValue.value = serviceId;
+                    return allowableValue.value == serviceId;
                 });
                 var serviceName = serviceNameValue != null && serviceNameValue != undefined ?serviceNameValue.displayName : '';
                 var promise = $http.get(DBCPTableSchemaService.DESCRIBE_TABLE_URL(serviceId,self.selectedTable.tableName),{params:{schema:self.selectedTable.schema, serviceName:serviceName}})
@@ -272,36 +286,6 @@
             }
         }
 
-
-
-
-
-        //getTableNames();
-
-if(this.mode =='create') {
-    $scope.$watch(function () {
-        return FeedService.createFeedModel.inputProcessor;
-    }, function (newVal) {
-
-        if (newVal != null && newVal != undefined) {
-            self.processor = newVal;
-            initPropertyLookup();
-        }
-    });
-}
-        else {
-
-    $scope.$watch(function () {
-        return EditFeedNifiPropertiesService.editFeedModel.inputProcessor;
-    }, function (newVal) {
-
-        if (newVal != null && newVal != undefined) {
-            self.processor = newVal;
-            initPropertyLookup();
-        }
-    });
-}
-
         /**
          * Watch for changes on the table to refresh the schema
          */
@@ -322,17 +306,6 @@ if(this.mode =='create') {
                 }
             }
         })
-
-        /**
-         * Watch for changes on the Connection and refresh the tables
-         */
-        if(self.dbConnectionProperty) {
-            $scope.$watch(function () {
-                return self.dbConnectionProperty.value
-            }, function (newVal) {
-                //getTableNames();
-            });
-        }
 
         this.loadStrategies = [{name:'Full Load',type:'SNAPSHOT',strategy:'FULL_LOAD',hint:'Select entire table'},{name:'Incremental',type:'DELTA',strategy:'INCREMENTAL',hint:'Select part of table based on high watermark'}];
 
@@ -356,9 +329,6 @@ if(this.mode =='create') {
 
     angular.module(MODULE_FEED_MGR)
         .directive('thinkbigGetTableDataProperties', directive);
-
-   // angular.module(MODULE_FEED_MGR)
-    //    .directive('thinkbigGetTableDataProperties', directive);
 
 })();
 

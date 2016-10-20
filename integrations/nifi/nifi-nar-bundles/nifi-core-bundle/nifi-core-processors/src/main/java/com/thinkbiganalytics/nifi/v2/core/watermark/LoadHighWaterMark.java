@@ -27,7 +27,8 @@ import com.thinkbiganalytics.nifi.core.api.metadata.WaterMarkActiveException;
 import com.thinkbiganalytics.nifi.v2.common.CommonProperties;
 
 /**
- *
+ * Loads a high-water mark and yields any processing if the water mark has not been released yet.
+ * 
  * @author Sean Felten
  */
 @EventDriven
@@ -84,13 +85,13 @@ public class LoadHighWaterMark extends HighWaterMarkProcessor {
         FlowFile outputFF = inputFF;
         boolean createdFlowfile = false;
 
-        initialize(context, inputFF);
-
         // Create the flow file if we are the start of the flow.
         if (outputFF == null && ! context.hasNonLoopConnection()) {
             outputFF = session.create();
             createdFlowfile = true;
         }
+        
+        outputFF = initialize(context, session, outputFF);
         
         if (outputFF != null) {
             MetadataRecorder recorder = context.getProperty(CommonProperties.METADATA_SERVICE).asControllerService(MetadataProviderService.class).getRecorder();
@@ -99,7 +100,7 @@ public class LoadHighWaterMark extends HighWaterMarkProcessor {
             String initialValue = context.getProperty(INITIAL_VALUE).getValue();
 
             try {
-                outputFF = recorder.loadWaterMark(session, outputFF, getFeedId(), waterMark, propName, initialValue);
+                outputFF = recorder.loadWaterMark(session, outputFF, getFeedId(context, outputFF), waterMark, propName, initialValue);
                 this.yieldCount.set(0);
                 session.transfer(outputFF, CommonProperties.REL_SUCCESS);
             } catch (WaterMarkActiveException e) {

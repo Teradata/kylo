@@ -3,6 +3,9 @@
  */
 package com.thinkbiganalytics.nifi.v2.common;
 
+import static com.thinkbiganalytics.nifi.v2.common.CommonProperties.FEED_CATEGORY;
+import static com.thinkbiganalytics.nifi.v2.common.CommonProperties.FEED_NAME;
+
 import java.util.List;
 
 import org.apache.nifi.annotation.lifecycle.OnScheduled;
@@ -17,9 +20,6 @@ import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProvider;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder;
 
-import static com.thinkbiganalytics.nifi.v2.common.CommonProperties.FEED_CATEGORY;
-import static com.thinkbiganalytics.nifi.v2.common.CommonProperties.FEED_NAME;
-
 /**
  * An abstract processor that can be configured with the feed canteory and name and
  * which will look up the feed's ID.
@@ -28,18 +28,16 @@ import static com.thinkbiganalytics.nifi.v2.common.CommonProperties.FEED_NAME;
  */
 public abstract class FeedProcessor extends BaseProcessor {
     private static final Logger log = LoggerFactory.getLogger(FeedProcessor.class);
-    private transient String feedId;
+
     private transient MetadataProviderService providerService;
-
-    public void initialize(ProcessContext context, FlowFile flowFile) {
-        final String category = context.getProperty(FEED_CATEGORY).evaluateAttributeExpressions(flowFile).getValue();
-        final String feedName = context.getProperty(FEED_NAME).evaluateAttributeExpressions(flowFile).getValue();
-        log.info("Resolving category {} and feed {}", category, feedName);
-        MetadataProviderService metadataController = context.getProperty(CommonProperties.METADATA_SERVICE).asControllerService(MetadataProviderService.class);
-        this.feedId = metadataController.getProvider().getFeedId(category, feedName);
+    
+    @OnScheduled
+    public void scheduled(ProcessContext context) {
         this.providerService = context.getProperty(CommonProperties.METADATA_SERVICE).asControllerService(MetadataProviderService.class);
-
-        log.info("Resolving id {} for category {} and feed {}", this.feedId, category, feedName);
+    }
+    
+    public FlowFile initialize(ProcessContext context, ProcessSession session, FlowFile flowFile) {
+        return ensureFeedId(context, session, flowFile);
     }
     
     @Override
@@ -58,8 +56,42 @@ public abstract class FeedProcessor extends BaseProcessor {
         return this.providerService.getRecorder();
     }
     
-    protected String getFeedId() {
-        return feedId;
+    protected String getFeedId(ProcessContext context, FlowFile flowFile) {
+        String feedId = flowFile.getAttribute("feedId");
+        
+        if (feedId == null) {
+            final String category = context.getProperty(FEED_CATEGORY).evaluateAttributeExpressions(flowFile).getValue();
+            final String feedName = context.getProperty(FEED_NAME).evaluateAttributeExpressions(flowFile).getValue();
+            
+            log.info("Resolving category {} and feed {}", category, feedName);
+            
+            feedId = getMetadataProvider().getFeedId(category, feedName);
+
+            log.info("Resolving id {} for category {} and feed {}", feedId, category, feedName);
+            
+            return feedId;
+        } else {
+            return feedId;
+        }
+    }
+    
+    protected FlowFile ensureFeedId(ProcessContext context, ProcessSession session, FlowFile flowFile) {
+        String feedId = flowFile.getAttribute("feedId");
+        
+        if (feedId == null) {
+            final String category = context.getProperty(FEED_CATEGORY).evaluateAttributeExpressions(flowFile).getValue();
+            final String feedName = context.getProperty(FEED_NAME).evaluateAttributeExpressions(flowFile).getValue();
+            
+            log.info("Resolving category {} and feed {}", category, feedName);
+            
+            feedId = getMetadataProvider().getFeedId(category, feedName);
+
+            log.info("Resolving id {} for category {} and feed {}", feedId, category, feedName);
+            
+            return session.putAttribute(flowFile, "feedId", feedId);
+        } else {
+            return flowFile;
+        }
     }
 
 }

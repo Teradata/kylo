@@ -49,6 +49,7 @@
         BroadcastService.subscribe($scope, 'DATA_TRANSFORM_SCHEMA_LOADED', onDataTransformSchemaLoaded);
 
         function onDataTransformSchemaLoaded() {
+            validate();
         }
 
         this.uploadBtnDisabled = false;
@@ -386,13 +387,16 @@
             }
         }
 
-        function validate() {
+        function validate(validForm) {
+            if (validForm == undefined) {
+                validForm = self.defineFeedTableForm.$valid;
+            }
             var valid = self.model.templateId != null && self.model.table.method != null && self.model.table.tableSchema.name != null && self.model.table.tableSchema.name != ''
                         && self.model.table.tableSchema.fields.length > 0;
             if (valid) {
                 ensurePartitionData();
             }
-            self.isValid = valid && self.defineFeedTableForm.$valid;
+            self.isValid = valid && validForm;
 
         };
 
@@ -412,7 +416,7 @@
             return self.defineFeedTableForm.$valid;
         }, function (newVal) {
             if (newVal == true) {
-                validate();
+                validate(newVal);
             }
             else {
                 self.isValid = false;

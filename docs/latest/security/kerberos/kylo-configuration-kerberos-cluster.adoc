@@ -91,7 +91,7 @@ for them to work in a Kerberos cluster some configuration is required. Some exam
 
 . Restart thinkbig-services and thinkbig-spark-shell
 
-    [root]# service thinkbig-spark-services restart
+    [root]# service thinkbig-services restart
     [root]# service thinkbig-spark-shell restart
 
     Kylo is now configured for a Kerberos cluster. You can test that it is configured correctly by

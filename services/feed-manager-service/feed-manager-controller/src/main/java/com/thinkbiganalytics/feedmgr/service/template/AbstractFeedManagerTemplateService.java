@@ -9,6 +9,7 @@ import com.thinkbiganalytics.nifi.rest.support.NifiFeedConstants;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 import com.thinkbiganalytics.security.AccessController;
 
+import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +53,22 @@ public abstract class AbstractFeedManagerTemplateService {
         return list;
     }
 
+    public List<RegisteredTemplate.Processor> getInputProcessorsInNifTemplate(String nifiTemplateId) {
+        List<RegisteredTemplate.Processor> processors = new ArrayList<>();
+        List<ProcessorDTO> inputProcessors = nifiRestClient.getInputProcessorsForTemplate(nifiRestClient.getTemplateById(nifiTemplateId));
+        if (inputProcessors != null) {
+            inputProcessors.stream().forEach(processorDTO -> {
+                RegisteredTemplate.Processor p = new RegisteredTemplate.Processor(processorDTO.getId());
+                p.setInputProcessor(true);
+                p.setGroupId(processorDTO.getParentGroupId());
+                p.setName(processorDTO.getName());
+                p.setType(processorDTO.getType());
+                processors.add(p);
+            });
+        }
+        return processors;
+    }
+
 
     /**
      * Get Registered Template for incoming RegisteredTemplate.id or Nifi Template Id if there is no RegisteredTEmplate matching the incoming id it is assumed to be a new Tempate and it tries to fetch
@@ -93,7 +110,7 @@ public abstract class AbstractFeedManagerTemplateService {
     /**
      * Ensure that the NIFI template Ids are correct and match our metadata for the Template Name
      */
-    private void syncTemplateId(RegisteredTemplate template) {
+    public RegisteredTemplate syncTemplateId(RegisteredTemplate template) {
         String oldId = template.getNifiTemplateId();
         String nifiTemplateId = templateIdForTemplateName(template.getTemplateName());
         template.setNifiTemplateId(nifiTemplateId);
@@ -103,11 +120,12 @@ public abstract class AbstractFeedManagerTemplateService {
         if (!oldId.equalsIgnoreCase(template.getNifiTemplateId())) {
             log.info("Updating Registered Template {} with new Nifi Template Id.  Old Id: {}, New Id: {} ", template.getTemplateName(), oldId, template.getNifiTemplateId());
         }
-        saveRegisteredTemplate(template);
+        RegisteredTemplate updatedTemplate = saveRegisteredTemplate(template);
         if (!oldId.equalsIgnoreCase(template.getNifiTemplateId())) {
             log.info("Successfully updated and synchronized Registered Template {} with new Nifi Template Id.  Old Id: {}, New Id: {} ", template.getTemplateName(), oldId,
                      template.getNifiTemplateId());
         }
+        return updatedTemplate;
     }
 
     public abstract RegisteredTemplate getRegisteredTemplateForNifiProperties(String nifiTemplateId, String nifiTemplateName);

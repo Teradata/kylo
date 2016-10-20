@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -52,6 +53,9 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
             } else {
                 log.info("About to save Registered Template {} ({}), nifi template Id of {} ", registeredTemplate.getTemplateName(), registeredTemplate.getId(),
                          registeredTemplate.getNifiTemplateId());
+                ensureRegisteredTemplateInputProcessors(registeredTemplate);
+
+
                 FeedManagerTemplate domain = templateModelTransform.REGISTERED_TEMPLATE_TO_DOMAIN.apply(registeredTemplate);
                 log.info("Domain Object is {} ({}), nifi template Id of {}", domain.getName(), domain.getId(), domain.getNifiTemplateId());
                 domain = templateProvider.update(domain);
@@ -59,6 +63,30 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
                 domain = templateProvider.findById(domain.getId());
                 return templateModelTransform.DOMAIN_TO_REGISTERED_TEMPLATE.apply(domain);
             }
+        });
+
+    }
+
+    /**
+     * Ensures that the {@code RegisteredTemplate#inputProcessors} list is populated not only with the processors which were defined as having user inputs, but also those that done require any input
+     */
+    public void ensureRegisteredTemplateInputProcessors(RegisteredTemplate registeredTemplate) {
+        registeredTemplate.initializeInputProcessors();
+        List<RegisteredTemplate.Processor> nifiProcessors = getInputProcessorsInNifTemplate(registeredTemplate.getNifiTemplateId());
+
+        List<RegisteredTemplate.Processor> validInputProcessors = nifiProcessors.stream().filter(RegisteredTemplate.isValidInputProcessor()).collect(Collectors.toList());
+
+        //add in any processors not in the map
+        validInputProcessors.stream().forEach(processor -> {
+
+            boolean match = registeredTemplate.getInputProcessors().stream().anyMatch(
+                registeredProcessor -> registeredProcessor.getId().equals(processor.getId()) || (registeredProcessor.getType().equals(processor.getType()) && registeredProcessor.getName()
+                    .equals(processor.getName())));
+            if (!match) {
+                log.info("Adding Processor {} to registered ", processor.getName());
+                registeredTemplate.getInputProcessors().add(processor);
+            }
+
         });
 
     }

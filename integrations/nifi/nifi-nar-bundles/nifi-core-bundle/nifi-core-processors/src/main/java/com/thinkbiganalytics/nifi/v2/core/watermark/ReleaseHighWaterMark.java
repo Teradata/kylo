@@ -21,7 +21,8 @@ import com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder;
 import com.thinkbiganalytics.nifi.v2.common.CommonProperties;
 
 /**
- *
+ * Releases the high-water mark (commits or rolls back).
+ * 
  * @author Sean Felten
  */
 @EventDriven
@@ -60,23 +61,23 @@ public class ReleaseHighWaterMark extends HighWaterMarkProcessor {
         MetadataRecorder recorder = context.getProperty(CommonProperties.METADATA_SERVICE).asControllerService(MetadataProviderService.class).getRecorder();
         FlowFile ff = session.get();
         if (ff != null) {
-            initialize(context, ff);
+            ff = initialize(context, session, ff);
             String mode = context.getProperty(MODE).evaluateAttributeExpressions(ff).toString();
             
             try {
                 if (context.getProperty(RELEASE_ALL).evaluateAttributeExpressions(ff).asBoolean()) {
                     if (mode.equals("COMMIT")) {
-                        ff = recorder.commitAllWaterMarks(session, ff, getFeedId());
+                        ff = recorder.commitAllWaterMarks(session, ff, getFeedId(context, ff));
                     } else {
-                        ff = recorder.releaseAllWaterMarks(session, ff, getFeedId());
+                        ff = recorder.releaseAllWaterMarks(session, ff, getFeedId(context, ff));
                     }
                 } else {
                     String waterMarkName = context.getProperty(HIGH_WATER_MARK).evaluateAttributeExpressions(ff).toString();
                     
                     if (mode.equals("COMMIT")) {
-                        ff = recorder.commitWaterMark(session, ff, getFeedId(), waterMarkName);
+                        ff = recorder.commitWaterMark(session, ff, getFeedId(context, ff), waterMarkName);
                     } else {
-                        ff = recorder.releaseWaterMark(session, ff, getFeedId(), waterMarkName);
+                        ff = recorder.releaseWaterMark(session, ff, getFeedId(context, ff), waterMarkName);
                     }
                 }
                 
