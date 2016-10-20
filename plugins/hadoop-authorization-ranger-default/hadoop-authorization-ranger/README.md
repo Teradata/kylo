@@ -7,8 +7,10 @@ as part of the feed creation process
 In addition there is a Ranger NiFi processor that can create Ranger policies based on the needs of your template. You can
 see an example of this in the data ingest sample template.
 
-To use this you need to include this jar in the /plugin directory (/opt/thinkbig/thinkbig-services/plugin) and configure the properties
-(authorization.ranger.properties) to connect to your Ranger.
+To use this you need to do the following
+* Include this jar in the /opt/thinkbig/thinkbig-services/plugin folder
+* Copy the authorization.ranger.properties to the /opt/thinkbig/thinkbig-services/conf folder
+* Configure the authorization.ranger.properties file
 
 This plugin is not installed by default as part of the RPM install
 
@@ -23,6 +25,9 @@ ranger.userName=admin
 ranger.password=admin
 ```
 
-What is Not Supported in This Release?
-For the 0.4.0 release we only added support for creating Ranger policies. In a follow up release we will add support for removing policies when
-deleting a feed, and modifying groups for a feed.
+Development
+===
+To test the plugin in your IDE you need to add the below two maven modules to the thinkbig-services app
+
+* hadoop-authorization-ranger
+* ranger-rest-client
