@@ -27,13 +27,16 @@ import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.apache.nifi.annotation.behavior.EventDriven;
 import org.apache.nifi.annotation.behavior.InputRequirement;
 import org.apache.nifi.annotation.behavior.InputRequirement.Requirement;
 import org.apache.nifi.annotation.behavior.TriggerWhenEmpty;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.components.PropertyDescriptor;
+import org.apache.nifi.components.PropertyValue;
 import org.apache.nifi.dbcp.DBCPService;
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.logging.ProcessorLog;
@@ -53,6 +56,7 @@ import com.thinkbiganalytics.nifi.thrift.api.AbstractRowVisitor;
 import com.thinkbiganalytics.util.ComponentAttributes;
 import com.thinkbiganalytics.util.JdbcCommon;
 
+@EventDriven
 @TriggerWhenEmpty
 @InputRequirement(Requirement.INPUT_ALLOWED)
 @Tags({"thinkbig", "table", "jdbc", "query", "database"})
@@ -118,7 +122,7 @@ public class GetTableData extends AbstractProcessor {
     
     public static final PropertyDescriptor HIGH_WATER_MARK_PROP = new PropertyDescriptor.Builder()
         .name("High-Water Mark Property Name")
-        .description("Name of the flow file attribute that should contain the current hig-water mark date, and which this processord will update with new values.  "
+        .description("Name of the flow file attribute that should contain the current hig-water mark date, and which this processor will update with new values.  "
                         + "Required if the load strategy is set to INCREMENTAL.")
         .required(false)
         .defaultValue(ComponentAttributes.HIGH_WATER_DATE.key())
@@ -244,7 +248,6 @@ public class GetTableData extends AbstractProcessor {
         final DBCPService dbcpService = context.getProperty(JDBC_SERVICE).asControllerService(DBCPService.class);
         final MetadataProviderService metadataService = context.getProperty(METADATA_SERVICE).asControllerService(MetadataProviderService.class);
         final String loadStrategy = context.getProperty(LOAD_STRATEGY).evaluateAttributeExpressions(incoming).getValue();
-        final String waterMarkPropName = context.getProperty(HIGH_WATER_MARK_PROP).evaluateAttributeExpressions(incoming).getValue();
         final String categoryName = context.getProperty(FEED_CATEGORY).evaluateAttributeExpressions(incoming).getValue();
         final String feedName = context.getProperty(FEED_NAME).evaluateAttributeExpressions(incoming).getValue();
         final String tableName = context.getProperty(TABLE_NAME).evaluateAttributeExpressions(incoming).getValue();
@@ -254,6 +257,7 @@ public class GetTableData extends AbstractProcessor {
         final Integer overlapTime = context.getProperty(OVERLAP_TIME).asTimePeriod(TimeUnit.SECONDS).intValue();
         final Integer backoffTime = context.getProperty(BACKOFF_PERIOD).asTimePeriod(TimeUnit.SECONDS).intValue();
         final String unitSize = context.getProperty(UNIT_SIZE).evaluateAttributeExpressions(incoming).getValue();
+        final PropertyValue waterMarkPropName = context.getProperty(HIGH_WATER_MARK_PROP).evaluateAttributeExpressions(incoming);
 
         final String[] selectFields = parseFields(fieldSpecs);
 
@@ -276,14 +280,16 @@ public class GetTableData extends AbstractProcessor {
                         if (strategy == LoadStrategy.FULL_LOAD) {
                             rs = support.selectFullLoad(tableName, selectFields);
                         } else if (strategy == LoadStrategy.INCREMENTAL) {
-                            LocalDateTime waterMarkTime = LocalDateTime.parse(current.getAttribute(waterMarkPropName), DATE_TIME_FORMAT);
+                            String waterMarkValue = getIncrementalWaterMarkValue(current, waterMarkPropName);
+                            LocalDateTime waterMarkTime = LocalDateTime.parse(waterMarkValue, DATE_TIME_FORMAT);
                             Date lastLoadDate = toDate(waterMarkTime);
                             visitor.setLastModifyDate(lastLoadDate);
                             rs = support.selectIncremental(tableName, selectFields, dateField, overlapTime, lastLoadDate, backoffTime, GetTableDataSupport.UnitSizes.valueOf(unitSize));
                         } else {
                             throw new RuntimeException("Unsupported loadStrategy [" + loadStrategy + "]");
                         }
-                        nrOfRows.set(JdbcCommon.convertToCSVStream(rs, out, visitor));
+                        
+                        nrOfRows.set(JdbcCommon.convertToCSVStream(rs, out, (strategy == LoadStrategy.INCREMENTAL ? visitor : null)));
                     } catch (final SQLException e) {
                         throw new IOException("SQL execution failure", e);
                     } finally {
@@ -319,7 +325,7 @@ public class GetTableData extends AbstractProcessor {
 
                 if (strategy == LoadStrategy.INCREMENTAL) {
                     String newWaterMarkStr = format(visitor.getLastModifyDate());
-                    outgoing = session.putAttribute(outgoing, ComponentAttributes.HIGH_WATER_DATE.key(), newWaterMarkStr);
+                    outgoing = setIncrementalWaterMarkValue(session, outgoing, waterMarkPropName, newWaterMarkStr);
 
                     logger.info("Recorded load status feed {} date {}", new Object[]{feedName, newWaterMarkStr});
                 }
@@ -332,6 +338,42 @@ public class GetTableData extends AbstractProcessor {
                 logger.error("Unable to execute SQL select from table due to {}; routing to failure", new Object[]{incoming, e});
                 session.transfer(incoming, REL_FAILURE);
             }
+        }
+    }
+
+    private String getIncrementalWaterMarkValue(FlowFile ff, PropertyValue waterMarkPropName) {
+        if (! waterMarkPropName.isSet()) {
+            // TODO validate when scheduled?
+            throw new IllegalArgumentException("The processor is configured for incremental load but the "
+                            + "property 'High-Water Mark Value Property Name' has not been set");
+        } else {
+            String propName = waterMarkPropName.getValue();
+            
+            if (StringUtils.isEmpty(propName)) {
+                throw new IllegalArgumentException("The processor is configured for incremental load but the "
+                                + "property 'High-Water Mark Value Property Name' does not have a value");
+            } else {
+                String value = ff.getAttribute(propName);
+                
+                // This can happen if the feed does not have an initial water mark, and the water mark
+                // load processor was not configure with a default value.  In this case default to the epoch.
+                if (StringUtils.isEmpty(value)) {
+                    value = "1970-01-01T00:00:00";
+                }
+                
+                return value;
+            }
+        }
+    }
+    
+    private FlowFile setIncrementalWaterMarkValue(ProcessSession session, FlowFile ff, PropertyValue waterMarkPropName, String newValue) {
+        String propName = waterMarkPropName.getValue();
+        
+        if (StringUtils.isEmpty(propName)) {
+            throw new IllegalArgumentException("The processor is configured for incremental load but the "
+                            + "property 'High-Water Mark Value Property Name' does not have a value");
+        } else {
+            return session.putAttribute(ff, propName, newValue);
         }
     }
     
