@@ -27,6 +27,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.UserFieldCollection;
 import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
 import com.thinkbiganalytics.feedmgr.service.category.FeedManagerCategoryService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService;
+import com.thinkbiganalytics.feedmgr.service.feed.FeedModelTransform;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventListener;
@@ -34,6 +35,7 @@ import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.event.feed.CleanupTriggerEvent;
 import com.thinkbiganalytics.metadata.api.event.feed.FeedOperationStatusEvent;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
 import com.thinkbiganalytics.metadata.api.op.FeedOperation;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
@@ -58,6 +60,9 @@ public class FeedManagerMetadataService implements MetadataService {
 
     @Inject
     MetadataAccess metadataAccess;
+
+    @Inject
+    FeedModelTransform feedModelTransform;
 
     // Metadata event service
     @Inject
@@ -137,7 +142,22 @@ public class FeedManagerMetadataService implements MetadataService {
             throw new IllegalArgumentException("Unknown feed: " + feedId);
         }
 
-        // Step 2: Enable NiFi cleanup flow
+        // Step 2: Delete hadoop authorization security policies if they exists
+        if(hadoopAuthorizationService != null) {
+            metadataAccess.read(() -> {
+                FeedManagerFeed domainFeed = feedModelTransform.feedToDomain(feed);
+                String hdfsPaths = (String)domainFeed.getProperties().get(HadoopAuthorizationService.REGISTRATION_HDFS_FOLDERS);
+
+                if(hdfsPaths == null) {
+                    throw new IllegalArgumentException("The HDFS path metadata is required for deletion of hadoop authorization policies");
+                }
+                hadoopAuthorizationService.deleteHivePolicy(feed.getCategoryName(), feed.getFeedName());
+                hadoopAuthorizationService.deleteHdfsPolicy(feed.getCategoryName(), feed.getFeedName(), HadoopAuthorizationService.convertNewlineDelimetedTextToList(hdfsPaths));
+            });
+
+        }
+
+        // Step 3: Enable NiFi cleanup flow
         boolean needsCleanup = false;
         final ProcessGroupDTO feedProcessGroup;
         final ProcessGroupDTO categoryProcessGroup = nifiRestClient.getProcessGroupByName("root", feed.getSystemCategoryName(), false, true);
@@ -149,7 +169,7 @@ public class FeedManagerMetadataService implements MetadataService {
             }
         }
 
-        // Step 3: Run NiFi cleanup flow
+        // Step 4: Run NiFi cleanup flow
         if (needsCleanup) {
             // Wait for input processor to start
             try {
@@ -161,7 +181,7 @@ public class FeedManagerMetadataService implements MetadataService {
             cleanupFeed(feed);
         }
 
-        // Step 4: Remove feed from NiFi
+        // Step 5: Remove feed from NiFi
         if (categoryProcessGroup != null) {
             final Set<ConnectionDTO> connections = categoryProcessGroup.getContents().getConnections();
             for (ProcessGroupDTO processGroup : NifiProcessUtil.findProcessGroupsByFeedName(categoryProcessGroup.getContents().getProcessGroups(), feed.getSystemFeedName())) {
@@ -169,14 +189,10 @@ public class FeedManagerMetadataService implements MetadataService {
             }
         }
 
-        // Step 5: Delete database entries
+
+        // Step 6: Delete database entries
         feedProvider.deleteFeed(feedId);
 
-        // Step 6: Delete ranger/sentry security policies if they exists
-        if(hadoopAuthorizationService != null) {
-            hadoopAuthorizationService.deleteHivePolicy(feed.getCategoryName(), feed.getFeedName());
-            hadoopAuthorizationService.deleteHdfsPolicy(feed.getCategoryName(), feed.getFeedName());
-        }
     }
 
     private boolean updateNifiFeedRunningStatus(FeedSummary feedSummary, Feed.State state) {

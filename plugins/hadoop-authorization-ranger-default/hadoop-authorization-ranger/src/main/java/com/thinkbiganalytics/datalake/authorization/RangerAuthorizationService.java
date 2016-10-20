@@ -299,7 +299,7 @@ public class RangerAuthorizationService extends BaseHadoopAuthorizationService {
 
         if (securityGroupNames == null || securityGroupNames.isEmpty()) {
             deleteHivePolicy(categoryName, feedName);
-            deleteHdfsPolicy(categoryName, feedName);
+            deleteHdfsPolicy(categoryName, feedName, null);
         } else {
             if (hdfsPolicy == null) {
                 String hdfsFoldersWithCommas = ((String)feedProperties.get(REGISTRATION_HDFS_FOLDERS)).replace("\n", ",");
@@ -415,7 +415,7 @@ public class RangerAuthorizationService extends BaseHadoopAuthorizationService {
     }
 
     @Override
-    public void deleteHdfsPolicy(String categoryName, String feedName) {
+    public void deleteHdfsPolicy(String categoryName, String feedName, List<String> hdfsPaths) {
 
         int policyId = 0;
         String rangerHdfsPolicyName = getHdfsPolicyName(categoryName, feedName);
