@@ -110,7 +110,7 @@ public class JcrUtil {
         }
     }
 
-    public static List<Node> getNodelist(Node parent, String property) {
+    public static List<Node> getNodeList(Node parent, String property) {
         return StreamSupport
                         .stream(getInterableChildren(parent, property).spliterator(), false)
                         .collect(Collectors.toList());

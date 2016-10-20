@@ -89,7 +89,6 @@ public class FeedDatabaseProvider {
                 dto.setName(systemName);
                 dto.setDisplayName(displayName);
                 dto.setVersion(version);
-                dto.setInitialized(isInitialized);
                 dto.setState(Feed.State.valueOf(state));
                 dto.setCategoryId(categoryProvider.resolveId(categoryId));
                 dto.setTemplateId(templateProvider.resolveId(templateId));

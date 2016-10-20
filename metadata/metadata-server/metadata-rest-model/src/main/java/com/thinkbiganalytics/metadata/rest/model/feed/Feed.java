@@ -32,13 +32,13 @@ public class Feed implements Serializable {
     private String owner;
     private State state;
     private DateTime createdTime;
-    private Boolean initialized;
     // TODO versions
     private FeedPrecondition precondition;
     private Set<FeedSource> sources = new HashSet<>();
     private Set<FeedDestination> destinations = new HashSet<>();
     private Properties properties = new Properties();
     private FeedCategory category;
+    private InitializationStatus currentInitStatus;
 
 
     public Feed() {
@@ -109,14 +109,6 @@ public class Feed implements Serializable {
         this.state = state;
     }
 
-    public Boolean isInitialized() {
-        return initialized;
-    }
-
-    public void setInitialized(boolean initialized) {
-        this.initialized = initialized;
-    }
-
     public FeedPrecondition getPrecondition() {
         return precondition;
     }
@@ -159,5 +151,13 @@ public class Feed implements Serializable {
 
     public void setCategory(FeedCategory category) {
         this.category = category;
+    }
+
+    public InitializationStatus getCurrentInitStatus() {
+        return currentInitStatus;
+    }
+
+    public void setCurrentInitStatus(InitializationStatus currentInitStatus) {
+        this.currentInitStatus = currentInitStatus;
     }
 }

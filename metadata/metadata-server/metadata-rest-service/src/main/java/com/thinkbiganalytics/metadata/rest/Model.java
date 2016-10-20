@@ -21,6 +21,7 @@ import com.thinkbiganalytics.metadata.rest.model.feed.FeedCategory;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedSource;
+import com.thinkbiganalytics.metadata.rest.model.feed.InitializationStatus;
 import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
 import com.thinkbiganalytics.metadata.rest.model.op.Dataset;
 import com.thinkbiganalytics.metadata.rest.model.op.FeedOperation;
@@ -46,6 +47,17 @@ public class Model {
     
 
     
+    public static final Function<com.thinkbiganalytics.metadata.api.feed.InitializationStatus, InitializationStatus> DOMAIN_TO_INIT_STATUS 
+        = new Function<com.thinkbiganalytics.metadata.api.feed.InitializationStatus, InitializationStatus>() {
+            @Override
+            public InitializationStatus apply(com.thinkbiganalytics.metadata.api.feed.InitializationStatus domain) {
+                InitializationStatus status = new InitializationStatus();
+                status.setState(InitializationStatus.State.valueOf(domain.getState().name()));
+                status.setTimestamp(domain.getTimestamp());
+                return status;
+            }
+        };
+    
     public static final Function<com.thinkbiganalytics.metadata.api.feed.Feed, Feed> DOMAIN_TO_FEED 
         = new Function<com.thinkbiganalytics.metadata.api.feed.Feed, Feed>() {
             @Override
@@ -57,9 +69,9 @@ public class Model {
                 feed.setDescription(domain.getDescription());
                 feed.setState(Feed.State.valueOf(domain.getState().name()));
                 feed.setCreatedTime(domain.getCreatedTime());
-                feed.setInitialized(domain.isInitialized());
+                feed.setCurrentInitStatus(DOMAIN_TO_INIT_STATUS.apply(domain.getCurrentInitStatus()));
                 if(domain.getCategory() != null){
-                feed.setCategory(DOMAIN_TO_FEED_CATEGORY.apply(domain.getCategory()));
+                    feed.setCategory(DOMAIN_TO_FEED_CATEGORY.apply(domain.getCategory()));
                 }
 
 //                feed.setPrecondition();
@@ -318,7 +330,6 @@ public class Model {
         domain.setDisplayName(feed.getDisplayName());
         domain.setDescription(feed.getDescription());
         domain.setState(State.valueOf(feed.getState().name()));
-        domain.setInitialized(feed.isInitialized());
         return domain;
     }
         

@@ -8,6 +8,7 @@ import com.thinkbiganalytics.metadata.api.feed.FeedConnection;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
+import com.thinkbiganalytics.metadata.api.feed.InitializationStatus;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
@@ -465,5 +466,32 @@ public class BaseFeed<C extends Category> implements Feed<C> {
         public void setLastAssessment(ServiceLevelAssessment assmnt) {
             this.lastAssessment = assmnt;
         }
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.feed.Feed#getCurrentInitStatus()
+     */
+    @Override
+    public InitializationStatus getCurrentInitStatus() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.feed.Feed#updateInitStatus(com.thinkbiganalytics.metadata.api.feed.InitializationStatus)
+     */
+    @Override
+    public void updateInitStatus(InitializationStatus status) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.feed.Feed#getInitHistory()
+     */
+    @Override
+    public List<InitializationStatus> getInitHistory() {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

@@ -6,6 +6,10 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -213,11 +217,11 @@ public class JcrPropertyUtil {
         }
     }
 
-    public static Object getProperty(Node node, String name) {
+    public static <T> T getProperty(Node node, String name) {
         return getProperty(node, name, false);
     }
 
-    public static Object getProperty(Node node, String name, boolean allowNotFound) {
+    public static <T> T getProperty(Node node, String name, boolean allowNotFound) {
         try {
             Property prop = node.getProperty(name);
             return asValue(prop);
@@ -372,6 +376,10 @@ public class JcrPropertyUtil {
                     return (T) Long.valueOf(prop.getLong());
                 } else if (code == PropertyType.DOUBLE) {
                     return (T) Double.valueOf(prop.getDouble());
+                } else if (code == PropertyType.DATE) {
+                    // TODO this is assuming the date will be UTC
+                    Instant instant = prop.getDate().toInstant();
+                    return (T) LocalDateTime.ofInstant(instant, ZoneId.of(ZoneOffset.UTC.getId()));
                 } else if (code == PropertyType.PATH) {
                     return (T) prop.getPath();
                 } else if (code == PropertyType.REFERENCE || code == PropertyType.WEAKREFERENCE) {

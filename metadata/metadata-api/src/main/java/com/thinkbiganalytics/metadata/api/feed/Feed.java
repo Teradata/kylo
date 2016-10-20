@@ -43,6 +43,12 @@ public interface Feed<C extends Category> extends Propertied, AccessControlled, 
     State getState();
 
     boolean isInitialized();
+    
+    InitializationStatus getCurrentInitStatus();
+    
+    void updateInitStatus(InitializationStatus status);
+    
+    List<InitializationStatus> getInitHistory();
 
     FeedPrecondition getPrecondition();
 
@@ -51,8 +57,6 @@ public interface Feed<C extends Category> extends Propertied, AccessControlled, 
     boolean addDependentFeed(Feed<?> feed);
 
     boolean removeDependentFeed(Feed<?> feed);
-
-    void setInitialized(boolean flag);
 
     void setDisplayName(String name);
 

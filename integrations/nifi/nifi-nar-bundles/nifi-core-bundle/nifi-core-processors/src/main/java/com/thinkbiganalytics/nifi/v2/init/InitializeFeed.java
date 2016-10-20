@@ -4,6 +4,8 @@
 package com.thinkbiganalytics.nifi.v2.init;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.HashMap;
@@ -27,8 +29,8 @@ import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.exception.ProcessException;
 import org.apache.nifi.processor.util.StandardValidators;
 
-import com.thinkbiganalytics.nifi.core.api.metadata.FeedInitializationStatus;
-import com.thinkbiganalytics.nifi.core.api.metadata.FeedInitializationStatus.State;
+import com.thinkbiganalytics.metadata.rest.model.feed.InitializationStatus;
+import com.thinkbiganalytics.metadata.rest.model.feed.InitializationStatus.State;
 import com.thinkbiganalytics.nifi.v2.common.CommonProperties;
 import com.thinkbiganalytics.nifi.v2.common.FeedProcessor;
 
@@ -95,8 +97,8 @@ public class InitializeFeed extends FeedProcessor {
         FlowFile inputFF = session.get();
         if (inputFF != null) {
             inputFF = initialize(context, session, inputFF);
-            FeedInitializationStatus status = getMetadataRecorder().getFeedInitializationStatus(getFeedId(context, inputFF))
-                            .orElse(new FeedInitializationStatus(State.PENDING));
+            InitializationStatus status = getMetadataRecorder().getInitializationStatus(getFeedId(context, inputFF))
+                            .orElse(new InitializationStatus(State.PENDING));
             
             switch (status.getState()) {
                 case PENDING:
@@ -106,7 +108,7 @@ public class InitializeFeed extends FeedProcessor {
                     inProgress(context, session, inputFF);
                     break;
                 case FAILED:
-                    failed(context, session, inputFF, status.getTime());
+                    failed(context, session, inputFF, status.getTimestamp());
                     break;
                 default:
                     success(context, session, inputFF);
@@ -151,7 +153,7 @@ public class InitializeFeed extends FeedProcessor {
             if (count.getAndIncrement() >= max) {
                 count.set(max);
                 session.transfer(inputFF, CommonProperties.REL_FAILURE);
-            } else if (failTime.plus(delay, ChronoUnit.SECONDS).isBefore(LocalDateTime.now())) {
+            } else if (failTime.plus(delay, ChronoUnit.SECONDS).isBefore(LocalDateTime.now(ZoneId.of(ZoneOffset.UTC.getId())))) {
                 beginInitialization(context, session, inputFF);
                 rejectFlowFile(session, inputFF);
             } else {

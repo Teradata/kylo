@@ -1,8 +1,10 @@
 package com.thinkbiganalytics.metadata.modeshape.feed;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +25,7 @@ import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
+import com.thinkbiganalytics.metadata.api.feed.InitializationStatus;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
@@ -56,8 +59,15 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
     public static final String CATEGORY = "tba:category";
     public static final String HIGH_WATER_MARKS = "tba:highWaterMarks";
     public static final String WATER_MARKS_TYPE = "tba:waterMarks";
+    
+    public static final String INITIALIZATION_TYPE = "tba:initialization";
+    public static final String INIT_STATUS_TYPE = "tba:initStatus";
+    public static final String INITIALIZATION = "tba:initialization";
+    public static final String INIT_HISTORY = "tba:history";
+    public static final String INIT_STATE = "tba:state";
+    public static final String CURRENT_INIT_STATUS = "tba:currentStatus";
 
-    public static final String STATE = "tba:state";
+    public static final String STATE = INIT_STATE;
 
     public static final String TEMPLATE = "tba:template";
     public static final String SCHEDULE_PERIOD = "tba:schedulingPeriod"; // Cron expression, or Timer Expression
@@ -167,6 +177,45 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
     public boolean isInitialized() {
         return false;
     }
+    
+    @Override
+    public InitializationStatus getCurrentInitStatus() {
+        if (JcrUtil.hasNode(getNode(), INITIALIZATION)) {
+            Node initNode = JcrUtil.getNode(getNode(), INITIALIZATION);
+            Node statusNode = JcrPropertyUtil.getProperty(initNode, CURRENT_INIT_STATUS);
+            return createInitializationStatus(statusNode);
+        } else {
+            return new InitializationStatus(InitializationStatus.State.PENDING);
+        }
+    }
+
+    @Override
+    public void updateInitStatus(InitializationStatus status) {
+        try {
+            Node initNode = JcrUtil.getOrCreateNode(getNode(), INITIALIZATION, INITIALIZATION, true);
+            Node statusNode = initNode.addNode(INIT_HISTORY, INIT_STATUS_TYPE);
+            statusNode.setProperty(INIT_STATE, status.getState().toString());
+            initNode.setProperty(CURRENT_INIT_STATUS, statusNode);
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to access initializations statuses", e);
+        }
+    }
+
+    @Override
+    public List<InitializationStatus> getInitHistory() {
+        Node initNode = JcrUtil.getNode(getNode(), INITIALIZATION);
+        
+        if (initNode != null) {
+            return JcrUtil.getNodeList(initNode, INIT_HISTORY).stream()
+                            .map(n -> createInitializationStatus(n))
+                            .sorted(Comparator.comparing(InitializationStatus::getTimestamp).reversed())
+                            .limit(10)
+                            .collect(Collectors.toList());
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
 
     @Override
     public FeedPrecondition getPrecondition() {
@@ -250,7 +299,7 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
 
     @Override
     public FeedSource getSource(final Datasource.ID id) {
-        return JcrUtil.getNodelist(this.node, SOURCE_NAME).stream()
+        return JcrUtil.getNodeList(this.node, SOURCE_NAME).stream()
                 .filter(node -> JcrPropertyUtil.isReferencing(node, JcrFeedConnection.DATASOURCE, id.toString()))
                 .findAny()
                 .map(node -> new JcrFeedSource(node))
@@ -300,9 +349,6 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
 //        }
 //        return destination;
 //    }
-
-    @Override
-    public void setInitialized(boolean flag) {}
 
     @Override
     public void setDisplayName(String name) {
@@ -409,5 +455,12 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
     public AllowedActions getAllowedActions() {
         Node allowedNode = JcrUtil.getOrCreateNode(this.node, JcrAllowedActions.NODE_NAME, JcrAllowedActions.NODE_TYPE, true);
         return JcrUtil.createJcrObject(allowedNode, JcrAllowedActions.class);
+    }
+
+
+    private InitializationStatus createInitializationStatus(Node statusNode) {
+        InitializationStatus.State state = InitializationStatus.State.valueOf(JcrPropertyUtil.getString(statusNode, INIT_STATE));
+        LocalDateTime timestamp = JcrPropertyUtil.getProperty(statusNode, "jcr:created");
+        return new InitializationStatus(state, timestamp);
     }
 }

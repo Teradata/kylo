@@ -60,6 +60,7 @@ import com.thinkbiganalytics.metadata.rest.model.feed.FeedCategory;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedCriteria;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedDependencyGraph;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
+import com.thinkbiganalytics.metadata.rest.model.feed.InitializationStatus;
 import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment;
@@ -140,6 +141,14 @@ public class MetadataClient {
 
     public void updateHighWaterMarkValue(String feedId, String waterMarkName, String value) {
         put(path("feed", feedId, "watermark", waterMarkName), value, MediaType.TEXT_PLAIN);
+    }
+    
+    public InitializationStatus getCurrentInitStatus(String feedId) {
+        return nullable(() -> get(Paths.get("feed", feedId, "initstatus"), InitializationStatus.class));
+    }
+    
+    public void updateCurrentInitStatus(String feedId, InitializationStatus status) {
+        put(Paths.get("feed", feedId, "initstatus"), status, MediaType.APPLICATION_JSON);
     }
     
     public Feed addSource(String feedId, String datasourceId) {
@@ -289,6 +298,18 @@ public class MetadataClient {
         } catch (HttpClientErrorException e) {
             if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
                 return Optional.empty();
+            } else {
+                throw e;
+            }
+        }
+    }
+    
+    private <R> R nullable(Supplier<R> supplier) {
+        try {
+            return supplier.get();
+        } catch (HttpClientErrorException e) {
+            if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
+                return null;
             } else {
                 throw e;
             }

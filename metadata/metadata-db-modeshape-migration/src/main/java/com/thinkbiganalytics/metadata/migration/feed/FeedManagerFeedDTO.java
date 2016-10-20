@@ -1,20 +1,5 @@
 package com.thinkbiganalytics.metadata.migration.feed;
 
-import com.thinkbiganalytics.metadata.api.category.Category;
-import com.thinkbiganalytics.metadata.api.datasource.Datasource;
-import com.thinkbiganalytics.metadata.api.feed.Feed;
-import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
-import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
-import com.thinkbiganalytics.metadata.api.feed.FeedSource;
-import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
-import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
-import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
-import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
-import com.thinkbiganalytics.security.action.AllowedActions;
-
-import org.joda.time.DateTime;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -25,6 +10,22 @@ import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
+
+import org.joda.time.DateTime;
+
+import com.thinkbiganalytics.metadata.api.category.Category;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource;
+import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
+import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
+import com.thinkbiganalytics.metadata.api.feed.FeedSource;
+import com.thinkbiganalytics.metadata.api.feed.InitializationStatus;
+import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
+import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
+import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
+import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+import com.thinkbiganalytics.security.action.AllowedActions;
 
 /**
  * A POJO for migrating feeds to a ModeShape repository.
@@ -64,6 +65,8 @@ public class FeedManagerFeedDTO implements FeedManagerFeed {
     private Set<Feed<?>> dependentFeeds;
     
     private Map<String, String> waterMarkValues = new HashMap<>();
+    
+    private InitializationStatus currentInitStatus = new InitializationStatus(InitializationStatus.State.PENDING);
 
     //template
 
@@ -174,10 +177,22 @@ public class FeedManagerFeedDTO implements FeedManagerFeed {
     public boolean isInitialized() {
         return initialized;
     }
+    
+    
 
     @Override
-    public void setInitialized(boolean initialized) {
-        this.initialized = initialized;
+    public InitializationStatus getCurrentInitStatus() {
+        return this.currentInitStatus;
+    }
+
+    @Override
+    public void updateInitStatus(InitializationStatus status) {
+        this.currentInitStatus = status;
+    }
+
+    @Override
+    public List<InitializationStatus> getInitHistory() {
+        return Collections.singletonList(this.currentInitStatus);
     }
 
     @Override
