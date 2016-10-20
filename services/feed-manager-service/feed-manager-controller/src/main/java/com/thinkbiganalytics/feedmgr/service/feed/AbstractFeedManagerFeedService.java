@@ -81,6 +81,12 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
 
         ///store only those matched and resolved in the final metadata store
         Set<NifiProperty> updatedProperties = new HashSet<>();
+        //first get all those selected properties where the value differs from the template value
+
+        List<NifiProperty> modifiedProperties = registeredTemplate.findModifiedDefaultProperties();
+        if (modifiedProperties != null) {
+            updatedProperties.addAll(modifiedProperties);
+        }
         updatedProperties.addAll(matchedProperties);
         updatedProperties.addAll(resolvedProperties);
         updatedProperties.addAll(inputProperties);

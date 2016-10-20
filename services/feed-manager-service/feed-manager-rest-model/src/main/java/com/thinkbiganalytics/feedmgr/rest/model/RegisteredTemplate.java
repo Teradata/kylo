@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * Created by sr186054 on 1/26/16.
@@ -218,6 +219,22 @@ public class RegisteredTemplate {
     @JsonIgnore
     public static Predicate<Processor> isValidInputProcessor(){
         return processor -> !NifiProcessUtil.CLEANUP_TYPE.equalsIgnoreCase(processor.getType());
+    }
+
+    @JsonIgnore
+    public static Predicate<NifiProperty> isPropertyModifiedFromTemplateValue() {
+        return property -> (property.isSelected() && ((property.getValue() == null && property.getTemplateValue() != null)
+                                                      || (property.getValue() != null && !property.getValue().equalsIgnoreCase(property.getTemplateValue()))
+        ));
+
+    }
+
+    public List<NifiProperty> findModifiedDefaultProperties() {
+        if (properties != null) {
+            return getProperties().stream().filter(isPropertyModifiedFromTemplateValue()).collect(Collectors.toList());
+        } else {
+            return null;
+        }
     }
 
     @JsonIgnore
