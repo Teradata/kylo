@@ -1,7 +1,6 @@
 package com.thinkbiganalytics.metadata.modeshape.feed;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -16,6 +15,8 @@ import javax.annotation.Nonnull;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Value;
+
+import org.joda.time.DateTime;
 
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryNotFoundException;
@@ -460,7 +461,7 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
 
     private InitializationStatus createInitializationStatus(Node statusNode) {
         InitializationStatus.State state = InitializationStatus.State.valueOf(JcrPropertyUtil.getString(statusNode, INIT_STATE));
-        LocalDateTime timestamp = JcrPropertyUtil.getProperty(statusNode, "jcr:created");
+        DateTime timestamp = JcrPropertyUtil.getProperty(statusNode, "jcr:created");
         return new InitializationStatus(state, timestamp);
     }
 }

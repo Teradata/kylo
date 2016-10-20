@@ -3,9 +3,8 @@
  */
 package com.thinkbiganalytics.metadata.api.feed;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 
 /**
  *
@@ -18,13 +17,13 @@ public class InitializationStatus {
     }
 
     private final State state;
-    private final LocalDateTime timestamp; // TODO correct time type?
+    private final DateTime timestamp;
 
     public InitializationStatus(State state) {
-        this(state, LocalDateTime.now(ZoneId.of(ZoneOffset.UTC.getId())));
+        this(state, DateTime.now(DateTimeZone.UTC));
     }
 
-    public InitializationStatus(State state, LocalDateTime timestamp) {
+    public InitializationStatus(State state, DateTime timestamp) {
         super();
         this.state = state;
         this.timestamp = timestamp;
@@ -34,7 +33,7 @@ public class InitializationStatus {
         return state;
     }
 
-    public LocalDateTime getTimestamp() {
+    public DateTime getTimestamp() {
         return timestamp;
     }
 

@@ -4,8 +4,6 @@
 package com.thinkbiganalytics.metadata.rest.client;
 
 import java.net.URI;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -288,6 +286,8 @@ public class MetadataClient {
     private ObjectMapper createObjectMapper() {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JodaModule());
+// TODO Module dependency is causing a conflict somehow.     
+//        mapper.registerModule(new JavaTimeModule());
         mapper.setSerializationInclusion(Include.NON_NULL);
         return mapper;
     }

@@ -376,10 +376,6 @@ public class JcrPropertyUtil {
                     return (T) Long.valueOf(prop.getLong());
                 } else if (code == PropertyType.DOUBLE) {
                     return (T) Double.valueOf(prop.getDouble());
-                } else if (code == PropertyType.DATE) {
-                    // TODO this is assuming the date will be UTC
-                    Instant instant = prop.getDate().toInstant();
-                    return (T) LocalDateTime.ofInstant(instant, ZoneId.of(ZoneOffset.UTC.getId()));
                 } else if (code == PropertyType.PATH) {
                     return (T) prop.getPath();
                 } else if (code == PropertyType.REFERENCE || code == PropertyType.WEAKREFERENCE) {

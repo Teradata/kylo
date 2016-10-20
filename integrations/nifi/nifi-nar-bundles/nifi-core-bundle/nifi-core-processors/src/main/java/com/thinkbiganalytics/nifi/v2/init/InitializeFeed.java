@@ -3,10 +3,6 @@
  */
 package com.thinkbiganalytics.nifi.v2.init;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -28,6 +24,8 @@ import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.exception.ProcessException;
 import org.apache.nifi.processor.util.StandardValidators;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 
 import com.thinkbiganalytics.metadata.rest.model.feed.InitializationStatus;
 import com.thinkbiganalytics.metadata.rest.model.feed.InitializationStatus.State;
@@ -141,7 +139,7 @@ public class InitializeFeed extends FeedProcessor {
         rejectFlowFile(session, inputFF);
     }
 
-    private void failed(ProcessContext context, ProcessSession session, FlowFile inputFF, LocalDateTime failTime) {
+    private void failed(ProcessContext context, ProcessSession session, FlowFile inputFF, DateTime failTime) {
         String strategy = context.getProperty(FAILURE_STRATEGY).getValue();
         
         if (strategy.equals("RETRY")) {
@@ -153,7 +151,7 @@ public class InitializeFeed extends FeedProcessor {
             if (count.getAndIncrement() >= max) {
                 count.set(max);
                 session.transfer(inputFF, CommonProperties.REL_FAILURE);
-            } else if (failTime.plus(delay, ChronoUnit.SECONDS).isBefore(LocalDateTime.now(ZoneId.of(ZoneOffset.UTC.getId())))) {
+            } else if (failTime.plusSeconds(delay).isBefore(DateTime.now(DateTimeZone.UTC))) {
                 beginInitialization(context, session, inputFF);
                 rejectFlowFile(session, inputFF);
             } else {

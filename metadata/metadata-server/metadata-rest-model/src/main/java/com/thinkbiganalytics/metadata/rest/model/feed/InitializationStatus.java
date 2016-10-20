@@ -4,9 +4,9 @@
 package com.thinkbiganalytics.metadata.rest.model.feed;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
+
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -26,17 +26,17 @@ public class InitializationStatus implements Serializable {
     }
 
     private State state;
-    private LocalDateTime timestamp;
+    private DateTime timestamp;
     
     public InitializationStatus() {
         super();
     }
 
     public InitializationStatus(State state) {
-        this(state, LocalDateTime.now(ZoneId.of(ZoneOffset.UTC.getId())));
+        this(state, DateTime.now(DateTimeZone.UTC));
     }
 
-    public InitializationStatus(State state, LocalDateTime timestamp) {
+    public InitializationStatus(State state, DateTime timestamp) {
         super();
         this.state = state;
         this.timestamp = timestamp;
@@ -50,11 +50,12 @@ public class InitializationStatus implements Serializable {
         this.state = state;
     }
 
-    public LocalDateTime getTimestamp() {
+//    @JsonIgnore
+    public DateTime getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(LocalDateTime timestamp) {
+    public void setTimestamp(DateTime timestamp) {
         this.timestamp = timestamp;
     }
 
