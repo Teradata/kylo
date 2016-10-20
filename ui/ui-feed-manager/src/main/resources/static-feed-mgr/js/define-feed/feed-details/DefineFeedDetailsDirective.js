@@ -139,7 +139,7 @@
             angular.forEach(self.inputProcessors,function(processor) {
                 if(processor.processorId == newVal){
                     var renderGetTableData = FeedDetailsProcessorRenderingHelper.updateGetTableDataRendering(processor, self.model.nonInputProcessors);
-                    var renderSqoop = FeedDetailsProcessorRenderingHelper.updateSqoopProcessorRendering(processor, self.model.nonInputProcessors);
+                    //  var renderSqoop = FeedDetailsProcessorRenderingHelper.updateSqoopProcessorRendering(processor, self.model.nonInputProcessors);
 
                     if (renderGetTableData) {
                         self.model.table.method = 'EXISTING_TABLE';
