@@ -56,6 +56,13 @@
         self.securityGroupChips = {};
         self.securityGroupChips.selectedItem = null;
         self.securityGroupChips.searchText = null;
+        self.securityGroupsEnabled = false;
+
+        FeedSecurityGroups.isEnabled().then(function(isValid) {
+                self.securityGroupsEnabled = isValid;
+            }
+
+        );
 
         this.transformChip = function(chip) {
             // If it is an object, it's already a known chip

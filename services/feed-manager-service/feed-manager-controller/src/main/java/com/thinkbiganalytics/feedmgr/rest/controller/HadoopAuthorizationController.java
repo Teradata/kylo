@@ -53,4 +53,21 @@ public class HadoopAuthorizationController {
         }
     }
 
+    @GET
+    @Path("/enabled")
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response groupEnabled() {
+        try {
+            boolean isEnabled = false;
+
+            if(hadoopAuthorizationService != null) {
+                isEnabled = true;
+            }
+
+            return Response.ok("[{\"enabled\":" + isEnabled + "}]").build();
+        }catch (Exception e){
+            throw new RuntimeException("Unable to get the external security groups "+e.getMessage());
+        }
+    }
+
 }
