@@ -14,6 +14,7 @@ import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
 import com.thinkbiganalytics.feedmgr.support.Constants;
 import com.thinkbiganalytics.nifi.feedmgr.TemplateCreationHelper;
+import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
@@ -208,9 +209,17 @@ public class TemplatesRestController {
                                                                                   feedMetadata.getProperties());
             }
         }
-
+        Set<PortDTO> ports = null;
         // fetch ports for this template
-        Set<PortDTO> ports = nifiRestClient.getPortsForTemplate(registeredTemplate.getNifiTemplateId());
+        try {
+            ports = nifiRestClient.getPortsForTemplate(registeredTemplate.getNifiTemplateId());
+        } catch (NifiComponentNotFoundException notFoundException) {
+            feedManagerTemplateService.syncTemplateId(registeredTemplate);
+            ports = nifiRestClient.getPortsForTemplate(registeredTemplate.getNifiTemplateId());
+        }
+        if (ports == null) {
+            ports = new HashSet<>();
+        }
         List<PortDTO> outputPorts = Lists.newArrayList(Iterables.filter(ports, new Predicate<PortDTO>() {
             @Override
             public boolean apply(PortDTO portDTO) {
