@@ -69,6 +69,28 @@
           <mappings>
             <!--  mappings -->
             <mapping>
+              <directory>${rpm.install.dir}/lib</directory>
+              <filemode>${file.permissions}</filemode>
+              <username>${rpm.user}</username>
+              <groupname>${rpm.user}</groupname>
+              <sources>
+                <source>
+                  <location>../integrations/nifi/nifi-nar-bundles/nifi-hadoop-bundle/nifi-hadoop-processors/target/thinkbig-nifi-hadoop-processors-${project.version}.jar</location>
+                </source>
+              </sources>
+            </mapping>
+            <mapping>
+              <directory>${rpm.install.dir}/bin</directory>
+              <filemode>${file.permissions}</filemode>
+              <username>${rpm.user}</username>
+              <groupname>${rpm.user}</groupname>
+              <sources>
+                <source>
+                  <location>./bin/encryptSqoopPassword.sh</location>
+                </source>
+              </sources>
+            </mapping>
+            <mapping>
               <directory>${rpm.install.dir}/thinkbig-ui</directory>
               <filemode>${file.permissions}</filemode>
               <username>${rpm.user}</username>
