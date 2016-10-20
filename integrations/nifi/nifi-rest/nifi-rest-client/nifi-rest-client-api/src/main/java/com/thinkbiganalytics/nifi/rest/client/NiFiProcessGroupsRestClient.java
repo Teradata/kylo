@@ -2,6 +2,7 @@ package com.thinkbiganalytics.nifi.rest.client;
 
 import org.apache.nifi.web.api.dto.ConnectableDTO;
 import org.apache.nifi.web.api.dto.ConnectionDTO;
+import org.apache.nifi.web.api.dto.ControllerServiceDTO;
 import org.apache.nifi.web.api.dto.FlowSnippetDTO;
 import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
@@ -38,6 +39,18 @@ public interface NiFiProcessGroupsRestClient {
      */
     @Nonnull
     ConnectionDTO createConnection(@Nonnull String processGroupId, @Nonnull ConnectableDTO source, @Nonnull ConnectableDTO dest);
+
+    /**
+     * Creates a controller service.
+     *
+     * @param processGroupId the process group id
+     * @param controllerService the controller service
+     * @return the controller service
+     * @throws NifiComponentNotFoundException if the process group does not exist
+     * @throws UnsupportedOperationException if the NiFi version is pre-1.0
+     */
+    @Nonnull
+    ControllerServiceDTO createControllerService(@Nonnull String processGroupId, @Nonnull ControllerServiceDTO controllerService);
 
     /**
      * Creates an input port.
@@ -122,6 +135,15 @@ public interface NiFiProcessGroupsRestClient {
      */
     @Nonnull
     Set<ConnectionDTO> getConnections(@Nonnull String processGroupId);
+
+    /**
+     * Gets all controller services.
+     *
+     * @param processGroupId the process group id
+     * @return all controller services within the process group
+     */
+    @Nonnull
+    Set<ControllerServiceDTO> getControllerServices(@Nonnull String processGroupId);
 
     /**
      * Gets all input ports.

@@ -388,18 +388,6 @@ public class LegacyNifiRestClient implements NifiFlowVisitorClient {
         return deleteProcessGroup(processGroup);
     }
 
-    @Deprecated
-    public ConnectionDTO getConnection(String processGroupId, String connectionId) throws NifiComponentNotFoundException {
-        return client.connections().findById(processGroupId, connectionId)
-                .orElseThrow(() -> new NifiComponentNotFoundException("Unable to find Connection for process Group: " + processGroupId + " and Connection Id " + connectionId, connectionId,
-                                                                            NifiConstants.NIFI_COMPONENT_TYPE.CONNECTION, null));
-    }
-
-    @Deprecated
-    public ListingRequestDTO getConnectionQueue(String processGroupId, String connectionId) {
-        return client.connections().getQueue(processGroupId, connectionId);
-    }
-
     public void deleteConnection(ConnectionDTO connection, boolean emptyQueue) {
 
         try {
@@ -830,11 +818,6 @@ public class LegacyNifiRestClient implements NifiFlowVisitorClient {
     }
 
     @Deprecated
-    public Set<ControllerServiceDTO> getControllerServices(String type) {
-        return getControllerServices();
-    }
-
-    @Deprecated
     public ControllerServiceDTO getControllerService(String type, String id) throws NifiComponentNotFoundException {
         return client.controllerServices().findById(id)
                 .orElseThrow(() -> new NifiComponentNotFoundException(id, NifiConstants.NIFI_COMPONENT_TYPE.CONTROLLER_SERVICE, null));
@@ -846,7 +829,7 @@ public class LegacyNifiRestClient implements NifiFlowVisitorClient {
     public ControllerServiceDTO getControllerServiceByName(String type, final String serviceName) {
         ControllerServiceDTO controllerService = null;
 
-        Set<ControllerServiceDTO> entity = getControllerServices(type);
+        Set<ControllerServiceDTO> entity = getControllerServices();
         if (entity != null) {
             List<ControllerServiceDTO> services = Lists.newArrayList(Iterables.filter(entity, new Predicate<ControllerServiceDTO>() {
                 @Override
@@ -1241,5 +1224,14 @@ public class LegacyNifiRestClient implements NifiFlowVisitorClient {
      */
     public NiFiPropertyDescriptorTransform getPropertyDescriptorTransform() {
         return propertyDescriptorTransform;
+    }
+
+    /**
+     * Returns the NiFi REST client.
+     *
+     * @return the NiFi REST client
+     */
+    public NiFiRestClient getNiFiRestClient() {
+        return client;
     }
 }

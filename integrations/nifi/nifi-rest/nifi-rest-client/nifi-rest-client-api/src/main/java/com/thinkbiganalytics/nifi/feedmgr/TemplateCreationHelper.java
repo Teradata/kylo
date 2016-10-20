@@ -4,12 +4,12 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
+import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
 import com.thinkbiganalytics.nifi.rest.model.ControllerServiceProperty;
 import com.thinkbiganalytics.nifi.rest.model.ControllerServicePropertyHolder;
 import com.thinkbiganalytics.nifi.rest.model.NiFiAllowableValue;
-import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptorTransform;
 import com.thinkbiganalytics.nifi.rest.model.NifiError;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
@@ -39,7 +39,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
-import javax.inject.Inject;
 
 /**
  * Created by sr186054 on 5/6/16.
@@ -71,8 +70,65 @@ public class TemplateCreationHelper {
         this.restClient = restClient;
     }
 
-    public FlowSnippetDTO instantiateFlowFromTemplate(String processGroupId, String templateId) throws NifiComponentNotFoundException {
-        return restClient.instantiateFlowFromTemplate(processGroupId, templateId);
+    /**
+     * Instantiates the specified template in the specified process group.
+     *
+     * <p>Controller services that are created under the specified process group will be moved to the root process group. This side-effect may be removed in the future.</p>
+     *
+     * @param processGroupId the process group id
+     * @param templateId the template id
+     * @return the instantiated flow
+     * @throws NifiComponentNotFoundException if the process group or template does not exist
+     */
+    @Nonnull
+    public FlowSnippetDTO instantiateFlowFromTemplate(@Nonnull final String processGroupId, @Nonnull final String templateId) throws NifiComponentNotFoundException {
+        // Instantiate template
+        final NiFiRestClient nifiClient = restClient.getNiFiRestClient();
+        final FlowSnippetDTO templateFlow = nifiClient.processGroups().instantiateTemplate(processGroupId, templateId);
+
+        // Move controller services to root process group (NiFi >= v1.0)
+        final Set<ControllerServiceDTO> groupControllerServices = nifiClient.processGroups().getControllerServices(processGroupId);
+        final Map<String, String> idMap = new HashMap<>(groupControllerServices.size());
+
+        groupControllerServices.stream()
+                .filter(controllerService -> controllerService.getParentGroupId().equals(processGroupId))
+                .forEach(groupControllerService -> {
+                    // Delete scoped service
+                    final String oldId = groupControllerService.getId();
+                    nifiClient.controllerServices().delete(groupControllerService.getId());
+
+                    // Create root service
+                    final ControllerServiceDTO rootControllerService = new ControllerServiceDTO();
+                    rootControllerService.setComments(groupControllerService.getComments());
+                    rootControllerService.setName(groupControllerService.getName());
+                    rootControllerService.setType(groupControllerService.getType());
+                    final String rootId = nifiClient.processGroups().createControllerService("root", rootControllerService).getId();
+
+                    // Map old ID to new ID
+                    idMap.put(oldId, rootId);
+                });
+
+        // Set properties on root controller services
+        groupControllerServices.stream()
+                .filter(controllerService -> controllerService.getParentGroupId().equals(processGroupId))
+                .forEach(groupControllerService -> {
+                    final Map<String, String> properties = groupControllerService.getProperties();
+                    groupControllerService.getDescriptors().values().stream()
+                            .filter(descriptor -> StringUtils.isNotBlank(descriptor.getIdentifiesControllerService()))
+                            .forEach(descriptor -> {
+                                final String name = descriptor.getName();
+                                final String oldId = properties.get(name);
+                                properties.put(name, idMap.get(oldId));
+                            });
+
+                    final ControllerServiceDTO rootControllerService = new ControllerServiceDTO();
+                    rootControllerService.setId(idMap.get(groupControllerService.getId()));
+                    rootControllerService.setProperties(properties);
+                    nifiClient.controllerServices().update(rootControllerService);
+                });
+
+        // Return flow
+        return templateFlow;
     }
 
 
@@ -379,11 +435,16 @@ public class TemplateCreationHelper {
                         //match the service by Name...
                         for (NiFiAllowableValue allowableValueDTO : allowableValueDTOs) {
                             ControllerServiceDTO dto = allServices.get(allowableValueDTO.getValue());
-                            if (StringUtils.isBlank(controllerServiceName)) {
-                                controllerServiceName = dto.getName();
-                            }
-                            if (allServices.containsKey(allowableValueDTO.getValue())) {
+                            if (dto != null) {
+                                if (StringUtils.isBlank(controllerServiceName)) {
+                                    controllerServiceName = dto.getName();
+                                }
                                 property.setValue(allowableValueDTO.getValue());
+
+                                //if service depends on other services lets enable those upstream services first
+                                List<NifiProperty> serviceProperties = NifiPropertyUtil.getPropertiesForService(dto, restClient.getPropertyDescriptorTransform());
+                                enableServices(controllerServiceProperties, enabledServices, allServices, serviceProperties);
+
                                 ControllerServiceDTO entity = tryToEnableControllerService(allowableValueDTO.getValue(), controllerServiceName, controllerServiceProperties);
                                 if (entity != null && NifiProcessUtil.SERVICE_STATE.ENABLED.name().equals(entity.getState())) {
                                     enabledServices.put(entity.getId(), entity);

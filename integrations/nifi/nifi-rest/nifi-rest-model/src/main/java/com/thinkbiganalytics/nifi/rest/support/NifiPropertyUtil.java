@@ -7,6 +7,7 @@ package com.thinkbiganalytics.nifi.rest.support;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.thinkbiganalytics.nifi.rest.model.NiFiAllowableValue;
 import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptor;
 import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptorTransform;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
@@ -19,11 +20,16 @@ import org.apache.nifi.web.api.dto.TemplateDTO;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Created by sr186054 on 1/11/16.
@@ -167,61 +173,90 @@ public class NifiPropertyUtil {
     }
 
     /**
-     * Attempts to match incoming properties against the activeProperties using the ProcessGroup Id/Name and Processor Id/Name along with the Property Key
-     * If a match is found sets the activeProperty value
-     * @param activeProperties
-     * @param properties
-     * @return
+     * Updates the values of the destination properties that match the specified source properties.
+     *
+     * <p>Matches are made using the processor ID or name and the property key.</p>
+     *
+     * @param sourceGroupName name of the source process group
+     * @param destinationGroupName name of the destination process group
+     * @param destinationProperties properties of processors in the destination group
+     * @param sourceProperties properties of processors in the source group
+     * @return modified properties from the destination group
      */
-    public static List<NifiProperty> matchAndSetPropertyValues(String rootProcesGroupName, String activeProcessGroupName,List<NifiProperty> activeProperties, List<NifiProperty> properties ) {
-
-        //try to match against processgroup and processor
-        //if not then match against processgroup name and processor name
-        Map<String,NifiProperty> idMap = new HashMap<>();
-
-        Map<String,NifiProperty> nameMap = new HashMap<>();
-
-
-        Map<String,String> processGroupIdMap = new HashMap<>();
-
-        Map<String,String> processorIdMap = new HashMap<>();
-
-        for(NifiProperty property : activeProperties){
-            idMap.put(property.getIdKey(),property);
-            nameMap.put(property.getNameKey(),property);
-            processGroupIdMap.put(property.getProcessGroupName(),property.getProcessGroupId());
-            processorIdMap.put(property.getProcessorName(),property.getProcessorId());
-        }
-        List<NifiProperty> modifiedProperties = new ArrayList<>();
-        //copy the properites to modify them
-
-if(properties != null) {
-    for (NifiProperty property : properties) {
-        //copy off the template property and save it so its snapshotted
-        NifiProperty templateProperty = new NifiProperty(property);
-        property.setTemplateProperty(templateProperty);
-
-        //if this properties processGroup == the root template, change it so it matches this new processgroup
-        if (property.getProcessGroupName().equalsIgnoreCase(rootProcesGroupName)) {
-            property.setProcessGroupName(activeProcessGroupName);
+    @Nonnull
+    public static List<NifiProperty> matchAndSetPropertyValues(@Nonnull final String sourceGroupName, @Nonnull final String destinationGroupName,
+                                                               @Nonnull final List<NifiProperty> destinationProperties, @Nullable final List<NifiProperty> sourceProperties) {
+        // Shortcut if there are no properties
+        if (destinationProperties.isEmpty() || sourceProperties == null || sourceProperties.isEmpty()) {
+            return Collections.emptyList();
         }
 
-        NifiProperty propertyToUpdate = idMap.get(property.getIdKey());
-        if (propertyToUpdate == null) {
-            propertyToUpdate = nameMap.get(property.getNameKey());
-        }
-        if (propertyToUpdate != null) {
-            property.setProcessorId(processorIdMap.get(propertyToUpdate.getProcessorName()));
-            property.setProcessGroupId(processGroupIdMap.get(propertyToUpdate.getProcessGroupName()));
-            propertyToUpdate.setValue(property.getValue());
-            modifiedProperties.add(propertyToUpdate);
+        // Create mappings for destination properties
+        final Map<String, NifiProperty> propertyById = new HashMap<>(destinationProperties.size());
+        final Map<String, NifiProperty> propertyByName = new HashMap<>(destinationProperties.size());
+        final Map<String, String> groupIdByName = new HashMap<>(destinationProperties.size());
+        final Map<String, String> processorIdByName = new HashMap<>(destinationProperties.size());
+
+        for (final NifiProperty property : destinationProperties){
+            propertyById.put(property.getIdKey(), property);
+            propertyByName.put(property.getNameKey(), property);
+            groupIdByName.put(property.getProcessGroupName(), property.getProcessGroupId());
+            processorIdByName.put(property.getProcessorName(), property.getProcessorId());
         }
 
-    }
-}
+        // Match and update destination properties
+        final List<NifiProperty> modifiedProperties = new ArrayList<>(destinationProperties.size());
+
+        for (final NifiProperty sourceProperty : sourceProperties) {
+            // Update source property to match destination
+            sourceProperty.setTemplateProperty(new NifiProperty(sourceProperty));
+
+            if (sourceProperty.getProcessGroupName().equalsIgnoreCase(sourceGroupName)) {
+                sourceProperty.setProcessGroupName(destinationGroupName);
+            }
+
+            // Find destination property
+            NifiProperty destinationProperty = propertyById.get(sourceProperty.getIdKey());
+            if (destinationProperty == null) {
+                destinationProperty = propertyByName.get(sourceProperty.getNameKey());
+            }
+
+            if (destinationProperty != null) {
+                sourceProperty.setProcessGroupId(groupIdByName.get(destinationProperty.getProcessGroupName()));
+                sourceProperty.setProcessorId(processorIdByName.get(destinationProperty.getProcessorName()));
+
+                final String sourceValue = sourceProperty.getValue();
+                if (isValidPropertyValue(destinationProperty, sourceValue)) {
+                    destinationProperty.setValue(sourceValue);
+                    modifiedProperties.add(destinationProperty);
+                }
+            }
+        }
+
         return modifiedProperties;
-
     }
+
+    /**
+     * Validates that the specified value is valid for the property.
+     *
+     * @param property the property
+     * @param value the value to validate
+     * @return {@code true} if the value is valid for the property, or {@code false} otherwise
+     */
+    private static boolean isValidPropertyValue(@Nonnull final NifiProperty property, @Nonnull final String value) {
+        // Check for list of allowable values
+        final Optional<List<NiFiAllowableValue>> allowableValues = Optional.of(property)
+                .map(NifiProperty::getPropertyDescriptor)
+                .map(NiFiPropertyDescriptor::getAllowableValues);
+        if (allowableValues.isPresent()) {
+            return allowableValues.get().stream()
+                    .filter(allowableValue -> allowableValue.getValue().equals(value))
+                    .findAny()
+                    .isPresent();
+        }
+        return true;
+    }
+
     public static List<NifiProperty> matchAndSetPropertyByIdKey(Collection<NifiProperty> templateProperties, List<NifiProperty> nifiProperties,PROPERTY_MATCH_AND_UPDATE_MODE updateMode){
         List<NifiProperty> matchedProperties = new ArrayList<>();
 

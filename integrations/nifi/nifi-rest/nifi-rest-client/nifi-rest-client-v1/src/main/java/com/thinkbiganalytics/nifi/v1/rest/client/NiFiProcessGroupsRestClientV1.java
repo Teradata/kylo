@@ -9,6 +9,7 @@ import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 
 import org.apache.nifi.web.api.dto.ConnectableDTO;
 import org.apache.nifi.web.api.dto.ConnectionDTO;
+import org.apache.nifi.web.api.dto.ControllerServiceDTO;
 import org.apache.nifi.web.api.dto.FlowSnippetDTO;
 import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
@@ -16,6 +17,8 @@ import org.apache.nifi.web.api.dto.RevisionDTO;
 import org.apache.nifi.web.api.dto.flow.FlowDTO;
 import org.apache.nifi.web.api.entity.ConnectionEntity;
 import org.apache.nifi.web.api.entity.ConnectionsEntity;
+import org.apache.nifi.web.api.entity.ControllerServiceEntity;
+import org.apache.nifi.web.api.entity.ControllerServicesEntity;
 import org.apache.nifi.web.api.entity.FlowEntity;
 import org.apache.nifi.web.api.entity.FunnelEntity;
 import org.apache.nifi.web.api.entity.InputPortsEntity;
@@ -103,6 +106,23 @@ public class NiFiProcessGroupsRestClientV1 extends AbstractNiFiProcessGroupsRest
 
     @Nonnull
     @Override
+    public ControllerServiceDTO createControllerService(@Nonnull final String processGroupId, @Nonnull final ControllerServiceDTO controllerService) {
+        final ControllerServiceEntity entity = new ControllerServiceEntity();
+        entity.setComponent(controllerService);
+
+        final RevisionDTO revision = new RevisionDTO();
+        revision.setVersion(0L);
+        entity.setRevision(revision);
+
+        try {
+            return client.post(BASE_PATH + processGroupId + "/controller-services", entity, ControllerServiceEntity.class).getComponent();
+        } catch (final NotFoundException e) {
+            throw new NifiComponentNotFoundException(processGroupId, NifiConstants.NIFI_COMPONENT_TYPE.PROCESS_GROUP, e);
+        }
+    }
+
+    @Nonnull
+    @Override
     public PortDTO createInputPort(@Nonnull final String processGroupId, @Nonnull final PortDTO inputPort) {
         final PortEntity entity = new PortEntity();
         entity.setComponent(inputPort);
@@ -168,6 +188,19 @@ public class NiFiProcessGroupsRestClientV1 extends AbstractNiFiProcessGroupsRest
             return client.get(BASE_PATH + processGroupId + "/connections", null, ConnectionsEntity.class)
                     .getConnections().stream()
                     .map(ConnectionEntity::getComponent)
+                    .collect(Collectors.toSet());
+        } catch (final NotFoundException e) {
+            throw new NifiComponentNotFoundException(processGroupId, NifiConstants.NIFI_COMPONENT_TYPE.PROCESS_GROUP, e);
+        }
+    }
+
+    @Nonnull
+    @Override
+    public Set<ControllerServiceDTO> getControllerServices(@Nonnull final String processGroupId) {
+        try {
+            return client.get("/flow/process-groups/" + processGroupId + "/controller-services", null, ControllerServicesEntity.class)
+                    .getControllerServices().stream()
+                    .map(ControllerServiceEntity::getComponent)
                     .collect(Collectors.toSet());
         } catch (final NotFoundException e) {
             throw new NifiComponentNotFoundException(processGroupId, NifiConstants.NIFI_COMPONENT_TYPE.PROCESS_GROUP, e);

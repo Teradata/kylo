@@ -8,6 +8,7 @@ import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 
 import org.apache.nifi.web.api.dto.ConnectableDTO;
 import org.apache.nifi.web.api.dto.ConnectionDTO;
+import org.apache.nifi.web.api.dto.ControllerServiceDTO;
 import org.apache.nifi.web.api.dto.FlowSnippetDTO;
 import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
@@ -21,6 +22,7 @@ import org.apache.nifi.web.api.entity.OutputPortsEntity;
 import org.apache.nifi.web.api.entity.ProcessGroupEntity;
 import org.apache.nifi.web.api.entity.ProcessGroupsEntity;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -92,6 +94,12 @@ public class NiFiProcessGroupsRestClientV0 extends AbstractNiFiProcessGroupsRest
 
     @Nonnull
     @Override
+    public ControllerServiceDTO createControllerService(@Nonnull final String processGroupId, @Nonnull final ControllerServiceDTO controllerService) {
+        throw new UnsupportedOperationException("Scoped controller services not supported in NiFi versions before 1.0.");
+    }
+
+    @Nonnull
+    @Override
     public PortDTO createInputPort(@Nonnull final String processGroupId, @Nonnull final PortDTO inputPort) {
         try {
             final InputPortEntity entity = new InputPortEntity();
@@ -147,6 +155,12 @@ public class NiFiProcessGroupsRestClientV0 extends AbstractNiFiProcessGroupsRest
         } catch (NotFoundException e) {
             throw new NifiComponentNotFoundException(processGroupId, NifiConstants.NIFI_COMPONENT_TYPE.PROCESS_GROUP, e);
         }
+    }
+
+    @Nonnull
+    @Override
+    public Set<ControllerServiceDTO> getControllerServices(@Nonnull final String processGroupId) {
+        return Collections.emptySet();  // not supported in NiFi versions before 1.0
     }
 
     @Nonnull

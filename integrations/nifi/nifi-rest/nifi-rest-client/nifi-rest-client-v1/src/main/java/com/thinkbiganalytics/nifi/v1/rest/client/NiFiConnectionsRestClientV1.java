@@ -8,10 +8,8 @@ import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 
 import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.apache.nifi.web.api.dto.DropRequestDTO;
-import org.apache.nifi.web.api.dto.ListingRequestDTO;
 import org.apache.nifi.web.api.entity.ConnectionEntity;
 import org.apache.nifi.web.api.entity.DropRequestEntity;
-import org.apache.nifi.web.api.entity.ListingRequestEntity;
 
 import java.util.Optional;
 
@@ -53,22 +51,6 @@ public class NiFiConnectionsRestClientV1 extends AbstractNiFiConnectionsRestClie
                         return Optional.empty();
                     }
                 });
-    }
-
-    @Nonnull
-    @Override
-    public Optional<ConnectionDTO> findById(@Nonnull final String processGroupId, @Nonnull final String connectionId) {
-        return findEntityById(connectionId).map(ConnectionEntity::getComponent);
-    }
-
-    @Nonnull
-    @Override
-    public ListingRequestDTO getQueue(@Nonnull final String processGroupId, @Nonnull final String connectionId) {
-        try {
-            return client.post(QUEUE_PATH + connectionId + "/listing-requests", null, ListingRequestEntity.class).getListingRequest();
-        } catch (final NotFoundException e) {
-            throw new NifiComponentNotFoundException(connectionId, NifiConstants.NIFI_COMPONENT_TYPE.CONNECTION, e);
-        }
     }
 
     @Nonnull

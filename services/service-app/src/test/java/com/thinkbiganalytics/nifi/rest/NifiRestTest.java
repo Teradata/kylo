@@ -176,33 +176,4 @@ public class NifiRestTest {
         Set<ProcessorDTO> failureProcessors = restClient.getFailureProcessors(id);
         int i = 0;
     }
-
-    // @Test
-    public void testConnection() throws JerseyClientException {
-        ConnectionDTO entity = restClient.getConnection("72f23ad8-2b7f-47e6-a6db-f8e92b7d1f59", "9ed6ea0f-8401-4e56-826e-f5b7556976b9");
-
-        ListingRequestDTO queue = restClient.getConnectionQueue("72f23ad8-2b7f-47e6-a6db-f8e92b7d1f59", "9ed6ea0f-8401-4e56-826e-f5b7556976b9");
-
-        int i = 0;
-
-    }
-
-    // @Test
-    public void testStopInputs() throws JerseyClientException {
-        String id = "b1d5e073-f3cd-4339-86ea-7a28434bca43";
-        restClient.disableAllInputProcessors(id);
-        //attempt to stop all processors
-        try {
-            restClient.stopInputs(id);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        String connectionId = "61e16428-9368-4f40-a0bb-7acaae92b286";
-        String groupId = "01fd0596-0bb7-47b3-a5b7-eaccbe10d645";
-        ConnectionDTO connectionEntity = restClient.getConnection(groupId, connectionId);
-        restClient.deleteConnection(connectionEntity, false);
-
-    }
-
-
 }

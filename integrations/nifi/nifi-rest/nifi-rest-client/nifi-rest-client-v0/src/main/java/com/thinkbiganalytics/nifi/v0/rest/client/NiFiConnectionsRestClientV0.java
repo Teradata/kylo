@@ -7,10 +7,8 @@ import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 
 import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.apache.nifi.web.api.dto.DropRequestDTO;
-import org.apache.nifi.web.api.dto.ListingRequestDTO;
 import org.apache.nifi.web.api.entity.ConnectionEntity;
 import org.apache.nifi.web.api.entity.DropRequestEntity;
-import org.apache.nifi.web.api.entity.ListingRequestEntity;
 
 import java.util.HashMap;
 import java.util.Optional;
@@ -42,26 +40,6 @@ public class NiFiConnectionsRestClientV0 extends AbstractNiFiConnectionsRestClie
             return Optional.of(client.delete("/controller/process-groups/" + processGroupId + "/connections/" + connectionId, new HashMap<>(), ConnectionEntity.class).getConnection());
         } catch (final NotFoundException e) {
             return Optional.empty();
-        }
-    }
-
-    @Nonnull
-    @Override
-    public Optional<ConnectionDTO> findById(@Nonnull final String processGroupId, @Nonnull final String connectionId) {
-        try {
-            return Optional.of(client.get("/controller/process-groups/" + processGroupId + "/connections/" + connectionId, null, ConnectionEntity.class).getConnection());
-        } catch (NotFoundException e) {
-            return Optional.empty();
-        }
-    }
-
-    @Nonnull
-    @Override
-    public ListingRequestDTO getQueue(@Nonnull final String processGroupId, @Nonnull final String connectionId) {
-        try {
-            return client.postForm("/controller/process-groups/" + processGroupId + "/connections/" + connectionId + "/listing-requests", null, ListingRequestEntity.class).getListingRequest();
-        } catch (NotFoundException e) {
-            throw new NifiComponentNotFoundException("Connection does not exist: " + connectionId, NifiConstants.NIFI_COMPONENT_TYPE.CONNECTION, e);
         }
     }
 

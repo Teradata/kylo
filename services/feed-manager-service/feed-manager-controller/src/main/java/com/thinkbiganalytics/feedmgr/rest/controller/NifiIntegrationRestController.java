@@ -124,7 +124,7 @@ public class NifiIntegrationRestController {
     @Path("/controller-services")
     @Produces({MediaType.APPLICATION_JSON})
     public Response getServices() {
-        final Set<ControllerServiceDTO> controllerServices = nifiRestClient.getControllerServices("NODE");
+        final Set<ControllerServiceDTO> controllerServices = nifiRestClient.getControllerServices();
         return Response.ok(ImmutableMap.of("controllerServices", controllerServices)).build();
     }
 

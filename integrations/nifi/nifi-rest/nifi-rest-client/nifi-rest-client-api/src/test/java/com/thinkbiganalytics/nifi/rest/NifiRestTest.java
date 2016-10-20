@@ -133,25 +133,6 @@ public class NifiRestTest {
         }
     }
 
-    // @Test
-    public void getControllerServices() {
-        try {
-            Set<ControllerServiceDTO> servicesEntity = restClient.getControllerServices(null);
-            for (ControllerServiceDTO dto : servicesEntity) {
-                for (Map.Entry<String, String> property : dto.getProperties().entrySet()) {
-                    String key = property.getKey();
-                    PropertyDescriptorDTO descriptorDTO = dto.getDescriptors().get(key);
-                    NifiProperty nifiProperty = new NifiProperty();
-                    nifiProperty.setKey(key);
-                }
-
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-
     //@Test
     public void testOrder() throws Exception {
         NifiVisitableProcessGroup g = restClient.getFlowOrder("7f836b40-e79d-4964-8cb7-0bd34264998d");

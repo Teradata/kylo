@@ -26,7 +26,9 @@ public interface NiFiControllerServicesRestClient {
      * Gets all controller services.
      *
      * @return the controller services
+     * @deprecated Find controller services by process group using {@link NiFiProcessGroupsRestClient#getControllerServices(String)}.
      */
+    @Deprecated
     @Nonnull
     Set<ControllerServiceDTO> findAll();
 

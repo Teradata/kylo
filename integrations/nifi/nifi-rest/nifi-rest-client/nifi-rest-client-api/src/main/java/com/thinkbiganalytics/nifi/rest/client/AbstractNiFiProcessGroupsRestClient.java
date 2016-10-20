@@ -57,11 +57,14 @@ public abstract class AbstractNiFiProcessGroupsRestClient implements NiFiProcess
         schedule(processGroup.getId(), processGroup.getParentGroupId(), NiFiComponentState.STOPPED);
 
         // Try to delete the process group
+        Exception lastError = null;
+
         for (int count=0; count <= retries; ++count) {
             try {
                 return doDelete(processGroup);
             } catch (final WebApplicationException e) {
                 if (e.getResponse().getStatus() == 409) {
+                    lastError = e;
                     Uninterruptibles.sleepUninterruptibly(timeout, timeUnit);
                 } else {
                     throw new NifiClientRuntimeException(e);
@@ -70,7 +73,7 @@ public abstract class AbstractNiFiProcessGroupsRestClient implements NiFiProcess
         }
 
         // Give up
-        throw new NifiClientRuntimeException("Unable to delete process group: " + processGroup.getId());
+        throw new NifiClientRuntimeException("Unable to delete process group: " + processGroup.getId(), lastError);
     }
 
     @Nonnull
