@@ -12,10 +12,11 @@ Kylo supports a variety of different strategies for injecting/replacing property
 The properties that get injected into the flows dont need to reside in the application.properties file.  Theyy can be externalized into separate properties files if you wish.
 The properties are loaded by Spring and you can follow their convention to externalize the properties here, http://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-external-config.html
 Below is an example using Spring Boot profiles to load in these properties:
- 1. Name each file application-{profile}.properties
- 2. in the application.properties file add the profile names to the comma separated property *spring.profiles.active*
+1. Name each file application-{profile}.properties
+2. in the application.properties file add the profile names to the comma separated property *spring.profiles.active*
 
 Example
+
 1. Suppose there are 2 files that contain properties that are to be injected into the flows.  Put both of these on the classpath  (/opt/thinkbig/thinkbig/services/conf)
    - application-nifi1.properties
    - application-nifi2.properties
