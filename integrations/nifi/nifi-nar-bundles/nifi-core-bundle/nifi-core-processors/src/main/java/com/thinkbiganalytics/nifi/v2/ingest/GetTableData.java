@@ -4,28 +4,11 @@
 
 package com.thinkbiganalytics.nifi.v2.ingest;
 
-import static com.thinkbiganalytics.nifi.v2.common.CommonProperties.FEED_CATEGORY;
-import static com.thinkbiganalytics.nifi.v2.common.CommonProperties.FEED_NAME;
-import static com.thinkbiganalytics.nifi.v2.common.CommonProperties.METADATA_SERVICE;
-import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.REL_FAILURE;
-import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.REL_SUCCESS;
-
-import java.io.IOException;
-import java.io.OutputStream;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.Vector;
-import java.util.concurrent.TimeUnit;
+import com.thinkbiganalytics.ingest.GetTableDataSupport;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
+import com.thinkbiganalytics.nifi.thrift.api.AbstractRowVisitor;
+import com.thinkbiganalytics.util.ComponentAttributes;
+import com.thinkbiganalytics.util.JdbcCommon;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -50,11 +33,28 @@ import org.apache.nifi.processor.util.StandardValidators;
 import org.apache.nifi.util.LongHolder;
 import org.apache.nifi.util.StopWatch;
 
-import com.thinkbiganalytics.ingest.GetTableDataSupport;
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
-import com.thinkbiganalytics.nifi.thrift.api.AbstractRowVisitor;
-import com.thinkbiganalytics.util.ComponentAttributes;
-import com.thinkbiganalytics.util.JdbcCommon;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.Vector;
+import java.util.concurrent.TimeUnit;
+
+import static com.thinkbiganalytics.nifi.v2.common.CommonProperties.FEED_CATEGORY;
+import static com.thinkbiganalytics.nifi.v2.common.CommonProperties.FEED_NAME;
+import static com.thinkbiganalytics.nifi.v2.common.CommonProperties.METADATA_SERVICE;
+import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.REL_FAILURE;
+import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.REL_SUCCESS;
 
 @EventDriven
 @TriggerWhenEmpty
@@ -399,7 +399,7 @@ public class GetTableData extends AbstractProcessor {
 
         public LastFieldVisitor(String lastModifyColumnName, Date lastModifyDate) {
             this.colName = lastModifyColumnName;
-            Validate.notEmpty(colName);
+            // Validate.notEmpty(colName);
             this.lastModifyDate = (lastModifyDate == null ? new Date(0L) : lastModifyDate);
         }
 
