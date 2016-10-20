@@ -381,7 +381,8 @@ if(properties != null) {
     private static void updateMatchingProperty(NifiProperty matchingProperty, NifiProperty nifiProperty, PROPERTY_MATCH_AND_UPDATE_MODE updateMode){
         if(updateMode.performUpdate()) {
             if (matchingProperty.getValue() == null || (matchingProperty.getValue() != null && (PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_ALL_PROPERTIES.equals(updateMode) || (PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_NON_EXPRESSION_PROPERTIES.equals(updateMode) && (
-                !matchingProperty.getValue().contains("${metadata.") || (matchingProperty.getValue().contains("${metadata.") && nifiProperty.getValue().contains("${metadata."))))))) {
+                (matchingProperty.getValue() != null && !matchingProperty.getValue().contains("${metadata.")) || (matchingProperty.getValue() != null && matchingProperty.getValue()
+                    .contains("${metadata.") && nifiProperty.getValue() != null && nifiProperty.getValue().contains("${metadata."))))))) {
                 updateProperty(matchingProperty, nifiProperty);
             }
         }
