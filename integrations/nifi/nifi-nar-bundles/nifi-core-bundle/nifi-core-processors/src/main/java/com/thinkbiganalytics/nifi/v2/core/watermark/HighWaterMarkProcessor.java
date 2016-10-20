@@ -22,7 +22,7 @@ public abstract class HighWaterMarkProcessor extends FeedProcessor {
 
     protected static final PropertyDescriptor HIGH_WATER_MARK = new PropertyDescriptor.Builder()
                     .name("High-Water Mark")
-                    .description("Name of the high-water mark managed for this feed")
+                    .description("The name to be given to this high-water mark, stored in the feed's metadata, which records the latest committed water mark value")
                     .defaultValue("highWaterMark")
                     .required(true)
                     .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
@@ -31,7 +31,8 @@ public abstract class HighWaterMarkProcessor extends FeedProcessor {
     
     protected static final PropertyDescriptor PROPERTY_NAME = new PropertyDescriptor.Builder()
                     .name("High-Water Mark Value Property Name")
-                    .description("Name of the property that should be set to the current high-water mark value")
+                    .description("Name of the flow file property which is set to the current high-water mark value for use in "
+                                    + "subsequent processing and commit")
                     .defaultValue("water.mark")
                     .required(true)
                     .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
