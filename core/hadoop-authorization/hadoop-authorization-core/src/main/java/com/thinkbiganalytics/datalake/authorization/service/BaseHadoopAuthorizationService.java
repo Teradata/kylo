@@ -22,9 +22,9 @@ import javax.inject.Inject;
 public abstract class BaseHadoopAuthorizationService implements HadoopAuthorizationService {
     private static final Logger log = LoggerFactory.getLogger(BaseHadoopAuthorizationService.class);
 
-    protected static final String REGISTRATION_HDFS_FOLDERS = "nifi:registration:hdfsFolders";
-    protected static final String REGISTRATION_HIVE_SCHEMA = "nifi:registration:hiveSchema";
-    protected static final String REGISTRATION_HIVE_TABLES = "nifi:registration:hiveTableNames";
+    public static final String REGISTRATION_HDFS_FOLDERS = "nifi:registration:hdfsFolders";
+    public static final String REGISTRATION_HIVE_SCHEMA = "nifi:registration:hiveSchema";
+    public static final String REGISTRATION_HIVE_TABLES = "nifi:registration:hiveTableNames";
 
     /**
      * Event listener for precondition events
@@ -92,51 +92,10 @@ public abstract class BaseHadoopAuthorizationService implements HadoopAuthorizat
             String hiveTablesWithCommasNew = metadataEvent.getNewProperties().getProperty(REGISTRATION_HIVE_TABLES);
             String hiveSchemaNew = metadataEvent.getNewProperties().getProperty(REGISTRATION_HIVE_SCHEMA);
 
-            String hdfsFoldersWithCommasOld = metadataEvent.getOldProperties().getProperty(REGISTRATION_HDFS_FOLDERS);
-            String hiveTablesWithCommasOld = metadataEvent.getOldProperties().getProperty(REGISTRATION_HIVE_TABLES);
-            String hiveSchemaOld = metadataEvent.getOldProperties().getProperty(REGISTRATION_HIVE_SCHEMA);
-
-            if (hdfsFoldersChanged(hdfsFoldersWithCommasNew, hdfsFoldersWithCommasOld) || hiveTablesChanged(hiveTablesWithCommasNew, hiveTablesWithCommasOld)
-                || hiveSchemaChanged(hiveSchemaNew, hiveSchemaOld)) {
+            if (hdfsFoldersWithCommasNew != null && hiveSchemaNew != null && hiveTablesWithCommasNew != null) {
                 return true;
             }
             return false;
-        }
-
-        private boolean hdfsFoldersChanged(String hdfsFoldersWithCommasNew, String hdfsFoldersWithCommasOld) {
-            if (hdfsFoldersWithCommasNew == null && hdfsFoldersWithCommasOld == null) {
-                return false;
-            } else if (hdfsFoldersWithCommasNew == null && hdfsFoldersWithCommasOld != null) {
-                return true;
-            } else if (hdfsFoldersWithCommasNew != null && hdfsFoldersWithCommasOld == null) {
-                return true;
-            } else {
-                return !hdfsFoldersWithCommasNew.equals(hdfsFoldersWithCommasOld);
-            }
-        }
-
-        private boolean hiveTablesChanged(String hiveTablesWithCommasNew, String hiveTablesWithCommasOld) {
-            if (hiveTablesWithCommasNew == null && hiveTablesWithCommasOld == null) {
-                return false;
-            } else if (hiveTablesWithCommasNew == null && hiveTablesWithCommasOld != null) {
-                return true;
-            } else if (hiveTablesWithCommasNew != null && hiveTablesWithCommasOld == null) {
-                return true;
-            } else {
-                return !hiveTablesWithCommasNew.equals(hiveTablesWithCommasOld);
-            }
-        }
-
-        private boolean hiveSchemaChanged(String hiveSchemaNew, String hiveSchemaOld) {
-            if (hiveSchemaNew == null && hiveSchemaOld == null) {
-                return false;
-            } else if (hiveSchemaNew == null && hiveSchemaOld != null) {
-                return true;
-            } else if (hiveSchemaNew != null && hiveSchemaOld == null) {
-                return true;
-            } else {
-                return !hiveSchemaNew.equals(hiveSchemaOld);
-            }
         }
     }
 }

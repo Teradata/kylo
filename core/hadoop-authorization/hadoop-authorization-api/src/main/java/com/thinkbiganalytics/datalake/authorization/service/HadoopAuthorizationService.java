@@ -5,6 +5,8 @@ import com.thinkbiganalytics.datalake.authorization.model.HadoopAuthorizationGro
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by Shashi Vishwakarma on 9/9/16.
@@ -13,6 +15,9 @@ import java.util.Map;
 public interface HadoopAuthorizationService {
 
     static final String HADOOP_AUTHORIZATION_TYPE_NONE = "NONE";
+    public static final String REGISTRATION_HDFS_FOLDERS = "nifi:registration:hdfsFolders";
+    public static final String REGISTRATION_HIVE_SCHEMA = "nifi:registration:hiveSchema";
+    public static final String REGISTRATION_HIVE_TABLES = "nifi:registration:hiveTableNames";
 
     void initialize(AuthorizationConfiguration configuration);
 
@@ -39,5 +44,10 @@ public interface HadoopAuthorizationService {
     void updateSecurityGroupsForAllPolicies(String categoryName, String feedName,List<String> hadoopAuthorizationGroups, Map<String,Object> feedProperties);
 
     String getType();
+
+    public static List<String> convertNewlineDelimetedTextToList(String text) {
+        List<String> result = Stream.of(text).collect(Collectors.toList());
+        return result;
+    }
 
 }
