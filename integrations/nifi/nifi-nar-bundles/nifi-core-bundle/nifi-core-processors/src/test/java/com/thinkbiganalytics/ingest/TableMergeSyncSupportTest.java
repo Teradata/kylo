@@ -136,6 +136,55 @@ public class TableMergeSyncSupportTest {
 
     @Test
     /**
+     * Tests the merge with empty target table
+     */
+    public void testMergePKWithEmptyTargetTable() throws Exception {
+
+        List<String> results = fetchEmployees(targetTableNP);
+        assertEquals(0, results.size());
+
+        ColumnSpec columnSpec1 = new ColumnSpec("id", "String", "", true, false, false);
+        ColumnSpec columnSpec2 = new ColumnSpec("name", "String", "", false, false, false);
+        ColumnSpec[] columnSpecs = Arrays.asList(columnSpec1, columnSpec2).toArray(new ColumnSpec[0]);
+
+        // Call merge
+        mergeSyncSupport.doPKMerge(sourceTable, targetTableNP, new PartitionSpec(), processingPartition, columnSpecs);
+
+        // We should have 4 records
+        results = fetchEmployees(targetTableNP);
+        assertEquals(4, results.size());
+
+        // Merge with same source should leave us with 4 records
+        mergeSyncSupport.doPKMerge(sourceTable, targetTableNP, new PartitionSpec(), processingPartition, columnSpecs);
+
+        // We should have 4 records
+        results = fetchEmployees(targetTableNP);
+        assertEquals(4, results.size());
+
+        // Should update 1 and add 1
+        hiveShell.execute("insert into emp_sr.employee_valid partition(processing_dttm='20160119074350') (  `id`,  `timestamp`, `name`,`company`,`zip`,`phone`,`email`,  `hired`,`country`) values "
+                          + "(1,'1',"
+                          + "'NEW VALUE',"
+                          + "'ABC',"
+                          + "'94550','555-1212','bruce@acme.org','2016-01-01','Canada');");
+
+        hiveShell.execute("insert into emp_sr.employee_valid partition(processing_dttm='20160119074350') (  `id`,  `timestamp`, `name`,`company`,`zip`,`phone`,`email`,  `hired`,`country`) values "
+                          + "(10010,'1',"
+                          + "'Bruce',"
+                          + "'ABC',"
+                          + "'94550','555-1212','bruce@acme.org','2016-01-01','Canada');");
+
+        // Call merge
+        mergeSyncSupport.doPKMerge(sourceTable, targetTableNP, new PartitionSpec(), "20160119074350", columnSpecs);
+
+        // We should have 4 records
+        results = fetchEmployees(targetTableNP);
+        assertEquals(5, results.size());
+
+    }
+
+    @Test
+    /**
      * Tests the merge partition with empty target table
      */
     public void testMergePartitionPKWithEmptyTargetTable() throws Exception {

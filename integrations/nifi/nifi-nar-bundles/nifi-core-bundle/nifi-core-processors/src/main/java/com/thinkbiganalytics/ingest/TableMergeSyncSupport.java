@@ -411,7 +411,7 @@ public class TableMergeSyncSupport implements Serializable {
             .append("  from ").append(sourceTable).append(" a")
             .append("  where ")
             .append("  a.processing_dttm='").append(feedPartitionValue).append("'")
-            .append(" union all ")
+            .append(" union ")
             .append("  select ").append(selectSQLWithAlias)
             .append("  from ").append(targetTable).append(" a left outer join (").append(sbSourceQuery.toString()).append(") b ")
             .append("  on (").append(joinOnClause).append(")")
