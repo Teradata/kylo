@@ -30,7 +30,7 @@ public interface HadoopAuthorizationService {
 
     void deleteHivePolicy(String categoryName, String feedName);
 
-    void deleteHdfsPolicy(String categoryName, String feedName);
+    void deleteHdfsPolicy(String categoryName, String feedName , List<String> hdfsPaths);
 
     void updateReadOnlyHivePolicy(String categoryName, String feedName, List<String> groups, String datebaseName, List<String> tableNames);
 

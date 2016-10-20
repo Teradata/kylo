@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.datalake.authorization;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -193,8 +194,10 @@ public class SentryAuthorizationService  extends BaseHadoopAuthorizationService 
     public void updateSecurityGroupsForAllPolicies(String categoryName, String feedName,List<String> securityGroupNames, Map<String,Object> feedProperties) {
 
         if (securityGroupNames == null || securityGroupNames.isEmpty()) {
+            String hdfsFoldersWithCommas = ((String)feedProperties.get(REGISTRATION_HDFS_FOLDERS)).replace("\n", ",");
+            List<String> hdfsFolders = Stream.of(hdfsFoldersWithCommas).collect(Collectors.toList());
             deleteHivePolicy(categoryName, feedName);
-            deleteHdfsPolicy(categoryName, feedName);
+            deleteHdfsPolicy(categoryName, feedName,hdfsFolders);
         } else {
 
             String hdfsFoldersWithCommas = ((String)feedProperties.get(REGISTRATION_HDFS_FOLDERS)).replace("\n", ",");
@@ -240,12 +243,18 @@ public class SentryAuthorizationService  extends BaseHadoopAuthorizationService 
     }
 
     @Override
-    public void deleteHdfsPolicy(String categoryName, String feedName ) {
+    public void deleteHdfsPolicy(String categoryName, String feedName , List<String> hdfsPaths ) {
 
         /**
-         * Implement Delete ACL    
+         * Delete ACL from list of HDFS Paths
          */
 
+        String allPathForAclDeletion = convertListToString(hdfsPaths, ",");
+        try {
+            sentryClientObject.flushACL(sentryConnection.getHadoopConfiguration(), allPathForAclDeletion);
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to remove ACL from HDFS Paths" +e.getMessage());
+        }
     }
 
 
