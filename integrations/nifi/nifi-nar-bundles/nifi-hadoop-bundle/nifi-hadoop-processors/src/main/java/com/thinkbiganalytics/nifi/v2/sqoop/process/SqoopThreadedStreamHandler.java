@@ -24,6 +24,7 @@ public class SqoopThreadedStreamHandler extends Thread {
     private InputStream inputStream;
     private Boolean logLineWithRetrievedRecordsFound = false;
     private final String SEARCH_STRING_FOR_RETRIEVED_RECORDS_FOUND = "INFO mapreduce.ImportJobBase: Retrieved";
+    private final String SEARCH_STRING_FOR_NO_NEW_RECORDS_FOUND = "No new rows detected since last import";
     private Boolean logLineWithNewHighWaterMarkFound = false;
     private final String SEARCH_STRING_FOR_NEW_HIGH_WATERMARK_FOUND = "INFO tool.ImportTool:   --last-value";
 
@@ -76,7 +77,8 @@ public class SqoopThreadedStreamHandler extends Thread {
 
                 if ((!logLineWithRetrievedRecordsFound)
                     &&
-                    (line.contains(SEARCH_STRING_FOR_RETRIEVED_RECORDS_FOUND))) {
+                    (line.contains(SEARCH_STRING_FOR_RETRIEVED_RECORDS_FOUND)
+                     || line.contains(SEARCH_STRING_FOR_NO_NEW_RECORDS_FOUND))) {
                     logLineWithRetrievedRecordsFound = true;
                     logLines[0] = line;
                     latch.countDown();

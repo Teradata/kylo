@@ -75,7 +75,7 @@ public class ImportSqoop extends AbstractProcessor {
     public static final PropertyDescriptor FEED_CATEGORY = new PropertyDescriptor.Builder()
         .name("System Feed Category")
         .description("System category that this feed belongs to")
-        .required(false)
+        .required(true)
         .defaultValue("${metadata.category.systemName}")
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
@@ -85,7 +85,7 @@ public class ImportSqoop extends AbstractProcessor {
         .name("System Feed Name")
         .description("System name of feed")
         .defaultValue("${metadata.systemFeedName}")
-        .required(false)
+        .required(true)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
@@ -101,7 +101,7 @@ public class ImportSqoop extends AbstractProcessor {
         .name("Source Table")
         .description("The table to extract from the source relational system")
         .required(true)
-        .defaultValue("${metadata.table.sourceTableSchema.name}")
+        .defaultValue("${source.table.name}")
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
@@ -112,6 +112,7 @@ public class ImportSqoop extends AbstractProcessor {
             "Field names (in order) to read from the source table. ie. the SELECT fields. Separate them using commas e.g. field1,field2,field3 "
             + "Inconsistent order will cause corruption of the downstream data. Indicate * to get all columns from table.")
         .required(true)
+        .defaultValue("${source.table.fields}")
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
@@ -145,7 +146,7 @@ public class ImportSqoop extends AbstractProcessor {
     public static final PropertyDescriptor SOURCE_PROPERTY_WATERMARK = new PropertyDescriptor.Builder()
         .name("Watermark Property (For Incremental Load)")
         .required(false)
-        .defaultValue("high-watermark")
+        .defaultValue("water.mark")
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
@@ -154,7 +155,7 @@ public class ImportSqoop extends AbstractProcessor {
         .name("Source Check Column Last Value (For Incremental Load)")
         .description("Source column value for the last modified time / id for tracking incremental-type load. Not needed for full type of load.")
         .required(false)
-        .defaultValue("${high-watermark}")
+        .defaultValue("${water.mark}")
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
@@ -390,11 +391,12 @@ public class ImportSqoop extends AbstractProcessor {
         logger.info("Finished execution of Sqoop command");
 
         int resultStatus = sqoopProcessResult.getExitValue();
+        int recordsCount = getSqoopRecordCount(sqoopProcessResult);
 
         flowFile = session.putAttribute(flowFile, "sqoop.command.text", sqoopCommand);
         flowFile = session.putAttribute(flowFile, "sqoop.result.code", String.valueOf(resultStatus));
         flowFile = session.putAttribute(flowFile, "sqoop.run.seconds", String.valueOf(jobDurationSeconds));
-        flowFile = session.putAttribute(flowFile, "sqoop.record.count", String.valueOf(getSqoopRecordCount(sqoopProcessResult)));
+        flowFile = session.putAttribute(flowFile, "sqoop.record.count", String.valueOf(recordsCount));
         flowFile = session.putAttribute(flowFile, "sqoop.output.hdfs", targetHdfsDirectory);
         flowFile = session.putAttribute(flowFile, "sqoop.file.delimiter", targetHdfsFileDelimiter);
         logger.info("Wrote result attributes to flow file");
@@ -403,7 +405,21 @@ public class ImportSqoop extends AbstractProcessor {
             logger.info("Sqoop Import OK [Code {}]", new Object[] { resultStatus });
             if (sourceLoadStrategy == SqoopLoadStrategy.INCREMENTAL_APPEND
                 || sourceLoadStrategy == SqoopLoadStrategy.INCREMENTAL_LASTMODIFIED) {
-                flowFile = session.putAttribute(flowFile, sourcePropertyWatermark, String.valueOf(getNewHighWatermark(sqoopProcessResult)));
+
+                if ((sourceLoadStrategy == SqoopLoadStrategy.INCREMENTAL_APPEND) &&  (recordsCount == 0)) {
+                    flowFile = session.putAttribute(flowFile, sourcePropertyWatermark, sourceCheckColumnLastValue);
+                }
+                else {
+
+                    String newHighWaterMark = getNewHighWatermark(sqoopProcessResult);
+
+                    if ((newHighWaterMark == null) || (newHighWaterMark.equals("NO_UPDATE")) || (newHighWaterMark.equals(""))) {
+                        flowFile = session.putAttribute(flowFile, sourcePropertyWatermark, sourceCheckColumnLastValue);
+                    }
+                    else {
+                        flowFile = session.putAttribute(flowFile, sourcePropertyWatermark, newHighWaterMark);
+                    }
+                }
             }
             session.transfer(flowFile, REL_SUCCESS);
         }
@@ -449,26 +465,43 @@ public class ImportSqoop extends AbstractProcessor {
     private int getSqoopRecordCount(SqoopProcessResult sqoopProcessResult) {
         String[] logLines = sqoopProcessResult.getLogLines();
 
-        if ((sqoopProcessResult.getExitValue() != 0) || (logLines.length == 0)) {
+        if ((sqoopProcessResult.getExitValue() != 0) || (logLines[0] == null)) {
+            getLogger().error("Skipping attempt to retrieve number of records extracted");
             return -1;
         }
 
         //Example of longLines[0]:
         //16/10/12 21:50:03 INFO mapreduce.ImportJobBase: Retrieved 2 records.
+        //16/10/21 02:05:41 INFO tool.ImportTool: No new rows detected since last import.
         String recordCountLogLine = logLines[0];
+        if (recordCountLogLine.contains("No new rows detected since last import")) {
+            return 0;
+        }
         int start = recordCountLogLine.indexOf("Retrieved");
         int end = recordCountLogLine.indexOf("records.");
         String numberString = recordCountLogLine.substring(start+9, end).trim();
-        return Integer.valueOf(numberString);
+        try {
+            return Integer.valueOf(numberString);
+        }
+        catch (Exception e) {
+            getLogger().error("Unable to parse number of records extracted. " + e.getMessage());
+            return -1;
+        }
     }
 
     private String getNewHighWatermark(SqoopProcessResult sqoopProcessResult) {
         String[] logLines = sqoopProcessResult.getLogLines();
 
+        final String NO_UPDATE = "NO_UPDATE";
+
         if ((sqoopProcessResult.getExitValue() != 0) || (logLines.length <= 1)) {
-            return "";
+            return NO_UPDATE;
+        }
+        else if ((logLines[0] != null) && (logLines[0].contains("No new rows detected since last import"))) {
+            return NO_UPDATE;
         }
         else {
+            if (logLines[1] == null) return NO_UPDATE;
             //16/10/18 23:37:11 INFO tool.ImportTool:   --last-value 1006
             String newHighWaterMarkLogLine = logLines[1];
             int end = newHighWaterMarkLogLine.length();
@@ -476,7 +509,6 @@ public class ImportSqoop extends AbstractProcessor {
             return newHighWaterMarkLogLine.substring(start + 12, end).trim();
         }
     }
-
 
     public static final Validator kerberosConfigValidator() {
         return new Validator() {
