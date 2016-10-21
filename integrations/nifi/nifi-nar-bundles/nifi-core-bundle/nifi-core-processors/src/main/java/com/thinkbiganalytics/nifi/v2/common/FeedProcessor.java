@@ -13,6 +13,7 @@ import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
+import org.apache.nifi.processor.exception.ProcessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,13 +64,22 @@ public abstract class FeedProcessor extends BaseProcessor {
             final String category = context.getProperty(FEED_CATEGORY).evaluateAttributeExpressions(flowFile).getValue();
             final String feedName = context.getProperty(FEED_NAME).evaluateAttributeExpressions(flowFile).getValue();
             
-            log.info("Resolving category {} and feed {}", category, feedName);
-            
-            feedId = getMetadataProvider().getFeedId(category, feedName);
-
-            log.info("Resolving id {} for category {} and feed {}", feedId, category, feedName);
-            
-            return feedId;
+            try {
+                log.info("Resolving category {} and feed {}", category, feedName);
+                
+                feedId = getMetadataProvider().getFeedId(category, feedName);
+                
+                if (feedId != null) {
+                    log.info("Resolving id {} for category {} and feed {}", feedId, category, feedName);
+                    return feedId;
+                } else {
+                    log.warn("ID for feed {}/{} could not be located", category, feedName);
+                    throw new ProcessException("ID for feed "+category+"/"+feedName+" could not be located");
+                }
+            } catch (Exception e) {
+                log.error("Failed to retrieve feed ID", e);
+                throw e;
+            }
         } else {
             return feedId;
         }
@@ -82,13 +92,22 @@ public abstract class FeedProcessor extends BaseProcessor {
             final String category = context.getProperty(FEED_CATEGORY).evaluateAttributeExpressions(flowFile).getValue();
             final String feedName = context.getProperty(FEED_NAME).evaluateAttributeExpressions(flowFile).getValue();
             
-            log.info("Resolving category {} and feed {}", category, feedName);
-            
-            feedId = getMetadataProvider().getFeedId(category, feedName);
+            try {
+                log.info("Resolving category {} and feed {}", category, feedName);
+                
+                feedId = getMetadataProvider().getFeedId(category, feedName);
 
-            log.info("Resolving id {} for category {} and feed {}", feedId, category, feedName);
-            
-            return session.putAttribute(flowFile, "feedId", feedId);
+                if (feedId != null) {
+                    log.info("Resolving id {} for category {} and feed {}", feedId, category, feedName);
+                    return session.putAttribute(flowFile, "feedId", feedId);
+                } else {
+                    log.warn("ID for feed {}/{} could not be located", category, feedName);
+                    throw new ProcessException("ID for feed "+category+"/"+feedName+" could not be located");
+                }
+            } catch (Exception e) {
+                log.error("Failed to retrieve feed ID", e);
+                throw e;
+            }
         } else {
             return flowFile;
         }
