@@ -8,7 +8,7 @@
   <parent>
     <artifactId>thinkbig-feed-manager-service</artifactId>
     <groupId>com.thinkbiganalytics.datalake</groupId>
-    <version>0.4.1</version>
+    <version>0.4.2-SNAPSHOT</version>
   </parent>
 
 
