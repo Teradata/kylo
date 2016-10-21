@@ -11,14 +11,14 @@
   <parent>
     <groupId>com.thinkbiganalytics.datalake</groupId>
     <artifactId>schema-discovery-service</artifactId>
-    <version>0.4.1-SNAPSHOT</version>
+    <version>0.4.1</version>
   </parent>
 
   <dependencies>
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>thinkbig-schema-discovery-api</artifactId>
-      <version>0.4.1-SNAPSHOT</version>
+      <version>0.4.1</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
