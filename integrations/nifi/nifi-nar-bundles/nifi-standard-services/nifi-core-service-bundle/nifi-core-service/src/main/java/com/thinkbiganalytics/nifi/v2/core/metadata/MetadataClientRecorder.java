@@ -113,11 +113,15 @@ public class MetadataClientRecorder implements MetadataRecorder {
         
         if (actives.containsKey(waterMarkName)) {
             String parameterName = actives.remove(waterMarkName);
-            String value = ff.getAttribute(parameterName);
             
-            updateHighWaterMarkValue(feedId, waterMarkName, value);
-            resultFF = setCurrentWaterMarksAttr(session, resultFF, actives);
-            releaseActiveWaterMark(feedId, waterMarkName);
+            try {
+                String value = ff.getAttribute(parameterName);
+                updateHighWaterMarkValue(feedId, waterMarkName, value);
+            } finally {
+                releaseActiveWaterMark(feedId, waterMarkName);
+                resultFF = setCurrentWaterMarksAttr(session, resultFF, actives);
+            }
+            
             return resultFF;
         } else {
             throw new IllegalStateException("No active high-water mark named \"" + waterMarkName + "\"");
@@ -150,12 +154,16 @@ public class MetadataClientRecorder implements MetadataRecorder {
         
         if (actives.containsKey(waterMarkName)) {
             String parameterName = actives.remove(waterMarkName);
-            String value = getHighWaterMarkValue(feedId, waterMarkName)
-                            .orElse(ff.getAttribute(initValueParameterName(parameterName)));
             
-            resultFF = session.putAttribute(resultFF, parameterName, value);
-            resultFF = setCurrentWaterMarksAttr(session, resultFF, actives);
-            releaseActiveWaterMark(feedId, waterMarkName);
+            try {
+                String value = getHighWaterMarkValue(feedId, waterMarkName)
+                                .orElse(ff.getAttribute(initValueParameterName(parameterName)));
+                resultFF = session.putAttribute(resultFF, parameterName, value);
+            } finally {
+                releaseActiveWaterMark(feedId, waterMarkName);
+                resultFF = setCurrentWaterMarksAttr(session, resultFF, actives);
+            }
+            
             return resultFF;
         } else {
             throw new IllegalStateException("No active high-water mark named \"" + waterMarkName + "\"");

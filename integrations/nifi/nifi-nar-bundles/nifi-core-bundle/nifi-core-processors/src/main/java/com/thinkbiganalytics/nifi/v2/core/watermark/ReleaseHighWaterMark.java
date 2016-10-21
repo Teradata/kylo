@@ -60,12 +60,19 @@ public class ReleaseHighWaterMark extends HighWaterMarkProcessor {
     public void onTrigger(ProcessContext context, ProcessSession session) throws ProcessException {
         MetadataRecorder recorder = context.getProperty(CommonProperties.METADATA_SERVICE).asControllerService(MetadataProviderService.class).getRecorder();
         FlowFile ff = session.get();
+        
         if (ff != null) {
-            ff = initialize(context, session, ff);
-            String mode = context.getProperty(MODE).evaluateAttributeExpressions(ff).toString();
+            try {
+                ff = initialize(context, session, ff);
+            } catch (Exception e) {
+                getLogger().error("Failure during initialization", e);
+                session.transfer(ff, CommonProperties.REL_FAILURE);
+            }
+            
+            String mode = context.getProperty(MODE).toString();
             
             try {
-                if (context.getProperty(RELEASE_ALL).evaluateAttributeExpressions(ff).asBoolean()) {
+                if (context.getProperty(RELEASE_ALL).asBoolean()) {
                     if (mode.equals("COMMIT")) {
                         ff = recorder.commitAllWaterMarks(session, ff, getFeedId(context, ff));
                     } else {
@@ -83,8 +90,8 @@ public class ReleaseHighWaterMark extends HighWaterMarkProcessor {
                 
                 session.transfer(ff, CommonProperties.REL_SUCCESS);
             } catch (Exception e) {
-                getLogger().warn("Failure to release high-water mark(s)", e);
-                throw new ProcessException("Failure to release high-water mark(s)", e);
+                getLogger().warn("Failure during release of high-water mark(s)", e);
+                session.transfer(ff, CommonProperties.REL_FAILURE);
             }
         }
         
