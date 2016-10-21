@@ -141,6 +141,7 @@ public class SentryClient {
                 if (policyName.getRole().equalsIgnoreCase(roleName))
                 {
                     matchFound = true;
+                    break;
                 }
                 else
                 {
@@ -255,10 +256,10 @@ public class SentryClient {
             hadoopAuthorizationGroup.setName(group);
             hadoopAuthorizationGroup.setOwner("thinkbig");
             sentryHadoopAuthorizationGroups.add(hadoopAuthorizationGroup);
-            
+
             sentryIdPrefix = "kyloGroup";
             hadoopAuthorizationGroup = new  SentryGroup();
-            
+
         }
         return sentryHadoopAuthorizationGroups;
     }

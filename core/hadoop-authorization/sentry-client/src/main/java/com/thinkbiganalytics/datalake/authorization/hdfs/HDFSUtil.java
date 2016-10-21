@@ -205,7 +205,6 @@ public class HDFSUtil {
                     applyAcl(fileSystem, status.getPath(), aclEntryOwner);
                     applyAcl(fileSystem, status.getPath(), aclEntryOther);
 
-
                 }
 
                 /**
@@ -244,7 +243,6 @@ public class HDFSUtil {
      */
     public void applyAcl(FileSystem fileSystem, Path path, AclEntry aclEntry) throws IOException {
         try {
-            log.info("Creating ACL for Path - " + path.toString());
             fileSystem.modifyAclEntries(path, Lists.newArrayList(aclEntry));
         } catch (IOException e) {
             throw new IOException("Unable to apply HDFS Policy for " + path.toString() + " " + e.getMessage());
