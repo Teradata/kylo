@@ -112,18 +112,5 @@ image::images/S2.png[]
 * Click Save Changes to commit the changes.
 
 image::images/S3.png[]
-
-== Configure CreataSentryAuthorizationPolicy processor
-
-* Go to NIFI
-* Select resusable template.
-* Select CreataSentryAuthorizationPolicy processor.
-* Update property descriptor as per cluster.
-
-	Hadoop Configuration Resources : /etc/hadoop/conf/core-site.xml,/etc/hadoop/conf/hdfs-site.xml
-	Kerberos Principle : nifi
-	Kerberos Keytab : /etc/security/nifi.headleass.keytab
-
-image::images/S4.png[]	
 	
 Sentry authorization is configured successfully. Now create a feed from ThinkBig UI and test it.
