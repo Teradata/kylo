@@ -52,7 +52,7 @@ public class FeedOnTimeArrivalMetric implements Metric {
     @PolicyProperty(name = "NoLaterThanTime",
                     displayName = "No later than time",
                     type = PolicyPropertyTypes.PROPERTY_TYPE.string,
-                    pattern = "^\\d+$",
+                    //  pattern = "^\\d+$",
                     patternInvalidMessage = "The value must be numeric digits",
                     hint = "Number specifying the amount of time allowed after the Expected Delivery Time",
                     group = "lateTime",
