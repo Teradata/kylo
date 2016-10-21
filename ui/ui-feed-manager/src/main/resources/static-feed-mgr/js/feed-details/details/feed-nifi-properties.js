@@ -40,7 +40,7 @@
             }
             //tell the ui what properties to show/hide
             var renderGetTableData = FeedDetailsProcessorRenderingHelper.updateGetTableDataRendering(self.model.inputProcessor, self.model.nonInputProcessors);
-            var renderSqoop = FeedDetailsProcessorRenderingHelper.updateSqoopProcessorRendering(self.model.inputProcessor, self.model.nonInputProcessors);
+            //   var renderSqoop = FeedDetailsProcessorRenderingHelper.updateSqoopProcessorRendering(self.model.inputProcessor, self.model.nonInputProcessors);
         })
 
         var inputProcessorIdWatch = $scope.$watch(function () {
