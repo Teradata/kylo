@@ -643,14 +643,11 @@ public class LegacyNifiRestClient implements NifiFlowVisitorClient {
      */
     private ProcessorDTO setProcessorState(ProcessorDTO processor, NifiProcessUtil.PROCESS_STATE state)
     {
-        ProcessorEntity entity = new ProcessorEntity();
         ProcessorDTO updateDto = new ProcessorDTO();
         updateDto.setId(processor.getId());
         updateDto.setParentGroupId(processor.getParentGroupId());
         updateDto.setState(state.name());
-        entity.setProcessor(updateDto);
-        ProcessorEntity updatedProcessor = updateProcessor(entity);
-        return updatedProcessor.getProcessor();
+        return updateProcessor(updateDto);
     }
 
     /**

@@ -61,7 +61,8 @@ public class ImportSqoop extends AbstractProcessor {
         .name("Kerberos Principal")
         .required(false)
         .description("Kerberos principal to authenticate as. Requires nifi.kerberos.krb5.file to be set in your nifi.properties.")
-        .addValidator(kerberosConfigValidator())
+// TODO(greg.hart): PC-659 Migrate to work with both NiFi 0.6 and 1.0
+//        .addValidator(kerberosConfigValidator())
         .build();
 
     public static final PropertyDescriptor KERBEROS_KEYTAB = new PropertyDescriptor.Builder()
@@ -69,7 +70,8 @@ public class ImportSqoop extends AbstractProcessor {
         .required(false)
         .description("Kerberos keytab associated with the principal. Requires nifi.kerberos.krb5.file to be set in your nifi.properties.")
         .addValidator(StandardValidators.FILE_EXISTS_VALIDATOR)
-        .addValidator(kerberosConfigValidator())
+// TODO(greg.hart): PC-659 Migrate to work with both NiFi 0.6 and 1.0
+//        .addValidator(kerberosConfigValidator())
         .build();
 
     public static final PropertyDescriptor FEED_CATEGORY = new PropertyDescriptor.Builder()
@@ -510,33 +512,34 @@ public class ImportSqoop extends AbstractProcessor {
         }
     }
 
-    public static final Validator kerberosConfigValidator() {
-        return new Validator() {
-
-            @Override
-            public ValidationResult validate(String subject, String input, ValidationContext context) {
-
-                File nifiProperties = NiFiProperties.getInstance().getKerberosConfigurationFile();
-
-                // Check that the Kerberos configuration is set
-                if (nifiProperties == null) {
-                    return new ValidationResult.Builder()
-                        .subject(subject).input(input).valid(false)
-                        .explanation("you are missing the nifi.kerberos.krb5.file property which "
-                                     + "must be set in order to use Kerberos")
-                        .build();
-                }
-
-                // Check that the Kerberos configuration is readable
-                if (!nifiProperties.canRead()) {
-                    return new ValidationResult.Builder().subject(subject).input(input).valid(false)
-                        .explanation(String.format("unable to read Kerberos config [%s], please make sure the path is valid "
-                                                   + "and nifi has adequate permissions", nifiProperties.getAbsoluteFile()))
-                        .build();
-                }
-
-                return new ValidationResult.Builder().subject(subject).input(input).valid(true).build();
-            }
-        };
-    }
+// TODO(greg.hart): PC-659 Migrate to work with both NiFi 0.6 and 1.0
+//    public static final Validator kerberosConfigValidator() {
+//        return new Validator() {
+//
+//            @Override
+//            public ValidationResult validate(String subject, String input, ValidationContext context) {
+//
+//                File nifiProperties = NiFiProperties.getInstance().getKerberosConfigurationFile();
+//
+//                // Check that the Kerberos configuration is set
+//                if (nifiProperties == null) {
+//                    return new ValidationResult.Builder()
+//                        .subject(subject).input(input).valid(false)
+//                        .explanation("you are missing the nifi.kerberos.krb5.file property which "
+//                                     + "must be set in order to use Kerberos")
+//                        .build();
+//                }
+//
+//                // Check that the Kerberos configuration is readable
+//                if (!nifiProperties.canRead()) {
+//                    return new ValidationResult.Builder().subject(subject).input(input).valid(false)
+//                        .explanation(String.format("unable to read Kerberos config [%s], please make sure the path is valid "
+//                                                   + "and nifi has adequate permissions", nifiProperties.getAbsoluteFile()))
+//                        .build();
+//                }
+//
+//                return new ValidationResult.Builder().subject(subject).input(input).valid(true).build();
+//            }
+//        };
+//    }
 }

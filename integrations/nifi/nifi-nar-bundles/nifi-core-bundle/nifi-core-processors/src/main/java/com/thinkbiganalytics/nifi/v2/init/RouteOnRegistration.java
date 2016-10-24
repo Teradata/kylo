@@ -15,7 +15,6 @@ import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.flowfile.FlowFile;
-import org.apache.nifi.logging.ProcessorLog;
 import org.apache.nifi.processor.AbstractProcessor;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
@@ -79,7 +78,6 @@ public class RouteOnRegistration extends AbstractProcessor {
         if (flowFile == null) {
             return;
         }
-        final ProcessorLog logger = getLogger();
 
         try {
             final MetadataProviderService metadataService = context.getProperty(METADATA_SERVICE).asControllerService(MetadataProviderService.class);
@@ -99,7 +97,7 @@ public class RouteOnRegistration extends AbstractProcessor {
             }
 
         } catch (final Exception e) {
-            logger.warn("Routing to registration required. Unable to determine registration status. Failed to route on registration due to {}", new Object[]{flowFile, e});
+            getLogger().warn("Routing to registration required. Unable to determine registration status. Failed to route on registration due to {}", new Object[]{flowFile, e});
         }
         session.transfer(flowFile, REL_REGISTRATION_REQ);
     }

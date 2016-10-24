@@ -16,7 +16,6 @@ import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.flowfile.FlowFile;
-import org.apache.nifi.logging.ProcessorLog;
 import org.apache.nifi.processor.AbstractProcessor;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
@@ -110,7 +109,6 @@ public class StripHeader extends AbstractProcessor {
             return;
         }
 
-        final ProcessorLog logger = getLogger();
         final boolean isEnabled = context.getProperty(ENABLED).evaluateAttributeExpressions(flowFile).asBoolean();
         final int headerCount = context.getProperty(HEADER_LINE_COUNT).evaluateAttributeExpressions(flowFile).asInteger();
 
@@ -131,11 +129,11 @@ public class StripHeader extends AbstractProcessor {
                 headerBoundaryInBytes.setValue(bytes);
 
                 if (bytes < 0) {
-                    logger.error("Unable to strip header {} expecting at least {} lines in file", new Object[]{flowFile, headerCount});
+                    getLogger().error("Unable to strip header {} expecting at least {} lines in file", new Object[]{flowFile, headerCount});
                 }
 
             } catch (IOException e) {
-                logger.error("Unable to strip header {} due to {}; routing to failure", new Object[]{flowFile, e.getLocalizedMessage()}, e);
+                getLogger().error("Unable to strip header {} due to {}; routing to failure", new Object[]{flowFile, e.getLocalizedMessage()}, e);
             }
 
         });
