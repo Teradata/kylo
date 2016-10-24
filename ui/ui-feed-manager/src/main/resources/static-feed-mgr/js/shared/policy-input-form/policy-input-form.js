@@ -38,6 +38,7 @@
 
     };
 
+
     angular.module(MODULE_FEED_MGR).controller('PolicyInputFormController', controller);
 
     angular.module(MODULE_FEED_MGR)
