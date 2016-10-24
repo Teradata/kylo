@@ -252,7 +252,7 @@ public class SentryAuthorizationService  extends BaseHadoopAuthorizationService 
         String allPathForAclDeletion = convertListToString(hdfsPaths, ",");
         try {
             sentryClientObject.flushACL(sentryConnection.getHadoopConfiguration(), allPathForAclDeletion);
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new RuntimeException("Unable to remove ACL from HDFS Paths" +e.getMessage());
         }
     }

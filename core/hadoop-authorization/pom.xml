@@ -16,7 +16,6 @@
   <modules>
     <module>hadoop-authorization-api</module>
     <module>hadoop-authorization-core</module>
-    <module>sentry-client</module>
   </modules>
 
 </project>
