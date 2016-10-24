@@ -19,10 +19,9 @@
         var self = this;
 
         /**
-         * Error message object that maps keys to a boolean indicating the error state.
-         * @type {Object}
+         * the angular form
          */
-        self.$error = {missingRegistration: true};
+        self.registerTemplateForm = {};
 
         /**
          * Indicates if the edit form is valid.
@@ -90,29 +89,24 @@
 
                 // Check for invalid connections
                 angular.forEach(self.model.reusableTemplateConnections, function(connection) {
+                    //initially mark as valid
+                    self.registerTemplateForm["port-" + connection.feedOutputPortName].$setValidity("invalidConnection", true);
                     if (!angular.isDefined(self.connectionMap[connection.inputPortDisplayName])) {
                         connection.inputPortDisplayName = null;
-                        self.$error["port-" + connection.feedOutputPortName] = true;
+                        // self.$error["port-" + connection.feedOutputPortName] = true;
+                        //mark as invalid
+                        self.registerTemplateForm["port-" + connection.feedOutputPortName].$setValidity("invalidConnection", false);
                     }
                 });
             });
         }
 
-        // Update isValid when $error is updated
-        $scope.$watch(
-                function() {return self.$error},
-                function() {
-                    self.isValid = _.reduce(self.$error, function(memo, value) {
-                        return memo && !value;
-                    }, true);
-                },
-                true
-        );
 
         self.onNeedsReusableTemplateConnectionChange = function(connection) {
             var port = self.connectionMap[connection.inputPortDisplayName];
             connection.reusableTemplateInputPortName = port.name;
-            self.$error["port-" + connection.feedOutputPortName] = false;
+            //mark as valid
+            self.registerTemplateForm["port-" + connection.feedOutputPortName].$setValidity("invalidConnection", true);
         };
 
         this.showIconPicker = function() {
@@ -181,7 +175,6 @@
             return self.model.nifiTemplateId;
         }, function(newVal) {
             if (newVal != null) {
-                self.$error.missingRegistration = false;
                 self.registrationSuccess = false;
             }
         });

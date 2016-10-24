@@ -38,6 +38,12 @@
 
         this.isValid = this.registeredTemplateId !== null;
 
+        /**
+         * Error message to be displayed if {@code isValid} is false
+         * @type {null}
+         */
+        this.errorMessage = null;
+
         this.controllerServiceNeededProperties = [];
 
         function showProgress(){
@@ -210,8 +216,8 @@
                         transformPropertiesToArray(templateData.properties);
                         if(self.stepperController) {
                             self.stepperController.showProgress = false;
-                            self.isValid = true;
                         }
+                        validate();
                     },10);
 
                     self.model.nifiTemplateId = templateData.nifiTemplateId;
@@ -242,8 +248,20 @@
                 return deferred.promise;
             }
         }
+        function validate() {
+            self.isValid = false;
+            if (self.model.reusableTemplate) {
+                self.isValid = false;
+                self.errorMessage =
+                    "This is a reusable template and cannont be registered as it starts with an input port.  You need to create and register a template that has output ports that connect to this template";
+            }
+            else {
+                self.isValid = true;
+            }
+        }
 
         this.changeTemplate = function(){
+            self.errorMessage = null;
             self.isValid = false;
              if(self.registeredTemplateId != null) {
                 RegisterTemplateService.resetModel();
@@ -257,7 +275,7 @@
                 self.controllerServiceNeededProperties = [];
                 //Wait for the properties to come back before allowing hte user to go to the next step
                   self.getTemplateProperties().then(function(properties) {
-                      self.isValid = true;
+                      validate();
                   });
 
             }

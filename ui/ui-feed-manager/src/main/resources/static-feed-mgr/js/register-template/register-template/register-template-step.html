@@ -8,7 +8,7 @@
     </header-section>
 
     <body-section>
-        <form name="registerTemplateForm">
+        <ng-form name="vm.registerTemplateForm">
             <div layout="column">
 
                 <md-input-container class="md-block condensed">
@@ -55,7 +55,10 @@
                                            required>
                                     <md-option ng-repeat="inputPort in vm.inputPortList" value="{{inputPort.value}}">{{inputPort.label}}</md-option>
                                 </md-select>
-                                <div class="error md-caption" ng-if="vm.$error['port-' + connection.feedOutputPortName]">The selected input port is no longer available.</div>
+                                <div ng-messages="vm.registerTemplateForm.$error " md-auto-hide="false">
+                                    <div ng-message="required">This field is required.</div>
+                                    <div ng-message="invalidConnection">The selected input port is no longer available.</div>
+                                </div>
                             </md-input-container>
                         </div>
                     </div>
@@ -74,9 +77,10 @@
 
             </div>
 
-            <thinkbig-step-buttons can-continue="vm.isValid && registerTemplateForm.$valid" step-index="{{::vm.stepIndex}}" final-step="Register" on-click-final-button="vm.registerTemplate()">
+            <thinkbig-step-buttons can-continue="vm.registerTemplateForm.$valid  && vm.model.reusableTemplate == false" step-index="{{::vm.stepIndex}}" final-step="Register"
+                                   on-click-final-button="vm.registerTemplate()">
             </thinkbig-step-buttons>
 
-        </form>
+        </ng-form>
     </body-section>
 </card-layout>
