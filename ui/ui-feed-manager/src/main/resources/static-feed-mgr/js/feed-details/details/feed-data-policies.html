@@ -221,8 +221,8 @@
       </div>
     </div>
 
-    <div layout="row" class="layout-padding-top-bottom">
-      <span flex="25" class="property-name">Security Groups</span>
+    <div layout="row" class="layout-padding-top-bottom" ng-if="vm.securityGroupsEnabled == true">
+      <span flex="25" class="property-name">Hadoop Security Groups</span>
 
       <div flex>
         {{vm.model.securityGroups | join: ',':'name'}}
@@ -428,7 +428,7 @@
       </div>
     </md-input-container>
 
-    <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="">
+    <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="" ng-if="vm.securityGroupsEnabled == true">
       <label class="label-small md-container-ignore">Hadoop Security Groups</label>
       <md-chips ng-model="vm.editModel.securityGroups" md-autocomplete-snap
                 md-transform-chip="vm.transformChip($chip)"

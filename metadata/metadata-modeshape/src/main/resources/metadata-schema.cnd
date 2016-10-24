@@ -115,7 +115,7 @@
     - usr:order (LONG)
 
 [tba:taggable] mixin
-  - tba:tags (STRING) multiple
+    - tba:tags (STRING) multiple
 
 [tba:propertied] mixin
 	+ tba:properties (tba:properties) COPY
@@ -125,6 +125,14 @@
 
 [tba:waterMarks] > nt:hierarchyNode
 	- * (UNDEFINED) COPY
+	
+[tba:initialization] > nt:hierarchyNode
+    - tba:currentStatus (WEAKREFERENCE)
+    + tba:history (tba:initStatus) sns
+    
+[tba:initStatus] > nt:hierarchyNode, mix:created
+    - tba:state (STRING)
+    
 
 [tba:entity] > nt:hierarchyNode, mix:lastModified, tba:taggable
 
@@ -153,9 +161,9 @@
 	+ tba:destinations (tba:feedDestination) sns
     + tba:precondition (tba:feedPrecondition)
     + tba:highWaterMarks (tba:waterMarks)
+	+ tba:initialization (tba:initialization)
 	- tba:systemName (STRING) mandatory
 	- tba:state (STRING) = 'ENABLED'
-	- tba:initialized (BOOLEAN) = 'false'
 	- tba:category (REFERENCE) mandatory
 	- tba:feedTemplate (REFERENCE)
 	- tba:json (STRING)

@@ -54,6 +54,7 @@ import com.thinkbiganalytics.metadata.rest.model.feed.FeedDependencyGraph;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedSource;
+import com.thinkbiganalytics.metadata.rest.model.feed.InitializationStatus;
 import com.thinkbiganalytics.metadata.rest.model.op.FeedOperation;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment;
 import com.thinkbiganalytics.security.AccessController;
@@ -87,6 +88,70 @@ public class FeedsController {
 
     @Inject
     private AccessController accessController;
+    
+    @GET
+    @Path("{id}/initstatus")
+    @Produces(MediaType.APPLICATION_JSON)
+    public InitializationStatus getInitializationStatus(@PathParam("id") String feedIdStr) {
+        LOG.debug("Get feed watermarks {}", feedIdStr);
+
+        return this.metadata.read(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
+
+            com.thinkbiganalytics.metadata.api.feed.Feed.ID feedId = feedProvider.resolveFeed(feedIdStr);
+            com.thinkbiganalytics.metadata.api.feed.Feed<?> feed = feedProvider.getFeed(feedId);
+
+            if (feed != null) {
+                return Model.DOMAIN_TO_INIT_STATUS.apply(feed.getCurrentInitStatus());
+            } else {
+                throw new WebApplicationException("A feed with the given ID does not exist: " + feedId, Status.NOT_FOUND);
+            }
+        });
+    }
+    
+    @GET
+    @Path("{id}/initstatus/history")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<InitializationStatus> getInitializationStatusHistory(@PathParam("id") String feedIdStr) {
+        LOG.debug("Get feed watermarks {}", feedIdStr);
+        
+        return this.metadata.read(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
+            
+            com.thinkbiganalytics.metadata.api.feed.Feed.ID feedId = feedProvider.resolveFeed(feedIdStr);
+            com.thinkbiganalytics.metadata.api.feed.Feed<?> feed = feedProvider.getFeed(feedId);
+            
+            if (feed != null) {
+                return new ArrayList<>(Collections2.transform(feed.getInitHistory(), Model.DOMAIN_TO_INIT_STATUS));                
+            } else {
+                throw new WebApplicationException("A feed with the given ID does not exist: " + feedId, Status.NOT_FOUND);
+            }
+        });
+    }
+    
+    @PUT
+    @Path("{id}/initstatus")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public void putInitializationStatus(@PathParam("id") String feedIdStr,
+                                        InitializationStatus status) {
+        LOG.debug("Get feed watermarks {}", feedIdStr);
+        
+        this.metadata.commit(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
+            
+            com.thinkbiganalytics.metadata.api.feed.Feed.ID feedId = feedProvider.resolveFeed(feedIdStr);
+            com.thinkbiganalytics.metadata.api.feed.Feed<?> feed = feedProvider.getFeed(feedId);
+            
+            if (feed != null) {
+                com.thinkbiganalytics.metadata.api.feed.InitializationStatus.State newState 
+                    = com.thinkbiganalytics.metadata.api.feed.InitializationStatus.State.valueOf(status.getState().name());
+                feed.updateInitStatus(new com.thinkbiganalytics.metadata.api.feed.InitializationStatus(newState));
+            } else {
+                throw new WebApplicationException("A feed with the given ID does not exist: " + feedId, Status.NOT_FOUND);
+            }
+        });
+    }
     
     @GET
     @Path("{id}/watermark")

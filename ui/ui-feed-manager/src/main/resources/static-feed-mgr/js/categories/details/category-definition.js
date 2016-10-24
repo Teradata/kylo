@@ -57,6 +57,13 @@
         self.securityGroupChips = {};
         self.securityGroupChips.selectedItem = null;
         self.securityGroupChips.searchText = null;
+        self.securityGroupsEnabled = false;
+
+        FeedSecurityGroups.isEnabled().then(function(isValid) {
+                self.securityGroupsEnabled = isValid;
+            }
+
+        );
 
 
         self.splitSecurityGroups = function() {

@@ -13,6 +13,7 @@ import java.util.Set;
 
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.processor.ProcessSession;
+import org.hibernate.validator.internal.util.privilegedactions.GetClassLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.thinkbiganalytics.metadata.rest.client.MetadataClient;
-import com.thinkbiganalytics.nifi.core.api.metadata.FeedInitializationStatus;
+import com.thinkbiganalytics.metadata.rest.model.feed.InitializationStatus;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder;
 import com.thinkbiganalytics.nifi.core.api.metadata.WaterMarkActiveException;
 
@@ -38,7 +39,7 @@ public class MetadataClientRecorder implements MetadataRecorder {
     
     private MetadataClient client;
     private Set<String> activeWaterMarks = Collections.synchronizedSet(new HashSet<>());
-    private Map<String, FeedInitializationStatus> feedInitStatusMap = Collections.synchronizedMap(new HashMap<>());
+    private Map<String, InitializationStatus> activeInitStatuses = Collections.synchronizedMap(new HashMap<>());
     
     // TODO: Remove this
     public Map<String, Boolean> workaroundRegistration = new HashMap<>();
@@ -112,11 +113,15 @@ public class MetadataClientRecorder implements MetadataRecorder {
         
         if (actives.containsKey(waterMarkName)) {
             String parameterName = actives.remove(waterMarkName);
-            String value = ff.getAttribute(parameterName);
             
-            updateHighWaterMarkValue(feedId, waterMarkName, value);
-            resultFF = setCurrentWaterMarksAttr(session, resultFF, actives);
-            releaseActiveWaterMark(feedId, waterMarkName);
+            try {
+                String value = ff.getAttribute(parameterName);
+                updateHighWaterMarkValue(feedId, waterMarkName, value);
+            } finally {
+                releaseActiveWaterMark(feedId, waterMarkName);
+                resultFF = setCurrentWaterMarksAttr(session, resultFF, actives);
+            }
+            
             return resultFF;
         } else {
             throw new IllegalStateException("No active high-water mark named \"" + waterMarkName + "\"");
@@ -149,12 +154,16 @@ public class MetadataClientRecorder implements MetadataRecorder {
         
         if (actives.containsKey(waterMarkName)) {
             String parameterName = actives.remove(waterMarkName);
-            String value = getHighWaterMarkValue(feedId, waterMarkName)
-                            .orElse(ff.getAttribute(initValueParameterName(parameterName)));
             
-            resultFF = session.putAttribute(resultFF, parameterName, value);
-            resultFF = setCurrentWaterMarksAttr(session, resultFF, actives);
-            releaseActiveWaterMark(feedId, waterMarkName);
+            try {
+                String value = getHighWaterMarkValue(feedId, waterMarkName)
+                                .orElse(ff.getAttribute(initValueParameterName(parameterName)));
+                resultFF = session.putAttribute(resultFF, parameterName, value);
+            } finally {
+                releaseActiveWaterMark(feedId, waterMarkName);
+                resultFF = setCurrentWaterMarksAttr(session, resultFF, actives);
+            }
+            
             return resultFF;
         } else {
             throw new IllegalStateException("No active high-water mark named \"" + waterMarkName + "\"");
@@ -182,17 +191,19 @@ public class MetadataClientRecorder implements MetadataRecorder {
      * @see com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder#getFeedInitializationStatus(java.lang.String)
      */
     @Override
-    public Optional<FeedInitializationStatus> getFeedInitializationStatus(String feedId) {
-        return Optional.ofNullable(this.feedInitStatusMap.get(feedId));
+    public Optional<InitializationStatus> getInitializationStatus(String feedId) {
+        // Defer to the local active state first
+        Optional<InitializationStatus> option = Optional.ofNullable(this.activeInitStatuses.get(feedId));
+        return option.isPresent() ? option : Optional.ofNullable(this.client.getCurrentInitStatus(feedId));
     }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder#startFeedInitialization(java.lang.String)
      */
     @Override
-    public FeedInitializationStatus startFeedInitialization(String feedId) {
-        FeedInitializationStatus status = new FeedInitializationStatus(FeedInitializationStatus.State.IN_PROGRESS);
-        this.feedInitStatusMap.put(feedId, status);
+    public InitializationStatus startFeedInitialization(String feedId) {
+        InitializationStatus status = new InitializationStatus(InitializationStatus.State.IN_PROGRESS);
+        this.activeInitStatuses.put(feedId, status);
         return status;
     }
 
@@ -200,20 +211,34 @@ public class MetadataClientRecorder implements MetadataRecorder {
      * @see com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder#completeFeedInitialization(java.lang.String)
      */
     @Override
-    public FeedInitializationStatus completeFeedInitialization(String feedId) {
-        FeedInitializationStatus status = new FeedInitializationStatus(FeedInitializationStatus.State.SUCCESS);
-        this.feedInitStatusMap.put(feedId, status);
-        return status;
+    public InitializationStatus completeFeedInitialization(String feedId) {
+        InitializationStatus status = new InitializationStatus(InitializationStatus.State.SUCCESS);
+        try {
+            this.client.updateCurrentInitStatus(feedId, status);
+            this.activeInitStatuses.remove(feedId);
+            return status;
+        } catch (Exception e) {
+            log.error("Failed to update feed initialization completion status: {},  feed: {}", status.getState(), feedId);
+            this.activeInitStatuses.put(feedId, status);
+            return status;
+        }
     }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder#failFeedInitialization(java.lang.String)
      */
     @Override
-    public FeedInitializationStatus failFeedInitialization(String feedId) {
-        FeedInitializationStatus status = new FeedInitializationStatus(FeedInitializationStatus.State.FAILED);
-        this.feedInitStatusMap.put(feedId, status);
-        return status;
+    public InitializationStatus failFeedInitialization(String feedId) {
+        InitializationStatus status = new InitializationStatus(InitializationStatus.State.FAILED);
+        try {
+            this.client.updateCurrentInitStatus(feedId, status);
+            this.activeInitStatuses.remove(feedId);
+            return status;
+        } catch (Exception e) {
+            log.error("Failed to update feed initialization completion status: {},  feed: {}", status.getState(), feedId);
+            this.activeInitStatuses.put(feedId, status);
+            return status;
+        }
     }
 
     @Override

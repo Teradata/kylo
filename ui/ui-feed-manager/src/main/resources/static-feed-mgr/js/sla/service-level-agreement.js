@@ -370,15 +370,10 @@
                         self.serviceLevelAgreements.push(self.editSla);
                     }
                     showList(true);
-
-                    $mdDialog.show(
-                            $mdDialog.alert()
-                                    .parent(angular.element(document.body))
-                                    .clickOutsideToClose(true)
-                                    .title('Saved SLA')
-                                    .textContent('Saved the Sla')
-                                    .ariaLabel('Alert Saved Sla')
-                                    .ok('Got it!')
+                    $mdToast.show(
+                        $mdToast.simple()
+                            .textContent("Saved the SLA")
+                            .hideDelay(1000)
                     );
                 }
 
@@ -388,6 +383,7 @@
 
         }
         function saveSla(successFn, failureFn) {
+
 
             $mdDialog.show(
                 $mdDialog.alert()
@@ -594,24 +590,6 @@
             });
 
             var validForm = PolicyInputFormService.validateForm(self.slaForm, ruleProperties);
-            if (validForm) {
-                //validate there is at least 1 action configuration
-                var actions = self.editSla.actionConfigurations.length;
-                /*
-                 if (actions == 0) {
-                 validForm = false;
-                 $mdDialog.show(
-                 $mdDialog.alert()
-                 .parent(angular.element(document.body))
-                 .clickOutsideToClose(true)
-                 .title('SLA Action Required')
-                 .textContent('At least 1 SLA Action is Required')
-                 .ariaLabel('Alert Input Sla errors')
-                 .ok('Got it!')
-                 );
-                 }
-                 */
-            }
             return validForm;
         }
 

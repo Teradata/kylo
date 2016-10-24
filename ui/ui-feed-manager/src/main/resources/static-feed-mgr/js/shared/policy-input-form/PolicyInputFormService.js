@@ -19,7 +19,7 @@ angular.module(MODULE_FEED_MGR).factory('PolicyInputFormService', function ($htt
                 //make the RegExp if it is supplied as a string
                 if (property.pattern != null && property.pattern != undefined && property.pattern != "") {
                     try {
-                        property.pattern = new RegExp(property.pattern);
+                        property.patternRegExp = new RegExp(property.pattern);
                     } catch (err) {
 
                     }

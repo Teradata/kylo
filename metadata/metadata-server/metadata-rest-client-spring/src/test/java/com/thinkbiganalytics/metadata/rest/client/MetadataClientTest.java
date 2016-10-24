@@ -110,18 +110,18 @@ public class MetadataClientTest {
         
         assertThat(feed.getDescription()).isEqualTo("feed1 feed");
         assertThat(feed.getState()).isEqualTo(Feed.State.ENABLED);
-        assertThat(feed.isInitialized()).isFalse();
+//        assertThat(feed.isInitialized()).isFalse();
         
         feed.setDescription("Description changed");
         feed.setState(Feed.State.DISABLED);
-        feed.setInitialized(true);
+//        feed.setInitialized(true);
         
         Feed result = client.updateFeed(feed);
         
         assertThat(result).isNotNull();
         assertThat(result.getDescription()).isEqualTo("Description changed");
         assertThat(result.getState()).isEqualTo(Feed.State.DISABLED);
-        assertThat(feed.isInitialized()).isTrue();
+//        assertThat(feed.isInitialized()).isTrue();
     }
     
 //    @Test

@@ -40,7 +40,7 @@
             }
             //tell the ui what properties to show/hide
             var renderGetTableData = FeedDetailsProcessorRenderingHelper.updateGetTableDataRendering(self.model.inputProcessor, self.model.nonInputProcessors);
-            var renderSqoop = FeedDetailsProcessorRenderingHelper.updateSqoopProcessorRendering(self.model.inputProcessor, self.model.nonInputProcessors);
+            //   var renderSqoop = FeedDetailsProcessorRenderingHelper.updateSqoopProcessorRendering(self.model.inputProcessor, self.model.nonInputProcessors);
         })
 
         var inputProcessorIdWatch = $scope.$watch(function () {
@@ -65,7 +65,7 @@
                 if (processor.processorId == newVal) {
                     //check the type and return the custom form if there is one via a factory
                     var renderGetTableData = FeedDetailsProcessorRenderingHelper.updateGetTableDataRendering(processor, self.editModel.nonInputProcessors);
-                    var renderSqoop = FeedDetailsProcessorRenderingHelper.updateSqoopProcessorRendering(processor, self.editModel.nonInputProcessors);
+                    //   var renderSqoop = FeedDetailsProcessorRenderingHelper.updateSqoopProcessorRendering(processor, self.editModel.nonInputProcessors);
                     if (renderGetTableData) {
                         self.model.table.method = 'EXISTING_TABLE';
                     }

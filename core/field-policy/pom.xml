@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.thinkbiganalytics.datalake</groupId>
         <artifactId>thinkbig-core</artifactId>
-        <version>0.4.1-SNAPSHOT</version>
+        <version>0.4.2-SNAPSHOT</version>
     </parent>
     <artifactId>thinkbig-field-policy</artifactId>
     <packaging>pom</packaging>

@@ -15,6 +15,7 @@
                 </md-option>
             </md-select>
         </md-input-container>
+        <div class="error md-caption layout-padding" ng-if="vm.errorMessage != null && !vm.isValid">{{vm.errorMessage}}</div>
         <thinkbig-step-buttons can-continue="vm.isValid" step-index="{{::vm.stepIndex}}" ></thinkbig-step-buttons>
     </body-section>
 

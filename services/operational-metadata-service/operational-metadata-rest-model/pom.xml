@@ -8,7 +8,7 @@
   <parent>
     <artifactId>thinkbig-operational-metadata-service</artifactId>
     <groupId>com.thinkbiganalytics.datalake</groupId>
-    <version>0.4.1-SNAPSHOT</version>
+    <version>0.4.2-SNAPSHOT</version>
   </parent>
 
 

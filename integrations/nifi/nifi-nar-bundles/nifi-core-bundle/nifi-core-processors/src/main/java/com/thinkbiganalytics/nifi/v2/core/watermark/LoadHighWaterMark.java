@@ -91,16 +91,26 @@ public class LoadHighWaterMark extends HighWaterMarkProcessor {
             createdFlowfile = true;
         }
         
-        outputFF = initialize(context, session, outputFF);
-        
         if (outputFF != null) {
+            outputFF = initialize(context, session, outputFF);
+            
             MetadataRecorder recorder = context.getProperty(CommonProperties.METADATA_SERVICE).asControllerService(MetadataProviderService.class).getRecorder();
             String waterMark = context.getProperty(HIGH_WATER_MARK).getValue();
             String propName = context.getProperty(PROPERTY_NAME).getValue();
             String initialValue = context.getProperty(INITIAL_VALUE).getValue();
 
             try {
-                outputFF = recorder.loadWaterMark(session, outputFF, getFeedId(context, outputFF), waterMark, propName, initialValue);
+                String feedId = getFeedId(context, outputFF);
+                
+                try {
+                    outputFF = recorder.loadWaterMark(session, outputFF, feedId, waterMark, propName, initialValue);
+                } catch (WaterMarkActiveException e) { 
+                    throw e;
+                } catch (Exception e) {
+                    getLogger().error("Failed to load the current high-water mark: {} for feed {}", new Object[] {waterMark, feedId}, e);
+                    session.transfer(outputFF, CommonProperties.REL_FAILURE);
+                }
+                
                 this.yieldCount.set(0);
                 session.transfer(outputFF, CommonProperties.REL_SUCCESS);
             } catch (WaterMarkActiveException e) {
@@ -113,11 +123,15 @@ public class LoadHighWaterMark extends HighWaterMarkProcessor {
                     session.transfer(outputFF, ACTIVE_FAILURE);
                 } else {
                     getLogger().debug("Yielding because water mark {} is active - attempt {} of {}", new Object[] { waterMark, count, maxCount });
+                    
                     // Remove the flow file before yielding if we create the flow file
                     if (createdFlowfile) {
                         session.remove(outputFF);
+                        context.yield();
+                    } else {
+                        session.penalize(outputFF);
+                        session.transfer(outputFF);
                     }
-                    context.yield();
                 }
             }
         }
