@@ -91,12 +91,12 @@
         <repository>
             <id>thinkbig-snapshot</id>
             <name>think big snapshot</name>
-            <url>http://54.152.98.43:8080/artifactory/libs-snapshot-local</url>
+            <url>http://52.203.91.75:8080/artifactory/libs-snapshot-local</url>
         </repository>
         <repository>
             <id>thinkbig-release</id>
             <name>thinkbig release</name>
-            <url>http://54.152.98.43:8080/artifactory/libs-release-local</url>
+            <url>http://52.203.91.75:8080/artifactory/libs-release-local</url>
         </repository>
         <repository>
             <id>spring-milestones</id>
