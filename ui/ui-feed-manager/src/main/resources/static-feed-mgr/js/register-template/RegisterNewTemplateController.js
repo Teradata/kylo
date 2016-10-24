@@ -32,15 +32,21 @@
             StateService.navigateToImportTemplate();
         };
 
-        // Add default method
-        self.registrationMethods.push({
-            name: "Import from NiFi", description: "Import a NiFi template directly from the current environment", icon: "near_me", iconColor: "#3483BA", onClick: self.createFromNifi
-        });
+        // Fetch the allowed actions
+        AccessControlService.getAllowedActions()
+		        .then(function(actionSet) {
+		        	if (AccessControlService.hasAction(AccessControlService.TEMPLATES_IMPORT, actionSet.actions)) {
+		        		self.registrationMethods.push({
+		        			name: "Import from NiFi", description: "Import a NiFi template directly from the current environment", icon: "near_me", 
+		        			iconColor: "#3483BA", onClick: self.createFromNifi
+		        		});
+		        	}
+		        });
 
         // Fetch the allowed actions
         AccessControlService.getAllowedActions()
                 .then(function(actionSet) {
-                    if (AccessControlService.hasAction(AccessControlService.FEEDS_IMPORT, actionSet.actions)) {
+                    if (AccessControlService.hasAction(AccessControlService.TEMPLATES_IMPORT, actionSet.actions)) {
                         self.registrationMethods.push({
                             name: "Import from a file", description: "Import from a Kylo archive or NiFi template file", icon: "file_upload",
                             iconColor: "#F08C38", onClick: self.importFromFile

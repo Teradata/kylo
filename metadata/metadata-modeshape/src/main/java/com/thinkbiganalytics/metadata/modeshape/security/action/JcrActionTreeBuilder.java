@@ -23,8 +23,8 @@ public class JcrActionTreeBuilder<P> extends JcrAbstractActionsBuilder implement
     private Node actionsNode;
     private P parentBuilder;
 
-    public JcrActionTreeBuilder(Node node, P parent) {
-        this.actionsNode = node;
+    public JcrActionTreeBuilder(Node actionsNode, P parent) {
+        this.actionsNode = actionsNode;
         this.parentBuilder = parent;
     }
     
@@ -32,9 +32,17 @@ public class JcrActionTreeBuilder<P> extends JcrAbstractActionsBuilder implement
      * @see com.thinkbiganalytics.security.action.config.ActionsTreeBuilder#action(com.thinkbiganalytics.security.action.Action)
      */
     @Override
-    public ActionBuilder<ActionsTreeBuilder<P>> action(Action action) {
-        // TODO: validate action hierarchy?
-        return action(action.getSystemName());
+    public ActionsTreeBuilder<P> action(Action action) {
+        Node currentNode = this.actionsNode;
+        
+        for (Action current : action.getHierarchy()) {
+            currentNode = JcrUtil.getOrCreateNode(currentNode, current.getSystemName(), JcrAllowableAction.NODE_TYPE);
+        }
+
+        return new JcrActionBuilder<>(currentNode, this)
+                      .title(action.getTitle())
+                      .description(action.getDescription())
+                      .add();
     }
 
     /* (non-Javadoc)

@@ -9,6 +9,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.ImportOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
 import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
+import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
@@ -17,6 +18,7 @@ import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiError;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessorDTO;
+import com.thinkbiganalytics.security.AccessController;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -72,6 +74,8 @@ NifiControllerServiceProperties nifiControllerServiceProperties;
     @Autowired
     LegacyNifiRestClient nifiRestClient;
 
+    @Inject
+    private AccessController accessController;
 
 
 
@@ -232,6 +236,8 @@ NifiControllerServiceProperties nifiControllerServiceProperties;
     }
 
     public ExportTemplate exportTemplate(String templateId) {
+        this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EXPORT_TEMPLATES);
+        
         RegisteredTemplate template = metadataService.getRegisteredTemplate(templateId);
         if (template != null) {
             String connectingReusableTemplate = null;
@@ -317,6 +323,8 @@ NifiControllerServiceProperties nifiControllerServiceProperties;
 
 
     public ImportTemplate importZip(String fileName, InputStream inputStream, ImportOptions importOptions) throws IOException {
+        this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.IMPORT_TEMPLATES);
+        
         ImportTemplate importTemplate = openZip(fileName, inputStream);
         //verify options before proceeding
         if(importTemplate.hasConnectingReusableTemplate() && ImportOptions.IMPORT_CONNECTING_FLOW.NOT_SET.equals(importOptions.getImportConnectingFlow())){
@@ -550,6 +558,8 @@ NifiControllerServiceProperties nifiControllerServiceProperties;
 
     public ImportTemplate importTemplate(final String fileName, final InputStream inputStream, ImportOptions importOptions) {
         return metadataAccess.commit(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.IMPORT_TEMPLATES);
+            
             ImportTemplate template = null;
             if (!isValidFileImport(fileName)) {
                 throw new UnsupportedOperationException("Unable to import " + fileName + ".  The file must be a zip file or a Nifi Template xml file");

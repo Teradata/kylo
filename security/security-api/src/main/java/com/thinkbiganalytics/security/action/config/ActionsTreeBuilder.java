@@ -11,7 +11,7 @@ import com.thinkbiganalytics.security.action.Action;
  */
 public interface ActionsTreeBuilder<P> {
 
-    ActionBuilder<ActionsTreeBuilder<P>> action(Action action);
+    ActionsTreeBuilder<P> action(Action action);
     
     ActionBuilder<ActionsTreeBuilder<P>> action(String systemName);
 

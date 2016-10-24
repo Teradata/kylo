@@ -14,14 +14,14 @@ import org.springframework.context.annotation.Configuration;
 public class AccessControlConfig {
 
 //    @Bean(name="servicesAllowedActionsTransform")
-//    public Function<AllowedActions, ActionSet> availableActions() {
+//    public Function<AllowedActions, ActionGroup> availableActions() {
 //        return (allowed) -> {
 //            List<Action> list = allowed.getAvailableActions().stream()
 //                .map(allowable -> { return new Action(allowable.getSystemName(), 
 //                                                      allowable.getTitle(), 
 //                                                      allowable.getDescription()); })
 //                .collect(Collectors.toList());
-//            ActionSet actions = new ActionSet();
+//            ActionGroup actions = new ActionGroup();
 //            actions.setActions(list);
 //            return actions;
 //        };

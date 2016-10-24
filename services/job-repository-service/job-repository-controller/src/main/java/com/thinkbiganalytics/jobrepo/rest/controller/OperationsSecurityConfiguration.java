@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 import com.thinkbiganalytics.jobrepo.security.OperationsAccessControl;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
-import com.thinkbiganalytics.security.action.config.ModuleActionsBuilder;
+import com.thinkbiganalytics.security.action.config.ActionsGroupBuilder;
 
 /**
  * Configures the allowable actions for feed management.
@@ -20,36 +20,21 @@ import com.thinkbiganalytics.security.action.config.ModuleActionsBuilder;
 @Configuration
 public class OperationsSecurityConfiguration {
 
+    @Inject
+    private MetadataAccess metadata;
+
+    @Inject
+    private ActionsGroupBuilder builder;
+
     @Bean
     public PostMetadataConfigAction operationsSecurityConfigAction() {
-        return new ConfigureAuthorizationAction();
-    }
-
-    public class ConfigureAuthorizationAction implements PostMetadataConfigAction {
-
-        @Inject
-        private MetadataAccess metadata;
-
-        @Inject
-        private ModuleActionsBuilder builder;
-
-        @Override
-        public void run() {
-            metadata.commit(() -> {
-                // Builds the allowable actions related to feeds to the services group
-                return builder
+        return () -> metadata.commit(() -> {
+            return builder
                             .group("services")
                                 .action(OperationsAccessControl.ACCESS_OPS)
-                                    .title("Access Operational information")
-                                    .description("Allows access to operational information like active feeds and execution history, etc.")
-                                    .subAction(OperationsAccessControl.ADMIN_OPS)
-                                        .title("Administer Operations")
-                                        .description("Allows administration of operations, such as stopping and abandoning them.")
-                                        .add()
-                                    .add()
+                                .action(OperationsAccessControl.ADMIN_OPS)
                                 .add()
                             .build();
-            });
-        }
+            }, MetadataAccess.SERVICE);
     }
 }

@@ -18,16 +18,16 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
  */
 @JsonInclude(Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ActionSet implements Serializable {
+public class ActionGroup implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     private String name;
     private List<Action> actions = new ArrayList<>();
 
-    public ActionSet() {}
+    public ActionGroup() {}
 
-    public ActionSet(String name) {
+    public ActionGroup(String name) {
         super();
         this.name = name;
     }

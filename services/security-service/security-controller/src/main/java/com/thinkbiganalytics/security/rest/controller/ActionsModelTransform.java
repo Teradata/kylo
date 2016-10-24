@@ -15,7 +15,7 @@ import com.thinkbiganalytics.security.UsernamePrincipal;
 import com.thinkbiganalytics.security.action.AllowableAction;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.rest.model.Action;
-import com.thinkbiganalytics.security.rest.model.ActionSet;
+import com.thinkbiganalytics.security.rest.model.ActionGroup;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange.ChangeType;
 
@@ -32,7 +32,7 @@ public class ActionsModelTransform {
                                                                                            Set<String> users, 
                                                                                            Set<String> groups) {
         return (allowed) -> {
-            ActionSet actionSet = availableActionsToActionSet(name).apply(allowed);
+            ActionGroup actionSet = availableActionsToActionSet(name).apply(allowed);
             PermissionsChange change = new PermissionsChange(changeType, actionSet);
             change.setUsers(users);
             change.setGroups(groups);
@@ -40,12 +40,12 @@ public class ActionsModelTransform {
         };
     }
 
-    public Function<AllowedActions, ActionSet> availableActionsToActionSet(String module) {
+    public Function<AllowedActions, ActionGroup> availableActionsToActionSet(String module) {
         return (allowed) -> {
             List<Action> list = allowed.getAvailableActions().stream()
                 .map(allowableActionToActionSet())
                 .collect(Collectors.toList());
-            ActionSet actions = new ActionSet(module);
+            ActionGroup actions = new ActionGroup(module);
             actions.setActions(list);
             return actions;
         };
@@ -62,11 +62,11 @@ public class ActionsModelTransform {
     }
 //
 //    public void addAction(PermissionsChange change, com.thinkbiganalytics.security.action.Action domainAction) {
-//        ActionSet actionSet = new ActionSet("");
+//        ActionGroup actionSet = new ActionGroup("");
 //        addHierarchy(actionSet, domainAction.getHierarchy().iterator());
 //    }
 
-    private void addHierarchy(ActionSet actionSet, Iterator<com.thinkbiganalytics.security.action.Action> itr) {
+    private void addHierarchy(ActionGroup actionSet, Iterator<com.thinkbiganalytics.security.action.Action> itr) {
         if (itr.hasNext()) {
             com.thinkbiganalytics.security.action.Action domainAction = itr.next();
             Action subAction = actionSet.getAction(domainAction.getSystemName())
@@ -97,7 +97,7 @@ public class ActionsModelTransform {
     }
 
     public void addAction(PermissionsChange change, List<? extends com.thinkbiganalytics.security.action.Action> hierarchy) {
-        ActionSet actionSet = change.getActionSet();
+        ActionGroup actionSet = change.getActionSet();
         for (com.thinkbiganalytics.security.action.Action action : hierarchy) {
             addHierarchy(actionSet, action.getHierarchy().iterator());
         }

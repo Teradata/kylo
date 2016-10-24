@@ -28,7 +28,7 @@ import org.springframework.stereotype.Component;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.security.action.AllowedModuleActionsProvider;
-import com.thinkbiganalytics.security.rest.model.ActionSet;
+import com.thinkbiganalytics.security.rest.model.ActionGroup;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange.ChangeType;
 
@@ -56,7 +56,7 @@ public class AccessControlController {
     @GET
     @Path("{name}/available")
     @Produces(MediaType.APPLICATION_JSON)
-    public ActionSet getAvailableActions(@PathParam("name") String moduleName) {
+    public ActionGroup getAvailableActions(@PathParam("name") String moduleName) {
         return metadata.read(() -> {
             return actionsProvider.getAvailableActions(moduleName)
                             .map(this.actionsTransform.availableActionsToActionSet("services"))
@@ -68,7 +68,7 @@ public class AccessControlController {
     @GET
     @Path("{name}/allowed")
     @Produces(MediaType.APPLICATION_JSON)
-    public ActionSet getAllowedActions(@PathParam("name") String moduleName,
+    public ActionGroup getAllowedActions(@PathParam("name") String moduleName,
                                        @QueryParam("user") Set<String> userNames,
                                        @QueryParam("group") Set<String> groupNames) {
         Set<Principal> users = this.actionsTransform.toUserPrincipals(userNames);
@@ -87,7 +87,7 @@ public class AccessControlController {
     @Path("{name}/allowed")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ActionSet postPermissionsChange(@PathParam("name") String moduleName,
+    public ActionGroup postPermissionsChange(@PathParam("name") String moduleName,
                                            PermissionsChange changes) {
         Set<Action> actionSet = collectActions(changes);
         Set<Principal> principals = collectPrincipals(changes);
@@ -156,7 +156,7 @@ public class AccessControlController {
         Set<Action> set = new HashSet<>();
         
         for (com.thinkbiganalytics.security.rest.model.Action modelAction : changes.getActionSet().getActions()) {
-            loadActionSet(modelAction, Action.create(modelAction.getSystemName()), set);
+            loadActionSet(modelAction, Action.create(modelAction.getSystemName(), modelAction.getTitle(), modelAction.getDescription()), set);
         }
         
         return set;
@@ -171,7 +171,7 @@ public class AccessControlController {
             set.add(action);
         } else {
             for (com.thinkbiganalytics.security.rest.model.Action modelChild : modelAction.getActions()) {
-                loadActionSet(modelChild, action.subAction(modelChild.getSystemName()), set);
+                loadActionSet(modelChild, action.subAction(modelChild.getSystemName(), modelChild.getTitle(), modelChild.getDescription()), set);
             }
         }
     }

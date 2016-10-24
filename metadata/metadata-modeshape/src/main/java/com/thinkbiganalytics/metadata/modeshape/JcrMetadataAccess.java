@@ -230,6 +230,8 @@ public class JcrMetadataAccess implements MetadataAccess {
         } else {
             try {
                 return cmd.execute();
+            } catch (RuntimeException e) {
+                throw e;
             } catch (Exception e) {
                 throw new MetadataExecutionException(e);
             }
@@ -295,6 +297,8 @@ public class JcrMetadataAccess implements MetadataAccess {
         } else {
             try {
                 return cmd.execute();
+            } catch (RuntimeException e) {
+                throw e;
             } catch (Exception e) {
                 throw new MetadataExecutionException(e);
             }

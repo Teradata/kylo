@@ -14,10 +14,10 @@ import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
 import com.thinkbiganalytics.auth.jaas.LoginConfigurationBuilder;
 import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
 import com.thinkbiganalytics.metadata.modeshape.common.SecurityPaths;
-import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedModuleActionsProvider;
-import com.thinkbiganalytics.metadata.modeshape.security.action.JcrModuleActionsBuilder;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActionsGroupProvider;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrActionsGroupBuilder;
 import com.thinkbiganalytics.security.AccessController;
-import com.thinkbiganalytics.security.action.config.ModuleActionsBuilder;
+import com.thinkbiganalytics.security.action.config.ActionsGroupBuilder;
 
 /**
  *
@@ -48,14 +48,14 @@ public class ModeShapeAuthConfig {
     }
     
     @Bean
-    public JcrAllowedModuleActionsProvider allowedModuleActionsProvider() {
-        return new JcrAllowedModuleActionsProvider();
+    public JcrAllowedActionsGroupProvider allowedModuleActionsProvider() {
+        return new JcrAllowedActionsGroupProvider();
     }
     
     @Bean(name = "prototypesActionGroupsBuilder")
     @Scope("prototype")
-    public ModuleActionsBuilder prototypesActionGroupsBuilder() {
-        return new JcrModuleActionsBuilder(SecurityPaths.PROTOTYPES.toString());
+    public ActionsGroupBuilder prototypesActionGroupsBuilder() {
+        return new JcrActionsGroupBuilder(SecurityPaths.PROTOTYPES.toString());
     }
 
 }

@@ -9,9 +9,9 @@ import com.thinkbiganalytics.security.action.AllowedActions;
  *
  * @author Sean Felten
  */
-public interface ModuleActionsBuilder {
+public interface ActionsGroupBuilder {
 
-    ActionsTreeBuilder<ModuleActionsBuilder> group(String name);
+    ActionsTreeBuilder<ActionsGroupBuilder> group(String name);
     
     AllowedActions build();
 }

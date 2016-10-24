@@ -22,7 +22,7 @@ public class PermissionsChange {
     public enum ChangeType { ADD, REMOVE, REPLACE }
     
     private ChangeType change;
-    private ActionSet actionSet;
+    private ActionGroup actionSet;
     private Set<String> users = new HashSet<>();
     private Set<String> groups = new HashSet<>();
     
@@ -30,10 +30,10 @@ public class PermissionsChange {
     }
     
     public PermissionsChange(ChangeType change, String name) {
-        this(change, new ActionSet(name));
+        this(change, new ActionGroup(name));
     }
     
-    public PermissionsChange(ChangeType change, ActionSet actions) {
+    public PermissionsChange(ChangeType change, ActionGroup actions) {
         super();
         this.change = change;
         this.actionSet = actions;
@@ -47,11 +47,11 @@ public class PermissionsChange {
         this.change = change;
     }
 
-    public ActionSet getActionSet() {
+    public ActionGroup getActionSet() {
         return actionSet;
     }
 
-    public void setActions(ActionSet actions) {
+    public void setActions(ActionGroup actions) {
         this.actionSet = actions;
     }
 

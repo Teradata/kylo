@@ -127,7 +127,7 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
             Node current = getNode();
             for (Action parent : action.getHierarchy()) {
                 if (! JcrUtil.hasNode(current, parent.getSystemName())) {
-                    throw new AccessControlException("Not authorized to perform the action: " + action.getSystemName());
+                    throw new AccessControlException("Not authorized to perform the action: " + action.getTitle());
                 }
 
                 current = JcrUtil.getNode(current, parent.getSystemName());

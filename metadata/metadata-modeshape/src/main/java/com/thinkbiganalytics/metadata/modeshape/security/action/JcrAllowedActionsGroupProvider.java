@@ -23,7 +23,7 @@ import com.thinkbiganalytics.security.action.AllowedModuleActionsProvider;
  *
  * @author Sean Felten
  */
-public class JcrAllowedModuleActionsProvider implements AllowedModuleActionsProvider {
+public class JcrAllowedActionsGroupProvider implements AllowedModuleActionsProvider {
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.security.action.AllowedModuleActionsProvider#getAvailavleActions(java.lang.String)
@@ -39,10 +39,10 @@ public class JcrAllowedModuleActionsProvider implements AllowedModuleActionsProv
      * @see com.thinkbiganalytics.security.action.AllowedModuleActionsProvider#getAllowedActions(java.lang.String)
      */
     @Override
-    public Optional<AllowedActions> getAllowedActions(String moduleName) {
-        Path modulePath = SecurityPaths.moduleActionPath(moduleName);
+    public Optional<AllowedActions> getAllowedActions(String groupName) {
+        Path modulePath = SecurityPaths.moduleActionPath(groupName);
         
-        return getActions(moduleName, modulePath);
+        return getActions(groupName, modulePath);
     }
 
     /* (non-Javadoc)
@@ -58,12 +58,12 @@ public class JcrAllowedModuleActionsProvider implements AllowedModuleActionsProv
             .orElseThrow(() -> new AccessControlException("No actions are defined for a madule named: " + moduleName));
     }
 
-    protected Optional<AllowedActions> getActions(String moduleName, Path modulePath) {
+    protected Optional<AllowedActions> getActions(String groupName, Path groupPath) {
         try {
             Session session = JcrMetadataAccess.getActiveSession();
             
-            if (session.getRootNode().hasNode(modulePath.toString())) {
-                Node node = session.getRootNode().getNode(modulePath.toString());
+            if (session.getRootNode().hasNode(groupPath.toString())) {
+                Node node = session.getRootNode().getNode(groupPath.toString());
                 JcrAllowedActions actions = new JcrAllowedActions(node);
                 return Optional.of(actions);
             } else {
@@ -72,7 +72,7 @@ public class JcrAllowedModuleActionsProvider implements AllowedModuleActionsProv
         } catch (AccessDeniedException e) { 
             return Optional.empty();
         } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Failed to access allowable actions for module: " + moduleName, e);
+            throw new MetadataRepositoryException("Failed to access allowable actions for module: " + groupName, e);
         }
     }
 

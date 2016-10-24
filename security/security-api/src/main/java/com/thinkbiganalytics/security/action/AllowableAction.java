@@ -11,12 +11,17 @@ import java.util.stream.Stream;
  * @author Sean Felten
  */
 public interface AllowableAction extends Action {
-    
-    String getTitle();
-    
-    String getDescription();
 
+    /**
+     * @return the set of direct sub-actions defined below this action
+     */
     List<AllowableAction> getSubActions();
     
+    /**
+     * Streams the full sub-action tree defined below this action 
+     * using pre-order traversal.
+     * .
+     * @return a stream of sub-actions of this action
+     */
     Stream<AllowableAction> stream();
 }

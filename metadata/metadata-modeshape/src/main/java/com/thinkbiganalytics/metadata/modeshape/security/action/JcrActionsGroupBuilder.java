@@ -18,13 +18,13 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.UsernamePrincipal;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.config.ActionsTreeBuilder;
-import com.thinkbiganalytics.security.action.config.ModuleActionsBuilder;
+import com.thinkbiganalytics.security.action.config.ActionsGroupBuilder;
 
 /**
  *
  * @author Sean Felten
  */
-public class JcrModuleActionsBuilder extends JcrAbstractActionsBuilder implements ModuleActionsBuilder {
+public class JcrActionsGroupBuilder extends JcrAbstractActionsBuilder implements ActionsGroupBuilder {
     
     public static final String ALLOWED_ACTIONS = "tba:allowedActions";
     
@@ -34,20 +34,20 @@ public class JcrModuleActionsBuilder extends JcrAbstractActionsBuilder implement
     private Node actionsNode;
     
     
-    public JcrModuleActionsBuilder(String protoPath) {
+    public JcrActionsGroupBuilder(String protoPath) {
         this.protoModulesPath = protoPath;
     }
     
-    public JcrModuleActionsBuilder(Node groupsNode) {
+    public JcrActionsGroupBuilder(Node groupsNode) {
         this((String) null);
         this.groupsNode = groupsNode;
     }
 
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.security.action.config.ModuleActionsBuilder#group(java.lang.String)
+     * @see com.thinkbiganalytics.security.action.config.ActionsGroupBuilder#group(java.lang.String)
      */
     @Override
-    public ActionsTreeBuilder<ModuleActionsBuilder> group(String name) {
+    public ActionsTreeBuilder<ActionsGroupBuilder> group(String name) {
         Session session = JcrMetadataAccess.getActiveSession();
         
         try {
@@ -63,7 +63,7 @@ public class JcrModuleActionsBuilder extends JcrAbstractActionsBuilder implement
     }
 
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.security.action.config.ModuleActionsBuilder#build()
+     * @see com.thinkbiganalytics.security.action.config.ActionsGroupBuilder#build()
      */
     @Override
     public AllowedActions build() {

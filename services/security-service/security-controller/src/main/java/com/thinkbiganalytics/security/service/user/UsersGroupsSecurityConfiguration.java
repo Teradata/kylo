@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration;
 
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
-import com.thinkbiganalytics.security.action.config.ModuleActionsBuilder;
+import com.thinkbiganalytics.security.action.config.ActionsGroupBuilder;
 
 /**
  * Configures the actions for users and groups.
@@ -19,7 +19,7 @@ public class UsersGroupsSecurityConfiguration {
     private MetadataAccess metadata;
 
     @Inject
-    private ModuleActionsBuilder builder;
+    private ActionsGroupBuilder builder;
 
     @Bean
     public PostMetadataConfigAction usersGroupsSecurityConfigAction() {
@@ -27,25 +27,10 @@ public class UsersGroupsSecurityConfiguration {
             return builder
                         .group("services")
                             .action(UsersGroupsAccessContol.USERS_GROUPS_SUPPORT)
-                                .title("Access Users and Groups support")
-                                .description("Allows access to user and group-related functions")
-                                .subAction(UsersGroupsAccessContol.ACCESS_USERS)
-                                    .title("Access Users")
-                                    .description("Allows the ability to view existing users")
-                                    .subAction(UsersGroupsAccessContol.ADMIN_USERS)
-                                        .title("Administer Users")
-                                        .description("Allows the ability to create and manage users")
-                                        .add()
-                                    .add()
-                                .subAction(UsersGroupsAccessContol.ACCESS_GROUPS)
-                                    .title("Access Groups")
-                                    .description("Allows the ability to view existing groups")
-                                    .subAction(UsersGroupsAccessContol.ADMIN_GROUPS)
-                                        .title("Administer Groups")
-                                        .description("Allows the ability to create and manage groups")
-                                        .add()
-                                    .add()
-                                .add()
+                            .action(UsersGroupsAccessContol.ACCESS_USERS)
+                            .action(UsersGroupsAccessContol.ADMIN_USERS)
+                            .action(UsersGroupsAccessContol.ACCESS_GROUPS)
+                            .action(UsersGroupsAccessContol.ADMIN_GROUPS)
                             .add()
                         .build();
 

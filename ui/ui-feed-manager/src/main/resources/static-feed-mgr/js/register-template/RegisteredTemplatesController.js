@@ -23,7 +23,7 @@
         // Register Add button
         AccessControlService.getAllowedActions()
                 .then(function(actionSet) {
-                    if (AccessControlService.hasAction(AccessControlService.TEMPLATES_EDIT, actionSet.actions)) {
+                    if (AccessControlService.hasAction(AccessControlService.TEMPLATES_IMPORT, actionSet.actions)) {
                         AddButtonService.registerAddButton("registered-templates", function() {
                             RegisterTemplateService.resetModel();
                             StateService.navigateToRegisterTemplate();
