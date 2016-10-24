@@ -1,15 +1,15 @@
 package com.thinkbiganalytics.datalake.authorization.client;
 
-import javax.sql.DataSource;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import javax.sql.DataSource;
+
 /**
  * Sentry Client configuration class for setting sentry connection information.
  *
- *  Created by Shashi Vishwakarma on 19/9/2016.
+ * Created by Shashi Vishwakarma on 19/9/2016.
  */
 public class SentryClientConfig {
 
@@ -23,7 +23,7 @@ public class SentryClientConfig {
     private FileSystem fileSystem;
     private DataSource dataSrouce;
     private JdbcTemplate sentryJdbcTemplate;
-    private String sentryGroups ;
+    private String sentryGroups;
 
     public SentryClientConfig() {
 
@@ -41,8 +41,7 @@ public class SentryClientConfig {
         this.setPassword(password);
     }
 
-    public SentryClientConfig(DataSource dataSrouce)
-    {
+    public SentryClientConfig(DataSource dataSrouce) {
         this.dataSrouce = dataSrouce;
         setSentryJdbcTemplate(new JdbcTemplate(this.dataSrouce));
     }
@@ -55,7 +54,6 @@ public class SentryClientConfig {
     public void setSentryJdbcTemplate(JdbcTemplate sentryJdbcTemplate) {
         this.sentryJdbcTemplate = sentryJdbcTemplate;
     }
-
 
 
     public String getDriverName() {

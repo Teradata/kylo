@@ -1,16 +1,17 @@
 package com.thinkbiganalytics.datalake.authorization.model;
+
+import org.springframework.jdbc.core.RowMapper;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.springframework.jdbc.core.RowMapper; 
 /**
- * 
- *  Created by Shashi Vishwakarma on 19/9/2016.
- *
+ * Created by Shashi Vishwakarma on 19/9/2016.
  */
-public class SentrySearchPolicyMapper  implements RowMapper<SentrySearchPolicy>{
+public class SentrySearchPolicyMapper implements RowMapper<SentrySearchPolicy> {
 
     private final String ROLE = "role";
+
     @Override
     public SentrySearchPolicy mapRow(ResultSet rs, int rowNum) throws SQLException {
 

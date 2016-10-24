@@ -166,7 +166,7 @@ public class HDFSUtil {
     /**
      * @param fileSystem : HDFS fileSystem object
      * @param path       : Path on which ACL needs to be created
-     * @param groups  : List of group to which permission needs to be granted.
+     * @param groups     : List of group to which permission needs to be granted.
      */
 
     public void listAllDirAndApplyPolicy(FileSystem fileSystem, Path path, String groups, String hdfsPermission) throws FileNotFoundException, IOException {
@@ -193,7 +193,7 @@ public class HDFSUtil {
                      */
 
                     AclEntry aclEntryOwner = new AclEntry.Builder().setName(groupListForPermission[groupCounter])
-                                    .setPermission(fsActionObject).setScope(AclEntryScope.ACCESS).setType(AclEntryType.GROUP).build();
+                        .setPermission(fsActionObject).setScope(AclEntryScope.ACCESS).setType(AclEntryType.GROUP).build();
 
                     AclEntry aclEntryOther = new AclEntry.Builder().setPermission(FsAction.NONE).setScope(AclEntryScope.ACCESS).setType(AclEntryType.OTHER).build();
 
@@ -219,7 +219,7 @@ public class HDFSUtil {
                      */
 
                     AclEntry aclEntryOwner = new AclEntry.Builder().setName(groupListForPermission[groupCounter])
-                                    .setPermission(fsActionObject).setScope(AclEntryScope.ACCESS).setType(AclEntryType.GROUP).build();
+                        .setPermission(fsActionObject).setScope(AclEntryScope.ACCESS).setType(AclEntryType.GROUP).build();
 
                     AclEntry aclEntryOther = new AclEntry.Builder().setPermission(FsAction.NONE).setScope(AclEntryScope.ACCESS).setType(AclEntryType.OTHER).build();
 
