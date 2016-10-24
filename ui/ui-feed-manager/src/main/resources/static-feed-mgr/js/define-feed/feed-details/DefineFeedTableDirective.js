@@ -21,7 +21,7 @@
         };
     }
 
-    var controller = function ($scope, $http, $mdToast, $filter, RestUrlService, FeedService, FileUpload, BroadcastService) {
+    var controller = function ($scope, $http, $timeout, $mdToast, $filter, RestUrlService, FeedService, FileUpload, BroadcastService) {
 
         this.defineFeedTableForm = {};
         var self = this;
@@ -36,6 +36,8 @@
         this.columnDefinitionDataTypes = ['string', 'int', 'bigint', 'tinyint', 'decimal', 'double', 'float', 'date', 'timestamp', 'boolean', 'binary'];
 
         self.useUnderscoreInsteadOfSpaces = true;
+
+        this.fieldNamesUniqueRetryAmounnt = 0;
 
         /**
          * The possibly Partition formulas
@@ -110,9 +112,16 @@
          * Ensure the field names are unique.
          * If not add the angular $error to invalidate the form
          */
-        function fieldNamesUnique() {
+        function fieldNamesUnique(resetFormReadyCheck) {
             //map of names that are not unique
             var notUnique = {}
+
+            if (resetFormReadyCheck == undefined) {
+                resetFormReadyCheck = false;
+            }
+            else if (resetFormReadyCheck == true) {
+                self.fieldNamesUniqueRetryAmounnt = 0;
+            }
 
             //map of names to array of columnDefinitions
             var nameMap = {};
@@ -126,16 +135,33 @@
                 }
             });
 
+            var formReady = true;
+
             //invalidate the form if needed
-            _.each(self.model.table.tableSchema.fields, function (columnDef) {
-                if (notUnique[columnDef.name] != undefined) {
-                    self.defineFeedTableForm['name_' + columnDef._id].$setValidity('notUnique', false);
+            _.some(self.model.table.tableSchema.fields, function (columnDef) {
+                var exists = self.defineFeedTableForm['name_' + columnDef._id] != undefined;
+                if (exists) {
+                    if (notUnique[columnDef.name] != undefined) {
+                        self.defineFeedTableForm['name_' + columnDef._id].$setValidity('notUnique', false);
+                    }
+                    else {
+                        self.defineFeedTableForm['name_' + columnDef._id].$setValidity('notUnique', true);
+                    }
                 }
                 else {
-                    self.defineFeedTableForm['name_' + columnDef._id].$setValidity('notUnique', true);
+                    //break out
+                    formReady = false;
+                    return true;
                 }
 
             });
+            if (formReady) {
+                self.fieldNamesUniqueRetryAmounnt = 0;
+            }
+            else if (self.fieldNamesUniqueRetryAmounnt < 10) {
+                self.fieldNamesUniqueRetryAmounnt++;
+                $timeout(fieldNamesUnique, 20);
+            }
         }
 
         /**
@@ -269,7 +295,7 @@
             if (self.useUnderscoreInsteadOfSpaces) {
                 columnDef.name = replaceSpaces(columnDef.name);
             }
-            fieldNamesUnique();
+            fieldNamesUnique(true);
             //update the partitions with "val" on this column so the name matches
             _.each(self.model.table.partitions, function (partition) {
                 if (partition.formula == 'val' && partition.columnDef == columnDef) {
@@ -454,7 +480,7 @@
                 FeedService.syncTableFieldPolicyNames();
                 //set the feedFormat property
                 self.model.table.feedFormat = response.hiveRecordFormat;
-
+                fieldNamesUnique();
                 hideProgress();
                 self.uploadBtnDisabled = false;
                 validate();
