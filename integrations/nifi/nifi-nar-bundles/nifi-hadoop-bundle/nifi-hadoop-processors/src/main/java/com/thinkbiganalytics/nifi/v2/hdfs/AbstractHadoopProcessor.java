@@ -17,11 +17,13 @@
 package com.thinkbiganalytics.nifi.v2.hdfs;
 
 
+import com.thinkbiganalytics.nifi.security.KerberosProperties;
+import com.thinkbiganalytics.nifi.security.SpringSecurityContextLoader;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.compress.*;
 import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.nifi.annotation.lifecycle.OnScheduled;
@@ -34,10 +36,7 @@ import org.apache.nifi.processor.AbstractProcessor;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessorInitializationContext;
 import org.apache.nifi.processor.exception.ProcessException;
-import org.apache.nifi.processor.util.StandardValidators;
-import org.apache.nifi.util.NiFiProperties;
 
-import javax.net.SocketFactory;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -50,69 +49,12 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+import javax.net.SocketFactory;
+
 /**
  * This is a base class that is helpful when building processors interacting with HDFS.
  */
 public abstract class AbstractHadoopProcessor extends AbstractProcessor {
-    /**
-     * Compression Type Enum
-     */
-    public enum CompressionType {
-        NONE,
-        DEFAULT,
-        BZIP,
-        GZIP,
-        LZ4,
-        SNAPPY,
-        AUTOMATIC;
-
-        @Override
-        public String toString() {
-            switch (this) {
-                case NONE:
-                    return "NONE";
-                case DEFAULT:
-                    return DefaultCodec.class.getName();
-                case BZIP:
-                    return BZip2Codec.class.getName();
-                case GZIP:
-                    return GzipCodec.class.getName();
-                case LZ4:
-                    return Lz4Codec.class.getName();
-                case SNAPPY:
-                    return SnappyCodec.class.getName();
-                case AUTOMATIC:
-                    return "Automatically Detected";
-            }
-            return null;
-        }
-    }
-
-
-    private static final Validator KERBEROS_CONFIG_VALIDATOR = new Validator() {
-        @Override
-        public ValidationResult validate(String subject, String input, ValidationContext context) {
-            // Check that both the principal & keytab are set before checking the kerberos config
-            if (context.getProperty(KERBEROS_KEYTAB).getValue() == null || context.getProperty(KERBEROS_PRINCIPAL).getValue() == null) {
-                return new ValidationResult.Builder().subject(subject).input(input).valid(false).explanation("both keytab and principal must be set in order to use Kerberos authentication").build();
-            }
-
-            // Check that the Kerberos configuration is set
-            if (NIFI_PROPERTIES.getKerberosConfigurationFile() == null) {
-                return new ValidationResult.Builder().subject(subject).input(input).valid(false)
-                        .explanation("you are missing the nifi.kerberos.krb5.file property in nifi.properties. " + "This must be set in order to use Kerberos").build();
-            }
-
-            // Check that the Kerberos configuration is readable
-            if (!NIFI_PROPERTIES.getKerberosConfigurationFile().canRead()) {
-                return new ValidationResult.Builder().subject(subject).input(input).valid(false)
-                        .explanation(String.format("unable to read Kerberos config [%s], please make sure the path is valid " + "and nifi has adequate permissions",
-                                NIFI_PROPERTIES.getKerberosConfigurationFile().getAbsoluteFile()))
-                        .build();
-            }
-            return new ValidationResult.Builder().subject(subject).input(input).valid(true).build();
-        }
-    };
 
     // properties
     public static final PropertyDescriptor HADOOP_CONFIGURATION_RESOURCES = new PropertyDescriptor.Builder().name("Hadoop Configuration Resources")
@@ -120,51 +62,21 @@ public abstract class AbstractHadoopProcessor extends AbstractProcessor {
                     + "will search the classpath for a 'core-site.xml' and 'hdfs-site.xml' file or will revert to a default configuration.")
             .required(false).addValidator(createMultipleFilesExistValidator()).build();
 
-    public static NiFiProperties NIFI_PROPERTIES = null;
-
     public static final String DIRECTORY_PROP_NAME = "Directory";
 
-    public static final PropertyDescriptor COMPRESSION_CODEC = new PropertyDescriptor.Builder().name("Compression codec").required(true)
-            .allowableValues(CompressionType.values()).defaultValue(CompressionType.NONE.toString()).build();
-
-    public static final PropertyDescriptor KERBEROS_PRINCIPAL = new PropertyDescriptor.Builder().name("Kerberos Principal").required(false)
-            .description("Kerberos principal to authenticate as. Requires nifi.kerberos.krb5.file to be set " + "in your nifi.properties").addValidator(Validator.VALID)
-            .addValidator(KERBEROS_CONFIG_VALIDATOR).build();
-
-    public static final PropertyDescriptor KERBEROS_KEYTAB = new PropertyDescriptor.Builder().name("Kerberos Keytab").required(false)
-            .description("Kerberos keytab associated with the principal. Requires nifi.kerberos.krb5.file to be set " + "in your nifi.properties").addValidator(Validator.VALID)
-            .addValidator(StandardValidators.FILE_EXISTS_VALIDATOR).addValidator(KERBEROS_CONFIG_VALIDATOR).build();
-
-    public static final PropertyDescriptor KERBEROS_RELOGIN_PERIOD = new PropertyDescriptor.Builder().name("Kerberos Relogin Period").required(false)
-            .description("Period of time which should pass before attempting a kerberos relogin").defaultValue("4 hours")
-            .addValidator(StandardValidators.TIME_PERIOD_VALIDATOR).addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .build();
-
-    protected static final List<PropertyDescriptor> properties;
-
     private static final Object RESOURCES_LOCK = new Object();
+
+    /** Property for Kerberos service keytab file */
+    protected PropertyDescriptor kerberosKeytab;
+
+    /** Property for Kerberos service principal */
+    protected PropertyDescriptor kerberosPrincipal;
 
     private long kerberosReloginThreshold;
     private long lastKerberosReloginTime;
 
-    static {
-        List<PropertyDescriptor> props = new ArrayList<>();
-        props.add(HADOOP_CONFIGURATION_RESOURCES);
-        props.add(KERBEROS_PRINCIPAL);
-        props.add(KERBEROS_KEYTAB);
-        props.add(KERBEROS_RELOGIN_PERIOD);
-        properties = Collections.unmodifiableList(props);
-// TODO(greg.hart): PC-659 Migrate to work with both NiFi 0.6 and 1.0
-//        try {
-//            NIFI_PROPERTIES = NiFiProperties.getInstance();
-//        } catch (Exception e) {
-//            // This will happen during tests
-//            NIFI_PROPERTIES = null;
-//        }
-//        if (NIFI_PROPERTIES != null && NIFI_PROPERTIES.getKerberosConfigurationFile() != null) {
-//            System.setProperty("java.security.krb5.conf", NIFI_PROPERTIES.getKerberosConfigurationFile().getAbsolutePath());
-//        }
-    }
+    /** List of properties */
+    private List<PropertyDescriptor> properties;
 
     // variables shared by all threads of this processor
     // Hadoop Configuration, Filesystem, and UserGroupInformation (optional)
@@ -173,6 +85,20 @@ public abstract class AbstractHadoopProcessor extends AbstractProcessor {
     @Override
     protected void init(ProcessorInitializationContext context) {
         hdfsResources.set(new HdfsResources(null, null, null));
+
+        // Create Kerberos properties
+        final SpringSecurityContextLoader securityContextLoader = SpringSecurityContextLoader.create(context);
+        final KerberosProperties kerberosProperties = securityContextLoader.getKerberosProperties();
+        kerberosKeytab = kerberosProperties.createKerberosKeytabProperty();
+        kerberosPrincipal = kerberosProperties.createKerberosPrincipalProperty();
+
+        // Create list of properties
+        final List<PropertyDescriptor> props = new ArrayList<>();
+        props.add(HADOOP_CONFIGURATION_RESOURCES);
+        props.add(kerberosPrincipal);
+        props.add(kerberosKeytab);
+        props.add(KerberosProperties.KERBEROS_RELOGIN_PERIOD);
+        properties = Collections.unmodifiableList(props);
     }
 
     @Override
@@ -188,8 +114,8 @@ public abstract class AbstractHadoopProcessor extends AbstractProcessor {
         try {
             // This value will be null when called from ListHDFS, because it overrides all of the default
             // properties this processor sets. TODO: re-work ListHDFS to utilize Kerberos
-            if (context.getProperty(KERBEROS_RELOGIN_PERIOD).getValue() != null) {
-                kerberosReloginThreshold = context.getProperty(KERBEROS_RELOGIN_PERIOD).asTimePeriod(TimeUnit.SECONDS);
+            if (context.getProperty(KerberosProperties.KERBEROS_RELOGIN_PERIOD).getValue() != null) {
+                kerberosReloginThreshold = context.getProperty(KerberosProperties.KERBEROS_RELOGIN_PERIOD).asTimePeriod(TimeUnit.SECONDS);
             }
             HdfsResources resources = hdfsResources.get();
             if (resources.getConfiguration() == null) {
@@ -265,8 +191,8 @@ public abstract class AbstractHadoopProcessor extends AbstractProcessor {
             UserGroupInformation ugi = null;
             synchronized (RESOURCES_LOCK) {
                 if (config.get("hadoop.security.authentication").equalsIgnoreCase("kerberos")) {
-                    String principal = context.getProperty(KERBEROS_PRINCIPAL).getValue();
-                    String keyTab = context.getProperty(KERBEROS_KEYTAB).getValue();
+                    String principal = context.getProperty(kerberosPrincipal).getValue();
+                    String keyTab = context.getProperty(kerberosKeytab).getValue();
                     UserGroupInformation.setConfiguration(config);
                     ugi = UserGroupInformation.loginUserFromKeytabAndReturnUGI(principal, keyTab);
                     fs = getFileSystemAsUser(config, ugi);
@@ -358,51 +284,6 @@ public abstract class AbstractHadoopProcessor extends AbstractProcessor {
             }
 
         };
-    }
-
-    /**
-     * Returns the configured CompressionCodec, or null if none is configured.
-     *
-     * @param context       the ProcessContext
-     * @param configuration the Hadoop Configuration
-     * @return CompressionCodec or null
-     */
-    protected org.apache.hadoop.io.compress.CompressionCodec getCompressionCodec(ProcessContext context, Configuration configuration) {
-        org.apache.hadoop.io.compress.CompressionCodec codec = null;
-        if (context.getProperty(COMPRESSION_CODEC).isSet()) {
-            String compressionClassname = CompressionType.valueOf(context.getProperty(COMPRESSION_CODEC).getValue()).toString();
-            CompressionCodecFactory ccf = new CompressionCodecFactory(configuration);
-            codec = ccf.getCodecByClassName(compressionClassname);
-        }
-
-        return codec;
-    }
-
-    /**
-     * Returns the relative path of the child that does not include the filename or the root path.
-     *
-     * @param root  the path to relativize from
-     * @param child the path to relativize
-     * @return the relative path
-     */
-    public static String getPathDifference(final Path root, final Path child) {
-        final int depthDiff = child.depth() - root.depth();
-        if (depthDiff <= 1) {
-            return "".intern();
-        }
-        String lastRoot = root.getName();
-        Path childsParent = child.getParent();
-        final StringBuilder builder = new StringBuilder();
-        builder.append(childsParent.getName());
-        for (int i = (depthDiff - 3); i >= 0; i--) {
-            childsParent = childsParent.getParent();
-            String name = childsParent.getName();
-            if (name.equals(lastRoot) && childsParent.toString().endsWith(root.toString())) {
-                break;
-            }
-            builder.insert(0, Path.SEPARATOR).insert(0, name);
-        }
-        return builder.toString();
     }
 
     protected Configuration getConfiguration() {

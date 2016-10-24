@@ -7,7 +7,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>thinkbig-nifi-spark-nar</artifactId>
+    <artifactId>thinkbig-nifi-spark-v0-nar</artifactId>
     <parent>
         <groupId>com.thinkbiganalytics.nifi.spark</groupId>
         <artifactId>thinkbig-nifi-spark-bundle</artifactId>
@@ -19,6 +19,11 @@
         <dependency>
             <groupId>com.thinkbiganalytics.nifi.spark</groupId>
             <artifactId>thinkbig-nifi-spark-processors</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.thinkbiganalytics.datalake</groupId>
+            <artifactId>thinkbig-nifi-security-v0</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

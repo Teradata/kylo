@@ -5,7 +5,9 @@
 package com.thinkbiganalytics.nifi.v2.spark;
 
 import com.thinkbiganalytics.nifi.security.ApplySecurityPolicy;
+import com.thinkbiganalytics.nifi.security.KerberosProperties;
 import com.thinkbiganalytics.nifi.security.SecurityUtil;
+import com.thinkbiganalytics.nifi.security.SpringSecurityContextLoader;
 import com.thinkbiganalytics.nifi.util.InputStreamReaderRunnable;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -25,6 +27,7 @@ import org.apache.nifi.logging.LogLevel;
 import org.apache.nifi.processor.AbstractProcessor;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
+import org.apache.nifi.processor.ProcessorInitializationContext;
 import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.exception.ProcessException;
 import org.apache.nifi.processor.util.StandardValidators;
@@ -37,6 +40,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import javax.annotation.Nonnull;
 
 @EventDriven
 @InputRequirement(InputRequirement.Requirement.INPUT_REQUIRED)
@@ -185,31 +190,31 @@ public class ExecuteSparkJob extends AbstractProcessor {
         .required(false).addValidator(createMultipleFilesExistValidator())
         .build();
 
-    public static final PropertyDescriptor KERBEROS_PRINCIPAL = new PropertyDescriptor.Builder()
-        .name("Kerberos Principal")
-        .required(false)
-        .description("Kerberos principal to authenticate as. Requires nifi.kerberos.krb5.file to be set in your nifi.properties")
-// TODO(greg.hart): PC-659 Migrate to work with both NiFi 0.6 and 1.0
-//        .addValidator(kerberosConfigValidator())
-        .build();
+    /** Kerberos service keytab */
+    private PropertyDescriptor kerberosKeyTab;
 
-    public static final PropertyDescriptor KERBEROS_KEYTAB = new PropertyDescriptor.Builder()
-        .name("Kerberos Keytab").required(false)
-        .description("Kerberos keytab associated with the principal. Requires nifi.kerberos.krb5.file to be set in your nifi.properties")
-        .addValidator(StandardValidators.FILE_EXISTS_VALIDATOR)
-// TODO(greg.hart): PC-659 Migrate to work with both NiFi 0.6 and 1.0
-//        .addValidator(kerberosConfigValidator())
-        .build();
+    /** Kerberos service principal */
+    private PropertyDescriptor kerberosPrincipal;
 
-
-    private final List<PropertyDescriptor> propDescriptors;
+    /** List of properties */
+    private List<PropertyDescriptor> propDescriptors;
 
     public ExecuteSparkJob() {
         final Set<Relationship> r = new HashSet<>();
         r.add(REL_SUCCESS);
         r.add(REL_FAILURE);
         relationships = Collections.unmodifiableSet(r);
+    }
 
+    @Override
+    protected void init(@Nonnull final ProcessorInitializationContext context) {
+        // Create Kerberos properties
+        final SpringSecurityContextLoader securityContextLoader = SpringSecurityContextLoader.create(context);
+        final KerberosProperties kerberosProperties = securityContextLoader.getKerberosProperties();
+        kerberosKeyTab = kerberosProperties.createKerberosKeytabProperty();
+        kerberosPrincipal = kerberosProperties.createKerberosPrincipalProperty();
+
+        // Create list of properties
         final List<PropertyDescriptor> pds = new ArrayList<>();
         pds.add(APPLICATION_JAR);
         pds.add(EXTRA_JARS);
@@ -225,8 +230,8 @@ public class ExecuteSparkJob extends AbstractProcessor {
         pds.add(EXECUTOR_CORES);
         pds.add(NETWORK_TIMEOUT);
         pds.add(HADOOP_CONFIGURATION_RESOURCES);
-        pds.add(KERBEROS_PRINCIPAL);
-        pds.add(KERBEROS_KEYTAB);
+        pds.add(kerberosPrincipal);
+        pds.add(kerberosKeyTab);
         pds.add(YARN_QUEUE);
         propDescriptors = Collections.unmodifiableList(pds);
     }
@@ -262,8 +267,8 @@ public class ExecuteSparkJob extends AbstractProcessor {
             String sparkApplicationName = context.getProperty(SPARK_APPLICATION_NAME).evaluateAttributeExpressions(flowFile).getValue();
             String executorCores = context.getProperty(EXECUTOR_CORES).evaluateAttributeExpressions(flowFile).getValue();
             String networkTimeout = context.getProperty(NETWORK_TIMEOUT).evaluateAttributeExpressions(flowFile).getValue();
-            String principal = context.getProperty(KERBEROS_PRINCIPAL).getValue();
-            String keyTab = context.getProperty(KERBEROS_KEYTAB).getValue();
+            String principal = context.getProperty(kerberosPrincipal).getValue();
+            String keyTab = context.getProperty(kerberosKeyTab).getValue();
             String hadoopConfigurationResources = context.getProperty(HADOOP_CONFIGURATION_RESOURCES).getValue();
             String[] args = null;
             if (!StringUtils.isEmpty(appArgs)) {
@@ -420,37 +425,4 @@ public class ExecuteSparkJob extends AbstractProcessor {
 
         };
     }
-
-// TODO(greg.hart): PC-659 Migrate to work with both NiFi 0.6 and 1.0
-//    public static final Validator kerberosConfigValidator() {
-//        return new Validator() {
-//
-//            @Override
-//            public ValidationResult validate(String subject, String input, ValidationContext context) {
-//
-//                File nifiProperties = NiFiProperties.getInstance().getKerberosConfigurationFile();
-//
-//                // Check that the Kerberos configuration is set
-//                if (nifiProperties == null) {
-//                    return new ValidationResult.Builder()
-//                        .subject(subject).input(input).valid(false)
-//                        .explanation("you are missing the nifi.kerberos.krb5.file property which "
-//                                     + "must be set in order to use Kerberos")
-//                        .build();
-//                }
-//
-//                // Check that the Kerberos configuration is readable
-//                if (!nifiProperties.canRead()) {
-//                    return new ValidationResult.Builder().subject(subject).input(input).valid(false)
-//                        .explanation(String.format("unable to read Kerberos config [%s], please make sure the path is valid "
-//                                                   + "and nifi has adequate permissions", nifiProperties.getAbsoluteFile()))
-//                        .build();
-//                }
-//
-//                return new ValidationResult.Builder().subject(subject).input(input).valid(true).build();
-//            }
-//
-//
-//        };
-//    }
 }

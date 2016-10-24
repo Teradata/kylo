@@ -56,15 +56,12 @@ public class RemoveHDFSFolder extends AbstractHadoopProcessor {
             .description("FlowFiles that removed a directory")
             .build();
 
-    /** Configuration fields */
-    private static final List<PropertyDescriptor> properties = ImmutableList.<PropertyDescriptor>builder().addAll(AbstractHadoopProcessor.properties).add(DIRECTORY).build();
-
     /** Output paths to other NiFi processors */
     private static final Set<Relationship> relationships = ImmutableSet.of(REL_FAILURE, REL_SUCCESS);
 
     @Override
     protected List<PropertyDescriptor> getSupportedPropertyDescriptors() {
-        return properties;
+        return ImmutableList.<PropertyDescriptor>builder().addAll(super.getSupportedPropertyDescriptors()).add(DIRECTORY).build();
     }
 
     @Override
@@ -150,8 +147,8 @@ public class RemoveHDFSFolder extends AbstractHadoopProcessor {
         if (SecurityUtil.isSecurityEnabled(configuration)) {
             // Get properties
             String hadoopConfigurationResources = context.getProperty(HADOOP_CONFIGURATION_RESOURCES).getValue();
-            String keyTab = context.getProperty(KERBEROS_KEYTAB).getValue();
-            String principal = context.getProperty(KERBEROS_PRINCIPAL).getValue();
+            String keyTab = context.getProperty(kerberosKeytab).getValue();
+            String principal = context.getProperty(kerberosPrincipal).getValue();
 
             if (keyTab.isEmpty() || principal.isEmpty()) {
                 getLogger().error("Kerberos keytab or principal information missing in Kerberos enabled cluster.");

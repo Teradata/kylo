@@ -355,9 +355,15 @@
                   </includes>
                 </source>
                 <source>
-                  <location>../integrations/nifi/nifi-nar-bundles/nifi-hadoop-bundle/nifi-hadoop-bundle-nar/target</location>
+                  <location>../integrations/nifi/nifi-nar-bundles/nifi-hadoop-bundle/nifi-hadoop-bundle-v0-nar/target</location>
                   <includes>
-                    <include>thinkbig-nifi-hadoop-nar-${project.version}.nar</include>
+                    <include>thinkbig-nifi-hadoop-v0-nar-${project.version}.nar</include>
+                  </includes>
+                </source>
+                <source>
+                  <location>../integrations/nifi/nifi-nar-bundles/nifi-hadoop-bundle/nifi-hadoop-bundle-v1-nar/target</location>
+                  <includes>
+                    <include>thinkbig-nifi-hadoop-v1-nar-${project.version}.nar</include>
                   </includes>
                 </source>
                 <source>
@@ -367,9 +373,15 @@
                   </includes>
                 </source>
                 <source>
-                  <location>../integrations/nifi/nifi-nar-bundles/nifi-spark-bundle/nifi-spark-nar/target</location>
+                  <location>../integrations/nifi/nifi-nar-bundles/nifi-spark-bundle/nifi-spark-v0-nar/target</location>
                   <includes>
-                    <include>thinkbig-nifi-spark-nar-${project.version}.nar</include>
+                    <include>thinkbig-nifi-spark-v0-nar-${project.version}.nar</include>
+                  </includes>
+                </source>
+                <source>
+                  <location>../integrations/nifi/nifi-nar-bundles/nifi-spark-bundle/nifi-spark-v1-nar/target</location>
+                  <includes>
+                    <include>thinkbig-nifi-spark-v1-nar-${project.version}.nar</include>
                   </includes>
                 </source>
                 <source>
@@ -379,9 +391,15 @@
                   </includes>
                 </source>
                 <source>
-                  <location>../integrations/nifi/nifi-nar-bundles/nifi-standard-services/nifi-hadoop-service-bundle/nifi-hadoop-service-nar/target</location>
+                  <location>../integrations/nifi/nifi-nar-bundles/nifi-standard-services/nifi-hadoop-service-bundle/nifi-hadoop-service-v0-nar/target</location>
                   <includes>
-                    <include>thinkbig-nifi-hadoop-service-nar-${project.version}.nar</include>
+                    <include>thinkbig-nifi-hadoop-service-v0-nar-${project.version}.nar</include>
+                  </includes>
+                </source>
+                <source>
+                  <location>../integrations/nifi/nifi-nar-bundles/nifi-standard-services/nifi-hadoop-service-bundle/nifi-hadoop-service-v1-nar/target</location>
+                  <includes>
+                    <include>thinkbig-nifi-hadoop-service-v1-nar-${project.version}.nar</include>
                   </includes>
                 </source>
                 <source>

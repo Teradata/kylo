@@ -90,20 +90,12 @@ public class CreateHDFSFolder extends AbstractHadoopProcessor {
         .build();
 
     private static final Set<Relationship> relationships;
-    private static final List<PropertyDescriptor> localProperties;
 
     static {
         final Set<Relationship> rels = new HashSet<>();
         rels.add(REL_SUCCESS);
         rels.add(REL_FAILURE);
         relationships = Collections.unmodifiableSet(rels);
-
-        List<PropertyDescriptor> props = new ArrayList<>(properties);
-        props.add(DIRECTORY);
-        props.add(UMASK);
-        props.add(REMOTE_OWNER);
-        props.add(REMOTE_GROUP);
-        localProperties = Collections.unmodifiableList(props);
     }
 
     @Override
@@ -113,7 +105,12 @@ public class CreateHDFSFolder extends AbstractHadoopProcessor {
 
     @Override
     protected List<PropertyDescriptor> getSupportedPropertyDescriptors() {
-        return localProperties;
+        List<PropertyDescriptor> props = new ArrayList<>(super.getSupportedPropertyDescriptors());
+        props.add(DIRECTORY);
+        props.add(UMASK);
+        props.add(REMOTE_OWNER);
+        props.add(REMOTE_GROUP);
+        return Collections.unmodifiableList(props);
     }
 
     @OnScheduled
@@ -139,8 +136,8 @@ public class CreateHDFSFolder extends AbstractHadoopProcessor {
         try {
             final Configuration configuration = getConfiguration();
 
-            String principal = context.getProperty(KERBEROS_PRINCIPAL).getValue();
-            String keyTab = context.getProperty(KERBEROS_KEYTAB).getValue();
+            String principal = context.getProperty(kerberosPrincipal).getValue();
+            String keyTab = context.getProperty(kerberosKeytab).getValue();
             String hadoopConfigurationResources = context.getProperty(HADOOP_CONFIGURATION_RESOURCES).getValue();
 
             if (SecurityUtil.isSecurityEnabled(configuration)) {
