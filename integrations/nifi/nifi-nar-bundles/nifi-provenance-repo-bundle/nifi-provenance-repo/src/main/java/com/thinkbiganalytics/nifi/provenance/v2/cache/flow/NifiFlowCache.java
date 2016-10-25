@@ -8,7 +8,6 @@ import com.thinkbiganalytics.nifi.provenance.model.ActiveFlowFile;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessor;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -16,7 +15,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 
 /**
  * Created by sr186054 on 8/11/16. Cache of the Nifi Flow graph
@@ -42,7 +41,7 @@ public class NifiFlowCache {
 
     private boolean active = true;
 
-
+    @Inject
     private NifiFlowClient nifiFlowClient;
 
    // private static NifiFlowCache instance = new NifiFlowCache();
@@ -88,17 +87,8 @@ public class NifiFlowCache {
 
     private void initClient() {
         if (active) {
-            if(StringUtils.isNotBlank(username)){
-                log.info("attempt to create new NifiFlowClient using user: {} @ {}", username, host);
-                nifiFlowClient = new NifiFlowClient(URI.create(host), NifiFlowClient.createCredentialProvider(username,password));
-            }
-            else {
-                log.info("attempt to create new NifiFlowClient using anonymous user @ {}",host);
-                nifiFlowClient = new NifiFlowClient(URI.create("http://localhost:8079"));
-            }
-
             //check the connection every second
-            initConnectionCheckTimerThread(0,1*1000,10);
+            initConnectionCheckTimerThread(0, 1000, 10);
         }
     }
     private boolean isConnectedToNifiRest(){

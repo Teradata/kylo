@@ -6,7 +6,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>thinkbig-nifi-provenance-repo-nar</artifactId>
+    <artifactId>thinkbig-nifi-provenance-repo-v1-nar</artifactId>
     <parent>
         <groupId>com.thinkbiganalytics.nifi.provenance</groupId>
         <artifactId>thinkbig-nifi-provenance-repo-bundle</artifactId>
@@ -22,6 +22,11 @@
         <dependency>
             <groupId>com.thinkbiganalytics.nifi.provenance</groupId>
             <artifactId>thinkbig-nifi-provenance-repo</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.thinkbiganalytics.datalake</groupId>
+            <artifactId>thinkbig-nifi-rest-client-v1</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

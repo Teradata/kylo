@@ -367,9 +367,15 @@
                   </includes>
                 </source>
                 <source>
-                  <location>../integrations/nifi/nifi-nar-bundles/nifi-provenance-repo-bundle/nifi-provenance-repo-nar/target</location>
+                  <location>../integrations/nifi/nifi-nar-bundles/nifi-provenance-repo-bundle/nifi-provenance-repo-v0-nar/target</location>
                   <includes>
-                    <include>thinkbig-nifi-provenance-repo-nar-${project.version}.nar</include>
+                    <include>thinkbig-nifi-provenance-repo-v0-nar-${project.version}.nar</include>
+                  </includes>
+                </source>
+                <source>
+                  <location>../integrations/nifi/nifi-nar-bundles/nifi-provenance-repo-bundle/nifi-provenance-repo-v1-nar/target</location>
+                  <includes>
+                    <include>thinkbig-nifi-provenance-repo-v1-nar-${project.version}.nar</include>
                   </includes>
                 </source>
                 <source>

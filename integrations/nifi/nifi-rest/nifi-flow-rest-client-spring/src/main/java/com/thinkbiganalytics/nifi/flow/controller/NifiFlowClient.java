@@ -1,8 +1,4 @@
-/**
- *
- */
 package com.thinkbiganalytics.nifi.flow.controller;
-
 
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
@@ -15,10 +11,6 @@ import com.thinkbiganalytics.nifi.rest.support.NifiTemplateNameUtil;
 import com.thinkbiganalytics.nifi.rest.visitor.NifiConnectionOrderVisitor;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.nifi.web.api.dto.AboutDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
@@ -26,8 +18,8 @@ import org.apache.nifi.web.api.dto.search.ComponentSearchResultDTO;
 import org.apache.nifi.web.api.dto.search.SearchResultsDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,24 +28,13 @@ import javax.inject.Inject;
 /**
  * Simple Client that will return a Graph of objects representing the NifiFlow
  */
+@Component
 public class NifiFlowClient implements NifiFlowVisitorClient {
 
     private static final Logger log = LoggerFactory.getLogger(NifiFlowClient.class);
 
     @Inject
     private LegacyNifiRestClient client;
-
-    public static CredentialsProvider createCredentialProvider(String username, String password) {
-        CredentialsProvider credsProvider = new BasicCredentialsProvider();
-        credsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password));
-        return credsProvider;
-    }
-
-    public NifiFlowClient(URI base) {
-        this(base, null);
-    }
-
-    public NifiFlowClient(URI base, CredentialsProvider credsProvider) {}
 
     ///Core methods to look up Processors and ProcessGroups for the flow
     @Override

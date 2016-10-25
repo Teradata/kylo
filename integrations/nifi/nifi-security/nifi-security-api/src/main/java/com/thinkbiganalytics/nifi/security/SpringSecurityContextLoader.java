@@ -22,9 +22,9 @@ public class SpringSecurityContextLoader {
     @Nonnull
     public static SpringSecurityContextLoader create(@Nonnull final ControllerServiceInitializationContext controllerServiceContext) {
         final ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext();
-        context.getBeanFactory().registerSingleton(ControllerServiceInitializationContext.class.getName(), controllerServiceContext);
         context.setConfigLocation("application-context.xml");
         context.refresh();
+        context.getBeanFactory().registerSingleton(ControllerServiceInitializationContext.class.getName(), controllerServiceContext);
         return new SpringSecurityContextLoader(context);
     }
 
@@ -37,9 +37,9 @@ public class SpringSecurityContextLoader {
     @Nonnull
     public static SpringSecurityContextLoader create(@Nonnull final ProcessorInitializationContext processorContext) {
         final ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext();
-        context.getBeanFactory().registerSingleton(ProcessorInitializationContext.class.getName(), processorContext);
         context.setConfigLocation("application-context.xml");
         context.refresh();
+        context.getBeanFactory().registerSingleton(ProcessorInitializationContext.class.getName(), processorContext);
         return new SpringSecurityContextLoader(context);
     }
 
