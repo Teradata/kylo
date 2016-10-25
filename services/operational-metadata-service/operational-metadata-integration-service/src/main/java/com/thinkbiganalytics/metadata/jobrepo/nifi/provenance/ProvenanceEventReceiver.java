@@ -13,6 +13,9 @@ import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiEvent;
+import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecution;
+import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecutionProvider;
+import com.thinkbiganalytics.metadata.api.jobrepo.step.FailedStepExecutionListener;
 import com.thinkbiganalytics.metadata.api.op.FeedOperation;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.NifiEventProvider;
 import com.thinkbiganalytics.nifi.activemq.Queues;
@@ -29,13 +32,14 @@ import org.springframework.stereotype.Component;
 
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 /**
  * JMS Listener for NiFi Provenance Events.
  */
 @Component
-public class ProvenanceEventReceiver {
+public class ProvenanceEventReceiver implements FailedStepExecutionListener{
 
     private static final Logger log = LoggerFactory.getLogger(ProvenanceEventReceiver.class);
 
@@ -43,7 +47,11 @@ public class ProvenanceEventReceiver {
     private NifiEventProvider nifiEventProvider;
 
     @Autowired
-    private BatchJobExecutionProvider nifiJobExecutionProvider;
+    private BatchJobExecutionProvider batchJobExecutionProvider;
+
+
+    @Autowired
+    private BatchStepExecutionProvider batchStepExecutionProvider;
 
     @Autowired
     private NifiRestClient nifiRestClient;
@@ -57,7 +65,8 @@ public class ProvenanceEventReceiver {
     @Inject
     private MetadataEventService eventService;
 
-
+    @Inject
+    NifiBulletinExceptionExtractor nifiBulletinExceptionExtractor;
 
 
     /**
@@ -116,6 +125,11 @@ public class ProvenanceEventReceiver {
         );
     }
 
+    @PostConstruct
+    private void init(){
+        batchStepExecutionProvider.subscribeToFailedSteps(this);
+    }
+
 
     /**
      * Unique key for the Event in relation to the Job
@@ -141,7 +155,7 @@ public class ProvenanceEventReceiver {
 
             if (event.isBatchJob()) {
                 //ensure the job is there
-                BatchJobExecution jobExecution = operationalMetadataAccess.commit(() -> nifiJobExecutionProvider.getOrCreateJobExecution(event));
+                BatchJobExecution jobExecution = operationalMetadataAccess.commit(() -> batchJobExecutionProvider.getOrCreateJobExecution(event));
                 NifiEvent nifiEvent = operationalMetadataAccess.commit(() -> receiveBatchEvent(jobExecution, event));
             } else {
                 NifiEvent nifiEvent = operationalMetadataAccess.commit(() -> nifiEventProvider.create(event));
@@ -161,7 +175,7 @@ public class ProvenanceEventReceiver {
         log.debug("Received ProvenanceEvent {}.  is end of Job: {}.  is ending flowfile:{}, isBatch: {}", event, event.isEndOfJob(), event.isEndingFlowFileEvent(), event.isBatchJob());
         nifiEvent = nifiEventProvider.create(event);
         if (event.isBatchJob()) {
-            BatchJobExecution job = nifiJobExecutionProvider.save(jobExecution, event, nifiEvent);
+            BatchJobExecution job = batchJobExecutionProvider.save(jobExecution, event, nifiEvent);
             if (job == null) {
                 log.error(" Detected a Batch event, but could not find related Job record. for event: {}  is end of Job: {}.  is ending flowfile:{}, isBatch: {}", event, event.isEndOfJob(),
                           event.isEndingFlowFileEvent(), event.isBatchJob());
@@ -237,5 +251,11 @@ public class ProvenanceEventReceiver {
         FeedOperation.State state = FeedOperation.State.SUCCESS;
         log.debug("Success JOB for Event {} ", event);
         this.eventService.notify(new FeedOperationStatusEvent(event.getFeedName(), null, state, "Job Succeeded for feed: " + event.getFeedName()));
+    }
+
+
+    @Override
+    public void failedStep(BatchJobExecution jobExecution, BatchStepExecution stepExecution, String flowFileId, String componentId) {
+       boolean added = nifiBulletinExceptionExtractor.addErrorMessagesToStep(stepExecution,flowFileId,componentId);
     }
 }

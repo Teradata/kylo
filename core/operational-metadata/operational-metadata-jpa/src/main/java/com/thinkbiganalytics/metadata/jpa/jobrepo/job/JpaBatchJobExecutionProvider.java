@@ -11,14 +11,11 @@ import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobInstance;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiEvent;
 import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecution;
+import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecutionProvider;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.BatchExecutionContextProvider;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiEventJobExecution;
-import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiEventStepExecution;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiRelatedRootFlowFiles;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.NifiRelatedRootFlowFilesRepository;
-import com.thinkbiganalytics.metadata.jpa.jobrepo.step.BatchStepExecutionRepository;
-import com.thinkbiganalytics.metadata.jpa.jobrepo.step.JpaBatchStepExecution;
-import com.thinkbiganalytics.metadata.jpa.jobrepo.step.JpaBatchStepExecutionContextValue;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
@@ -66,6 +63,7 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
     private OperationalMetadataAccess operationalMetadataAccess;
 
 
+
     @Autowired
     private JPAQueryFactory factory;
 
@@ -76,29 +74,29 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
     private BatchJobParametersRepository jobParametersRepository;
 
 
-    private BatchStepExecutionRepository nifiStepExecutionRepository;
-
     private NifiRelatedRootFlowFilesRepository relatedRootFlowFilesRepository;
 
-    private BatchStepExecutionRepository stepExecutionRepository;
+    @Inject
+    private BatchStepExecutionProvider batchStepExecutionProvider;
+
+
+
 
 
     @Autowired
     public JpaBatchJobExecutionProvider(BatchJobExecutionRepository jobExecutionRepository, BatchJobInstanceRepository jobInstanceRepository,
-                                        BatchStepExecutionRepository nifiStepExecutionRepository,
                                         NifiRelatedRootFlowFilesRepository relatedRootFlowFilesRepository,
-                                        BatchJobParametersRepository jobParametersRepository,
-                                        BatchStepExecutionRepository stepExecutionRepository
+                                        BatchJobParametersRepository jobParametersRepository
     ) {
 
         this.jobExecutionRepository = jobExecutionRepository;
         this.jobInstanceRepository = jobInstanceRepository;
-        this.nifiStepExecutionRepository = nifiStepExecutionRepository;
         this.relatedRootFlowFilesRepository = relatedRootFlowFilesRepository;
         this.jobParametersRepository = jobParametersRepository;
-        this.stepExecutionRepository = stepExecutionRepository;
 
     }
+
+
 
     @Override
     public BatchJobInstance createJobInstance(ProvenanceEventRecordDTO event) {
@@ -108,6 +106,8 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
         jobInstance.setJobName(event.getFeedName());
         return this.jobInstanceRepository.save(jobInstance);
     }
+
+
 
     /**
      * Generate a Unique key for the Job Instance table This code is similar to what was used by Spring Batch
@@ -320,7 +320,8 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
         }
             JpaBatchJobExecution jpaBatchJobExecution = (JpaBatchJobExecution)jobExecution;
             checkAndRelateJobs(event, nifiEvent);
-            createStepExecution(jobExecution, event);
+           BatchStepExecution stepExecution = batchStepExecutionProvider.createStepExecution(jobExecution, event);
+
           /*  if (event.isEndOfJob()) {
                 finishJob(event, jpaBatchJobExecution);
                 jobExecution =    this.jobExecutionRepository.save(jpaBatchJobExecution);
@@ -329,12 +330,8 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
 
         if (jobExecution.isFinished()) {
             //ensure failures
-            boolean addedFailures = ensureFailureSteps(jpaBatchJobExecution);
-           /* if (addedFailures) {
-                jpaBatchJobExecution.completeOrFailJob();
-                jobExecution =    this.jobExecutionRepository.save(jpaBatchJobExecution);
-            }
-            */
+            boolean addedFailures = batchStepExecutionProvider.ensureFailureSteps(jpaBatchJobExecution);
+
         }
         return jobExecution;
     }
@@ -347,88 +344,10 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
     }
 
 
-    /**
-     * We get Nifi Events after a step has executed. If a flow takes some time we might not initially get the event that the given step has failed when we write the StepExecution record. This should
-     * be called when a Job Completes as it will verify all failures and then update the correct step status to reflect the failure if there is one.
-     */
-    private boolean ensureFailureSteps(JpaBatchJobExecution jobExecution) {
-
-        //find all the Steps for this Job that have records in the Failure table for this job flow file
-        List<JpaBatchStepExecution> stepsNeedingToBeFailed = nifiStepExecutionRepository.findStepsInJobThatNeedToBeFailed(jobExecution.getJobExecutionId());
-        if (stepsNeedingToBeFailed != null) {
-            for (JpaBatchStepExecution se : stepsNeedingToBeFailed) {
-                se.failStep();
-            }
-            //save them
-            nifiStepExecutionRepository.save(stepsNeedingToBeFailed);
-            return true;
-        }
-        return false;
-    }
 
 
-    private BatchStepExecution createStepExecution(BatchJobExecution jobExecution, ProvenanceEventRecordDTO event) {
-
-        //only create the step if it doesnt exist yet for this event
-        JpaBatchStepExecution stepExecution = nifiStepExecutionRepository.findByProcessorAndJobFlowFile(event.getComponentId(), event.getJobFlowFileId());
-        if (stepExecution == null) {
-
-            stepExecution = new JpaBatchStepExecution();
-            stepExecution.setJobExecution(jobExecution);
-            stepExecution.setStartTime(
-                event.getPreviousEventTime() != null ? DateTimeUtil.convertToUTC(event.getPreviousEventTime())
-                                                     : DateTimeUtil.convertToUTC((event.getEventTime().minus(event.getEventDuration()))));
-            stepExecution.setEndTime(DateTimeUtil.convertToUTC(event.getEventTime()));
-            stepExecution.setStepName(event.getComponentName());
-            log.info("New Step Execution {} on Job: {} using event {} ", stepExecution.getStepName(), jobExecution.getJobExecutionId(), event.getEventId());
-
-            boolean failure = event.isFailure();
-            if (failure) {
-                stepExecution.failStep();
-            } else {
-                stepExecution.completeStep();
-            }
-            //add in execution contexts
-            assignStepExecutionContextMap(event, stepExecution);
-
-            //Attach the NifiEvent object to this StepExecution
-            JpaNifiEventStepExecution eventStepExecution = new JpaNifiEventStepExecution(jobExecution, stepExecution, event.getEventId(), event.getJobFlowFileId());
-            eventStepExecution.setComponentId(event.getComponentId());
-            eventStepExecution.setJobFlowFileId(event.getJobFlowFileId());
-            stepExecution.setNifiEventStepExecution(eventStepExecution);
-
-            jobExecution.getStepExecutions().add(stepExecution);
-            stepExecution = nifiStepExecutionRepository.save(stepExecution);
-            //also persist to spring batch tables
-            //TODO to be removed in next release once Spring batch is completely removed.  Needed since the UI references this table
-            batchExecutionContextProvider.saveStepExecutionContext(stepExecution.getStepExecutionId(), event.getUpdatedAttributes());
 
 
-        } else {
-            //update it
-            assignStepExecutionContextMap(event, stepExecution);
-            //log.info("Update Step Execution {} ({}) on Job: {} using event {} ", stepExecution.getStepName(), stepExecution.getStepExecutionId(), jobExecution, event);
-            stepExecution = nifiStepExecutionRepository.save(stepExecution);
-            //also persist to spring batch tables
-            //TODO to be removed in next release once Spring batch is completely removed.  Needed since the UI references this table
-            batchExecutionContextProvider.saveStepExecutionContext(stepExecution.getStepExecutionId(), stepExecution.getStepExecutionContextAsMap());
-        }
-
-
-        return stepExecution;
-
-    }
-
-    private void assignStepExecutionContextMap(ProvenanceEventRecordDTO event, JpaBatchStepExecution stepExecution) {
-        Map<String, String> updatedAttrs = event.getUpdatedAttributes();
-        if (updatedAttrs != null && !updatedAttrs.isEmpty()) {
-            for (Map.Entry<String, String> entry : updatedAttrs.entrySet()) {
-                JpaBatchStepExecutionContextValue stepExecutionContext = new JpaBatchStepExecutionContextValue(stepExecution, entry.getKey());
-                stepExecutionContext.setStringVal(entry.getValue());
-                stepExecution.addStepExecutionContext(stepExecutionContext);
-            }
-        }
-    }
 
 
     /**
