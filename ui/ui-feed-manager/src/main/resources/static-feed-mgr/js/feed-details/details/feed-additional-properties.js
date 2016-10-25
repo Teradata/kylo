@@ -19,7 +19,7 @@
         };
     };
 
-    var FeedAdditionalPropertiesController = function($scope, AccessControlService, FeedService, FeedTagService) {
+    var FeedAdditionalPropertiesController = function($scope, AccessControlService, FeedService, FeedTagService, FeedSecurityGroups) {
 
         var self = this;
 
@@ -38,6 +38,19 @@
         self.tagChips.selectedItem = null;
         self.tagChips.searchText = null;
         this.isValid = true;
+
+        this.feedSecurityGroups = FeedSecurityGroups;
+
+        self.securityGroupChips = {};
+        self.securityGroupChips.selectedItem = null;
+        self.securityGroupChips.searchText = null;
+        self.securityGroupsEnabled = false;
+
+        FeedSecurityGroups.isEnabled().then(function(isValid) {
+                self.securityGroupsEnabled = isValid;
+            }
+
+        );
 
         this.transformChip = function(chip) {
             // If it is an object, it's already a known chip
@@ -69,6 +82,11 @@
             self.editModel.dataOwner = self.model.dataOwner;
             self.editModel.tags = tags;
             self.editModel.userProperties = angular.copy(self.model.userProperties);
+
+            self.editModel.securityGroups = angular.copy(FeedService.editFeedModel.securityGroups);
+            if (self.editModel.securityGroups == undefined) {
+                self.editModel.securityGroups = [];
+            }
         };
 
         this.onCancel = function() {
@@ -83,6 +101,7 @@
             copy.tags = self.editModel.tags;
             copy.dataOwner = self.editModel.dataOwner;
             copy.userProperties = self.editModel.userProperties;
+            copy.securityGroups = self.editModel.securityGroups;
 
             FeedService.saveFeedModel(copy).then(function(response) {
                 FeedService.hideFeedSavingDialog();
@@ -91,6 +110,7 @@
                 self.model.tags = self.editModel.tags;
                 self.model.dataOwner = self.editModel.dataOwner;
                 self.model.userProperties = self.editModel.userProperties;
+                self.model.securityGroups = self.editModel.securityGroups;
             }, function(response) {
                 FeedService.hideFeedSavingDialog();
                 FeedService.buildErrorData(self.model.feedName, response.data);

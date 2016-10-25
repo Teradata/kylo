@@ -15,7 +15,7 @@
         };
     }
 
-    var controller = function ($scope, $mdDialog, $timeout, AccessControlService, FeedService, FeedSecurityGroups) {
+    var controller = function ($scope, $mdDialog, $timeout, AccessControlService, FeedService) {
 
         var self = this;
 
@@ -78,19 +78,6 @@
         this.mergeStrategies = angular.copy(FeedService.mergeStrategies);
 
         this.targetFormatOptions = FeedService.targetFormatOptions;
-
-        this.feedSecurityGroups = FeedSecurityGroups;
-
-        self.securityGroupChips = {};
-        self.securityGroupChips.selectedItem = null;
-        self.securityGroupChips.searchText = null;
-        self.securityGroupsEnabled = false;
-
-        FeedSecurityGroups.isEnabled().then(function(isValid) {
-                self.securityGroupsEnabled = isValid;
-            }
-
-        );
 
         this.fieldDataTypeDisplay = function (columnDef) {
             if (columnDef != undefined) {
@@ -174,10 +161,7 @@
             if (self.editModel.table.options.compressionFormat === undefined) {
                 self.editModel.options.compressionFormat = 'NONE'
             }
-            self.editModel.securityGroups = angular.copy(FeedService.editFeedModel.securityGroups);
-            if (self.editModel.securityGroups == undefined) {
-                self.editModel.securityGroups = [];
-            }
+
             $timeout(validateMergeStrategies, 400);
         }
 
@@ -213,7 +197,6 @@
 
             copy.table.targetMergeStrategy = self.editModel.table.targetMergeStrategy;
             copy.table.options = self.editModel.table.options;
-            copy.securityGroups = self.editModel.securityGroups;
             copy.userProperties = null;
 
             FeedService.saveFeedModel(copy).then(function (response) {
@@ -225,7 +208,6 @@
                 self.model.table.fieldPolicies = self.editModel.fieldPolicies;
                 self.model.table.targetMergeStrategy = self.editModel.table.targetMergeStrategy;
                 self.model.table.options = self.editModel.table.options;
-                self.model.securityGroups = self.editModel.securityGroups;
                 populateFieldNameMap();
             }, function (response) {
                 FeedService.hideFeedSavingDialog();

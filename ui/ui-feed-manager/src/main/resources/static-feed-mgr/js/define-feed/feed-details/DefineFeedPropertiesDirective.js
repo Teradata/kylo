@@ -21,7 +21,7 @@
         };
     };
 
-    var DefineFeedPropertiesDirective = function($scope, $http, $mdToast, RestUrlService, FeedTagService, FeedService) {
+    var DefineFeedPropertiesDirective = function($scope, $http, $mdToast, RestUrlService, FeedTagService, FeedService, FeedSecurityGroups) {
         var self = this;
 
         self.stepNumber = parseInt(this.stepIndex) + 1;
@@ -31,6 +31,7 @@
         self.tagChips.selectedItem = null;
         self.tagChips.searchText = null;
         self.isValid = true;
+        self.feedSecurityGroups = FeedSecurityGroups;
 
         // Update user fields when category changes
         $scope.$watch(
@@ -81,6 +82,17 @@
                 self.model.userProperties.push({locked: false, systemName: key, value: value});
             });
         }
+
+        self.securityGroupChips = {};
+        self.securityGroupChips.selectedItem = null;
+        self.securityGroupChips.searchText = null;
+        self.securityGroupsEnabled = false;
+
+        FeedSecurityGroups.isEnabled().then(function(isValid) {
+                self.securityGroupsEnabled = isValid;
+            }
+
+        );
     };
 
     angular.module(MODULE_FEED_MGR).controller('DefineFeedPropertiesController', DefineFeedPropertiesDirective);

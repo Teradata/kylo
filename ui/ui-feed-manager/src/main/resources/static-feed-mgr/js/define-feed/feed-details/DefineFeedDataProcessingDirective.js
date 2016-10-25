@@ -21,12 +21,11 @@
         };
     }
 
-    var controller = function ($scope, $http, $mdDialog, RestUrlService, FeedService, FeedSecurityGroups, BroadcastService, StepperService) {
+    var controller = function ($scope, $http, $mdDialog, RestUrlService, FeedService, BroadcastService, StepperService) {
         this.isValid = true;
 
         var self = this;
         this.model = FeedService.createFeedModel;
-        this.feedSecurityGroups = FeedSecurityGroups;
         this.stepNumber = parseInt(this.stepIndex)+1
 
         /**
@@ -52,17 +51,6 @@
         this.allCompressionOptions = FeedService.compressionOptions;
 
         this.targetFormatOptions = FeedService.targetFormatOptions;
-
-        self.securityGroupChips = {};
-        self.securityGroupChips.selectedItem = null;
-        self.securityGroupChips.searchText = null;
-        self.securityGroupsEnabled = false;
-
-        FeedSecurityGroups.isEnabled().then(function(isValid) {
-                self.securityGroupsEnabled = isValid;
-            }
-
-        );
 
         this.transformChip = function(chip) {
             // If it is an object, it's already a known chip
