@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.nifi.v2.core.watermark;
 
@@ -22,7 +22,7 @@ import com.thinkbiganalytics.nifi.v2.common.CommonProperties;
 
 /**
  * Releases the high-water mark (commits or rolls back).
- * 
+ *
  * @author Sean Felten
  */
 @EventDriven
@@ -31,11 +31,11 @@ import com.thinkbiganalytics.nifi.v2.common.CommonProperties;
 @CapabilityDescription("Releases the watermark claim associated with a feed.")
 public class ReleaseHighWaterMark extends HighWaterMarkProcessor {
 
-    protected static final AllowableValue[] MODE_VALUES = new AllowableValue[] { 
+    protected static final AllowableValue[] MODE_VALUES = new AllowableValue[] {
                              new AllowableValue("COMMIT", "Commit", "Commits the updates to the high-water mark(s)"),
                              new AllowableValue("REJECT", "Reject", "Rejects any updates to the high-water mark(s)")
                           };
-    
+
     protected static final PropertyDescriptor MODE = new PropertyDescriptor.Builder()
                     .name("Mode")
                     .description("Indicates whether this processor should commit or reject high-water mark updates")
@@ -43,7 +43,7 @@ public class ReleaseHighWaterMark extends HighWaterMarkProcessor {
                     .defaultValue("COMMIT")
                     .required(true)
                     .build();
-    
+
     protected static final PropertyDescriptor RELEASE_ALL = new PropertyDescriptor.Builder()
                     .name("Release All")
                     .description("If true, commits or rolls back all pending high-water marks.  "
@@ -60,17 +60,17 @@ public class ReleaseHighWaterMark extends HighWaterMarkProcessor {
     public void onTrigger(ProcessContext context, ProcessSession session) throws ProcessException {
         MetadataRecorder recorder = context.getProperty(CommonProperties.METADATA_SERVICE).asControllerService(MetadataProviderService.class).getRecorder();
         FlowFile ff = session.get();
-        
+
         if (ff != null) {
             try {
                 ff = initialize(context, session, ff);
             } catch (Exception e) {
-                getLogger().error("Failure during initialization", e);
+                getLog().error("Failure during initialization", e);
                 session.transfer(ff, CommonProperties.REL_FAILURE);
             }
-            
+
             String mode = context.getProperty(MODE).toString();
-            
+
             try {
                 if (context.getProperty(RELEASE_ALL).asBoolean()) {
                     if (mode.equals("COMMIT")) {
@@ -80,21 +80,21 @@ public class ReleaseHighWaterMark extends HighWaterMarkProcessor {
                     }
                 } else {
                     String waterMarkName = context.getProperty(HIGH_WATER_MARK).evaluateAttributeExpressions(ff).toString();
-                    
+
                     if (mode.equals("COMMIT")) {
                         ff = recorder.commitWaterMark(session, ff, getFeedId(context, ff), waterMarkName);
                     } else {
                         ff = recorder.releaseWaterMark(session, ff, getFeedId(context, ff), waterMarkName);
                     }
                 }
-                
+
                 session.transfer(ff, CommonProperties.REL_SUCCESS);
             } catch (Exception e) {
-                getLogger().warn("Failure during release of high-water mark(s)", e);
+                getLog().warn("Failure during release of high-water mark(s)", e);
                 session.transfer(ff, CommonProperties.REL_FAILURE);
             }
         }
-        
+
     }
 
     /* (non-Javadoc)

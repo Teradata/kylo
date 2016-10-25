@@ -7,6 +7,7 @@ package com.thinkbiganalytics.nifi.v2.init;
 
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder;
+import com.thinkbiganalytics.nifi.processor.AbstractNiFiProcessor;
 
 import org.apache.nifi.annotation.behavior.EventDriven;
 import org.apache.nifi.annotation.behavior.InputRequirement;
@@ -37,7 +38,7 @@ import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.REL_SUCCESS;
 @Tags({"thinkbig", "registration", "route"})
 @CapabilityDescription("Routes depending on whether a registration is required.  Registration is typically one-time setup such as creating permanent tables.")
 
-public class RouteOnRegistration extends AbstractProcessor {
+public class RouteOnRegistration extends AbstractNiFiProcessor {
 
     private final Set<Relationship> relationships;
 
@@ -97,7 +98,7 @@ public class RouteOnRegistration extends AbstractProcessor {
             }
 
         } catch (final Exception e) {
-            getLogger().warn("Routing to registration required. Unable to determine registration status. Failed to route on registration due to {}", new Object[]{flowFile, e});
+            getLog().warn("Routing to registration required. Unable to determine registration status. Failed to route on registration due to {}", new Object[]{flowFile, e});
         }
         session.transfer(flowFile, REL_REGISTRATION_REQ);
     }

@@ -3,6 +3,7 @@ package com.thinkbiganalytics.nifi.v2.thrift;
  * Copyright (c) 2015. Teradata Inc.
  */
 
+import com.thinkbiganalytics.nifi.processor.AbstractNiFiProcessor;
 import com.thinkbiganalytics.util.JdbcCommon;
 import com.thinkbiganalytics.util.ResultSetAdapter;
 
@@ -64,7 +65,7 @@ import java.util.concurrent.atomic.AtomicLong;
                        "select query. " +
                        "FlowFile attribute 'executesql.row.count' indicates how many rows were selected."
 )
-public class ExecuteHQL extends AbstractProcessor {
+public class ExecuteHQL extends AbstractNiFiProcessor {
 
     public static final String RESULT_ROW_COUNT = "executesql.row.count";
 
@@ -130,7 +131,7 @@ public class ExecuteHQL extends AbstractProcessor {
     }
 
     private void setQueryTimeout(Statement st, int queryTimeout) {
-        final ComponentLog logger = getLogger();
+        final ComponentLog logger = getLog();
         try {
             st.setQueryTimeout(queryTimeout); // timeout in seconds
         } catch (SQLException e) {
@@ -140,7 +141,7 @@ public class ExecuteHQL extends AbstractProcessor {
 
     @Override
     public void onTrigger(final ProcessContext context, final ProcessSession session) throws ProcessException {
-        final ComponentLog logger = getLogger();
+        final ComponentLog logger = getLog();
         FlowFile flowFile = null;
 
         try {

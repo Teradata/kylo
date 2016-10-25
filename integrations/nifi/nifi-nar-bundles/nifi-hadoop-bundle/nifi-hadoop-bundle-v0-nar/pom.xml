@@ -22,6 +22,12 @@
     <dependencies>
 
         <dependency>
+            <groupId>com.thinkbiganalytics.datalake</groupId>
+            <artifactId>thinkbig-nifi-framework-v0</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.thinkbiganalytics.nifi.hadoop</groupId>
             <artifactId>thinkbig-nifi-hadoop-processors</artifactId>
             <version>${project.version}</version>

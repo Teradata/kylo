@@ -3,6 +3,8 @@
  */
 package com.thinkbiganalytics.nifi.v2.common;
 
+import com.thinkbiganalytics.nifi.processor.AbstractNiFiProcessor;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -17,7 +19,7 @@ import org.apache.nifi.processor.Relationship;
 /**
  * @author Sean Felten
  */
-public abstract class BaseProcessor extends AbstractProcessor {
+public abstract class BaseProcessor extends AbstractNiFiProcessor {
 
     private Set<Relationship> relationships;
     private List<PropertyDescriptor> properties;
@@ -27,6 +29,8 @@ public abstract class BaseProcessor extends AbstractProcessor {
      */
     @Override
     protected void init(final ProcessorInitializationContext context) {
+        super.init(context);
+
         final Set<Relationship> relationships = new HashSet<>();
         addRelationships(relationships);
         this.relationships = Collections.unmodifiableSet(relationships);
@@ -55,7 +59,7 @@ public abstract class BaseProcessor extends AbstractProcessor {
     /**
      * Convenience method for collecting the properties that the processor will support.
      * Subclasses should call super.addProperties(list) before adding additional properties.
-     * 
+     *
      * @param props the list to which is added this processor's properties
      */
     protected void addProperties(List<PropertyDescriptor> list) {
@@ -64,7 +68,7 @@ public abstract class BaseProcessor extends AbstractProcessor {
     /**
      * Convenience method for collecting the relationships that the processor will support.
      * Subclasses should call super.addRelationship(set) before adding additional relationships.
-     * 
+     *
      * @param props the set to which is added this processor's relationships
      */
     protected void addRelationships(Set<Relationship> set) {

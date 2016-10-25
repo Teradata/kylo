@@ -5,6 +5,7 @@ package com.thinkbiganalytics.nifi.v2.ingest;
 
 
 import com.thinkbiganalytics.ingest.TableRegisterSupport;
+import com.thinkbiganalytics.nifi.processor.AbstractNiFiProcessor;
 import com.thinkbiganalytics.nifi.v2.thrift.ThriftService;
 import com.thinkbiganalytics.util.ColumnSpec;
 import com.thinkbiganalytics.util.TableRegisterConfiguration;
@@ -49,7 +50,7 @@ import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.THRIFT_SERVI
 @InputRequirement(InputRequirement.Requirement.INPUT_REQUIRED)
 @Tags({"hive", "ddl", "register", "thinkbig"})
 @CapabilityDescription("Creates a set of standard feed tables managed by the Think Big platform. ")
-public class RegisterFeedTables extends AbstractProcessor {
+public class RegisterFeedTables extends AbstractNiFiProcessor {
 
     private static String DEFAULT_STORAGE_FORMAT = "STORED AS ORC";
 
@@ -164,21 +165,21 @@ public class RegisterFeedTables extends AbstractProcessor {
             .map(ColumnSpec::createFromString)
             .orElse(new ColumnSpec[0]);
         if (columnSpecs == null || columnSpecs.length == 0) {
-            getLogger().error("Missing field specification");
+            getLog().error("Missing field specification");
             session.transfer(flowFile, IngestProperties.REL_FAILURE);
             return;
         }
 
         final String entity = context.getProperty(IngestProperties.FEED_NAME).evaluateAttributeExpressions(flowFile).getValue();
         if (entity == null || entity.isEmpty()) {
-            getLogger().error("Missing feed name");
+            getLog().error("Missing feed name");
             session.transfer(flowFile, IngestProperties.REL_FAILURE);
             return;
         }
 
         final String source = context.getProperty(IngestProperties.FEED_CATEGORY).evaluateAttributeExpressions(flowFile).getValue();
         if (source == null || source.isEmpty()) {
-            getLogger().error("Missing category name");
+            getLog().error("Missing category name");
             session.transfer(flowFile, IngestProperties.REL_FAILURE);
             return;
         }
@@ -205,7 +206,7 @@ public class RegisterFeedTables extends AbstractProcessor {
             final Relationship relnResult = (result ? REL_SUCCESS : REL_FAILURE);
             session.transfer(flowFile, relnResult);
         } catch (final ProcessException | SQLException e) {
-            getLogger().error("Unable to obtain connection for {} due to {}; routing to failure", new Object[]{flowFile, e});
+            getLog().error("Unable to obtain connection for {} due to {}; routing to failure", new Object[]{flowFile, e});
             session.transfer(flowFile, REL_FAILURE);
         }
     }

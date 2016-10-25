@@ -4,6 +4,7 @@ package com.thinkbiganalytics.nifi.v2.sqoop.core;
  * @author jagrut sharma
  */
 
+import com.thinkbiganalytics.nifi.processor.AbstractNiFiProcessor;
 import com.thinkbiganalytics.nifi.security.KerberosProperties;
 import com.thinkbiganalytics.nifi.security.SpringSecurityContextLoader;
 import com.thinkbiganalytics.nifi.v2.sqoop.SqoopConnectionService;
@@ -55,7 +56,7 @@ import java.util.concurrent.TimeUnit;
 /*
  * A processor to run a Sqoop import job to fetch data from a relational system into HDFS
  */
-public class ImportSqoop extends AbstractProcessor {
+public class ImportSqoop extends AbstractNiFiProcessor {
 
     public static final PropertyDescriptor FEED_CATEGORY = new PropertyDescriptor.Builder()
         .name("System Feed Category")
@@ -252,6 +253,8 @@ public class ImportSqoop extends AbstractProcessor {
 
     @Override
     protected void init(final ProcessorInitializationContext context) {
+        super.init(context);
+
         // Create Kerberos properties
         final SpringSecurityContextLoader securityContextLoader = SpringSecurityContextLoader.create(context);
         final KerberosProperties kerberosProperties = securityContextLoader.getKerberosProperties();
@@ -302,7 +305,7 @@ public class ImportSqoop extends AbstractProcessor {
 
     @Override
     public void onTrigger(ProcessContext context, ProcessSession session) throws ProcessException {
-        final ComponentLog logger = getLogger();
+        final ComponentLog logger = getLog();
         FlowFile flowFile = session.get();
 
         if (flowFile == null) {
@@ -464,7 +467,7 @@ public class ImportSqoop extends AbstractProcessor {
         String[] logLines = sqoopProcessResult.getLogLines();
 
         if ((sqoopProcessResult.getExitValue() != 0) || (logLines[0] == null)) {
-            getLogger().error("Skipping attempt to retrieve number of records extracted");
+            getLog().error("Skipping attempt to retrieve number of records extracted");
             return -1;
         }
 
@@ -482,7 +485,7 @@ public class ImportSqoop extends AbstractProcessor {
             return Integer.valueOf(numberString);
         }
         catch (Exception e) {
-            getLogger().error("Unable to parse number of records extracted. " + e.getMessage());
+            getLog().error("Unable to parse number of records extracted. " + e.getMessage());
             return -1;
         }
     }

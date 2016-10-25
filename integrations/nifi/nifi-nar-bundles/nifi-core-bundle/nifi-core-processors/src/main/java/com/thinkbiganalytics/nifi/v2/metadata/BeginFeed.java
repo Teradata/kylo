@@ -130,7 +130,7 @@ public class BeginFeed extends AbstractFeedProcessor {
         Datasource datasource = getSourceDatasource(context, datasourceName);
 
         if (datasource != null) {
-            getLogger().debug("ensuring feed source - feed: {} datasource: {}", new Object[]{feed.getId(), datasource.getId()});
+            getLog().debug("ensuring feed source - feed: {} datasource: {}", new Object[]{feed.getId(), datasource.getId()});
             provider.ensureFeedSource(feed.getId(), datasource.getId());
 //            this.sourceDatasources.add(datasource);
         } else {
@@ -202,7 +202,7 @@ public class BeginFeed extends AbstractFeedProcessor {
 
         // If no precondition exits yet install one that depends on the datasources.
         if (feed.getPrecondition() == null) {
-            getLogger().debug("Setting default feed preconditions for: " + dsNames);
+            getLog().debug("Setting default feed preconditions for: " + dsNames);
 
             Metric[] metrics = new Metric[dsNames.length];
 
@@ -223,14 +223,14 @@ public class BeginFeed extends AbstractFeedProcessor {
             PreconditionListener listener = new PreconditionListener() {
                 @Override
                 public void triggered(FeedPreconditionTriggerEvent event) {
-                    getLogger().debug("Precondition event triggered: ", new Object[]{ event });
-                    
+                    getLog().debug("Precondition event triggered: ", new Object[]{ event });
+
                     BeginFeed.this.pendingChanges.add(event);
                 }
             };
 
             for (String dsName : dsNames) {
-                getLogger().debug("Adding precondition listener for datasoure name: " + dsName);
+                getLog().debug("Adding precondition listener for datasoure name: " + dsName);
                 precondService.addListener("", dsName, listener);
             }
 

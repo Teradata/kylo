@@ -4,6 +4,8 @@
 package com.thinkbiganalytics.nifi.v2.thrift;
 
 
+import com.thinkbiganalytics.nifi.processor.AbstractNiFiProcessor;
+
 import org.apache.nifi.annotation.behavior.EventDriven;
 import org.apache.nifi.annotation.behavior.InputRequirement;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
@@ -34,7 +36,7 @@ import java.util.concurrent.TimeUnit;
 @Tags({"hive", "ddl", "dml", "jdbc", "thinkbig"})
 @CapabilityDescription("Execute provided HIVE or Spark statement. This can be any HQL DML or DDL statement that results in no results."
 )
-public class ExecuteHQLStatement extends AbstractProcessor {
+public class ExecuteHQLStatement extends AbstractNiFiProcessor {
 
     // Relationships
     public static final Relationship REL_SUCCESS = new Relationship.Builder()
@@ -88,7 +90,7 @@ public class ExecuteHQLStatement extends AbstractProcessor {
 
     @Override
     public void onTrigger(final ProcessContext context, final ProcessSession session) throws ProcessException {
-        final ComponentLog logger = getLogger();
+        final ComponentLog logger = getLog();
         FlowFile flowFile = session.get();
         if (flowFile == null) {
             return;

@@ -4,6 +4,7 @@
 
 package com.thinkbiganalytics.nifi.v2.spark;
 
+import com.thinkbiganalytics.nifi.processor.AbstractNiFiProcessor;
 import com.thinkbiganalytics.nifi.security.ApplySecurityPolicy;
 import com.thinkbiganalytics.nifi.security.KerberosProperties;
 import com.thinkbiganalytics.nifi.security.SecurityUtil;
@@ -48,7 +49,7 @@ import javax.annotation.Nonnull;
 @Tags({"spark", "thinkbig"})
 @CapabilityDescription("Execute a Spark job. "
 )
-public class ExecuteSparkJob extends AbstractProcessor {
+public class ExecuteSparkJob extends AbstractNiFiProcessor {
 
     public static final String SPARK_NETWORK_TIMEOUT_CONFIG_NAME = "spark.network.timeout";
     public static final String SPARK_YARN_KEYTAB = "spark.yarn.keytab";
@@ -208,6 +209,8 @@ public class ExecuteSparkJob extends AbstractProcessor {
 
     @Override
     protected void init(@Nonnull final ProcessorInitializationContext context) {
+        super.init(context);
+
         // Create Kerberos properties
         final SpringSecurityContextLoader securityContextLoader = SpringSecurityContextLoader.create(context);
         final KerberosProperties kerberosProperties = securityContextLoader.getKerberosProperties();
@@ -248,7 +251,7 @@ public class ExecuteSparkJob extends AbstractProcessor {
 
     @Override
     public void onTrigger(final ProcessContext context, final ProcessSession session) throws ProcessException {
-        final ComponentLog logger = getLogger();
+        final ComponentLog logger = getLog();
         FlowFile flowFile = session.get();
         if (flowFile == null) {
             return;
@@ -279,7 +282,7 @@ public class ExecuteSparkJob extends AbstractProcessor {
             if (!StringUtils.isEmpty(extraJars)) {
                 extraJarPaths = extraJars.split(",");
             } else {
-                getLogger().info("No extra jars to be added to class path");
+                getLog().info("No extra jars to be added to class path");
             }
 
             // If all 3 fields are filled out then assume kerberos is enabled and we want to authenticate the user
@@ -292,39 +295,39 @@ public class ExecuteSparkJob extends AbstractProcessor {
                 ApplySecurityPolicy applySecurityObject = new ApplySecurityPolicy();
                 Configuration configuration;
                 try {
-                    getLogger().info("Getting Hadoop configuration from " + hadoopConfigurationResources);
+                    getLog().info("Getting Hadoop configuration from " + hadoopConfigurationResources);
                     configuration = ApplySecurityPolicy.getConfigurationFromResources(hadoopConfigurationResources);
 
                     if (SecurityUtil.isSecurityEnabled(configuration)) {
-                        getLogger().info("Security is enabled");
+                        getLog().info("Security is enabled");
 
                         if (principal.equals("") && keyTab.equals("")) {
-                            getLogger().error("Kerberos Principal and Kerberos KeyTab information missing in Kerboeros enabled cluster.");
+                            getLog().error("Kerberos Principal and Kerberos KeyTab information missing in Kerboeros enabled cluster.");
                             session.transfer(flowFile, REL_FAILURE);
                             return;
                         }
 
                         try {
-                            getLogger().info("User authentication initiated");
+                            getLog().info("User authentication initiated");
 
                             boolean authenticationStatus = applySecurityObject.validateUserWithKerberos(logger, hadoopConfigurationResources, principal, keyTab);
                             if (authenticationStatus) {
-                                getLogger().info("User authenticated successfully.");
+                                getLog().info("User authenticated successfully.");
                             } else {
-                                getLogger().info("User authentication failed.");
+                                getLog().info("User authentication failed.");
                                 session.transfer(flowFile, REL_FAILURE);
                                 return;
                             }
 
                         } catch (Exception unknownException) {
-                            getLogger().error("Unknown exception occured while validating user :" + unknownException.getMessage());
+                            getLog().error("Unknown exception occured while validating user :" + unknownException.getMessage());
                             session.transfer(flowFile, REL_FAILURE);
                             return;
                         }
 
                     }
                 } catch (IOException e1) {
-                    getLogger().error("Unknown exception occurred while authenticating user :" + e1.getMessage());
+                    getLog().error("Unknown exception occurred while authenticating user :" + e1.getMessage());
                     session.transfer(flowFile, REL_FAILURE);
                     return;
                 }
@@ -354,7 +357,7 @@ public class ExecuteSparkJob extends AbstractProcessor {
             }
             if (ArrayUtils.isNotEmpty(extraJarPaths)) {
                 for (String path : extraJarPaths) {
-                    getLogger().info("Adding to class path '" + path + "'");
+                    getLog().info("Adding to class path '" + path + "'");
                     launcher.addJar(path);
                 }
             }

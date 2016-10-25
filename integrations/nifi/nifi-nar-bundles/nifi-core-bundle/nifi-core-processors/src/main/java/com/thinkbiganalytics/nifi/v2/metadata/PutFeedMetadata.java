@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProvider;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
+import com.thinkbiganalytics.nifi.processor.AbstractNiFiProcessor;
 
 import org.apache.nifi.annotation.behavior.DynamicProperty;
 import org.apache.nifi.annotation.behavior.EventDriven;
@@ -42,7 +43,7 @@ import javax.annotation.Nonnull;
 @Tags({"feed", "metadata", "thinkbig"})
 @DynamicProperty(name = "A feed attribute to add", value = "The value to set it to", supportsExpressionLanguage = true,
                  description = "Updates a feed attribute specified by the Dynamic Property's key with the value specified by the Dynamic Property's value")
-public class PutFeedMetadata extends AbstractProcessor {
+public class PutFeedMetadata extends AbstractNiFiProcessor {
 
     private static final String METADATA_FIELD_PREFIX = "nifi";
     private static final Pattern DYNAMIC_ATTRIBUTE_NAME_REGEX = Pattern.compile("^[a-zA-Z0-9][a-zA-Z0-9:_]+");
@@ -137,7 +138,7 @@ public class PutFeedMetadata extends AbstractProcessor {
 
     @Override
     public void onTrigger(final ProcessContext context, final ProcessSession session) {
-        final ComponentLog logger = getLogger();
+        final ComponentLog logger = getLog();
         FlowFile flowFile = null;
 
         try {
@@ -159,7 +160,7 @@ public class PutFeedMetadata extends AbstractProcessor {
             String feed = context.getProperty(FEED_NAME).evaluateAttributeExpressions(flowFile).getValue();
             String namespace = context.getProperty(NAMESPACE).evaluateAttributeExpressions(flowFile).getValue();
 
-            getLogger().debug("The category is: " + category + " and feed is " + feed);
+            getLog().debug("The category is: " + category + " and feed is " + feed);
 
             MetadataProvider metadataProvider = getMetadataService(context).getProvider();
 

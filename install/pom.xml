@@ -343,15 +343,27 @@
                   </includes>
                 </source>
                 <source>
-                  <location>../integrations/nifi/nifi-nar-bundles/nifi-core-bundle/nifi-core-nar/target</location>
+                  <location>../integrations/nifi/nifi-nar-bundles/nifi-core-bundle/nifi-core-v0-nar/target</location>
                   <includes>
-                    <include>thinkbig-nifi-core-nar-${project.version}.nar</include>
+                    <include>thinkbig-nifi-core-v0-nar-${project.version}.nar</include>
                   </includes>
                 </source>
                 <source>
-                  <location>../integrations/nifi/nifi-nar-bundles/nifi-elasticsearch-bundle/nifi-elasticsearch-nar/target</location>
+                  <location>../integrations/nifi/nifi-nar-bundles/nifi-core-bundle/nifi-core-v1-nar/target</location>
                   <includes>
-                    <include>thinkbig-nifi-elasticsearch-nar-${project.version}.nar</include>
+                    <include>thinkbig-nifi-core-v1-nar-${project.version}.nar</include>
+                  </includes>
+                </source>
+                <source>
+                  <location>../integrations/nifi/nifi-nar-bundles/nifi-elasticsearch-bundle/nifi-elasticsearch-v0-nar/target</location>
+                  <includes>
+                    <include>thinkbig-nifi-elasticsearch-v0-nar-${project.version}.nar</include>
+                  </includes>
+                </source>
+                <source>
+                  <location>../integrations/nifi/nifi-nar-bundles/nifi-elasticsearch-bundle/nifi-elasticsearch-v1-nar/target</location>
+                  <includes>
+                    <include>thinkbig-nifi-elasticsearch-v1-nar-${project.version}.nar</include>
                   </includes>
                 </source>
                 <source>

@@ -17,6 +17,7 @@
 package com.thinkbiganalytics.nifi.v2.hdfs;
 
 
+import com.thinkbiganalytics.nifi.processor.AbstractNiFiProcessor;
 import com.thinkbiganalytics.nifi.security.KerberosProperties;
 import com.thinkbiganalytics.nifi.security.SpringSecurityContextLoader;
 
@@ -32,7 +33,6 @@ import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.components.ValidationContext;
 import org.apache.nifi.components.ValidationResult;
 import org.apache.nifi.components.Validator;
-import org.apache.nifi.processor.AbstractProcessor;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessorInitializationContext;
 import org.apache.nifi.processor.exception.ProcessException;
@@ -49,12 +49,13 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+import javax.annotation.Nonnull;
 import javax.net.SocketFactory;
 
 /**
  * This is a base class that is helpful when building processors interacting with HDFS.
  */
-public abstract class AbstractHadoopProcessor extends AbstractProcessor {
+public abstract class AbstractHadoopProcessor extends AbstractNiFiProcessor {
 
     // properties
     public static final PropertyDescriptor HADOOP_CONFIGURATION_RESOURCES = new PropertyDescriptor.Builder().name("Hadoop Configuration Resources")
@@ -83,7 +84,8 @@ public abstract class AbstractHadoopProcessor extends AbstractProcessor {
     private final AtomicReference<HdfsResources> hdfsResources = new AtomicReference<>();
 
     @Override
-    protected void init(ProcessorInitializationContext context) {
+    protected void init(@Nonnull final ProcessorInitializationContext context) {
+        super.init(context);
         hdfsResources.set(new HdfsResources(null, null, null));
 
         // Create Kerberos properties
@@ -126,7 +128,7 @@ public abstract class AbstractHadoopProcessor extends AbstractProcessor {
                 hdfsResources.set(resources);
             }
         } catch (IOException ex) {
-            getLogger().error("HDFS Configuration error - {}", new Object[]{ex});
+            getLog().error("HDFS Configuration error - {}", new Object[]{ex});
             hdfsResources.set(new HdfsResources(null, null, null));
             throw ex;
         }
@@ -204,7 +206,7 @@ public abstract class AbstractHadoopProcessor extends AbstractProcessor {
                 }
             }
             config.set(disableCacheName, "true");
-            getLogger().info("Initialized a new HDFS File System with working dir: {} default block size: {} default replication: {} config: {}",
+            getLog().info("Initialized a new HDFS File System with working dir: {} default block size: {} default replication: {} config: {}",
                     new Object[]{fs.getWorkingDirectory(), fs.getDefaultBlockSize(new Path(dir)), fs.getDefaultReplication(new Path(dir)), config.toString()});
             return new HdfsResources(config, fs, ugi);
 
@@ -300,16 +302,16 @@ public abstract class AbstractHadoopProcessor extends AbstractProcessor {
 
     protected void tryKerberosRelogin(UserGroupInformation ugi) {
         try {
-            getLogger().info("Kerberos ticket age exceeds threshold [{} seconds] " +
+            getLog().info("Kerberos ticket age exceeds threshold [{} seconds] " +
                     "attempting to renew ticket for user {}", new Object[]{
                     kerberosReloginThreshold, ugi.getUserName()});
             ugi.checkTGTAndReloginFromKeytab();
             lastKerberosReloginTime = System.currentTimeMillis() / 1000;
-            getLogger().info("Kerberos relogin successful or ticket still valid");
+            getLog().info("Kerberos relogin successful or ticket still valid");
         } catch (IOException e) {
             // Most likely case of this happening is ticket is expired and error getting a new one,
             // meaning dfs operations would fail
-            getLogger().error("Kerberos relogin failed", e);
+            getLog().error("Kerberos relogin failed", e);
             throw new ProcessException("Unable to renew kerberos ticket", e);
         }
     }

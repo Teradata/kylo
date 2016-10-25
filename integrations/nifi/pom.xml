@@ -15,6 +15,7 @@
         <module>nifi-nar-bundles</module>
         <module>nifi-jms</module>
         <module>nifi-security</module>
+        <module>nifi-framework</module>
     </modules>
 
     <build>

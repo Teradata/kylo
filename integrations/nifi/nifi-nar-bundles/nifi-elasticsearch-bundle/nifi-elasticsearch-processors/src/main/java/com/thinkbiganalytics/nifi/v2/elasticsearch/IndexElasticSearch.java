@@ -4,6 +4,8 @@
 
 package com.thinkbiganalytics.nifi.v2.elasticsearch;
 
+import com.thinkbiganalytics.nifi.processor.AbstractNiFiProcessor;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.nifi.annotation.behavior.InputRequirement;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
@@ -44,7 +46,7 @@ import java.util.UUID;
 @InputRequirement(InputRequirement.Requirement.INPUT_REQUIRED)
 @Tags({"elasticsearch", "thinkbig"})
 @CapabilityDescription("Write FlowFile from a JSON array to Elasticsearch (V2)")
-public class IndexElasticSearch extends AbstractProcessor {
+public class IndexElasticSearch extends AbstractNiFiProcessor {
 
     // relationships
     public static final Relationship REL_SUCCESS = new Relationship.Builder()
@@ -125,7 +127,7 @@ public class IndexElasticSearch extends AbstractProcessor {
 
     @Override
     public void onTrigger(final ProcessContext context, final ProcessSession session) throws ProcessException {
-        final ComponentLog logger = getLogger();
+        final ComponentLog logger = getLog();
         FlowFile flowFile = session.get();
         if (flowFile == null) return;
         try {
@@ -166,7 +168,7 @@ public class IndexElasticSearch extends AbstractProcessor {
     }
 
     private boolean sendToElasticSearch(String json, String hostName, String index, String type, String clusterName, String idField) throws Exception {
-        final ComponentLog logger = getLogger();
+        final ComponentLog logger = getLog();
         Settings settings = Settings.settingsBuilder()
                 .put("cluster.name", clusterName).build();
         Client client = TransportClient.builder().settings(settings).build()

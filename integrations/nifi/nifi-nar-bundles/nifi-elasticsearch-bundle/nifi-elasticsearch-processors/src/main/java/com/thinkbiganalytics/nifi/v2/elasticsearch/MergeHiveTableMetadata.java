@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
+import com.thinkbiganalytics.nifi.processor.AbstractNiFiProcessor;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.nifi.annotation.behavior.InputRequirement;
@@ -41,7 +42,7 @@ import java.util.Set;
 @InputRequirement(InputRequirement.Requirement.INPUT_REQUIRED)
 @Tags({"hive", "metadata", "thinkbig", "elasticsearch"})
 @CapabilityDescription("Aggregate JSON across multiple documents into one document representing a Hive table (V2)")
-public class MergeHiveTableMetadata extends AbstractProcessor {
+public class MergeHiveTableMetadata extends AbstractNiFiProcessor {
 
     // relationships
     public static final Relationship REL_SUCCESS = new Relationship.Builder()
@@ -138,7 +139,7 @@ public class MergeHiveTableMetadata extends AbstractProcessor {
 
     @Override
     public void onTrigger(final ProcessContext context, final ProcessSession session) throws ProcessException {
-        final ComponentLog logger = getLogger();
+        final ComponentLog logger = getLog();
 
         FlowFile flowFile = session.get();
         if (flowFile == null) {

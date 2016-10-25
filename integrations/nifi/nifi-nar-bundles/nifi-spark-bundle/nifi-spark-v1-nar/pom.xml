@@ -17,6 +17,11 @@
     <packaging>nar</packaging>
     <dependencies>
         <dependency>
+            <groupId>com.thinkbiganalytics.datalake</groupId>
+            <artifactId>thinkbig-nifi-framework-v1</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.thinkbiganalytics.nifi.spark</groupId>
             <artifactId>thinkbig-nifi-spark-processors</artifactId>
             <version>${project.version}</version>

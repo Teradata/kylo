@@ -6,6 +6,7 @@ package com.thinkbiganalytics.nifi.v2.ingest;
 
 
 import com.thinkbiganalytics.ingest.StripHeaderSupport;
+import com.thinkbiganalytics.nifi.processor.AbstractNiFiProcessor;
 
 import org.apache.commons.lang3.mutable.MutableLong;
 import org.apache.nifi.annotation.behavior.EventDriven;
@@ -35,7 +36,7 @@ import java.util.Set;
 @Tags({"header", "text"})
 @InputRequirement(Requirement.INPUT_REQUIRED)
 @CapabilityDescription("Splits a text file(s) content from its header. The content of the header is passed through a separate relationship for validation")
-public class StripHeader extends AbstractProcessor {
+public class StripHeader extends AbstractNiFiProcessor {
 
     public static final PropertyDescriptor ENABLED = new PropertyDescriptor.Builder()
         .name("Enable processing")
@@ -77,6 +78,8 @@ public class StripHeader extends AbstractProcessor {
 
     @Override
     protected void init(final ProcessorInitializationContext context) {
+        super.init(context);
+
         final List<PropertyDescriptor> properties = new ArrayList<>();
         properties.add(ENABLED);
         properties.add(HEADER_LINE_COUNT);
@@ -129,11 +132,11 @@ public class StripHeader extends AbstractProcessor {
                 headerBoundaryInBytes.setValue(bytes);
 
                 if (bytes < 0) {
-                    getLogger().error("Unable to strip header {} expecting at least {} lines in file", new Object[]{flowFile, headerCount});
+                    getLog().error("Unable to strip header {} expecting at least {} lines in file", new Object[]{flowFile, headerCount});
                 }
 
             } catch (IOException e) {
-                getLogger().error("Unable to strip header {} due to {}; routing to failure", new Object[]{flowFile, e.getLocalizedMessage()}, e);
+                getLog().error("Unable to strip header {} due to {}; routing to failure", new Object[]{flowFile, e.getLocalizedMessage()}, e);
             }
 
         });

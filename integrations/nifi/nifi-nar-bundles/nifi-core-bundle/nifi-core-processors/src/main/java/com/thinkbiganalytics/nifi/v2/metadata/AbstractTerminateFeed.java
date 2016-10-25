@@ -68,7 +68,7 @@ public abstract class AbstractTerminateFeed extends AbstractFeedProcessor {
         return ensureDestinationDatasource(context);
 
 //        if (this.destinationDatasource.get() == null) {
-//            this.destinationDatasource.compareAndSet(null, ensureDestinationDatasource(context));    
+//            this.destinationDatasource.compareAndSet(null, ensureDestinationDatasource(context));
 //        }
     }
 
@@ -100,7 +100,7 @@ public abstract class AbstractTerminateFeed extends AbstractFeedProcessor {
 
                 DataOperation op = provider.beginOperation(destination, opStart);
                 op = completeOperation(context, flowFile, ds, op, getState(context, op));
-                
+
                 updateFeedState(context, flowFile);
 
                 flowFile = session.putAttribute(flowFile, OPERATON_STOP_PROP, Formatters.print(new DateTime()));
@@ -113,7 +113,7 @@ public abstract class AbstractTerminateFeed extends AbstractFeedProcessor {
         } catch (Exception e) {
             context.yield();
             session.rollback();
-            getLogger().error("Unexpected error processing feed completion", e);
+            getLog().error("Unexpected error processing feed completion", e);
             throw new ProcessException(e);
         }
     }
@@ -131,13 +131,13 @@ public abstract class AbstractTerminateFeed extends AbstractFeedProcessor {
     private Properties deriveFeedProperties(FlowFile flowFile) {
         Properties props = new Properties();
         Map<String, String> attrs = flowFile.getAttributes();
-        
+
         for (Entry<String, String> entry : attrs.entrySet()) {
             if (entry.getKey().startsWith(MetadataConstants.LAST_LOAD_TIME_PROP)) {
                 props.setProperty(entry.getKey(), entry.getValue());
             }
         }
-        
+
         return props;
     }
 
@@ -187,7 +187,7 @@ public abstract class AbstractTerminateFeed extends AbstractFeedProcessor {
         if (dataset != null) {
             return dataset;
         } else {
-            getLogger().info("No destinationDatasource exists with the givn name, creating: " + datasetName);
+            getLog().info("No destinationDatasource exists with the givn name, creating: " + datasetName);
 
             return createDestinationDatasource(context, datasetName, "");
         }

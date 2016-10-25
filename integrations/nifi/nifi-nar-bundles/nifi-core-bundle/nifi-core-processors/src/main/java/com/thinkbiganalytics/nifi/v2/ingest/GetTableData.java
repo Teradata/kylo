@@ -6,6 +6,7 @@ package com.thinkbiganalytics.nifi.v2.ingest;
 
 import com.thinkbiganalytics.ingest.GetTableDataSupport;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
+import com.thinkbiganalytics.nifi.processor.AbstractNiFiProcessor;
 import com.thinkbiganalytics.nifi.thrift.api.AbstractRowVisitor;
 import com.thinkbiganalytics.util.ComponentAttributes;
 import com.thinkbiganalytics.util.JdbcCommon;
@@ -64,7 +65,7 @@ import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.REL_SUCCESS;
     "Extracts data from a JDBC source table and can optional extract incremental data if provided criteria. Query result will be converted to CSV format. Streaming is used so arbitrarily large result sets are supported. This processor can be scheduled to run on a timer, or cron expression, using the standard scheduling methods, or it can be triggered by an incoming FlowFile. If it is triggered by an incoming FlowFile, then attributes of that FlowFile will be available when evaluating the select query. FlowFile attribute \'source.row.count\' indicates how many rows were selected.")
 
 // Implements strategies outlined by https://thebibackend.wordpress.com/2011/05/18/incremental-load-part-i-overview/
-public class GetTableData extends AbstractProcessor {
+public class GetTableData extends AbstractNiFiProcessor {
 
     public static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter.ISO_DATE_TIME;
     public static final String RESULT_ROW_COUNT = "source.row.count";
@@ -243,7 +244,7 @@ public class GetTableData extends AbstractProcessor {
         }
 
         final FlowFile incoming = flowFile;
-        final ComponentLog logger = getLogger();
+        final ComponentLog logger = getLog();
 
         final DBCPService dbcpService = context.getProperty(JDBC_SERVICE).asControllerService(DBCPService.class);
         final MetadataProviderService metadataService = context.getProperty(METADATA_SERVICE).asControllerService(MetadataProviderService.class);
@@ -300,7 +301,7 @@ public class GetTableData extends AbstractProcessor {
                                 }
                                 rs.close();
                             } catch (SQLException e) {
-                                getLogger().error("Error closing sql statement and resultset");
+                                getLog().error("Error closing sql statement and resultset");
                             }
                         }
                     }

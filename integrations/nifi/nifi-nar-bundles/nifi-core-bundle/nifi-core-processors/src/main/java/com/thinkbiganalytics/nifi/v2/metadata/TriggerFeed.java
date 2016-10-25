@@ -45,7 +45,7 @@ import com.thinkbiganalytics.util.ComponentAttributes;
 @Tags({"feed", "trigger", "thinkbig"})
 @CapabilityDescription("Triggers the execution of a feed whenever the conditions defined by its precondition have been met.  This process should be the first processor in a flow depends upon preconditions.")
 public class TriggerFeed extends AbstractFeedProcessor {
-    
+
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private Queue<FeedPreconditionTriggerEvent> triggerEventQueue = new LinkedBlockingQueue<>();
@@ -68,7 +68,7 @@ public class TriggerFeed extends AbstractFeedProcessor {
     @Override
     protected void init(ProcessorInitializationContext context) {
         super.init(context);
-        
+
         this.preconditionListener = createPreconditionListener();
     }
 
@@ -76,14 +76,14 @@ public class TriggerFeed extends AbstractFeedProcessor {
     public void scheduled(ProcessContext context) {
         String category = context.getProperty(CommonProperties.FEED_CATEGORY).getValue();
         String feedName = context.getProperty(CommonProperties.FEED_NAME).getValue();
-        
+
         try {
             this.feedId = getProviderService(context).getProvider().getFeedId(category, feedName);
         } catch (Exception e) {
-            getLogger().warn("Failure retrieving feed metadata" + category + "/" + feedName, e);
+            getLog().warn("Failure retrieving feed metadata" + category + "/" + feedName, e);
             // TODO Swallowing for now until metadata client is working again
         }
-        
+
         registerPreconditonListener(context, category, feedName);
     }
 
@@ -136,22 +136,22 @@ public class TriggerFeed extends AbstractFeedProcessor {
         }
     }
 
-    private FlowFile createFlowFile(ProcessContext context, 
+    private FlowFile createFlowFile(ProcessContext context,
                                     ProcessSession session,
                                     FeedPreconditionTriggerEvent event) {
         FlowFile file = session.create();
-        
+
         if (this.feedId != null) {
             Map<DateTime, Map<String, String>> props = getProviderService(context).getProvider().getFeedDependentResultDeltas(this.feedId);
             try {
                 String value = MAPPER.writeValueAsString(props);
                 file = session.putAttribute(file, ComponentAttributes.FEED_DEPENDENT_RESULT_DELTAS.name(), value);
             } catch (JsonProcessingException e) {
-                getLogger().warn("Failed to serialize feed dependency result deltas", e);
+                getLog().warn("Failed to serialize feed dependency result deltas", e);
                 // TODO Swallow the exception and produce the flow file anyway?
             }
         }
-        
+
         return file;
     }
 
@@ -165,8 +165,8 @@ public class TriggerFeed extends AbstractFeedProcessor {
         PreconditionListener listener = new PreconditionListener() {
             @Override
             public void triggered(FeedPreconditionTriggerEvent event) {
-                getLogger().debug("Precondition event triggered: {}", new Object[]{ event });
-                
+                getLog().debug("Precondition event triggered: {}", new Object[]{ event });
+
                 TriggerFeed.this.triggerEventQueue.add(event);
             }
         };
