@@ -25,12 +25,15 @@
     var controller = function ($scope, $http, $mdToast, RestUrlService, FeedTagService, FeedService, RegisterTemplateService, FeedInputProcessorOptionsFactory, BroadcastService, StepperService,
                                FeedDetailsProcessorRenderingHelper) {
 
-        function DefineFeedDetailsControllerTag() {
-        }
-
-        this.__tag = new DefineFeedDetailsControllerTag();
 
         var self = this;
+
+        /**
+         * The Angular Form for validation
+         * @type {{}}
+         */
+        this.feedDetailsForm = {};
+
         this.stepNumber = parseInt(this.stepIndex)+1
         this.model = FeedService.createFeedModel;
 

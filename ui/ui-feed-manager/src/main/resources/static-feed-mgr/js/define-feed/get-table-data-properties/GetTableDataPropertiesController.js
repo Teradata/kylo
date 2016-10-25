@@ -6,7 +6,8 @@
             restrict: "EA",
             bindToController: {
                 mode: '@',
-                processor: '='
+                processor: '=',
+                theForm: '='
             },
             controllerAs: 'ctl',
             scope: {},
@@ -106,6 +107,13 @@
 
         this.resetTableFields = function(){
             self.tableFields = angular.copy(self.originalTableFields);
+        }
+
+        this.onDbConnectionPropertyChanged = function (dbConnectionProperty) {
+            //clear out rest of the model
+            self.selectedTable = undefined;
+            self.model.table.sourceTableIncrementalDateField = null;
+
         }
 
         function findProperty(key, clone) {
@@ -209,10 +217,12 @@
             searchText:'',
             selectedTable:null,
             searchTextChange:function(text){
+                validate();
 
             },
             selectedItemChange : function(table){
             self.selectedTable = table;
+                validate();
             },
             querySearch:function(txt){
                 return queryTablesSearch(txt);
@@ -287,12 +297,29 @@
         }
 
         /**
+         * Validates the autocomplete has a selected table
+         */
+        function validate() {
+            if (self.theForm.tableAutocompleteInput) {
+
+                if (self.selectedTable == undefined) {
+                    self.theForm.tableAutocompleteInput.$setValidity("required", false);
+                }
+                else {
+                    self.theForm.tableAutocompleteInput.$setValidity("required", true);
+                }
+            }
+        }
+
+
+        /**
          * Watch for changes on the table to refresh the schema
          */
         $scope.$watch(function(){
             return self.selectedTable
         },function(newVal){
             var tableProperty = self.tableProperty
+            validate();
             if(tableProperty && newVal != undefined) {
                 tableProperty.value = newVal.fullName;
                 if (newVal != null && newVal != undefined) {
@@ -318,12 +345,14 @@
               }
                 else if(newVal == 'INCREMENTAL'){
                   self.model.table.tableType = 'DELTA';
+                  //reset the date field
+                  self.model.table.sourceTableIncrementalDateField = '';
               }
 
             });
         }
-    };
 
+    };
 
     angular.module(MODULE_FEED_MGR).controller('GetTableDataPropertiesController', controller);
 

@@ -5,7 +5,7 @@
 /**
  *
  */
-angular.module(MODULE_FEED_MGR).service('StepperService', function ($rootScope, $http) {
+angular.module(MODULE_FEED_MGR).service('StepperService', function ($rootScope, $http, BroadcastService) {
 
     var self = this;
     /**
@@ -22,6 +22,12 @@ angular.module(MODULE_FEED_MGR).service('StepperService', function ($rootScope, 
      * @type {string}
      */
     this.STEP_CHANGED_EVENT = 'STEP_CHANGED_EVENT';
+
+    /**
+     * Event called when a step is enabled or disabled
+     * @type {string}
+     */
+    this.STEP_STATE_CHANGED_EVENT = 'STEP_STATE_CHANGED_EVENT';
 
     this.steppers = {};
     this.newNameIndex = 0;
@@ -137,10 +143,11 @@ angular.module(MODULE_FEED_MGR).service('StepperService', function ($rootScope, 
 
     }
 
-    this.arePreviousStepsComplete = function(index) {
+    this.arePreviousStepsComplete = function (stepper, index) {
         var complete= false;
+        var steps = self.steppers[stepper];
         for(var i=0; i<index; i++) {
-            var step = self.steps[i];
+            var step = steps[i];
             if(step.active && step.complete && step.visited){
                 complete = true;
                 break;
@@ -149,10 +156,11 @@ angular.module(MODULE_FEED_MGR).service('StepperService', function ($rootScope, 
         return complete;
     }
 
-    this.arePreviousStepsVisited = function(index) {
+    this.arePreviousStepsVisited = function (stepper, index) {
         var complete= false;
+        var steps = self.steppers[stepper];
         for(var i=0; i<index; i++) {
-            var step = self.steps[i];
+            var step = steps[i];
             if(step.active && step.visited){
                 complete = true;
                 break;
@@ -161,11 +169,11 @@ angular.module(MODULE_FEED_MGR).service('StepperService', function ($rootScope, 
         return complete;
     }
 
-
-    this.arePreviousStepsDisabled = function(index) {
+    this.arePreviousStepsDisabled = function (stepper, index) {
         var disabled= false;
+        var steps = self.steppers[stepper];
         for(var i=0; i<index; i++) {
-            var step = self.steps[i];
+            var step = steps[i];
             if(step.disabled){
                 disabled = true;
                 break;

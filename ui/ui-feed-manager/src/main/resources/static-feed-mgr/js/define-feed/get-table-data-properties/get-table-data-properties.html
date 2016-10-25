@@ -1,6 +1,6 @@
 <div  class="layout-padding-indent">
 
-         <md-input-container property-disabled="ctl.mode == 'edit'" nifi-property-input class="md-block layout-padding-top-bottom" property="ctl.dbConnectionProperty"
+         <md-input-container property-disabled="ctl.mode == 'edit'" nifi-property-input class="md-block layout-padding-top-bottom" property="ctl.dbConnectionProperty" on-property-change="ctl.onDbConnectionPropertyChanged"
                              flex-gt-sm >
              </md-input-container>
 
@@ -14,7 +14,10 @@
                      md-item-text="item.fullName"
                      md-min-length="1"
                      placeholder="Select a Table"
-                     md-menu-class="autocomplete-hive-table-template">
+                     md-menu-class="autocomplete-hive-table-template"
+                     md-require-match="true"
+                     md-input-name="tableAutocompleteInput"
+                     required>
         <md-item-template>
 
                     <span class="item-title" >
@@ -31,6 +34,9 @@
         <md-not-found>
             No tables matching "{{ctl.tablesAutocomplete.searchText}}" were found.
         </md-not-found>
+      <div ng-messages="ctl.theForm.tableAutocompleteInput.$error" md-auto-hide="false">
+        <div ng-message="required">This field is required.</div>
+      </div>
     </md-autocomplete>
 
     <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="" >
@@ -48,11 +54,14 @@
 
     <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="" ng-if="ctl.loadStrategyProperty.value == 'INCREMENTAL'">
         <label class="label-small md-container-ignore">Date Field to use when selecting incremental updates</label>
-        <md-select ng-model="ctl.model.table.sourceTableIncrementalDateField" ng-change="ctl.onIncrementalDateFieldChange()">
+        <md-select name="incrementalDate" ng-model="ctl.model.table.sourceTableIncrementalDateField" ng-change="ctl.onIncrementalDateFieldChange()" required>
             <md-option ng-repeat="field in ctl.tableFields | filter: ctl.filterFieldDates track by $index" value="{{field.name}}">
                 {{field.name}}
             </md-option>
         </md-select>
+      <div ng-messages="ctl.theForm.incrementalDate.$error " md-auto-hide="false">
+        <div ng-message="required">This field is required.</div>
+      </div>
     </md-input-container>
 <!--
     <nifi-property-time-unit-input property="ctl.retentionPeriodProperty" ng-if="ctl.retentionPeriodProperty != undefined"></nifi-property-time-unit-input>

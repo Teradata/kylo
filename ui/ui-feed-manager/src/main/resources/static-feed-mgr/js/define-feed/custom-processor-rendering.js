@@ -6,7 +6,8 @@
             scope: {
                 mode: '@',
                 processor: '=',
-                templateUrl: '@'
+                templateUrl: '@',
+                theForm: '='
             },
             template: '<div ng-include="getContentUrl()"></div>',
             link: function ($scope, element, attrs) {

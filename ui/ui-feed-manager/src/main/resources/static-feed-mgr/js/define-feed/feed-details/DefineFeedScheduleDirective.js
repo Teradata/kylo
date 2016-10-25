@@ -22,11 +22,13 @@
         };
     }
 
-    var controller =  function($scope, $http,$mdDialog,$mdToast,RestUrlService, FeedService, StateService,StepperService,   CategoriesService,BroadcastService,FeedCreationErrorService) {
+    var controller = function ($scope, $http, $mdDialog, $mdToast, $timeout, RestUrlService, FeedService, StateService, StepperService, CategoriesService, BroadcastService, FeedCreationErrorService) {
 
         var self = this;
 
         BroadcastService.subscribe($scope,StepperService.ACTIVE_STEP_EVENT,onActiveStep)
+
+        BroadcastService.subscribe($scope, StepperService.STEP_STATE_CHANGED_EVENT, onStepStateChange)
 
         this.stepperController = null;
         this.stepNumber = parseInt(this.stepIndex)+1
@@ -35,6 +37,8 @@
 
         this.timerAmount = 5;
         this.timerUnits = "min";
+
+        this.waitForStepperControllerRetryAmount = 0;
 
         //if the Model doesnt support Preconditions dont allow it in the list
         var allScheduleStrategies = [{label: "Cron", value: "CRON_DRIVEN"}, {label: "Timer", value: "TIMER_DRIVEN"}, {label: "Trigger/Event", value: "TRIGGER_DRIVEN"}];
@@ -78,6 +82,16 @@
                 updateScheduleStrategies();
                 setDefaultScheduleStrategy();
             }
+        }
+
+        /**
+         * get notified of the step state (enabled/disabled) changed
+         * Validate the form
+         * @param event
+         * @param index
+         */
+        function onStepStateChange(event, index) {
+            validate();
         }
 
         this.timerChanged = function () {
@@ -142,8 +156,32 @@
             //cron expression validation is handled via the cron-expression validator
             var valid = (self.model.schedule.schedulingStrategy == 'CRON_DRIVEN') ||
                         (self.model.schedule.schedulingStrategy == 'TIMER_DRIVEN' && self.timerAmount != undefined && self.timerAmount != null) ||
-                        (self.model.schedule.schedulingStrategy == 'TRIGGER_DRIVEN' && self.model.schedule.preconditions != null && self.model.schedule.preconditions.length > 0 );
-            self.isValid = valid;
+                        (self.model.schedule.schedulingStrategy == 'TRIGGER_DRIVEN' && self.model.schedule.preconditions != null && self.model.schedule.preconditions.length > 0
+                        );
+            if (valid) {
+                waitForStepperController(function () {
+                    self.isValid = !self.stepperController.arePreviousStepsDisabled(self.stepIndex)
+                });
+
+            }
+            else {
+                self.isValid = valid;
+            }
+        }
+
+        function waitForStepperController(callback) {
+            if (self.stepperController) {
+                self.waitForStepperControllerRetryAmount = 0;
+                callback();
+            }
+            else {
+                if (self.waitForStepperControllerRetryAmount < 20) {
+                    self.waitForStepperControllerRetryAmount++;
+                    $timeout(function () {
+                        waitForStepperController(callback)
+                    }, 10);
+                }
+            }
         }
 
         this.deletePrecondition = function($index){

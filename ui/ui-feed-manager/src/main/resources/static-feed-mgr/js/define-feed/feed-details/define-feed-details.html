@@ -7,6 +7,7 @@
       <thinkbig-feed-errors-card-header></thinkbig-feed-errors-card-header>
     </header-section>
 <body-section class="md-padding">
+  <ng-form name="vm.feedDetailsForm">
     <div layout="column">
                 <div style="padding-bottom:10px;" ng-if="vm.model.inputProcessor != null">
                     <div class="md-subhead">Choose a Feed Input</div>
@@ -30,7 +31,7 @@
                     </div>
             </div>
         <div ng-if="vm.model.inputProcessor != null && vm.model.inputProcessor.feedPropertiesUrl != null">
-          <custom-processor-rendering template-url="{{vm.model.inputProcessor.feedPropertiesUrl}}" processor="vm.model.inputProcessor" ></custom-processor-rendering>
+          <custom-processor-rendering template-url="{{vm.model.inputProcessor.feedPropertiesUrl}}" processor="vm.model.inputProcessor" the-form="vm.feedDetailsForm" ></custom-processor-rendering>
         </div>
 
 
@@ -42,12 +43,13 @@
                     </div>
                 </div>
               <div ng-if="processor.feedPropertiesUrl != null">
-                <custom-processor-rendering template-url="{{processor.feedPropertiesUrl}}" processor="processor" ></custom-processor-rendering>
+                <custom-processor-rendering template-url="{{processor.feedPropertiesUrl}}" processor="processor" the-form="vm.feedDetailsForm" ></custom-processor-rendering>
               </div>
 
             </div>
 
     </div>
-    <thinkbig-step-buttons can-continue="vm.isValid" step-index="{{::vm.stepIndex}}" ></thinkbig-step-buttons>
+    <thinkbig-step-buttons can-continue="vm.isValid && vm.feedDetailsForm.$valid" step-index="{{::vm.stepIndex}}" ></thinkbig-step-buttons>
+  </ng-form>
 </body-section>
     </card-layout>
