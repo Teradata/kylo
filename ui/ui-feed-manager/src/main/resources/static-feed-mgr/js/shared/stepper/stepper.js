@@ -130,9 +130,11 @@
 
         this.stepDisabled = function(index) {
             StepperService.stepDisabled(self.stepperName,index);
+            BroadcastService.notify(StepperService.STEP_STATE_CHANGED_EVENT, index);
         }
         this.stepEnabled = function(index) {
             StepperService.stepEnabled(self.stepperName,index);
+            BroadcastService.notify(StepperService.STEP_STATE_CHANGED_EVENT, index);
         }
 
 
@@ -150,6 +152,10 @@
         this.previousActiveStep = function(index){
             return StepperService.previousActiveStep(self.stepperName,index)
 
+        }
+
+        this.arePreviousStepsDisabled = function (index) {
+            return StepperService.arePreviousStepsDisabled(self.stepperName, index);
         }
 
         this.cancelStepper = function(){

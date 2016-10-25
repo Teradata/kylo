@@ -78,7 +78,7 @@
                     <md-divider></md-divider>
                   </md-list-item>
                   <md-list-item ng-if="vm.showJobParameters == true"
-                                ng-repeat="item in vm.jobData.jobParametersArray | orderBy:key">
+                                ng-repeat="item in vm.jobData.jobParametersArray | orderBy:'key'">
                     <div flex="30" style="word-wrap:break-word;" class="item-column md-list-item-text ">
                       {{item.key}}
                     </div>
@@ -96,7 +96,7 @@
                     </div>
                     <md-divider></md-divider>
                   </md-list-item>
-                  <md-list-item ng-if="vm.showJobParameters == false" ng-repeat="item in vm.jobData.executionContextArray | orderBy:key">
+                  <md-list-item ng-if="vm.showJobParameters == false" ng-repeat="item in vm.jobData.executionContextArray | orderBy:'key'">
                     <div flex="30" style="word-wrap:break-word;" class="item-column md-list-item-text ">
                       {{item.key}}
                     </div>
@@ -160,7 +160,7 @@
                     <div ng-if="step.content.open" class="fade-in-out layout-padding-left-16" layout-fill flex>
 
                       <div class="item-title" style="padding-top:10px;padding-bottom:4px;">Exit Description</div>
-                      <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;white-space:pre;" ng-text-truncate="step.content.exitDescription"
+                      <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;" ng-text-truncate="step.content.exitDescription"
                            ng-tt-chars-threshold="150">
                       </div>
                       <md-list flex layout-fill ng-show="vm.loading == false" class="list-item-table">
