@@ -6,6 +6,7 @@ package com.thinkbiganalytics.spark.datavalidator;
 
 import com.thinkbiganalytics.policy.FieldPolicy;
 import com.thinkbiganalytics.policy.standardization.StandardizationPolicy;
+import com.thinkbiganalytics.policy.validation.NotNullValidator;
 import com.thinkbiganalytics.policy.validation.RangeValidator;
 import com.thinkbiganalytics.policy.validation.ValidationPolicy;
 import com.thinkbiganalytics.policy.validation.ValidationResult;
@@ -21,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 public class ValidatorTest {
@@ -55,5 +57,24 @@ public class ValidatorTest {
         List<StandardizationPolicy> standardizationPolicies = new ArrayList<>();
         FieldPolicy fieldPolicy = new FieldPolicy("emp", "field1", false, false, validationPolicies, standardizationPolicies, false, 0);
         return validator.validateField(fieldPolicy, HCatDataType.createFromDataType("field1", dataType), value);
+    }
+
+    @Test
+    public void testValidateNotNull() {
+
+        assertNotEquals(Validator.VALID_RESULT, notNullValidate("string", null, false, false));
+
+        //assertTrue(!rangeValidate(1, 100, "decimal", "0").isValid());
+        //assertTrue(!rangeValidate(1, 100, "double", "0").isValid());
+        //assertTrue(!rangeValidate(1, 100, "int", "0").isValid());
+    }
+
+    private ValidationResult notNullValidate(String dataType, String value, boolean allowEmptyString, boolean trimString) {
+        NotNullValidator validatorPolicy = new NotNullValidator(allowEmptyString, trimString);
+        //List<ValidationPolicy> validationPolicies = new ArrayList<>();
+        //validationPolicies.add(validatorPolicy);
+        //List<StandardizationPolicy> standardizationPolicies = new ArrayList<>();
+        //FieldPolicy fieldPolicy = new FieldPolicy("emp", "field1", false, true, validationPolicies, standardizationPolicies, false, 0);
+        return validator.validateValue(validatorPolicy, HCatDataType.createFromDataType("field1", dataType), value);
     }
 }

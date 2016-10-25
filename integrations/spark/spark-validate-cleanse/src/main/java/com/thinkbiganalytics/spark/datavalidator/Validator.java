@@ -417,8 +417,13 @@ public class Validator implements Serializable {
         if (expectedParamClazz == null) {
             // Cache for future references
 
-            ParameterizedType type = (ParameterizedType)validator.getClass().getGenericInterfaces()[0];
-            expectedParamClazz = (Class)type.getActualTypeArguments()[0];
+            Object t = validator.getClass().getGenericInterfaces()[0];
+            if (t instanceof ParameterizedType) {
+                ParameterizedType type = (ParameterizedType)t;
+                expectedParamClazz = (Class)type.getActualTypeArguments()[0];
+            } else {
+                expectedParamClazz = String.class;
+            }
             validatorParamType.put(validator.getClass(), expectedParamClazz);
         }
         return expectedParamClazz;
