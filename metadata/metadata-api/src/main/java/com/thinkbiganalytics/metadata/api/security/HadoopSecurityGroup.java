@@ -11,7 +11,7 @@ public interface HadoopSecurityGroup {
 
     ID getId();
 
-    long getGroupId();
+    String getGroupId();
 
     String getName();
 

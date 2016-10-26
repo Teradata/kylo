@@ -24,11 +24,11 @@ public class JcrHadoopSecurityGroup extends JcrEntity implements HadoopSecurityG
     }
 
     @Override
-    public long getGroupId() {
-        return JcrPropertyUtil.getLong(this.node, HADOOP_SECURITY_GROUP_ID);
+    public String getGroupId() {
+        return JcrPropertyUtil.getString(this.node, HADOOP_SECURITY_GROUP_ID);
     }
 
-    public void setGroupId(long id) {
+    public void setGroupId(String id) {
         JcrPropertyUtil.setProperty(this.node, HADOOP_SECURITY_GROUP_ID, id);
     }
 
