@@ -188,7 +188,7 @@
 //  + fieldPolicies (tba:fieldPolicy) sns
 
 [tba:hadoopSecurityGroup] > nt:hierarchyNode, mix:referenceable, mix:title
-    - tba:groupId (LONG) mandatory
+    - tba:groupId (STRING) mandatory
 
 [tba:datasource] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied 
     - tba:systemName (STRING) mandatory

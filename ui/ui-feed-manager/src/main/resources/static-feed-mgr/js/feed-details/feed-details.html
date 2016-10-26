@@ -60,7 +60,9 @@
     <card-layout style="max-width:250px;width:250px;min-width:250px;" flex="initial" body-css="md-padding">
         <header-section>
             <div class="card-title" flex>Feed Summary</div>
-            <span class="md-subhead" ng-if="!vm.loadingFeedData">{{vm.model.feedName}}</span>
+            <div layout="column" class="layout-padding-top-bottom">
+                <span class="item-title" ng-if="!vm.loadingFeedData">{{vm.model.feedName}}</span>
+            </div>
         </header-section>
 
         <body-section>
