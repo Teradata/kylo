@@ -12,14 +12,19 @@ import com.thinkbiganalytics.nifi.rest.client.NifiRestClientConfig;
 import com.thinkbiganalytics.rest.JerseyRestClient;
 
 import org.apache.nifi.web.api.dto.AboutDTO;
+import org.apache.nifi.web.api.dto.BulletinBoardDTO;
+import org.apache.nifi.web.api.dto.BulletinDTO;
 import org.apache.nifi.web.api.dto.RevisionDTO;
 import org.apache.nifi.web.api.dto.search.SearchResultsDTO;
 import org.apache.nifi.web.api.entity.AboutEntity;
+import org.apache.nifi.web.api.entity.BulletinBoardEntity;
 import org.apache.nifi.web.api.entity.Entity;
 import org.apache.nifi.web.api.entity.SearchResultsEntity;
 
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -108,6 +113,15 @@ public class NiFiRestClientV0 extends JerseyRestClient implements NiFiRestClient
             params.put(VERSION, revision.getVersion());
         }
         return super.delete(path, params, returnType);
+    }
+
+    @Nonnull
+    @Override
+    public List<BulletinDTO> getBulletins(@Nonnull final String sourceId) {
+        return Optional.ofNullable(get("/controller/bulletin-board", ImmutableMap.of("sourceId", sourceId), BulletinBoardEntity.class))
+                .map(BulletinBoardEntity::getBulletinBoard)
+                .map(BulletinBoardDTO::getBulletins)
+                .orElse(Collections.emptyList());
     }
 
     /**

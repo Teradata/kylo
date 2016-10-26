@@ -12,9 +12,18 @@ import com.thinkbiganalytics.nifi.rest.client.NifiRestClientConfig;
 import com.thinkbiganalytics.rest.JerseyRestClient;
 
 import org.apache.nifi.web.api.dto.AboutDTO;
+import org.apache.nifi.web.api.dto.BulletinBoardDTO;
+import org.apache.nifi.web.api.dto.BulletinDTO;
 import org.apache.nifi.web.api.dto.search.SearchResultsDTO;
 import org.apache.nifi.web.api.entity.AboutEntity;
+import org.apache.nifi.web.api.entity.BulletinBoardEntity;
+import org.apache.nifi.web.api.entity.BulletinEntity;
 import org.apache.nifi.web.api.entity.SearchResultsEntity;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -77,6 +86,16 @@ public class NiFiRestClientV1 extends JerseyRestClient implements NiFiRestClient
             controllerServices = new NiFiControllerServicesRestClientV1(this);
         }
         return controllerServices;
+    }
+
+    @Nonnull
+    @Override
+    public List<BulletinDTO> getBulletins(@Nonnull final String sourceId) {
+        return Optional.ofNullable(get("/flow/bulletin-board", ImmutableMap.of("sourceId", sourceId), BulletinBoardEntity.class))
+                .map(BulletinBoardEntity::getBulletinBoard)
+                .map(BulletinBoardDTO::getBulletins)
+                .map(bulletins -> bulletins.stream().map(BulletinEntity::getBulletin).collect(Collectors.toList()))
+                .orElse(Collections.emptyList());
     }
 
     @Nonnull

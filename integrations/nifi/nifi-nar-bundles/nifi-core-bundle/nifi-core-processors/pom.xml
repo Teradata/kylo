@@ -135,6 +135,12 @@
     </dependency>
     <!-- End required for Hive tests -->
 
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>thinkbig-nifi-framework-v1</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
 </project>

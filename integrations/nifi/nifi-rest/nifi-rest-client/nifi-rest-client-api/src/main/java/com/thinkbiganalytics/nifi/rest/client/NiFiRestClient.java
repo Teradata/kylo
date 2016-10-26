@@ -1,10 +1,12 @@
 package com.thinkbiganalytics.nifi.rest.client;
 
 import org.apache.nifi.web.api.dto.AboutDTO;
+import org.apache.nifi.web.api.dto.BulletinDTO;
 import org.apache.nifi.web.api.dto.search.SearchResultsDTO;
 
+import java.util.List;
+
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 /**
  * Communicates with a NiFi service using a REST interface.
@@ -34,6 +36,15 @@ public interface NiFiRestClient {
      */
     @Nonnull
     NiFiControllerServicesRestClient controllerServices();
+
+    /**
+     * Gets the current bulletins for the specified source.
+     *
+     * @param sourceId the source id
+     * @return the bulletins
+     */
+    @Nonnull
+    List<BulletinDTO> getBulletins(@Nonnull String sourceId);
 
     /**
      * Gets the client for managing ports.

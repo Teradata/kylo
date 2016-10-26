@@ -24,12 +24,12 @@ import com.thinkbiganalytics.support.FeedNameUtil;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.AboutDTO;
+import org.apache.nifi.web.api.dto.BulletinDTO;
 import org.apache.nifi.web.api.dto.ConnectableDTO;
 import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.apache.nifi.web.api.dto.ControllerServiceDTO;
 import org.apache.nifi.web.api.dto.DocumentedTypeDTO;
 import org.apache.nifi.web.api.dto.FlowSnippetDTO;
-import org.apache.nifi.web.api.dto.ListingRequestDTO;
 import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
@@ -918,6 +918,10 @@ public class LegacyNifiRestClient implements NifiFlowVisitorClient {
     public boolean isConnected(){
         AboutDTO aboutEntity = getNifiVersion();
         return aboutEntity != null;
+    }
+
+    public List<BulletinDTO> getProcessorBulletins(String processorId) {
+        return client.getBulletins(processorId);
     }
 
     @Deprecated

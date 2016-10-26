@@ -93,6 +93,12 @@
         </dependency>
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
+            <artifactId>thinkbig-nifi-framework-v1</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.thinkbiganalytics.datalake</groupId>
             <artifactId>thinkbig-nifi-security-v1</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
