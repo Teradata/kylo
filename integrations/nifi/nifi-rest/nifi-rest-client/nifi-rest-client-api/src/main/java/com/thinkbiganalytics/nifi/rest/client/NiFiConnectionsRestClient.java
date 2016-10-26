@@ -1,7 +1,6 @@
 package com.thinkbiganalytics.nifi.rest.client;
 
 import org.apache.nifi.web.api.dto.ConnectionDTO;
-import org.apache.nifi.web.api.dto.ListingRequestDTO;
 
 import java.util.Optional;
 

@@ -11,7 +11,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nonnull;
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
 
 /**
  * Provides a standard implementation of {@link NiFiProcessGroupsRestClient} that can be extended for different NiFi versions.
