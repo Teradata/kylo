@@ -6,10 +6,10 @@
     <includeBaseDirectory>true</includeBaseDirectory>
     <dependencySets>
         <dependencySet>
-            <excludes>
-                <exclude>org.apache.nifi:*</exclude>
-            </excludes>
-            <outputDirectory>lib</outputDirectory>
+            <includes>
+                <include>org.apache.nifi:*</include>
+            </includes>
+            <outputDirectory>lib/nifi-v0</outputDirectory>
         </dependencySet>
     </dependencySets>
 </assembly>

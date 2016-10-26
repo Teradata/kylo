@@ -13,7 +13,7 @@
     <artifactId>thinkbig-nifi-rest-client-v0</artifactId>
 
     <properties>
-        <nifi.version>0.6.0</nifi.version>
+        <nifi.version>0.6.1</nifi.version>
     </properties>
 
     <dependencies>
@@ -119,5 +119,26 @@
         </dependency>
 
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <descriptors>
+                        <descriptor>src/main/assembly/descriptor.xml</descriptor>
+                    </descriptors>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

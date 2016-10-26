@@ -170,6 +170,28 @@
               </sources>
             </mapping>
             <mapping>
+              <directory>${rpm.install.dir}/thinkbig-services</directory>
+              <filemode>${file.permissions}</filemode>
+              <username>${rpm.user}</username>
+              <groupname>${rpm.user}</groupname>
+              <sources>
+                <source>
+                  <location>../integrations/nifi/nifi-rest/nifi-rest-client/nifi-rest-client-v0/target/thinkbig-nifi-rest-client-v0-${project.version}-distribution.tar.gz</location>
+                </source>
+              </sources>
+            </mapping>
+            <mapping>
+              <directory>${rpm.install.dir}/thinkbig-services</directory>
+              <filemode>${file.permissions}</filemode>
+              <username>${rpm.user}</username>
+              <groupname>${rpm.user}</groupname>
+              <sources>
+                <source>
+                  <location>../integrations/nifi/nifi-rest/nifi-rest-client/nifi-rest-client-v1/target/thinkbig-nifi-rest-client-v1-${project.version}-distribution.tar.gz</location>
+                </source>
+              </sources>
+            </mapping>
+            <mapping>
               <directory>${rpm.install.dir}/thinkbig-services/conf</directory>
               <filemode>${file.permissions}</filemode>
               <username>${rpm.user}</username>
@@ -326,13 +348,12 @@
                 <source>
                   <location>./setup/nifi</location>
                   <includes>
-                    <include>logback.xml</include>
-                    <include>bootstrap.conf</include>
-                    <include>nifi.properties</include>
-                    <include>nifi</include>
+                    <include>create-symbolic-links.sh</include>
                     <include>install-nifi.sh</include>
                     <include>install-thinkbig-components.sh</include>
-                    <include>create-symbolic-links.sh</include>
+                    <include>nifi</include>
+                    <include>nifi.properties</include>
+                    <include>nifi-env.sh</include>
                     <include>update-nars-jars.sh</include>
                   </includes>
                 </source>

@@ -117,7 +117,11 @@ echo "    - Completed thinkbig-ui install"
 echo "    - Install thinkbig-services application"
 
 tar -xf $rpmInstallDir/thinkbig-services/thinkbig-service-app-*.tar.gz -C $rpmInstallDir/thinkbig-services --strip-components=1
+tar -xf $rpmInstallDir/thinkbig-services/thinkbig-nifi-rest-client-v0-*.tar.gz -C $rpmInstallDir/thinkbig-services --strip-components=1
+tar -xf $rpmInstallDir/thinkbig-services/thinkbig-nifi-rest-client-v1-*.tar.gz -C $rpmInstallDir/thinkbig-services --strip-components=1
 rm -rf $rpmInstallDir/thinkbig-services/thinkbig-service-app-*.tar.gz
+rm -rf $rpmInstallDir/thinkbig-services/thinkbig-nifi-rest-client-v0-*.tar.gz
+rm -rf $rpmInstallDir/thinkbig-services/thinkbig-nifi-rest-client-v1-*.tar.gz
 rm -f $rpmInstallDir/thinkbig-services/lib/jetty*
 rm -f $rpmInstallDir/thinkbig-services/lib/servlet-api*
 echo "   - Installed thinkbig-services to '$rpmInstallDir/thinkbig-services'"
@@ -127,7 +131,8 @@ cat << EOF > $rpmInstallDir/thinkbig-services/bin/run-thinkbig-services.sh
 export JAVA_HOME=/opt/java/current
 export PATH=\$JAVA_HOME/bin:\$PATH
 export THINKBIG_SERVICES_OPTS=
-java \$THINKBIG_SERVICES_OPTS -cp $rpmInstallDir/thinkbig-services/conf:$rpmInstallDir/thinkbig-services/lib/*:$rpmInstallDir/thinkbig-services/plugin/* com.thinkbiganalytics.server.ThinkbigServerApplication --pgrep-marker=$pgrepMarkerThinkbigServices > /var/log/thinkbig-services/thinkbig-services.log 2>&1 &
+THINKBIG_NIFI_PROFILE=\$(grep ^spring.profiles.active $rpmInstallDir/thinkbig-services/conf/application.properties | grep -o nifi-v.)
+java \$THINKBIG_SERVICES_OPTS -cp $rpmInstallDir/thinkbig-services/conf:$rpmInstallDir/thinkbig-services/lib/*:$rpmInstallDir/thinkbig-services/lib/\${THINKBIG_NIFI_PROFILE}/*:$rpmInstallDir/thinkbig-services/plugin/* com.thinkbiganalytics.server.ThinkbigServerApplication --pgrep-marker=$pgrepMarkerThinkbigServices > /var/log/thinkbig-services/thinkbig-services.log 2>&1 &
 EOF
 cat << EOF > $rpmInstallDir/thinkbig-services/bin/run-thinkbig-services-with-debug.sh
 #!/bin/bash
@@ -135,7 +140,8 @@ export JAVA_HOME=/opt/java/current
 export PATH=\$JAVA_HOME/bin:\$PATH
 export THINKBIG_SERVICES_OPTS=
 JAVA_DEBUG_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=9998
-java \$THINKBIG_SERVICES_OPTS \$JAVA_DEBUG_OPTS -cp $rpmInstallDir/thinkbig-services/conf:$rpmInstallDir/thinkbig-services/lib/*:$rpmInstallDir/thinkbig-services/plugin/* com.thinkbiganalytics.server.ThinkbigServerApplication --pgrep-marker=$pgrepMarkerThinkbigServices > /var/log/thinkbig-services/thinkbig-services.log 2>&1 &
+THINKBIG_NIFI_PROFILE=\$(grep ^spring.profiles.active $rpmInstallDir/thinkbig-services/conf/application.properties | grep -o nifi-v.)
+java \$THINKBIG_SERVICES_OPTS \$JAVA_DEBUG_OPTS -cp $rpmInstallDir/thinkbig-services/conf:$rpmInstallDir/thinkbig-services/lib/*:$rpmInstallDir/thinkbig-services/lib/\${THINKBIG_NIFI_PROFILE}/*:$rpmInstallDir/thinkbig-services/plugin/* com.thinkbiganalytics.server.ThinkbigServerApplication --pgrep-marker=$pgrepMarkerThinkbigServices > /var/log/thinkbig-services/thinkbig-services.log 2>&1 &
 EOF
 chmod +x $rpmInstallDir/thinkbig-services/bin/run-thinkbig-services.sh
 chmod +x $rpmInstallDir/thinkbig-services/bin/run-thinkbig-services-with-debug.sh
