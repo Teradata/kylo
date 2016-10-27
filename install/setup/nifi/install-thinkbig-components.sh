@@ -21,8 +21,7 @@ fi
 
 echo "Copying the configuration files"
 cp $NIFI_SETUP_DIR/nifi.properties /opt/nifi/current/conf
-cp $NIFI_SETUP_DIR/bootstrap.conf /opt/nifi/current/conf
-cp $NIFI_SETUP_DIR/nifi-env.sh /opt/nifi/current/bin
+sed -i 's/NIFI_LOG_DIR=\".*\"/NIFI_LOG_DIR=\"\/var\/log\/nifi\"/' /opt/nifi/current/bin/nifi-env.sh
 
 echo "Installing the thinkbig libraries to the NiFi lib"
 mkdir /opt/nifi/current/lib/app
