@@ -58,6 +58,7 @@ public abstract class BaseHadoopAuthorizationService implements HadoopAuthorizat
             if (metadataEvent.getHadoopSecurityGroupNames() != null && hadoopAuthorizationChangesRequired(metadataEvent)) {
                 try {
                     String hdfsFolders = metadataEvent.getNewProperties().getProperty(REGISTRATION_HDFS_FOLDERS);
+                    
                     if (!StringUtils.isEmpty(hdfsFolders)) {
                         String hdfsFoldersWithCommas = hdfsFolders.replace("\n", ",");
                         List<String> hdfsFoldersConverted = Arrays.asList(hdfsFoldersWithCommas.split(",")).stream().collect(Collectors.toList());
@@ -79,8 +80,8 @@ public abstract class BaseHadoopAuthorizationService implements HadoopAuthorizat
                             , hiveTablesConverted);
                     }
                 } catch (Exception e) {
-                    log.error("Error creating Ranger policy after metadata property change event", e);
-                    throw new RuntimeException("Error creating Ranger policy after metadata property change event");
+                    log.error("Error creating Kylo Authorization policy after metadata property change event", e);
+                    throw new RuntimeException("Error creating Kylo Authorization policy after metadata property change event");
                 }
             }
         }
