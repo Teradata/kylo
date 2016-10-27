@@ -11,6 +11,10 @@
 
     <artifactId>thinkbig-nifi-security-v1</artifactId>
 
+    <properties>
+        <nifi.version>1.0.0</nifi.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
