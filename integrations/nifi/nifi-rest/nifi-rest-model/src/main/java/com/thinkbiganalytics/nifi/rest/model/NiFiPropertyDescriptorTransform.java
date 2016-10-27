@@ -10,6 +10,14 @@ import javax.annotation.Nonnull;
 public interface NiFiPropertyDescriptorTransform {
 
     /**
+     * Indicates if the specified property has a sensitive value.
+     *
+     * @param propertyDescriptorDTO the property descriptor
+     * @return {@code true} if the value is sensitive, {@code false} otherwise
+     */
+    Boolean isSensitive(@Nonnull PropertyDescriptorDTO propertyDescriptorDTO);
+
+    /**
      * Transforms the specified {@link PropertyDescriptorDTO} to a {@link NiFiPropertyDescriptor}.
      *
      * @param propertyDescriptorDTO the property descriptor DTO

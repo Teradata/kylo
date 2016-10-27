@@ -854,18 +854,19 @@ public class LegacyNifiRestClient implements NifiFlowVisitorClient {
     /**
      * Enables the ControllerService and also replaces the properties if they match their keys
      */
-    public ControllerServiceDTO enableControllerServiceAndSetProperties(String id, Map<String, String> properties) throws NifiClientRuntimeException {
+    public ControllerServiceDTO enableControllerServiceAndSetProperties(String id, Map<String, String> properties)
+            throws NifiClientRuntimeException {
         ControllerServiceDTO entity = getControllerService(null, id);
         ControllerServiceDTO dto = entity;
         //only need to do this if it is not enabled
         if (!dto.getState().equals(NifiProcessUtil.SERVICE_STATE.ENABLED.name())) {
             if (properties != null) {
-                boolean changed = false;
+                boolean changed;
                 Map<String, String> resolvedProperties = NifiEnvironmentProperties.getEnvironmentControllerServiceProperties(properties, dto.getName());
                 if (resolvedProperties != null && !resolvedProperties.isEmpty()) {
-                    changed = ConfigurationPropertyReplacer.replaceControllerServiceProperties(dto, resolvedProperties);
+                    changed = ConfigurationPropertyReplacer.replaceControllerServiceProperties(dto, resolvedProperties, getPropertyDescriptorTransform());
                 } else {
-                    changed = ConfigurationPropertyReplacer.replaceControllerServiceProperties(dto, properties);
+                    changed = ConfigurationPropertyReplacer.replaceControllerServiceProperties(dto, properties, getPropertyDescriptorTransform());
                 }
                 if (changed) {
                     //first save the property change

@@ -224,7 +224,7 @@ public class NiFiProcessGroupsRestClientV0 extends AbstractNiFiProcessGroupsRest
             final ProcessGroupEntity entity = new ProcessGroupEntity();
             entity.setProcessGroup(processGroup);
 
-            return client.put(BASE_PATH + "/" + processGroup.getId(), processGroup, ProcessGroupEntity.class).getProcessGroup();
+            return client.put(BASE_PATH + "/" + processGroup.getId(), entity, ProcessGroupEntity.class).getProcessGroup();
         } catch (NotFoundException e) {
             throw new NifiComponentNotFoundException(processGroup.getId(), NifiConstants.NIFI_COMPONENT_TYPE.PROCESS_GROUP, e);
         }
@@ -234,9 +234,8 @@ public class NiFiProcessGroupsRestClientV0 extends AbstractNiFiProcessGroupsRest
     @Override
     protected Optional<ProcessGroupDTO> doDelete(@Nonnull final ProcessGroupDTO processGroup) {
         try {
-            final ProcessGroupEntity entity = client.delete(BASE_PATH + "/" + processGroup.getParentGroupId() + "/process-group-references/" + processGroup.getId(), new HashMap<>(),
-                                                            ProcessGroupEntity.class);
-            return Optional.of(entity.getProcessGroup());
+            client.delete(BASE_PATH + "/" + processGroup.getParentGroupId() + "/process-group-references/" + processGroup.getId(), new HashMap<>(), ProcessGroupEntity.class);
+            return Optional.of(new ProcessGroupDTO());
         } catch (NotFoundException e) {
             return Optional.empty();
         }

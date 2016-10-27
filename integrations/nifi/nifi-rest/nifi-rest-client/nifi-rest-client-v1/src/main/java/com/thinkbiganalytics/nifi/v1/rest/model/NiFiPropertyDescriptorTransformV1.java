@@ -18,6 +18,11 @@ import javax.annotation.Nonnull;
  */
 public class NiFiPropertyDescriptorTransformV1 implements NiFiPropertyDescriptorTransform {
 
+    @Override
+    public Boolean isSensitive(@Nonnull final PropertyDescriptorDTO propertyDescriptorDTO) {
+        return propertyDescriptorDTO.isSensitive();
+    }
+
     /**
      * Transforms the specified {@link AllowableValueDTO} to a {@link NiFiAllowableValue}.
      *

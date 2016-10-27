@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.nifi.feedmgr;
 
 
+import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptorTransform;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 
 import org.apache.commons.collections.map.CaseInsensitiveMap;
@@ -34,7 +35,7 @@ public class ConfigurationPropertyReplacer {
     /**
      * This will replace the Map of Properties in the DTO but not persist back to Nifi.  You need to call the rest client to persist the change
      */
-    public static boolean replaceControllerServiceProperties(ControllerServiceDTO controllerServiceDTO, Map<String, String> properties) {
+    public static boolean replaceControllerServiceProperties(ControllerServiceDTO controllerServiceDTO, Map<String, String> properties, NiFiPropertyDescriptorTransform propertyDescriptorTransform) {
         Set<String> changedProperties = new HashSet<>();
         if (controllerServiceDTO != null) {
             //check both Nifis Internal Key name as well as the Displayname to match the properties
@@ -46,7 +47,7 @@ public class ConfigurationPropertyReplacer {
                 entry -> (propertyMap.containsKey(entry.getKey()) || (controllerServiceDTO.getDescriptors().get(entry.getKey()) != null && propertyMap
                     .containsKey(controllerServiceDTO.getDescriptors().get(entry.getKey()).getDisplayName().toLowerCase())))).
                 forEach(entry -> {
-                    boolean isSensitive = controllerServiceDTO.getDescriptors().get(entry.getKey()).isSensitive();
+                    boolean isSensitive = propertyDescriptorTransform.isSensitive(controllerServiceDTO.getDescriptors().get(entry.getKey()));
                     String value = (String) propertyMap.get(entry.getKey());
                     if (StringUtils.isBlank(value)) {
                         value = (String) propertyMap.get(controllerServiceDTO.getDescriptors().get(entry.getKey()).getDisplayName().toLowerCase());

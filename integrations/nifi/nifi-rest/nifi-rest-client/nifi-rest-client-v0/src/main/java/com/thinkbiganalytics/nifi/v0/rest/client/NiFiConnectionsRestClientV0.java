@@ -37,7 +37,8 @@ public class NiFiConnectionsRestClientV0 extends AbstractNiFiConnectionsRestClie
     @Override
     public Optional<ConnectionDTO> delete(@Nonnull final String processGroupId, @Nonnull final String connectionId) {
         try {
-            return Optional.of(client.delete("/controller/process-groups/" + processGroupId + "/connections/" + connectionId, new HashMap<>(), ConnectionEntity.class).getConnection());
+            client.delete("/controller/process-groups/" + processGroupId + "/connections/" + connectionId, new HashMap<>(), ConnectionEntity.class);
+            return Optional.of(new ConnectionDTO());
         } catch (final NotFoundException e) {
             return Optional.empty();
         }
@@ -57,9 +58,8 @@ public class NiFiConnectionsRestClientV0 extends AbstractNiFiConnectionsRestClie
     @Override
     protected Optional<DropRequestDTO> deleteDropRequest(@Nonnull final String processGroupId, @Nonnull final String connectionId, @Nonnull final String dropRequestId) {
         try {
-            final DropRequestEntity dropRequest = client.delete("/controller/process-groups/" + processGroupId + "/connections/" + connectionId + "/drop-requests/" + dropRequestId, null,
-                                                                DropRequestEntity.class);
-            return Optional.of(dropRequest.getDropRequest());
+            client.delete("/controller/process-groups/" + processGroupId + "/connections/" + connectionId + "/drop-requests/" + dropRequestId, null, DropRequestEntity.class);
+            return Optional.of(new DropRequestDTO());
         } catch (NotFoundException e) {
             return Optional.empty();
         }

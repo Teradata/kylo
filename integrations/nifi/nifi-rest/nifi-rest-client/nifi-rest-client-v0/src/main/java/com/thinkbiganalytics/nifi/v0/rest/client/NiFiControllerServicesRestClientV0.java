@@ -41,7 +41,8 @@ public class NiFiControllerServicesRestClientV0 implements NiFiControllerService
     @Override
     public Optional<ControllerServiceDTO> delete(@Nonnull final String id) {
         try {
-            return Optional.of(client.delete(BASE_PATH + "/" + client.getClusterType() + "/" + id, new HashMap<>(), ControllerServiceEntity.class).getControllerService());
+            client.delete(BASE_PATH + "/" + client.getClusterType() + "/" + id, new HashMap<>(), ControllerServiceEntity.class);
+            return Optional.of(new ControllerServiceDTO());
         } catch (NotFoundException e) {
             return Optional.empty();
         }
