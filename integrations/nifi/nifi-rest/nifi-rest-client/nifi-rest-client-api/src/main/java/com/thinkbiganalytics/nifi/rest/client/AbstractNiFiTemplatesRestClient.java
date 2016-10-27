@@ -29,7 +29,6 @@ public abstract class AbstractNiFiTemplatesRestClient implements NiFiTemplatesRe
 
         FormDataContentDisposition.FormDataContentDispositionBuilder disposition = FormDataContentDisposition.name(templatePart.getName());
         disposition.fileName((name == null) ? "import_template_" + System.currentTimeMillis() : name);
-        disposition.size(xml.length());
         templatePart.setFormDataContentDisposition(disposition.build());
 
         // Combine parts
