@@ -5,7 +5,7 @@ import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.nifi.feedmgr.InputOutputPort;
-import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
+import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClientConfig;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessorSchedule;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
@@ -15,10 +15,10 @@ import com.thinkbiganalytics.rest.JerseyClientException;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.NoHttpResponseException;
 import org.apache.http.conn.HttpHostConnectException;
+import org.apache.nifi.web.api.dto.ConnectionDTO;
+import org.apache.nifi.web.api.dto.ListingRequestDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
-import org.apache.nifi.web.api.entity.ConnectionEntity;
-import org.apache.nifi.web.api.entity.ListingRequestEntity;
 import org.apache.nifi.web.api.entity.ProvenanceEventEntity;
 
 import java.io.IOException;
@@ -37,45 +37,12 @@ import javax.ws.rs.ProcessingException;
 public class NifiRestTest {
 
 
-    private NifiRestClient restClient;
+    private LegacyNifiRestClient restClient;
 
     //@Before
     public void setupRestClient() {
-        NifiRestClientConfig config = new NifiRestClientConfig();
-        config.setHost("localhost");
-        config.setPort(8079);
-        restClient = new NifiRestClient(config);
+        restClient = new LegacyNifiRestClient();
     }
-
-
-
-
-    //@Test
-    public void testReplay() {
-
-        ProvenanceEventEntity e = restClient.replayProvenanceEvent(3382L);
-    }
-
-    // @Test
-    public void testEvent() {
-        try {
-            ProvenanceEventEntity provenanceEventEntity = restClient.getProvenanceEvent("123456");
-        } catch (Exception e) {
-
-            if (e instanceof NotFoundException) {
-                int i = 0;
-            } else if (e instanceof ProcessingException) {
-                if (e.getCause() instanceof NoHttpResponseException) {
-                    //connection error
-
-                } else if (e.getCause() instanceof HttpHostConnectException) {
-                    //connection error
-                }
-            }
-        }
-
-    }
-
 
     //@Test
     public void testCreateFeed1() throws JerseyClientException {
@@ -209,33 +176,4 @@ public class NifiRestTest {
         Set<ProcessorDTO> failureProcessors = restClient.getFailureProcessors(id);
         int i = 0;
     }
-
-    // @Test
-    public void testConnection() throws JerseyClientException {
-        ConnectionEntity entity = restClient.getConnection("72f23ad8-2b7f-47e6-a6db-f8e92b7d1f59", "9ed6ea0f-8401-4e56-826e-f5b7556976b9");
-
-        ListingRequestEntity queue = restClient.getConnectionQueue("72f23ad8-2b7f-47e6-a6db-f8e92b7d1f59", "9ed6ea0f-8401-4e56-826e-f5b7556976b9");
-
-        int i = 0;
-
-    }
-
-    // @Test
-    public void testStopInputs() throws JerseyClientException {
-        String id = "b1d5e073-f3cd-4339-86ea-7a28434bca43";
-        restClient.disableAllInputProcessors(id);
-        //attempt to stop all processors
-        try {
-            restClient.stopInputs(id);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        String connectionId = "61e16428-9368-4f40-a0bb-7acaae92b286";
-        String groupId = "01fd0596-0bb7-47b3-a5b7-eaccbe10d645";
-        ConnectionEntity connectionEntity = restClient.getConnection(groupId, connectionId);
-        restClient.deleteConnection(connectionEntity.getConnection(), false);
-
-    }
-
-
 }

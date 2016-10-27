@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <artifactId>thinkbig-nifi</artifactId>
+        <groupId>com.thinkbiganalytics.datalake</groupId>
+        <version>0.4.2-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>thinkbig-nifi-framework</artifactId>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>nifi-framework-api</module>
+        <module>nifi-framework-v0</module>
+        <module>nifi-framework-v1</module>
+    </modules>
+
+</project>

@@ -5,6 +5,7 @@
 package com.thinkbiganalytics.nifi.v2.ingest;
 
 import com.thinkbiganalytics.ingest.TableMergeSyncSupport;
+import com.thinkbiganalytics.nifi.processor.AbstractNiFiProcessor;
 import com.thinkbiganalytics.nifi.v2.thrift.ThriftService;
 import com.thinkbiganalytics.util.ColumnSpec;
 import com.thinkbiganalytics.util.PartitionSpec;
@@ -16,7 +17,7 @@ import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.flowfile.FlowFile;
-import org.apache.nifi.logging.ProcessorLog;
+import org.apache.nifi.logging.ComponentLog;
 import org.apache.nifi.processor.AbstractProcessor;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
@@ -48,7 +49,7 @@ import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.THRIFT_SERVI
 @CapabilityDescription("Fully synchronize or Merge values from a feed partition into the target table optionally supporting de-dupe and overwriting partitions. Sync will overwrite the entire table "
                        + "to match the source."
 )
-public class MergeTable extends AbstractProcessor {
+public class MergeTable extends AbstractNiFiProcessor {
 
     /**
      * Merge using primary key
@@ -127,7 +128,7 @@ public class MergeTable extends AbstractProcessor {
 
     @Override
     public void onTrigger(final ProcessContext context, final ProcessSession session) throws ProcessException {
-        final ProcessorLog logger = getLogger();
+        final ComponentLog logger = getLog();
         FlowFile flowFile = session.get();
         if (flowFile == null) {
             return;
@@ -145,7 +146,7 @@ public class MergeTable extends AbstractProcessor {
             .orElse(new ColumnSpec[0]);
 
         if (STRATEGY_PK_MERGE.equals(mergeStrategyValue) && (columnSpecs == null || columnSpecs.length == 0)) {
-            getLogger().error("Missing required field specification for PK merge feature");
+            getLog().error("Missing required field specification for PK merge feature");
             session.transfer(flowFile, IngestProperties.REL_FAILURE);
             return;
         }

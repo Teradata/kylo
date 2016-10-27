@@ -170,6 +170,28 @@
               </sources>
             </mapping>
             <mapping>
+              <directory>${rpm.install.dir}/thinkbig-services</directory>
+              <filemode>${file.permissions}</filemode>
+              <username>${rpm.user}</username>
+              <groupname>${rpm.user}</groupname>
+              <sources>
+                <source>
+                  <location>../integrations/nifi/nifi-rest/nifi-rest-client/nifi-rest-client-v0/target/thinkbig-nifi-rest-client-v0-${project.version}-distribution.tar.gz</location>
+                </source>
+              </sources>
+            </mapping>
+            <mapping>
+              <directory>${rpm.install.dir}/thinkbig-services</directory>
+              <filemode>${file.permissions}</filemode>
+              <username>${rpm.user}</username>
+              <groupname>${rpm.user}</groupname>
+              <sources>
+                <source>
+                  <location>../integrations/nifi/nifi-rest/nifi-rest-client/nifi-rest-client-v1/target/thinkbig-nifi-rest-client-v1-${project.version}-distribution.tar.gz</location>
+                </source>
+              </sources>
+            </mapping>
+            <mapping>
               <directory>${rpm.install.dir}/thinkbig-services/conf</directory>
               <filemode>${file.permissions}</filemode>
               <username>${rpm.user}</username>
@@ -326,13 +348,12 @@
                 <source>
                   <location>./setup/nifi</location>
                   <includes>
-                    <include>logback.xml</include>
-                    <include>bootstrap.conf</include>
-                    <include>nifi.properties</include>
-                    <include>nifi</include>
+                    <include>create-symbolic-links.sh</include>
                     <include>install-nifi.sh</include>
                     <include>install-thinkbig-components.sh</include>
-                    <include>create-symbolic-links.sh</include>
+                    <include>nifi</include>
+                    <include>nifi.properties</include>
+                    <include>nifi-env.sh</include>
                     <include>update-nars-jars.sh</include>
                   </includes>
                 </source>
@@ -343,33 +364,63 @@
                   </includes>
                 </source>
                 <source>
-                  <location>../integrations/nifi/nifi-nar-bundles/nifi-core-bundle/nifi-core-nar/target</location>
+                  <location>../integrations/nifi/nifi-nar-bundles/nifi-core-bundle/nifi-core-v0-nar/target</location>
                   <includes>
-                    <include>thinkbig-nifi-core-nar-${project.version}.nar</include>
+                    <include>thinkbig-nifi-core-v0-nar-${project.version}.nar</include>
                   </includes>
                 </source>
                 <source>
-                  <location>../integrations/nifi/nifi-nar-bundles/nifi-elasticsearch-bundle/nifi-elasticsearch-nar/target</location>
+                  <location>../integrations/nifi/nifi-nar-bundles/nifi-core-bundle/nifi-core-v1-nar/target</location>
                   <includes>
-                    <include>thinkbig-nifi-elasticsearch-nar-${project.version}.nar</include>
+                    <include>thinkbig-nifi-core-v1-nar-${project.version}.nar</include>
                   </includes>
                 </source>
                 <source>
-                  <location>../integrations/nifi/nifi-nar-bundles/nifi-hadoop-bundle/nifi-hadoop-bundle-nar/target</location>
+                  <location>../integrations/nifi/nifi-nar-bundles/nifi-elasticsearch-bundle/nifi-elasticsearch-v0-nar/target</location>
                   <includes>
-                    <include>thinkbig-nifi-hadoop-nar-${project.version}.nar</include>
+                    <include>thinkbig-nifi-elasticsearch-v0-nar-${project.version}.nar</include>
                   </includes>
                 </source>
                 <source>
-                  <location>../integrations/nifi/nifi-nar-bundles/nifi-provenance-repo-bundle/nifi-provenance-repo-nar/target</location>
+                  <location>../integrations/nifi/nifi-nar-bundles/nifi-elasticsearch-bundle/nifi-elasticsearch-v1-nar/target</location>
                   <includes>
-                    <include>thinkbig-nifi-provenance-repo-nar-${project.version}.nar</include>
+                    <include>thinkbig-nifi-elasticsearch-v1-nar-${project.version}.nar</include>
                   </includes>
                 </source>
                 <source>
-                  <location>../integrations/nifi/nifi-nar-bundles/nifi-spark-bundle/nifi-spark-nar/target</location>
+                  <location>../integrations/nifi/nifi-nar-bundles/nifi-hadoop-bundle/nifi-hadoop-bundle-v0-nar/target</location>
                   <includes>
-                    <include>thinkbig-nifi-spark-nar-${project.version}.nar</include>
+                    <include>thinkbig-nifi-hadoop-v0-nar-${project.version}.nar</include>
+                  </includes>
+                </source>
+                <source>
+                  <location>../integrations/nifi/nifi-nar-bundles/nifi-hadoop-bundle/nifi-hadoop-bundle-v1-nar/target</location>
+                  <includes>
+                    <include>thinkbig-nifi-hadoop-v1-nar-${project.version}.nar</include>
+                  </includes>
+                </source>
+                <source>
+                  <location>../integrations/nifi/nifi-nar-bundles/nifi-provenance-repo-bundle/nifi-provenance-repo-v0-nar/target</location>
+                  <includes>
+                    <include>thinkbig-nifi-provenance-repo-v0-nar-${project.version}.nar</include>
+                  </includes>
+                </source>
+                <source>
+                  <location>../integrations/nifi/nifi-nar-bundles/nifi-provenance-repo-bundle/nifi-provenance-repo-v1-nar/target</location>
+                  <includes>
+                    <include>thinkbig-nifi-provenance-repo-v1-nar-${project.version}.nar</include>
+                  </includes>
+                </source>
+                <source>
+                  <location>../integrations/nifi/nifi-nar-bundles/nifi-spark-bundle/nifi-spark-v0-nar/target</location>
+                  <includes>
+                    <include>thinkbig-nifi-spark-v0-nar-${project.version}.nar</include>
+                  </includes>
+                </source>
+                <source>
+                  <location>../integrations/nifi/nifi-nar-bundles/nifi-spark-bundle/nifi-spark-v1-nar/target</location>
+                  <includes>
+                    <include>thinkbig-nifi-spark-v1-nar-${project.version}.nar</include>
                   </includes>
                 </source>
                 <source>
@@ -379,9 +430,15 @@
                   </includes>
                 </source>
                 <source>
-                  <location>../integrations/nifi/nifi-nar-bundles/nifi-standard-services/nifi-hadoop-service-bundle/nifi-hadoop-service-nar/target</location>
+                  <location>../integrations/nifi/nifi-nar-bundles/nifi-standard-services/nifi-hadoop-service-bundle/nifi-hadoop-service-v0-nar/target</location>
                   <includes>
-                    <include>thinkbig-nifi-hadoop-service-nar-${project.version}.nar</include>
+                    <include>thinkbig-nifi-hadoop-service-v0-nar-${project.version}.nar</include>
+                  </includes>
+                </source>
+                <source>
+                  <location>../integrations/nifi/nifi-nar-bundles/nifi-standard-services/nifi-hadoop-service-bundle/nifi-hadoop-service-v1-nar/target</location>
+                  <includes>
+                    <include>thinkbig-nifi-hadoop-service-v1-nar-${project.version}.nar</include>
                   </includes>
                 </source>
                 <source>

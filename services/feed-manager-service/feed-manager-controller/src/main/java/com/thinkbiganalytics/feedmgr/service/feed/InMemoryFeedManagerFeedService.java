@@ -14,7 +14,7 @@ import com.thinkbiganalytics.feedmgr.service.FileObjectPersistence;
 import com.thinkbiganalytics.feedmgr.service.category.FeedManagerCategoryService;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
-import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
+import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 import com.thinkbiganalytics.rest.model.LabelValue;
 
@@ -36,7 +36,7 @@ import javax.inject.Inject;
 public class InMemoryFeedManagerFeedService extends AbstractFeedManagerFeedService implements FeedManagerFeedService {
 
     @Inject
-    private NifiRestClient nifiRestClient;
+    private LegacyNifiRestClient nifiRestClient;
 
     @Inject
     private FeedManagerCategoryService categoryProvider;

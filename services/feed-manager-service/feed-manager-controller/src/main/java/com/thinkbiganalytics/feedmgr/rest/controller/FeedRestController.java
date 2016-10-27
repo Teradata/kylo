@@ -15,7 +15,7 @@ import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
 import com.thinkbiganalytics.hive.service.HiveService;
 import com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
-import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
+import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 import com.thinkbiganalytics.policy.rest.model.PreconditionRule;
@@ -76,7 +76,7 @@ public class FeedRestController {
 
     @Autowired
     @Qualifier("nifiRestClient")
-    NifiRestClient nifiRestClient;
+    LegacyNifiRestClient nifiRestClient;
 
     @Autowired
     MetadataService metadataService;
@@ -164,9 +164,9 @@ public class FeedRestController {
         Map<String, Set<PortDTO>> portMap = new HashMap<>();
         for (FeedMetadata metadata : reusableFeeds) {
             //fetch the ports
-            InputPortsEntity inputPortsEntity = nifiRestClient.getInputPorts(metadata.getNifiProcessGroupId());
+            Set<PortDTO> inputPortsEntity = nifiRestClient.getInputPorts(metadata.getNifiProcessGroupId());
             if (inputPortsEntity != null) {
-                portMap.put(metadata.getFeedName(), inputPortsEntity.getInputPorts());
+                portMap.put(metadata.getFeedName(), inputPortsEntity);
             }
         }
         return Response.ok(portMap).build();

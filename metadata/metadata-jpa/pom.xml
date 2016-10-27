@@ -1,12 +1,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
+
     <artifactId>thinkbig-metadata-jpa</artifactId>
     <parent>
         <groupId>com.thinkbiganalytics.metadata</groupId>
         <artifactId>thinkbig-metadata</artifactId>
-        <version>0.1.0-SNAPSHOT</version>
+        <version>0.4.2-SNAPSHOT</version>
     </parent>
 
     <dependencies>
@@ -54,7 +54,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <!-- 
+        <!--
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-autoconfigure</artifactId>
@@ -74,7 +74,7 @@
             <artifactId>hibernate-entitymanager</artifactId>
             <version>${hibernate.version}</version>
         </dependency>
-        <!-- 
+        <!--
         <dependency>
             <groupId>joda-time</groupId>
             <artifactId>joda-time-hibernate</artifactId>
@@ -104,8 +104,8 @@
             <artifactId>h2</artifactId>
             <version>1.4.191</version>
         </dependency>
-        
-        
+
+
         <!-- Testing -->
         <dependency>
             <groupId>org.springframework</groupId>
@@ -168,17 +168,17 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <!-- 
+                    <!--
                     <dialect>org.hibernate.dialect.MySQL5InnoDBDialect</dialect>
                     <url>jdbc:mysql://localhost:3306/pipeline_db</url>
                     <driver>com.mysql.jdbc.Driver</driver>
                     <username>root</username>
                     -->
-                    
+
                     <dialect>org.hibernate.dialect.H2Dialect</dialect>
                     <url>jdbc:h2:file:./target/db</url>
                     <driver>org.h2.Driver</driver>
-                    <username>sa</username> 
+                    <username>sa</username>
 
                     <export>false</export>
                     <skip>false</skip>
@@ -201,7 +201,7 @@
         </plugins>
         <pluginManagement>
             <plugins>
-                <!--This plugin's configuration is used to store Eclipse 
+                <!--This plugin's configuration is used to store Eclipse
                     m2e settings only. It has no influence on the Maven build itself. -->
                 <plugin>
                     <groupId>org.eclipse.m2e</groupId>

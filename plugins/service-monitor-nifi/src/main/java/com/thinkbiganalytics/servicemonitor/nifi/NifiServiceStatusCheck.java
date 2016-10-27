@@ -1,14 +1,14 @@
 package com.thinkbiganalytics.servicemonitor.nifi;
 
 
-import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
+import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.servicemonitor.check.ServiceStatusCheck;
 import com.thinkbiganalytics.servicemonitor.model.DefaultServiceComponent;
 import com.thinkbiganalytics.servicemonitor.model.DefaultServiceStatusResponse;
 import com.thinkbiganalytics.servicemonitor.model.ServiceComponent;
 import com.thinkbiganalytics.servicemonitor.model.ServiceStatusResponse;
 
-import org.apache.nifi.web.api.entity.AboutEntity;
+import org.apache.nifi.web.api.dto.AboutDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -24,7 +24,7 @@ public class NifiServiceStatusCheck implements ServiceStatusCheck {
 
   @Autowired
   @Qualifier("nifiRestClient")
- private NifiRestClient nifiRestClient;
+ private LegacyNifiRestClient nifiRestClient;
 
   public NifiServiceStatusCheck(){
   }
@@ -40,9 +40,9 @@ public class NifiServiceStatusCheck implements ServiceStatusCheck {
     Map<String, Object> properties = new HashMap<>();
 
     try {
-      AboutEntity aboutEntity = nifiRestClient.getNifiVersion();
+      AboutDTO aboutEntity = nifiRestClient.getNifiVersion();
 
-      String nifiVersion = aboutEntity.getAbout().getVersion();
+      String nifiVersion = aboutEntity.getVersion();
       component =
           new DefaultServiceComponent.Builder(componentName + " - " + nifiVersion, ServiceComponent.STATE.UP)
               .message("Nifi is up.").properties(properties).build();
@@ -53,7 +53,7 @@ public class NifiServiceStatusCheck implements ServiceStatusCheck {
     return new DefaultServiceStatusResponse(serviceName, Arrays.asList(component));
   }
 
-  public void setNifiRestClient(NifiRestClient nifiRestClient) {
+  public void setNifiRestClient(LegacyNifiRestClient nifiRestClient) {
     this.nifiRestClient = nifiRestClient;
   }
 }

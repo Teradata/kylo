@@ -3,6 +3,10 @@ package com.thinkbiganalytics.nifi.v2.sqoop.core;
 /**
  * @author jagrut sharma
  */
+
+import com.thinkbiganalytics.nifi.processor.AbstractNiFiProcessor;
+import com.thinkbiganalytics.nifi.security.KerberosProperties;
+import com.thinkbiganalytics.nifi.security.SpringSecurityContextLoader;
 import com.thinkbiganalytics.nifi.v2.sqoop.SqoopConnectionService;
 import com.thinkbiganalytics.nifi.v2.sqoop.enums.CompressionAlgorithm;
 import com.thinkbiganalytics.nifi.v2.sqoop.enums.HiveDelimStrategy;
@@ -18,7 +22,6 @@ import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.components.ValidationContext;
 import org.apache.nifi.components.ValidationResult;
-import org.apache.nifi.components.Validator;
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.flowfile.attributes.CoreAttributes;
 import org.apache.nifi.logging.ComponentLog;
@@ -29,10 +32,8 @@ import org.apache.nifi.processor.ProcessorInitializationContext;
 import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.exception.ProcessException;
 import org.apache.nifi.processor.util.StandardValidators;
-import org.apache.nifi.util.NiFiProperties;
 import org.apache.nifi.util.StopWatch;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -55,22 +56,7 @@ import java.util.concurrent.TimeUnit;
 /*
  * A processor to run a Sqoop import job to fetch data from a relational system into HDFS
  */
-public class ImportSqoop extends AbstractProcessor {
-
-    public static final PropertyDescriptor KERBEROS_PRINCIPAL = new PropertyDescriptor.Builder()
-        .name("Kerberos Principal")
-        .required(false)
-        .description("Kerberos principal to authenticate as. Requires nifi.kerberos.krb5.file to be set in your nifi.properties.")
-        .addValidator(kerberosConfigValidator())
-        .build();
-
-    public static final PropertyDescriptor KERBEROS_KEYTAB = new PropertyDescriptor.Builder()
-        .name("Kerberos Keytab")
-        .required(false)
-        .description("Kerberos keytab associated with the principal. Requires nifi.kerberos.krb5.file to be set in your nifi.properties.")
-        .addValidator(StandardValidators.FILE_EXISTS_VALIDATOR)
-        .addValidator(kerberosConfigValidator())
-        .build();
+public class ImportSqoop extends AbstractNiFiProcessor {
 
     public static final PropertyDescriptor FEED_CATEGORY = new PropertyDescriptor.Builder()
         .name("System Feed Category")
@@ -256,15 +242,29 @@ public class ImportSqoop extends AbstractProcessor {
         .description("Sqoop import failure")
         .build();
 
+    /** Property for Kerberos service keytab */
+    private PropertyDescriptor kerberosKeytab;
+
+    /** Property for Kerberos service principal */
+    private PropertyDescriptor kerberosPrincipal;
+
     private List<PropertyDescriptor> properties;
     private Set<Relationship> relationships;
 
     @Override
     protected void init(final ProcessorInitializationContext context) {
+        super.init(context);
 
+        // Create Kerberos properties
+        final SpringSecurityContextLoader securityContextLoader = SpringSecurityContextLoader.create(context);
+        final KerberosProperties kerberosProperties = securityContextLoader.getKerberosProperties();
+        kerberosKeytab = kerberosProperties.createKerberosKeytabProperty();
+        kerberosPrincipal = kerberosProperties.createKerberosPrincipalProperty();
+
+        // Create list of properties
         final List<PropertyDescriptor> properties = new ArrayList<>();
-        properties.add(KERBEROS_PRINCIPAL);
-        properties.add(KERBEROS_KEYTAB);
+        properties.add(kerberosPrincipal);
+        properties.add(kerberosKeytab);
         properties.add(FEED_CATEGORY);
         properties.add(FEED_NAME);
         properties.add(SQOOP_CONNECTION_SERVICE);
@@ -286,6 +286,7 @@ public class ImportSqoop extends AbstractProcessor {
         properties.add(TARGET_COMPRESSION_ALGORITHM);
         this.properties = Collections.unmodifiableList(properties);
 
+        // Create list of relationships
         final Set<Relationship> relationships = new HashSet<>();
         relationships.add(REL_SUCCESS);
         relationships.add(REL_FAILURE);
@@ -304,7 +305,7 @@ public class ImportSqoop extends AbstractProcessor {
 
     @Override
     public void onTrigger(ProcessContext context, ProcessSession session) throws ProcessException {
-        final ComponentLog logger = getLogger();
+        final ComponentLog logger = getLog();
         FlowFile flowFile = session.get();
 
         if (flowFile == null) {
@@ -315,8 +316,8 @@ public class ImportSqoop extends AbstractProcessor {
             logger.info("Using an existing flow file having uuid: {}", new Object[] { flowFile.getAttribute(CoreAttributes.UUID.key()) } );
         }
 
-        final String kerberosPrincipal = context.getProperty(KERBEROS_PRINCIPAL).getValue();
-        final String kerberosKeyTab = context.getProperty(KERBEROS_KEYTAB).getValue();
+        final String kerberosPrincipal = context.getProperty(this.kerberosPrincipal).getValue();
+        final String kerberosKeyTab = context.getProperty(kerberosKeytab).getValue();
         final String feedCategory = context.getProperty(FEED_CATEGORY).evaluateAttributeExpressions(flowFile).getValue();
         final String feedName = context.getProperty(FEED_NAME).evaluateAttributeExpressions(flowFile).getValue();
         final SqoopConnectionService sqoopConnectionService = context.getProperty(SQOOP_CONNECTION_SERVICE).asControllerService(SqoopConnectionService.class);
@@ -466,7 +467,7 @@ public class ImportSqoop extends AbstractProcessor {
         String[] logLines = sqoopProcessResult.getLogLines();
 
         if ((sqoopProcessResult.getExitValue() != 0) || (logLines[0] == null)) {
-            getLogger().error("Skipping attempt to retrieve number of records extracted");
+            getLog().error("Skipping attempt to retrieve number of records extracted");
             return -1;
         }
 
@@ -484,7 +485,7 @@ public class ImportSqoop extends AbstractProcessor {
             return Integer.valueOf(numberString);
         }
         catch (Exception e) {
-            getLogger().error("Unable to parse number of records extracted. " + e.getMessage());
+            getLog().error("Unable to parse number of records extracted. " + e.getMessage());
             return -1;
         }
     }
@@ -508,35 +509,5 @@ public class ImportSqoop extends AbstractProcessor {
             int start = newHighWaterMarkLogLine.indexOf("--last-value");
             return newHighWaterMarkLogLine.substring(start + 12, end).trim();
         }
-    }
-
-    public static final Validator kerberosConfigValidator() {
-        return new Validator() {
-
-            @Override
-            public ValidationResult validate(String subject, String input, ValidationContext context) {
-
-                File nifiProperties = NiFiProperties.getInstance().getKerberosConfigurationFile();
-
-                // Check that the Kerberos configuration is set
-                if (nifiProperties == null) {
-                    return new ValidationResult.Builder()
-                        .subject(subject).input(input).valid(false)
-                        .explanation("you are missing the nifi.kerberos.krb5.file property which "
-                                     + "must be set in order to use Kerberos")
-                        .build();
-                }
-
-                // Check that the Kerberos configuration is readable
-                if (!nifiProperties.canRead()) {
-                    return new ValidationResult.Builder().subject(subject).input(input).valid(false)
-                        .explanation(String.format("unable to read Kerberos config [%s], please make sure the path is valid "
-                                                   + "and nifi has adequate permissions", nifiProperties.getAbsoluteFile()))
-                        .build();
-                }
-
-                return new ValidationResult.Builder().subject(subject).input(input).valid(true).build();
-            }
-        };
     }
 }

@@ -8,6 +8,7 @@ import com.thinkbiganalytics.metadata.rest.model.event.FeedCleanupTriggerEvent;
 import com.thinkbiganalytics.nifi.core.api.cleanup.CleanupEventService;
 import com.thinkbiganalytics.nifi.core.api.cleanup.CleanupListener;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
+import com.thinkbiganalytics.nifi.processor.AbstractNiFiProcessor;
 
 import org.apache.nifi.annotation.behavior.EventDriven;
 import org.apache.nifi.annotation.behavior.InputRequirement;
@@ -41,7 +42,7 @@ import javax.annotation.Nullable;
 @EventDriven
 @InputRequirement(InputRequirement.Requirement.INPUT_ALLOWED)
 @Tags({"cleanup", "trigger", "thinkbig"})
-public class TriggerCleanup extends AbstractProcessor implements CleanupListener {
+public class TriggerCleanup extends AbstractNiFiProcessor implements CleanupListener {
 
     /** Property for the category system name */
     public static final PropertyDescriptor CATEGORY_NAME = new PropertyDescriptor.Builder()
@@ -123,7 +124,7 @@ public class TriggerCleanup extends AbstractProcessor implements CleanupListener
         try {
             feedId = getMetadataService(context).getProvider().getFeedId(category, feed);
         } catch (Exception e) {
-            getLogger().warn("Failure retrieving metadata for feed: {}.{}", new Object[]{ category, feed }, e);
+            getLog().warn("Failure retrieving metadata for feed: {}.{}", new Object[]{ category, feed }, e);
             throw new IllegalStateException("Failed to retrieve feed metadata", e);
         }
 
@@ -147,7 +148,7 @@ public class TriggerCleanup extends AbstractProcessor implements CleanupListener
             throw new IllegalStateException("Failed to fetch properties for feed: " + feedId);
         }
         if (!properties.containsKey(FeedProperties.CLEANUP_ENABLED) || !"true".equals(properties.getProperty(FeedProperties.CLEANUP_ENABLED))) {
-            getLogger().info("Ignoring cleanup event because deleteEnabled is false for feed: {}", new Object[]{ feedId });
+            getLog().info("Ignoring cleanup event because deleteEnabled is false for feed: {}", new Object[]{ feedId });
             context.yield();
             return;  // ignore events if deleteEnabled is not true
         }
@@ -181,7 +182,7 @@ public class TriggerCleanup extends AbstractProcessor implements CleanupListener
 
     @Override
     public void triggered(@Nonnull final FeedCleanupTriggerEvent event) {
-        getLogger().debug("Cleanup event triggered: {}", new Object[]{ event });
+        getLog().debug("Cleanup event triggered: {}", new Object[]{ event });
         queue.add(event);
     }
 

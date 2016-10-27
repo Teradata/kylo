@@ -2,6 +2,7 @@ package com.thinkbiganalytics.auth;
 
 import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
 
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -28,6 +29,7 @@ import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
 public class SimpleAuthConfig {
     
     @Bean(name = "authenticationService")
+    @ConfigurationProperties("authenticationService")
     public AuthenticationService authenticationService() {
         return new SimpleAuthenticationService();
     }

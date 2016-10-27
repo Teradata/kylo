@@ -3,7 +3,7 @@ package com.thinkbiganalytics.feedmgr.nifi;
 import com.thinkbiganalytics.db.PoolingDataSourceService;
 import com.thinkbiganalytics.db.model.schema.TableSchema;
 import com.thinkbiganalytics.kerberos.KerberosTicketConfiguration;
-import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
+import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.schema.DBSchemaParser;
 
 import org.apache.commons.lang3.StringUtils;
@@ -32,7 +32,7 @@ public class DBCPConnectionPoolTableInfo {
     private static final Logger log = LoggerFactory.getLogger(DBCPConnectionPoolTableInfo.class);
 
     @Autowired
-    NifiRestClient nifiRestClient;
+    LegacyNifiRestClient nifiRestClient;
 
     @Inject
     @Qualifier("kerberosHiveConfiguration")

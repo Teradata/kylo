@@ -6,6 +6,9 @@
     <includeBaseDirectory>true</includeBaseDirectory>
     <dependencySets>
         <dependencySet>
+            <excludes>
+                <exclude>org.apache.nifi:*</exclude>
+            </excludes>
             <outputDirectory>lib</outputDirectory>
         </dependencySet>
     </dependencySets>

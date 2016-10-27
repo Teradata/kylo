@@ -4,13 +4,15 @@
 
 package com.thinkbiganalytics.nifi.v2.elasticsearch;
 
+import com.thinkbiganalytics.nifi.processor.AbstractNiFiProcessor;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.nifi.annotation.behavior.InputRequirement;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.flowfile.FlowFile;
-import org.apache.nifi.logging.ProcessorLog;
+import org.apache.nifi.logging.ComponentLog;
 import org.apache.nifi.processor.AbstractProcessor;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
@@ -31,7 +33,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.nio.charset.Charset;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * This processor indexes json data in elasticsearch
@@ -39,7 +46,7 @@ import java.util.*;
 @InputRequirement(InputRequirement.Requirement.INPUT_REQUIRED)
 @Tags({"elasticsearch", "thinkbig"})
 @CapabilityDescription("Write FlowFile from a JSON array to Elasticsearch (V2)")
-public class IndexElasticSearch extends AbstractProcessor {
+public class IndexElasticSearch extends AbstractNiFiProcessor {
 
     // relationships
     public static final Relationship REL_SUCCESS = new Relationship.Builder()
@@ -120,7 +127,7 @@ public class IndexElasticSearch extends AbstractProcessor {
 
     @Override
     public void onTrigger(final ProcessContext context, final ProcessSession session) throws ProcessException {
-        final ProcessorLog logger = getLogger();
+        final ComponentLog logger = getLog();
         FlowFile flowFile = session.get();
         if (flowFile == null) return;
         try {
@@ -161,7 +168,7 @@ public class IndexElasticSearch extends AbstractProcessor {
     }
 
     private boolean sendToElasticSearch(String json, String hostName, String index, String type, String clusterName, String idField) throws Exception {
-        final ProcessorLog logger = getLogger();
+        final ComponentLog logger = getLog();
         Settings settings = Settings.settingsBuilder()
                 .put("cluster.name", clusterName).build();
         Client client = TransportClient.builder().settings(settings).build()

@@ -1,19 +1,19 @@
 package com.thinkbiganalytics.feedmgr.rest.controller;
 
+import com.google.common.collect.ImmutableMap;
 import com.thinkbiganalytics.db.model.schema.TableSchema;
 import com.thinkbiganalytics.feedmgr.nifi.DBCPConnectionPoolTableInfo;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.SpringEnvironmentProperties;
 import com.thinkbiganalytics.nifi.feedmgr.TemplateCreationHelper;
-import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
+import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowDeserializer;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
 
+import org.apache.nifi.web.api.dto.ControllerServiceDTO;
 import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.entity.ControllerServiceTypesEntity;
-import org.apache.nifi.web.api.entity.ControllerServicesEntity;
-import org.apache.nifi.web.api.entity.InputPortsEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +46,7 @@ public class NifiIntegrationRestController {
 
     private static final Logger log = LoggerFactory.getLogger(NifiIntegrationRestController.class);
     @Autowired
-    private NifiRestClient nifiRestClient;
+    private LegacyNifiRestClient nifiRestClient;
 
     @Autowired
     private SpringEnvironmentProperties environmentProperties;
@@ -111,9 +111,9 @@ public class NifiIntegrationRestController {
         ProcessGroupDTO processGroup = nifiRestClient.getProcessGroupByName("root", TemplateCreationHelper.REUSABLE_TEMPLATES_PROCESS_GROUP_NAME);
         if (processGroup != null) {
             //fetch the ports
-            InputPortsEntity inputPortsEntity = nifiRestClient.getInputPorts(processGroup.getId());
-            if (inputPortsEntity != null && inputPortsEntity.getInputPorts() != null && !inputPortsEntity.getInputPorts().isEmpty()) {
-                ports.addAll(inputPortsEntity.getInputPorts());
+            Set<PortDTO> inputPortsEntity = nifiRestClient.getInputPorts(processGroup.getId());
+            if (inputPortsEntity != null && !inputPortsEntity.isEmpty()) {
+                ports.addAll(inputPortsEntity);
             }
         }
         return Response.ok(ports).build();
@@ -124,8 +124,8 @@ public class NifiIntegrationRestController {
     @Path("/controller-services")
     @Produces({MediaType.APPLICATION_JSON})
     public Response getServices() {
-        ControllerServicesEntity entity = nifiRestClient.getControllerServices("NODE");
-        return Response.ok(entity).build();
+        final Set<ControllerServiceDTO> controllerServices = nifiRestClient.getControllerServices();
+        return Response.ok(ImmutableMap.of("controllerServices", controllerServices)).build();
     }
 
 
@@ -133,7 +133,8 @@ public class NifiIntegrationRestController {
     @Path("/controller-services/types")
     @Produces({MediaType.APPLICATION_JSON})
     public Response getServiceTypes() {
-        ControllerServiceTypesEntity entity = nifiRestClient.getControllerServiceTypes();
+        final ControllerServiceTypesEntity entity = new ControllerServiceTypesEntity();
+        entity.setControllerServiceTypes(nifiRestClient.getControllerServiceTypes());
         return Response.ok(entity).build();
     }
 

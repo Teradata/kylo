@@ -37,7 +37,7 @@ import com.thinkbiganalytics.metadata.api.event.feed.FeedOperationStatusEvent;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
 import com.thinkbiganalytics.metadata.api.op.FeedOperation;
-import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
+import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 
@@ -56,7 +56,7 @@ public class FeedManagerMetadataService implements MetadataService {
     FeedManagerFeedService feedProvider;
 
     @Inject
-    NifiRestClient nifiRestClient;
+    LegacyNifiRestClient nifiRestClient;
 
     @Inject
     MetadataAccess metadataAccess;
@@ -203,15 +203,12 @@ public class FeedManagerMetadataService implements MetadataService {
             if (group != null) {
                 ProcessGroupDTO feed = nifiRestClient.getProcessGroupByName(group.getId(), feedSummary.getSystemFeedName());
                 if (feed != null) {
-                    ProcessGroupEntity entity = null;
                     if (state.equals(Feed.State.ENABLED)) {
-                        entity = nifiRestClient.startAll(feed.getId(), feed.getParentGroupId());
+                        ProcessGroupDTO entity = nifiRestClient.startAll(feed.getId(), feed.getParentGroupId());
+                        updatedNifi = (entity != null);
                     } else if (state.equals(Feed.State.DISABLED)) {
-                        entity = nifiRestClient.stopInputs(feed.getId());
-                    }
-
-                    if (entity != null) {
-                        updatedNifi = true;
+                        ProcessGroupDTO entity = nifiRestClient.stopInputs(feed.getId());
+                        updatedNifi = (entity != null);
                     }
                 }
             }

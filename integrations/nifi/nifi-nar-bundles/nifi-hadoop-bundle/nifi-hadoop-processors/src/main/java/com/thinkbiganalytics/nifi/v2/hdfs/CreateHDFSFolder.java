@@ -90,20 +90,12 @@ public class CreateHDFSFolder extends AbstractHadoopProcessor {
         .build();
 
     private static final Set<Relationship> relationships;
-    private static final List<PropertyDescriptor> localProperties;
 
     static {
         final Set<Relationship> rels = new HashSet<>();
         rels.add(REL_SUCCESS);
         rels.add(REL_FAILURE);
         relationships = Collections.unmodifiableSet(rels);
-
-        List<PropertyDescriptor> props = new ArrayList<>(properties);
-        props.add(DIRECTORY);
-        props.add(UMASK);
-        props.add(REMOTE_OWNER);
-        props.add(REMOTE_GROUP);
-        localProperties = Collections.unmodifiableList(props);
     }
 
     @Override
@@ -113,7 +105,12 @@ public class CreateHDFSFolder extends AbstractHadoopProcessor {
 
     @Override
     protected List<PropertyDescriptor> getSupportedPropertyDescriptors() {
-        return localProperties;
+        List<PropertyDescriptor> props = new ArrayList<>(super.getSupportedPropertyDescriptors());
+        props.add(DIRECTORY);
+        props.add(UMASK);
+        props.add(REMOTE_OWNER);
+        props.add(REMOTE_GROUP);
+        return Collections.unmodifiableList(props);
     }
 
     @OnScheduled
@@ -139,31 +136,31 @@ public class CreateHDFSFolder extends AbstractHadoopProcessor {
         try {
             final Configuration configuration = getConfiguration();
 
-            String principal = context.getProperty(KERBEROS_PRINCIPAL).getValue();
-            String keyTab = context.getProperty(KERBEROS_KEYTAB).getValue();
+            String principal = context.getProperty(kerberosPrincipal).getValue();
+            String keyTab = context.getProperty(kerberosKeytab).getValue();
             String hadoopConfigurationResources = context.getProperty(HADOOP_CONFIGURATION_RESOURCES).getValue();
 
             if (SecurityUtil.isSecurityEnabled(configuration)) {
                 if (principal.equals("") && keyTab.equals("")) {
-                    getLogger().error("Kerberos Principal and Kerberos KeyTab information missing in Kerberos enabled cluster.");
+                    getLog().error("Kerberos Principal and Kerberos KeyTab information missing in Kerberos enabled cluster.");
                     session.transfer(flowFile, REL_FAILURE);
                     return;
                 }
 
                 try {
-                    getLogger().info("User authentication initiated");
+                    getLog().info("User authentication initiated");
                     ApplySecurityPolicy applySecurityObject = new ApplySecurityPolicy();
-                    boolean authenticationStatus = applySecurityObject.validateUserWithKerberos(getLogger(), hadoopConfigurationResources, principal, keyTab);
+                    boolean authenticationStatus = applySecurityObject.validateUserWithKerberos(getLog(), hadoopConfigurationResources, principal, keyTab);
                     if (authenticationStatus) {
-                        getLogger().info("User authenticated successfully.");
+                        getLog().info("User authenticated successfully.");
                     } else {
-                        getLogger().info("User authentication failed.");
+                        getLog().info("User authentication failed.");
                         session.transfer(flowFile, REL_FAILURE);
                         return;
                     }
 
                 } catch (Exception unknownException) {
-                    getLogger().error("Unknown exception occured while validating user :" + unknownException.getMessage());
+                    getLog().error("Unknown exception occured while validating user :" + unknownException.getMessage());
                     session.transfer(flowFile, REL_FAILURE);
                     return;
                 }
@@ -172,7 +169,7 @@ public class CreateHDFSFolder extends AbstractHadoopProcessor {
 
             final FileSystem hdfs = getFileSystem();
             if (configuration == null || hdfs == null) {
-                getLogger().error("HDFS not configured properly");
+                getLog().error("HDFS not configured properly");
                 session.transfer(flowFile, REL_FAILURE);
                 context.yield();
                 return;
@@ -187,7 +184,7 @@ public class CreateHDFSFolder extends AbstractHadoopProcessor {
 
             // Create for each path defined
             for (String path : paths) {
-                getLogger().info("Creating folder " + path);
+                getLog().info("Creating folder " + path);
                 final Path folderPath = new Path(path.trim());
                 hdfsSupport.createFolder(folderPath, owner, group);
             }
@@ -195,13 +192,13 @@ public class CreateHDFSFolder extends AbstractHadoopProcessor {
             stopWatch.stop();
             final long millis = stopWatch.getDuration(TimeUnit.MILLISECONDS);
 
-            getLogger().info("created folders {} in {} milliseconds",
+            getLog().info("created folders {} in {} milliseconds",
                              new Object[]{pathString, millis});
 
             session.transfer(flowFile, REL_SUCCESS);
 
         } catch (Exception e) {
-            getLogger().error("failed folder creation {}",
+            getLog().error("failed folder creation {}",
                               new Object[]{e});
             session.transfer(flowFile, REL_FAILURE);
         }

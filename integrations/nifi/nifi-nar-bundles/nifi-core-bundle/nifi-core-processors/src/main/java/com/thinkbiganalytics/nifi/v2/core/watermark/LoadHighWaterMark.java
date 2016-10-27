@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.nifi.v2.core.watermark;
 
@@ -28,7 +28,7 @@ import com.thinkbiganalytics.nifi.v2.common.CommonProperties;
 
 /**
  * Loads a high-water mark and yields any processing if the water mark has not been released yet.
- * 
+ *
  * @author Sean Felten
  */
 @EventDriven
@@ -37,11 +37,11 @@ import com.thinkbiganalytics.nifi.v2.common.CommonProperties;
 @CapabilityDescription("Loads and makes active a watermark associated with a feed.")
 public class LoadHighWaterMark extends HighWaterMarkProcessor {
 
-    protected static final AllowableValue[] ACTIVE_STRATEGY_VALUES = new AllowableValue[] { 
+    protected static final AllowableValue[] ACTIVE_STRATEGY_VALUES = new AllowableValue[] {
                              new AllowableValue("YIELD", "Yield", "Yield processing so that another attempt to obtain the high-water mark can be made later"),
                              new AllowableValue("ROUTE", "Route", "Route immediately to the \"active\" relationship")
                           };
-    
+
     protected static final PropertyDescriptor ACTIVE_WATER_MARK_STRATEGY = new PropertyDescriptor.Builder()
                     .name("Active Water Mark Strategy")
                     .description("Specifies what strategy should be followed when an attempt to obtain the latest high-water mark fails because another "
@@ -50,7 +50,7 @@ public class LoadHighWaterMark extends HighWaterMarkProcessor {
                     .defaultValue("YIELD")
                     .required(true)
                     .build();
-    
+
     protected static final PropertyDescriptor MAX_YIELD_COUNT = new PropertyDescriptor.Builder()
                     .name("Max Yield Count")
                     .description("The maximum number of yields, if the yield strategy is selected, "
@@ -68,12 +68,12 @@ public class LoadHighWaterMark extends HighWaterMarkProcessor {
                     .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
                     .expressionLanguageSupported(true)
                     .build();
-    
+
     public static final Relationship ACTIVE_FAILURE = new Relationship.Builder()
                     .name("activeFailure")
                     .description("The water mark is actively being processed and has not yet been committed or rejected")
                     .build();
-    
+
     private AtomicInteger yieldCount = new AtomicInteger(0);
 
     /* (non-Javadoc)
@@ -90,10 +90,10 @@ public class LoadHighWaterMark extends HighWaterMarkProcessor {
             outputFF = session.create();
             createdFlowfile = true;
         }
-        
+
         if (outputFF != null) {
             outputFF = initialize(context, session, outputFF);
-            
+
             MetadataRecorder recorder = context.getProperty(CommonProperties.METADATA_SERVICE).asControllerService(MetadataProviderService.class).getRecorder();
             String waterMark = context.getProperty(HIGH_WATER_MARK).getValue();
             String propName = context.getProperty(PROPERTY_NAME).getValue();
@@ -101,29 +101,29 @@ public class LoadHighWaterMark extends HighWaterMarkProcessor {
 
             try {
                 String feedId = getFeedId(context, outputFF);
-                
+
                 try {
                     outputFF = recorder.loadWaterMark(session, outputFF, feedId, waterMark, propName, initialValue);
-                } catch (WaterMarkActiveException e) { 
+                } catch (WaterMarkActiveException e) {
                     throw e;
                 } catch (Exception e) {
-                    getLogger().error("Failed to load the current high-water mark: {} for feed {}", new Object[] {waterMark, feedId}, e);
+                    getLog().error("Failed to load the current high-water mark: {} for feed {}", new Object[] {waterMark, feedId}, e);
                     session.transfer(outputFF, CommonProperties.REL_FAILURE);
                 }
-                
+
                 this.yieldCount.set(0);
                 session.transfer(outputFF, CommonProperties.REL_SUCCESS);
             } catch (WaterMarkActiveException e) {
                 PropertyValue value = context.getProperty(MAX_YIELD_COUNT);
                 int maxCount = value.isSet() ? value.asInteger() : Integer.MAX_VALUE - 1;
                 int count = this.yieldCount.incrementAndGet();
-                
+
                 if (maxCount > 0 && count > maxCount) {
-                    getLogger().debug("Water mark {} is active - routing to \"activeFailure\"", new Object[] { waterMark });
+                    getLog().debug("Water mark {} is active - routing to \"activeFailure\"", new Object[] { waterMark });
                     session.transfer(outputFF, ACTIVE_FAILURE);
                 } else {
-                    getLogger().debug("Yielding because water mark {} is active - attempt {} of {}", new Object[] { waterMark, count, maxCount });
-                    
+                    getLog().debug("Yielding because water mark {} is active - attempt {} of {}", new Object[] { waterMark, count, maxCount });
+
                     // Remove the flow file before yielding if we create the flow file
                     if (createdFlowfile) {
                         session.remove(outputFF);
@@ -135,7 +135,7 @@ public class LoadHighWaterMark extends HighWaterMarkProcessor {
                 }
             }
         }
-        
+
     }
 
 
@@ -149,7 +149,7 @@ public class LoadHighWaterMark extends HighWaterMarkProcessor {
         list.add(MAX_YIELD_COUNT);
         list.add(INITIAL_VALUE);
     }
-    
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.nifi.v2.common.BaseProcessor#addRelationships(java.util.Set)
      */

@@ -56,15 +56,12 @@ public class RemoveHDFSFolder extends AbstractHadoopProcessor {
             .description("FlowFiles that removed a directory")
             .build();
 
-    /** Configuration fields */
-    private static final List<PropertyDescriptor> properties = ImmutableList.<PropertyDescriptor>builder().addAll(AbstractHadoopProcessor.properties).add(DIRECTORY).build();
-
     /** Output paths to other NiFi processors */
     private static final Set<Relationship> relationships = ImmutableSet.of(REL_FAILURE, REL_SUCCESS);
 
     @Override
     protected List<PropertyDescriptor> getSupportedPropertyDescriptors() {
-        return properties;
+        return ImmutableList.<PropertyDescriptor>builder().addAll(super.getSupportedPropertyDescriptors()).add(DIRECTORY).build();
     }
 
     @Override
@@ -94,12 +91,12 @@ public class RemoveHDFSFolder extends AbstractHadoopProcessor {
             // Check for possible missing properties - accidentally deleting parent directory instead of child
             String pathString = string.trim();
             if (!pathString.endsWith("/")) {
-                getLogger().error("Path must end with a slash /: " + pathString);
+                getLog().error("Path must end with a slash /: " + pathString);
                 session.transfer(flowFile, REL_FAILURE);
                 return;
             }
             if (pathString.contains("//")) {
-                getLogger().error("Path cannot contain double slashes //: " + pathString);
+                getLog().error("Path cannot contain double slashes //: " + pathString);
                 session.transfer(flowFile, REL_FAILURE);
                 return;
             }
@@ -107,21 +104,21 @@ public class RemoveHDFSFolder extends AbstractHadoopProcessor {
             // Check for relative directories - accidentally deleting folder in home directory
             Path path = new Path(pathString);
             if (!path.isAbsolute()) {
-                getLogger().error("Path is not absolute: " + path);
+                getLog().error("Path is not absolute: " + path);
                 session.transfer(flowFile, REL_FAILURE);
                 return;
             }
 
             // Delete path
-            getLogger().debug("Deleting path: " + path);
+            getLog().debug("Deleting path: " + path);
             try {
                 if (!fileSystem.delete(path, true) && fileSystem.exists(path)) {
-                    getLogger().error("Failed to remove path: " + path);
+                    getLog().error("Failed to remove path: " + path);
                     session.transfer(flowFile, REL_FAILURE);
                     return;
                 }
             } catch (IOException e) {
-                getLogger().error("Failed to remove path: " + path, e);
+                getLog().error("Failed to remove path: " + path, e);
                 session.transfer(flowFile, REL_FAILURE);
                 return;
             }
@@ -142,7 +139,7 @@ public class RemoveHDFSFolder extends AbstractHadoopProcessor {
         // Get Hadoop configuration
         final Configuration configuration = getConfiguration();
         if (configuration == null) {
-            getLogger().error("Missing Hadoop configuration.");
+            getLog().error("Missing Hadoop configuration.");
             return null;
         }
 
@@ -150,25 +147,25 @@ public class RemoveHDFSFolder extends AbstractHadoopProcessor {
         if (SecurityUtil.isSecurityEnabled(configuration)) {
             // Get properties
             String hadoopConfigurationResources = context.getProperty(HADOOP_CONFIGURATION_RESOURCES).getValue();
-            String keyTab = context.getProperty(KERBEROS_KEYTAB).getValue();
-            String principal = context.getProperty(KERBEROS_PRINCIPAL).getValue();
+            String keyTab = context.getProperty(kerberosKeytab).getValue();
+            String principal = context.getProperty(kerberosPrincipal).getValue();
 
             if (keyTab.isEmpty() || principal.isEmpty()) {
-                getLogger().error("Kerberos keytab or principal information missing in Kerberos enabled cluster.");
+                getLog().error("Kerberos keytab or principal information missing in Kerberos enabled cluster.");
                 return null;
             }
 
             // Authenticate
             try {
-                getLogger().debug("User authentication initiated.");
-                if (new ApplySecurityPolicy().validateUserWithKerberos(getLogger(), hadoopConfigurationResources, principal, keyTab)) {
-                    getLogger().debug("User authenticated successfully.");
+                getLog().debug("User authentication initiated.");
+                if (new ApplySecurityPolicy().validateUserWithKerberos(getLog(), hadoopConfigurationResources, principal, keyTab)) {
+                    getLog().debug("User authenticated successfully.");
                 } else {
-                    getLogger().error("User authentication failed.");
+                    getLog().error("User authentication failed.");
                     return null;
                 }
             } catch (Exception e) {
-                getLogger().error("Failed to authenticate:" + e, e);
+                getLog().error("Failed to authenticate:" + e, e);
                 return null;
             }
         }
@@ -178,7 +175,7 @@ public class RemoveHDFSFolder extends AbstractHadoopProcessor {
         if (fileSystem != null) {
             return fileSystem;
         } else {
-            getLogger().error("Hadoop FileSystem not properly configured.");
+            getLog().error("Hadoop FileSystem not properly configured.");
             return null;
         }
     }

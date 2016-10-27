@@ -6,6 +6,7 @@ package com.thinkbiganalytics.nifi.v2.ingest;
 
 import com.thinkbiganalytics.ingest.GetTableDataSupport;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
+import com.thinkbiganalytics.nifi.processor.AbstractNiFiProcessor;
 import com.thinkbiganalytics.nifi.thrift.api.AbstractRowVisitor;
 import com.thinkbiganalytics.util.ComponentAttributes;
 import com.thinkbiganalytics.util.JdbcCommon;
@@ -22,7 +23,7 @@ import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.components.PropertyValue;
 import org.apache.nifi.dbcp.DBCPService;
 import org.apache.nifi.flowfile.FlowFile;
-import org.apache.nifi.logging.ProcessorLog;
+import org.apache.nifi.logging.ComponentLog;
 import org.apache.nifi.processor.AbstractProcessor;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
@@ -30,7 +31,6 @@ import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.exception.ProcessException;
 import org.apache.nifi.processor.io.OutputStreamCallback;
 import org.apache.nifi.processor.util.StandardValidators;
-import org.apache.nifi.util.LongHolder;
 import org.apache.nifi.util.StopWatch;
 
 import java.io.IOException;
@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static com.thinkbiganalytics.nifi.v2.common.CommonProperties.FEED_CATEGORY;
 import static com.thinkbiganalytics.nifi.v2.common.CommonProperties.FEED_NAME;
@@ -64,7 +65,7 @@ import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.REL_SUCCESS;
     "Extracts data from a JDBC source table and can optional extract incremental data if provided criteria. Query result will be converted to CSV format. Streaming is used so arbitrarily large result sets are supported. This processor can be scheduled to run on a timer, or cron expression, using the standard scheduling methods, or it can be triggered by an incoming FlowFile. If it is triggered by an incoming FlowFile, then attributes of that FlowFile will be available when evaluating the select query. FlowFile attribute \'source.row.count\' indicates how many rows were selected.")
 
 // Implements strategies outlined by https://thebibackend.wordpress.com/2011/05/18/incremental-load-part-i-overview/
-public class GetTableData extends AbstractProcessor {
+public class GetTableData extends AbstractNiFiProcessor {
 
     public static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter.ISO_DATE_TIME;
     public static final String RESULT_ROW_COUNT = "source.row.count";
@@ -119,7 +120,7 @@ public class GetTableData extends AbstractProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
-    
+
     public static final PropertyDescriptor HIGH_WATER_MARK_PROP = new PropertyDescriptor.Builder()
         .name("High-Water Mark Property Name")
         .description("Name of the flow file attribute that should contain the current hig-water mark date, and which this processor will update with new values.  "
@@ -179,10 +180,10 @@ public class GetTableData extends AbstractProcessor {
         .allowableValues(GetTableDataSupport.UnitSizes.values()).required(true).defaultValue(GetTableDataSupport.UnitSizes.NONE.toString()).build();
 
     private final List<PropertyDescriptor> propDescriptors;
-    
+
     private transient String waterMarkPropertyName;
 
-    
+
     public GetTableData() {
         HashSet r = new HashSet();
 
@@ -243,7 +244,7 @@ public class GetTableData extends AbstractProcessor {
         }
 
         final FlowFile incoming = flowFile;
-        final ProcessorLog logger = getLogger();
+        final ComponentLog logger = getLog();
 
         final DBCPService dbcpService = context.getProperty(JDBC_SERVICE).asControllerService(DBCPService.class);
         final MetadataProviderService metadataService = context.getProperty(METADATA_SERVICE).asControllerService(MetadataProviderService.class);
@@ -267,7 +268,7 @@ public class GetTableData extends AbstractProcessor {
         try (final Connection conn = dbcpService.getConnection()) {
 
             FlowFile outgoing = (incoming == null ? session.create() : incoming);
-            final LongHolder nrOfRows = new LongHolder(0L);
+            final AtomicLong nrOfRows = new AtomicLong(0L);
             final LastFieldVisitor visitor = new LastFieldVisitor(dateField, null);
             final FlowFile current = outgoing;
 
@@ -288,7 +289,7 @@ public class GetTableData extends AbstractProcessor {
                         } else {
                             throw new RuntimeException("Unsupported loadStrategy [" + loadStrategy + "]");
                         }
-                        
+
                         nrOfRows.set(JdbcCommon.convertToCSVStream(rs, out, (strategy == LoadStrategy.INCREMENTAL ? visitor : null)));
                     } catch (final SQLException e) {
                         throw new IOException("SQL execution failure", e);
@@ -300,7 +301,7 @@ public class GetTableData extends AbstractProcessor {
                                 }
                                 rs.close();
                             } catch (SQLException e) {
-                                getLogger().error("Error closing sql statement and resultset");
+                                getLog().error("Error closing sql statement and resultset");
                             }
                         }
                     }
@@ -308,7 +309,7 @@ public class GetTableData extends AbstractProcessor {
             });
 
             // set attribute how many rows were selected
-            outgoing = session.putAttribute(outgoing, RESULT_ROW_COUNT, nrOfRows.get().toString());
+            outgoing = session.putAttribute(outgoing, RESULT_ROW_COUNT, Long.toString(nrOfRows.get()));
 
             session.getProvenanceReporter().modifyContent(outgoing, "Retrieved " + nrOfRows.get() + " rows", stopWatch.getElapsed(TimeUnit.MILLISECONDS));
 
@@ -348,27 +349,27 @@ public class GetTableData extends AbstractProcessor {
                             + "property 'High-Water Mark Value Property Name' has not been set");
         } else {
             String propName = waterMarkPropName.getValue();
-            
+
             if (StringUtils.isEmpty(propName)) {
                 throw new IllegalArgumentException("The processor is configured for incremental load but the "
                                 + "property 'High-Water Mark Value Property Name' does not have a value");
             } else {
                 String value = ff.getAttribute(propName);
-                
+
                 // This can happen if the feed does not have an initial water mark, and the water mark
                 // load processor was not configure with a default value.  In this case default to the epoch.
                 if (StringUtils.isEmpty(value)) {
                     value = "1970-01-01T00:00:00";
                 }
-                
+
                 return value;
             }
         }
     }
-    
+
     private FlowFile setIncrementalWaterMarkValue(ProcessSession session, FlowFile ff, PropertyValue waterMarkPropName, String newValue) {
         String propName = waterMarkPropName.getValue();
-        
+
         if (StringUtils.isEmpty(propName)) {
             throw new IllegalArgumentException("The processor is configured for incremental load but the "
                             + "property 'High-Water Mark Value Property Name' does not have a value");
@@ -376,11 +377,11 @@ public class GetTableData extends AbstractProcessor {
             return session.putAttribute(ff, propName, newValue);
         }
     }
-    
+
     private static LocalDateTime toDateTime(Date date) {
         return date == null ? LocalDateTime.MIN : LocalDateTime.ofInstant(date.toInstant(), ZoneOffset.UTC.normalized());
     }
-    
+
     private static Date toDate(LocalDateTime dateTime) {
         return dateTime == null ? new Date(0L) : Date.from(dateTime.toInstant(ZoneOffset.UTC));
     }
@@ -418,7 +419,7 @@ public class GetTableData extends AbstractProcessor {
         public Date getLastModifyDate() {
             return lastModifyDate;
         }
-        
+
         public void setLastModifyDate(Date date) {
             lastModifyDate = date;
         }

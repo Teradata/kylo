@@ -1,117 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>thinkbig-nifi-rest-client</artifactId>
+    <parent>
+        <artifactId>thinkbig-nifi-rest</artifactId>
+        <groupId>com.thinkbiganalytics.datalake</groupId>
+        <version>0.4.2-SNAPSHOT</version>
+    </parent>
 
-  <parent>
-    <artifactId>thinkbig-nifi-rest</artifactId>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
-    <version>0.4.2-SNAPSHOT</version>
-  </parent>
+    <artifactId>thinkbig-nifi-rest-client</artifactId>
+    <packaging>pom</packaging>
 
-
-  <dependencies>
-
-    <dependency>
-      <artifactId>thinkbig-nifi-rest-model</artifactId>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
-      <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
-      <artifactId>thinkbig-commons-rest-client</artifactId>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
-      <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
-      <artifactId>thinkbig-nifi-flow-visitor-rest-client-api</artifactId>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
-      <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
-      <artifactId>thinkbig-commons-feed-util</artifactId>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
-      <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
-      <artifactId>thinkbig-nifi-flow-visitor</artifactId>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
-      <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-context-support</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-aop</artifactId>
-      <version>4.2.5.RELEASE</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-aspects</artifactId>
-      <version>4.2.5.RELEASE</version>
-    </dependency>
-
-
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-annotations</artifactId>
-    </dependency>
-
-
-    <dependency>
-      <groupId>org.apache.nifi</groupId>
-      <artifactId>nifi-client-dto</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-lang3</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>commons-collections</groupId>
-      <artifactId>commons-collections</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-io</artifactId>
-      <version>1.3.2</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.glassfish.jersey.media</groupId>
-      <artifactId>jersey-media-multipart</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>com.google.code.findbugs</groupId>
-      <artifactId>jsr305</artifactId>
-      <optional>true</optional>
-    </dependency>
-
-  </dependencies>
-
+    <modules>
+        <module>nifi-rest-client-api</module>
+        <module>nifi-rest-client-v0</module>
+        <module>nifi-rest-client-v1</module>
+    </modules>
 </project>

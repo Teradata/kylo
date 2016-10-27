@@ -2,11 +2,12 @@ package com.thinkbiganalytics.feedmgr.service.template;
 
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
+import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
-import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiFeedConstants;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
+import com.thinkbiganalytics.nifi.rest.support.NifiTemplateUtil;
 import com.thinkbiganalytics.security.AccessController;
 
 import org.apache.nifi.web.api.dto.ProcessorDTO;
@@ -31,7 +32,7 @@ public abstract class AbstractFeedManagerTemplateService {
     private AccessController accessController;
 
     @Autowired
-    private NifiRestClient nifiRestClient;
+    private LegacyNifiRestClient nifiRestClient;
 
     public String templateIdForTemplateName(String templateName) {
 
@@ -55,7 +56,7 @@ public abstract class AbstractFeedManagerTemplateService {
 
     public List<RegisteredTemplate.Processor> getInputProcessorsInNifTemplate(String nifiTemplateId) {
         List<RegisteredTemplate.Processor> processors = new ArrayList<>();
-        List<ProcessorDTO> inputProcessors = nifiRestClient.getInputProcessorsForTemplate(nifiRestClient.getTemplateById(nifiTemplateId));
+        List<ProcessorDTO> inputProcessors = NifiTemplateUtil.getInputProcessorsForTemplate(nifiRestClient.getTemplateById(nifiTemplateId));
         if (inputProcessors != null) {
             inputProcessors.stream().forEach(processorDTO -> {
                 RegisteredTemplate.Processor p = new RegisteredTemplate.Processor(processorDTO.getId());
@@ -138,7 +139,7 @@ public abstract class AbstractFeedManagerTemplateService {
     public RegisteredTemplate mergeRegisteredTemplateProperties(RegisteredTemplate registeredTemplate) {
         if (registeredTemplate != null) {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_TEMPLATES);
-            
+
             log.info("Merging properties for template {} ({})", registeredTemplate.getTemplateName(), registeredTemplate.getId());
             List<NifiProperty> properties = null;
             int matchCount = 0;

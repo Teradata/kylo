@@ -10,7 +10,7 @@ import com.thinkbiganalytics.metadata.api.jobrepo.ExecutionConstants;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecution;
-import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
+import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 
 import org.apache.nifi.web.api.dto.provenance.ProvenanceEventDTO;
 import org.joda.time.format.DateTimeFormat;
@@ -42,7 +42,7 @@ public class NifiJobService extends AbstractJobService {
 
     @SuppressWarnings("SpringJavaAutowiringInspection")
     @Inject
-    private NifiRestClient nifiRestClient;
+    private LegacyNifiRestClient nifiRestClient;
 
     @Override
     public Long restartJobExecution(Long executionId) throws JobExecutionException {

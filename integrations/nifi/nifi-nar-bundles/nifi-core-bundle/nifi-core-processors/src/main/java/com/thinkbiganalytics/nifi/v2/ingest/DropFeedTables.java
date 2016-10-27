@@ -3,6 +3,7 @@ package com.thinkbiganalytics.nifi.v2.ingest;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.thinkbiganalytics.ingest.TableRegisterSupport;
+import com.thinkbiganalytics.nifi.processor.AbstractNiFiProcessor;
 import com.thinkbiganalytics.nifi.v2.thrift.ThriftService;
 import com.thinkbiganalytics.util.TableRegisterConfiguration;
 import com.thinkbiganalytics.util.TableType;
@@ -36,7 +37,7 @@ import javax.annotation.Nonnull;
 @EventDriven
 @InputRequirement(InputRequirement.Requirement.INPUT_REQUIRED)
 @Tags({"hive", "ddl", "drop", "thinkbig"})
-public class DropFeedTables extends AbstractProcessor {
+public class DropFeedTables extends AbstractNiFiProcessor {
     /** Property specifying additional tables to drop */
     public static final PropertyDescriptor ADDITIONAL_TABLES = new PropertyDescriptor.Builder()
             .name("Additional Tables")
@@ -90,14 +91,14 @@ public class DropFeedTables extends AbstractProcessor {
 
         String entity = context.getProperty(IngestProperties.FEED_NAME).evaluateAttributeExpressions(flowFile).getValue();
         if (entity == null || entity.isEmpty()) {
-            getLogger().error("Missing feed name");
+            getLog().error("Missing feed name");
             session.transfer(flowFile, IngestProperties.REL_FAILURE);
             return;
         }
 
         String source = context.getProperty(IngestProperties.FEED_CATEGORY).evaluateAttributeExpressions(flowFile).getValue();
         if (source == null || source.isEmpty()) {
-            getLogger().error("Missing category name");
+            getLog().error("Missing category name");
             session.transfer(flowFile, IngestProperties.REL_FAILURE);
             return;
         }
@@ -117,7 +118,7 @@ public class DropFeedTables extends AbstractProcessor {
             boolean result = new TableRegisterSupport(conn).dropTables(source, entity, tableTypes, additionalTables);
             session.transfer(flowFile, result ? IngestProperties.REL_SUCCESS : IngestProperties.REL_FAILURE);
         } catch (final Exception e) {
-            getLogger().error("Unable drop tables", e);
+            getLog().error("Unable drop tables", e);
             session.transfer(flowFile, IngestProperties.REL_FAILURE);
         }
     }

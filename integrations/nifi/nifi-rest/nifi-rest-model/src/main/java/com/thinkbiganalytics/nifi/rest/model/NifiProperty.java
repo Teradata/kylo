@@ -6,8 +6,6 @@ package com.thinkbiganalytics.nifi.rest.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import org.apache.nifi.web.api.dto.PropertyDescriptorDTO;
-
 import java.util.List;
 import java.util.Map;
 
@@ -30,7 +28,7 @@ public class NifiProperty {
     private String templateValue;
     private boolean userEditable;
     private List<String> expressionProperties;
-    private PropertyDescriptorDTO propertyDescriptor;
+    private NiFiPropertyDescriptor propertyDescriptor;
    //private ProcessorDTO processor;
 
     private String renderType; // checkbox, input, editor-hive, editor-sql, editor-pig, etc
@@ -82,7 +80,7 @@ public class NifiProperty {
         this.value = value;
     }
 
-    public NifiProperty(String processGroupId,String processorId, String key, String value, PropertyDescriptorDTO propertyDescriptor) {
+    public NifiProperty(String processGroupId,String processorId, String key, String value, NiFiPropertyDescriptor propertyDescriptor) {
         this.processGroupId = processGroupId;
         this.processorId = processorId;
         this.key = key;
@@ -138,11 +136,11 @@ public class NifiProperty {
         this.value = value;
     }
 
-    public PropertyDescriptorDTO getPropertyDescriptor() {
+    public NiFiPropertyDescriptor getPropertyDescriptor() {
         return propertyDescriptor;
     }
 
-    public void setPropertyDescriptor(PropertyDescriptorDTO propertyDescriptor) {
+    public void setPropertyDescriptor(NiFiPropertyDescriptor propertyDescriptor) {
         this.propertyDescriptor = propertyDescriptor;
     }
 

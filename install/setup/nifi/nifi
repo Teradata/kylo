@@ -5,8 +5,6 @@
 dir="/opt/nifi/current/bin"
 RUN_AS_USER=nifi
 
-name=nifi
-
 case "$1" in
     start)
     cd "$dir"

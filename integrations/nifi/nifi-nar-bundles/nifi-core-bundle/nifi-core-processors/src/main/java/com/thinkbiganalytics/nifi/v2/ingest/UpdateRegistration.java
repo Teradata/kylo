@@ -6,6 +6,7 @@ package com.thinkbiganalytics.nifi.v2.ingest;
 
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder;
+import com.thinkbiganalytics.nifi.processor.AbstractNiFiProcessor;
 
 import org.apache.nifi.annotation.behavior.EventDriven;
 import org.apache.nifi.annotation.behavior.InputRequirement;
@@ -13,7 +14,7 @@ import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.flowfile.FlowFile;
-import org.apache.nifi.logging.ProcessorLog;
+import org.apache.nifi.logging.ComponentLog;
 import org.apache.nifi.processor.AbstractProcessor;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
@@ -36,7 +37,7 @@ import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.REL_SUCCESS;
 @Tags({"thinkbig", "registration", "put"})
 @CapabilityDescription("Saves the outcome of registration.")
 
-public class UpdateRegistration extends AbstractProcessor {
+public class UpdateRegistration extends AbstractNiFiProcessor {
 
     public static final String SUCCESS = "success";
     public static final String FAIL = "fail";
@@ -84,7 +85,7 @@ public class UpdateRegistration extends AbstractProcessor {
         if (flowFile == null) {
             return;
         }
-        ProcessorLog logger = getLogger();
+        ComponentLog logger = getLog();
         try {
             final MetadataProviderService metadataService = context.getProperty(METADATA_SERVICE).asControllerService(MetadataProviderService.class);
             final String categoryName = context.getProperty(FEED_CATEGORY).evaluateAttributeExpressions(flowFile).getValue();

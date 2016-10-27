@@ -19,7 +19,8 @@
 
     <modules>
         <module>nifi-provenance-repo</module>
-        <module>nifi-provenance-repo-nar</module>
+        <module>nifi-provenance-repo-v0-nar</module>
+        <module>nifi-provenance-repo-v1-nar</module>
     </modules>
 
 </project>

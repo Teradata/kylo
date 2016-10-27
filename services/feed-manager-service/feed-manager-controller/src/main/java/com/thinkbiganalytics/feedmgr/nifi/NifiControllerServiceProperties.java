@@ -3,7 +3,7 @@ package com.thinkbiganalytics.feedmgr.nifi;
 import com.thinkbiganalytics.nifi.feedmgr.NifiEnvironmentProperties;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
-import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
+import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 
 import org.apache.commons.collections.map.CaseInsensitiveMap;
 import org.apache.nifi.web.api.dto.ControllerServiceDTO;
@@ -29,7 +29,7 @@ public class NifiControllerServiceProperties {
     SpringEnvironmentProperties environmentProperties;
 
     @Autowired
-    NifiRestClient nifiRestClient;
+    LegacyNifiRestClient nifiRestClient;
 
 
 
@@ -124,9 +124,9 @@ public class NifiControllerServiceProperties {
     public ControllerServiceDTO getControllerServiceById(String serviceId) {
         ControllerServiceDTO controllerService = null;
         try {
-            ControllerServiceEntity entity = nifiRestClient.getControllerService(null, serviceId);
-            if (entity != null && entity.getControllerService() != null) {
-                controllerService = entity.getControllerService();
+            ControllerServiceDTO entity = nifiRestClient.getControllerService(null, serviceId);
+            if (entity != null) {
+                controllerService = entity;
             }
         } catch (NifiComponentNotFoundException e) {
             log.error("Unable to find Nifi Controller Service with ID: " + serviceId + ".  " + e.getMessage(), e);

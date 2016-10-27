@@ -15,7 +15,7 @@ import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService
 import com.thinkbiganalytics.feedmgr.support.Constants;
 import com.thinkbiganalytics.nifi.feedmgr.TemplateCreationHelper;
 import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
-import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
+import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
@@ -54,7 +54,7 @@ public class TemplatesRestController {
     private static final Logger log = LoggerFactory.getLogger(TemplatesRestController.class);
 
     @Autowired
-    NifiRestClient nifiRestClient;
+    LegacyNifiRestClient nifiRestClient;
 
     @Autowired
     MetadataService metadataService;
@@ -75,11 +75,11 @@ public class TemplatesRestController {
     @GET
     @Produces({MediaType.APPLICATION_JSON})
     public Response getTemplates(@QueryParam("includeDetails") boolean includeDetails) {
-        TemplatesEntity templatesEntity = nifiRestClient.getTemplates(includeDetails);
+        Set<TemplateDTO> nifiTemplates = nifiRestClient.getTemplates(includeDetails);
         List<RegisteredTemplate> registeredTemplates = metadataService.getRegisteredTemplates();
 
         Set<TemplateDtoWrapper> dtos = new HashSet<>();
-        for (final TemplateDTO dto : templatesEntity.getTemplates()) {
+        for (final TemplateDTO dto : nifiTemplates) {
             RegisteredTemplate match = metadataService.getRegisteredTemplateForNifiProperties(dto.getId(), dto.getName());
             TemplateDtoWrapper wrapper = new TemplateDtoWrapper(dto);
             if (match != null) {
@@ -94,11 +94,11 @@ public class TemplatesRestController {
     @Path("/unregistered")
     @Produces({MediaType.APPLICATION_JSON})
     public Response getUnregisteredTemplates(@QueryParam("includeDetails") boolean includeDetails) {
-        TemplatesEntity templatesEntity = nifiRestClient.getTemplates(includeDetails);
+        Set<TemplateDTO> nifiTemplates = nifiRestClient.getTemplates(includeDetails);
         List<RegisteredTemplate> registeredTemplates = metadataService.getRegisteredTemplates();
 
         Set<TemplateDtoWrapper> dtos = new HashSet<>();
-        for (final TemplateDTO dto : templatesEntity.getTemplates()) {
+        for (final TemplateDTO dto : nifiTemplates) {
             RegisteredTemplate match = metadataService.getRegisteredTemplateForNifiProperties(dto.getId(), dto.getName());
             if (match == null) {
                 dtos.add(new TemplateDtoWrapper(dto));

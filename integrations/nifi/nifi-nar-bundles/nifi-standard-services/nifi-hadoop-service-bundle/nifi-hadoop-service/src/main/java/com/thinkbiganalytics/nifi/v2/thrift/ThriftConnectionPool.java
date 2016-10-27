@@ -4,7 +4,9 @@
 package com.thinkbiganalytics.nifi.v2.thrift;
 
 import com.thinkbiganalytics.nifi.security.ApplySecurityPolicy;
+import com.thinkbiganalytics.nifi.security.KerberosProperties;
 import com.thinkbiganalytics.nifi.security.SecurityUtil;
+import com.thinkbiganalytics.nifi.security.SpringSecurityContextLoader;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.lang3.StringUtils;
@@ -19,12 +21,11 @@ import org.apache.nifi.components.ValidationResult;
 import org.apache.nifi.components.Validator;
 import org.apache.nifi.controller.AbstractControllerService;
 import org.apache.nifi.controller.ConfigurationContext;
+import org.apache.nifi.controller.ControllerServiceInitializationContext;
 import org.apache.nifi.logging.ComponentLog;
-import org.apache.nifi.logging.ProcessorLog;
 import org.apache.nifi.processor.exception.ProcessException;
 import org.apache.nifi.processor.util.StandardValidators;
 import org.apache.nifi.reporting.InitializationException;
-import org.apache.nifi.util.NiFiProperties;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -38,6 +39,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import javax.annotation.Nonnull;
 
 /**
  * Implementation of for Database Connection Pooling Service. Apache DBCP is used for connection pooling functionality.
@@ -127,24 +130,26 @@ public class ThriftConnectionPool extends AbstractControllerService implements T
         .required(false).addValidator(createMultipleFilesExistValidator())
         .build();
 
-    public static final PropertyDescriptor KERBEROS_PRINCIPAL = new PropertyDescriptor.Builder()
-        .name("Kerberos Principal")
-        .required(false)
-        .description("Kerberos principal to authenticate as. Requires nifi.kerberos.krb5.file to be set in your nifi.properties")
-        .addValidator(kerberosConfigValidator())
-        .build();
+    /** Property for Kerberos service keytab */
+    private PropertyDescriptor kerberosKeytab;
 
-    public static final PropertyDescriptor KERBEROS_KEYTAB = new PropertyDescriptor.Builder()
-        .name("Kerberos Keytab").required(false)
-        .description("Kerberos keytab associated with the principal. Requires nifi.kerberos.krb5.file to be set in your nifi.properties")
-        .addValidator(StandardValidators.FILE_EXISTS_VALIDATOR)
-        .addValidator(kerberosConfigValidator())
-        .build();
+    /** Property for Kerberos service principal */
+    private PropertyDescriptor kerberosPrincipal;
 
+    /** List of properties */
+    private List<PropertyDescriptor> properties;
 
-    private static final List<PropertyDescriptor> properties;
+    private volatile BasicDataSource dataSource;
 
-    static {
+    @Override
+    protected void init(@Nonnull final ControllerServiceInitializationContext config) throws InitializationException {
+        // Create Kerberos properties
+        final SpringSecurityContextLoader securityContextLoader = SpringSecurityContextLoader.create(config);
+        final KerberosProperties kerberosProperties = securityContextLoader.getKerberosProperties();
+        kerberosKeytab = kerberosProperties.createKerberosKeytabProperty();
+        kerberosPrincipal = kerberosProperties.createKerberosPrincipalProperty();
+
+        // Create list of properties
         final List<PropertyDescriptor> props = new ArrayList<>();
         props.add(DATABASE_URL);
         props.add(DB_DRIVERNAME);
@@ -155,13 +160,10 @@ public class ThriftConnectionPool extends AbstractControllerService implements T
         props.add(MAX_WAIT_TIME);
         props.add(MAX_TOTAL_CONNECTIONS);
         props.add(HADOOP_CONFIGURATION_RESOURCES);
-        props.add(KERBEROS_PRINCIPAL);
-        props.add(KERBEROS_KEYTAB);
-
+        props.add(kerberosPrincipal);
+        props.add(kerberosKeytab);
         properties = Collections.unmodifiableList(props);
     }
-
-    private volatile BasicDataSource dataSource;
 
     @Override
     protected List<PropertyDescriptor> getSupportedPropertyDescriptors() {
@@ -190,8 +192,8 @@ public class ThriftConnectionPool extends AbstractControllerService implements T
         final Integer maxTotal = context.getProperty(MAX_TOTAL_CONNECTIONS).asInteger();
         //Kerberos Property
         this.hadoopConfiguraiton = context.getProperty(HADOOP_CONFIGURATION_RESOURCES).getValue();
-        this.principal = context.getProperty(KERBEROS_PRINCIPAL).getValue();
-        this.keytab = context.getProperty(KERBEROS_KEYTAB).getValue();
+        this.principal = context.getProperty(kerberosPrincipal).getValue();
+        this.keytab = context.getProperty(kerberosKeytab).getValue();
         final String validationQuery = context.getProperty(DB_VALIDATION_QUERY).getValue();
 
         // Optional driver URL used to get DriverClassLoader, when exist, this URL will be used to locate driver jar file location
@@ -315,7 +317,7 @@ public class ThriftConnectionPool extends AbstractControllerService implements T
 
                 loggerInstance.info("User anuthentication initiated");
 
-                boolean authenticationStatus = applySecurityObject.validateUserWithKerberos((ProcessorLog)loggerInstance,hadoopConfigurationResources,principal,keyTab);
+                boolean authenticationStatus = applySecurityObject.validateUserWithKerberos(loggerInstance, hadoopConfigurationResources, principal, keyTab);
                 if (authenticationStatus)
                 {
                     loggerInstance.info("User authenticated successfully.");
@@ -361,45 +363,6 @@ public class ThriftConnectionPool extends AbstractControllerService implements T
                 }
                 return new ValidationResult.Builder().subject(subject).input(input).valid(true).build();
             }
-
-        };
-    }
-
-    public static final Validator kerberosConfigValidator()
-    {
-        return new Validator() {
-
-            @Override
-            public ValidationResult validate(String subject, String input, ValidationContext context) {
-
-
-
-                File nifiProperties =  NiFiProperties.getInstance().getKerberosConfigurationFile();
-
-
-                // Check that the Kerberos configuration is set
-                if (nifiProperties == null) {
-                    return new ValidationResult.Builder()
-                        .subject(subject).input(input).valid(false)
-                        .explanation("you are missing the nifi.kerberos.krb5.file property which "
-                                     + "must be set in order to use Kerberos")
-                        .build();
-                }
-
-                // Check that the Kerberos configuration is readable
-                if (!nifiProperties.canRead()) {
-                    return new ValidationResult.Builder().subject(subject).input(input).valid(false)
-                        .explanation(String.format("unable to read Kerberos config [%s], please make sure the path is valid "
-                                                   + "and nifi has adequate permissions", nifiProperties.getAbsoluteFile()))
-                        .build();
-                }
-
-                return new ValidationResult.Builder().subject(subject).input(input).valid(true).build();
-            }
-
-
-
-
 
         };
     }
