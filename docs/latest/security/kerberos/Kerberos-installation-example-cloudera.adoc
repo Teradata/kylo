@@ -164,15 +164,15 @@ up the KDC server to auto-start on boot.
 
 *	Login to Cloudera Manager and Select Security option from Administration tab.
 
-image::images/CK111.gif[]
+image::images/CK111.png[]
 
 *	Click on Enable Kerberos. 
 
-image::images/CK2.gif[]
+image::images/CK2.png[]
 
 *	Select each item and click on continue.
 
-image::images/CK3.gif[]
+image::images/CK3.png[]
 
 *	The Kerberos Wizard needs to know the details of what the script configured. Fill in the entries as follows and click continue.
 
@@ -180,11 +180,11 @@ image::images/CK3.gif[]
 	Kerberos Security Realm: CLOUDERA
 	Kerberos Encryption Types: aes256-cts-hmac-sha1-96
 
-image::images/CK4.gif[]
+image::images/CK4.png[]
 	
 *	Select checkbox Manage krb5.conf through cloudera manager.
 
-image::images/CK5.gif[]
+image::images/CK5.png[]
 
 *	Enter username and password for of KDC admin user.
 	
@@ -193,11 +193,11 @@ image::images/CK5.gif[]
 	
 *	The next screen provides good news. It lets you know that the wizard was able to successfully authenticate. 
 
-image::images/CK6.gif[]
+image::images/CK6.png[]
 
 *	Select "I’m ready to restart the cluster now" and click on continue.
 
-image::images/CK8.gif[]
+image::images/CK8.png[]
 
 *	Make sure all services started properly. Kerberos is sucessfully installed on cluster.
 
