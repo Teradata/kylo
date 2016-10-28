@@ -233,6 +233,7 @@ public class ExportImportFeedService {
             //now that we have the Feed object we need to create the instance of the feed
             NifiFeed nifiFeed = metadataAccess.commit(() -> {
                 FeedMetadata metadata = ObjectMapperSerializer.deserialize(feed.getFeedJson(), FeedMetadata.class);
+                metadata.setId(null);
                 //reassign the templateId to the newly registered template id
                 metadata.setTemplateId(template.getTemplateId());
                 if (metadata.getRegisteredTemplate() != null) {

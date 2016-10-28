@@ -100,6 +100,13 @@ the resources to install a Cloudera cluster
 
 link:./deployment/cloudera-docker-sandbox{outfilesuffix}[Cloudera EC2 Docker Sandbox Deployment Guide ]
 
+=== Install Procedure 4: Tar file install (instead of RPM)
+This is optional for those who have to install Kylo in a different folder than /opt/thinkbig or run
+as a different user
+
+link:./deployment/kylo-tar-install{outfilesuffix}[Kylo TAR File Installation Guide ]
+
+
 == Configuration
 
 === Ranger / Sentry

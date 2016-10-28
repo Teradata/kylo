@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -47,9 +48,8 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
         String loopDelim = "";
 
         for (String input : list) {
-
             sb.append(loopDelim);
-            sb.append(input);
+            sb.append(input.trim());
 
             loopDelim = delim;
         }
@@ -201,19 +201,19 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
 
         if (securityGroupNames == null || securityGroupNames.isEmpty()) {
             String hdfsFoldersWithCommas = ((String) feedProperties.get(REGISTRATION_HDFS_FOLDERS)).replace("\n", ",");
-            List<String> hdfsFolders = Stream.of(hdfsFoldersWithCommas).collect(Collectors.toList());
+            List<String> hdfsFolders = Arrays.asList(hdfsFoldersWithCommas.split(",")).stream().collect(Collectors.toList());
             deleteHivePolicy(categoryName, feedName);
             deleteHdfsPolicy(categoryName, feedName, hdfsFolders);
         } else {
 
             String hdfsFoldersWithCommas = ((String) feedProperties.get(REGISTRATION_HDFS_FOLDERS)).replace("\n", ",");
-            List<String> hdfsFolders = Stream.of(hdfsFoldersWithCommas).collect(Collectors.toList());
+            List<String> hdfsFolders = Arrays.asList(hdfsFoldersWithCommas.split(",")).stream().collect(Collectors.toList());
             createReadOnlyHdfsPolicy(categoryName, feedName, securityGroupNames, hdfsFolders);
 
             String sentryHivePolicyName = getHivePolicyName(categoryName, feedName);
             if (!sentryClientObject.checkIfRoleExists(sentryHivePolicyName)) {
                 String hiveTablesWithCommas = ((String) feedProperties.get(REGISTRATION_HIVE_TABLES)).replace("\n", ",");
-                List<String> hiveTables = Stream.of(hiveTablesWithCommas).collect(Collectors.toList());
+                List<String> hiveTables = Arrays.asList(hiveTablesWithCommas.split(",")).stream().collect(Collectors.toList()); //Stream.of(hiveTablesWithCommas).collect(Collectors.toList());
                 String hiveSchema = ((String) feedProperties.get(REGISTRATION_HIVE_SCHEMA));
 
                 createOrUpdateReadOnlyHivePolicy(categoryName, feedName, securityGroupNames, hiveSchema, hiveTables);
@@ -224,7 +224,7 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
                     throw new RuntimeException("Unable to delete policy  " + sentryHivePolicyName + " in Sentry  " + e.getMessage());
                 }
                 String hiveTablesWithCommas = ((String) feedProperties.get(REGISTRATION_HIVE_TABLES)).replace("\n", ",");
-                List<String> hiveTables = Stream.of(hiveTablesWithCommas).collect(Collectors.toList());
+                List<String> hiveTables = Arrays.asList(hiveTablesWithCommas.split(",")).stream().collect(Collectors.toList()); //Stream.of(hiveTablesWithCommas).collect(Collectors.toList());
                 String hiveSchema = ((String) feedProperties.get(REGISTRATION_HIVE_SCHEMA));
                 List<String> hivePermissions = new ArrayList();
                 hivePermissions.add(HIVE_READ_ONLY_PERMISSION);
