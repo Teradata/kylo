@@ -1,4 +1,4 @@
-<div class="feed-user-property" layout="row" ng-repeat="property in propertyList">
+<div class="feed-user-property" layout="row" ng-repeat="property in propertyList"  style="margin-top:-10px">
 
     <div ng-if="property.locked" layout="column" flex="50">
         <span>{{property.displayName}}</span>
@@ -26,4 +26,4 @@
     </md-button>
 </div>
 
-<md-button class="md-primary" ng-click="vm.addProperty()">Add Property</md-button>
+<md-button class="md-raised" ng-click="vm.addProperty()">Add Property</md-button>

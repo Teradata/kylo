@@ -30,7 +30,7 @@
         this.model = FeedService.createFeedModel;
         this.isValid = false;
         this.sampleFile = null;
-        this.sampleFileOverrideDelimiter = false;
+        this.autoDetect = true;
         this.sampleFileDelimiter = null;
         this.tableCreateMethods = [{type: 'MANUAL', name: 'Manual'}, {type: 'SAMPLE_FILE', name: 'Sample File'}];
         this.columnDefinitionDataTypes = ['string', 'int', 'bigint', 'tinyint', 'decimal', 'double', 'float', 'date', 'timestamp', 'boolean', 'binary'];
@@ -491,7 +491,7 @@
                 self.uploadBtnDisabled = false;
                 angular.element('#upload-sample-file-btn').removeClass('md-primary');
             }
-            if (this.sampleFileOverrideDelimiter) {
+            if (!this.autoDetect) {
                 params['delimiter'] = this.sampleFileDelimiter;
             }
             //clear partitions
