@@ -10,6 +10,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
 import com.thinkbiganalytics.feedmgr.service.FeedCleanupFailedException;
 import com.thinkbiganalytics.feedmgr.service.FeedCleanupTimeoutException;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
+import com.thinkbiganalytics.feedmgr.service.feed.DuplicateFeedNameException;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerPreconditionService;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
 import com.thinkbiganalytics.hive.service.HiveService;
@@ -111,6 +112,16 @@ public class FeedRestController {
         NifiFeed feed;
         try {
             feed = getMetadataService().createFeed(feedMetadata);
+        } catch (DuplicateFeedNameException e) {
+            log.info("Failed to create a new feed due to another feed having the same category/feed name: " + feedMetadata.getCategoryAndFeedDisplayName());
+            
+            // Create an error message
+            String msg = "A feed already exists in the cantegory \"" + e.getCategoryName() + "\" with name name \"" + e.getFeedName() + "\"";
+
+            // Add error message to feed
+            feed = new NifiFeed(feedMetadata, null);
+            feed.addErrorMessage(msg);
+            feed.setSuccess(false);
         } catch (Exception e) {
             log.error("Failed to create a new feed.", e);
 
