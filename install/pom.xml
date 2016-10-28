@@ -353,7 +353,6 @@
                     <include>install-thinkbig-components.sh</include>
                     <include>nifi</include>
                     <include>nifi.properties</include>
-                    <include>nifi-env.sh</include>
                     <include>update-nars-jars.sh</include>
                   </includes>
                 </source>

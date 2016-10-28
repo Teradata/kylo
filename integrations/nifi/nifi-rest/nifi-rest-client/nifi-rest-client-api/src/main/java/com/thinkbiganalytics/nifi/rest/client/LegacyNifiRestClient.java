@@ -303,7 +303,7 @@ public class LegacyNifiRestClient implements NifiFlowVisitorClient {
 
     @Deprecated
     public ProcessGroupDTO stopAllProcessors(String processGroupId, String parentProcessGroupId) throws NifiClientRuntimeException {
-        client.processGroups().schedule(processGroupId, parentProcessGroupId, NiFiComponentState.RUNNING);
+        client.processGroups().schedule(processGroupId, parentProcessGroupId, NiFiComponentState.STOPPED);
         return client.processGroups().findById(processGroupId, false, false).get();
     }
 
