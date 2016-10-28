@@ -108,7 +108,7 @@ public class TableSchema {
     }
 
     private String deriveSeparatorRecordFormat() {
-        String template = " \"separatorChar\" = \"%s\"";
+        String template = " 'separatorChar' = '%s'";
         return String.format(template, getDelim());
     }
 
@@ -116,7 +116,7 @@ public class TableSchema {
         if (quote == null) {
             return "";
         }
-        String template = " ,\"quoteChar\" = \"%s\"";
+        String template = " ,'quoteChar' = '%s'";
         return String.format(template, getQuote());
     }
 
@@ -124,7 +124,7 @@ public class TableSchema {
         if (escape == null) {
             return "";
         }
-        String template = " ,\"escapeChar\" = \"%s\"";
+        String template = " ,'escapeChar' = '%s'";
         return String.format(template, getEscape());
     }
 
