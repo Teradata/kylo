@@ -27,7 +27,7 @@ image::images/SN3.png[]
 	Database Type : mysql
 	Database Name : sentry
 	Username : sentry
-	Password : sentry
+	Password : cloudera
 	
 image::images/SN4.png[]
 
