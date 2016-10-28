@@ -152,13 +152,13 @@ up the KDC server to auto-start on boot.
     /etc/rc.d/init.d/kadmin restart
 
 
-13. Create a user in the linux by typing below. We will use this user to test whether the Kerberos authentication is working or not. We will first run the command “hadoop fs –ls /” but switching to this user. And we will run the same command again when we enable Kerberos. 
+13. Create a user in the linux by typing below. We will use this user to test whether the Kerberos authentication is working or not. We will first run the command hadoop fs ls / but switching to this user. And we will run the same command again when we enable Kerberos. 
 
     adduser testUser
 
     su testUser
 
-    hadoop fs –ls /
+    hadoop fs ls /
 	
 === Install Kerberos on Cloudera Cluster.	
 
@@ -195,7 +195,7 @@ image::images/CK5.png[]
 
 image::images/CK6.png[]
 
-*	Select "I’m ready to restart the cluster now" and click on continue.
+*	Select "I'm ready to restart the cluster now" and click on continue.
 
 image::images/CK8.png[]
 
