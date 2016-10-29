@@ -94,8 +94,8 @@ public class TextFileParser {
         switch (c) {
             case '\t':
                 return "\\t";
-            case '"':
-                return "\\\"";
+            case '\'':
+                return "\\\'";
             case '\\':
                 return "\\\\";
             default:

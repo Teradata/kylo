@@ -35,7 +35,7 @@ public class TextFileParserTest {
             TableSchema schema = parser.parse(is, null);
             assertTrue(schema.getDelim().equals(","));
             assertTrue(schema.getEscape() != null && schema.getEscape().equals("\\\\"));
-            assertTrue(schema.getQuote() != null && schema.getQuote().equals("'"));
+            assertTrue(schema.getQuote() != null && schema.getQuote().equals("\\\'"));
             assertEquals(3, schema.getFields().size());
         } catch (IOException e) {
             fail(e.getMessage());
@@ -50,7 +50,7 @@ public class TextFileParserTest {
             TableSchema schema = parser.parse(is, null);
             assertTrue(schema.getDelim().equals(","));
             assertTrue(schema.getEscape() != null && schema.getEscape().equals("\\\\"));
-            assertTrue(schema.getQuote() != null && schema.getQuote().equals("\\\""));
+            assertTrue(schema.getQuote() != null && schema.getQuote().equals("\""));
             assertEquals(3, schema.getFields().size());
         } catch (IOException e) {
             fail(e.getMessage());
