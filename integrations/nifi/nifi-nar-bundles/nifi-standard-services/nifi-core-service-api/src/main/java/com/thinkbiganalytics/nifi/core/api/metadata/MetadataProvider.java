@@ -7,6 +7,7 @@
  */
 package com.thinkbiganalytics.nifi.core.api.metadata;
 
+import com.thinkbiganalytics.metadata.api.op.FeedDependencyDeltaResults;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.DirectoryDatasource;
 import com.thinkbiganalytics.metadata.rest.model.data.HiveTableDatasource;
@@ -22,7 +23,6 @@ import org.joda.time.DateTime;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.Properties;
 
 import javax.annotation.Nonnull;
@@ -33,8 +33,8 @@ import javax.annotation.Nonnull;
 public interface MetadataProvider {
     
     String getFeedId(String category, String feedName);
-    
-    Map<DateTime, Map<String, String>> getFeedDependentResultDeltas(String feedId);
+
+    FeedDependencyDeltaResults getFeedDependentResultDeltas(String feedId);
 
     Feed ensureFeed(String categoryName, String feedName, String string);
 

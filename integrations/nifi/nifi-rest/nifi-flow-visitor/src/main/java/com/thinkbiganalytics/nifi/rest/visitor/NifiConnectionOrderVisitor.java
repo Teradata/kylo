@@ -15,7 +15,6 @@ import org.apache.nifi.web.api.dto.ConnectableDTO;
 import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
-import org.apache.nifi.web.api.entity.ProcessGroupEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -271,8 +270,11 @@ public class NifiConnectionOrderVisitor implements NifiFlowVisitor {
                 NifiVisitableProcessGroup group = visitedProcessGroups.get(source.getGroupId());
                 if (group != null) {
                     Set<NifiVisitableProcessor> sources = group.getOutputPortProcessors(source.getId());
-                    if(sourceProcessors != null) {
+                    if(sourceProcessors != null && sources != null) {
                         sourceProcessors.addAll(sources);
+                    }
+                    else if(sourceProcessors != null && sources == null) {
+                        log.info("Unable to find/add source processors for source Connectable {} ({}) from connection id: {} ",source.getName(), source.getId(),connection.getId());
                     }
                 }
             }

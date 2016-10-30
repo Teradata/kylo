@@ -71,6 +71,7 @@ public class JpaBatchJobExecution implements BatchJobExecution {
     @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     @Column(name = "START_TIME")
     private DateTime startTime;
+
     @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     @Column(name = "END_TIME")
     private DateTime endTime;

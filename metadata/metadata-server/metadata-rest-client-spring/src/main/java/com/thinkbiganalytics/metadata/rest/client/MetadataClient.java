@@ -3,21 +3,29 @@
  */
 package com.thinkbiganalytics.metadata.rest.client;
 
-import java.net.URI;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-import java.util.function.Supplier;
-
-import javax.annotation.Nonnull;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.joda.JodaModule;
+import com.google.common.base.Function;
+import com.google.common.base.Strings;
+import com.thinkbiganalytics.metadata.api.op.FeedDependencyDeltaResults;
+import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
+import com.thinkbiganalytics.metadata.rest.model.data.DatasourceCriteria;
+import com.thinkbiganalytics.metadata.rest.model.data.DirectoryDatasource;
+import com.thinkbiganalytics.metadata.rest.model.data.HiveTableColumn;
+import com.thinkbiganalytics.metadata.rest.model.data.HiveTableDatasource;
+import com.thinkbiganalytics.metadata.rest.model.data.HiveTablePartition;
+import com.thinkbiganalytics.metadata.rest.model.extension.ExtensibleTypeDescriptor;
+import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
+import com.thinkbiganalytics.metadata.rest.model.feed.FeedCategory;
+import com.thinkbiganalytics.metadata.rest.model.feed.FeedCriteria;
+import com.thinkbiganalytics.metadata.rest.model.feed.FeedDependencyGraph;
+import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
+import com.thinkbiganalytics.metadata.rest.model.feed.InitializationStatus;
+import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
+import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment;
+import com.thinkbiganalytics.metadata.sla.api.Metric;
 
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -41,40 +49,31 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.joda.JodaModule;
-import com.google.common.base.Function;
-import com.google.common.base.Strings;
-import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
-import com.thinkbiganalytics.metadata.rest.model.data.DatasourceCriteria;
-import com.thinkbiganalytics.metadata.rest.model.data.DirectoryDatasource;
-import com.thinkbiganalytics.metadata.rest.model.data.HiveTableColumn;
-import com.thinkbiganalytics.metadata.rest.model.data.HiveTableDatasource;
-import com.thinkbiganalytics.metadata.rest.model.data.HiveTablePartition;
-import com.thinkbiganalytics.metadata.rest.model.extension.ExtensibleTypeDescriptor;
-import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
-import com.thinkbiganalytics.metadata.rest.model.feed.FeedCategory;
-import com.thinkbiganalytics.metadata.rest.model.feed.FeedCriteria;
-import com.thinkbiganalytics.metadata.rest.model.feed.FeedDependencyGraph;
-import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
-import com.thinkbiganalytics.metadata.rest.model.feed.InitializationStatus;
-import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
-import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
-import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment;
-import com.thinkbiganalytics.metadata.sla.api.Metric;
+import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.function.Supplier;
+
+import javax.annotation.Nonnull;
 
 /**
  *
  * @author Sean Felten
  */
 public class MetadataClient {
-    
     public static final List<MediaType> ACCEPT_TYPES = Collections.unmodifiableList(Arrays.asList(MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN));
     
     public static final ParameterizedTypeReference<List<ExtensibleTypeDescriptor>> TYPE_LIST = new ParameterizedTypeReference<List<ExtensibleTypeDescriptor>>() { };
     public static final ParameterizedTypeReference<List<Feed>> FEED_LIST = new ParameterizedTypeReference<List<Feed>>() { };
-    public static final ParameterizedTypeReference<Map<DateTime, Map<String, String>>> FEED_RESULT_DELTAS = new ParameterizedTypeReference<Map<DateTime, Map<String, String>>>() { };
+    //   public static final ParameterizedTypeReference<FeedDependencyDeltaResults> FEED_RESULT_DELTAS = new ParameterizedTypeReference<FeedDependencyDeltaResults>() { };
     public static final ParameterizedTypeReference<List<Datasource>> DATASOURCE_LIST = new ParameterizedTypeReference<List<Datasource>>() { };
     public static final ParameterizedTypeReference<List<Metric>> METRIC_LIST = new ParameterizedTypeReference<List<Metric>>() { };
     
@@ -207,9 +206,10 @@ public class MetadataClient {
     public FeedDependencyGraph getFeedDependency(String id) {
         return get(path("feed", id, "depfeeds"), FeedDependencyGraph.class);
     }
-    
-    public Map<DateTime, Map<String, String>> getFeedDependencyDeltas(String feedId) {
-        return get(path("feed", feedId, "depfeeds", "delta"), FEED_RESULT_DELTAS);
+
+
+    public FeedDependencyDeltaResults getFeedDependencyDeltas(String feedId) {
+        return get(path("feed", feedId, "depfeeds", "delta"), FeedDependencyDeltaResults.class);
     }
 
     public Feed updateFeed(Feed feed) {
