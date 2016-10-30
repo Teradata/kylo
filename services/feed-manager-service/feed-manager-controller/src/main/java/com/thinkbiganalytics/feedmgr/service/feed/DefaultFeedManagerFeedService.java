@@ -37,6 +37,8 @@ import com.thinkbiganalytics.metadata.rest.model.sla.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
+import com.thinkbiganalytics.policy.precondition.DependentFeedPrecondition;
+import com.thinkbiganalytics.policy.precondition.Precondition;
 import com.thinkbiganalytics.policy.precondition.transform.PreconditionPolicyTransformer;
 import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 import com.thinkbiganalytics.policy.rest.model.PreconditionRule;
@@ -53,6 +55,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -328,7 +331,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
             if (preconditions != null) {
                 PreconditionPolicyTransformer transformer = new PreconditionPolicyTransformer(preconditions);
                 transformer.applyFeedNameToCurrentFeedProperties(feed.getCategory().getSystemName(), feed.getSystemFeedName());
-                List<com.thinkbiganalytics.metadata.rest.model.sla.ObligationGroup> transformedPreconditions = transformer.getPreconditions();
+                List<com.thinkbiganalytics.metadata.rest.model.sla.ObligationGroup> transformedPreconditions = transformer.getPreconditionObligationGroups();
                 ServiceLevelAgreementBuilder
                     preconditionBuilder =
                     feedProvider.buildPrecondition(domainFeed.getId()).name("Precondition for feed " + feed.getCategoryAndFeedName() + "  (" + domainFeed.getId() + ")");
@@ -340,6 +343,44 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
                 preconditionBuilder.build();
 
                 //add in the lineage dependency relationships
+                //will the feed exist in the jcr store here if it is new??
+
+                //store the existing list of dependent feeds to track and delete those that dont match
+                Set<Feed.ID> oldDependentFeedIds = new HashSet<Feed.ID>();
+                Set<Feed.ID> newDependentFeedIds = new HashSet<Feed.ID>();
+                final Feed.ID domainFeedId = domainFeed.getId();
+                List<Feed> dependentFeeds = domainFeed.getDependentFeeds();
+                if(dependentFeeds != null && !dependentFeeds.isEmpty()){
+                    dependentFeeds.stream().forEach(dependentFeed -> {
+                        oldDependentFeedIds.add(dependentFeed.getId());
+                    });
+                }
+                //find those preconditions that are marked as dependent feed types
+                List<Precondition> preconditionPolicies = transformer.getPreconditionPolicies();
+                preconditionPolicies.stream().filter(precondition -> precondition instanceof DependentFeedPrecondition).forEach(dependentFeedPrecondition -> {
+                    DependentFeedPrecondition feedPrecondition = (DependentFeedPrecondition)dependentFeedPrecondition;
+                    List<String> dependentFeedNames = feedPrecondition.getDependentFeedNames();
+                    if(dependentFeedNames != null && !dependentFeedNames.isEmpty()){
+                      //find the feed
+                        for(String dependentFeedName: dependentFeedNames) {
+                            Feed dependentFeed = feedProvider.findBySystemName(dependentFeedName);
+                            if(dependentFeed != null) {
+                                Feed.ID newDependentFeedId = dependentFeed.getId();
+                                newDependentFeedIds.add(newDependentFeedId);
+                                //add and persist it if it doesnt already exist
+                                if(!oldDependentFeedIds.contains(newDependentFeedId)) {
+                                    feedProvider.addDependent(domainFeedId, dependentFeed.getId());
+                                }
+                            }
+                        }
+                    }
+
+                });
+                //delete any of those dependent feed ids from the oldDependentFeeds that are not part of the newDependentFeedIds
+                oldDependentFeedIds.stream().filter(oldFeedId -> !newDependentFeedIds.contains(oldFeedId)).forEach(dependentFeedToDelete ->  feedProvider.removeDependent(domainFeedId,dependentFeedToDelete));
+
+
+
 
             }
             //sync the feed information to ops manager

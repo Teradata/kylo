@@ -35,7 +35,23 @@ public class PreconditionPolicyTransformer {
         }
     }
 
-    public List<ObligationGroup> getPreconditions() {
+    public List<Precondition> getPreconditionPolicies(){
+        List<Precondition> policies = new ArrayList<>();
+        if (preconditionRules != null) {
+            for (PreconditionRule rule : preconditionRules) {
+                try {
+                    Precondition policy = PreconditionAnnotationTransformer.instance().fromUiModel(rule);
+                    policies.add(policy);
+                } catch (PolicyTransformException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+        return policies;
+
+    }
+
+    public List<ObligationGroup> getPreconditionObligationGroups() {
         List<ObligationGroup> policies = new ArrayList<>();
         if (preconditionRules != null) {
             for (PreconditionRule rule : preconditionRules) {

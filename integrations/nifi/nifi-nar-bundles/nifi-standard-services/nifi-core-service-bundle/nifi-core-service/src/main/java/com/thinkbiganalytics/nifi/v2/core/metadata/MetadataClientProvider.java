@@ -3,6 +3,7 @@
  */
 package com.thinkbiganalytics.nifi.v2.core.metadata;
 
+import com.thinkbiganalytics.metadata.api.op.FeedDependencyDeltaResults;
 import com.thinkbiganalytics.metadata.rest.client.MetadataClient;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.DatasourceCriteria;
@@ -27,7 +28,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import javax.annotation.Nonnull;
@@ -68,7 +68,7 @@ public class MetadataClientProvider implements MetadataProvider {
     }
     
     @Override
-    public Map<DateTime, Map<String, String>> getFeedDependentResultDeltas(String feedId) {
+    public FeedDependencyDeltaResults getFeedDependentResultDeltas(String feedId) {
         return this.client.getFeedDependencyDeltas(feedId);
     }
 

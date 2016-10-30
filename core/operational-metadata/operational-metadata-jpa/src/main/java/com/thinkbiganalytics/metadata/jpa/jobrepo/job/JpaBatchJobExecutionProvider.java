@@ -21,6 +21,7 @@ import com.thinkbiganalytics.support.FeedNameUtil;
 
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -211,6 +212,25 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
     }
 
     /**
+     * Sets the Job Execution params to either Check Data or Feed Jobs
+     */
+    private boolean updateJobType(BatchJobExecution jobExecution, ProvenanceEventRecordDTO event) {
+
+        if (event.getUpdatedAttributes() != null && event.getUpdatedAttributes().containsKey(NIFI_JOB_TYPE_PROPERTY)) {
+            String jobType = event.getUpdatedAttributes().get(NIFI_JOB_TYPE_PROPERTY);
+            String nifiCategory = event.getAttributeMap().get(NIFI_CATEGORY_PROPERTY);
+            String nifiFeedName = event.getAttributeMap().get(NIFI_FEED_PROPERTY);
+            String feedName = FeedNameUtil.fullName(nifiCategory, nifiFeedName);
+            if (FeedConstants.PARAM_VALUE__JOB_TYPE_CHECK.equalsIgnoreCase(jobType)) {
+                Set<JpaBatchJobExecutionParameter> updatedParams = ((JpaBatchJobExecution) jobExecution).setAsCheckDataJob(feedName);
+                jobParametersRepository.save(updatedParams);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * When the job is complete determine its status, write out exection context, and determine if all related jobs are complete
      */
     private void finishJob(ProvenanceEventRecordDTO event, JpaBatchJobExecution jobExecution) {
@@ -339,36 +359,31 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
     @Override
     public BatchJobExecution save(ProvenanceEventRecordDTO event, NifiEvent nifiEvent) {
         JpaBatchJobExecution jobExecution = getOrCreateJobExecution(event);
-        return save(jobExecution,event,nifiEvent);
+        return save(jobExecution, event, nifiEvent);
 
     }
 
-
-
+    @Override
+    public BatchJobExecution save(BatchJobExecution jobExecution) {
+        return jobExecutionRepository.save((JpaBatchJobExecution) jobExecution);
+    }
 
 
 
 
 
     /**
-     * Sets the Job Execution params to either Check Data or Feed Jobs
+     * Find the Job Execution by the Nifi EventId and JobFlowFileId
      */
-    private boolean updateJobType(BatchJobExecution jobExecution, ProvenanceEventRecordDTO event) {
-
-        if (event.getUpdatedAttributes() != null && event.getUpdatedAttributes().containsKey(NIFI_JOB_TYPE_PROPERTY)) {
-            String jobType = event.getUpdatedAttributes().get(NIFI_JOB_TYPE_PROPERTY);
-            String nifiCategory = event.getAttributeMap().get(NIFI_CATEGORY_PROPERTY);
-            String nifiFeedName = event.getAttributeMap().get(NIFI_FEED_PROPERTY);
-            String feedName = FeedNameUtil.fullName(nifiCategory, nifiFeedName);
-            if (FeedConstants.PARAM_VALUE__JOB_TYPE_CHECK.equalsIgnoreCase(jobType)) {
-                Set<JpaBatchJobExecutionParameter> updatedParams = ((JpaBatchJobExecution) jobExecution).setAsCheckDataJob(feedName);
-                jobParametersRepository.save(updatedParams);
-                return true;
-            }
-        }
-        return false;
+    @Override
+    public BatchJobExecution findByEventAndFlowFile(Long eventId, String flowfileid) {
+        return jobExecutionRepository.findByEventAndFlowFile(eventId, flowfileid);
     }
 
+    @Override
+    public BatchJobExecution findByJobExecutionId(Long jobExecutionId) {
+        return jobExecutionRepository.findOne(jobExecutionId);
+    }
 
     /**
      * When a Job Finishes this will check if it has any relatedJobExecutions and allow you to get notified when the set of Jobs are complete Currently this is not needed as the
@@ -413,13 +428,6 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
     }
 
 
-    /**
-     * Find the Job Execution by the Nifi EventId and JobFlowFileId
-     */
-    @Override
-    public BatchJobExecution findByEventAndFlowFile(Long eventId, String flowfileid) {
-        return jobExecutionRepository.findByEventAndFlowFile(eventId, flowfileid);
-    }
 
 
 /*
@@ -439,14 +447,17 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
     */
 
 
-    @Override
-    public BatchJobExecution findByJobExecutionId(Long jobExecutionId) {
-        return jobExecutionRepository.findOne(jobExecutionId);
+    public Set<? extends BatchJobExecution> findJobsForFeedCompletedSince(String feedName, DateTime sinceDate) {
+        return jobExecutionRepository.findJobsForFeedCompletedSince(feedName, sinceDate);
     }
 
-    @Override
-    public BatchJobExecution save(BatchJobExecution jobExecution) {
-        return jobExecutionRepository.save((JpaBatchJobExecution) jobExecution);
+    public BatchJobExecution findLatestCompletedJobForFeed(String feedName) {
+        List<JpaBatchJobExecution> jobExecutions = jobExecutionRepository.findLatestCompletedJobForFeed(feedName);
+        if (jobExecutions != null && !jobExecutions.isEmpty()) {
+            return jobExecutions.get(0);
+        } else {
+            return null;
+        }
     }
 
 }
