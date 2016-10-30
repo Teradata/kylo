@@ -116,7 +116,7 @@
                   <div flex="20" class="md-list-item-text  ">
                     <md-input-container md-no-float class="md-block condensed" flex-gt-sm>
                       <input ng-model="columnDef.name" placeholder="Field Name" required name="name_{{columnDef._id}}" ng-change="vm.onFieldNameChange(columnDef)"
-                             ng-pattern="/^[a-zA-Z0-9_-\s]*$/"
+                             ng-pattern="/^[a-zA-Z0-9_-\s\)\(]*$/"
                              ng-disabled="vm.model.dataTransformationFeed"/>
 
                       <div ng-messages="vm.defineFeedTableForm['name_'+columnDef._id].$error" md-auto-hide="false">
