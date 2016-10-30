@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.metadata.rest.client;
 
+import com.thinkbiganalytics.metadata.api.op.FeedDependencyDeltaResults;
 import com.thinkbiganalytics.metadata.api.sla.FeedExecutedSinceFeed;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.DirectoryDatasource;
@@ -17,13 +18,11 @@ import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment;
 
 import org.joda.time.DateTime;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 import java.net.URI;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,9 +36,9 @@ public class MetadataClientTest {
     public void connect() {
         client = new MetadataClient(URI.create("http://localhost:8420/api/metadata/"));
     }
-    
-    
-//    @Test
+
+
+    //    @Test
     public void testGetExtensibleTypes() {
         List<ExtensibleTypeDescriptor> types = client.getExtensibleTypes();
         
@@ -225,12 +224,12 @@ public class MetadataClientTest {
         
         assertThat(assmt).isNotNull();
     }
-    
-//    @Test
+
+    // @Test
     public void testGetFeedDependencyDeltas() {
-        Map<DateTime, Map<String, String>> props = client.getFeedDependencyDeltas("f665f2ab-29ed-4e55-9f1c-173819957488");
-        
-        assertThat(props).isNotNull().isNotEmpty();
+        FeedDependencyDeltaResults props = client.getFeedDependencyDeltas("90056286-a3b0-493c-89a4-91cb1e7529b6");
+
+        assertThat(props).isNotNull();
     }
 
     private FeedBuilder buildFeed(String category, String name) throws ParseException {
