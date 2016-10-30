@@ -19,7 +19,8 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.StringReader;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -56,8 +57,10 @@ public class TextFileParser {
      * @throws IOException If there is an error parsing the sample file
      */
     public TableSchema parse(InputStream is, Character delimiter) throws IOException {
+
+        String sample = ParserHelper2.extractSampleLines(is, Charset.forName("UTF-8"), 11);
         TableSchema schema = null;
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
+        try (BufferedReader br = new BufferedReader(new StringReader(sample))) {
             List<LineStats> lineStats = generateStats(br);
             if (delimiter == null) {
                 this.delim = guessDelimiter(lineStats);
@@ -70,7 +73,7 @@ public class TextFileParser {
                 throw new IOException("Unrecognized format");
             }
 
-            schema = createSchema(br);
+            schema = createSchema(sample);
         }
         return schema;
     }
@@ -79,18 +82,18 @@ public class TextFileParser {
         List<LineStats> lineStats = new Vector<>();
         String line;
         int rows = 0;
-        br.mark(32765);
         while ((line = br.readLine()) != null && rows < 10) {
             LineStats stats = new LineStats(line);
             rows++;
             lineStats.add(stats);
         }
-        br.reset();
         return lineStats;
     }
 
     private String stringForCharacter(Character c) {
-        if (c == null) return null;
+        if (c == null) {
+            return null;
+        }
         switch (c) {
             case '\t':
                 return "\\t";
@@ -103,7 +106,7 @@ public class TextFileParser {
         }
     }
 
-    private TableSchema createSchema(BufferedReader br) throws IOException {
+    private TableSchema createSchema(String sample) throws IOException {
         TableSchema schema = new TableSchema();
         schema.setDelim(stringForCharacter(delim));
         schema.setEscape(stringForCharacter(escape));
@@ -118,39 +121,42 @@ public class TextFileParser {
             format = format.withQuoteMode(QuoteMode.MINIMAL).withQuote(quote);
         }
         // Parse the file
-        CSVParser parser = format.parse(br);
-        int i = 0;
+        try (StringReader sr = new StringReader(sample)) {
 
-        Vector<Field> fields = new Vector<>();
-        for (CSVRecord record : parser) {
-            if (i > 10) {
-                break;
-            }
-            int size = record.size();
-            for (int j = 0; j < size; j++) {
-                Field field = null;
-                // Assume field is header name
-                if (i == 0) {
-                    field = new Field();
-                    field.setName(record.get(j));
-                    fields.add(field);
-                } else {
-                    // Add field if needed
-                    if (j > fields.size()) {
-                        field = new Field();
-                        field.setName("Field " + j);
-                        fields.add(field);
-                    }
-                    field = fields.get(j);
-                    field.getSampleValues().add(StringUtils.defaultString(record.get(j), ""));
+            CSVParser parser = format.parse(sr);
+            int i = 0;
+
+            Vector<Field> fields = new Vector<>();
+            for (CSVRecord record : parser) {
+                if (i > 10) {
+                    break;
                 }
+                int size = record.size();
+                for (int j = 0; j < size; j++) {
+                    Field field = null;
+                    // Assume field is header name
+                    if (i == 0) {
+                        field = new Field();
+                        field.setName(record.get(j));
+                        fields.add(field);
+                    } else {
+                        // Add field if needed
+                        if (j > fields.size()) {
+                            field = new Field();
+                            field.setName("Field " + j);
+                            fields.add(field);
+                        }
+                        field = fields.get(j);
+                        field.getSampleValues().add(StringUtils.defaultString(record.get(j), ""));
+                    }
+                }
+                i++;
             }
-            i++;
+            schema.setFields(fields);
+            deriveDataTypes(fields);
+            schema.deriveHiveRecordFormat();
+            return schema;
         }
-        schema.setFields(fields);
-        deriveDataTypes(fields);
-        schema.deriveHiveRecordFormat();
-        return schema;
 
     }
 

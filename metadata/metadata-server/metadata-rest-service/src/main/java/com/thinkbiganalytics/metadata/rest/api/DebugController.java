@@ -40,11 +40,13 @@ import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.HiveTableDatasource;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
+import io.swagger.annotations.Api;
 
 /**
  *
  * @author Sean Felten
  */
+@Api(value = "debug", produces = "application/json")
 @Component
 @Path("/metadata/debug")
 public class DebugController {
@@ -99,7 +101,7 @@ public class DebugController {
     }
 
     @GET
-    @Path("procondition")
+    @Path("precondition")
     @Produces(MediaType.APPLICATION_JSON)
     public FeedPrecondition examplePrecondition() {
         FeedPrecondition procond = new FeedPrecondition("DependingPrecondition");
@@ -118,15 +120,12 @@ public class DebugController {
         try {
             metadata.commit(() -> {
                 Session session = JcrMetadataAccess.getActiveSession();
-                Node node = session.getRootNode().getNode(abspath);
-                String nodeStr = node.toString();
-                
-                node.remove();
-                pw.print("DELETING: ");
-                pw.println(nodeStr);
+                session.removeItem(abspath);
+                pw.print("DELETED " + abspath);
             });
         } catch (Exception e) {
             e.printStackTrace(pw);
+            throw new RuntimeException(e);
         }
         
         pw.flush();
@@ -137,6 +136,7 @@ public class DebugController {
     @Path("jcr/{abspath: .*}")
     @Produces(MediaType.TEXT_PLAIN)
     public String printJcrTree(@PathParam("abspath") final String abspath) {
+
         return metadata.read(() -> {
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
