@@ -51,4 +51,8 @@ public interface BatchJobExecutionProvider {
      * @return
      */
     BatchJobExecution findLatestCompletedJobForFeed(String feedName);
+
+    Boolean isFeedRunning(String feedName);
+
+
 }

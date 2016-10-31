@@ -134,6 +134,8 @@ public class TriggerFeed extends AbstractFeedProcessor {
     protected FlowFile produceFlowFile(ProcessContext context, ProcessSession session) {
         FeedPreconditionTriggerEvent event = this.triggerEventQueue.poll();
         if (event != null) {
+            //drain queue
+            this.triggerEventQueue.clear();
             return createFlowFile(context, session, event);
         } else {
             return session.get();

@@ -3,13 +3,6 @@
  */
 package com.thinkbiganalytics.metadata.core.sla.feed;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
-import org.joda.time.DateTime;
-
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedCriteria;
@@ -21,6 +14,13 @@ import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.spi.MetricAssessmentBuilder;
 import com.thinkbiganalytics.scheduler.util.CronExpressionUtil;
+
+import org.joda.time.DateTime;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  *
@@ -43,7 +43,7 @@ public class FeedExecutedSinceScheduleAssessor extends MetadataMetricAssessor<Fe
         
         if (feeds.size() > 0) {
             Feed<?> feed = feeds.get(0);
-            List<FeedOperation> list = this.getFeedOperationsProvider().find(feed.getId(), 1);
+            List<FeedOperation> list = this.getFeedOperationsProvider().find(feed.getId());
             
             if (! list.isEmpty()) {
                 FeedOperation latest = list.get(0);
