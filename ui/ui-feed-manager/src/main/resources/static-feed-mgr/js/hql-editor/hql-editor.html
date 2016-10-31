@@ -1,11 +1,11 @@
 <div class="md-padding">
 
             <div ng-if="vm.loadingHiveSchemas">
-                <span class="hint">Initializing Hive schemas for autocomplete.  Table and Field Autocomplete will work in a few seconds. </span>
+                <span class="hint">Initializing</span>
             <md-progress-linear md-mode="indeterminate" ></md-progress-linear>
             </div>
             <div id="hqlEditorContainer">
-                <span class="md-input-label">Enter a Query</span>
+                <span class="md-input-label">Enter Query</span>
                 <div class="hql-editor" ui-codemirror ng-model="vm.sql" ui-codemirror-opts="vm.codemirrorOptions">
                 </div>
             </div>

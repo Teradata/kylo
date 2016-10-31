@@ -1,0 +1,28 @@
+<!--
+  ~ Copyright (c) 2016. Teradata Inc.
+  -->
+
+<div class="layout-padding">
+
+  <md-input-container>
+    <label>Limit</label>
+    <md-select ng-model="vm.limit" ng-change="vm.onLimitChange()">
+      <md-option ng-repeat="opt in vm.limitOptions track by $index" ng-value="opt">
+        {{opt}}
+      </md-option>
+    </md-select>
+  </md-input-container>
+
+  <div class="layout-padding-bottom">
+    <div ui-grid-auto-resize
+         browser-height
+         browser-height-scroll-y="false"
+         browser-height-offset="284"
+         ui-grid="gridOptions"
+         ui-grid-move-columns
+         flex>
+    </div>
+
+  </div>
+  <md-progress-linear md-mode="indeterminate" ng-if="vm.executingQuery"></md-progress-linear>
+</div>

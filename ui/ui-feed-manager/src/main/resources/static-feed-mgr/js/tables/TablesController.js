@@ -9,6 +9,66 @@
         this.schemaTables = {};
         this.selectedDatabase = ALL_DATABASES;
         this.selectedTables = [];
+        this.loading = true;
+        this.pageName = 'Tables';
+        self.filterInternal = true;
+
+        this.paginationData = PaginationDataService.paginationData(this.pageName);
+        this.paginationId = 'tables';
+        PaginationDataService.setRowsPerPageOptions(this.pageName, ['5', '10', '20', '50', 'All']);
+        this.currentPage = PaginationDataService.currentPage(self.pageName) || 1;
+        this.viewType = PaginationDataService.viewType(this.pageName);
+        this.sortOptions = loadSortOptions();
+
+        this.filter = PaginationDataService.filter(self.pageName);
+
+        $scope.$watch(function() {
+            return self.viewType;
+        }, function(newVal) {
+            self.onViewTypeChange(newVal);
+        })
+
+        $scope.$watch(function () {
+            return self.filter;
+        }, function (newVal) {
+            PaginationDataService.filter(self.pageName, newVal)
+        })
+
+        this.onViewTypeChange = function(viewType) {
+            PaginationDataService.viewType(this.pageName, self.viewType);
+        }
+
+        this.onOrderChange = function(order) {
+            PaginationDataService.sort(self.pageName, order);
+            TableOptionsService.setSortOption(self.pageName, order);
+        };
+
+        this.onPaginationChange = function(page, limit) {
+            PaginationDataService.currentPage(self.pageName, null, page);
+            self.currentPage = page;
+        };
+
+        /**
+         * Called when a user Clicks on a table Option
+         * @param option
+         */
+        this.selectedTableOption = function(option) {
+            var sortString = TableOptionsService.toSortString(option);
+            var savedSort = PaginationDataService.sort(self.pageName, sortString);
+            var updatedOption = TableOptionsService.toggleSort(self.pageName, option);
+            TableOptionsService.setSortOption(self.pageName, sortString);
+        }
+
+        /**
+         * Build the possible Sorting Options
+         * @returns {*[]}
+         */
+        function loadSortOptions() {
+            var options = {'Schema': 'schema', 'Table': 'tableName'};
+            var sortOptions = TableOptionsService.newSortOptions(self.pageName, options, 'schema', 'asc');
+            TableOptionsService.initializeSortOption(self.pageName);
+            return sortOptions;
+        }
 
         function getTables(){
             var successFn = function (response) {
@@ -27,7 +87,8 @@
                     })
                 }
                 self.tables = arr;
-                self.selectedTables = arr;
+                self.selectedTables = arr.filter(function(t) { return !(t.tableName.endsWith("_valid") || t.tableName.endsWith("_invalid") || t.tableName.endsWith("_profile") || t.tableName.endsWith("_feed"))});
+                self.loading = false;
 
             }
             var errorFn = function (err) {
