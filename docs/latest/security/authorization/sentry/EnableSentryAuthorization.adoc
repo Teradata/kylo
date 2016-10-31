@@ -1,8 +1,6 @@
 = Enable Sentry Authorization Guide
 ifdef::env-github,env-browser[:outfilesuffix: .adoc]
 
-IMPORTANT: This feature is a work in progress. It is not ready for use
-
 Think Big Analytics
 September 2016
 
@@ -100,6 +98,15 @@ If you have Kerberos enabled cluster.
 * Restart the Hive service.
 
 image::images/S2.png[]
+
+
+=== Administrative Priviledge
+
+Once sentryAdmin is group is part of Sentry Admin list ,it will be able to create policies in Sentry but it sentryAdmin will not be allowed to read/write any table. We need to grant priviledges to sentryAdmin group.
+
+	CREATE ROLE admin_role
+	GRANT ALL ON SERVER server1 TO ROLE admin_role;
+	GRANT ROLE admin_role TO GROUP sentryAdmin;
 
 
 == Enabled HDFS ACL

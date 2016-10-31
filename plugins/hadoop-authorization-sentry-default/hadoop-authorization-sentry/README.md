@@ -14,7 +14,7 @@ This plugin is not installed by default as part of the RPM install
 
 Sentry authorization.sentry.properties
 ===
-Below is an example properties file:
+Below is an example properties file for Non-Kerberos environment:
 
 ```
 beeline.connection.url=jdbc:hive2://localhost:10000/default
@@ -24,6 +24,21 @@ beeline.password=
 hdfs.hadoop.configuration=/etc/hadoop/conf/hdfs-site.xml,/etc/hadoop/conf/core-site.xml
 authorization.sentry.groups=hadoop,sentry1,sentry2,sentry3,nifi,thinkbig
 ```
+
+Below is an example properties file for Kerberos environment:
+
+```
+beeline.connection.url=jdbc:hive2://localhost:10000/default;principal=hive/quickstart.cloudera@CLOUDERA
+beeline.drive.name=org.apache.hive.jdbc.HiveDriver
+beeline.userName=nifi
+beeline.password=
+hdfs.hadoop.configuration=/etc/hadoop/conf/hdfs-site.xml,/etc/hadoop/conf/core-site.xml
+authorization.sentry.groups=hadoop,sentry1,sentry2,sentry3,nifi,thinkbig
+sentry.kerberos.principal=nifi@CLOUDERA
+sentry.kerberos.KeytabLocation=/etc/security/nifi.headless.keytab
+sentry.IsKerberosEnabled=true
+```
+
 
 PutFeedMetadata Processor Required Values
 ===

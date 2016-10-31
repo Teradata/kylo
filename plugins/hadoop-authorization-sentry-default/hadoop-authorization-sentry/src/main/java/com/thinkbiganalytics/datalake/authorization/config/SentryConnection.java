@@ -1,8 +1,8 @@
 package com.thinkbiganalytics.datalake.authorization.config;
 
-import com.thinkbiganalytics.datalake.authorization.config.AuthorizationConfiguration;
-
 import javax.sql.DataSource;
+
+import com.thinkbiganalytics.kerberos.KerberosTicketConfiguration;
 
 /**
  * Created by Shashi Vishwakarma on 20/9/16.
@@ -17,6 +17,7 @@ public class SentryConnection implements AuthorizationConfiguration {
     private DataSource dataSource;
     private String hadoopConfiguration;
     private String sentryGroups;
+    private KerberosTicketConfiguration kerberosTicketConfiguration;
 
     public DataSource getDataSource() {
         return dataSource;
@@ -72,6 +73,14 @@ public class SentryConnection implements AuthorizationConfiguration {
 
     public void setSentryGroups(String sentryGroups) {
         this.sentryGroups = sentryGroups;
+    }
+
+    public KerberosTicketConfiguration getKerberosTicketConfiguration() {
+        return kerberosTicketConfiguration;
+    }
+
+    public void setKerberosTicketConfiguration(KerberosTicketConfiguration kerberosTicketConfiguration) {
+        this.kerberosTicketConfiguration = kerberosTicketConfiguration;
     }
 
 }

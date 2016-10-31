@@ -1,7 +1,6 @@
 package com.thinkbiganalytics.datalake.authorization.config;
 
-import com.thinkbiganalytics.datalake.authorization.SentryAuthorizationService;
-import com.thinkbiganalytics.datalake.authorization.service.HadoopAuthorizationService;
+import javax.sql.DataSource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +10,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
-import javax.sql.DataSource;
+import com.thinkbiganalytics.datalake.authorization.SentryAuthorizationService;
+import com.thinkbiganalytics.datalake.authorization.service.HadoopAuthorizationService;
+import com.thinkbiganalytics.kerberos.KerberosTicketConfiguration;
 
 /**
  * Created by Shashi Vishwakarma on 20/9/16.
@@ -28,13 +29,17 @@ public class SentryConfiguration {
         , @Value("${beeline.userName}") String userName
         , @Value("${beeline.password}") String password
         , @Value("${hdfs.hadoop.configuration}") String hadoopConfiguration
-        , @Value("${authorization.sentry.groups}") String sentryGroups) {
+        , @Value("${authorization.sentry.groups}") String sentryGroups
+        , @Value("${sentry.kerberos.principal}") String kerberosPrincipal
+        , @Value ("${sentry.kerberos.KeytabLocation}") String kerberosKeytabLocation
+        , @Value ("${sentry.IsKerberosEnabled}") String kerberosEnabled) {
         SentryConnection sentryConnection = new SentryConnection();
         sentryConnection.setDriverName(driverURL);
         sentryConnection.setSentryGroups(sentryGroups);
         sentryConnection.setHadoopConfiguration(hadoopConfiguration);
         sentryConnection.setDataSource(dataSource(connectionURL, driverURL, userName, password));
-
+        sentryConnection.setKerberosTicketConfiguration(createKerberosTicketConfiguration(kerberosEnabled,hadoopConfiguration,kerberosPrincipal,kerberosKeytabLocation));
+     
         SentryAuthorizationService hadoopAuthorizationService = new SentryAuthorizationService();
         hadoopAuthorizationService.initialize(sentryConnection);
         return hadoopAuthorizationService;
@@ -49,6 +54,15 @@ public class SentryConfiguration {
         dataSourceBuilder.username(userName);
         dataSourceBuilder.password(password);
         return dataSourceBuilder.build();
+    }
+    
+    private KerberosTicketConfiguration createKerberosTicketConfiguration(String kerberosEnabled, String hadoopConfigurationResources, String kerberosPrincipal, String keytabLocation ) {
+        KerberosTicketConfiguration config = new KerberosTicketConfiguration();
+        config.setKerberosEnabled("true".equalsIgnoreCase(kerberosEnabled) ? true: false);
+        config.setHadoopConfigurationResources(hadoopConfigurationResources);
+        config.setKerberosPrincipal(kerberosPrincipal);
+        config.setKeytabLocation(keytabLocation);
+        return config;
     }
 
 }

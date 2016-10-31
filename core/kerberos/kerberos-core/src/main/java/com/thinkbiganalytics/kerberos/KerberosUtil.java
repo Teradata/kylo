@@ -33,8 +33,7 @@ public class KerberosUtil {
                 });
                 log.info("Successfully got a datasource connection !!!!!");
             } catch (Exception e) {
-                log.error("Error with kerberos authentication jeremy");
-
+                log.error("Error with kerberos authentication" +e.getMessage());
                 throw new RuntimeException(e);
             }
         }

@@ -1,0 +1,42 @@
+= Sentry Installation Guide
+ifdef::env-github,env-browser[:outfilesuffix: .adoc]
+
+Think Big Analytics
+October 2016
+
+:toc:
+:toclevels: 2
+:toc-title: Contents
+
+== Installation Steps
+
+*	Log in to Cloudera Manager and Click on Add Service.
+
+image::images/SN1.png[]
+
+* 	Select Sentry from list.
+
+image::images/SN2.png[]
+
+*	Select host for Sentry.
+
+image::images/SN3.png[]
+
+*	Provide Sentry database information and test connection.
+
+	Database Type : mysql
+	Database Name : sentry
+	Username : sentry
+	Password : cloudera
+	
+image::images/SN4.png[]
+
+*	Click on Continue once all services are started.
+
+image::images/SN5.png[]
+
+*	Click on Finish.
+
+image::images/SN6.png[]
+	
+Sentry is insatlled successfully. 
