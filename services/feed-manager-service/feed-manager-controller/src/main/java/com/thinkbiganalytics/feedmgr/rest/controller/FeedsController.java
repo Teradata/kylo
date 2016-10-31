@@ -108,7 +108,7 @@ public class FeedsController {
     @Path("{id}/initstatus/history")
     @Produces(MediaType.APPLICATION_JSON)
     public List<InitializationStatus> getInitializationStatusHistory(@PathParam("id") String feedIdStr) {
-        LOG.debug("Get feed watermarks {}", feedIdStr);
+        LOG.debug("Get feed initializtion history {}", feedIdStr);
         
         return this.metadata.read(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
@@ -130,7 +130,7 @@ public class FeedsController {
     @Consumes(MediaType.APPLICATION_JSON)
     public void putInitializationStatus(@PathParam("id") String feedIdStr,
                                         InitializationStatus status) {
-        LOG.debug("Get feed watermarks {}", feedIdStr);
+        LOG.debug("Get feed initialization status {}", feedIdStr);
         
         this.metadata.commit(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);

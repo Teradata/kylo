@@ -142,7 +142,7 @@ public class LoadHighWaterMark extends HighWaterMarkProcessor {
                                 context.yield();
                             } else {
                                 getLog().debug("Penalizing flow file because water mark {} is active - attempt {} of {}", new Object[] { waterMark, count, maxCount });
-                                session.penalize(outputFF);
+                                outputFF = session.penalize(outputFF);
                                 session.transfer(outputFF);
                             }
                         }
