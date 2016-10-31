@@ -1,9 +1,19 @@
-<div class="feed-user-property" layout="row" ng-repeat="property in propertyList">
+<div class="feed-user-property" layout="row" ng-repeat="property in propertyList"  style="margin-top:-10px">
 
+<!--
     <div ng-if="property.locked" layout="column" flex="50">
         <span>{{property.displayName}}</span>
         <span class="hint">{{property.description}}</span>
     </div>
+-->
+  <md-input-container class="md-block" flex-gt-sm ng-if="property.locked">
+    <label>{{property.displayName}}</label>
+    <input  ng-model="property.value"/>
+    <div ng-messages="property.$error" md-auto-hide="false">
+      <div ng-message="missingValue">A value is required.</div>
+    </div>
+  </md-input-container>
+
     <md-input-container ng-if="!property.locked" flex="50">
         <label>Property</label>
         <input ng-model="property.systemName">
@@ -13,7 +23,7 @@
         </div>
     </md-input-container>
 
-    <md-input-container flex="45">
+    <md-input-container flex="45" ng-if="!property.locked">
         <label>Value</label>
         <input ng-model="property.value">
         <div ng-messages="property.$error" md-auto-hide="false">
@@ -26,4 +36,4 @@
     </md-button>
 </div>
 
-<md-button class="md-primary" ng-click="vm.addProperty()">Add Property</md-button>
+<md-button class="md-raised" ng-click="vm.addProperty()">Add Property</md-button>

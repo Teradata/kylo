@@ -3,6 +3,10 @@ package com.thinkbiganalytics.metadata.api.jobrepo.job;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiEvent;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 
+import org.joda.time.DateTime;
+
+import java.util.Set;
+
 /**
  * Created by sr186054 on 9/18/16.
  */
@@ -32,4 +36,19 @@ public interface BatchJobExecutionProvider {
      * @return
      */
     BatchJobExecution getOrCreateJobExecution(ProvenanceEventRecordDTO event);
+
+    /**
+     * Returns all completed JobExecution records that were started since {@code sinceDate}
+     * @param feedName
+     * @param sinceDate
+     * @return
+     */
+    Set<? extends BatchJobExecution> findJobsForFeedCompletedSince(String feedName,  DateTime sinceDate);
+
+    /**
+     * Returns the Latest Completed JobExecution record for a feed
+     * @param feedName
+     * @return
+     */
+    BatchJobExecution findLatestCompletedJobForFeed(String feedName);
 }

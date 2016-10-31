@@ -309,7 +309,9 @@ public class TableSetup {
 
     public void updateFeedFormat() {
         if (StringUtils.isNotBlank(feedFormat)) {
-            feedFormat = StringEscapeUtils.escapeJava(feedFormat); // StringUtils.replace(feedFormat, "\\n", "\\\\n");
+            // Strip newlines then escape for use
+            feedFormat =  StringUtils.replace(feedFormat, "\n", "");
+            feedFormat = StringEscapeUtils.escapeJava(feedFormat);
         }
     }
 

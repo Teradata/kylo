@@ -1,11 +1,11 @@
 <card-layout body-css="md-padding">
     <header-section>
         <div layout="row" layout-align="space-between-center" flex>
-            <div class="card-title" flex>Properties</div>
+            <div class="card-title" flex>Business Properties</div>
             <h2 class="md-subheader">{{vm.stepNumber}} of {{vm.totalSteps}}</h2>
         </div>
         <div layout="row" layout-align="space-between-center" flex class="layout-padding-top">
-            <div class="md-subheader" flex>Supply additional feed properties</div>
+            <div class="md-subheader" flex>Provide additional business metadata</div>
             <thinkbig-feed-errors-card-header></thinkbig-feed-errors-card-header>
         </div>
     </header-section>
@@ -15,12 +15,13 @@
             <input ng-model="vm.model.dataOwner">
             </input>
         </md-input-container>
+      <thinkbig-property-list-editor properties="vm.model.userProperties" is-valid="vm.isValid"></thinkbig-property-list-editor>
 
         <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm" flex-gt-sm="" style="">
             <label class="label-small md-container-ignore">Tags</label>
             <md-chips ng-model="vm.model.tags" md-autocomplete-snap md-transform-chip="vm.transformChip($chip)" md-require-match="false">
                 <md-autocomplete md-selected-item="vm.tagChips.selectedItem" md-search-text="vm.tagChips.searchText" md-items="item in vm.feedTagService.querySearch(vm.tagChips.searchText)"
-                                 md-item-text="item.name" placeholder="Add a Tag">
+                                 md-item-text="item.name" placeholder="Add tag(s)">
                     <span md-highlight-text="vm.tagChips.searchText">{{item.name}}</span>
                 </md-autocomplete>
                 <md-chip-template>
@@ -54,7 +55,6 @@
             </md-chips>
         </md-input-container>
 
-        <thinkbig-property-list-editor properties="vm.model.userProperties" is-valid="vm.isValid"></thinkbig-property-list-editor>
 
         <thinkbig-step-buttons can-continue="vm.isValid" step-index="{{::vm.stepIndex}}"></thinkbig-step-buttons>
     </body-section>

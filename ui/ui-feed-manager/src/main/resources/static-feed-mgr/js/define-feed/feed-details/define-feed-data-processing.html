@@ -5,7 +5,7 @@
         <h2 class="md-subheader">{{vm.stepNumber}} of {{vm.totalSteps}}</h2>
       </div>
      <div layout="row" layout-align="space-between-center" flex class="layout-padding-top">
-       <div class="md-subheader" flex>Apply additional rules and options to the destination table</div>
+       <div class="md-subheader" flex>Define validation, standardization, and cleansing rules</div>
        <thinkbig-feed-errors-card-header></thinkbig-feed-errors-card-header>
      </div>
 
@@ -17,13 +17,13 @@
 
       <md-list-item  >
          <div layout="row" layout-fill>
-            <div flex="25" class="md-list-item-text hint">
+            <div flex="40" class="md-list-item-text hint">
                Field Name
             </div>
-            <div flex="10" class="md-list-item-text hint">
+            <div flex="20" class="md-list-item-text hint">
                Index
               <md-tooltip md-direction="top">
-                Define what should be sent to "Global Search"
+                Specifies fields available for global indexing for search and discovery
               </md-tooltip>
             </div>
            <!--
@@ -34,10 +34,10 @@
               </md-tooltip>
             </div>
             -->
-            <div flex="25" class="md-list-item-text hint">
+            <div flex="20" class="md-list-item-text hint">
                Standardize
             </div>
-            <div flex="25" class="md-list-item-text hint">
+            <div flex="20" class="md-list-item-text hint">
                Validate
             </div>
          </div>
@@ -46,13 +46,13 @@
      <md-virtual-repeat-container style="height:600px;" md-auto-shrink id="define-feed-data-processing-container">
        <div md-virtual-repeat="policy in vm.model.table.fieldPolicies" md-item-size="60" class="repeated-item" layout="row" layout-fill style="max-height:100%;">
 
-                <div flex="25" class="md-list-item-text">
+                <div flex="40" class="md-list-item-text">
                    <md-input-container class="md-block" flex-gt-sm>
                       <div>{{policy.name}}</div>
                      <div class="hint">{{policy.field.dataTypeDisplay()}}</div>
                    </md-input-container>
                 </div>
-         <div flex="10" class="md-list-item-text " layout="column">
+         <div flex="20" class="md-list-item-text " layout="column">
            <md-input-container class="md-block" flex-gt-sm>
              <md-checkbox flex-gt-sm ng-model="policy.index" aria-label="Index">
              </md-checkbox>
@@ -64,14 +64,14 @@
             </md-checkbox>
           </div>
           -->
-                <div flex="25" class="md-list-item-text hint" layout-align="start center">
+                <div flex="20" class="md-list-item-text hint" layout-align="start center">
                   <div ng-click="vm.showFieldRuleDialog(policy,'standardization')" style="color:#2D78B1;">
                      <md-button class="icon-btn" style="padding-left:2px;padding-right:2px;"><ng-md-icon icon="add_circle_outline" style="fill:#2D78B1;"></ng-md-icon></md-button>ADD</div>
                    <div ng-if="policy.standardization != null && policy.standardization.length >0" class="orange" style="padding-left:32px;">
                       {{policy.standardization.length}} Added
                    </div>
                 </div>
-                <div flex="25" class="md-list-item-text hint" layout-align="start center">
+                <div flex="20" class="md-list-item-text hint" layout-align="start center">
                    <div href ng-click="vm.showFieldRuleDialog(policy,'validation')" style="color:#2D78B1;">
                       <md-button class="icon-btn" style="padding-left:2px;padding-right:2px;"><ng-md-icon icon="add_circle_outline" style="fill:#2D78B1;"></ng-md-icon></md-button>ADD</div>
                    <div ng-if="policy.validation != null && policy.validation.length >0" class="orange" style="padding-left:32px;">
@@ -112,7 +112,7 @@
 
 
      <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="" >
-         <label class="label-small md-container-ignore">Compression options</label>
+         <label class="label-small md-container-ignore">Compression Options</label>
          <md-select ng-model="vm.model.table.options.compressionFormat" >
              <md-option ng-repeat="opt in vm.compressionOptions track by $index" ng-value="opt">
                  {{opt}}

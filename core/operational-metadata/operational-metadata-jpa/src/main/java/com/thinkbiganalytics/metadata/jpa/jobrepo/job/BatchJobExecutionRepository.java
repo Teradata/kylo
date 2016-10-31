@@ -1,12 +1,14 @@
 package com.thinkbiganalytics.metadata.jpa.jobrepo.job;
 
 
+import org.joda.time.DateTime;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QueryDslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by sr186054 on 8/23/16.
@@ -91,5 +93,43 @@ public interface BatchJobExecutionRepository extends JpaRepository<JpaBatchJobEx
                    + ")"
                    + "and job.status = 'FAILED'")
     Boolean hasRelatedJobFailures(@Param("jobExecutionId") Long jobExecutionId);
+
+
+    @Query(value = "select job from JpaBatchJobExecution as job "
+                   + "join JpaNifiEventJobExecution as nifiEventJob on nifiEventJob.jobExecution.jobExecutionId = job.jobExecutionId "
+                   + "join JpaNifiEvent nifiEvent on nifiEvent.eventId = nifiEventJob.eventId "
+                   + "and nifiEvent.flowFileId = nifiEventJob.flowFileId "
+                   + "where nifiEvent.feedName = :feedName")
+    List<JpaBatchJobExecution> findJobsForFeed(@Param("feedName") String feedName);
+
+
+    @Query(value = "select job from JpaBatchJobExecution as job "
+                   + "join JpaNifiEventJobExecution as nifiEventJob on nifiEventJob.jobExecution.jobExecutionId = job.jobExecutionId "
+                   + "join JpaNifiEvent nifiEvent on nifiEvent.eventId = nifiEventJob.eventId "
+                   + "and nifiEvent.flowFileId = nifiEventJob.flowFileId "
+                   + "left join fetch JpaBatchJobExecutionContextValue executionContext on executionContext.jobExecutionId = job.jobExecutionId "
+                   + "where nifiEvent.feedName = :feedName "
+                   + "and job.status = 'COMPLETED' "
+                   + "and job.endTime > :sinceDate ")
+    Set<JpaBatchJobExecution> findJobsForFeedCompletedSince(@Param("feedName") String feedName, @Param("sinceDate") DateTime sinceDate);
+
+
+    @Query(value = "select job from JpaBatchJobExecution as job "
+                   + "join JpaNifiEventJobExecution as nifiEventJob on nifiEventJob.jobExecution.jobExecutionId = job.jobExecutionId "
+                   + "join JpaNifiEvent nifiEvent on nifiEvent.eventId = nifiEventJob.eventId "
+                   + "and nifiEvent.flowFileId = nifiEventJob.flowFileId "
+                   + "where nifiEvent.feedName = :feedName "
+                   + "and job.status = 'COMPLETED' "
+                   + "and job.endTime = (SELECT max(job2.endTime) "
+                   + "        from JpaBatchJobExecution as job2 "
+                   + "        join JpaNifiEventJobExecution as nifiEventJob2 on nifiEventJob2.jobExecution.jobExecutionId = job2.jobExecutionId "
+                   + "        join JpaNifiEvent nifiEvent2 on nifiEvent2.eventId = nifiEventJob2.eventId "
+                   + "        and nifiEvent2.flowFileId = nifiEventJob2.flowFileId "
+                   + "        where nifiEvent2.feedName = :feedName "
+                   + "        and job2.status = 'COMPLETED' )"
+                   + " order by job.jobExecutionId")
+    List<JpaBatchJobExecution> findLatestCompletedJobForFeed(@Param("feedName") String feedName);
+
+
 
 }

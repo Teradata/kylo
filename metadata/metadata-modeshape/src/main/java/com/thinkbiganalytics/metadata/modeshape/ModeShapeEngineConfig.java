@@ -36,13 +36,13 @@ public class ModeShapeEngineConfig {
     
     @PreDestroy
     public void stopEngine() throws InterruptedException, ExecutionException {
-        log.info("Stopping ModeShap engine...");
+        log.info("Stopping ModeShape engine...");
         Future<Boolean> future = modeShapeEngine().shutdown();
         
         if ( future.get() ) {
-            log.info("ModeShap engine stopped");
+            log.info("ModeShape engine stopped");
         } else {
-            log.info("ModeShap engine not reported as stopped");
+            log.info("ModeShape engine not reported as stopped");
         }
     }
     
@@ -70,9 +70,9 @@ public class ModeShapeEngineConfig {
     @Bean
     public ModeShapeEngine modeShapeEngine() {
         ModeShapeEngine engine = new ModeShapeEngine();
-        log.info("Starting ModeShap engine...");
+        log.info("Starting ModeShape engine...");
         engine.start();
-        log.info("ModeShap engine started");
+        log.info("ModeShape engine started");
         return engine;
     }
     

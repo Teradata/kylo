@@ -3,15 +3,16 @@
  */
 package com.thinkbiganalytics.nifi.v2.metadata;
 
-import static com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants.OPERATON_START_PROP;
-import static com.thinkbiganalytics.nifi.v2.common.CommonProperties.FEED_CATEGORY;
-import static com.thinkbiganalytics.nifi.v2.common.CommonProperties.FEED_NAME;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
-import java.util.concurrent.LinkedBlockingQueue;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thinkbiganalytics.metadata.api.op.FeedDependencyDeltaResults;
+import com.thinkbiganalytics.metadata.rest.model.Formatters;
+import com.thinkbiganalytics.metadata.rest.model.event.FeedPreconditionTriggerEvent;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants;
+import com.thinkbiganalytics.nifi.core.api.precondition.FeedPreconditionEventService;
+import com.thinkbiganalytics.nifi.core.api.precondition.PreconditionListener;
+import com.thinkbiganalytics.nifi.v2.common.CommonProperties;
+import com.thinkbiganalytics.util.ComponentAttributes;
 
 import org.apache.nifi.annotation.behavior.EventDriven;
 import org.apache.nifi.annotation.behavior.InputRequirement;
@@ -25,17 +26,20 @@ import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.ProcessorInitializationContext;
 import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.exception.ProcessException;
+import org.apache.nifi.processor.io.OutputStreamCallback;
 import org.joda.time.DateTime;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.thinkbiganalytics.metadata.rest.model.Formatters;
-import com.thinkbiganalytics.metadata.rest.model.event.FeedPreconditionTriggerEvent;
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants;
-import com.thinkbiganalytics.nifi.core.api.precondition.FeedPreconditionEventService;
-import com.thinkbiganalytics.nifi.core.api.precondition.PreconditionListener;
-import com.thinkbiganalytics.nifi.v2.common.CommonProperties;
-import com.thinkbiganalytics.util.ComponentAttributes;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Queue;
+import java.util.Set;
+import java.util.concurrent.LinkedBlockingQueue;
+
+import static com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants.OPERATON_START_PROP;
+import static com.thinkbiganalytics.nifi.v2.common.CommonProperties.FEED_CATEGORY;
+import static com.thinkbiganalytics.nifi.v2.common.CommonProperties.FEED_NAME;
 
 /**
  * @author Sean Felten
@@ -136,20 +140,66 @@ public class TriggerFeed extends AbstractFeedProcessor {
         }
     }
 
-    private FlowFile createFlowFile(ProcessContext context,
+    private FlowFile createFlowFilex(ProcessContext context,
                                     ProcessSession session,
                                     FeedPreconditionTriggerEvent event) {
         FlowFile file = session.create();
-
+        getLog().info("createFlowFile for Feed {}", new Object[]{this.feedId});
         if (this.feedId != null) {
-            Map<DateTime, Map<String, String>> props = getProviderService(context).getProvider().getFeedDependentResultDeltas(this.feedId);
+            FeedDependencyDeltaResults props = getProviderService(context).getProvider().getFeedDependentResultDeltas(this.feedId);
             try {
+
                 String value = MAPPER.writeValueAsString(props);
-                file = session.putAttribute(file, ComponentAttributes.FEED_DEPENDENT_RESULT_DELTAS.name(), value);
+                //add the json as an attr value?
+                //   file = session.putAttribute(file, ComponentAttributes.FEED_DEPENDENT_RESULT_DELTAS.key(), value);
+                //write the json back to the flow file content
+                file = session.write(file, new OutputStreamCallback() {
+                    @Override
+                    public void process(OutputStream outputStream) throws IOException {
+                        outputStream.write(value.getBytes(StandardCharsets.UTF_8));
+                    }
+                });
             } catch (JsonProcessingException e) {
                 getLog().warn("Failed to serialize feed dependency result deltas", e);
                 // TODO Swallow the exception and produce the flow file anyway?
             }
+        }
+
+        return file;
+    }
+
+
+    private FlowFile createFlowFile(ProcessContext context,
+                                    ProcessSession session,
+                                    FeedPreconditionTriggerEvent event) {
+
+        getLog().info("createFlowFile for Feed {}", new Object[]{this.feedId});
+        FlowFile file = null;
+        if (this.feedId != null) {
+            FeedDependencyDeltaResults deltas = getProviderService(context).getProvider().getFeedDependentResultDeltas(this.feedId);
+            if (deltas != null && deltas.getDependentFeedNames() != null && !deltas.getDependentFeedNames().isEmpty()) {
+                file = session.create();
+
+                try {
+
+                    String value = MAPPER.writeValueAsString(deltas);
+                    //add the json as an attr value?
+                    file = session.putAttribute(file, ComponentAttributes.FEED_DEPENDENT_RESULT_DELTAS.key(), value);
+                    //write the json back to the flow file content
+                    file = session.write(file, new OutputStreamCallback() {
+                        @Override
+                        public void process(OutputStream outputStream) throws IOException {
+                            outputStream.write(value.getBytes(StandardCharsets.UTF_8));
+                        }
+                    });
+                } catch (JsonProcessingException e) {
+                    getLog().warn("Failed to serialize feed dependency result deltas", e);
+                    // TODO Swallow the exception and produce the flow file anyway?
+                }
+            }
+        }
+        if (file == null) {
+            file = session.get();
         }
 
         return file;
@@ -165,7 +215,7 @@ public class TriggerFeed extends AbstractFeedProcessor {
         PreconditionListener listener = new PreconditionListener() {
             @Override
             public void triggered(FeedPreconditionTriggerEvent event) {
-                getLog().debug("Precondition event triggered: {}", new Object[]{ event });
+                getLog().debug("Precondition event triggered: {}", new Object[]{event});
 
                 TriggerFeed.this.triggerEventQueue.add(event);
             }

@@ -3,6 +3,37 @@
  */
 package com.thinkbiganalytics.feedmgr.rest.controller;
 
+import com.google.common.collect.Collections2;
+import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
+import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementModelTransform;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource;
+import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
+import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
+import com.thinkbiganalytics.metadata.api.op.FeedDependencyDeltaResults;
+import com.thinkbiganalytics.metadata.api.op.FeedOperation.State;
+import com.thinkbiganalytics.metadata.api.op.FeedOperationCriteria;
+import com.thinkbiganalytics.metadata.api.op.FeedOperationsProvider;
+import com.thinkbiganalytics.metadata.core.feed.FeedPreconditionService;
+import com.thinkbiganalytics.metadata.rest.Model;
+import com.thinkbiganalytics.metadata.rest.model.Formatters;
+import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
+import com.thinkbiganalytics.metadata.rest.model.feed.FeedCriteria;
+import com.thinkbiganalytics.metadata.rest.model.feed.FeedDependencyGraph;
+import com.thinkbiganalytics.metadata.rest.model.feed.FeedDestination;
+import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
+import com.thinkbiganalytics.metadata.rest.model.feed.FeedSource;
+import com.thinkbiganalytics.metadata.rest.model.feed.InitializationStatus;
+import com.thinkbiganalytics.metadata.rest.model.op.FeedOperation;
+import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment;
+import com.thinkbiganalytics.security.AccessController;
+
+import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -26,38 +57,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-
-import org.apache.commons.lang3.StringUtils;
-import org.joda.time.DateTime;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
-
-import com.google.common.collect.Collections2;
-import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
-import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementModelTransform;
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.datasource.Datasource;
-import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
-import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
-import com.thinkbiganalytics.metadata.api.op.FeedOperation.State;
-import com.thinkbiganalytics.metadata.api.op.FeedOperationCriteria;
-import com.thinkbiganalytics.metadata.api.op.FeedOperationsProvider;
-import com.thinkbiganalytics.metadata.core.feed.FeedPreconditionService;
-import com.thinkbiganalytics.metadata.rest.Model;
-import com.thinkbiganalytics.metadata.rest.model.Formatters;
-import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
-import com.thinkbiganalytics.metadata.rest.model.feed.FeedCriteria;
-import com.thinkbiganalytics.metadata.rest.model.feed.FeedDependencyGraph;
-import com.thinkbiganalytics.metadata.rest.model.feed.FeedDestination;
-import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
-import com.thinkbiganalytics.metadata.rest.model.feed.FeedSource;
-import com.thinkbiganalytics.metadata.rest.model.feed.InitializationStatus;
-import com.thinkbiganalytics.metadata.rest.model.op.FeedOperation;
-import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment;
-import com.thinkbiganalytics.security.AccessController;
 
 import io.swagger.annotations.Api;
 
@@ -383,19 +383,14 @@ public class FeedsController {
     @GET
     @Path("{feedId}/depfeeds/delta")
     @Produces(MediaType.APPLICATION_JSON)
-    public Map<DateTime, Map<String, Object>> getDependentResultDeltas(@PathParam("feedId") final String feedIdStr) {
-
+    public FeedDependencyDeltaResults getDependentResultDeltas(@PathParam("feedId") final String feedIdStr) {
+        LOG.info("Get feed dependencies  delta for {}", feedIdStr);
         com.thinkbiganalytics.metadata.api.feed.Feed.ID feedId = this.feedProvider.resolveFeed(feedIdStr);
 
         return this.metadata.read(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
-
-            Map<DateTime, Map<String, Object>> results = this.feedOpsProvider.getDependentDeltaResults(feedId, null);
-            return results.entrySet().stream()
-                .collect(Collectors.toMap(te -> te.getKey(),
-                                          te -> (Map<String, Object>) te.getValue().entrySet().stream()
-                                              .collect(Collectors.toMap(ve -> ve.getKey(),
-                                                                        ve -> (Object) ve.getValue().toString()))));
+            FeedDependencyDeltaResults results = this.feedOpsProvider.getDependentDeltaResults(feedId, null);
+           return results;
         });
     }
 

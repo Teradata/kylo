@@ -3,6 +3,29 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.op;
 
+import com.thinkbiganalytics.jobrepo.query.model.ExecutedFeed;
+import com.thinkbiganalytics.jobrepo.query.model.ExecutedJob;
+import com.thinkbiganalytics.jobrepo.query.model.ExecutionStatus;
+import com.thinkbiganalytics.jobrepo.repository.FeedRepository;
+import com.thinkbiganalytics.jobrepo.repository.JobRepository;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.feed.FeedNotFoundExcepton;
+import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
+import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;
+import com.thinkbiganalytics.metadata.api.op.FeedDependencyDeltaResults;
+import com.thinkbiganalytics.metadata.api.op.FeedOperation;
+import com.thinkbiganalytics.metadata.api.op.FeedOperation.ID;
+import com.thinkbiganalytics.metadata.api.op.FeedOperation.State;
+import com.thinkbiganalytics.metadata.api.op.FeedOperationCriteria;
+import com.thinkbiganalytics.metadata.api.op.FeedOperationsProvider;
+import com.thinkbiganalytics.metadata.core.AbstractMetadataCriteria;
+import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedProvider;
+import com.thinkbiganalytics.metadata.modeshape.op.FeedOperationExecutedJobWrapper.OpId;
+import com.thinkbiganalytics.support.FeedNameUtil;
+
+import org.joda.time.DateTime;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -15,25 +38,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
-
-import org.joda.time.DateTime;
-
-import com.thinkbiganalytics.jobrepo.query.model.ExecutedFeed;
-import com.thinkbiganalytics.jobrepo.query.model.ExecutedJob;
-import com.thinkbiganalytics.jobrepo.query.model.ExecutionStatus;
-import com.thinkbiganalytics.jobrepo.repository.FeedRepository;
-import com.thinkbiganalytics.jobrepo.repository.JobRepository;
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.feed.Feed;
-import com.thinkbiganalytics.metadata.api.feed.FeedNotFoundExcepton;
-import com.thinkbiganalytics.metadata.api.op.FeedOperation;
-import com.thinkbiganalytics.metadata.api.op.FeedOperation.ID;
-import com.thinkbiganalytics.metadata.api.op.FeedOperation.State;
-import com.thinkbiganalytics.metadata.api.op.FeedOperationCriteria;
-import com.thinkbiganalytics.metadata.api.op.FeedOperationsProvider;
-import com.thinkbiganalytics.metadata.core.AbstractMetadataCriteria;
-import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedProvider;
-import com.thinkbiganalytics.metadata.modeshape.op.FeedOperationExecutedJobWrapper.OpId;
 
 /**
  *
@@ -49,6 +53,9 @@ public class JobRepoFeedOperationsProvider implements FeedOperationsProvider {
     
     @Inject
     private JobRepository jobRepo;
+
+    @Inject
+    private BatchJobExecutionProvider jobExecutionProvider;
     
     @Inject
     private MetadataAccess metadata;
@@ -132,20 +139,20 @@ public class JobRepoFeedOperationsProvider implements FeedOperationsProvider {
     public List<FeedOperation> find(Feed.ID feedId, int limit) {
         return metadata.<List<FeedOperation>>read(() -> {
             Feed<?> feed = this.feedProvider.getFeed(feedId);
-            
+
             if (feed != null) {
                 ExecutedFeed feedExec = this.feedRepo.findLastCompletedFeed(feed.getQualifiedName());
-                
+
                 if (feedExec != null) {
                     List<ExecutedJob> jobs = feedExec.getExecutedJobs();
-                    
+
                     if (jobs.isEmpty()) {
                         return Collections.<FeedOperation>emptyList();
                     } else {
                         return feedExec.getExecutedJobs().stream()
-                                        .limit(limit)
-                                        .map(exec -> createOperation(exec))
-                                        .collect(Collectors.toList());
+                            .limit(limit)
+                            .map(exec -> createOperation(exec))
+                            .collect(Collectors.toList());
                     }
                 } else {
                     return Collections.<FeedOperation>emptyList();
@@ -157,21 +164,70 @@ public class JobRepoFeedOperationsProvider implements FeedOperationsProvider {
     }
     
     @Override
-    public Map<DateTime, Map<String, Object>> getDependentDeltaResults(Feed.ID feedId, Set<String> props) {
+    public FeedDependencyDeltaResults getDependentDeltaResults(Feed.ID feedId, Set<String> props) {
         Feed feed = this.feedProvider.getFeed(feedId);
         
         if (feed != null) {
+            String systemFeedName = FeedNameUtil.fullName(feed.getCategory().getName(), feed.getName());
+            FeedDependencyDeltaResults results = new FeedDependencyDeltaResults(feed.getId().toString(),systemFeedName);
+
+            //find this feeds latest completion
+            BatchJobExecution latest = jobExecutionProvider.findLatestCompletedJobForFeed(systemFeedName);
+
+            if (latest == null) {
+                return results;
+            } else {
+                //get the dependent feeds
+                List<Feed<?>> dependents =  feed.getDependentFeeds();
+                for(Feed depFeed:dependents){
+
+                    String depFeedSystemName = FeedNameUtil.fullName(depFeed.getCategory().getName(), depFeed.getName());
+                    //find Completed feeds executed since time
+                    Set<? extends BatchJobExecution> jobs =  jobExecutionProvider.findJobsForFeedCompletedSince(depFeedSystemName, latest.getStartTime());
+                    if(jobs != null){
+                        for(BatchJobExecution job: jobs){
+                            DateTime endTime = job.getEndTime();
+                            Map<String,String> executionContext = job.getJobExecutionContextAsMap();
+                            Map<String,Object>  map = new HashMap<>();
+                            //filter the map
+                            if(executionContext != null) {
+                                //add those requested to the results map
+                                for (Entry<String, String> entry : executionContext.entrySet()) {
+                                    if (props == null || props.isEmpty() || props.contains(entry.getKey())) {
+                                        map.put(entry.getKey(), entry.getValue());
+                                    }
+                                }
+                            }
+                            results.addFeedExecutionContext(depFeedSystemName,job.getJobExecutionId(),job.getStartTime(),endTime,map);
+
+
+                        }
+                    }
+
+                }
+            }
+            
+            return results;
+        } else {
+            throw new FeedNotFoundExcepton(feedId);
+        }
+    }
+
+    public Map<DateTime, Map<String, Object>> getDependentDeltaResultsxx(Feed.ID feedId, Set<String> props) {
+        Feed feed = this.feedProvider.getFeed(feedId);
+
+        if (feed != null) {
             Map<DateTime, Map<String, Object>> results = new HashMap<DateTime, Map<String,Object>>();
             List<FeedOperation> latest = find(feed.getId(), 1);
-            
+
             if (latest.isEmpty()) {
                 return Collections.emptyMap();
             } else {
                 Criteria criteria = (Criteria) criteria()
-                                .stoppedSince(latest.get(0).getStartTime())
-                                .state(State.SUCCESS);
+                    .stoppedSince(latest.get(0).getStartTime())
+                    .state(State.SUCCESS);
                 List<Feed<?>> dependents =  feed.getDependentFeeds();
-                
+
                 for (Feed<?> dep : dependents) {
                     criteria.feed(dep.getId());
                 }
@@ -179,12 +235,12 @@ public class JobRepoFeedOperationsProvider implements FeedOperationsProvider {
                 for (FeedOperation op : find(criteria)) {
                     DateTime time = op.getStopTime();
                     Map<String, Object> map = results.get(time);
-                    
+
                     if (map == null) {
                         map = new HashMap<String, Object>();
                         results.put(time, map);
                     }
-                    
+
                     for (Entry<String, Object> entry : op.getResults().entrySet()) {
                         if (props == null || props.isEmpty() || props.contains(entry.getKey())) {
                             map.put(entry.getKey(), entry.getValue());
@@ -192,7 +248,7 @@ public class JobRepoFeedOperationsProvider implements FeedOperationsProvider {
                     }
                 }
             }
-            
+
             return results;
         } else {
             throw new FeedNotFoundExcepton(feedId);

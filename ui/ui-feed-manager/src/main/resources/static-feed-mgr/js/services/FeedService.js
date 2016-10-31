@@ -105,7 +105,9 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
                     method: 'SAMPLE_FILE',
                     existingTableName: null,
                     targetMergeStrategy: 'DEDUPE_AND_MERGE',
-                    feedFormat: "ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' LINES TERMINATED BY '\\n' STORED AS TEXTFILE",
+                    feedFormat: 'ROW FORMAT SERDE \'org.apache.hadoop.hive.serde2.OpenCSVSerde\' WITH SERDEPROPERTIES ( \'separatorChar\' = \',\' ,\'escapeChar\' = \'\\\\\' ,\'quoteChar\' = \'"\')'
+                                + ' STORED AS'
+                                + ' TEXTFILE',
                     targetFormat: null,
                     fieldPolicies: [],
                     partitions: [],

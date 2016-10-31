@@ -21,7 +21,7 @@ import java.util.Set;
  * Created by sr186054 on 7/12/16.
  */
 @PreconditionPolicy(name = PreconditionPolicyConstants.FEED_EXECUTED_SINCE_FEEDS_NAME, description = "Policy will trigger the feed when all of the supplied feeds have successfully finished")
-public class FeedExecutedSinceFeeds implements Precondition {
+public class FeedExecutedSinceFeeds implements Precondition,DependentFeedPrecondition {
 
     @PolicyProperty(name = "Since Feed", type = PolicyPropertyTypes.PROPERTY_TYPE.currentFeed, hidden = true)
     private String sinceCategoryAndFeedName;
@@ -63,8 +63,12 @@ public class FeedExecutedSinceFeeds implements Precondition {
     }
 
     @Override
-    public Set<com.thinkbiganalytics.metadata.rest.model.sla.ObligationGroup> buildPreconditionObligations() {
+    public List<String> getDependentFeedNames() {
+        return categoryAndFeedList;
+    }
 
+    @Override
+    public Set<com.thinkbiganalytics.metadata.rest.model.sla.ObligationGroup> buildPreconditionObligations() {
         return Sets.newHashSet(buildPreconditionObligation());
     }
 

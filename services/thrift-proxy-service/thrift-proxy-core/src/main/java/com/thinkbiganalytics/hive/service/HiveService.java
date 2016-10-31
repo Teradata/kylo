@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 
@@ -26,6 +27,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.sql.DataSource;
@@ -61,9 +63,9 @@ public class HiveService {
     }
 
     public List<String> getTables(String schema) {
-       return getDBSchemaParser().listTables(schema);
+       List<String> tables = getDBSchemaParser().listTables(schema);
+       return tables;
     }
-
 
     /**
      * returns a list of schemanName.TableName
@@ -140,6 +142,11 @@ public class HiveService {
 
     }
 
+    // TODO: Temporary until we determine how we want to handle
+    private String safeQuery(String query) {
+        return "SELECT kylo_.* FROM ("+query+") kylo_ LIMIT 1000";
+    }
+
 
     public QueryResult query(String query) throws DataAccessException{
         Connection conn = null;
@@ -147,7 +154,7 @@ public class HiveService {
        final QueryResult queryResult = new QueryResult(query);
         final List<QueryResultColumn> columns = new ArrayList<>();
         final Map<String,Integer> displayNameMap = new HashMap<>();
-
+        query = safeQuery(query);
         try {
             jdbcTemplate.query(query, new RowMapper<Map<String, Object>>() {
                 @Override
@@ -189,9 +196,8 @@ public class HiveService {
 
         } catch (DataAccessException dae) {
             dae.printStackTrace();
-
+            throw dae;
         }
-
         log.info("Return " + queryResult.getRows().size());
         return queryResult;
 

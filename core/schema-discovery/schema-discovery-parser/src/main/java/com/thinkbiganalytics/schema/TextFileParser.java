@@ -17,11 +17,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.StringReader;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -37,10 +36,14 @@ import java.util.Vector;
  */
 
 public class TextFileParser {
+
     private static final Logger log = LoggerFactory.getLogger(TextFileParser.class);
+
+    private static final Character DEFAULT_DELIM = ',';
+
     private Character delim;
-    private boolean quotes;
-    private boolean escapes;
+    private Character quote;
+    private Character escape;
 
     private void TextFileParser() {
     }
@@ -48,25 +51,29 @@ public class TextFileParser {
     /**
      * Parses a sample file to allow schema specification when creating a new feed.
      *
-     * @param is The sample file
+     * @param is        The sample file
      * @param delimiter Allows user to manually select the delimiter used in the sample file
      * @return A <code>TableSchema</code> representing the schema
      * @throws IOException If there is an error parsing the sample file
      */
     public TableSchema parse(InputStream is, Character delimiter) throws IOException {
+
+        String sample = ParserHelper2.extractSampleLines(is, Charset.forName("UTF-8"), 11);
         TableSchema schema = null;
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
+        try (BufferedReader br = new BufferedReader(new StringReader(sample))) {
             List<LineStats> lineStats = generateStats(br);
             if (delimiter == null) {
                 this.delim = guessDelimiter(lineStats);
             } else {
                 this.delim = delimiter;
             }
-            this.quotes = hasQuotes(lineStats);
-            this.escapes = hasEscapes(lineStats);
-            if (delim == null) throw new IOException("Unrecognized format");
+            this.quote = deriveQuote(lineStats);
+            this.escape = deriveEscape(lineStats);
+            if (delim == null) {
+                throw new IOException("Unrecognized format");
+            }
 
-            schema = createSchema(br);
+            schema = createSchema(sample);
         }
         return schema;
     }
@@ -75,62 +82,81 @@ public class TextFileParser {
         List<LineStats> lineStats = new Vector<>();
         String line;
         int rows = 0;
-        br.mark(32765);
         while ((line = br.readLine()) != null && rows < 10) {
             LineStats stats = new LineStats(line);
             rows++;
             lineStats.add(stats);
         }
-        br.reset();
         return lineStats;
     }
 
-    private TableSchema createSchema(BufferedReader br) throws IOException {
+    private String stringForCharacter(Character c) {
+        if (c == null) {
+            return null;
+        }
+        switch (c) {
+            case '\t':
+                return "\\t";
+            case '\'':
+                return "\\\'";
+            case '\\':
+                return "\\\\";
+            default:
+                return c.toString();
+        }
+    }
+
+    private TableSchema createSchema(String sample) throws IOException {
         TableSchema schema = new TableSchema();
-        schema.setDelim(delim);
-        schema.setEscapes(escapes);
-        schema.setQuotes(quotes);
+        schema.setDelim(stringForCharacter(delim));
+        schema.setEscape(stringForCharacter(escape));
+        schema.setQuote(stringForCharacter(quote));
 
         // Parse the file and derive types
         CSVFormat format = CSVFormat.DEFAULT.withAllowMissingColumnNames().withDelimiter(delim);
-        if (escapes) {
-            format = format.withEscape('\\');
+        if (escape != null) {
+            format = format.withEscape(escape);
         }
-        if (quotes) {
-            format = format.withQuoteMode(QuoteMode.MINIMAL).withQuote('\"');
+        if (quote != null) {
+            format = format.withQuoteMode(QuoteMode.MINIMAL).withQuote(quote);
         }
         // Parse the file
-        CSVParser parser = format.parse(br);
-        int i = 0;
+        try (StringReader sr = new StringReader(sample)) {
 
-        Vector<Field> fields = new Vector<>();
-        for (CSVRecord record : parser) {
-            if (i > 10) break;
-            int size = record.size();
-            for (int j = 0; j < size; j++) {
-                Field field = null;
-                // Assume field is header name
-                if (i == 0) {
-                    field = new Field();
-                    field.setName(record.get(j));
-                    fields.add(field);
-                } else {
-                    // Add field if needed
-                    if (j > fields.size()) {
-                        field = new Field();
-                        field.setName("Field " + j);
-                        fields.add(field);
-                    }
-                    field = fields.get(j);
-                    field.getSampleValues().add(StringUtils.defaultString(record.get(j), ""));
+            CSVParser parser = format.parse(sr);
+            int i = 0;
+
+            Vector<Field> fields = new Vector<>();
+            for (CSVRecord record : parser) {
+                if (i > 10) {
+                    break;
                 }
+                int size = record.size();
+                for (int j = 0; j < size; j++) {
+                    Field field = null;
+                    // Assume field is header name
+                    if (i == 0) {
+                        field = new Field();
+                        field.setName(record.get(j));
+                        fields.add(field);
+                    } else {
+                        // Add field if needed
+                        if (j > fields.size()) {
+                            field = new Field();
+                            field.setName("Field " + j);
+                            fields.add(field);
+                        }
+                        field = fields.get(j);
+                        field.getSampleValues().add(StringUtils.defaultString(record.get(j), ""));
+                    }
+                }
+                i++;
             }
-            i++;
+            schema.setFields(fields);
+            deriveDataTypes(fields);
+            schema.deriveHiveRecordFormat();
+            return schema;
         }
-        schema.setFields(fields);
-        deriveDataTypes(fields);
-        schema.deriveHiveRecordFormat();
-        return schema;
 
     }
 
@@ -157,22 +183,23 @@ public class TextFileParser {
         }
     }
 
-    private boolean hasEscapes(List<LineStats> lineStats) {
+    private Character deriveEscape(List<LineStats> lineStats) {
         for (LineStats lineStat : lineStats) {
-            if (lineStat.escapes) {
-                return true;
+            if (lineStat.hasEscapes) {
+                return '\\';
             }
         }
-        return false;
+        return null;
     }
 
-    private boolean hasQuotes(List<LineStats> lineStats) {
+    private Character deriveQuote(List<LineStats> lineStats) {
         for (LineStats lineStat : lineStats) {
-            if (lineStat.hasQuotedStrings()) {
-                return true;
+            Character quoteChar = lineStat.deriveQuoteChar();
+            if (quoteChar != null) {
+                return quoteChar;
             }
         }
-        return false;
+        return null;
     }
 
     private Character guessDelimiter(List<LineStats> lineStats) {
@@ -212,7 +239,7 @@ public class TextFileParser {
                 log.warn("Warning: initial delimiter changes");
             }
             // All agree so character delim should be the sole element
-            retVal =  (firstDelimFreq.keySet().iterator().next());
+            retVal = (firstDelimFreq.size() > 0 ? firstDelimFreq.keySet().iterator().next() : DEFAULT_DELIM);
         }
         return retVal;
     }
@@ -252,14 +279,18 @@ public class TextFileParser {
         Map<Character, Integer> delimStats = new HashMap<Character, Integer>();
         Map<Character, Integer> nonDelimStats = new HashMap<Character, Integer>();
         Character lastChar;
-        boolean escapes;
+        boolean hasEscapes;
         Character firstDelim;
 
         public LineStats(String line) {
             // Look for delimiters
             char[] chars = line.toCharArray();
+            // ignore stats on next character if escape
+            boolean escape = false;
             for (int i = 0; i < chars.length; i++) {
+
                 char c = chars[i];
+
                 switch (c) {
                     case ',':
                         increment(',', true);
@@ -269,6 +300,9 @@ public class TextFileParser {
                         break;
                     case '\t':
                         increment('\t', true);
+                        break;
+                    case '\'':
+                        increment('\'', false);
                         break;
                     case '"':
                         increment('"', false);
@@ -283,13 +317,25 @@ public class TextFileParser {
                         increment('\\', false);
                         break;
                     default:
+
                 }
+
             }
         }
 
-        boolean hasQuotedStrings() {
-            Integer count = nonDelimStats.get('"');
+        boolean isQuoteChar(Character c) {
+            Integer count = nonDelimStats.get(c);
             return (count != null && count.intValue() % 2 == 0);
+        }
+
+        Character deriveQuoteChar() {
+            if (isQuoteChar('"')) {
+                return '"';
+            }
+            if (isQuoteChar('\'')) {
+                return '\'';
+            }
+            return null;
         }
 
         void increment(Character c, boolean delim) {
@@ -297,10 +343,12 @@ public class TextFileParser {
                 if (lastChar == null || (lastChar != '\\') || (lastChar == '\\' && c == '\\')) {
                     Integer val = delimStats.get(c);
                     val = (val == null ? 1 : val.intValue() + 1);
-                    if (val == 1) firstDelim = c;
+                    if (val == 1) {
+                        firstDelim = c;
+                    }
                     delimStats.put(c, val);
                 } else {
-                    escapes = true;
+                    hasEscapes = true;
                 }
             } else {
                 Integer val = nonDelimStats.get(c);

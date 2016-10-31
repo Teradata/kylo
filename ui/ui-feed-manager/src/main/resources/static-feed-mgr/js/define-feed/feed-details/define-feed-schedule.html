@@ -6,7 +6,7 @@
       <div class="md-subheader">{{vm.stepNumber}} of {{vm.totalSteps}}</div>
     </div>
     <div layout="row" layout-align="space-between-center" flex class="layout-padding-top">
-      <div class="md-subheader" flex>Schedule and create the feed</div>
+      <div class="md-subheader" flex>Schedule and enable the feed</div>
       <thinkbig-feed-errors-card-header></thinkbig-feed-errors-card-header>
     </div>
   </header-section>
@@ -30,7 +30,7 @@
           <div ng-show="vm.defineFeedScheduleForm.cronExpression.$touched && vm.defineFeedScheduleForm.cronExpression.$invalid"
                ng-messages="vm.defineFeedScheduleForm.cronExpression.$error">
             <div ng-show="vm.defineFeedScheduleForm.cronExpression.$error.cronExpression"
-                 ng-message="cronExpression">Invalid Cron Expression.
+                 ng-message="cronExpression">Invalid cron expression.
             </div>
             <div ng-show="vm.defineFeedScheduleForm.cronExpression.$error.required" ng-message="required">
               Required.
@@ -96,7 +96,7 @@
       </div>
 
       <div layout="column">
-        <md-checkbox ng-model="vm.model.active"> Enable Feed Immediately</md-checkbox>
+        <md-checkbox ng-model="vm.model.active"> Enable feed immediately</md-checkbox>
         <span class="hint fade" ng-show="vm.model.active" ng-hide="!vm.model.active">The feed will be scheduled and running when it is saved.</span>
         <span class="hint fade" ng-show="!vm.model.active" ng-hide="vm.model.active">The feed will be disabled when it is saved.  You will need to enable the feed later.</span>
       </div>

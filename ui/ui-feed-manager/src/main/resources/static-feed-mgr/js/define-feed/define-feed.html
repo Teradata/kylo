@@ -3,7 +3,7 @@
     <div layout="column" flex class="md-padding feed-templates" layout-align="start center" ng-if="vm.stepperUrl == null">
         <div layout="row">
             <div layout="column" flex layout-fill layout-align="center center">
-                <div class="md-title">Select the type of feed <span ng-if="vm.allowImport">or <a href="" ng-click="vm.gotoImportFeed()">Import</a> from an archive</span></div>
+                <div class="card-title">Select a feed template <span ng-if="vm.allowImport">or <a href="" ng-click="vm.gotoImportFeed()">import</a> from file</span></div>
             </div>
         </div>
 
@@ -12,7 +12,7 @@
         <md-card style="width:450px;max-width:450px;max-height:121px;height:121px" ng-repeat="template in vm.firstTemplates track by $index" flex="initial" flex-md="initial" flex-sm="50" ng-click="vm.selectTemplate(template)">
             <md-card-title>
                 <md-card-title-text>
-                    <span style="font-size: 20px;font-weight:400;letter-spacing: .005em;">{{template.templateName}}</span>
+                    <span style="font-size: 16px;font-weight:400;letter-spacing: .005em;">{{template.templateName}}</span>
                 </md-card-title-text>
                 <md-card-title-media>
                     <ng-md-icon icon="{{template.icon}}" size="40" style="fill:{{template.iconColor}};margin-right:-20px;" class="md-media-xs"></ng-md-icon>

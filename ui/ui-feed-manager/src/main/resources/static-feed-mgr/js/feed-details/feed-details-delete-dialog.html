@@ -1,7 +1,7 @@
 <md-dialog aria-label="Delete Feed" ng-cloak>
     <md-dialog-content class="md-dialog-content">
-        <h2 class="md-title">Delete the {{vm.model.feedName}} feed?</h2>
-        <div>All data related to the feed will be lost.</div>
+        <h2 class="md-title">Delete {{vm.model.feedName}}?</h2>
+        <div>All data for this feed will be permanently deleted.</div>
         <md-input-container>
             <label>Enter YES to confirm</label>
             <input type="text" maxlength="3" ng-model="confirm" ng-disabled="vm.model.state == 'DELETED'">

@@ -5,7 +5,6 @@
 package com.thinkbiganalytics.db.model.schema;
 
 
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.base.Function;
@@ -29,11 +28,11 @@ public class TableSchema {
 
     public List<Field> fields;
 
-    private Character delim;
+    private String delim;
 
-    private boolean escapes;
+    private String escape;
 
-    private boolean quotes;
+    private String quote;
 
     private String hiveRecordFormat;
 
@@ -62,28 +61,28 @@ public class TableSchema {
         this.fields = fields;
     }
 
-    public Character getDelim() {
+    public String getDelim() {
         return delim;
     }
 
-    public void setDelim(Character delim) {
+    public void setDelim(String delim) {
         this.delim = delim;
     }
 
-    public boolean isEscapes() {
-        return escapes;
+    public String getEscape() {
+        return escape;
     }
 
-    public void setEscapes(boolean escapes) {
-        this.escapes = escapes;
+    public void setEscape(String escape) {
+        this.escape = escape;
     }
 
-    public boolean isQuotes() {
-        return quotes;
+    public String getQuote() {
+        return quote;
     }
 
-    public void setQuotes(boolean quotes) {
-        this.quotes = quotes;
+    public void setQuote(String quote) {
+        this.quote = quote;
     }
 
     public String getSchemaName() {
@@ -95,10 +94,40 @@ public class TableSchema {
     }
 
     @JsonIgnore
-    public String deriveHiveRecordFormat(){
-        hiveRecordFormat = "ROW FORMAT DELIMITED FIELDS TERMINATED BY '"+getDelim()+"' LINES TERMINATED BY '\\n' STORED AS TEXTFILE";
+    public String deriveHiveRecordFormat() {
+
+        String template = "ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'\n" +
+                          " WITH SERDEPROPERTIES (" +
+                          deriveSeparatorRecordFormat() +
+                          deriveEscapeCharRecordFormat() +
+                          deriveQuoteRecordFormat() +
+                          ") STORED AS TEXTFILE";
+        hiveRecordFormat = String.format(template);
+        System.out.println(hiveRecordFormat);
         return hiveRecordFormat;
     }
+
+    private String deriveSeparatorRecordFormat() {
+        String template = " 'separatorChar' = '%s'";
+        return String.format(template, getDelim());
+    }
+
+    private String deriveQuoteRecordFormat() {
+        if (quote == null) {
+            return "";
+        }
+        String template = " ,'quoteChar' = '%s'";
+        return String.format(template, getQuote());
+    }
+
+    private String deriveEscapeCharRecordFormat() {
+        if (escape == null) {
+            return "";
+        }
+        String template = " ,'escapeChar' = '%s'";
+        return String.format(template, getEscape());
+    }
+
 
     public String getHiveRecordFormat() {
         return hiveRecordFormat;
@@ -109,9 +138,9 @@ public class TableSchema {
     }
 
     @JsonIgnore
-    public Map<String,Field> getFieldsAsMap(){
-        Map<String,Field> map = new HashMap<>();
-        if(fields != null) {
+    public Map<String, Field> getFieldsAsMap() {
+        Map<String, Field> map = new HashMap<>();
+        if (fields != null) {
             map = Maps.uniqueIndex(fields, new Function<Field, String>() {
                 @Override
                 public String apply(Field field) {

@@ -1,15 +1,24 @@
 <md-dialog aria-label="Profile Data"  ng-cloak style="width:100%;height:100%;" class="md-dialog-fullscreen-fixed" >
-         <div  class="md-toolbar-tools">
-            <h4 class="md-title">
-                <span>Profile Statistics for {{processingdate |date:'MM/dd/yyyy @ hh:mm:ssa'}}</span></h4>
-            <span flex></span>
-        </div>
+
+
+  <div class="md-toolbar-tools" layout="row" layout-align="left">
+    <md-dialog-actions layout="row" layout-align="end start" flex class="layout-padding-top" >
+      <md-button class="md-raised md-primary" ng-click="cancel($event)">
+        Close
+      </md-button>
+    </md-dialog-actions>
+    <h4 class="md-title">
+      <span>Feed Profile</span><br>
+      <div class="hint">Processed {{processingdate |date:'MM/dd/yyyy hh:mm:ssa'}}</div>
+    </h4>
+  </div>
+
         <md-dialog-content layout="column" layout-padding style="width:100%;height:100%;">
 
             <md-tabs md-dynamic-height md-border-bottom md-selected="selectedTabIndex" >
                 <md-tab >
                     <md-tab-label >
-                        <div>stats</div>
+                        <div>Profile</div>
                     </md-tab-label>
                     <md-tab-body>
                         <thinkbig-feed-profile-stats ng-if="selectedTabIndex ==0"  processingdttm="processingdttm" rows-per-page="paginationData.rowsPerPage"></thinkbig-feed-profile-stats>
@@ -36,10 +45,5 @@
                 </md-tab>
                 </md-tabs>
         </md-dialog-content>
-        <md-dialog-actions layout="row" layout-align="start center" flex>
-            <md-button class="md-raised" ng-click="cancel($event)">
-                Back
-            </md-button>
-            <span flex></span>
-        </md-dialog-actions>
+
 </md-dialog>

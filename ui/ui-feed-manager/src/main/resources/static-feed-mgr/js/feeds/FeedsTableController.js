@@ -84,7 +84,7 @@
          */
         function loadSortOptions() {
             var options = {'Feed': 'feedName', 'State': 'state', 'Category': 'category.name', 'Type': 'templateName', 'Last Modified': 'updateDate'};
-            var sortOptions = TableOptionsService.newSortOptions(self.pageName, options, 'feedName', 'asc');
+            var sortOptions = TableOptionsService.newSortOptions(self.pageName, options, 'updateDate', 'desc');
             TableOptionsService.initializeSortOption(self.pageName);
             return sortOptions;
         }
