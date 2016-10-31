@@ -38,8 +38,10 @@ import com.thinkbiganalytics.nifi.v2.common.CommonProperties;
 public class LoadHighWaterMark extends HighWaterMarkProcessor {
 
     protected static final AllowableValue[] ACTIVE_STRATEGY_VALUES = new AllowableValue[] {
-                             new AllowableValue("YIELD", "Yield", "Yield processing so that another attempt to obtain the high-water mark can be made later"),
-                             new AllowableValue("ROUTE", "Route", "Route immediately to the \"active\" relationship")
+                             new AllowableValue("YIELD", "Yield", "Yield processing so that another attempt to obtain the high-water mark can be made later."),
+                             new AllowableValue("PENALIZE", "Penalize", "Penalize the flow file and return it ot the queue that it came from so that another "
+                                             + "attempt to obtain the high-water mark can be made later.  Performs a yield instead if this processor is the first in the flow."),
+                             new AllowableValue("ROUTE", "Route", "Route immediately to the \"activeFailure\" relationship.")
                           };
 
     protected static final PropertyDescriptor ACTIVE_WATER_MARK_STRATEGY = new PropertyDescriptor.Builder()
@@ -114,23 +116,36 @@ public class LoadHighWaterMark extends HighWaterMarkProcessor {
                 this.yieldCount.set(0);
                 session.transfer(outputFF, CommonProperties.REL_SUCCESS);
             } catch (WaterMarkActiveException e) {
-                PropertyValue value = context.getProperty(MAX_YIELD_COUNT);
-                int maxCount = value.isSet() ? value.asInteger() : Integer.MAX_VALUE - 1;
-                int count = this.yieldCount.incrementAndGet();
-
-                if (maxCount > 0 && count > maxCount) {
+                String strategy = context.getProperty(ACTIVE_WATER_MARK_STRATEGY).getValue();
+                
+                if ("ROUTE".equals(strategy)) {
                     getLog().debug("Water mark {} is active - routing to \"activeFailure\"", new Object[] { waterMark });
                     session.transfer(outputFF, ACTIVE_FAILURE);
                 } else {
-                    getLog().debug("Yielding because water mark {} is active - attempt {} of {}", new Object[] { waterMark, count, maxCount });
-
-                    // Remove the flow file before yielding if we create the flow file
-                    if (createdFlowfile) {
-                        session.remove(outputFF);
-                        context.yield();
+                    PropertyValue value = context.getProperty(MAX_YIELD_COUNT);
+                    int maxCount = value.isSet() ? value.asInteger() : Integer.MAX_VALUE - 1;
+                    int count = this.yieldCount.incrementAndGet();
+    
+                    if (maxCount > 0 && count > maxCount) {
+                        getLog().debug("Water mark {} is active - routing to \"activeFailure\"", new Object[] { waterMark });
+                        session.transfer(outputFF, ACTIVE_FAILURE);
                     } else {
-                        session.penalize(outputFF);
-                        session.transfer(outputFF);
+                        // If this processor created this flow file (1st processor in flow) then we will yield no matter what the strategy.
+                        if (createdFlowfile) {
+                            getLog().debug("Removing creatd flow file and yielding because water mark {} is active - attempt {} of {}", new Object[] { waterMark, count, maxCount });
+                            session.remove(outputFF);
+                            context.yield();
+                        } else {
+                            if ("YIELD".equals(strategy)) {
+                                getLog().debug("Yielding because water mark {} is active - attempt {} of {}", new Object[] { waterMark, count, maxCount });
+                                session.transfer(outputFF);
+                                context.yield();
+                            } else {
+                                getLog().debug("Penalizing flow file because water mark {} is active - attempt {} of {}", new Object[] { waterMark, count, maxCount });
+                                session.penalize(outputFF);
+                                session.transfer(outputFF);
+                            }
+                        }
                     }
                 }
             }
