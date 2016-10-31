@@ -100,6 +100,15 @@ If you have Kerberos enabled cluster.
 image::images/S2.png[]
 
 
+=== Administrative Priviledge
+
+Once sentryAdmin is group is part of Sentry Admin list ,it will be able to create policies in Sentry but it sentryAdmin will not be allowed to read/write any table. We need to grant priviledges to sentryAdmin group.
+
+	CREATE ROLE admin_role
+	GRANT ALL ON SERVER server1 TO ROLE admin_role;
+	GRANT ROLE admin_role TO GROUP sentryAdmin;
+
+
 == Enabled HDFS ACL
 
 * Go to the Cloudera Manager Admin Console and navigate to the HDFS service.
