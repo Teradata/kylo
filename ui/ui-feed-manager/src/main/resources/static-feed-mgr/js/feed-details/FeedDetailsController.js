@@ -117,22 +117,49 @@
             $http.delete(RestUrlService.GET_FEEDS_URL + "/" + self.feedId).then(successFn, errorFn);
         };
 
+        /**
+         * Enables this feed.
+         */
         this.enableFeed = function() {
             self.enabling = true;
             $http.post(RestUrlService.ENABLE_FEED_URL(self.feedId)).then(function(response) {
                 self.model.state = response.data.state;
                 FeedService.updateEditModelStateIcon();
                 self.enabling = false;
+            }, function() {
+                $mdDialog.show(
+                        $mdDialog.alert()
+                                .clickOutsideToClose(true)
+                                .title("NiFi Error")
+                                .textContent("The feed could not be enabled.")
+                                .ariaLabel("Cannot enable feed.")
+                                .ok("OK")
+                );
+                self.enabling = false;
             });
-        }
+        };
+
+        /**
+         * Disables this feed.
+         */
         this.disableFeed = function() {
             self.disabling = true;
             $http.post(RestUrlService.DISABLE_FEED_URL(self.feedId)).then(function(response) {
                 self.model.state = response.data.state;
                 FeedService.updateEditModelStateIcon();
                 self.disabling = false;
+            }, function() {
+                $mdDialog.show(
+                        $mdDialog.alert()
+                                .clickOutsideToClose(true)
+                                .title("NiFi Error")
+                                .textContent("The feed could not be disabled.")
+                                .ariaLabel("Cannot disable feed.")
+                                .ok("OK")
+                );
+                self.disabling = false;
             });
-        }
+        };
 
         function mergeTemplateProperties(feed) {
             var successFn = function(response) {

@@ -1,20 +1,5 @@
 package com.thinkbiganalytics.feedmgr.service;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.inject.Inject;
-
-import org.apache.nifi.web.api.dto.ConnectionDTO;
-import org.apache.nifi.web.api.dto.ProcessGroupDTO;
-import org.apache.nifi.web.api.entity.ProcessGroupEntity;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import com.thinkbiganalytics.datalake.authorization.service.HadoopAuthorizationService;
 import com.thinkbiganalytics.feedmgr.InvalidOperationException;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
@@ -38,13 +23,33 @@ import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
 import com.thinkbiganalytics.metadata.api.op.FeedOperation;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
+import com.thinkbiganalytics.nifi.rest.client.NiFiComponentState;
+import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
+
+import org.apache.nifi.web.api.dto.ConnectionDTO;
+import org.apache.nifi.web.api.dto.ProcessGroupDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.inject.Inject;
 
 /**
  * Provides access to category, feed, and template metadata stored in the metadata store.
  */
 public class FeedManagerMetadataService implements MetadataService {
+
+    private static final Logger log = LoggerFactory.getLogger(FeedManagerMetadataService.class);
 
     @Inject
     FeedManagerCategoryService categoryProvider;
@@ -72,6 +77,10 @@ public class FeedManagerMetadataService implements MetadataService {
     @Autowired(required = false)
     @Qualifier("hadoopAuthorizationService")
     private HadoopAuthorizationService hadoopAuthorizationService;
+
+    /** NiFi REST client */
+    @Inject
+    private NiFiRestClient nifiClient;
 
     @Override
     public void registerTemplate(RegisteredTemplate registeredTemplate) {
@@ -195,25 +204,35 @@ public class FeedManagerMetadataService implements MetadataService {
 
     }
 
+    /**
+     * Changes the state of the specified feed.
+     *
+     * @param feedSummary the feed
+     * @param state the new state
+     * @return {@code true} if the feed is in the new state, or {@code false} otherwise
+     */
     private boolean updateNifiFeedRunningStatus(FeedSummary feedSummary, Feed.State state) {
-        boolean updatedNifi = false;
-        if (feedSummary != null && feedSummary.getState().equals(state.name())) {
-
-            ProcessGroupDTO group = nifiRestClient.getProcessGroupByName("root", feedSummary.getSystemCategoryName());
-            if (group != null) {
-                ProcessGroupDTO feed = nifiRestClient.getProcessGroupByName(group.getId(), feedSummary.getSystemFeedName());
-                if (feed != null) {
-                    if (state.equals(Feed.State.ENABLED)) {
-                        ProcessGroupDTO entity = nifiRestClient.startAll(feed.getId(), feed.getParentGroupId());
-                        updatedNifi = (entity != null);
-                    } else if (state.equals(Feed.State.DISABLED)) {
-                        ProcessGroupDTO entity = nifiRestClient.stopInputs(feed.getId());
-                        updatedNifi = (entity != null);
-                    }
-                }
-            }
+        // Validate parameters
+        if (feedSummary == null || !feedSummary.getState().equals(state.name())) {
+            return false;
         }
-        return updatedNifi;
+
+        // Find the process group
+        final Optional<ProcessGroupDTO> categoryGroup = nifiClient.processGroups().findByName("root", feedSummary.getSystemCategoryName(), false, false);
+        final Optional<ProcessGroupDTO> feedGroup = categoryGroup.flatMap(group -> nifiClient.processGroups().findByName(group.getId(), feedSummary.getSystemFeedName(), false, true));
+        if (!feedGroup.isPresent()) {
+            log.warn("NiFi process group missing for feed: {}.{}", feedSummary.getSystemCategoryName(), feedSummary.getSystemFeedName());
+            return Feed.State.DISABLED.equals(state);
+        }
+
+        // Update the state
+        if (state.equals(Feed.State.ENABLED)) {
+            nifiClient.processGroups().schedule(feedGroup.get().getId(), categoryGroup.get().getId(), NiFiComponentState.RUNNING);
+        } else if (state.equals(Feed.State.DISABLED)) {
+            nifiRestClient.stopInputs(feedGroup.get());
+        }
+
+        return true;
     }
 
     //@Transactional(transactionManager = "metadataTransactionManager")
