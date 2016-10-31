@@ -20,10 +20,11 @@
         <md-divider ng-if="!$last"></md-divider>
       </md-list-item>
       <md-list-item ng-show="vm.loading == false && vm.serviceLevelAgreements.length ==0">
-        No Service Level Agreements exist.
+        No Service Level Agreements
       </md-list-item>
       <md-divider></md-divider>
-      <md-list-item layout-align="end center" layout-row class="pagination-list-item" ng-show="vm.serviceLevelAgreements.length >0">
+
+      <md-list-item layout-align="end center" layout-row class="pagination-list-item" ng-show="vm.serviceLevelAgreements.length > 0">
         <dir-pagination-controls pagination-id="vm.paginationId"
                                  auto-hide="false"
                                  max-size="5"

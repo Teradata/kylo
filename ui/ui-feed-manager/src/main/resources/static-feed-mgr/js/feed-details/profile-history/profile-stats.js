@@ -35,42 +35,43 @@
 
         self.selectRowAndUpdateCharts = function(event, row) {
             //called when user selects the column
-            selectRow(row);
-            updateCharts();
+            self.selectRow(row);
+            self.updateCharts();
         };
 
-        var chartColor = function (d, i) {
-            return '#1f77b4'; //couldn't do it via css
+        self.chartColor = function (d, i) {
+            return '#f08c38'; //#1f77b4'; //couldn't do it via css
         };
-        var chartDuration = 500;
-        var multiBarHorizontalChartMarginLeft = 80;
-        var multiBarHorizontalChartMarginRight = 50;
+        self.chartDuration = 500;
+        self.multiBarHorizontalChartMarginLeft = 80;
+        self.multiBarHorizontalChartMarginRight = 50;
 
-        function selectRow(row) {
+        self.selectRow = function(row) {
             //console.log("Selecting row " + row);
 
-            selectColumn(row);
+            self.selectColumn(row);
 
-            selectColumnData();
-            selectType();
-            selectTopValues();
-            selectTimeValues();
-            selectStringValues();
+            self.selectColumnData();
+            self.selectType();
+            self.selectTopValues();
+            self.selectTimeValues();
+            self.selectStringValues();
+            self.selectNumericValues();
         }
 
-        function selectColumn(row) {
+        self.selectColumn = function(row) {
             self.selectedRow.prevProfile = self.selectedRow.profile;
             self.selectedRow.columnname = row.columnname;
         }
 
-        function selectColumnData() {
+        self.selectColumnData = function() {
             self.filtered = _.filter(self.data.rows, function (row) {
                 return row.columnname == self.selectedRow.columnname;
             });
         }
 
-        function selectType() {
-            var type = findStat(self.filtered, 'COLUMN_DATATYPE');
+        self.selectType = function() {
+            var type = self.findStat(self.filtered, 'COLUMN_DATATYPE');
             if (_.isUndefined(type)) {
                 type = "UnknownType";
             }
@@ -88,28 +89,20 @@
         }
 
 
-        function updateCharts() {
+        self.updateCharts = function() {
+
             self.summaryApi.update();
             if (self.selectedRow.prevProfile != "Unknown") {
                 //chart with percents is not shown only for Unknown, i.e.
                 // in all other cases it needs to be updated
                 self.percApi.update();
             }
-            if (self.selectedRow.prevProfile == self.selectedRow.profile) {
-                //we only need to explicitly update when not changing profile types,
-                //charts are updated automatically when profile type changes
-                if (self.selectedRow.profile == "String") {
-                    self.stringApi.update();
-                } else if (self.selectedRow.profile == "Numeric") {
-                    self.numericApi.update();
-                }
-            }
         }
 
         self.summaryOptions = {
             chart: {
                 type: 'discreteBarChart',
-                color: chartColor,
+                color: self.chartColor,
                 height: 270,
                 margin : {
                     top: 5, //otherwise top of numeric value is cut off
@@ -117,7 +110,7 @@
                     bottom: 25, //otherwise bottom labels are not visible
                     left: 0
                 },
-                duration: chartDuration,
+                duration: self.chartDuration,
                 x: function(d){return d.label;},
                 y: function(d){return d.value + (1e-10);},
                 showXAxis: true,
@@ -132,16 +125,25 @@
             }
         };
 
+        /* Returns the class indicating an active column selection */
+        self.getClass = function(item) {
+            if (item.columnname == self.selectedRow.columnname) {
+                return "md-raised"
+            } else {
+                return "";
+            }
+        }
+
         self.summaryData = function() {
-            var total = findNumericStat(self.filtered, 'TOTAL_COUNT');
-            var nulls = findNumericStat(self.filtered, 'NULL_COUNT');
-            var empty = findNumericStat(self.filtered, 'EMPTY_COUNT');
-            var unique = findNumericStat(self.filtered, 'UNIQUE_COUNT');
-            var invalid = findNumericStat(self.filtered, 'INVALID_COUNT');
+            var total = self.findNumericStat(self.filtered, 'TOTAL_COUNT');
+            var nulls = self.findNumericStat(self.filtered, 'NULL_COUNT');
+            var empty = self.findNumericStat(self.filtered, 'EMPTY_COUNT');
+            var unique = self.findNumericStat(self.filtered, 'UNIQUE_COUNT');
+            var invalid = self.findNumericStat(self.filtered, 'INVALID_COUNT');
             var valid = total - invalid;
 
             //display negative values in red
-            var color = chartColor();
+            var color = self.chartColor();
             if (valid < 0) {
                 color = "red";
             }
@@ -162,15 +164,15 @@
         self.stringOptions = {
             chart: {
                 type: 'multiBarHorizontalChart',
-                color: chartColor,
+                color: self.chartColor,
                 height: 125,
                 margin : {
                     top: 0,
                     right: 0,
                     bottom: 0,
-                    left: multiBarHorizontalChartMarginLeft //otherwise y axis labels are not visible
+                    left: self.multiBarHorizontalChartMarginLeft //otherwise y axis labels are not visible
                 },
-                duration: chartDuration,
+                duration: self.chartDuration,
                 x: function(d){return d.label;},
                 y: function(d){return d.value;},
                 showXAxis: true,
@@ -197,15 +199,15 @@
         self.numericOptions = {
             chart: {
                 type: 'multiBarHorizontalChart',
-                color: chartColor,
+                color: self.chartColor,
                 height: 250,
                 margin : {
                     top: 0,
-                    right: multiBarHorizontalChartMarginRight, //otherwise large numbers are cut off
+                    right: self.multiBarHorizontalChartMarginRight, //otherwise large numbers are cut off
                     bottom: 0,
-                    left: multiBarHorizontalChartMarginLeft //otherwise y axis labels are not visible
+                    left: self.multiBarHorizontalChartMarginLeft //otherwise y axis labels are not visible
                 },
-                duration: chartDuration,
+                duration: self.chartDuration,
                 x: function(d){return d.label;},
                 y: function(d){return d.value;},
                 showXAxis: true,
@@ -219,15 +221,15 @@
         self.percOptions = {
             chart: {
                 type: 'multiBarHorizontalChart',
-                color: chartColor,
+                color: self.chartColor,
                 height: 200,
                 margin : {
                     top: 0,
-                    right: multiBarHorizontalChartMarginRight, //otherwise large numbers are cut off
+                    right: self.multiBarHorizontalChartMarginRight, //otherwise large numbers are cut off
                     bottom: 0,
-                    left: multiBarHorizontalChartMarginLeft //otherwise y axis labels are not visible
+                    left: self.multiBarHorizontalChartMarginLeft //otherwise y axis labels are not visible
                 },
-                duration: chartDuration,
+                duration: self.chartDuration,
                 x: function(d){return d.label;},
                 y: function(d){return d.value;},
                 showXAxis: true,
@@ -241,45 +243,29 @@
             }
         };
 
-        self.numericData = function() {
-            //console.log("calculating numeric data");
-            var values = [];
-
-            values.push({"label": "Minimum", "value": findNumericStat(self.filtered, 'MIN')});
-            values.push({"label": "Maximum", "value": findNumericStat(self.filtered, 'MAX')});
-            values.push({"label": "Mean", "value": findNumericStat(self.filtered, 'MEAN')});
-            values.push({"label": "Std Dev", "value": findNumericStat(self.filtered, 'STDDEV')});
-
-            //variance dominates the graph - and we have std dev anyway
-            //values.push({"label": "Variance", "value": findNumericStat(self.filtered, 'VARIANCE')});
-            //values.push({"label": "Sum", "value": findNumericStat(self.filtered, 'SUM')});
-
-            return [{key: "Stats", values: values}];
-        };
-
         self.percData = function() {
             //console.log("calculating percentage data");
             var values = [];
 
-            values.push({label: "Nulls", value: findNumericStat(self.filtered, 'PERC_NULL_VALUES')});
-            values.push({label: "Unique", value: findNumericStat(self.filtered, 'PERC_UNIQUE_VALUES')});
-            values.push({label: "Duplicates", value: findNumericStat(self.filtered, 'PERC_DUPLICATE_VALUES')});
+            values.push({label: "Nulls", value: self.findNumericStat(self.filtered, 'PERC_NULL_VALUES')});
+            values.push({label: "Unique", value: self.findNumericStat(self.filtered, 'PERC_UNIQUE_VALUES')});
+            values.push({label: "Duplicates", value: self.findNumericStat(self.filtered, 'PERC_DUPLICATE_VALUES')});
 
             return [{key: "Stats", values: values}];
         };
 
-        function findStat(rows, metrictype) {
+        self.findStat = function(rows, metrictype) {
             var row = _.find(rows, function(row){ return row.metrictype == metrictype; });
             return _.isUndefined(row) || _.isUndefined(row.metricvalue) ? "" : row.metricvalue;
         }
 
-        function findNumericStat(rows, metrictype) {
-            var stat = findStat(rows, metrictype);
+        self.findNumericStat = function(rows, metrictype) {
+            var stat = self.findStat(rows, metrictype);
             return stat == ""  ? 0 : Number(stat);
         }
 
-        function selectTopValues() {
-            var topN = findStat(self.filtered, 'TOP_N_VALUES');
+        self.selectTopValues = function() {
+            var topN = self.findStat(self.filtered, 'TOP_N_VALUES');
             var topVals = [];
             if (_.isUndefined(topN)) {
                 topVals = [];
@@ -295,33 +281,49 @@
             self.topvalues = topVals;
         }
 
-        function selectTimeValues() {
+        self.selectTimeValues = function() {
             var timeVals = [];
             self.timevalues = timeVals;
             if (self.selectedRow.profile == "Time") {
                 //console.log("calculating time data");
 
-                timeVals.push({name: "Maximum", value: findStat(self.filtered, 'MAX_TIMESTAMP')});
-                timeVals.push({name: "Minimum", value: findStat(self.filtered, 'MIN_TIMESTAMP')});
+                timeVals.push({name: "Maximum", value: self.findStat(self.filtered, 'MAX_TIMESTAMP')});
+                timeVals.push({name: "Minimum", value: self.findStat(self.filtered, 'MIN_TIMESTAMP')});
             }
         }
 
-        function selectStringValues() {
+        self.selectNumericValues = function() {
+            //console.log("calculating numeric data");
+            var values = [];
+            self.numericvalues = values;
+
+            if (self.selectedRow.profile == "Numeric") {
+                values.push({"name": "Minimum", "value": self.findNumericStat(self.filtered, 'MIN')});
+                values.push({"name": "Maximum", "value": self.findNumericStat(self.filtered, 'MAX')});
+                values.push({"name": "Mean", "value": self.findNumericStat(self.filtered, 'MEAN')});
+                values.push({"name": "Std Dev", "value": self.findNumericStat(self.filtered, 'STDDEV')});
+                values.push({"name": "Variance", "value": self.findNumericStat(self.filtered, 'VARIANCE')});
+                values.push({"name": "Sum", "value": self.findNumericStat(self.filtered, 'SUM')});
+            }
+
+        }
+
+        self.selectStringValues = function() {
             var vals = [];
             self.stringvalues = vals;
             if (self.selectedRow.profile == "String") {
                 //console.log("calculating time data");
 
-                vals.push({name: "Longest", value: findStat(self.filtered, 'LONGEST_STRING')});
-                vals.push({name: "Shortest", value: findStat(self.filtered, 'SHORTEST_STRING')});
-                vals.push({name: "Min (Case Sensitive)", value: findStat(self.filtered, 'MIN_STRING_CASE')});
-                vals.push({name: "Max (Case Sensitive)", value: findStat(self.filtered, 'MAX_STRING_CASE')});
-                vals.push({name: "Min (Case Insensitive)", value: findStat(self.filtered, 'MIN_STRING_ICASE')});
-                vals.push({name: "Max (Case Insensitive)", value: findStat(self.filtered, 'MAX_STRING_ICASE')});
+                vals.push({name: "Longest", value: self.findStat(self.filtered, 'LONGEST_STRING')});
+                vals.push({name: "Shortest", value: self.findStat(self.filtered, 'SHORTEST_STRING')});
+                vals.push({name: "Min (Case Sensitive)", value: self.findStat(self.filtered, 'MIN_STRING_CASE')});
+                vals.push({name: "Max (Case Sensitive)", value: self.findStat(self.filtered, 'MAX_STRING_CASE')});
+                vals.push({name: "Min (Case Insensitive)", value: self.findStat(self.filtered, 'MIN_STRING_ICASE')});
+                vals.push({name: "Max (Case Insensitive)", value: self.findStat(self.filtered, 'MAX_STRING_ICASE')});
             }
         }
 
-        function getProfileStats(){
+        self.getProfileStats = function(){
             self.loading = true;
             var successFn = function (response) {
                 var transformFn = function(row,columns,displayColumns){
@@ -350,10 +352,10 @@
                     self.sorted = _.sortBy(unique, _.property('columnname'));
                     if (self.sorted && self.sorted.length > 1) {
                         //default to selecting other than (ALL) column - (ALL) column will be first, so we select second
-                        selectRow(self.sorted[1]);
+                        self.selectRow(self.sorted[1]);
                     } else if (self.sorted && self.sorted.length > 0) {
                         //fall back to selecting first column if no other exist
-                        selectRow(self.sorted[1]);
+                        self.selectRow(self.sorted[1]);
                     }
                 }
 
@@ -368,7 +370,7 @@
             return promise;
         }
 
-        getProfileStats();
+        this.getProfileStats();
     };
 
 

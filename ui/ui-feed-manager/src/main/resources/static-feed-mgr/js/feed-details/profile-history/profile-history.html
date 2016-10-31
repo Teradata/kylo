@@ -4,7 +4,7 @@
       <md-list flex layout-fill class="list-item-table">
         <md-list-item   ng-repeat="row in vm.profileSummary">
             <div layout="row" layout-fill>
-                <div flex="10" layout="column" class="item-column md-list-item-text ">
+                <div flex="15" layout="column" class="item-column md-list-item-text ">
                                      <span class="item-title" title="{{row.TOTAL_COUNT}}">
                                          {{row.TOTAL_COUNT}}
                                    </span>
@@ -13,7 +13,7 @@
                                    </span>
 
                 </div>
-                <div flex="10" layout="column" class="item-column md-list-item-text ">
+                <div flex="15" layout="column" class="item-column md-list-item-text ">
 
                                    <a ng-click="vm.onValidCountClick(row)" class="item-title primary-color-1" title="{{row.VALID_COUNT}}"  >
                                  {{row.VALID_COUNT}}
@@ -22,7 +22,7 @@
                                      # Valid
                                    </span>
                 </div>
-                <div flex="10" layout="column" class="item-column md-list-item-text ">
+                <div flex="15" layout="column" class="item-column md-list-item-text ">
 
                                    <span  ng-click="vm.onInvalidCountClick(row)" class="item-title primary-color-1" title="{{row.INVALID_COUNT}}"  >
                                  {{row.INVALID_COUNT}}
@@ -31,7 +31,7 @@
                                      # Invalid
                                    </span>
                 </div>
-                <div flex="15" layout="column" class="item-column md-list-item-text ">
+                <div flex="20" layout="column" class="item-column md-list-item-text ">
                                      <span class="item-title" title="{{row.DATE_TIME}}">
                                          {{row.DATE_TIME | moment}}
                                    </span>
@@ -50,8 +50,8 @@
                                    </span>
                 </div>
                 <div class="item-column md-list-item-text ">
-                                    <md-button ng-click="vm.viewProfileStats(row)">
-                                      Stats
+                                    <md-button class="md-accent" ng-click="vm.viewProfileStats(row)">
+                                      View
                                     </md-button>
 
                 </div>
@@ -60,7 +60,7 @@
         </md-list>
     </div>
   <div ng-if="vm.showNoResults" class="layout-padding-left-right layout-padding-top-bottom">
-    No profile data exists for this feed.
+    No profile data for this feed.
   </div>
 
 
