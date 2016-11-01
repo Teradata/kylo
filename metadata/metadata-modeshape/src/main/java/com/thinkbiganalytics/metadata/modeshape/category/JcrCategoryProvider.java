@@ -1,14 +1,6 @@
 package com.thinkbiganalytics.metadata.modeshape.category;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
-import javax.annotation.Nonnull;
-import javax.inject.Inject;
-
+import com.google.common.collect.ImmutableMap;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
@@ -20,6 +12,16 @@ import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.extension.ExtensionsConstants;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
+
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+
+import javax.annotation.Nonnull;
+import javax.inject.Inject;
 
 /**
  * A JCR provider for {@link Category} objects.
@@ -36,9 +38,8 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
 
     @Override
     public Category findBySystemName(String systemName) {
-
-        String query = "SELECT * FROM [" + getNodeType(getJcrEntityClass()) + "] as cat WHERE cat.[" + JcrCategory.SYSTEM_NAME + "] = '" + systemName + "'";
-        return findFirst(query);
+        final String query = "SELECT * FROM [" + getNodeType(getJcrEntityClass()) + "] as cat WHERE cat.[" + JcrCategory.SYSTEM_NAME + "] = $systemName";
+        return JcrQueryUtil.findFirst(getSession(), query, ImmutableMap.of("systemName", systemName), getEntityClass());
     }
 
     @Override

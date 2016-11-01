@@ -1,18 +1,5 @@
 package com.thinkbiganalytics.metadata.modeshape.user;
 
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.Optional;
-
-import javax.annotation.Nonnull;
-import javax.jcr.ItemNotFoundException;
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-
-import org.apache.commons.lang.StringEscapeUtils;
-
 import com.thinkbiganalytics.metadata.api.user.GroupAlreadyExistsException;
 import com.thinkbiganalytics.metadata.api.user.User;
 import com.thinkbiganalytics.metadata.api.user.UserAlreadyExistsException;
@@ -23,7 +10,21 @@ import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.UsersPaths;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+
+import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Optional;
+
+import javax.annotation.Nonnull;
+import javax.jcr.ItemNotFoundException;
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 
 /**
  * Provides access to {@link User} objects stored in a JCR repository.
@@ -39,9 +40,9 @@ public class JcrUserProvider extends BaseJcrProvider<Object, Serializable> imple
     @Nonnull
     @Override
     public Optional<User> findUserBySystemName(@Nonnull final String systemName) {
-        final String safeSystemName = StringEscapeUtils.escapeSql(encodeUserName(systemName));
-        final String query = "SELECT * FROM [" + JcrUser.NODE_TYPE + "] AS user WHERE NAME() = '" + safeSystemName + "'";
-        return Optional.ofNullable((User) findFirst(query));
+        final String query = "SELECT * FROM [" + JcrUser.NODE_TYPE + "] AS user WHERE NAME() = $systemName";
+        final Map<String, String> bindParams = Collections.singletonMap("systemName", encodeUserName(systemName));
+        return Optional.ofNullable(JcrQueryUtil.findFirst(getSession(), query, bindParams, getEntityClass()));
     }
 
     @Override
@@ -161,9 +162,9 @@ public class JcrUserProvider extends BaseJcrProvider<Object, Serializable> imple
     @Nonnull
     @Override
     public Optional<UserGroup> findGroupByName(@Nonnull final String groupName) {
-        final String safeGroupName = StringEscapeUtils.escapeSql(encodeGroupName(groupName));
-        final String query = "SELECT * FROM [" + JcrUserGroup.NODE_TYPE + "] AS user WHERE NAME() = '" + safeGroupName + "'";
-        return Optional.ofNullable(findFirst(query, JcrUserGroup.class));
+        final String query = "SELECT * FROM [" + JcrUserGroup.NODE_TYPE + "] AS user WHERE NAME() = $groupName";
+        final Map<String, String> bindParams = Collections.singletonMap("groupName", encodeGroupName(groupName));
+        return Optional.ofNullable(JcrQueryUtil.findFirst(getSession(), query, bindParams, JcrUserGroup.class));
     }
 
     /* (non-Javadoc)
