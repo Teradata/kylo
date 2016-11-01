@@ -5,6 +5,7 @@ import com.thinkbiganalytics.db.model.query.QueryResult;
 import com.thinkbiganalytics.db.model.query.QueryResultColumn;
 import com.thinkbiganalytics.db.model.schema.Field;
 import com.thinkbiganalytics.db.model.schema.TableSchema;
+import com.thinkbiganalytics.hive.util.HiveUtils;
 import com.thinkbiganalytics.kerberos.KerberosTicketConfiguration;
 import com.thinkbiganalytics.schema.DBSchemaParser;
 
@@ -13,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 
@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.sql.DataSource;
@@ -131,7 +130,7 @@ public class HiveService {
         if(where == null){
             where = "";
         }
-        String query = "SELECT * from "+schema+"."+table+" "+where+" LIMIT "+limit;
+        String query = "SELECT * from " + HiveUtils.quoteIdentifier(schema, table) + " " + where + " LIMIT " + limit;
         return browse(query);
     }
 

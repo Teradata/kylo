@@ -34,7 +34,13 @@
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>thinkbig-kerberos-core</artifactId>
-      <version>0.4.2-SNAPSHOT</version>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>thinkbig-commons-hive</artifactId>
+      <version>${project.version}</version>
     </dependency>
 
     <dependency>
