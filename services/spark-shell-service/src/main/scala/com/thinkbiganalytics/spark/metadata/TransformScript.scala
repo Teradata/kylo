@@ -1,7 +1,8 @@
 package com.thinkbiganalytics.spark.metadata
 
 import com.thinkbiganalytics.db.model.query.{QueryResult, QueryResultColumn}
-import com.thinkbiganalytics.spark.util.{DataTypeUtils, HiveUtils}
+import com.thinkbiganalytics.hive.util.HiveUtils
+import com.thinkbiganalytics.spark.util.DataTypeUtils
 
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row, SQLContext, SaveMode}
