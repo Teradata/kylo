@@ -83,8 +83,8 @@ public class FeedManagerMetadataService implements MetadataService {
     private NiFiRestClient nifiClient;
 
     @Override
-    public void registerTemplate(RegisteredTemplate registeredTemplate) {
-        templateProvider.registerTemplate(registeredTemplate);
+    public RegisteredTemplate registerTemplate(RegisteredTemplate registeredTemplate) {
+        return templateProvider.registerTemplate(registeredTemplate);
     }
 
     @Override

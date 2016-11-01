@@ -1,32 +1,5 @@
 package com.thinkbiganalytics.feedmgr.rest.controller;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
-import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
-import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
-import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
-import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
-import com.thinkbiganalytics.feedmgr.rest.model.TemplateDtoWrapper;
-import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
-import com.thinkbiganalytics.feedmgr.service.MetadataService;
-import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
-import com.thinkbiganalytics.feedmgr.support.Constants;
-import com.thinkbiganalytics.nifi.feedmgr.TemplateCreationHelper;
-import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
-import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
-import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
-import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
-import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
-
-import org.apache.nifi.web.api.dto.PortDTO;
-import org.apache.nifi.web.api.dto.TemplateDTO;
-import org.apache.nifi.web.api.entity.TemplatesEntity;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -41,6 +14,31 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import org.apache.nifi.web.api.dto.PortDTO;
+import org.apache.nifi.web.api.dto.TemplateDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
+import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
+import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
+import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
+import com.thinkbiganalytics.feedmgr.rest.model.TemplateDtoWrapper;
+import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
+import com.thinkbiganalytics.feedmgr.service.MetadataService;
+import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
+import com.thinkbiganalytics.feedmgr.support.Constants;
+import com.thinkbiganalytics.nifi.feedmgr.TemplateCreationHelper;
+import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
+import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
+import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
+import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
+import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 
 import io.swagger.annotations.Api;
 
@@ -279,11 +277,12 @@ public class TemplatesRestController {
     @Produces({MediaType.APPLICATION_JSON})
     public Response registerTemplate(RegisteredTemplate registeredTemplate) {
 
-        getMetadataService().registerTemplate(registeredTemplate);
-        if (registeredTemplate.isReusableTemplate()) {
+        RegisteredTemplate saved = getMetadataService().registerTemplate(registeredTemplate);
+        
+        if (saved.isReusableTemplate()) {
             //attempt to auto create the Feed using this template
-            FeedMetadata metadata = metadataService.getFeedByName(Constants.REUSABLE_TEMPLATES_CATEGORY_NAME, registeredTemplate.getTemplateName());
-            if(metadata == null) {
+            FeedMetadata metadata = metadataService.getFeedByName(Constants.REUSABLE_TEMPLATES_CATEGORY_NAME, saved.getTemplateName());
+            if (metadata == null) {
                 metadata = new FeedMetadata();
                 FeedCategory category = metadataService.getCategoryBySystemName(TemplateCreationHelper.REUSABLE_TEMPLATES_PROCESS_GROUP_NAME);
                 if(category == null){
@@ -292,14 +291,14 @@ public class TemplatesRestController {
                     metadataService.saveCategory(category);
                 }
                 metadata.setCategory(category);
-                metadata.setTemplateId(registeredTemplate.getId());
-                metadata.setFeedName(registeredTemplate.getTemplateName());
-                metadata.setSystemFeedName(SystemNamingService.generateSystemName(registeredTemplate.getTemplateName()));
+                metadata.setTemplateId(saved.getId());
+                metadata.setFeedName(saved.getTemplateName());
+                metadata.setSystemFeedName(SystemNamingService.generateSystemName(saved.getTemplateName()));
             }
-            metadata.setRegisteredTemplate(registeredTemplate);
-            NifiFeed feed = getMetadataService().createFeed(metadata);
+            metadata.setRegisteredTemplate(saved);
+            getMetadataService().createFeed(metadata);
         }
-        return Response.ok(registeredTemplate).build();
+        return Response.ok(saved).build();
     }
 
 
