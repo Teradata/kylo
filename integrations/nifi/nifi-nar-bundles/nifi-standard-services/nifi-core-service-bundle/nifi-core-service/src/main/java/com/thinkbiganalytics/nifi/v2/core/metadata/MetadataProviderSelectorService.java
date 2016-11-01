@@ -7,12 +7,14 @@
  */
 package com.thinkbiganalytics.nifi.v2.core.metadata;
 
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import com.thinkbiganalytics.metadata.rest.client.MetadataClient;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProvider;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
+import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.nifi.annotation.lifecycle.OnEnabled;
 import org.apache.nifi.components.AllowableValue;
 import org.apache.nifi.components.PropertyDescriptor;
@@ -21,11 +23,24 @@ import org.apache.nifi.controller.AbstractControllerService;
 import org.apache.nifi.controller.ConfigurationContext;
 import org.apache.nifi.processor.util.StandardValidators;
 import org.apache.nifi.reporting.InitializationException;
+import org.apache.nifi.ssl.SSLContextService;
 
-import com.thinkbiganalytics.metadata.rest.client.MetadataClient;
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProvider;
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import javax.net.ssl.SSLContext;
 
 /**
  * @author Sean Felten
@@ -34,7 +49,7 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
 
     private static final AllowableValue[] ALLOWABLE_IMPLEMENATIONS = {
             new AllowableValue("LOCAL", "Local, In-memory storage", "An implemenation that stores metadata locally in memory (for development-only)"),
-            new AllowableValue("REMOTE", "REST API", "An implemenation that accesses metadata via the metadata service REST API")
+            new AllowableValue("REMOTE", "REST API", "An implementation that accesses metadata via the metadata service REST API")
     };
 
     public static final PropertyDescriptor IMPLEMENTATION = new PropertyDescriptor.Builder()
@@ -74,6 +89,13 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
             .required(false)
             .build();
 
+    public static final PropertyDescriptor SSL_CONTEXT_SERVICE = new PropertyDescriptor.Builder()
+        .name("SSL Context Service")
+        .description("The Controller Service to obtain the SSL Context")
+        .required(false)
+        .identifiesControllerService(SSLContextService.class)
+        .build();
+
 
     private static final List<PropertyDescriptor> properties;
 
@@ -83,12 +105,18 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
         props.add(CLIENT_URL);
         props.add(CLIENT_USERNAME);
         props.add(CLIENT_PASSWORD);
+        props.add(SSL_CONTEXT_SERVICE);
         properties = Collections.unmodifiableList(props);
     }
 
 
     private volatile MetadataProvider provider;
     private volatile MetadataRecorder recorder;
+
+    /**
+     * The Service holding the SSL Context information
+     */
+    private SSLContextService sslContextService;
 
     @Override
     protected List<PropertyDescriptor> getSupportedPropertyDescriptors() {
@@ -104,11 +132,17 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
             String user = context.getProperty(CLIENT_USERNAME).getValue();
             String password = context.getProperty(CLIENT_PASSWORD).getValue();
             MetadataClient client;
-            
+            SSLContext sslContext = null;
+
+            if (context.getProperty(SSL_CONTEXT_SERVICE) != null && context.getProperty(SSL_CONTEXT_SERVICE).isSet()) {
+                this.sslContextService = context.getProperty(SSL_CONTEXT_SERVICE).asControllerService(SSLContextService.class);
+                sslContext = this.sslContextService.createSSLContext(SSLContextService.ClientAuth.REQUIRED);
+            }
+
             if (StringUtils.isEmpty(user)) {
-                client = new MetadataClient(uri);
+                client = new MetadataClient(uri, sslContext);
             } else {
-                client = new MetadataClient(uri, user, password);
+                client = new MetadataClient(uri, user, password, sslContext);
             }
             
             this.provider = new MetadataClientProvider(client);
@@ -129,5 +163,38 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
     public MetadataRecorder getRecorder() {
         return recorder;
     }
+
+
+    /**
+     * Taken from NiFi GetHttp Processor
+     */
+    private SSLContext createSSLContext(final SSLContextService service)
+        throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException, KeyManagementException, UnrecoverableKeyException {
+
+        final SSLContextBuilder sslContextBuilder = new SSLContextBuilder();
+
+        if (StringUtils.isNotBlank(service.getTrustStoreFile())) {
+            final KeyStore truststore = KeyStore.getInstance(service.getTrustStoreType());
+            try (final InputStream in = new FileInputStream(new File(service.getTrustStoreFile()))) {
+                truststore.load(in, service.getTrustStorePassword().toCharArray());
+            }
+            sslContextBuilder.loadTrustMaterial(truststore, new TrustSelfSignedStrategy());
+        }
+
+        if (StringUtils.isNotBlank(service.getKeyStoreFile())) {
+            final KeyStore keystore = KeyStore.getInstance(service.getKeyStoreType());
+            try (final InputStream in = new FileInputStream(new File(service.getKeyStoreFile()))) {
+                keystore.load(in, service.getKeyStorePassword().toCharArray());
+            }
+            sslContextBuilder.loadKeyMaterial(keystore, service.getKeyStorePassword().toCharArray());
+        }
+
+        sslContextBuilder.useProtocol(service.getSslAlgorithm());
+
+        return sslContextBuilder.build();
+    }
+
+
+
 
 }

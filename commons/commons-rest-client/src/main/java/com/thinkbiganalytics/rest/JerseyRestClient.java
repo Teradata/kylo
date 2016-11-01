@@ -70,34 +70,56 @@ public class JerseyRestClient {
         if (config.isHttps()) {
             SslConfigurator sslConfig = null;
             byte[] keyStoreFile = null;
+            byte[] truststoreFile = null;
+
             try {
+                if(StringUtils.isNotBlank(config.getKeystorePath())) {
                 InputStream keystore = JerseyRestClient.class.getResourceAsStream(config.getKeystorePath());
                 if (keystore != null) {
                     keyStoreFile = ByteStreams.toByteArray(keystore);
                 }
+                }
             } catch (IOException e) {
             }
 
+            try {
+                if(StringUtils.isNotBlank(config.getTruststorePath())) {
+                    InputStream truststore = JerseyRestClient.class.getResourceAsStream(config.getTruststorePath());
+                    if (truststore != null) {
+                        truststoreFile = ByteStreams.toByteArray(truststore);
+                    }
+                }
+            } catch (IOException e) {
+            }
+
+
             if (keyStoreFile != null) {
+           //     LOG.info("Jersey Rest Client using SSL configuration using classpath truststore: {}, keystore: {} ",config.getTruststorePath(), config.getKeystorePath());
                 sslConfig = SslConfigurator.newInstance()
-                    .trustStoreBytes(keyStoreFile)
-                    .trustStorePassword(config.getKeystorePassword())
-                    .keyStoreBytes(keyStoreFile)
+                    .trustStoreBytes(truststoreFile != null ? truststoreFile : keyStoreFile)
+                    .trustStorePassword(config.getTruststorePassword() != null ? config.getTruststorePassword() : config.getKeystorePassword())
+                    .trustStoreType(config.getTrustStoreType())
+                    .keyStoreBytes(keyStoreFile != null ? keyStoreFile : truststoreFile)
                     .keyStorePassword(config.getKeystorePassword());
             } else {
+              //  LOG.info("Jersey Rest Client using SSL configuration using external truststore: {}, keystore: {} ",config.getTruststorePath(), config.getKeystorePath());
                 sslConfig = SslConfigurator.newInstance()
-                    .trustStoreFile(config.getKeystorePath())
-                    .trustStorePassword(config.getKeystorePassword());
+                    .keyStoreFile(config.getKeystorePath() == null ? config.getTruststorePath() : config.getKeystorePath())
+                    .keyStorePassword(config.getKeystorePassword() == null ? config.getTruststorePassword() : config.getKeystorePassword())
+                    .trustStoreFile(config.getTruststorePath() == null ? config.getKeystorePath() : config.getTruststorePath())
+                    .trustStorePassword(config.getTruststorePassword() == null ? config.getKeystorePassword() : config.getTruststorePassword())
+                    .trustStoreType(config.getTrustStoreType());
             }
 
             try {
                 sslContext = sslConfig.createSSLContext();
             } catch (Exception e) {
-                LOG.error("ERROR creating CLient SSL Context.  " + e.getMessage() + " Falling back to JIRA Client without SSL.  JIRA Integration will probably not work until this is fixed!");
-            }
+                LOG.error("ERROR creating CLient SSL Context.  " + e.getMessage() + " Falling back to Jersey Client without SSL.  Rest Integration with '"+config.getUrl()+"'  will probably not work until this is fixed!");
+               }
         }
 
         ClientConfig clientConfig = new ClientConfig();
+
         // Add in Timeouts if configured.  Values are in milliseconds
         if (config.getReadTimeout() != null) {
             clientConfig.property(ClientProperties.READ_TIMEOUT, config.getReadTimeout());
@@ -157,9 +179,8 @@ public class JerseyRestClient {
 
         if (StringUtils.isNotBlank(config.getHost()) && !HOST_NOT_SET_VALUE.equals(config.getHost())) {
             this.isHostConfigured = true;
-            LOG.info("Jersey Rest Client initialized");
         } else {
-            LOG.info("Jersey Rest Client not initialized");
+            LOG.info("Jersey Rest Client not initialized.  Host name is Not set!!");
         }
 
 

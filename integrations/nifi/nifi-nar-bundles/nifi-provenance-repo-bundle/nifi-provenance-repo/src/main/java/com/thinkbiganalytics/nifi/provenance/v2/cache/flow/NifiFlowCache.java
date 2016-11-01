@@ -12,7 +12,6 @@ import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -76,6 +75,7 @@ public class NifiFlowCache {
    //     return instance;
   //  }
 
+    /*
     @Value("${thinkbig.nifi.rest.host}")
     private String host;
 
@@ -84,7 +84,7 @@ public class NifiFlowCache {
 
     @Value("${thinkbig.nifi.rest.password}")
     private String password;
-
+*/
     private void initClient() {
         if (active) {
             //check the connection every second
