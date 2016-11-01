@@ -2,12 +2,15 @@ package com.thinkbiganalytics.metadata.jpa.feed;
 
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
+import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.Serializable;
 import java.util.List;
+
+import javax.inject.Inject;
 
 /**
  * Created by sr186054 on 9/15/16.
@@ -16,6 +19,9 @@ import java.util.List;
 public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
 
     private OpsManagerFeedRepository repository;
+
+    @Inject
+    BatchJobExecutionProvider batchJobExecutionProvider;
 
 
     @Autowired
@@ -71,5 +77,13 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
         if (feed != null) {
             repository.delete(feed.getId());
         }
+    }
+
+    public boolean isFeedRunning(OpsManagerFeed.ID id) {
+        OpsManagerFeed feed = findById(id);
+        if (feed != null) {
+            return batchJobExecutionProvider.isFeedRunning(feed.getName());
+        }
+        return false;
     }
 }

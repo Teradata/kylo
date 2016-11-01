@@ -51,11 +51,19 @@ public class JcrFeedManagerFeedProvider extends BaseJcrProvider<FeedManagerFeed,
 
     @Override
     public FeedManagerFeed findBySystemName(String categorySystemName, String systemName) {
-        Feed feed = feedProvider.findBySystemName(categorySystemName, systemName);
-        if (feed != null) {
-            return (FeedManagerFeed) feed;
+        try {
+            JcrFeed feed = (JcrFeed) feedProvider.findBySystemName(categorySystemName, systemName);
+            if (feed != null) {
+                if (feed instanceof FeedManagerFeed) {
+                    return (FeedManagerFeed) feed;
+                } else {
+                    return new JcrFeedManagerFeed<>(feed.getNode());
+                }
+            }
+            return null;
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to look up feed by system name",e);
         }
-        return null;
     }
 
     public FeedManagerFeed ensureFeed(Feed feed) {

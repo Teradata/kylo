@@ -460,4 +460,8 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
         }
     }
 
+    public Boolean isFeedRunning(String feedName) {
+        return jobExecutionRepository.isFeedRunning(feedName);
+    }
+
 }

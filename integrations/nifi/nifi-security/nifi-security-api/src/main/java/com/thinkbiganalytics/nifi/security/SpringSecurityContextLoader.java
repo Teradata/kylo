@@ -2,9 +2,10 @@ package com.thinkbiganalytics.nifi.security;
 
 import org.apache.nifi.controller.ControllerServiceInitializationContext;
 import org.apache.nifi.processor.ProcessorInitializationContext;
-import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.context.support.GenericApplicationContext;
 
 import javax.annotation.Nonnull;
 
@@ -14,6 +15,20 @@ import javax.annotation.Nonnull;
 public class SpringSecurityContextLoader {
 
     /**
+     * Creates a new Security Context Loader from the specified application context.
+     *
+     * @param applicationContext the application context
+     * @return the Security Context Loader
+     */
+    @Nonnull
+    public static SpringSecurityContextLoader create(@Nonnull final ApplicationContext applicationContext) {
+        final ClassPathXmlApplicationContext securityContext = new ClassPathXmlApplicationContext(applicationContext);
+        securityContext.setConfigLocation("application-context.xml");
+        securityContext.refresh();
+        return new SpringSecurityContextLoader(securityContext);
+    }
+
+    /**
      * Creates a new Security Context Loader from the specified controller service context.
      *
      * @param controllerServiceContext the controller service initialization context
@@ -21,11 +36,11 @@ public class SpringSecurityContextLoader {
      */
     @Nonnull
     public static SpringSecurityContextLoader create(@Nonnull final ControllerServiceInitializationContext controllerServiceContext) {
-        final ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext();
-        context.setConfigLocation("application-context.xml");
+        final DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
+        beanFactory.registerSingleton(ControllerServiceInitializationContext.class.getName(), controllerServiceContext);
+        final GenericApplicationContext context = new GenericApplicationContext(beanFactory);
         context.refresh();
-        context.getBeanFactory().registerSingleton(ControllerServiceInitializationContext.class.getName(), controllerServiceContext);
-        return new SpringSecurityContextLoader(context);
+        return create(context);
     }
 
     /**
@@ -36,11 +51,11 @@ public class SpringSecurityContextLoader {
      */
     @Nonnull
     public static SpringSecurityContextLoader create(@Nonnull final ProcessorInitializationContext processorContext) {
-        final ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext();
-        context.setConfigLocation("application-context.xml");
+        final DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
+        beanFactory.registerSingleton(ProcessorInitializationContext.class.getName(), processorContext);
+        final GenericApplicationContext context = new GenericApplicationContext(beanFactory);
         context.refresh();
-        context.getBeanFactory().registerSingleton(ProcessorInitializationContext.class.getName(), processorContext);
-        return new SpringSecurityContextLoader(context);
+        return create(context);
     }
 
     /** Spring application context */

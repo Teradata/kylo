@@ -61,14 +61,25 @@ public class JpaServiceLevelAssessmentProvider implements ServiceLevelAssessment
 
     //find last assessment
     public ServiceLevelAssessment findLatestAssessment(ServiceLevelAgreement.ID slaId) {
-        return serviceLevelAssessmentRepository.findLatestAssessment(slaId.toString());
+        List<? extends ServiceLevelAssessment> latestAssessments = serviceLevelAssessmentRepository.findLatestAssessments(slaId.toString());
+        if (latestAssessments != null) {
+            JpaServiceLevelAssessment jpaServiceLevelAssessment = (JpaServiceLevelAssessment) latestAssessments.get(0);
+            ensureServiceLevelAgreementOnAssessment(jpaServiceLevelAssessment);
+            return jpaServiceLevelAssessment;
+        }
+        return null;
     }
 
 
     @Override
     public ServiceLevelAssessment findLatestAssessmentNotEqualTo(ServiceLevelAgreement.ID slaId, ServiceLevelAssessment.ID assessmentId) {
         if (assessmentId != null) {
-            return serviceLevelAssessmentRepository.findLatestAssessmentNotEqualTo(slaId.toString(), assessmentId);
+            List<? extends ServiceLevelAssessment> latestAssessments = serviceLevelAssessmentRepository.findLatestAssessmentsNotEqualTo(slaId.toString(), assessmentId);
+            if (latestAssessments != null) {
+                return latestAssessments.get(0);
+            } else {
+                return null;
+            }
         } else {
             return findLatestAssessment(slaId);
         }

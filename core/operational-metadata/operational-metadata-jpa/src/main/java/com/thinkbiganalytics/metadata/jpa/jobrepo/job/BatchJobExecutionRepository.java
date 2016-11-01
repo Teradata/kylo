@@ -130,6 +130,13 @@ public interface BatchJobExecutionRepository extends JpaRepository<JpaBatchJobEx
                    + " order by job.jobExecutionId")
     List<JpaBatchJobExecution> findLatestCompletedJobForFeed(@Param("feedName") String feedName);
 
-
+    @Query(value = "select case when(count(job)) > 0 then true else false end "
+                   + " from JpaBatchJobExecution as job "
+                   + "join JpaNifiEventJobExecution as nifiEventJob on nifiEventJob.jobExecution.jobExecutionId = job.jobExecutionId "
+                   + "join JpaNifiEvent nifiEvent on nifiEvent.eventId = nifiEventJob.eventId "
+                   + "and nifiEvent.flowFileId = nifiEventJob.flowFileId "
+                   + "where nifiEvent.feedName = :feedName "
+                   + "and job.endTime is null")
+    Boolean isFeedRunning(@Param("feedName") String feedName);
 
 }

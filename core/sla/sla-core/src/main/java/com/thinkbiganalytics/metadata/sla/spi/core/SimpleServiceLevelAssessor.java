@@ -26,8 +26,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -41,6 +43,8 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
     private Set<ObligationAssessor<? extends Obligation>> obligationAssessors;
     private Set<MetricAssessor<? extends Metric, ? extends Serializable>> metricAssessors;
     private ObligationAssessor<? extends Obligation> defaultObligationAssessor;
+
+    private Map<ServiceLevelAgreement.ID,ServiceLevelAssessment> lastAssessments = new HashMap<>();
 
     /**
      * 
@@ -159,7 +163,11 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
         throw new AssessorNotFoundException(metric);
     }
 
-    
+    @Override
+    public ServiceLevelAssessment findLatestAssessment(ServiceLevelAgreement sla) {
+        return lastAssessments.get(sla.getId());
+    }
+
     private ServiceLevelAssessment completeAssessment(SimpleServiceLevelAssessment slaAssessment, AssessmentResult result) {
         slaAssessment.setResult(result);
         if (result == AssessmentResult.SUCCESS) {
@@ -167,7 +175,7 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
         } else {
             slaAssessment.setMessage("At least one of the SLA obligations resulted in the status: " + result);
         }
-        
+        lastAssessments.put(slaAssessment.getAgreement().getId(),slaAssessment);
         return slaAssessment;
     }
 

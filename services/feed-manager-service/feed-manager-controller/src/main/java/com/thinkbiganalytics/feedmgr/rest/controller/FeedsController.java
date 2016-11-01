@@ -11,12 +11,9 @@ import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.op.FeedDependencyDeltaResults;
-import com.thinkbiganalytics.metadata.api.op.FeedOperation.State;
-import com.thinkbiganalytics.metadata.api.op.FeedOperationCriteria;
 import com.thinkbiganalytics.metadata.api.op.FeedOperationsProvider;
 import com.thinkbiganalytics.metadata.core.feed.FeedPreconditionService;
 import com.thinkbiganalytics.metadata.rest.Model;
-import com.thinkbiganalytics.metadata.rest.model.Formatters;
 import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedCriteria;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedDependencyGraph;
@@ -24,12 +21,10 @@ import com.thinkbiganalytics.metadata.rest.model.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedSource;
 import com.thinkbiganalytics.metadata.rest.model.feed.InitializationStatus;
-import com.thinkbiganalytics.metadata.rest.model.op.FeedOperation;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment;
 import com.thinkbiganalytics.security.AccessController;
 
 import org.apache.commons.lang3.StringUtils;
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -113,7 +108,7 @@ public class FeedsController {
     @Path("{id}/initstatus/history")
     @Produces(MediaType.APPLICATION_JSON)
     public List<InitializationStatus> getInitializationStatusHistory(@PathParam("id") String feedIdStr) {
-        LOG.debug("Get feed watermarks {}", feedIdStr);
+        LOG.debug("Get feed initializtion history {}", feedIdStr);
         
         return this.metadata.read(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
@@ -135,7 +130,7 @@ public class FeedsController {
     @Consumes(MediaType.APPLICATION_JSON)
     public void putInitializationStatus(@PathParam("id") String feedIdStr,
                                         InitializationStatus status) {
-        LOG.debug("Get feed watermarks {}", feedIdStr);
+        LOG.debug("Get feed initialization status {}", feedIdStr);
         
         this.metadata.commit(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
@@ -275,6 +270,7 @@ public class FeedsController {
         });
     }
 
+    /*
     @GET
     @Path("{id}/op")
     @Produces(MediaType.APPLICATION_JSON)
@@ -296,6 +292,7 @@ public class FeedsController {
             return list.stream().map(op -> Model.DOMAIN_TO_FEED_OP.apply(op)).collect(Collectors.toList());
         });
     }
+
 
     @GET
     @Path("{id}/op/results")
@@ -322,7 +319,7 @@ public class FeedsController {
                                                                         ve -> (Object) ve.getValue().toString()))));
         });
     }
-
+  */
     @GET
     @Path("{id}/depfeeds")
     @Produces(MediaType.APPLICATION_JSON)

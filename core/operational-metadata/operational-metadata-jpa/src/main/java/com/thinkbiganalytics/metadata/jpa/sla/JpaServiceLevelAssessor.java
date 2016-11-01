@@ -127,6 +127,10 @@ public class JpaServiceLevelAssessor implements ServiceLevelAssessor {
 
     }
 
+    @Override
+    public ServiceLevelAssessment findLatestAssessment(ServiceLevelAgreement sla) {
+        return this.operationalMetadataAccess.read(() -> assessmentProvider.findLatestAssessment(sla.getId()));
+    }
 
     /**
      * Assess the SLA (coming from JCR)

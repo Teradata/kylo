@@ -3,14 +3,12 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.op;
 
-import com.thinkbiganalytics.jobrepo.query.model.ExecutedFeed;
 import com.thinkbiganalytics.jobrepo.query.model.ExecutedJob;
 import com.thinkbiganalytics.jobrepo.query.model.ExecutionStatus;
-import com.thinkbiganalytics.jobrepo.repository.FeedRepository;
-import com.thinkbiganalytics.jobrepo.repository.JobRepository;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedNotFoundExcepton;
+import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;
 import com.thinkbiganalytics.metadata.api.op.FeedDependencyDeltaResults;
@@ -26,8 +24,8 @@ import com.thinkbiganalytics.support.FeedNameUtil;
 
 import org.joda.time.DateTime;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -35,7 +33,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -47,21 +44,47 @@ public class JobRepoFeedOperationsProvider implements FeedOperationsProvider {
     
     @Inject
     private JcrFeedProvider feedProvider;
-    
-    @Inject
-    private FeedRepository feedRepo;
-    
-    @Inject
-    private JobRepository jobRepo;
+
+    // @Inject
+    // private FeedRepository feedRepo;
+
+    //  @Inject
+    //  private JobRepository jobRepo;
 
     @Inject
     private BatchJobExecutionProvider jobExecutionProvider;
+
+    @Inject
+    OpsManagerFeedProvider opsManagerFeedProvider;
     
     @Inject
     private MetadataAccess metadata;
 
 
     protected static FeedOperation.State asOperationState(ExecutionStatus status) {
+        switch (status) {
+            case ABANDONED:
+                return State.CANCELED;
+            case COMPLETED:
+                return State.SUCCESS;
+            case FAILED:
+                return State.FAILURE;
+            case STARTED:
+                return State.STARTED;
+            case STARTING:
+                return State.STARTED;
+            case STOPPING:
+                return State.STARTED;
+            case STOPPED:
+                return State.CANCELED;
+            case UNKNOWN:
+                return State.STARTED;
+            default:
+                return State.FAILURE;
+        }
+    }
+
+    protected static FeedOperation.State asOperationState(BatchJobExecution.JobStatus status) {
         switch (status) {
             case ABANDONED:
                 return State.CANCELED;
@@ -93,29 +116,34 @@ public class JobRepoFeedOperationsProvider implements FeedOperationsProvider {
         return new Criteria();
     }
 
+    public boolean isFeedRunning(Feed.ID feedId) {
+        if (feedId != null) {
+            return opsManagerFeedProvider.isFeedRunning(opsManagerFeedProvider.resolveId(feedId.toString()));
+        }
+        return false;
+    }
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.op.FeedOperationsProvider#getOperation(com.thinkbiganalytics.metadata.api.op.FeedOperation.ID)
      */
     @Override
     public FeedOperation getOperation(ID id) {
         OpId opId = (OpId) id;
-        ExecutedJob exec = this.jobRepo.findByExecutionId(opId.toString());
-        
-        if (exec != null) {
-            return createOperation(exec);
+        BatchJobExecution jobExecution = jobExecutionProvider.findByJobExecutionId(new Long(opId.toString()));
+        if (jobExecution != null) {
+            return createOperation(jobExecution);
         } else {
             return null;
         }
     }
+    /*
 
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.op.FeedOperationsProvider#find(com.thinkbiganalytics.metadata.api.op.FeedOperationCriteria)
-     */
+
     @Override
     public List<FeedOperation> find(FeedOperationCriteria criteria) {
         // TODO Replace with more efficient, sql-based filtering...
         Criteria execCriteria = (Criteria) criteria;
-        
+
         return this.jobRepo.findJobs(0, Integer.MAX_VALUE).stream()
                         .filter(execCriteria)
                         .limit(execCriteria.getLimit())
@@ -123,43 +151,26 @@ public class JobRepoFeedOperationsProvider implements FeedOperationsProvider {
                         .collect(Collectors.toList());
     }
 
+*/
 
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.op.FeedOperationsProvider#find(Feed.ID)
-     */
-    @Override
-    public List<FeedOperation> find(Feed.ID feedId) {
-        return find(feedId, Integer.MAX_VALUE);
-    }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.op.FeedOperationsProvider#find(Feed.ID, int)
      */
     @Override
-    public List<FeedOperation> find(Feed.ID feedId, int limit) {
+    public List<FeedOperation> find(Feed.ID feedId) {
         return metadata.<List<FeedOperation>>read(() -> {
+            List<FeedOperation> operations = new ArrayList<FeedOperation>();
             Feed<?> feed = this.feedProvider.getFeed(feedId);
 
             if (feed != null) {
-                ExecutedFeed feedExec = this.feedRepo.findLastCompletedFeed(feed.getQualifiedName());
+                BatchJobExecution latestJobExecution = this.jobExecutionProvider.findLatestCompletedJobForFeed(feed.getQualifiedName());
 
-                if (feedExec != null) {
-                    List<ExecutedJob> jobs = feedExec.getExecutedJobs();
-
-                    if (jobs.isEmpty()) {
-                        return Collections.<FeedOperation>emptyList();
-                    } else {
-                        return feedExec.getExecutedJobs().stream()
-                            .limit(limit)
-                            .map(exec -> createOperation(exec))
-                            .collect(Collectors.toList());
-                    }
-                } else {
-                    return Collections.<FeedOperation>emptyList();
+                if (latestJobExecution != null) {
+                    operations.add(createOperation(latestJobExecution));
                 }
-            } else {
-                return Collections.<FeedOperation>emptyList();
             }
+            return operations;
         });
     }
     
@@ -213,52 +224,11 @@ public class JobRepoFeedOperationsProvider implements FeedOperationsProvider {
         }
     }
 
-    public Map<DateTime, Map<String, Object>> getDependentDeltaResultsxx(Feed.ID feedId, Set<String> props) {
-        Feed feed = this.feedProvider.getFeed(feedId);
-
-        if (feed != null) {
-            Map<DateTime, Map<String, Object>> results = new HashMap<DateTime, Map<String,Object>>();
-            List<FeedOperation> latest = find(feed.getId(), 1);
-
-            if (latest.isEmpty()) {
-                return Collections.emptyMap();
-            } else {
-                Criteria criteria = (Criteria) criteria()
-                    .stoppedSince(latest.get(0).getStartTime())
-                    .state(State.SUCCESS);
-                List<Feed<?>> dependents =  feed.getDependentFeeds();
-
-                for (Feed<?> dep : dependents) {
-                    criteria.feed(dep.getId());
-                }
-
-                for (FeedOperation op : find(criteria)) {
-                    DateTime time = op.getStopTime();
-                    Map<String, Object> map = results.get(time);
-
-                    if (map == null) {
-                        map = new HashMap<String, Object>();
-                        results.put(time, map);
-                    }
-
-                    for (Entry<String, Object> entry : op.getResults().entrySet()) {
-                        if (props == null || props.isEmpty() || props.contains(entry.getKey())) {
-                            map.put(entry.getKey(), entry.getValue());
-                        }
-                    }
-                }
-            }
-
-            return results;
-        } else {
-            throw new FeedNotFoundExcepton(feedId);
-        }
-    }
-    
+    /*
     @Override
     public Map<DateTime, Map<String, Object>> getAllResults(FeedOperationCriteria criteria, Set<String> props) {
         Map<DateTime, Map<String, Object>> results = new HashMap<DateTime, Map<String,Object>>();
-        List<FeedOperation> ops = find(criteria);
+       // List<FeedOperation> ops = find(criteria);
         
         for (FeedOperation op : ops) {
             DateTime time = op.getStopTime();
@@ -286,8 +256,15 @@ public class JobRepoFeedOperationsProvider implements FeedOperationsProvider {
         ExecutedJob fullExec = this.jobRepo.findByExecutionId(id.toString());
         return new FeedOperationExecutedJobWrapper(fullExec);
     }
+      */
 
-    
+
+    private FeedOperationBatchJobExecutionJobWrapper createOperation(BatchJobExecution exec) {
+        return new FeedOperationBatchJobExecutionJobWrapper(exec);
+    }
+
+
+
     private class Criteria extends AbstractMetadataCriteria<FeedOperationCriteria> implements FeedOperationCriteria, Predicate<ExecutedJob> {
 
         private Set<State> states = new HashSet<>();

@@ -3,12 +3,12 @@
  */
 package com.thinkbiganalytics.metadata.sla.spi;
 
-import java.io.Serializable;
-
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
+
+import java.io.Serializable;
 
 /**
  * A service for producing assessments SLAs.  It is also used to register obligation and metric assessors
@@ -24,6 +24,8 @@ public interface ServiceLevelAssessor {
      * @return an assessment of the SLA
      */
     ServiceLevelAssessment assess(ServiceLevelAgreement sla);
+
+    ServiceLevelAssessment findLatestAssessment(ServiceLevelAgreement sla);
     
     /**
      * Registers an assessor of obligations that match its expected obligation type.

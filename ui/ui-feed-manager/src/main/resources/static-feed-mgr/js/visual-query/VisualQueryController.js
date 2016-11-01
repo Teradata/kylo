@@ -22,6 +22,7 @@
          * Navigates to the Feeds page when the stepper is cancelled.
          */
         self.cancelStepper = function() {
+            VisualQueryService.resetModel();
             StateService.navigateToHome();
         };
 

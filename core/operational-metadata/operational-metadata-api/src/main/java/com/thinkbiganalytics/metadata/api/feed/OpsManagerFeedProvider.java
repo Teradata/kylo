@@ -23,5 +23,7 @@ public interface OpsManagerFeedProvider {
 
     void delete(OpsManagerFeed.ID id);
 
+    boolean isFeedRunning(OpsManagerFeed.ID id);
+
 
 }

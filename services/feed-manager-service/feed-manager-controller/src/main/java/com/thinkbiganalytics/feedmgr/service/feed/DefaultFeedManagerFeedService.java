@@ -306,7 +306,13 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
 
             List<HadoopSecurityGroup> previousSavedSecurityGroups = null;
             // Store the old security groups before saving beccause we need to compare afterward
-            if(!feed.isNew()) {
+            if(feed.isNew()) {
+                FeedManagerFeed existing = feedManagerFeedProvider.findBySystemName(feed.getCategory().getSystemName(), feed.getSystemFeedName());
+                // Since we know this is expected to be new check if the category/feed name combo is already being used.
+                if (existing != null) {
+                    throw new DuplicateFeedNameException(feed.getCategoryName(), feed.getFeedName());
+                }
+            } else {
                 FeedManagerFeed previousStateBeforeSaving = feedManagerFeedProvider.findById(feedManagerFeedProvider.resolveId(feed.getId()));
                 Map<String, String> userProperties = previousStateBeforeSaving.getUserProperties();
                 previousSavedSecurityGroups = previousStateBeforeSaving.getSecurityGroups();
