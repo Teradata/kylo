@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Created by sr186054 on 10/26/16.
@@ -38,11 +39,12 @@ public class FeedDependencyDeltaResults {
      */
     Map<String, FeedJobExecutionData> latestFeedJobExecutionContext = new HashMap<>();
 
-    @JsonIgnore
+
     /**
      * internal map to store jobexecution data
      */
-        Map<Long, FeedJobExecutionData> jobExecutionDataMap = new HashMap<>();
+    @JsonIgnore
+    Map<Long, FeedJobExecutionData> jobExecutionDataMap = new HashMap<>();
 
 
     public void addFeedExecutionContext(String depFeedSystemName, Long jobExecutionId, DateTime startTime, DateTime endTime, Map<String, Object> executionContext) {
@@ -62,6 +64,35 @@ public class FeedDependencyDeltaResults {
             feedJobExecutionData.getExecutionContext().putAll(executionContext);
         }
 
+    }
+
+    private void reduceExecutionContextToMatchingKeys(FeedJobExecutionData executionData, List<String> validKeys) {
+        if (executionData != null && executionData.getExecutionContext() != null) {
+            Map<String, Object> reducedMap = executionData.getExecutionContext().entrySet().stream().filter(e ->
+                                                                                                                validKeys.stream()
+                                                                                                                    .anyMatch(validKey -> e.getKey().toLowerCase().startsWith(validKey.toLowerCase())))
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue()));
+            executionData.setExecutionContext(reducedMap);
+
+        }
+
+    }
+
+    /**
+     * reduce the excecution Context data that is in the Map matching where any key starts with the passed in list of validkeys
+     */
+    public void reduceExecutionContextToMatchingKeys(List<String> validKeys) {
+        feedJobExecutionContexts.values().forEach(feedJobExecutionDatas -> {
+            if (feedJobExecutionDatas != null) {
+                feedJobExecutionDatas.stream().forEach(executionData -> reduceExecutionContextToMatchingKeys(executionData, validKeys));
+            }
+        });
+
+        latestFeedJobExecutionContext.values().forEach(executionData -> {
+            if (executionData != null) {
+                reduceExecutionContextToMatchingKeys(executionData, validKeys);
+            }
+        });
     }
 
 

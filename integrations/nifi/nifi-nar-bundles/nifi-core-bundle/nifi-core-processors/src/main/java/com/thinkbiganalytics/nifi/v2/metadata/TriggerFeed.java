@@ -5,6 +5,8 @@ package com.thinkbiganalytics.nifi.v2.metadata;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.thinkbiganalytics.metadata.api.op.FeedDependencyDeltaResults;
 import com.thinkbiganalytics.metadata.rest.model.Formatters;
 import com.thinkbiganalytics.metadata.rest.model.event.FeedPreconditionTriggerEvent;
@@ -14,6 +16,7 @@ import com.thinkbiganalytics.nifi.core.api.precondition.PreconditionListener;
 import com.thinkbiganalytics.nifi.v2.common.CommonProperties;
 import com.thinkbiganalytics.util.ComponentAttributes;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.annotation.behavior.EventDriven;
 import org.apache.nifi.annotation.behavior.InputRequirement;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
@@ -27,11 +30,14 @@ import org.apache.nifi.processor.ProcessorInitializationContext;
 import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.exception.ProcessException;
 import org.apache.nifi.processor.io.OutputStreamCallback;
+import org.apache.nifi.processor.util.StandardValidators;
 import org.joda.time.DateTime;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
@@ -50,7 +56,8 @@ import static com.thinkbiganalytics.nifi.v2.common.CommonProperties.FEED_NAME;
 @CapabilityDescription("Triggers the execution of a feed whenever the conditions defined by its precondition have been met.  This process should be the first processor in a flow depends upon preconditions.")
 public class TriggerFeed extends AbstractFeedProcessor {
 
-    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static ObjectMapper MAPPER = new ObjectMapper();
+    private static final String DEFAULT_EXECUTION_CONTEXT_KEY = "export.kylo";
 
     private Queue<FeedPreconditionTriggerEvent> triggerEventQueue = new LinkedBlockingQueue<>();
     private transient PreconditionListener preconditionListener;
@@ -63,6 +70,18 @@ public class TriggerFeed extends AbstractFeedProcessor {
             .identifiesControllerService(FeedPreconditionEventService.class)
             .build();
 
+
+    public static final PropertyDescriptor MATCHING_EXECUTION_CONTEXT_KEYS = new PropertyDescriptor.Builder()
+        .name("Matching Execution Context Keys")
+        .description(
+            "Comma separated list of Execution context keys or key fragments that will be applied to each of the dependent feed execution context data set.  Only the execution context values starting with keys this set will be included in the flow file JSON content.   Any key (case insensitive) starting with one of these supplied keys will be included")
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .defaultValue(DEFAULT_EXECUTION_CONTEXT_KEY)
+        .expressionLanguageSupported(false)
+        .required(true)
+        .build();
+
+
     public static final Relationship SUCCESS = new Relationship.Builder()
             .name("Success")
             .description("Relationship followed on successful precondition event.")
@@ -72,6 +91,11 @@ public class TriggerFeed extends AbstractFeedProcessor {
     @Override
     protected void init(ProcessorInitializationContext context) {
         super.init(context);
+
+        MAPPER.registerModule(new JodaModule());
+        MAPPER.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, true);
+        MAPPER.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+
 
         this.preconditionListener = createPreconditionListener();
     }
@@ -88,7 +112,7 @@ public class TriggerFeed extends AbstractFeedProcessor {
             // TODO Swallowing for now until metadata client is working again
         }
 
-        registerPreconditonListener(context, category, feedName);
+        registerPreconditionListener(context, category, feedName);
     }
 
     /* (non-Javadoc)
@@ -119,6 +143,7 @@ public class TriggerFeed extends AbstractFeedProcessor {
         props.add(PRECONDITION_SERVICE);
         props.add(FEED_CATEGORY);
         props.add(FEED_NAME);
+        props.add(MATCHING_EXECUTION_CONTEXT_KEYS);
     }
 
     @Override
@@ -142,32 +167,14 @@ public class TriggerFeed extends AbstractFeedProcessor {
         }
     }
 
-    private FlowFile createFlowFilex(ProcessContext context,
-                                    ProcessSession session,
-                                    FeedPreconditionTriggerEvent event) {
-        FlowFile file = session.create();
-        getLog().info("createFlowFile for Feed {}", new Object[]{this.feedId});
-        if (this.feedId != null) {
-            FeedDependencyDeltaResults props = getProviderService(context).getProvider().getFeedDependentResultDeltas(this.feedId);
-            try {
-
-                String value = MAPPER.writeValueAsString(props);
-                //add the json as an attr value?
-                //   file = session.putAttribute(file, ComponentAttributes.FEED_DEPENDENT_RESULT_DELTAS.key(), value);
-                //write the json back to the flow file content
-                file = session.write(file, new OutputStreamCallback() {
-                    @Override
-                    public void process(OutputStream outputStream) throws IOException {
-                        outputStream.write(value.getBytes(StandardCharsets.UTF_8));
-                    }
-                });
-            } catch (JsonProcessingException e) {
-                getLog().warn("Failed to serialize feed dependency result deltas", e);
-                // TODO Swallow the exception and produce the flow file anyway?
-            }
+    private List<String> getMatchingExecutionContextKeys(ProcessContext context) {
+        String executionContextKeys = context.getProperty(MATCHING_EXECUTION_CONTEXT_KEYS).getValue();
+        if (StringUtils.isBlank(executionContextKeys)) {
+            executionContextKeys = DEFAULT_EXECUTION_CONTEXT_KEY;
         }
-
-        return file;
+        //split and trim
+        List<String> list = new ArrayList<String>(Arrays.asList(executionContextKeys.trim().split("\\s*,\\s*")));
+        return list;
     }
 
 
@@ -183,7 +190,9 @@ public class TriggerFeed extends AbstractFeedProcessor {
                 file = session.create();
 
                 try {
-
+                    List<String> keysToMatch = getMatchingExecutionContextKeys(context);
+                    getLog().info("Reducing the Execution Context to match {} keys ", new Object[]{StringUtils.join((keysToMatch))});
+                    deltas.reduceExecutionContextToMatchingKeys(keysToMatch);
                     String value = MAPPER.writeValueAsString(deltas);
                     //add the json as an attr value?
                     file = session.putAttribute(file, ComponentAttributes.FEED_DEPENDENT_RESULT_DELTAS.key(), value);
@@ -207,7 +216,7 @@ public class TriggerFeed extends AbstractFeedProcessor {
         return file;
     }
 
-    private void registerPreconditonListener(ProcessContext context, String category, String feedName) {
+    private void registerPreconditionListener(ProcessContext context, String category, String feedName) {
         FeedPreconditionEventService precondService = getPreconditionService(context);
 
         precondService.addListener(category, feedName, preconditionListener);
