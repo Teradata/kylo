@@ -1,9 +1,6 @@
 package com.thinkbiganalytics.rest;
 
 
-import org.apache.commons.lang3.StringUtils;
-import org.glassfish.jersey.internal.util.collection.Values;
-
 /**
  * Created by sr186054 on 10/15/15.
  */
@@ -18,6 +15,11 @@ public class JerseyClientConfig {
 
     private String keystorePath;
     private String keystorePassword;
+    private String keystoreType;
+
+    private String truststorePath;
+    private String truststorePassword;
+    private String trustStoreType;
 
     //Values are in milliseconds
     private Integer readTimeout = null;
@@ -164,5 +166,37 @@ public class JerseyClientConfig {
 
     public void setPort(Integer port) {
         this.port = port;
+    }
+
+    public String getTruststorePath() {
+        return truststorePath;
+    }
+
+    public void setTruststorePath(String truststorePath) {
+        this.truststorePath = truststorePath;
+    }
+
+    public String getTruststorePassword() {
+        return truststorePassword;
+    }
+
+    public void setTruststorePassword(String truststorePassword) {
+        this.truststorePassword = truststorePassword;
+    }
+
+    public String getTrustStoreType() {
+        return trustStoreType;
+    }
+
+    public void setTrustStoreType(String trustStoreType) {
+        this.trustStoreType = trustStoreType;
+    }
+
+    public String getKeystoreType() {
+        return keystoreType;
+    }
+
+    public void setKeystoreType(String keystoreType) {
+        this.keystoreType = keystoreType;
     }
 }

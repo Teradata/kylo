@@ -16,7 +16,7 @@ import com.thinkbiganalytics.spark.metadata.TransformJob;
 import com.thinkbiganalytics.spark.metadata.TransformRequest;
 import com.thinkbiganalytics.spark.metadata.TransformResponse;
 import com.thinkbiganalytics.spark.repl.ScriptEngine;
-import com.thinkbiganalytics.spark.util.HiveUtils;
+import com.thinkbiganalytics.hive.util.HiveUtils;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -26,7 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.security.PrivilegedExceptionAction;
-import java.sql.Connection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Queue;

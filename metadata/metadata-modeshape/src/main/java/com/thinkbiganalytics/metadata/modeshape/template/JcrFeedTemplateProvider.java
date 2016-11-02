@@ -18,7 +18,6 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
  */
 public class JcrFeedTemplateProvider extends BaseJcrProvider<FeedManagerTemplate, FeedManagerTemplate.ID> implements FeedManagerTemplateProvider {
 
-
     @Override
     public Class<? extends FeedManagerTemplate> getEntityClass() {
         return JcrFeedTemplate.class;
@@ -35,18 +34,20 @@ public class JcrFeedTemplateProvider extends BaseJcrProvider<FeedManagerTemplate
     }
 
     public FeedManagerTemplate ensureTemplate(String systemName) {
+        String sanitiezedName = sanitizeSystemName(systemName);
         String path = EntityUtil.pathForTemplates();
         Map<String, Object> props = new HashMap<>();
-        props.put(JcrFeedTemplate.TITLE, systemName);
-        return findOrCreateEntity(path, systemName, props);
+        props.put(JcrFeedTemplate.TITLE, sanitiezedName);
+        return findOrCreateEntity(path, sanitiezedName, props);
     }
 
     @Override
     public FeedManagerTemplate findByName(String name) {
         if (StringUtils.isNotBlank(name)) {
+            String sanitiezedTitle = sanitizeTitle(name);
             String query = "SELECT * from " + EntityUtil.asQueryProperty(JcrFeedTemplate.NODE_TYPE) + " as e where e." + EntityUtil.asQueryProperty(JcrFeedTemplate.TITLE) + " = $title";
             Map<String, String> bindParams = new HashMap<>();
-            bindParams.put("title", name);
+            bindParams.put("title", sanitiezedTitle);
             return JcrQueryUtil.findFirst(getSession(), query, bindParams, JcrFeedTemplate.class);
         } else {
             return null;

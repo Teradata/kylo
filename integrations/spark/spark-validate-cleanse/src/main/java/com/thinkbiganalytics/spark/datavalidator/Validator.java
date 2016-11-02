@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.spark.datavalidator;
 
+import com.thinkbiganalytics.hive.util.HiveUtils;
 import com.thinkbiganalytics.policy.FieldPoliciesJsonTransformer;
 import com.thinkbiganalytics.policy.FieldPolicy;
 import com.thinkbiganalytics.policy.FieldPolicyBuilder;
@@ -96,7 +97,7 @@ public class Validator implements Serializable {
         ;
         this.feedTablename = targetDatabase + "." + entity + "_feed";
         this.refTablename = targetDatabase + "." + validTableName;
-        this.qualifiedProfileName = targetDatabase + "." + profileTableName;
+        this.qualifiedProfileName = HiveUtils.quoteIdentifier(targetDatabase, profileTableName);
         this.partition = partition;
         this.targetDatabase = targetDatabase;
         this.fieldPolicyJsonPath = fieldPolicyJsonPath;
@@ -239,7 +240,7 @@ public class Validator implements Serializable {
 
             String insertSQL = "INSERT OVERWRITE TABLE " + qualifiedProfileName
                                + " PARTITION (processing_dttm='" + partition + "')"
-                               + " SELECT columnname, metrictype, metricvalue FROM " + tempTable;
+                               + " SELECT columnname, metrictype, metricvalue FROM " + HiveUtils.quoteIdentifier(tempTable);
 
             hiveContext.sql(insertSQL);
         } catch (Exception e) {
@@ -274,10 +275,8 @@ public class Validator implements Serializable {
         sourceDF.registerTempTable(tempTable);
 
         // Insert the data into our partition
-        String qualifiedTable = targetDatabase + "." + targetTable;
-        hiveContext
-            .sql("INSERT OVERWRITE TABLE " + qualifiedTable + " PARTITION (processing_dttm='" + partition + "') SELECT * FROM "
-                 + tempTable);
+        final String qualifiedTable = HiveUtils.quoteIdentifier(targetDatabase, targetTable);
+        hiveContext.sql("INSERT OVERWRITE TABLE " + qualifiedTable + " PARTITION (processing_dttm='" + partition + "') SELECT * FROM " + HiveUtils.quoteIdentifier(tempTable));
     }
 
     /**

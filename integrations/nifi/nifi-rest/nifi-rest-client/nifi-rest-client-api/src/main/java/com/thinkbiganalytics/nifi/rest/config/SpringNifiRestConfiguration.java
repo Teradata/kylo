@@ -3,9 +3,8 @@ package com.thinkbiganalytics.nifi.rest.config;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClientConfig;
 
+import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -46,7 +45,14 @@ public class SpringNifiRestConfiguration {
         final NifiRestClientConfig config = new NifiRestClientConfig();
         config.setUsername(env.getProperty("thinkbig.nifi.rest.username"));
         config.setPassword(env.getProperty("thinkbig.nifi.rest.password"));
-
+        config.setHttps(BooleanUtils.toBoolean(env.getProperty("thinkbig.nifi.rest.https")));
+        config.setUseConnectionPooling(BooleanUtils.toBoolean(env.getProperty("thinkbig.nifi.rest.useConnectionPooling")));
+        config.setTruststorePath(env.getProperty("thinkbig.nifi.rest.truststorePath"));
+        config.setTruststorePassword(env.getProperty("thinkbig.nifi.rest.truststorePassword"));
+        config.setKeystorePassword(env.getProperty("thinkbig.nifi.rest.keystorePassword"));
+        config.setKeystorePath(env.getProperty("thinkbig.nifi.rest.keystorePath"));
+        config.setTrustStoreType(env.getProperty("thinkbig.nifi.rest.truststoreType"));
+        config.setKeystoreType(env.getProperty("thinkbig.nifi.rest.keystoreType"));
         final String host = env.getProperty("thinkbig.nifi.rest.host");
         if (host != null) {
             try {

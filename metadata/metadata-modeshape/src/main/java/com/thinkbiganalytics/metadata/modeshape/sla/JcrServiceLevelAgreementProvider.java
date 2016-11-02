@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.modeshape.sla;
 
@@ -21,6 +21,7 @@ import javax.jcr.query.QueryResult;
 
 import org.modeshape.jcr.api.JcrTools;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementProvider;
@@ -52,9 +53,9 @@ import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
  * @author Sean Felten
  */
 public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLevelAgreement, ServiceLevelAgreement.ID> implements ServiceLevelAgreementProvider {
-    
+
     public static final String SLA_PATH = "/metadata/sla";
-    
+
     private final JcrTools jcrTools = new JcrTools();
 
     @Inject
@@ -104,7 +105,7 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the ServiceLevelAgreements", e);
         }
-        
+
     }
 
     /**
@@ -138,7 +139,7 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
             Session session = getSession();
             SlaId slaId = (SlaId) id;
             return new JcrServiceLevelAgreement(session.getNodeByIdentifier(slaId.getIdValue()));
-        } catch (ItemNotFoundException e) { 
+        } catch (ItemNotFoundException e) {
             return null;
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the SLA node", e);
@@ -150,8 +151,8 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
      */
     @Override
     public ServiceLevelAgreement findAgreementByName(String slaName) {
-        String query =  "SELECT * FROM ["+getNodeType(getJcrEntityClass())+"] as sla WHERE sla.["+JcrPropertyConstants.TITLE+"] = '"+slaName+"'";
-        return findFirst(query);
+        String query =  "SELECT * FROM [" + getNodeType(getJcrEntityClass()) + "] as sla WHERE sla.[" + JcrPropertyConstants.TITLE + "] = $slaName";
+        return JcrQueryUtil.findFirst(getSession(), query, ImmutableMap.of("slaName", slaName), getEntityClass());
     }
 
 
@@ -172,7 +173,7 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
                 slaNode.remove();
             }
             return true;
-        } catch (ItemNotFoundException e) { 
+        } catch (ItemNotFoundException e) {
             return false;
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the SLA node", e);
@@ -188,7 +189,7 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
             Session session = getSession();
             Node slasNode = session.getNode(SLA_PATH);
             Node slaNode = slasNode.addNode("sla-" + UUID.randomUUID(), "tba:sla");
-            
+
             return builder(slaNode);
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to create an sla node", e);
@@ -269,29 +270,29 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
         public ObligationBuilder<ServiceLevelAgreementBuilder> obligationBuilder() {
             try {
                 Node groupNode = null;
-                
+
                 if (this.slaNode.hasProperty(JcrServiceLevelAgreement.DEFAULT_GROUP)) {
                     groupNode = this.slaNode.getProperty(JcrServiceLevelAgreement.DEFAULT_GROUP).getNode();
                 } else {
                     groupNode = this.slaNode.addNode(JcrServiceLevelAgreement.GROUPS, JcrServiceLevelAgreement.GROUP_TYPE);
                     this.slaNode.setProperty(JcrServiceLevelAgreement.DEFAULT_GROUP, groupNode);
                 }
-                
+
                 Node obNode = groupNode.addNode(JcrObligationGroup.OBLIGATIONS, JcrObligationGroup.OBLIGATION_TYPE);
-                
+
                 return new ObligationBuilderImpl<ServiceLevelAgreementBuilder>(obNode, this);
             } catch (RepositoryException e) {
                 throw new MetadataRepositoryException("Failed to build the obligation node", e);
             }
         }
-        
+
         @Override
         public ObligationBuilder<ServiceLevelAgreementBuilder> obligationBuilder(Condition condition) {
             try {
                 Node groupNode = this.slaNode.getProperty(JcrServiceLevelAgreement.DEFAULT_GROUP).getNode();
                 groupNode.setProperty(JcrObligationGroup.CONDITION, condition.name());
                 Node obNode = groupNode.addNode(JcrObligationGroup.OBLIGATIONS, JcrObligationGroup.OBLIGATION_TYPE);
-                
+
                 return new ObligationBuilderImpl<ServiceLevelAgreementBuilder>(obNode, this);
             } catch (RepositoryException e) {
                 throw new MetadataRepositoryException("Failed to build the obligation group node", e);
@@ -302,7 +303,7 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
         public ObligationGroupBuilder obligationGroupBuilder(Condition condition) {
             try {
                 Node groupNode = this.slaNode.addNode(JcrServiceLevelAgreement.GROUPS, JcrServiceLevelAgreement.GROUP_TYPE);
-                    
+
                 return new ObligationGroupBuilderImpl(groupNode, condition, this);
             } catch (RepositoryException e) {
                 throw new MetadataRepositoryException("Failed to build the obligation group node", e);
@@ -331,7 +332,7 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
     private static class ObligationBuilderImpl<B> implements ObligationBuilder<B> {
 
         private Node obNode;
-        
+
         private SLABuilderImpl slaBuilder;
         private ObligationGroupBuilderImpl groupBuilder;
         private String description;
@@ -341,7 +342,7 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
             this.obNode = node;
             this.slaBuilder = bldr;
         }
-        
+
         public ObligationBuilderImpl(Node node, ObligationGroupBuilderImpl bldr) {
             this.obNode = node;
             this.groupBuilder = bldr;
@@ -376,7 +377,7 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
 
                 for (Metric metric : this.metrics) {
                     Node metricNode = this.obNode.addNode(JcrObligation.METRICS, JcrObligation.METRIC_TYPE);
-                    
+
                     JcrPropertyUtil.setProperty(metricNode, JcrObligation.NAME, metric.getClass().getSimpleName());
                     JcrPropertyUtil.setProperty(metricNode, JcrObligation.DESCRIPTION, metric.getDescription());
                     JcrUtil.addGenericJson(metricNode, JcrObligation.JSON, metric);
@@ -398,7 +399,7 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
         private Node groupNode;
         private Condition condition;
         private SLABuilderImpl slaBuilder;
-        
+
         public ObligationGroupBuilderImpl(Node node, Condition cond, SLABuilderImpl slaBuilder) {
             this.groupNode = node;
             this.condition = cond;

@@ -52,7 +52,7 @@
                 self.allowDatabaseBrowse = false;
             }
             if (self.defaultSchemaName != null && self.defaultTableName != null) {
-                self.sql = 'SELECT * FROM ' + self.defaultSchemaName + "." + self.defaultTableName + " LIMIT 20";
+                self.sql = "SELECT * FROM `" + StringUtils.quoteSql(self.defaultSchemaName) + "`.`" + StringUtils.quoteSql(self.defaultTableName) + "` LIMIT 20";
                 if (self.allowExecuteQuery) {
                     self.query();
                 }

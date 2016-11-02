@@ -1,6 +1,6 @@
 package com.thinkbiganalytics.nifi.flow.controller;
 
-import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
+import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
 import com.thinkbiganalytics.nifi.rest.client.NifiFlowVisitorClient;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowDeserializer;
@@ -34,7 +34,7 @@ public class NifiFlowClient implements NifiFlowVisitorClient {
     private static final Logger log = LoggerFactory.getLogger(NifiFlowClient.class);
 
     @Inject
-    private LegacyNifiRestClient client;
+    private NiFiRestClient nifiRestClient;
 
     ///Core methods to look up Processors and ProcessGroups for the flow
     @Override
@@ -45,7 +45,8 @@ public class NifiFlowClient implements NifiFlowVisitorClient {
 
     public boolean isConnected(boolean logException) {
         try {
-            AboutDTO aboutEntity = client.getNifiVersion();
+            log.debug("Attempt to check isConnection get about entity for {} ",nifiRestClient);
+            AboutDTO aboutEntity = nifiRestClient.about();
             return aboutEntity != null;
         }catch (Exception e){
             if(logException) {
@@ -56,20 +57,20 @@ public class NifiFlowClient implements NifiFlowVisitorClient {
     }
 
     public ProcessGroupDTO getProcessGroup(String processGroupId, boolean recursive, boolean verbose) throws NifiComponentNotFoundException {
-        return client.getProcessGroup(processGroupId, recursive, verbose);
+        return nifiRestClient.processGroups().findById(processGroupId, recursive, verbose).orElse(null);
     }
 
 
     public ProcessGroupDTO getRootProcessGroup() throws NifiComponentNotFoundException {
-        return client.getRootProcessGroup();
+        return nifiRestClient.processGroups().findRoot();
     }
 
     public ProcessorDTO getProcessor(String processGroupId, String processorId) throws NifiComponentNotFoundException {
-        return client.getProcessor(processGroupId, processorId);
+        return nifiRestClient.processors().findById(processGroupId, processorId).orElse(null);
     }
 
     public ProcessorDTO findProcessorById(String processorId) {
-        SearchResultsDTO results = client.search(processorId);
+        SearchResultsDTO results = nifiRestClient.search(processorId);
         //log this
         if (results != null && results.getProcessorResults() != null && !results.getProcessorResults().isEmpty()) {
             log.debug("Attempt to find processor by id {}. Processors Found: {} ", processorId, results.getProcessorResults().size());

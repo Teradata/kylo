@@ -17,5 +17,6 @@
         <module>commons-jdbc</module>
         <module>commons-jpa</module>
         <module>commons-spark</module>
+        <module>commons-hive</module>
     </modules>
 </project>

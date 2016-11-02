@@ -12,7 +12,7 @@ public interface FeedManagerTemplateService {
 
     String templateIdForTemplateName(String templateName);
 
-    void registerTemplate(RegisteredTemplate registeredTemplate);
+    RegisteredTemplate registerTemplate(RegisteredTemplate registeredTemplate);
 
     List<NifiProperty> getTemplateProperties(String templateId);
 

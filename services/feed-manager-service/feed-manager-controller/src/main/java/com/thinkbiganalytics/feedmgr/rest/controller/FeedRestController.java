@@ -10,12 +10,14 @@ import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
 import com.thinkbiganalytics.feedmgr.service.FeedCleanupFailedException;
 import com.thinkbiganalytics.feedmgr.service.FeedCleanupTimeoutException;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
+import com.thinkbiganalytics.feedmgr.service.feed.DuplicateFeedNameException;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerPreconditionService;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
 import com.thinkbiganalytics.hive.service.HiveService;
+import com.thinkbiganalytics.hive.util.HiveUtils;
 import com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement;
-import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
+import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 import com.thinkbiganalytics.policy.rest.model.PreconditionRule;
@@ -23,7 +25,6 @@ import com.thinkbiganalytics.schema.TextFileParser;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.PortDTO;
-import org.apache.nifi.web.api.entity.InputPortsEntity;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.hibernate.JDBCException;
@@ -111,6 +112,16 @@ public class FeedRestController {
         NifiFeed feed;
         try {
             feed = getMetadataService().createFeed(feedMetadata);
+        } catch (DuplicateFeedNameException e) {
+            log.info("Failed to create a new feed due to another feed having the same category/feed name: " + feedMetadata.getCategoryAndFeedDisplayName());
+            
+            // Create an error message
+            String msg = "A feed already exists in the cantegory \"" + e.getCategoryName() + "\" with name name \"" + e.getFeedName() + "\"";
+
+            // Add error message to feed
+            feed = new NifiFeed(feedMetadata, null);
+            feed.addErrorMessage(msg);
+            feed.setSuccess(false);
         } catch (Exception e) {
             log.error("Failed to create a new feed.", e);
 
@@ -268,7 +279,7 @@ public class FeedRestController {
     //TODO rework and move logic to proper Service/provider class
     public Response profileSummary(@PathParam("feedId") String feedId) {
         FeedMetadata feedMetadata = getMetadataService().getFeedById(feedId);
-        String profileTable = feedMetadata.getProfileTableName();
+        final String profileTable = HiveUtils.quoteIdentifier(feedMetadata.getProfileTableName());
         String query = "SELECT * from " + profileTable + " where columnname = '(ALL)'";
 
         List<Map<String, Object>> rows = new ArrayList<>();
@@ -285,7 +296,7 @@ public class FeedRestController {
                     if (field.contains(".")) {
                         field = StringUtils.substringAfterLast(field, ".");
                     }
-                    query = "SELECT * from " + profileTable + " where metrictype IN('MIN_TIMESTAMP','MAX_TIMESTAMP') AND columnname = '" + field + "'";
+                    query = "SELECT * from " + profileTable + " where metrictype IN('MIN_TIMESTAMP','MAX_TIMESTAMP') AND columnname = " + HiveUtils.quoteString(field);
 
                     QueryResult dateRows = hiveService.query(query);
                     if (dateRows != null && !dateRows.isEmpty()) {
@@ -310,7 +321,7 @@ public class FeedRestController {
     public Response profileStats(@PathParam("feedId") String feedId, @QueryParam("processingdttm") String processingdttm) {
         FeedMetadata feedMetadata = getMetadataService().getFeedById(feedId);
         String profileTable = feedMetadata.getProfileTableName();
-        String query = "SELECT * from " + profileTable + " where processing_dttm = '" + processingdttm + "'";
+        String query = "SELECT * from " + HiveUtils.quoteIdentifier(profileTable) + " where processing_dttm = " + HiveUtils.quoteString(processingdttm);
         QueryResult rows = hiveService.query(query);
         return Response.ok(rows.getRows()).build();
     }
@@ -326,7 +337,7 @@ public class FeedRestController {
         FeedMetadata feedMetadata = getMetadataService().getFeedById(feedId);
         String condition = "";
         if (StringUtils.isNotBlank(filter)) {
-            condition = " and dlp_reject_reason like '%" + filter + "%' ";
+            condition = " and dlp_reject_reason like " + HiveUtils.quoteString("%" + filter + "%") + " ";
         }
         return getPage(processingdttm, limit, feedMetadata.getInvalidTableName(), condition);
     }
@@ -351,7 +362,7 @@ public class FeedRestController {
         } else if (limit < 1) {
             limit = 1;
         }
-        StringBuilder query = new StringBuilder("SELECT * from " + table + " where processing_dttm = '" + processingdttm + "' ");
+        StringBuilder query = new StringBuilder("SELECT * from " + HiveUtils.quoteIdentifier(table) + " where processing_dttm = " + HiveUtils.quoteString(processingdttm) + " ");
         if (StringUtils.isNotBlank(filter)) {
             query.append(filter);
         }

@@ -63,6 +63,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 import javax.annotation.Nonnull;
+import javax.net.ssl.SSLContext;
 
 /**
  *
@@ -96,19 +97,30 @@ public class MetadataClient {
 
     
     public MetadataClient(URI base) {
-        this(base, null);
+        this(base, null, null, null);
+    }
+
+    public MetadataClient(URI base, SSLContext sslContext) {
+        this(base, null, null, sslContext);
     }
     
     public MetadataClient(URI base, String username, String password) {
-        this(base, createCredentialProvider(username, password));
+        this(base, username, password, null);
     }
-    
-    public MetadataClient(URI base, CredentialsProvider credsProvider) {
+
+    public MetadataClient(URI base, String username, String password, SSLContext sslContext) {
+        this(base, createCredentialProvider(username, password), sslContext);
+    }
+
+
+    public MetadataClient(URI base, CredentialsProvider credsProvider, SSLContext sslContext) {
         super();
         this.base = base;
         
         if (credsProvider != null) {
-            HttpClient httpClient = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build();
+            HttpClient httpClient = HttpClients.custom().setDefaultCredentialsProvider(credsProvider)
+                .setSSLContext(sslContext != null ? sslContext : null)
+                .build();
             ClientHttpRequestFactory reqFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
             this.template = new RestTemplate(reqFactory);
         } else {
@@ -118,6 +130,7 @@ public class MetadataClient {
         ObjectMapper mapper = createObjectMapper();
         this.template.getMessageConverters().add(new MappingJackson2HttpMessageConverter(mapper));
     }
+
     
     public List<ExtensibleTypeDescriptor> getExtensibleTypes() {
         return get(path("extension", "type"), null, TYPE_LIST);
