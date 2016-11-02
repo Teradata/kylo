@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.spark.dataprofiler.core;
 
+import com.thinkbiganalytics.hive.util.HiveUtils;
 import com.thinkbiganalytics.spark.dataprofiler.columns.BigDecimalColumnStatistics;
 import com.thinkbiganalytics.spark.dataprofiler.columns.BooleanColumnStatistics;
 import com.thinkbiganalytics.spark.dataprofiler.columns.ByteColumnStatistics;
@@ -46,10 +47,10 @@ import scala.Tuple2;
  *
  */
 public class Profiler {
-	
+
 	/* Schema lookup table */
 	private static Broadcast<Map<Integer, StructField>> bSchemaMap;
-	
+
 	/**
 	 * Main entry point into program
 	 * @param args: list of args
@@ -62,22 +63,22 @@ public class Profiler {
 		HiveContext hiveContext;
 		DataFrame resultDF;
 		String queryString;
-		
 
-		
+
+
 		/* Check command line arguments and get query to run. */
 		if ((queryString = checkCommandLineArgs(args)) == null) {
 			return;
 		}
-		
-		
+
+
 		/* Initialize and configure Spark */
-		conf = new SparkConf().setAppName(ProfilerConfiguration.APP_NAME);		
-		
+		conf = new SparkConf().setAppName(ProfilerConfiguration.APP_NAME);
+
 		if (ProfilerConfiguration.SERIALIZER.equals("kryo")) {
 			conf = configureEfficientSerialization(conf);
 		}
-		
+
 		sc = new JavaSparkContext(conf);
 		hiveContext = new HiveContext(sc.sc());
 		hiveContext.setConf("spark.sql.dialect", ProfilerConfiguration.SQL_DIALECT);
@@ -86,30 +87,30 @@ public class Profiler {
 		/* Run query and get result */
 		System.out.println("[PROFILER-INFO] Analyzing profile statistics for: [" + queryString + "]");
 		resultDF = hiveContext.sql(queryString);
-		
-		
+
+
 		/* Update schema map and broadcast it*/
 		populateAndBroadcastSchemaMap(resultDF, sc);
-		
-		
+
+
 		/* Get profile statistics and write to table */
 		profileStatistics(resultDF).writeModel(sc, hiveContext);
-		
-		
+
+
 		/* Wrap up */
 		System.out.println("[PROFILER-INFO] Profiling finished.");
 		sc.close();
 	}
 
-	
-	
+
+
 	/**
 	 * Profile statistics for data frame
 	 * @param resultDF data frame to analyze
 	 * @return StatisticsModel
 	 */
 	public static StatisticsModel profileStatistics(DataFrame resultDF) {
-		
+
 		JavaPairRDD<Tuple2<Integer, Object>, Integer> columnValueCounts;
 		StatisticsModel profileStatisticsModel;
 
@@ -118,16 +119,16 @@ public class Profiler {
 				.javaRDD()
 				.flatMapToPair(new IndividualColumnValueCounts())
 				.reduceByKey(new TotalColumnValueCounts());
-				
+
 		/* Generate the profile model */
 		profileStatisticsModel = columnValueCounts
 				.mapPartitions(new PartitionLevelModels(bSchemaMap))
 				.reduce(new CombineModels());
 
-		return profileStatisticsModel;	
+		return profileStatisticsModel;
 	}
 
-	
+
 	/**
 	 * Check command line arguments
 	 * @param args list of command line arguments
@@ -140,14 +141,14 @@ public class Profiler {
 			showCommandLineArgs();
 			return null;
 		}
-		
+
 		String retVal;
-		
-		String profileObjectType = args[0];	
-		String profileObjectDesc = args[1];	
+
+		String profileObjectType = args[0];
+		String profileObjectDesc = args[1];
 		Integer n = Integer.valueOf(args[2]);
 		String profileOutputTable = args[3];
-		
+
 		String inputAndOutputTablePartitionKey = "ALL";
 
 	    if (args.length >= 5) {
@@ -156,9 +157,9 @@ public class Profiler {
 
 		switch (profileObjectType) {
 			case "table":
-				retVal = "select * from " + profileObjectDesc;
+				retVal = "select * from " + HiveUtils.quoteIdentifier(profileObjectDesc);
 				if (inputAndOutputTablePartitionKey != null && !"ALL".equalsIgnoreCase(inputAndOutputTablePartitionKey)) {
-					retVal += " where " + ProfilerConfiguration.INPUT_TABLE_PARTITION_COLUMN_NAME + " = '" + inputAndOutputTablePartitionKey + "'";
+					retVal += " where " + HiveUtils.quoteIdentifier(ProfilerConfiguration.INPUT_TABLE_PARTITION_COLUMN_NAME) + " = " + HiveUtils.quoteString(inputAndOutputTablePartitionKey);
 				}
 				break;
 			case "query":
@@ -169,8 +170,8 @@ public class Profiler {
 				showCommandLineArgs();
 				return null;
 		}
-		
-		
+
+
 		if (n <= 0) {
 			System.out.println("Illegal command line argument for n for top_n values (" + n + ")");
 			showCommandLineArgs();
@@ -179,28 +180,28 @@ public class Profiler {
 		else {
 			ProfilerConfiguration.NUMBER_OF_TOP_N_VALUES = n;
 		}
-		
-		
+
+
 		if (!setOutputTableDBAndName(profileOutputTable)) {
 			System.out.println("Illegal command line argument for output table (" + profileOutputTable + ")");
 			showCommandLineArgs();
 			return null;
 		}
-		
+
 		ProfilerConfiguration.INPUT_AND_OUTPUT_TABLE_PARTITION_KEY = inputAndOutputTablePartitionKey;
 
 		return retVal;
 	}
-	
-	
+
+
 	/*
 	 * Set output database and table
 	 */
 	private static boolean setOutputTableDBAndName(String profileOutputTable) {
-		
+
 		Boolean retVal = true;
 		String[] tableNameParts = profileOutputTable.split("\\.");
-		
+
 		if (tableNameParts.length == 1) {
 			//output db remains as 'default'
 			ProfilerConfiguration.OUTPUT_TABLE_NAME = tableNameParts[0];
@@ -212,7 +213,7 @@ public class Profiler {
 		else {
 			retVal = false;
 		}
-		
+
 		return retVal;
 	}
 
@@ -221,11 +222,11 @@ public class Profiler {
 	 * Configure efficient serialization via kryo
 	 */
 	private static SparkConf configureEfficientSerialization(SparkConf conf) {
-		
+
 		List<Class<?>> serializeClassesList;
 		Class<?>[] serializeClassesArray;
 
-		conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer"); 
+		conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer");
 
 		serializeClassesList = new ArrayList<>();
 		serializeClassesList.add(ColumnStatistics.class);
@@ -240,20 +241,20 @@ public class Profiler {
 		serializeClassesList.add(ShortColumnStatistics.class);
 		serializeClassesList.add(StringColumnStatistics.class);
 		serializeClassesList.add(TimestampColumnStatistics.class);
-		serializeClassesList.add(UnsupportedColumnStatistics.class);		
+		serializeClassesList.add(UnsupportedColumnStatistics.class);
 		serializeClassesList.add(StatisticsModel.class);
 		serializeClassesList.add(TopNDataItem.class);
 		serializeClassesList.add(TopNDataList.class);
 		serializeClassesList.add(OutputRow.class);
 		serializeClassesList.add(OutputWriter.class);
-		
 
-		serializeClassesArray = new Class[serializeClassesList.size()];	
+
+		serializeClassesArray = new Class[serializeClassesList.size()];
 		for (int i = 0; i < serializeClassesList.size(); i++) {
 			serializeClassesArray[i] = serializeClassesList.get(i);
 		}
 
-		conf.registerKryoClasses(serializeClassesArray);	
+		conf.registerKryoClasses(serializeClassesArray);
 		return conf;
 	}
 
@@ -261,39 +262,39 @@ public class Profiler {
 
 	/*
 	 *  Print column value counts
-	 *  Only use for debugging, since output can be quite large in volume 
+	 *  Only use for debugging, since output can be quite large in volume
 	 */
 	@SuppressWarnings("unused")
 	private static void printColumnValueCounts(JavaPairRDD<Tuple2<Integer, Object>, Integer> columnValueCounts) {
-		
+
 		for (Tuple2<Tuple2<Integer, Object>, Integer> columnValueCount: columnValueCounts.collect()) {
 			System.out.println(columnValueCount);
 		}
 
 	}
 
-	
+
 	/* Populate schema map */
 	public static void populateAndBroadcastSchemaMap(DataFrame df, JavaSparkContext sc) {
-		
+
 		for (int i=0; i < df.schema().fields().length; i++) {
 			SchemaInfo.schemaMap.put(i, df.schema().fields()[i]);
 		}
-		
+
 		bSchemaMap = sc.broadcast(SchemaInfo.schemaMap);
 	}
 
 
-	/* 
+	/*
 	 * Print schema of query result
-	 * Only use for debugging, since this is already written out as result of profiling 
+	 * Only use for debugging, since this is already written out as result of profiling
 	 */
 	@SuppressWarnings("unused")
 	private static void printSchema(StructField[] schemaFields) {
-		
+
 		System.out.println("=== Schema ===");
 		System.out.println("[Field#\tName\tDataType\tNullable?\tMetadata]");
-		for (int i = 0; i < schemaFields.length; i++) {			
+		for (int i = 0; i < schemaFields.length; i++) {
 			String output = "Field #" + i + "\t"
 					+ schemaFields[i].name() + "\t"
 					+ schemaFields[i].dataType() + "\t"
@@ -303,12 +304,12 @@ public class Profiler {
 			System.out.println(output);
 		}
 	}
-	
-	
-	
+
+
+
 	/* Show required command-line arguments */
 	private static void showCommandLineArgs()  {
-		
+
 		System.out.println("*** \nInfo: Required command line arguments:\n"
 				+ "1. object type: valid values are {table, query}\n"
 				+ "2. object description: valid values are {<database.table>, <query>}\n"
