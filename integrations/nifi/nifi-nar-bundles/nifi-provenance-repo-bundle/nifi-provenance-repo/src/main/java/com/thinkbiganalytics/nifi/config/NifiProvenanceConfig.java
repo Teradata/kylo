@@ -21,7 +21,7 @@ import javax.sql.DataSource;
  */
 @Configuration
 @ComponentScan(basePackages = {"com.thinkbiganalytics"})
-@PropertySource("file:/opt/nifi/ext-config/config.properties")
+@PropertySource("file:${thinkbig.nifi.configPath}/config.properties")
 public class NifiProvenanceConfig {
 
     private static final Logger log = LoggerFactory.getLogger(NifiProvenanceConfig.class);
