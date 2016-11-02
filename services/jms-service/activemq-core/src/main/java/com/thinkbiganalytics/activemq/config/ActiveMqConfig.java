@@ -10,10 +10,14 @@ import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.pool.PooledConnectionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.PropertySources;
+import org.springframework.core.env.Environment;
 import org.springframework.jms.annotation.EnableJms;
 import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
 import org.springframework.jms.config.JmsListenerContainerFactory;
@@ -28,42 +32,28 @@ import javax.jms.ConnectionFactory;
  */
 @Configuration
 @EnableJms
+@ComponentScan(basePackages = {"com.thinkbiganalytics"})
+@PropertySources({
+                     @PropertySource(value = "file:${thinkbig.nifi.configPath}/config.properties", ignoreResourceNotFound = true),
+                     @PropertySource(value = "classpath:application.properties", ignoreResourceNotFound = true)
+                 })
 public class ActiveMqConfig {
 
     private static final Logger log = LoggerFactory.getLogger(ActiveMqConfig.class);
 
-    @Value("${jms.activemq.broker.url:tcp://localhost:61616}")
-    private String activeMqBrokerUrl;
-    @Value("${jms.client.id:thinkbig.feedmgr}")
-    private String jmsClientId;
+    @Autowired
+    private Environment env;
 
     @Bean
     public ConnectionFactory connectionFactory() {
         PooledConnectionFactory pool = new PooledConnectionFactory();
         pool.setIdleTimeout(0);
-        ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(activeMqBrokerUrl);
+        ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(env.getProperty("jms.activemq.broker.url"));
         factory.setTrustAllPackages(true);
         pool.setConnectionFactory(factory);
-        log.info("Setup ActiveMQ ConnectionFactory for "+activeMqBrokerUrl);
+        log.info("Setup ActiveMQ ConnectionFactory for " + env.getProperty("jms.activemq.broker.url"));
         return pool;
     }
-/*
-    @Bean
-    public JmsListenerContainerFactory<?> jmsContainerFactory(ConnectionFactory connectionFactory) {
-        DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
-        factory.setPubSubDomain(false);
-        factory.setConnectionFactory(connectionFactory);
-        //factory.setSubscriptionDurable(true);
-        factory.setClientId(jmsClientId);
-        factory.setConcurrency("1-1");
-        MappingJackson2MessageConverter converter = new MappingJackson2MessageConverter();
-        converter.setTargetType(MessageType.TEXT);
-        converter.setObjectMapper(objectMapperSerializer().getMapper());
-        converter.setTypeIdPropertyName("jms_javatype");
-        factory.setMessageConverter(converter);
-        return factory;
-    }
-    */
 
     @Bean
     public JmsListenerContainerFactory<?> jmsContainerFactory(ConnectionFactory connectionFactory) {
@@ -71,7 +61,7 @@ public class ActiveMqConfig {
         factory.setPubSubDomain(false);
         factory.setConnectionFactory(connectionFactory);
         //factory.setSubscriptionDurable(true);
-        factory.setClientId(jmsClientId);
+        factory.setClientId(env.getProperty("jms.client.id:thinkbig.feedmgr"));
         factory.setConcurrency("1-1");
         factory.setConnectionFactory(connectionFactory);
         factory.setMessageConverter(new SimpleMessageConverter());
@@ -79,16 +69,16 @@ public class ActiveMqConfig {
     }
 
     @Bean
-    public ObjectMapperSerializer objectMapperSerializer(){
+    public ObjectMapperSerializer objectMapperSerializer() {
         return new ObjectMapperSerializer();
     }
 
 
     @Bean
     @Qualifier("jmsTemplate")
-    public  JmsMessagingTemplate jmsMessagingTemplate(ConnectionFactory connectionFactory) {
+    public JmsMessagingTemplate jmsMessagingTemplate(ConnectionFactory connectionFactory) {
         JmsMessagingTemplate template = new JmsMessagingTemplate(connectionFactory);
-    return template;
+        return template;
     }
 
 

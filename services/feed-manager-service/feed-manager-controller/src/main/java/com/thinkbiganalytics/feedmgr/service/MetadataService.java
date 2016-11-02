@@ -27,7 +27,7 @@ import javax.annotation.Nonnull;
 @Service
 public interface MetadataService {
 
-    void registerTemplate(RegisteredTemplate registeredTemplate);
+    RegisteredTemplate registerTemplate(RegisteredTemplate registeredTemplate);
 
     List<NifiProperty> getTemplateProperties(String templateId);
 

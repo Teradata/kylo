@@ -89,6 +89,11 @@
     <!-- Think Big dependencies -->
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>thinkbig-commons-hive</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>thinkbig-commons-spark</artifactId>
       <version>${project.version}</version>
     </dependency>

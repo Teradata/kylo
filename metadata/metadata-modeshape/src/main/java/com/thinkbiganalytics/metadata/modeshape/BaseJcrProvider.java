@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.stream.StreamSupport;
 
 import javax.jcr.ItemNotFoundException;
@@ -14,6 +15,7 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.query.QueryResult;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang3.reflect.ConstructorUtils;
 import org.modeshape.jcr.api.JcrTools;
 import org.slf4j.Logger;
@@ -33,6 +35,8 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
  */
 public abstract class BaseJcrProvider<T, PK extends Serializable> implements BaseProvider<T, PK> {
     private static final Logger log = LoggerFactory.getLogger(BaseJcrProvider.class);
+
+    private static final Pattern INVALID_SYSTEM_NAME_PATTERN = Pattern.compile("[^(A-Z)(a-z)(0-9)_-]");
 
     protected Session getSession() {
         return JcrMetadataAccess.getActiveSession();
@@ -309,6 +313,14 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
                 throw new MetadataRepositoryException("Failure executing query: " + query, e);
             }
         };
+    }
+
+    protected String sanitizeSystemName(String systemName) {
+        return INVALID_SYSTEM_NAME_PATTERN.matcher(systemName).replaceAll("_");
+    }
+
+    protected String sanitizeTitle(String title) {
+        return StringEscapeUtils.escapeJava(title);
     }
 
 }

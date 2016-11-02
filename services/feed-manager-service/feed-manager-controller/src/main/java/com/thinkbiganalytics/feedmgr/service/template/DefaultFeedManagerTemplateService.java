@@ -93,8 +93,8 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
 
     @Override
     //@Transactional(transactionManager = "metadataTransactionManager")
-    public void registerTemplate(RegisteredTemplate registeredTemplate) {
-        saveRegisteredTemplate(registeredTemplate);
+    public RegisteredTemplate registerTemplate(RegisteredTemplate registeredTemplate) {
+        return saveRegisteredTemplate(registeredTemplate);
     }
 
 

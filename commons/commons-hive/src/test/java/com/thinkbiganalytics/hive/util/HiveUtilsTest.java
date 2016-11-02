@@ -1,4 +1,6 @@
-package com.thinkbiganalytics.spark.util;
+package com.thinkbiganalytics.hive.util;
+
+import com.thinkbiganalytics.hive.util.HiveUtils;
 
 import org.junit.Assert;
 import org.junit.Test;

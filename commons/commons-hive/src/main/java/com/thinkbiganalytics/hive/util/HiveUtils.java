@@ -1,4 +1,9 @@
-package com.thinkbiganalytics.spark.util;
+package com.thinkbiganalytics.hive.util;
+
+import org.apache.commons.lang3.StringEscapeUtils;
+
+import java.io.IOException;
+import java.io.StringWriter;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -35,6 +40,25 @@ public class HiveUtils {
             return quoteIdentifier(first) + "." + quoteIdentifier(second);
         } else {
             return quoteIdentifier(second);
+        }
+    }
+
+    /**
+     * Quotes the specified string for use in a Hive query.
+     *
+     * @param string the string to be quoted
+     * @return the quoted string
+     */
+    @Nonnull
+    public static String quoteString(@Nonnull final String string) {
+        try {
+            final StringWriter writer = new StringWriter(string.length() + 2);
+            writer.append('"');
+            StringEscapeUtils.ESCAPE_JAVA.translate(string, writer);
+            writer.append('"');
+            return writer.toString();
+        } catch (final IOException e) {
+            throw new IllegalArgumentException("String contains invalid characters: " + string, e);
         }
     }
 

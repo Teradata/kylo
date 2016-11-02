@@ -45,7 +45,7 @@ public class InMemoryFeedManagerTemplateService extends AbstractFeedManagerTempl
 
 
   @Override
-  public void registerTemplate(RegisteredTemplate registeredTemplate) {
+  public RegisteredTemplate registerTemplate(RegisteredTemplate registeredTemplate) {
     Date updateDate = new Date();
 
     if (registeredTemplate.getId() == null || !registeredTemplates.containsKey(registeredTemplate.getId())) {
@@ -56,8 +56,7 @@ public class InMemoryFeedManagerTemplateService extends AbstractFeedManagerTempl
       registeredTemplate.setId(UUID.randomUUID().toString());
 
     }
-    saveRegisteredTemplate(registeredTemplate);
-
+    return saveRegisteredTemplate(registeredTemplate);
   }
 
   @Override
