@@ -79,7 +79,7 @@
             self.selectedRow.type = type;
             if (type == "String") {
                 self.selectedRow.profile = "String";
-            } else if (type == "Long" || type == "Double"|| type == "Float" || type == "Byte" || type == "Integer") {
+            } else if (type == "Long" || type == "Double"|| type == "Float" || type == "Byte" || type == "Integer" || type == "Decimal") {
                 self.selectedRow.profile = "Numeric";
             } else if (type == "Timestamp" || type == "Date") {
                 self.selectedRow.profile = "Time";
