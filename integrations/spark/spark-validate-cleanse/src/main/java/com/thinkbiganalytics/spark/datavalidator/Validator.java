@@ -95,8 +95,8 @@ public class Validator implements Serializable {
         this.invalidTableName = entity + "_invalid";
         this.profileTableName = entity + "_profile";
         ;
-        this.feedTablename = targetDatabase + "." + entity + "_feed";
-        this.refTablename = targetDatabase + "." + validTableName;
+        this.feedTablename = HiveUtils.quoteIdentifier(targetDatabase, entity + "_feed");
+        this.refTablename = HiveUtils.quoteIdentifier(targetDatabase, validTableName);
         this.qualifiedProfileName = HiveUtils.quoteIdentifier(targetDatabase, profileTableName);
         this.partition = partition;
         this.targetDatabase = targetDatabase;

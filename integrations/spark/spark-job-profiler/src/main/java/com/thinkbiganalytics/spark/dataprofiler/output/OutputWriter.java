@@ -165,7 +165,7 @@ public class OutputWriter implements Serializable {
 
     /* Create output table if does not exist */
     private void createOutputTableIfNotExists() {
-        String createTableSQL = "CREATE TABLE IF NOT EXISTS " + ProfilerConfiguration.OUTPUT_DB_NAME + "." + ProfilerConfiguration.OUTPUT_TABLE_NAME + "\n"
+        String createTableSQL = "CREATE TABLE IF NOT EXISTS " + HiveUtils.quoteIdentifier(ProfilerConfiguration.OUTPUT_DB_NAME, ProfilerConfiguration.OUTPUT_TABLE_NAME) + "\n"
         		+ "(columnname STRING, metricname STRING, metricvalue STRING)\n"
         		+ "PARTITIONED BY (" + ProfilerConfiguration.OUTPUT_TABLE_PARTITION_COLUMN_NAME + " STRING)\n"
         		+ "ROW FORMAT DELIMITED\n"
