@@ -130,6 +130,9 @@ public class FeedManagerMetadataService implements MetadataService {
     public NifiFeed createFeed(FeedMetadata feedMetadata) {
         NifiFeed feed = feedProvider.createFeed(feedMetadata);
         if (feed.isSuccess()) {
+            if (feed.isEnableAfterSave()) {
+                enableFeed(feed.getFeedMetadata().getId());
+            }
             //requery to get the latest version
             FeedMetadata updatedFeed = getFeedById(feed.getFeedMetadata().getId());
             feed.setFeedMetadata(updatedFeed);
