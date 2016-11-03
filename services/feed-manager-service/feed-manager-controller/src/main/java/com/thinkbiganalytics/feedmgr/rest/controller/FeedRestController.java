@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
@@ -253,13 +254,63 @@ public class FeedRestController {
         if (registeredTemplate != null) {
             NifiPropertyUtil
                     .matchAndSetPropertyByProcessorName(registeredTemplate.getProperties(), feed.getProperties(), NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_NON_EXPRESSION_PROPERTIES);
+
+            //detect template properties that dont match the feed.proerteis from the registeredtemplate
+            ensureFeedPropertiesExistInTemplate(feed, registeredTemplate);
             feed.setProperties(registeredTemplate.getProperties());
+
         }
         registeredTemplate.initializeProcessors();
         feed.setRegisteredTemplate(registeredTemplate);
 
         return Response.ok(feed).build();
     }
+
+
+    /**
+     * If a Template changes the Processor Names the Feed PRoperties will no longer be associated to the correct processors This will match any feed propertie to a  whose processor name has changed in
+     * the template to the template processor/property based upon the template processor type.
+     */
+    private void ensureFeedPropertiesExistInTemplate(FeedMetadata feed, RegisteredTemplate registeredTemplate) {
+        Set<String> templateProcessors = registeredTemplate.getProperties().stream().map(property -> property.getProcessorName()).collect(Collectors.toSet());
+
+        //Store the template Properties
+        Map<String, String> templateProcessorIdProcessorNameMap = new HashMap<>();
+        Map<String, String> templateProcessorTypeProcessorIdMap = new HashMap<>();
+        registeredTemplate.getProperties().stream().filter(property -> !templateProcessorIdProcessorNameMap.containsKey(property.getProcessorId())).forEach(property1 -> {
+            templateProcessorIdProcessorNameMap.put(property1.getProcessorId(), property1.getProcessorName());
+            templateProcessorTypeProcessorIdMap.put(property1.getProcessorType(), property1.getProcessorId());
+        });
+
+        Map<String, Map<String, NifiProperty>> templatePropertiesByProcessorIdMap = new HashMap<>();
+        registeredTemplate.getProperties().stream().forEach(property -> {
+            templatePropertiesByProcessorIdMap.computeIfAbsent(property.getProcessorId(), key -> new HashMap<String, NifiProperty>()).put(property.getKey(), property);
+        });
+
+        //store the Feed Properties
+        Map<String, String> processorIdProcessorTypeMap = new HashMap<>();
+        feed.getProperties().stream().filter(property -> !processorIdProcessorTypeMap.containsKey(property.getProcessorId())).forEach(property1 -> {
+            processorIdProcessorTypeMap.put(property1.getProcessorId(), property1.getProcessorType());
+        });
+
+        feed.getProperties().stream().filter(property -> !templateProcessors.contains(property.getProcessorName())).forEach(property -> {
+            //if the property doesnt match the template but the type matches try to merge in the feed properties overwriting the template ones
+            String processorType = processorIdProcessorTypeMap.get(property.getProcessorId());
+            if (processorType != null) {
+                String templateProcessorId = templateProcessorTypeProcessorIdMap.get(processorType);
+
+                if (templateProcessorId != null && templateProcessorIdProcessorNameMap.containsKey(templateProcessorId)) {
+                    NifiProperty templateProperty = templatePropertiesByProcessorIdMap.get(templateProcessorId).get(property.getKey());
+                    templateProperty.setValue(property.getValue());
+                    templateProperty.setRenderType(property.getRenderType());
+                    templateProperty.setRenderOptions(property.getRenderOptions());
+                }
+            }
+        });
+
+
+    }
+
 
     @POST
     @Path("/table/sample-file")
