@@ -6,7 +6,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -40,7 +39,7 @@ public abstract class RestClient {
     this.additionalMessageConverters = additionalMessageConverters;
   }
 
-  protected <T> T doGet(RestCommand<T> restCommand) throws RestClientException {
+  protected <T> T doGet(RestCommand<T> restCommand) {
     RestTemplate rest = this.restTemplate;
 
     HttpHeaders headers = createHeaders(getConfig().getUsername(), getConfig().getPassword());

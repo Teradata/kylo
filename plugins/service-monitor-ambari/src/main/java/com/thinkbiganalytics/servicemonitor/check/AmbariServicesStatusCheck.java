@@ -257,28 +257,30 @@ UNKNOWN 	The component state can not be determined.
 
   public List<ServiceAlert> transformAmbariAlert(AlertSummary alertSummary) {
     List<ServiceAlert> serviceAlerts = new ArrayList<>();
-    List<AlertItem> alertItems = alertSummary.getItems();
-    if (alertItems != null) {
-      for (AlertItem alertItem : alertItems) {
-        Alert alert = alertItem.getAlert();
-        ServiceAlert serviceAlert = new DefaultServiceAlert();
-        serviceAlert.setServiceName(alertItem.getAlert().getServiceName());
-        serviceAlert.setComponentName(alert.getComponentName());
-        serviceAlert.setFirstTimestamp(new Date(alert.getOriginalTimestamp()));
-        serviceAlert.setLatestTimestamp(new Date(alert.getLatestTimestamp()));
-        serviceAlert.setLabel(alert.getLabel());
-        serviceAlert.setMessage(alert.getText());
-        if (StringUtils.isNotBlank(alert.getState())) {
-          try {
-            serviceAlert.setState(ServiceAlert.STATE.valueOf(alert.getState()));
-          } catch (IllegalArgumentException e) {
+    if (alertSummary != null) {
+      List<AlertItem> alertItems = alertSummary.getItems();
+      if (alertItems != null) {
+        for (AlertItem alertItem : alertItems) {
+          Alert alert = alertItem.getAlert();
+          ServiceAlert serviceAlert = new DefaultServiceAlert();
+          serviceAlert.setServiceName(alertItem.getAlert().getServiceName());
+          serviceAlert.setComponentName(alert.getComponentName());
+          serviceAlert.setFirstTimestamp(new Date(alert.getOriginalTimestamp()));
+          serviceAlert.setLatestTimestamp(new Date(alert.getLatestTimestamp()));
+          serviceAlert.setLabel(alert.getLabel());
+          serviceAlert.setMessage(alert.getText());
+          if (StringUtils.isNotBlank(alert.getState())) {
+            try {
+              serviceAlert.setState(ServiceAlert.STATE.valueOf(alert.getState()));
+            } catch (IllegalArgumentException e) {
+              serviceAlert.setState(ServiceAlert.STATE.UNKNOWN);
+            }
+          } else {
             serviceAlert.setState(ServiceAlert.STATE.UNKNOWN);
           }
-        } else {
-          serviceAlert.setState(ServiceAlert.STATE.UNKNOWN);
-        }
 
-        serviceAlerts.add(serviceAlert);
+          serviceAlerts.add(serviceAlert);
+        }
       }
     }
     return serviceAlerts;

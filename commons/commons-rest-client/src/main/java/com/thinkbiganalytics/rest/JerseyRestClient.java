@@ -4,6 +4,7 @@
 
 package com.thinkbiganalytics.rest;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.ByteStreams;
 
 import org.apache.commons.lang3.StringUtils;
@@ -37,6 +38,7 @@ import java.util.concurrent.Future;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
+import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
@@ -57,12 +59,21 @@ public class JerseyRestClient {
     public static final String HOST_NOT_SET_VALUE = "NOT_SET";
 
     protected Client client;
-    private String uri;
+    protected String uri;
     private String username;
 
     public boolean isHostConfigured;
 
-    private boolean useConnectionPooling = true;
+    /**
+     * if the supplied endpoint doesnt accept JSON but rather Plain Text, this mapper will be used to resolve the text and turn it into JSON/object
+     */
+    private ObjectMapper objectMapper;
+
+    /**
+     * flag to use the PoolingHttpClientConnectionManager from Apache instead of the Jersey Manager The PoolingHttpClientConnectionManager doesnt support some JSON header which is why this is turned
+     * off by default
+     */
+    private boolean useConnectionPooling = false;
 
     public JerseyRestClient(JerseyClientConfig config) {
         useConnectionPooling = config.isUseConnectionPooling();
@@ -183,6 +194,8 @@ public class JerseyRestClient {
             LOG.info("Jersey Rest Client not initialized.  Host name is Not set!!");
         }
 
+        objectMapper = new ObjectMapper();
+
 
     }
 
@@ -204,13 +217,18 @@ public class JerseyRestClient {
         return target;
     }
 
+    protected WebTarget getTargetFromPath(String path) {
+        String updatedPath = uri + path;
+        WebTarget target = client.target(updatedPath);
+        return target;
+    }
+
 
     private WebTarget buildTarget(String path, Map<String, Object> params) {
         WebTarget target = getBaseTarget().path(path);
         if (params != null) {
             for (Map.Entry<String, Object> entry : params.entrySet()) {
                 target = target.queryParam(entry.getKey(), entry.getValue());
-
             }
         }
         return target;
@@ -229,8 +247,62 @@ public class JerseyRestClient {
 
     public <T> T get(String path, Map<String, Object> params, Class<T> clazz) {
         WebTarget target = buildTarget(path, params);
-        return target.request(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE, MediaType.APPLICATION_XML_TYPE).get(clazz);
+        T obj = null;
+
+        try {
+            obj = target.request(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE, MediaType.APPLICATION_XML_TYPE).get(clazz);
+        } catch (Exception e) {
+            if (e instanceof NotAcceptableException) {
+                obj = handleNotAcceptableJsonException(target, clazz);
+            }
+
+        }
+        return obj;
     }
+
+    /**
+     * if a request doesnt like the accepted type (i.e. its coded for TEXT instead of JSON, try to resolve the JSON by getting the JSON string
+     */
+    private <T> T handleNotAcceptableJsonException(WebTarget target, Class<T> clazz) {
+        T obj = null;
+        try {
+            //the response didnt link getting data in JSON.. attempt to get it in TEXT and convert to JSON
+            String jsonString = target.request(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.TEXT_PLAIN_TYPE).get(String.class);
+            if (StringUtils.isNotBlank(jsonString)) {
+                try {
+                    obj = objectMapper.readValue(jsonString, clazz);
+                } catch (Exception ex) {
+                    //unable to deserialize string
+                    LOG.error("Unable to deserialize request to JSON for string {}, for target {} returning class {} ", jsonString, target, clazz);
+                }
+            }
+        } catch (Exception ex1) {
+            //swallow the exception.  cant do anything about it.
+            LOG.error("Unable to deserialize request for target {} returning class {} ", target, clazz);
+        }
+        return obj;
+    }
+
+    /**
+     * Allow a client to create the target passing in a full url path with ? and & query params
+     */
+    public <T> T getFromPathString(String path, Class<T> clazz) {
+
+        WebTarget target = getTargetFromPath(path);
+
+        T obj = null;
+        try {
+
+            obj = target.request(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE, MediaType.APPLICATION_XML_TYPE).get(clazz);
+        } catch (Exception e) {
+            if (e instanceof NotAcceptableException) {
+                obj = handleNotAcceptableJsonException(target, clazz);
+            }
+
+        }
+        return obj;
+    }
+
 
 
     public <T> T get(String path, Map<String, Object> params, GenericType<T> type) {

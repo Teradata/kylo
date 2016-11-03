@@ -1,5 +1,10 @@
 package com.thinkbiganalytics.servicemonitor.check;
 
+import com.thinkbiganalytics.servicemonitor.rest.client.ambari.AmbariClient;
+import com.thinkbiganalytics.servicemonitor.rest.client.ambari.AmbariJerseyClient;
+import com.thinkbiganalytics.servicemonitor.rest.client.ambari.AmbariJerseyRestClientConfig;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -14,4 +19,15 @@ public class AmbariSpringConfiguration {
     return new AmbariServicesStatusCheck();
   }
 
+
+  @Bean(name = "ambariJerseyClientConfig")
+  @ConfigurationProperties(prefix = "ambariRestClientConfig")
+  public AmbariJerseyRestClientConfig ambariJerseyRestClientConfig() {
+    return new AmbariJerseyRestClientConfig();
+  }
+
+  @Bean(name = "ambariClient")
+  public AmbariClient ambariClient() {
+    return new AmbariJerseyClient(ambariJerseyRestClientConfig());
+  }
 }

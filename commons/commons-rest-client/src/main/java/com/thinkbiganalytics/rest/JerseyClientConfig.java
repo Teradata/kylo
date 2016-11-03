@@ -25,7 +25,7 @@ public class JerseyClientConfig {
     private Integer readTimeout = null;
     private Integer connectTimeout = null;
 
-    private boolean useConnectionPooling = true;
+    private boolean useConnectionPooling = false;
 
 
 
