@@ -55,6 +55,21 @@ public class NiFiTemplatesRestClientV1 extends AbstractNiFiTemplatesRestClient {
         }
     }
 
+    @Override
+    public Optional<TemplateDTO> findByName(@Nonnull final String name) {
+        Optional<TemplateDTO> dto = findAll().stream()
+            .filter(template -> template.getName().equalsIgnoreCase(name))
+            .findFirst();
+        if (dto.isPresent()) {
+            TemplateDTO templateDTO = dto.get();
+            //populate the snippet
+            if (templateDTO != null) {
+                dto = findById(templateDTO.getId());
+            }
+        }
+        return dto;
+    }
+
     @Nonnull
     @Override
     public Set<TemplateDTO> findAll() {

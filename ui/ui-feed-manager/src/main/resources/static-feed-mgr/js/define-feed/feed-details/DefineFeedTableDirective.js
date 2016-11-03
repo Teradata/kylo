@@ -298,7 +298,7 @@
             fieldNamesUnique(true);
             //update the partitions with "val" on this column so the name matches
             _.each(self.model.table.partitions, function (partition) {
-                if (partition.formula == 'val' && partition.columnDef == columnDef) {
+                if (partition.columnDef == columnDef) {
                     partition.sourceDataType = columnDef.dataType;
                     partition.sourceField = columnDef.name;
                     self.updatePartitionFieldName(partition);

@@ -14,6 +14,7 @@ public class NifiFeed {
     private FeedMetadata feedMetadata;
     private NifiProcessGroup feedProcessGroup;
     private boolean success = false;
+    private boolean enableAfterSave = false;
     private List<String> errorMessages;
 
 
@@ -52,6 +53,14 @@ public class NifiFeed {
 
     public void setErrorMessages(List<String> errorMessages) {
         this.errorMessages = errorMessages;
+    }
+
+    public boolean isEnableAfterSave() {
+        return enableAfterSave;
+    }
+
+    public void setEnableAfterSave(boolean enableAfterSave) {
+        this.enableAfterSave = enableAfterSave;
     }
 
     @JsonIgnore

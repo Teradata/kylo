@@ -88,7 +88,7 @@ public class CommandLineArgsTestCase {
 		args[2] = "3";
 		args[3] = "profileresult";
 
-		String expectedRetVal = "select * from `profiler.people`";
+		String expectedRetVal = "select * from `profiler`.`people`";
 
 		String retVal = Profiler.checkCommandLineArgs(args);
 		assertEquals(expectedRetVal, retVal);
@@ -231,7 +231,7 @@ public class CommandLineArgsTestCase {
 		args[3] = "mystatsdb.profilerresult2";
 		args[4] = "partition_00";
 
-		String expectedRetVal = "select * from `profiler.people` where `processing_dttm` = \"" + args[4] + "\"";
+		String expectedRetVal = "select * from `profiler`.`people` where `processing_dttm` = \"" + args[4] + "\"";
 
 		String retVal = Profiler.checkCommandLineArgs(args);
 		assertEquals(expectedRetVal, retVal);

@@ -157,7 +157,12 @@ public class Profiler {
 
 		switch (profileObjectType) {
 			case "table":
-				retVal = "select * from " + HiveUtils.quoteIdentifier(profileObjectDesc);
+				// Quote source table
+				final String[] tableRef = profileObjectDesc.split("\\.", 2);
+				final String safeTable = tableRef.length == 1 ? HiveUtils.quoteIdentifier(tableRef[0]) : HiveUtils.quoteIdentifier(tableRef[0], tableRef[1]);
+
+				// Create SQL
+				retVal = "select * from " + safeTable;
 				if (inputAndOutputTablePartitionKey != null && !"ALL".equalsIgnoreCase(inputAndOutputTablePartitionKey)) {
 					retVal += " where " + HiveUtils.quoteIdentifier(ProfilerConfiguration.INPUT_TABLE_PARTITION_COLUMN_NAME) + " = " + HiveUtils.quoteString(inputAndOutputTablePartitionKey);
 				}

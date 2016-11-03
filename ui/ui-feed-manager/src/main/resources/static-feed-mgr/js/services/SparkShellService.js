@@ -250,16 +250,26 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
             return _.map(columns, function(col) {
                 var dataType;
                 //comment out decimal to double.  Decimals are supported ... will remove after testing
-                //if (col.dataType.startsWith("decimal")) {
-                //   dataType = "decimal";
-                //}
-                if (col.dataType === "smallint") {
+                if (col.dataType.startsWith("decimal")) {
+                    dataType = "decimal";
+                }
+                else if (col.dataType === "smallint") {
                     dataType = "int";
                 } else {
                     dataType = col.dataType;
                 }
-                return {name: col.hiveColumnLabel, description: "", dataType: dataType, primaryKey: false, nullable: false,
+                var colDef = {
+                    name: col.hiveColumnLabel, description: "", dataType: dataType, primaryKey: false, nullable: false,
                     sampleValues: []};
+                if (dataType == 'decimal') {
+                    //parse out the precisionScale
+                    var precisionScale = '20,2';
+                    if (col.dataType.indexOf("(") > 0) {
+                        precisionScale = col.dataType.substring(col.dataType.indexOf("(") + 1, col.dataType.length - 1);
+                    }
+                    colDef.precisionScale = precisionScale;
+                }
+                return colDef;
             });
         },
 

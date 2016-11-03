@@ -15,6 +15,7 @@ import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 import com.thinkbiganalytics.security.AccessController;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +49,9 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
         this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_FEEDS);
 
         NifiFeed feed = null;
+        if (StringUtils.isBlank(feedMetadata.getId())) {
+            feedMetadata.setIsNew(true);
+        }
         //replace expressions with values
         if (feedMetadata.getTable() != null) {
             feedMetadata.getTable().updateMetadataFieldValues();
@@ -102,6 +106,15 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
 
         boolean enabled = (FeedMetadata.STATE.NEW.equals(state) && feedMetadata.isActive()) || FeedMetadata.STATE.ENABLED.equals(state);
 
+        // flag to indicate to enable the feed later
+        //if this is the first time for this feed and it is set to be enabled, mark it to be enabled after we commit to the JCR store
+        boolean enableLater = false;
+        if (enabled && feedMetadata.isNew()) {
+            enableLater = true;
+            enabled = false;
+            feedMetadata.setState(FeedMetadata.STATE.DISABLED.name());
+        }
+
         CreateFeedBuilder
             feedBuilder = CreateFeedBuilder.newFeed(nifiRestClient, feedMetadata, registeredTemplate.getNifiTemplateId(), propertyExpressionResolver).enabled(enabled);
 
@@ -125,7 +138,9 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
             feedMetadata.setNifiProcessGroupId(entity.getProcessGroupEntity().getId());
 
             try {
+
                 saveFeed(feedMetadata);
+                feed.setEnableAfterSave(enableLater);
                 feed.setSuccess(true);
             } catch (Exception e) {
                 feed.setSuccess(false);
