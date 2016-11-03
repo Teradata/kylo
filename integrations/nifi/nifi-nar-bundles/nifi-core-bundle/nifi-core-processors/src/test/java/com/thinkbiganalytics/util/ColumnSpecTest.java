@@ -103,8 +103,8 @@ public class ColumnSpecTest {
 
         String sql = spec.toDistinctSelectSQL("sourceSchema", "sourceTable", "11111111");
         System.out.println(sql);
-        String expected = "select country, year(`hired_date`), month(`reg date`), day(`reg date`), count(0) as `tb_cnt` from `sourceSchema`.`sourceTable` where `processing_dttm` = \"11111111\" "
-                          + "group by country, year(`hired_date`), month(`reg date`), day(`reg date`)";
+        String expected = "select `country`, year(`hired_date`), month(`reg date`), day(`reg date`), count(0) as `tb_cnt` from `sourceSchema`.`sourceTable` where `processing_dttm` = \"11111111\" "
+                          + "group by `country`, year(`hired_date`), month(`reg date`), day(`reg date`)";
         assertEquals(expected, sql);
 
         assertEquals("`country`", key1.getKeyForSql());
