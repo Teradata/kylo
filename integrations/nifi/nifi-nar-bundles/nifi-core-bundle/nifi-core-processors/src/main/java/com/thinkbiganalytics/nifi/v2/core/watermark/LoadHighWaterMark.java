@@ -25,6 +25,7 @@ import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder;
 import com.thinkbiganalytics.nifi.core.api.metadata.WaterMarkActiveException;
 import com.thinkbiganalytics.nifi.v2.common.CommonProperties;
+import com.thinkbiganalytics.nifi.v2.common.FeedIdNotFoundException;
 
 /**
  * Loads a high-water mark and yields any processing if the water mark has not been released yet.
@@ -94,7 +95,21 @@ public class LoadHighWaterMark extends HighWaterMarkProcessor {
         }
 
         if (outputFF != null) {
-            outputFF = initialize(context, session, outputFF);
+            try {
+                outputFF = initialize(context, session, outputFF);
+            } catch (FeedIdNotFoundException e) {
+                // Initialize should find the current feed ID.  If we are the head of the flow then the feed metadata 
+                // creation may not have completed before we were triggered we will yield so that we can retry.  
+                // Otherwise re-throw the exception.
+                if (createdFlowfile && outputFF.getAttribute(FEED_ID_ATTR) == null) {
+                    getLog().debug("ID for feed was not available yet - yielding");
+                    session.remove(outputFF);
+                    context.yield();
+                    return;
+                } else {
+                    throw e;
+                }
+            }
 
             MetadataRecorder recorder = context.getProperty(CommonProperties.METADATA_SERVICE).asControllerService(MetadataProviderService.class).getRecorder();
             String waterMark = context.getProperty(HIGH_WATER_MARK).getValue();
