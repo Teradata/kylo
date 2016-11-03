@@ -14,6 +14,7 @@ import com.klarna.hiverunner.annotations.HiveProperties;
 import com.klarna.hiverunner.annotations.HiveRunnerSetup;
 import com.klarna.hiverunner.annotations.HiveSQL;
 import com.klarna.hiverunner.config.HiveRunnerConfig;
+import com.thinkbiganalytics.hive.util.HiveUtils;
 import com.thinkbiganalytics.util.ColumnSpec;
 import com.thinkbiganalytics.util.PartitionBatch;
 import com.thinkbiganalytics.util.PartitionSpec;
@@ -65,10 +66,11 @@ public class TableMergeSyncSupportTest {
         "my.schema", "bar",
     });
 
-
-    private String sourceTable = "emp_sr.employee_valid";
-    private String targetTable = "emp_sr.employee";
-    private String targetTableNP = "emp_sr.employee_np";
+    private String sourceSchema = "emp_sr";
+    private String sourceTable = "employee_valid";
+    private String targetSchema = "emp_sr";
+    private String targetTable = "employee";
+    private String targetTableNP = "employee_np";
     private String processingPartition = "20160119074340";
     private PartitionSpec spec = new PartitionSpec("country|string|country\nyear|int|year(hired)");
     private PartitionSpec specNP = new PartitionSpec("");
@@ -87,7 +89,7 @@ public class TableMergeSyncSupportTest {
 
     private List<PartitionBatch> fetchPartitionBatches() {
         List<PartitionBatch> vBatch = new Vector<>();
-        String sql = spec.toDistinctSelectSQL(sourceTable, processingPartition);
+        String sql = spec.toDistinctSelectSQL(sourceSchema, sourceTable, processingPartition);
         List<Object[]> results = hiveShell.executeStatement(sql);
         for (Object[] vals : results) {
             vBatch.add(new PartitionBatch((Long) vals[2], spec, new String[]{vals[0].toString(), vals[1].toString()}));
@@ -96,8 +98,8 @@ public class TableMergeSyncSupportTest {
     }
 
 
-    private List<String> fetchEmployees(String targetTable) {
-        return hiveShell.executeQuery("select * from " + targetTable);
+    private List<String> fetchEmployees(String targetSchema, String targetTable) {
+        return hiveShell.executeQuery("select * from " + HiveUtils.quoteIdentifier(targetSchema, targetTable));
     }
 
 
@@ -106,7 +108,7 @@ public class TableMergeSyncSupportTest {
      * Tests the sync function
      */
     public void testSyncWithPartitions() throws Exception {
-        doTestSync(targetTable, spec);
+        doTestSync(targetSchema, targetTable, spec);
     }
 
     @Test
@@ -114,13 +116,13 @@ public class TableMergeSyncSupportTest {
      * Tests the sync function
      */
     public void testSyncNonPartitioned() throws Exception {
-        doTestSync(targetTableNP, specNP);
+        doTestSync(targetSchema, targetTableNP, specNP);
     }
 
 
-    private void doTestSync(String targetTable, PartitionSpec spec) throws SQLException {
-        mergeSyncSupport.doSync(sourceTable, targetTable, spec, processingPartition);
-        List<String> results = fetchEmployees(targetTable);
+    private void doTestSync(String targetSchema, String targetTable, PartitionSpec spec) throws SQLException {
+        mergeSyncSupport.doSync(sourceSchema, sourceTable, targetSchema, targetTable, spec, processingPartition);
+        List<String> results = fetchEmployees(targetSchema, targetTable);
         assertEquals(4, results.size());
 
         hiveShell.execute("insert into emp_sr.employee_valid partition(processing_dttm='20160119074340') (  `id`,  `timestamp`, `name`,`company`,`zip`,`phone`,`email`,  `hired`,`country`) values "
@@ -129,8 +131,8 @@ public class TableMergeSyncSupportTest {
                           + "'ABC',"
                           + "'94550','555-1212','bruce@acme.org','2016-01-01','Canada');");
 
-        mergeSyncSupport.doSync(sourceTable, targetTable, spec, processingPartition);
-        results = fetchEmployees(targetTable);
+        mergeSyncSupport.doSync(sourceSchema, sourceTable, targetSchema, targetTable, spec, processingPartition);
+        results = fetchEmployees(targetSchema, targetTable);
         assertEquals(5, results.size());
     }
 
@@ -140,7 +142,7 @@ public class TableMergeSyncSupportTest {
      */
     public void testMergePKWithEmptyTargetTable() throws Exception {
 
-        List<String> results = fetchEmployees(targetTableNP);
+        List<String> results = fetchEmployees(targetSchema, targetTableNP);
         assertEquals(0, results.size());
 
         ColumnSpec columnSpec1 = new ColumnSpec("id", "String", "", true, false, false);
@@ -148,17 +150,17 @@ public class TableMergeSyncSupportTest {
         ColumnSpec[] columnSpecs = Arrays.asList(columnSpec1, columnSpec2).toArray(new ColumnSpec[0]);
 
         // Call merge
-        mergeSyncSupport.doPKMerge(sourceTable, targetTableNP, new PartitionSpec(), processingPartition, columnSpecs);
+        mergeSyncSupport.doPKMerge(sourceSchema, sourceTable, targetSchema, targetTableNP, new PartitionSpec(), processingPartition, columnSpecs);
 
         // We should have 4 records
-        results = fetchEmployees(targetTableNP);
+        results = fetchEmployees(targetSchema, targetTableNP);
         assertEquals(4, results.size());
 
         // Merge with same source should leave us with 4 records
-        mergeSyncSupport.doPKMerge(sourceTable, targetTableNP, new PartitionSpec(), processingPartition, columnSpecs);
+        mergeSyncSupport.doPKMerge(sourceSchema, sourceTable, targetSchema, targetTableNP, new PartitionSpec(), processingPartition, columnSpecs);
 
         // We should have 4 records
-        results = fetchEmployees(targetTableNP);
+        results = fetchEmployees(targetSchema, targetTableNP);
         assertEquals(4, results.size());
 
         // Should update 1 and add 1
@@ -175,10 +177,10 @@ public class TableMergeSyncSupportTest {
                           + "'94550','555-1212','bruce@acme.org','2016-01-01','Canada');");
 
         // Call merge
-        mergeSyncSupport.doPKMerge(sourceTable, targetTableNP, new PartitionSpec(), "20160119074350", columnSpecs);
+        mergeSyncSupport.doPKMerge(sourceSchema, sourceTable, targetSchema, targetTableNP, new PartitionSpec(), "20160119074350", columnSpecs);
 
         // We should have 4 records
-        results = fetchEmployees(targetTableNP);
+        results = fetchEmployees(targetSchema, targetTableNP);
         assertEquals(5, results.size());
 
     }
@@ -188,17 +190,17 @@ public class TableMergeSyncSupportTest {
      * Tests the merge partition with empty target table
      */
     public void testMergePartitionPKWithEmptyTargetTable() throws Exception {
-        List<String> results = fetchEmployees(targetTable);
+        List<String> results = fetchEmployees(targetSchema, targetTable);
         assertEquals(0, results.size());
 
         ColumnSpec columnSpec1 = new ColumnSpec("id", "String", "", true, false, false);
         ColumnSpec columnSpec2 = new ColumnSpec("name", "String", "", false, false, false);
         ColumnSpec[] columnSpecs = Arrays.asList(columnSpec1, columnSpec2).toArray(new ColumnSpec[0]);
         // Call merge
-        mergeSyncSupport.doPKMerge(sourceTable, targetTable, spec, processingPartition, columnSpecs);
+        mergeSyncSupport.doPKMerge(sourceSchema, sourceTable, targetSchema, targetTable, spec, processingPartition, columnSpecs);
 
         // We should have 4 records
-        results = fetchEmployees(targetTable);
+        results = fetchEmployees(targetSchema, targetTable);
         assertEquals(4, results.size());
     }
 
@@ -213,7 +215,7 @@ public class TableMergeSyncSupportTest {
             + "'555-1212',"
             + "'sally@acme.org','2015-01-01');");
 
-        doTestMergePK(targetTable, spec);
+        doTestMergePK(targetSchema, targetTable, spec);
     }
 
     @Test
@@ -221,7 +223,7 @@ public class TableMergeSyncSupportTest {
      * Tests the merge partition without dedupe and the merge partition with dedupe
      */
     public void testMergePartitionMovingPartitionPK() throws Exception {
-        doTestMergePKWithDifferentPartitions(targetTable, spec);
+        doTestMergePKWithDifferentPartitions(targetSchema, targetTable, spec);
     }
 
     @Test
@@ -252,14 +254,14 @@ public class TableMergeSyncSupportTest {
 
     private void doTestMerge(String targetTable, PartitionSpec spec) throws SQLException {
 
-        List<String> results = fetchEmployees(targetTable);
+        List<String> results = fetchEmployees(targetSchema, targetTable);
         assertEquals(1, results.size());
 
         // Call merge
-        mergeSyncSupport.doMerge(sourceTable, targetTable, spec, processingPartition, false);
+        mergeSyncSupport.doMerge(sourceSchema, sourceTable, targetSchema, targetTable, spec, processingPartition, false);
 
         // We should have 5 records 4 from the sourceTable and 1 existing
-        results = fetchEmployees(targetTable);
+        results = fetchEmployees(targetSchema, targetTable);
         assertEquals(5, results.size());
 
         // Run merge with dedupe and should get the following two additional results. The result should not include any duplicates in the target table.
@@ -270,9 +272,9 @@ public class TableMergeSyncSupportTest {
                           + "'ABC',"
                           + "'94550','555-1212','harry@acme.org','2016-01-01','Canada');");
 
-        mergeSyncSupport.doMerge(sourceTable, targetTable, spec, processingPartition, true);
+        mergeSyncSupport.doMerge(sourceSchema, sourceTable, targetSchema, targetTable, spec, processingPartition, true);
 
-        results = fetchEmployees(targetTable);
+        results = fetchEmployees(targetSchema, targetTable);
         assertEquals(6, results.size());
         // Verify no duplicates exist in the table
         HashSet<String> existing = new HashSet<>();
@@ -283,19 +285,19 @@ public class TableMergeSyncSupportTest {
 
     }
 
-    private void doTestMergePK(String targetTable, PartitionSpec spec) throws SQLException {
+    private void doTestMergePK(String targetSchema, String targetTable, PartitionSpec spec) throws SQLException {
 
-        List<String> results = fetchEmployees(targetTable);
+        List<String> results = fetchEmployees(targetSchema, targetTable);
         assertEquals(1, results.size());
 
         ColumnSpec columnSpec1 = new ColumnSpec("id", "String", "", true, false, false);
         ColumnSpec columnSpec2 = new ColumnSpec("name", "String", "", false, false, false);
         ColumnSpec[] columnSpecs = Arrays.asList(columnSpec1, columnSpec2).toArray(new ColumnSpec[0]);
         // Call merge
-        mergeSyncSupport.doPKMerge(sourceTable, targetTable, spec, processingPartition, columnSpecs);
+        mergeSyncSupport.doPKMerge(sourceSchema, sourceTable, targetSchema, targetTable, spec, processingPartition, columnSpecs);
 
         // We should have 4 records
-        results = fetchEmployees(targetTable);
+        results = fetchEmployees(targetSchema, targetTable);
         assertEquals(4, results.size());
         assertFalse("Should not have old valur", results.stream().anyMatch(s -> s.contains("OLD")));
 
@@ -308,9 +310,9 @@ public class TableMergeSyncSupportTest {
                           + "'OLD',"
                           + "'94550','555-1212','harry@acme.org','2016-01-01','Canada');");
 
-        mergeSyncSupport.doPKMerge(sourceTable, targetTable, spec, processingPartition, columnSpecs);
+        mergeSyncSupport.doPKMerge(sourceSchema, sourceTable, targetSchema, targetTable, spec, processingPartition, columnSpecs);
 
-        results = fetchEmployees(targetTable);
+        results = fetchEmployees(targetSchema, targetTable);
         assertEquals(6, results.size());
         // Verify no duplicates exist in the table
         HashSet<String> existing = new HashSet<>();
@@ -329,8 +331,8 @@ public class TableMergeSyncSupportTest {
                           + "'ABC',"
                           + "'94550','555-1212','buddy@acme.org','2016-01-01','Canada');");
 
-        mergeSyncSupport.doPKMerge(sourceTable, targetTable, spec, "20160119074540", columnSpecs);
-        results = fetchEmployees(targetTable);
+        mergeSyncSupport.doPKMerge(sourceSchema, sourceTable, targetSchema, targetTable, spec, "20160119074540", columnSpecs);
+        results = fetchEmployees(targetSchema, targetTable);
         assertEquals(7, results.size());
         existing = new HashSet<>();
         for (String r : results) {
@@ -345,7 +347,7 @@ public class TableMergeSyncSupportTest {
     /*
     Test ability to strip records that match the ID but are in a different partition than the newer record
      */
-    private void doTestMergePKWithDifferentPartitions(String targetTable, PartitionSpec spec) throws SQLException {
+    private void doTestMergePKWithDifferentPartitions(String targetSchema, String targetTable, PartitionSpec spec) throws SQLException {
 
         // Insert one record to start
         hiveShell.execute(
@@ -374,17 +376,17 @@ public class TableMergeSyncSupportTest {
             + "'555-1212',"
             + "'sally@acme.org','2013-01-01');");
 
-        List<String> results = fetchEmployees(targetTable);
+        List<String> results = fetchEmployees(targetSchema, targetTable);
         assertEquals(6, results.size());
 
         ColumnSpec columnSpec1 = new ColumnSpec("id", "String", "", true, false, false);
         ColumnSpec columnSpec2 = new ColumnSpec("name", "String", "", false, false, false);
         ColumnSpec[] columnSpecs = Arrays.asList(columnSpec1, columnSpec2).toArray(new ColumnSpec[0]);
         // Call merge
-        mergeSyncSupport.doPKMerge(sourceTable, targetTable, spec, processingPartition, columnSpecs);
+        mergeSyncSupport.doPKMerge(sourceSchema, sourceTable, targetSchema, targetTable, spec, processingPartition, columnSpecs);
 
         // We should have 6 records
-        results = fetchEmployees(targetTable);
+        results = fetchEmployees(targetSchema, targetTable);
         assertEquals(6, results.size());
         assertFalse("Should not have old value", results.stream().anyMatch(s -> s.contains("OLD")));
 
@@ -397,9 +399,9 @@ public class TableMergeSyncSupportTest {
                           + "'OLD',"
                           + "'94550','555-1212','harry@acme.org','2016-01-01','Canada');");
 
-        mergeSyncSupport.doPKMerge(sourceTable, targetTable, spec, processingPartition, columnSpecs);
+        mergeSyncSupport.doPKMerge(sourceSchema, sourceTable, targetSchema, targetTable, spec, processingPartition, columnSpecs);
 
-        results = fetchEmployees(targetTable);
+        results = fetchEmployees(targetSchema, targetTable);
         assertEquals(8, results.size());
         // Verify no duplicates exist in the table
         HashSet<String> existing = new HashSet<>();
@@ -418,8 +420,8 @@ public class TableMergeSyncSupportTest {
                           + "'ABC',"
                           + "'94550','555-1212','buddy@acme.org','2016-01-01','Canada');");
 
-        mergeSyncSupport.doPKMerge(sourceTable, targetTable, spec, "20160119074540", columnSpecs);
-        results = fetchEmployees(targetTable);
+        mergeSyncSupport.doPKMerge(sourceSchema, sourceTable, targetSchema, targetTable, spec, "20160119074540", columnSpecs);
+        results = fetchEmployees(targetSchema, targetTable);
         assertEquals(9, results.size());
         existing = new HashSet<>();
         for (String r : results) {
