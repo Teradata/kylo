@@ -30,10 +30,10 @@
     "storage" : {
         "persistence" : {
             "type" : "db",
-            "connectionUrl": "jdbc:mysql://localhost:3306/thinkbig",
-            "driver": "com.mysql.jdbc.Driver",
-            "username": "root",
-            "password": "",
+            "connectionUrl": "${modeshape.datasource.url}",
+            "driver": "${modeshape.datasource.driverClassName}",
+            "username": "${modeshape.datasource.username}",
+            "password": "${modeshape.datasource.password}",
             "createOnStart" : true,
             "dropOnExit" : false
         },
