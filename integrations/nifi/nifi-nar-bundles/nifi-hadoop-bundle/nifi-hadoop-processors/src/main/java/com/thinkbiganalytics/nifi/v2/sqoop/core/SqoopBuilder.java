@@ -328,11 +328,19 @@ public class SqoopBuilder {
             .append(EQUAL_STRING)
             .append(QUOTE)
             .append(sourcePasswordPassphrase)       //"user provided"
-            .append(END_QUOTE_SPACE)
-            .append(sourceDriverLabel)              //--driver
-            .append(START_SPACE_QUOTE)
-            .append(sourceDriver)                   //"user provided"
-            .append(END_QUOTE_SPACE)
+            .append(END_QUOTE_SPACE);
+
+        if (!isOracleDatabase(sourceDriver)) {
+            commandStringBuffer.append(sourceDriverLabel) //--driver
+                .append(START_SPACE_QUOTE)
+                .append(sourceDriver)                   //"user provided"
+                .append(END_QUOTE_SPACE);
+        }
+        else {
+            logger.info("Skipping provided --driver parameter for Oracle database.");
+        }
+
+        commandStringBuffer
             .append(sourceConnectionStringLabel)    //--connect
             .append(START_SPACE_QUOTE)
             .append(sourceConnectionString)         //"user provided"
@@ -498,5 +506,9 @@ public class SqoopBuilder {
             }
         }
         return queryFieldsBuilder.toString();
+    }
+
+    private boolean isOracleDatabase(@Nonnull String driver) {
+        return driver.toLowerCase().contains("oracle");
     }
 }
