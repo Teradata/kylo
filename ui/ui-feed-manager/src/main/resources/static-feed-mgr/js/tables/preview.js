@@ -29,7 +29,7 @@
         this.model = {};
         this.loading = false;
         this.limitOptions = [10, 50, 100, 500, 1000];
-        this.limit = this.limitOptions[2];
+        this.limit = this.limitOptions[1];
         this.executingQuery = true;
 
         //noinspection JSUnusedGlobalSymbols
@@ -49,14 +49,14 @@
             self.executingQuery = true;
             if (self.defaultSchemaName != null && self.defaultTableName != null) {
                 if (self.rowsPerPage == null) {
-                    self.rowsPerPage = 100;
+                    self.rowsPerPage = 50;
                 }
                 self.sql = 'SELECT * FROM ' + self.defaultSchemaName + "." + self.defaultTableName + " LIMIT "+self.limit;
             }
 
             return HiveService.queryResult(self.sql).then(function(tableData) {
                 self.loading = true;
-                var result = self.queryResults = HiveService.transformQueryResultsToUiGridModel(tableData);
+                var result = self.queryResults = HiveService.transformQueryResultsToUiGridModel(tableData);.0
                 self.gridOptions.columnDefs = result.columns;
                 self.gridOptions.data = result.rows;
                 self.executingQuery = false;

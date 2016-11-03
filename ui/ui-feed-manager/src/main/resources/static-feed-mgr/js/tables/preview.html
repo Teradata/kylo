@@ -12,17 +12,18 @@
       </md-option>
     </md-select>
   </md-input-container>
-
+  <div class="layout-padding"  ng-if="vm.executingQuery">
+    <md-progress-linear md-mode="indeterminate"></md-progress-linear>
+  </div>
   <div class="layout-padding-bottom">
     <div ui-grid-auto-resize
          browser-height
          browser-height-scroll-y="false"
-         browser-height-offset="284"
+         browser-height-offset="374"
          ui-grid="gridOptions"
          ui-grid-move-columns
          flex>
     </div>
 
   </div>
-  <md-progress-linear md-mode="indeterminate" ng-if="vm.executingQuery"></md-progress-linear>
 </div>
