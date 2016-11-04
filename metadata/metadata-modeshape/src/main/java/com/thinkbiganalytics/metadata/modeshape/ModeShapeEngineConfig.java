@@ -8,6 +8,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import javax.annotation.PreDestroy;
+import javax.inject.Inject;
 import javax.jcr.Repository;
 
 import org.modeshape.common.collection.Problems;
@@ -20,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 
 import com.thinkbiganalytics.metadata.modeshape.security.ModeShapeAuthConfig;
@@ -33,6 +35,16 @@ import com.thinkbiganalytics.metadata.modeshape.security.ModeShapeAuthConfig;
 public class ModeShapeEngineConfig {
     
     private static final Logger log = LoggerFactory.getLogger(ModeShapeEngineConfig.class);
+    
+    private static final String[] CONFIG_PROPS = {"modeshape.datasource.driverClassName",
+                                                  "modeshape.datasource.url",
+                                                  "modeshape.datasource.username",
+                                                  "modeshape.datasource.password"
+    };
+    
+    @Inject
+    private Environment environment;
+    
     
     @PreDestroy
     public void stopEngine() throws InterruptedException, ExecutionException {
@@ -53,6 +65,14 @@ public class ModeShapeEngineConfig {
     
     @Bean
     public RepositoryConfiguration metadataRepoConfig() throws IOException {
+        // Expose the values of the config properties as system properties so that they can be used
+        // for variable substitution in the ModeShape json config.
+        for (String prop : CONFIG_PROPS) {
+            if (this.environment.containsProperty(prop)) {
+                System.setProperty(prop, this.environment.getProperty(prop));
+            }
+        }
+        
         ClassPathResource res = new ClassPathResource("/metadata-repository.json");
         RepositoryConfiguration config = RepositoryConfiguration.read(res.getURL());
         

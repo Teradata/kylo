@@ -13,7 +13,6 @@ import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
-import org.apache.nifi.processor.exception.ProcessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,6 +27,9 @@ import com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder;
  * @author Sean Felten
  */
 public abstract class FeedProcessor extends BaseProcessor {
+    /** The attribute in the flow file containing feed ID */
+    public static final String FEED_ID_ATTR = "feedId";
+
     private static final Logger log = LoggerFactory.getLogger(FeedProcessor.class);
 
     private transient MetadataProviderService providerService;
@@ -58,23 +60,22 @@ public abstract class FeedProcessor extends BaseProcessor {
     }
     
     protected String getFeedId(ProcessContext context, FlowFile flowFile) {
-        String feedId = flowFile.getAttribute("feedId");
+        String feedId = flowFile.getAttribute(FEED_ID_ATTR);
         
         if (feedId == null) {
             final String category = context.getProperty(FEED_CATEGORY).evaluateAttributeExpressions(flowFile).getValue();
             final String feedName = context.getProperty(FEED_NAME).evaluateAttributeExpressions(flowFile).getValue();
             
             try {
-                log.info("Resolving category {} and feed {}", category, feedName);
-                
+                log.info("Resolving ID for feed {}/{}", category, feedName);
                 feedId = getMetadataProvider().getFeedId(category, feedName);
                 
                 if (feedId != null) {
-                    log.info("Resolving id {} for category {} and feed {}", feedId, category, feedName);
+                    log.info("Resolving id {} for feed {}/{}", feedId, category, feedName);
                     return feedId;
                 } else {
                     log.warn("ID for feed {}/{} could not be located", category, feedName);
-                    throw new ProcessException("ID for feed "+category+"/"+feedName+" could not be located");
+                    throw new FeedIdNotFoundException(category, feedName);
                 }
             } catch (Exception e) {
                 log.error("Failed to retrieve feed ID", e);
@@ -86,23 +87,22 @@ public abstract class FeedProcessor extends BaseProcessor {
     }
     
     protected FlowFile ensureFeedId(ProcessContext context, ProcessSession session, FlowFile flowFile) {
-        String feedId = flowFile.getAttribute("feedId");
+        String feedId = flowFile.getAttribute(FEED_ID_ATTR);
         
         if (feedId == null) {
             final String category = context.getProperty(FEED_CATEGORY).evaluateAttributeExpressions(flowFile).getValue();
             final String feedName = context.getProperty(FEED_NAME).evaluateAttributeExpressions(flowFile).getValue();
             
             try {
-                log.info("Resolving category {} and feed {}", category, feedName);
-                
+                log.info("Resolving ID for feed {}/{}", category, feedName);
                 feedId = getMetadataProvider().getFeedId(category, feedName);
 
                 if (feedId != null) {
-                    log.info("Resolving id {} for category {} and feed {}", feedId, category, feedName);
-                    return session.putAttribute(flowFile, "feedId", feedId);
+                    log.info("Resolving id {} for feed {}/{}", feedId, category, feedName);
+                    return session.putAttribute(flowFile, FEED_ID_ATTR, feedId);
                 } else {
                     log.warn("ID for feed {}/{} could not be located", category, feedName);
-                    throw new ProcessException("ID for feed "+category+"/"+feedName+" could not be located");
+                    throw new FeedIdNotFoundException(category, feedName);
                 }
             } catch (Exception e) {
                 log.error("Failed to retrieve feed ID", e);

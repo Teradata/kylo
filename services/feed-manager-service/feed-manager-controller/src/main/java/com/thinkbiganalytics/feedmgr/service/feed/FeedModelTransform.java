@@ -100,6 +100,20 @@ public class FeedModelTransform {
         }
     }
 
+
+    /**
+     *
+     * @param feedMetadata
+     */
+    private void simplifyFeedMetadataForSerialization(FeedMetadata feedMetadata){
+
+
+        if(feedMetadata.getTable() != null){
+            feedMetadata.getTable().simplifyFieldPoliciesForSerialization();
+        }
+
+    }
+
     /**
      * Transforms the specified Feed Manager feed to a Metadata feed.
      *
@@ -151,6 +165,8 @@ public class FeedModelTransform {
         domain.setNifiProcessGroupId(feedMetadata.getNifiProcessGroupId());
 
         //clear out the state as that
+        simplifyFeedMetadataForSerialization(feedMetadata);
+
         domain.setJson(ObjectMapperSerializer.serialize(feedMetadata));
         // if (feedMetadata.getVersion() == null) {
         //     feedMetadata.setVersion(1L);

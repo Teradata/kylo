@@ -12,6 +12,19 @@ public abstract class RestCommand<T> {
   private String url;
   private Map<String, Object> parameters;
 
+  public String getPathString() {
+    return null;
+  }
+
+  /**
+   * called just before making the request to allow for class to setup data
+   */
+  public void beforeRestRequest() {
+
+  }
+
+  ;
+
   public abstract String payload();
 
   private Class<T> responseType;

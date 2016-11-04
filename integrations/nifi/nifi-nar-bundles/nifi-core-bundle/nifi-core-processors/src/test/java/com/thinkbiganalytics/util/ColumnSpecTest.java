@@ -4,6 +4,7 @@
 
 package com.thinkbiganalytics.util;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -15,6 +16,37 @@ import static org.junit.Assert.assertTrue;
 
 public class ColumnSpecTest {
 
+    /** Verify the DDL for creating the column. */
+    @Test
+    public void toCreateSQL() {
+        final ColumnSpec[] specs = ColumnSpec.createFromString("col1|string");
+        Assert.assertNotNull(specs);
+        Assert.assertEquals("`col1` string", specs[0].toCreateSQL());
+    }
+
+    /** Verify the DDL for creating the partition. */
+    @Test
+    public void toPartitionSQL() {
+        final ColumnSpec[] specs = ColumnSpec.createFromString("col1|string");
+        Assert.assertNotNull(specs);
+        Assert.assertEquals("`col1` string", specs[0].toPartitionSQL());
+    }
+
+    /** Verify the join query. */
+    @Test
+    public void toPrimaryKeyJoinSQL() {
+        final ColumnSpec[] specs = ColumnSpec.createFromString("col1|string|pk1|1|0|0\ncol2|int\ncol3|int|pk2|1|0|0");
+        Assert.assertNotNull(specs);
+        Assert.assertEquals("`a`.`col1` = `b`.`col1` AND `a`.`col3` = `b`.`col3`", ColumnSpec.toPrimaryKeyJoinSQL(specs, "a", "b"));
+    }
+
+    /** Verify the primary key identifiers. */
+    @Test
+    public void toPrimaryKeys() {
+        final ColumnSpec[] specs = ColumnSpec.createFromString("col1|string|pk1|1|0|0\ncol2|int\ncol3|int|pk2|1|0|0");
+        Assert.assertNotNull(specs);
+        Assert.assertArrayEquals(new String[] {"`col1`", "`col3`"}, ColumnSpec.toPrimaryKeys(specs));
+    }
 
     @Test
     public void testFromString() throws IOException {
@@ -65,27 +97,20 @@ public class ColumnSpecTest {
         PartitionKey key1 = new PartitionKey("country", "string", "country");
         PartitionKey key2 = new PartitionKey("year", "int", "year(hired_date)");
         PartitionKey key3 = new PartitionKey("reg date month", "int", "month(reg date)");
-        PartitionKey key4 = new PartitionKey("`reg date day`", "int", "day(`reg date`)");
+        PartitionKey key4 = new PartitionKey("reg date day", "int", "day(`reg date`)");
 
         PartitionSpec spec = new PartitionSpec(key1, key2, key3, key4);
 
-        String sql = spec.toDistinctSelectSQL("sourceTable", "11111111");
+        String sql = spec.toDistinctSelectSQL("sourceSchema", "sourceTable", "11111111");
         System.out.println(sql);
-        String
-            expected =
-            "select country,year(hired_date),month(`reg date`),day(`reg date`) , count(0) as tb_cnt from sourceTable where processing_dttm = '11111111' group by country,year(hired_date),month(`reg date`),day(`reg date`)";
+        String expected = "select `country`, year(`hired_date`), month(`reg date`), day(`reg date`), count(0) as `tb_cnt` from `sourceSchema`.`sourceTable` where `processing_dttm` = \"11111111\" "
+                          + "group by `country`, year(`hired_date`), month(`reg date`), day(`reg date`)";
         assertEquals(expected, sql);
 
-        assertEquals(key1.getKeyForSql(), "country");
-        assertEquals(key2.getKeyForSql(), "year");
-        assertEquals(key3.getKeyForSql(), "`reg date month`");
-        assertEquals(key4.getKeyForSql(), "`reg date day`");
+        assertEquals("`country`", key1.getKeyForSql());
+        assertEquals("`year`", key2.getKeyForSql());
+        assertEquals("`reg date month`", key3.getKeyForSql());
+        assertEquals("`reg date day`", key4.getKeyForSql());
 
     }
-
-
-
-
 }
-
-

@@ -4,6 +4,8 @@
 
 package com.thinkbiganalytics.util;
 
+import com.thinkbiganalytics.hive.util.HiveUtils;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 
@@ -39,7 +41,7 @@ public class PartitionKey implements Cloneable {
     }
 
     public String getKeyForSql() {
-        return HiveColumnUtil.surroundWithTick(key);
+        return HiveUtils.quoteIdentifier(key);
     }
 
     public String getKeyWithAlias() {
@@ -47,7 +49,7 @@ public class PartitionKey implements Cloneable {
     }
 
     public String getFormula() {
-        return formula;
+        return formula.indexOf('(') > -1 ? formula : HiveUtils.quoteIdentifier(key);
     }
 
     public String getFormulaWithAlias() {
@@ -70,8 +72,8 @@ public class PartitionKey implements Cloneable {
     private void surroundFormulaColumnWithTick() {
         int idx = formula.indexOf("(");
         String column = StringUtils.substringBetween(formula, "(", ")");
-        if (StringUtils.isNotBlank(column)) {
-            column = HiveColumnUtil.surroundWithTick(column);
+        if (StringUtils.isNotBlank(column) && column.charAt(0) != '`') {
+            column = HiveUtils.quoteIdentifier(column);
             StringBuffer sb = new StringBuffer();
             sb.append(StringUtils.substringBefore(formula, "(")).append("(").append(column).append(")");
             formula = sb.toString();

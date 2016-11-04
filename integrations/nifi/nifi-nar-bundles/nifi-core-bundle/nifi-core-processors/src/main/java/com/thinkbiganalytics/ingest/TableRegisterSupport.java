@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.ingest;
 
+import com.thinkbiganalytics.hive.util.HiveUtils;
 import com.thinkbiganalytics.util.ColumnSpec;
 import com.thinkbiganalytics.util.TableRegisterConfiguration;
 import com.thinkbiganalytics.util.TableType;
@@ -102,7 +103,7 @@ public class TableRegisterSupport {
     public Set<String> fetchExisting(String source, String tableEntity) {
         HashSet<String> tables = new HashSet<>();
         try (final Statement st = conn.createStatement()) {
-            st.execute("use " + source);
+            st.execute("use " + HiveUtils.quoteIdentifier(source));
             ResultSet rs = st.executeQuery("show tables like '" + tableEntity + "*'");
             while (rs.next()) {
                 tables.add(rs.getString(1));
@@ -143,10 +144,14 @@ public class TableRegisterSupport {
         return result;
     }
 
-    protected String createDatabaseDDL(String source) {
-        StringBuffer sb = new StringBuffer();
-        sb.append("CREATE DATABASE IF NOT EXISTS `").append(source).append("`");
-        return sb.toString();
+    /**
+     * Returns the Hive query for creating the specified database.
+     *
+     * @param source the database name
+     * @return the Hive query
+     */
+    protected String createDatabaseDDL(@Nonnull final String source) {
+        return "CREATE DATABASE IF NOT EXISTS " + HiveUtils.quoteIdentifier(source);
     }
 
     protected String createDDL(String source, String entity, ColumnSpec[] columnSpecs, ColumnSpec[] partitions, String feedFormatOptions, String targetFormatOptions, String targetTableProperties,
@@ -163,10 +168,9 @@ public class TableRegisterSupport {
 
     protected String createDDL(String tableName, String columnsSQL, String partitionSQL, String formatOptionsSQL, String locationSQL, String targetTablePropertiesSQL) {
         StringBuffer sb = new StringBuffer();
-        sb.append("CREATE EXTERNAL ");
-        sb.append("TABLE IF NOT EXISTS `")
-            .append(tableName.trim())
-            .append("`").append(" (").append(columnsSQL).append(") ");
+        sb.append("CREATE EXTERNAL TABLE IF NOT EXISTS ")
+                .append(tableName)
+                .append(" (").append(columnsSQL).append(") ");
 
         if (!StringUtils.isEmpty(partitionSQL)) {
             sb.append(" ").append(partitionSQL);

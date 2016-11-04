@@ -120,7 +120,7 @@ public class TableRegisterSupportTest {
             @Override
             public Boolean answer(final InvocationOnMock invocation) throws Throwable {
                 final String sql = (String)invocation.getArguments()[0];
-                if (sql.equals("DROP TABLE IF EXISTS invalid")) {
+                if (sql.equals("DROP TABLE IF EXISTS `invalid`")) {
                     throw new SQLException();
                 }
                 return true;
@@ -131,11 +131,11 @@ public class TableRegisterSupportTest {
 
         // Test dropping table with success
         final TableRegisterSupport support = new TableRegisterSupport(connection);
-        Assert.assertTrue(support.dropTable("feed"));
-        Mockito.verify(statement).execute("DROP TABLE IF EXISTS feed");
+        Assert.assertTrue(support.dropTable("`feed`"));
+        Mockito.verify(statement).execute("DROP TABLE IF EXISTS `feed`");
 
         // Test dropping table with exception
-        Assert.assertFalse(support.dropTable("invalid"));
+        Assert.assertFalse(support.dropTable("`invalid`"));
     }
 
     /** Verify exception if the connection is null. */
@@ -153,7 +153,7 @@ public class TableRegisterSupportTest {
             @Override
             public Boolean answer(InvocationOnMock invocation) throws Throwable {
                 final String sql = (String)invocation.getArguments()[0];
-                if (sql.startsWith("DROP TABLE IF EXISTS invalid")) {
+                if (sql.startsWith("DROP TABLE IF EXISTS `invalid`")) {
                     throw new SQLException();
                 }
                 return true;
@@ -166,14 +166,14 @@ public class TableRegisterSupportTest {
         // Test dropping tables with success
         TableRegisterSupport support = new TableRegisterSupport(connection);
         Assert.assertTrue(support.dropTables("cat", "feed", EnumSet.of(TableType.MASTER, TableType.VALID, TableType.INVALID), ImmutableSet.of("backup.feed")));
-        Mockito.verify(statement).execute("DROP TABLE IF EXISTS cat.feed");
-        Mockito.verify(statement).execute("DROP TABLE IF EXISTS cat.feed_valid");
-        Mockito.verify(statement).execute("DROP TABLE IF EXISTS cat.feed_invalid");
+        Mockito.verify(statement).execute("DROP TABLE IF EXISTS `cat`.`feed`");
+        Mockito.verify(statement).execute("DROP TABLE IF EXISTS `cat`.`feed_valid`");
+        Mockito.verify(statement).execute("DROP TABLE IF EXISTS `cat`.`feed_invalid`");
         Mockito.verify(statement).execute("DROP TABLE IF EXISTS backup.feed");
 
         // Test dropping tables with exception
         Assert.assertFalse(support.dropTables("invalid", "feed", EnumSet.allOf(TableType.class), ImmutableSet.of()));
-        Assert.assertFalse(support.dropTables("cat", "feed", ImmutableSet.of(), ImmutableSet.of("invalid")));
+        Assert.assertFalse(support.dropTables("cat", "feed", ImmutableSet.of(), ImmutableSet.of("`invalid`")));
     }
 
 }

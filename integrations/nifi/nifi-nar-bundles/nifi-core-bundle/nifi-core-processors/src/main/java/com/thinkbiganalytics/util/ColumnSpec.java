@@ -5,17 +5,17 @@
 package com.thinkbiganalytics.util;
 
 import com.google.common.io.LineReader;
+import com.thinkbiganalytics.hive.util.HiveUtils;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.Vector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ColumnSpec {
 
@@ -107,37 +107,36 @@ public class ColumnSpec {
 
     public String toCreateSQL(boolean strings) {
         StringBuffer sb = new StringBuffer();
-        sb.append("`").append(name).append("` ");
+        sb.append(HiveUtils.quoteIdentifier(name)).append(' ');
         sb.append((strings ? "string" : dataType));
         if (!StringUtils.isEmpty(comment)) {
-            sb.append(" COMMENT ").append("'").append(comment).append("'");
+            sb.append(" COMMENT ").append(HiveUtils.quoteString(comment));
         }
         return sb.toString();
     }
 
     public String toPartitionSQL() {
-        StringBuffer sb = new StringBuffer();
-        sb.append("`").append(name).append("` ");
-        sb.append(dataType);
-        return sb.toString();
+        return HiveUtils.quoteIdentifier(name) + " " + dataType;
     }
 
     public static String toPrimaryKeyJoinSQL(ColumnSpec[] specs, String leftTableAlias, String rightTableAlias) {
-        ArrayList<String> keys = new ArrayList<>();
-        Arrays.stream(specs).filter(columnSpec -> columnSpec.isPk()).forEach(columnSpec -> keys.add(leftTableAlias + "." + columnSpec.getName() + " = " + rightTableAlias + "." + columnSpec.getName()));
-        String joinOn = StringUtils.join(keys, " AND ");
-        return joinOn;
+        final String safeLeftTable = HiveUtils.quoteIdentifier(leftTableAlias);
+        final String safeRightTable = HiveUtils.quoteIdentifier(rightTableAlias);
+        final List<String> keys = Stream.of(specs)
+                .filter(ColumnSpec::isPk)
+                .map(ColumnSpec::getName)
+                .map(HiveUtils::quoteIdentifier)
+                .map(column -> safeLeftTable + "." + column + " = " + safeRightTable + "." + column)
+                .collect(Collectors.toList());
+        return StringUtils.join(keys, " AND ");
     }
 
     public static String[] toPrimaryKeys(ColumnSpec[] specs) {
-        ArrayList<String> keys = new ArrayList<>();
-        Arrays.stream(specs).filter(columnSpec -> columnSpec.isPk()).forEach(columnSpec -> keys.add(columnSpec.getName()));
-        return keys.toArray(new String[0]);
-    }
-
-
-    public String toAlterSQL() {
-        throw new UnsupportedOperationException();
+        return Stream.of(specs)
+                .filter(ColumnSpec::isPk)
+                .map(ColumnSpec::getName)
+                .map(HiveUtils::quoteIdentifier)
+                .toArray(String[]::new);
     }
 
     /**

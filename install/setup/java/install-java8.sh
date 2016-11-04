@@ -1,5 +1,9 @@
 #!/bin/bash
 
+#set -x
+
+MY_DIR=$(dirname $0)
+
 offline=false
 working_dir=$2
 
@@ -34,3 +38,6 @@ tar -xvf jdk-8u92-linux-x64.tar.gz
 rm -f jdk-8u92-linux-x64.tar.gz
 echo "Creating symbolic link called 'current' to simplify upgrades"
 ln -s jdk1.8.0_92 current
+
+[ $offline = true ] && offline_flag="-o"
+$MY_DIR/install-java-crypt-ext.sh /opt/java/current $offline_flag

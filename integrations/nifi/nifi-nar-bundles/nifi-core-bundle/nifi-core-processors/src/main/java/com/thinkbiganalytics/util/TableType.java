@@ -4,6 +4,8 @@
 
 package com.thinkbiganalytics.util;
 
+import com.thinkbiganalytics.hive.util.HiveUtils;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 
@@ -44,7 +46,7 @@ public enum TableType {
     }
 
     public String deriveQualifiedName(String source, String entity) {
-        return source + "." + deriveTablename(entity);
+        return HiveUtils.quoteIdentifier(source.trim(), deriveTablename(entity.trim()));
     }
 
     public String deriveLocationSpecification(Path tableLocation, String source, String entity) {

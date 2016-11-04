@@ -467,7 +467,7 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         String[] logLines = sqoopProcessResult.getLogLines();
 
         if ((sqoopProcessResult.getExitValue() != 0) || (logLines[0] == null)) {
-            getLog().error("Skipping attempt to retrieve number of records extracted");
+            getLog().info("Skipping attempt to retrieve number of records extracted");
             return -1;
         }
 
@@ -485,7 +485,7 @@ public class ImportSqoop extends AbstractNiFiProcessor {
             return Integer.valueOf(numberString);
         }
         catch (Exception e) {
-            getLog().error("Unable to parse number of records extracted. " + e.getMessage());
+            getLog().info("Unable to parse number of records extracted. " + e.getMessage());
             return -1;
         }
     }

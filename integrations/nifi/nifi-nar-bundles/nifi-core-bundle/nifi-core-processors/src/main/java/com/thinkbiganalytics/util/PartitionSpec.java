@@ -4,6 +4,8 @@
 
 package com.thinkbiganalytics.util;
 
+import com.thinkbiganalytics.hive.util.HiveUtils;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +18,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.annotation.Nonnull;
 
 /**
  * Represents a partition specification for a target table
@@ -121,14 +127,19 @@ public class PartitionSpec implements Cloneable {
     }
 
     /**
-     * Generates a select statement that will find all unique data partitions in the source table
+     * Generates a select statement that will find all unique data partitions in the source table.
+     *
+     * @param sourceSchema       the schema or database name of the source table
+     * @param sourceTable        the source table name
+     * @param feedPartitionValue the source processing partition value
      */
-    public String toDistinctSelectSQL(String sourceTable, String feedPartitionValue) {
-        String[] parts = new String[keys.size()];
-        for (int i = 0; i < keys.size(); i++) {
-            parts[i] = keys.get(i).getFormulaWithAlias();
-        }
-        return "select " + StringUtils.join(parts, ",") + " , count(0) as tb_cnt from " + sourceTable + " where processing_dttm = '" + feedPartitionValue + "' group by " + StringUtils.join(parts, ",");
+    public String toDistinctSelectSQL(@Nonnull final String sourceSchema, @Nonnull final String sourceTable, @Nonnull final String feedPartitionValue) {
+        final String keysWithAliases = keys.stream()
+                .map(PartitionKey::getFormulaWithAlias)
+                .collect(Collectors.joining(", "));
+        return "select " + keysWithAliases + ", count(0) as `tb_cnt` from " + HiveUtils.quoteIdentifier(sourceSchema, sourceTable) +
+               " where `processing_dttm` = " + HiveUtils.quoteString(feedPartitionValue) +
+               " group by " + keysWithAliases;
     }
 
     public PartitionSpec newForAlias(String alias) {

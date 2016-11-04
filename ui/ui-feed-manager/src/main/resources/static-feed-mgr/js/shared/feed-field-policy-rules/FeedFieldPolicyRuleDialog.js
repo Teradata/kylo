@@ -82,7 +82,6 @@
         }
 
         $scope.onRuleTypeChange = function () {
-            console.log('opts ',$scope.options)
             if ($scope.ruleType != null) {
                 var rule = angular.copy($scope.ruleType);
                 rule.groups = PolicyInputFormService.groupProperties(rule);
@@ -152,7 +151,23 @@
             $scope.editMode = 'EDIT';
             $scope.addText = 'SAVE EDIT';
             $scope.editIndex = index;
+            //get a copy of the saved rule
             var editRule = angular.copy($scope.policyRules[index]);
+            //copy the rule from options with all the select options
+            var startingRule = angular.copy(_.find($scope.options,function(optRule) { return optRule.name == editRule.name}));
+            //reset the values
+            _.each(startingRule.properties,function(ruleProperty){
+                var editRuleProperty =_.find(editRule.properties,function(editProperty){
+                    return editProperty.name == ruleProperty.name;
+                });
+                if(editRuleProperty != null && editRuleProperty != undefined){
+                 //assign the values
+                    ruleProperty.value = editRuleProperty.value;
+                    ruleProperty.values = editRuleProperty.values;
+                }
+            });
+            //reassign the editRule object to the one that has all the select values
+            editRule = startingRule;
             editRule.groups = PolicyInputFormService.groupProperties(editRule);
             PolicyInputFormService.updatePropertyIndex(editRule);
             //make all rules editable

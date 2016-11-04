@@ -9,18 +9,16 @@
     </header-section>
 
     <body-section md-content >
-<ng-form name="defineFeedForm">
+<ng-form name="vm.defineFeedGeneralForm">
         <div layout="column">
                 <div layout="row" layout-align="space-between start">
                     <md-input-container flex="45" class="condensed">
                         <label>Display Name</label>
                         <input required ng-model="vm.model.feedName" name="feedName" ng-disabled="vm.model.id != null"/>
-                        <div ng-messages="defineFeedForm.feedName.$error">
+                        <div ng-messages="vm.defineFeedGeneralForm.feedName.$error"  md-auto-hide="false">
                             <div ng-message="required">Required.</div>
-                        </div>
-                        <div ng-messages="vm.existingFeedNames" md-auto-hide="false">
-                            <div ng-message-exp="vm.model.systemFeedName">A feed with this name already exists.</div>
-                        </div>
+                          <div ng-message="notUnique">A feed with this name already exists.</div>
+                       </div>
                     </md-input-container>
                     <div flex="10"></div>
                     <md-input-container flex="45" class="condensed">
@@ -55,7 +53,7 @@
                         <md-not-found>
                             No categories matching "{{vm.categorySearchText}}" were found.
                         </md-not-found>
-                      <div ng-messages="defineFeedForm.category.$error">
+                      <div ng-messages="vm.defineFeedGeneralForm.category.$error">
                         <div ng-message="required">Required.</div>
                       </div>
                   </md-autocomplete>
@@ -68,7 +66,7 @@
 
         </div>
 
-        <thinkbig-step-buttons can-continue="vm.isValid" step-index="{{::vm.stepIndex}}" ></thinkbig-step-buttons>
+        <thinkbig-step-buttons can-continue="vm.isValid &&  vm.defineFeedGeneralForm.$valid" step-index="{{::vm.stepIndex}}" ></thinkbig-step-buttons>
         </ng-form>
     </body-section>
 

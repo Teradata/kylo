@@ -18,12 +18,10 @@ import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.logging.ComponentLog;
-import org.apache.nifi.processor.AbstractProcessor;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.exception.ProcessException;
-import org.apache.nifi.processor.util.StandardValidators;
 import org.apache.nifi.util.StopWatch;
 
 import java.sql.Connection;
@@ -40,6 +38,9 @@ import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.FIELD_SPECIF
 import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.PARTITION_SPECIFICATION;
 import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.REL_FAILURE;
 import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.REL_SUCCESS;
+import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.SOURCE_SCHEMA;
+import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.SOURCE_TABLE;
+import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.TARGET_SCHEMA;
 import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.TARGET_TABLE;
 import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.THRIFT_SERVICE;
 
@@ -72,16 +73,6 @@ public class MergeTable extends AbstractNiFiProcessor {
 
     private final Set<Relationship> relationships;
 
-
-    public static final PropertyDescriptor SOURCE_TABLE = new PropertyDescriptor.Builder()
-        .name("Source table")
-        .description("Fully qualified name of the source table")
-        .required(true)
-        .defaultValue("${metadata.category.systemName}.${metadata.systemFeedName}_valid")
-        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .expressionLanguageSupported(true)
-        .build();
-
     public static final PropertyDescriptor MERGE_STRATEGY = new PropertyDescriptor.Builder()
         .name("Merge Strategy")
         .description("Specifies the algorithm used to merge. Valid values are SYNC,MERGE,PK_MERGE,DEDUPE_AND_MERGE.  Sync will completely overwrite the target table with the source data. "
@@ -107,7 +98,9 @@ public class MergeTable extends AbstractNiFiProcessor {
         final List<PropertyDescriptor> pds = new ArrayList<>();
         pds.add(THRIFT_SERVICE);
         pds.add(MERGE_STRATEGY);
+        pds.add(SOURCE_SCHEMA);
         pds.add(SOURCE_TABLE);
+        pds.add(TARGET_SCHEMA);
         pds.add(TARGET_TABLE);
         pds.add(FEED_PARTITION);
         pds.add(PARTITION_SPECIFICATION);
@@ -136,7 +129,9 @@ public class MergeTable extends AbstractNiFiProcessor {
 
         ThriftService thriftService = context.getProperty(THRIFT_SERVICE).asControllerService(ThriftService.class);
         String partitionSpecString = context.getProperty(PARTITION_SPECIFICATION).evaluateAttributeExpressions(flowFile).getValue();
+        String sourceSchema = context.getProperty(SOURCE_SCHEMA).evaluateAttributeExpressions(flowFile).getValue();
         String sourceTable = context.getProperty(SOURCE_TABLE).evaluateAttributeExpressions(flowFile).getValue();
+        String targetSchema = context.getProperty(TARGET_SCHEMA).evaluateAttributeExpressions(flowFile).getValue();
         String targetTable = context.getProperty(TARGET_TABLE).evaluateAttributeExpressions(flowFile).getValue();
         String feedPartitionValue = context.getProperty(FEED_PARTITION).evaluateAttributeExpressions(flowFile).getValue();
         String mergeStrategyValue = context.getProperty(MERGE_STRATEGY).evaluateAttributeExpressions(flowFile).getValue();
@@ -168,13 +163,13 @@ public class MergeTable extends AbstractNiFiProcessor {
             PartitionSpec partitionSpec = new PartitionSpec(partitionSpecString);
 
             if (STRATEGY_DEDUPE_MERGE.equals(mergeStrategyValue)) {
-                mergeSupport.doMerge(sourceTable, targetTable, partitionSpec, feedPartitionValue, true);
+                mergeSupport.doMerge(sourceSchema, sourceTable, targetSchema, targetTable, partitionSpec, feedPartitionValue, true);
             } else if (STRATEGY_MERGE.equals(mergeStrategyValue)) {
-                mergeSupport.doMerge(sourceTable, targetTable, partitionSpec, feedPartitionValue, false);
+                mergeSupport.doMerge(sourceSchema, sourceTable, targetSchema, targetTable, partitionSpec, feedPartitionValue, false);
             } else if (STRATEGY_SYNC.equals(mergeStrategyValue)) {
-                mergeSupport.doSync(sourceTable, targetTable, partitionSpec, feedPartitionValue);
+                mergeSupport.doSync(sourceSchema, sourceTable, targetSchema, targetTable, partitionSpec, feedPartitionValue);
             } else if (STRATEGY_PK_MERGE.equals(mergeStrategyValue)) {
-                mergeSupport.doPKMerge(sourceTable, targetTable, partitionSpec, feedPartitionValue, columnSpecs);
+                mergeSupport.doPKMerge(sourceSchema, sourceTable, targetSchema, targetTable, partitionSpec, feedPartitionValue, columnSpecs);
             } else {
                 throw new UnsupportedOperationException("Failed to resolve the merge strategy");
             }

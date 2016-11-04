@@ -69,11 +69,11 @@ public class DropFeedTablesTest {
         Assert.assertEquals(0, runner.getFlowFilesForRelationship(IngestProperties.REL_FAILURE).size());
         Assert.assertEquals(1, runner.getFlowFilesForRelationship(IngestProperties.REL_SUCCESS).size());
 
-        Mockito.verify(thriftService.statement).execute("DROP TABLE IF EXISTS movies.artists_feed");
-        Mockito.verify(thriftService.statement).execute("DROP TABLE IF EXISTS movies.artists_valid");
-        Mockito.verify(thriftService.statement).execute("DROP TABLE IF EXISTS movies.artists_invalid");
-        Mockito.verify(thriftService.statement).execute("DROP TABLE IF EXISTS movies.artists");
-        Mockito.verify(thriftService.statement).execute("DROP TABLE IF EXISTS movies.artists_profile");
+        Mockito.verify(thriftService.statement).execute("DROP TABLE IF EXISTS `movies`.`artists_feed`");
+        Mockito.verify(thriftService.statement).execute("DROP TABLE IF EXISTS `movies`.`artists_valid`");
+        Mockito.verify(thriftService.statement).execute("DROP TABLE IF EXISTS `movies`.`artists_invalid`");
+        Mockito.verify(thriftService.statement).execute("DROP TABLE IF EXISTS `movies`.`artists`");
+        Mockito.verify(thriftService.statement).execute("DROP TABLE IF EXISTS `movies`.`artists_profile`");
         Mockito.verify(thriftService.statement, Mockito.times(5)).close();
         Mockito.verifyNoMoreInteractions(thriftService.statement);
     }
@@ -90,7 +90,7 @@ public class DropFeedTablesTest {
         Assert.assertEquals(0, runner.getFlowFilesForRelationship(IngestProperties.REL_FAILURE).size());
         Assert.assertEquals(1, runner.getFlowFilesForRelationship(IngestProperties.REL_SUCCESS).size());
 
-        Mockito.verify(thriftService.statement).execute("DROP TABLE IF EXISTS movies.artists");
+        Mockito.verify(thriftService.statement).execute("DROP TABLE IF EXISTS `movies`.`artists`");
         Mockito.verify(thriftService.statement).execute("DROP TABLE IF EXISTS test.sample_07");
         Mockito.verify(thriftService.statement).execute("DROP TABLE IF EXISTS test.sample_08");
         Mockito.verify(thriftService.statement, Mockito.times(3)).close();
@@ -130,7 +130,7 @@ public class DropFeedTablesTest {
         Assert.assertEquals(0, runner.getFlowFilesForRelationship(IngestProperties.REL_FAILURE).size());
         Assert.assertEquals(1, runner.getFlowFilesForRelationship(IngestProperties.REL_SUCCESS).size());
 
-        Mockito.verify(thriftService.statement).execute("DROP TABLE IF EXISTS movies.artists");
+        Mockito.verify(thriftService.statement).execute("DROP TABLE IF EXISTS `movies`.`artists`");
         Mockito.verify(thriftService.statement).close();
         Mockito.verifyNoMoreInteractions(thriftService.statement);
     }
