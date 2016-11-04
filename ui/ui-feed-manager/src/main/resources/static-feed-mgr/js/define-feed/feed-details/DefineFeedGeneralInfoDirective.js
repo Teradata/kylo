@@ -25,6 +25,12 @@
     var controller =  function($scope,$log, $http,$mdToast,RestUrlService, FeedService, CategoriesService) {
 
         var self = this;
+
+        /**
+         * The angular form
+         * @type {{}}
+         */
+        this.defineFeedGeneralForm = {};
         this.templates = [];
         this.model = FeedService.createFeedModel;
         this.isValid = false;
@@ -48,23 +54,60 @@
                 self.model.category.name = item.name;
                 self.model.category.id = item.id;
                 self.model.category.systemName = item.systemName;
-                $http.get(RestUrlService.GET_FEEDS_URL).then(function(response) {
-                    self.existingFeedNames = {};
-                    angular.forEach(response.data, function(feed) {
-                        if (feed.categoryId === item.id) {
-                            self.existingFeedNames[feed.systemFeedName] = true;
-                        }
-                    });
-                });
                 setSecurityGroups(item.name);
+                validateUniqueFeedName();
             }
             else {
                 self.model.category.name = null;
                 self.model.category.id = null;
                 self.model.category.systemName = null;
                 self.existingFeedNames = {};
+                self.defineFeedGeneralForm['feedName'].$setValidity('notUnique', true);
             }
         }
+
+        function existingFeedNameKey(categoryId, feedName) {
+            return categoryId + "-" + feedName;
+        }
+
+        populateExistingFeedNames();
+
+        /**
+         * updates the {@code existingFeedNames} object with the latest feed names from the server
+         * @returns {promise}
+         */
+        function populateExistingFeedNames() {
+            return $http.get(RestUrlService.GET_FEEDS_URL).then(function (response) {
+                self.existingFeedNames = {};
+                angular.forEach(response.data, function (feed) {
+                    self.existingFeedNames[existingFeedNameKey(feed.categoryId, feed.systemFeedName)] = feed.systemFeedName;
+                });
+            });
+        }
+
+        function validateUniqueFeedName() {
+
+            function _validate() {
+                //validate to ensure the name is unique in this category
+                if (self.existingFeedNames[existingFeedNameKey(self.model.category.id, self.model.systemFeedName)]) {
+                    self.defineFeedGeneralForm['feedName'].$setValidity('notUnique', false);
+                }
+                else {
+                    self.defineFeedGeneralForm['feedName'].$setValidity('notUnique', true);
+                }
+            }
+
+            if (_.isEmpty(self.existingFeedNames)) {
+                populateExistingFeedNames().then(function () {
+                    _validate();
+                });
+            }
+            else {
+                _validate();
+            }
+
+        }
+
 
 
       //  getRegisteredTemplates();
@@ -106,6 +149,7 @@
         },function(newVal) {
            FeedService.getSystemName(newVal).then(function (response) {
                self.model.systemFeedName = response.data;
+               validateUniqueFeedName();
                validate();
            });
 
@@ -114,6 +158,7 @@
         $scope.$watch(function(){
             return self.model.category.name;
         },function(newVal) {
+
             validate();
         })
 
