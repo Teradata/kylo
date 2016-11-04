@@ -215,6 +215,7 @@ public class TableSetup {
             }
         }
         setSourceFields(sb.toString());
+
     }
 
     @JsonIgnore
@@ -332,6 +333,17 @@ public class TableSetup {
         }
     }
 
+    public void ensureNotEmpty() {
+        if (StringUtils.isBlank(sourceFields)) {
+            sourceFields = "NA";
+        }
+        if (sourceTableSchema != null) {
+            if (StringUtils.isBlank(sourceTableSchema.getName())) {
+                sourceTableSchema.setName("NA");
+            }
+        }
+    }
+
     public void updateMetadataFieldValues() {
         ensurePartitionSourceDataTypes();
         updatePartitionStructure();
@@ -344,6 +356,7 @@ public class TableSetup {
         updateFieldPolicyJson();
         updateTargetTblProperties();
         updateFeedFormat();
+        ensureNotEmpty();
 
     }
 

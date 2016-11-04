@@ -301,9 +301,11 @@ public class FeedRestController {
 
                 if (templateProcessorId != null && templateProcessorIdProcessorNameMap.containsKey(templateProcessorId)) {
                     NifiProperty templateProperty = templatePropertiesByProcessorIdMap.get(templateProcessorId).get(property.getKey());
-                    templateProperty.setValue(property.getValue());
-                    templateProperty.setRenderType(property.getRenderType());
-                    templateProperty.setRenderOptions(property.getRenderOptions());
+                    if (templateProperty != null) {
+                        templateProperty.setValue(property.getValue());
+                        templateProperty.setRenderType(property.getRenderType());
+                        templateProperty.setRenderOptions(property.getRenderOptions());
+                    }
                 }
             }
         });
