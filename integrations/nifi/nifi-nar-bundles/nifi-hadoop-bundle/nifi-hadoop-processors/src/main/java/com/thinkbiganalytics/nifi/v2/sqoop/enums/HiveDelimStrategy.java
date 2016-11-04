@@ -21,6 +21,6 @@ public enum HiveDelimStrategy {
             case REPLACE:
                 return "REPLACE";
         }
-        return null;
+        return "";
     }
 }

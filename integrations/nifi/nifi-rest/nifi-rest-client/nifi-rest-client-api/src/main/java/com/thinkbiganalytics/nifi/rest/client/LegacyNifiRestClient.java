@@ -221,6 +221,10 @@ public class LegacyNifiRestClient implements NifiFlowVisitorClient {
      */
     public List<NifiProperty> getPropertiesForTemplateByName(String templateName) {
         TemplateDTO dto = getTemplateByName(templateName);
+        if (dto != null) {
+            //populate the snippet
+            dto = getTemplateById(dto.getId());
+        }
         ProcessGroupDTO rootProcessGroup = getProcessGroup("root", false, false);
         return NifiPropertyUtil.getPropertiesForTemplate(rootProcessGroup, dto, propertyDescriptorTransform);
     }

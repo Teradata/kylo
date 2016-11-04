@@ -27,6 +27,6 @@ public enum CompressionAlgorithm {
             case LZO:
                 return "LZO";
         }
-        return null;
+        return "";
     }
 }
