@@ -4,7 +4,7 @@
 
         <header-section>
             <div layout="row" layout-align="center start">
-                <div class="card-title">Import a Template</div>
+                <div class="card-title">Import Template</div>
                 <span flex></span>
                 <ng-md-icon icon="file_upload" style="fill:#F08C38;padding-right:16px;" size="30"></ng-md-icon>
             </div>
@@ -15,9 +15,11 @@
 
 
             <div layout="column" flex class="md-padding">
+
                 <div>
-                    <div class="md-subheader">Choose Import a Nifi Template or Kylo Archive.</div>
+                    <div class="item-title">Import one of the following from another environment:</div>
                 </div>
+
                 <div class="layout-padding-indent">
                     <md-list flex layout-fill class="list-item-table list-condensed">
 
@@ -40,28 +42,26 @@
                         <md-list-item>
                             <div layout="row" layout-fill>
                                 <div flex="20" class="md-list-item-text ">
-                                    Nifi Template
+                                    NiFi template
                                 </div>
                                 <div flex="10" class="md-list-item-text ">
                                     XML
                                 </div>
                                 <div flex="60" class="md-list-item-text ">
-                                    Importing a Nifi Template will validate and import the template into Nifi.
+                                    Imports a NiFi template
                                 </div>
                             </div>
                         </md-list-item>
                         <md-list-item>
                             <div layout="row" layout-fill>
                                 <div flex="20" class="md-list-item-text ">
-                                    Archive
+                                    Kylo template bundle
                                 </div>
                                 <div flex="10" class="md-list-item-text ">
                                     ZIP
                                 </div>
                                 <div flex="60" class="md-list-item-text ">
-                                    An archive contains both Nifi and Kylo data.
-                                    <Br/>
-                                    This will import into Nifi and register the template in Kylo.
+                                    Imports Kylo configuration and NiFi template
                                 </div>
                             </div>
                         </md-list-item>
@@ -76,29 +76,27 @@
                             Overwrite
                         </md-checkbox>
                         <div class="hint" style="margin-top:-10px">
-                            If template already exists it will be replaced.
+                            Replace any template with same name
                         </div>
                     </md-input-container>
                     <md-input-container class="condensed-no-float md-block layout-padding-bottom"
                                         ng-if="vm.xmlType == true">
-                        <md-checkbox ng-model="vm.createReusableFlow" aria-label="Create Reusable Flow">
+                        <md-checkbox ng-model="vm.createReusableFlow" aria-label="Create a reusable flow (callable by other flows)">
                             Create Reusable Flow
                         </md-checkbox>
                         <div class="hint" style="margin-top:-10px">
-                            A Flow will be created and saved in Nifi under the "reusable_templates" process group.
+                            Flow will be created in NiFi under the "reusable_templates" process group
                         </div>
                     </md-input-container>
                     <md-input-container class="condensed-no-float md-block layout-padding-bottom"
                                         ng-if="vm.verifyToCreateConnectingReusableTemplate == true">
-                        <md-checkbox ng-model="vm.createConnectingReusableTemplate" aria-label="Import Connecting Reusable Flow">
+                        <md-checkbox ng-model="vm.createConnectingReusableTemplate" aria-label="Import Reusable Flow">
                             Import Connecting Reusable Flow
                         </md-checkbox>
                         <div class="hint" style="margin-top:-10px">
-                            The Template you are importing also contains its reusable flow.  Do you want to also import the reusable flow and version that as well?
+                            This template contains a common flow shared by other templates. Overwrite?
                         </div>
                     </md-input-container>
-
-
 
                 <span style="padding-top:10px">
                 <md-button class="md-raised md-primary" ng-click="vm.importTemplate();" ng-if="vm.templateFile != null"

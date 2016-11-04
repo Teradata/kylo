@@ -10,7 +10,7 @@
         <body-section>
           <div ng-if="vm.loading">
             <md-progress-linear md-mode="indeterminate"></md-progress-linear>
-            <span class="md-body-2">Loading Templates</span>
+            <span class="md-body-2">Loading templates</span>
           </div>
 
         <div  ng-hide="vm.viewType != 'list'" ng-show="vm.viewType == 'list' && !vm.loading">
@@ -30,7 +30,7 @@
                                 <div flex="40" layout="column" class="item-column md-list-item-text ">
 
                                            <span  class="item-title" title="{{feed.active}}" >
-                                             {{template.updateDate | date: 'MM/dd/yyyy @ h:mm:ssa'}}</span>
+                                             {{template.updateDate | date: 'MM/dd/yyyy h:mm:ssa'}}</span>
                                              <span class="column-title column-title-bottom">
                                              Last Updated
                                            </span>
@@ -85,7 +85,7 @@
                             <td md-cell ng-click="vm.templateDetails($event,feed)">
                                 {{template.properties.length}}
                             </td>
-                            <td md-cell ng-click="vm.templateDetails($event,feed)">{{template.updateDate | date: 'MM/dd/yyyy @ h:mm:ssa' }}</td>
+                            <td md-cell ng-click="vm.templateDetails($event,feed)">{{template.updateDate | date: 'MM/dd/yyyy h:mm:ssa' }}</td>
                             <td md-cell>
                                 <md-button href="{{template.exportUrl}}"  layout-align="center">
                                     <ng-md-icon icon="file_download" size="20" style="fill:#F08C38"> </ng-md-icon>

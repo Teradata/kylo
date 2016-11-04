@@ -18,7 +18,7 @@
 
         self.registeredTemplates = [];
         this.loading = true;
-        this.cardTitle = 'Registered Templates';
+        this.cardTitle = 'Templates';
 
         // Register Add button
         AccessControlService.getAllowedActions()

@@ -2,7 +2,7 @@
 
     <div layout="column" flex class="md-padding " layout-align="start start" >
         <div layout="column" flex layout-fill layout-align="center center">
-            <div class="md-title">Register a new template</div>
+            <div class="item-title">Choose import method</div>
         </div>
         <div layout="column" flex layout-fill layout-align="center center">
 
@@ -11,9 +11,11 @@
                     <md-card-title-text>
                         <span style="font-size: 20px;font-weight:400;letter-spacing: .005em;">{{method.name}}</span>
                     </md-card-title-text>
-                    <md-card-title-media>
+                  <!--
+                  <md-card-title-media>
                         <ng-md-icon icon="{{method.icon}}" size="40" style="fill:{{method.iconColor}};margin-right:-20px;" class="md-media-xs"></ng-md-icon>
                     </md-card-title-media>
+                    -->
                 </md-card-title>
                 <md-card-content>
                     <div style="word-wrap:break-word;">{{method.description | characters:100}}</div>

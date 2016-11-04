@@ -10,6 +10,7 @@
         this.selectedDatabase = ALL_DATABASES;
         this.selectedTables = [];
         this.loading = true;
+        this.cardTitle = "Tables";
         this.pageName = 'Tables';
         self.filterInternal = true;
 

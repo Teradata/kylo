@@ -79,7 +79,7 @@ app.config(function($stateProvider,$urlRouterProvider) {
         },
         data:{
             breadcrumbRoot:true,
-            displayName:'Registered Templates'
+            displayName:'Templates'
         }
     }).state('register-template',{
         url:'/register-template',

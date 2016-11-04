@@ -34,7 +34,7 @@
 
         // Add default method
         self.registrationMethods.push({
-            name: "Create from Nifi", description: "Register a new template that currently resides in Nifi", icon: "near_me", iconColor: "#3483BA", onClick: self.createFromNifi
+            name: "Import from NiFi", description: "Import a NiFi template directly from the current environment", icon: "near_me", iconColor: "#3483BA", onClick: self.createFromNifi
         });
 
         // Fetch the allowed actions
@@ -42,7 +42,7 @@
                 .then(function(actionSet) {
                     if (AccessControlService.hasAction(AccessControlService.FEEDS_IMPORT, actionSet.actions)) {
                         self.registrationMethods.push({
-                            name: "Import from file", description: "Register a new template that you exported from a different Kylo environment", icon: "file_upload",
+                            name: "Import from a file", description: "Import from a Kylo archive or NiFi template file", icon: "file_upload",
                             iconColor: "#F08C38", onClick: self.importFromFile
                         });
                     }
