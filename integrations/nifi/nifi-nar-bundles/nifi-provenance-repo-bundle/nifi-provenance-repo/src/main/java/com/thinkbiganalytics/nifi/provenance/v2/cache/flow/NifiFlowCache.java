@@ -139,11 +139,11 @@ public class NifiFlowCache {
 
     private NifiFlowProcessGroup getGraph(String processGroupId) {
         if (nifiFlowClient != null) {
-            log.info(" START load for ProcessGroup {} ", processGroupId);
+            log.debug(" START load for ProcessGroup {} ", processGroupId);
             NifiFlowProcessGroup group = nifiFlowClient.getFlowForProcessGroup(processGroupId);
             populateStartingProcessors(group);
             populateProcessorMaps(group);
-            log.info(" Finish load for ProcessGroup {} , {} ", processGroupId, group);
+            log.debug(" Finish load for ProcessGroup {} , {} ", processGroupId, group);
             return group;
         }
         return null;
@@ -300,7 +300,7 @@ public class NifiFlowCache {
 
                         }
                         else {
-                            log.info("Unable to connect to Nifi Rest.  Attempt Number: {}, Timer will try again in {} seconds ",retryAttempts, interval/1000);
+                            log.debug("Unable to connect to Nifi Rest.  Attempt Number: {}, Timer will try again in {} seconds ", retryAttempts, interval / 1000);
                         }
                     }
                     else {
@@ -311,7 +311,8 @@ public class NifiFlowCache {
                              connectionRetryAttempts.set(0);
                         }
                         else {
-                             log.info("Unable to connect to Nifi Rest.  Attempt Number: {}, Timer now wait and try again in {} seconds ",retryAttempts, ((waitCount - waitCounter) * interval) /1000);
+                             log.debug("Unable to connect to Nifi Rest.  Attempt Number: {}, Timer now wait and try again in {} seconds ", retryAttempts,
+                                       ((waitCount - waitCounter) * interval) / 1000);
                          }
 
                     }
