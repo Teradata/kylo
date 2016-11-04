@@ -168,6 +168,20 @@ public class TableSetup {
         }
     }
 
+    @JsonIgnore
+    public void simplifyFieldPoliciesForSerialization(){
+        if(fieldPolicies != null) {
+            getFieldPolicies().stream().forEach(fieldPolicy -> {
+                if (fieldPolicy.getStandardization() != null) {
+                    fieldPolicy.getStandardization().stream().forEach(policy -> policy.simplifyForSerialization());
+                }
+                if (fieldPolicy.getValidation() != null) {
+                    fieldPolicy.getValidation().stream().forEach(policy -> policy.simplifyForSerialization());
+                }
+            });
+        }
+    }
+
 
     @JsonIgnore
     public void updateFieldStringData() {
@@ -284,6 +298,7 @@ public class TableSetup {
         ObjectMapper mapper = new ObjectMapper();
         String json = "[]";
         try {
+            simplifyFieldPoliciesForSerialization();
             json = mapper.writeValueAsString(getFieldPolicies());
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
@@ -291,6 +306,8 @@ public class TableSetup {
         fieldPoliciesJson = json;
 
     }
+
+
 
     private void updateTargetTblProperties() {
         this.targetTblProperties = "";

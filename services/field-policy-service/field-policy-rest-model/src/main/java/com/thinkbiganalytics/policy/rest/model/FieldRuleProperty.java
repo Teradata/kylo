@@ -32,6 +32,29 @@ public class FieldRuleProperty {
     private String pattern;
     private String patternInvalidMessage;
 
+
+    public FieldRuleProperty(){
+
+    }
+
+
+    /**
+     * Strip out anything not needed for serialization
+     */
+    @JsonIgnore
+    public void simplifyForSerialization(){
+        this.displayName = null;
+        this.placeholder = null;
+        this.hint = null;
+        this.type = null;
+        this.selectableValues = null;
+        this.group = null;
+        this.groupOrder = null;
+        this.layout = null;
+        this.pattern = null;
+        this.patternInvalidMessage = null;
+    }
+
     public String getName() {
         return name;
     }

@@ -23,6 +23,27 @@ public class BaseUiPolicyRule {
   private String objectShortClassType;
   private String propertyValuesDisplayString;
 
+  public BaseUiPolicyRule(){
+
+  }
+
+  /**
+   * strip out everything that is not needed when saving
+   */
+  @JsonIgnore
+  public void simplifyForSerialization(){
+    this.displayName = null;
+    this.description = null;
+    this.shortDescription = null;
+    this.propertyValuesDisplayString = null;
+    if(getProperties() != null){
+      for(FieldRuleProperty property : getProperties()){
+        property.simplifyForSerialization();
+      }
+    }
+
+  }
+
   public String getName() {
     return name;
   }
