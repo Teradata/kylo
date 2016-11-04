@@ -69,7 +69,7 @@ public class NiFiProcessorsRestClientV1 implements NiFiProcessorsRestClient {
     @Nonnull
     private Optional<ProcessorEntity> findEntityById(@Nonnull final String id) {
         try {
-            return Optional.of(client.get(BASE_PATH + id, null, ProcessorEntity.class));
+            return Optional.ofNullable(client.get(BASE_PATH + id, null, ProcessorEntity.class));
         } catch (final NotFoundException e) {
             return Optional.empty();
         }
