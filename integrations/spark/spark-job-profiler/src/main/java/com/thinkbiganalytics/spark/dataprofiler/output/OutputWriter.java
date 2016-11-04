@@ -1,17 +1,18 @@
 package com.thinkbiganalytics.spark.dataprofiler.output;
 
+import com.thinkbiganalytics.hive.util.HiveUtils;
+import com.thinkbiganalytics.spark.dataprofiler.core.ProfilerConfiguration;
+
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.DataFrame;
-//import org.apache.spark.sql.Row;
 import org.apache.spark.sql.hive.HiveContext;
-
-import com.thinkbiganalytics.hive.util.HiveUtils;
-import com.thinkbiganalytics.spark.dataprofiler.core.ProfilerConfiguration;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+
+//import org.apache.spark.sql.Row;
 
 
 /**
@@ -151,7 +152,7 @@ public class OutputWriter implements Serializable {
             //outputRowsDF.write().mode(SaveMode.Overwrite).saveAsTable(outputTable);
 
             // Since Spark doesn't support partitions, write to temp table, then write to partitioned table
-            String tempTable = ProfilerConfiguration.OUTPUT_TABLE_NAME + "_" + ProfilerConfiguration.INPUT_AND_OUTPUT_TABLE_PARTITION_KEY;
+            String tempTable = ProfilerConfiguration.OUTPUT_TABLE_NAME + "_" + System.currentTimeMillis();
             outputRowsDF.registerTempTable(tempTable);
 
             createOutputTableIfNotExists();
