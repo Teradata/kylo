@@ -125,10 +125,8 @@ public class SqoopProcessRunner {
             for (long i = 0; i < latch.getCount(); i++) {
                 latch.countDown();
             }
-            new SqoopProcessResult(exitValue, logLines);
+            return new SqoopProcessResult(exitValue, logLines);
         }
-
-        return null;    //should not be reached
     }
 
 

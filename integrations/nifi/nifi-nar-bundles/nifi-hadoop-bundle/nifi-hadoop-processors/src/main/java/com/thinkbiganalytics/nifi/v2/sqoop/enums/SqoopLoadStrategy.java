@@ -21,6 +21,6 @@ public enum SqoopLoadStrategy {
             case INCREMENTAL_APPEND:
                 return "INCREMENTAL_APPEND";
         }
-        return null;
+        return "";
     }
 }

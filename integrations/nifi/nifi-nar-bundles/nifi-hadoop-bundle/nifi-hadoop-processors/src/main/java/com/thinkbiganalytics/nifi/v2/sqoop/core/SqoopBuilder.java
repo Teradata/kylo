@@ -305,6 +305,11 @@ public class SqoopBuilder {
                     logger.error("{} set to: {}", new Object[] { property, value});
                 }
                 break;
+
+            default:
+                if (logger != null) {
+                    logger.info("{} set to: {}", new Object[] { property, value});
+                }
         }
     }
 

@@ -24,6 +24,6 @@ public enum HiveNullEncodingStrategy {
             case ENCODE_ONLY_NONSTRING:
                 return "ENCODE_ONLY_NONSTRING";
         }
-        return null;
+        return "";
     }
 }
