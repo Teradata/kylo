@@ -981,7 +981,7 @@ public class LegacyNifiRestClient implements NifiFlowVisitorClient {
             source.setType(NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name());
             ConnectableDTO dest = new ConnectableDTO();
             dest.setGroupId(reusableTemplateGroupId);
-            //  dest.setName(reusableTemplateGroup.getProcessGroup().getName());
+            dest.setName(inputPortName);
             dest.setId(templateInputPort.getId());
             dest.setType(NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name());
             createConnection(reusableTemplateCategoryGroupId, source, dest);
