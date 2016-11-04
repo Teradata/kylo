@@ -14,7 +14,6 @@ import com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants;
 import com.thinkbiganalytics.nifi.core.api.precondition.FeedPreconditionEventService;
 import com.thinkbiganalytics.nifi.core.api.precondition.PreconditionListener;
 import com.thinkbiganalytics.nifi.v2.common.CommonProperties;
-import com.thinkbiganalytics.util.ComponentAttributes;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.annotation.behavior.EventDriven;
@@ -195,7 +194,7 @@ public class TriggerFeed extends AbstractFeedProcessor {
                     deltas.reduceExecutionContextToMatchingKeys(keysToMatch);
                     String value = MAPPER.writeValueAsString(deltas);
                     //add the json as an attr value?
-                    file = session.putAttribute(file, ComponentAttributes.FEED_DEPENDENT_RESULT_DELTAS.key(), value);
+                    // file = session.putAttribute(file, ComponentAttributes.FEED_DEPENDENT_RESULT_DELTAS.key(), value);
                     //write the json back to the flow file content
                     file = session.write(file, new OutputStreamCallback() {
                         @Override

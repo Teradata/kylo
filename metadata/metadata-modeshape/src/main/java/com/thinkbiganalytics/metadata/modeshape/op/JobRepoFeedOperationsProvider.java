@@ -185,23 +185,32 @@ public class JobRepoFeedOperationsProvider implements FeedOperationsProvider {
             //find this feeds latest completion
             BatchJobExecution latest = jobExecutionProvider.findLatestCompletedJobForFeed(systemFeedName);
 
-            if (latest == null) {
-                return results;
-            } else {
+
                 //get the dependent feeds
                 List<Feed<?>> dependents =  feed.getDependentFeeds();
-                for(Feed depFeed:dependents){
+            if (dependents != null) {
+                for (Feed depFeed : dependents) {
 
                     String depFeedSystemName = FeedNameUtil.fullName(depFeed.getCategory().getName(), depFeed.getName());
                     //find Completed feeds executed since time
-                    Set<? extends BatchJobExecution> jobs =  jobExecutionProvider.findJobsForFeedCompletedSince(depFeedSystemName, latest.getStartTime());
-                    if(jobs != null){
-                        for(BatchJobExecution job: jobs){
+                    Set<BatchJobExecution> jobs = null;
+                    if (latest != null) {
+                        jobs = (Set<BatchJobExecution>) jobExecutionProvider.findJobsForFeedCompletedSince(depFeedSystemName, latest.getStartTime());
+                    } else {
+                        BatchJobExecution job = jobExecutionProvider.findLatestCompletedJobForFeed(depFeedSystemName);
+                        if (job != null) {
+                            jobs = new HashSet<>();
+                            jobs.add(job);
+                        }
+                    }
+
+                    if (jobs != null) {
+                        for (BatchJobExecution job : jobs) {
                             DateTime endTime = job.getEndTime();
-                            Map<String,String> executionContext = job.getJobExecutionContextAsMap();
-                            Map<String,Object>  map = new HashMap<>();
+                            Map<String, String> executionContext = job.getJobExecutionContextAsMap();
+                            Map<String, Object> map = new HashMap<>();
                             //filter the map
-                            if(executionContext != null) {
+                            if (executionContext != null) {
                                 //add those requested to the results map
                                 for (Entry<String, String> entry : executionContext.entrySet()) {
                                     if (props == null || props.isEmpty() || props.contains(entry.getKey())) {
@@ -209,15 +218,17 @@ public class JobRepoFeedOperationsProvider implements FeedOperationsProvider {
                                     }
                                 }
                             }
-                            results.addFeedExecutionContext(depFeedSystemName,job.getJobExecutionId(),job.getStartTime(),endTime,map);
+                            results.addFeedExecutionContext(depFeedSystemName, job.getJobExecutionId(), job.getStartTime(), endTime, map);
 
 
                         }
+                    } else {
+                        results.getDependentFeedNames().add(depFeedSystemName);
                     }
 
                 }
             }
-            
+
             return results;
         } else {
             throw new FeedNotFoundExcepton(feedId);

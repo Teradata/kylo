@@ -113,6 +113,9 @@ public class FeedDependencyDeltaResults {
     }
 
     public List<String> getDependentFeedNames() {
+        if (dependentFeedNames == null) {
+            dependentFeedNames = new ArrayList<>();
+        }
         return dependentFeedNames;
     }
 
