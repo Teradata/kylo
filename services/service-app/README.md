@@ -24,7 +24,28 @@ Example
 ```properties
 spring.profiles.active=auth-kylo,auth-simple,nifi1,nifi2
 ``` 
+
+## Property Value Encryption
+
+Starting with version 0.4.2 of Kylo there is support for encrypting any property value in the Kylo property files.  In order to support encryption the java installation must be updated with the [Java Cryptographic Extensions](http://www.oracle.com/technetwork/java/javase/downloads/jce8-download-2133166.html).  An encrypted property is identified by prepending the tag “{cipher}” to the encrypted value.  For example:
+
+```
+hive.datasource.password={cipher}29fcf1534a84700c68f5c79520ecf8911379c8b5ef4427a696d845cc809b4af0
+```
    
+### Encrypting a property value
+
+By default, a new kylo installation does not have any of its configuration properties encrypted.  Once you have started Kylo for the first time, the easiest way to derive encrypted versions of property values is to post values to the Kylo services ```/encrypt``` endpoint to have it generate an encrypted form for you.  You could then paste back the encrypted value back into your properties file.  For instance, if you wanted to encrypt the Hive datasource password above (assuming the password is “mypassword”) you can get it’s encrypted form using curl like this:  
+
+```
+$ curl localhost:8420/encrypt –d mypassword
+29fcf1534a84700c68f5c79520ecf8911379c8b5ef4427a696d845cc809b4af0
+``` 
+
+In this case, you would then copy that value and replace the clear text password string in the properties file with "{cipher}29fcf1534a84700c68f5c79520ecf8911379c8b5ef4427a696d845cc809b4af0".  
+
+The benefit of this approach is that you will be getting a value that is guaranteed to work with the encryption settings of the server where that configuration value is being used.
+
 ## Processor Property Injection
    
 ###  Inject by matching the processor type name

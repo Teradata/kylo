@@ -193,6 +193,14 @@ The project includes a script to stand up a single node ActiveMQ instance to get
         For thinkbig-ui and thinkbig-services
         $ /opt/thinkbig/setup/java/remove-default-thinkbig-java-home.sh
         $ /opt/thinkbig/setup/java/change-thinkbig-java-home.sh <PATH_TO_JAVA_HOME>
+        
+=== Install Java Cryptographic Extension
+The Java 8 install script above will also download and install the http://www.oracle.com/technetwork/java/javase/downloads/jce8-download-2133166.html[Java Cryptographic Extension] automatically.  This extension is required to allow encrypted property values in the Kylo configuration files.
+If you already have a Java 8 installed on the system, you can install the Java Cryptographic Extension by running the following script:
+
+    $ <SETUP_DIR>/java/install-java-crypt-ext.sh <PATH_TO_JAVA_HOME>
+
+This script downloads the extension zip file and extracts the replacement jar files into the JRE security directory ($JAVA_HOME/jre/lib/security).  It will first make a backup copies of the original jars it is replacing.
 
 === Install NiFi
 
