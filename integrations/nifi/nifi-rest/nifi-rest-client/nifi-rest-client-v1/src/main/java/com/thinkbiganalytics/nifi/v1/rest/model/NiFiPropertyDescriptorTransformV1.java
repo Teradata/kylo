@@ -31,6 +31,7 @@ public class NiFiPropertyDescriptorTransformV1 implements NiFiPropertyDescriptor
      */
     @Nonnull
     public NiFiAllowableValue toNiFiAllowableValue(@Nonnull final AllowableValueDTO dto) {
+
         final NiFiAllowableValue nifi = new NiFiAllowableValue();
         nifi.setDisplayName(dto.getDisplayName());
         nifi.setValue(dto.getValue());
@@ -54,7 +55,8 @@ public class NiFiPropertyDescriptorTransformV1 implements NiFiPropertyDescriptor
 
         final List<AllowableValueEntity> allowableValues = dto.getAllowableValues();
         if (allowableValues != null) {
-            nifi.setAllowableValues(allowableValues.stream()
+            nifi.setAllowableValues(
+                allowableValues.stream().filter(allowableValueEntity -> allowableValueEntity.getAllowableValue() != null && allowableValueEntity.getAllowableValue().getValue() != null)
                     .map(AllowableValueEntity::getAllowableValue)
                     .map(this::toNiFiAllowableValue)
                     .collect(Collectors.toList()));
