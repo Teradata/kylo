@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.thinkbiganalytics.datalake</groupId>
         <artifactId>thinkbig-data-lake-accelerator</artifactId>
-        <version>0.4.2</version>
+        <version>0.4.3-SNAPSHOT</version>
     </parent>
     <artifactId>thinkbig-integrations</artifactId>
     <packaging>pom</packaging>
