@@ -103,7 +103,7 @@ angular.module(COMMON_APP_MODULE_NAME).service('PaginationDataService',function(
      * @returns {string|Function|*|number}
      */
     this.filter = function(pageName, value){
-        if(value) {
+        if (value != undefined) {
             self.paginationData(pageName).filter = value;
         }
         return self.paginationData(pageName).filter;
@@ -116,7 +116,7 @@ angular.module(COMMON_APP_MODULE_NAME).service('PaginationDataService',function(
      * @returns {string|Function|*|number}
      */
     this.rowsPerPage = function(pageName, value){
-        if(value) {
+        if (value != undefined) {
             self.paginationData(pageName).rowsPerPage = value;
         }
         return self.paginationData(pageName).rowsPerPage;
