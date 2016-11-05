@@ -10,6 +10,7 @@ import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowDeserializer;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.ControllerServiceDTO;
 import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
@@ -24,6 +25,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -118,6 +120,29 @@ public class NifiIntegrationRestController {
         }
         return Response.ok(ports).build();
     }
+
+
+    @GET
+    @Path("/controller-services/{processGroupId}")
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response getControllerServices(@PathParam("processGroupId") String processGroupId, @QueryParam("type") String type) {
+        Set<ControllerServiceDTO> controllerServiceDTOs = null;
+        if ("all".equalsIgnoreCase(processGroupId)) {
+            controllerServiceDTOs = nifiRestClient.getControllerServices();
+        } else {
+            if ("root".equalsIgnoreCase(processGroupId)) {
+                processGroupId = nifiRestClient.getRootProcessGroup().getId();
+            }
+            controllerServiceDTOs = nifiRestClient.getNiFiRestClient().processGroups().getControllerServices(processGroupId);
+        }
+
+        if (controllerServiceDTOs != null && StringUtils.isNotBlank(type)) {
+            controllerServiceDTOs = controllerServiceDTOs.stream().filter(controllerServiceDTO -> controllerServiceDTO.getType().equalsIgnoreCase(type)).collect(Collectors.toSet());
+        }
+        return Response.ok(controllerServiceDTOs).build();
+    }
+
+
 
 
     @GET
