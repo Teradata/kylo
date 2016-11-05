@@ -35,7 +35,7 @@ hive.datasource.password={cipher}29fcf1534a84700c68f5c79520ecf8911379c8b5ef4427a
    
 ### Encrypting a property value
 
-By default, a new kylo installation does not have any of its configuration properties encrypted.  Once you have started Kylo for the first time, the easiest way to derive encrypted versions of property values is to post values to the Kylo services ```/encrypt``` endpoint to have it generate an encrypted form for you.  You could then paste back the encrypted value back into your properties file.  For instance, if you wanted to encrypt the Hive datasource password above (assuming the password is “mypassword”) you can get it’s encrypted form using curl like this:  
+By default, a new Kylo installation does not have any of its configuration properties encrypted.  Once you have started Kylo for the first time, the easiest way to derive encrypted versions of property values is to post values to the Kylo services ```/encrypt``` endpoint to have it generate an encrypted form for you.  You could then paste the encrypted value back into your properties file.  For instance, if you wanted to encrypt the Hive datasource password above (assuming the password is “mypassword”) you can get it’s encrypted form using curl like this:  
 
 ```
 $ curl localhost:8420/encrypt –d mypassword
