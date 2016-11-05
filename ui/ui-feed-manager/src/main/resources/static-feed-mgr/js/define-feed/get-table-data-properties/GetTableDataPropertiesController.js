@@ -53,12 +53,6 @@
 
         this.dbConnectionProperty = findProperty(self.DB_CONNECTION_SERVICE_PROPERTY_KEY, false)
 
-
-
-
-
-
-
         this.tableFields = [];
         this.originalTableFields = [];
 
@@ -155,6 +149,38 @@
                 return (item.fullNameLower.indexOf(lowercaseQuery) != -1 );
             };
         }
+
+        self.allowableControllerServics = [];
+        function getAvailableControllerServices() {
+            var deferred = $q.defer();
+            if (self.allowableControllerServics.length == 0) {
+
+                $http.get(DBCPTableSchemaService.LIST_SERVICES_URL("root"), {params: {type: "org.apache.nifi.dbcp.DBCPConnectionPool"}}).then(function (response) {
+                    var results = response.data;
+                    self.allowableControllerServics = results;
+                    deferred.resolve(results);
+
+                });
+            }
+            else {
+                deferred.resolve(self.allowableControllerServics);
+            }
+            return deferred.promise;
+
+        }
+
+        getAvailableControllerServices().then(function (services) {
+            var dbcpProperty = self.dbConnectionProperty;
+            if (dbcpProperty != null) {
+                //set the allowablevalues
+                //convert services to allowalvalues
+                var allowableValues = _.map(services, function (service) {
+                    return {displayName: service.name, value: service.id}
+                });
+                dbcpProperty.propertyDescriptor.allowableValues = allowableValues;
+            }
+        })
+
 
         /**
          * return the list of tables for the selected Service ID

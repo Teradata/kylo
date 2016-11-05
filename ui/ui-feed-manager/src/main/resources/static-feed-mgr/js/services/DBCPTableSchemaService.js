@@ -13,6 +13,9 @@ angular.module(MODULE_FEED_MGR).service('DBCPTableSchemaService', function (Rest
         return this.ROOT+"/proxy/v1/feedmgr/nifi/controller-services/"+serviceId+"/tables/"+tableName;
     }
 
+    this.LIST_SERVICES_URL = function (processGroupId) {
+        return this.ROOT + "/proxy/v1/feedmgr/nifi/controller-services/" + processGroupId;
+    }
 
 
 });
