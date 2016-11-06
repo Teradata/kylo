@@ -1,3 +1,4 @@
+SET SQL_MODE='ALLOW_INVALID_DATES';
 use thinkbig;
 delimiter //
 
