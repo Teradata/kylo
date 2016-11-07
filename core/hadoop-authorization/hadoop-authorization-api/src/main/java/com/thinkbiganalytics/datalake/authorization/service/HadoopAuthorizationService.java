@@ -3,6 +3,10 @@ package com.thinkbiganalytics.datalake.authorization.service;
 import com.thinkbiganalytics.datalake.authorization.config.AuthorizationConfiguration;
 import com.thinkbiganalytics.datalake.authorization.model.HadoopAuthorizationGroup;
 
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -46,7 +50,11 @@ public interface HadoopAuthorizationService {
     String getType();
 
     public static List<String> convertNewlineDelimetedTextToList(String text) {
-        List<String> result = Stream.of(text).collect(Collectors.toList());
+        List<String> result = new ArrayList<>();
+        if(StringUtils.isNotEmpty(text)) {
+            String listWithCommas = text.replace("\n", ",");
+            result = Arrays.asList(listWithCommas.split(",")).stream().collect(Collectors.toList());
+        }
         return result;
     }
 
