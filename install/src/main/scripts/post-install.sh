@@ -13,9 +13,12 @@ tar -xf $rpmInstallDir/thinkbig-ui/thinkbig-ui-app-*.tar.gz -C $rpmInstallDir/th
 rm -rf $rpmInstallDir/thinkbig-ui/thinkbig-ui-app-*.tar.gz
 echo "   - Installed thinkbig-ui to '$rpmInstallDir/thinkbig-ui'"
 
-head -c64 < /dev/urandom | base64 > $rpmInstallDir/encrypt.key
-chmod 400 $rpmInstallDir/encrypt.key
-chown thinkbig:users $rpmInstallDir/encrypt.key
+if ! [ -f $rpmInstallDir/encrypt.key ]
+then
+    head -c64 < /dev/urandom | base64 > $rpmInstallDir/encrypt.key
+    chmod 400 $rpmInstallDir/encrypt.key
+    chown thinkbig:users $rpmInstallDir/encrypt.key
+fi
 
 cat << EOF > $rpmInstallDir/thinkbig-ui/bin/run-thinkbig-ui.sh
 #!/bin/bash
