@@ -187,6 +187,23 @@ public abstract class ScriptEngine {
     }
 
     /**
+     * Resets the engine state so the {@link SparkContext} can be recreated.
+     */
+    protected void reset() {
+        // Stop Spark
+        if (sparkContext != null && !sparkContext.isStopped()) {
+            sparkContext.stop();
+        }
+
+        // Clear instance variables
+        exception.set(null);
+        out.reset();
+        result.set(null);
+        sparkContext = null;
+        sqlContext = null;
+    }
+
+    /**
      * Gets the value of the specified binding.
      *
      * @param name the name of the binding

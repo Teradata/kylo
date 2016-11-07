@@ -73,7 +73,25 @@ public class SparkScriptEngine extends ScriptEngine {
     @Override
     protected void execute(@Nonnull final String script) {
         log.debug("Executing script:\n{}", script);
-        getInterpreter().interpret(script);
+
+        try {
+            getInterpreter().interpret(script);
+        } catch (final AssertionError e) {
+            log.warn("Caught assertion error when executing script. Retrying...", e);
+            reset();
+            getInterpreter().interpret(script);
+        }
+    }
+
+    @Override
+    protected void reset() {
+        super.reset();
+
+        // Clear the interpreter
+        if (interpreter != null) {
+            interpreter.close();
+            interpreter = null;
+        }
     }
 
     /**
