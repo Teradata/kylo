@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.metadata.sla.config;
 
 import com.thinkbiganalytics.metadata.sla.api.Metric;
+import com.thinkbiganalytics.metadata.sla.api.core.FeedFailureMetricAssessor;
 import com.thinkbiganalytics.metadata.sla.api.core.FeedOnTimeArrivalMetricAssessor;
 import com.thinkbiganalytics.metadata.sla.spi.MetricAssessor;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessor;
@@ -20,6 +21,13 @@ public class DefaultServiceLevelAgreementConfiguration {
     @Bean(name = "onTimeAssessor")
     public MetricAssessor<? extends Metric, Serializable> onTimeMetricAssessor(@Qualifier("slaAssessor") ServiceLevelAssessor slaAssessor) {
         FeedOnTimeArrivalMetricAssessor metricAssr = new FeedOnTimeArrivalMetricAssessor();
+        slaAssessor.registerMetricAssessor(metricAssr);
+        return metricAssr;
+    }
+
+    @Bean(name = "feedFailureAssessor")
+    public MetricAssessor<? extends Metric, Serializable> feedFailureAssessor(@Qualifier("slaAssessor") ServiceLevelAssessor slaAssessor) {
+        FeedFailureMetricAssessor metricAssr = new FeedFailureMetricAssessor();
         slaAssessor.registerMetricAssessor(metricAssr);
         return metricAssr;
     }
