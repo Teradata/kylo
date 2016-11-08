@@ -5,10 +5,13 @@ package com.thinkbiganalytics.auth.jaas;
 
 import java.io.IOException;
 import java.security.Principal;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
@@ -187,6 +190,14 @@ public abstract class AbstractLoginModule implements LoginModule {
         return principals;
     }
     
+    /**
+     * @return the user principal (if any) and all ather princials in a combined set.
+     */
+    protected Set<Principal> getAllPrincipals() {
+        return getUserPrincipal() == null ? getPrincipals() : Stream.concat(Stream.of(getUserPrincipal()), 
+                                                                            getPrincipals().stream()).collect(Collectors.toSet());
+    }
+    
     protected Principal getUserPrincipal() {
         return userPrincipal;
     }
@@ -217,6 +228,10 @@ public abstract class AbstractLoginModule implements LoginModule {
     
     protected boolean addPrincipal(Principal principal) {
         return this.principals.add(principal);
+    }
+    
+    protected boolean addAllPrincipals(Collection<? extends Principal> principals) {
+        return this.principals.addAll(principals);
     }
     
     protected boolean removePrincipal(Principal principal) {

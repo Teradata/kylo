@@ -1,16 +1,14 @@
 package com.thinkbiganalytics.auth.kylo;
 
-import java.security.Principal;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 import javax.annotation.Nonnull;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
+import javax.security.auth.login.AccountLockedException;
 import javax.security.auth.login.AccountNotFoundException;
 import javax.security.auth.login.CredentialException;
 import javax.security.auth.login.LoginException;
@@ -55,8 +53,6 @@ public class KyloLoginModule extends AbstractLoginModule implements LoginModule 
     /** Metadata user provider */
     private UserProvider userProvider;
     
-    private Set<Principal> principals = new HashSet<>();
-    
 
     @Override
     public void initialize(@Nonnull final Subject subject, @Nonnull final CallbackHandler callbackHandler, @Nonnull final Map<String, ?> sharedState, @Nonnull final Map<String, ?> options) {
@@ -85,12 +81,14 @@ public class KyloLoginModule extends AbstractLoginModule implements LoginModule 
             Optional<User> user = userProvider.findUserBySystemName(nameCallback.getName());
             
             if (user.isPresent()) {
-                if (requirePassword && passwordEncoder.matches(new String(passwordCallback.getPassword()), user.get().getPassword())) {
-                    throw new CredentialException("The username and/or password do not match any account");
+                if (! user.get().isEnabled()) {
+                    throw new AccountLockedException("The account \"" + nameCallback.getName() + "\" is currently disabled");
+                } else if (requirePassword && passwordEncoder.matches(new String(passwordCallback.getPassword()), user.get().getPassword())) {
+                    throw new CredentialException("The username and/or password combination do not match");
                 }
                 
-                this.principals.add(user.get().getPrincipal());
-                this.principals.addAll(user.get().getAllGroupPrincipals());
+                addPrincipal(user.get().getPrincipal());
+                addAllPrincipals(user.get().getAllGroupPrincipals());
             } else {
                 throw new AccountNotFoundException("No account exists with name name \"" + nameCallback.getName() + "\"");
             }
@@ -101,7 +99,7 @@ public class KyloLoginModule extends AbstractLoginModule implements LoginModule 
 
     @Override
     protected boolean doCommit() throws Exception {
-        getSubject().getPrincipals().addAll(this.principals);
+        getSubject().getPrincipals().addAll(getAllPrincipals());
         return true;
     }
 
@@ -112,7 +110,7 @@ public class KyloLoginModule extends AbstractLoginModule implements LoginModule 
 
     @Override
     protected boolean doLogout() throws Exception {
-        getSubject().getPrincipals().removeAll(this.principals);
+        getSubject().getPrincipals().removeAll(getAllPrincipals());
         return true;
     }
 
