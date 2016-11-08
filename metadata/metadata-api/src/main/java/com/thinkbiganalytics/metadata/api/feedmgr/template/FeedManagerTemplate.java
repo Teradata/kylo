@@ -1,11 +1,11 @@
 package com.thinkbiganalytics.metadata.api.feedmgr.template;
 
-import java.io.Serializable;
-import java.util.List;
+import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
 
 import org.joda.time.DateTime;
 
-import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
+import java.io.Serializable;
+import java.util.List;
 
 /**
  * Created by sr186054 on 5/4/16.
@@ -13,7 +13,16 @@ import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
 public interface FeedManagerTemplate {
 
     interface ID extends Serializable { }
+
     List<FeedManagerFeed> getFeeds();
+
+    boolean addFeed(FeedManagerFeed<?> feed);
+
+    boolean removeFeed(FeedManagerFeed<?> feed);
+
+    enum State {
+        ENABLED, DISABLED
+    }
 
     ID getId();
 
@@ -58,6 +67,8 @@ public interface FeedManagerTemplate {
 
     void setJson(String json);
 
+    void setState(State state);
 
+    State getState();
 
 }

@@ -37,6 +37,7 @@ public class RegisteredTemplate {
     private String icon;
     private String iconColor;
     private String description;
+    private String state;
 
     private boolean defineTable;
     @JsonProperty("allowPreconditions")
@@ -47,6 +48,11 @@ public class RegisteredTemplate {
     private boolean reusableTemplate;
 
     private List<ReusableTemplateConnectionInfo> reusableTemplateConnections;
+
+    /**
+     * The number of feeds that use this template
+     */
+    private Integer feedsCount;
 
     public RegisteredTemplate(){
 
@@ -64,6 +70,7 @@ public class RegisteredTemplate {
         this.icon = registeredTemplate.getIcon();
         this.iconColor = registeredTemplate.getIconColor();
         this.description = registeredTemplate.getDescription();
+        this.state = registeredTemplate.getState();
         //copy properties???
         if(registeredTemplate.getProperties() != null) {
             this.properties = new ArrayList<>(registeredTemplate.getProperties());
@@ -72,6 +79,7 @@ public class RegisteredTemplate {
         if(registeredTemplate.getReusableTemplateConnections() != null) {
             this.reusableTemplateConnections = new ArrayList<>(registeredTemplate.getReusableTemplateConnections());
         }
+        this.feedsCount= registeredTemplate.getFeedsCount();
         this.initializeProcessors();
     }
 
@@ -193,6 +201,14 @@ public class RegisteredTemplate {
 
     public boolean usesReusableTemplate(){
         return getReusableTemplateConnections() != null && !getReusableTemplateConnections().isEmpty();
+    }
+
+    public Integer getFeedsCount() {
+        return feedsCount;
+    }
+
+    public void setFeedsCount(Integer feedsCount) {
+        this.feedsCount = feedsCount;
     }
 
     public List<Processor> getNonInputProcessors() {
@@ -399,4 +415,11 @@ public class RegisteredTemplate {
     }
 
 
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
+    }
 }

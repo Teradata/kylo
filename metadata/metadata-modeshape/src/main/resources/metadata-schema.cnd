@@ -145,8 +145,10 @@
     - tba:allowPreconditions (BOOLEAN) = 'false'
     - tba:icon (STRING)
     - tba:iconColor (STRING)
-    - tba:nifiTemplateId (STRING)   
+    - tba:nifiTemplateId (STRING)
+    - tba:state (STRING) = 'ENABLED'
     - tba:json (STRING)
+    - tba:feeds (REFERENCE) multiple
 
 [tba:category] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied, tba:accessControlled
 	- tba:systemName (STRING) mandatory

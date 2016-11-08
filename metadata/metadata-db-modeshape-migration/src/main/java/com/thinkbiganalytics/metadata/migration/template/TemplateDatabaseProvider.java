@@ -75,7 +75,7 @@ public class TemplateDatabaseProvider {
                 }
                 dto.setDescription(description);
                 dto.setName(name);
-                dto.setState(state);
+                dto.setState(FeedManagerTemplate.State.valueOf(state));
                 dto.setDefineTable(isDefineTable);
                 dto.setAllowPreconditions(isAllowPreconditions);
                 dto.setDataTransformation(isDataTransform);

@@ -88,7 +88,7 @@ public class InMemoryFeedManagerTemplateService extends AbstractFeedManagerTempl
     return registeredTemplate;
   }
 
-  public void deleteRegisteredTemplate(String templateId){
+  public boolean deleteRegisteredTemplate(String templateId) {
     throw new UnsupportedOperationException("unable to delete the template");
   }
 
@@ -142,4 +142,14 @@ public class InMemoryFeedManagerTemplateService extends AbstractFeedManagerTempl
     return new ArrayList<>(registeredTemplates.values());
   }
 
+
+  @Override
+  public RegisteredTemplate enableTemplate(String templateId) {
+    return null;
+  }
+
+  @Override
+  public RegisteredTemplate disableTemplate(String templateId) {
+    return null;
+  }
 }

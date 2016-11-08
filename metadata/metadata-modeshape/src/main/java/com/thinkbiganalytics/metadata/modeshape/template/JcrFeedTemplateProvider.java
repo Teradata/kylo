@@ -1,22 +1,30 @@
 package com.thinkbiganalytics.metadata.modeshape.template;
 
+import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
+import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
+import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
+import com.thinkbiganalytics.metadata.api.feedmgr.template.TemplateDeletionException;
+import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
+
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
-
-import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
-import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
-import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
-import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
+import javax.inject.Inject;
 
 /**
  * Created by sr186054 on 6/8/16.
  */
 public class JcrFeedTemplateProvider extends BaseJcrProvider<FeedManagerTemplate, FeedManagerTemplate.ID> implements FeedManagerTemplateProvider {
+
+    @Inject
+    FeedManagerFeedProvider feedManagerFeedProvider;
 
     @Override
     public Class<? extends FeedManagerTemplate> getEntityClass() {
@@ -67,5 +75,59 @@ public class JcrFeedTemplateProvider extends BaseJcrProvider<FeedManagerTemplate
 
     public FeedManagerTemplate.ID resolveId(Serializable fid) {
         return new JcrFeedTemplate.FeedTemplateId(fid);
+    }
+
+
+    @Override
+    public FeedManagerTemplate enable(FeedManagerTemplate.ID id) {
+        JcrFeedTemplate template = (JcrFeedTemplate) findById(id);
+        if (template != null) {
+            if (!template.isEnabled()) {
+                template.enable();
+                return update(template);
+            }
+            return template;
+        } else {
+            throw new MetadataRepositoryException("Unable to find template with id" + id);
+        }
+    }
+
+    @Override
+    public FeedManagerTemplate disable(FeedManagerTemplate.ID id) {
+        JcrFeedTemplate template = (JcrFeedTemplate) findById(id);
+        if (template != null) {
+            if (template.isEnabled()) {
+                template.disable();
+                return update(template);
+            }
+            return template;
+        } else {
+            throw new MetadataRepositoryException("Unable to find template with id" + id);
+        }
+    }
+
+    @Override
+    public boolean deleteTemplate(FeedManagerTemplate.ID id) throws TemplateDeletionException {
+        FeedManagerTemplate item = findById(id);
+        return deleteTemplate(item);
+    }
+
+    public boolean deleteTemplate(FeedManagerTemplate feedManagerTemplate) throws TemplateDeletionException {
+        if (feedManagerTemplate != null && (feedManagerTemplate.getFeeds() == null || feedManagerTemplate.getFeeds().size() == 0)) {
+            super.delete(feedManagerTemplate);
+            return true;
+        } else {
+            throw new TemplateDeletionException(feedManagerTemplate.getName(), feedManagerTemplate.getId().toString(), "There are still feeds assigned to this template.");
+        }
+    }
+
+    @Override
+    public void delete(FeedManagerTemplate feedManagerTemplate) {
+        deleteTemplate(feedManagerTemplate);
+    }
+
+    @Override
+    public void deleteById(FeedManagerTemplate.ID id) {
+        deleteTemplate(id);
     }
 }

@@ -5,7 +5,7 @@
 /**
  *
  */
-angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($http, RestUrlService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper) {
+angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($http, $q, $mdDialog, RestUrlService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper) {
 
   function escapeRegExp(str) {
     return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
@@ -49,7 +49,8 @@ angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($ht
       needsReusableTemplate: false,
       ports: [],
       reusableTemplateConnections:[],  //[{reusableTemplateFeedName:'', feedOutputPortName: '', reusableTemplateInputPortName: ''}]
-      icon: {title: null, color: null}
+      icon: {title: null, color: null,
+      state:'ENABLED'}
     },
     newModel: function () {
       this.model = angular.copy(this.emptyModel);
@@ -78,7 +79,8 @@ angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($ht
         iconColor: this.model.icon.color,
         reusableTemplate: this.model.reusableTemplate,
         needsReusableTemplate: this.model.needsReusableTemplate,
-        reusableTemplateConnections: this.model.reusableTemplateConnections
+        reusableTemplateConnections: this.model.reusableTemplateConnections,
+        state:this.model.state
       }
     },
     newReusableConnectionInfo: function() {
@@ -381,6 +383,234 @@ angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($ht
         updateProperties(processor, processor.properties)
         setRenderTemplateForProcessor(processor);
       });
+
+    },
+    disableTemplate:function(templateId){
+      var self = this;
+      var promise = $http.post(RestUrlService.DISABLE_REGISTERED_TEMPLATE_URL(templateId)).then(function(response){
+        self.model.state = response.data.state
+        if ( self.model.state == 'ENABLED') {
+          self.model.stateIcon = 'check_circle'
+        }
+        else {
+          self.model.stateIcon = 'block'
+        }
+      });
+      return promise;
+    },
+    /**
+     *
+     * @param templateId
+     * @returns {*}
+     */
+    enableTemplate:function(templateId){
+      var self = this;
+      var promise = $http.post(RestUrlService.ENABLE_REGISTERED_TEMPLATE_URL(templateId)).then(function(response){
+        self.model.state = response.data.state
+        if ( self.model.state == 'ENABLED') {
+          self.model.stateIcon = 'check_circle'
+        }
+        else {
+          self.model.stateIcon = 'block'
+        }
+      });
+      return promise;
+
+    },
+    deleteTemplate:function(templateId){
+      var deferred = $q.defer();
+       $http.delete(RestUrlService.DELETE_REGISTERED_TEMPLATE_URL(templateId)).then(function(response){
+        deferred.resolve(response);
+      }, function(response){
+        deferred.reject(response);
+      });
+      return deferred.promise;
+    },
+    /**
+     * Assigns the model properties and render types
+     * Returns a promise
+     * @returns {*}
+     */
+    loadTemplateWithProperties:function(registeredTemplateId, nifiTemplateId){
+      var isValid = true;
+
+      var self = this;
+      /**
+       * Assign the render types to the properties
+       * @param property
+       */
+      function assignPropertyRenderType(property) {
+
+        var allowableValues = property.propertyDescriptor.allowableValues;
+        if( allowableValues !== undefined && allowableValues !== null && allowableValues.length >0 ){
+          if(allowableValues.length == 2){
+            var list = _.filter(allowableValues,function(value){
+              return (value.value.toLowerCase() == 'false' ||  value.value.toLowerCase() == 'true');
+            });
+            if(list != undefined && list.length == 2) {
+              property.renderTypes = self.trueFalseRenderTypes;
+            }
+          }
+          if(property.renderTypes == undefined){
+            property.renderTypes = self.selectRenderType;
+          }
+          property.renderType = property.renderType == undefined ? 'select' : property.renderType;
+        }
+        else {
+          property.renderTypes = self.propertyRenderTypes;
+          property.renderType = property.renderType == undefined ? 'text' : property.renderType;
+        }
+      }
+
+      /**
+       * groups properties into processor groups
+       * TODO fix to reference Java collections instead of in Javascript
+       * @param properties
+       */
+      function transformPropertiesToArray(properties) {
+        var inputProperties = [];
+        var additionalProperties = [];
+        var inputProcessors  = [];
+        var additionalProcessors = [];
+        angular.forEach(properties, function (property, i) {
+          if(property.processor == undefined){
+            property.processor = {};
+            property.processor.id = property.processorId;
+            property.processor.name = property.processorName;
+            property.processor.type = property.processorType;
+            property.processor.groupId = property.processGroupId;
+            property.processor.groupName = property.processGroupName;
+          }
+
+          if(property.selected == undefined){
+            property.selected = false;
+          }
+          if(property.renderOptions == undefined){
+            property.renderOptions = {};
+          }
+          // if(property.propertyDescriptor.required == true && ( property.value =='' || property.value ==undefined)) {
+          //     property.selected = true;
+          //  }
+
+          assignPropertyRenderType(property)
+
+          property.templateValue = property.value;
+          property.userEditable = (property.userEditable == undefined || property.userEditable == null) ? true : property.userEditable ;
+
+          if(property.inputProperty){
+            property.mentioId='inputProperty'+property.processorName+'_'+i;
+          }
+          else {
+            property.mentioId='processorProperty_'+property.processorName+'_'+i;
+          }
+
+          //       copyProperty.processor = {id: property.processor.id, name: property.processor.name};
+          if(property.inputProperty) {
+            inputProperties.push(property);
+          }
+          else {
+            additionalProperties.push(property);
+          }
+        });
+
+        //sort them by processor name and property key
+        var inputPropertiesAndProcessors = self.sortPropertiesForDisplay(inputProperties);
+        inputProperties = inputPropertiesAndProcessors.properties;
+        inputProcessors = inputPropertiesAndProcessors.processors;
+
+        var additionalPropertiesAndProcessors = self.sortPropertiesForDisplay(additionalProperties);
+        additionalProperties = additionalPropertiesAndProcessors.properties;
+        additionalProcessors = additionalPropertiesAndProcessors.processors;
+
+        self.model.inputProperties = inputProperties;
+        self.model.additionalProperties = additionalProperties;
+        self.model.inputProcessors = inputProcessors;
+        self.model.additionalProcessors = additionalProcessors;
+
+      }
+
+      function validate() {
+        if (self.model.reusableTemplate) {
+          self.model.valid = false;
+          var errorMessage =
+              "This is a reusable template and cannot be registered as it starts with an input port.  You need to create and register a template that has output ports that connect to this template";
+          $mdDialog.show(
+              $mdDialog.alert()
+                  .ariaLabel("Error loading the template")
+                  .clickOutsideToClose(true)
+                  .htmlContent(errorMessage)
+                  .ok("Got it!")
+                  .parent(document.body)
+                  .title("Error loading the template"));
+          return false;
+        }
+        else {
+          self.model.valid = true;
+          return true;
+        }
+      }
+
+
+      if(registeredTemplateId != null) {
+        self.resetModel();
+        //get the templateId for the registeredTemplateId
+        self.model.id = registeredTemplateId;
+      }
+      if(nifiTemplateId != null) {
+        self.model.nifiTemplateId = nifiTemplateId;
+      }
+      if(self.model.nifiTemplateId != null) {
+        self.model.loading = true;
+          var successFn = function (response) {
+            var templateData = response.data;
+            transformPropertiesToArray(templateData.properties);
+            self.model.exportUrl = RestUrlService.ADMIN_EXPORT_TEMPLATE_URL + "/" + templateData.id;
+            self.model.nifiTemplateId = templateData.nifiTemplateId;
+            self.nifiTemplateId = templateData.nifiTemplateId;
+            self.model.templateName = templateData.templateName;
+            self.model.defineTable = templateData.defineTable;
+            self.model.state = templateData.state;
+            self.model.id = templateData.id;
+            if(self.model.id == null){
+              self.model.state = 'NOT REGISTERED'
+            }
+            self.model.updateDate = templateData.updateDate;
+            self.model.feedsCount = templateData.feedsCount;
+            self.model.allowPreconditions = templateData.allowPreconditions;
+            self.model.dataTransformation = templateData.dataTransformation;
+            self.model.description = templateData.description;
+
+            self.model.icon.title = templateData.icon;
+            self.model.icon.color = templateData.iconColor;
+            self.model.reusableTemplate = templateData.reusableTemplate;
+            self.model.reusableTemplateConnections = templateData.reusableTemplateConnections;
+            self.model.needsReusableTemplate = templateData.reusableTemplateConnections != undefined && templateData.reusableTemplateConnections.length>0;
+            if (templateData.state == 'ENABLED') {
+              self.model.stateIcon = 'check_circle'
+            }
+            else {
+              self.model.stateIcon = 'block'
+            }
+            validate();
+            self.model.loading = false;
+          }
+          var errorFn = function (err) {
+            self.model.loading = false;
+          }
+          var id = registeredTemplateId != undefined && registeredTemplateId != null ? registeredTemplateId : self.model.nifiTemplateId;
+          var promise = $http.get(RestUrlService.GET_REGISTERED_TEMPLATE_URL(id), {params: {allProperties: true}});
+          promise.then(successFn, errorFn);
+          return promise;
+        }
+        else {
+          var deferred = $q.defer();
+          self.properties = [];
+          deferred.resolve(self.properties);
+          return deferred.promise;
+        }
+
+
+
 
     }
 

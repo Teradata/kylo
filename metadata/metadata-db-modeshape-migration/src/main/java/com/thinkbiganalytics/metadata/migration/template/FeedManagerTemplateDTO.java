@@ -30,7 +30,7 @@ public class FeedManagerTemplateDTO implements FeedManagerTemplate {
 
     private String iconColor;
 
-    private String state;
+    private State state;
 
     private String json;
 
@@ -113,12 +113,8 @@ public class FeedManagerTemplateDTO implements FeedManagerTemplate {
         this.iconColor = iconColor;
     }
 
-    public String getState() {
+    public State getState() {
         return state;
-    }
-
-    public void setState(String state) {
-        this.state = state;
     }
 
     public String getJson() {
@@ -156,5 +152,20 @@ public class FeedManagerTemplateDTO implements FeedManagerTemplate {
     @Override
     public List<FeedManagerFeed> getFeeds() {
         return null;
+    }
+
+    @Override
+    public boolean addFeed(FeedManagerFeed<?> feed) {
+        return false;
+    }
+
+    @Override
+    public boolean removeFeed(FeedManagerFeed<?> feed) {
+        return false;
+    }
+
+    @Override
+    public void setState(State state) {
+
     }
 }

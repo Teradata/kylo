@@ -24,7 +24,11 @@ public interface FeedManagerTemplateService {
 
     RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId);
 
-    void deleteRegisteredTemplate(String templateId);
+    boolean deleteRegisteredTemplate(String templateId);
+
+    RegisteredTemplate enableTemplate(String templateId);
+
+    RegisteredTemplate disableTemplate(String templateId);
 
     List<RegisteredTemplate> getRegisteredTemplates();
 

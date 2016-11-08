@@ -70,6 +70,17 @@ angular.module(MODULE_FEED_MGR).service('RestUrlService', function () {
         return self.TEMPLATES_BASE_URL+"/nifi/"+nifiTemplateId+"/ports";
     }
 
+    this.DISABLE_REGISTERED_TEMPLATE_URL = function(templateId) {
+        console.log('DISABLE URL ',self.GET_REGISTERED_TEMPLATES_URL+"/"+templateId+"/disable")
+        return self.GET_REGISTERED_TEMPLATES_URL+"/"+templateId+"/disable";
+    }
+    this.ENABLE_REGISTERED_TEMPLATE_URL = function(templateId) {
+        return self.GET_REGISTERED_TEMPLATES_URL+"/"+templateId+"/enable";
+    }
+    this.DELETE_REGISTERED_TEMPLATE_URL = function(templateId) {
+        return self.GET_REGISTERED_TEMPLATES_URL+"/"+templateId+"/delete";
+    }
+
     this.ALL_REUSABLE_FEED_INPUT_PORTS = this.ROOT+"/proxy/v1/feedmgr/nifi/reusable-input-ports";
 
     this.CONFIGURATION_PROPERTIES_URL =this.ROOT+"/proxy/v1/feedmgr/nifi/configuration/properties";

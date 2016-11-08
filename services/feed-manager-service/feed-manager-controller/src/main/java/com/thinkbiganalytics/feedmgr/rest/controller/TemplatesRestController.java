@@ -1,26 +1,5 @@
 package com.thinkbiganalytics.feedmgr.rest.controller;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
-import org.apache.nifi.web.api.dto.PortDTO;
-import org.apache.nifi.web.api.dto.TemplateDTO;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -39,6 +18,29 @@ import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
+import com.thinkbiganalytics.rest.model.RestResponseStatus;
+
+import org.apache.nifi.web.api.dto.PortDTO;
+import org.apache.nifi.web.api.dto.TemplateDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import io.swagger.annotations.Api;
 
@@ -263,6 +265,32 @@ public class TemplatesRestController {
         feedManagerTemplateService.ensureRegisteredTemplateInputProcessors(registeredTemplate);
 
         return Response.ok(registeredTemplate).build();
+    }
+
+    @POST
+    @Path("/registered/{templateId}/enable")
+    @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response enableTemplate(@PathParam("templateId") String templateId) {
+        RegisteredTemplate enabledTemplate = feedManagerTemplateService.enableTemplate(templateId);
+        return Response.ok(enabledTemplate).build();
+    }
+
+    @POST
+    @Path("/registered/{templateId}/disable")
+    @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response disableTemplate(@PathParam("templateId") String templateId) {
+        RegisteredTemplate disabledTemplate = feedManagerTemplateService.disableTemplate(templateId);
+        return Response.ok(disabledTemplate).build();
+    }
+
+    @DELETE
+    @Path("/registered/{templateId}/delete")
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response deleteTemplate(@PathParam("templateId") String templateId) {
+       boolean deleted = feedManagerTemplateService.deleteRegisteredTemplate(templateId);
+        return Response.ok( deleted ? new RestResponseStatus.ResponseStatusBuilder().buildSuccess() : new RestResponseStatus.ResponseStatusBuilder().buildError()).build();
     }
 
 

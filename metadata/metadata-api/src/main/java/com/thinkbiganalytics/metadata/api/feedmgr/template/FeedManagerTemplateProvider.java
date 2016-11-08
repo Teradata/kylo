@@ -13,4 +13,10 @@ public interface FeedManagerTemplateProvider  extends BaseProvider<FeedManagerTe
 
      FeedManagerTemplate ensureTemplate(String name);
 
+     FeedManagerTemplate enable(FeedManagerTemplate.ID id);
+
+     FeedManagerTemplate disable(FeedManagerTemplate.ID id);
+
+     boolean deleteTemplate(FeedManagerTemplate.ID id) throws TemplateDeletionException;
+
 }

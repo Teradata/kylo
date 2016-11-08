@@ -1,17 +1,5 @@
 package com.thinkbiganalytics.metadata.upgrade;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.OperationalMetadataAccess;
 import com.thinkbiganalytics.metadata.api.app.KyloVersion;
@@ -22,11 +10,25 @@ import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
+import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
+import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaOpsManagerFeed;
 import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailability;
 import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailabilityListener;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.support.FeedNameUtil;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 
 /**
  * Created by sr186054 on 9/19/16.
@@ -41,6 +43,9 @@ public class UpgradeKyloService implements ModeShapeAvailabilityListener {
 
     @Inject
     private FeedManagerFeedProvider feedManagerFeedProvider;
+
+    @Inject
+    private FeedManagerTemplateProvider feedManagerTemplateProvider;
     
     @Inject
     private FeedManagerCategoryProvider feedManagerCategoryProvider;
@@ -78,18 +83,42 @@ public class UpgradeKyloService implements ModeShapeAvailabilityListener {
         KyloVersion version = kyloVersionProvider.getKyloVersion();
         if (version == null || version.getMajorVersionNumber() == null || (version.getMajorVersionNumber() != null && version.getMajorVersionNumber().floatValue() < 0.4f)) {
             version = upgradeTo0_4_0();
-        } else {
+        }
+        ensureFeedTemplateFeedRelationships();
             version = operationalMetadataAccess.commit(() -> {
                 //ensure/update the version
                 KyloVersion kyloVersion = kyloVersionProvider.updateToCurrentVersion();
                 return kyloVersion;
             });
-        }
+
         log.info("Upgrade check complete for Kylo {}", version.getVersion());
 
 
     }
 
+    /**
+     * Ensure the Feed Template has the relationships setup to its related feeds
+     */
+    private void ensureFeedTemplateFeedRelationships() {
+        metadataAccess.commit(() -> {
+
+            //ensure the templates have the feed relationships
+            List<FeedManagerFeed> feeds = feedManagerFeedProvider.findAll();
+            if (feeds != null) {
+                feeds.stream().forEach(feed -> {
+                    FeedManagerTemplate template = feed.getTemplate();
+                    //ensure the template has feeds
+                    if (template.getFeeds() == null || !template.getFeeds().contains(feed)) {
+                        template.addFeed(feed);
+                        feedManagerTemplateProvider.update(template);
+                    }
+                });
+
+            }
+
+            return null;
+        }, MetadataAccess.SERVICE);
+    }
 
     public KyloVersion upgradeTo0_4_0() {
 

@@ -4,6 +4,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
+import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
 
@@ -30,6 +31,9 @@ public class TemplateModelTransform {
                     String json = domain.getJson();
                     RegisteredTemplate template = ObjectMapperSerializer.deserialize(json, RegisteredTemplate.class);
                     template.setId(domain.getId().toString());
+                    template.setState(domain.getState().name());
+                    List<FeedManagerFeed> feeds = domain.getFeeds();
+                    template.setFeedsCount(feeds == null ? 0 : feeds.size());
                     if(domain.getCreatedTime() != null) {
                          template.setCreateDate(domain.getCreatedTime().toDate());
                     }
@@ -65,6 +69,7 @@ public class TemplateModelTransform {
                     domain.setIconColor(registeredTemplate.getIconColor());
                     domain.setDescription(registeredTemplate.getDescription());
                     domain.setJson(json);
+                    domain.setState(FeedManagerTemplate.State.valueOf(registeredTemplate.getState()));
 
                     //assign the id back to the ui model
                     registeredTemplate.setId(domainId.toString());
@@ -74,6 +79,10 @@ public class TemplateModelTransform {
 
     public List<RegisteredTemplate> domainToRegisteredTemplate(Collection<FeedManagerTemplate> domain) {
         return new ArrayList<>(Collections2.transform(domain, DOMAIN_TO_REGISTERED_TEMPLATE));
+    }
+
+    public RegisteredTemplate domainToRegisteredTemplate(FeedManagerTemplate domain) {
+        return DOMAIN_TO_REGISTERED_TEMPLATE.apply(domain);
     }
 
     public List<FeedManagerTemplate> registeredTemplateToDomain(Collection<RegisteredTemplate> registeredTemplates) {

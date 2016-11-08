@@ -179,6 +179,7 @@ public class FeedModelTransform {
             FeedManagerTemplate.ID templateId = templateProvider.resolveId(feedMetadata.getTemplateId());
             FeedManagerTemplate domainTemplate = templateProvider.findById(templateId);
             domain.setTemplate(domainTemplate);
+
         }
 
         // Set user-defined properties

@@ -116,17 +116,12 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
 
     }
 
-    public void deleteRegisteredTemplate(final String templateId) {
-        metadataAccess.commit(() -> {
+    public boolean deleteRegisteredTemplate(final String templateId) {
+       return metadataAccess.commit(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_TEMPLATES);
 
             FeedManagerTemplate.ID domainId = templateProvider.resolveId(templateId);
-            FeedManagerTemplate domainTemplate = templateProvider.findById(domainId);
-            //only allow deletion if there are no feeds
-            if (domainTemplate != null && (domainTemplate.getFeeds() == null || domainTemplate.getFeeds().size() == 0)) {
-                templateProvider.deleteById(domainId);
-            }
-            return true;
+            return templateProvider.deleteTemplate(domainId);
         });
 
     }
@@ -180,7 +175,33 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
 
     }
 
+    @Override
+    public RegisteredTemplate enableTemplate(String templateId) {
+        return metadataAccess.commit(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_TEMPLATES);
+            FeedManagerTemplate.ID domainId = templateProvider.resolveId(templateId);
+            if(domainId != null){
+                FeedManagerTemplate template =   templateProvider.enable(domainId);
+                if(template != null){
+                   return templateModelTransform.domainToRegisteredTemplate(template);
+                }
+            }
+            return null;
+        });
+    }
 
-
-
+    @Override
+    public RegisteredTemplate disableTemplate(String templateId) {
+        return metadataAccess.commit(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_TEMPLATES);
+            FeedManagerTemplate.ID domainId = templateProvider.resolveId(templateId);
+            if(domainId != null){
+                FeedManagerTemplate template =   templateProvider.disable(domainId);
+                if(template != null){
+                    return templateModelTransform.domainToRegisteredTemplate(template);
+                }
+            }
+            return null;
+        });
+    }
 }

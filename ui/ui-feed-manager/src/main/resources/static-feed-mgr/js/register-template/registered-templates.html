@@ -1,6 +1,6 @@
-<div ng-controller="RegisteredTemplatesController as vm">
+<div ng-controller="RegisteredTemplatesController as vm" layout="row" layout-align="center start">
 
-    <card-layout  header-css="filter-header" class="centered">
+  <card-layout header-css="filter-header" class="centered" style="max-width:980px;width:980px;">
 
         <header-section tba-card-filter-header transclude-to="head" flex layout card-title="vm.cardTitle" page-name="{{vm.pageName}}" view-type="vm.viewType" sort-options="vm.sortOptions" on-selected-option="vm.selectedTableOption" filter-model="vm.filter">
 
@@ -17,19 +17,29 @@
            <md-list flex layout-fill class="list-item-table registered-templates">
                         <md-list-item  class="md-secondary" dir-paginate="template in vm.registeredTemplates |orderBy:vm.paginationData.sort |filter:vm.filter|itemsPerPage:vm.paginationData.rowsPerPage" pagination-id="registered-templates"  current-page="vm.currentPage" >
                             <div layout="row" layout-fill>
-                                <div flex="40" layout="column" class="item-column md-list-item-text " title="{{template.properties.length}} properties configured" ng-click="vm.templateDetails($event,template)">
+                              <div flex="40" layout="column" class="item-column md-list-item-text " ng-class="{'disabled':template.state == 'DISABLED'}"
+                                   title="{{template.properties.length}} properties configured" ng-click="vm.templateDetails($event,template)">
                                              <span class="item-title" title="{{template.templateName}}">
                                               {{template.templateName}}
                                            </span>
-                                           <span class="column-title column-title-bottom">
-                                                  <ng-md-icon icon="{{template.icon}}" size="20" hide-xs style="fill:{{template.iconColor}}">
-                                                  </ng-md-icon>
-                                            Template Name
-                                           </span>
-                                </div>
-                                <div flex="40" layout="column" class="item-column md-list-item-text ">
 
+                                <div layout="row" class="column-title column-title-bottom">
+                                  <ng-md-icon icon="{{template.icon}}" size="20" hide-xs style="fill:{{template.iconColor}}">
+                                  </ng-md-icon>
+                                  <span>Template Name</span>
+                                  <span ng-if="template.state == 'DISABLED'">DISABLED</span>
+                                </div>
+                                </div>
+                              <div flex="10" layout="column" class="item-column md-list-item-text ">
                                            <span  class="item-title" title="{{feed.active}}" >
+                                             {{template.feedsCount}}</span>
+                                             <span class="column-title column-title-bottom">
+                                             Feeds
+                                           </span>
+                              </div>
+                              <div flex="30" layout="column" class="item-column md-list-item-text ">
+
+                                           <span class="item-title">
                                              {{template.updateDate | date: 'MM/dd/yyyy h:mm:ssa'}}</span>
                                              <span class="column-title column-title-bottom">
                                              Last Updated

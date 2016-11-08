@@ -31,7 +31,9 @@
 
                 if (response.data) {
 
-                    var data = _.chain(response.data).sortBy('templateName').sortBy(function(template) {
+                    var data = _.chain(response.data).filter(function (template) {
+                        return template.state == 'ENABLED'
+                    }).sortBy('templateName').sortBy(function (template) {
                         if (template.templateName == 'Data Ingest') {
                             return 0;
                         }

@@ -16,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.ControllerServiceDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
+import org.apache.nifi.web.api.dto.PropertyDescriptorDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
 
 import java.util.ArrayList;
@@ -113,13 +114,16 @@ public class NifiPropertyUtil {
     public static List<NifiProperty> getPropertiesForProcessor(ProcessGroupDTO processGroup, ProcessorDTO processor, NiFiPropertyDescriptorTransform propertyDescriptorTransform) {
         List<NifiProperty> properties = new ArrayList<>();
         for(Map.Entry<String,String> entry : processor.getConfig().getProperties().entrySet()) {
-            final NiFiPropertyDescriptor propertyDescriptor = propertyDescriptorTransform.toNiFiPropertyDescriptor(processor.getConfig().getDescriptors().get(entry.getKey()));
-            final NifiProperty property = new NifiProperty(processor.getParentGroupId(),processor.getId(),entry.getKey(),entry.getValue(), propertyDescriptor);
-           // property.setProcessor(processor);
-            property.setProcessGroupName(processGroup.getName());
-            property.setProcessorName(processor.getName());
-            property.setProcessorType(processor.getType());
-            properties.add(property);
+            PropertyDescriptorDTO descriptorDTO = processor.getConfig().getDescriptors().get(entry.getKey());
+            if (descriptorDTO != null) {
+                final NiFiPropertyDescriptor propertyDescriptor = propertyDescriptorTransform.toNiFiPropertyDescriptor(processor.getConfig().getDescriptors().get(entry.getKey()));
+                final NifiProperty property = new NifiProperty(processor.getParentGroupId(), processor.getId(), entry.getKey(), entry.getValue(), propertyDescriptor);
+                // property.setProcessor(processor);
+                property.setProcessGroupName(processGroup.getName());
+                property.setProcessorName(processor.getName());
+                property.setProcessorType(processor.getType());
+                properties.add(property);
+            }
         }
         return properties;
     }

@@ -20,9 +20,10 @@
         };
     }
 
-    var controller =  function($scope, $stateParams,$http,$mdDialog,$timeout,RestUrlService, RegisterTemplateService) {
+    var controller =  function($scope, $stateParams,$http,$mdDialog, $mdToast,$timeout,RestUrlService, RegisterTemplateService,StateService, AccessControlService) {
 
         var self = this;
+
         this.templates = [];
         this.model = RegisterTemplateService.model;
         this.stepNumber = parseInt(this.stepIndex)+1
@@ -33,8 +34,6 @@
 
         this.registeredTemplateId = $stateParams.registeredTemplateId || null;
         this.nifiTemplateId = $stateParams.nifiTemplateId || null;
-        this.templateSelectionDisabled = this.registeredTemplateId != null;
-        this.templateCache = {};
 
         this.isValid = this.registeredTemplateId !== null;
 
@@ -44,7 +43,6 @@
          */
         this.errorMessage = null;
 
-        this.controllerServiceNeededProperties = [];
 
         function showProgress(){
             if(self.stepperController) {
@@ -64,11 +62,14 @@
             })
         }
 
-
+        /**
+         * Gets the templates for the select dropdown
+         * @returns {HttpPromise}
+         */
         this.getTemplates = function () {
            showProgress();
             var successFn = function (response) {
-                self.templates = response.data;
+                   self.templates = response.data;
                hideProgress();
             }
             var errorFn = function (err) {
@@ -80,214 +81,108 @@
             return promise;
         };
 
-        this.showControllerServiceNeededDialog = function() {
-            hideProgress();
-
-            $mdDialog.show({
-                controller: ControllerServiceNeededDialog,
-                templateUrl: 'js/register-template/controller-service-needed-dialog.html',
-                parent: angular.element(document.body),
-                clickOutsideToClose:false,
-                fullscreen: true,
-                locals : {
-                    templateName:self.model.templateName,
-                    properties:self.controllerServiceNeededProperties
-                }
-            })
-                .then(function(msg) {
-                    if(msg == 'fixErrors') {
-                        //stay here and fix
-                    }
-                }, function() {
-
-                });
-        };
 
 
-        function assignPropertyRenderType(property) {
+        this.changeTemplate = function(){
+            showProgress();
+                //Wait for the properties to come back before allowing hte user to go to the next step
+                  RegisterTemplateService.loadTemplateWithProperties(null, self.nifiTemplateId).then(function(response) {
+                      $timeout(function() {
+                          hideProgress();
+                      },10);
+                      self.isValid = self.model.valid;
+                  });
+        }
 
-            var allowableValues = property.propertyDescriptor.allowableValues;
-            if( allowableValues !== undefined && allowableValues !== null && allowableValues.length >0 ){
-                 if(allowableValues.length == 2){
-                     var list = _.filter(allowableValues,function(value){
-                         return (value.value.toLowerCase() == 'false' ||  value.value.toLowerCase() == 'true');
-                     });
-                     if(list != undefined && list.length == 2) {
-                         property.renderTypes = RegisterTemplateService.trueFalseRenderTypes;
-                     }
-                }
-                 if(property.renderTypes == undefined){
-                    property.renderTypes = RegisterTemplateService.selectRenderType;
-                }
-                property.renderType = property.renderType == undefined ? 'select' : property.renderType;
+
+        this.disableTemplate = function(){
+            if( self.model.id) {
+                RegisterTemplateService.disableTemplate( self.model.id)
             }
-            else {
-                property.renderTypes = RegisterTemplateService.propertyRenderTypes;
-                property.renderType = property.renderType == undefined ? 'text' : property.renderType;
+        }
+
+        this.enableTemplate = function(){
+            if( self.model.id) {
+                RegisterTemplateService.enableTemplate( self.model.id)
+            }
+        }
+
+        function deleteTemplateError(errorMsg){
+            // Display error message
+            var msg = "<p>The template cannot be deleted at this time.</p><p>";
+            msg += angular.isString(errorMsg) ? _.escape(errorMsg) : "Please try again later.";
+            msg += "</p>";
+
+            $mdDialog.hide();
+            $mdDialog.show(
+                $mdDialog.alert()
+                    .ariaLabel("Error deleting the template")
+                    .clickOutsideToClose(true)
+                    .htmlContent(msg)
+                    .ok("Got it!")
+                    .parent(document.body)
+                    .title("Error deleting the template"));
+        }
+
+        this.deleteTemplate = function(){
+            if( self.model.id) {
+
+                RegisterTemplateService.deleteTemplate( self.model.id).then(function(response){
+                    if(response.data && response.data.status =='success') {
+                        self.model.state = "DELETED";
+
+                        $mdToast.show(
+                            $mdToast.simple()
+                                .textContent('Successfully deleted the template ')
+                                .hideDelay(3000)
+                        );
+                        RegisterTemplateService.resetModel();
+                        StateService.navigateToRegisteredTemplates();
+                    }
+                    else {
+                        deleteTemplateError(response.data.message)
+                    }
+                }, function(response){
+                   deleteTemplateError(response.data.message)
+                });
+
             }
         }
 
         /**
-         * groups properties into processor groups
-         * TODO fix to reference Java collections instead of in Javascript
-         * @param properties
+         * Displays a confirmation dialog for deleting the feed.
          */
-        function transformPropertiesToArray(properties) {
-            var inputProperties = [];
-            var additionalProperties = [];
-            var inputProcessors  = [];
-            var additionalProcessors = [];
-            angular.forEach(properties, function (property, i) {
-                if(property.processor == undefined){
-                    property.processor = {};
-                    property.processor.id = property.processorId;
-                    property.processor.name = property.processorName;
-                    property.processor.type = property.processorType;
-                    property.processor.groupId = property.processGroupId;
-                    property.processor.groupName = property.processGroupName;
-                }
+        this.confirmDeleteTemplate = function() {
+            var $dialogScope = $scope.$new();
+            $dialogScope.dialog = $mdDialog;
+            $dialogScope.vm = self;
 
-                if(property.selected == undefined){
-                    property.selected = false;
-                }
-                if(property.renderOptions == undefined){
-                    property.renderOptions = {};
-                }
-               // if(property.propertyDescriptor.required == true && ( property.value =='' || property.value ==undefined)) {
-               //     property.selected = true;
-              //  }
-
-                assignPropertyRenderType(property)
-
-                property.templateValue = property.value;
-                property.userEditable = (property.userEditable == undefined || property.userEditable == null) ? true : property.userEditable ;
-
-                if(property.inputProperty){
-                    property.mentioId='inputProperty'+property.processorName+'_'+i;
-                }
-                else {
-                    property.mentioId='processorProperty_'+property.processorName+'_'+i;
-                }
-
-
-                //If the Property needs a Controller Service, ensure there is at least 1 to choose from
-                if(property.propertyDescriptor.required && property.propertyDescriptor.identifiesControllerService != null && property.propertyDescriptor.identifiesControllerService != '' && ( property.propertyDescriptor.allowableValues == null || property.propertyDescriptor.allowableValues.length ==0 )) {
-                    self.isValid = false;
-                    self.controllerServiceNeededProperties.push(property)
-                }
-             //       copyProperty.processor = {id: property.processor.id, name: property.processor.name};
-                if(property.inputProperty) {
-                    inputProperties.push(property);
-                }
-                else {
-                    additionalProperties.push(property);
-                }
+            $mdDialog.show({
+                escapeToClose: false,
+                fullscreen: true,
+                parent: angular.element(document.body),
+                scope: $dialogScope,
+                templateUrl: "js/register-template/template-delete-dialog.html"
             });
-
-            //sort them by processor name and property key
-            var inputPropertiesAndProcessors = RegisterTemplateService.sortPropertiesForDisplay(inputProperties);
-            inputProperties = inputPropertiesAndProcessors.properties;
-            inputProcessors = inputPropertiesAndProcessors.processors;
-
-            var additionalPropertiesAndProcessors = RegisterTemplateService.sortPropertiesForDisplay(additionalProperties);
-            additionalProperties = additionalPropertiesAndProcessors.properties;
-            additionalProcessors = additionalPropertiesAndProcessors.processors;
-
-            self.model.inputProperties = inputProperties;
-            self.model.additionalProperties = additionalProperties;
-            self.model.inputProcessors = inputProcessors;
-            self.model.additionalProcessors = additionalProcessors;
-
-        }
+        };
 
 
 
 
 
-        this.getTemplateProperties = function() {
-            if(self.stepperController) {
-                self.stepperController.showProgress = true;
-            }
-            if(self.model.nifiTemplateId != null) {
-                var successFn = function (response) {
-                //    self.templateCache[self.model.templateId]= response;
-                    var templateData = response.data;
-                    $timeout(function() {
-                        transformPropertiesToArray(templateData.properties);
-                        if(self.stepperController) {
-                            self.stepperController.showProgress = false;
-                        }
-                        validate();
-                    },10);
-
-                    self.model.nifiTemplateId = templateData.nifiTemplateId;
-                    self.nifiTemplateId = templateData.nifiTemplateId;
-                    self.model.templateName = templateData.templateName;
-                    self.model.defineTable = templateData.defineTable;
-                    self.model.allowPreconditions = templateData.allowPreconditions;
-                    self.model.dataTransformation = templateData.dataTransformation;
-                    self.model.description = templateData.description;
-                    self.model.icon.title = templateData.icon;
-                    self.model.icon.color = templateData.iconColor;
-                    self.model.reusableTemplate = templateData.reusableTemplate;
-                    self.model.reusableTemplateConnections = templateData.reusableTemplateConnections;
-                    self.model.needsReusableTemplate = templateData.reusableTemplateConnections != undefined && templateData.reusableTemplateConnections.length>0;
-                }
-                var errorFn = function (err) {
-
-                }
-                var id = self.registeredTemplateId != undefined && self.registeredTemplateId != null ? self.registeredTemplateId : self.model.nifiTemplateId;
-                     var promise = $http.get(RestUrlService.GET_REGISTERED_TEMPLATE_URL(id), {params: {allProperties: true}});
-                    promise.then(successFn, errorFn);
-                    return promise;
-            }
-            else {
-                var deferred = $q.defer();
-                self.properties = [];
-                deferred.resolve(self.properties);
-                return deferred.promise;
-            }
-        }
-        function validate() {
-            self.isValid = false;
-            if (self.model.reusableTemplate) {
-                self.isValid = false;
-                self.errorMessage =
-                    "This is a reusable template and cannont be registered as it starts with an input port.  You need to create and register a template that has output ports that connect to this template";
-            }
-            else {
-                self.isValid = true;
-            }
-        }
-
-        this.changeTemplate = function(){
-            self.errorMessage = null;
-            self.isValid = false;
-             if(self.registeredTemplateId != null) {
-                RegisterTemplateService.resetModel();
-                //get the templateId for the registeredTemplateId
-                self.model.id = self.registeredTemplateId;
-            }
-            if(self.nifiTemplateId != null) {
-                self.model.nifiTemplateId = self.nifiTemplateId;
-            }
-            if(self.model.nifiTemplateId != null) {
-                self.controllerServiceNeededProperties = [];
-                //Wait for the properties to come back before allowing hte user to go to the next step
-                  self.getTemplateProperties().then(function(properties) {
-                      validate();
-                  });
-
-            }
-
-        }
 
 
-        if(this.isValid) {
-            this.changeTemplate();
-        }
+      //  if(this.isValid) {
+     //       this.changeTemplate();
+       // }
 
         this.getTemplates();
+
+        AccessControlService.getAllowedActions()
+            .then(function(actionSet) {
+                self.allowAdmin = AccessControlService.hasAction(AccessControlService.TEMPLATES_ADMIN, actionSet.actions);
+                self.allowExport = AccessControlService.hasAction(AccessControlService.TEMPLATES_EXPORT, actionSet.actions);
+            });
 
 
     };
