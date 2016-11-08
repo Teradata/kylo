@@ -27,7 +27,7 @@ public class FeedFailureService {
     private MetadataEventService eventService;
 
     /**
-     * Event listener for precondition events
+     * Event listener for failure events
      */
     private final MetadataEventListener<FeedOperationStatusEvent> failedFeedEventListener = new FailedFeedEventDispatcher();
 
