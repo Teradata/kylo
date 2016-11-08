@@ -59,7 +59,7 @@ public class FeedFailureService {
     }
 
     /**
-     * Transfers precondition events to JMS.
+     * populate latest failure events
      */
     private class FailedFeedEventDispatcher implements MetadataEventListener<FeedOperationStatusEvent> {
 
