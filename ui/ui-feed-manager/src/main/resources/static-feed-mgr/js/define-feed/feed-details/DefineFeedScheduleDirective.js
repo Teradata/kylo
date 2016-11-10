@@ -105,8 +105,9 @@
          * Filter out those that are not needed based upon the template
          */
         function updateScheduleStrategies() {
+
             self.scheduleStrategies = allScheduleStrategies;
-            if (self.model.allowPreconditions) {
+            if (self.model.allowPreconditions && self.model.inputProcessorType.indexOf("TriggerFeed") >= 0) {
                 self.scheduleStrategies = _.reject(allScheduleStrategies, function (strategy) {
                     return strategy.value != 'TRIGGER_DRIVEN';
                 });
@@ -115,6 +116,14 @@
                 self.scheduleStrategies = _.reject(allScheduleStrategies, function (strategy) {
                     return strategy.value == 'TRIGGER_DRIVEN';
                 });
+            }
+            if (self.model.schedule.schedulingStrategy) {
+                var validStrategy = _.filter(self.scheduleStrategies, function (strategy) {
+                        return strategy.value == self.model.schedule.schedulingStrategy
+                    }).length > 0;
+                if (!validStrategy) {
+                    self.model.schedule.schedulingStrategyTouched = false;
+                }
             }
         }
 
@@ -187,7 +196,10 @@
          */
         function onActiveStep(event, index) {
             if (index == parseInt(self.stepIndex)) {
+
                 updateScheduleStrategies();
+                //make sure the selected strategy is valid
+
                 setDefaultScheduleStrategy();
             }
         }
