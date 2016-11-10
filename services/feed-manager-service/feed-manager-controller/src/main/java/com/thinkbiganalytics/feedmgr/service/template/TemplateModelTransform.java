@@ -71,7 +71,9 @@ public class TemplateModelTransform {
                     domain.setJson(json);
                     FeedManagerTemplate.State state = FeedManagerTemplate.State.ENABLED;
                     try {
-                        state = FeedManagerTemplate.State.valueOf(registeredTemplate.getState());
+                        if (registeredTemplate.getState() != null) {
+                            state = FeedManagerTemplate.State.valueOf(registeredTemplate.getState());
+                        }
                     } catch (IllegalArgumentException e) {
                         // make enabled by default
                     }
