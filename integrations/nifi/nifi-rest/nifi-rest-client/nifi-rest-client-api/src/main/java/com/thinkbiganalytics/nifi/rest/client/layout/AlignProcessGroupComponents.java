@@ -65,6 +65,11 @@ public class AlignProcessGroupComponents {
     private Map<String, PortDTO> inputPortMap = new HashMap<>();
 
     /**
+     * Flag to indicate when Alignment is complete
+     */
+    private boolean aligned = false;
+
+    /**
      * Pointer to the last Positioned LayoutGroup
      */
     private LayoutGroup lastPositionedGroup;
@@ -103,6 +108,7 @@ public class AlignProcessGroupComponents {
             createLayoutGroups();
             //organize each group of items on the screen
             layoutGroups.entrySet().stream().sorted(Map.Entry.<String, LayoutGroup>comparingByKey()).forEachOrdered(entry -> arrangeProcessGroup(entry.getValue()));
+            aligned = true;
         } catch (Exception e) {
             log.error("Error Aligning items in Process Group {}. {}", parentProcessGroupId, e.getMessage());
         }
@@ -132,6 +138,11 @@ public class AlignProcessGroupComponents {
 
         lastPositionedGroup = layoutGroup;
 
+    }
+
+
+    public boolean isAligned() {
+        return aligned;
     }
 
     private void arrangeProcessGroupWithoutConnectionsLayout(ProcessGroupWithoutConnections layout) {

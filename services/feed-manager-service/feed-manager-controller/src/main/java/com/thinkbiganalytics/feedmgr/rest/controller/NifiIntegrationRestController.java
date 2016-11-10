@@ -7,8 +7,11 @@ import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.SpringEnvironmentProperties;
 import com.thinkbiganalytics.nifi.feedmgr.TemplateCreationHelper;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
+import com.thinkbiganalytics.nifi.rest.client.layout.AlignNiFiComponents;
+import com.thinkbiganalytics.nifi.rest.client.layout.AlignProcessGroupComponents;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowDeserializer;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
+import com.thinkbiganalytics.rest.model.RestResponseStatus;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.ControllerServiceDTO;
@@ -60,6 +63,38 @@ public class NifiIntegrationRestController {
     public NifiIntegrationRestController() {
     }
 
+    @GET
+    @Path("/auto-align/{processGroupId}")
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response autoAlign(@PathParam("processGroupId") String processGroupId) {
+        RestResponseStatus status;
+        if ("all".equals(processGroupId)) {
+            AlignNiFiComponents alignNiFiComponents = new AlignNiFiComponents();
+            alignNiFiComponents.setNiFiRestClient(nifiRestClient.getNiFiRestClient());
+            alignNiFiComponents.autoLayout();
+            String message = "";
+            if (alignNiFiComponents.isAligned()) {
+                message = "Aligned All of NiFi.  " + alignNiFiComponents.getAlignedProcessGroups() + " process groups were aligned ";
+            } else {
+                message =
+                    "Alignment failed while attempting to align all of NiFi. " + alignNiFiComponents.getAlignedProcessGroups()
+                    + " were successfully aligned. Please look at the logs for more information";
+            }
+            status = new RestResponseStatus.ResponseStatusBuilder().message(message).buildSuccess();
+        } else {
+            AlignProcessGroupComponents alignProcessGroupComponents = new AlignProcessGroupComponents(nifiRestClient.getNiFiRestClient(), processGroupId);
+            ProcessGroupDTO alignedGroup = alignProcessGroupComponents.autoLayout();
+            String message = "";
+            if (alignProcessGroupComponents.isAligned()) {
+                message = "Aligned " + alignedGroup.getContents().getProcessGroups().size() + " process groups under " + alignedGroup.getName();
+            } else {
+                message = "Alignment failed for process group " + processGroupId + ". Please look at the logs for more information";
+            }
+            status = new RestResponseStatus.ResponseStatusBuilder().message(message).buildSuccess();
+        }
+
+        return Response.ok(status).build();
+    }
 
     @GET
     @Path("/flow/{processGroupId}")
