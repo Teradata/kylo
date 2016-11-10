@@ -177,8 +177,6 @@ public class HiveService {
 
 
     public QueryResult query(String query) throws DataAccessException{
-        Connection conn = null;
-        Statement stmt = null;
        final QueryResult queryResult = new QueryResult(query);
         final List<QueryResultColumn> columns = new ArrayList<>();
         final Map<String,Integer> displayNameMap = new HashMap<>();
