@@ -9,6 +9,7 @@ import com.thinkbiganalytics.nifi.feedmgr.TemplateCreationHelper;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
+import com.thinkbiganalytics.nifi.rest.client.layout.AlignProcessGroupComponents;
 import com.thinkbiganalytics.nifi.rest.model.NifiError;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessorSchedule;
@@ -205,6 +206,9 @@ public class CreateFeedBuilder {
                     nonInputProcessors = NifiProcessUtil.getNonInputProcessors(entity);
 
                     newProcessGroup = new NifiProcessGroup(entity, input, nonInputProcessors);
+                    //align items
+                    AlignProcessGroupComponents alignProcessGroupComponents = new AlignProcessGroupComponents(restClient.getNiFiRestClient(), entity.getParentGroupId());
+                    alignProcessGroupComponents.autoLayout();
 
                     //Validate and if invalid Delete the process group
                     if (newProcessGroup.hasFatalErrors()) {
