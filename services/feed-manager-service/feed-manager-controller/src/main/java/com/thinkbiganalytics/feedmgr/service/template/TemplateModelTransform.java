@@ -69,7 +69,13 @@ public class TemplateModelTransform {
                     domain.setIconColor(registeredTemplate.getIconColor());
                     domain.setDescription(registeredTemplate.getDescription());
                     domain.setJson(json);
-                    domain.setState(FeedManagerTemplate.State.valueOf(registeredTemplate.getState()));
+                    FeedManagerTemplate.State state = FeedManagerTemplate.State.ENABLED;
+                    try {
+                        state = FeedManagerTemplate.State.valueOf(registeredTemplate.getState());
+                    } catch (IllegalArgumentException e) {
+                        // make enabled by default
+                    }
+                    domain.setState(state);
 
                     //assign the id back to the ui model
                     registeredTemplate.setId(domainId.toString());
