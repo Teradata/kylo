@@ -13,6 +13,7 @@ import java.util.Set;
 
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.processor.ProcessSession;
+import org.apache.nifi.processor.exception.ProcessException;
 import org.hibernate.validator.internal.util.privilegedactions.GetClassLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -218,9 +219,8 @@ public class MetadataClientRecorder implements MetadataRecorder {
             this.activeInitStatuses.remove(feedId);
             return status;
         } catch (Exception e) {
-            log.error("Failed to update feed initialization completion status: {},  feed: {}", status.getState(), feedId);
-            this.activeInitStatuses.put(feedId, status);
-            return status;
+            log.error("Failed to update metadata with feed initialization completion status: {},  feed: {}", status.getState(), feedId, e);
+            throw new ProcessException("Failed to update metadata with feed initialization completion status: " + status + ",  feed: " + feedId, e);
         }
     }
 
