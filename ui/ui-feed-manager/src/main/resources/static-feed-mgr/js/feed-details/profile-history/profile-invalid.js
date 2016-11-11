@@ -24,7 +24,8 @@
 
         this.model = FeedService.editFeedModel;
         this.data = [];
-        this.loading = false;
+        this.loadingFilterOptions = false;
+        this.loadingData = false;
         this.limitOptions = [10, 50, 100, 500, 1000];
         this.limit = this.limitOptions[2];
 
@@ -102,10 +103,10 @@
         };
 
         var errorFn = function (err) {
-            self.loading = false;
+            self.loadingData = false;
         };
         function getProfileValidation(){
-            self.loading = true;
+            self.loadingData = true;
 
             var successFn = function (response) {
                 var result = self.queryResults = HiveService.transformResultsToUiGridModel(response, [], transformFn);
@@ -115,7 +116,7 @@
                 });
                 $scope.gridOptions.data = result.rows;
 
-                self.loading = false;
+                self.loadingData = false;
                 BroadcastService.notify('PROFILE_TAB_DATA_LOADED','invalid');
             };
 
@@ -133,10 +134,10 @@
         }
 
         function getFilterOptions() {
-            self.loading = true;
+            self.loadingFilterOptions = true;
             var filterOptionsOk = function(response) {
                 self.filterOptions = _.union(self.filterOptions, response.data);
-                self.loading = false;
+                self.loadingFilterOptions = false;
             };
             var promise = $http.get(RestUrlService.AVAILABLE_VALIDATION_POLICIES, {cache:true});
             promise.then(filterOptionsOk, errorFn);

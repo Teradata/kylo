@@ -1,6 +1,9 @@
 <div class="profile profile-invalid layout-padding-left">
-    <md-progress-linear md-mode="indeterminate" ng-if="vm.loading"></md-progress-linear>
-
+  <div ng-if="vm.loadingData || vm.loadingFilterOptions" layout="column" layout-fill layout-align="space-between center">
+    <md-progress-linear md-mode="indeterminate"></md-progress-linear>
+    <span> Loading ...</span>
+  </div>
+  <div ng-if="!(vm.loadingData && vm.loadingFilterOptions)">
     <md-input-container>
         <label>Limit</label>
         <md-select ng-model="vm.limit" ng-change="vm.onLimitChange()">
@@ -28,5 +31,5 @@
          flex>
 
     </div>
-
+  </div>
 </div>

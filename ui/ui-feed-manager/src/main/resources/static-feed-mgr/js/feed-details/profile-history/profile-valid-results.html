@@ -1,5 +1,10 @@
 <div class="layout-padding-left">
-    <md-progress-linear md-mode="indeterminate" ng-if="vm.loading"></md-progress-linear>
+  <div ng-if="vm.loading" layout="column" layout-fill layout-align="space-between center">
+    <md-progress-linear md-mode="indeterminate"></md-progress-linear>
+    <span> Loading ...</span>
+  </div>
+  <div ng-if="!vm.loading">
+    <md-progress-linear md-mode="indeterminate"></md-progress-linear>
 
     <md-input-container>
         <label>Limit</label>
@@ -10,7 +15,7 @@
         </md-select>
     </md-input-container>
 
-    <div ui-grid-auto-resize
+    <div ui-grid-auto-resize ng-if="vm.loading"
          browser-height
          browser-height-scroll-y="false"
          browser-height-offset="284"
@@ -19,4 +24,5 @@
          flex>
 
     </div>
+  </div>
 </div>
