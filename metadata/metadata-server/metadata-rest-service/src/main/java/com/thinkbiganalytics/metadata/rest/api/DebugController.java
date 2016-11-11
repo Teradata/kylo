@@ -120,7 +120,7 @@ public class DebugController {
         try {
             metadata.commit(() -> {
                 Session session = JcrMetadataAccess.getActiveSession();
-                session.removeItem(abspath);
+                session.removeItem("/" + abspath);
                 pw.print("DELETED " + abspath);
             });
         } catch (Exception e) {
