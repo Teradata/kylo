@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.sql.DataSource;
@@ -61,16 +62,13 @@ public class HiveService {
         return getDBSchemaParser().listSchemas();
     }
 
-    public List<String> getTables(String schema) {
+    /**
+     public List<String> getTablesxx(String schema) {
        List<String> tables = getDBSchemaParser().listTables(schema);
        return tables;
     }
 
-    /**
-     * returns a list of schemanName.TableName
-     * @return
-     */
-    public List<String> getAllTables(){
+     public List<String> getAllTablesxx(){
         List<String> allTables = new ArrayList<>();
         List<String> schemas = getSchemaNames();
         if(schemas != null) {
@@ -83,6 +81,29 @@ public class HiveService {
                 }
             }
         }
+        return allTables;
+    }
+     */
+
+    /**
+     * returns a list of all the scheam.tablename for a given schema
+     */
+    public List<String> getTables(String schema) {
+        QueryResult tables = query("show tables in " + schema);
+        return tables.getRows().stream().flatMap(row -> row.entrySet().stream()).map(e -> schema + "." + e.getValue().toString()).collect(Collectors.toList());
+    }
+
+
+    /**
+     * returns a list of all the schema.tablename
+     */
+    public List<String> getAllTables() {
+        long start = System.currentTimeMillis();
+        List<String> allTables = new ArrayList<>();
+        QueryResult result = query("show databases");
+        List<Object> databases = result.getRows().stream().flatMap(row -> row.entrySet().stream()).map(e -> e.getValue()).collect(Collectors.toList());
+        databases.stream().forEach(database -> allTables.addAll(getTables(database.toString())));
+        System.out.print("time to get all tables " + (System.currentTimeMillis() - start) + " ms");
         return allTables;
     }
 
@@ -111,9 +132,17 @@ public class HiveService {
         return allTables;
     }
 
+    /**
+     * Describes the given Table
+     * @param schema
+     * @param table
+     * @return
+     */
     public TableSchema getTableSchema(String schema, String table) {
         return  getDBSchemaParser().describeTable(schema, table);
     }
+
+
 
     public List<Field> getFields(String schema, String table) {
         TableSchema tableSchema = getTableSchema(schema, table);
@@ -153,7 +182,9 @@ public class HiveService {
        final QueryResult queryResult = new QueryResult(query);
         final List<QueryResultColumn> columns = new ArrayList<>();
         final Map<String,Integer> displayNameMap = new HashMap<>();
-        query = safeQuery(query);
+        if(query != null && !query.toLowerCase().startsWith("show")) {
+            query = safeQuery(query);
+        }
         try {
             jdbcTemplate.query(query, new RowMapper<Map<String, Object>>() {
                 @Override
