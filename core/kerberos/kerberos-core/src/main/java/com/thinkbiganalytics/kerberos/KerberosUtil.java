@@ -14,12 +14,13 @@ import javax.sql.DataSource;
  * Created by Jeremy Merrifield on 9/28/16.
  */
 public class KerberosUtil {
+
     private static Logger log = LoggerFactory.getLogger(KerberosUtil.class);
 
-    public static  Connection getConnectionWithOrWithoutKerberos(final DataSource dataSource, KerberosTicketConfiguration kerberosTicketConfiguration) throws SQLException {
-        log.info("Initializing the Kerberos Ticket for hive connection");
+    public static Connection getConnectionWithOrWithoutKerberos(final DataSource dataSource, KerberosTicketConfiguration kerberosTicketConfiguration) throws SQLException {
         Connection connection = null;
-        if(kerberosTicketConfiguration.isKerberosEnabled()) {
+        if (kerberosTicketConfiguration.isKerberosEnabled()) {
+            log.info("Initializing Kerberos ticket for Hive connection");
             UserGroupInformation userGroupInformation;
             try {
                 KerberosTicketGenerator t = new KerberosTicketGenerator();
@@ -31,13 +32,11 @@ public class KerberosUtil {
                         return dataSource.getConnection();
                     }
                 });
-                log.info("Successfully got a datasource connection !!!!!");
             } catch (Exception e) {
-                log.error("Error with kerberos authentication" +e.getMessage());
+                log.error("Error in Kerberos authentication", e);
                 throw new RuntimeException(e);
             }
-        }
-        else {
+        } else {
             connection = dataSource.getConnection();
         }
         return connection;

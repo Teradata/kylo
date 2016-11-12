@@ -141,7 +141,7 @@ public class HiveService {
 
     }
 
-    // TODO: Temporary until we determine how we want to handle
+    // TODO: Temporary until we determine how we want to ensure DDL isn't sent through
     private String safeQuery(String query) {
         return "SELECT kylo_.* FROM ("+query+") kylo_ LIMIT 1000";
     }
@@ -197,7 +197,6 @@ public class HiveService {
             dae.printStackTrace();
             throw dae;
         }
-        log.info("Return " + queryResult.getRows().size());
         return queryResult;
 
     }
