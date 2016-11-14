@@ -18,11 +18,11 @@ Specifications for managed Hive tables
  */
 public enum TableType {
 
-    FEED("feed", true, false, true, false),
-    VALID("valid", true, true, false, false),
-    INVALID("invalid", true, true, true, true),
-    MASTER("", false, true, false, false),
-    PROFILE("profile", true, true, true, false);
+    FEED("feed", true, false, true, false, true),
+    VALID("valid", true, true, false, false, false),
+    INVALID("invalid", true, true, true, true, false),
+    MASTER("", false, true, false, false, false, true),
+    PROFILE("profile", true, true, true, false, false);
 
     //private String tableLocation;
     //private String partitionLocation;
@@ -31,14 +31,22 @@ public enum TableType {
     private boolean strings;
     private boolean feedPartition;
     private boolean addReasonCode;
+    private boolean external;
+    private boolean appendProcessingDttmField;
 
-
-    TableType(String suffix, boolean feedPartition, boolean useTargetStorageSpec, boolean strings, boolean addReasonCode) {
+    TableType(String suffix, boolean feedPartition, boolean useTargetStorageSpec, boolean strings, boolean addReasonCode, boolean external, boolean appendProcessingDttmField) {
         this.tableSuffix = suffix;
         this.feedPartition = feedPartition;
         this.useTargetStorageSpec = useTargetStorageSpec;
         this.strings = strings;
         this.addReasonCode = addReasonCode;
+        this.external = external;
+        this.appendProcessingDttmField = appendProcessingDttmField;
+    }
+
+
+    TableType(String suffix, boolean feedPartition, boolean useTargetStorageSpec, boolean strings, boolean addReasonCode, boolean external) {
+        this(suffix, feedPartition, useTargetStorageSpec, strings, addReasonCode, external, false);
     }
 
     public String deriveTablename(String entity) {
@@ -83,6 +91,9 @@ public enum TableType {
         // Handle the special case for writing error reason in invalid table
         if (addReasonCode) {
             sb.append(", dlp_reject_reason string ");
+        }
+        if (appendProcessingDttmField) {
+            sb.append(", processing_dttm string");
         }
         return sb.toString();
     }
@@ -143,5 +154,9 @@ public enum TableType {
             return targetTableProperties;
         }
         return "";
+    }
+
+    public boolean isExternal() {
+        return external;
     }
 }

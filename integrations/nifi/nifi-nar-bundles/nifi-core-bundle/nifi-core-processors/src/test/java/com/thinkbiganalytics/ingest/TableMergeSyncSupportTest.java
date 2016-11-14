@@ -231,12 +231,80 @@ public class TableMergeSyncSupportTest {
      * Tests the merge partition without dedupe and the merge partition with dedupe
      */
     public void testMergePartition() throws Exception {
+
         // Insert one record to start
         hiveShell.execute(
-            "insert into emp_sr.employee partition(country='USA',year=2015) (  `id`,  `timestamp`,`name`,`company`,`zip`,`phone`,`email`,  `hired`)  values (1,'1','Sally','ABC','94550','555-1212',"
-            + "'sally@acme.org','2015-01-01');");
+            "insert into emp_sr.employee partition(country='USA',year=2015) (`id`, `timestamp`, `name`,`company`,`zip`,`phone`,`email`,  `hired`, `processing_dttm`)  values (60,'1','Billy',"
+            + "'ABC','94550',"
+            + "'555-1212',"
+            + "'billy@acme.org','2015-01-01','20150119974340');");
 
-        doTestMerge(targetTable, spec);
+        // Validate one record initial test condition
+        List<String> results = fetchEmployees(targetSchema, targetTable);
+        assertEquals(1, results.size());
+
+        // Call merge
+        mergeSyncSupport.doMerge(sourceSchema, sourceTable, targetSchema, targetTable, spec, processingPartition, false);
+
+        // We should have 5 records 4 from the sourceTable and 1 existing
+        results = fetchEmployees(targetSchema, targetTable);
+        assertEquals(5, results.size());
+
+        // Now create a duplicate record and ensure we don't see it twice the final table
+        hiveShell.execute("insert into emp_sr.employee partition(country='Canada',year=2016) (`id`, `timestamp`, `name`,`company`,`zip`,`phone`,`email`,  `hired`,`processing_dttm`)  "
+                          + "values (100, '1', 'Bruce','ABC','94550','555-1212','bruce@acme.org','2016-01-01','20150119974340');");
+
+        mergeSyncSupport.doMerge(sourceSchema, sourceTable, targetSchema, targetTable, spec, "20160119974350", true);
+
+        results = fetchEmployees(targetSchema, targetTable);
+        assertEquals(7, results.size());
+        verifyUnique(results);
+    }
+
+    @Test
+    /**
+     * Tests the merge partition without dedupe and the merge partition with dedupe
+     */
+    public void testMergePartitionNoProcessingDttm() throws Exception {
+        String targetTable = "employeepd";
+
+        // Insert one record to start
+        hiveShell.execute(
+            "insert into emp_sr.employeepd partition(country='USA',year=2015) (`id`, `timestamp`, `name`,`company`,`zip`,`phone`,`email`,  `hired`)  values (60,'1','Billy',"
+            + "'ABC','94550',"
+            + "'555-1212',"
+            + "'billy@acme.org','2015-01-01');");
+
+        // Validate one record initial test condition
+        List<String> results = fetchEmployees(targetSchema, targetTable);
+        assertEquals(1, results.size());
+
+        // Call merge
+        mergeSyncSupport.doMerge(sourceSchema, sourceTable, targetSchema, targetTable, spec, processingPartition, false);
+
+        // We should have 5 records 4 from the sourceTable and 1 existing
+        results = fetchEmployees(targetSchema, targetTable);
+        assertEquals(5, results.size());
+
+        // Now create a duplicate record and ensure we don't see it twice the final table
+        hiveShell.execute("insert into emp_sr.employeepd partition(country='Canada',year=2016) (`id`, `timestamp`, `name`,`company`,`zip`,`phone`,`email`,  `hired`)  "
+                          + "values (100, '1', 'Bruce','ABC','94550','555-1212','bruce@acme.org','2016-01-01');");
+
+        mergeSyncSupport.doMerge(sourceSchema, sourceTable, targetSchema, targetTable, spec, "20160119974350", true);
+
+        results = fetchEmployees(targetSchema, targetTable);
+        assertEquals(7, results.size());
+        verifyUnique(results);
+    }
+
+
+    // Verify no duplicates exist in the table
+    private void verifyUnique(List<String> results) {
+        HashSet<String> existing = new HashSet<>();
+        for (String r : results) {
+            assertFalse(existing.contains(r));
+            existing.add(r);
+        }
     }
 
     @Test
@@ -246,13 +314,72 @@ public class TableMergeSyncSupportTest {
     public void testMergeNonPartitioned() throws Exception {
         // Insert one record to start
         hiveShell.execute(
-            "insert into emp_sr.employee partition(country='USA',year=2015) (`id`,  `name`,`company`,`zip`,`phone`,`email`,  `hired`)  values (1,'Sally','ABC','94550','555-1212',"
-            + "'sally@acme.org','2015-01-01');");
+            "insert into emp_sr.employee_np (`id`, `timestamp`, `name`,`company`,`zip`,`phone`,`email`,  `hired`, `country`)  values (60, '1', 'Billy',"
+            + "'ABC',"
+            + "'94550',"
+            + "'555-1212',"
+            + "'billy@acme.org','2015-01-01', 'USA');");
 
-        doTestMerge(targetTableNP, specNP);
+        List<String> results = fetchEmployees(targetSchema, targetTableNP);
+        assertEquals(1, results.size());
+
+        // Call merge without dedupe
+        mergeSyncSupport.doMerge(sourceSchema, sourceTable, targetSchema, targetTableNP, specNP, processingPartition, false);
+
+        // We should have 5 records 4 from the sourceTable and 1 existing
+        results = fetchEmployees(targetSchema, targetTableNP);
+        assertEquals(5, results.size());
+
+        // Now create a duplicate record and ensure we don't see it in the final table
+        hiveShell.execute("insert into emp_sr.employee_np (`id`, `timestamp`, `name`,`company`,`zip`,`phone`,`email`,  `hired`, `country`)  "
+                          + "values (100, '1', 'Bruce','ABC','94550','555-1212','bruce@acme.org','2016-01-01', 'Canada');");
+
+        mergeSyncSupport.doMerge(sourceSchema, sourceTable, targetSchema, targetTableNP, specNP, "20160119974350", true);
+
+        results = fetchEmployees(targetSchema, targetTableNP);
+        assertEquals(7, results.size());
+        verifyUnique(results);
     }
 
-    private void doTestMerge(String targetTable, PartitionSpec spec) throws SQLException {
+    @Test
+    /**
+     * Tests the merge partition without dedupe and the merge partition with dedupe
+     */
+    public void testMergeNonPartitionedWithProcessingDttm() throws Exception {
+
+        String targetTableNP = "employeepd_np";
+        // Insert one record to start
+        hiveShell.execute(
+            "insert into emp_sr.employeepd_np (`id`, `timestamp`, `name`,`company`,`zip`,`phone`,`email`,  `hired`, `country`, `processing_dttm`)  values (60, '1', 'Billy',"
+            + "'ABC',"
+            + "'94550',"
+            + "'555-1212',"
+            + "'billy@acme.org','2015-01-01', 'USA', '20150119974350');");
+
+        List<String> results = fetchEmployees(targetSchema, targetTableNP);
+        assertEquals(1, results.size());
+
+        // Call merge without dedupe
+        mergeSyncSupport.doMerge(sourceSchema, sourceTable, targetSchema, targetTableNP, specNP, processingPartition, false);
+
+        // We should have 5 records 4 from the sourceTable and 1 existing
+        results = fetchEmployees(targetSchema, targetTableNP);
+        assertEquals(5, results.size());
+
+        // Now create a duplicate record and ensure we don't see it in the final table
+        hiveShell.execute("insert into emp_sr.employeepd_np (`id`, `timestamp`, `name`,`company`,`zip`,`phone`,`email`,  `hired`, `country`, `processing_dttm`)  "
+                          + "values (100, '1', 'Bruce','ABC','94550','555-1212','bruce@acme.org','2016-01-01', 'Canada', '20150119974350');");
+
+        mergeSyncSupport.doMerge(sourceSchema, sourceTable, targetSchema, targetTableNP, specNP, "20160119974350", true);
+
+        results = fetchEmployees(targetSchema, targetTableNP);
+        assertEquals(7, results.size());
+        verifyUnique(results);
+    }
+
+
+
+    private void doTestMergeNoProcessingDttm(String targetTable, PartitionSpec spec) throws SQLException {
 
         List<String> results = fetchEmployees(targetSchema, targetTable);
         assertEquals(1, results.size());
@@ -265,17 +392,18 @@ public class TableMergeSyncSupportTest {
         assertEquals(5, results.size());
 
         // Run merge with dedupe and should get the following two additional results. The result should not include any duplicates in the target table.
-        hiveShell.execute("insert into emp_sr.employee_valid partition(processing_dttm='20160119074340') (  `id`,  `name`,`company`,`zip`,`phone`,`email`,  `hired`,`country`) values (100,'Bruce',"
-                          + "'ABC',"
-                          + "'94550','555-1212','bruce@acme.org','2016-01-01','Canada');");
-        hiveShell.execute("insert into emp_sr.employee_valid partition(processing_dttm='20160119074340') (  `id`,  `name`,`company`,`zip`,`phone`,`email`,  `hired`,`country`) values (101,'Harry',"
-                          + "'ABC',"
-                          + "'94550','555-1212','harry@acme.org','2016-01-01','Canada');");
+        hiveShell.execute("insert into emp_sr.employee_valid partition(processing_dttm='20160119974340') (  `id`, `timestamp`, `name`,`company`,`zip`,`phone`,`email`,  `hired`,`country`) "
+                          + "values (100, '1', 'Bruce','ABC','94550','555-1212','bruce@acme.org','2016-01-01','Canada');");
+        hiveShell.execute("insert into emp_sr.employee_valid partition(processing_dttm='20160119974340') (  `id`, `timestamp`, `name`,`company`,`zip`,`phone`,`email`,  `hired`,`country`) "
+                          + "values (101, '1','Harry','ABC','94550','555-1212','harry@acme.org','2016-01-01','Canada');");
 
-        mergeSyncSupport.doMerge(sourceSchema, sourceTable, targetSchema, targetTable, spec, processingPartition, true);
+        hiveShell.execute("insert into emp_sr.employee partition(country='Canada',year=2016) (`id`, `timestamp`, `name`,`company`,`zip`,`phone`,`email`,  `hired`,`processing_dttm`)  "
+                          + "values (100, '1', 'Bruce','ABC','94550','555-1212','bruce@acme.org','2016-01-01','20150119974340');");
+
+        mergeSyncSupport.doMerge(sourceSchema, sourceTable, targetSchema, targetTable, spec, "20160119974340", true);
 
         results = fetchEmployees(targetSchema, targetTable);
-        assertEquals(6, results.size());
+        assertEquals(7, results.size());
         // Verify no duplicates exist in the table
         HashSet<String> existing = new HashSet<>();
         for (String r : results) {
@@ -284,6 +412,9 @@ public class TableMergeSyncSupportTest {
         }
 
     }
+
+
+
 
     private void doTestMergePK(String targetSchema, String targetTable, PartitionSpec spec) throws SQLException {
 

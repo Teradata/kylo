@@ -92,6 +92,7 @@ public class TableRegisterSupport {
         Validate.notNull(conn);
 
         try (final Statement st = conn.createStatement()) {
+            logger.info("Executing {}", ddl);
             st.execute(ddl);
             return true;
         } catch (final SQLException e) {
@@ -123,7 +124,7 @@ public class TableRegisterSupport {
         String partitionSQL = TableType.PROFILE.derivePartitionSpecification(null);
         String locationSQL = TableType.PROFILE.deriveLocationSpecification(config.pathForTableType(TableType.PROFILE), source, tableEntity);
 
-        String ddl = createDDL(tableName, columnSQL, partitionSQL, formatSQL, locationSQL, "");
+        String ddl = createDDL(tableName, columnSQL, partitionSQL, formatSQL, locationSQL, "", TableType.PROFILE.isExternal());
         return createTable(ddl);
     }
 
@@ -163,12 +164,13 @@ public class TableRegisterSupport {
         String formatOptionsSQL = tableType.deriveFormatSpecification(feedFormatOptions, targetFormatOptions);
         String tblPropertiesSQL = tableType.deriveTableProperties(targetTableProperties);
 
-        return createDDL(tableName, columnsSQL, partitionSQL, formatOptionsSQL, locationSQL, tblPropertiesSQL);
+        return createDDL(tableName, columnsSQL, partitionSQL, formatOptionsSQL, locationSQL, tblPropertiesSQL, tableType.isExternal());
     }
 
-    protected String createDDL(String tableName, String columnsSQL, String partitionSQL, String formatOptionsSQL, String locationSQL, String targetTablePropertiesSQL) {
+    protected String createDDL(String tableName, String columnsSQL, String partitionSQL, String formatOptionsSQL, String locationSQL, String targetTablePropertiesSQL, boolean external) {
         StringBuffer sb = new StringBuffer();
-        sb.append("CREATE EXTERNAL TABLE IF NOT EXISTS ")
+        String externalString = (external ? " EXTERNAL " : " ");
+        sb.append("CREATE").append(externalString).append("TABLE IF NOT EXISTS ")
                 .append(tableName)
                 .append(" (").append(columnsSQL).append(") ");
 

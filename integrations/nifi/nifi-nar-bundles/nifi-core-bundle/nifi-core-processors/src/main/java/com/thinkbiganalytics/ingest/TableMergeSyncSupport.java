@@ -21,6 +21,7 @@ import java.sql.Statement;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -113,20 +114,34 @@ public class TableMergeSyncSupport implements Serializable {
         final String sql;
         if (partitionSpec.isNonPartitioned()) {
             if (shouldDedupe) {
-                sql = generateMergeNonPartitionQueryWithDedupe(selectFields, sourceSchema, sourceTable, targetSchema, targetTable, feedPartitionValue);
+                if (hasProcessingDttm(selectFields)) {
+                    sql = generateMergeNonPartitionQueryWithDedupe(selectFields, sourceSchema, sourceTable, targetSchema, targetTable, feedPartitionValue);
+                } else {
+                    sql = generateMergeNonPartitionQueryWithDedupeNoProcessingDttm(selectFields, sourceSchema, sourceTable, targetSchema, targetTable, feedPartitionValue);
+                }
             } else {
                 sql = generateMergeNonPartitionQuery(selectFields, sourceSchema, sourceTable, targetSchema, targetTable, feedPartitionValue);
             }
         } else {
             if (shouldDedupe) {
                 batches = createPartitionBatches(partitionSpec, sourceSchema, sourceTable, feedPartitionValue);
-                sql = generateMergeWithDedupePartitionQuery(selectFields, partitionSpec, batches, sourceSchema, sourceTable, targetSchema, targetTable, feedPartitionValue);
+                // Newer tables with processing_dttm in target will always be unique so requires additional handling
+                if (hasProcessingDttm(selectFields)) {
+                    sql = generateMergeWithDedupePartitionQuery(selectFields, partitionSpec, batches, sourceSchema, sourceTable, targetSchema, targetTable, feedPartitionValue);
+                } else {
+                    sql = generateMergeWithDedupePartitionQueryNoProcessingDttm(selectFields, partitionSpec, batches, sourceSchema, sourceTable, targetSchema, targetTable, feedPartitionValue);
+                }
+
             } else {
                 sql = generateMergeWithPartitionQuery(selectFields, partitionSpec, sourceSchema, sourceTable, targetSchema, targetTable, feedPartitionValue);
             }
         }
         doExecuteSQL(sql);
         return batches;
+    }
+
+    private boolean hasProcessingDttm(String[] selectFields) {
+        return Arrays.asList(selectFields).stream().anyMatch( v-> ("`processing_dttm`".equals(v)));
     }
 
     /**
@@ -168,7 +183,7 @@ public class TableMergeSyncSupport implements Serializable {
 
     private String createSyncTable(@Nonnull final String schema, @Nonnull final String table, @Nonnull final String syncTableLocation) throws SQLException {
         final String syncTable = table + "_" + System.currentTimeMillis();
-        final String createSQL = "create external table " + HiveUtils.quoteIdentifier(schema, syncTable) +
+        final String createSQL = "create table " + HiveUtils.quoteIdentifier(schema, syncTable) +
                                  " like " + HiveUtils.quoteIdentifier(schema, table) +
                                  " location " + HiveUtils.quoteString(syncTableLocation);
         doExecuteSQL(createSQL);
@@ -290,6 +305,8 @@ public class TableMergeSyncSupport implements Serializable {
 
     /**
      * Generates a merge query for inserting overwriting from a source table into the target table appending to any partitions
+     * uses the batch identifier processing_dttm to determine whether a new record should be inserted so only new, distinct records will be
+     * inserted.
      *
      * @param selectFields       the list of fields in the select clause of the source table
      * @param spec               the partition specification
@@ -302,6 +319,49 @@ public class TableMergeSyncSupport implements Serializable {
      * @return the sql string
      */
     protected String generateMergeWithDedupePartitionQuery(@Nonnull final String[] selectFields, @Nonnull final PartitionSpec spec, @Nonnull final List<PartitionBatch> batches,
+                                                           @Nonnull final String sourceSchema, @Nonnull final String sourceTable, @Nonnull final String targetSchema,
+                                                           @Nonnull final String targetTable, @Nonnull final String feedPartitionValue) {
+
+        // Strip processing_dttm for the distinct since it will always be different
+        String[] distinctSelectFields = Arrays.asList(selectFields).stream().filter( v-> !("`processing_dttm`".equals(v))).collect(Collectors.toList()).toArray(new String[0]);
+        final String selectAggregateSQL = StringUtils.join(distinctSelectFields, ",")+", min(processing_dttm) processing_dttm, "+spec.toPartitionSelectSQL();
+        final String groupBySQL = StringUtils.join(distinctSelectFields, ",")+","+spec.toPartitionSelectSQL();
+        final String selectSQL = StringUtils.join(selectFields, ",");
+        final String targetPartitionWhereClause = targetPartitionsWhereClause(batches);
+
+        final StringBuilder sb = new StringBuilder();
+        sb.append("insert into table ").append(HiveUtils.quoteIdentifier(targetSchema, targetTable)).append(" ")
+            .append(spec.toDynamicPartitionSpec())
+            .append("select ").append(selectAggregateSQL).append(" from (")
+            .append(" select ").append(selectSQL).append(",").append(spec.toDynamicSelectSQLSpec())
+            .append(" from ").append(HiveUtils.quoteIdentifier(sourceSchema, sourceTable)).append(" ")
+            .append(" where ")
+            .append(" processing_dttm = ").append(HiveUtils.quoteString(feedPartitionValue))
+            .append(" union all ")
+            .append(" select ").append(selectSQL).append(",").append(spec.toPartitionSelectSQL())
+            .append(" from ").append(HiveUtils.quoteIdentifier(targetSchema, targetTable)).append(" ");
+        if (targetPartitionWhereClause != null) {
+            sb.append(" where (").append(targetPartitionWhereClause).append(")");
+        }
+            sb.append(") t group by "+groupBySQL).append(" having min(processing_dttm) = ").append(HiveUtils.quoteString(feedPartitionValue));
+
+        return sb.toString();
+    }
+
+    /**
+     * Generates a merge query for inserting overwriting from a source table into the target table appending to any partitions
+     *
+     * @param selectFields       the list of fields in the select clause of the source table
+     * @param spec               the partition specification
+     * @param batches            the partitions of the source table
+     * @param sourceSchema       the schema or database name of the source table
+     * @param sourceTable        the source table name
+     * @param targetSchema       the schema or database name of the target table
+     * @param targetTable        the target table name
+     * @param feedPartitionValue the source processing partition value
+     * @return the sql string
+     */
+    protected String generateMergeWithDedupePartitionQueryNoProcessingDttm(@Nonnull final String[] selectFields, @Nonnull final PartitionSpec spec, @Nonnull final List<PartitionBatch> batches,
                                                            @Nonnull final String sourceSchema, @Nonnull final String sourceTable, @Nonnull final String targetSchema,
                                                            @Nonnull final String targetTable, @Nonnull final String feedPartitionValue) {
         final String selectSQL = StringUtils.join(selectFields, ",");
@@ -360,6 +420,35 @@ public class TableMergeSyncSupport implements Serializable {
      * @return the sql string
      */
     protected String generateMergeNonPartitionQueryWithDedupe(@Nonnull final String[] selectFields, @Nonnull final String sourceSchema, @Nonnull final String sourceTable,
+                                                              @Nonnull final String targetSchema, @Nonnull final String targetTable, @Nonnull final String feedPartitionValue) {
+
+        String[] distinctSelectFields = Arrays.asList(selectFields).stream().filter( v-> !("`processing_dttm`".equals(v))).collect(Collectors.toList()).toArray(new String[0]);
+        final String selectAggregateSQL = StringUtils.join(distinctSelectFields, ",")+", min(processing_dttm) processing_dttm";
+        final String selectSQL = StringUtils.join(selectFields, ",");
+        final String groupBySQL = StringUtils.join(distinctSelectFields, ",");
+
+        return "insert into table " + HiveUtils.quoteIdentifier(targetSchema, targetTable) + " " +
+               "select " + selectAggregateSQL + " from (" +
+               " select " + selectSQL +
+               " from " + HiveUtils.quoteIdentifier(sourceSchema, sourceTable) + " where processing_dttm = " + HiveUtils.quoteString(feedPartitionValue) + " " +
+               " union all " +
+               " select " + selectSQL +
+               " from " + HiveUtils.quoteIdentifier(targetSchema, targetTable) +
+               ") x group by " + groupBySQL + " having min(processing_dttm) = "  + HiveUtils.quoteString(feedPartitionValue) + ";";
+    }
+
+    /**
+     * Generates a query for merging from a source table into the target table with no partitions.
+     *
+     * @param selectFields       the list of fields in the select clause of the source table
+     * @param sourceSchema       the schema or database name of the source table
+     * @param sourceTable        the source table name
+     * @param targetSchema       the schema or database name of the target table
+     * @param targetTable        the target table name
+     * @param feedPartitionValue the source processing partition value
+     * @return the sql string
+     */
+    protected String generateMergeNonPartitionQueryWithDedupeNoProcessingDttm(@Nonnull final String[] selectFields, @Nonnull final String sourceSchema, @Nonnull final String sourceTable,
                                                               @Nonnull final String targetSchema, @Nonnull final String targetTable, @Nonnull final String feedPartitionValue) {
         final String selectSQL = StringUtils.join(selectFields, ",");
         return "insert overwrite table " + HiveUtils.quoteIdentifier(targetSchema, targetTable) + " " +
