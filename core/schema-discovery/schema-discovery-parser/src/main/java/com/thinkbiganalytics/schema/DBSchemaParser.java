@@ -7,16 +7,13 @@ package com.thinkbiganalytics.schema;
 import com.thinkbiganalytics.db.model.schema.Field;
 import com.thinkbiganalytics.db.model.schema.TableSchema;
 import com.thinkbiganalytics.kerberos.KerberosTicketConfiguration;
-import com.thinkbiganalytics.kerberos.KerberosTicketGenerator;
 import com.thinkbiganalytics.kerberos.KerberosUtil;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
-import org.apache.hadoop.security.UserGroupInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -26,6 +23,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.sql.DataSource;
 
 public class DBSchemaParser {
@@ -67,102 +66,85 @@ public class DBSchemaParser {
         }
     }
 
-    private ResultSet getTables(Connection conn, String schema, String tableName) throws SQLException {
-        return conn.getMetaData().getTables(schema, "%", tableName, new String[]{"TABLE", "VIEW"});
+    /**
+     * Lists the tables in the specified schema that match the specified table pattern.
+     *
+     * @param conn the JDBC connection
+     * @param catalog the catalog name pattern, or {@code null}
+     * @param schema the schema name pattern, or {@code null}
+     * @param tableName the table name pattern   @return a result set containing the matching table metadata
+     * @throws SQLException if a database access error occurs
+     */
+    @Nonnull
+    private ResultSet getTables(@Nonnull final Connection conn, @Nullable String catalog, @Nullable final String schema, @Nonnull final String tableName) throws SQLException {
+        return conn.getMetaData().getTables(catalog, schema, tableName, new String[]{"TABLE", "VIEW"});
     }
 
+    /**
+     * Lists the tables in the specified schema.
+     *
+     * @param schema the schema name, or {@code null}
+     * @return the list of table names prepended with the schema name, like: {@code <schema>.<table>}
+     * @throws RuntimeException if a database access error occurs
+     */
+    @Nonnull
+    public List<String> listTables(@Nullable final String schema) {
+        final String schemaPattern = (schema != null) ? schema : "%";
+        final List<String> tables = new ArrayList<>();
 
-    public List<String> listTables(String schema) {
-        List<String> schemas = new ArrayList<>();
-        if (StringUtils.isBlank(schema)) {
-            schemas = listSchemas();
-            if (schemas == null || schemas.isEmpty()) {
-                schemas = listCatalogs();
-            }
-        } else {
-            schemas.add(schema);
-        }
-
-        Vector<String> tables = new Vector<>();
-        for (String tableSchema : schemas) {
-            try (Connection conn = ds.getConnection()) {
-                ResultSet result = getTables(conn, tableSchema, "%");
-                while (result.next()) {
-                    String tableName = result.getString("TABLE_NAME");
-                    String tableSchem = result.getString("TABLE_SCHEM");
-                    String tableCat = result.getString("TABLE_CAT");
-                    String schem = tableSchem != null ? tableSchem : tableCat;
-                    tableName = schem + "." + tableName;
-                    tables.add(tableName);
+        try (final Connection conn = ds.getConnection()) {
+            for (final String catalog : listCatalogs()) {
+                try (final ResultSet result = getTables(conn, catalog, "%", "%")) {
+                    while (result.next()) {
+                        final String tableName = result.getString("TABLE_NAME");
+                        final String tableSchem = result.getString("TABLE_SCHEM");
+                        final String tableCat = result.getString("TABLE_CAT");
+                        tables.add((tableSchem != null ? tableSchem : tableCat) + "." + tableName);
+                    }
                 }
-
-            } catch (SQLException e) {
-                throw new RuntimeException("Unable to obtTain list schemas", e);
             }
+        } catch (final SQLException e) {
+            throw new RuntimeException("Unable to obtain table list", e);
         }
+
         return tables;
     }
 
-
-    public List<String> listCurrentTables(String schema) {
-
-        Vector<String> tables = new Vector<>();
-        try (Connection conn = ds.getConnection()) {
-            ResultSet result = getTables(conn, schema, null);
-            while (result.next()) {
-                String tableName = result.getString("TABLE_NAME");
-                tables.add(tableName);
-            }
-            return tables;
-        } catch (SQLException e) {
-            throw new RuntimeException("Unable to list schema [" + schema + "]", e);
-        }
-    }
-
-
-    public TableSchema describeTable(String schema, String table) {
+    /**
+     * Gets the schema for the specified table.
+     *
+     * @param schema the schema name
+     * @param table the table name
+     * @return the table schema
+     * @throws IllegalArgumentException if the table name is empty
+     * @throws RuntimeException if a database access error occurs
+     */
+    @Nullable
+    public TableSchema describeTable(@Nullable final String schema, @Nonnull final String table) {
         Validate.isTrue(!StringUtils.isEmpty(table), "Table expected");
 
-        TableSchema tableSchema = null;
-        Connection conn = null;
-        ResultSet result = null;
-        try {
-            if(kerberosTicketConfiguration.isKerberosEnabled()) {
-                conn = KerberosUtil.getConnectionWithOrWithoutKerberos(ds, kerberosTicketConfiguration);
-            }
-            else {
-                conn = ds.getConnection();
-            }
+        final String catalog = StringUtils.isNotBlank(schema) ? listCatalogs().stream().filter(schema::equalsIgnoreCase).findFirst().orElse(null) : null;
 
-            result = getTables(conn, schema, table);
-            while (result.next()) {
-                String tableName = result.getString(3);
-                if (table.equalsIgnoreCase(tableName)) {
-                    tableSchema = new TableSchema();
-                    String catalog = result.getString(1);
-                    String schem = result.getString(2);
-                    tableSchema.setSchemaName(StringUtils.isBlank(schem) ? catalog : schem);
-                    tableSchema.setName(tableName);
-                    tableSchema.setFields(listColumns(conn, schema, tableName));
-                    return tableSchema;
+        try (final Connection conn = kerberosTicketConfiguration.isKerberosEnabled() ? KerberosUtil.getConnectionWithOrWithoutKerberos(ds, kerberosTicketConfiguration) : ds.getConnection()) {
+            try (final ResultSet result = getTables(conn, catalog, (catalog == null) ? schema : "%", table)) {
+                while (result.next()) {
+                    final String cat = result.getString(1);
+                    final String schem = result.getString(2);
+                    final String tableName = result.getString(3);
+                    if (table.equalsIgnoreCase(tableName) && (schema == null || schem == null || schema.equalsIgnoreCase(schem))) {
+                        final TableSchema tableSchema = new TableSchema();
+                        tableSchema.setFields(listColumns(conn, schema, tableName));
+                        tableSchema.setName(tableName);
+                        tableSchema.setSchemaName(StringUtils.isBlank(schem) ? cat : schem);
+                        return tableSchema;
+                    }
                 }
             }
-            return null;
-        } catch (SQLException e) {
-            throw new RuntimeException("Unable to describe table [" + table + "]", e);
+        } catch (final SQLException e) {
+            throw new RuntimeException("Unable to describe schema [" + schema + "] table [" + table + "]", e);
         }
-        finally {
-            if(conn != null) {
-                try {
-                    conn.close();
-                } catch(Throwable t) {}
-            }
-            if(result != null) {
-                try {
-                    result.close();
-                } catch(Throwable t) {}
-            }
-        }
+
+        return null;
     }
 
     protected Set<String> listPrimaryKeys(Connection conn, String schema, String tableName) throws SQLException {
