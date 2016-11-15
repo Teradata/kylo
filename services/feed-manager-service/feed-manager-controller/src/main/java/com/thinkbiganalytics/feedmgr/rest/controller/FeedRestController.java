@@ -36,6 +36,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
+import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -360,7 +361,11 @@ public class FeedRestController {
         } catch (DataAccessException e) {
             if (e.getCause() instanceof org.apache.hive.service.cli.HiveSQLException && e.getCause().getMessage().contains("Table not found")) {
                 //this exception is ok to swallow since it just means no profile data exists yet
-            } else {
+            }
+            else if(e.getCause().getMessage().contains("HiveAccessControlException Permission denied")) {
+                throw new AccessControlException("You do not have permission to execute this hive query");
+            }
+            else {
                 throw e;
             }
         }
