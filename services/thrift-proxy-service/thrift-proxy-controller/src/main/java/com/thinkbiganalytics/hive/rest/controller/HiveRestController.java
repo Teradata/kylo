@@ -11,6 +11,7 @@ import com.thinkbiganalytics.hive.service.HiveService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.dao.DataAccessException;
 
 import java.sql.SQLException;
@@ -37,6 +38,8 @@ public class HiveRestController {
 
     private static final Logger log = LoggerFactory.getLogger(HiveRestController.class);
 
+    @Autowired
+    Environment env;
 
     @Autowired
     HiveService hiveService;
@@ -177,12 +180,17 @@ public class HiveRestController {
     public Response getTables()
     {
         List<String> tables = null;
-        //List<String> tables = getHiveService().getAllTables();
-        try {
-            tables = getHiveMetadataService().getAllTables();
-        } catch (DataAccessException e) {
-            log.error("Error listing Hive Tables from the metastore ",e);
-            throw e;
+        boolean userImpersonationEnabled = Boolean.valueOf(env.getProperty("hive.userImpersonation.enabled"));
+        if(userImpersonationEnabled) {
+            tables = getHiveService().getAllTablesForImpersonatedUser();
+        }
+        else {
+            try {
+                tables = getHiveMetadataService().getAllTables();
+            } catch (DataAccessException e) {
+                log.error("Error listing Hive Tables from the metastore ", e);
+                throw e;
+            }
         }
         return Response.ok(asJson(tables)).build();
     }
@@ -192,7 +200,14 @@ public class HiveRestController {
     @Produces({MediaType.APPLICATION_JSON })
     public Response getTableNames(@PathParam("schema")String schema)
     {
-        List<String> tables = getHiveService().getTables(schema);
+        boolean userImpersonationEnabled = Boolean.valueOf(env.getProperty("hive.userImpersonation.enabled"));
+        List<String> tables = null;
+        if(userImpersonationEnabled) {
+            tables = getHiveService().getTablesForImpersonatedUser(schema);
+        }
+        else {
+            tables = getHiveService().getTables(schema);
+        }
         return Response.ok(asJson(tables)).build();
     }
 

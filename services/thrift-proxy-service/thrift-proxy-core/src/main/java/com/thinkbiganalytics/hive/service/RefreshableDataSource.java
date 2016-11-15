@@ -177,22 +177,20 @@ public class RefreshableDataSource implements DataSource {
     private DataSource create() {
         String prefix = getPrefixWithTrailingDot();
         boolean userImpersonationEnabled = Boolean.valueOf(env.getProperty("hive.userImpersonation.enabled"));
-        String userName = env.getProperty(prefix + "username");
-        if(userImpersonationEnabled) {
-            String currentUser = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-            userName = currentUser;
-        }
 
         String driverClassName = env.getProperty(prefix + "driverClassName");
         String url = env.getProperty(prefix + "url");
-        String username = userName;
         String password = env.getProperty(prefix + "password");
-      /*  BasicDataSource ds = new BasicDataSource();
-        ds.setDriverClassName(driverClassName);
-        ds.setUsername(username);
-        ds.setPassword(password);
-        ds.setUrl(url);
-        */
+        String userName = env.getProperty(prefix + "username");
+
+        if(userImpersonationEnabled && propertyPrefix.equals("hive.datasource")) {
+            String currentUser = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            userName = currentUser;
+            url = url + ";hive.server2.proxy.user=" + currentUser;
+        }
+        log.debug("The JDBC URL is " + url + " --- User impersonation enabled: " + userImpersonationEnabled);
+        String username = userName;
+
         DataSource ds = DataSourceBuilder.create().driverClassName(driverClassName).url(url).username(username).password(password).build();
         return ds;
     }

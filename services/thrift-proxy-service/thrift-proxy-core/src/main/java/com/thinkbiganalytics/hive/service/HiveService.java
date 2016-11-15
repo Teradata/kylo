@@ -62,13 +62,16 @@ public class HiveService {
         return getDBSchemaParser().listSchemas();
     }
 
-    /**
-     public List<String> getTablesxx(String schema) {
-       List<String> tables = getDBSchemaParser().listTables(schema);
-       return tables;
+    public List<String> getTables(String schema) {
+        List<String> tables = getDBSchemaParser().listTables(schema);
+        return tables;
     }
 
-     public List<String> getAllTablesxx(){
+    /**
+     * returns a list of schemanName.TableName
+     * @return
+     */
+    private List<String> getAllTables(){
         List<String> allTables = new ArrayList<>();
         List<String> schemas = getSchemaNames();
         if(schemas != null) {
@@ -83,12 +86,12 @@ public class HiveService {
         }
         return allTables;
     }
-     */
+
 
     /**
      * returns a list of all the scheam.tablename for a given schema
      */
-    public List<String> getTables(String schema) {
+    public List<String> getTablesForImpersonatedUser(String schema) {
         QueryResult tables = query("show tables in " + schema);
         return tables.getRows().stream().flatMap(row -> row.entrySet().stream()).map(e -> schema + "." + e.getValue().toString()).collect(Collectors.toList());
     }
@@ -97,7 +100,7 @@ public class HiveService {
     /**
      * returns a list of all the schema.tablename
      */
-    public List<String> getAllTables() {
+    public List<String> getAllTablesForImpersonatedUser() {
         long start = System.currentTimeMillis();
         List<String> allTables = new ArrayList<>();
         QueryResult result = query("show databases");
