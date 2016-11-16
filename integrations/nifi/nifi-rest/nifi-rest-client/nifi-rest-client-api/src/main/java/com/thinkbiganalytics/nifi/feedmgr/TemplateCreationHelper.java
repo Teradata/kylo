@@ -499,7 +499,7 @@ public class TemplateCreationHelper {
                     restClient.deleteControllerServices(servicesToDelete);
                 } catch (Exception e) {
                     log.info("error attempting to cleanup controller services while trying to delete Services: " + e.getMessage()
-                             + ".  It might be wise to login to NIFI and verify there are not extra controller services", e);
+                             + ".  It might be wise to login to NIFI and verify there are not extra controller services");
                     getErrors().add(new NifiError(NifiError.SEVERITY.INFO, "There is an error attempting to remove the controller service :" + e.getMessage()));
                 }
             }
