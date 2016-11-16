@@ -396,7 +396,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
             if(!feed.isNew() && !ListUtils.isEqualList(previousSavedSecurityGroups, domainFeed.getSecurityGroups())) {
                 List<HadoopSecurityGroup> securityGroups = domainFeed.getSecurityGroups();
                 List<String> groupsAsCommaList = securityGroups.stream().map(group -> group.getName()).collect(Collectors.toList());
-                hadoopAuthorizationService.updateSecurityGroupsForAllPolicies(feed.getCategoryName(), feed.getFeedName(), groupsAsCommaList, domainFeed.getProperties());
+                hadoopAuthorizationService.updateSecurityGroupsForAllPolicies(feed.getSystemCategoryName(), feed.getSystemFeedName(), groupsAsCommaList, domainFeed.getProperties());
             }
 
             // Return result

@@ -17,18 +17,18 @@ public class FeedPropertyChangeEvent extends AbstractMetadataEvent<String> {
 
     private Properties oldProperties;
     private Properties newProperties;
-    private String feedCategory;
-    private String feedName;
+    private String feedCategorySystemName;
+    private String feedSystemName;
     private String feedId;
     private List<String> hadoopSecurityGroupNames;
 
-    public FeedPropertyChangeEvent(String feedId, String feedCategory, String feedName, List<String> hadoopSecurityGroupNames, Map<String, Object> oldProperties, Map<String, Object> newProperties) {
+    public FeedPropertyChangeEvent(String feedId, String feedCategorySystemName, String feedSystemName, List<String> hadoopSecurityGroupNames, Map<String, Object> oldProperties, Map<String, Object> newProperties) {
         super("");
         this.feedId = feedId;
         this.oldProperties = convertMapToProperties(oldProperties);
         this.newProperties = convertMapToProperties(newProperties);
-        this.feedCategory = feedCategory;
-        this.feedName = feedName;
+        this.feedCategorySystemName = feedCategorySystemName;
+        this.feedSystemName = feedSystemName;
         this.hadoopSecurityGroupNames = hadoopSecurityGroupNames;
     }
 
@@ -93,12 +93,12 @@ public class FeedPropertyChangeEvent extends AbstractMetadataEvent<String> {
         return properties;
     }
 
-    public String getFeedCategory() {
-        return feedCategory;
+    public String getFeedCategorySystemName() {
+        return feedCategorySystemName;
     }
 
-    public String getFeedName() {
-        return feedName;
+    public String getFeedSystemName() {
+        return feedSystemName;
     }
 
     public List<String> getHadoopSecurityGroupNames() {

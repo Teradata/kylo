@@ -302,17 +302,17 @@ public class RangerAuthorizationService extends BaseHadoopAuthorizationService {
 
         if (securityGroupNames == null || securityGroupNames.isEmpty()) {
             // Only delete if the policies exists. It's possibile that someone adds a security group right after feed creation and before initial ingestion
-            if(hivePolicy != null) {
+            if (hivePolicy != null) {
                 deleteHivePolicy(categoryName, feedName);
             }
-            if(hdfsPolicy != null) {
+            if (hdfsPolicy != null) {
                 deleteHdfsPolicy(categoryName, feedName, null);
             }
         } else {
             if (hdfsPolicy == null) {
                 // If a feed hasn't run yet the metadata won't exists
-                if(!StringUtils.isEmpty((String)feedProperties.get(REGISTRATION_HDFS_FOLDERS))) {
-                    String hdfsFoldersWithCommas = ((String)feedProperties.get(REGISTRATION_HDFS_FOLDERS)).replace("\n", ",");
+                if (!StringUtils.isEmpty((String) feedProperties.get(REGISTRATION_HDFS_FOLDERS))) {
+                    String hdfsFoldersWithCommas = ((String) feedProperties.get(REGISTRATION_HDFS_FOLDERS)).replace("\n", ",");
                     List<String> hdfsFolders = Stream.of(hdfsFoldersWithCommas).collect(Collectors.toList());
                     createReadOnlyHdfsPolicy(categoryName, feedName, securityGroupNames, hdfsFolders);
                 }
@@ -329,8 +329,8 @@ public class RangerAuthorizationService extends BaseHadoopAuthorizationService {
 
             if (hivePolicy == null) {
                 // If a feed hasn't run yet the metadata won't exists
-                if(!StringUtils.isEmpty((String)feedProperties.get(REGISTRATION_HIVE_TABLES))) {
-                    String hiveTablesWithCommas = ((String)feedProperties.get(REGISTRATION_HIVE_TABLES)).replace("\n", ",");
+                if (!StringUtils.isEmpty((String) feedProperties.get(REGISTRATION_HIVE_TABLES))) {
+                    String hiveTablesWithCommas = ((String) feedProperties.get(REGISTRATION_HIVE_TABLES)).replace("\n", ",");
                     List<String> hiveTables = Stream.of(hiveTablesWithCommas).collect(Collectors.toList());
                     String hiveSchema = ((String) feedProperties.get(REGISTRATION_HIVE_SCHEMA));
                     createOrUpdateReadOnlyHivePolicy(categoryName, feedName, securityGroupNames, hiveSchema, hiveTables);
@@ -392,8 +392,6 @@ public class RangerAuthorizationService extends BaseHadoopAuthorizationService {
 
     @Override
     public void deleteHivePolicy(String categoryName, String feedName) {
-
-        int policyId = 0;
         String rangerHivePolicyName = getHivePolicyName(categoryName, feedName);
 
         Map<String, Object> searchHiveCriteria = new HashMap<>();
@@ -402,23 +400,20 @@ public class RangerAuthorizationService extends BaseHadoopAuthorizationService {
         List<RangerPolicy> hadoopPolicyList = this.searchPolicy(searchHiveCriteria);
 
         if (hadoopPolicyList.size() == 0) {
-            throw new UnsupportedOperationException("Ranger Plugin : Unable to get ID for Ranger " + rangerHivePolicyName + " Policy");
+            log.info("Ranger Plugin : Unable to find Ranger Hive policy " + rangerHivePolicyName + " ... Ignoring");
+        } else if (hadoopPolicyList.size() > 1) {
+            throw new RuntimeException("Unable to find Hive unique policy.");
         } else {
-            if (hadoopPolicyList.size() > 1) {
-                throw new RuntimeException("Unable to find Hive unique policy.");
-            } else {
 
-                for (RangerPolicy hadoopPolicy : hadoopPolicyList) {
-                    policyId = hadoopPolicy.getId();
+            for (RangerPolicy hadoopPolicy : hadoopPolicyList) {
+                try {
+                    rangerRestClient.deletePolicy(hadoopPolicy.getId());
+                } catch (Exception e) {
+                    log.error("Unable to delete policy", e);
+                    throw new RuntimeException("Unable to delete policy for " + rangerHivePolicyName, e);
                 }
-            }
-        }
 
-        try {
-            rangerRestClient.deletePolicy(policyId);
-        } catch (Exception e) {
-            log.error("Unable to delete policy", e);
-            throw new RuntimeException("Unable to delete policy for " + rangerHivePolicyName, e);
+            }
         }
 
     }
@@ -426,7 +421,6 @@ public class RangerAuthorizationService extends BaseHadoopAuthorizationService {
     @Override
     public void deleteHdfsPolicy(String categoryName, String feedName, List<String> hdfsPaths) {
 
-        int policyId = 0;
         String rangerHdfsPolicyName = getHdfsPolicyName(categoryName, feedName);
 
         Map<String, Object> searchHdfsCriteria = new HashMap<>();
@@ -435,24 +429,19 @@ public class RangerAuthorizationService extends BaseHadoopAuthorizationService {
         List<RangerPolicy> hadoopPolicyList = this.searchPolicy(searchHdfsCriteria);
 
         if (hadoopPolicyList.size() == 0) {
-            throw new UnsupportedOperationException("Ranger Plugin : Unable to get ID for Ranger " + rangerHdfsPolicyName + " Policy");
+            log.info("Ranger Plugin : Unable to find Ranger HDFS policy " + rangerHdfsPolicyName+ " ... Ignoring");
+        } else if (hadoopPolicyList.size() > 1) {
+            throw new RuntimeException("Unable to find HDFS unique policy.");
         } else {
-            if (hadoopPolicyList.size() > 1) {
-                throw new RuntimeException("Unable to find HDFS unique policy.");
-            } else {
-                for (RangerPolicy hadoopPolicy : hadoopPolicyList) {
-                    policyId = hadoopPolicy.getId();
+            for (RangerPolicy hadoopPolicy : hadoopPolicyList) {
+                try {
+                    rangerRestClient.deletePolicy(hadoopPolicy.getId());
+                } catch (Exception e) {
+                    log.error("Unable to delete policy", e);
+                    throw new RuntimeException("Unable to delete policy for " + rangerHdfsPolicyName, e);
                 }
             }
         }
-
-        try {
-            rangerRestClient.deletePolicy(policyId);
-        } catch (Exception e) {
-            log.error("Unable to delete policy", e);
-            throw new RuntimeException("Unable to delete policy for " + rangerHdfsPolicyName, e);
-        }
-
     }
 
     @Override

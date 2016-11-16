@@ -63,7 +63,7 @@ public abstract class BaseHadoopAuthorizationService implements HadoopAuthorizat
                         String hdfsFoldersWithCommas = hdfsFolders.replace("\n", ",");
                         List<String> hdfsFoldersConverted = Arrays.asList(hdfsFoldersWithCommas.split(",")).stream().collect(Collectors.toList());
 
-                        createOrUpdateReadOnlyHdfsPolicy(metadataEvent.getFeedCategory(), metadataEvent.getFeedName()
+                        createOrUpdateReadOnlyHdfsPolicy(metadataEvent.getFeedCategorySystemName(), metadataEvent.getFeedSystemName()
                             , metadataEvent.getHadoopSecurityGroupNames()
                             , hdfsFoldersConverted);
                     }
@@ -74,7 +74,7 @@ public abstract class BaseHadoopAuthorizationService implements HadoopAuthorizat
                         String hiveTablesWithCommas = hiveTables.replace("\n", ",");
                         List<String> hiveTablesConverted = Arrays.asList(hiveTablesWithCommas.split(",")).stream().collect(Collectors.toList());
 
-                        createOrUpdateReadOnlyHivePolicy(metadataEvent.getFeedCategory(), metadataEvent.getFeedName()
+                        createOrUpdateReadOnlyHivePolicy(metadataEvent.getFeedCategorySystemName(), metadataEvent.getFeedSystemName()
                             , metadataEvent.getHadoopSecurityGroupNames()
                             , hiveSchema
                             , hiveTablesConverted);

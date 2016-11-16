@@ -160,11 +160,8 @@ public class FeedManagerMetadataService implements MetadataService {
                 FeedManagerFeed domainFeed = feedModelTransform.feedToDomain(feed);
                 String hdfsPaths = (String)domainFeed.getProperties().get(HadoopAuthorizationService.REGISTRATION_HDFS_FOLDERS);
 
-                if(hdfsPaths == null) {
-                    throw new IllegalArgumentException("The HDFS path metadata is required for deletion of hadoop authorization policies");
-                }
-                hadoopAuthorizationService.deleteHivePolicy(feed.getCategoryName(), feed.getFeedName());
-                hadoopAuthorizationService.deleteHdfsPolicy(feed.getCategoryName(), feed.getFeedName(), HadoopAuthorizationService.convertNewlineDelimetedTextToList(hdfsPaths));
+                hadoopAuthorizationService.deleteHivePolicy(feed.getSystemCategoryName(), feed.getSystemFeedName());
+                hadoopAuthorizationService.deleteHdfsPolicy(feed.getSystemCategoryName(), feed.getSystemFeedName(), HadoopAuthorizationService.convertNewlineDelimetedTextToList(hdfsPaths));
             });
 
         }

@@ -179,7 +179,7 @@ public class MergeTable extends AbstractNiFiProcessor {
             session.transfer(flowFile, REL_SUCCESS);
 
         } catch (final Exception e) {
-            logger.error("Unable to execute merge doMerge for {} due to {}; routing to failure", new Object[]{flowFile, e});
+            logger.error("Unable to execute merge doMerge for {} due to {}; routing to failure", new Object[]{flowFile, e}, e);
             session.transfer(flowFile, REL_FAILURE);
         }
     }
