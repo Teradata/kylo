@@ -1,0 +1,30 @@
+[
+  {"processorType":"org.apache.nifi.processors.standard.GetFile",
+    "datasourcePropertyKeys":["Input Directory","File Filter"],
+    "datasourceType":"DirectoryDatasource",
+    "connectionType":"SOURCE",
+    "identityString":"${Input Directory}/${File Filter}",
+    "description":" Directory or File source"
+  },
+  {
+    "processorType":"com.thinkbiganalytics.nifi.v2.ingest.GetTableData",
+    "datasourcePropertyKeys":["Source Table"],
+    "datasourceType":"DatabaseDatasource",
+    "connectionType":"SOURCE",
+    "identityString":"Database ${Source Table}"
+  },
+  {
+    "processorType":"datatransformation.template",
+    "datasourcePropertyKeys":["Target schema","Target table"],
+    "datasourceType":"HiveDatasource",
+    "connectionType":"SOURCE",
+    "identityString":"${schema}.${table}"
+  },
+  {
+    "processorType":"com.thinkbiganalytics.nifi.v2.ingest.MergeTable",
+    "datasourcePropertyKeys":["Target schema","Target table"],
+    "datasourceType":"HiveDatasource",
+    "connectionType":"DESTINATION",
+    "identityString":"${Target schema}.${Target table}"
+  }
+]
