@@ -62,7 +62,7 @@ public class DerivedDatasourceFactory {
             if (id != null) {
                 if (com.thinkbiganalytics.metadata.rest.model.data.DatasourceDefinition.ConnectionType.SOURCE.equals(definition.getDatasourceDefinition().getConnectionType())) {
                     //ensure this is the selected one for the feed
-                    if (template != null && template.getInputProcessors() != null && definition.getProcessorType().equalsIgnoreCase(feedMetadata.getInputProcessorType())) {
+                    if (template != null && template.getInputProcessors() != null && getFeedInputProcessorTypes(feedMetadata).contains(definition.getProcessorType())) {
                         sources.add(id);
                     }
                 } else {
