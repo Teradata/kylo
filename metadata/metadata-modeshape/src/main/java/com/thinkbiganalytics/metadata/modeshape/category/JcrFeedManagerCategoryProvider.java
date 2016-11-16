@@ -96,4 +96,9 @@ public class JcrFeedManagerCategoryProvider extends BaseJcrProvider<FeedManagerC
     public void setFeedUserFields(@Nonnull Category.ID categoryId, @Nonnull Set<UserFieldDescriptor> userFields) {
         categoryProvider.setFeedUserFields(categoryId, userFields);
     }
+
+    @Override
+    public void rename(@Nonnull Category.ID categoryId, @Nonnull String newName) {
+        categoryProvider.rename(categoryId, newName);
+    }
 }

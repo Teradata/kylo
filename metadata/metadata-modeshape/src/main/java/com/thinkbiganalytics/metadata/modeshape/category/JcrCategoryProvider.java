@@ -8,11 +8,13 @@ import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.extension.ExtensionsConstants;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -22,6 +24,8 @@ import java.util.Set;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
 
 /**
  * A JCR provider for {@link Category} objects.
@@ -124,5 +128,34 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
             JcrPropertyUtil.setUserFields(ExtensionsConstants.getUserCategoryFeed(category.getName()), userFields, extensibleTypeProvider);
             return userFields;
         }, MetadataAccess.SERVICE);
+    }
+
+    @Override
+    public void rename(@Nonnull final Category.ID categoryId, @Nonnull final String newName) {
+        // Move the node to the new path
+        final JcrCategory category = (JcrCategory) findById(categoryId);
+        final Node node = category.getNode();
+
+        try {
+            final String newPath = JcrUtil.path(node.getParent().getPath(), newName).toString();
+            JcrMetadataAccess.getActiveSession().move(node.getPath(), newPath);
+        } catch (final RepositoryException e) {
+            throw new IllegalStateException("Unable to rename category: " + node, e);
+        }
+
+        // Update properties
+        category.setProperty(JcrCategory.SYSTEM_NAME, newName);
+
+        // Move user fields
+        final Optional<Set<UserFieldDescriptor>> feedUserFields = getFeedUserFields(category.getId());
+
+        if (feedUserFields.isPresent()) {
+            final ExtensibleType type = extensibleTypeProvider.getType(ExtensionsConstants.getUserCategoryFeed(category.getName()));
+            if (type != null) {
+                extensibleTypeProvider.deleteType(type.getId());
+            }
+
+            setFeedUserFields(category.getId(), feedUserFields.get());
+        }
     }
 }

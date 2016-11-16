@@ -34,6 +34,7 @@ import com.thinkbiganalytics.metadata.api.extension.FieldDescriptorBuilder;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.TypeAlreadyExistsException;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
 public class JcrExtensibleTypeProvider implements ExtensibleTypeProvider {
 
@@ -91,6 +92,7 @@ public class JcrExtensibleTypeProvider implements ExtensibleTypeProvider {
         try {
             final Node typeNode = session.getNodeByIdentifier(typeId.getIdValue());
             session.getWorkspace().getNodeTypeManager().unregisterNodeType(typeNode.getName());
+            session.getRootNode().getNode(ExtensionsConstants.TYPES + "/" + typeNode.getName()).remove();
             return true;
         } catch (ItemNotFoundException|NoSuchNodeTypeException e) {
             return true;
@@ -196,7 +198,7 @@ public class JcrExtensibleTypeProvider implements ExtensibleTypeProvider {
             final Session session = getSession();
             final Node typeNode;
 
-            if (!session.nodeExists("/" + ExtensionsConstants.TYPES + "/" + builder.name)) {
+            if (!session.nodeExists(JcrUtil.path(session.getRootNode().getPath(), ExtensionsConstants.TYPES + "/" + builder.name).toString())) {
                 typeNode = session.getRootNode().addNode(ExtensionsConstants.TYPES + "/" + builder.name, ExtensionsConstants.TYPE_DESCRIPTOR_TYPE);
             } else {
                 throw new TypeAlreadyExistsException(builder.name);

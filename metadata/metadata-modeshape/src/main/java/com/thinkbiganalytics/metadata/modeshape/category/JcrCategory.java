@@ -80,7 +80,9 @@ public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Cat
 
     @Override
     public void setName(String name) {
-        setSystemName(name);
+        if (!getName().equals(name)) {
+            throw new UnsupportedOperationException();
+        }
     }
 
     @Nonnull

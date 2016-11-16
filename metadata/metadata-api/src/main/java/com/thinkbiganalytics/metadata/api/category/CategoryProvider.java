@@ -54,4 +54,12 @@ public interface CategoryProvider<T extends Category> extends BaseProvider<T, Ca
      * @since 0.4.0
      */
     void setFeedUserFields(@Nonnull Category.ID categoryId, @Nonnull Set<UserFieldDescriptor> userFields);
+
+    /**
+     * Renames the specified category.
+     *
+     * @param categoryId the category id
+     * @param newName the new name
+     */
+    void rename(@Nonnull Category.ID categoryId, @Nonnull String newName);
 }
