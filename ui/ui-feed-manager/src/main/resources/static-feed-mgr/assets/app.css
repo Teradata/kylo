@@ -5,6 +5,17 @@ html, body {
   padding: 0px;
 }
 
+/* Always show scrollbars */
+::-webkit-scrollbar {
+  -webkit-appearance: none;
+  height: 8px;
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background-color: #c2c2c2;
+  border-radius: 4px;
+}
+
 /* Toolbar area */
 
 .menu {
