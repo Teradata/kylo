@@ -67,18 +67,11 @@
          * @returns {HttpPromise}
          */
         this.getTemplates = function () {
-           showProgress();
-            var successFn = function (response) {
-                   self.templates = response.data;
-               hideProgress();
-            }
-            var errorFn = function (err) {
-
-            }
-
-            var promise = $http.get(RestUrlService.GET_TEMPLATES_URL);
-            promise.then(successFn, errorFn);
-            return promise;
+            showProgress();
+            RegisterTemplateService.getTemplates().then(function(response){
+                self.templates = response.data;
+                hideProgress();
+            });
         };
 
 

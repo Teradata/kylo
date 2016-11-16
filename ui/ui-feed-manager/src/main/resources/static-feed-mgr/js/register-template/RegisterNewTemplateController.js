@@ -8,7 +8,7 @@
      * @param {AccessControlService} AccessControlService the access control service
      * @param StateService
      */
-    function RegisterNewTemplateController($scope, AccessControlService, StateService) {
+    function RegisterNewTemplateController($scope, AccessControlService, StateService, RegisterTemplateService) {
         var self = this;
 
         /**
@@ -22,6 +22,7 @@
          * Creates a new Feed Manager template from a NiFi template.
          */
         self.createFromNifi = function() {
+            RegisterTemplateService.resetModel();
             StateService.navigateToRegisterNifiTemplate();
         };
 
@@ -29,6 +30,7 @@
          * Imports a Feed Manager template from a file.
          */
         self.importFromFile = function() {
+            RegisterTemplateService.resetModel();
             StateService.navigateToImportTemplate();
         };
 

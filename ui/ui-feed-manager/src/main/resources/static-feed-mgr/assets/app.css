@@ -1284,3 +1284,22 @@ md-list-item .md-list-item-inner > md-checkbox.permissions-indent-2 {
 .table-schema-checkbox {
   margin-top: -10px;
 }
+
+.bottom-left {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 8px 16px 88px;
+  z-index: 70;
+  border-top-width: 1px;
+  border-top-style: solid;
+  -webkit-transform: translate3d(0,80px,0);
+  transform: translate3d(0,80px,0);
+  -webkit-transition: all .4s cubic-bezier(.25,.8,.25,1);
+  transition: all .4s cubic-bezier(.25,.8,.25,1);
+  -webkit-transition-property: -webkit-transform;
+  transition-property: -webkit-transform;
+  transition-property: transform;
+  transition-property: transform,-webkit-transform;
+}

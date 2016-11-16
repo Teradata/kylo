@@ -19,6 +19,12 @@
         var self = this;
 
         /**
+         * Order of the templates via the dndLists
+         * @type {Array}
+         */
+        this.templateOrder = [];
+
+            /**
          * the angular form
          */
         self.registerTemplateForm = {};
@@ -29,11 +35,59 @@
          */
         self.isValid = false;
 
+        self.processorDatasourceDefinitions = [];
+
+
+
+
+        var buildTemplateProcessorDatasourcesMap = function(){
+            var assignedPortIds = [];
+            _.each(self.model.reusableTemplateConnections,function(conn) {
+                var inputPort = conn.inputPortDisplayName;
+                var port = self.connectionMap[inputPort];
+                assignedPortIds.push(port.id);
+            });
+            var selectedPortIds = '';
+            if(assignedPortIds.length >0) {
+              selectedPortIds = assignedPortIds.join(",");
+            }
+
+            RegisterTemplateService.getTemplateProcessorDatasourceDefinitions(self.model.nifiTemplateId,selectedPortIds ).then(function(response){
+                var map = {};
+
+                //merge in those already selected/saved on this template
+                console.log('THIS DATA ',self.model);
+                _.each(response.data,function(def) {
+                    def.selectedDatasource = false;
+                    if(self.model.registeredDatasourceDefinitions.length == 0) {
+                        def.selectedDatasource = true;
+                    }
+                    else {
+
+                   var matchingTypes = _.filter(self.model.registeredDatasourceDefinitions,function(ds) {
+                        return (def.processorType == ds.processorType && ( ds.processorId == def.processorId || ds.processorName == def.processorName));
+                    });
+                    if(matchingTypes.length >0){
+                        def.selectedDatasource = true;
+                    }
+                  }
+                    });
+             self.processorDatasourceDefinitions = response.data;
+                console.log('def ',self.processorDatasourceDefinitions)
+            });
+        };
+
+
+
+
+
         this.model = RegisterTemplateService.model;
         this.message = null;
         this.registrationSuccess = false;
         this.stepNumber = parseInt(this.stepIndex) + 1
         this.templateTableOption = this.model.templateTableOption;
+
+        // setup the Stepper types
         if (this.templateTableOption == undefined) {
 
             if (this.model.defineTable) {
@@ -98,7 +152,12 @@
                         self.registerTemplateForm["port-" + connection.feedOutputPortName].$setValidity("invalidConnection", false);
                     }
                 });
+
+                buildTemplateProcessorDatasourcesMap();
             });
+        }
+        else {
+            buildTemplateProcessorDatasourcesMap();
         }
 
 
@@ -107,6 +166,7 @@
             connection.reusableTemplateInputPortName = port.name;
             //mark as valid
             self.registerTemplateForm["port-" + connection.feedOutputPortName].$setValidity("invalidConnection", true);
+            buildTemplateProcessorDatasourcesMap();
         };
 
         this.showIconPicker = function() {
@@ -160,6 +220,33 @@
 
             //get all properties that are selected
             var savedTemplate = RegisterTemplateService.getModelForSave();
+            //get template order
+            var order = [];
+            _.each(self.templateOrder,function(template) {
+                order.push(template.id);
+            });
+            savedTemplate.templateOrder = order;
+
+            var thisOrder = order.length -1;
+            if(self.model.id != undefined) {
+                 thisOrder = _.indexOf(order, self.model.id)
+            }
+            else {
+                thisOrder = _.indexOf(order,'NEW');
+            }
+            savedTemplate.order = thisOrder
+
+            //add in the datasources
+            console.log('SAVING ',self.processorDatasourceDefinitions)
+
+           var selectedDatasourceDefinitions =  _.filter(self.processorDatasourceDefinitions,function(ds){
+                return ds.selectedDatasource == true;
+            })
+
+            console.log('selectedDatasourceDefinitions ',selectedDatasourceDefinitions)
+            savedTemplate.registeredDatasourceDefinitions = selectedDatasourceDefinitions;
+
+
             var promise = $http({
                 url: RestUrlService.REGISTER_TEMPLATE_URL(),
                 method: "POST",
@@ -210,6 +297,29 @@
 
                     });
         };
+
+
+
+        //order list
+        RegisterTemplateService.getRegisteredTemplates().then(function(response){
+
+            //order by .order
+            var templates = _.sortBy(response.data,'order');
+            if(self.model.id ==null || self.model.id == undefined){
+                //append to bottom
+               templates.push({id:'NEW',name:self.model.templateName,currentTemplate:true});
+            }
+            else {
+                var currentTemplate = _.filter(templates,function(template) {
+                    return template.id == self.model.id;
+                });
+                if(currentTemplate && currentTemplate.length == 1){
+                    currentTemplate[0].currentTemplate = true;
+                }
+            }
+            self.templateOrder = templates;
+        });
+
 
     }
 

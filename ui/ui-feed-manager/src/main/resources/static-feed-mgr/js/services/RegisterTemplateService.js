@@ -49,8 +49,11 @@ angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($ht
       needsReusableTemplate: false,
       ports: [],
       reusableTemplateConnections:[],  //[{reusableTemplateFeedName:'', feedOutputPortName: '', reusableTemplateInputPortName: ''}]
-      icon: {title: null, color: null,
-      state:'ENABLED'}
+      icon: {title: null, color: null},
+      state:'NOT REGISTERED',
+        updateDate:null,
+        feedsCount:0,
+      registeredDatasources:[]
     },
     newModel: function () {
       this.model = angular.copy(this.emptyModel);
@@ -273,6 +276,42 @@ angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($ht
       });
       return custom !== undefined;
     },
+
+    /**
+     * Gets all templates registered or not.  (looks at Nifi)
+     * id property will ref NiFi id
+     * registeredTemplateId property will be populated if registered
+     * @returns {HttpPromise}
+     */
+    getTemplates : function () {
+    var successFn = function (response) {
+
+    }
+    var errorFn = function (err) {
+
+    }
+
+    var promise = $http.get(RestUrlService.GET_TEMPLATES_URL);
+    promise.then(successFn, errorFn);
+    return promise;
+      },
+
+    /**
+     * Gets the Registered Templates
+     * @returns {HttpPromise}
+     */
+    getRegisteredTemplates : function () {
+      var successFn = function (response) {
+
+      }
+      var errorFn = function (err) {
+
+      }
+
+      var promise = $http.get(RestUrlService.GET_REGISTERED_TEMPLATES_URL);
+      promise.then(successFn, errorFn);
+      return promise;
+    },
     removeNonUserEditableProperties: function (processorArray, keepProcessorIfEmpty) {
       //only keep those that are userEditable:true
       var validProcessors = [];
@@ -425,6 +464,16 @@ angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($ht
         deferred.reject(response);
       });
       return deferred.promise;
+    },
+    getTemplateProcessorDatasourceDefinitions : function(nifiTemplateId, inputPortIds){
+      var deferred = $q.defer();
+      $http.get(RestUrlService.TEMPLATE_PROCESSOR_DATASOURCE_DEFINITIONS(nifiTemplateId),{params:{inputPorts:inputPortIds}}).then(function(response){
+        deferred.resolve(response);
+      }, function(response){
+        deferred.reject(response);
+      });
+      return deferred.promise;
+
     },
     /**
      * Assigns the model properties and render types
@@ -585,6 +634,7 @@ angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($ht
             self.model.reusableTemplate = templateData.reusableTemplate;
             self.model.reusableTemplateConnections = templateData.reusableTemplateConnections;
             self.model.needsReusableTemplate = templateData.reusableTemplateConnections != undefined && templateData.reusableTemplateConnections.length>0;
+            self.model.registeredDatasourceDefinitions = templateData.registeredDatasourceDefinitions;
             if (templateData.state == 'ENABLED') {
               self.model.stateIcon = 'check_circle'
             }

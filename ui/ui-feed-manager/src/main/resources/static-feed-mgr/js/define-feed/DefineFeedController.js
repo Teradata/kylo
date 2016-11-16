@@ -33,20 +33,7 @@
 
                     var data = _.chain(response.data).filter(function (template) {
                         return template.state == 'ENABLED'
-                    }).sortBy('templateName').sortBy(function (template) {
-                        if (template.templateName == 'Data Ingest') {
-                            return 0;
-                        }
-                        else if (template.templateName == 'Archive Data') {
-                            return 1;
-                        }
-                        else if (template.templateName == 'Data Transformation') {
-                            return 2;
-                        }
-                        else {
-                            return 3;
-                        }
-                    })
+                    }).sortBy('order')
                             .value();
 
                     if (data.length > 1) {

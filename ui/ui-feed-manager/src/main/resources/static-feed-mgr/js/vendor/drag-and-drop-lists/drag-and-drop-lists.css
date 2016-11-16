@@ -35,7 +35,7 @@ ul[dnd-list].simple-dnd-list .dndDraggingSource {
 ul[dnd-list].simple-dnd-list .dndPlaceholder {
     display: block;
     background-color: #ddd;
-    min-height: 42px;
+    min-height: 20px;
 }
 
 /**

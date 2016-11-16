@@ -77,6 +77,54 @@
 
             </div>
 
+            <div layout="column">
+                <md-subheader class="md-subhead left-aligned">Change Template Order</md-subheader>
+                <span class="hint">Drag the templates below to adjust their order at feed creation time.</span>
+                <ul dnd-list="vm.templateOrder"  class="simple-dnd-list">
+                    <li ng-repeat="item in vm.templateOrder"
+                        dnd-draggable="item"
+                        dnd-moved="vm.templateOrder.splice($index, 1)"
+                        dnd-effect-allowed="move"
+                        ng-class="{'selected': item.currentTemplate == true}"
+                        style="height:20px;"
+                        >
+                             {{$index+1}}. {{item.templateName}}
+                    </li>
+
+                </ul>
+
+            </div>
+
+
+            <div layout="column">
+                <md-subheader class="md-subhead left-aligned">Assign Datasources</md-subheader>
+                <span class="hint">Identify the Processor and Properties that define the source and destination datasources.</span>
+
+                <div layout="row" layout-fill layout-align="space-between center">
+                    <div layout="column">
+
+                        <div ng-repeat="dsDef in vm.processorDatasourceDefinitions" layout="column">
+
+                            <div layout="row">
+                                <md-checkbox ng-model="dsDef.selectedDatasource"
+                                             aria-label="Processor Datasource Definition">{{dsDef.processorName}} - {{dsDef.datasourceDefinition.name}}
+                                </md-checkbox>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+
+
+
+            </div>
+
+
+
             <thinkbig-step-buttons can-continue="vm.registerTemplateForm.$valid  && vm.model.reusableTemplate == false" step-index="{{::vm.stepIndex}}" final-step="Register"
                                    on-click-final-button="vm.registerTemplate()">
             </thinkbig-step-buttons>

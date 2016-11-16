@@ -20,6 +20,9 @@ var app = angular.module(MODULE_FEED_MGR, [
     'ui.grid.moveColumns',
     'ui.grid.pagination',
     'templates.navigate-before.html', 'templates.navigate-first.html', 'templates.navigate-last.html', 'templates.navigate-next.html',
+    'ngVis',
+    'dndLists',
+    'material.components.expansionPanels',
     'datalakeui.common'
     ]);
 

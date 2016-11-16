@@ -28,12 +28,12 @@
                         <thinkbig-feed-profile-history ng-if="vm.selectedTabIndex == 1"></thinkbig-feed-profile-history>
                     </md-tab-body>
                 </md-tab>
-                <md-tab ng-disabled="true">
+                <md-tab >
                     <md-tab-label>
-                        <div>Related</div>
+                        <div>Lineage</div>
                     </md-tab-label>
                     <md-tab-body>
-                        Related
+                       <thinkbig-feed-lineage  ng-if="vm.selectedTabIndex == 2"></thinkbig-feed-lineage>
                     </md-tab-body>
                 </md-tab>
                 <md-tab ng-disabled="false">
