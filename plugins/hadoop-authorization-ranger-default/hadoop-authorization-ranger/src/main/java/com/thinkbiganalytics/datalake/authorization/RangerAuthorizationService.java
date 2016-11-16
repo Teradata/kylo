@@ -10,6 +10,7 @@ import com.thinkbiganalytics.datalake.authorization.rest.model.RangerGroup;
 import com.thinkbiganalytics.datalake.authorization.rest.model.RangerPolicy;
 import com.thinkbiganalytics.datalake.authorization.service.BaseHadoopAuthorizationService;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -296,16 +297,25 @@ public class RangerAuthorizationService extends BaseHadoopAuthorizationService {
     public void updateSecurityGroupsForAllPolicies(String categoryName, String feedName, List<String> securityGroupNames, Map<String, Object> feedProperties) {
         String rangerHdfsPolicyName = getHdfsPolicyName(categoryName, feedName);
         RangerPolicy hdfsPolicy = (RangerPolicy) searchHdfsPolicy(rangerHdfsPolicyName);
+        String rangerHivePolicyName = getHivePolicyName(categoryName, feedName);
+        RangerPolicy hivePolicy = (RangerPolicy) searchHivePolicy(rangerHivePolicyName);
 
         if (securityGroupNames == null || securityGroupNames.isEmpty()) {
-            deleteHivePolicy(categoryName, feedName);
-            deleteHdfsPolicy(categoryName, feedName, null);
+            // Only delete if the policies exists. It's possibile that someone adds a security group right after feed creation and before initial ingestion
+            if(hivePolicy != null) {
+                deleteHivePolicy(categoryName, feedName);
+            }
+            if(hdfsPolicy != null) {
+                deleteHdfsPolicy(categoryName, feedName, null);
+            }
         } else {
             if (hdfsPolicy == null) {
-                String hdfsFoldersWithCommas = ((String)feedProperties.get(REGISTRATION_HDFS_FOLDERS)).replace("\n", ",");
-                List<String> hdfsFolders = Stream.of(hdfsFoldersWithCommas).collect(Collectors.toList());
-
-                createReadOnlyHdfsPolicy(categoryName, feedName, securityGroupNames, hdfsFolders);
+                // If a feed hasn't run yet the metadata won't exists
+                if(!StringUtils.isEmpty((String)feedProperties.get(REGISTRATION_HDFS_FOLDERS))) {
+                    String hdfsFoldersWithCommas = ((String)feedProperties.get(REGISTRATION_HDFS_FOLDERS)).replace("\n", ",");
+                    List<String> hdfsFolders = Stream.of(hdfsFoldersWithCommas).collect(Collectors.toList());
+                    createReadOnlyHdfsPolicy(categoryName, feedName, securityGroupNames, hdfsFolders);
+                }
             } else {
                 List<String> hdfsPermissions = new ArrayList();
                 hdfsPermissions.add(HDFS_READ_ONLY_PERMISSION);
@@ -317,15 +327,14 @@ public class RangerAuthorizationService extends BaseHadoopAuthorizationService {
                 rangerRestClient.updatePolicy(updatePolicy, hdfsPolicy.getId());
             }
 
-            String rangerHivePolicyName = getHivePolicyName(categoryName, feedName);
-            RangerPolicy hivePolicy = (RangerPolicy) searchHivePolicy(rangerHivePolicyName);
-
             if (hivePolicy == null) {
-                String hiveTablesWithCommas = ((String)feedProperties.get(REGISTRATION_HIVE_TABLES)).replace("\n", ",");
-                List<String> hiveTables = Stream.of(hiveTablesWithCommas).collect(Collectors.toList());
-                String hiveSchema = ((String)feedProperties.get(REGISTRATION_HIVE_SCHEMA));
-
-                createOrUpdateReadOnlyHivePolicy(categoryName, feedName, securityGroupNames, hiveSchema, hiveTables);
+                // If a feed hasn't run yet the metadata won't exists
+                if(!StringUtils.isEmpty((String)feedProperties.get(REGISTRATION_HIVE_TABLES))) {
+                    String hiveTablesWithCommas = ((String)feedProperties.get(REGISTRATION_HIVE_TABLES)).replace("\n", ",");
+                    List<String> hiveTables = Stream.of(hiveTablesWithCommas).collect(Collectors.toList());
+                    String hiveSchema = ((String) feedProperties.get(REGISTRATION_HIVE_SCHEMA));
+                    createOrUpdateReadOnlyHivePolicy(categoryName, feedName, securityGroupNames, hiveSchema, hiveTables);
+                }
             } else {
                 List<String> hivePermissions = new ArrayList();
                 hivePermissions.add(HIVE_READ_ONLY_PERMISSION);
