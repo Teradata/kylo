@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.dao.DataAccessException;
 
+import java.security.AccessControlException;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -84,7 +85,15 @@ public class HiveRestController {
     public Response getTableColumns() {
         List<DatabaseMetadata> list = null;
         try {
-            list = getHiveMetadataService().getTableColumns();
+            boolean userImpersonationEnabled = Boolean.valueOf(env.getProperty("hive.userImpersonation.enabled"));
+            if(userImpersonationEnabled) {
+                List<String> tables = getHiveService().getAllTablesForImpersonatedUser();
+                list = getHiveMetadataService().getTableColumns(tables);
+            }
+            else {
+                list = getHiveMetadataService().getTableColumns(null);
+            }
+
         } catch (DataAccessException e) {
             log.error("Error Querying Hive Tables  for columns from the Metastore ",e);
             throw e;
@@ -130,8 +139,14 @@ public class HiveRestController {
         try {
             list = getHiveService().query(query);
         } catch (DataAccessException e) {
-            log.error("Error Querying Hive for query: " + query);
-            throw e;
+            if(e.getCause().getMessage().contains("HiveAccessControlException Permission denied")) {
+                throw new AccessControlException("You do not have permission to execute this hive query");
+            }
+            else {
+                log.error("Error Querying Hive for query: " + query);
+                throw e;
+            }
+
         }
         return Response.ok(asJson(list)).build();
     }

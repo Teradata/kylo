@@ -62,7 +62,7 @@ public class HiveMetastoreService {
 
 
 
-    public  List<DatabaseMetadata> getTableColumns() throws DataAccessException{
+    public  List<DatabaseMetadata> getTableColumns(List<String> tablesFilter) throws DataAccessException{
 
         List<DatabaseMetadata> metadata = new ArrayList<>();
 
@@ -95,8 +95,18 @@ public class HiveMetastoreService {
         });
 
 
-        return metadata;
+        return tablesFilter == null? metadata : filterDatabaseMetadata(metadata, tablesFilter);
 
+    }
+
+    private List<DatabaseMetadata> filterDatabaseMetadata(List<DatabaseMetadata> allTables, List<String> tablesFilter) {
+        List<DatabaseMetadata> results = new ArrayList<>();
+        allTables.forEach(metadata -> {
+            if(tablesFilter.contains(metadata.getDatabaseName() + "." + metadata.getTableName())) {
+                results.add(metadata);
+            }
+        });
+        return results;
     }
 
     public List<String> getAllTables() throws DataAccessException{
