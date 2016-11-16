@@ -225,14 +225,19 @@ public class FeedRestController {
             getMetadataService().deleteFeed(feedId);
             return Response.noContent().build();
         } catch (FeedCleanupFailedException e) {
+            log.error("Error deleting feed: Cleanup error", e);
             throw new InternalServerErrorException(STRINGS.getString("deleteFeed.cleanupError"), e);
         } catch (FeedCleanupTimeoutException e) {
+            log.error("Error deleting feed: Cleanup timeout", e);
             throw new InternalServerErrorException(STRINGS.getString("deleteFeed.cleanupTimeout"), e);
         } catch (IllegalArgumentException e) {
+            log.error("Error deleting feed: Illegal Argument", e);
             throw new NotFoundException(STRINGS.getString("deleteFeed.notFound"), e);
         } catch (NifiClientRuntimeException e) {
+            log.error("Error deleting feed: NiFi error", e);
             throw new InternalServerErrorException(STRINGS.getString("deleteFeed.nifiError"), e);
         } catch (Exception e) {
+            log.error("Error deleting feed: Unknown error", e);
             throw new InternalServerErrorException(STRINGS.getString("deleteFeed.unknownError"), e);
         }
     }
