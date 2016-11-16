@@ -111,7 +111,6 @@ public class DerivedDatasourceFactory {
 
         }
         return list;
-
     }
 
     public boolean isDataTransformation(FeedMetadata feedMetadata) {
@@ -130,20 +129,21 @@ public class DerivedDatasourceFactory {
             //fetch the def
             DatasourceDefinition datasourceDefinition = datasourceDefinitionProvider.findByProcessorType(definition.getProcessorType());
             if (datasourceDefinition != null) {
+            //    List<NifiProperty> feedProperties = feedMetadata.getProperties();
 
-                datasourceDefinition.getDatasourcePropertyKeys().size();
+            //    datasourceDefinition.getDatasourcePropertyKeys().size();
 
                 //find out if there are any saved properties on the Feed that match the datasourceDef
                 List<NifiProperty> feedProperties = feedMetadata.getProperties().stream().filter(
                     property -> matchesDefinition(definition, property) && datasourceDefinition.getDatasourcePropertyKeys().contains(property.getKey())).collect(
                     Collectors.toList());
-                Set<String>
-                    matchingFeedProperties = feedProperties.stream().map(p -> p.getKey()).collect(Collectors.toSet());
+              //  Set<String>
+             //       matchingFeedProperties = feedProperties.stream().map(p -> p.getKey()).collect(Collectors.toSet());
 
                 //template Props
-                List<NifiProperty> templateProperties = allProperties.stream().filter(
-                    property -> !matchingFeedProperties.contains(property.getKey()) && matchesDefinition(definition, property) && datasourceDefinition.getDatasourcePropertyKeys()
-                        .contains(property.getKey())).collect(Collectors.toList());
+           //     List<NifiProperty> templateProperties = allProperties.stream().filter(
+              //      property -> !matchingFeedProperties.contains(property.getKey()) && matchesDefinition(definition, property) && datasourceDefinition.getDatasourcePropertyKeys()
+              //          .contains(property.getKey())).collect(Collectors.toList());
 
                 //resolve any ${metadata.} properties
                 List<NifiProperty> resolvedFeedProperties = propertyExpressionResolver.resolvePropertyExpressions(feedProperties, feedMetadata);
@@ -175,7 +175,7 @@ public class DerivedDatasourceFactory {
                     PropertyExpressionResolver.ResolvedVariables descriptionPropertyResolution = propertyExpressionResolver.resolveVariables(desc, propertiesToEvalulate);
                     desc = descriptionPropertyResolution.getResolvedString();
                 }
-                String title = identityString;
+                String title = datasourceDefinition.getTitle();
                 //if the identityString still contains unresolved variables then make the title readable and replace the idstring with the feed.id
                 if (propertyExpressionResolver.containsVariablesPatterns(identityString)) {
                     title = propertyExpressionResolver.replaceAll(title, " {runtime variable} ");
@@ -209,13 +209,23 @@ public class DerivedDatasourceFactory {
     }
 
 
+    private List<String> getFeedInputProcessorTypes(FeedMetadata feedMetadata){
+        List<String> types = new ArrayList<>();
+        types.add(feedMetadata.getInputProcessorType());
+        if(feedMetadata.getInputProcessorType().equals("com.thinkbiganalytics.nifi.v2.core.watermark.LoadHighWaterMark")){
+           types.add("com.thinkbiganalytics.nifi.v2.sqoop.core.ImportSqoop");
+            types.add("com.thinkbiganalytics.nifi.v2.ingest.GetTableData");
+        }
+        return types;
+    }
+
     /**
      * Create Datasources for all DESTINATIONS and only if the SOURCE matches the assigned source for this feed.
      */
     private boolean isCreateDatasource(DatasourceDefinition datasourceDefinition, FeedMetadata feedMetadata) {
         return DatasourceDefinition.ConnectionType.DESTINATION.equals(datasourceDefinition.getConnectionType()) ||
                (DatasourceDefinition.ConnectionType.SOURCE.equals(datasourceDefinition.getConnectionType()) && (
-                   datasourceDefinition.getProcessorType().equalsIgnoreCase(feedMetadata.getInputProcessorType())));
+                   getFeedInputProcessorTypes(feedMetadata).contains( datasourceDefinition.getProcessorType())));
     }
 
 

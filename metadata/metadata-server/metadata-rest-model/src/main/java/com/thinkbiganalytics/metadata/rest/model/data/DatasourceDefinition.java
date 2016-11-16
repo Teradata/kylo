@@ -2,6 +2,8 @@ package com.thinkbiganalytics.metadata.rest.model.data;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.Set;
 
 /**
@@ -26,6 +28,9 @@ public class DatasourceDefinition {
     private String identityString;
 
     private String description;
+
+    private String title;
+
 
 
     public String getProcessorType() {
@@ -74,5 +79,13 @@ public class DatasourceDefinition {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getTitle() {
+        return StringUtils.isBlank(title) ? identityString : title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 }

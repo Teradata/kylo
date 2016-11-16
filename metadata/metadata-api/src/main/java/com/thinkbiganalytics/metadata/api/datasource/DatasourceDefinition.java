@@ -46,5 +46,9 @@ public interface DatasourceDefinition {
 
     void setDescription(String desc);
 
+    String getTitle();
+
+    void setTile(String title);
+
 
 }

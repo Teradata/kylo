@@ -30,6 +30,8 @@ public class JcrDatasourceDefinition extends AbstractJcrAuditableSystemEntity im
 
     public static final String IDENTITY_STRING = "tba:identityString";
 
+
+
     public static final String NODE_TYPE = "tba:datasourceDefinition";
 
     public JcrDatasourceDefinition(Node node) {
@@ -105,5 +107,14 @@ public class JcrDatasourceDefinition extends AbstractJcrAuditableSystemEntity im
     @Override
     public void setDatasourceType(String dsType) {
         JcrPropertyUtil.setProperty(this.node, DATASOURCE_TYPE, dsType);
+    }
+
+    @Override
+    public void setTile(String title) {
+        JcrPropertyUtil.setProperty(this.node, TITLE, title);
+    }
+
+    public String getTitle() {
+        return JcrPropertyUtil.getProperty(this.node, TITLE);
     }
 }
