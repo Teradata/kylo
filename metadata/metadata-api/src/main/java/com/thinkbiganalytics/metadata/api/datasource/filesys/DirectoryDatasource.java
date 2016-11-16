@@ -14,4 +14,6 @@ import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 public interface DirectoryDatasource extends Datasource {
 
     Path getDirectory();
+
+    void setDirectory(Path path);
 }
