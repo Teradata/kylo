@@ -5,7 +5,7 @@ import com.thinkbiganalytics.db.model.schema.TableSchema;
 import com.thinkbiganalytics.feedmgr.nifi.DBCPConnectionPoolTableInfo;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.SpringEnvironmentProperties;
-import com.thinkbiganalytics.nifi.feedmgr.TemplateCreationHelper;
+import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.layout.AlignNiFiComponents;
 import com.thinkbiganalytics.nifi.rest.client.layout.AlignProcessGroupComponents;
@@ -24,7 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -58,6 +57,9 @@ public class NifiIntegrationRestController {
 
     @Autowired
     DBCPConnectionPoolTableInfo dbcpConnectionPoolTableInfo;
+
+    @Autowired
+    FeedManagerTemplateService feedManagerTemplateService;
 
 
     public NifiIntegrationRestController() {
@@ -144,15 +146,7 @@ public class NifiIntegrationRestController {
     @Path("/reusable-input-ports")
     @Produces({MediaType.APPLICATION_JSON})
     public Response getReusableFeedInputPorts() {
-        Set<PortDTO> ports = new HashSet<>();
-        ProcessGroupDTO processGroup = nifiRestClient.getProcessGroupByName("root", TemplateCreationHelper.REUSABLE_TEMPLATES_PROCESS_GROUP_NAME);
-        if (processGroup != null) {
-            //fetch the ports
-            Set<PortDTO> inputPortsEntity = nifiRestClient.getInputPorts(processGroup.getId());
-            if (inputPortsEntity != null && !inputPortsEntity.isEmpty()) {
-                ports.addAll(inputPortsEntity);
-            }
-        }
+        Set<PortDTO> ports = feedManagerTemplateService.getReusableFeedInputPorts();
         return Response.ok(ports).build();
     }
 

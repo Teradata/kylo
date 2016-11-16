@@ -3,16 +3,16 @@
  */
 package com.thinkbiganalytics.metadata.rest.model.feed;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
+import org.joda.time.DateTime;
+
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
-
-import org.joda.time.DateTime;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 /**
  *
@@ -39,6 +39,21 @@ public class Feed implements Serializable {
     private Properties properties = new Properties();
     private FeedCategory category;
     private InitializationStatus currentInitStatus;
+
+    /**
+     * Feeds that this feed is dependent upon  (parents)
+     */
+    private Set<Feed> dependentFeeds;
+
+    private Set<String> dependentFeedIds;
+
+    /**
+     * Feeds that depend upon this feed (children)
+     */
+    private Set<Feed> usedByFeeds;
+
+    private Set<String> usedByFeedIds;
+
 
 
     public Feed() {
@@ -160,4 +175,72 @@ public class Feed implements Serializable {
     public void setCurrentInitStatus(InitializationStatus currentInitStatus) {
         this.currentInitStatus = currentInitStatus;
     }
+
+
+    public Set<Feed> getDependentFeeds() {
+        if (dependentFeeds == null) {
+            dependentFeeds = new HashSet<>();
+        }
+        return dependentFeeds;
+    }
+
+    public void setDependentFeeds(Set<Feed> dependentFeeds) {
+        this.dependentFeeds = dependentFeeds;
+        //mark the inverse relationship
+        if (dependentFeeds != null) {
+            dependentFeeds.stream().forEach(dependentFeed -> {
+                dependentFeed.getUsedByFeeds().add(this);
+            });
+        }
+    }
+
+    public Set<Feed> getUsedByFeeds() {
+        if (usedByFeeds == null) {
+            usedByFeeds = new HashSet<>();
+        }
+        return usedByFeeds;
+    }
+
+    public Set<String> getDependentFeedIds() {
+        return dependentFeedIds;
+    }
+
+    public void setDependentFeedIds(Set<String> dependentFeedIds) {
+        this.dependentFeedIds = dependentFeedIds;
+    }
+
+    public Set<String> getUsedByFeedIds() {
+        return usedByFeedIds;
+    }
+
+    public void setUsedByFeedIds(Set<String> usedByFeedIds) {
+        this.usedByFeedIds = usedByFeedIds;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        Feed feed = (Feed) o;
+
+        if (id != null ? !id.equals(feed.id) : feed.id != null) {
+            return false;
+        }
+        return !(systemName != null ? !systemName.equals(feed.systemName) : feed.systemName != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (systemName != null ? systemName.hashCode() : 0);
+        return result;
+    }
+
+
 }

@@ -31,6 +31,7 @@ public class JcrFeedTemplate extends AbstractJcrAuditableSystemEntity implements
     public static String ICON_COLOR = "tba:iconColor";
     public static String NIFI_TEMPLATE_ID = "tba:nifiTemplateId";
     public static String FEEDS = "tba:feeds";
+    public static String ORDER = "tba:order";
 
     public static String JSON = "tba:json";
 
@@ -181,4 +182,13 @@ public class JcrFeedTemplate extends AbstractJcrAuditableSystemEntity implements
 
         return JcrPropertyUtil.removeFromSetProperty(this.node, FEEDS, feedNode);
     }
+
+    public Long getOrder() {
+        return getProperty(ORDER, Long.class);
+    }
+
+    public void setOrder(Long order) {
+        setProperty(ORDER, order);
+    }
 }
+

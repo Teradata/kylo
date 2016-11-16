@@ -6,6 +6,7 @@ package com.thinkbiganalytics.metadata.rest;
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.thinkbiganalytics.metadata.api.category.Category;
+import com.thinkbiganalytics.metadata.api.datasource.DerivedDatasource;
 import com.thinkbiganalytics.metadata.api.datasource.filesys.FileList;
 import com.thinkbiganalytics.metadata.api.datasource.hive.HivePartitionUpdate;
 import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableUpdate;
@@ -13,6 +14,7 @@ import com.thinkbiganalytics.metadata.api.feed.Feed.State;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet;
 import com.thinkbiganalytics.metadata.rest.model.Formatters;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
+import com.thinkbiganalytics.metadata.rest.model.data.DatasourceDefinition;
 import com.thinkbiganalytics.metadata.rest.model.data.DirectoryDatasource;
 import com.thinkbiganalytics.metadata.rest.model.data.HiveTableDatasource;
 import com.thinkbiganalytics.metadata.rest.model.data.HiveTablePartition;
@@ -57,9 +59,12 @@ public class Model {
                 return status;
             }
         };
-    
-    public static final Function<com.thinkbiganalytics.metadata.api.feed.Feed, Feed> DOMAIN_TO_FEED 
-        = new Function<com.thinkbiganalytics.metadata.api.feed.Feed, Feed>() {
+
+
+    public static final Function<com.thinkbiganalytics.metadata.api.feed.Feed, Feed> DOMAIN_TO_FEED = DOMAIN_TO_FEED(true);
+
+    public static final Function<com.thinkbiganalytics.metadata.api.feed.Feed, Feed> DOMAIN_TO_FEED(boolean addSources) {
+        return new Function<com.thinkbiganalytics.metadata.api.feed.Feed, Feed>() {
             @Override
             public Feed apply(com.thinkbiganalytics.metadata.api.feed.Feed domain) {
                 Feed feed = new Feed();
@@ -70,28 +75,30 @@ public class Model {
                 feed.setState(Feed.State.valueOf(domain.getState().name()));
                 feed.setCreatedTime(domain.getCreatedTime());
                 feed.setCurrentInitStatus(DOMAIN_TO_INIT_STATUS.apply(domain.getCurrentInitStatus()));
-                if(domain.getCategory() != null){
+                if (domain.getCategory() != null) {
                     feed.setCategory(DOMAIN_TO_FEED_CATEGORY.apply(domain.getCategory()));
                 }
 
-//                feed.setPrecondition();
-//                feed.setOwner();
-                @SuppressWarnings("unchecked")
-                Collection<FeedSource> sources = Collections2.transform(domain.getSources(), DOMAIN_TO_FEED_SOURCE);
-                feed.setSources(new HashSet<FeedSource>(sources));
-                @SuppressWarnings("unchecked")
-                Collection<FeedDestination> destinations =Collections2.transform(domain.getDestinations(), DOMAIN_TO_FEED_DESTINATION) ;
-                feed.setDestinations(new HashSet<FeedDestination>(destinations));
-                
+                if (addSources) {
+                    @SuppressWarnings("unchecked")
+                    Collection<FeedSource> sources = Collections2.transform(domain.getSources(), DOMAIN_TO_FEED_SOURCE);
+                    feed.setSources(new HashSet<FeedSource>(sources));
+
+                    @SuppressWarnings("unchecked")
+                    Collection<FeedDestination> destinations = Collections2.transform(domain.getDestinations(), DOMAIN_TO_FEED_DESTINATION);
+                    feed.setDestinations(new HashSet<FeedDestination>(destinations));
+                }
+
                 for (Entry<String, Object> entry : domain.getProperties().entrySet()) {
                     if (entry.getValue() != null) {
                         feed.getProperties().setProperty(entry.getKey(), entry.getValue().toString());
                     }
                 }
-                
+
                 return feed;
             }
         };
+    }
         
     public static final Function<com.thinkbiganalytics.metadata.api.feed.FeedSource, FeedSource> DOMAIN_TO_FEED_SOURCE
         = new Function<com.thinkbiganalytics.metadata.api.feed.FeedSource, FeedSource>() {
@@ -126,29 +133,33 @@ public class Model {
                 return precond;
             }
         };
-    
-    public static final Function<com.thinkbiganalytics.metadata.api.datasource.Datasource, Datasource> DOMAIN_TO_DS
-        = new Function<com.thinkbiganalytics.metadata.api.datasource.Datasource, Datasource>() {
+
+    public static final Function<com.thinkbiganalytics.metadata.api.datasource.Datasource, Datasource> DOMAIN_TO_DS = DOMAIN_TO_DS(true);
+
+    public static final Function<com.thinkbiganalytics.metadata.api.datasource.Datasource, Datasource> DOMAIN_TO_DS(boolean addConnections) {
+        return new Function<com.thinkbiganalytics.metadata.api.datasource.Datasource, Datasource>() {
             @Override
             public Datasource apply(com.thinkbiganalytics.metadata.api.datasource.Datasource domain) {
-                // TODO Is there a better way?
+                Datasource ds;
                 if (domain instanceof com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDatasource) {
-                    return DOMAIN_TO_DIR_DS.apply((com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDatasource) domain);
+                    ds = DOMAIN_TO_DIR_DS.apply((com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDatasource) domain);
                 } else if (domain instanceof com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource) {
-                    return DOMAIN_TO_TABLE_DS.apply((com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource) domain);
+                    ds = DOMAIN_TO_TABLE_DS.apply((com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource) domain);
+                } else if (domain instanceof DerivedDatasource) {
+                    ds = DOMAIN_TO_DERIVED_DS.apply((DerivedDatasource) domain);
                 } else {
-                    Datasource ds = new Datasource();
+                    ds = new Datasource();
                     ds.setId(domain.getId().toString());
                     ds.setName(domain.getName());
                     ds.setDescription(domain.getDescription());
-//                    ds.setOwnder();
-//                    ds.setEncrypted();
-//                    ds.setCompressed();
-                    addConnections(domain, ds);
-                    return ds;
                 }
+                if (addConnections) {
+                    addConnections(domain, ds);
+                }
+                return ds;
             }
         };
+    }
 
     public static final Function<com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource, HiveTableDatasource> DOMAIN_TO_TABLE_DS
         = new Function<com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource, HiveTableDatasource>() {
@@ -158,19 +169,51 @@ public class Model {
                 table.setId(domain.getId().toString());
                 table.setName(domain.getName());
                 table.setDescription(domain.getDescription());
-//                table.setOwnder();
-//                table.setEncrypted();
-//                table.setCompressed();
                 table.setDatabase(domain.getDatabaseName());
                 table.setTableName(domain.getTableName());
-//                table.setFields();
-//                table.setPartitions();
-                addConnections(domain, table);
-                
                 return table;
             }
         };
-    
+
+
+    /**
+     * Convert a Domin DatasourceDefinition to the Rest Model
+     */
+    public static final Function<com.thinkbiganalytics.metadata.api.datasource.DatasourceDefinition, DatasourceDefinition> DOMAIN_TO_DS_DEFINITION
+        = new Function<com.thinkbiganalytics.metadata.api.datasource.DatasourceDefinition, DatasourceDefinition>() {
+        @Override
+        public DatasourceDefinition apply(com.thinkbiganalytics.metadata.api.datasource.DatasourceDefinition domain) {
+            DatasourceDefinition dsDef = new DatasourceDefinition();
+            dsDef.setDatasourceType(domain.getDatasourceType());
+            dsDef.setProcessorType(domain.getProcessorType());
+            if (domain.getConnectionType() != null) {
+                dsDef.setConnectionType(DatasourceDefinition.ConnectionType.valueOf(domain.getConnectionType().name()));
+            }
+            dsDef.setIdentityString(domain.getIdentityString());
+            dsDef.setDatasourcePropertyKeys(domain.getDatasourcePropertyKeys());
+            return dsDef;
+        }
+    };
+
+
+    public static final Function<DerivedDatasource, com.thinkbiganalytics.metadata.rest.model.data.DerivedDatasource> DOMAIN_TO_DERIVED_DS
+        = new Function<DerivedDatasource, com.thinkbiganalytics.metadata.rest.model.data.DerivedDatasource>() {
+        @Override
+        public com.thinkbiganalytics.metadata.rest.model.data.DerivedDatasource apply(DerivedDatasource domain) {
+            com.thinkbiganalytics.metadata.rest.model.data.DerivedDatasource ds = new com.thinkbiganalytics.metadata.rest.model.data.DerivedDatasource();
+            ds.setId(domain.getId().toString());
+            ds.setName(domain.getName());
+            ds.setDescription(domain.getDescription());
+            ds.setProperties(domain.getProperties());
+            ds.setDatasourceType(domain.getDatasourceType());
+            return ds;
+        }
+    };
+
+
+
+
+
     public static final Function<com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDatasource, DirectoryDatasource> DOMAIN_TO_DIR_DS
         = new Function<com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDatasource, DirectoryDatasource>() {
             @Override
@@ -179,12 +222,7 @@ public class Model {
                 dir.setId(domain.getId().toString());
                 dir.setName(domain.getName());
                 dir.setDescription(domain.getDescription());
-//                dir.setOwnder();
-//                dir.setEncrypted();
-//                dir.setCompressed();
                 dir.setPath(domain.getDirectory().toString());
-                addConnections(domain, dir);
-                
                 return dir;
             }
         };

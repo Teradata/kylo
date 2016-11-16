@@ -3,7 +3,10 @@ package com.thinkbiganalytics.feedmgr.service.template;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 
+import org.apache.nifi.web.api.dto.PortDTO;
+
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by sr186054 on 5/1/16.
@@ -42,6 +45,26 @@ public interface FeedManagerTemplateService {
      * @param template
      */
     RegisteredTemplate syncTemplateId(RegisteredTemplate template);
+
+
+    /**
+     * Returns the Ports available in the Reusable_templates process group
+     */
+    Set<PortDTO> getReusableFeedInputPorts();
+
+
+    /**
+     * Walks the flow of children connected to each {@code inputPortIds} and builds a List of objects containing Processor and property info
+     */
+    List<RegisteredTemplate.Processor> getReusableTemplateProcessorsForInputPorts(List<String> inputPortIds);
+
+    List<RegisteredTemplate.Processor> getRegisteredTemplateProcessors(String templateId, boolean includeReusableProcessors);
+
+
+    /**
+     * For a niFi templateId return the list of processors and properties
+     */
+    List<RegisteredTemplate.Processor> getNiFiTemplateProcessors(String templateId);
 
 
 }

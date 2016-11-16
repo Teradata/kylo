@@ -51,6 +51,22 @@ public interface FeedProvider {
 
     Feed<?> removeDependent(Feed.ID feedId, Feed.ID depId);
 
+    void populateInverseFeedDependencies();
+
+
+    void removeFeedSources(Feed.ID feedId);
+
+    void removeFeedSource(Feed.ID feedId, Datasource.ID dsId);
+
+    void removeFeedDestination(Feed.ID feedId, Datasource.ID dsId);
+
+    void removeFeedDestinations(Feed.ID feedId);
+
+
+
+
+
+
 //    FeedSource getFeedSource(FeedSource.ID id);
 //    FeedDestination getFeedDestination(FeedDestination.ID id);
 

@@ -3,13 +3,9 @@
  */
 package com.thinkbiganalytics.metadata.modeshape;
 
-import java.util.List;
-
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
 import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
+import com.thinkbiganalytics.metadata.api.datasource.DatasourceDefinitionProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntityProvider;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
@@ -25,6 +21,7 @@ import com.thinkbiganalytics.metadata.core.op.InMemoryDataOperationsProvider;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategoryProvider;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrFeedManagerCategoryProvider;
 import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailability;
+import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasourceDefinitionProvider;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasourceProvider;
 import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensibleEntityProvider;
 import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensibleTypeProvider;
@@ -36,6 +33,11 @@ import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreementProv
 import com.thinkbiganalytics.metadata.modeshape.tag.TagProvider;
 import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplateProvider;
 import com.thinkbiganalytics.metadata.modeshape.user.JcrUserProvider;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import java.util.List;
 
 /**
  *
@@ -106,6 +108,10 @@ public class MetadataJcrConfig {
         return new InMemoryDataOperationsProvider();
     }
 
+    @Bean
+    public DatasourceDefinitionProvider datasourceDefinitionProvider() {
+        return new JcrDatasourceDefinitionProvider();
+    }
 
 
 //    @Bean

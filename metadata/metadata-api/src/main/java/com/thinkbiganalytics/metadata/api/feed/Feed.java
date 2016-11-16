@@ -1,15 +1,5 @@
 package com.thinkbiganalytics.metadata.api.feed;
 
-import java.io.Serializable;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
-import javax.annotation.Nonnull;
-
-import org.joda.time.DateTime;
-
 import com.thinkbiganalytics.metadata.api.MissingUserPropertyException;
 import com.thinkbiganalytics.metadata.api.Propertied;
 import com.thinkbiganalytics.metadata.api.category.Category;
@@ -18,6 +8,16 @@ import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.security.AccessControlled;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+
+import org.joda.time.DateTime;
+
+import java.io.Serializable;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+
+import javax.annotation.Nonnull;
 
 /**
  * A feed is a specification for how data should flow into and out of a system.
@@ -57,6 +57,12 @@ public interface Feed<C extends Category> extends Propertied, AccessControlled, 
     boolean addDependentFeed(Feed<?> feed);
 
     boolean removeDependentFeed(Feed<?> feed);
+
+    List<Feed<C>> getUsedByFeeds();
+
+    boolean addUsedByFeed(Feed<?> feed);
+
+    boolean removeUsedByFeed(Feed<?> feed);
 
     void setDisplayName(String name);
 

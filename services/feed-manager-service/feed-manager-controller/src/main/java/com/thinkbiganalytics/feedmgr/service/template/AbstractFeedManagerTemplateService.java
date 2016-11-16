@@ -2,14 +2,20 @@ package com.thinkbiganalytics.feedmgr.service.template;
 
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
+import com.thinkbiganalytics.nifi.feedmgr.TemplateCreationHelper;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
+import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptorTransform;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
+import com.thinkbiganalytics.nifi.rest.support.NifiConnectionUtil;
 import com.thinkbiganalytics.nifi.rest.support.NifiFeedConstants;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 import com.thinkbiganalytics.nifi.rest.support.NifiTemplateUtil;
 import com.thinkbiganalytics.security.AccessController;
 
+import org.apache.nifi.web.api.dto.ConnectionDTO;
+import org.apache.nifi.web.api.dto.PortDTO;
+import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
 import org.slf4j.Logger;
@@ -17,7 +23,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -32,7 +41,10 @@ public abstract class AbstractFeedManagerTemplateService {
     private AccessController accessController;
 
     @Autowired
-    private LegacyNifiRestClient nifiRestClient;
+    protected LegacyNifiRestClient nifiRestClient;
+
+    @Inject
+    private NiFiPropertyDescriptorTransform propertyDescriptorTransform;
 
     public String templateIdForTemplateName(String templateName) {
 
@@ -181,5 +193,72 @@ public abstract class AbstractFeedManagerTemplateService {
         return registeredTemplate;
     }
 
+    public Set<PortDTO> getReusableFeedInputPorts() {
+        Set<PortDTO> ports = new HashSet<>();
+        ProcessGroupDTO processGroup = nifiRestClient.getProcessGroupByName("root", TemplateCreationHelper.REUSABLE_TEMPLATES_PROCESS_GROUP_NAME);
+        if (processGroup != null) {
+            //fetch the ports
+            Set<PortDTO> inputPortsEntity = nifiRestClient.getInputPorts(processGroup.getId());
+            if (inputPortsEntity != null && !inputPortsEntity.isEmpty()) {
+                ports.addAll(inputPortsEntity);
+            }
+        }
+        return ports;
+    }
+
+    /**
+     * gets a List of Processors and their properties for the incoming template
+     */
+    public List<RegisteredTemplate.Processor> getNiFiTemplateProcessors(String nifiTemplateId) {
+        Set<ProcessorDTO> processorDTOs = nifiRestClient.getProcessorsForTemplate(nifiTemplateId);
+        List<RegisteredTemplate.Processor> processorProperties = processorDTOs.stream().map(processorDTO -> {
+            RegisteredTemplate.Processor p = new RegisteredTemplate.Processor(processorDTO.getId());
+            p.setGroupId(processorDTO.getParentGroupId());
+            p.setType(processorDTO.getType());
+            p.setName(processorDTO.getName());
+            p.setProperties(NifiPropertyUtil.getPropertiesForProcessor(new ProcessGroupDTO(), processorDTO, propertyDescriptorTransform));
+            return p;
+        }).collect(Collectors.toList());
+        return processorProperties;
+
+    }
+
+    public List<RegisteredTemplate.Processor> getReusableTemplateProcessorsForInputPorts(List<String> inputPortIds) {
+        Set<ProcessorDTO> processorDTOs = new HashSet<>();
+        if (inputPortIds != null && !inputPortIds.isEmpty()) {
+            ProcessGroupDTO processGroup = nifiRestClient.getProcessGroupByName("root", TemplateCreationHelper.REUSABLE_TEMPLATES_PROCESS_GROUP_NAME);
+            if (processGroup != null) {
+                //fetch the Content
+                ProcessGroupDTO content = nifiRestClient.getProcessGroup(processGroup.getId(), true, true);
+                processGroup.setContents(content.getContents());
+                Set<PortDTO> ports = getReusableFeedInputPorts();
+                ports.stream()
+                    .filter(portDTO -> inputPortIds.contains(portDTO.getId()))
+                    .forEach(port -> {
+                        List<ConnectionDTO> connectionDTOs = NifiConnectionUtil.findConnectionsMatchingSourceId(processGroup.getContents().getConnections(), port.getId());
+                        if (connectionDTOs != null) {
+                            connectionDTOs.stream().forEach(connectionDTO -> {
+                                String processGroupId = connectionDTO.getDestination().getGroupId();
+                                Set<ProcessorDTO> processors = nifiRestClient.getProcessorsForFlow(processGroupId);
+                                if (processors != null) {
+                                    processorDTOs.addAll(processors);
+                                }
+                            });
+                        }
+                    });
+
+            }
+        }
+
+        List<RegisteredTemplate.Processor> processorProperties = processorDTOs.stream().map(processorDTO -> {
+            RegisteredTemplate.Processor p = new RegisteredTemplate.Processor(processorDTO.getId());
+            p.setGroupId(processorDTO.getParentGroupId());
+            p.setType(processorDTO.getType());
+            p.setName(processorDTO.getName());
+            p.setProperties(NifiPropertyUtil.getPropertiesForProcessor(new ProcessGroupDTO(), processorDTO, propertyDescriptorTransform));
+            return p;
+        }).collect(Collectors.toList());
+        return processorProperties;
+    }
 
 }

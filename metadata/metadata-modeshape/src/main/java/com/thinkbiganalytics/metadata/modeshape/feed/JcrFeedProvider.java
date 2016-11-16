@@ -35,6 +35,7 @@ import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrVersionUtil;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup.Condition;
@@ -105,6 +106,86 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         return JcrFeed.class;
     }
 
+    public void removeFeedSources(Feed.ID feedId) {
+        JcrFeed<?> feed = (JcrFeed) findById(feedId);
+        try {
+
+            List<? extends FeedSource> sources = feed.getSources();
+            if (sources != null && !sources.isEmpty()) {
+                //checkout the feed
+                JcrVersionUtil.checkout(feed.getNode());
+                sources.stream().forEach(source -> {
+                    try {
+                        Node sourceNode = ((JcrFeedSource) source).getNode();
+                        ((JcrDatasource) ((JcrFeedSource) source).getDatasource()).removeSourceNode(sourceNode);
+                        sourceNode.remove();
+                    } catch (RepositoryException e) {
+                        e.printStackTrace();
+                    }
+                });
+            }
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("unable to remove feed sources for feed " + feed.getSystemName(), e);
+        }
+    }
+
+    public void removeFeedSource(Feed.ID feedId, Datasource.ID dsId) {
+        JcrFeed<?> feed = (JcrFeed) findById(feedId);
+        FeedSource source = feed.getSource(dsId);
+
+        if (source != null) {
+            try {
+                JcrVersionUtil.checkout(((JcrFeedSource) source).getNode().getParent());
+                ((JcrFeedSource) source).getNode().remove();
+
+                //  JcrVersionUtil.checkin(((JcrFeedSource) source).getNode().getParent());
+            } catch (RepositoryException e) {
+                throw new MetadataRepositoryException("Unable to remove FeedSource for Feed: " + feedId + ", Datasource: " + dsId);
+            }
+        }
+    }
+
+    public void removeFeedDestination(Feed.ID feedId, Datasource.ID dsId) {
+        JcrFeed<?> feed = (JcrFeed) findById(feedId);
+        FeedDestination dest = feed.getDestination(dsId);
+
+        if (dest != null) {
+            try {
+                JcrVersionUtil.checkout(((JcrFeedDestination) dest).getNode().getParent());
+                ((JcrFeedDestination) dest).getNode().remove();
+            } catch (RepositoryException e) {
+                throw new MetadataRepositoryException("Unable to remove FeedDestination for Feed: " + feedId + ", Datasource: " + dsId);
+            }
+        }
+    }
+
+    public void removeFeedDestinations(Feed.ID feedId) {
+        JcrFeed<?> feed = (JcrFeed) findById(feedId);
+        List<? extends FeedDestination> destinations = feed.getDestinations();
+        try {
+            JcrVersionUtil.checkout(feed.getNode());
+
+            if (destinations != null && !destinations.isEmpty()) {
+                destinations.stream().forEach(dest -> {
+                    try {
+
+                        Node destNode = ((JcrFeedDestination) dest).getNode();
+                        ((JcrDatasource) ((JcrFeedDestination) dest).getDatasource()).removeDestinationNode(destNode);
+                        destNode.remove();
+
+                        ((JcrFeedDestination) dest).getNode().remove();
+                    } catch (RepositoryException e) {
+                        e.printStackTrace();
+                    }
+                });
+
+
+            }
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("unable to remove feed destinations for feed " + feed.getSystemName(), e);
+        }
+    }
+
     @Override
     public FeedSource ensureFeedSource(Feed.ID feedId, Datasource.ID dsId) {
         JcrFeed<?> feed = (JcrFeed) findById(feedId);
@@ -114,7 +195,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             JcrDatasource datasource = (JcrDatasource) datasourceProvider.getDatasource(dsId);
 
             if (datasource != null) {
-                Node feedSrcNode = JcrUtil.getOrCreateNode(feed.getNode(), JcrFeed.SOURCE_NAME, JcrFeedSource.NODE_TYPE, true);
+                Node feedSrcNode = JcrUtil.addNode(feed.getNode(), JcrFeed.SOURCE_NAME, JcrFeedSource.NODE_TYPE);
                 JcrFeedSource jcrSrc = new JcrFeedSource(feedSrcNode, datasource);
                 
                 save();
@@ -142,7 +223,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             JcrDatasource datasource = (JcrDatasource) datasourceProvider.getDatasource(dsId);
 
             if (datasource != null) {
-                Node feedDestNode = JcrUtil.getOrCreateNode(feed.getNode(), JcrFeed.DESTINATION_NAME, JcrFeedDestination.NODE_TYPE, true);
+                Node feedDestNode = JcrUtil.addNode(feed.getNode(), JcrFeed.DESTINATION_NAME, JcrFeedDestination.NODE_TYPE);
                 JcrFeedDestination jcrDest = new JcrFeedDestination(feedDestNode, datasource);
                 
                 save();
@@ -699,5 +780,19 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             JcrPropertyUtil.setUserFields(ExtensionsConstants.USER_FEED, userFields, extensibleTypeProvider);
             return userFields;
         }, MetadataAccess.SERVICE);
+    }
+
+
+    public void populateInverseFeedDependencies() {
+        Map<Feed.ID, Feed> map = new HashMap<Feed.ID, Feed>();
+        List<Feed> feeds = getFeeds();
+        if (feeds != null) {
+            feeds.stream().forEach(feed -> map.put(feed.getId(), feed));
+        }
+        feeds.stream().filter(feed -> feed.getDependentFeeds() != null && !feed.getDependentFeeds().isEmpty()).forEach(feed1 -> {
+            List<Feed> dependentFeeds = feed1.getDependentFeeds();
+            dependentFeeds.stream().filter(depFeed -> depFeed.getUsedByFeeds() == null || !depFeed.getUsedByFeeds().contains(feed1))
+                .forEach(depFeed -> depFeed.addUsedByFeed(feed1));
+        });
     }
 }

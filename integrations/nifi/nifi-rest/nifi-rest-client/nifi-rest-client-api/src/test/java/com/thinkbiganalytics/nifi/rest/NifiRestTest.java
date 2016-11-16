@@ -3,7 +3,6 @@ package com.thinkbiganalytics.nifi.rest;/*
  */
 
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
-import com.thinkbiganalytics.nifi.rest.client.NifiRestClientConfig;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.visitor.NifiFlowBuilder;
@@ -11,13 +10,8 @@ import com.thinkbiganalytics.nifi.rest.model.visitor.NifiVisitableProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.visitor.NifiVisitableProcessor;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.nifi.web.api.dto.ControllerServiceDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
-import org.apache.nifi.web.api.dto.PropertyDescriptorDTO;
 import org.apache.nifi.web.api.dto.provenance.ProvenanceRequestDTO;
-import org.apache.nifi.web.api.entity.BulletinBoardEntity;
-import org.apache.nifi.web.api.entity.ControllerServicesEntity;
-import org.apache.nifi.web.api.entity.ProcessorEntity;
 import org.junit.Before;
 
 import java.io.IOException;
@@ -28,7 +22,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -111,7 +104,7 @@ public class NifiRestTest {
     public void testGetProcessorsForTemplate() {
         String templateId = "5ae589b3-72d8-483c-884a-8eab79a00dbb";
         try {
-            Collection<ProcessorDTO> processors = restClient.getProcessorsForTemplate(templateId, false);
+            Collection<ProcessorDTO> processors = restClient.getProcessorsForTemplate(templateId);
             for (ProcessorDTO dto : processors) {
                 System.out.println(dto.getName());
             }

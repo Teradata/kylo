@@ -87,6 +87,22 @@ public class BaseFeed<C extends Category> implements Feed<C> {
         return this.dependentFeeds.remove(feed);
     }
 
+
+    @Override
+    public List<Feed<C>> getUsedByFeeds() {
+        return null;
+    }
+
+    @Override
+    public boolean addUsedByFeed(Feed<?> feed) {
+        return false;
+    }
+
+    @Override
+    public boolean removeUsedByFeed(Feed<?> feed) {
+        return false;
+    }
+
     @Override
     public Map<String, Object> getProperties() {
         return this.properties;

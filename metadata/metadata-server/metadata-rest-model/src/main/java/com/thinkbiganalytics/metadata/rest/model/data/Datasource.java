@@ -3,12 +3,6 @@
  */
 package com.thinkbiganalytics.metadata.rest.model.data;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.joda.time.DateTime;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -19,6 +13,12 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.joda.ser.DateTimeSerializer;
 import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
+
+import org.joda.time.DateTime;
+
+import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  *
@@ -44,8 +44,8 @@ public class Datasource implements Serializable {
     private String ownder;
     private boolean encrypted;
     private boolean compressed;
-    private List<Feed> sourceForFeeds = new ArrayList<>();
-    private List<Feed> destinationForFeeds = new ArrayList<>();
+    private Set<Feed> sourceForFeeds = new HashSet<>();
+    private Set<Feed> destinationForFeeds = new HashSet<>();
     
 
     public Datasource() {
@@ -98,12 +98,18 @@ public class Datasource implements Serializable {
     public DateTime getCreationTime() {
         return creationTime;
     }
-    
-    public List<Feed> getSourceForFeeds() {
+
+    public Set<Feed> getSourceForFeeds() {
+        if (sourceForFeeds == null) {
+            sourceForFeeds = new HashSet<>();
+        }
         return sourceForFeeds;
     }
-    
-    public List<Feed> getDestinationForFeeds() {
+
+    public Set<Feed> getDestinationForFeeds() {
+        if (destinationForFeeds == null) {
+            destinationForFeeds = new HashSet<>();
+        }
         return destinationForFeeds;
     }
 

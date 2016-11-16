@@ -3,6 +3,17 @@
  */
 package com.thinkbiganalytics.metadata.modeshape;
 
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
+import com.thinkbiganalytics.metadata.modeshape.common.SecurityPaths;
+import com.thinkbiganalytics.metadata.modeshape.extension.ExtensionsConstants;
+import com.thinkbiganalytics.metadata.modeshape.security.AdminCredentials;
+import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
+import com.thinkbiganalytics.metadata.modeshape.security.ModeShapeAdminPrincipal;
+
+import org.modeshape.jcr.security.SimplePrincipal;
+import org.springframework.core.annotation.AnnotationAwareOrderComparator;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -18,17 +29,6 @@ import javax.jcr.nodetype.NodeTypeIterator;
 import javax.jcr.nodetype.NodeTypeManager;
 import javax.jcr.nodetype.PropertyDefinition;
 import javax.jcr.security.Privilege;
-
-import org.modeshape.jcr.security.SimplePrincipal;
-import org.springframework.core.annotation.AnnotationAwareOrderComparator;
-
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
-import com.thinkbiganalytics.metadata.modeshape.common.SecurityPaths;
-import com.thinkbiganalytics.metadata.modeshape.extension.ExtensionsConstants;
-import com.thinkbiganalytics.metadata.modeshape.security.AdminCredentials;
-import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
-import com.thinkbiganalytics.metadata.modeshape.security.ModeShapeAdminPrincipal;
 
 /**
  *
@@ -173,6 +173,17 @@ public class MetadataJcrConfigurator {
 
         if (!session.getRootNode().hasNode("metadata/hadoopSecurityGroups")) {
             session.getRootNode().getNode("metadata").addNode("hadoopSecurityGroups");
+        }
+
+        if (!session.getRootNode().hasNode("metadata/datasourceDefinitions")) {
+            session.getRootNode().addNode("metadata", "tba:datasourceDefinitionsFolder");
+        }
+        if (!session.getRootNode().hasNode("metadata/datasources/derived")) {
+
+            if (!session.getRootNode().hasNode("metadata/datasources")) {
+                session.getRootNode().addNode("metadata", "datasources");
+            }
+            session.getRootNode().getNode("metadata/datasources").addNode("derived");
         }
     }
     

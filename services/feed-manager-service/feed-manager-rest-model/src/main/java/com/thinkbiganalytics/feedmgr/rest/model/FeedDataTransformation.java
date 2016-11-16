@@ -1,10 +1,15 @@
 package com.thinkbiganalytics.feedmgr.rest.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.thinkbiganalytics.feedmgr.metadata.MetadataField;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * A Spark script for transforming data.
@@ -95,5 +100,17 @@ public class FeedDataTransformation {
      */
     public void setStates(List<Map<String, Object>> states) {
         this.states = states;
+    }
+
+    @JsonIgnore
+    public Set<String> getTableNamesFromViewModel(){
+        Set<String> tables = new HashSet<>();
+        if(chartViewModel != null){
+            Collection<Map<String,Object>> nodes = (Collection<Map<String,Object>>)chartViewModel.get("nodes");
+            if(nodes != null){
+                tables = nodes.stream().map(node -> (String)node.get("name")).collect(Collectors.toSet());
+            }
+        }
+        return tables;
     }
 }

@@ -13,11 +13,13 @@ import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.op.FeedDependencyDeltaResults;
 import com.thinkbiganalytics.metadata.api.op.FeedOperationsProvider;
 import com.thinkbiganalytics.metadata.core.feed.FeedPreconditionService;
+import com.thinkbiganalytics.metadata.rest.FeedLineageBuilder;
 import com.thinkbiganalytics.metadata.rest.Model;
 import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedCriteria;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedDependencyGraph;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedDestination;
+import com.thinkbiganalytics.metadata.rest.model.feed.FeedLineage;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedSource;
 import com.thinkbiganalytics.metadata.rest.model.feed.InitializationStatus;
@@ -668,6 +670,62 @@ public class FeedsController {
             }
         });
     }
+
+    @GET
+    @Path("{feedId}/lineage")
+    @Produces(MediaType.APPLICATION_JSON)
+    public FeedLineage getFeedLineage(@PathParam("feedId") final String feedId) {
+
+        return this.metadata.read(() -> {
+
+            com.thinkbiganalytics.metadata.api.feed.Feed domainFeed = feedProvider.getFeed(feedProvider.resolveFeed(feedId));
+            if (domainFeed != null) {
+                FeedLineageBuilder builder = new FeedLineageBuilder(domainFeed);
+                Feed feed = builder.build();//Model.DOMAIN_TO_FEED_WITH_DEPENDENCIES.apply(domainFeed);
+                return new FeedLineage(feed);
+            }
+            return null;
+        });
+
+    }
+
+    /*
+    @GET
+    @Path("remove-sources")
+    @Produces(MediaType.APPLICATION_JSON)
+    public RestResponseStatus removeSources(){
+
+        try {
+            this.metadata.commit(() -> {
+                List<? extends com.thinkbiganalytics.metadata.api.feed.Feed> feeds = feedProvider.getFeeds();
+                feeds.stream().forEach(feed -> {
+                    feedProvider.removeFeedSources(feed.getId());
+                });
+            }, MetadataAccess.SERVICE);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+
+        this.metadata.commit(() -> {
+                                 List<? extends com.thinkbiganalytics.metadata.api.feed.Feed> feeds = feedProvider.getFeeds();
+                                 feeds.stream().forEach(feed -> {
+                                     feedProvider.removeFeedDestinations(feed.getId());
+                                 });
+                             }, MetadataAccess.SERVICE);
+        this.metadata.commit(() -> {
+            List<Datasource> datasources = datasetProvider.getDatasources();
+            datasources.stream().forEach(datasource -> {
+                datasetProvider.removeDatasource(datasource.getId());
+            });
+
+        }, MetadataAccess.SERVICE);
+        return new RestResponseStatus.ResponseStatusBuilder().buildSuccess();
+
+    }
+
+*/
+
 
     @POST
     @Path("{feedId}/source")

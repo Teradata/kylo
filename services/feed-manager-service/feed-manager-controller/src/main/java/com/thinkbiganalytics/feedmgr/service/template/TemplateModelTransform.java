@@ -40,6 +40,7 @@ public class TemplateModelTransform {
                     if(domain.getModifiedTime() != null) {
                          template.setUpdateDate(domain.getModifiedTime().toDate());
                     }
+                    template.setOrder(domain.getOrder());
                     return template;
                 }
             };
@@ -59,6 +60,8 @@ public class TemplateModelTransform {
                         domain = templateProvider.ensureTemplate(registeredTemplate.getTemplateName());
                     }
                     domainId = domain.getId();
+                    //clean the order from the template
+                    registeredTemplate.setTemplateOrder(null);
                     String json = ObjectMapperSerializer.serialize(registeredTemplate);
                     domain.setNifiTemplateId(registeredTemplate.getNifiTemplateId());
                     domain.setAllowPreconditions(registeredTemplate.isAllowPreconditions());
@@ -68,6 +71,7 @@ public class TemplateModelTransform {
                     domain.setIcon(registeredTemplate.getIcon());
                     domain.setIconColor(registeredTemplate.getIconColor());
                     domain.setDescription(registeredTemplate.getDescription());
+                    domain.setOrder(registeredTemplate.getOrder());
                     domain.setJson(json);
                     FeedManagerTemplate.State state = FeedManagerTemplate.State.ENABLED;
                     try {

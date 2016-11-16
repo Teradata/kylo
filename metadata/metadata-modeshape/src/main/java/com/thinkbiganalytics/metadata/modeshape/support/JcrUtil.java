@@ -3,13 +3,18 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.support;
 
-import java.io.IOException;
+import com.thinkbiganalytics.classnameregistry.ClassNameChangeRegistry;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
+
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.ConstructorUtils;
+import org.modeshape.jcr.api.JcrTools;
+
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URI;
-import java.net.URL;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,16 +32,6 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.nodetype.NoSuchNodeTypeException;
 import javax.jcr.nodetype.NodeType;
-
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.reflect.ConstructorUtils;
-import org.modeshape.jcr.api.JcrTools;
-
-import com.thinkbiganalytics.classnameregistry.ClassNameChangeRegistry;
-import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
-import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 
 /**
  * @author Sean Felten
@@ -268,7 +263,6 @@ public class JcrUtil {
     public static <T extends JcrObject> List<T> getJcrObjects(Node parentNode, String name, NodeType nodeType, JcrObjectTypeResolver<T> typeResolver) {
         List<T> list = new ArrayList<>();
         try {
-
             javax.jcr.NodeIterator nodeItr = null;
             if (StringUtils.isBlank(name)) {
                 nodeItr = parentNode.getNodes();
@@ -314,18 +308,27 @@ public class JcrUtil {
                 if (forUpdate) {
                     JcrMetadataAccess.ensureCheckoutNode(parentNode);
                 }
-                
+
                 return parentNode.getNode(name);
             } else {
-                JcrMetadataAccess.ensureCheckoutNode(parentNode);
-                
-                return parentNode.addNode(name, nodeType);
+                return addNode(parentNode, name, nodeType);
             }
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the Node named" + name, e);
         }
     }
-    
+
+
+    public static Node addNode(Node parentNode, String name, String nodeType) {
+        try {
+                JcrMetadataAccess.ensureCheckoutNode(parentNode);
+                return parentNode.addNode(name, nodeType);
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to retrieve the Node named" + name, e);
+        }
+    }
+
+
     /**
      * Get or Create a node relative to the Parent Node; checking out the parent node as necessary.
      */

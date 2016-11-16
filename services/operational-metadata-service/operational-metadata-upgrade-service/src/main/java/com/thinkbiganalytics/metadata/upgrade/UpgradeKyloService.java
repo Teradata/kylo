@@ -4,6 +4,7 @@ import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.OperationalMetadataAccess;
 import com.thinkbiganalytics.metadata.api.app.KyloVersion;
 import com.thinkbiganalytics.metadata.api.app.KyloVersionProvider;
+import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
@@ -13,8 +14,10 @@ import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaOpsManagerFeed;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailability;
 import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailabilityListener;
+import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedManagerFeed;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
@@ -24,11 +27,16 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
+import javax.jcr.Property;
+import javax.jcr.PropertyIterator;
+import javax.jcr.RepositoryException;
 
 /**
  * Created by sr186054 on 9/19/16.
@@ -43,6 +51,9 @@ public class UpgradeKyloService implements ModeShapeAvailabilityListener {
 
     @Inject
     private FeedManagerFeedProvider feedManagerFeedProvider;
+
+    @Inject
+    private FeedProvider feedProvider;
 
     @Inject
     private FeedManagerTemplateProvider feedManagerTemplateProvider;
@@ -85,6 +96,7 @@ public class UpgradeKyloService implements ModeShapeAvailabilityListener {
             version = upgradeTo0_4_0();
         }
         ensureFeedTemplateFeedRelationships();
+        // migrateUnusedFeedProperties();
             version = operationalMetadataAccess.commit(() -> {
                 //ensure/update the version
                 KyloVersion kyloVersion = kyloVersionProvider.updateToCurrentVersion();
@@ -116,9 +128,50 @@ public class UpgradeKyloService implements ModeShapeAvailabilityListener {
 
             }
 
+            feedProvider.populateInverseFeedDependencies();
+
             return null;
         }, MetadataAccess.SERVICE);
     }
+
+    /**
+     * Migrate and remove or move any properties defined
+     */
+    private void migrateUnusedFeedProperties() {
+        Set<String> propertiesToRemove = new HashSet<>();
+        //propertiesToRemove.add('nametoremove');
+        if (!propertiesToRemove.isEmpty()) {
+            metadataAccess.commit(() -> {
+
+                List<FeedManagerFeed> domainFeeds = feedManagerFeedProvider.findAll();
+                for (FeedManagerFeed feedManagerFeed : domainFeeds) {
+
+                    final PropertyIterator iterator;
+                    try {
+                        iterator = ((JcrFeedManagerFeed) feedManagerFeed).getNode().getProperties();
+                    } catch (RepositoryException e) {
+                        throw new MetadataRepositoryException("Failed to get properties for node: " + feedManagerFeed, e);
+                    }
+                    while (iterator.hasNext()) {
+                        final Property property = iterator.nextProperty();
+                        try {
+
+                            if (propertiesToRemove.contains(property.getName())) {
+                                property.remove();
+                            }
+                        } catch (Exception e) {
+
+                        }
+                    }
+                }
+                return null;
+            }, MetadataAccess.SERVICE);
+        }
+    }
+
+
+
+
 
     public KyloVersion upgradeTo0_4_0() {
 

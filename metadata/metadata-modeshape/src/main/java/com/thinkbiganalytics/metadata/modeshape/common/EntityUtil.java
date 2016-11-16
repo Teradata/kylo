@@ -1,10 +1,10 @@
 package com.thinkbiganalytics.metadata.modeshape.common;
 
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.thinkbiganalytics.metadata.modeshape.extension.ExtensionsConstants;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Utility to get basic Paths for schema
@@ -17,6 +17,10 @@ public class EntityUtil {
 
     public static String pathForCategory(String categorySystemName) {
         return JcrUtil.path("/metadata", "feeds", categorySystemName).toString();
+    }
+
+    public static String pathForDatasourceDefinition() {
+        return JcrUtil.path("/metadata", "datasourceDefinitions").toString();
     }
 
     public static String pathForFeed(String categorySystemName, String feedSystemName) {
@@ -33,6 +37,10 @@ public class EntityUtil {
 
     public static String pathForDataSource() {
         return JcrUtil.path("/metadata", "datasources").toString();
+    }
+
+    public static String pathForDerivedDatasource() {
+        return JcrUtil.path("/metadata", "datasources", "derived").toString();
     }
 
     public static String pathForTemplates() {

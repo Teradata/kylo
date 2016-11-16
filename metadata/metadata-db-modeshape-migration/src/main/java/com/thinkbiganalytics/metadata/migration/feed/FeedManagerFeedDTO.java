@@ -1,18 +1,5 @@
 package com.thinkbiganalytics.metadata.migration.feed;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
-import javax.annotation.Nonnull;
-
-import org.joda.time.DateTime;
-
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
@@ -26,6 +13,19 @@ import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.security.action.AllowedActions;
+
+import org.joda.time.DateTime;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+
+import javax.annotation.Nonnull;
 
 /**
  * A POJO for migrating feeds to a ModeShape repository.
@@ -338,4 +338,18 @@ public class FeedManagerFeedDTO implements FeedManagerFeed {
         this.waterMarkValues.put(waterMarkName, waterMarkName);
     }
 
+    @Override
+    public List<Feed> getUsedByFeeds() {
+        return null;
+    }
+
+    @Override
+    public boolean addUsedByFeed(Feed feed) {
+        return false;
+    }
+
+    @Override
+    public boolean removeUsedByFeed(Feed feed) {
+        return false;
+    }
 }

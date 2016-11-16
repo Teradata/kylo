@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.feedmgr.service.template;
 
+import com.google.common.collect.Sets;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
@@ -7,11 +8,18 @@ import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.security.AccessController;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.web.api.dto.PortDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import javax.inject.Inject;
 
@@ -37,13 +45,14 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
     @Override
     //@Transactional(transactionManager = "metadataTransactionManager")
     protected RegisteredTemplate saveRegisteredTemplate(final RegisteredTemplate registeredTemplate) {
-        return metadataAccess.commit(() -> {
+        List<String> templateOrder = registeredTemplate.getTemplateOrder();
+        RegisteredTemplate savedTemplate = metadataAccess.commit(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_TEMPLATES);
 
             //ensure that the incoming template name doesnt already exist.
             //if so remove and replace with this one
             RegisteredTemplate template = getRegisteredTemplateByName(registeredTemplate.getTemplateName());
-            if(registeredTemplate.getId() == null && template != null){
+            if (registeredTemplate.getId() == null && template != null) {
                 registeredTemplate.setId(template.getId());
             }
             if (template != null && !template.getId().equalsIgnoreCase(registeredTemplate.getId())) {
@@ -55,7 +64,6 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
                          registeredTemplate.getNifiTemplateId());
                 ensureRegisteredTemplateInputProcessors(registeredTemplate);
 
-
                 FeedManagerTemplate domain = templateModelTransform.REGISTERED_TEMPLATE_TO_DOMAIN.apply(registeredTemplate);
                 log.info("Domain Object is {} ({}), nifi template Id of {}", domain.getName(), domain.getId(), domain.getNifiTemplateId());
                 domain = templateProvider.update(domain);
@@ -65,6 +73,80 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
             }
         });
 
+        if(StringUtils.isBlank(registeredTemplate.getId())) {
+         templateOrder =  templateOrder.stream().map(template -> {
+               if("NEW".equals(template)){
+                   return savedTemplate.getId();
+               }
+               else {
+                   return template;
+               }
+           }).collect(Collectors.toList());
+        }
+
+            //order it
+            orderTemplates(templateOrder, Sets.newHashSet(savedTemplate.getId()));
+
+
+        return savedTemplate;
+
+    }
+
+    /**
+     * pass in the Template Ids in Order
+     * @param orderedTemplateIds
+     */
+    protected void orderTemplates(List<String> orderedTemplateIds, Set<String> exclude) {
+      metadataAccess.commit(() -> {
+          this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_TEMPLATES);
+
+          if (orderedTemplateIds != null && !orderedTemplateIds.isEmpty()) {
+              IntStream.range(0, orderedTemplateIds.size()).forEach(i -> {
+                  String id = orderedTemplateIds.get(i);
+                  if (exclude == null || (exclude != null && !exclude.contains(id))) {
+                      FeedManagerTemplate template = templateProvider.findById(templateProvider.resolveId(id));
+                      if (template != null) {
+                          if (template.getOrder() == null || !template.getOrder().equals(new Long(i))) {
+                              //save the new order
+                              template.setOrder(new Long(i));
+                              templateProvider.update(template);
+                          }
+                      }
+                  }
+              });
+          }
+      });
+
+
+
+    }
+
+
+    @Override
+    public List<RegisteredTemplate.Processor> getRegisteredTemplateProcessors(String templateId, boolean includeReusableProcessors) {
+        List<RegisteredTemplate.Processor> processorProperties = new ArrayList<>();
+
+        RegisteredTemplate template = getRegisteredTemplate(templateId);
+        if(template != null){
+            processorProperties.addAll(template.getInputProcessors());
+            processorProperties.addAll(template.getNonInputProcessors());
+        }
+        if(includeReusableProcessors &&  template.getReusableTemplateConnections() != null &&  !template.getReusableTemplateConnections().isEmpty()) {
+
+            //1 fetch ports in reusable templates
+            Map<String,PortDTO> reusableTemplateInputPorts = new HashMap<>();
+            Set<PortDTO> ports = getReusableFeedInputPorts();
+            if(ports !=null){
+                ports.stream().forEach(portDTO -> reusableTemplateInputPorts.put(portDTO.getName(), portDTO));
+            }
+
+            //match to the name
+            List<String> matchingPortIds =  template.getReusableTemplateConnections().stream().filter(conn -> reusableTemplateInputPorts.containsKey(conn.getReusableTemplateInputPortName())).map(reusableTemplateConnectionInfo -> reusableTemplateInputPorts.get(reusableTemplateConnectionInfo.getReusableTemplateInputPortName()).getId()).collect(Collectors.toList());
+
+            List<RegisteredTemplate.Processor> reusableProcessors = getReusableTemplateProcessorsForInputPorts(matchingPortIds);
+            processorProperties.addAll(reusableProcessors);
+        }
+        return processorProperties;
     }
 
     /**
@@ -111,6 +193,10 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
                 //transform it
                 registeredTemplate = templateModelTransform.DOMAIN_TO_REGISTERED_TEMPLATE.apply(domainTemplate);
             }
+            if(registeredTemplate != null) {
+                registeredTemplate.initializeProcessors();
+            }
+
             return registeredTemplate;
         });
 
@@ -118,11 +204,11 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
 
     public boolean deleteRegisteredTemplate(final String templateId) {
        return metadataAccess.commit(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_TEMPLATES);
+           this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_TEMPLATES);
 
-            FeedManagerTemplate.ID domainId = templateProvider.resolveId(templateId);
-            return templateProvider.deleteTemplate(domainId);
-        });
+           FeedManagerTemplate.ID domainId = templateProvider.resolveId(templateId);
+           return templateProvider.deleteTemplate(domainId);
+       });
 
     }
     @Override
@@ -180,10 +266,10 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
         return metadataAccess.commit(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_TEMPLATES);
             FeedManagerTemplate.ID domainId = templateProvider.resolveId(templateId);
-            if(domainId != null){
-                FeedManagerTemplate template =   templateProvider.enable(domainId);
-                if(template != null){
-                   return templateModelTransform.domainToRegisteredTemplate(template);
+            if (domainId != null) {
+                FeedManagerTemplate template = templateProvider.enable(domainId);
+                if (template != null) {
+                    return templateModelTransform.domainToRegisteredTemplate(template);
                 }
             }
             return null;
@@ -204,4 +290,7 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
             return null;
         });
     }
+
+
+
 }

@@ -17,8 +17,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -43,7 +45,7 @@ public class PropertyExpressionResolver {
     private static final Logger log = LoggerFactory.getLogger(PropertyExpressionResolver.class);
 
     /** Matches a variable in a property value */
-    private static final Pattern VARIABLE_PATTERN = Pattern.compile("\\$\\{(.+?)\\}");
+    public static final Pattern VARIABLE_PATTERN = Pattern.compile("\\$\\{(.+?)\\}");
 
     /** Prefix for variable-type property replacement */
     public static String configPropertyPrefix = "config.";
@@ -64,13 +66,22 @@ public class PropertyExpressionResolver {
     @Nonnull
     public List<NifiProperty> resolvePropertyExpressions(@Nullable final FeedMetadata metadata) {
         if (metadata != null) {
-            return metadata.getProperties().stream()
-                    .filter(property -> resolveExpression(metadata, property))
-                    .collect(Collectors.toList());
+            return resolvePropertyExpressions(metadata.getProperties(), metadata);
         } else {
             return Collections.emptyList();
         }
     }
+
+    public List<NifiProperty> resolvePropertyExpressions(List<NifiProperty> properties, @Nullable final FeedMetadata metadata) {
+        if (metadata != null && properties != null) {
+            return properties.stream()
+                .filter(property -> resolveExpression(metadata, property))
+                .collect(Collectors.toList());
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
 
     /**
      * @return only those properties that were updated
@@ -258,4 +269,141 @@ public class PropertyExpressionResolver {
             this.isModified = isModified;
         }
     }
+
+    public boolean containsVariablesPatterns(String str) {
+        final Matcher matcher = VARIABLE_PATTERN.matcher(str);
+        return (matcher.find());
+    }
+
+    public static class ResolvedVariables {
+
+        private Map<String, String> resolvedVariables;
+
+        private String str;
+
+        private String resolvedString;
+
+        public ResolvedVariables(String str) {
+            this.str = str;
+            this.resolvedString = str;
+            this.resolvedVariables = new HashMap<>();
+        }
+
+        public Map<String, String> getResolvedVariables() {
+            return resolvedVariables;
+        }
+
+        public void setResolvedVariables(Map<String, String> resolvedVariables) {
+            this.resolvedVariables = resolvedVariables;
+        }
+
+        public String getResolvedString() {
+            return resolvedString;
+        }
+
+        public void setResolvedString(String resolvedString) {
+            this.resolvedString = resolvedString;
+        }
+    }
+
+
+    /**
+     * Replace any property in the str  ${var} with the respective value in the map of vars
+     */
+    public String resolveVariables(String str, Map<String, String> vars) {
+
+        String replacedString = str;
+        if (str != null) {
+            // Look for a match, else return
+            final Matcher matcher = VARIABLE_PATTERN.matcher(str);
+            if (!matcher.find()) {
+                return replacedString;
+            }
+
+            final StringBuffer result = new StringBuffer(str.length() * 2);
+
+            do {
+                final String variable = matcher.group(1);
+
+                String replacement = vars.get(variable);
+                if (replacement != null) {
+                    matcher.appendReplacement(result, Matcher.quoteReplacement(replacement));
+                }
+            } while (matcher.find());
+
+            // Replace property value
+            matcher.appendTail(result);
+            replacedString = StringUtils.trim(result.toString());
+        }
+        return replacedString;
+    }
+
+    public String replaceAll(String str, String replacement) {
+        if (str != null) {
+            final Matcher matcher = VARIABLE_PATTERN.matcher(str);
+            return matcher.replaceAll(replacement);
+        }
+        return str;
+    }
+
+    /**
+     * Resolve the str with values from the supplied {@code properties} This will recursively fill out the str looking back at the properties to get the correct value. NOTE the property values will be
+     * overwritten if replacement is found!
+     */
+    public ResolvedVariables resolveVariables(String str, List<NifiProperty> properties) {
+        return resolveVariables(str, properties, new HashMap<>());
+    }
+
+    private ResolvedVariables resolveVariables(String str, List<NifiProperty> properties, Map<String, Set<String>> resolvedValues) {
+        ResolvedVariables variables = new ResolvedVariables(str);
+
+        if (str != null) {
+            // Look for a match, else return
+            final Matcher matcher = PropertyExpressionResolver.VARIABLE_PATTERN.matcher(str);
+            if (!matcher.find()) {
+                return variables;
+            }
+
+            final StringBuffer result = new StringBuffer(str.length() * 2);
+
+            do {
+                final String variable = matcher.group(1);
+                NifiProperty property = properties.stream().filter(p -> p.getKey().equals(variable)).findFirst().orElse(null);
+                if (property != null) {
+                    String replacedString = property.getValue();
+                    //cannot contain itself
+
+                    if (!replacedString.contains("${" + property.getKey() + "}") && replacedString != null && (!resolvedValues.containsKey(property.getKey()) || (!resolvedValues.get(property.getKey())
+                        .contains(replacedString)))) {
+                        resolvedValues.computeIfAbsent(property.getKey(), (key) -> new HashSet<String>()).add(replacedString);
+                        ResolvedVariables resolvedVariables = resolveVariables(replacedString, properties, resolvedValues);
+                        replacedString = resolvedVariables.getResolvedString();
+                        property.setValue(resolvedVariables.getResolvedString());
+                        variables.getResolvedVariables().put(property.getKey(), replacedString);
+
+                    }
+                    if (replacedString != null) {
+                        matcher.appendReplacement(result, Matcher.quoteReplacement(replacedString));
+                    }
+                }
+
+            } while (matcher.find());
+
+            // Replace property value
+            matcher.appendTail(result);
+            String replacement = StringUtils.trim(result.toString());
+            variables.setResolvedString(replacement);
+            return variables;
+
+        } else {
+            return null;
+        }
+    }
+
+
+
+
+
+
+
 }

@@ -1,7 +1,24 @@
 package com.thinkbiganalytics.metadata.rest.api;
 
+import com.google.common.collect.Collections2;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.datasource.DatasourceDefinitionProvider;
+import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
+import com.thinkbiganalytics.metadata.rest.Model;
+import com.thinkbiganalytics.metadata.rest.model.Formatters;
+import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
+import com.thinkbiganalytics.metadata.rest.model.data.DatasourceCriteria;
+import com.thinkbiganalytics.metadata.rest.model.data.DatasourceDefinition;
+import com.thinkbiganalytics.metadata.rest.model.data.DirectoryDatasource;
+import com.thinkbiganalytics.metadata.rest.model.data.HiveTableDatasource;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Component;
+
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
@@ -16,25 +33,15 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.stereotype.Component;
-
-import com.google.common.collect.Collections2;
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
-import com.thinkbiganalytics.metadata.rest.Model;
-import com.thinkbiganalytics.metadata.rest.model.Formatters;
-import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
-import com.thinkbiganalytics.metadata.rest.model.data.DatasourceCriteria;
-import com.thinkbiganalytics.metadata.rest.model.data.DirectoryDatasource;
-import com.thinkbiganalytics.metadata.rest.model.data.HiveTableDatasource;
-
 @Component
 @Path("/metadata/datasource")
 public class DatasourceController {
 
     @Inject
     private DatasourceProvider datasetProvider;
+
+    @Inject
+    private DatasourceDefinitionProvider datasourceDefinitionProvider;
 
     @Inject
     private MetadataAccess metadata;
@@ -72,6 +79,21 @@ public class DatasourceController {
         });
     }
 
+
+    @GET
+    @Path("/datasource-definitions")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Set<DatasourceDefinition> getDatasourceDefinitions() {
+        return this.metadata.read(() -> {
+            Set<com.thinkbiganalytics.metadata.api.datasource.DatasourceDefinition> datasourceDefinitions = this.datasourceDefinitionProvider.getDatasourceDefinitions();
+            if (datasourceDefinitions != null) {
+                return new HashSet<>(Collections2.transform(datasourceDefinitions, Model.DOMAIN_TO_DS_DEFINITION));
+            }
+            return null;
+        });
+    }
+
+
     @POST
     @Path("/hivetable")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -82,8 +104,8 @@ public class DatasourceController {
 
         return this.metadata.commit(() -> {
             com.thinkbiganalytics.metadata.api.datasource.DatasourceCriteria crit = datasetProvider.datasetCriteria()
-                            .name(ds.getName())
-                            .type(com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource.class);
+                .name(ds.getName())
+                .type(com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource.class);
             List<com.thinkbiganalytics.metadata.api.datasource.Datasource> existing = datasetProvider.getDatasources(crit);
 
             if (existing.isEmpty()) {

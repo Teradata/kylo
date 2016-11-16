@@ -152,4 +152,10 @@ public class InMemoryFeedManagerTemplateService extends AbstractFeedManagerTempl
   public RegisteredTemplate disableTemplate(String templateId) {
     return null;
   }
+
+
+  @Override
+  public List<RegisteredTemplate.Processor> getRegisteredTemplateProcessors(String templateId, boolean includeReusableProcessors) {
+    return null;
+  }
 }

@@ -1,13 +1,5 @@
 package com.thinkbiganalytics.metadata.modeshape.datasource;
 
-import java.io.Serializable;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
@@ -19,13 +11,20 @@ import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedSource;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
+import java.io.Serializable;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+
 /**
  * Created by sr186054 on 6/5/16.
  */
 public class JcrDatasource extends AbstractJcrAuditableSystemEntity implements Datasource {
     
-    @SuppressWarnings("unused")
-    private static final String PATH_NAME = "generic";
+
 
     public static final String NODE_TYPE = "tba:datasource";
     public static final String SOURCE_NAME = "tba:feedSources";
@@ -56,12 +55,12 @@ public class JcrDatasource extends AbstractJcrAuditableSystemEntity implements D
     }
 
 
-    public List<JcrFeedSource> getSources(){
-     return  JcrUtil.getJcrObjects(this.node,SOURCE_NAME, JcrFeedSource.class);
+    public List<JcrFeedSource> getSources() {
+        return JcrUtil.getJcrObjects(this.node, SOURCE_NAME, JcrFeedSource.class);
     }
 
-    public List<JcrFeedDestination> getDestinations(){
-        return  JcrUtil.getJcrObjects(this.node, DESTINATION_NAME, JcrFeedDestination.class);
+    public List<JcrFeedDestination> getDestinations() {
+        return JcrUtil.getJcrObjects(this.node, DESTINATION_NAME, JcrFeedDestination.class);
     }
 
 
@@ -124,4 +123,6 @@ public class JcrDatasource extends AbstractJcrAuditableSystemEntity implements D
     public void removeDestinationNode(Node node) {
         JcrPropertyUtil.removeFromSetProperty(this.node, DESTINATION_NAME, node);
     }
+
+
 }

@@ -181,6 +181,27 @@ public class InMemoryFeedProvider implements FeedProvider {
         return newFeed;
     }
 
+
+    @Override
+    public void removeFeedSources(Feed.ID feedId) {
+
+    }
+
+    @Override
+    public void removeFeedSource(Feed.ID feedId, ID dsId) {
+
+    }
+
+    @Override
+    public void removeFeedDestination(Feed.ID feedId, ID dsId) {
+
+    }
+
+    @Override
+    public void removeFeedDestinations(Feed.ID feedId) {
+
+    }
+
     @Override
     public Feed<?> createPrecondition(Feed.ID feedId, String descr, List<Metric> metrics) {
         BaseFeed feed = (BaseFeed) this.feeds.get(feedId);
@@ -477,4 +498,9 @@ public class InMemoryFeedProvider implements FeedProvider {
 
     @Override
     public void setUserFields(@Nonnull Set<UserFieldDescriptor> userFields) {}
+
+    @Override
+    public void populateInverseFeedDependencies() {
+
+    }
 }

@@ -188,6 +188,7 @@ public class LegacyNifiRestClient implements NifiFlowVisitorClient {
     }
 
 
+
     public Set<PortDTO> getPortsForTemplate(String templateId) throws NifiComponentNotFoundException {
         Set<PortDTO> ports = new HashSet<>();
         TemplateDTO dto = getTemplateById(templateId);
@@ -738,7 +739,7 @@ public class LegacyNifiRestClient implements NifiFlowVisitorClient {
     /**
      * get a set of all ProcessorDTOs in a template and optionally remove the initial input ones
      */
-    public Set<ProcessorDTO> getProcessorsForTemplate(String templateId, boolean excludeInputs) throws NifiComponentNotFoundException {
+    public Set<ProcessorDTO> getProcessorsForTemplate(String templateId) throws NifiComponentNotFoundException {
         TemplateDTO dto = getTemplateById(templateId);
         Set<ProcessorDTO> processors = NifiProcessUtil.getProcessors(dto);
 

@@ -49,6 +49,12 @@ public class RegisteredTemplate {
 
     private List<ReusableTemplateConnectionInfo> reusableTemplateConnections;
 
+    private List<TemplateProcessorDatasourceDefinition> registeredDatasourceDefinitions;
+
+    private Long order;
+
+    private List<String> templateOrder;
+
     /**
      * The number of feeds that use this template
      */
@@ -80,6 +86,8 @@ public class RegisteredTemplate {
             this.reusableTemplateConnections = new ArrayList<>(registeredTemplate.getReusableTemplateConnections());
         }
         this.feedsCount= registeredTemplate.getFeedsCount();
+        this.registeredDatasourceDefinitions = registeredTemplate.getRegisteredDatasourceDefinitions();
+        this.order = registeredTemplate.getOrder();
         this.initializeProcessors();
     }
 
@@ -421,5 +429,29 @@ public class RegisteredTemplate {
 
     public void setState(String state) {
         this.state = state;
+    }
+
+    public List<String> getTemplateOrder() {
+        return templateOrder;
+    }
+
+    public void setTemplateOrder(List<String> templateOrder) {
+        this.templateOrder = templateOrder;
+    }
+
+    public Long getOrder() {
+        return order;
+    }
+
+    public void setOrder(Long order) {
+        this.order = order;
+    }
+
+    public List<TemplateProcessorDatasourceDefinition> getRegisteredDatasourceDefinitions() {
+        return registeredDatasourceDefinitions;
+    }
+
+    public void setRegisteredDatasourceDefinitions(List<TemplateProcessorDatasourceDefinition> registeredDatasources) {
+        this.registeredDatasourceDefinitions = registeredDatasources;
     }
 }

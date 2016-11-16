@@ -8,6 +8,12 @@
  *          "datasources"
  *              "hive"
  *                  HiveTableDatasource*
+                "directory"
+                    DirectoryDatasource*
+                "derived"
+
+            "datasourceDefinitions"
+                   datasourceDefinition
  *          "prototypes"
  *             template
  *          "sla"
@@ -43,6 +49,7 @@
 [tba:metadataFolder] 
 	+ feeds (tba:feedsFolder) = tba:feedsFolder autocreated mandatory
 	+ datasources (tba:datasourcesFolder) = tba:datasourcesFolder autocreated mandatory
+	+ datasourceDefinitions (tba:datasourceDefinitionsFolder) = tba:datasourceDefinitionsFolder autocreated mandatory
 	+ templates (tba:templatesFolder) = tba:templatesFolder autocreated mandatory
 	+ sla (tba:slaFolder) = tba:slaFolder autocreated mandatory
 	+ extensions (tba:extensionsFolder) = tba:extensionsFolder autocreated mandatory
@@ -64,7 +71,12 @@
 	+ types (tba:typesFolder) = tba:typesFolder autocreated mandatory
 	+ entities (tba:entitiesFolder) = tba:entitiesFolder autocreated mandatory
 
-[tba:datasourcesFolder] > nt:folder 
+[tba:datasourcesFolder] > nt:folder
+    + derived (tba:derivedDatasourcesFolder) = tba:derivedDatasourcesFolder autocreated mandatory
+
+[tba:derivedDatasourcesFolder] >nt:folder
+
+[tba:datasourceDefinitionsFolder] > nt:folder
 
 [tba:typesFolder] > nt:folder 
 
@@ -149,6 +161,7 @@
     - tba:state (STRING) = 'ENABLED'
     - tba:json (STRING)
     - tba:feeds (REFERENCE) multiple
+    - tba:order (LONG)
 
 [tba:category] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied, tba:accessControlled
 	- tba:systemName (STRING) mandatory
@@ -156,7 +169,6 @@
 	- tba:state (LONG)
 	- tba:initialized (BOOLEAN) = 'false'
 	+ * (tba:feed) sns
-
 
 [tba:feed] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied, tba:accessControlled, mix:versionable
 	+ tba:sources (tba:feedSource) sns
@@ -172,6 +184,7 @@
 	- tba:schedulingPeriod (STRING)
 	- tba:schedulingStrategy (STRING)
     - tba:dependentFeeds (REFERENCE) multiple
+    - tba:usedByFeeds (REFERENCE) multiple
     - tba:slas (WEAKREFERENCE) multiple
     - tba:securityGroups (WEAKREFERENCE) multiple
 
@@ -182,7 +195,7 @@
     // TODO: when to check conditions (schedule, event, ...)
 
 [tba:feedConnection] > nt:hierarchyNode, mix:referenceable
-    - tba:datasource (REFERENCE) mandatory COPY
+    - tba:datasource (WEAKREFERENCE) mandatory COPY
 
 [tba:feedSource] > tba:feedConnection
 
@@ -192,16 +205,25 @@
 [tba:hadoopSecurityGroup] > nt:hierarchyNode, mix:referenceable, mix:title
     - tba:groupId (STRING) mandatory
 
-[tba:datasource] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied 
+[tba:datasourceDefinition] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied
+    - tba:connectionType  (STRING)  //source or destination
+    - tba:processorType  (STRING)
+    - tba:datasourceType (STRING)
+    - tba:datasourcePropertyKeys (STRING) multiple
+    - tba:identityString (STRING) // string defining this identity
+
+[tba:datasource] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied
+    - tba.datasourceDefinition (REFERENCE)
     - tba:systemName (STRING) mandatory
     - tba:feedSources (WEAKREFERENCE) multiple
     - tba:feedDestinations (WEAKREFERENCE) multiple
-//  - tba:state (STRING)
-//  - tba:initialized (BOOLEAN) = 'false'
+
+[tba:derivedDatasource] > tba:datasource
+    - tba:datasourceType (STRING)
 
 [tba:hiveTableDatasource] > tba:datasource
     - tba:database (STRING) 
-    - tba:tableName (STRING) 
+    - tba:tableName (STRING)
     - tba:modifiers (STRING)
     + tba:columns (nt:folder)
     + tba:partitions (nt:folder) 
@@ -210,6 +232,8 @@
     - tba:name (STRING) mandatory
     - tba:type (STRING) mandatory
 
+[tba:directoryDatasource] > tba:datasource
+    - tba:directory (STRING) mandatory
 
 [tba:sla] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied
     - tba:defaultGroup (REFERENCE)

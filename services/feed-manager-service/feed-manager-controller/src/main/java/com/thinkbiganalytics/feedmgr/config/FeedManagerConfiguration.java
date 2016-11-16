@@ -11,11 +11,13 @@ import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.category.CategoryModelTransform;
 import com.thinkbiganalytics.feedmgr.service.category.DefaultFeedManagerCategoryService;
 import com.thinkbiganalytics.feedmgr.service.category.FeedManagerCategoryService;
+import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceService;
 import com.thinkbiganalytics.feedmgr.service.feed.DefaultFeedManagerFeedService;
 import com.thinkbiganalytics.feedmgr.service.feed.ExportImportFeedService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerPreconditionService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedModelTransform;
+import com.thinkbiganalytics.feedmgr.service.feed.datasource.DerivedDatasourceFactory;
 import com.thinkbiganalytics.feedmgr.service.template.DefaultFeedManagerTemplateService;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
 import com.thinkbiganalytics.feedmgr.service.template.TemplateModelTransform;
@@ -153,6 +155,17 @@ public class FeedManagerConfiguration {
     @Bean
     public FeedPreconditionService feedPreconditionService() {
         return new FeedPreconditionService();
+    }
+
+
+    @Bean
+    public DatasourceService datasourceService() {
+        return new DatasourceService();
+    }
+
+    @Bean
+    public DerivedDatasourceFactory derivedDatasourceFactory() {
+        return new DerivedDatasourceFactory();
     }
 
 }

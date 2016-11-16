@@ -8,10 +8,13 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
 import com.thinkbiganalytics.feedmgr.rest.model.TemplateDtoWrapper;
+import com.thinkbiganalytics.feedmgr.rest.model.TemplateProcessorDatasourceDefinition;
 import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
+import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceService;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
 import com.thinkbiganalytics.feedmgr.support.Constants;
+import com.thinkbiganalytics.metadata.rest.model.data.DatasourceDefinition;
 import com.thinkbiganalytics.nifi.feedmgr.TemplateCreationHelper;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
@@ -20,6 +23,7 @@ import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
 import org.slf4j.Logger;
@@ -27,9 +31,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -61,6 +69,9 @@ public class TemplatesRestController {
 
     @Autowired
     FeedManagerTemplateService feedManagerTemplateService;
+
+    @Autowired
+    DatasourceService datasourceService;
 
 
     public TemplatesRestController() {
@@ -132,6 +143,74 @@ public class TemplatesRestController {
 
 
     @GET
+    @Path("/nifi/reusable-input-ports-processors")
+    @Produces({MediaType.APPLICATION_JSON})
+    public List<RegisteredTemplate.Processor> getReusableTemplateProcessorsForInputPorts(@QueryParam("inputPorts") String inputPortIds) {
+        List<RegisteredTemplate.Processor> processorProperties = new ArrayList<>();
+        if (StringUtils.isNotBlank(inputPortIds)) {
+            List<String> inputPortIdsList = Arrays.asList(StringUtils.split(inputPortIds, ","));
+            processorProperties = feedManagerTemplateService.getReusableTemplateProcessorsForInputPorts(inputPortIdsList);
+        }
+        return processorProperties;
+    }
+
+
+    @GET
+    @Path("/nifi/{templateId}/processors")
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response getNiFiTemplateProcessors(@PathParam("templateId") String templateId) {
+        List<RegisteredTemplate.Processor> processorProperties = feedManagerTemplateService.getNiFiTemplateProcessors(templateId);
+        return Response.ok(processorProperties).build();
+    }
+
+    @GET
+    @Path("/nifi/{templateId}/datasource-definitions")
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response getDatasourceDefinitionsForProcessors(@PathParam("templateId") String templateId, @QueryParam("inputPorts") String inputPortIds) {
+
+        Map<RegisteredTemplate.Processor, DatasourceDefinition> map = new HashMap<>();
+        List<RegisteredTemplate.Processor> processors = new ArrayList<>();
+        List<RegisteredTemplate.Processor> reusableProcessors = getReusableTemplateProcessorsForInputPorts(inputPortIds);
+
+        List<RegisteredTemplate.Processor> thisTemplateProcessors = feedManagerTemplateService.getNiFiTemplateProcessors(templateId);
+
+        Set<DatasourceDefinition> defs = datasourceService.getDatasourceDefinitions();
+        Map<String, DatasourceDefinition> datasourceDefinitionMap = new HashMap<>();
+        if (defs != null) {
+            defs.stream().forEach(def -> datasourceDefinitionMap.put(def.getProcessorType(), def));
+        }
+
+        //join the two lists
+        processors.addAll(thisTemplateProcessors);
+        processors.addAll(reusableProcessors);
+
+        List<TemplateProcessorDatasourceDefinition> templateProcessorDatasourceDefinitions = new ArrayList<>();
+
+        templateProcessorDatasourceDefinitions = processors.stream().filter(processor -> datasourceDefinitionMap.containsKey(processor.getType())).map(p -> {
+            TemplateProcessorDatasourceDefinition definition = new TemplateProcessorDatasourceDefinition();
+            definition.setProcessorType(p.getType());
+            definition.setProcessorName(p.getName());
+            definition.setProcessorId(p.getId());
+            definition.setDatasourceDefinition(datasourceDefinitionMap.get(p.getType()));
+            return definition;
+        }).collect(Collectors.toList());
+
+        return Response.ok(templateProcessorDatasourceDefinitions).build();
+
+
+    }
+
+
+    @GET
+    @Path("/reload-data-source-definitions")
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response reloadDatasources() {
+        datasourceService.loadDefinitionsFromFile();
+        return Response.ok(RestResponseStatus.SUCCESS).build();
+    }
+
+
+    @GET
     @Path("/nifi/{templateId}/out-ports")
     @Produces({MediaType.APPLICATION_JSON})
     public Response getOutputPortsForNifiTemplate(@PathParam("templateId") String nifiTemplateId) {
@@ -158,6 +237,22 @@ public class TemplatesRestController {
         List<RegisteredTemplate> templates = getMetadataService().getRegisteredTemplates();
         return Response.ok(templates).build();
 
+    }
+
+
+    /**
+     * Gets the template and optionally all reusable flow processors and properties
+     */
+    @GET
+    @Path("/registered/{templateId}/processor-properties")
+    @Produces({MediaType.APPLICATION_JSON})
+    public List<RegisteredTemplate.Processor> getReusableTemplateProcessorsForInputPorts(@PathParam("templateId") String templateId,
+                                                                                         @QueryParam("includeReusableTemplates") boolean includeReusableTemplates) {
+        List<RegisteredTemplate.Processor> processorProperties = new ArrayList<>();
+
+        processorProperties = feedManagerTemplateService.getRegisteredTemplateProcessors(templateId, includeReusableTemplates);
+
+        return processorProperties;
     }
 
 

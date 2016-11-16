@@ -71,4 +71,8 @@ public interface FeedManagerTemplate {
 
     State getState();
 
+    Long getOrder();
+
+    void setOrder(Long order);
+
 }

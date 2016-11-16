@@ -3,13 +3,13 @@
  */
 package com.thinkbiganalytics.metadata.api.datasource;
 
-import java.io.Serializable;
-import java.util.Set;
+import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
+import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 
 import org.joda.time.DateTime;
 
-import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
-import com.thinkbiganalytics.metadata.api.feed.FeedSource;
+import java.io.Serializable;
+import java.util.Set;
 
 /**
  *
@@ -30,7 +30,6 @@ public interface Datasource extends Serializable {
     Set<? extends FeedSource> getFeedSources();
     
     Set<? extends FeedDestination> getFeedDestinations();
-    
-    // TODO add type/schema/format related properties
+
 
 }

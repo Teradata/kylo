@@ -9,6 +9,9 @@ import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
 
@@ -116,5 +119,33 @@ public class PropertyExpressionResolverTest {
         final NifiProperty property = new NifiProperty(DEFAULT_GROUP, DEFAULT_GROUP, key, value);
         property.setProcessorType(DEFAULT_TYPE);
         return property;
+    }
+
+
+
+
+
+
+    @Test
+    public void testResolveValues(){
+
+        List<NifiProperty> props = new ArrayList<>();
+        props.add(newProperty("test.property","${a}/${b} "));
+        props.add(newProperty("test.property2","${a2}/${c} "));
+        props.add(newProperty("d","fred"));
+        props.add(newProperty("a","${b} "));
+        props.add(newProperty("b","${c}"));
+        props.add(newProperty("c","${d}"));
+
+
+        PropertyExpressionResolver.ResolvedVariables variables = resolver.resolveVariables("${a} - ${b} - ${test.property2}", props);
+        int i = 0;
+    }
+
+    private NifiProperty newProperty(String key, String value){
+        NifiProperty p = new NifiProperty();
+        p.setKey(key);
+        p.setValue(value);
+        return p;
     }
 }

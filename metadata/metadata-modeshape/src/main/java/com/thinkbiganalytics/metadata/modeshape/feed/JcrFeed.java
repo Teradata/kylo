@@ -1,23 +1,5 @@
 package com.thinkbiganalytics.metadata.modeshape.feed;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nonnull;
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-import javax.jcr.Value;
-
-import org.joda.time.DateTime;
-
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryNotFoundException;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
@@ -42,6 +24,24 @@ import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplate;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.security.action.AllowedActions;
 
+import org.joda.time.DateTime;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nonnull;
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.jcr.Value;
+
 /**
  * An implementation of {@link Feed} backed by a JCR repository.
  *
@@ -54,6 +54,7 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
     public static final String ALLOWED_ACTIONS = "tba:allowedActions";
     public static final String PRECONDITION = "tba:precondition";
     public static final String DEPENDENTS = "tba:dependentFeeds";
+    public static final String USED_BY_FEEDS = "tba:usedByFeeds";
     public static final String NODE_TYPE = "tba:feed";
     public static final String SOURCE_NAME = "tba:sources";
     public static final String DESTINATION_NAME = "tba:destinations";
@@ -286,6 +287,7 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
     public boolean addDependentFeed(Feed<?> feed) {
         JcrFeed<?> dependent = (JcrFeed<?>) feed;
         Node depNode = dependent.getNode();
+        feed.addUsedByFeed(this);
 
         return JcrPropertyUtil.addToSetProperty(this.node, DEPENDENTS, depNode);
     }
@@ -294,25 +296,63 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
     public boolean removeDependentFeed(Feed<?> feed) {
         JcrFeed<?> dependent = (JcrFeed<?>) feed;
         Node depNode = dependent.getNode();
-
+        feed.removeUsedByFeed(this);
         return JcrPropertyUtil.removeFromSetProperty(this.node, DEPENDENTS, depNode);
+    }
+
+
+    @Override
+    public List<Feed<C>> getUsedByFeeds() {
+        List<Feed<C>> deps = new ArrayList<>();
+        Set<Node> depNodes = JcrPropertyUtil.getSetProperty(this.node, USED_BY_FEEDS);
+
+        for (Node depNode : depNodes) {
+            deps.add(new JcrFeed<C>(depNode));
+        }
+
+        return deps;
+    }
+
+    @Override
+    public boolean addUsedByFeed(Feed<?> feed) {
+        JcrFeed<?> dependent = (JcrFeed<?>) feed;
+        Node depNode = dependent.getNode();
+
+        return JcrPropertyUtil.addToSetProperty(this.node, USED_BY_FEEDS, depNode);
+    }
+
+    @Override
+    public boolean removeUsedByFeed(Feed<?> feed) {
+        JcrFeed<?> dependent = (JcrFeed<?>) feed;
+        Node depNode = dependent.getNode();
+
+        return JcrPropertyUtil.removeFromSetProperty(this.node, USED_BY_FEEDS, depNode);
     }
 
     @Override
     public FeedSource getSource(final Datasource.ID id) {
+        List<? extends FeedSource> sources = getSources();
+        if (sources != null) {
+            return sources.stream().filter(feedSource -> feedSource.getDatasource().getId().equals(id)).findFirst().orElse(null);
+        }
+        return null;
+
+        /*
         return JcrUtil.getNodeList(this.node, SOURCE_NAME).stream()
                 .filter(node -> JcrPropertyUtil.isReferencing(node, JcrFeedConnection.DATASOURCE, id.toString()))
                 .findAny()
                 .map(node -> new JcrFeedSource(node))
                 .orElse(null);
+                */
     }
+
 //
 //    @Override
 //    public FeedSource getSource(final FeedSource.ID id) {
 //        @SuppressWarnings("unchecked")
 //        List<FeedSource> sources = (List<FeedSource>) getSources();
 //        FeedSource source = null;
-//        
+//
 //        if (sources != null && !sources.isEmpty()) {
 //            source = Iterables.tryFind(sources, new Predicate<FeedSource>() {
 //                @Override
@@ -325,13 +365,23 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
 //
 //    }
 
+
     @Override
     public FeedDestination getDestination(final Datasource.ID id) {
+        List<? extends FeedDestination> destinations = getDestinations();
+        if (destinations != null) {
+            return destinations.stream().filter(feedDestination -> feedDestination.getDatasource().getId().equals(id)).findFirst().orElse(null);
+        }
+        return null;
+
+        /*
+
         return JcrPropertyUtil.getReferencedNodeSet(this.node, DESTINATION_NAME).stream()
                 .filter(node -> JcrPropertyUtil.isReferencing(this.node, JcrFeedConnection.DATASOURCE, id.toString()))
                 .findAny()
                 .map(node -> new JcrFeedDestination(node))
                 .orElse(null);
+                */
     }
 //
 //    @Override

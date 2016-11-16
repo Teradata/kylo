@@ -168,4 +168,14 @@ public class FeedManagerTemplateDTO implements FeedManagerTemplate {
     public void setState(State state) {
 
     }
+
+    @Override
+    public Long getOrder() {
+        return null;
+    }
+
+    @Override
+    public void setOrder(Long order) {
+
+    }
 }

@@ -3,6 +3,24 @@
  */
 package com.thinkbiganalytics.metadata.core.dataset;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
+import com.thinkbiganalytics.metadata.api.MetadataException;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource.ID;
+import com.thinkbiganalytics.metadata.api.datasource.DatasourceCriteria;
+import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
+import com.thinkbiganalytics.metadata.api.datasource.DerivedDatasource;
+import com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDatasource;
+import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource;
+import com.thinkbiganalytics.metadata.core.AbstractMetadataCriteria;
+import com.thinkbiganalytics.metadata.core.dataset.files.BaseDirectoryDatasource;
+import com.thinkbiganalytics.metadata.core.dataset.hive.BaseHiveTableDatasource;
+
+import org.apache.commons.lang3.reflect.ConstructorUtils;
+import org.joda.time.DateTime;
+
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
@@ -13,21 +31,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import org.apache.commons.lang3.reflect.ConstructorUtils;
-import org.joda.time.DateTime;
-
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
-import com.thinkbiganalytics.metadata.api.MetadataException;
-import com.thinkbiganalytics.metadata.api.datasource.Datasource;
-import com.thinkbiganalytics.metadata.api.datasource.Datasource.ID;
-import com.thinkbiganalytics.metadata.api.datasource.DatasourceCriteria;
-import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
-import com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDatasource;
-import com.thinkbiganalytics.metadata.core.AbstractMetadataCriteria;
-import com.thinkbiganalytics.metadata.core.dataset.files.BaseDirectoryDatasource;
 
 /**
  *
@@ -49,7 +52,18 @@ public class InMemoryDatasourceProvider implements DatasourceProvider {
             return new BaseDatasource.DatasourceId(id);
         }
     }
-    
+
+
+    @Override
+    public DerivedDatasource ensureDerivedDatasource(String datasourceType, String identityString, String title,String desc, Map<String, Object> properties) {
+        return null;
+    }
+
+    @Override
+    public DerivedDatasource findDerivedDatasource(String datasourceType, String systemName) {
+        return null;
+    }
+
     @Override
     public <D extends Datasource> D ensureDatasource(String name, String descr, Class<D> type) {
         synchronized (this.datasets) {
@@ -72,21 +86,26 @@ public class InMemoryDatasourceProvider implements DatasourceProvider {
             }
         }
     }
-    
-//
-//    @Override
-//    public Datasource ensureDatasource(String name, String descr) {
-//        synchronized (this.datasets) {
-//            BaseDatasource ds = getExistingDataset(name);
-//            
-//            if (ds == null) {
-//                ds = new BaseDatasource(name, descr);
-//                this.datasets.put(ds.getId(), ds);
-//            }
-//            
-//            return ds;
-//        }
-//    }
+
+    @Override
+    public DerivedDatasource ensureGenericDatasource(String name, String descr) {
+        return null;
+    }
+
+    //
+   // @Override
+    public Datasource ensureDatasource(String name, String descr) {
+        synchronized (this.datasets) {
+            BaseDatasource ds = getExistingDataset(name);
+
+            if (ds == null) {
+                ds = new BaseDatasource(name, descr);
+                this.datasets.put(ds.getId(), ds);
+}
+
+            return ds;
+       }
+    }
 
     public DirectoryDatasource ensureDirectoryDatasource(String name, String descr, Path dir) {
         synchronized (this.datasets) {
@@ -106,25 +125,31 @@ public class InMemoryDatasourceProvider implements DatasourceProvider {
         }
     }
 //
-//    @Override
-//    public HiveTableDatasource ensureHiveTableDatasource(String name, String descr, String database, String table) {
-//        synchronized (this.datasets) {
-//            Datasource ds = getExistingDataset(name);
-//            
-//            if (ds != null) {
-//                if (ds.getClass().isAssignableFrom(BaseHiveTableDatasource.class)) {
-//                    return (BaseHiveTableDatasource) ds;
-//                } else {
-//                    throw new DatasourceException("A non-hive dataset already exists with the given name:" + name);
-//                }
-//            }
-//            
-//            BaseHiveTableDatasource hds = new BaseHiveTableDatasource(name, descr, database, table);
-//            this.datasets.put(hds.getId(), hds);
-//            return hds;
-//        }
-//    }
-//    
+    @Override
+    public HiveTableDatasource ensureHiveTableDatasource(String name, String descr, String database, String table) {
+        synchronized (this.datasets) {
+            Datasource ds = getExistingDataset(name);
+
+            if (ds != null) {
+                if (ds.getClass().isAssignableFrom(BaseHiveTableDatasource.class)) {
+                    return (BaseHiveTableDatasource) ds;
+                } else {
+                    throw new DatasourceException("A non-hive dataset already exists with the given name:" + name);
+                }
+            }
+
+            BaseHiveTableDatasource hds = new BaseHiveTableDatasource(name, descr, database, table);
+            this.datasets.put(hds.getId(), hds);
+            return hds;
+        }
+    }
+
+    @Override
+    public void removeDatasource(ID id) {
+
+    }
+
+    //
 //    
 //    @Override
 //    public DirectoryDatasource asDirectoryDatasource(ID dsId, Path dir) {
