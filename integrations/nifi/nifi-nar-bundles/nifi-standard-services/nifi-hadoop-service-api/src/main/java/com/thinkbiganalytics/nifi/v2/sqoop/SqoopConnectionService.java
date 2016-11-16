@@ -5,27 +5,48 @@ import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.controller.ControllerService;
 
 /**
+ * Interface for a connection provider service for Sqoop<br>
+ *     Provides information for connecting to a relational system
  * @author jagrut sharma
  */
 @Tags({"thinkbig", "ingest", "sqoop", "rdbms", "database", "table"})
-@CapabilityDescription("Provides connection configuration for running a sqoop job")
+@CapabilityDescription("Provides information for connecting to a relational system for running a sqoop job")
 
-/*
-Interface for service to get connection details for sqoop
- */
 public interface SqoopConnectionService extends ControllerService {
-    /* Driver to access source system */
+    /**
+     * Driver to access source system
+     */
     String getDriver();
 
-    /* Connection string to access source system */
+    /**
+     * Connection string to access source system
+     */
     String getConnectionString();
 
-    /* User name for source system authentication */
+    /**
+     * User name for source system authentication
+     */
     String getUserName();
 
-    /* Location of encrypted password file on HDFS */
+    /**
+     * Get password mode
+     */
+    PasswordMode getPasswordMode();
+
+    /**
+     * Location of encrypted password file on HDFS
+     */
     String getPasswordHdfsFile();
 
-    /* Passphrase to decrypt password */
+    /**
+     * Passphrase to decrypt password
+     */
     String getPasswordPassphrase();
+
+    /**
+     * Get the password
+     */
+    String getEnteredPassword();
+
 }
+

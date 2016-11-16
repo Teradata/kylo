@@ -1,10 +1,8 @@
 package com.thinkbiganalytics.nifi.v2.sqoop.enums;
 
 /**
+ * List of supported strategies for handling Hive-specific delimiters (\n, \r, \01)
  * @author jagrut sharma
- */
-/*
-List of Hive delimiter handling strategies
  */
 public enum HiveDelimStrategy {
     DROP,
@@ -24,3 +22,4 @@ public enum HiveDelimStrategy {
         return "";
     }
 }
+

@@ -1,19 +1,19 @@
 package com.thinkbiganalytics.nifi.v2.sqoop.core;
 
-/**
- * @author jagrut sharma
- */
-
 import com.thinkbiganalytics.nifi.processor.AbstractNiFiProcessor;
 import com.thinkbiganalytics.nifi.security.KerberosProperties;
 import com.thinkbiganalytics.nifi.security.SpringSecurityContextLoader;
+import com.thinkbiganalytics.nifi.v2.sqoop.PasswordMode;
 import com.thinkbiganalytics.nifi.v2.sqoop.SqoopConnectionService;
 import com.thinkbiganalytics.nifi.v2.sqoop.enums.CompressionAlgorithm;
+import com.thinkbiganalytics.nifi.v2.sqoop.enums.ExtractDataFormat;
 import com.thinkbiganalytics.nifi.v2.sqoop.enums.HiveDelimStrategy;
 import com.thinkbiganalytics.nifi.v2.sqoop.enums.SqoopLoadStrategy;
 import com.thinkbiganalytics.nifi.v2.sqoop.process.SqoopProcessResult;
 import com.thinkbiganalytics.nifi.v2.sqoop.process.SqoopProcessRunner;
 import com.thinkbiganalytics.nifi.v2.sqoop.security.KerberosConfig;
+import com.thinkbiganalytics.nifi.v2.sqoop.utils.SqoopBuilder;
+import com.thinkbiganalytics.nifi.v2.sqoop.utils.SqoopUtils;
 
 import org.apache.nifi.annotation.behavior.WritesAttribute;
 import org.apache.nifi.annotation.behavior.WritesAttributes;
@@ -25,7 +25,6 @@ import org.apache.nifi.components.ValidationResult;
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.flowfile.attributes.CoreAttributes;
 import org.apache.nifi.logging.ComponentLog;
-import org.apache.nifi.processor.AbstractProcessor;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.ProcessorInitializationContext;
@@ -42,6 +41,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.Nonnull;
+
+/**
+ * NiFi Processor to import data from a relational source into HDFS via Sqoop
+ * @author jagrut sharma
+ */
 @Tags({"thinkbig", "ingest", "sqoop", "rdbms", "database", "table"})
 @CapabilityDescription("Import data from a relational source into HDFS via Sqoop")
 @WritesAttributes({
@@ -50,42 +55,20 @@ import java.util.concurrent.TimeUnit;
                       @WritesAttribute(attribute = "sqoop.run.seconds", description =  "Total seconds taken to run the Sqoop command"),
                       @WritesAttribute(attribute = "sqoop.record.count", description = "Count of records imported"),
                       @WritesAttribute(attribute = "sqoop.output.hdfs", description = "HDFS location where data is written"),
-                      @WritesAttribute(attribute = "sqoop.file.delimiter", description = "File delimiter for imported data")
                   })
 
-/*
- * A processor to run a Sqoop import job to fetch data from a relational system into HDFS
- */
 public class ImportSqoop extends AbstractNiFiProcessor {
-
-    public static final PropertyDescriptor FEED_CATEGORY = new PropertyDescriptor.Builder()
-        .name("System Feed Category")
-        .description("System category that this feed belongs to")
-        .required(true)
-        .defaultValue("${metadata.category.systemName}")
-        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .expressionLanguageSupported(true)
-        .build();
-
-    public static final PropertyDescriptor FEED_NAME = new PropertyDescriptor.Builder()
-        .name("System Feed Name")
-        .description("System name of feed")
-        .defaultValue("${metadata.systemFeedName}")
-        .required(true)
-        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .expressionLanguageSupported(true)
-        .build();
 
     public static final PropertyDescriptor SQOOP_CONNECTION_SERVICE = new PropertyDescriptor.Builder()
         .name("Sqoop Connection Service")
-        .description("Connection service for executing sqoop jobs")
+        .description("Connection service for executing sqoop jobs.")
         .required(true)
         .identifiesControllerService(SqoopConnectionService.class)
         .build();
 
     public static final PropertyDescriptor SOURCE_TABLE_NAME = new PropertyDescriptor.Builder()
         .name("Source Table")
-        .description("The table to extract from the source relational system")
+        .description("The table to extract from the source relational system.")
         .required(true)
         .defaultValue("${source.table.name}")
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
@@ -95,7 +78,7 @@ public class ImportSqoop extends AbstractNiFiProcessor {
     public static final PropertyDescriptor SOURCE_TABLE_FIELDS = new PropertyDescriptor.Builder()
         .name("Source Fields")
         .description(
-            "Field names (in order) to read from the source table. ie. the SELECT fields. Separate them using commas e.g. field1,field2,field3 "
+            "Field names (in order) to read from the source table. ie. the SELECT fields. Separate them using commas e.g. field1,field2,field3. "
             + "Inconsistent order will cause corruption of the downstream data. Indicate * to get all columns from table.")
         .required(true)
         .defaultValue("${source.table.fields}")
@@ -113,7 +96,7 @@ public class ImportSqoop extends AbstractNiFiProcessor {
 
     public static final PropertyDescriptor SOURCE_LOAD_STRATEGY = new PropertyDescriptor.Builder()
         .name("Source Load Strategy")
-        .description("The extraction type (full table, incremental based on last modified time field, incremental based on id field)")
+        .description("The load type (full table, incremental based on last modified time field, incremental based on id field).")
         .required(true)
         .allowableValues(SqoopLoadStrategy.values())
         .defaultValue(SqoopLoadStrategy.FULL_LOAD.toString())
@@ -122,15 +105,16 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         .build();
 
     public static final PropertyDescriptor SOURCE_CHECK_COLUMN_NAME = new PropertyDescriptor.Builder()
-        .name("Source Check Column Name (For Incremental Load)")
-        .description("Source column name that contains the last modified time / id for incremental-type load. Not needed for full type of load.")
+        .name("Source Check Column Name (INCR)")
+        .description("Source column name that contains the last modified time / id for incremental-type load. Only applicable for incremental-type load.")
         .required(false)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
 
     public static final PropertyDescriptor SOURCE_PROPERTY_WATERMARK = new PropertyDescriptor.Builder()
-        .name("Watermark Property (For Incremental Load)")
+        .name("Watermark Property (INCR)")
+        .description("Property containing value of current watermark. Only applicable for incremental-type load.")
         .required(false)
         .defaultValue("water.mark")
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
@@ -138,8 +122,9 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         .build();
 
     public static final PropertyDescriptor SOURCE_CHECK_COLUMN_LAST_VALUE = new PropertyDescriptor.Builder()
-        .name("Source Check Column Last Value (For Incremental Load)")
-        .description("Source column value for the last modified time / id for tracking incremental-type load. Not needed for full type of load.")
+        .name("Source Check Column Last Value (INCR)")
+        .description("Source column value for the last modified time / id for tracking incremental-type load. Only applicable for incremental-type load. "
+                     + "This should generally be ${value for Watermark Property (INCR)}.")
         .required(false)
         .defaultValue("${water.mark}")
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
@@ -148,9 +133,9 @@ public class ImportSqoop extends AbstractNiFiProcessor {
 
     public static final PropertyDescriptor SOURCE_SPLIT_BY_FIELD = new PropertyDescriptor.Builder()
         .name("Source Split By Field")
-        .description("A field that has unique values in the source table. "
+        .description("A column of the table that should be used to split work units for parallel imports. "
                      + "By default, the table's primary key will be used. "
-                     + "This is used to perform parallel imports.")
+                     + "If this column is not provided, and the table does not have a primary key, one mapper will be used for the import.")
         .required(false)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
@@ -158,10 +143,10 @@ public class ImportSqoop extends AbstractNiFiProcessor {
 
     public static final PropertyDescriptor SOURCE_BOUNDARY_QUERY = new PropertyDescriptor.Builder()
         .name("Source Boundary Query")
-        .description("A query to get the min and max values for split by field column.\n"
-                     + "The min and max values can also be explicitly provided (e.g. SELECT 1, 10).\n"
-                     + "Query will be literally run without modification, so please ensure that it is correct.\n"
-                     + "Query should return one row with exactly two columns")
+        .description("A query to get the min and max values for split by field column. This can improve the efficiency of import. "
+                     + "The min and max values can also be explicitly provided (e.g. SELECT 1, 10). "
+                     + "Query will be literally run without modification, so please ensure that it is correct. "
+                     + "Query should return one row with exactly two columns.")
         .required(false)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
@@ -169,11 +154,13 @@ public class ImportSqoop extends AbstractNiFiProcessor {
 
     public static final PropertyDescriptor CLUSTER_MAP_TASKS = new PropertyDescriptor.Builder()
         .name("Cluster Map Tasks")
-        .description("Number of map tasks to extract data in parallel. Valid values are from 1 to 15. Higher values put more load on the source system.")
+        .description("Number of map tasks to extract data in parallel. Valid values are from 1 to 25. "
+                     + "Higher values put more load on the source system. "
+                     + "Also, consider capacity of cluster when setting this property value.")
         .required(false)
         .expressionLanguageSupported(true)
         .defaultValue("4")
-        .addValidator(StandardValidators.createLongValidator(1L, 15L, true))
+        .addValidator(StandardValidators.createLongValidator(1L, 25L, true))
         .build();
 
     public static final PropertyDescriptor CLUSTER_UI_JOB_NAME = new PropertyDescriptor.Builder()
@@ -187,17 +174,27 @@ public class ImportSqoop extends AbstractNiFiProcessor {
     public static final PropertyDescriptor TARGET_HDFS_DIRECTORY = new PropertyDescriptor.Builder()
         .name("Target HDFS Directory")
         .description("Target HDFS directory to land data in. The directory should not pre-exist. "
-                     + "Otherwise, job will fail. This behavior is designed to allow accidental overwrites. "
-                     + "Also, the directory must have write permissions for user running nifi.")
+                     + "Otherwise, job will fail. This behavior is designed to prevent accidental overwrites. "
+                     + "Also, verify that permissions on HDFS are appropriate.")
         .required(true)
         .expressionLanguageSupported(true)
         .defaultValue("/tmp")
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .build();
 
+    public static final PropertyDescriptor TARGET_EXTRACT_DATA_FORMAT = new PropertyDescriptor.Builder()
+        .name("Target Extract Data Format")
+        .description("Format to land the extracted data in on HDFS.")
+        .required(true)
+        .expressionLanguageSupported(false)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .allowableValues(ExtractDataFormat.values())
+        .defaultValue(ExtractDataFormat.TEXT.toString())
+        .build();
+
     public static final PropertyDescriptor TARGET_HDFS_FILE_DELIMITER = new PropertyDescriptor.Builder()
         .name("Target HDFS File Delimiter")
-        .description("Delimiter for data landing in HDFS.")
+        .description("Delimiter for data landing in HDFS. This is relevant for TEXT and SEQUENCE_FILE target extract data formats.")
         .required(true)
         .expressionLanguageSupported(true)
         .defaultValue(",")
@@ -206,7 +203,7 @@ public class ImportSqoop extends AbstractNiFiProcessor {
 
     public static final PropertyDescriptor TARGET_HIVE_DELIM_STRATEGY = new PropertyDescriptor.Builder()
         .name("Target Hive Delimiter Strategy")
-        .description("Strategy to handle Hive-specific delimiters. Facilitates downstream Hive ingestion.")
+        .description("Strategy to handle Hive-specific delimiters (\\n, \\r, \\01). Facilitates downstream Hive ingestion.")
         .required(true)
         .expressionLanguageSupported(false)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
@@ -224,7 +221,7 @@ public class ImportSqoop extends AbstractNiFiProcessor {
 
     public static final PropertyDescriptor TARGET_COMPRESSION_ALGORITHM = new PropertyDescriptor.Builder()
         .name("Target Compression Algorithm")
-        .description("Compression algorithm to use for data landing in HDFS")
+        .description("Compression algorithm to use for data landing in HDFS. For PARQUET data format, compression is not supported.")
         .required(true)
         .expressionLanguageSupported(false)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
@@ -242,31 +239,29 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         .description("Sqoop import failure")
         .build();
 
-    /** Property for Kerberos service keytab */
-    private PropertyDescriptor kerberosKeytab;
-
     /** Property for Kerberos service principal */
-    private PropertyDescriptor kerberosPrincipal;
+    private PropertyDescriptor KERBEROS_PRINCIPAL;
+
+    /** Property for Kerberos service keytab */
+    private PropertyDescriptor KERBEROS_KEYTAB;
 
     private List<PropertyDescriptor> properties;
     private Set<Relationship> relationships;
 
     @Override
-    protected void init(final ProcessorInitializationContext context) {
+    protected void init(@Nonnull final ProcessorInitializationContext context) {
         super.init(context);
 
-        // Create Kerberos properties
+        /* Create Kerberos properties */
         final SpringSecurityContextLoader securityContextLoader = SpringSecurityContextLoader.create(context);
         final KerberosProperties kerberosProperties = securityContextLoader.getKerberosProperties();
-        kerberosKeytab = kerberosProperties.createKerberosKeytabProperty();
-        kerberosPrincipal = kerberosProperties.createKerberosPrincipalProperty();
+        KERBEROS_KEYTAB = kerberosProperties.createKerberosKeytabProperty();
+        KERBEROS_PRINCIPAL = kerberosProperties.createKerberosPrincipalProperty();
 
-        // Create list of properties
+        /* Create list of properties */
         final List<PropertyDescriptor> properties = new ArrayList<>();
-        properties.add(kerberosPrincipal);
-        properties.add(kerberosKeytab);
-        properties.add(FEED_CATEGORY);
-        properties.add(FEED_NAME);
+        properties.add(KERBEROS_PRINCIPAL);
+        properties.add(KERBEROS_KEYTAB);
         properties.add(SQOOP_CONNECTION_SERVICE);
         properties.add(SOURCE_TABLE_NAME);
         properties.add(SOURCE_TABLE_FIELDS);
@@ -280,13 +275,14 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         properties.add(CLUSTER_MAP_TASKS);
         properties.add(CLUSTER_UI_JOB_NAME);
         properties.add(TARGET_HDFS_DIRECTORY);
+        properties.add(TARGET_EXTRACT_DATA_FORMAT);
         properties.add(TARGET_HDFS_FILE_DELIMITER);
         properties.add(TARGET_HIVE_DELIM_STRATEGY);
         properties.add(TARGET_HIVE_REPLACE_DELIM);
         properties.add(TARGET_COMPRESSION_ALGORITHM);
         this.properties = Collections.unmodifiableList(properties);
 
-        // Create list of relationships
+        /* Create list of relationships */
         final Set<Relationship> relationships = new HashSet<>();
         relationships.add(REL_SUCCESS);
         relationships.add(REL_FAILURE);
@@ -316,10 +312,8 @@ public class ImportSqoop extends AbstractNiFiProcessor {
             logger.info("Using an existing flow file having uuid: {}", new Object[] { flowFile.getAttribute(CoreAttributes.UUID.key()) } );
         }
 
-        final String kerberosPrincipal = context.getProperty(this.kerberosPrincipal).getValue();
-        final String kerberosKeyTab = context.getProperty(kerberosKeytab).getValue();
-        final String feedCategory = context.getProperty(FEED_CATEGORY).evaluateAttributeExpressions(flowFile).getValue();
-        final String feedName = context.getProperty(FEED_NAME).evaluateAttributeExpressions(flowFile).getValue();
+        final String kerberosPrincipal = context.getProperty(KERBEROS_PRINCIPAL).getValue();
+        final String kerberosKeyTab = context.getProperty(KERBEROS_KEYTAB).getValue();
         final SqoopConnectionService sqoopConnectionService = context.getProperty(SQOOP_CONNECTION_SERVICE).asControllerService(SqoopConnectionService.class);
         final String sourceTableName = context.getProperty(SOURCE_TABLE_NAME).evaluateAttributeExpressions(flowFile).getValue();
         final String sourceTableFields = context.getProperty(SOURCE_TABLE_FIELDS).evaluateAttributeExpressions(flowFile).getValue();
@@ -333,6 +327,7 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         final Integer clusterMapTasks = context.getProperty(CLUSTER_MAP_TASKS).evaluateAttributeExpressions(flowFile).asInteger();
         final String clusterUIJobName = context.getProperty(CLUSTER_UI_JOB_NAME).evaluateAttributeExpressions(flowFile).getValue();
         final String targetHdfsDirectory = context.getProperty(TARGET_HDFS_DIRECTORY).evaluateAttributeExpressions(flowFile).getValue();
+        final ExtractDataFormat targetExtractDataFormat = ExtractDataFormat.valueOf(context.getProperty(TARGET_EXTRACT_DATA_FORMAT).getValue());
         final String targetHdfsFileDelimiter = context.getProperty(TARGET_HDFS_FILE_DELIMITER).evaluateAttributeExpressions(flowFile).getValue();
         final HiveDelimStrategy targetHiveDelimStrategy = HiveDelimStrategy.valueOf(context.getProperty(TARGET_HIVE_DELIM_STRATEGY).getValue());
         final String targetHiveReplaceDelim = context.getProperty(TARGET_HIVE_REPLACE_DELIM).evaluateAttributeExpressions(flowFile).getValue();
@@ -351,13 +346,13 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         SqoopBuilder sqoopBuilder = new SqoopBuilder();
         String sqoopCommand = sqoopBuilder
             .setLogger(logger)
-            .setFeedCategory(feedCategory)
-            .setFeedName(feedName)
             .setSourceDriver(sqoopConnectionService.getDriver())
             .setSourceConnectionString(sqoopConnectionService.getConnectionString())
             .setSourceUserName(sqoopConnectionService.getUserName())
+            .setPasswordMode(sqoopConnectionService.getPasswordMode())
             .setSourcePasswordHdfsFile(sqoopConnectionService.getPasswordHdfsFile())
             .setSourcePasswordPassphrase(sqoopConnectionService.getPasswordPassphrase())
+            .setSourceEnteredPassword(sqoopConnectionService.getEnteredPassword())
             .setSourceTableName(sourceTableName)
             .setSourceTableFields(sourceTableFields)
             .setSourceTableWhereClause(sourceTableWhereClause)
@@ -369,6 +364,7 @@ public class ImportSqoop extends AbstractNiFiProcessor {
             .setClusterMapTasks(clusterMapTasks)
             .setClusterUIJobName(clusterUIJobName)
             .setTargetHdfsDirectory(targetHdfsDirectory)
+            .setTargetExtractDataFormat(targetExtractDataFormat)
             .setTargetHdfsFileDelimiter(targetHdfsFileDelimiter)
             .setTargetHiveDelimStrategy(targetHiveDelimStrategy)
             .setTargetHiveReplaceDelim(targetHiveReplaceDelim)
@@ -392,14 +388,17 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         logger.info("Finished execution of Sqoop command");
 
         int resultStatus = sqoopProcessResult.getExitValue();
-        int recordsCount = getSqoopRecordCount(sqoopProcessResult);
+        SqoopUtils sqoopUtils = new SqoopUtils();
+        int recordsCount = sqoopUtils.getSqoopRecordCount(sqoopProcessResult, logger);
 
-        flowFile = session.putAttribute(flowFile, "sqoop.command.text", sqoopCommand);
+        String sqoopCommandWithCredentialsMasked = sqoopUtils.maskCredentials(sqoopCommand,
+                                                                              sqoopUtils.getCredentialsToMask());
+
+        flowFile = session.putAttribute(flowFile, "sqoop.command.text", sqoopCommandWithCredentialsMasked);
         flowFile = session.putAttribute(flowFile, "sqoop.result.code", String.valueOf(resultStatus));
         flowFile = session.putAttribute(flowFile, "sqoop.run.seconds", String.valueOf(jobDurationSeconds));
         flowFile = session.putAttribute(flowFile, "sqoop.record.count", String.valueOf(recordsCount));
         flowFile = session.putAttribute(flowFile, "sqoop.output.hdfs", targetHdfsDirectory);
-        flowFile = session.putAttribute(flowFile, "sqoop.file.delimiter", targetHdfsFileDelimiter);
         logger.info("Wrote result attributes to flow file");
 
         if (resultStatus == 0) {
@@ -412,7 +411,7 @@ public class ImportSqoop extends AbstractNiFiProcessor {
                 }
                 else {
 
-                    String newHighWaterMark = getNewHighWatermark(sqoopProcessResult);
+                    String newHighWaterMark = sqoopUtils.getNewHighWatermark(sqoopProcessResult);
 
                     if ((newHighWaterMark == null) || (newHighWaterMark.equals("NO_UPDATE")) || (newHighWaterMark.equals(""))) {
                         flowFile = session.putAttribute(flowFile, sourcePropertyWatermark, sourceCheckColumnLastValue);
@@ -435,17 +434,22 @@ public class ImportSqoop extends AbstractNiFiProcessor {
 
         final List<ValidationResult> results = new ArrayList<>();
         final SqoopLoadStrategy sourceLoadStrategy = SqoopLoadStrategy.valueOf(validationContext.getProperty(SOURCE_LOAD_STRATEGY).getValue());
-        final String sourceCheckColumnName = validationContext.getProperty(SOURCE_CHECK_COLUMN_NAME).getValue();
-        final String sourceCheckColumnLastValue = validationContext.getProperty(SOURCE_CHECK_COLUMN_LAST_VALUE).getValue();
+        final String sourceCheckColumnName = validationContext.getProperty(SOURCE_CHECK_COLUMN_NAME).evaluateAttributeExpressions().getValue();
+        final String sourceCheckColumnLastValue = validationContext.getProperty(SOURCE_CHECK_COLUMN_LAST_VALUE).evaluateAttributeExpressions().getValue();
         final HiveDelimStrategy targetHiveDelimStrategy = HiveDelimStrategy.valueOf(validationContext.getProperty(TARGET_HIVE_DELIM_STRATEGY).getValue());
-        final String targetHiveReplaceDelim = validationContext.getProperty(TARGET_HIVE_REPLACE_DELIM).getValue();
+        final String targetHiveReplaceDelim = validationContext.getProperty(TARGET_HIVE_REPLACE_DELIM).evaluateAttributeExpressions().getValue();
+        final SqoopConnectionService sqoopConnectionService = validationContext.getProperty(SQOOP_CONNECTION_SERVICE).asControllerService(SqoopConnectionService.class);
+        final PasswordMode passwordMode = sqoopConnectionService.getPasswordMode();
+        final ExtractDataFormat targetExtractDataFormat = ExtractDataFormat.valueOf(validationContext.getProperty(TARGET_EXTRACT_DATA_FORMAT).getValue());
+        final CompressionAlgorithm targetCompressionAlgorithm = CompressionAlgorithm.valueOf(validationContext.getProperty(TARGET_COMPRESSION_ALGORITHM).getValue());
+        SqoopUtils sqoopUtils = new SqoopUtils();
 
-        if (sourceLoadStrategy != SqoopLoadStrategy.FULL_LOAD) {
+        if (sourceLoadStrategy == SqoopLoadStrategy.INCREMENTAL_LASTMODIFIED || sourceLoadStrategy == SqoopLoadStrategy.INCREMENTAL_APPEND) {
             if ((sourceCheckColumnName == null) || (sourceCheckColumnLastValue == null)) {
                 results.add(new ValidationResult.Builder()
                                 .subject(this.getClass().getSimpleName())
                                 .valid(false)
-                                .explanation("Both 'Check Column Name' and 'Check Column Last Value' are required for incremental load")
+                                .explanation("Both 'Check Column Name' and 'Check Column Last Value' are required for incremental load.")
                                 .build());
 
             }
@@ -456,58 +460,57 @@ public class ImportSqoop extends AbstractNiFiProcessor {
                 results.add(new ValidationResult.Builder()
                             .subject(this.getClass().getSimpleName())
                             .valid(false)
-                            .explanation("Replacement delimiter must be specified for Hive Delimiter REPLACE Strategy")
+                            .explanation("Replacement delimiter must be specified for Hive Delimiter REPLACE Strategy.")
                             .build());
             }
         }
+
+        if (passwordMode == PasswordMode.ENCRYPTED_ON_HDFS_FILE) {
+            if (sqoopConnectionService.getPasswordHdfsFile() == null || sqoopConnectionService.getPasswordPassphrase() == null) {
+                results.add(new ValidationResult.Builder()
+                                .subject(this.getClass().getSimpleName())
+                                .valid(false)
+                                .explanation("For encrypted password on HDFS, both encrypted HDFS file location and passphrase are required.")
+                                .build());
+            }
+        }
+        else if (passwordMode == PasswordMode.ENCRYPTED_TEXT_ENTRY) {
+            if (sqoopConnectionService.getEnteredPassword() == null || sqoopConnectionService.getPasswordPassphrase() == null) {
+                results.add(new ValidationResult.Builder()
+                                .subject(this.getClass().getSimpleName())
+                                .valid(false)
+                                .explanation("For encrypted password entry mode, both the encrypted password and passphrase are required.")
+                                .build());
+            }
+        }
+        else if (passwordMode == PasswordMode.CLEAR_TEXT_ENTRY) {
+            if (sqoopConnectionService.getEnteredPassword() == null) {
+                results.add(new ValidationResult.Builder()
+                                .subject(this.getClass().getSimpleName())
+                                .valid(false)
+                                .explanation("For clear text password entry mode, the password must be provided.")
+                                .build());
+            }
+        }
+
+
+        if ((targetExtractDataFormat == ExtractDataFormat.PARQUET) && (targetCompressionAlgorithm != CompressionAlgorithm.NONE)) {
+            results.add(new ValidationResult.Builder()
+                            .subject(this.getClass().getSimpleName())
+                            .valid(false)
+                            .explanation("For PARQUET data format, compression is not supported.")
+                            .build());
+
+        }
+
+        if ((sqoopUtils.isTeradataDatabase(sqoopConnectionService.getDriver()) && (sourceLoadStrategy == SqoopLoadStrategy.INCREMENTAL_LASTMODIFIED))) {
+            results.add(new ValidationResult.Builder()
+                            .subject(this.getClass().getSimpleName())
+                            .valid(false)
+                            .explanation("For Teradata source system, INCREMENTAL_LASTMODIFIED mode of load is not supported. This is due to a known issue with Sqoop (SQOOP-2402).")
+                            .build());
+        }
+
         return results;
-    }
-
-    private int getSqoopRecordCount(SqoopProcessResult sqoopProcessResult) {
-        String[] logLines = sqoopProcessResult.getLogLines();
-
-        if ((sqoopProcessResult.getExitValue() != 0) || (logLines[0] == null)) {
-            getLog().info("Skipping attempt to retrieve number of records extracted");
-            return -1;
-        }
-
-        //Example of longLines[0]:
-        //16/10/12 21:50:03 INFO mapreduce.ImportJobBase: Retrieved 2 records.
-        //16/10/21 02:05:41 INFO tool.ImportTool: No new rows detected since last import.
-        String recordCountLogLine = logLines[0];
-        if (recordCountLogLine.contains("No new rows detected since last import")) {
-            return 0;
-        }
-        int start = recordCountLogLine.indexOf("Retrieved");
-        int end = recordCountLogLine.indexOf("records.");
-        String numberString = recordCountLogLine.substring(start+9, end).trim();
-        try {
-            return Integer.valueOf(numberString);
-        }
-        catch (Exception e) {
-            getLog().info("Unable to parse number of records extracted. " + e.getMessage());
-            return -1;
-        }
-    }
-
-    private String getNewHighWatermark(SqoopProcessResult sqoopProcessResult) {
-        String[] logLines = sqoopProcessResult.getLogLines();
-
-        final String NO_UPDATE = "NO_UPDATE";
-
-        if ((sqoopProcessResult.getExitValue() != 0) || (logLines.length <= 1)) {
-            return NO_UPDATE;
-        }
-        else if ((logLines[0] != null) && (logLines[0].contains("No new rows detected since last import"))) {
-            return NO_UPDATE;
-        }
-        else {
-            if (logLines[1] == null) return NO_UPDATE;
-            //16/10/18 23:37:11 INFO tool.ImportTool:   --last-value 1006
-            String newHighWaterMarkLogLine = logLines[1];
-            int end = newHighWaterMarkLogLine.length();
-            int start = newHighWaterMarkLogLine.indexOf("--last-value");
-            return newHighWaterMarkLogLine.substring(start + 12, end).trim();
-        }
     }
 }

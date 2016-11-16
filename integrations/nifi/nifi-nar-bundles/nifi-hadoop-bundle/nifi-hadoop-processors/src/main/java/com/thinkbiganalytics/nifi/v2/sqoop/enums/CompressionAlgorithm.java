@@ -1,10 +1,8 @@
 package com.thinkbiganalytics.nifi.v2.sqoop.enums;
 
 /**
+ * List of supported compression algorithms
  * @author jagrut sharma
- */
-/*
-List of compression algorithms
  */
 public enum CompressionAlgorithm {
     NONE,

@@ -1,6 +1,5 @@
 package com.thinkbiganalytics.nifi.v2.sqoop.process;
 
-
 import com.thinkbiganalytics.nifi.v2.sqoop.security.KerberosConfig;
 import com.thinkbiganalytics.nifi.v2.sqoop.enums.SqoopLoadStrategy;
 
@@ -14,28 +13,27 @@ import java.util.concurrent.CountDownLatch;
 import static com.google.gson.internal.$Gson$Preconditions.checkNotNull;
 
 /**
+ * Run a sqoop job via a system process
  * @author jagrut sharma
- */
-/*
-Class to run a sqoop job via a system process
  */
 public class SqoopProcessRunner {
 
     private List<String> commands = new ArrayList<>();
     private KerberosConfig kerberosConfig = null;
-    private SqoopThreadedStreamHandler inputStreamHandler;
-    private SqoopThreadedStreamHandler errorStreamHandler;
 
     private ComponentLog logger = null;
 
     private SqoopLoadStrategy sourceLoadStrategy;
 
-    CountDownLatch latch;
-    String[] logLines;
+    private CountDownLatch latch;
+    private String[] logLines;
 
     /**
-     * One argument constructor
-     * @param commands Commands to run, as a list
+     * Constructor
+     * @param kerberosConfig kerberos configuration
+     * @param commands command list to run
+     * @param logger logger
+     * @param sourceLoadStrategy load strategy (full/incremental)
      */
     public SqoopProcessRunner(KerberosConfig kerberosConfig,
                               final List<String> commands,
@@ -75,22 +73,26 @@ public class SqoopProcessRunner {
 
     /**
      * Execute the process
-     * @return exit code (0 indicates success, other codes indicate failure)
+     * @return result of execution as {@link SqoopProcessResult}
      */
     public SqoopProcessResult execute() {
-        logger.info("Executing command: " + getFullCommand());
+        logger.info("Executing sqoop command");
         int exitValue = -1;
 
         try {
             ProcessBuilder pb = new ProcessBuilder(commands);
 
             if (kerberosConfig.isKerberosConfigured()) {
+                logger.info("Kerberos service principal and keytab are provided.");
                 ProcessBuilder processBuilderKerberosInit = new ProcessBuilder(kerberosConfig.getKinitCommandAsList());
                 Process processKerberosInit = processBuilderKerberosInit.start();
                 int kerberosInitExitValue = processKerberosInit.waitFor();
                 if (kerberosInitExitValue != 0) {
-                    logger.info("Kerberos kinit failed ({})", new Object[] { kerberosConfig.getKinitCommandAsString() });
-                    throw new Exception("Kerberos init failed");
+                    logger.error("Kerberos kinit failed ({})", new Object[] { kerberosConfig.getKinitCommandAsString() });
+                    throw new Exception("Kerberos kinit failed");
+                }
+                else {
+                    logger.info("Kerberos kinit succeeded");
                 }
             }
 
@@ -99,8 +101,8 @@ public class SqoopProcessRunner {
             InputStream inputStream = process.getInputStream();
             InputStream errorStream = process.getErrorStream();
 
-            inputStreamHandler = new SqoopThreadedStreamHandler(inputStream, logger, logLines, latch, sourceLoadStrategy);
-            errorStreamHandler = new SqoopThreadedStreamHandler(errorStream, logger, logLines, latch, sourceLoadStrategy); // no latch countdown from this
+            SqoopThreadedStreamHandler inputStreamHandler = new SqoopThreadedStreamHandler(inputStream, logger, logLines, latch, sourceLoadStrategy);
+            SqoopThreadedStreamHandler errorStreamHandler = new SqoopThreadedStreamHandler(errorStream, logger, logLines, latch, sourceLoadStrategy);
 
             inputStreamHandler.start();
             errorStreamHandler.start();
@@ -120,7 +122,7 @@ public class SqoopProcessRunner {
             return new SqoopProcessResult(exitValue, logLines);
         }
         catch (Exception e) {
-            logger.error("Error running command: " + getFullCommand());
+            logger.error("Error running sqoop command [{}].", new Object[] { e.getMessage() });
 
             for (long i = 0; i < latch.getCount(); i++) {
                 latch.countDown();
@@ -129,12 +131,11 @@ public class SqoopProcessRunner {
         }
     }
 
-
-    /**
-     * Get the full command to be executed
-     * @return command
+    /*
+    Get the full command to be executed
      */
-    public String getFullCommand() {
+    @SuppressWarnings("unused")
+    private String getFullCommand() {
 
         StringBuffer retVal = new StringBuffer();
         for (String c: commands) {

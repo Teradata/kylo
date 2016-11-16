@@ -12,11 +12,8 @@ import java.util.Collections;
 import java.util.List;
 
 /**
+ * An implementation for {@link SqoopConnectionService} to provide connection details to a relational system for running a sqoop job
  * @author jagrut sharma
- */
-
-/**
- * Implementation for SqoopConnectionService to provide connection details for a sqoop job
  */
 public class StandardSqoopConnectionService
     extends AbstractControllerService
@@ -46,10 +43,21 @@ public class StandardSqoopConnectionService
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .build();
 
+    public static final PropertyDescriptor PASSWORD_MODE = new PropertyDescriptor.Builder()
+        .name("Password Mode")
+        .description("Indicates type of password and how it is provided. "
+                     + "(1) Entered as clear text (2) Entered as encrypted text (3) Location of file on HDFS containing encrypted password")
+        .required(true)
+        .expressionLanguageSupported(false)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .allowableValues(PasswordMode.values())
+        .defaultValue(PasswordMode.ENCRYPTED_ON_HDFS_FILE.toString())
+        .build();
+
     public static final PropertyDescriptor SOURCE_PASSWORD_HDFS_FILE = new PropertyDescriptor.Builder()
         .name("Source Password File")
         .description("The HDFS location containing encrypted password file for accessing the relational source system.")
-        .required(true)
+        .required(false)
         .expressionLanguageSupported(true)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .sensitive(true)
@@ -58,7 +66,18 @@ public class StandardSqoopConnectionService
     public static final PropertyDescriptor SOURCE_PASSWORD_PASSPHRASE = new PropertyDescriptor.Builder()
         .name("Source Password Passphrase")
         .description("The passphrase to decrypt the password for connecting to source system.")
-        .required(true)
+        .required(false)
+        .expressionLanguageSupported(true)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .sensitive(true)
+        .build();
+
+    public static final PropertyDescriptor SOURCE_ENTERED_PASSWORD = new PropertyDescriptor.Builder()
+        .name("Source Password (Encrypted Base64/Clear Text)")
+        .description("The password (can be either encrypted or clear text). "
+                     + "For encrypted password, use the base64 encoded version which is output by the encryption utility. "
+                     + "The Password Mode indicates how the password will be obtained and/or decrypted.")
+        .required(false)
         .expressionLanguageSupported(true)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .sensitive(true)
@@ -71,8 +90,10 @@ public class StandardSqoopConnectionService
         properties.add(SOURCE_DRIVER);
         properties.add(SOURCE_CONNECTION_STRING);
         properties.add(SOURCE_USERNAME);
+        properties.add(PASSWORD_MODE);
         properties.add(SOURCE_PASSWORD_HDFS_FILE);
         properties.add(SOURCE_PASSWORD_PASSPHRASE);
+        properties.add(SOURCE_ENTERED_PASSWORD);
 
         sqoopConnectionProperties = Collections.unmodifiableList(properties);
     }
@@ -82,11 +103,13 @@ public class StandardSqoopConnectionService
         return sqoopConnectionProperties;
     }
 
-    String sourceDriver;
-    String sourceConnectionString;
-    String sourceUserName;
-    String sourcePasswordHdfsFile;
-    String sourcePasswordPassphrase;
+    private String sourceDriver;
+    private String sourceConnectionString;
+    private String sourceUserName;
+    private PasswordMode passwordMode;
+    private String sourcePasswordHdfsFile;
+    private String sourcePasswordPassphrase;
+    private String sourceEnteredPassword;
 
     @OnEnabled
     public void onConfigured(final ConfigurationContext context) throws InitializationException {
@@ -94,8 +117,10 @@ public class StandardSqoopConnectionService
         sourceDriver = context.getProperty(SOURCE_DRIVER).evaluateAttributeExpressions().getValue();
         sourceConnectionString = context.getProperty(SOURCE_CONNECTION_STRING).evaluateAttributeExpressions().getValue();
         sourceUserName = context.getProperty(SOURCE_USERNAME).evaluateAttributeExpressions().getValue();
+        passwordMode = PasswordMode.valueOf(context.getProperty(PASSWORD_MODE).getValue());
         sourcePasswordHdfsFile = context.getProperty(SOURCE_PASSWORD_HDFS_FILE).evaluateAttributeExpressions().getValue();
         sourcePasswordPassphrase = context.getProperty(SOURCE_PASSWORD_PASSPHRASE).evaluateAttributeExpressions().getValue();
+        sourceEnteredPassword = context.getProperty(SOURCE_ENTERED_PASSWORD).evaluateAttributeExpressions().getValue();
     }
 
     @Override
@@ -114,6 +139,11 @@ public class StandardSqoopConnectionService
     }
 
     @Override
+    public PasswordMode getPasswordMode() {
+        return this.passwordMode;
+    }
+
+    @Override
     public String getPasswordHdfsFile() {
         return this.sourcePasswordHdfsFile;
     }
@@ -121,5 +151,10 @@ public class StandardSqoopConnectionService
     @Override
     public String getPasswordPassphrase() {
         return this.sourcePasswordPassphrase;
+    }
+
+    @Override
+    public String getEnteredPassword() {
+        return this.sourceEnteredPassword;
     }
 }
