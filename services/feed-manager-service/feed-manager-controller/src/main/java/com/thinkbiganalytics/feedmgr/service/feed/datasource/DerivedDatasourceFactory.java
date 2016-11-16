@@ -129,53 +129,38 @@ public class DerivedDatasourceFactory {
             //fetch the def
             DatasourceDefinition datasourceDefinition = datasourceDefinitionProvider.findByProcessorType(definition.getProcessorType());
             if (datasourceDefinition != null) {
-            //    List<NifiProperty> feedProperties = feedMetadata.getProperties();
-
-            //    datasourceDefinition.getDatasourcePropertyKeys().size();
 
                 //find out if there are any saved properties on the Feed that match the datasourceDef
                 List<NifiProperty> feedProperties = feedMetadata.getProperties().stream().filter(
                     property -> matchesDefinition(definition, property) && datasourceDefinition.getDatasourcePropertyKeys().contains(property.getKey())).collect(
                     Collectors.toList());
-              //  Set<String>
-             //       matchingFeedProperties = feedProperties.stream().map(p -> p.getKey()).collect(Collectors.toSet());
-
-                //template Props
-           //     List<NifiProperty> templateProperties = allProperties.stream().filter(
-              //      property -> !matchingFeedProperties.contains(property.getKey()) && matchesDefinition(definition, property) && datasourceDefinition.getDatasourcePropertyKeys()
-              //          .contains(property.getKey())).collect(Collectors.toList());
 
                 //resolve any ${metadata.} properties
                 List<NifiProperty> resolvedFeedProperties = propertyExpressionResolver.resolvePropertyExpressions(feedProperties, feedMetadata);
 
-                //  List<NifiProperty> resolvedTemplateProperties = propertyExpressionResolver.resolvePropertyExpressions(templateProperties, feedMetadata);
-
                 List<NifiProperty> resolvedAllProperties = propertyExpressionResolver.resolvePropertyExpressions(allProperties, feedMetadata);
 
                 //propetyHash
-                //List<NifiProperty> allProperties = new ArrayList<NifiProperty>();
                 propertiesToEvalulate.addAll(feedProperties);
                 propertiesToEvalulate.addAll(allProperties);
-                //remove any properties in the templateProperties that match the property from the feed
-                //  allProperties.addAll(templateProperties);
+
                 propertyExpressionResolver.resolveStaticProperties(propertiesToEvalulate);
 
-                //if properties contain expressions then mark this as unique prop relative to this feed and processorType
-
-                //build the identitystring
                 String identityString = datasourceDefinition.getIdentityString();
                 String desc = datasourceDefinition.getDescription();
+                String title = datasourceDefinition.getTitle();
 
-                //for each ${}
-                //find the property that has a key == to that
-                // find that properties value
                 PropertyExpressionResolver.ResolvedVariables identityStringPropertyResolution = propertyExpressionResolver.resolveVariables(identityString, propertiesToEvalulate);
                 identityString = identityStringPropertyResolution.getResolvedString();
+
+                PropertyExpressionResolver.ResolvedVariables titlePropertyResolution = propertyExpressionResolver.resolveVariables(title, propertiesToEvalulate);
+                title = titlePropertyResolution.getResolvedString();
+
                 if (desc != null) {
                     PropertyExpressionResolver.ResolvedVariables descriptionPropertyResolution = propertyExpressionResolver.resolveVariables(desc, propertiesToEvalulate);
                     desc = descriptionPropertyResolution.getResolvedString();
                 }
-                String title = datasourceDefinition.getTitle();
+
                 //if the identityString still contains unresolved variables then make the title readable and replace the idstring with the feed.id
                 if (propertyExpressionResolver.containsVariablesPatterns(identityString)) {
                     title = propertyExpressionResolver.replaceAll(title, " {runtime variable} ");
