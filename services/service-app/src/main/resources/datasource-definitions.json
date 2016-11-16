@@ -11,7 +11,8 @@
     "datasourcePropertyKeys":["Source Table"],
     "datasourceType":"DatabaseDatasource",
     "connectionType":"SOURCE",
-    "identityString":"Database ${Source Table}"
+    "identityString":"${Source Table} - ${Source Database Connection}",
+    "title":"Database ${Source Table}"
   },
   {
     "processorType":"datatransformation.template",
