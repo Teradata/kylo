@@ -54,11 +54,17 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
         /**
          * The available Target Format options
          */
-        targetFormatOptions: [{label: "ORC", value: 'STORED AS ORC'}, {label: "PARQUET", value: 'STORED AS PARQUET'}],
+        targetFormatOptions: [{label: "ORC", value: 'STORED AS ORC'},
+            {label: "PARQUET", value: 'STORED AS PARQUET'},
+            {label: "AVRO", value: 'STORED AS AVRO'},
+            {label: "TEXTFILE", value: 'ROW FORMAT SERDE \'org.apache.hadoop.hive.serde2.OpenCSVSerde\' WITH SERDEPROPERTIES ( \'separatorChar\' = \',\' ,\'escapeChar\' = \'\\\\\' ,\'quoteChar\' = \'"\')'
+                                       + ' STORED AS'
+                                       + ' TEXTFILE'},
+            {label: "RCFILE", value: 'ROW FORMAT SERDE "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe" STORED AS RCFILE'}],
         /**
          * The available Compression options for a given targetFormat {@see this#targetFormatOptions}
          */
-        compressionOptions: {"ORC": ['NONE', 'SNAPPY', 'ZLIB'], "PARQUET": ['NONE', 'SNAPPY']},
+        compressionOptions: {"ORC": ['NONE', 'SNAPPY', 'ZLIB'], "PARQUET": ['NONE', 'SNAPPY'], "AVRO": ['NONE']},
 
         /**
          * Returns an array of all the compression options regardless of the {@code targetFormat}
