@@ -30,4 +30,10 @@ public class BaseDirectoryDatasource extends BaseDatasource implements Directory
         return this.directory;
     }
 
+    @Override
+    public void setDirectory(Path path) {
+        directory = path;
+    }
+
+
 }
