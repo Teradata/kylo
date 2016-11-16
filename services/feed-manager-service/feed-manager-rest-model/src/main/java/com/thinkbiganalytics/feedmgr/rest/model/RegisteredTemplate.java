@@ -448,6 +448,9 @@ public class RegisteredTemplate {
     }
 
     public List<TemplateProcessorDatasourceDefinition> getRegisteredDatasourceDefinitions() {
+        if(registeredDatasourceDefinitions == null) {
+            registeredDatasourceDefinitions = new ArrayList<>();
+        }
         return registeredDatasourceDefinitions;
     }
 
