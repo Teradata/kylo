@@ -863,6 +863,15 @@ card-layout header-section h2 {
   margin-top:8px;
 }
 
+card-layout.card-width {
+  max-width: 980px;
+  width: 980px;
+}
+
+card-layout.card-full-width {
+  max-width: 100%;
+  width: 100%;
+}
 
 .md-subheader.left-aligned .md-subheader-inner {
   padding-left:0px;
@@ -903,7 +912,10 @@ card-layout section:first-child {
   background-color:white;
 }
 
-
+card-layout.card-full-width section:first-child {
+  background-color: white;
+  width: 100%;
+}
 
 thinkbig-stepper md-tabs-wrapper {
   height:75px;

@@ -16,10 +16,12 @@
      * @param RegisterTemplateService
      * @param StateService
      */
-    var controller = function($scope, $q, $stateParams, $mdDialog, $mdToast, $http, $state, AccessControlService, RestUrlService, FeedService, RegisterTemplateService, StateService) {
+    var controller = function ($scope, $q, $stateParams, $mdDialog, $mdToast, $http, $state, AccessControlService, RestUrlService, FeedService, RegisterTemplateService, StateService, SideNavService) {
 
         var SLA_INDEX = 3;
         var self = this;
+
+        self.cardWidth = true;
 
         /**
          * Indicates if admin operations are allowed.
@@ -45,6 +47,14 @@
             return self.selectedTabIndex;
         }, function(newVal) {
 
+            if (newVal == 2) {
+                SideNavService.hideSideNav();
+                self.cardWidth = false;
+            }
+            else {
+                SideNavService.showSideNav();
+                self.cardWidth = true;
+            }
         })
 
         /**

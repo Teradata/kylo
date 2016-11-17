@@ -1,6 +1,6 @@
 <div ng-controller="FeedDetailsController as vm" class="centered">
 
-    <card-layout class="not-centered" style="max-width:980px;width:980px;" flex="initial">
+    <card-layout class="not-centered" style="" flex="initial" ng-class="{'card-width':vm.cardWidth, 'card-full-width':!vm.cardWidth }">
         <header-section>
             <div class="card-title" flex>Feed Details</div>
         </header-section>
