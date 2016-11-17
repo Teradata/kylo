@@ -23,5 +23,6 @@ public class MaskLeavingLastFourDigitStandardizerTest {
         assertEquals("2015", cc.convertValue("2015"));
         assertEquals("20", cc.convertValue("20"));
         assertEquals("", cc.convertValue(""));
+        assertEquals("XXXXXXXXXXX9966", cc.convertValue("373327123279966"));
     }
 }

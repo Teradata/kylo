@@ -51,7 +51,9 @@ public class FieldPoliciesJsonTransformer {
       for (com.thinkbiganalytics.policy.rest.model.FieldPolicy uiFieldPolicy : uiFieldPolicies) {
         FieldPolicyTransformer transformer = new FieldPolicyTransformer(uiFieldPolicy);
         transformer.setListener(listener);
-        fieldPolicyMap.put(uiFieldPolicy.getFieldName(), transformer.buildPolicy());
+        if (uiFieldPolicy.getFieldName() != null) {
+            fieldPolicyMap.put(uiFieldPolicy.getFieldName().toLowerCase().trim(), transformer.buildPolicy());
+        }
       }
     }
     log.info("Transformed UI Policies to Field Policies.  {} ", listener.getCounts());
