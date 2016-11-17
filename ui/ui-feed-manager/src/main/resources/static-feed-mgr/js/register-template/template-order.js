@@ -30,7 +30,7 @@
             var templates = _.sortBy(response.data, 'order');
             if (self.addAsNew && (self.templateId == null || self.templateId == undefined)) {
                 //append to bottom
-                templates.push({id: 'NEW', name: self.templateName, currentTemplate: true});
+                templates.push({id: 'NEW', templateName: self.templateName, currentTemplate: true});
             }
             else {
                 var currentTemplate = _.filter(templates, function (template) {
