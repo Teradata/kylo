@@ -127,7 +127,9 @@ public class JcrDatasourceProvider extends BaseJcrProvider<Datasource, Datasourc
             }
         }
         // ((JcrDerivedDatasource)derivedDatasource).mergeProperties()
-        derivedDatasource.setProperties(properties);
+        if(properties != null) {
+            derivedDatasource.setProperties(properties);
+        }
         derivedDatasource.setTitle(title);
 
         return derivedDatasource;

@@ -39,6 +39,7 @@ import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrFeedManagerCategory;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
+import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDerivedDatasource;
 import com.thinkbiganalytics.metadata.modeshape.datasource.hive.JcrHiveTableDatasource;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedProvider;
@@ -126,15 +127,9 @@ public class JcrPropertyTest {
             cat.setTitle("my category");
             categoryProvider.update(cat);
 
-            JcrHiveTableDatasource datasource1 = (JcrHiveTableDatasource) datasourceProvider.ensureDatasource("mysql.table1", "mysql table source 1", HiveTableDatasource.class);
-            datasource1.setDatabase("TEST");
-            datasource1.setTableName("TABLE1");
-            datasource1.setProperty(JcrDatasource.TYPE_NAME, "Database");
+            JcrDerivedDatasource datasource1 = (JcrDerivedDatasource) datasourceProvider.ensureDerivedDatasource("HiveDatasource","mysql.table1","mysql.table1","mysql table source 1", null);
+            JcrDerivedDatasource datasource2 = (JcrDerivedDatasource) datasourceProvider.ensureDerivedDatasource("HiveDatasource","mysql.table2","mysql.table2","mysql table source 2", null);
 
-            JcrDatasource datasource2 = (JcrHiveTableDatasource) datasourceProvider.ensureDatasource("mysql.table2", "mysql table source 2", HiveTableDatasource.class);
-            datasource1.setDatabase("TEST");
-            datasource1.setTableName("TABLE1");
-            datasource2.setProperty(JcrDatasource.TYPE_NAME, "Database");
 
             String feedSystemName = "my_feed";
 //                JcrFeed feed = (JcrFeed) feedProvider.ensureFeed(categorySystemName, feedSystemName, "my feed desc", datasource1.getId(), null);
@@ -173,9 +168,9 @@ public class JcrPropertyTest {
             if (sources != null) {
                 for (FeedSource source : sources) {
                     Map<String, Object> dataSourceProperties = ((JcrDatasource) source.getDatasource()).getAllProperties();
-                    String type = (String) dataSourceProperties.get(JcrDatasource.TYPE_NAME);
+                    String type = (String) dataSourceProperties.get(JcrDerivedDatasource.TYPE_NAME);
                     //assert the type of datasource matches what was created "Database"
-                    Assert.assertEquals(type, "Database");
+                    Assert.assertEquals(type, "HiveDatasource");
                 }
             }
             List<JcrObject> taggedObjects = tagProvider.findByTag("my tag");

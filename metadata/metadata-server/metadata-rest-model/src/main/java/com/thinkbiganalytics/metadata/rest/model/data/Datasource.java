@@ -41,7 +41,7 @@ public class Datasource implements Serializable {
     private String id;
     private String name;
     private String description;
-    private String ownder;
+    private String owner;
     private boolean encrypted;
     private boolean compressed;
     private Set<Feed> sourceForFeeds = new HashSet<>();
@@ -87,12 +87,12 @@ public class Datasource implements Serializable {
         this.description = description;
     }
 
-    public String getOwnder() {
-        return ownder;
+    public String getOwner() {
+        return owner;
     }
 
-    public void setOwnder(String ownder) {
-        this.ownder = ownder;
+    public void setOwner(String owner) {
+        this.owner = owner;
     }
 
     public DateTime getCreationTime() {

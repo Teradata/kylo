@@ -590,7 +590,7 @@ public class MetadataClient {
             HiveTableDatasource src = new HiveTableDatasource();
             src.setName(this.name);
             src.setDescription(this.description);
-            src.setOwnder(this.owner);
+            src.setOwner(this.owner);
             src.setEncrypted(this.encrypted);
             src.setCompressed(this.compressed);
             src.setDatabase(this.database);
@@ -644,7 +644,7 @@ public class MetadataClient {
             DirectoryDatasource src = new DirectoryDatasource();
             src.setName(this.name);
             src.setDescription(this.description);
-            src.setOwnder(this.owner);
+            src.setOwner(this.owner);
             src.setEncrypted(this.encrypted);
             src.setCompressed(this.compressed);
             src.setPath(this.path);
