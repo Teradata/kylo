@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
@@ -110,6 +111,26 @@ public class Validator implements Serializable {
         log.info("Loading Field Policy JSON file at {} ", fieldPolicyJsonPath);
         String fieldPolicyJson = "[]";
 
+        /**
+         * If Validator is running in yarn-cluster mode, the fieldPolicyJson file will be passed via --files param to be
+         * added into driver classpath in Application Master. The "fieldPolicyJsonPath" won't be valid in that case,
+         * as it would be pointing to local file system. To enable this, we should be checking the fieldPolicyFile
+         * in the current location ie classpath for "yarn-cluster" mode as well as the fieldPolicyJsonPath for "yarn-client" mode
+
+         * You can also use sparkcontext object to get the value of sparkContext.getConf().get("spark.submit.deployMode")
+         * and use this to decide which readFieldPolicyJsonPath to choose.
+         */
+
+        File fieldPolicyJsonFile = new File(fieldPolicyJsonPath);
+        if(fieldPolicyJsonFile.exists() && fieldPolicyJsonFile.isFile())
+            log.info("Loading Field Policy JSON file at {} ", fieldPolicyJsonPath);
+        else {
+            log.info("Couldn't find Field Policy JSON file at {} ", fieldPolicyJsonPath);
+            log.info("Checking in classpath..");
+            String fieldPolicyJsonFileName = fieldPolicyJsonFile.getName();
+            fieldPolicyJsonPath = "./"+fieldPolicyJsonFileName;
+        }
+
         try (BufferedReader br = new BufferedReader(new FileReader(fieldPolicyJsonPath))) {
             StringBuilder sb = new StringBuilder();
             String line = br.readLine();
@@ -146,6 +167,8 @@ public class Validator implements Serializable {
             SparkContext sparkContext = SparkContext.getOrCreate();
             hiveContext = new org.apache.spark.sql.hive.HiveContext(sparkContext);
             sqlContext = new SQLContext(sparkContext);
+
+            log.info("Deployment Node - " + sparkContext.getConf().get("spark.submit.deployMode"));
             loadPolicies();
 
             // Extract fields from a source table

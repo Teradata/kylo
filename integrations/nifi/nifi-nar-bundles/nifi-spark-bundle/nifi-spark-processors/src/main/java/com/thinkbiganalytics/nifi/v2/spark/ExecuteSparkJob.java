@@ -55,6 +55,8 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
     public static final String SPARK_YARN_KEYTAB = "spark.yarn.keytab";
     public static final String SPARK_YARN_PRINCIPAL = "spark.yarn.principal";
     public static final String SPARK_YARN_QUEUE = "spark.yarn.queue";
+    public static final String SPARK_CONFIG_NAME = "--conf";
+    public static final String SPARK_EXTRA_FILES_CONFIG_NAME = "--files";
 
     // Relationships
     public static final Relationship REL_SUCCESS = new Relationship.Builder()
@@ -191,6 +193,23 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         .required(false).addValidator(createMultipleFilesExistValidator())
         .build();
 
+    public static final PropertyDescriptor SPARK_CONFS = new PropertyDescriptor.Builder()
+        .name("Spark Configurations")
+        .description("Pipe separated arguments to be passed into the Spark as configurations i.e <CONF1>=<VALUE1>|<CONF2>=<VALUE2>..")
+        .required(false)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .build();
+
+    public static final PropertyDescriptor EXTRA_SPARK_FILES = new PropertyDescriptor.Builder()
+        .name("Extra Files")
+        .description("Comma separated file paths to be passed to the Spark Executors")
+        .required(false)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .build();
+
+
     /** Kerberos service keytab */
     private PropertyDescriptor kerberosKeyTab;
 
@@ -236,6 +255,8 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         pds.add(kerberosPrincipal);
         pds.add(kerberosKeyTab);
         pds.add(YARN_QUEUE);
+        pds.add(SPARK_CONFS);
+        pds.add(EXTRA_SPARK_FILES);
         propDescriptors = Collections.unmodifiableList(pds);
     }
 
@@ -273,6 +294,14 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
             String principal = context.getProperty(kerberosPrincipal).getValue();
             String keyTab = context.getProperty(kerberosKeyTab).getValue();
             String hadoopConfigurationResources = context.getProperty(HADOOP_CONFIGURATION_RESOURCES).getValue();
+            String sparkConfs = context.getProperty(SPARK_CONFS).evaluateAttributeExpressions(flowFile).getValue();
+            String extraFiles = context.getProperty(EXTRA_SPARK_FILES).evaluateAttributeExpressions(flowFile).getValue();
+
+            String[] confs = null;
+            if(!StringUtils.isEmpty(sparkConfs)){
+                confs = sparkConfs.split("\\|");
+            }
+
             String[] args = null;
             if (!StringUtils.isEmpty(appArgs)) {
                 args = appArgs.split(",");
@@ -345,6 +374,7 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
                 .setConf(SparkLauncher.EXECUTOR_MEMORY, executorMemory)
                 .setConf(SparkLauncher.EXECUTOR_CORES, executorCores)
                 .setConf(SPARK_NETWORK_TIMEOUT_CONFIG_NAME, networkTimeout)
+                .addSparkArg(SPARK_EXTRA_FILES_CONFIG_NAME, extraFiles)
                 .setSparkHome(sparkHome)
                 .setAppName(sparkApplicationName);
 
@@ -355,6 +385,14 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
             if (args != null) {
                 launcher.addAppArgs(args);
             }
+
+            if(confs != null){
+                for(String conf : confs){
+                    getLogger().info("Adding sparkconf '" + conf + "'");
+                    launcher.addSparkArg(SPARK_CONFIG_NAME,conf);
+                }
+            }
+
             if (ArrayUtils.isNotEmpty(extraJarPaths)) {
                 for (String path : extraJarPaths) {
                     getLog().info("Adding to class path '" + path + "'");
