@@ -115,6 +115,6 @@ public class JcrDatasourceDefinition extends AbstractJcrAuditableSystemEntity im
     }
 
     public String getTitle() {
-        return JcrPropertyUtil.getProperty(this.node, TITLE);
+        return JcrPropertyUtil.getProperty(this.node, TITLE, true);
     }
 }

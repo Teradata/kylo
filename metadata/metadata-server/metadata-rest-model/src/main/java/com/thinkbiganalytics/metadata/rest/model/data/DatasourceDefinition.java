@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Created by sr186054 on 11/15/16.
@@ -50,6 +52,10 @@ public class DatasourceDefinition {
     }
 
     public Set<String> getDatasourcePropertyKeys() {
+
+        if (datasourcePropertyKeys == null) {
+            datasourcePropertyKeys = new HashSet<>();
+        }
         return datasourcePropertyKeys;
     }
 
@@ -58,6 +64,9 @@ public class DatasourceDefinition {
     }
 
     public String getDatasourceType() {
+        if (StringUtils.isBlank(datasourceType)) {
+            datasourceType = "Datasource";
+        }
         return datasourceType;
     }
 
@@ -66,6 +75,9 @@ public class DatasourceDefinition {
     }
 
     public String getIdentityString() {
+        if (StringUtils.isBlank(identityString)) {
+            identityString = getDatasourcePropertyKeys().stream().map(key -> "${" + key + "}").collect(Collectors.joining(","));
+        }
         return identityString;
     }
 
@@ -82,7 +94,7 @@ public class DatasourceDefinition {
     }
 
     public String getTitle() {
-        return StringUtils.isBlank(title) ? identityString : title;
+        return StringUtils.isBlank(title) ? getIdentityString() : title;
     }
 
     public void setTitle(String title) {
