@@ -1,20 +1,27 @@
 package com.thinkbiganalytics.feedmgr.nifi;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
-import org.springframework.core.env.*;
-import org.springframework.core.io.ClassPathResource;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.core.env.AbstractEnvironment;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.MapPropertySource;
+import org.springframework.core.env.PropertySource;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.NavigableMap;
+import java.util.TreeMap;
 
 /**
  * Created by sr186054 on 5/3/16.
  *
  * Helper class to get Environment Properties
  */
+@RefreshScope
 public class SpringEnvironmentProperties {
 
-    private  Map<String,Object> properties;
+    private Map<String, Object> properties = new HashMap<>();
 
     private Map<String,Map<String,Object>> propertiesStartingWith = new HashMap<>();
 
@@ -62,6 +69,11 @@ public class SpringEnvironmentProperties {
         return null;
     }
 
+    public void reset() {
+        this.propertiesStartingWith.clear();
+        this.properties.clear();
+    }
+
 
     /**
      * get All properties
@@ -69,7 +81,7 @@ public class SpringEnvironmentProperties {
      */
     public  Map<String,Object> getAllProperties(  )
     {
-        if(properties == null) {
+        if (properties == null || properties.isEmpty()) {
             Map<String, Object> map = new HashMap();
             for(Iterator it = ((AbstractEnvironment) env).getPropertySources().iterator(); it.hasNext(); ) {
                 PropertySource propertySource = (PropertySource) it.next();

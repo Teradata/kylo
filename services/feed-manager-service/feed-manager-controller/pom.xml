@@ -123,6 +123,12 @@
       <version>${project.version}</version>
     </dependency>
 
+    <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-context</artifactId>
+      <version>${spring.cloud.version}</version>
+    </dependency>
+
 
     <!-- HIVE THRIFT CLIENT -->
 
