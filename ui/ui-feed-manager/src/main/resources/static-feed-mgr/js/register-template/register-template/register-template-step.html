@@ -77,23 +77,25 @@
 
             </div>
 
-            <div layout="column">
-                <md-subheader class="md-subhead left-aligned">Change Template Order</md-subheader>
-                <span class="hint">Drag the templates below to adjust their order at feed creation time.</span>
-                <ul dnd-list="vm.templateOrder"  class="simple-dnd-list">
-                    <li ng-repeat="item in vm.templateOrder"
-                        dnd-draggable="item"
-                        dnd-moved="vm.templateOrder.splice($index, 1)"
-                        dnd-effect-allowed="move"
-                        ng-class="{'selected': item.currentTemplate == true}"
-                        style="height:20px;"
-                        >
-                             {{$index+1}}. {{item.templateName}}
-                    </li>
+            <thinkbig-template-order model="vm.templateOrder" template-id="vm.model.id" template-name="vm.model.templateName" add-as-new="true" add-save-btn="false"></thinkbig-template-order>
 
-                </ul>
+            <!--  <div layout="column">
+                  <md-subheader class="md-subhead left-aligned">Change Template Order</md-subheader>
+                  <span class="hint">Drag the templates below to adjust their order at feed creation time.</span>
+                  <ul dnd-list="vm.templateOrder"  class="simple-dnd-list">
+                      <li ng-repeat="item in vm.templateOrder"
+                          dnd-draggable="item"
+                          dnd-moved="vm.templateOrder.splice($index, 1)"
+                          dnd-effect-allowed="move"
+                          ng-class="{'selected': item.currentTemplate == true}"
+                          style="height:20px;"
+                          >
+                               {{$index+1}}. {{item.templateName}}
+                      </li>
 
-            </div>
+                  </ul>
+
+              </div> -->
 
 
             <div layout="column">

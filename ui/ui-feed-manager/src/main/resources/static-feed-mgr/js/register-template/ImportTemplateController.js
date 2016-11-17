@@ -5,7 +5,7 @@
         var self = this;
         this.templateFile = null;
         this.fileName = null;
-        this.importBtnDisabled = false;
+        this.importInProgress = false;
         this.overwrite = false;
         this.createReusableFlow = false;
         this.xmlType = false;
@@ -45,7 +45,7 @@
 
 
         this.importTemplate = function () {
-            self.importBtnDisabled = true;
+            self.importInProgress = true;
             self.importResult = null;
             showProgress();
             var file = self.templateFile;
@@ -114,11 +114,11 @@
                     }
                 }
 
-                self.importBtnDisabled = false;
+                self.importInProgress = false;
             }
             var errorFn = function (data) {
                 hideProgress();
-                self.importBtnDisabled = false;
+                self.importInProgress = false;
             }
             var createConnectingReusableFlow = 'NOT_SET';
             if(self.verifiedToCreateConnectingReusableTemplate && self.createConnectingReusableTemplate) {

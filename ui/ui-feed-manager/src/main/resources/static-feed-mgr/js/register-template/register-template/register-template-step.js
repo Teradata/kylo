@@ -303,8 +303,7 @@
                     });
         };
 
-
-
+        /*
         //order list
         RegisterTemplateService.getRegisteredTemplates().then(function(response){
 
@@ -324,7 +323,7 @@
             }
             self.templateOrder = templates;
         });
-
+         */
 
     }
 

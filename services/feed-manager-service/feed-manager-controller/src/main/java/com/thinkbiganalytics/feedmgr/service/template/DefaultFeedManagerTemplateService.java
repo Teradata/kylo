@@ -96,7 +96,7 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
      * pass in the Template Ids in Order
      * @param orderedTemplateIds
      */
-    protected void orderTemplates(List<String> orderedTemplateIds, Set<String> exclude) {
+    public void orderTemplates(List<String> orderedTemplateIds, Set<String> exclude) {
       metadataAccess.commit(() -> {
           this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_TEMPLATES);
 

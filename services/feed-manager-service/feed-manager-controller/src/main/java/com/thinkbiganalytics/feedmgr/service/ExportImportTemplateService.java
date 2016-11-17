@@ -12,9 +12,9 @@ import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
 import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
-import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiError;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessorDTO;
@@ -25,7 +25,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
-import org.apache.nifi.web.api.entity.ProcessGroupEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -489,7 +488,11 @@ NifiControllerServiceProperties nifiControllerServiceProperties;
 
         if (!createReusableFlow) {
             removeTemporaryProcessGroup(importTemplate);
-            nifiRestClient.deleteProcessGroup(newTemplateInstance.getProcessGroupEntity());
+            try {
+                nifiRestClient.deleteProcessGroup(newTemplateInstance.getProcessGroupEntity());
+            } catch (NifiComponentNotFoundException e) {
+                //its ok if its not found
+            }
             log.info("Success cleanup: Successfully cleaned up Nifi");
         }
         log.info("Import all finished");
@@ -544,7 +547,11 @@ NifiControllerServiceProperties nifiControllerServiceProperties;
                 } catch (Exception e2) {
                     //this is ok. we are cleaning up the template so if an error occurs due to no connections it is fine since we ultimately want to remove this temp template.
                 }
-                nifiRestClient.deleteProcessGroup(importTemplate.getTemplateResults().getProcessGroupEntity());
+                try {
+                    nifiRestClient.deleteProcessGroup(importTemplate.getTemplateResults().getProcessGroupEntity());
+                } catch (NifiComponentNotFoundException nfe) {
+                    //this is ok
+                }
             }
             log.info("Successfully cleaned up Nifi and deleted the process group {} ", importTemplate.getTemplateResults().getProcessGroupEntity().getName());
         } catch (NifiClientRuntimeException e) {

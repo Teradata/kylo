@@ -46,6 +46,9 @@ angular.module(MODULE_FEED_MGR).service('RestUrlService', function () {
         return self.TEMPLATES_BASE_URL + "/register";
     }
 
+    this.SAVE_TEMPLATE_ORDER_URL = self.TEMPLATES_BASE_URL + "/order";
+
+
     this.GET_REGISTERED_TEMPLATES_URL = self.TEMPLATES_BASE_URL + "/registered";
 
     this.GET_REGISTERED_TEMPLATE_PROPERTIES_URL = function (templateId) {

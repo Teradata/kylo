@@ -67,4 +67,12 @@ public interface FeedManagerTemplateService {
     List<RegisteredTemplate.Processor> getNiFiTemplateProcessors(String templateId);
 
 
+    /**
+     * saves the order as indicated via index in the supplied {@code orderedTemplateIds}
+     * @param orderedTemplateIds
+     * @param exclude
+     */
+    void orderTemplates(List<String> orderedTemplateIds, Set<String> exclude);
+
+
 }

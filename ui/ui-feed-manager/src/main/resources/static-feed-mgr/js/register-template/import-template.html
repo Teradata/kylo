@@ -100,9 +100,10 @@
 
                 <span style="padding-top:10px">
                 <md-button class="md-raised md-primary" ng-click="vm.importTemplate();" ng-if="vm.templateFile != null"
-                           ng-disabled="vm.importBtnDisabled">
+                           ng-disabled="vm.importInProgress">
                     Import Template
                 </md-button>
+                    <md-progress-circular md-mode="indeterminate" ng-if="vm.importInProgress"></md-progress-circular>
                     </span>
                 </div>
 
@@ -126,6 +127,14 @@
                             <md-divider ng-if="!$last"></md-divider>
                         </md-list-item>
                     </md-list>
+
+                    <!-- reorder -->
+
+                    <div ng-if="!vm.xmlType">
+                        <thinkbig-template-order template-id="vm.importResult.templateId" template-name="vm.importResult.templateName" add-as-new="false" add-save-btn="true"></thinkbig-template-order>
+                    </div>
+
+
                 </div>
             </div>
         </body-section>

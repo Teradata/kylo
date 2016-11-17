@@ -12,6 +12,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.annotation.PostConstruct;
@@ -157,5 +158,11 @@ public class InMemoryFeedManagerTemplateService extends AbstractFeedManagerTempl
   @Override
   public List<RegisteredTemplate.Processor> getRegisteredTemplateProcessors(String templateId, boolean includeReusableProcessors) {
     return null;
+  }
+
+
+  @Override
+  public void orderTemplates(List<String> orderedTemplateIds, Set<String> exclude) {
+
   }
 }

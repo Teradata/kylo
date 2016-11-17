@@ -8,6 +8,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
 import com.thinkbiganalytics.feedmgr.rest.model.TemplateDtoWrapper;
+import com.thinkbiganalytics.feedmgr.rest.model.TemplateOrder;
 import com.thinkbiganalytics.feedmgr.rest.model.TemplateProcessorDatasourceDefinition;
 import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
@@ -388,6 +389,14 @@ public class TemplatesRestController {
         return Response.ok( deleted ? new RestResponseStatus.ResponseStatusBuilder().buildSuccess() : new RestResponseStatus.ResponseStatusBuilder().buildError()).build();
     }
 
+    @POST
+    @Path("/order")
+    @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response orderTemplates(TemplateOrder templateOrder) {
+        feedManagerTemplateService.orderTemplates(templateOrder.getTemplateIds(), null);
+        return Response.ok(new RestResponseStatus.ResponseStatusBuilder().buildSuccess()).build();
+    }
 
     /**
      * Register and save a given template and its properties

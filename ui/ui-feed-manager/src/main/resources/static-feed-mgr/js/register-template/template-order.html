@@ -1,0 +1,19 @@
+<div layout="column">
+  <md-subheader class="md-subhead left-aligned">Change Template Order</md-subheader>
+  <span class="hint">Drag the templates below to adjust their order at feed creation time. </span>
+  <ul dnd-list="vm.model" class="simple-dnd-list">
+    <li ng-repeat="item in vm.model"
+        dnd-draggable="item"
+        dnd-moved="vm.model.splice($index, 1)"
+        dnd-effect-allowed="move"
+        ng-class="{'selected': item.currentTemplate == true}"
+        style="height:20px;"
+        >
+      {{$index+1}}. {{item.templateName}}
+    </li>
+
+  </ul>
+  <div layout-align="start start">
+    <md-button class="md-raised md-primary" ng-click="vm.saveOrder()" ng-if="vm.addSaveBtn">Save Order</md-button>
+  </div>
+</div>
