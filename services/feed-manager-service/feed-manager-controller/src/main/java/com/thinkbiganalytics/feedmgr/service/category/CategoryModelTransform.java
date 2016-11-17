@@ -185,7 +185,7 @@ public class CategoryModelTransform {
         FeedManagerCategory category = null;
         if (domainId != null) {
             category = categoryProvider.findById(domainId);
-            if (!feedCategory.getSystemName().equals(category.getName())) {
+            if (category != null && !feedCategory.getSystemName().equals(category.getName())) {
                 categoryProvider.rename(domainId, feedCategory.getSystemName());
             }
         }
