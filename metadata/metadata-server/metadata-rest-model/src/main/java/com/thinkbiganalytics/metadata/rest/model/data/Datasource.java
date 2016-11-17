@@ -31,6 +31,7 @@ import java.util.Set;
 @JsonSubTypes({
     @JsonSubTypes.Type(value = DirectoryDatasource.class),
     @JsonSubTypes.Type(value = HiveTableDatasource.class),
+    @JsonSubTypes.Type(value = DerivedDatasource.class)
     }
 )
 public class Datasource implements Serializable {
