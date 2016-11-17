@@ -57,10 +57,10 @@
 
         /**
          * The Response data that comes back from the server before the network is built.
-         * This is a map of the various feeds {@code self.feedLineage.feedMap} and datasources {@code self.feedLineage.datasourceMap}
+         * This is a map of the various feeds {@code feedLineage.feedMap} and datasources {@code self.feedLineage.datasourceMap}
          * that can be used to assemble the graph
          */
-        self.feedLineage = null;
+        var feedLineage = null;
 
         /**
          * flag to indicate when the graph is loading
@@ -70,14 +70,22 @@
 
         var graphModes = {SIMPLE:"SIMPLE",DETAILED:"DETAILED"};
 
-        var graphMode = graphModes.SIMPLE;
+        self.graphMode = graphModes.SIMPLE;
 
+
+
+        /**
+         * The default text of the node selector
+         * @type {{name: string, type: string, content: {displayProperties: null}}}
+         */
+        var SELECT_A_NODE = {name: 'Select a node', type: 'Feed Lineage', content: {displayProperties: null}};
 
         /**
          * The selected Node
          * @type {{name: string, type: string, content: null}}
          */
-        self.selectedNode = {name:'Select a node',type:'Feed Lineage',content:null}
+        self.selectedNode = SELECT_A_NODE;
+
 
         /**
          *
@@ -112,7 +120,7 @@
                 }
             },
             groups:{
-            feed:{
+                /*   feed:{
                 shape: 'box',
                 font: {
                     align: 'center'
@@ -123,50 +131,64 @@
                     font: {
                         align: 'center'
                     }
-                }
+                 }*/
             },
             interaction:{hover:true}
         };
 
         var isDetailedGraph = function(){
-            return graphMode == graphModes.DETAILED;
+            return self.graphMode == graphModes.DETAILED;
         }
 
 
         self.onDetailedView = function(){
-            graphMode = graphModes.DETAILED;
-            console.log('DETAILED')
+            self.graphMode = graphModes.DETAILED;
             nodes = [];
             edges = [];
             edgeKeys ={};
             processedDatasource = {};
             processedNodes = {};
 
-            buildVisJsGraph(self.feedLineage,self.feedLineage.feed);
+            buildVisJsGraph(feedLineage.feed);
             setNodeData();
         }
         self.onSimpleView = function(){
-            graphMode = graphModes.SIMPLE;
-            console.log('SIMPLE')
+            self.graphMode = graphModes.SIMPLE;
             nodes = [];
             edges = [];
             edgeKeys ={};
             processedDatasource = {};
             processedNodes = {};
 
-            buildVisJsGraph(self.feedLineage,self.feedLineage.feed);
+            buildVisJsGraph(feedLineage.feed);
             setNodeData();
         }
 
         var setNodeStyle = function (node, style) {
-            if (style && style.icon) {
-                node.shape = 'icon';
-                node.icon = {};
-                node.icon.face = 'FontAwesome';
-                node.icon.code = style.icon;
-                node.icon.size = style.size != undefined ? style.size : 50;
-                node.icon.color = style.color != undefined ? style.color : 'blue';
+            if (style) {
+                if ((style.shape == 'icon' || !style.shape) && style.icon && style.icon.code) {
+                    node.shape = 'icon';
+                    if (angular.isObject(style.icon)) {
+                        node.icon = style.icon;
+                    }
+                }
+                else if (style.shape) {
+                    node.shape = style.shape;
+                }
+
+                if (style.color) {
+                    node.color = style.color;
+                }
+                if (style.size) {
+                    node.size = style.size;
+                }
+                if (style.font) {
+                    node.font = style.font;
+                }
             }
+            console.log('NODE STYLE ', node)
+
+
         }
 
         /**
@@ -176,7 +198,7 @@
          * @param dsId
          * @param type
          */
-        var buildDatasource = function(feedLineage,feed,dsId, type){
+        var buildDatasource = function (feed, dsId, type) {
             if(dsId) {
                 var processedDatasource = processedNodes[dsId];
 
@@ -185,7 +207,7 @@
                     assignDatasourceProperties(ds);
                     //console.log('building datasource',ds.name)
                     if (isDetailedGraph()) {
-                        var node = {id: dsId, label: datasourceNodeLabel(ds), group: "datasource"};
+                        var node = {id: dsId, label: datasourceNodeLabel(ds), title: datasourceNodeLabel(ds), group: "datasource"};
                         nodes.push(node);
                         processedNodes[node.id] = node;
                         var style = feedLineage.styles[ds.datasourceType];
@@ -220,7 +242,7 @@
                                     edgeKeys[edgeKey] = edge;
                                     edges.push(edge);
                                 }
-                                buildVisJsGraph(feedLineage, depFeed);
+                                buildVisJsGraph(depFeed);
                             }
                         });
                     }
@@ -249,7 +271,7 @@
                                     edgeKeys[edgeKey] = edge;
                                     edges.push(edge);
                                 }
-                                buildVisJsGraph(feedLineage, depFeed);
+                                buildVisJsGraph(depFeed);
                             }
                         });
                     }
@@ -283,15 +305,15 @@
          * Builds the Graph of Datasources as they are related to the incoming {@code feed}
          * @param feed
          */
-         var buildDataSourceGraph = function(feedLineage,feed) {
+        var buildDataSourceGraph = function (feed) {
             if (feed.sources) {
                 _.each(feed.sources, function (src) {
-                    buildDatasource(feedLineage, feed, src.datasourceId, 'source');
+                    buildDatasource(feed, src.datasourceId, 'source');
                 });
             }
                 if (feed.destinations) {
                     _.each(feed.destinations, function (dest) {
-                        buildDatasource(feedLineage, feed, dest.datasourceId, 'destination');
+                        buildDatasource(feed, dest.datasourceId, 'destination');
                     })
                 }
 
@@ -303,8 +325,13 @@
          */
         var assignDatasourceProperties = function(ds){
             var keysToOmit = ['@type', 'id','name','encrypted','compressed','destinationForFeeds','sourceForFeeds'];
-            ds.displayProperties = _.omit(ds, keysToOmit);
+            var props = _.omit(ds, keysToOmit);
+            props = _.pick(props, function (value, key) {
+                return !_.isObject(value);
+            });
+            ds.displayProperties = props
             cleanProperties(ds);
+            //add in any properties of its own
             angular.extend(ds.displayProperties, ds.properties);
 
         }
@@ -351,10 +378,10 @@
         var feedNode = function(feed){
 
             var node = {id: feed.id, label: feedNodeLabel(feed), title:feedNodeLabel(feed), group: "feed"};
-            var style = self.feedLineage.styles['feed'];
+            var style = feedLineage.styles['feed'];
             setNodeStyle(node, style);
             if(feed.id == self.model.id){
-                var style = self.feedLineage.styles['currentFeed'];
+                var style = feedLineage.styles['currentFeed'];
                 setNodeStyle(node, style);
             }
             cleanProperties(feed);
@@ -363,17 +390,16 @@
 
         /**
          * Build the Lineage Graph
-         * @param feedLineage
          * @param feed
          */
-        var buildVisJsGraph = function(feedLineage, feed){
+        var buildVisJsGraph = function (feed) {
 
             var node = processedNodes[feed.id] == undefined ? feedNode(feed) : processedNodes[feed.id];
           if(processedNodes[node.id] == undefined) {
             //  console.log('building feed',feed.systemName)
               processedNodes[node.id] = node;
               nodes.push(node);
-              buildDataSourceGraph(feedLineage, feed);
+              buildDataSourceGraph(feed);
 
               //walk the graph both ways (up and down)
               if (feed.dependentFeedIds) {
@@ -381,7 +407,7 @@
                       //get it from the map
                       var depFeed = feedLineage.feedMap[depFeedId];
                       if (processedNodes[depFeed.id] == undefined) {
-                          buildVisJsGraph(feedLineage, depFeed)
+                          buildVisJsGraph(depFeed)
                       }
                       var edgeKey = depFeed.id + feed.id;
                       if (edgeKeys[edgeKey] == undefined) {
@@ -397,7 +423,7 @@
                       //get it from the map
                       var usedByFeed = feedLineage.feedMap[usedByFeedId];
                       if (processedNodes[usedByFeed.id] == undefined) {
-                          buildVisJsGraph(feedLineage, usedByFeed);
+                          buildVisJsGraph(usedByFeed);
                       }
                       var edgeKey = feed.id + usedByFeed.id;
                       if (edgeKeys[edgeKey] == undefined) {
@@ -433,10 +459,10 @@
             self.loading = true;
 
             $http.get(RestUrlService.FEED_LINEAGE_URL(feedId)).then(function(response){
-                self.feedLineage = response.data;
+                feedLineage = response.data;
                 self.loading = false;
-                console.log('feedLineage', self.feedLineage);
-            buildVisJsGraph(response.data,response.data.feed);
+                console.log('feedLineage', feedLineage);
+                buildVisJsGraph(feedLineage.feed);
            setNodeData();
 
 
@@ -455,17 +481,20 @@
          * Called when a Node is selected
          * @param item
          */
+        self.changed = false;
+
         var onSelect = function (item) {
-            if(item && item.nodes && item.nodes[0]){
+            if (item && item.nodes && item.nodes[0]) {
+                self.changed = true;
                 var firstItem = item.nodes[0];
-                var feed = self.feedLineage.feedMap[firstItem];
+                var feed = feedLineage.feedMap[firstItem];
                 if(feed){
                     self.selectedNode.name = feed.displayName;
                     self.selectedNode.type = 'FEED';
                     self.selectedNode.content=feed;
                 }
                 else {
-                    var ds = self.feedLineage.datasourceMap[firstItem];
+                    var ds = feedLineage.datasourceMap[firstItem];
                     self.selectedNode.name = ds.name;
                     self.selectedNode.type = 'DATASOURCE';
                     self.selectedNode.content=ds;
@@ -473,10 +502,11 @@
 
             }
             else {
-                self.selectedNode.name = 'Select a node'
-                self.selectedNode.type = 'Feed Lineage';
-                self.selectedNode.content=null;
+                self.selectedNode = SELECT_A_NODE;
             }
+            //force angular to refresh selection
+            jQuery('#hiddenSelectedNode').html(self.selectedNode.name)
+            console.log(' self.selectedNode', self.selectedNode)
         };
 
         /**
@@ -510,3 +540,22 @@
         .directive('thinkbigFeedLineage', directive);
 
 })();
+
+(function () {
+
+    var directive = function () {
+        return {
+            restrict: "E",
+            templateUrl: 'js/feed-details/lineage/selected-node.html',
+            link: function ($scope, element, attrs) {
+
+            }
+
+        };
+    }
+
+    angular.module(MODULE_FEED_MGR)
+        .directive('thinkbigFeedLineageSelectedNode', directive);
+
+})();
+

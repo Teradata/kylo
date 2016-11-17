@@ -1,23 +1,29 @@
 {
   "feed": {
-    "icon": "\uf0ec",
+    "shape": "circle",
     "color": "#3483BA"
   },
   "currentFeed": {
-    "icon": "\uf0ec",
+    "shape": "star",
     "color": "#F08C38",
     "size": 50
   },
   "DirectoryDatasource": {
-    "icon": "\uf016",
-    "color": "#E4682C"
+    "shape": "icon",
+    "icon": {
+      "code": "\uf15b",
+      "color": "#E4682C"
+    },
+    "font": {
+      "color": "green"
+    }
   },
   "HiveDatasource": {
-    "icon": "\uf211",
+    "shape": "database",
     "color": "#E4682C"
   },
   "DatabaseDatasource": {
-    "icon": "\uf0ce",
+    "shape": "database",
     "color": "#E4682C"
   }
 }

@@ -1,0 +1,99 @@
+<div layout="row" layout-align="end center" class="layout-padding-top layout-padding-left">
+    <span class="md-button-group" layout="row" layout-align="end center">
+              <span flex></span>
+        <md-button class="border-btn" style="max-width:200px;" ng-class="{'selected': vm.graphMode == 'SIMPLE'}" ng-click="vm.onSimpleView()">Simple</md-button>
+        <md-button class="border-btn" style="max-width:200px;" ng-class="{'selected': vm.graphMode == 'DETAILED'}" ng-click="vm.onDetailedView()">Detailed</md-button>
+     </span>
+</div>
+
+
+<div style="min-height:800px;height:800px;" layout-fill id="feed-lineage-container">
+  <div ng-if="vm.loading" layout="column" layout-fill layout-align="start center">
+    <md-progress-linear md-mode="indeterminate"></md-progress-linear>
+    <div class="layout-padding-top-bottom">Loading Feed Lineage ...</div>
+  </div>
+  <vis-network data="vm.data" options="vm.options" events="vm.events"></vis-network>
+  <div ng-draggable="{handle:'.dragHandle',containment:'#feed-lineage-container'}" style="width:300px;left: 10px;top: -790px;">
+    <span id="hiddenSelectedNode" style="display:none;"></span>
+
+    <div class="dragHandle" layout="row" style="background-color:#e5e5e5; box-shadow: 0 -1px 0 #e5e5e5, 0 0 2px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.24);">
+      <span><ng-md-icon icon="drag_handle" size="20"></ng-md-icon></span>
+      <span class="md-summary" sytle="padding-left:5px;">{{vm.selectedNode.type}}</span>
+    </div>
+
+    <md-expansion-panel md-component-id="panelOne">
+
+      <md-expansion-panel-collapsed>
+        <div class="md-summary">{{vm.selectedNode.name}}</div>
+        <md-expansion-panel-icon></md-expansion-panel-icon>
+      </md-expansion-panel-collapsed>
+
+
+      <md-expansion-panel-expanded>
+
+        <md-expansion-panel-header>
+          <div class="md-summary">{{vm.selectedNode.name}}</div>
+          <md-expansion-panel-icon></md-expansion-panel-icon>
+        </md-expansion-panel-header>
+
+        <md-expansion-panel-content>
+          <div ng-if="vm.selectedNode.content == null">
+            <p>Select a node</p>
+          </div>
+          <div ng-if="vm.selectedNode.type == 'FEED' && vm.selectedNode.content != null">
+            <div>
+              <div layout="column" class="layout-padding-bottom">
+                <span class="md-subheader">State</span>
+                <span>{{vm.selectedNode.content.state}}</span>
+                <md-divider></md-divider>
+              </div>
+              <div ng-repeat="(key,value) in vm.selectedNode.content.displayProperties" layout="column" class="layout-padding-bottom">
+                <span class="md-subheader">{{key}}</span>
+                <span>{{value}}</span>
+                <md-divider></md-divider>
+              </div>
+            </div>
+          </div>
+          <div ng-if="vm.selectedNode.type == 'DATASOURCE' && vm.selectedNode.content != null">
+            <div>
+              <div ng-repeat="(key,value) in vm.selectedNode.content.displayProperties" layout="column" class="layout-padding-bottom">
+                <span class="md-subheader">{{key}}</span>
+                <span>{{value}}</span>
+                <md-divider></md-divider>
+              </div>
+            </div>
+          </div>
+        </md-expansion-panel-content>
+
+        <md-expansion-panel-footer>
+          <div flex></div>
+          <md-button class="md-warn" ng-click="$panel.collapse()">Collapse</md-button>
+        </md-expansion-panel-footer>
+
+      </md-expansion-panel-expanded>
+
+    </md-expansion-panel>
+
+  </div>
+  <!--
+
+
+
+      -->
+</div>
+
+
+<!--
+<div class="bottom-left">
+  Display at the bottom left of the screen<br/>
+<div ng-if="vm.selectedDatasource != null" layout="column">
+  <span>Datasource</span>
+  <span>{{vm.selectedDatasource.name}}</span>
+</div>
+  <div ng-if="vm.selectedFeed != null" layout="column">
+    <span>Feed</span>
+    <span>{{vm.selectedFeed.displayName}}</span>
+    <span>vm.selectedFeed.state</span>
+  </div>
+</div>
+-->

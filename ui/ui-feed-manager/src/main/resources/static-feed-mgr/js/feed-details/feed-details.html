@@ -20,7 +20,7 @@
                         <div ng-if="!vm.loadingFeedData && vm.model.loaded == false && vm.loadMessage != '' " class="layout-padding">{{vm.loadMessage}}</div>
                     </md-tab-body>
                 </md-tab>
-                <md-tab>
+                <md-tab ng-disabled="vm.loadingFeedData">
                     <md-tab-label>
                         <div>Profile</div>
                     </md-tab-label>
@@ -28,7 +28,7 @@
                         <thinkbig-feed-profile-history ng-if="vm.selectedTabIndex == 1"></thinkbig-feed-profile-history>
                     </md-tab-body>
                 </md-tab>
-                <md-tab >
+                <md-tab ng-disabled="vm.loadingFeedData">
                     <md-tab-label>
                         <div>Lineage</div>
                     </md-tab-label>
@@ -36,7 +36,7 @@
                        <thinkbig-feed-lineage  ng-if="vm.selectedTabIndex == 2"></thinkbig-feed-lineage>
                     </md-tab-body>
                 </md-tab>
-                <md-tab ng-disabled="false">
+                <md-tab ng-disabled="vm.loadingFeedData">
                     <md-tab-label>
                         <div>SLA</div>
                     </md-tab-label>
