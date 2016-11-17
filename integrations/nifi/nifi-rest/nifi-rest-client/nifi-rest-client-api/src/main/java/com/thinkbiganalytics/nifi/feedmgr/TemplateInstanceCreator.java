@@ -2,6 +2,7 @@ package com.thinkbiganalytics.nifi.feedmgr;
 
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
+import com.thinkbiganalytics.nifi.rest.client.layout.AlignProcessGroupComponents;
 import com.thinkbiganalytics.nifi.rest.model.NifiError;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
@@ -171,6 +172,9 @@ public class TemplateInstanceCreator {
                         log.info("Reusable flow, attempt to mark the Processors as running.");
                         templateCreationHelper.markProcessorsAsRunning(newProcessGroup);
                         log.info("Reusable flow.  Successfully marked the Processors as running.");
+                        //align items
+                        AlignProcessGroupComponents alignProcessGroupComponents = new AlignProcessGroupComponents(restClient.getNiFiRestClient(), entity.getParentGroupId());
+                        alignProcessGroupComponents.autoLayout();
                     }
 
                     templateCreationHelper.cleanupControllerServices();
