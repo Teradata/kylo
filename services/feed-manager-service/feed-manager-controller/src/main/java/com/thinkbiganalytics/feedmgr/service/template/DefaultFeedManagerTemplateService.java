@@ -103,7 +103,7 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
           if (orderedTemplateIds != null && !orderedTemplateIds.isEmpty()) {
               IntStream.range(0, orderedTemplateIds.size()).forEach(i -> {
                   String id = orderedTemplateIds.get(i);
-                  if (exclude == null || (exclude != null && !exclude.contains(id))) {
+                  if (!"NEW".equals(id) && (exclude == null || (exclude != null && !exclude.contains(id)))) {
                       FeedManagerTemplate template = templateProvider.findById(templateProvider.resolveId(id));
                       if (template != null) {
                           if (template.getOrder() == null || !template.getOrder().equals(new Long(i))) {
