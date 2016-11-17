@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.inject.Inject;
 import javax.jcr.Node;
@@ -131,7 +132,7 @@ public class JcrPropertyTest {
             JcrDerivedDatasource datasource2 = (JcrDerivedDatasource) datasourceProvider.ensureDerivedDatasource("HiveDatasource","mysql.table2","mysql.table2","mysql table source 2", null);
 
 
-            String feedSystemName = "my_feed";
+            String feedSystemName = "my_feed_"+ UUID.randomUUID();
 //                JcrFeed feed = (JcrFeed) feedProvider.ensureFeed(categorySystemName, feedSystemName, "my feed desc", datasource1.getId(), null);
             JcrFeed feed = (JcrFeed) feedProvider.ensureFeed(sysName, feedSystemName, "my feed desc");
             feedProvider.ensureFeedSource(feed.getId(), datasource1.getId());
@@ -169,13 +170,15 @@ public class JcrPropertyTest {
                 for (FeedSource source : sources) {
                     Map<String, Object> dataSourceProperties = ((JcrDatasource) source.getDatasource()).getAllProperties();
                     String type = (String) dataSourceProperties.get(JcrDerivedDatasource.TYPE_NAME);
+                    log.info("props {} ",dataSourceProperties);
                     //assert the type of datasource matches what was created "Database"
+
                     Assert.assertEquals(type, "HiveDatasource");
                 }
             }
             List<JcrObject> taggedObjects = tagProvider.findByTag("my tag");
             //assert we got 1 feed back
-            Assert.assertEquals(1, taggedObjects.size());
+            Assert.assertTrue(taggedObjects.size() >=1);
             return f.getId();
         });
 
