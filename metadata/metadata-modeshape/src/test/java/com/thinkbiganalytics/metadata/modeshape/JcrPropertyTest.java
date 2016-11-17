@@ -161,18 +161,12 @@ public class JcrPropertyTest {
             @SuppressWarnings("unchecked")
             List<? extends FeedSource> sources = f.getSources();
 
-            // TODO: For some reason only one source gets saved even though 2 get registered.  This appears to happen
-            // only in this unit test for some reason.
-//                Assert.assertTrue(sources.size() > 1);
             Assert.assertTrue(sources.size() > 0);
 
             if (sources != null) {
                 for (FeedSource source : sources) {
                     Map<String, Object> dataSourceProperties = ((JcrDatasource) source.getDatasource()).getAllProperties();
                     String type = (String) dataSourceProperties.get(JcrDerivedDatasource.TYPE_NAME);
-                    log.info("props {} ",dataSourceProperties);
-                    //assert the type of datasource matches what was created "Database"
-
                     Assert.assertEquals(type, "HiveDatasource");
                 }
             }
