@@ -4,7 +4,7 @@
      *
      * @constructor
      */
-    var EditFeedController = function($scope, $http, $mdDialog, $stateParams, FeedService, RestUrlService, StateService) {
+    var EditFeedController = function($scope, $http, $mdDialog, $stateParams, FeedService, RestUrlService, StateService, VisualQueryService) {
         var self = this;
 
         /**
@@ -59,6 +59,7 @@
                     self.stepperUrl = "js/define-feed/define-feed-stepper.html";
                     self.totalSteps = 6;
                 } else if (self.model.registeredTemplate.dataTransformation) {
+                    VisualQueryService.resetModel();
                     self.selectedStepIndex = 2;
                     self.stepperUrl = "js/define-feed/define-feed-data-transform-stepper.html";
                     self.totalSteps = 8;
