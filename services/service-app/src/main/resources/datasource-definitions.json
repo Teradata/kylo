@@ -8,11 +8,11 @@
   },
   {
     "processorType":"com.thinkbiganalytics.nifi.v2.ingest.GetTableData",
-    "datasourcePropertyKeys":["Source Table"],
+    "datasourcePropertyKeys":["Source Table","Source Database Connection"],
     "datasourceType":"DatabaseDatasource",
     "connectionType":"SOURCE",
     "identityString":"${Source Table} - ${Source Database Connection}",
-    "title":"Database ${Source Table}"
+    "title":"${Source Table}"
   },
   {
     "processorType":"datatransformation.template",

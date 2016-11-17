@@ -1,0 +1,23 @@
+{
+  "feed": {
+    "icon": "\uf0ec",
+    "color": "#3483BA"
+  },
+  "currentFeed": {
+    "icon": "\uf0ec",
+    "color": "#F08C38",
+    "size": 50
+  },
+  "DirectoryDatasource": {
+    "icon": "\uf016",
+    "color": "#E4682C"
+  },
+  "HiveDatasource": {
+    "icon": "\uf211",
+    "color": "#E4682C"
+  },
+  "DatabaseDatasource": {
+    "icon": "\uf0ce",
+    "color": "#E4682C"
+  }
+}

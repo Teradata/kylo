@@ -15,7 +15,7 @@
         };
     }
 
-    var controller = function ($scope, $element, $http,$mdDialog, $timeout, AccessControlService, FeedService, RestUrlService,VisDataSet) {
+    var controller = function ($scope, $element, $http, $mdDialog, $timeout, AccessControlService, FeedService, RestUrlService, VisDataSet, Utils) {
 
         this.model = FeedService.editFeedModel;
 
@@ -108,18 +108,21 @@
             nodes: {
                 shape: 'box',
                 font: {
-                     align: 'left'
+                    align: 'center'
                 }
-
             },
             groups:{
             feed:{
-                color:{background:'#3483BA'},
-                font:{color:'white'}
+                shape: 'box',
+                font: {
+                    align: 'center'
+                }
             },
                 datasource:{
-                    color:{background:'yellow'},
-                    font:{color:'black'}
+                    shape: 'box',
+                    font: {
+                        align: 'center'
+                    }
                 }
             },
             interaction:{hover:true}
@@ -154,6 +157,18 @@
             buildVisJsGraph(self.feedLineage,self.feedLineage.feed);
             setNodeData();
         }
+
+        var setNodeStyle = function (node, style) {
+            if (style && style.icon) {
+                node.shape = 'icon';
+                node.icon = {};
+                node.icon.face = 'FontAwesome';
+                node.icon.code = style.icon;
+                node.icon.size = style.size != undefined ? style.size : 50;
+                node.icon.color = style.color != undefined ? style.color : 'blue';
+            }
+        }
+
         /**
          *  Builds the datasource Node for the passed in {@code dsId}
          * @param feedLineage
@@ -173,6 +188,10 @@
                         var node = {id: dsId, label: datasourceNodeLabel(ds), group: "datasource"};
                         nodes.push(node);
                         processedNodes[node.id] = node;
+                        var style = feedLineage.styles[ds.datasourceType];
+                        setNodeStyle(node, style);
+
+
                     }
 
                     //build subgraph of feed relationships
@@ -284,8 +303,19 @@
          */
         var assignDatasourceProperties = function(ds){
             var keysToOmit = ['@type', 'id','name','encrypted','compressed','destinationForFeeds','sourceForFeeds'];
-            ds.properties  = _.omit(ds,keysToOmit);
+            ds.displayProperties = _.omit(ds, keysToOmit);
+            cleanProperties(ds);
+            angular.extend(ds.displayProperties, ds.properties);
 
+        }
+
+        var cleanProperties = function (item) {
+            if (item.properties) {
+                var updatedProps = _.omit(item.properties, function (val, key) {
+                    return key.indexOf("jcr:") == 0 || key == "tba:properties";
+                });
+                item.properties = updatedProps
+            }
         }
 
         /**
@@ -294,7 +324,11 @@
          * @returns {string}
          */
         var datasourceNodeLabel = function(ds){
-            var label = "Datasource\n"+ds.name+"\n";
+            var label = ds.datasourceType;
+            if (ds.datasourceType && Utils.endsWith(ds.datasourceType.toLowerCase(), "datasource")) {
+                label = label.substring(0, label.toLowerCase().lastIndexOf("datasource"));
+            }
+            label += "\n" + ds.name;
             return label;
         }
 
@@ -317,14 +351,13 @@
         var feedNode = function(feed){
 
             var node = {id: feed.id, label: feedNodeLabel(feed), title:feedNodeLabel(feed), group: "feed"};
+            var style = self.feedLineage.styles['feed'];
+            setNodeStyle(node, style);
             if(feed.id == self.model.id){
-                if(node.font == undefined){
-                    node.font = {};
-                }
-                node.font.size=18;
-                node.font.color='white';
-                node.color = {background:'#F08C38'}
+                var style = self.feedLineage.styles['currentFeed'];
+                setNodeStyle(node, style);
             }
+            cleanProperties(feed);
             return node;
         }
 
@@ -402,6 +435,7 @@
             $http.get(RestUrlService.FEED_LINEAGE_URL(feedId)).then(function(response){
                 self.feedLineage = response.data;
                 self.loading = false;
+                console.log('feedLineage', self.feedLineage);
             buildVisJsGraph(response.data,response.data.feed);
            setNodeData();
 

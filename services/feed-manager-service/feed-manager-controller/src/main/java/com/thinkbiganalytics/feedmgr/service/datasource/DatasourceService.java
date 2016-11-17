@@ -2,8 +2,6 @@ package com.thinkbiganalytics.feedmgr.service.datasource;
 
 import com.google.common.collect.Collections2;
 import com.thinkbiganalytics.app.ServicesApplicationStartup;
-import com.thinkbiganalytics.app.ServicesApplicationStartupListener;
-import com.thinkbiganalytics.feedmgr.rest.model.IconColor;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceDefinitionProvider;
@@ -11,14 +9,18 @@ import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailability;
 import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailabilityListener;
 import com.thinkbiganalytics.metadata.rest.Model;
 import com.thinkbiganalytics.metadata.rest.model.data.DatasourceDefinition;
+import com.thinkbiganalytics.metadata.rest.model.feed.FeedLineageStyle;
 import com.thinkbiganalytics.spring.FileResourceService;
 
 import org.apache.commons.lang3.StringUtils;
-import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -28,6 +30,8 @@ import javax.inject.Inject;
  * Created by sr186054 on 11/15/16.
  */
 public class DatasourceService  {
+
+    private static final Logger log = LoggerFactory.getLogger(DatasourceService.class);
 
     @Inject
     ServicesApplicationStartup startup;
@@ -44,12 +48,36 @@ public class DatasourceService  {
     @Inject
     MetadataAccess metadataAccess;
 
+    private Map<String, FeedLineageStyle> feedLineageStyleMap;
+
     @PostConstruct
     private void init() {
+        loadFeedLineageStylesFromFile();
         modeShapeAvailability.subscribe(new DatasourceLoadStartupListener());
     }
 
 
+    public void loadFeedLineageStylesFromFile() {
+
+        String json = fileResourceService.getResourceAsString("classpath:/datasource-styles.json");
+        Map<String, FeedLineageStyle> styles = null;
+        try {
+            if (StringUtils.isNotBlank(json)) {
+                styles = (Map<String, FeedLineageStyle>) ObjectMapperSerializer.deserialize(json, Map.class);
+                feedLineageStyleMap = styles;
+            }
+        } catch (Exception e) {
+            log.error("Unable to parse JSON for datasource-styles.json file.  Error: {}",
+                      e.getMessage());
+        }
+    }
+
+    public Map<String, FeedLineageStyle> getFeedLineageStyleMap() {
+        if (feedLineageStyleMap == null) {
+            feedLineageStyleMap = new HashMap<>();
+        }
+        return feedLineageStyleMap;
+    }
 
     public void loadDefinitionsFromFile() {
 

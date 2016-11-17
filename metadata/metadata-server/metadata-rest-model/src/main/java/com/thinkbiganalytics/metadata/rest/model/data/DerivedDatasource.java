@@ -1,10 +1,13 @@
 package com.thinkbiganalytics.metadata.rest.model.data;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.util.Map;
 
 /**
  * Created by sr186054 on 11/15/16.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class DerivedDatasource extends Datasource {
 
     public Map<String, Object> properties;
@@ -26,4 +29,5 @@ public class DerivedDatasource extends Datasource {
     public void setDatasourceType(String datasourceType) {
         this.datasourceType = datasourceType;
     }
+
 }

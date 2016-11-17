@@ -21,9 +21,12 @@ public class FeedLineage {
 
     private Map<String, Datasource> datasourceMap = new HashMap<>();
 
-    public FeedLineage(Feed feed) {
+    private Map<String,FeedLineageStyle> styles;
+
+    public FeedLineage(Feed feed, Map<String,FeedLineageStyle> styles) {
         this.feed = feed;
         this.feedMap = new HashMap<>();
+        this.styles = styles;
         serialize(this.feed);
     }
 
@@ -138,5 +141,14 @@ public class FeedLineage {
 
     public void setDatasourceMap(Map<String, Datasource> datasourceMap) {
         this.datasourceMap = datasourceMap;
+    }
+
+
+    public Map<String, FeedLineageStyle> getStyles() {
+        return styles;
+    }
+
+    public void setStyles(Map<String, FeedLineageStyle> styles) {
+        this.styles = styles;
     }
 }

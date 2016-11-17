@@ -5,6 +5,7 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
 
 import com.google.common.collect.Collections2;
 import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
+import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceService;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementModelTransform;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
@@ -76,6 +77,9 @@ public class FeedsController {
 
     @Inject
     private DatasourceProvider datasetProvider;
+
+    @Inject
+    private DatasourceService datasourceService;
 
     @Inject
     private FeedPreconditionService preconditionService;
@@ -671,6 +675,8 @@ public class FeedsController {
         });
     }
 
+
+
     @GET
     @Path("{feedId}/lineage")
     @Produces(MediaType.APPLICATION_JSON)
@@ -679,10 +685,11 @@ public class FeedsController {
         return this.metadata.read(() -> {
 
             com.thinkbiganalytics.metadata.api.feed.Feed domainFeed = feedProvider.getFeed(feedProvider.resolveFeed(feedId));
+
             if (domainFeed != null) {
                 FeedLineageBuilder builder = new FeedLineageBuilder(domainFeed);
                 Feed feed = builder.build();//Model.DOMAIN_TO_FEED_WITH_DEPENDENCIES.apply(domainFeed);
-                return new FeedLineage(feed);
+                return new FeedLineage(feed,datasourceService.getFeedLineageStyleMap());
             }
             return null;
         });

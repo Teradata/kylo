@@ -22,12 +22,14 @@ public class FeedLineageBuilder {
 
     Map<String, Datasource> restDatasources = new HashMap<>();
 
+
     private Feed domainFeed;
 
     public FeedLineageBuilder(Feed domainFeed) {
         this.domainFeed = domainFeed;
         build(this.domainFeed);
     }
+
 
     public com.thinkbiganalytics.metadata.rest.model.feed.Feed build() {
         return build(this.domainFeed);
@@ -38,6 +40,7 @@ public class FeedLineageBuilder {
         if (ds == null) {
             // build the data source
             ds = Model.DOMAIN_TO_DS(false).apply(domainDatasource);
+
             restDatasources.put(ds.getId(), ds);
             //populate the Feed relationships
             if (domainDatasource.getFeedSources() != null) {
