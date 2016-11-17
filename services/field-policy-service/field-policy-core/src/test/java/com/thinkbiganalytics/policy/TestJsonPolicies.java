@@ -41,14 +41,14 @@ public class TestJsonPolicies {
     RangeValidator validator = new RangeValidator(10, 20);
     validationRules.add(ValidatorAnnotationTransformer.instance().toUIModel(validator));
 
-    fieldPolicies.add(new FieldPolicyBuilder("Field1").addStandardization(standardizationPolicyList).addValidations(
+    fieldPolicies.add(new FieldPolicyBuilder("field1").addStandardization(standardizationPolicyList).addValidations(
         validationRules).build());
     ObjectMapper mapper = new ObjectMapper();
     String json = mapper.writeValueAsString(fieldPolicies);
 
     FieldPoliciesJsonTransformer fieldPolicyTransformer = new FieldPoliciesJsonTransformer(json);
     Map<String, com.thinkbiganalytics.policy.FieldPolicy> policyMap = fieldPolicyTransformer.buildPolicies();
-    com.thinkbiganalytics.policy.FieldPolicy field1Policy = policyMap.get("Field1");
+    com.thinkbiganalytics.policy.FieldPolicy field1Policy = policyMap.get("field1");
     Assert.assertEquals(2, field1Policy.getStandardizationPolicies().size());
     Assert.assertEquals(1, field1Policy.getValidators().size());
 
