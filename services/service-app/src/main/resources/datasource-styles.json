@@ -1,29 +1,42 @@
 {
   "feed": {
-    "shape": "circle",
-    "color": "#3483BA"
+    "shape": "star",
+    "color": "#3483BA",
+    "size": 40
   },
   "currentFeed": {
     "shape": "star",
     "color": "#F08C38",
-    "size": 50
+    "size": 50,
+    "font": {
+      "size": 18
+    }
   },
   "DirectoryDatasource": {
     "shape": "icon",
     "icon": {
       "code": "\uf15b",
-      "color": "#E4682C"
+      "color": "#607D8B"
     },
-    "font": {
-      "color": "green"
+    "color": {
+      "background": "#97C2FC"
     }
   },
   "HiveDatasource": {
-    "shape": "database",
-    "color": "#E4682C"
+    "shape": "icon",
+    "icon": {
+      "code": "\uf0ce",
+      "color": {
+        "background": "#97C2FC"
+      }
+    }
   },
   "DatabaseDatasource": {
-    "shape": "database",
-    "color": "#E4682C"
+    "shape": "icon",
+    "color": "#E4682C",
+    "icon": {
+      "code": "\uf0ce",
+      "color": "#E4682C"
+    }
   }
 }

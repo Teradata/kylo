@@ -87,6 +87,7 @@
         self.selectedNode = SELECT_A_NODE;
 
 
+
         /**
          *
          * @type {{height: string, width: string, edges: {smooth: {forceDirection: string}}, physics: {barnesHut: {springLength: number}, minVelocity: number}, layout: {hierarchical: {enabled:
@@ -120,7 +121,7 @@
                 }
             },
             groups:{
-                /*   feed:{
+                feed: {
                 shape: 'box',
                 font: {
                     align: 'center'
@@ -131,9 +132,12 @@
                     font: {
                         align: 'center'
                     }
-                 }*/
+                }
             },
-            interaction:{hover:true}
+            interaction: {
+                hover: true, navigationButtons: true,
+                keyboard: true
+            }
         };
 
         var isDetailedGraph = function(){
@@ -186,7 +190,6 @@
                     node.font = style.font;
                 }
             }
-            console.log('NODE STYLE ', node)
 
 
         }
@@ -365,8 +368,7 @@
          * @returns {string}
          */
         var feedNodeLabel = function(feed){
-            var label = "Feed\n"+feed.displayName+" \n";
-            //label +="State: "+feed.state;
+            var label = feed.displayName;
             return label;
         }
 
@@ -461,7 +463,6 @@
             $http.get(RestUrlService.FEED_LINEAGE_URL(feedId)).then(function(response){
                 feedLineage = response.data;
                 self.loading = false;
-                console.log('feedLineage', feedLineage);
                 buildVisJsGraph(feedLineage.feed);
            setNodeData();
 
@@ -506,7 +507,6 @@
             }
             //force angular to refresh selection
             jQuery('#hiddenSelectedNode').html(self.selectedNode.name)
-            console.log(' self.selectedNode', self.selectedNode)
         };
 
         /**
