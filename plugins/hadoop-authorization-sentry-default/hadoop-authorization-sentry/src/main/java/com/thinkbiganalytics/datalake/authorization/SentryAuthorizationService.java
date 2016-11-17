@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -251,35 +252,51 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
                     public Void run() throws Exception {
 
                         if (securityGroupNames == null || securityGroupNames.isEmpty()) {
-                            String hdfsFoldersWithCommas = ((String) feedProperties.get(REGISTRATION_HDFS_FOLDERS)).replace("\n", ",");
-                            List<String> hdfsFolders = Arrays.asList(hdfsFoldersWithCommas.split(",")).stream().collect(Collectors.toList());
-                            deleteHivePolicy(categoryName, feedName);
-                            deleteHdfsPolicy(categoryName, feedName, hdfsFolders);
+
+                            // Only delete if the policies exists. It's possibile that someone adds a security group right after feed creation and before initial ingestion
+                            String sentryPolicyName = getHivePolicyName(categoryName, feedName);
+                            if ((sentryClientObject.checkIfRoleExists(sentryPolicyName))) {
+                                deleteHivePolicy(categoryName, feedName);
+                            }
+                            if(!StringUtils.isEmpty((String)feedProperties.get(REGISTRATION_HDFS_FOLDERS))) {
+                                String hdfsFoldersWithCommas = ((String) feedProperties.get(REGISTRATION_HDFS_FOLDERS)).replace("\n", ",");
+                                List<String> hdfsFolders = Arrays.asList(hdfsFoldersWithCommas.split(",")).stream().collect(Collectors.toList());
+                                deleteHdfsPolicy(categoryName, feedName, hdfsFolders);
+                            }
+
                         } else {
 
-                            String hdfsFoldersWithCommas = ((String) feedProperties.get(REGISTRATION_HDFS_FOLDERS)).replace("\n", ",");
-                            List<String> hdfsFolders = Arrays.asList(hdfsFoldersWithCommas.split(",")).stream().collect(Collectors.toList());
-                            createReadOnlyHdfsPolicy(categoryName, feedName, securityGroupNames, hdfsFolders);
+                            if(!StringUtils.isEmpty((String)feedProperties.get(REGISTRATION_HDFS_FOLDERS))) {
+                                String hdfsFoldersWithCommas = ((String) feedProperties.get(REGISTRATION_HDFS_FOLDERS)).replace("\n", ",");
+                                List<String> hdfsFolders = Arrays.asList(hdfsFoldersWithCommas.split(",")).stream().collect(Collectors.toList());
+                                createReadOnlyHdfsPolicy(categoryName, feedName, securityGroupNames, hdfsFolders);
+                            }
 
                             String sentryHivePolicyName = getHivePolicyName(categoryName, feedName);
                             if (!sentryClientObject.checkIfRoleExists(sentryHivePolicyName)) {
-                                String hiveTablesWithCommas = ((String) feedProperties.get(REGISTRATION_HIVE_TABLES)).replace("\n", ",");
-                                List<String> hiveTables = Arrays.asList(hiveTablesWithCommas.split(",")).stream().collect(Collectors.toList()); //Stream.of(hiveTablesWithCommas).collect(Collectors.toList());
-                                String hiveSchema = ((String) feedProperties.get(REGISTRATION_HIVE_SCHEMA));
-
-                                createOrUpdateReadOnlyHivePolicy(categoryName, feedName, securityGroupNames, hiveSchema, hiveTables);
-                            } else {
-                                try {
-                                    sentryClientObject.dropRole(sentryHivePolicyName);
-                                } catch (SentryClientException e) {
-                                    throw new RuntimeException("Unable to delete policy  " + sentryHivePolicyName + " in Sentry  " + e.getMessage());
+                                if(!StringUtils.isEmpty((String)feedProperties.get(REGISTRATION_HIVE_TABLES))) {
+                                    String hiveTablesWithCommas = ((String) feedProperties.get(REGISTRATION_HIVE_TABLES)).replace("\n", ",");
+                                    List<String> hiveTables = Arrays.asList(hiveTablesWithCommas.split(",")).stream().collect(Collectors.toList()); //Stream.of(hiveTablesWithCommas).collect(Collectors.toList());
+                                    String hiveSchema = ((String) feedProperties.get(REGISTRATION_HIVE_SCHEMA));
+                                    createOrUpdateReadOnlyHivePolicy(categoryName, feedName, securityGroupNames, hiveSchema, hiveTables);
                                 }
-                                String hiveTablesWithCommas = ((String) feedProperties.get(REGISTRATION_HIVE_TABLES)).replace("\n", ",");
-                                List<String> hiveTables = Arrays.asList(hiveTablesWithCommas.split(",")).stream().collect(Collectors.toList()); //Stream.of(hiveTablesWithCommas).collect(Collectors.toList());
-                                String hiveSchema = ((String) feedProperties.get(REGISTRATION_HIVE_SCHEMA));
-                                List<String> hivePermissions = new ArrayList();
-                                hivePermissions.add(HIVE_READ_ONLY_PERMISSION);
-                                createOrUpdateReadOnlyHivePolicy(categoryName, feedName, securityGroupNames, hiveSchema, hiveTables);
+
+                            } else {
+
+                                if(!StringUtils.isEmpty((String)feedProperties.get(REGISTRATION_HIVE_TABLES))) {
+                                    try {
+                                        sentryClientObject.dropRole(sentryHivePolicyName);
+                                    } catch (SentryClientException e) {
+                                        throw new RuntimeException("Unable to delete policy  " + sentryHivePolicyName + " in Sentry  " + e.getMessage());
+                                    }
+
+                                    String hiveTablesWithCommas = ((String) feedProperties.get(REGISTRATION_HIVE_TABLES)).replace("\n", ",");
+                                    List<String> hiveTables = Arrays.asList(hiveTablesWithCommas.split(",")).stream().collect(Collectors.toList()); //Stream.of(hiveTablesWithCommas).collect(Collectors.toList());
+                                    String hiveSchema = ((String) feedProperties.get(REGISTRATION_HIVE_SCHEMA));
+                                    List<String> hivePermissions = new ArrayList();
+                                    hivePermissions.add(HIVE_READ_ONLY_PERMISSION);
+                                    createOrUpdateReadOnlyHivePolicy(categoryName, feedName, securityGroupNames, hiveSchema, hiveTables);
+                                }
                             }
                         }
                         return null;
@@ -292,35 +309,50 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
         else
         {
             if (securityGroupNames == null || securityGroupNames.isEmpty()) {
-                String hdfsFoldersWithCommas = ((String) feedProperties.get(REGISTRATION_HDFS_FOLDERS)).replace("\n", ",");
-                List<String> hdfsFolders = Arrays.asList(hdfsFoldersWithCommas.split(",")).stream().collect(Collectors.toList());
-                deleteHivePolicy(categoryName, feedName);
-                deleteHdfsPolicy(categoryName, feedName, hdfsFolders);
+
+                String sentryPolicyName = getHivePolicyName(categoryName, feedName);
+                if ((sentryClientObject.checkIfRoleExists(sentryPolicyName))) {
+                    deleteHivePolicy(categoryName, feedName);
+                }
+
+                if(!StringUtils.isEmpty((String) feedProperties.get(REGISTRATION_HDFS_FOLDERS))) {
+                    String hdfsFoldersWithCommas = ((String) feedProperties.get(REGISTRATION_HDFS_FOLDERS)).replace("\n", ",");
+                    List<String> hdfsFolders = Arrays.asList(hdfsFoldersWithCommas.split(",")).stream().collect(Collectors.toList());
+                    deleteHdfsPolicy(categoryName, feedName, hdfsFolders);
+                }
             } else {
 
-                String hdfsFoldersWithCommas = ((String) feedProperties.get(REGISTRATION_HDFS_FOLDERS)).replace("\n", ",");
-                List<String> hdfsFolders = Arrays.asList(hdfsFoldersWithCommas.split(",")).stream().collect(Collectors.toList());
-                createReadOnlyHdfsPolicy(categoryName, feedName, securityGroupNames, hdfsFolders);
+                if(!StringUtils.isEmpty((String) feedProperties.get(REGISTRATION_HDFS_FOLDERS))) {
+                    String hdfsFoldersWithCommas = ((String) feedProperties.get(REGISTRATION_HDFS_FOLDERS)).replace("\n", ",");
+                    List<String> hdfsFolders = Arrays.asList(hdfsFoldersWithCommas.split(",")).stream().collect(Collectors.toList());
+                    createReadOnlyHdfsPolicy(categoryName, feedName, securityGroupNames, hdfsFolders);
+                }
 
                 String sentryHivePolicyName = getHivePolicyName(categoryName, feedName);
                 if (!sentryClientObject.checkIfRoleExists(sentryHivePolicyName)) {
-                    String hiveTablesWithCommas = ((String) feedProperties.get(REGISTRATION_HIVE_TABLES)).replace("\n", ",");
-                    List<String> hiveTables = Arrays.asList(hiveTablesWithCommas.split(",")).stream().collect(Collectors.toList()); //Stream.of(hiveTablesWithCommas).collect(Collectors.toList());
-                    String hiveSchema = ((String) feedProperties.get(REGISTRATION_HIVE_SCHEMA));
 
-                    createOrUpdateReadOnlyHivePolicy(categoryName, feedName, securityGroupNames, hiveSchema, hiveTables);
-                } else {
-                    try {
-                        sentryClientObject.dropRole(sentryHivePolicyName);
-                    } catch (SentryClientException e) {
-                        throw new RuntimeException("Unable to delete policy  " + sentryHivePolicyName + " in Sentry  " + e.getMessage());
+                    if(!StringUtils.isEmpty((String) feedProperties.get(REGISTRATION_HIVE_TABLES))) {
+                        String hiveTablesWithCommas = ((String) feedProperties.get(REGISTRATION_HIVE_TABLES)).replace("\n", ",");
+                        List<String> hiveTables = Arrays.asList(hiveTablesWithCommas.split(",")).stream().collect(Collectors.toList()); //Stream.of(hiveTablesWithCommas).collect(Collectors.toList());
+                        String hiveSchema = ((String) feedProperties.get(REGISTRATION_HIVE_SCHEMA));
+
+                        createOrUpdateReadOnlyHivePolicy(categoryName, feedName, securityGroupNames, hiveSchema, hiveTables);
                     }
-                    String hiveTablesWithCommas = ((String) feedProperties.get(REGISTRATION_HIVE_TABLES)).replace("\n", ",");
-                    List<String> hiveTables = Arrays.asList(hiveTablesWithCommas.split(",")).stream().collect(Collectors.toList()); //Stream.of(hiveTablesWithCommas).collect(Collectors.toList());
-                    String hiveSchema = ((String) feedProperties.get(REGISTRATION_HIVE_SCHEMA));
-                    List<String> hivePermissions = new ArrayList();
-                    hivePermissions.add(HIVE_READ_ONLY_PERMISSION);
-                    createOrUpdateReadOnlyHivePolicy(categoryName, feedName, securityGroupNames, hiveSchema, hiveTables);
+                } else {
+
+                    if(!StringUtils.isEmpty((String) feedProperties.get(REGISTRATION_HIVE_TABLES))) {
+                        try {
+                            sentryClientObject.dropRole(sentryHivePolicyName);
+                        } catch (SentryClientException e) {
+                            throw new RuntimeException("Unable to delete policy  " + sentryHivePolicyName + " in Sentry  " + e.getMessage());
+                        }
+                        String hiveTablesWithCommas = ((String) feedProperties.get(REGISTRATION_HIVE_TABLES)).replace("\n", ",");
+                        List<String> hiveTables = Arrays.asList(hiveTablesWithCommas.split(",")).stream().collect(Collectors.toList()); //Stream.of(hiveTablesWithCommas).collect(Collectors.toList());
+                        String hiveSchema = ((String) feedProperties.get(REGISTRATION_HIVE_SCHEMA));
+                        List<String> hivePermissions = new ArrayList();
+                        hivePermissions.add(HIVE_READ_ONLY_PERMISSION);
+                        createOrUpdateReadOnlyHivePolicy(categoryName, feedName, securityGroupNames, hiveSchema, hiveTables);
+                    }
                 }
             }
 
