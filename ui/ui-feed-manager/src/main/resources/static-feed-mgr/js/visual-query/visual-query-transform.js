@@ -27,7 +27,7 @@
         //The model passed in from the previous step
         this.model = VisualQueryService.model;
         //Flag to determine if we can move on to the next step
-        this.isValid = true;
+        this.isValid = false;
         //The SQL String from the previous step
         this.sql = this.model.visualQuerySql;
         //The sql model passed over from the previous step
@@ -276,6 +276,7 @@
 
                 //mark the flag to indicate Hive is loaded
                 self.hiveDataLoaded = true;
+                self.isValid = true;
 
                 //store the result for use in the commands
                 self.tableData = {rows: self.sparkShellService.getRows(), columns: self.sparkShellService.getColumns()};
@@ -542,6 +543,13 @@
                     // notify those that the data is loaded/updated
                     BroadcastService.notify('DATA_TRANSFORM_SCHEMA_LOADED', 'SCHEMA_LOADED');
                 });
+            } else if (changedSteps.newStep == thisIndex && self.sql == null) {
+                var functionDefs = self.sparkShellService.getFunctionDefs();
+
+                self.sql = self.model.visualQuerySql;
+                self.sparkShellService = new SparkShellService(self.sql);
+                self.sparkShellService.setFunctionDefs(functionDefs);
+                self.query();
             }
         }
 
@@ -591,6 +599,17 @@
 
         // Load table data
         this.query();
+
+        // Invalidate when SQL changes
+        $scope.$watch(
+                function() { return self.model.visualQuerySql; },
+                function() {
+                    if (self.sql != self.model.visualQuerySql) {
+                        self.isValid = false;
+                        self.sql = null;
+                    }
+                }
+        );
 
         $scope.$on('$destroy', function() {
             //clean up code here
