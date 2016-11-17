@@ -212,6 +212,16 @@
                 </source>
                 <source>
                   <location>
+                    ../services/service-app/src/main/resources/datasource-definitions.json
+                  </location>
+                </source>
+                <source>
+                  <location>
+                    ../services/service-app/src/main/resources/datasource-styles.json
+                  </location>
+                </source>
+                <source>
+                  <location>
                     ../services/service-app/src/main/resources/icons.json
                   </location>
                 </source>
