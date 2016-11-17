@@ -126,7 +126,7 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
     public List<RegisteredTemplate.Processor> getRegisteredTemplateProcessors(String templateId, boolean includeReusableProcessors) {
         List<RegisteredTemplate.Processor> processorProperties = new ArrayList<>();
 
-        RegisteredTemplate template = getRegisteredTemplate(templateId);
+        RegisteredTemplate template = getRegisteredTemplateWithAllProperties(templateId);
         if(template != null){
             processorProperties.addAll(template.getInputProcessors());
             processorProperties.addAll(template.getNonInputProcessors());
