@@ -9,6 +9,9 @@ import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
@@ -23,6 +26,7 @@ import javax.jcr.RepositoryException;
  */
 public class JcrDatasourceDefinitionProvider extends BaseJcrProvider<DatasourceDefinition, DatasourceDefinition.ID> implements DatasourceDefinitionProvider {
 
+    private static final Logger log = LoggerFactory.getLogger(JcrDatasourceDefinitionProvider.class);
 
     @Override
     public Class<? extends DatasourceDefinition> getEntityClass() {
@@ -62,10 +66,10 @@ public class JcrDatasourceDefinitionProvider extends BaseJcrProvider<DatasourceD
 
             try {
                 if (!getSession().getRootNode().hasNode("metadata/datasourceDefinitions")) {
-                    getSession().getRootNode().addNode("metadata", "tba:datasourceDefinitionsFolder");
+                    getSession().getRootNode().addNode("metadata/datasourceDefinitions", "tba:datasourceDefinitionsFolder");
                 }
             } catch (RepositoryException e) {
-
+                log.error("Failed to create datasource definitions node", e);
             }
 
             String path = EntityUtil.pathForDatasourceDefinition();

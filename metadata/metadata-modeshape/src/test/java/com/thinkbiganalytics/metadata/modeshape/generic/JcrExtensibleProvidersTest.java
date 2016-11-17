@@ -27,23 +27,24 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
 
     @Inject
     private ExtensibleTypeProvider typeProvider;
-    
+
     @Inject
     private ExtensibleEntityProvider entityProvider;
-    
+
     @Inject
     private JcrMetadataAccess metadata;
-    
+
 
     @Test
     public void testGetAllDefaultTypes() {
         int size = metadata.commit(new AdminCredentials(), () -> {
             List<ExtensibleType> types = typeProvider.getTypes();
-            
+
             return types.size();
         });
-        // Category + Datasource + Feed + FeedSLA + HiveTableDatasource + Metric + Sla + SlaActionConfiguration + SlaCheck + User + UserGroup = 11
-        assertThat(size).isEqualTo(11);
+        // Category + Datasource + DatasourceDefinition + DerivedDatasource + DirectoryDatasource + Feed + FeedSLA + HiveTableDatasource + Metric + Sla + SlaActionConfiguration + SlaCheck + User +
+        // UserGroup = 14
+        assertThat(size).isEqualTo(14);
     }
 
     @Test(dependsOnMethods="testGetAllDefaultTypes")
@@ -59,13 +60,13 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
                             .addField("description", FieldDescriptor.Type.STRING)
                             .addField("age", FieldDescriptor.Type.LONG)
                             .build();
-                              
+
             return type.getName();
         });
-        
+
         assertThat(typeName).isNotNull().isEqualTo("Person");
     }
-    
+
     @Test(dependsOnMethods="testCreatePersonType")
     public void testCreateEmployeeType() {
         String typeName = metadata.commit(new AdminCredentials(), () -> {
@@ -81,86 +82,86 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
                             .addField("description", FieldDescriptor.Type.STRING)
                             .addField("age", FieldDescriptor.Type.LONG)
                             .build();
-            
+
             return emp.getSupertype().getName();
         });
-        
+
         assertThat(typeName).isNotNull().isEqualTo("Person");
     }
-    
+
     @Test(dependsOnMethods="testCreatePersonType")
     public void testGetPersonType() {
         final ExtensibleType.ID id = metadata.commit(new AdminCredentials(), () -> {
             ExtensibleType type = typeProvider.getType("Person");
-            
+
             return type.getId();
         });
-        
+
         assertThat(id).isNotNull();
-        
+
         Map<String, FieldDescriptor.Type> fields = metadata.commit(new AdminCredentials(), () -> {
             ExtensibleType type = typeProvider.getType("Person");
             Map<String, FieldDescriptor.Type> map = new HashMap<>();
-            
+
             for (FieldDescriptor descr : type.getFieldDescriptors()) {
                 map.put(descr.getName(), descr.getType());
             }
-            
+
             return map;
         });
-        
+
         assertThat(fields).isNotNull();
         assertThat(fields).containsEntry("name", FieldDescriptor.Type.STRING);
         assertThat(fields).containsEntry("description", FieldDescriptor.Type.STRING);
         assertThat(fields).containsEntry("age", FieldDescriptor.Type.LONG);
     }
-    
+
     @Test(dependsOnMethods="testCreatePersonType")
     public void testGetAllTypes() {
         int size = metadata.commit(new AdminCredentials(), () -> {
             List<ExtensibleType> types = typeProvider.getTypes();
-            
+
             return types.size();
         });
-        
-        // 11 + Person + Employee = 13
-        assertThat(size).isEqualTo(13);
+
+        // 14 + Person + Employee = 16
+        assertThat(size).isEqualTo(16);
     }
-    
+
     @Test(dependsOnMethods="testCreatePersonType")
     public void testCreateEntity() {
         ExtensibleEntity.ID id = metadata.commit(new AdminCredentials(), () -> {
             ExtensibleType type = typeProvider.getType("Person");
-            
+
             Map<String, Object> props = new HashMap<>();
             props.put("name", "Bob");
             props.put("description", "Silly");
             props.put("age", 50);
-            
+
             ExtensibleEntity entity = entityProvider.createEntity(type, props);
-            
+
             return entity.getId();
         });
-        
+
         assertThat(id).isNotNull();
     }
-    
+
     @Test(dependsOnMethods="testCreatePersonType")
     public void testGetEntity() {
         String typeName = metadata.commit(new AdminCredentials(), () ->  {
             List<ExtensibleEntity> list = entityProvider.getEntities();
-            
+
             assertThat(list).isNotNull().hasSize(1);
-            
+
             ExtensibleEntity.ID id = list.get(0).getId();
             ExtensibleEntity entity = entityProvider.getEntity(id);
-            
+
             assertThat(entity).isNotNull();
             assertThat(entity.getProperty("name")).isEqualTo("Bob");
-            
+
             return entity.getTypeName();
         });
-        
+
         assertThat(typeName).isEqualTo("Person");
     }
 }
