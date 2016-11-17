@@ -303,27 +303,6 @@
                     });
         };
 
-        /*
-        //order list
-        RegisterTemplateService.getRegisteredTemplates().then(function(response){
-
-            //order by .order
-            var templates = _.sortBy(response.data,'order');
-            if(self.model.id ==null || self.model.id == undefined){
-                //append to bottom
-               templates.push({id:'NEW',name:self.model.templateName,currentTemplate:true});
-            }
-            else {
-                var currentTemplate = _.filter(templates,function(template) {
-                    return template.id == self.model.id;
-                });
-                if(currentTemplate && currentTemplate.length == 1){
-                    currentTemplate[0].currentTemplate = true;
-                }
-            }
-            self.templateOrder = templates;
-        });
-         */
 
     }
 
