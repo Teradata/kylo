@@ -374,9 +374,8 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
                 .setConf(SparkLauncher.EXECUTOR_MEMORY, executorMemory)
                 .setConf(SparkLauncher.EXECUTOR_CORES, executorCores)
                 .setConf(SPARK_NETWORK_TIMEOUT_CONFIG_NAME, networkTimeout)
-                .addSparkArg(SPARK_EXTRA_FILES_CONFIG_NAME, extraFiles)
                 .setSparkHome(sparkHome)
-                .setAppName(sparkApplicationName);
+                .setAppName(sparkApplicationName) ;
 
             if(authenticateUser) {
                 launcher.setConf(SPARK_YARN_KEYTAB, keyTab);
@@ -401,6 +400,9 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
             }
             if (StringUtils.isNotEmpty(yarnQueue)) {
                 launcher.setConf(SPARK_YARN_QUEUE, yarnQueue);
+            }
+            if (StringUtils.isNotEmpty(extraFiles)) {
+                launcher.addSparkArg(SPARK_EXTRA_FILES_CONFIG_NAME, extraFiles);
             }
 
 
