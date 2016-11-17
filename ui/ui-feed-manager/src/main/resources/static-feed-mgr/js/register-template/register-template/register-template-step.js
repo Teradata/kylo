@@ -37,10 +37,14 @@
 
         self.processorDatasourceDefinitions = [];
 
-
-
+        /**
+         * flag to tell when the system is loading datasources
+         * @type {boolean}
+         */
+        self.loadingProcessorDatasources = true;
 
         var buildTemplateProcessorDatasourcesMap = function(){
+            self.loadingProcessorDatasources = true;
             var assignedPortIds = [];
             _.each(self.model.reusableTemplateConnections,function(conn) {
                 var inputPort = conn.inputPortDisplayName;
@@ -56,7 +60,6 @@
                 var map = {};
 
                 //merge in those already selected/saved on this template
-                console.log('THIS DATA ',self.model);
                 _.each(response.data,function(def) {
                     def.selectedDatasource = false;
                     if(self.model.registeredDatasourceDefinitions.length == 0) {
@@ -72,13 +75,18 @@
                     }
                   }
                     });
-             self.processorDatasourceDefinitions = response.data;
-                console.log('def ',self.processorDatasourceDefinitions)
+                //sort with SOURCEs first
+                self.processorDatasourceDefinitions = _.sortBy(response.data, function (def) {
+                    if (def.datasourceDefinition.connectionType == 'SOURCE') {
+                        return 1;
+                    }
+                    else {
+                        return 2;
+                    }
+                });
+                self.loadingProcessorDatasources = false;
             });
         };
-
-
-
 
 
         this.model = RegisterTemplateService.model;
@@ -237,13 +245,10 @@
             savedTemplate.order = thisOrder
 
             //add in the datasources
-            console.log('SAVING ',self.processorDatasourceDefinitions)
-
            var selectedDatasourceDefinitions =  _.filter(self.processorDatasourceDefinitions,function(ds){
                 return ds.selectedDatasource == true;
             })
 
-            console.log('selectedDatasourceDefinitions ',selectedDatasourceDefinitions)
             savedTemplate.registeredDatasourceDefinitions = selectedDatasourceDefinitions;
 
 

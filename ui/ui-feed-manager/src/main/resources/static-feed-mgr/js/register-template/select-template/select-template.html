@@ -19,7 +19,7 @@
         </md-input-container>
         <div class="error md-caption layout-padding" ng-if="vm.errorMessage != null && !vm.isValid">{{vm.errorMessage}}</div>
         <br/><br/><br/>
-        <thinkbig-step-buttons can-continue="vm.isValid" step-index="{{::vm.stepIndex}}" ></thinkbig-step-buttons>
+        <thinkbig-step-buttons can-continue="vm.isValid && !vm.model.loading" step-index="{{::vm.stepIndex}}"></thinkbig-step-buttons>
     </body-section>
 
 </card-layout>
@@ -29,7 +29,7 @@
         <header-section>
             <div class="card-title">Template</div>
             <div layout="column" class="layout-padding-top-bottom">
-            <span class="item-title" ng-if="!vm.loading">
+            <span class="item-title" ng-if="!vm.model.loading">
                  <ng-md-icon icon="{{vm.model.icon.title}}" size="20" hide-xs style="fill:{{vm.model.icon.color}}" ng-if="vm.model.icon && vm.model.state != 'NOT REGISTERED'">
                  </ng-md-icon>
                 {{vm.model.templateName}}</span>

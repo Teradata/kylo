@@ -100,17 +100,27 @@
                 <md-subheader class="md-subhead left-aligned">Assign Datasources</md-subheader>
                 <span class="hint">Identify the Processor and Properties that define the source and destination datasources.</span>
 
-                <div layout="row" layout-fill layout-align="space-between center">
+                <div ng-if="vm.loadingProcessorDatasources" layout="column" layout-align="start center" class="layout-padding-top-bottom">
+                    <md-progress-linear md-mode="indeterminate"></md-progress-linear>
+                    <span>Loading ...</span>
+                </div>
+
+                <div layout="row" layout-fill layout-align="space-between center" ng-if="!vm.loadingProcessorDatasources" class="layout-padding-top-bottom">
                     <div layout="column">
 
                         <div ng-repeat="dsDef in vm.processorDatasourceDefinitions" layout="column">
 
                             <div layout="row">
                                 <md-checkbox ng-model="dsDef.selectedDatasource"
-                                             aria-label="Processor Datasource Definition">{{dsDef.processorName}} - {{dsDef.datasourceDefinition.name}}
+                                             aria-label="Processor Datasource Definition">{{dsDef.processorName}} - {{dsDef.datasourceDefinition.datasourceType}} -
+                                    {{dsDef.datasourceDefinition.connectionType}}
                                 </md-checkbox>
                             </div>
 
+                        </div>
+
+                        <div ng-if="vm.processorDatasourceDefinitions.length ==0" class="layout-padding-top-bottom">
+                            No Processors were found in the flow matching the configured Datasource Definitions
                         </div>
 
                     </div>
@@ -124,8 +134,8 @@
             </div>
 
 
-
-            <thinkbig-step-buttons can-continue="vm.registerTemplateForm.$valid  && vm.model.reusableTemplate == false" step-index="{{::vm.stepIndex}}" final-step="Register"
+            <thinkbig-step-buttons can-continue="vm.registerTemplateForm.$valid &&!vm.loadingProcessorDatasources && vm.model.reusableTemplate == false" step-index="{{::vm.stepIndex}}"
+                                   final-step="Register"
                                    on-click-final-button="vm.registerTemplate()">
             </thinkbig-step-buttons>
 
