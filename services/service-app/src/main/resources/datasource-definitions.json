@@ -189,5 +189,14 @@
     "datasourceType": "DirectoryDatasource",
     "connectionType": "DESTINATION",
     "title": "${Directory}"
+  },
+  {
+    "processorType": "org.apache.nifi.processors.hadoop.PutHDFS",
+    "datasourcePropertyKeys": [
+      "Directory"
+    ],
+    "datasourceType": "HDFSDatasource",
+    "connectionType": "DESTINATION",
+    "title": "${Directory}"
   }
 ]

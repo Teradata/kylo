@@ -15,7 +15,7 @@
         };
     }
 
-    var controller = function ($scope, $element, $http, $mdDialog, $timeout, AccessControlService, FeedService, RestUrlService, VisDataSet, Utils) {
+    var controller = function ($scope, $element, $http, $mdDialog, $timeout, AccessControlService, FeedService, RestUrlService, VisDataSet, Utils, BroadcastService, StateService) {
 
         this.model = FeedService.editFeedModel;
 
@@ -68,8 +68,17 @@
          */
         self.loading = false;
 
+        /**
+         * Enum for modes
+         *
+         * @type {{SIMPLE: string, DETAILED: string}}
+         */
         var graphModes = {SIMPLE:"SIMPLE",DETAILED:"DETAILED"};
 
+        /**
+         * Set the default mode to SIMPLE view
+         * @type {string}
+         */
         self.graphMode = graphModes.SIMPLE;
 
 
@@ -86,7 +95,7 @@
          */
         self.selectedNode = SELECT_A_NODE;
 
-
+        BroadcastService.subscribe($scope, BroadcastConstants.CONTENT_WINDOW_RESIZED, self.redraw);
 
         /**
          *
@@ -98,20 +107,23 @@
             height: '100%',
             width: '100%',
             "edges": {
-                "smooth": {
-                    "forceDirection": "none"
-                }
+                "arrowStrikethrough": false,
+                smooth: {
+                    enabled: true,
+                    type: "horizontal",
+                    roundness: 0,
+                    "forceDirection": "horizontal"
+                },
+                font: {align: 'horizontal'},
+                length: 300
             },
             "physics": {
+                "enabled": true,
                 "barnesHut": {
-                    "springLength":300
-                },
-                "minVelocity": 0.75
+                    "springLength": 300
+                }
             },
             layout: {
-                hierarchical: {
-                    enabled: false
-                },
                 randomSeed:2
             },
             nodes: {
@@ -120,14 +132,14 @@
                     align: 'center'
                 }
             },
-            groups:{
+            groups: {
                 feed: {
-                shape: 'box',
-                font: {
-                    align: 'center'
-                }
-            },
-                datasource:{
+                    shape: 'box',
+                    font: {
+                        align: 'center'
+                    }
+                },
+                datasource: {
                     shape: 'box',
                     font: {
                         align: 'center'
@@ -140,32 +152,41 @@
             }
         };
 
+
         var isDetailedGraph = function(){
             return self.graphMode == graphModes.DETAILED;
         }
 
+        self.redraw = function () {
+            if (isDetailedGraph()) {
+                self.onDetailedView();
+            }
+            else {
+                self.onSimpleView();
+            }
+        }
 
-        self.onDetailedView = function(){
-            self.graphMode = graphModes.DETAILED;
+        var _draw = function () {
             nodes = [];
             edges = [];
             edgeKeys ={};
             processedDatasource = {};
             processedNodes = {};
 
+            //turn on physics for layout
+            self.options.physics.enabled = true;
             buildVisJsGraph(feedLineage.feed);
             setNodeData();
         }
+
+        self.onDetailedView = function () {
+            self.graphMode = graphModes.DETAILED;
+            _draw();
+
+        }
         self.onSimpleView = function(){
             self.graphMode = graphModes.SIMPLE;
-            nodes = [];
-            edges = [];
-            edgeKeys ={};
-            processedDatasource = {};
-            processedNodes = {};
-
-            buildVisJsGraph(feedLineage.feed);
-            setNodeData();
+            _draw();
         }
 
         var setNodeStyle = function (node, style) {
@@ -189,6 +210,10 @@
                 if (style.font) {
                     node.font = style.font;
                 }
+                if (!node.font) {
+                    node.font = {}
+                }
+                node.font.background = '#ffffff'
             }
 
 
@@ -342,7 +367,7 @@
         var cleanProperties = function (item) {
             if (item.properties) {
                 var updatedProps = _.omit(item.properties, function (val, key) {
-                    return key.indexOf("jcr:") == 0 || key == "tba:properties";
+                    return key.indexOf("jcr:") == 0 || key == "tba:properties" || key == 'tba:processGroupId';
                 });
                 item.properties = updatedProps
             }
@@ -387,6 +412,10 @@
                 setNodeStyle(node, style);
             }
             cleanProperties(feed);
+            feed.displayProperties = {};
+            //add in any properties of its own
+            angular.extend(feed.displayProperties, feed.properties);
+
             return node;
         }
 
@@ -463,8 +492,7 @@
             $http.get(RestUrlService.FEED_LINEAGE_URL(feedId)).then(function(response){
                 feedLineage = response.data;
                 self.loading = false;
-                buildVisJsGraph(feedLineage.feed);
-           setNodeData();
+                self.redraw();
 
 
             });
@@ -505,22 +533,39 @@
             else {
                 self.selectedNode = SELECT_A_NODE;
             }
+            //console.log(self.selectedNode);
             //force angular to refresh selection
             jQuery('#hiddenSelectedNode').html(self.selectedNode.name)
         };
+
+        self.navigateToFeed = function () {
+            if (self.selectedNode.type == 'FEED' && self.selectedNode.content) {
+                StateService.navigateToFeedDetails(self.selectedNode.content.id, 2);
+            }
+
+        }
 
         /**
          * Called when the graph is loaded
          * @param network
          */
         var onLoad = function(network){
-           // console.log(network);
+            self.network = network;
         }
 
+        var stabilizationIterationsDone = function () {
+            self.options.physics.enabled = false;
+            if (self.network) {
+                self.network.setOptions({
+                    physics: {enabled: false}
+                });
+            }
+        }
 
         self.events = {
-            onLoad:onLoad,
-            selectNode: onSelect
+            onload: onLoad,
+            selectNode: onSelect,
+            stabilizationIterationsDone: stabilizationIterationsDone
         };
 
         /**

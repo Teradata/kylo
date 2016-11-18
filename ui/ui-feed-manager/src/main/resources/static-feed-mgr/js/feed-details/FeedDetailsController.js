@@ -21,6 +21,12 @@
         var SLA_INDEX = 3;
         var self = this;
 
+        /**
+         * Flag to indicate style of page
+         * if true it will fit the card to the 980px width
+         * if false it will make it go 100% width
+         * @type {boolean}
+         */
         self.cardWidth = true;
 
         /**
@@ -43,18 +49,25 @@
         this.model.loaded = false;
         this.loadMessage = ''
 
+        var requestedTabIndex = $stateParams.tabIndex;
+
+
+
         $scope.$watch(function() {
             return self.selectedTabIndex;
         }, function(newVal) {
-
-            if (newVal == 2) {
+            //Make the Lineage tab fit without side nav
+            //open side nav if we are not navigating between lineage links
+            if (newVal == 2 || (requestedTabIndex != undefined && requestedTabIndex == 2)) {
                 SideNavService.hideSideNav();
                 self.cardWidth = false;
+                requestedTabIndex = 0;
             }
             else {
                 SideNavService.showSideNav();
                 self.cardWidth = true;
             }
+
         })
 
         /**
@@ -66,7 +79,8 @@
 
         var init = function() {
             self.feedId = $stateParams.feedId;
-            loadFeed($stateParams.tabIndex);
+
+            loadFeed(requestedTabIndex);
 
             AccessControlService.getAllowedActions()
                     .then(function(actionSet) {

@@ -1,42 +1,43 @@
 {
-  "feed": {
-    "shape": "star",
-    "color": "#3483BA",
-    "size": 40
-  },
-  "currentFeed": {
-    "shape": "star",
-    "color": "#F08C38",
-    "size": 50,
-    "font": {
-      "size": 18
-    }
-  },
-  "DirectoryDatasource": {
-    "shape": "icon",
-    "icon": {
-      "code": "\uf15b",
-      "color": "#607D8B"
+    "feed": {
+      "shape": "icon",
+      "icon": {
+        "code": "\uf1e1",
+        "color": "#3483BA"
+      },
+      "size": 40
     },
-    "color": {
-      "background": "#97C2FC"
-    }
-  },
-  "HiveDatasource": {
-    "shape": "icon",
-    "icon": {
-      "code": "\uf0ce",
-      "color": {
-        "background": "#97C2FC"
+    "currentFeed": {
+      "shape": "icon",
+      "icon": {
+        "code": "\uf1e1",
+        "color": "#F08C38",
+        "size": 50
+      },
+      "font": {
+        "size": 18
+      }
+    },
+    "DirectoryDatasource": {
+      "shape": "icon",
+      "icon": {
+        "code": "\uf15b",
+        "color": "#607D8B"
+      }
+    },
+    "HiveDatasource": {
+      "shape": "icon",
+      "icon": {
+        "code": "\uf0ce",
+        "color": "#97C2FC"
+      }
+    },
+    "DatabaseDatasource": {
+      "shape": "icon",
+      "color": "#E4682C",
+      "icon": {
+        "code": "\uf0ce",
+        "color": "#E4682C"
       }
     }
-  },
-  "DatabaseDatasource": {
-    "shape": "icon",
-    "color": "#E4682C",
-    "icon": {
-      "code": "\uf0ce",
-      "color": "#E4682C"
-    }
-  }
 }

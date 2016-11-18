@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.feedmgr.rest.controller;
 
+import com.google.common.collect.Lists;
 import com.thinkbiganalytics.db.model.query.QueryResult;
 import com.thinkbiganalytics.db.model.schema.TableSchema;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
@@ -10,17 +11,22 @@ import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
 import com.thinkbiganalytics.feedmgr.service.FeedCleanupFailedException;
 import com.thinkbiganalytics.feedmgr.service.FeedCleanupTimeoutException;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
+import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceService;
 import com.thinkbiganalytics.feedmgr.service.feed.DuplicateFeedNameException;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerPreconditionService;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
 import com.thinkbiganalytics.hive.service.HiveService;
 import com.thinkbiganalytics.hive.util.HiveUtils;
+import com.thinkbiganalytics.metadata.rest.model.data.DatasourceDefinition;
+import com.thinkbiganalytics.metadata.rest.model.data.DatasourceDefinitions;
+import com.thinkbiganalytics.metadata.rest.model.feed.FeedLineageStyle;
 import com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 import com.thinkbiganalytics.policy.rest.model.PreconditionRule;
+import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.schema.TextFileParser;
 
 import org.apache.commons.lang3.StringUtils;
@@ -90,6 +96,9 @@ public class FeedRestController {
 
     @Autowired
     FeedManagerPreconditionService feedManagerPreconditionService;
+
+    @Inject
+    DatasourceService datasourceService;
 
     @Inject
     ServiceLevelAgreementService serviceLevelAgreementService;
@@ -448,5 +457,27 @@ public class FeedRestController {
     public Response getSla(@PathParam("feedId") String feedId) {
         List<FeedServiceLevelAgreement> sla = serviceLevelAgreementService.getFeedServiceLevelAgreements(feedId);
         return Response.ok(sla).build();
+    }
+
+    @POST
+    @Path("/update-feed-lineage-styles")
+    @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response updateFeedLineageStyles(Map<String, FeedLineageStyle> styles) {
+        datasourceService.refreshFeedLineageStyles(styles);
+        return Response.ok(new RestResponseStatus.ResponseStatusBuilder().buildSuccess()).build();
+    }
+
+    @POST
+    @Path("/update-datasource-definitions")
+    @Produces(MediaType.APPLICATION_JSON)
+    public DatasourceDefinitions updateDatasourceDefinitions(DatasourceDefinitions definitions) {
+        if (definitions != null) {
+            Set<DatasourceDefinition> updatedDefinitions = datasourceService.updateDatasourceDefinitions(definitions.getDefinitions());
+            if (updatedDefinitions != null) {
+                return new DatasourceDefinitions(Lists.newArrayList(updatedDefinitions));
+            }
+        }
+        return new DatasourceDefinitions();
     }
 }

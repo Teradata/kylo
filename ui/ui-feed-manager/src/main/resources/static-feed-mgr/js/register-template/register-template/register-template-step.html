@@ -79,28 +79,10 @@
 
             <thinkbig-template-order model="vm.templateOrder" template-id="vm.model.id" template-name="vm.model.templateName" add-as-new="true" add-save-btn="false"></thinkbig-template-order>
 
-            <!--  <div layout="column">
-                  <md-subheader class="md-subhead left-aligned">Change Template Order</md-subheader>
-                  <span class="hint">Drag the templates below to adjust their order at feed creation time.</span>
-                  <ul dnd-list="vm.templateOrder"  class="simple-dnd-list">
-                      <li ng-repeat="item in vm.templateOrder"
-                          dnd-draggable="item"
-                          dnd-moved="vm.templateOrder.splice($index, 1)"
-                          dnd-effect-allowed="move"
-                          ng-class="{'selected': item.currentTemplate == true}"
-                          style="height:20px;"
-                          >
-                               {{$index+1}}. {{item.templateName}}
-                      </li>
-
-                  </ul>
-
-              </div> -->
-
 
             <div layout="column">
-                <md-subheader class="md-subhead left-aligned">Assign Datasources</md-subheader>
-                <span class="hint">Identify the Processor and Properties that define the source and destination datasources.</span>
+                <md-subheader class="md-subhead left-aligned">Feed Lineage Datasources</md-subheader>
+                <span class="hint">Select datasources that should track feed lineage</span>
 
                 <div ng-if="vm.loadingProcessorDatasources" layout="column" layout-align="start center" class="layout-padding-top-bottom">
                     <md-progress-circular md-mode="indeterminate"></md-progress-circular>
@@ -122,16 +104,12 @@
                         </div>
 
                         <div ng-if="vm.processorDatasourceDefinitions.length ==0" class="layout-padding-top-bottom">
-                            No Processors were found in the flow matching the configured Datasource Definitions
+                            No processors were found in the flow matching the configured datasource definitions
                         </div>
 
                     </div>
 
                 </div>
-
-
-
-
 
             </div>
 

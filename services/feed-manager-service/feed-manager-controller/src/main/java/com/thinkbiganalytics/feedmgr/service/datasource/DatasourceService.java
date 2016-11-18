@@ -57,6 +57,9 @@ public class DatasourceService  {
     }
 
 
+    /**
+     * Loads the styles from the json file
+     */
     public void loadFeedLineageStylesFromFile() {
 
         String json = fileResourceService.getResourceAsString("classpath:/datasource-styles.json");
@@ -72,6 +75,16 @@ public class DatasourceService  {
         }
     }
 
+
+    /**
+     * Refresh the styles
+     */
+    public void refreshFeedLineageStyles(Map<String, FeedLineageStyle> styles) {
+        if (styles != null && !styles.isEmpty()) {
+            feedLineageStyleMap = styles;
+        }
+    }
+
     public Map<String, FeedLineageStyle> getFeedLineageStyleMap() {
         if (feedLineageStyleMap == null) {
             feedLineageStyleMap = new HashMap<>();
@@ -79,39 +92,44 @@ public class DatasourceService  {
         return feedLineageStyleMap;
     }
 
+
+
     public void loadDefinitionsFromFile() {
 
 
             String json = fileResourceService.getResourceAsString("classpath:/datasource-definitions.json");
-            List<DatasourceDefinition> defs = null;
-            if (StringUtils.isNotBlank(json)) {
-                defs = Arrays.asList(ObjectMapperSerializer.deserialize(json, DatasourceDefinition[].class));
-            }
-
-            if(defs != null){
-                final   List<DatasourceDefinition> datasourceDefinitions = defs;
-
-
-
-                    metadataAccess.commit(() -> {
-                        datasourceDefinitions.stream().forEach(def ->
-                                              {
-                                                  com.thinkbiganalytics.metadata.api.datasource.DatasourceDefinition domainDef = datasourceDefinitionProvider.ensureDatasourceDefinition(def.getProcessorType());
-                                                  domainDef.setDatasourcePropertyKeys(def.getDatasourcePropertyKeys());
-                                                  domainDef.setIdentityString(def.getIdentityString());
-                                                  domainDef.setConnectionType(com.thinkbiganalytics.metadata.api.datasource.DatasourceDefinition.ConnectionType.valueOf(def.getConnectionType().name()));
-                                                  domainDef.setProcessorType(def.getProcessorType());
-                                                  domainDef.setDatasourceType(def.getDatasourceType());
-                                                  domainDef.setDescription(def.getDescription());
-                                                  domainDef.setTile(def.getTitle());
-                                                  datasourceDefinitionProvider.update(domainDef);
-                                              });
-                        return null;
-                    }, MetadataAccess.SERVICE);
-             }
-
-
+            List<DatasourceDefinition> definitions = null;
+        if (StringUtils.isNotBlank(json)) {
+                definitions = Arrays.asList(ObjectMapperSerializer.deserialize(json, DatasourceDefinition[].class));
+        }
+        updateDatasourceDefinitions(definitions);
     }
+
+    public Set<DatasourceDefinition> updateDatasourceDefinitions(List<DatasourceDefinition> definitions) {
+        if (definitions != null) {
+            final List<DatasourceDefinition> datasourceDefinitions = definitions;
+            metadataAccess.commit(() -> {
+                datasourceDefinitions.stream().forEach(def ->
+                                                       {
+                                                           com.thinkbiganalytics.metadata.api.datasource.DatasourceDefinition
+                                                               domainDef =
+                                                               datasourceDefinitionProvider.ensureDatasourceDefinition(def.getProcessorType());
+                                                           domainDef.setDatasourcePropertyKeys(def.getDatasourcePropertyKeys());
+                                                           domainDef.setIdentityString(def.getIdentityString());
+                                                           domainDef.setConnectionType(
+                                                               com.thinkbiganalytics.metadata.api.datasource.DatasourceDefinition.ConnectionType.valueOf(def.getConnectionType().name()));
+                                                           domainDef.setProcessorType(def.getProcessorType());
+                                                           domainDef.setDatasourceType(def.getDatasourceType());
+                                                           domainDef.setDescription(def.getDescription());
+                                                           domainDef.setTile(def.getTitle());
+                                                           datasourceDefinitionProvider.update(domainDef);
+                                                       });
+                return null;
+            }, MetadataAccess.SERVICE);
+        }
+        return getDatasourceDefinitions();
+    }
+
 
     public Set<DatasourceDefinition> getDatasourceDefinitions(){
        return  metadataAccess.read(() -> {

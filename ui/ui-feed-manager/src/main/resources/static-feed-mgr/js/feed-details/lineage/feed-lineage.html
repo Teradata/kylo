@@ -1,13 +1,13 @@
-<div layout="row" layout-align="end center" class="layout-padding-top layout-padding-left">
-    <span class="md-button-group" layout="row" layout-align="end center">
-              <span flex></span>
-        <md-button class="border-btn" style="max-width:200px;" ng-class="{'selected': vm.graphMode == 'SIMPLE'}" ng-click="vm.onSimpleView()">Simple</md-button>
-        <md-button class="border-btn" style="max-width:200px;" ng-class="{'selected': vm.graphMode == 'DETAILED'}" ng-click="vm.onDetailedView()">Detailed</md-button>
+<div layout="row" layout-align="end center" class="layout-padding-top layout-padding-left" style="margin-left:-10px;">
+  <span flex></span>
+     <span class="md-button-group" layout-align="end center" layout="row">
+        <md-button class="border-btn" style="max-width:200px;" ng-class="{'selected': vm.graphMode == 'SIMPLE'}" ng-click="vm.onSimpleView()">Show Feeds</md-button>
+        <md-button class="border-btn" style="max-width:200px;" ng-class="{'selected': vm.graphMode == 'DETAILED'}" ng-click="vm.onDetailedView()">Show Feeds and Sources</md-button>
      </span>
 </div>
 
 
-<div style="min-height:800px;height:800px;" layout-fill id="feed-lineage-container">
+<div style="min-height:700px;height:700px" layout-fill id="feed-lineage-container">
   <div ng-if="vm.loading" layout="column" layout-fill layout-align="start center">
     <md-progress-linear md-mode="indeterminate"></md-progress-linear>
     <div class="layout-padding-top-bottom">Loading Feed Lineage ...</div>
@@ -32,7 +32,9 @@
       <md-expansion-panel-expanded>
 
         <md-expansion-panel-header>
-          <div class="md-summary">{{vm.selectedNode.name}}</div>
+          <div class="md-summary" ng-if="vm.selectedNode.type == 'FEED'">Feed selected</div>
+          <div class="md-summary" ng-if="vm.selectedNode.type == 'DATASOURCE'">Datasource selected</div>
+          <div class="md-summary" ng-if="vm.selectedNode.type != 'FEED' && vm.selectedNode.type != 'DATASOURCE' ">Select a node</div>
           <md-expansion-panel-icon></md-expansion-panel-icon>
         </md-expansion-panel-header>
 
@@ -42,33 +44,31 @@
           </div>
           <div ng-if="vm.selectedNode.type == 'FEED' && vm.selectedNode.content != null">
             <div>
+
               <div layout="column" class="layout-padding-bottom">
-                <span class="md-subheader">Type</span>
-                <span>Feed</span>
+                <span><a href="" ng-click="vm.navigateToFeed()">{{vm.selectedNode.name}}</a></span>
+                <span class="hint">Feed</span>
                 <md-divider></md-divider>
               </div>
+
+
               <div layout="column" class="layout-padding-bottom">
-                <span class="md-subheader">State</span>
-                <span>{{vm.selectedNode.content.state}}</span>
+                <span class="md-subheader">{{vm.selectedNode.content.state}}</span>
+                <span class="hint">State</span>
                 <md-divider></md-divider>
               </div>
               <div ng-repeat="(key,value) in vm.selectedNode.content.displayProperties" layout="column" class="layout-padding-bottom">
-                <span class="md-subheader">{{key}}</span>
                 <span>{{value}}</span>
+                <span class="hint">{{key}}</span>
                 <md-divider></md-divider>
               </div>
             </div>
           </div>
           <div ng-if="vm.selectedNode.type == 'DATASOURCE' && vm.selectedNode.content != null">
             <div>
-              <div layout="column" class="layout-padding-bottom">
-                <span class="md-subheader">Type</span>
-                <span>Datasource</span>
-                <md-divider></md-divider>
-              </div>
               <div ng-repeat="(key,value) in vm.selectedNode.content.displayProperties" layout="column" class="layout-padding-bottom">
-                <span class="md-subheader">{{key}}</span>
                 <span>{{value}}</span>
+                <span class="hint">{{key}}</span>
                 <md-divider></md-divider>
               </div>
             </div>

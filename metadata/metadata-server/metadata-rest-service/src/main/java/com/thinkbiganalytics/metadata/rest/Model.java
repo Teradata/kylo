@@ -192,6 +192,7 @@ public class Model {
             dsDef.setIdentityString(domain.getIdentityString());
             dsDef.setDatasourcePropertyKeys(domain.getDatasourcePropertyKeys());
             dsDef.setTitle(domain.getTitle());
+            dsDef.setDescription(domain.getDescription());
             return dsDef;
         }
     };
