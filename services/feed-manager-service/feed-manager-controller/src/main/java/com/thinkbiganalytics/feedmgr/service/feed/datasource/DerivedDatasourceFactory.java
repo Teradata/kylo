@@ -55,6 +55,26 @@ public class DerivedDatasourceFactory {
             if (ids != null && !ids.isEmpty()) {
                 sources.addAll(ids);
             }
+            //ensure this feed gets set as a hive table dest
+            DatasourceDefinition datasourceDefinition = datasourceDefinitionProvider.findByProcessorType(DATA_TRANSFORMATION_DEFINITION);
+            String identityString = datasourceDefinition.getIdentityString();
+            Map<String, String> props = new HashMap<String, String>();
+            props.put("schema", feedMetadata.getSystemCategoryName());
+            props.put("table", feedMetadata.getSystemFeedName());
+            identityString = propertyExpressionResolver.resolveVariables(identityString, props);
+            String desc = datasourceDefinition.getDescription();
+            if (desc != null) {
+                desc = propertyExpressionResolver.resolveVariables(desc, props);
+            }
+            String title = identityString;
+            DerivedDatasource
+                derivedDatasource =
+                datasourceProvider.ensureDerivedDatasource(datasourceDefinition.getDatasourceType(), identityString, title, desc,
+                                                           new HashMap<String, Object>(props));
+            if (derivedDatasource != null) {
+                dest.add(derivedDatasource.getId());
+            }
+
         }
 
         template.getRegisteredDatasourceDefinitions().stream().forEach(definition -> {
