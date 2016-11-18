@@ -11,5 +11,6 @@
 
   <modules>
     <module>kerberos-core</module>
+    <module>kerberos-test-client</module>
   </modules>
 </project>

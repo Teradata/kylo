@@ -13,8 +13,10 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.shims.Utils;
+import org.apache.hadoop.hive.thrift.DelegationTokenIdentifier;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.token.Token;
 import org.apache.hive.jdbc.HiveConnection;
 import org.apache.hive.service.auth.HiveAuthFactory;
 
@@ -164,7 +166,7 @@ public class TestKerberosKinit {
         System.out.println("Delegation token is: " + delegationToken);
 
 
-        Utils.setTokenStr(realugi, delegationToken, HiveAuthFactory.HS2_CLIENT_TOKEN);
+        setDelegationToken(realugi, delegationToken, HiveAuthFactory.HS2_CLIENT_TOKEN);
 
         Connection con = (Connection) realugi.doAs(new PrivilegedExceptionAction<Object>() {
             public Object run() {
@@ -203,6 +205,14 @@ public class TestKerberosKinit {
         realUserConnection.close();
         System.out.println(" ");
         System.out.println("Delegation token " + delegationToken + " has been removed");
+    }
+
+    public static void setDelegationToken(UserGroupInformation ugi, String tokenStr, String tokenService)
+        throws IOException {
+        Token<DelegationTokenIdentifier> delegationToken = new Token<DelegationTokenIdentifier>();
+        delegationToken.decodeFromUrlString(tokenStr);
+        delegationToken.setService(new Text(tokenService));
+        ugi.addToken(delegationToken);
     }
 
     /**
