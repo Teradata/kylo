@@ -21,6 +21,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Statement;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
@@ -36,7 +37,10 @@ public class RefreshableDataSource implements DataSource {
 
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(RefreshableDataSource.class);
 
-    private AtomicReference<DataSource> target = new AtomicReference<DataSource>();
+    private static final String DEFAULT_DATASOURCE_NAME = "DEFAULT";
+
+    //private AtomicReference<DataSource> target = new AtomicReference<DataSource>();
+    private ConcurrentHashMap<String,DataSource> datasources = new ConcurrentHashMap<>();
 
     private AtomicBoolean isRefreshing = new AtomicBoolean(false);
     String propertyPrefix;
@@ -57,7 +61,16 @@ public class RefreshableDataSource implements DataSource {
     public void refresh() {
         if (isRefreshing.compareAndSet(false, true)) {
             log.info("REFRESHING DATASOURCE for {} ", propertyPrefix);
-            target.set(create());
+            boolean userImpersonationEnabled = Boolean.valueOf(env.getProperty("hive.userImpersonation.enabled"));
+            if(userImpersonationEnabled && propertyPrefix.equals("hive.datasource")) {
+                String currentUser = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+                DataSource dataSource = create(true,currentUser);
+                datasources.put(currentUser, dataSource);
+            }
+            else {
+                DataSource dataSource = create(false,null);
+                datasources.put(DEFAULT_DATASOURCE_NAME, dataSource);
+            }
             isRefreshing.set(false);
         } else {
             //unable to refresh.  Refresh already in progress
@@ -91,7 +104,9 @@ public class RefreshableDataSource implements DataSource {
     }
 
     private Connection getConnectionForValidation() throws SQLException {
-        refresh();
+        if(getDataSource() == null) {
+            refresh();
+        }
         return KerberosUtil.getConnectionWithOrWithoutKerberos(getDataSource(), kerberosTicketConfiguration);
     }
 
@@ -130,7 +145,14 @@ public class RefreshableDataSource implements DataSource {
     //Rest of DataSource methods
 
     private DataSource getDataSource() {
-        return target.get();
+        boolean userImpersonationEnabled = Boolean.valueOf(env.getProperty("hive.userImpersonation.enabled"));
+        if(userImpersonationEnabled && propertyPrefix.equals("hive.datasource")) {
+            String currentUser = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            return datasources.get(currentUser);
+        }
+        else {
+            return datasources.get(DEFAULT_DATASOURCE_NAME);
+        }
     }
 
 
@@ -174,21 +196,19 @@ public class RefreshableDataSource implements DataSource {
         return prefix;
     }
 
-    private DataSource create() {
+    private DataSource create(boolean proxyUser, String principal) {
         String prefix = getPrefixWithTrailingDot();
-        boolean userImpersonationEnabled = Boolean.valueOf(env.getProperty("hive.userImpersonation.enabled"));
 
         String driverClassName = env.getProperty(prefix + "driverClassName");
         String url = env.getProperty(prefix + "url");
         String password = env.getProperty(prefix + "password");
         String userName = env.getProperty(prefix + "username");
 
-        if(userImpersonationEnabled && propertyPrefix.equals("hive.datasource")) {
-            String currentUser = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-            userName = currentUser;
-            url = url + ";hive.server2.proxy.user=" + currentUser;
+        if(proxyUser && propertyPrefix.equals("hive.datasource")) {
+            userName = principal;
+            url = url + ";hive.server2.proxy.user=" + principal;
         }
-        log.debug("The JDBC URL is " + url + " --- User impersonation enabled: " + userImpersonationEnabled);
+        log.debug("The JDBC URL is " + url + " --- User impersonation enabled: " + proxyUser);
         String username = userName;
 
         DataSource ds = DataSourceBuilder.create().driverClassName(driverClassName).url(url).username(username).password(password).build();
