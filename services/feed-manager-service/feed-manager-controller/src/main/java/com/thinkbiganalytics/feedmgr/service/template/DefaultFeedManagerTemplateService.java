@@ -128,6 +128,7 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
 
         RegisteredTemplate template = getRegisteredTemplateWithAllProperties(templateId);
         if(template != null){
+            template.initializeProcessors();
             processorProperties.addAll(template.getInputProcessors());
             processorProperties.addAll(template.getNonInputProcessors());
         }
