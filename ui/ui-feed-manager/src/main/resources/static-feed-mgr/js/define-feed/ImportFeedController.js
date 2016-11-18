@@ -118,7 +118,17 @@
             }
             var errorFn = function (data) {
                 hideProgress();
+                self.importResult = {};
                 self.importBtnDisabled = false;
+                self.importResultIcon = "error";
+                self.importResultIconColor = "#FF0000";
+                var msg =  "Unable to import and register the feed.  Errors were found. Ensure you are trying to upload a valid feed export file and not a template export file. ";
+                if(data.developerMessage){
+                    msg += data.developerMessage;
+                }
+                self.message = msg;
+                self.verifiedToCreateConnectingReusableTemplate = false;
+                self.createConnectingReusableTemplate = false;
             }
 
             var createConnectingReusableFlow = 'NOT_SET';

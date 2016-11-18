@@ -1,19 +1,6 @@
 package com.thinkbiganalytics.feedmgr.service.feed;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
-
-import javax.inject.Inject;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
+import com.google.common.collect.Sets;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportOptions;
@@ -22,9 +9,25 @@ import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
 import com.thinkbiganalytics.feedmgr.service.ExportImportTemplateService;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
+import com.thinkbiganalytics.feedmgr.support.ZipFileUtil;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.security.AccessController;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
+
+import javax.inject.Inject;
 
 /**
  * Created by sr186054 on 5/6/16.
@@ -64,6 +67,16 @@ public class ExportImportFeedService {
         public byte[] getFile() {
             return file;
         }
+    }
+
+    private Set<String> getValidZipFileEntries(){
+        String[] entries = {
+            "feed.json",
+            "nifiConnectingReusableTemplate.xml",
+            "nifiTemplate.xml",
+            "template.json"
+        };
+        return Sets.newHashSet(entries);
     }
 
 
@@ -206,10 +219,7 @@ public class ExportImportFeedService {
         return exportFeed;
 
     }
-
-    public ImportFeed importFeed(String fileName, InputStream inputStream, ImportOptions importOptions) throws IOException {
-        this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.IMPORT_FEEDS);
-
+    private byte[] streamToByteArray(InputStream inputStream)  throws IOException{
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         byte[] buf = new byte[1024];
         int n = 0;
@@ -217,6 +227,20 @@ public class ExportImportFeedService {
             baos.write(buf, 0, n);
         }
         byte[] content = baos.toByteArray();
+        return content;
+    }
+
+    public ImportFeed importFeed(String fileName, InputStream inputStream, ImportOptions importOptions) throws IOException {
+        this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.IMPORT_FEEDS);
+
+        byte[] content = streamToByteArray(inputStream);
+
+        boolean isValid = ZipFileUtil.validateZipEntriesWithRequiredEntries(content,getValidZipFileEntries(),Sets.newHashSet(FEED_JSON_FILE));
+        if(!isValid){
+            throw new ImportFeedException("The zip file you uploaded is not valid feed export.");
+        }
+
+
 
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(content);
 
@@ -262,5 +286,7 @@ public class ExportImportFeedService {
 
 
     }
+
+
 
 }
