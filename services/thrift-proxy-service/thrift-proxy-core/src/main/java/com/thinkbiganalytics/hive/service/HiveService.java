@@ -106,7 +106,7 @@ public class HiveService {
         QueryResult result = query("show databases");
         List<Object> databases = result.getRows().stream().flatMap(row -> row.entrySet().stream()).map(e -> e.getValue()).collect(Collectors.toList());
         databases.stream().forEach(database -> allTables.addAll(getTables(database.toString())));
-        System.out.print("time to get all tables " + (System.currentTimeMillis() - start) + " ms");
+        log.debug("time to get all tables " + (System.currentTimeMillis() - start) + " ms");
         return allTables;
     }
 
