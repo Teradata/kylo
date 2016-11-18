@@ -110,17 +110,16 @@
                 "arrowStrikethrough": false,
                 smooth: {
                     enabled: true,
-                    type: "horizontal",
+                    type: "cubicBezier",
                     roundness: 0,
                     "forceDirection": "horizontal"
                 },
-                font: {align: 'horizontal'},
-                length: 300
+                font: {align: 'horizontal'}
             },
             "physics": {
                 "enabled": true,
                 "barnesHut": {
-                    "springLength": 300
+                    "springLength": 200
                 }
             },
             layout: {
