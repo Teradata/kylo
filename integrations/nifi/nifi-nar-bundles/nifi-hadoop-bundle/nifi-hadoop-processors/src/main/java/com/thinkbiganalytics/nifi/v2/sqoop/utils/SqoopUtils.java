@@ -94,6 +94,39 @@ public class SqoopUtils {
     }
 
     /**
+     * Get count of records exported (for sqoop export job)
+     * @param sqoopExportProcessResult {@link SqoopProcessResult}
+     * @param logger Logger
+     * @return export record count
+     */
+    public int getSqoopExportRecordCount(SqoopProcessResult sqoopExportProcessResult, ComponentLog logger) {
+        String[] logLines = sqoopExportProcessResult.getLogLines();
+
+        if ((sqoopExportProcessResult.getExitValue() != 0) || (logLines[0] == null)) {
+            logger.info("Skipping attempt to retrieve number of records exported");
+            return -1;
+        }
+
+        //Example of logLines[0]:
+        //16/11/17 00:25:14 INFO mapreduce.ExportJobBase: Exported 4 records.
+        //In case of no records to export, the above will report: Exported 0 records.
+        String recordExportCountLogLine = logLines[0];
+
+        final String START_EXPORT_RECORD_COUNT_IDENTIFIER = "Exported";
+        final String END_EXPORT_RECORD_COUNT_IDENTIFIER = "records.";
+        int start = recordExportCountLogLine.indexOf(START_EXPORT_RECORD_COUNT_IDENTIFIER);
+        int end = recordExportCountLogLine.indexOf(END_EXPORT_RECORD_COUNT_IDENTIFIER);
+        String numberString = recordExportCountLogLine.substring(start + START_EXPORT_RECORD_COUNT_IDENTIFIER.length(), end).trim();
+        try {
+            return Integer.parseInt(numberString);
+        }
+        catch (Exception e) {
+            logger.info("Unable to parse number of records exported. " + e.getMessage());
+            return -1;
+        }
+    }
+
+    /**
      * Get next high watermark value for incremental load
      * @param sqoopProcessResult {@link SqoopProcessResult}
      * @return new high watermark value
