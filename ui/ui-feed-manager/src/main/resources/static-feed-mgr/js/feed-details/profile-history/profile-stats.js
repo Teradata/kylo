@@ -70,6 +70,13 @@
             });
         }
 
+        self.initTotalRows = function() {
+            var allColumnData = _.filter(self.data.rows, function (row) {
+                return row.columnname == "(ALL)";
+            });
+            return self.findNumericStat(allColumnData, 'TOTAL_COUNT');
+        }
+
         self.selectType = function() {
             var type = self.findStat(self.filtered, 'COLUMN_DATATYPE');
             if (_.isUndefined(type)) {
@@ -135,12 +142,11 @@
         }
 
         self.summaryData = function() {
-            var total = self.findNumericStat(self.filtered, 'TOTAL_COUNT');
             var nulls = self.findNumericStat(self.filtered, 'NULL_COUNT');
             var empty = self.findNumericStat(self.filtered, 'EMPTY_COUNT');
             var unique = self.findNumericStat(self.filtered, 'UNIQUE_COUNT');
             var invalid = self.findNumericStat(self.filtered, 'INVALID_COUNT');
-            var valid = total - invalid;
+            var valid = self.totalRows - invalid;
 
             //display negative values in red
             var color = self.chartColor();
@@ -149,7 +155,7 @@
             }
 
             var values = [];
-            values.push({"label": "Total", "value": total});
+            values.push({"label": "Total", "value": self.totalRows});
             values.push({"label": "Valid", "value": valid, "color": color});
             values.push({"label": "Invalid", "value": invalid});
 
@@ -358,6 +364,8 @@
                         self.selectRow(self.sorted[1]);
                     }
                 }
+
+                self.totalRows = self.initTotalRows();
 
                 self.loading = false;
                 BroadcastService.notify('PROFILE_TAB_DATA_LOADED','profile-stats');
