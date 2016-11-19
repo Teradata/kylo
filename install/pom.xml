@@ -5,7 +5,7 @@
   <parent>
     <artifactId>thinkbig-data-lake-accelerator</artifactId>
     <groupId>com.thinkbiganalytics.datalake</groupId>
-    <version>0.4.3-SNAPSHOT</version>
+    <version>0.4.3</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>install</artifactId>
