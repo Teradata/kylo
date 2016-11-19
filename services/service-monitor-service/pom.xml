@@ -7,7 +7,7 @@
     <parent>
         <artifactId>thinkbig-services</artifactId>
         <groupId>com.thinkbiganalytics.datalake</groupId>
-        <version>0.4.3</version>
+        <version>0.5.0-SNAPSHOT</version>
     </parent>
     <modules>
           <module>service-monitor-controller</module>
