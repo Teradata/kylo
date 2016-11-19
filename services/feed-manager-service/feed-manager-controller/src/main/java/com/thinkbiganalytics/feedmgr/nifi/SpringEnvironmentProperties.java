@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.feedmgr.nifi;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.core.env.AbstractEnvironment;
@@ -20,6 +22,8 @@ import java.util.TreeMap;
  */
 @RefreshScope
 public class SpringEnvironmentProperties {
+
+    private static final Logger log = LoggerFactory.getLogger(SpringEnvironmentProperties.class);
 
     private Map<String, Object> properties = new HashMap<>();
 
@@ -49,7 +53,14 @@ public class SpringEnvironmentProperties {
             if (props != null) {
                 NavigableMap m = new TreeMap(props);
                 Map<String,Object> properties = m.subMap(key, key + Character.MAX_VALUE);
-                propertiesStartingWith.put(key,properties);
+                Map<String, Object> decryptedProperties = new HashMap<>();
+                if (properties != null && !properties.isEmpty()) {
+                    properties.keySet().stream().forEach(k -> {
+                                                             decryptedProperties.put(k, env.getProperty(k));
+                                                         }
+                    );
+                }
+                propertiesStartingWith.put(key, decryptedProperties);
                 return properties;
 
             }
@@ -60,6 +71,7 @@ public class SpringEnvironmentProperties {
     public Object getPropertyValue(String key){
         return getAllProperties().get(key);
     }
+
 
     public String getPropertyValueAsString(String key){
         Object obj =  getPropertyValue(key);
@@ -89,8 +101,13 @@ public class SpringEnvironmentProperties {
                     map.putAll(((MapPropertySource) propertySource).getSource());
                 }
             }
+            //decrypt
+            Map<String, Object> decryptedMap = new HashMap();
+            map.keySet().forEach(k -> {
+                decryptedMap.put(k, env.getProperty(k));
+            });
 
-            properties = map;
+            properties = decryptedMap;
         }
         return properties;
     }
