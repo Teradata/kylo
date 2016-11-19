@@ -21,8 +21,6 @@ import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.OperationalMetadataAccess;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
-import com.thinkbiganalytics.metadata.api.datasource.DerivedDatasource;
-import com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDatasource;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventListener;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.event.feed.FeedPropertyChangeEvent;
@@ -44,7 +42,6 @@ import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptorTransform;
-import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.policy.precondition.DependentFeedPrecondition;
 import com.thinkbiganalytics.policy.precondition.Precondition;
 import com.thinkbiganalytics.policy.precondition.transform.PreconditionPolicyTransformer;
@@ -60,7 +57,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.io.Serializable;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -478,79 +474,6 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
         //TODO deal with inputs changing sources?
 
     }
-
-    /**
-     * Assigns FeedSource and FeedDestination along with their respective Datasources
-     */
-    private void assignFeedDatasourcesx(FeedMetadata feed, FeedManagerFeed domainFeed) {
-        final Feed.ID domainFeedId = domainFeed.getId();
-        Set<com.thinkbiganalytics.metadata.api.datasource.Datasource.ID> sources = new HashSet<com.thinkbiganalytics.metadata.api.datasource.Datasource.ID>();
-        Set<com.thinkbiganalytics.metadata.api.datasource.Datasource.ID> destinations = new HashSet<com.thinkbiganalytics.metadata.api.datasource.Datasource.ID>();
-
-        String uniqueName = FeedNameUtil.fullName(feed.getCategory().getSystemName(), feed.getSystemFeedName());
-
-        RegisteredTemplate template = feed.getRegisteredTemplate();
-        if (template == null) {
-            //fetch it for checks
-            template = templateRestProvider.getRegisteredTemplateByName(feed.getTemplateName());
-        }
-        //Sources
-
-        if (feed.getDataTransformation() != null && !feed.getDataTransformation().getTableNamesFromViewModel().isEmpty()) {
-            Set<String> hiveTableSources = feed.getDataTransformation().getTableNamesFromViewModel();
-            //create hive sources
-            hiveTableSources.stream().forEach(hiveTable -> {
-                com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource table
-                    = datasourceProvider.ensureHiveTableDatasource(hiveTable,
-                                                                   feed.getDescription(),
-                                                                   StringUtils.trim(StringUtils.substringBefore(hiveTable, ".")),
-                                                                   StringUtils.trim(StringUtils.substringAfterLast(hiveTable, ".")));
-                sources.add(table.getId());
-            });
-
-        } else if (feed.getInputProcessorType().endsWith(".GetFile")) {
-            String dir = "/" + uniqueName;
-            if (template != null && template.getInputProcessors() != null) {
-                RegisteredTemplate.Processor processor = template.getInputProcessors().stream().filter(p -> p.getType().equals(feed.getInputProcessorType())).findFirst().orElse(null);
-
-                if (processor != null) {
-                    NifiProperty inputdir = processor.getProperties().stream().filter(property -> property.getKey().equalsIgnoreCase("Input Directory")).findFirst().orElse(null);
-                    if (inputdir != null) {
-                        dir = inputdir.getValue();
-                    }
-                }
-            }
-            //get the value from the feed if possible
-            NifiProperty
-                feedInput =
-                feed.getProperties().stream().filter(property -> property.getProcessorType().equals(feed.getInputProcessorType()) && property.getKey().equals("Input Directory")).findFirst()
-                    .orElse(null);
-            if (feedInput != null) {
-                dir = feedInput.getValue();
-            }
-
-            DirectoryDatasource directoryDatasource = datasourceProvider.ensureDirectoryDatasource(dir, feed.getDescription(), Paths.get(dir));
-            sources.add(directoryDatasource.getId());
-        } else {
-            DerivedDatasource defaultDatasource = datasourceProvider.ensureDatasource(uniqueName, feed.getDescription(), DerivedDatasource.class);
-            sources.add(defaultDatasource.getId());
-        }
-        if (template != null && template.isDefineTable() || template.isDataTransformation()) {
-
-            //find the destination for this type
-            com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource table
-                = datasourceProvider.ensureHiveTableDatasource(uniqueName,
-                                                               feed.getDescription(),
-                                                               feed.getCategory().getSystemName(),
-                                                               feed.getSystemFeedName());
-            destinations.add(table.getId());
-        }
-
-        sources.stream().forEach(sourceId -> feedProvider.ensureFeedSource(domainFeedId, sourceId));
-        destinations.stream().forEach(sourceId -> feedProvider.ensureFeedDestination(domainFeedId, sourceId));
-        //TODO deal with inputs changing sources?
-    }
-
     @Override
     public void deleteFeed(@Nonnull final String feedId) {
         metadataAccess.commit(() -> {

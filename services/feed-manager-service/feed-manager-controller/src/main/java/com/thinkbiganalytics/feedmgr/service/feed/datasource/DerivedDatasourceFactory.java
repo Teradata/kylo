@@ -76,9 +76,11 @@ public class DerivedDatasourceFactory {
             }
 
         }
+        List<RegisteredTemplate.Processor> processors = feedManagerTemplateService.getRegisteredTemplateProcessors(feedMetadata.getTemplateId(), true);
+        List<NifiProperty> allProperties = processors.stream().flatMap(processor -> processor.getProperties().stream()).collect(Collectors.toList());
 
         template.getRegisteredDatasourceDefinitions().stream().forEach(definition -> {
-            Datasource.ID id = ensureDatasource(definition, feedMetadata);
+            Datasource.ID id = ensureDatasource(definition, feedMetadata, allProperties);
             if (id != null) {
                 if (com.thinkbiganalytics.metadata.rest.model.data.DatasourceDefinition.ConnectionType.SOURCE.equals(definition.getDatasourceDefinition().getConnectionType())) {
                     //ensure this is the selected one for the feed
@@ -138,11 +140,8 @@ public class DerivedDatasourceFactory {
     }
 
 
-    public Datasource.ID ensureDatasource(TemplateProcessorDatasourceDefinition definition, FeedMetadata feedMetadata) {
+    public Datasource.ID ensureDatasource(TemplateProcessorDatasourceDefinition definition, FeedMetadata feedMetadata, List<NifiProperty> allProperties) {
         return metadataAccess.commit(() -> {
-
-            List<RegisteredTemplate.Processor> processors = feedManagerTemplateService.getRegisteredTemplateProcessors(feedMetadata.getTemplateId(), true);
-            List<NifiProperty> allProperties = processors.stream().flatMap(processor -> processor.getProperties().stream()).collect(Collectors.toList());
 
             List<NifiProperty> propertiesToEvalulate = new ArrayList<NifiProperty>();
 
@@ -186,8 +185,6 @@ public class DerivedDatasourceFactory {
                     title = propertyExpressionResolver.replaceAll(title, " {runtime variable} ");
                     identityString = propertyExpressionResolver.replaceAll(identityString, feedMetadata.getId());
                 }
-
-                NifiProperty feedProp = allProperties.stream().filter(p -> p.getKey().equals("feed")).findFirst().orElse(null);
 
                 //find any datasource matching this DsName and identity String, if not create one
                 //if it is the Source ensure the feed matches this ds
