@@ -13,21 +13,4 @@
           <module>service-monitor-controller</module>
     </modules>
 
-    <profiles>
-        <profile>
-            <id>ambari</id>
-            <modules>
-                <module>service-monitor/service-monitor-ambari</module>
-            </modules>
-        </profile>
-
-        <profile>
-            <id>cloudera</id>
-            <modules>
-                <module>service-monitor/service-monitor-cloudera</module>
-            </modules>
-        </profile>
-
-    </profiles>
-
 </project>

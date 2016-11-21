@@ -41,6 +41,8 @@
       <groupId>com.cloudera.api</groupId>
       <artifactId>cloudera-manager-api</artifactId>
       <version>5.4.0.1-tba</version>
+      <scope>system</scope>
+      <systemPath>${project.basedir}/lib/cloudera-manager-api-5.4.0.1-tba.jar</systemPath>
       <exclusions>
         <exclusion>
           <groupId>org.eclipse.jetty</groupId>
