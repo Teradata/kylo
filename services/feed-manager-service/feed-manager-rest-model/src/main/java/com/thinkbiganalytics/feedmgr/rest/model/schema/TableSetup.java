@@ -9,7 +9,6 @@ import com.thinkbiganalytics.db.model.schema.TableSchema;
 import com.thinkbiganalytics.feedmgr.metadata.MetadataField;
 import com.thinkbiganalytics.policy.rest.model.FieldPolicy;
 
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -325,14 +324,6 @@ public class TableSetup {
         }
     }
 
-    public void updateFeedFormat() {
-        if (StringUtils.isNotBlank(feedFormat)) {
-            // Strip newlines then escape for use
-            feedFormat =  StringUtils.replace(feedFormat, "\n", "");
-            feedFormat = StringEscapeUtils.escapeJava(feedFormat);
-        }
-    }
-
     public void ensureNotEmpty() {
         if (StringUtils.isBlank(sourceFields)) {
             sourceFields = "NA";
@@ -355,7 +346,6 @@ public class TableSetup {
         updateFieldPolicyNames();
         updateFieldPolicyJson();
         updateTargetTblProperties();
-        updateFeedFormat();
         ensureNotEmpty();
 
     }
@@ -467,11 +457,7 @@ public class TableSetup {
 
 
     public String getFeedFormat() {
-        if (StringUtils.isNotBlank(feedFormat) && feedFormat.contains("\\\\")) {
-            return StringUtils.isNotBlank(feedFormat) ? StringEscapeUtils.unescapeJava(feedFormat) : null;
-        } else {
-            return feedFormat;
-        }
+        return feedFormat;
     }
 
     public void setFeedFormat(String feedFormat) {
