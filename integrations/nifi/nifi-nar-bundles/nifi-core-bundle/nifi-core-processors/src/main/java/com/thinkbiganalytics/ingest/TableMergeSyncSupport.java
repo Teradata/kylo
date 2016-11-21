@@ -46,6 +46,12 @@ public class TableMergeSyncSupport implements Serializable {
         doExecuteSQL("set hive.exec.dynamic.partition.mode=nonstrict");
     }
 
+    public void setHiveConf(String[] configurations){
+        for(String conf : configurations){
+            doExecuteSQL("set " + conf);
+        }
+    }
+
     /**
      * Performs a sync replacing all data in the target table. A temporary table is created with the new data, old table dropped and the temporary table renamed to become the new table.  This causes a
      * very brief lapse for consumers between when the table is dropped and the rename.
