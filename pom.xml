@@ -27,6 +27,7 @@
         <junit.version>4.11</junit.version>
         <testng.version>6.9.10</testng.version>
         <slf4j.version>1.7.12</slf4j.version>
+        <slf4j.log4j12.version>1.7.10</slf4j.log4j12.version>
         <io.swagger.version>1.5.9</io.swagger.version>
         <commons-beanutils.version>1.9.2</commons-beanutils.version>
         <commons.dbcp>1.4</commons.dbcp>
@@ -53,10 +54,11 @@
         <powermock.version>1.6.3</powermock.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <quartz.version>2.2.1</quartz.version>
-        <scala.version>2.10.4</scala.version>  <!-- Require 2.10.4+ for Java 8 -->
         <slf4j.version>1.7.12</slf4j.version>
-        <scala.version>2.10.4</scala.version>
+        <scala.version>2.10.6</scala.version>
+        <scala.binary.version>2.10</scala.binary.version>
         <spark.version>1.6.1</spark.version>
+        <spark.binary.version>1.6</spark.binary.version>
         <spring.version>4.2.5.RELEASE</spring.version>
         <spring.batch.version>3.0.6.RELEASE</spring.batch.version>
         <spring.boot.version>1.3.7.RELEASE</spring.boot.version>
@@ -90,16 +92,6 @@
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
-        </repository>
-        <repository>
-            <id>thinkbig-snapshot</id>
-            <name>think big snapshot</name>
-            <url>http://52.203.91.75:8080/artifactory/libs-snapshot-local</url>
-        </repository>
-        <repository>
-            <id>thinkbig-release</id>
-            <name>thinkbig release</name>
-            <url>http://52.203.91.75:8080/artifactory/libs-release-local</url>
         </repository>
         <repository>
             <id>spring-milestones</id>
@@ -655,27 +647,27 @@
             <!-- Spark -->
             <dependency>
                 <groupId>org.apache.spark</groupId>
-                <artifactId>spark-core_2.10</artifactId>
+                <artifactId>spark-core_${scala.binary.version}</artifactId>
                 <version>${spark.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.spark</groupId>
-                <artifactId>spark-hive_2.10</artifactId>
+                <artifactId>spark-hive_${scala.binary.version}</artifactId>
                 <version>${spark.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.spark</groupId>
-                <artifactId>spark-mllib_2.10</artifactId>
+                <artifactId>spark-mllib_${scala.binary.version}</artifactId>
                 <version>${spark.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.spark</groupId>
-                <artifactId>spark-repl_2.10</artifactId>
+                <artifactId>spark-repl_${scala.binary.version}</artifactId>
                 <version>${spark.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.spark</groupId>
-                <artifactId>spark-sql_2.10</artifactId>
+                <artifactId>spark-sql_${scala.binary.version}</artifactId>
                 <version>${spark.version}</version>
             </dependency>
 
@@ -688,7 +680,7 @@
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-log4j12</artifactId>
-                <version>1.7.10</version>
+                <version>${slf4j.log4j12.version}</version>
             </dependency>
 
             <!-- reflections io -->
@@ -757,9 +749,8 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
         </dependency>
+   </dependencies>
 
-
-    </dependencies>
 
     <build>
         <plugins>

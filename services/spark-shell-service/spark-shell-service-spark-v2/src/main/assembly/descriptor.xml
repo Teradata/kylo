@@ -1,0 +1,12 @@
+<assembly>
+    <id>distribution</id>
+    <formats>
+        <format>tar.gz</format>
+    </formats>
+    <includeBaseDirectory>true</includeBaseDirectory>
+    <dependencySets>
+        <dependencySet>
+            <outputDirectory>lib/spark-v2</outputDirectory>
+        </dependencySet>
+    </dependencySets>
+</assembly>

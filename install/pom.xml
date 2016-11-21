@@ -306,20 +306,10 @@
               <groupname>${rpm.user}</groupname>
               <sources>
                 <source>
-                  <location>../services/spark-shell-service/target/thinkbig-spark-shell-service-${project.version}-distribution.tar.gz</location>
+                  <location>../services/spark-shell-service/spark-shell-service-spark-v1/target/thinkbig-spark-shell-service-spark-v1-${project.version}-distribution.tar.gz</location>
                 </source>
-              </sources>
-            </mapping>
-            <mapping>
-              <directory>${rpm.install.dir}/thinkbig-spark-shell</directory>
-              <filemode>${file.permissions}</filemode>
-              <username>${rpm.user}</username>
-              <groupname>${rpm.user}</groupname>
-              <sources>
                 <source>
-                  <location>
-                    ../services/spark-shell-service/target/thinkbig-spark-shell-service-${project.version}.jar
-                  </location>
+                  <location>../services/spark-shell-service/spark-shell-service-spark-v2/target/thinkbig-spark-shell-service-spark-v2-${project.version}-distribution.tar.gz</location>
                 </source>
               </sources>
             </mapping>
@@ -331,12 +321,12 @@
               <sources>
                 <source>
                   <location>
-                    ../services/spark-shell-service/src/main/config/rpm-build/application.properties
+                    ../services/spark-shell-service/spark-shell-service-app/src/main/config/rpm-build/application.properties
                   </location>
                 </source>
                 <source>
                   <location>
-                    ../services/spark-shell-service/src/main/config/rpm-build/log4j.properties
+                    ../services/spark-shell-service/spark-shell-service-app/src/main/config/rpm-build/log4j.properties
                   </location>
                 </source>
               </sources>
@@ -457,21 +447,39 @@
                   </includes>
                 </source>
                 <source>
-                  <location>../integrations/spark/spark-job-profiler/target</location>
+                  <location>../integrations/spark/spark-job-profiler/spark-job-profiler-spark-v1/target</location>
                   <includes>
-                    <include>thinkbig-spark-job-profiler-${project.version}-jar-with-dependencies.jar</include>
+                    <include>thinkbig-spark-job-profiler-spark-v1-${project.version}-jar-with-dependencies.jar</include>
                   </includes>
                 </source>
                 <source>
-                  <location>../integrations/spark/spark-validate-cleanse/target</location>
+                  <location>../integrations/spark/spark-job-profiler/spark-job-profiler-spark-v2/target</location>
                   <includes>
-                    <include>thinkbig-spark-validate-cleanse-${project.version}-jar-with-dependencies.jar</include>
+                    <include>thinkbig-spark-job-profiler-spark-v2-${project.version}-jar-with-dependencies.jar</include>
                   </includes>
                 </source>
                 <source>
-                  <location>../integrations/spark/spark-interpreter/target</location>
+                  <location>../integrations/spark/spark-validate-cleanse/spark-validate-cleanse-spark-v1/target</location>
                   <includes>
-                    <include>thinkbig-spark-interpreter-${project.version}-jar-with-dependencies.jar</include>
+                    <include>thinkbig-spark-validate-cleanse-spark-v1-${project.version}-jar-with-dependencies.jar</include>
+                  </includes>
+                </source>
+                <source>
+                  <location>../integrations/spark/spark-validate-cleanse/spark-validate-cleanse-spark-v2/target</location>
+                  <includes>
+                    <include>thinkbig-spark-validate-cleanse-spark-v2-${project.version}-jar-with-dependencies.jar</include>
+                  </includes>
+                </source>
+                <source>
+                  <location>../integrations/spark/spark-interpreter/spark-interpreter-spark-v1/target</location>
+                  <includes>
+                    <include>thinkbig-spark-interpreter-spark-v1-${project.version}-jar-with-dependencies.jar</include>
+                  </includes>
+                </source>
+                <source>
+                  <location>../integrations/spark/spark-interpreter/spark-interpreter-spark-v2/target</location>
+                  <includes>
+                    <include>thinkbig-spark-interpreter-spark-v2-${project.version}-jar-with-dependencies.jar</include>
                   </includes>
                 </source>
               </sources>

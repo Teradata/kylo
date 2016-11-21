@@ -243,16 +243,17 @@ echo "   - Added service 'thinkbig-services'"
 echo "    - Completed thinkbig-services install"
 
 echo "    - Install thinkbig-spark-shell application"
-tar -xf $rpmInstallDir/thinkbig-spark-shell/thinkbig-spark-shell-service-*.tar.gz -C $rpmInstallDir/thinkbig-spark-shell --strip-components=1
+tar -xf $rpmInstallDir/thinkbig-spark-shell/thinkbig-spark-shell-service-spark-v1-*.tar.gz -C $rpmInstallDir/thinkbig-spark-shell --strip-components=1
+tar -xf $rpmInstallDir/thinkbig-spark-shell/thinkbig-spark-shell-service-spark-v2-*.tar.gz -C $rpmInstallDir/thinkbig-spark-shell --strip-components=1
 rm -rf $rpmInstallDir/thinkbig-spark-shell/thinkbig-spark-shell-service-*.tar.gz
-rm -f $rpmInstallDir/thinkbig-spark-shell/lib/slf4j*
-rm -f $rpmInstallDir/thinkbig-spark-shell/lib/log4j*
-rm -f $rpmInstallDir/thinkbig-spark-shell/lib/thinkbig-spark-shell*
+rm -f $rpmInstallDir/thinkbig-spark-shell/lib/*/slf4j*
+rm -f $rpmInstallDir/thinkbig-spark-shell/lib/*/log4j*
 echo "   - Installed thinkbig-spark-shell to '$rpmInstallDir/thinkbig-spark-shell'"
 
 cat << EOF > $rpmInstallDir/thinkbig-spark-shell/bin/run-thinkbig-spark-shell.sh
 #!/bin/bash
-spark-submit --conf spark.driver.userClassPathFirst=true --class com.thinkbiganalytics.spark.SparkShellApp --driver-class-path /opt/thinkbig/thinkbig-spark-shell/conf --jars \`find $rpmInstallDir/thinkbig-spark-shell/lib/ -name "*.jar" | paste -d, -s\` $rpmInstallDir/thinkbig-spark-shell/thinkbig-spark-shell-*.jar --pgrep-marker=$pgrepMarkerThinkbigSparkShell
+SPARK_PROFILE="spark-v"$(spark-submit --version 2>&1 | grep -o "version [0-9]" | grep -o "[0-9]")
+spark-submit --conf spark.driver.userClassPathFirst=true --class com.thinkbiganalytics.spark.SparkShellApp --driver-class-path /opt/thinkbig/thinkbig-spark-shell/conf --jars \`find $rpmInstallDir/thinkbig-spark-shell/lib/\${SPARK_PROFILE}/ -name "*.jar" | paste -d, -s\` $rpmInstallDir/thinkbig-spark-shell/lib/\${SPARK_PROFILE}/thinkbig-spark-shell-service-app-*.jar --pgrep-marker=$pgrepMarkerThinkbigSparkShell
 EOF
 chmod +x $rpmInstallDir/thinkbig-spark-shell/bin/run-thinkbig-spark-shell.sh
 echo "   - Created thinkbig-spark-shell script '$rpmInstallDir/thinkbig-spark-shell/bin/run-thinkbig-spark-shell.sh'"

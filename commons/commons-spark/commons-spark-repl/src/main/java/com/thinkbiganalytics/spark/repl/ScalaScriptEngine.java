@@ -1,0 +1,72 @@
+package com.thinkbiganalytics.spark.repl;
+
+import org.apache.spark.SparkConf;
+import org.apache.spark.SparkContext;
+import org.apache.spark.util.Utils;
+import scala.collection.JavaConversions;
+import scala.collection.immutable.List;
+import scala.tools.nsc.Settings;
+import scala.tools.nsc.interpreter.IMain;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.io.File;
+
+public class ScalaScriptEngine extends ScriptEngine {
+
+    private static final String OUTPUTDIR = "spark.repl.class.outputDir";
+
+    @Nonnull
+    private final SparkConf conf;
+
+    @Nullable
+    private IMain interpreter;
+
+    public ScalaScriptEngine(@Nonnull final SparkConf conf) {
+        this.conf = conf;
+    }
+
+    @Nonnull
+    @Override
+    protected SparkContext createSparkContext() {
+        // Set output directory
+        String rootDir = this.conf.get("spark.repl.classdir", Utils.getLocalDir(this.conf));
+        File outputDir = Utils.createTempDir(rootDir, "repl");
+        this.conf.set("spark.repl.class.outputDir", outputDir.getAbsolutePath());
+
+        // Create Spark context
+        return new SparkContext(this.conf);
+    }
+
+    @Override
+    protected void execute(@Nonnull String script) {
+        getInterpreter().interpret(script);
+    }
+
+    @Nonnull
+    private IMain getInterpreter() {
+        if (this.interpreter == null) {
+            java.util.List<String> params = new java.util.ArrayList<>();
+            params.add("-Yrepl-class-based");
+            params.add("-Yrepl-outdir");
+            params.add(getOutputDirectory());
+            List<String> interpArguments = JavaConversions.asScalaBuffer(params).toList();
+
+            Settings settings = new Settings();
+            settings.processArguments(interpArguments, true);
+
+            // Initialize engine
+            this.interpreter = new IMain(settings, getPrintWriter());
+            this.interpreter.initializeSynchronous();
+
+            // Setup environment
+            this.interpreter.bind("engine", ScalaScriptEngine.class.getName(), this, null);
+        }
+        return this.interpreter;
+    }
+
+    @Nonnull
+    private String getOutputDirectory() {
+        return getSparkContext().getConf().get(OUTPUTDIR);
+    }
+}
