@@ -76,9 +76,13 @@ those users created before installing the Kylo stack. You will need a user/group
 Note: Those exact names are required (note the lowercase)
 
 == Installation
-There are 3 procedures you can follow to deploy the solution. In a test and production environment you will likely want to follow the manual installation guide as it has more
+There are multiple procedures you can follow to deploy Kylo. In a test and production environment you will likely want to follow the manual installation guide as it has more
 detailed instructions on how to install each individual component. For local development and 1 node development boxes you can leverage the setup wizard procedure to quickly bootstrap
 your environment.
+
+NOTE: If you are installing Kylo on SUSE please read the following doc to work around ActiveMQ and Elasticsearch issues
+
+link:deployment/suse/suse-configuration-changes{outfilesuffix}[SUSE Configuration Changes]
 
 === Install Procedure 1:  Installing all components on one edge node with internet access using the wizard
 
