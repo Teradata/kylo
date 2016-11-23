@@ -172,5 +172,37 @@ public class SqoopUtils {
         final String ORACLE_IDENTIFIER = "oracle";
         return driver.toLowerCase().contains(ORACLE_IDENTIFIER);
     }
+
+    /**
+     * Check target column type mappings input format. Expected format is key=value pairs separated by comma. No spaces.
+     * @param valueToCheck A value to check
+     * @return true/false indicating if value is correctly formatted
+     */
+    public Boolean checkMappingInput (@Nonnull String valueToCheck) {
+        final String SPACE_STRING = " ";
+        final char COMMA_CHAR = ',';
+        final char EQUAL_CHAR = '=';
+
+        if (valueToCheck.contains(SPACE_STRING)) {
+            return false;
+        }
+
+        int commaCount = 0;
+        int equalCount = 0;
+        for (char c: valueToCheck.toCharArray()) {
+            if (c == COMMA_CHAR) {
+                commaCount++;
+            }
+            else if (c == EQUAL_CHAR) {
+                equalCount++;
+            }
+        }
+
+        if ((equalCount - commaCount - 1) != 0) {
+            return false;
+        }
+
+        return true;
+    }
 }
 

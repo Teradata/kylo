@@ -229,6 +229,19 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         .defaultValue(CompressionAlgorithm.NONE.toString())
         .build();
 
+    public static final PropertyDescriptor TARGET_COLUMN_TYPE_MAPPING = new PropertyDescriptor.Builder()
+        .name("Target Column Type Mapping")
+        .description("Mapping to use for source columns (SQL type) to target (Java type). "
+                     + "This will override Sqoop's default mapping.  Only provide mappings that you wish to override. "
+                     + "The source must contain the specified column/s."
+                     + "Also, this is REQUIRED for source columns that Sqoop is unable to map (An example is Oracle NCLOB data type). "
+                     + "Mappings can be entered as COLUMN=Type pairs separated by comma. Ensure that there are no spaces in entry. "
+                     + "Example: PO_ID=Integer,PO_DETAILS=String")
+        .required(false)
+        .expressionLanguageSupported(true)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .build();
+
     public static final Relationship REL_SUCCESS = new Relationship.Builder()
         .name("success")
         .description("Sqoop import success")
@@ -280,6 +293,7 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         properties.add(TARGET_HIVE_DELIM_STRATEGY);
         properties.add(TARGET_HIVE_REPLACE_DELIM);
         properties.add(TARGET_COMPRESSION_ALGORITHM);
+        properties.add(TARGET_COLUMN_TYPE_MAPPING);
         this.properties = Collections.unmodifiableList(properties);
 
         /* Create list of relationships */
@@ -332,6 +346,7 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         final HiveDelimStrategy targetHiveDelimStrategy = HiveDelimStrategy.valueOf(context.getProperty(TARGET_HIVE_DELIM_STRATEGY).getValue());
         final String targetHiveReplaceDelim = context.getProperty(TARGET_HIVE_REPLACE_DELIM).evaluateAttributeExpressions(flowFile).getValue();
         final CompressionAlgorithm targetCompressionAlgorithm = CompressionAlgorithm.valueOf(context.getProperty(TARGET_COMPRESSION_ALGORITHM).getValue());
+        final String targetColumnTypeMapping = context.getProperty(TARGET_COLUMN_TYPE_MAPPING).evaluateAttributeExpressions(flowFile).getValue();
 
         final String COMMAND_SHELL = "/bin/bash";
         final String COMMAND_SHELL_FLAGS = "-c";
@@ -369,6 +384,7 @@ public class ImportSqoop extends AbstractNiFiProcessor {
             .setTargetHiveDelimStrategy(targetHiveDelimStrategy)
             .setTargetHiveReplaceDelim(targetHiveReplaceDelim)
             .setTargetCompressionAlgorithm(targetCompressionAlgorithm)
+            .setTargetColumnTypeMapping(targetColumnTypeMapping)
             .build();
 
         List<String> sqoopExecutionCommand = new ArrayList<>();
@@ -442,6 +458,8 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         final PasswordMode passwordMode = sqoopConnectionService.getPasswordMode();
         final ExtractDataFormat targetExtractDataFormat = ExtractDataFormat.valueOf(validationContext.getProperty(TARGET_EXTRACT_DATA_FORMAT).getValue());
         final CompressionAlgorithm targetCompressionAlgorithm = CompressionAlgorithm.valueOf(validationContext.getProperty(TARGET_COMPRESSION_ALGORITHM).getValue());
+        final String targetColumnTypeMapping = validationContext.getProperty(TARGET_COLUMN_TYPE_MAPPING).evaluateAttributeExpressions().getValue();
+
         SqoopUtils sqoopUtils = new SqoopUtils();
 
         if (sourceLoadStrategy == SqoopLoadStrategy.INCREMENTAL_LASTMODIFIED || sourceLoadStrategy == SqoopLoadStrategy.INCREMENTAL_APPEND) {
@@ -493,7 +511,6 @@ public class ImportSqoop extends AbstractNiFiProcessor {
             }
         }
 
-
         if ((targetExtractDataFormat == ExtractDataFormat.PARQUET) && (targetCompressionAlgorithm != CompressionAlgorithm.NONE)) {
             results.add(new ValidationResult.Builder()
                             .subject(this.getClass().getSimpleName())
@@ -509,6 +526,19 @@ public class ImportSqoop extends AbstractNiFiProcessor {
                             .valid(false)
                             .explanation("For Teradata source system, INCREMENTAL_LASTMODIFIED mode of load is not supported. This is due to a known issue with Sqoop (SQOOP-2402).")
                             .build());
+        }
+
+        if ((targetColumnTypeMapping != null) && (!targetColumnTypeMapping.isEmpty())) {
+            if (!sqoopUtils.checkMappingInput(targetColumnTypeMapping)) {
+                results.add(new ValidationResult.Builder()
+                                .subject(this.getClass().getSimpleName())
+                                .valid(false)
+                                .explanation("For Target Column Type Mapping, ensure that mappings are provided as COLUMN=Type pairs separated by comma. "
+                                             + "Ensure no spaces in entry. "
+                                             + "Example: PO_ID=Integer,PO_DETAILS=String")
+                                .build());
+
+            }
         }
 
         return results;

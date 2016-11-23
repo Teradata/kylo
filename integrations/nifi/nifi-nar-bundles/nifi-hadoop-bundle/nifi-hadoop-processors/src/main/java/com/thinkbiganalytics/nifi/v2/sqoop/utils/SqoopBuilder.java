@@ -91,6 +91,8 @@ public class SqoopBuilder {
     private final static String targetCompressionCodecLabel = "--compression-codec";
     private String targetCompressionCodec;
     private Boolean targetCompressFlag = false;
+    private final static String targetColumnTypeMappingLabel = "--map-column-java";
+    private String targetColumnTypeMapping;
 
     private final static String operationName = "sqoop";
     private final static String operationType = "import";
@@ -368,8 +370,19 @@ public class SqoopBuilder {
      * @return {@link SqoopBuilder}
      */
     public SqoopBuilder setTargetCompressionAlgorithm (CompressionAlgorithm targetCompressionAlgorithm) {
-        targetCompressionCodec = getCompressionCodecClass (targetCompressionAlgorithm);
+        this.targetCompressionCodec = getCompressionCodecClass (targetCompressionAlgorithm);
         logMessage("info", "Target Compression Algorithm", targetCompressionAlgorithm);
+        return this;
+    }
+
+    /**
+     * Set mapping to use for source columns (SQL type) to target (Java type).
+     * @param targetColumnTypeMapping mapping as COLUMN=Type pairs separated by comma. Example: PO_ID=Integer,PO_DETAILS=String
+     * @return {@link SqoopBuilder}
+     */
+    public SqoopBuilder setTargetColumnTypeMapping (String targetColumnTypeMapping) {
+        this.targetColumnTypeMapping = targetColumnTypeMapping;
+        logMessage("info", "Target Column Type Mapping", this.targetColumnTypeMapping);
         return this;
     }
 
@@ -702,6 +715,14 @@ public class SqoopBuilder {
                 .append(targetCompressionCodecLabel)                                            //--compression-codec
                 .append(START_SPACE_QUOTE)
                 .append(targetCompressionCodec)                                                 //"user provided"
+                .append(END_QUOTE_SPACE);
+        }
+
+        if ((targetColumnTypeMapping != null) && (!targetColumnTypeMapping.isEmpty())) {
+            commandStringBuffer
+                .append(targetColumnTypeMappingLabel)                                           //--map-column-java
+                .append(START_SPACE_QUOTE)
+                .append(targetColumnTypeMapping)                                                //"user provided"
                 .append(END_QUOTE_SPACE);
         }
 
