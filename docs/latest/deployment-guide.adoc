@@ -286,7 +286,7 @@ In addition there is a script for cleaning up the hive schema and HDFS folders t
 
 == Appendix: Postgres Integration
 
-TBD
+link:postgres/postgres-hive-metadata-configuration{outfilesuffix}[Postgres Hive Metadata Configuration]
 
 == Icons and Icon Colors
 Icons and the colors can be configured using 2 JSON files found in the /opt/thinkbig/thinkbig-services/conf directory
