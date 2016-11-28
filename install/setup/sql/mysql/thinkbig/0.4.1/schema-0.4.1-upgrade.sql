@@ -1,0 +1,2 @@
+use thinkbig;
+alter table NIFI_FEED_PROCESSOR_STATS MODIFY FM_FEED_NAME VARCHAR(45);
