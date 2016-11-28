@@ -1,0 +1,229 @@
+package com.thinkbiganalytics.spark.rest.controller;
+
+import com.thinkbiganalytics.spark.rest.model.RegistrationRequest;
+import com.thinkbiganalytics.spark.rest.model.TransformRequest;
+import com.thinkbiganalytics.spark.rest.model.TransformResponse;
+import com.thinkbiganalytics.spark.shell.SparkShellProcess;
+import com.thinkbiganalytics.spark.shell.SparkShellProcessManager;
+import com.thinkbiganalytics.spark.shell.SparkShellRestClient;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
+
+import java.util.MissingResourceException;
+import java.util.Optional;
+import java.util.ResourceBundle;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.inject.Inject;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+
+@Api(value = "spark")
+@Component
+@Path("/v1/spark/shell")
+public class SparkShellProxyController {
+
+    private static final Logger log = LoggerFactory.getLogger(SparkShellProxyController.class);
+
+    /** Resources for error messages */
+    private static final ResourceBundle STRINGS = ResourceBundle.getBundle("spark-shell");
+
+    /** Manages Spark Shell processes */
+    @Inject
+    private SparkShellProcessManager processManager;
+
+    /** Communicates with Spark Shell processes */
+    @Inject
+    private SparkShellRestClient restClient;
+
+    /**
+     * Requests the status of a transformation.
+     *
+     * @param id the destination table name
+     * @return the transformation status
+     */
+    @GET
+    @Path("/transform/{table}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Fetches the status of a transformation.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Returns the status of the transformation.", response = TransformResponse.class),
+            @ApiResponse(code = 404, message = "The transformation does not exist.", response = TransformResponse.class),
+            @ApiResponse(code = 500, message = "There was a problem accessing the data.", response = TransformResponse.class)
+    })
+    @Nonnull
+    public Response getTable(@Nonnull @PathParam("table") final String id) {
+        // Forward to the Spark Shell process
+        final SparkShellProcess process = getSparkShellProcess();
+        final Optional<TransformResponse> response;
+
+        try {
+            response = restClient.getTable(process, id);
+        } catch (final Exception e) {
+            throw error(Response.Status.INTERNAL_SERVER_ERROR, "transform.error", e);
+        }
+
+        // Return response
+        if (response.isPresent()) {
+            return Response.ok(response).build();
+        } else {
+            throw error(Response.Status.NOT_FOUND, "getTable.unknownTable", null);
+        }
+    }
+
+    /**
+     * Ensures a Spark Shell process has been started for the current user.
+     *
+     * @return 202 Accepted
+     */
+    @POST
+    @Path("/start")
+    @ApiOperation("Starts a new Spark Shell process for the current user if one is not already running.")
+    @ApiResponses({
+            @ApiResponse(code = 202, message = "The Spark Shell process will be started."),
+            @ApiResponse(code = 500, message = "The Spark Shell process could not be started.")
+    })
+    @Nonnull
+    public Response start() {
+        final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        try {
+            processManager.start(auth.getName());
+            return Response.accepted().build();
+        } catch (final Exception e) {
+            throw error(Response.Status.INTERNAL_SERVER_ERROR, "start.error", e);
+        }
+    }
+
+    /**
+     * Registers a Spark Shell process.
+     *
+     * @param registration the process information
+     * @return 204 No Content
+     */
+    @POST
+    @Path("/register")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @ApiOperation("Registers a new Spark Shell process with Kylo.")
+    @ApiResponses({
+            @ApiResponse(code = 204, message = "The Spark Shell process has been successfully registered with this server."),
+            @ApiResponse(code = 401, message = "The provided credentials are invalid."),
+            @ApiResponse(code = 403, message = "The Spark Shell process does not have permission to register with this server."),
+            @ApiResponse(code = 500, message = "The Spark Shell process could not be registered with this server.")
+    })
+    @Nonnull
+    public Response register(@Nonnull final RegistrationRequest registration) {
+        final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        try {
+            processManager.register(auth.getPrincipal().toString(), auth.getCredentials().toString(), registration);
+            return Response.noContent().build();
+        } catch (final IllegalArgumentException e) {
+            throw error(Response.Status.FORBIDDEN, "register.forbidden", null);
+        }
+    }
+
+    /**
+     * Executes a Spark script that performs transformations using a {@code DataFrame}.
+     *
+     * @param request the transformation request
+     * @return the transformation status
+     */
+    @POST
+    @Path("/transform")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Queries a Hive table and applies a series of transformations on the rows.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Returns the status of the transformation.", response = TransformResponse.class),
+            @ApiResponse(code = 400, message = "The request could not be parsed.", response = TransformResponse.class),
+            @ApiResponse(code = 500, message = "There was a problem processing the data.", response = TransformResponse.class)
+    })
+    @Nonnull
+    public Response transform(@ApiParam(value = "The request indicates the transformations to apply to the source table and how the user wishes the results to be displayed. Exactly one parent or"
+                                                + " source must be specified.", required = true)
+                                  @Nullable final TransformRequest request) {
+        // Validate request
+        if (request == null || request.getScript() == null) {
+            throw error(Response.Status.BAD_REQUEST, "transform.missingScript", null);
+        }
+        if (request.getParent() != null) {
+            if (request.getParent().getScript() == null) {
+                throw error(Response.Status.BAD_REQUEST, "transform.missingParentScript", null);
+            }
+            if (request.getParent().getTable() == null) {
+                throw error(Response.Status.BAD_REQUEST, "transform.missingParentTable", null);
+            }
+        }
+
+        // Execute request
+        final SparkShellProcess process = getSparkShellProcess();
+
+        try {
+            final TransformResponse response = restClient.transform(process, request);
+            return Response.ok(response).build();
+        } catch (final Exception e) {
+            throw error(Response.Status.INTERNAL_SERVER_ERROR, "transform.error", e);
+        }
+    }
+
+    /**
+     * Generates an error response for the specified message.
+     *
+     * @param key the resource key or the error message
+     * @return the error response
+     */
+    @Nonnull
+    private WebApplicationException error(@Nonnull final Response.Status status, @Nonnull final String key, @Nullable final Throwable cause) {
+        // Create entity
+        final TransformResponse entity = new TransformResponse();
+        entity.setStatus(TransformResponse.Status.ERROR);
+
+        try {
+            entity.setMessage(STRINGS.getString(key));
+        } catch (final MissingResourceException e) {
+            log.warn("Missing resource message: " + key, e);
+            entity.setMessage(key);
+        }
+
+        // Generate the response
+        final Response response = Response.status(status).entity(entity).build();
+        if (cause != null) {
+            return new WebApplicationException(cause, response);
+        } else {
+            return new WebApplicationException(response);
+        }
+    }
+
+    /**
+     * Retrieves the Spark Shell process for the current user.
+     *
+     * @return the Spark Shell process
+     */
+    @Nonnull
+    private SparkShellProcess getSparkShellProcess() {
+        final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        try {
+            return processManager.getProcessForUser(auth.getPrincipal().toString());
+        } catch (final Exception e) {
+            throw error(Response.Status.INTERNAL_SERVER_ERROR, "start.error", e);
+        }
+    }
+}

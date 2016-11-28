@@ -1,32 +1,24 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
-    <artifactId>thinkbig-integrations</artifactId>
-    <version>0.5.0-SNAPSHOT</version>
-  </parent>
-  <artifactId>thinkbig-spark</artifactId>
-  <packaging>pom</packaging>
+    <modelVersion>4.0.0</modelVersion>
 
-  <modules>
-    <module>spark-job-profiler</module>
-    <module>spark-validate-cleanse</module>
-    <module>spark-interpreter</module>
-  </modules>
+    <artifactId>thinkbig-spark</artifactId>
+    <packaging>pom</packaging>
+    <parent>
+        <groupId>com.thinkbiganalytics.datalake</groupId>
+        <artifactId>thinkbig-integrations</artifactId>
+        <version>0.5.0-SNAPSHOT</version>
+    </parent>
 
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.5.1</version>
-        <configuration>
-          <source>1.7</source>
-          <target>1.7</target>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
+    <properties>
+        <maven.compiler.source>1.7</maven.compiler.source>
+        <maven.compiler.target>1.7</maven.compiler.target>
+    </properties>
 
+    <modules>
+        <module>spark-interpreter</module>
+        <module>spark-job-profiler</module>
+        <module>spark-shell-client</module>
+        <module>spark-validate-cleanse</module>
+    </modules>
 </project>

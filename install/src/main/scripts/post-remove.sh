@@ -23,12 +23,9 @@ rm -rf $rpmInstallDir/thinkbig-ui
 echo "         - Removed thinkbig-ui"
 rm -rf $rpmInstallDir/thinkbig-services
 echo "         - Removed thinkbig-services"
-rm -rf $rpmInstallDir/thinkbig-spark-shell
-echo "         - Removed thinkbig-spark-shell"
 
 echo "     5. Deleting log folders "
 rm -rf /var/log/thinkbig-ui
 rm -rf /var/log/thinkbig-services
-rm -rf /var/log/thinkbig-spark-shell
 
 echo "    REMOVAL COMPLETE! "

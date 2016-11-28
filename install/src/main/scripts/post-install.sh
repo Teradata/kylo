@@ -243,28 +243,22 @@ echo "   - Added service 'thinkbig-services'"
 echo "    - Completed thinkbig-services install"
 
 echo "    - Install thinkbig-spark-shell application"
-tar -xf $rpmInstallDir/thinkbig-spark-shell/thinkbig-spark-shell-service-spark-v1-*.tar.gz -C $rpmInstallDir/thinkbig-spark-shell --strip-components=1
-tar -xf $rpmInstallDir/thinkbig-spark-shell/thinkbig-spark-shell-service-spark-v2-*.tar.gz -C $rpmInstallDir/thinkbig-spark-shell --strip-components=1
-rm -rf $rpmInstallDir/thinkbig-spark-shell/thinkbig-spark-shell-service-*.tar.gz
-rm -f $rpmInstallDir/thinkbig-spark-shell/lib/*/slf4j*
-rm -f $rpmInstallDir/thinkbig-spark-shell/lib/*/log4j*
-echo "   - Installed thinkbig-spark-shell to '$rpmInstallDir/thinkbig-spark-shell'"
 
-cat << EOF > $rpmInstallDir/thinkbig-spark-shell/bin/run-thinkbig-spark-shell.sh
+cat << EOF > $rpmInstallDir/thinkbig-services/bin/run-thinkbig-spark-shell.sh
 #!/bin/bash
-SPARK_PROFILE="spark-v"$(spark-submit --version 2>&1 | grep -o "version [0-9]" | grep -o "[0-9]")
-spark-submit --conf spark.driver.userClassPathFirst=true --class com.thinkbiganalytics.spark.SparkShellApp --driver-class-path /opt/thinkbig/thinkbig-spark-shell/conf --jars \`find $rpmInstallDir/thinkbig-spark-shell/lib/\${SPARK_PROFILE}/ -name "*.jar" | paste -d, -s\` $rpmInstallDir/thinkbig-spark-shell/lib/\${SPARK_PROFILE}/thinkbig-spark-shell-service-app-*.jar --pgrep-marker=$pgrepMarkerThinkbigSparkShell
+SPARK_PROFILE="v"\$(spark-submit --version 2>&1 | grep -o "version [0-9]" | grep -o "[0-9]")
+spark-submit --conf spark.driver.userClassPathFirst=true --class com.thinkbiganalytics.spark.SparkShellApp --driver-class-path /opt/thinkbig/thinkbig-services/conf --driver-java-options -Dlog4j.configuration=$rpmInstallDir/thinkbig-services/conf/log4j-spark.properties $rpmInstallDir/thinkbig-services/lib/app/thinkbig-spark-shell-client-\${SPARK_PROFILE}-*.jar --pgrep-marker=$pgrepMarkerThinkbigSparkShell
 EOF
-chmod +x $rpmInstallDir/thinkbig-spark-shell/bin/run-thinkbig-spark-shell.sh
-echo "   - Created thinkbig-spark-shell script '$rpmInstallDir/thinkbig-spark-shell/bin/run-thinkbig-spark-shell.sh'"
+chmod +x $rpmInstallDir/thinkbig-services/bin/run-thinkbig-spark-shell.sh
+echo "   - Created thinkbig-spark-shell script '$rpmInstallDir/thinkbig-services/bin/run-thinkbig-spark-shell.sh'"
 
 cat << EOF > /etc/init.d/thinkbig-spark-shell
 #! /bin/sh
 # chkconfig: 345 98 20
 # description: thinkbig-spark-shell
 # processname: thinkbig-spark-shell
-stdout_log="/var/log/thinkbig-spark-shell/thinkbig-spark-shell.log"
-stderr_log="/var/log/thinkbig-spark-shell/thinkbig-spark-shell.err"
+stdout_log="/var/log/thinkbig-services/thinkbig-spark-shell.log"
+stderr_log="/var/log/thinkbig-services/thinkbig-spark-shell.err"
 RUN_AS_USER=thinkbig
 
 start() {
@@ -273,7 +267,7 @@ start() {
         echo Already running.
       else
         echo Starting thinkbig-spark-shell ...
-        su - \$RUN_AS_USER -c "$rpmInstallDir/thinkbig-spark-shell/bin/run-thinkbig-spark-shell.sh" >> "\$stdout_log" 2>> "\$stderr_log" &
+        su - \$RUN_AS_USER -c "$rpmInstallDir/thinkbig-services/bin/run-thinkbig-spark-shell.sh" >> "\$stdout_log" 2>> "\$stderr_log" &
     fi
 }
 
@@ -319,9 +313,6 @@ exit 0
 EOF
 chmod +x /etc/init.d/thinkbig-spark-shell
 echo "   - Created thinkbig-spark-shell script '/etc/init.d/thinkbig-spark-shell'"
-
-mkdir -p $rpmLogDir/thinkbig-spark-shell/
-echo "   - Created Log folder $rpmLogDir/thinkbig-spark-shell/"
 
 chkconfig --add thinkbig-spark-shell
 chkconfig thinkbig-spark-shell on

@@ -170,6 +170,24 @@
               </sources>
             </mapping>
             <mapping>
+              <directory>${rpm.install.dir}/thinkbig-services/lib/app</directory>
+              <filemode>${file.permissions}</filemode>
+              <username>${rpm.user}</username>
+              <groupname>${rpm.user}</groupname>
+              <sources>
+                <source>
+                  <location>
+                    ../integrations/spark/spark-shell-client/spark-shell-client-v1/target/thinkbig-spark-shell-client-v1-${project.version}.jar
+                  </location>
+                </source>
+                <source>
+                  <location>
+                    ../integrations/spark/spark-shell-client/spark-shell-client-v2/target/thinkbig-spark-shell-client-v2-${project.version}.jar
+                  </location>
+                </source>
+              </sources>
+            </mapping>
+            <mapping>
               <directory>${rpm.install.dir}/thinkbig-services</directory>
               <filemode>${file.permissions}</filemode>
               <username>${rpm.user}</username>
@@ -253,6 +271,16 @@
                     <include>jira.properties</include>
                   </includes>
                 </source>
+                <source>
+                  <location>
+                    ../services/spark-shell-service/spark-shell-core/src/main/resources/spark.properties
+                  </location>
+                </source>
+                <source>
+                  <location>
+                    ../integrations/spark/spark-shell-client/spark-shell-client-app/src/main/config/rpm-build/log4j-spark.properties
+                  </location>
+                </source>
               </sources>
             </mapping>
             <mapping>
@@ -297,45 +325,6 @@
                   <include>com.thinkbiganalytics.datalake:thinkbig-jira-rest-client</include>
                 </includes>
               </dependency>
-            </mapping>
-            <!-- thinkbig spark shell mappings -->
-            <mapping>
-              <directory>${rpm.install.dir}/thinkbig-spark-shell</directory>
-              <filemode>${file.permissions}</filemode>
-              <username>${rpm.user}</username>
-              <groupname>${rpm.user}</groupname>
-              <sources>
-                <source>
-                  <location>../services/spark-shell-service/spark-shell-service-spark-v1/target/thinkbig-spark-shell-service-spark-v1-${project.version}-distribution.tar.gz</location>
-                </source>
-                <source>
-                  <location>../services/spark-shell-service/spark-shell-service-spark-v2/target/thinkbig-spark-shell-service-spark-v2-${project.version}-distribution.tar.gz</location>
-                </source>
-              </sources>
-            </mapping>
-            <mapping>
-              <directory>${rpm.install.dir}/thinkbig-spark-shell/conf</directory>
-              <filemode>${file.permissions}</filemode>
-              <username>${rpm.user}</username>
-              <groupname>${rpm.user}</groupname>
-              <sources>
-                <source>
-                  <location>
-                    ../services/spark-shell-service/spark-shell-service-app/src/main/config/rpm-build/application.properties
-                  </location>
-                </source>
-                <source>
-                  <location>
-                    ../services/spark-shell-service/spark-shell-service-app/src/main/config/rpm-build/log4j.properties
-                  </location>
-                </source>
-              </sources>
-            </mapping>
-            <mapping>
-              <directory>${rpm.install.dir}/thinkbig-spark-shell/bin</directory>
-              <filemode>${file.permissions}</filemode>
-              <username>${rpm.user}</username>
-              <groupname>${rpm.user}</groupname>
             </mapping>
 
             <!-- Conf/Setup -->

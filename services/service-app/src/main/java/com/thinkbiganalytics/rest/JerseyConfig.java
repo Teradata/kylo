@@ -35,19 +35,20 @@ public class JerseyConfig extends ResourceConfig {
         //TODO: either make the packages driven by a property, or change and uncomment the top level com.thinkbiganalytics package
 
         //packages("com.thinkbiganalytics");
-        packages("com.thinkbiganalytics.ui.rest.controller", 
-                 "com.thinkbiganalytics.config.rest.controller", 
+        packages("com.thinkbiganalytics.ui.rest.controller",
+                 "com.thinkbiganalytics.config.rest.controller",
                  "com.thinkbiganalytics.servicemonitor.rest.controller",
                  "com.thinkbiganalytics.scheduler.rest.controller",
-                 "com.thinkbiganalytics.jobrepo.rest.controller", 
+                 "com.thinkbiganalytics.jobrepo.rest.controller",
                  "com.thinkbiganalytics.hive.rest.controller",
-                 "com.thinkbiganalytics.feedmgr.rest.controller", 
-                 "com.thinkbiganalytics.policy.rest.controller", 
+                 "com.thinkbiganalytics.feedmgr.rest.controller",
+                 "com.thinkbiganalytics.policy.rest.controller",
                  "com.thinkbiganalytics.security.rest.controller",
-                 "com.thinkbiganalytics.metadata.rest.api", 
+                 "com.thinkbiganalytics.metadata.rest.api",
                  "com.thinkbiganalytics.metadata.migration.rest.controller",
+                 "com.thinkbiganalytics.spark.rest.controller",
                  "com.thinkbiganalytics.rest.exception");
-                  
+
         register(JacksonFeature.class);
         register(MultiPartFeature.class);
         register(WadlResource.class);

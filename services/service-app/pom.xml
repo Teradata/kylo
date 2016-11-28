@@ -195,6 +195,12 @@
             <version>${project.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.thinkbiganalytics.datalake</groupId>
+            <artifactId>thinkbig-spark-shell-controller</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
         <!-- metadata server -->
         <dependency>
             <groupId>com.thinkbiganalytics.metadata</groupId>
@@ -333,7 +339,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        
+
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-config</artifactId>
