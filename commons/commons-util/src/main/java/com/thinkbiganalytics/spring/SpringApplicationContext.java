@@ -1,15 +1,19 @@
 package com.thinkbiganalytics.spring;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 
 /**
- * Wrapper to always return a reference to the Spring Application Context from within non-Spring enabled beans. Unlike Spring MVC's WebApplicationContextUtils we do not need a reference to the Servlet
- * context for this. All we need is for this bean to be initialized during application startup.
+ * Wrapper to always return a reference to the Spring Application Context from within non-Spring enabled beans.
  */
 public class SpringApplicationContext implements ApplicationContextAware {
+
+    private static final Logger log = LoggerFactory.getLogger(SpringApplicationContext.class);
 
     private static ApplicationContext CONTEXT;
 
@@ -39,5 +43,57 @@ public class SpringApplicationContext implements ApplicationContextAware {
 
     public static <T> T getBean(Class<T> clazz) {
         return CONTEXT.getBean(clazz);
+    }
+
+
+    /**
+     * Autowire properties in the object
+     */
+    public static Object autowire(String key, Object obj) {
+
+        return autowire(key, obj, true);
+    }
+
+    /**
+     * Auto wire an object that is created outside of spring but references spring @Autowire annotation
+     */
+    public static Object autowire(Object obj) {
+        autowire(null, obj, true);
+        return obj;
+    }
+
+
+    /**
+     * Autowire an object Force it to be autowired even if the bean is not registered with the appcontext
+     */
+    public static Object autowire(String key, Object obj, boolean force) {
+        Object bean = null;
+        if (key != null) {
+            try {
+                bean = getBean(key);
+            } catch (Exception e) {
+                //this is ok
+            }
+        }
+        if (bean == null || force) {
+
+            try {
+
+                if (CONTEXT != null) {
+                    AutowireCapableBeanFactory autowire = getApplicationContext().getAutowireCapableBeanFactory();
+                    autowire.autowireBean(obj);
+                    //fire PostConstruct methods
+                    autowire.initializeBean(obj, key);
+                    return obj;
+                } else {
+                    log.error("Unable to autowire {} with Object.  ApplicationContext is null.", key, obj);
+                }
+            } catch (Exception e) {
+                log.error("Unable to autowire {} with Object ", key, obj);
+            }
+        } else if (bean != null) {
+            return bean;
+        }
+        return null;
     }
 }
