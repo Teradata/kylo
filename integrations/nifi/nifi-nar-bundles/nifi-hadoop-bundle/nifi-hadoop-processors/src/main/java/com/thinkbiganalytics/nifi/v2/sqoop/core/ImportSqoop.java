@@ -242,6 +242,18 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .build();
 
+    public static final PropertyDescriptor SQOOP_CODEGEN_DIR = new PropertyDescriptor.Builder()
+        .name("Sqoop Code Generation Directory")
+        .description("A by-product of importing data is a Sqoop-generated Java class that can encapsulate one row of the imported table. "
+                     + "This can help with subsequent MapReduce processing of the data. "
+                     + "This property value specifies the output directory that Sqoop should use to create these artifacts. "
+                     + "Please ensure that the specified directory has appropriate write permissions. "
+                     + "DEFAULT VALUE = Working directory from where sqoop is launched (i.e. NiFi installation home directory)")
+        .required(false)
+        .expressionLanguageSupported(true)
+        .addValidator(new StandardValidators.DirectoryExistsValidator(true, false))
+        .build();
+
     public static final Relationship REL_SUCCESS = new Relationship.Builder()
         .name("success")
         .description("Sqoop import success")
@@ -294,6 +306,7 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         properties.add(TARGET_HIVE_REPLACE_DELIM);
         properties.add(TARGET_COMPRESSION_ALGORITHM);
         properties.add(TARGET_COLUMN_TYPE_MAPPING);
+        properties.add(SQOOP_CODEGEN_DIR);
         this.properties = Collections.unmodifiableList(properties);
 
         /* Create list of relationships */
@@ -347,6 +360,7 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         final String targetHiveReplaceDelim = context.getProperty(TARGET_HIVE_REPLACE_DELIM).evaluateAttributeExpressions(flowFile).getValue();
         final CompressionAlgorithm targetCompressionAlgorithm = CompressionAlgorithm.valueOf(context.getProperty(TARGET_COMPRESSION_ALGORITHM).getValue());
         final String targetColumnTypeMapping = context.getProperty(TARGET_COLUMN_TYPE_MAPPING).evaluateAttributeExpressions(flowFile).getValue();
+        final String sqoopCodeGenDirectory = context.getProperty(SQOOP_CODEGEN_DIR).evaluateAttributeExpressions(flowFile).getValue();
 
         final String COMMAND_SHELL = "/bin/bash";
         final String COMMAND_SHELL_FLAGS = "-c";
@@ -385,6 +399,7 @@ public class ImportSqoop extends AbstractNiFiProcessor {
             .setTargetHiveReplaceDelim(targetHiveReplaceDelim)
             .setTargetCompressionAlgorithm(targetCompressionAlgorithm)
             .setTargetColumnTypeMapping(targetColumnTypeMapping)
+            .setSqoopCodeGenDirectory(sqoopCodeGenDirectory)
             .build();
 
         List<String> sqoopExecutionCommand = new ArrayList<>();

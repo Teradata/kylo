@@ -198,11 +198,7 @@ public class SqoopUtils {
             }
         }
 
-        if ((equalCount - commaCount - 1) != 0) {
-            return false;
-        }
-
-        return true;
+        return (equalCount - commaCount - 1) == 0;
     }
 }
 

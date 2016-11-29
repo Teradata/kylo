@@ -93,6 +93,8 @@ public class SqoopBuilder {
     private Boolean targetCompressFlag = false;
     private final static String targetColumnTypeMappingLabel = "--map-column-java";
     private String targetColumnTypeMapping;
+    private final static String sqoopCodeGenDirectoryLabel = "--outdir";
+    private String sqoopCodeGenDirectory;
 
     private final static String operationName = "sqoop";
     private final static String operationType = "import";
@@ -383,6 +385,17 @@ public class SqoopBuilder {
     public SqoopBuilder setTargetColumnTypeMapping (String targetColumnTypeMapping) {
         this.targetColumnTypeMapping = targetColumnTypeMapping;
         logMessage("info", "Target Column Type Mapping", this.targetColumnTypeMapping);
+        return this;
+    }
+
+    /**
+     * Set output directory where Sqoop should create the generated code artifacts
+     * @param sqoopCodeGenDirectory full directory path
+     * @return {@link SqoopBuilder}
+     */
+    public SqoopBuilder setSqoopCodeGenDirectory (String sqoopCodeGenDirectory) {
+        this.sqoopCodeGenDirectory = sqoopCodeGenDirectory;
+        logMessage("info", "Sqoop Code Generation Directory", this.sqoopCodeGenDirectory);
         return this;
     }
 
@@ -723,6 +736,14 @@ public class SqoopBuilder {
                 .append(targetColumnTypeMappingLabel)                                           //--map-column-java
                 .append(START_SPACE_QUOTE)
                 .append(targetColumnTypeMapping)                                                //"user provided"
+                .append(END_QUOTE_SPACE);
+        }
+
+        if ((sqoopCodeGenDirectory != null) && (!sqoopCodeGenDirectory.isEmpty())) {
+            commandStringBuffer
+                .append(sqoopCodeGenDirectoryLabel)                                             //--outdir
+                .append(START_SPACE_QUOTE)
+                .append(sqoopCodeGenDirectory)                                                  //"user provided"
                 .append(END_QUOTE_SPACE);
         }
 
