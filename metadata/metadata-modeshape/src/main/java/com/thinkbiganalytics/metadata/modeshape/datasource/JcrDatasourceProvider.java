@@ -1,33 +1,7 @@
 package com.thinkbiganalytics.metadata.modeshape.datasource;
 
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.MetadataException;
-import com.thinkbiganalytics.metadata.api.datasource.Datasource;
-import com.thinkbiganalytics.metadata.api.datasource.DatasourceCriteria;
-import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
-import com.thinkbiganalytics.metadata.api.datasource.DerivedDatasource;
-import com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDatasource;
-import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource;
-import com.thinkbiganalytics.metadata.core.AbstractMetadataCriteria;
-import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
-import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
-import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
-import com.thinkbiganalytics.metadata.modeshape.datasource.directory.JcrDirectoryDatasource;
-import com.thinkbiganalytics.metadata.modeshape.datasource.hive.JcrHiveTableDatasource;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrObjectTypeResolver;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrTool;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
-
-import org.apache.commons.lang3.reflect.FieldUtils;
-import org.joda.time.DateTime;
-import org.modeshape.common.text.Jsr283Encoder;
-
 import java.io.Serializable;
 import java.lang.reflect.Field;
-import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -38,6 +12,27 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+
+import org.apache.commons.lang3.reflect.FieldUtils;
+import org.joda.time.DateTime;
+import org.modeshape.common.text.Jsr283Encoder;
+
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.MetadataException;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource;
+import com.thinkbiganalytics.metadata.api.datasource.DatasourceCriteria;
+import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
+import com.thinkbiganalytics.metadata.api.datasource.DerivedDatasource;
+import com.thinkbiganalytics.metadata.core.AbstractMetadataCriteria;
+import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrObjectTypeResolver;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrTool;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
 /**
  * Created by sr186054 on 6/7/16.
@@ -50,8 +45,6 @@ public class JcrDatasourceProvider extends BaseJcrProvider<Datasource, Datasourc
     private static final Map<Class<? extends Datasource>, Class<? extends JcrDatasource>> DOMAIN_TYPES_MAP;
     static {
         Map<Class<? extends Datasource>, Class<? extends JcrDatasource>> map = new HashMap<>();
-        map.put(HiveTableDatasource.class, JcrHiveTableDatasource.class);
-        map.put(DirectoryDatasource.class, JcrDirectoryDatasource.class);
         map.put(DerivedDatasource.class, JcrDerivedDatasource.class);
         DOMAIN_TYPES_MAP = map;
     }
@@ -60,8 +53,6 @@ public class JcrDatasourceProvider extends BaseJcrProvider<Datasource, Datasourc
     static {
         Map<String, Class<? extends JcrDatasource>> map = new HashMap<>();
         map.put(JcrDerivedDatasource.NODE_TYPE, JcrDerivedDatasource.class);
-        map.put(JcrDirectoryDatasource.NODE_TYPE, JcrDirectoryDatasource.class);
-        map.put(JcrHiveTableDatasource.NODE_TYPE, JcrHiveTableDatasource.class);
         NODE_TYPES_MAP = map;
     }
     
@@ -226,13 +217,6 @@ public class JcrDatasourceProvider extends BaseJcrProvider<Datasource, Datasourc
         }
     }
 
-    @Override
-    public DirectoryDatasource ensureDirectoryDatasource(String name, String descr, Path dir) {
-        DirectoryDatasource directoryDatasource = ensureDatasource(name, descr, DirectoryDatasource.class);
-        directoryDatasource.setDirectory(dir);
-        return directoryDatasource;
-    }
-
 
     @Override
     public DerivedDatasource ensureGenericDatasource(String name, String descr) {
@@ -240,25 +224,6 @@ public class JcrDatasourceProvider extends BaseJcrProvider<Datasource, Datasourc
         return genericDatasource;
     }
 
-
-    @Override
-    public HiveTableDatasource ensureHiveTableDatasource(String name, String descr, String database, String table) {
-        com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource hiveTableDatasource = ensureDatasource(name, descr,
-                                                                                                                      com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource.class);
-        hiveTableDatasource.setDatabase(database);
-        hiveTableDatasource.setTableName(table);
-        return hiveTableDatasource;
-    }
-//
-//    @Override
-//    public DirectoryDatasource asDirectoryDatasource(Datasource.ID dsId, Path dir) {
-//        return null;
-//    }
-//
-//    @Override
-//    public HiveTableDatasource asHiveTableDatasource(Datasource.ID dsId, String database, String table) {
-//        return null;
-//    }
 
     public Datasource.ID resolveId(Serializable fid) {
         return new JcrDatasource.DatasourceId(fid);

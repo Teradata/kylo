@@ -1,12 +1,24 @@
 package com.thinkbiganalytics.metadata.modeshape.feed;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.inject.Inject;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.testng.Assert;
+
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DerivedDatasource;
-import com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDatasource;
-import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
@@ -21,19 +33,6 @@ import com.thinkbiganalytics.metadata.modeshape.JcrTestConfig;
 import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
 import com.thinkbiganalytics.metadata.modeshape.security.AdminCredentials;
 import com.thinkbiganalytics.support.FeedNameUtil;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.testng.Assert;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.inject.Inject;
 
 /**
  * Created by sr186054 on 11/7/16.
@@ -109,10 +108,10 @@ public class TestFeedManagerFeed {
         String templateName = "my_template";
         String description = " my feed description";
         setupFeedAndTemplate(categorySystemName, feedName, templateName);
-        boolean isDefineTable = true;
-        boolean isGetFile = false;
+//        boolean isDefineTable = true;
+//        boolean isGetFile = false;
 
-        metadata.commit(new AdminCredentials(), () -> {
+        metadata.commit(() -> {
 
             Feed feed = feedTestUtil.findFeed(categorySystemName, feedName);
 
@@ -121,34 +120,17 @@ public class TestFeedManagerFeed {
             //Add Table Dependencies
             String uniqueName = FeedNameUtil.fullName(categorySystemName, feedName);
 
-            if (isGetFile) {
-                DirectoryDatasource directoryDatasource = datasourceProvider.ensureDirectoryDatasource(uniqueName, feed.getDescription(), null);
-                sources.add(directoryDatasource.getId());
-            } else {
-                DerivedDatasource defaultDatasource = datasourceProvider.ensureDatasource(uniqueName, feed.getDescription(), DerivedDatasource.class);
-                sources.add(defaultDatasource.getId());
-
-            }
-
-            //Destinations
-
-            if (isDefineTable) {
-
-                //find the destination for this type
-                com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource table
-                    = datasourceProvider.ensureHiveTableDatasource(uniqueName,
-                                                                   description,
-                                                                   categorySystemName,
-                                                                   feedName);
-                destinations.add(table.getId());
-            }
+            DerivedDatasource srcDatasource = datasourceProvider.ensureDatasource(uniqueName, feed.getDescription(), DerivedDatasource.class);
+            sources.add(srcDatasource.getId());
+            DerivedDatasource destDatasource = datasourceProvider.ensureDatasource("destination", feed.getDescription(), DerivedDatasource.class);
+            destinations.add(destDatasource.getId());
 
             sources.stream().forEach(sourceId -> feedProvider.ensureFeedSource(feed.getId(), sourceId));
             destinations.stream().forEach(destinationId -> feedProvider.ensureFeedDestination(feed.getId(), destinationId));
-        });
+        }, MetadataAccess.SERVICE);
 
         //ensure the sources and dest got created
-        metadata.read(new AdminCredentials(), () -> {
+        metadata.read(() -> {
             Feed feed = feedTestUtil.findFeed(categorySystemName, feedName);
             Assert.assertNotNull(feed.getSources());
             Assert.assertTrue(feed.getSources().size() == 1, "Feed Sources should be 1");
@@ -160,11 +142,11 @@ public class TestFeedManagerFeed {
             if (feedDestinations != null) {
                 FeedDestination feedDestination = feedDestinations.get(0);
                 Datasource ds = feedDestination.getDatasource();
-                Assert.assertTrue(ds instanceof HiveTableDatasource, "Datasource was not expected HiveTableDatasource");
+                Assert.assertTrue(ds instanceof DerivedDatasource, "Datasource was not expected DerivedDatasource");
             }
 
 
-        });
+        }, MetadataAccess.SERVICE);
 
     }
 

@@ -3,6 +3,14 @@
  */
 package com.thinkbiganalytics.metadata.server;
 
+import java.security.Principal;
+
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Profile;
+
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.MetadataAction;
 import com.thinkbiganalytics.metadata.api.MetadataCommand;
@@ -11,10 +19,8 @@ import com.thinkbiganalytics.metadata.api.MetadataRollbackAction;
 import com.thinkbiganalytics.metadata.api.MetadataRollbackCommand;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
-import com.thinkbiganalytics.metadata.api.op.DataOperationsProvider;
 import com.thinkbiganalytics.metadata.core.dataset.InMemoryDatasourceProvider;
 import com.thinkbiganalytics.metadata.core.feed.InMemoryFeedProvider;
-import com.thinkbiganalytics.metadata.core.op.InMemoryDataOperationsProvider;
 import com.thinkbiganalytics.metadata.core.sla.TestMetricAssessor;
 import com.thinkbiganalytics.metadata.core.sla.WithinScheduleAssessor;
 import com.thinkbiganalytics.metadata.core.sla.feed.DatasourceUpdatedSinceAssessor;
@@ -30,14 +36,6 @@ import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessor;
 import com.thinkbiganalytics.metadata.sla.spi.core.InMemorySLAProvider;
 import com.thinkbiganalytics.metadata.sla.spi.core.SimpleServiceLevelAssessor;
-
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Profile;
-
-import java.security.Principal;
 
 /**
  * @author Sean Felten
@@ -61,11 +59,11 @@ public class ServerConfiguration {
         return new InMemoryDatasourceProvider();
     }
 
-    @Bean
-    @Profile("metadata.memory-only")
-    public DataOperationsProvider dataOperationsProvider() {
-        return new InMemoryDataOperationsProvider();
-    }
+//    @Bean
+//    @Profile("metadata.memory-only")
+//    public DataOperationsProvider dataOperationsProvider() {
+//        return new InMemoryDataOperationsProvider();
+//    }
 
     @Bean
     @Profile("metadata.memory-only")

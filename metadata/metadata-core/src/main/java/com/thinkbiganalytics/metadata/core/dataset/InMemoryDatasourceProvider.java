@@ -3,6 +3,19 @@
  */
 package com.thinkbiganalytics.metadata.core.dataset;
 
+import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.apache.commons.lang3.reflect.ConstructorUtils;
+import org.joda.time.DateTime;
+
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
@@ -12,25 +25,7 @@ import com.thinkbiganalytics.metadata.api.datasource.Datasource.ID;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceCriteria;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DerivedDatasource;
-import com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDatasource;
-import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource;
 import com.thinkbiganalytics.metadata.core.AbstractMetadataCriteria;
-import com.thinkbiganalytics.metadata.core.dataset.files.BaseDirectoryDatasource;
-import com.thinkbiganalytics.metadata.core.dataset.hive.BaseHiveTableDatasource;
-
-import org.apache.commons.lang3.reflect.ConstructorUtils;
-import org.joda.time.DateTime;
-
-import java.io.Serializable;
-import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  *
@@ -105,43 +100,6 @@ public class InMemoryDatasourceProvider implements DatasourceProvider {
 
             return ds;
        }
-    }
-
-    public DirectoryDatasource ensureDirectoryDatasource(String name, String descr, Path dir) {
-        synchronized (this.datasets) {
-            Datasource ds = getExistingDataset(name);
-            
-            if (ds != null) {
-                if (ds.getClass().isAssignableFrom(BaseDirectoryDatasource.class)) {
-                    return (BaseDirectoryDatasource) ds;
-                } else {
-                    throw new DatasourceException("A non-directory dataset already exists with the given name:" + name);
-                }
-            }
-            
-            BaseDirectoryDatasource dds = new BaseDirectoryDatasource(name, descr, dir);
-            this.datasets.put(dds.getId(), dds);
-            return dds;
-        }
-    }
-//
-    @Override
-    public HiveTableDatasource ensureHiveTableDatasource(String name, String descr, String database, String table) {
-        synchronized (this.datasets) {
-            Datasource ds = getExistingDataset(name);
-
-            if (ds != null) {
-                if (ds.getClass().isAssignableFrom(BaseHiveTableDatasource.class)) {
-                    return (BaseHiveTableDatasource) ds;
-                } else {
-                    throw new DatasourceException("A non-hive dataset already exists with the given name:" + name);
-                }
-            }
-
-            BaseHiveTableDatasource hds = new BaseHiveTableDatasource(name, descr, database, table);
-            this.datasets.put(hds.getId(), hds);
-            return hds;
-        }
     }
 
     @Override

@@ -4,13 +4,9 @@
 package com.thinkbiganalytics.metadata.core.sla;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 
 import org.joda.time.DateTime;
 
-import com.thinkbiganalytics.metadata.api.datasource.Datasource;
-import com.thinkbiganalytics.metadata.api.op.ChangeSet;
-import com.thinkbiganalytics.metadata.api.op.Dataset;
 import com.thinkbiganalytics.metadata.api.sla.WithinSchedule;
 import com.thinkbiganalytics.metadata.core.sla.feed.MetadataMetricAssessor;
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
@@ -40,8 +36,7 @@ public class WithinScheduleAssessor extends MetadataMetricAssessor<WithinSchedul
         if (start.isBeforeNow() && end.isAfterNow()) {
             builder
                 .result(AssessmentResult.SUCCESS)
-                .message("Current time falls between the schedule " + start + " - " + end)
-                .data(new ArrayList<Dataset<Datasource, ChangeSet>>());
+                .message("Current time falls between the schedule " + start + " - " + end);
         } else {
             builder
                 .result(AssessmentResult.FAILURE)
