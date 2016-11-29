@@ -9,6 +9,7 @@ import com.thinkbiganalytics.policy.rest.model.BaseUiPolicyRule;
 import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 import com.thinkbiganalytics.policy.rest.model.FieldRulePropertyBuilder;
 import com.thinkbiganalytics.rest.model.LabelValue;
+import com.thinkbiganalytics.spring.SpringApplicationContext;
 
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -16,8 +17,13 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.lang3.reflect.ConstructorUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
+import org.reflections.Reflections;
+import org.reflections.scanners.FieldAnnotationsScanner;
+import org.reflections.scanners.SubTypesScanner;
+import org.reflections.util.ClasspathHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
@@ -30,7 +36,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
+
+import javax.inject.Inject;
 
 /**
  * Created by sr186054 on 4/21/16.
@@ -330,6 +339,17 @@ public abstract class BasePolicyAnnotationTransformer<U extends BaseUiPolicyRule
                 //attempt to create a new instance
                 standardizationPolicy = standardizationPolicyClass.newInstance();
             }
+
+        }
+
+        //detect if class has @Autowire annotation on any fields
+        //if so autowire
+        Reflections r = new Reflections(ClasspathHelper.forClass(standardizationPolicy.getClass()),
+                                        new SubTypesScanner(), new FieldAnnotationsScanner());
+        Set<Field> autowiredFields = r.getFieldsAnnotatedWith(Autowired.class);
+        Set<Field> injectFields = r.getFieldsAnnotatedWith(Inject.class);
+        if ((autowiredFields != null && !autowiredFields.isEmpty()) || (injectFields != null && !injectFields.isEmpty())) {
+            SpringApplicationContext.autowire(standardizationPolicy);
         }
 
         return standardizationPolicy;
