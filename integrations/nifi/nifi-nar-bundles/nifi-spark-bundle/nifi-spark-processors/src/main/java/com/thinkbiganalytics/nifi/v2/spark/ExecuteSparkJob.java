@@ -57,6 +57,7 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
     public static final String SPARK_YARN_QUEUE = "spark.yarn.queue";
     public static final String SPARK_CONFIG_NAME = "--conf";
     public static final String SPARK_EXTRA_FILES_CONFIG_NAME = "--files";
+    public static final String SPARK_NUM_EXECUTORS = "spark.executor.instances";
 
     // Relationships
     public static final Relationship REL_SUCCESS = new Relationship.Builder()
@@ -370,7 +371,7 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
                 .setMainClass(mainClass)
                 .setMaster(sparkMaster)
                 .setConf(SparkLauncher.DRIVER_MEMORY, driverMemory)
-                .setConf(SparkLauncher.EXECUTOR_CORES, numberOfExecutors)
+                .setConf(SPARK_NUM_EXECUTORS, numberOfExecutors)
                 .setConf(SparkLauncher.EXECUTOR_MEMORY, executorMemory)
                 .setConf(SparkLauncher.EXECUTOR_CORES, executorCores)
                 .setConf(SPARK_NETWORK_TIMEOUT_CONFIG_NAME, networkTimeout)
