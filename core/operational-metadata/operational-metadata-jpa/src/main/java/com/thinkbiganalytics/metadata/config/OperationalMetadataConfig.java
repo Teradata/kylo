@@ -32,7 +32,8 @@ import javax.sql.DataSource;
 @Configuration
 //@EnableAutoConfiguration
 @EnableTransactionManagement
-@EnableJpaRepositories(basePackages = {"com.thinkbiganalytics.metadata.jpa"}, entityManagerFactoryRef = "operationalMetadataEntityManagerFactory")
+@EnableJpaRepositories(basePackages = {"com.thinkbiganalytics.metadata.jpa"}, transactionManagerRef = "operationalMetadataTransactionManager",
+                       entityManagerFactoryRef = "operationalMetadataEntityManagerFactory")
 public class OperationalMetadataConfig {
 
     @Bean(name = "operationalMetadataDateTimeFormatter")
