@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * Created by sr186054 on 3/31/16.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
+@Deprecated
 public class QueryResultColumn {
 
     private String displayName;

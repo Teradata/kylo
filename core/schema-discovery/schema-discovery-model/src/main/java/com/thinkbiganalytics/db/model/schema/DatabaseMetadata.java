@@ -3,6 +3,7 @@ package com.thinkbiganalytics.db.model.schema;
 /**
  * Created by sr186054 on 2/17/16.
  */
+@Deprecated
 public class DatabaseMetadata {
 
     private String databaseName;

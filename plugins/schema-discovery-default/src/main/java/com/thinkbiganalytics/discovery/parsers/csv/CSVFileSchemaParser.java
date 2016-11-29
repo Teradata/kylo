@@ -171,21 +171,46 @@ public class CSVFileSchemaParser implements FileSchemaParser {
     }
 
     public String deriveHiveRecordFormat() {
-        String template = "ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'" +
+        String template = "ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'\n" +
                           " WITH SERDEPROPERTIES (" +
-                          " \"separatorChar\" = \"%s\"," +
-                          " \"quoteChar\" = \"%s\", " +
-                          " \"escapeChar\" = \"%s\" " +
+                          deriveSeparatorRecordFormat() +
+                          deriveEscapeCharRecordFormat() +
+                          deriveQuoteRecordFormat() +
                           ") STORED AS TEXTFILE";
-
         return String.format(template, separatorChar, escapeChar, quoteChar);
     }
 
+    private String deriveSeparatorRecordFormat() {
+        String template = " 'separatorChar' = '%s'";
+        return String.format(template, separatorChar);
+    }
+
+    private String deriveQuoteRecordFormat() {
+        if (StringUtils.isEmpty(quoteChar)) {
+            return "";
+        }
+        String template = " ,'quoteChar' = '%s'";
+        return String.format(template, quoteChar);
+    }
+
+    private String deriveEscapeCharRecordFormat() {
+        if (StringUtils.isEmpty(escapeChar)) {
+            return "";
+        }
+        String template = " ,'escapeChar' = '%s'";
+        return String.format(template, escapeChar);
+    }
+
+
     private void validate() {
-        Validate.isTrue(separatorChar != null && separatorChar.length() == 1);
-        Validate.isTrue(quoteChar != null && quoteChar.length() == 1);
-        Validate.isTrue(escapeChar != null && escapeChar.length() == 1);
-        Validate.inclusiveBetween(1, MAX_ROWS, numRowsToSample);
+        Validate.isTrue(separatorChar != null && separatorChar.length() == 1, "Legal separator character required.");
+        if (!StringUtils.isEmpty(quoteChar)) {
+            Validate.isTrue(quoteChar != null && quoteChar.length() == 1, "Legal quote character required.");
+        }
+        if (!StringUtils.isEmpty(escapeChar)) {
+            Validate.isTrue(escapeChar != null && escapeChar.length() == 1, "Legal escape character required.");
+        }
+        Validate.inclusiveBetween(1, MAX_ROWS, numRowsToSample, "Cannot sample more than " + MAX_ROWS + ".");
     }
 
     public void setAutoDetect(boolean autoDetect) {

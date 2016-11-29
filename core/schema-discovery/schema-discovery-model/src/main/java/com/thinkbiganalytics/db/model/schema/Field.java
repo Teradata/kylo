@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Vector;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
+@Deprecated
 public class Field {
 
     private String name;

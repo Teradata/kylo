@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
+@Deprecated
 public class TableSchema {
 
 

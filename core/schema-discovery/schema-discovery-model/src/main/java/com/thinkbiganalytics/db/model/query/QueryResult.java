@@ -12,6 +12,7 @@ import java.util.Map;
  * Created by sr186054 on 3/31/16.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
+@Deprecated
 public class QueryResult {
 
     private String query;
