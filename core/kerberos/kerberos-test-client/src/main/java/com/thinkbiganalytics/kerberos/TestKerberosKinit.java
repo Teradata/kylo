@@ -30,7 +30,7 @@ public class TestKerberosKinit {
         Scanner scanner = new Scanner(System.in);
 
         System.out.println(" ");
-        System.out.print("Which environment are you in? Enter 1 for HDP or 2 for Cloudera");
+        System.out.print("Which environment are you in? Enter 1 for HDP or 2 for Cloudera: ");
         String environmentCode = scanner.nextLine();
         if (StringUtils.isEmpty(environmentCode)) {
             environmentCode = "1";
@@ -77,6 +77,22 @@ public class TestKerberosKinit {
             proxyUser = "N";
         }
 
+        System.out.println(" ");
+        System.out.println("Hit enter to default to: hdfs://sandbox.hortonworks.com:8020");
+        System.out.print("Please enter the HDFS URL: ");
+        String hdfsUrl = scanner.nextLine();
+        if (StringUtils.isEmpty(hdfsUrl)) {
+            hdfsUrl = "hdfs://sandbox.hortonworks.com:8020";
+        }
+
+        System.out.println(" ");
+        System.out.println("Hit enter to default to: localhost");
+        System.out.print("Please enter the Hive host name: ");
+        String hiveHost = scanner.nextLine();
+        if (StringUtils.isEmpty(hiveHost)) {
+            hiveHost = "localhost";
+        }
+
         String proxyUserName = null;
         if ("Y".equalsIgnoreCase(proxyUser)) {
             System.out.println(" ");
@@ -88,17 +104,19 @@ public class TestKerberosKinit {
         System.out.println("Executing Kinit to generate a kerberos ticket");
 
         if ("Y".equalsIgnoreCase(proxyUser)) {
-            testKerberosKinit.testHdfsWithUserImpersonation(configResources, keytab, realUserPrincipal, proxyUserName, environment);
+            System.out.println("Testing with the proxy user: " + proxyUserName);
+            testKerberosKinit.testHdfsWithUserImpersonation(configResources, keytab, realUserPrincipal, proxyUserName, environment, hdfsUrl);
 
             //testKerberosKinit.testHiveJdbcConnectionWithUserImpersonation(configResources, keytab, realUserPrincipal, proxyUserName);
-            testKerberosKinit.testHiveJdbcConnection(configResources, keytab, realUserPrincipal, proxyUserName);
+            testKerberosKinit.testHiveJdbcConnection(configResources, keytab, realUserPrincipal, proxyUserName, hiveHost);
         } else {
-            testKerberosKinit.testHdfsAsKerberosUser(configResources, keytab, realUserPrincipal, environment);
-            testKerberosKinit.testHiveJdbcConnection(configResources, keytab, realUserPrincipal, null);
+            System.out.println("No Proxy User");
+            testKerberosKinit.testHdfsAsKerberosUser(configResources, keytab, realUserPrincipal, environment, hdfsUrl);
+            testKerberosKinit.testHiveJdbcConnection(configResources, keytab, realUserPrincipal, null,  hiveHost);
         }
     }
 
-    private void testHdfsWithUserImpersonation(final String configResources, final String keytab, final String principal, String proxyUser, final String environment) {
+    private void testHdfsWithUserImpersonation(final String configResources, final String keytab, final String principal, String proxyUser, final String environment, final String hdfsUrl) {
         final String path = "/user";
         try {
             final Configuration configuration = TestKerberosKinit.createConfigurationFromList(configResources);
@@ -112,7 +130,7 @@ public class TestKerberosKinit {
             ugiProxy.doAs(new PrivilegedExceptionAction<Object>() {
                 public Object run() {
                     try {
-                        searchHDFS(configuration, environment, path);
+                        searchHDFS(configuration, environment, path, hdfsUrl);
                     } catch (Exception e) {
                         throw new RuntimeException("Error testing HDFS with Kerberos Hive Impersonation", e);
                     }
@@ -127,7 +145,7 @@ public class TestKerberosKinit {
         }
     }
 
-    private void testHdfsAsKerberosUser(final String configResources, final String keytab, final String principal, final String environment) {
+    private void testHdfsAsKerberosUser(final String configResources, final String keytab, final String principal, final String environment, final String hdfsUrl) {
         final String path = "/user";
         try {
             final Configuration configuration = TestKerberosKinit.createConfigurationFromList(configResources);
@@ -139,7 +157,7 @@ public class TestKerberosKinit {
             realugi.doAs(new PrivilegedExceptionAction<Object>() {
                 public Object run() {
                     try {
-                        searchHDFS(configuration, environment, path);
+                        searchHDFS(configuration, environment, path, hdfsUrl);
                     } catch (Exception e) {
                         throw new RuntimeException("Error testing HDFS with Kerberos", e);
                     }
@@ -154,17 +172,17 @@ public class TestKerberosKinit {
         }
     }
 
-    private void searchHDFS(Configuration configuration, final String environment, String hdfsPath) throws Exception {
+    private void searchHDFS(Configuration configuration, final String environment, String hdfsPath, String hdfsUrl) throws Exception {
         configuration.set("fs.file.impl", org.apache.hadoop.fs.LocalFileSystem.class.getName());
         configuration.set("fs.hdfs.impl", org.apache.hadoop.hdfs.DistributedFileSystem.class.getName());
         FileSystem fs = FileSystem.get(configuration);
 
         if (environment.equalsIgnoreCase(ENVIRONMENT_CLOUDERA)) {
-            FileStatus[] status = fs.listStatus(new Path("hdfs://quickstart.cloudera:8020" + hdfsPath));
+            FileStatus[] status = fs.listStatus(new Path(hdfsUrl + hdfsPath));
             System.out.println("File Count: " + status.length);
         } else {
             if (environment.equalsIgnoreCase(ENVIRONMENT_HDP)) {
-                FileStatus[] status = fs.listStatus(new Path("hdfs://sandbox.hortonworks.com:8020" + hdfsPath));
+                FileStatus[] status = fs.listStatus(new Path(hdfsUrl + hdfsPath));
                 System.out.println("File Count: " + status.length);
             }
         }
@@ -262,7 +280,7 @@ public class TestKerberosKinit {
      * @param proxyUser
      * @throws Exception
      */
-    private void testHiveJdbcConnection(final String configResources, final String keytab, final String realUserPrincipal, final String proxyUser) throws Exception {
+    private void testHiveJdbcConnection(final String configResources, final String keytab, final String realUserPrincipal, final String proxyUser, final String hiveHostName) throws Exception {
 
         final Configuration configuration = TestKerberosKinit.createConfigurationFromList(configResources);
         UserGroupInformation realugi = TestKerberosKinit.generateKerberosTicket(configuration, keytab, realUserPrincipal);
@@ -275,7 +293,7 @@ public class TestKerberosKinit {
                 Connection connection = null;
                 try {
                     Class.forName(driverName);
-                    String url = "jdbc:hive2://localhost:10000/default;principal=" + realUserPrincipal;
+                    String url = "jdbc:hive2://" + hiveHostName + ":10000/default;principal=" + realUserPrincipal;
                     if(proxyUser != null) {
                         url = url + ";hive.server2.proxy.user=" + proxyUser;
                     }
