@@ -20,7 +20,18 @@ public interface SparkShellProcessManager {
      * @throws IllegalStateException if a Spark Shell process cannot be started
      * @throws InterruptedException if the current thread is interrupted while it is waiting
      */
+    @Nonnull
     SparkShellProcess getProcessForUser(@Nonnull String username) throws InterruptedException;
+
+    /**
+     * Waits for the system Spark Shell process to start.
+     *
+     * @return the system Spark Shell process
+     * @throws IllegalStateException if a Spark Shell process cannot be started
+     * @throws InterruptedException if the current thread is interrupted while it is waiting
+     */
+    @Nonnull
+    SparkShellProcess getSystemProcess() throws InterruptedException;
 
     /**
      * Registers the specified Spark Shell process for handling user requests.

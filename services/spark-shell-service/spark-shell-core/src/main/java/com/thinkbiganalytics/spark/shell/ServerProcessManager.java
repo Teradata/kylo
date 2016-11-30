@@ -36,8 +36,15 @@ public class ServerProcessManager implements SparkShellProcessManager {
         };
     }
 
+    @Nonnull
     @Override
     public SparkShellProcess getProcessForUser(@Nonnull final String username) throws InterruptedException {
+        return process;
+    }
+
+    @Nonnull
+    @Override
+    public SparkShellProcess getSystemProcess() throws InterruptedException {
         return process;
     }
 
