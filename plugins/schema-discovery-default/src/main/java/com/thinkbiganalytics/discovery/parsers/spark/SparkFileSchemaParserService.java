@@ -10,21 +10,29 @@ import com.thinkbiganalytics.discovery.model.DefaultField;
 import com.thinkbiganalytics.discovery.model.DefaultHiveSchema;
 import com.thinkbiganalytics.discovery.schema.Schema;
 import com.thinkbiganalytics.discovery.util.TableSchemaType;
-import com.thinkbiganalytics.spark.metadata.TransformRequest;
-import com.thinkbiganalytics.spark.metadata.TransformResponse;
-import com.thinkbiganalytics.spark.service.TransformService;
+import com.thinkbiganalytics.spark.rest.model.TransformRequest;
+import com.thinkbiganalytics.spark.rest.model.TransformResponse;
+import com.thinkbiganalytics.spark.shell.SparkShellProcess;
+import com.thinkbiganalytics.spark.shell.SparkShellProcessManager;
+import com.thinkbiganalytics.spark.shell.SparkShellRestClient;
 
 import org.apache.commons.io.IOUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
+import javax.inject.Inject;
 import javax.script.ScriptException;
 
 /**
@@ -37,25 +45,51 @@ public class SparkFileSchemaParserService {
         PARQUET, AVRO, JSON, ORC
     }
 
-    @Autowired
-    TransformService transformService;
+    @Inject
+    SparkShellProcessManager shellProcessManager;
+
+    /**
+     * Communicates with Spark Shell processes
+     */
+    @Inject
+    private SparkShellRestClient restClient;
     // Port: 8450
 
     /**
      * Delegate to spark shell service to load the file into a temporary table and loading it
      */
     public Schema doParse(InputStream inputStream, SparkFileType fileType, TableSchemaType tableSchemaType) throws IOException {
-
         /* TODO: Support yarn-cluster mode. Not supported now since file will be written to edge */
+        Path p = Paths.get("/Users/matthutton/git/data-lake-accelerator/plugins/schema-discovery-default/src/test/resources/users.parquet");
+        inputStream = new FileInputStream(p.toFile());
+
         File tempFile = toFile(inputStream);
         try {
-            TransformResponse response = transformService.execute(createTransformRequest(tempFile, fileType));
-            List<com.thinkbiganalytics.db.model.query.QueryResultColumn> columns = response.getResults().getColumns();
+            TransformResponse tableResponse = null;
+            SparkShellProcess shellProcess = getSparkShellProcess();
+            TransformResponse response = restClient.transform(shellProcess, createTransformRequest(tempFile, fileType));
+            if (response.getStatus() == TransformResponse.Status.SUCCESS) {
+                String table = response.getTable();
+                do {
+                    Optional<TransformResponse> optionalResponse = restClient.getTable(shellProcess, table);
+                    if (!optionalResponse.isPresent()) {
+                        Thread.sleep(500L);
+                    } else {
+                        tableResponse = optionalResponse.get();
+                        if (tableResponse.getStatus() != TransformResponse.Status.SUCCESS) {
+                            throw new IOException("Failed to process data [" + tableResponse.getMessage() + "]");
+                        }
+                    }
+                } while (tableResponse == null);
+
+            }
+            List<com.thinkbiganalytics.db.model.query.QueryResultColumn> columns = tableResponse.getResults().getColumns();
             return toSchema(response.getResults(), fileType, tableSchemaType);
 
         } catch (ScriptException e) {
             throw new IOException("Unexpected script exception ", e);
-
+        } catch (Exception e) {
+            throw new IOException("Unexpected exception ", e);
         } finally {
             tempFile.delete();
         }
@@ -120,12 +154,25 @@ public class SparkFileSchemaParserService {
         schema.setFields(fields);
         return schema;
     }
+
     private File toFile(InputStream is) throws IOException {
         File tempFile = File.createTempFile("kylo-spark-parser", "dat");
         try (FileOutputStream fos = new FileOutputStream(tempFile)) {
             IOUtils.copyLarge(is, fos);
         }
         return tempFile;
+    }
+
+    /**
+     * Retrieves the Spark Shell process for the current user.
+     */
+    private SparkShellProcess getSparkShellProcess() throws Exception {
+        final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String user = auth.getPrincipal().toString();
+        SparkShellProcess process = shellProcessManager.getProcessForUser(user);
+        shellProcessManager.start(user);
+        return process;
+
     }
 
 }

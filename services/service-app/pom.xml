@@ -61,6 +61,11 @@
             <version>${project.version}</version>
         </dependency>
 
+        <dependency>
+           <groupId>com.thinkbiganalytics.datalake</groupId>
+           <artifactId>thinkbig-schema-discovery-controller</artifactId>
+           <version>${project.version}</version>
+         </dependency>
 
         <!-- end service monitoring -->
 

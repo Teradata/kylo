@@ -69,7 +69,7 @@
     -->
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-spark-shell-service-app</artifactId>
+      <artifactId>thinkbig-spark-shell-api</artifactId>
       <version>${project.version}</version>
     </dependency>
 
@@ -78,6 +78,14 @@
       <artifactId>thinkbig-commons-rest-client</artifactId>
       <version>${project.version}</version>
     </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>thinkbig-spark-shell-rest-model</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+
 
     <dependency>
       <groupId>org.apache.hadoop</groupId>

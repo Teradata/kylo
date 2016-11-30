@@ -17,6 +17,7 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -80,6 +81,13 @@ public class SchemaDiscoveryRestController {
         for (FileSchemaParser parser : parsers) {
             SchemaParserDescriptor descriptor = transformer.toUIModel(parser);
             descriptors.add(descriptor);
+            if ("Parquet".equals(descriptor.getName())) {
+                try {
+                    parser.parse(null, null, TableSchemaType.HIVE);
+                } catch (IOException e) {
+                    e.printStackTrace();;
+                }
+            }
         }
         return Response.ok(descriptors).build();
     }

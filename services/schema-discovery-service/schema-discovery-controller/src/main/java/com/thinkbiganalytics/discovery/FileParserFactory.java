@@ -5,11 +5,13 @@ package com.thinkbiganalytics.discovery;
 
 import com.thinkbiganalytics.discovery.parser.FileSchemaParser;
 import com.thinkbiganalytics.discovery.parser.SchemaParser;
+import com.thinkbiganalytics.spring.SpringApplicationContext;
 
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -52,7 +54,11 @@ public class FileParserFactory {
         List<Class<SchemaParser>> supportedParsersClazzes = listSchemaParsersClasses();
         for (Class<SchemaParser> clazz : supportedParsersClazzes) {
             try {
-                supportedParsers.add((FileSchemaParser) clazz.newInstance());
+               FileSchemaParser newInstance = (FileSchemaParser)clazz.newInstance();
+               newInstance = (FileSchemaParser)SpringApplicationContext.autowire(newInstance);
+
+                supportedParsers.add(newInstance);
+
             } catch (InstantiationException | IllegalAccessException e) {
                 log.warn("Failed to instantiate registered schema parser [?]. Missing default constructor?", clazz.getAnnotation(SchemaParser.class).name(), e);
             }
