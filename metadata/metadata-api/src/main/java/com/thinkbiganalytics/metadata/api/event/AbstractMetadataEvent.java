@@ -4,6 +4,7 @@
 package com.thinkbiganalytics.metadata.api.event;
 
 import java.io.Serializable;
+import java.security.Principal;
 
 import org.joda.time.DateTime;
 
@@ -17,13 +18,19 @@ public abstract class AbstractMetadataEvent<C extends Serializable> implements M
     
     private final DateTime timestamp;
     private final C data;
+    private final Principal userPrincipal;
     
     public AbstractMetadataEvent(C data) {
-        this(data, DateTime.now());
+        this(data, DateTime.now(), null);
     }
     
-    public AbstractMetadataEvent(C data, DateTime time) {
+    public AbstractMetadataEvent(C data, Principal user) {
+        this(data, DateTime.now(), user);
+    }
+    
+    public AbstractMetadataEvent(C data, DateTime time, Principal user) {
         this.timestamp = time;
+        this.userPrincipal = user;
         this.data = data;
     }
 
@@ -37,4 +44,7 @@ public abstract class AbstractMetadataEvent<C extends Serializable> implements M
         return this.data;
     }
 
+    public Principal getUserPrincipal() {
+        return userPrincipal;
+    }
 }

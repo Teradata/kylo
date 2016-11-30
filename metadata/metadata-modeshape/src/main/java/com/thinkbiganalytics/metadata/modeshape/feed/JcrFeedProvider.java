@@ -10,6 +10,7 @@ import com.thinkbiganalytics.metadata.api.datasource.DatasourceNotFoundException
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.event.feed.FeedPropertyChangeEvent;
+import com.thinkbiganalytics.metadata.api.event.feed.PropertyChange;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
@@ -748,7 +749,8 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
                 HadoopSecurityGroup securityGroup = (HadoopSecurityGroup)o;
                 securityGroupNames.add(securityGroup.getName());
             }
-            this.metadataEventService.notify(new FeedPropertyChangeEvent(feed.getId().getIdValue(), feed.getCategory().getName(), feed.getSystemName(), securityGroupNames , feed.getProperties(), properties));
+            PropertyChange change = new PropertyChange(feed.getId().getIdValue(), feed.getCategory().getName(), feed.getSystemName(), securityGroupNames , feed.getProperties(), properties);
+            this.metadataEventService.notify(new FeedPropertyChangeEvent(change));
 
             return feed.mergeProperties(properties);
         } catch (RepositoryException e) {

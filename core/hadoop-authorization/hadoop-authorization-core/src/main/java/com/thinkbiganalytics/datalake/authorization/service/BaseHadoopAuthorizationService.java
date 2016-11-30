@@ -3,6 +3,7 @@ package com.thinkbiganalytics.datalake.authorization.service;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventListener;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.event.feed.FeedPropertyChangeEvent;
+import com.thinkbiganalytics.metadata.api.event.feed.PropertyChange;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -55,27 +56,29 @@ public abstract class BaseHadoopAuthorizationService implements HadoopAuthorizat
 
         @Override
         public void notify(final FeedPropertyChangeEvent metadataEvent) {
-            if (metadataEvent.getHadoopSecurityGroupNames() != null && hadoopAuthorizationChangesRequired(metadataEvent)) {
+            PropertyChange change = metadataEvent.getData();
+            
+            if (change.getHadoopSecurityGroupNames() != null && hadoopAuthorizationChangesRequired(metadataEvent)) {
                 try {
-                    String hdfsFolders = metadataEvent.getNewProperties().getProperty(REGISTRATION_HDFS_FOLDERS);
+                    String hdfsFolders = change.getNewProperties().getProperty(REGISTRATION_HDFS_FOLDERS);
                     
                     if (!StringUtils.isEmpty(hdfsFolders)) {
                         String hdfsFoldersWithCommas = hdfsFolders.replace("\n", ",");
                         List<String> hdfsFoldersConverted = Arrays.asList(hdfsFoldersWithCommas.split(",")).stream().collect(Collectors.toList());
 
-                        createOrUpdateReadOnlyHdfsPolicy(metadataEvent.getFeedCategorySystemName(), metadataEvent.getFeedSystemName()
-                            , metadataEvent.getHadoopSecurityGroupNames()
+                        createOrUpdateReadOnlyHdfsPolicy(change.getFeedCategorySystemName(), change.getFeedSystemName()
+                            , change.getHadoopSecurityGroupNames()
                             , hdfsFoldersConverted);
                     }
 
-                    String hiveTables = metadataEvent.getNewProperties().getProperty(REGISTRATION_HIVE_TABLES);
-                    String hiveSchema = metadataEvent.getNewProperties().getProperty(REGISTRATION_HIVE_SCHEMA);
+                    String hiveTables = change.getNewProperties().getProperty(REGISTRATION_HIVE_TABLES);
+                    String hiveSchema = change.getNewProperties().getProperty(REGISTRATION_HIVE_SCHEMA);
                     if (!StringUtils.isEmpty(hiveTables) && !StringUtils.isEmpty(hiveSchema)) {
                         String hiveTablesWithCommas = hiveTables.replace("\n", ",");
                         List<String> hiveTablesConverted = Arrays.asList(hiveTablesWithCommas.split(",")).stream().collect(Collectors.toList());
 
-                        createOrUpdateReadOnlyHivePolicy(metadataEvent.getFeedCategorySystemName(), metadataEvent.getFeedSystemName()
-                            , metadataEvent.getHadoopSecurityGroupNames()
+                        createOrUpdateReadOnlyHivePolicy(change.getFeedCategorySystemName(), change.getFeedSystemName()
+                            , change.getHadoopSecurityGroupNames()
                             , hiveSchema
                             , hiveTablesConverted);
                     }
@@ -87,9 +90,10 @@ public abstract class BaseHadoopAuthorizationService implements HadoopAuthorizat
         }
 
         private boolean hadoopAuthorizationChangesRequired(final FeedPropertyChangeEvent metadataEvent) {
-            String hdfsFoldersWithCommasNew = metadataEvent.getNewProperties().getProperty(REGISTRATION_HDFS_FOLDERS);
-            String hiveTablesWithCommasNew = metadataEvent.getNewProperties().getProperty(REGISTRATION_HIVE_TABLES);
-            String hiveSchemaNew = metadataEvent.getNewProperties().getProperty(REGISTRATION_HIVE_SCHEMA);
+            PropertyChange change = metadataEvent.getData();
+            String hdfsFoldersWithCommasNew = change.getNewProperties().getProperty(REGISTRATION_HDFS_FOLDERS);
+            String hiveTablesWithCommasNew = change.getNewProperties().getProperty(REGISTRATION_HIVE_TABLES);
+            String hiveSchemaNew = change.getNewProperties().getProperty(REGISTRATION_HIVE_SCHEMA);
 
             if (hdfsFoldersWithCommasNew != null || (hiveSchemaNew != null && hiveTablesWithCommasNew != null)) {
                 return true;

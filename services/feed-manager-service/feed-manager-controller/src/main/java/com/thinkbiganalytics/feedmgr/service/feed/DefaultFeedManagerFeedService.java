@@ -649,9 +649,9 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
 
         @Override
         public void notify(@Nonnull final FeedPropertyChangeEvent metadataEvent) {
-            Properties oldProperties = metadataEvent.getNifiPropertiesToDelete();
+            Properties oldProperties = metadataEvent.getData().getNifiPropertiesToDelete();
             metadataAccess.commit(() -> {
-                Feed feed = feedProvider.getFeed(feedProvider.resolveFeed(metadataEvent.getFeedId()));
+                Feed feed = feedProvider.getFeed(feedProvider.resolveFeed(metadataEvent.getData().getFeedId()));
                 oldProperties.forEach((k,v) -> {
                     feed.removeProperty((String)k);
                 });

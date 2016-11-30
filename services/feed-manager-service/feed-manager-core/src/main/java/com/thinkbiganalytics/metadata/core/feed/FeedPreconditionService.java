@@ -102,7 +102,7 @@ public class FeedPreconditionService {
 
         @Override
         public void notify(FeedOperationStatusEvent event) {
-            FeedOperation.State state = event.getState();
+            FeedOperation.State state = event.getData().getState();
 
             // TODO as precondition check criteria are not implemented yet, 
             // check all preconditions of feeds that have them.
@@ -112,7 +112,7 @@ public class FeedPreconditionService {
                         // Don't check the precondition of the feed that that generated this change event.
                         // TODO: this might not be the correct behavior but none of our current metrics
                         // need to be assessed when the feed itself containing the precondition has changed state.
-                        if (! feed.getQualifiedName().equals(event.getFeedName())) {
+                        if (! feed.getQualifiedName().equals(event.getData().getFeedName())) {
                             checkPrecondition(feed);
                         }
                     }

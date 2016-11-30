@@ -447,8 +447,8 @@ public class FeedManagerMetadataService implements MetadataService {
 
         @Override
         public void notify(@Nonnull final FeedOperationStatusEvent event) {
-            if (event.getFeedName().equals(feedName)) {
-                state = event.getState();
+            if (event.getData().getFeedName().equals(feedName)) {
+                state = event.getData().getState();
                 target.interrupt();
             }
         }

@@ -8,6 +8,7 @@ import com.thinkbiganalytics.activemq.config.ActiveMqConstants;
 import com.thinkbiganalytics.metadata.api.OperationalMetadataAccess;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.event.feed.FeedOperationStatusEvent;
+import com.thinkbiganalytics.metadata.api.event.feed.OperationStatus;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
@@ -237,7 +238,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener{
     private void failedJob(ProvenanceEventRecordDTO event) {
         FeedOperation.State state = FeedOperation.State.FAILURE;
         log.debug("FAILED JOB for Event {} ", event);
-        this.eventService.notify(new FeedOperationStatusEvent(event.getFeedName(), null, state, "Failed Job"));
+        this.eventService.notify(new FeedOperationStatusEvent(new OperationStatus(event.getFeedName(), null, state, "Failed Job")));
     }
 
     /**
@@ -250,7 +251,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener{
 
         FeedOperation.State state = FeedOperation.State.SUCCESS;
         log.debug("Success JOB for Event {} ", event);
-        this.eventService.notify(new FeedOperationStatusEvent(event.getFeedName(), null, state, "Job Succeeded for feed: " + event.getFeedName()));
+        this.eventService.notify(new FeedOperationStatusEvent(new OperationStatus(event.getFeedName(), null, state, "Job Succeeded for feed: " + event.getFeedName())));
     }
 
 

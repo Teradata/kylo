@@ -65,9 +65,9 @@ public class FeedFailureService {
 
         @Override
         public void notify(@Nonnull final FeedOperationStatusEvent event) {
-            if (FeedOperation.State.FAILURE.equals(event.getState())) {
-                event.getFeedName();
-                lastFeedFailureMap.put(event.getFeedName(), new LastFeedFailure(event.getFeedName()));
+            if (FeedOperation.State.FAILURE.equals(event.getData().getState())) {
+                event.getData().getFeedName();
+                lastFeedFailureMap.put(event.getData().getFeedName(), new LastFeedFailure(event.getData().getFeedName()));
             }
         }
     }

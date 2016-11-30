@@ -30,6 +30,7 @@ import org.springframework.stereotype.Component;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.event.feed.FeedOperationStatusEvent;
+import com.thinkbiganalytics.metadata.api.event.feed.OperationStatus;
 import com.thinkbiganalytics.metadata.api.op.FeedOperation;
 import com.thinkbiganalytics.metadata.api.sla.FeedExecutedSinceFeed;
 import com.thinkbiganalytics.metadata.api.sla.FeedExecutedSinceSchedule;
@@ -40,6 +41,7 @@ import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.HiveTableDatasource;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
+
 import io.swagger.annotations.Api;
 
 /**
@@ -61,14 +63,15 @@ public class DebugController {
     private MetadataEventService eventService;
 
     @POST
-    @Path("event")
+    @Path("feedop/event")
     public String postFeedOperationStatusEvent(@QueryParam("feed") String feedName,
                                                @QueryParam("op") String opIdStr,
                                                @QueryParam("state") String stateStr,
                                                @QueryParam("status") @DefaultValue("") String status) {
         FeedOperation.ID opId = null;
         FeedOperation.State state = FeedOperation.State.valueOf(stateStr.toUpperCase());
-        FeedOperationStatusEvent event = new FeedOperationStatusEvent(feedName, opId, state, status);
+        OperationStatus opStatus = new OperationStatus(feedName, opId, state, status);
+        FeedOperationStatusEvent event = new FeedOperationStatusEvent(opStatus);
 
         this.eventService.notify(event);
 
