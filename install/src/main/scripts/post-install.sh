@@ -262,7 +262,7 @@ stderr_log="/var/log/thinkbig-services/thinkbig-spark-shell.err"
 RUN_AS_USER=thinkbig
 
 start() {
-    if pgrep -f /thinkbig-spark-shell/ >/dev/null 2>&1
+    if pgrep -f $pgrepMarkerThinkbigSparkShell >/dev/null 2>&1
       then
         echo Already running.
       else
@@ -272,20 +272,20 @@ start() {
 }
 
 stop() {
-    if pgrep -f /thinkbig-spark-shell/ >/dev/null 2>&1
+    if pgrep -f $pgrepMarkerThinkbigSparkShell >/dev/null 2>&1
       then
         echo Stopping thinkbig-spark-shell ...
-        pkill -f /thinkbig-spark-shell/
+        pkill -f $pgrepMarkerThinkbigSparkShell
       else
         echo Already stopped.
     fi
 }
 
 status() {
-    if pgrep -f /thinkbig-spark-shell/ >/dev/null 2>&1
+    if pgrep -f $pgrepMarkerThinkbigSparkShell >/dev/null 2>&1
       then
           echo Running.  Here are the related processes:
-          pgrep -lf /thinkbig-spark-shell/
+          pgrep -lf $pgrepMarkerThinkbigSparkShell
       else
         echo Stopped.
     fi
