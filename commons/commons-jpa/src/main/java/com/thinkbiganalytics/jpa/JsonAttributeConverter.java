@@ -19,7 +19,11 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 
 /**
- *
+ * A parameterized converter that converts any object that is serializable to a JSON string stored as a.
+ * single field.  The resulting serialized string embeds the java class name of the source object plus its
+ * JSON serialized form as produced by Jackson.  Implementations must extend this type in order
+ * to specify the source object type that is converted.  This subtype is what is specified
+ * to the @Converter annotation on the field .
  * @author Sean Felten
  */
 public class JsonAttributeConverter<O> implements AttributeConverter<O, String> {

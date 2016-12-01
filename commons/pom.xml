@@ -18,5 +18,6 @@
         <module>commons-jpa</module>
         <module>commons-spark</module>
         <module>commons-hive</module>
+        <module>commons-test-jpa</module>
     </modules>
 </project>
