@@ -50,7 +50,7 @@ public class TestKerberosKinit {
         System.out.print("Please enter the list of configuration resources: ");
         String configResources = scanner.nextLine();
         if (StringUtils.isEmpty(configResources)) {
-            configResources = "/etc/hadoop/conf/core-site.xml,/etc/hadoop/conf/hdfs-site.xml";
+            configResources = "/etc/hadoop/conf/core-site.xml,/etc/hadoop/conf/hdfs-site.xml,/usr/hdp/current/hive-client/conf/hive-site.xml";
         }
 
         System.out.println(" ");
@@ -62,11 +62,11 @@ public class TestKerberosKinit {
         }
 
         System.out.println(" ");
-        System.out.println("Hit enter to default to: thinkbig");
+        System.out.println("Hit enter to default to: hive/sandbox.hortonworks.com@sandbox.hortonworks.com");
         System.out.print("Please enter the real user principal name: ");
         String realUserPrincipal = scanner.nextLine();
         if (StringUtils.isEmpty(realUserPrincipal)) {
-            realUserPrincipal = "thinkbig";
+            realUserPrincipal = "hive/sandbox.hortonworks.com@sandbox.hortonworks.com";
         }
 
         System.out.println(" ");
@@ -86,11 +86,11 @@ public class TestKerberosKinit {
         }
 
         System.out.println(" ");
-        System.out.println("Hit enter to default to: localhost");
-        System.out.print("Please enter the Hive host name: ");
+        System.out.println("Hit enter to default to: jdbc:hive2://localhost:10000/default");
+        System.out.print("Please enter the Hive base connection string: ");
         String hiveHost = scanner.nextLine();
         if (StringUtils.isEmpty(hiveHost)) {
-            hiveHost = "localhost";
+            hiveHost = "jdbc:hive2://localhost:10000/default";
         }
 
         String proxyUserName = null;
@@ -112,7 +112,7 @@ public class TestKerberosKinit {
         } else {
             System.out.println("No Proxy User");
             testKerberosKinit.testHdfsAsKerberosUser(configResources, keytab, realUserPrincipal, environment, hdfsUrl);
-            testKerberosKinit.testHiveJdbcConnection(configResources, keytab, realUserPrincipal, null,  hiveHost);
+            testKerberosKinit.testHiveJdbcConnection(configResources, keytab, realUserPrincipal, null, hiveHost);
         }
     }
 
@@ -293,11 +293,11 @@ public class TestKerberosKinit {
                 Connection connection = null;
                 try {
                     Class.forName(driverName);
-                    String url = "jdbc:hive2://" + hiveHostName + ":10000/default;principal=" + realUserPrincipal;
-                    if(proxyUser != null) {
+                    String url = hiveHostName;
+                    if (proxyUser != null) {
                         url = url + ";hive.server2.proxy.user=" + proxyUser;
                     }
-
+                    System.out.println("Hive URL: " + url);
                     connection = DriverManager.getConnection(url);
 
                     Class.forName(driverName);
