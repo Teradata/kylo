@@ -81,11 +81,13 @@ public class AdminController {
     public Response uploadFeed(@NotNull @FormDataParam("file") InputStream fileInputStream,
                                    @NotNull @FormDataParam("file") FormDataContentDisposition fileMetaData,
                                    @FormDataParam("overwrite") @DefaultValue("false") boolean overwrite,
+                                   @FormDataParam("categorySystemName") String categorySystemName,
                                @FormDataParam("importConnectingReusableFlow") @DefaultValue("NOT_SET") ImportOptions.IMPORT_CONNECTING_FLOW importConnectingFlow)
         throws Exception {
         ImportOptions options = new ImportOptions();
         options.setOverwrite(overwrite);
         options.setImportConnectingFlow(importConnectingFlow);
+        options.setCategorySystemName(categorySystemName);
         ExportImportFeedService.ImportFeed importFeed = exportImportFeedService.importFeed(fileMetaData.getFileName(), fileInputStream, options);
 
         return Response.ok(importFeed).build();

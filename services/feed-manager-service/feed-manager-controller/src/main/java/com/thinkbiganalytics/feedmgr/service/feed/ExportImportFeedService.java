@@ -1,6 +1,21 @@
 package com.thinkbiganalytics.feedmgr.service.feed;
 
 import com.google.common.collect.Sets;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
+
+import javax.inject.Inject;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportOptions;
@@ -215,14 +230,13 @@ public class ExportImportFeedService {
         //merge zip files
         String feedJson = ObjectMapperSerializer.serialize(feed);
         byte[] zipFile = addToZip(exportTemplate.getFile(), feedJson, FEED_JSON_FILE);
-        ExportFeed exportFeed = new ExportFeed(feed.getSystemFeedName() + ".zip", zipFile);
-        return exportFeed;
+        return new ExportFeed(feed.getSystemFeedName() + ".feed.zip", zipFile);
 
     }
     private byte[] streamToByteArray(InputStream inputStream)  throws IOException{
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         byte[] buf = new byte[1024];
-        int n = 0;
+        int n;
         while ((n = inputStream.read(buf)) >= 0) {
             baos.write(buf, 0, n);
         }
@@ -244,6 +258,16 @@ public class ExportImportFeedService {
 
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(content);
 
+        final FeedCategory optionsCategory;
+        if (StringUtils.isNotBlank(importOptions.getCategorySystemName())) {
+            optionsCategory = metadataService.getCategoryBySystemName(importOptions.getCategorySystemName());
+            if (optionsCategory == null) {
+                throw new UnsupportedOperationException(String.format("No such category '%s'", importOptions.getCategorySystemName()));
+            }
+        } else {
+            optionsCategory = null;
+        }
+
         ExportImportTemplateService.ImportTemplate template = exportImportTemplateService.importTemplate(fileName, byteArrayInputStream, importOptions);
         if (template.isVerificationToReplaceConnectingResuableTemplateNeeded()) {
             ImportFeed feed = new ImportFeed(fileName);
@@ -257,6 +281,8 @@ public class ExportImportFeedService {
             //now that we have the Feed object we need to create the instance of the feed
             NifiFeed nifiFeed = metadataAccess.commit(() -> {
                 FeedMetadata metadata = ObjectMapperSerializer.deserialize(feed.getFeedJson(), FeedMetadata.class);
+                metadata.setIsNew(true);
+                metadata.setFeedId(null);
                 metadata.setId(null);
                 //reassign the templateId to the newly registered template id
                 metadata.setTemplateId(template.getTemplateId());
@@ -265,7 +291,7 @@ public class ExportImportFeedService {
                     metadata.getRegisteredTemplate().setId(template.getTemplateId());
                 }
                 //get/create category
-                FeedCategory category = metadataService.getCategoryBySystemName(metadata.getCategory().getSystemName());
+                FeedCategory category = optionsCategory != null ? optionsCategory : metadataService.getCategoryBySystemName(metadata.getCategory().getSystemName());
                 if (category == null) {
                     metadataService.saveCategory(metadata.getCategory());
                 } else {

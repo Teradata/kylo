@@ -1315,3 +1315,6 @@ md-list-item .md-list-item-inner > md-checkbox.permissions-indent-2 {
   transition-property: transform;
   transition-property: transform,-webkit-transform;
 }
+.feed.import.category {
+  width: 410px;
+}

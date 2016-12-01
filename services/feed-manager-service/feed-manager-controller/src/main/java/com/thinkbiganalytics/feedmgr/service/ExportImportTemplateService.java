@@ -35,6 +35,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
@@ -52,7 +53,7 @@ public class ExportImportTemplateService {
 
     private static final Logger log = LoggerFactory.getLogger(ExportImportTemplateService.class);
 
-    private static final String NIFI_CONNECTING_REUSABLE_TEMPLATE_XML_FILE = "nifiConnectingReusableTemplate.xml";
+    private static final String NIFI_CONNECTING_REUSABLE_TEMPLATE_XML_FILE = "nifiConnectingReusableTemplate";
 
     private static final String NIFI_TEMPLATE_XML_FILE = "nifiTemplate.xml";
 
@@ -105,31 +106,27 @@ NifiControllerServiceProperties nifiControllerServiceProperties;
         boolean success;
         private NifiProcessGroup templateResults;
         private List<NifiProcessorDTO> controllerServiceErrors;
-
         private String templateId;
         private String nifiTemplateId;
-
         private boolean zipFile;
+        private String nifiTemplateXml;
+        private String templateJson;
+        private List<String> nifiConnectingReusableTemplateXmls = new ArrayList<>();
+        private boolean verificationToReplaceConnectingResuableTemplateNeeded;
+
 
         public ImportTemplate(String fileName) {
             this.fileName = fileName;
         }
 
-        private String nifiTemplateXml;
-        private String templateJson;
-        private String nifiConnectingReusableTemplateXml;
-
-        private boolean verificationToReplaceConnectingResuableTemplateNeeded;
-
+        public ImportTemplate(String templateName, boolean success) {
+            this.templateName = templateName;
+            this.success = success;
+        }
 
         @JsonIgnore
         public boolean isValid() {
             return StringUtils.isNotBlank(templateJson) && StringUtils.isNotBlank(nifiTemplateXml);
-        }
-
-        public ImportTemplate(String templateName, boolean success) {
-            this.templateName = templateName;
-            this.success = success;
         }
 
         public String getTemplateName() {
@@ -213,16 +210,16 @@ NifiControllerServiceProperties nifiControllerServiceProperties;
             this.nifiTemplateId = nifiTemplateId;
         }
 
-        public String getNifiConnectingReusableTemplateXml() {
-            return nifiConnectingReusableTemplateXml;
+        public List<String> getNifiConnectingReusableTemplateXmls() {
+            return nifiConnectingReusableTemplateXmls;
         }
 
-        public void setNifiConnectingReusableTemplateXml(String nifiConnectingReusableTemplateXml) {
-            this.nifiConnectingReusableTemplateXml = nifiConnectingReusableTemplateXml;
+        public void addNifiConnectingReusableTemplateXml(String nifiConnectingReusableTemplateXml) {
+            this.nifiConnectingReusableTemplateXmls.add(nifiConnectingReusableTemplateXml);
         }
 
         public boolean hasConnectingReusableTemplate(){
-            return StringUtils.isNotBlank(nifiConnectingReusableTemplateXml);
+            return !nifiConnectingReusableTemplateXmls.isEmpty();
         }
 
         public boolean isVerificationToReplaceConnectingResuableTemplateNeeded() {
@@ -239,7 +236,7 @@ NifiControllerServiceProperties nifiControllerServiceProperties;
         
         RegisteredTemplate template = metadataService.getRegisteredTemplate(templateId);
         if (template != null) {
-            String connectingReusableTemplate = null;
+            List<String> connectingReusableTemplates = new ArrayList<>();
             //if this template uses any reusable templates then export those reusable ones as well
             if (template.usesReusableTemplate()) {
                 List<ReusableTemplateConnectionInfo> reusableTemplateConnectionInfos = template.getReusableTemplateConnections();
@@ -249,7 +246,7 @@ NifiControllerServiceProperties nifiControllerServiceProperties;
                     Map<String, String> map = nifiRestClient.getTemplatesAsXmlMatchingInputPortName(inputName);
                     if (map != null && !map.isEmpty()) {
                         //get the first one??
-                        connectingReusableTemplate = Lists.newArrayList(map.values()).get(0);
+                        connectingReusableTemplates.add(Lists.newArrayList(map.values()).get(0));
                     }
 
                 }
@@ -272,16 +269,16 @@ NifiControllerServiceProperties nifiControllerServiceProperties;
             }
 
             //create a zip file with the template and xml
-            byte[] zipFile = zip(template, templateXml, connectingReusableTemplate);
+            byte[] zipFile = zip(template, templateXml, connectingReusableTemplates);
 
-            return new ExportTemplate(SystemNamingService.generateSystemName(template.getTemplateName()) + ".zip", zipFile);
+            return new ExportTemplate(SystemNamingService.generateSystemName(template.getTemplateName()) + ".template.zip", zipFile);
 
         } else {
             throw new UnsupportedOperationException("Unable to find Template for " + templateId);
         }
     }
 
-    private byte[] zip(RegisteredTemplate template, String nifiTemplateXml, String reusableTemplateXml) {
+    private byte[] zip(RegisteredTemplate template, String nifiTemplateXml, List<String> reusableTemplateXmls) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (ZipOutputStream zos = new ZipOutputStream(baos)) {
 
@@ -289,8 +286,9 @@ NifiControllerServiceProperties nifiControllerServiceProperties;
             zos.putNextEntry(entry);
             zos.write(nifiTemplateXml.getBytes());
             zos.closeEntry();
-            if (StringUtils.isNotBlank(reusableTemplateXml)) {
-                entry = new ZipEntry(NIFI_CONNECTING_REUSABLE_TEMPLATE_XML_FILE);
+            int reusableTemplateNumber = 0;
+            for (String reusableTemplateXml : reusableTemplateXmls) {
+                entry = new ZipEntry(String.format("%s_%s.xml", NIFI_CONNECTING_REUSABLE_TEMPLATE_XML_FILE, reusableTemplateNumber++));
                 zos.putNextEntry(entry);
                 zos.write(reusableTemplateXml.getBytes());
                 zos.closeEntry();
@@ -312,15 +310,6 @@ NifiControllerServiceProperties nifiControllerServiceProperties;
     }
 
 
-    private ImportTemplate importConnectingReusableTemplate(ImportTemplate importTemplate, boolean overwrite) throws IOException{
-        if(StringUtils.isNotBlank(importTemplate.getNifiConnectingReusableTemplateXml())){
-            ImportTemplate reusableTemplateImport = importNifiTemplate(importTemplate.getFileName(),importTemplate.getNifiConnectingReusableTemplateXml(),overwrite,true);
-            return reusableTemplateImport;
-        }
-        return null;
-    }
-
-
     public ImportTemplate importZip(String fileName, InputStream inputStream, ImportOptions importOptions) throws IOException {
         this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.IMPORT_TEMPLATES);
         
@@ -333,13 +322,17 @@ NifiControllerServiceProperties nifiControllerServiceProperties;
             return importTemplate;
         }
         log.info("Importing Zip file template {}, overwrite: {}, reusableFlow: {}", fileName, importOptions.isOverwrite());
-        ImportTemplate connectingTemplate = null;
+        List<ImportTemplate> connectingTemplates = new ArrayList<>();
         if(importTemplate.hasConnectingReusableTemplate() && ImportOptions.IMPORT_CONNECTING_FLOW.YES.equals(importOptions.getImportConnectingFlow())){
             log.info("Importing Zip file template {}. first importing reusable flow from zip");
-            connectingTemplate = importConnectingReusableTemplate(importTemplate, true);
-            if(!connectingTemplate.isSuccess()) {
-                //return with exception
-                return connectingTemplate;
+            for (String reusableTemplateXml : importTemplate.getNifiConnectingReusableTemplateXmls()) {
+                ImportTemplate connectingTemplate = importNifiTemplate(importTemplate.getFileName(), reusableTemplateXml, true, true);
+                if(!connectingTemplate.isSuccess()) {
+                    //return with exception
+                    return connectingTemplate;
+                } else {
+                    connectingTemplates.add(connectingTemplate);
+                }
             }
         }
 
@@ -428,7 +421,7 @@ NifiControllerServiceProperties nifiControllerServiceProperties;
         removeTemporaryProcessGroup(importTemplate);
 
         //if we also imported the reusable template make sure that is all running properly
-        if (connectingTemplate != null) {
+        for (ImportTemplate connectingTemplate : connectingTemplates) {
             //enable it
             nifiRestClient.markConnectionPortsAsRunning(connectingTemplate.getTemplateResults().getProcessGroupEntity());
         }
@@ -606,7 +599,7 @@ NifiControllerServiceProperties nifiControllerServiceProperties;
             } else if (entry.getName().startsWith(TEMPLATE_JSON_FILE)) {
                 importTemplate.setTemplateJson(outString);
             }else if (entry.getName().startsWith(NIFI_CONNECTING_REUSABLE_TEMPLATE_XML_FILE)) {
-                importTemplate.setNifiConnectingReusableTemplateXml(outString);
+                importTemplate.addNifiConnectingReusableTemplateXml(outString);
             }
         }
         zis.closeEntry();

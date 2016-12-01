@@ -54,9 +54,37 @@
           </md-list>
         </div>
 
-        <div fex layout="column" layout-align="start start" style="padding-top:15px;"
+        <div flex="100" layout="column" layout-align="start" style="padding-top:15px;"
              class="layout-padding-indent">
           <upload-file upload-file-model="vm.feedFile"></upload-file>
+            <div layout="row" class="feed import category">
+                <md-autocomplete flex ng-disabled="vm.model.id != null"
+                                 md-input-name="category"
+                                 md-selected-item="vm.category"
+                                 md-search-text-change="vm.categorySearchTextChanged(vm.categorySearchText)"
+                                 md-search-text="vm.categorySearchText"
+                                 md-selected-item-change="vm.categorySelectedItemChange(item)"
+                                 md-items="item in vm.categoriesService.querySearch(vm.categorySearchText)"
+                                 md-item-text="item.name"
+                                 md-min-length="0"
+                                 md-floating-label="Category"
+                                 md-menu-class="autocomplete-categories-template">
+                  <md-item-template>
+                      <span class="item-title">
+                           <ng-md-icon icon="{{item.icon}}" style="fill:{{item.iconColor}}"></ng-md-icon>
+                        <span> {{item.name}} </span>
+                      </span>
+                      <span class="item-metadata">
+                        <span class="item-metastat">
+                          <strong>{{item.relatedFeeds}}</strong> Related Feeds
+                        </span>
+                      </span>
+                  </md-item-template>
+                  <md-not-found>
+                    No categories matching "{{vm.categorySearchText}}" were found.
+                  </md-not-found>
+                </md-autocomplete>
+            </div>
           <md-input-container class="condensed-no-float md-block layout-padding-bottom">
             <md-checkbox ng-model="vm.overwrite" aria-label="Overwrite if exists">
               Overwrite

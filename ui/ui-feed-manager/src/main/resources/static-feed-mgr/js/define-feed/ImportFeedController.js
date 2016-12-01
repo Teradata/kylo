@@ -1,6 +1,6 @@
 (function () {
 
-    var controller = function ($scope, $http, $mdDialog, FileUpload, RestUrlService, FeedCreationErrorService) {
+    var controller = function ($scope, $http, $mdDialog, FileUpload, RestUrlService, FeedCreationErrorService, CategoriesService) {
 
         var self = this;
         this.feedFile = null;
@@ -17,6 +17,38 @@
 
         self.errorMap = null;
         self.errorCount = 0;
+
+        self.categorySelectedItemChange = selectedItemChange;
+        self.categorySearchTextChanged = searchTextChange;
+        self.categoriesService = CategoriesService;
+        self.model = {
+            category: {}
+        };
+
+        function searchTextChange(text) {
+            //   $log.info('Text changed to ' + text);
+        }
+        function selectedItemChange(item) {
+            if(item != null && item != undefined) {
+                self.model.category.name = item.name;
+                self.model.category.id = item.id;
+                self.model.category.systemName = item.systemName;
+                $http.get(RestUrlService.GET_FEEDS_URL).then(function(response) {
+                    self.existingFeedNames = {};
+                    angular.forEach(response.data, function(feed) {
+                        if (feed.categoryId === item.id) {
+                            self.existingFeedNames[feed.systemFeedName] = true;
+                        }
+                    });
+                });
+            }
+            else {
+                self.model.category.name = null;
+                self.model.category.id = null;
+                self.model.category.systemName = null;
+                self.existingFeedNames = {};
+            }
+        }
 
         function showVerifyReplaceReusableTemplateDialog(ev) {
             // Appending dialog to document.body to cover sidenav in docs app
@@ -140,6 +172,7 @@
             }
             FileUpload.uploadFileToUrl(file, uploadUrl, successFn, errorFn, {
                 overwrite: self.overwrite,
+                categorySystemName: angular.isDefined(self.model.category.systemName) ? self.model.category.systemName : "",
                 importConnectingReusableFlow: createConnectingReusableFlow
             });
         };

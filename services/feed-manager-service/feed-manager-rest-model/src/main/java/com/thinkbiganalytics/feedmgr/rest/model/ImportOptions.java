@@ -9,9 +9,18 @@ public class ImportOptions {
         YES, NO, NOT_SET
     }
 
+    private String categorySystemName;
     private boolean createReusableFlow;
     private boolean overwrite;
     private IMPORT_CONNECTING_FLOW importConnectingFlow;
+
+    public void setCategorySystemName(String categorySystemName) {
+        this.categorySystemName = categorySystemName;
+    }
+
+    public String getCategorySystemName() {
+        return categorySystemName;
+    }
 
     public boolean isCreateReusableFlow() {
         return createReusableFlow;
