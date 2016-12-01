@@ -644,6 +644,33 @@
          * @param outputConnection
          */
         this.onCreateConnectionCallback = function(connectionViewModel, connectionDataModel, dest, source, inputConnection, outputConnection) {
+            // Ensure connection is unique
+            var newDestID = dest.data.id;
+            var newSourceID = source.data.id;
+
+            for (var i=0; i < self.chartViewModel.data.connections.length - 1; ++i) {
+                var oldDestID = self.chartViewModel.data.connections[i].dest.nodeID;
+                var oldSourceID = self.chartViewModel.data.connections[i].source.nodeID;
+                if ((oldDestID === newDestID && oldSourceID === newSourceID) || (oldDestID === newSourceID && oldSourceID === newDestID)) {
+                    // Delete connection
+                    self.chartViewModel.deselectAll();
+                    connectionViewModel.select();
+                    self.chartViewModel.deleteSelected();
+
+                    // Display error message
+                    var alert = $mdDialog.alert()
+                            .parent($('body'))
+                            .clickOutsideToClose(true)
+                            .title("Duplicate join")
+                            .textContent("There is already a join between those two tables. Please edit the existing join or switch to advanced mode.")
+                            .ariaLabel("joins must be unique")
+                            .ok("Got it!");
+                    $mdDialog.show(alert);
+                    return;
+                }
+            }
+
+            // Add connection
             self.showConnectionDialog(true, connectionViewModel, connectionDataModel, source, dest);
             validate();
         };
