@@ -28,7 +28,16 @@ import java.util.regex.Pattern;
 
 /**
  * Apply a Filter to a given QueryDSL object Filter based upon supplying a list of {@code SearchCriteria} classes or a Filter String: <column><operator><value> where <column> is the jpaColumn name,
- * <operator> is a valid {@code this#operators} Operator, and <value> is some string value Created by sr186054 on 11/29/16.
+ * <operator> is a valid {@code this#operators} Operator, and <value> is some string value
+ *
+ * Example usage in a Provider:
+ *
+ *  public Page<? extends BatchJobExecution> findAll(String filter, Pageable pageable) {
+      QJpaBatchJobExecution jobExecution = QJpaBatchJobExecution.jpaBatchJobExecution;
+      return jobExecutionRepository.findAll(GenericQueryDslFilter.buildFilter(jobExecution, filter), pageable);
+    }
+ *
+ * Created by sr186054 on 11/29/16.
  */
 public class GenericQueryDslFilter {
 
