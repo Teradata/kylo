@@ -164,7 +164,8 @@ public class ProvenanceEventAggregator implements NifiRestConnectionListener {
         if (!eventsPriorToNifiConnection.isEmpty()) {
             log.info("About to process {} events that were stored prior to making the NiFi rest connection ", eventsPriorToNifiConnection.size());
         }
-        eventsPriorToNifiConnection.forEach(e -> {
+        eventsPriorToNifiConnection.stream().filter(e -> e != null).forEach(e -> {
+//        eventsPriorToNifiConnection.forEach(e -> {
             log.debug("Processing onConnected {}", e);
             process(e);
 
