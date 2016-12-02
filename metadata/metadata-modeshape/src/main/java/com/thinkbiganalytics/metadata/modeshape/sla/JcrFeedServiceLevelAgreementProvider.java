@@ -262,9 +262,11 @@ public class JcrFeedServiceLevelAgreementProvider implements FeedServiceLevelAgr
             JcrFeedServiceLevelAgreementRelationship extensibleEntity = (JcrFeedServiceLevelAgreementRelationship) findRelationship(id);
             if (extensibleEntity != null) {
                 JcrMetadataAccess.ensureCheckoutNode(extensibleEntity.getNode());
-                for (Feed feed : extensibleEntity.getFeeds()) {
-                    JcrFeed jcrFeed = (JcrFeed) feed;
-                    JcrMetadataAccess.ensureCheckoutNode(jcrFeed.getNode());
+                for (final Feed feed : extensibleEntity.getFeeds()) {
+                    if (feed != null) {
+                        final JcrFeed jcrFeed = (JcrFeed) feed;
+                        JcrMetadataAccess.ensureCheckoutNode(jcrFeed.getNode());
+                    }
                 }
                 return extensibleEntity.removeFeedRelationships(id);
             }
@@ -280,9 +282,11 @@ public class JcrFeedServiceLevelAgreementProvider implements FeedServiceLevelAgr
             JcrFeedServiceLevelAgreementRelationship extensibleEntity = (JcrFeedServiceLevelAgreementRelationship) findRelationship(id);
             if (extensibleEntity != null) {
                 JcrMetadataAccess.ensureCheckoutNode(extensibleEntity.getNode());
-                for (Feed feed : extensibleEntity.getFeeds()) {
-                    JcrFeed jcrFeed = (JcrFeed) feed;
-                    JcrMetadataAccess.ensureCheckoutNode(jcrFeed.getNode());
+                for (final Feed feed : extensibleEntity.getFeeds()) {
+                    if (feed != null) {
+                        final JcrFeed jcrFeed = (JcrFeed) feed;
+                        JcrMetadataAccess.ensureCheckoutNode(jcrFeed.getNode());
+                    }
                 }
                 extensibleEntity.removeFeedRelationships(id);
                 extensibleEntity.getNode().remove();

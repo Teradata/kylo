@@ -45,12 +45,12 @@ public class JcrFeedServiceLevelAgreementRelationship extends JcrExtensibleEntit
 
     @Override
     public boolean removeFeedRelationships(ServiceLevelAgreement.ID id) {
-
-        Set<JcrFeed> feeds = (Set<JcrFeed>) getFeeds();
+        @SuppressWarnings("unchecked")
+        final Set<JcrFeed> feeds = (Set<JcrFeed>) getFeeds();
         if (feeds != null && !feeds.isEmpty()) {
-            for (JcrFeed feed : feeds) {
-                feed.removeServiceLevelAgreement(id);
-            }
+            feeds.stream()
+                    .filter(feed -> feed != null)
+                    .forEach(feed -> feed.removeServiceLevelAgreement(id));
         }
         setProperty(FEEDS, null);
         return true;

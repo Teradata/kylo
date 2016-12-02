@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Transforms to/from  Domain/Rest
@@ -193,10 +194,11 @@ public class ServiceLevelAgreementModelTransform {
         com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement slaModel = toModel(domain, deep);
         FeedServiceLevelAgreement feedServiceLevelAgreement = new FeedServiceLevelAgreement(slaModel);
         if (feeds != null && !feeds.isEmpty()) {
-            Collection<Feed> feedModels = Collections2.transform(feeds, Model.DOMAIN_TO_FEED);
-            if (feedModels != null) {
-                feedServiceLevelAgreement.setFeeds(new HashSet(feedModels));
-            }
+            final Set<Feed> feedModels = feeds.stream()
+                    .filter(feed -> feed != null)
+                    .map(Model.DOMAIN_TO_FEED::apply)
+                    .collect(Collectors.toSet());
+            feedServiceLevelAgreement.setFeeds(feedModels);
         }
         return feedServiceLevelAgreement;
     }
