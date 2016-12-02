@@ -483,7 +483,12 @@
          * @returns {string[]} the list of aliases
          */
         function getColumnAliases(tableName, columnName) {
-            return [columnName, tableName.replace(/.*\./, "") + "_" + columnName, tableName.replace(".", "_") + "_" + columnName];
+            var aliases = [];
+            if (columnName !== "processing_dttm") {
+                aliases.push(columnName);
+            }
+            aliases.push(tableName.replace(/.*\./, "") + "_" + columnName, tableName.replace(".", "_") + "_" + columnName);
+            return aliases;
         }
 
         /**

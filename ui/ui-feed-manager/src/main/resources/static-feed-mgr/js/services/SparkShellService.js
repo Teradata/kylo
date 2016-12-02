@@ -522,17 +522,24 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
                 var invalid = _.find(response.data.results.columns, function(column) {
                     return (column.hiveColumnLabel.match(/[.`]/) !== null);  // Escaping backticks not supported until Spark 2.0
                 });
+                var reserved = _.find(response.data.results.columns, function(column) {
+                    return (column.hiveColumnLabel === "processing_dttm");
+                });
 
                 var state = self.states_[index];
-                if (typeof(invalid) === "undefined") {
+                if (angular.isDefined(invalid)) {
+                    state.columns = [];
+                    state.rows = [];
+                    deferred.reject("Column name '" + invalid.hiveColumnLabel + "' is not supported. Please choose a different name.");
+                } else if (angular.isDefined(reserved)) {
+                    state.columns = [];
+                    state.rows = [];
+                    deferred.reject("Column name '" + reserved.hiveColumnLabel + "' is reserved. Please choose a different name.");
+                } else {
                     state.columns = response.data.results.columns;
                     state.rows = response.data.results.rows;
                     state.table = response.data.table;
                     deferred.resolve(true);
-                } else {
-                    state.columns = [];
-                    state.rows = [];
-                    deferred.reject("Column name '" + invalid.hiveColumnLabel + "' is not supported. Please choose a different name.");
                 }
             };
             var errorCallback = function(response) {
