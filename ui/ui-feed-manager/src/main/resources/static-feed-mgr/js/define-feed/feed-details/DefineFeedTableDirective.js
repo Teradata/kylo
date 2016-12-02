@@ -135,25 +135,28 @@
                 }
             });
 
-            var formReady = true;
-
             //invalidate the form if needed
-            _.some(self.model.table.tableSchema.fields, function (columnDef) {
-                var exists = self.defineFeedTableForm['name_' + columnDef._id] != undefined;
-                if (exists) {
-                    if (notUnique[columnDef.name] != undefined) {
-                        self.defineFeedTableForm['name_' + columnDef._id].$setValidity('notUnique', false);
-                    }
-                    else {
-                        self.defineFeedTableForm['name_' + columnDef._id].$setValidity('notUnique', true);
-                    }
-                }
-                else {
-                    //break out
-                    formReady = false;
-                    return true;
+            var formReady = _.every(self.model.table.tableSchema.fields, function(columnDef) {
+                // Ensure column is defined
+                if (!angular.isDefined(self.defineFeedTableForm["name_" + columnDef._id])) {
+                    return false;
                 }
 
+                // Check for reserved names
+                if (columnDef.name === "processing_dttm") {
+                    self.defineFeedTableForm["name_" + columnDef._id].$setValidity("reserved", false);
+                } else {
+                    self.defineFeedTableForm["name_" + columnDef._id].$setValidity("reserved", true);
+                }
+
+                // Check for duplicate column names
+                if (angular.isDefined(notUnique[columnDef.name])) {
+                    self.defineFeedTableForm["name_" + columnDef._id].$setValidity("notUnique", false);
+                } else {
+                    self.defineFeedTableForm["name_" + columnDef._id].$setValidity("notUnique", true);
+                }
+
+                return true;
             });
             if (formReady) {
                 self.fieldNamesUniqueRetryAmounnt = 0;
