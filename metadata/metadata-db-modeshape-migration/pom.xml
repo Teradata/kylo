@@ -16,6 +16,11 @@
   <dependencies>
     <dependency>
       <groupId>com.thinkbiganalytics.metadata</groupId>
+      <artifactId>thinkbig-metadata-persistence</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.metadata</groupId>
       <artifactId>thinkbig-metadata-modeshape</artifactId>
       <version>${project.version}</version>
     </dependency>

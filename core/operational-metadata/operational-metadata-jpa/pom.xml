@@ -11,6 +11,11 @@
   <dependencies>
 
     <dependency>
+        <groupId>com.thinkbiganalytics.metadata</groupId>
+        <artifactId>thinkbig-metadata-api</artifactId>
+        <version>${project.version}</version>
+    </dependency>
+    <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>thinkbig-operational-metadata-api</artifactId>
       <version>${project.version}</version>

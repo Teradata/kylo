@@ -4,7 +4,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.thinkbiganalytics.DateTimeUtil;
 import com.thinkbiganalytics.jobrepo.common.constants.CheckDataStepConstants;
 import com.thinkbiganalytics.jobrepo.common.constants.FeedConstants;
-import com.thinkbiganalytics.metadata.api.OperationalMetadataAccess;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.jobrepo.ExecutionConstants;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;
@@ -61,7 +61,7 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
     private BatchExecutionContextProvider batchExecutionContextProvider;
 
     @Inject
-    private OperationalMetadataAccess operationalMetadataAccess;
+    private MetadataAccess metadataAccess;
 
 
 

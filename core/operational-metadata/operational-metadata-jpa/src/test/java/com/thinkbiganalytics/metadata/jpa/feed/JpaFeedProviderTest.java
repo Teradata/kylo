@@ -3,7 +3,7 @@
  */
 package com.thinkbiganalytics.metadata.jpa.feed;
 
-import com.thinkbiganalytics.metadata.api.OperationalMetadataAccess;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.config.OperationalMetadataConfig;
 import com.thinkbiganalytics.metadata.jpa.TestJpaConfiguration;
@@ -30,19 +30,19 @@ public class JpaFeedProviderTest {
     private OpsFeedManagerFeedProvider feedProvider;
 
     @Inject
-    private OperationalMetadataAccess operationalMetadataAccess;
+    private MetadataAccess metadataAccess;
 
     private String nameTag = "" + System.currentTimeMillis();
 
     @Test
     public void testCreateFeed() {
         String name = "test.category.testFeed";
-        operationalMetadataAccess.commit(() -> {
+        metadataAccess.commit(() -> {
             OpsManagerFeed.ID id = feedProvider.resolveId(UUID.randomUUID().toString());
             return feedProvider.save(id, name);
         });
 
-        operationalMetadataAccess.read(() -> {
+        metadataAccess.read(() -> {
             OpsManagerFeed feed = feedProvider.findByName(name);
             Assert.assertNotNull(feed);
             return feed;

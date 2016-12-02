@@ -1,9 +1,20 @@
 package com.thinkbiganalytics.metadata.sla;
 
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.OperationalMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailability;
 import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailabilityListener;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
@@ -14,18 +25,6 @@ import com.thinkbiganalytics.scheduler.JobIdentifier;
 import com.thinkbiganalytics.scheduler.JobScheduler;
 import com.thinkbiganalytics.scheduler.JobSchedulerException;
 import com.thinkbiganalytics.scheduler.model.DefaultJobIdentifier;
-
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
 
 /**
  * Created by sr186054 on 7/22/16.
@@ -49,9 +48,6 @@ public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreem
 
     @Inject
     private MetadataAccess metadataAccess;
-
-    @Inject
-    private OperationalMetadataAccess operationalMetadataAccess;
 
     @Inject
     ServiceLevelAgreementProvider slaProvider;
@@ -195,7 +191,6 @@ public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreem
             jobScheduler.scheduleWithCronExpression(jobIdentifier, new Runnable() {
                 @Override
                 public void run() {
-
                     //query for this SLA
                     metadataAccess.commit(() -> {
                         ServiceLevelAgreement sla = slaProvider.getAgreement(slaId);
@@ -205,28 +200,21 @@ public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreem
 
                         }
                         if (sla.isEnabled()) {
-                            operationalMetadataAccess.commit(() -> {
-                                slaChecker.checkAgreement(sla);
-                                return null;
-                            });
-                        }
-                        else {
+                            slaChecker.checkAgreement(sla);
+                        } else {
                             log.info("SLA {} will not fire since it is disabled ",sla.getName());
                         }
+                    }, MetadataAccess.SERVICE);
                 }
-
-                ,MetadataAccess.SERVICE);
-
-
-            }
-        }, (StringUtils.isBlank(defaultCron) ? DEFAULT_CRON : defaultCron));
+            }, (StringUtils.isBlank(defaultCron) ? DEFAULT_CRON : defaultCron));
+            
             log.debug("Schedule sla job " + jobIdentifier.getName());
             scheduledJobNames.put(sla.getId(), jobIdentifier.getName());
         } catch (JobSchedulerException e) {
             throw new RuntimeException(e);
         }
 
-        if(!sla.isEnabled()){
+        if (!sla.isEnabled()) {
             disableServiceLevelAgreement(sla);
         }
 

@@ -85,7 +85,7 @@ public class TestJpaConfiguration {
 
 
 //    @Bean(name = "operationalMetadataAccess")
-//    public OperationalMetadataAccess metadataAccess() {
+//    public MetadataAccess metadataAccess() {
 //        return new OperationalMetadataTransactionTemplateMetadataAccess();
 //    }
 //

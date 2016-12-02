@@ -3,7 +3,22 @@
  */
 package com.thinkbiganalytics.metadata.jpa.sla;
 
-import com.thinkbiganalytics.metadata.api.OperationalMetadataAccess;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.inject.Inject;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.MetricAssessment;
@@ -22,28 +37,13 @@ import com.thinkbiganalytics.metadata.sla.spi.ObligationAssessor;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessor;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.inject.Inject;
-
 
 public class JpaServiceLevelAssessor implements ServiceLevelAssessor {
 
     private static final Logger log = LoggerFactory.getLogger(JpaServiceLevelAssessor.class);
 
     @Inject
-    OperationalMetadataAccess operationalMetadataAccess;
+    MetadataAccess metadataAccess;
 
     @Inject
     private JpaServiceLevelAssessmentProvider assessmentProvider;
@@ -129,7 +129,8 @@ public class JpaServiceLevelAssessor implements ServiceLevelAssessor {
 
     @Override
     public ServiceLevelAssessment findLatestAssessment(ServiceLevelAgreement sla) {
-        return this.operationalMetadataAccess.read(() -> assessmentProvider.findLatestAssessment(sla.getId()));
+        return this.metadataAccess.read(() -> assessmentProvider.findLatestAssessment(sla.getId()),
+                                        MetadataAccess.SERVICE);
     }
 
     /**
@@ -144,7 +145,7 @@ public class JpaServiceLevelAssessor implements ServiceLevelAssessor {
         ServiceLevelAssessment assessment = null;
 
         ServiceLevelAgreement serviceLevelAgreement = sla;
-        assessment = this.operationalMetadataAccess.commit(() -> {
+        assessment = this.metadataAccess.commit(() -> {
             AssessmentResult combinedResult = AssessmentResult.FAILURE;
             try {
 
@@ -191,7 +192,7 @@ public class JpaServiceLevelAssessor implements ServiceLevelAssessor {
             } finally {
                 log.debug("Completed assessment of SLA {}: {}", sla.getName(), combinedResult);
             }
-        });
+        }, MetadataAccess.SERVICE);
         return assessment;
     }
 

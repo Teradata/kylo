@@ -5,7 +5,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.thinkbiganalytics.activemq.config.ActiveMqConstants;
-import com.thinkbiganalytics.metadata.api.OperationalMetadataAccess;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.event.feed.FeedOperationStatusEvent;
 import com.thinkbiganalytics.metadata.api.event.feed.OperationStatus;
@@ -58,7 +58,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener{
     private LegacyNifiRestClient nifiRestClient;
 
     @Inject
-    private OperationalMetadataAccess operationalMetadataAccess;
+    private MetadataAccess metadataAccess;
 
     @Inject
     OpsManagerFeedProvider opsManagerFeedProvider;
@@ -113,10 +113,9 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener{
                                                                   public OpsManagerFeed load(String feedName) throws Exception {
                                                                       OpsManagerFeed feed =null;
                                                                       try {
-                                                                          feed = operationalMetadataAccess.commit(() -> {
-                                                                                return opsManagerFeedProvider.findByName(feedName);
-                                                                            });
-                                                                      }catch (Exception e){
+                                                                          feed = metadataAccess.commit(() -> opsManagerFeedProvider.findByName(feedName), 
+                                                                                                       MetadataAccess.SERVICE);
+                                                                      } catch (Exception e){
 
                                                                       }
                                                                       return feed == null ? NULL_FEED : feed;
@@ -156,10 +155,13 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener{
 
             if (event.isBatchJob()) {
                 //ensure the job is there
-                BatchJobExecution jobExecution = operationalMetadataAccess.commit(() -> batchJobExecutionProvider.getOrCreateJobExecution(event));
-                NifiEvent nifiEvent = operationalMetadataAccess.commit(() -> receiveBatchEvent(jobExecution, event));
+                BatchJobExecution jobExecution = metadataAccess.commit(() -> batchJobExecutionProvider.getOrCreateJobExecution(event), 
+                                                                       MetadataAccess.SERVICE);
+                NifiEvent nifiEvent = metadataAccess.commit(() -> receiveBatchEvent(jobExecution, event), 
+                                                            MetadataAccess.SERVICE);
             } else {
-                NifiEvent nifiEvent = operationalMetadataAccess.commit(() -> nifiEventProvider.create(event));
+                NifiEvent nifiEvent = metadataAccess.commit(() -> nifiEventProvider.create(event), 
+                                                            MetadataAccess.SERVICE);
             }
             if (event.isFinalJobEvent()) {
                 notifyJobFinished(event);

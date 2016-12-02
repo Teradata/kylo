@@ -6,7 +6,7 @@ import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementGroup;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementMetricTransformerHelper;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementModelTransform;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
-import com.thinkbiganalytics.metadata.api.OperationalMetadataAccess;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
@@ -57,7 +57,7 @@ public class ServiceLevelAgreementRestController {
     private JcrMetadataAccess metadata;
 
     @Inject
-    private OperationalMetadataAccess operationalMetadataAccess;
+    private MetadataAccess metadataAccess;
 
     @Inject
     ServiceLevelAssessor assessor;

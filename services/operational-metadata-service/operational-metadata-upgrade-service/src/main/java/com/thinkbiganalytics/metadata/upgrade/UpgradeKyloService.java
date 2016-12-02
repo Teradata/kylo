@@ -1,7 +1,7 @@
 package com.thinkbiganalytics.metadata.upgrade;
 
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.OperationalMetadataAccess;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.app.KyloVersion;
 import com.thinkbiganalytics.metadata.api.app.KyloVersionProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
@@ -65,9 +65,6 @@ public class UpgradeKyloService implements ModeShapeAvailabilityListener {
     OpsManagerFeedProvider opsManagerFeedProvider;
 
     @Inject
-    OperationalMetadataAccess operationalMetadataAccess;
-
-    @Inject
     MetadataAccess metadataAccess;
 
     @Inject
@@ -97,11 +94,11 @@ public class UpgradeKyloService implements ModeShapeAvailabilityListener {
         }
         ensureFeedTemplateFeedRelationships();
         // migrateUnusedFeedProperties();
-            version = operationalMetadataAccess.commit(() -> {
+            version = metadataAccess.commit(() -> {
                 //ensure/update the version
                 KyloVersion kyloVersion = kyloVersionProvider.updateToCurrentVersion();
                 return kyloVersion;
-            });
+            }, MetadataAccess.SERVICE);
 
         log.info("Upgrade check complete for Kylo {}", version.getVersion());
 
@@ -175,7 +172,7 @@ public class UpgradeKyloService implements ModeShapeAvailabilityListener {
 
     public KyloVersion upgradeTo0_4_0() {
 
-        return metadataAccess.commit(() -> operationalMetadataAccess.commit(() -> {
+        return metadataAccess.commit(() -> metadataAccess.commit(() -> {
             
             for (FeedManagerCategory category : feedManagerCategoryProvider.findAll()) {
                 // Ensure each category has an allowedActions (gets create if not present.)

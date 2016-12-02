@@ -24,6 +24,7 @@
         <!-- <module>metadata-jpa</module> -->
         <module>metadata-modeshape</module>
         <module>metadata-db-modeshape-migration</module>
+        <module>metadata-persistence</module>
     </modules>
     
     <dependencies>

@@ -18,7 +18,7 @@ import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
 import com.thinkbiganalytics.jobrepo.repository.FeedRepository;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.OperationalMetadataAccess;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventListener;
@@ -100,9 +100,6 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     FeedModelTransform feedModelTransform;
 
     @Inject
-    MetadataAccess metadataAccess;
-
-    @Inject
     ServiceLevelAgreementProvider slaProvider;
 
     @Inject
@@ -118,7 +115,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     OpsManagerFeedProvider opsManagerFeedProvider;
 
     @Inject
-    OperationalMetadataAccess operationalMetadataAccess;
+    MetadataAccess metadataAccess;
 
     /** Metadata event service */
     @Inject
@@ -355,7 +352,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
             assignFeedDatasources(feed, domainFeed);
 
             //sync the feed information to ops manager
-            operationalMetadataAccess.commit(() -> opsManagerFeedProvider.save(opsManagerFeedProvider.resolveId(domainId), feedName));
+            metadataAccess.commit(() -> opsManagerFeedProvider.save(opsManagerFeedProvider.resolveId(domainId), feedName));
 
             // Update hadoop security group polices if the groups changed
             if(!feed.isNew() && !ListUtils.isEqualList(previousSavedSecurityGroups, domainFeed.getSecurityGroups())) {
@@ -370,7 +367,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
         }, (e) -> {
             if (feed.isNew() && StringUtils.isNotBlank(feed.getId())) {
                 //Rollback ops Manager insert if it is newly created
-                operationalMetadataAccess.commit(() -> {
+                metadataAccess.commit(() -> {
                     opsManagerFeedProvider.delete(opsManagerFeedProvider.resolveId(feed.getId()));
                     return null;
                 });
@@ -484,7 +481,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
             serviceLevelAgreementService.unscheduleServiceLevelAgreement(feed.getId());
             feedRepository.deleteFeed(feed.getCategory().getName(), feed.getName());
             feedManagerFeedProvider.deleteById(feed.getId());
-            operationalMetadataAccess.commit(() -> {
+            metadataAccess.commit(() -> {
                 opsManagerFeedProvider.delete(opsManagerFeedProvider.resolveId(feedId));
                 return null;
             });

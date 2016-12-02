@@ -22,6 +22,6 @@
         <module>kerberos</module>
         <module>hadoop-authorization</module>
         <module>operational-metadata</module>
-        <module>-audit-logging</module>
+        <module>audit-logging</module>
     </modules>
 </project>

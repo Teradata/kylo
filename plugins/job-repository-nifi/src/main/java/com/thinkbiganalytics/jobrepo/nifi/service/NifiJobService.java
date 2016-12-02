@@ -5,7 +5,7 @@ import com.thinkbiganalytics.DateTimeUtil;
 import com.thinkbiganalytics.jobrepo.query.model.ExecutedJob;
 import com.thinkbiganalytics.jobrepo.service.AbstractJobService;
 import com.thinkbiganalytics.jobrepo.service.JobExecutionException;
-import com.thinkbiganalytics.metadata.api.OperationalMetadataAccess;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.jobrepo.ExecutionConstants;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;
@@ -35,7 +35,7 @@ public class NifiJobService extends AbstractJobService {
     private static DateTimeFormatter utcDateTimeFormat = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSS").withZoneUTC();
 
     @Inject
-    private OperationalMetadataAccess operationalMetadataAccess;
+    private MetadataAccess metadataAccess;
 
     @Autowired
     private BatchJobExecutionProvider nifiJobExecutionProvider;
@@ -66,7 +66,7 @@ public class NifiJobService extends AbstractJobService {
 
     @Override
     public void abandonJobExecution(Long executionId) throws JobExecutionException {
-        operationalMetadataAccess.commit(() -> {
+        metadataAccess.commit(() -> {
             BatchJobExecution execution = this.nifiJobExecutionProvider.findByJobExecutionId(executionId);
             if (execution != null) {
                 if (execution.getStartTime() == null) {
@@ -89,7 +89,7 @@ public class NifiJobService extends AbstractJobService {
 
     @Override
     public void failJobExecution(Long executionId) {
-        operationalMetadataAccess.commit(() -> {
+        metadataAccess.commit(() -> {
 
             BatchJobExecution execution = this.nifiJobExecutionProvider.findByJobExecutionId(executionId);
             if (execution != null && !execution.isFailed()) {

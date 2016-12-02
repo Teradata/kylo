@@ -1,7 +1,7 @@
 package com.thinkbiganalytics.metadata.jobrepo.nifi.provenance;
 
 import com.thinkbiganalytics.activemq.config.ActiveMqConstants;
-import com.thinkbiganalytics.metadata.api.OperationalMetadataAccess;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStatisticsProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStats;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiFeedProcessorStats;
@@ -26,19 +26,19 @@ public class NifiStatsJmsReceiver {
     private NifiFeedProcessorStatisticsProvider nifiEventStatisticsProvider;
 
     @Inject
-    private OperationalMetadataAccess operationalMetadataAccess;
+    private MetadataAccess metadataAccess;
 
 
     @JmsListener(destination = Queues.PROVENANCE_EVENT_STATS_QUEUE, containerFactory = ActiveMqConstants.JMS_CONTAINER_FACTORY)
     public void receiveTopic(AggregatedFeedProcessorStatisticsHolder stats) {
 
-        operationalMetadataAccess.commit(() -> {
+        metadataAccess.commit(() -> {
             List<NifiFeedProcessorStats> summaryStats = createSummaryStats(stats);
             for (NifiFeedProcessorStats stat : summaryStats) {
                 nifiEventStatisticsProvider.create(stat);
             }
             return summaryStats;
-        });
+        }, MetadataAccess.SERVICE);
 
     }
 
