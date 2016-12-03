@@ -69,10 +69,6 @@
                     if (renderGetTableData) {
                         self.model.table.method = 'EXISTING_TABLE';
                     }
-                    else {
-                        self.model.table.method = 'MANUAL';
-                    }
-
                     self.editModel.inputProcessor = processor;
                     self.editModel.inputProcessorType = processor.type;
                     //  setInputProcessorFeedPropertiesUrl(processor);

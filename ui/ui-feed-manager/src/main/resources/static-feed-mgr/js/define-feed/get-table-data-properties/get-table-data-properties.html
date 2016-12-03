@@ -13,7 +13,7 @@
                      md-items="item in ctl.tablesAutocomplete.querySearch(ctl.tablesAutocomplete.searchText)"
                      md-item-text="item.fullName"
                      md-min-length="1"
-                     placeholder="Select a Table"
+                     placeholder="Type table name"
                      md-menu-class="autocomplete-hive-table-template"
                      md-require-match="true"
                      md-input-name="tableAutocompleteInput"
@@ -53,7 +53,7 @@
     </md-input-container>
 
     <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="" ng-if="ctl.loadStrategyProperty.value == 'INCREMENTAL'">
-        <label class="label-small md-container-ignore">Date Field to use when selecting incremental updates</label>
+        <label class="label-small md-container-ignore">Field for high watermark tracking</label>
         <md-select name="incrementalDate" ng-model="ctl.model.table.sourceTableIncrementalDateField" ng-change="ctl.onIncrementalDateFieldChange()" required>
             <md-option ng-repeat="field in ctl.tableFields | filter: ctl.filterFieldDates track by $index" value="{{field.name}}">
                 {{field.name}}

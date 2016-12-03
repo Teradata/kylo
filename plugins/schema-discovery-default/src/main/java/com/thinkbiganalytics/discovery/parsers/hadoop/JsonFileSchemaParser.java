@@ -2,7 +2,7 @@
  * Copyright (c) 2016. Teradata Inc.
  */
 
-package com.thinkbiganalytics.discovery.parsers.spark;
+package com.thinkbiganalytics.discovery.parsers.hadoop;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.thinkbiganalytics.discovery.parser.FileSchemaParser;
@@ -16,8 +16,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 
-@SchemaParser(name = "Parquet", description = "Supports parquet formatted files.", tags = {"Parquet"})
-public class ParquetFileSchemaParser implements FileSchemaParser {
+@SchemaParser(name = "JSON", description = "Supports JSON formatted files.", tags = {"JSON"})
+public class JsonFileSchemaParser implements FileSchemaParser {
 
     @Autowired
     @JsonIgnore
@@ -25,6 +25,7 @@ public class ParquetFileSchemaParser implements FileSchemaParser {
 
     @Override
     public Schema parse(InputStream is, Charset charset, TableSchemaType target) throws IOException {
-        return parserService.doParse(is, SparkFileSchemaParserService.SparkFileType.PARQUET, target);
+        return parserService.doParse(is, SparkFileSchemaParserService.SparkFileType.JSON, target);
     }
+
 }

@@ -5,13 +5,12 @@ package com.thinkbiganalytics.discovery;
 
 import com.thinkbiganalytics.discovery.parser.FileSchemaParser;
 import com.thinkbiganalytics.discovery.parser.SchemaParser;
+import com.thinkbiganalytics.policy.ReflectionPolicyAnnotationDiscoverer;
 import com.thinkbiganalytics.spring.SpringApplicationContext;
 
-import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -36,10 +35,12 @@ public class FileParserFactory {
 
         List<Class<SchemaParser>> supportedParsers = new ArrayList<>();
 
-        Set<Class<?>> parsers = new Reflections("").getTypesAnnotatedWith(SchemaParser.class);
+        Set<Class<?>> parsers = ReflectionPolicyAnnotationDiscoverer.getTypesAnnotatedWith(SchemaParser.class);
         for (Class c : parsers) {
             if (FileSchemaParser.class.isAssignableFrom(c)) {
                 supportedParsers.add(c);
+            } else {
+                log.warn("[" + c + "] is annotated with @SchemaParser and does not impellement the FileSchemaParser interface so will be ignored.");
             }
         }
         return supportedParsers;
@@ -54,8 +55,8 @@ public class FileParserFactory {
         List<Class<SchemaParser>> supportedParsersClazzes = listSchemaParsersClasses();
         for (Class<SchemaParser> clazz : supportedParsersClazzes) {
             try {
-               FileSchemaParser newInstance = (FileSchemaParser)clazz.newInstance();
-               newInstance = (FileSchemaParser)SpringApplicationContext.autowire(newInstance);
+                FileSchemaParser newInstance = (FileSchemaParser) clazz.newInstance();
+                newInstance = (FileSchemaParser) SpringApplicationContext.autowire(newInstance);
 
                 supportedParsers.add(newInstance);
 

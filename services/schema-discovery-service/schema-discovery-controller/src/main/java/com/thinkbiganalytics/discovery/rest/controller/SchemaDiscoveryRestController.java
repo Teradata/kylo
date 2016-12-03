@@ -5,11 +5,11 @@
 package com.thinkbiganalytics.discovery.rest.controller;
 
 import com.thinkbiganalytics.discovery.FileParserFactory;
-import com.thinkbiganalytics.discovery.model.DefaultHiveSchema;
 import com.thinkbiganalytics.discovery.model.SchemaParserDescriptor;
 import com.thinkbiganalytics.discovery.parser.FileSchemaParser;
 import com.thinkbiganalytics.discovery.schema.Schema;
 import com.thinkbiganalytics.discovery.util.TableSchemaType;
+import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.policy.PolicyTransformException;
 
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -17,14 +17,12 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
-import javax.inject.Singleton;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.InternalServerErrorException;
@@ -53,14 +51,15 @@ public class SchemaDiscoveryRestController {
     @Path("/hive/sample-file")
     @Consumes({MediaType.MULTIPART_FORM_DATA})
     @Produces({MediaType.APPLICATION_JSON})
-    public Response uploadFile(@FormDataParam("parser") SchemaParserDescriptor parserDescriptor,
+    public Response uploadFile(@FormDataParam("parser") String parserDescriptor,
                                @FormDataParam("file") InputStream fileInputStream,
                                @FormDataParam("file") FormDataContentDisposition fileMetaData) throws Exception {
 
         Schema schema;
         SchemaParserAnnotationTransformer transformer = new SchemaParserAnnotationTransformer();
         try {
-            FileSchemaParser p = transformer.fromUiModel(parserDescriptor);
+            SchemaParserDescriptor descriptor = ObjectMapperSerializer.deserialize(parserDescriptor, SchemaParserDescriptor.class);
+            FileSchemaParser p = transformer.fromUiModel(descriptor);
             // TODO: Detect charset
             schema = p.parse(fileInputStream, Charset.defaultCharset(), TableSchemaType.HIVE);
         } catch (PolicyTransformException e) {
@@ -74,20 +73,12 @@ public class SchemaDiscoveryRestController {
     @Path("/file-parsers")
     @Produces({MediaType.APPLICATION_JSON})
     public Response getFileParsers() {
-
         List<FileSchemaParser> parsers = FileParserFactory.instance().listSchemaParsers();
         List<SchemaParserDescriptor> descriptors = new ArrayList<>();
         SchemaParserAnnotationTransformer transformer = new SchemaParserAnnotationTransformer();
         for (FileSchemaParser parser : parsers) {
             SchemaParserDescriptor descriptor = transformer.toUIModel(parser);
             descriptors.add(descriptor);
-            if ("Parquet".equals(descriptor.getName())) {
-                try {
-                    parser.parse(null, null, TableSchemaType.HIVE);
-                } catch (IOException e) {
-                    e.printStackTrace();;
-                }
-            }
         }
         return Response.ok(descriptors).build();
     }

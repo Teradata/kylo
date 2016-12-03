@@ -14,6 +14,8 @@ import com.thinkbiganalytics.discovery.schema.Schema;
 import com.thinkbiganalytics.discovery.util.ParserHelper;
 import com.thinkbiganalytics.discovery.util.TableSchemaType;
 import com.thinkbiganalytics.policy.PolicyProperty;
+import com.thinkbiganalytics.policy.PolicyPropertyTypes;
+import com.thinkbiganalytics.policy.PropertyLabelValue;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -40,10 +42,10 @@ public class CSVFileSchemaParser implements FileSchemaParser {
 
     private int numRowsToSample = 10;
 
-    @PolicyProperty(name = "Auto Detect?", hint = "Auto detect will attempt to infer delimiter from the sample file.", value = "true")
+    @PolicyProperty(name = "Auto Detect?", hint = "Auto detect will attempt to infer delimiter from the sample file.", type = PolicyPropertyTypes.PROPERTY_TYPE.select, selectableValues = {"true","false"})
     private boolean autoDetect = true;
 
-    @PolicyProperty(name = "Header?", hint = "Whether file has a header.", value = "true")
+    @PolicyProperty(name = "Header?", hint = "Whether file has a header.", value = "true", type = PolicyPropertyTypes.PROPERTY_TYPE.select, selectableValues = {"true","false"})
     private boolean headerRow = true;
 
     @PolicyProperty(name = "Delimiter Char", hint = "Character separating fields", value = ",")

@@ -360,7 +360,9 @@
             }
         })
 
-        this.loadStrategies = [{name:'Full Load',type:'SNAPSHOT',strategy:'FULL_LOAD',hint:'Select entire table'},{name:'Incremental',type:'DELTA',strategy:'INCREMENTAL',hint:'Select part of table based on high watermark'}];
+        this.loadStrategies = [{name:'Full Load',type:'SNAPSHOT',strategy:'FULL_LOAD',hint:'Replace entire table'},{name:'Incremental',type:'DELTA',strategy:'INCREMENTAL',hint:'Incremental load'
+                                                                                                                                                                               + ' based on a '
+                                                                                                                                                                               + ' high watermark'}];
 
         if(self.loadStrategyProperty){
             $scope.$watch(function () {

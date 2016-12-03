@@ -72,9 +72,9 @@ public class JerseyConfig extends ResourceConfig {
 
         BeanConfig config = new BeanConfig();
         config.setConfigId("thinkbig-pipeline-controller");
-        config.setTitle("Thinkbig Pipeline Controller");
+        config.setTitle("Kylo");
         config.setVersion("v1");
-        config.setContact("Thinkbig");
+        config.setContact("Teradata Inc.");
         config.setSchemes(new String[]{"http"});
         config.setBasePath("/proxy");
         config.setResourcePackage("com.thinkbiganalytics");

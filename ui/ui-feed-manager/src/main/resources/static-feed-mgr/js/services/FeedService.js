@@ -350,7 +350,7 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
          */
         clearTableData:function(){
 
-            this.createFeedModel.table.method = 'MANUAL';
+            //this.createFeedModel.table.method = 'MANUAL';
             this.createFeedModel.table.tableSchema.fields = [];
             this.createFeedModel.table.fieldPolicies = [];
             this.createFeedModel.table.existingTableName = null;

@@ -6,6 +6,7 @@ package com.thinkbiganalytics.discovery.rest.controller;
 
 import com.thinkbiganalytics.discovery.model.DefaultHiveSchema;
 import com.thinkbiganalytics.discovery.model.SchemaParserDescriptor;
+import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 
 import org.glassfish.jersey.client.ClientConfig;
@@ -53,7 +54,7 @@ public class SchemaDiscoveryRestControllerTest extends JerseyTest {
 
         SchemaParserDescriptor descriptor = createMockParserDescriptor();
         SchemaDiscoveryRestController c = new SchemaDiscoveryRestController();
-        Response response = c.uploadFile(descriptor, new ByteArrayInputStream("ABC".getBytes()), null);
+        Response response = c.uploadFile(ObjectMapperSerializer.serialize(descriptor), new ByteArrayInputStream("ABC".getBytes()), null);
         assertNotNull(response != null);
     }
 

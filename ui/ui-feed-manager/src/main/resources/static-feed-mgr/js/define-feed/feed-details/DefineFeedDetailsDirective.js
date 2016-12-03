@@ -148,7 +148,7 @@
                         self.model.table.method = 'EXISTING_TABLE';
                     }
                     else {
-                        self.model.table.method = 'MANUAL';
+                        self.model.table.method = 'SAMPLE_FILE';
                     }
                     //check the type and return the custom form if there is one via a factory
                     // self.model.table.method = 'MANUAL';

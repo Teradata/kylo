@@ -10,7 +10,7 @@
 <div style="min-height:700px;height:700px" layout-fill id="feed-lineage-container">
   <div ng-if="vm.loading" layout="column" layout-fill layout-align="start center">
     <md-progress-linear md-mode="indeterminate"></md-progress-linear>
-    <div class="layout-padding-top-bottom">Loading Feed Lineage ...</div>
+    <div class="layout-padding-top-bottom">Loading feed lineage ...</div>
   </div>
   <vis-network data="vm.data" options="vm.options" events="vm.events"></vis-network>
   <div ng-draggable="{handle:'.dragHandle',containment:'#feed-lineage-container'}" style="width:300px;left: 10px;top: -690px;">

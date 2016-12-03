@@ -2,7 +2,7 @@
 <div layout="row" layout-sm="column" layout-xs="column" ng-controller="FeedDetailsController as feedDetails" >
     <div layout="column" flex="100" flex-gt-sm="70" flex-order="1" flex-order-xs="2" flex-order-sm="2" >
             <tba-feed-activity  feed-name="feedDetails.feedName"></tba-feed-activity>
-            <tba-jobs hide-feed-column="true" card-title="Feed Jobs" feed-filter="feedDetails.feedName" page-name="feed-job-details" on-job-action="feedDetails.onJobAction(action,job)"></tba-jobs>
+            <tba-jobs hide-feed-column="true" card-title="Jobs" feed-filter="feedDetails.feedName" page-name="feed-job-details" on-job-action="feedDetails.onJobAction(action,job)"></tba-jobs>
     </div>
 
     <div layout="column"  flex="100"  flex-gt-sm="30"  style="margin:8px;" flex-order="2" flex-order-xs="1" flex-order-sm="1">

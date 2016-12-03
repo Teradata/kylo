@@ -227,14 +227,15 @@
 angular.module(MODULE_FEED_MGR).factory('FieldPolicyRuleOptionsFactory', function ($http, $q, RestUrlService) {
 
     function getStandardizationOptions() {
-
         return $http.get(RestUrlService.AVAILABLE_STANDARDIZATION_POLICIES, {cache: true});
-
     }
 
     function getValidationOptions() {
         return $http.get(RestUrlService.AVAILABLE_VALIDATION_POLICIES, {cache: true});
+    }
 
+    function getParserOptions() {
+        return $http.get(RestUrlService.LIST_FILE_PARSERS, {cache: true});
     }
 
     var data = {
@@ -246,6 +247,8 @@ angular.module(MODULE_FEED_MGR).factory('FieldPolicyRuleOptionsFactory', functio
             }
             else if (type == 'validation') {
                 return 'Validation Policies';
+            } else if (type == 'schemaParser') {
+                return 'Supported Parsers'
             }
 
         },
@@ -255,6 +258,9 @@ angular.module(MODULE_FEED_MGR).factory('FieldPolicyRuleOptionsFactory', functio
             }
             else if (type == 'validation') {
                 return getValidationOptions();
+            }
+            else if (type == 'schemaParser') {
+                return getParserOptions();
             }
         }
     };
