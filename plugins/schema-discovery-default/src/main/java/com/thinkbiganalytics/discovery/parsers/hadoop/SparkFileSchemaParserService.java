@@ -93,8 +93,10 @@ public class SparkFileSchemaParserService {
 
     private String toScript(File localFile, SparkFileType fileType) {
         String path = "file://" + localFile.getAbsolutePath();
-        // Test remove: String path = "file:///usr/hdp/2.4.0.0-169/spark/examples/src/main/resources/users.parquet";
-
+        //path = "file:///var/sampledata/HiveGroup.parquet";
+        //path = "file:///var/sampledata/users.parquet";
+        //path = "file:///var/sampledata/signups.orc";
+        //path = "file:///var/sampledata/books.json";
         StringBuffer sb = new StringBuffer();
         sb.append("import sqlContext.implicits._\n");
         sb.append("import org.apache.spark.sql._\n");

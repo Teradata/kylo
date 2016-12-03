@@ -23,5 +23,6 @@
         <module>sla-jira</module>
         <module>hadoop-authorization-ranger-default</module>
         <module>hadoop-authorization-sentry-default</module>
+        <module>schema-discovery-default</module>
     </modules>
 </project>

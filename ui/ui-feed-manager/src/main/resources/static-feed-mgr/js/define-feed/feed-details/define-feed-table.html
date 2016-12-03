@@ -84,10 +84,10 @@
 
 
                     <div layout="row" layout-fill>
-                      <div flex="45" class="md-list-item-text hint">
+                      <div flex="30" class="md-list-item-text hint">
                         Field Name
                       </div>
-                      <div flex="20" class="md-list-item-text hint" style="padding-left:5px;">
+                      <div flex="35 class="md-list-item-text hint" style="padding-left:5px;">
                         Data Type
                       </div>
                       <div flex="10" class="md-list-item-text hint" layout-align="start center" layout="column">
@@ -117,7 +117,7 @@
                       <div layout="row" layout-fill layout="row" class=" repeated-item" md-virtual-repeat="columnDef in vm.model.table.tableSchema.fields" md-item-size="60"
                            style="height:100%;max-height:100%;"
                            ng-click="vm.onSelectedColumn(columnDef)">
-                        <div flex="45" class="md-list-item-text  ">
+                        <div flex="30" class="md-list-item-text  ">
                           <md-input-container md-no-float class="md-block condensed" flex-gt-sm>
                             <input ng-model="columnDef.name" placeholder="Field Name" required name="name_{{columnDef._id}}" ng-change="vm.onFieldNameChange(columnDef)"
                                    ng-pattern="/^[a-zA-Z0-9_-\s\)\(]*$/"
@@ -130,11 +130,11 @@
                             </div>
                           </md-input-container>
                         </div>
-                        <div flex="20" class="md-list-item-text " style="padding-left:5px;">
+                        <div flex="35" class="md-list-item-text " style="padding-left:5px;">
                           <div layout="column">
                             <md-input-container class="md-block md-dense condensed" flex-gt-sm>
                               <md-select ng-model="columnDef.dataType" placeholder="Data Type" name="datatype_{{columnDef._id}}" required ng-disabled="vm.model.dataTransformationFeed">
-                                <md-option ng-repeat="dataType in vm.columnDefinitionDataTypes | orderBy:'toString()' track by $index" value="{{dataType}}" aria-label="{{dataType}}">
+                                <md-option ng-repeat="dataType in vm.availableDefinitionDataTypes | orderBy:'toString()' track by $index" value="{{dataType}}" aria-label="{{dataType}}">
                                   {{dataType}}
                                 </md-option>
                               </md-select>
@@ -295,7 +295,6 @@
             </div>
           </div>
         </md-expansion-panel-group>
-      </div>
         <thinkbig-step-buttons can-continue="vm.isValid" step-index="{{vm.stepIndex}}"></thinkbig-step-buttons>
       </body-section>
     </card-layout>

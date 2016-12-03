@@ -7,6 +7,7 @@ package com.thinkbiganalytics.discovery.parsers.hadoop;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.thinkbiganalytics.discovery.parser.FileSchemaParser;
 import com.thinkbiganalytics.discovery.parser.SchemaParser;
+import com.thinkbiganalytics.discovery.schema.HiveTableSchema;
 import com.thinkbiganalytics.discovery.schema.Schema;
 import com.thinkbiganalytics.discovery.util.TableSchemaType;
 
@@ -25,7 +26,9 @@ public class JsonFileSchemaParser implements FileSchemaParser {
 
     @Override
     public Schema parse(InputStream is, Charset charset, TableSchemaType target) throws IOException {
-        return parserService.doParse(is, SparkFileSchemaParserService.SparkFileType.JSON, target);
+        HiveTableSchema schema = (HiveTableSchema) parserService.doParse(is, SparkFileSchemaParserService.SparkFileType.JSON, target);
+        schema.setHiveFormat("ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe' STORED AS TEXTFILE");
+        return schema;
     }
 
 }
