@@ -21,7 +21,7 @@
         };
     }
 
-    var controller = function ($scope, $http, $timeout, $mdToast, $filter, RestUrlService, FeedService, FileUpload, BroadcastService) {
+    var controller = function ($scope, $http, $timeout, $mdToast, $filter, $mdDialog, $mdExpansionPanel, RestUrlService, FeedService, FileUpload, BroadcastService) {
 
         this.defineFeedTableForm = {};
         var self = this;
@@ -30,14 +30,13 @@
         this.model = FeedService.createFeedModel;
         this.isValid = false;
         this.sampleFile = null;
-        this.autoDetect = true;
-        this.sampleFileDelimiter = null;
         this.tableCreateMethods = [{type: 'MANUAL', name: 'Manual'}, {type: 'SAMPLE_FILE', name: 'Sample File'}];
         this.columnDefinitionDataTypes = ['string', 'int', 'bigint', 'tinyint', 'decimal', 'double', 'float', 'date', 'timestamp', 'boolean', 'binary'];
-
+        this.availableDefinitionDataTypes = self.columnDefinitionDataTypes.slice();
+        this.schemaParser = {};
         self.useUnderscoreInsteadOfSpaces = true;
-
-        this.fieldNamesUniqueRetryAmounnt = 0;
+        this.selectedColumn = null;
+        this.fieldNamesUniqueRetryAmount = 0;
 
         /**
          * The possibly Partition formulas
@@ -46,7 +45,6 @@
         this.partitionFormulas = ['val', 'year', 'month', 'day', 'hour', 'min', 'sec'];
 
         this.feedFormat = '';
-
 
         BroadcastService.subscribe($scope, 'DATA_TRANSFORM_SCHEMA_LOADED', onDataTransformSchemaLoaded);
 
@@ -90,8 +88,6 @@
             }
         }
 
-
-
         function showProgress() {
             if (self.stepperController) {
                 self.stepperController.showProgress = true;
@@ -103,6 +99,7 @@
                 self.stepperController.showProgress = false;
             }
         }
+
         function resetColumns() {
             self.model.table.tableSchema.fields = [];
             self.model.table.fieldPolicies = [];
@@ -120,7 +117,7 @@
                 resetFormReadyCheck = false;
             }
             else if (resetFormReadyCheck == true) {
-                self.fieldNamesUniqueRetryAmounnt = 0;
+                self.fieldNamesUniqueRetryAmount = 0;
             }
 
             //map of names to array of columnDefinitions
@@ -159,10 +156,10 @@
                 return true;
             });
             if (formReady) {
-                self.fieldNamesUniqueRetryAmounnt = 0;
+                self.fieldNamesUniqueRetryAmount = 0;
             }
-            else if (self.fieldNamesUniqueRetryAmounnt < 10) {
-                self.fieldNamesUniqueRetryAmounnt++;
+            else if (self.fieldNamesUniqueRetryAmount < 10) {
+                self.fieldNamesUniqueRetryAmount++;
                 $timeout(fieldNamesUnique, 20);
             }
         }
@@ -287,6 +284,14 @@
             partitionNamesUnique();
         }
 
+        this.getSelectedColumn = function () {
+            return self.selectedColumn;
+        };
+
+        this.onSelectedColumn = function (selectedColumn) {
+            self.selectedColumn = selectedColumn;
+        };
+
         /**
          * When the schema field changes it needs to
          *  - ensure the names are unique
@@ -295,6 +300,7 @@
          * @param columnDef
          */
         this.onFieldNameChange = function (columnDef) {
+            self.selectedColumn = columnDef;
             if (self.useUnderscoreInsteadOfSpaces) {
                 columnDef.name = replaceSpaces(columnDef.name);
             }
@@ -429,7 +435,6 @@
 
         };
 
-
         //Set the Table Name to be the System Feed Name
         var systemFeedNameWatch = $scope.$watch(function () {
             return self.model.systemFeedName;
@@ -453,8 +458,6 @@
 
         });
 
-
-
         var sampleFileWatch = $scope.$watch(function () {
             return self.sampleFile;
         }, function (newVal) {
@@ -466,26 +469,60 @@
             }
         });
 
+        /*
+         Collapse the file picker section
+         */
+        this.collapseMethodPanel = function () {
+            $mdExpansionPanel().waitFor('panelOne').then(function (instance) {
+                instance.collapse();
+            });
+        }
+
+        /*
+         Expand the schema panel
+         */
+        this.expandSchemaPanel = function () {
+            $mdExpansionPanel().waitFor('panelTwo').then(function (instance) {
+                instance.expand();
+            });
+        }
 
         this.uploadSampleFile = function () {
             self.uploadBtnDisabled = true;
             showProgress();
             var file = self.sampleFile;
             var params = {};
+            if (self.schemaParser) {
+                params = {parser: JSON.stringify(self.schemaParser)};
+            }
             var uploadUrl = RestUrlService.UPLOAD_SAMPLE_TABLE_FILE;
             var successFn = function (response) {
                 resetColumns();
+                self.availableDefinitionDataTypes = self.columnDefinitionDataTypes.slice();
                 angular.forEach(response.fields, function (field) {
                     var col = newColumnDefinition();
                     col = angular.extend(col, field)
+                    // backwards compatibility
+                    if (col.dataType == '' && field.derivedDataType) {
+                        col.dataType = field.derivedDataType;
+                    }
+                    // add exotic data type to available columns if needed
+                    if (!$.inArray(col.dataType, self.availableDefinitionDataTypes)) {
+                        console.debug('adding', col.dataType);
+                        self.availableDefinitionDataTypes.push(col.dataType);
+                    }
+                    console.debug('col.dataType', col.dataType, 'self.avail', self.availableDefinitionDataTypes)
                     self.addColumn(col, false);
                 });
                 FeedService.syncTableFieldPolicyNames();
                 //set the feedFormat property
-                self.model.table.feedFormat = response.hiveRecordFormat;
+                self.model.table.feedFormat = response.hiveFormat;
                 fieldNamesUnique();
                 hideProgress();
                 self.uploadBtnDisabled = false;
+                self.collapseMethodPanel();
+                self.expandSchemaPanel();
+
                 validate();
                 angular.element('#upload-sample-file-btn').removeClass('md-primary');
             }
@@ -493,9 +530,6 @@
                 hideProgress();
                 self.uploadBtnDisabled = false;
                 angular.element('#upload-sample-file-btn').removeClass('md-primary');
-            }
-            if (!this.autoDetect) {
-                params['delimiter'] = this.sampleFileDelimiter;
             }
             //clear partitions
             while (self.model.table.partitions.length) {
@@ -506,11 +540,7 @@
 
         $scope.$on('$destroy', function () {
             systemFeedNameWatch();
-            //tableMethodWatch();
-            //tableFieldsWatch();
-            // partitionFieldsWatch();
         })
-
 
     };
 
