@@ -8,6 +8,7 @@ import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
+import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.query.QueryResult;
 
@@ -111,9 +113,14 @@ public class JcrFeedManagerFeedProvider extends BaseJcrProvider<FeedManagerFeed,
         return new JcrFeed.FeedId(fid);
     }
 
-
     @Override
     public void delete(FeedManagerFeed feedManagerFeed) {
+        // Remove dependent feeds
+        final Node node = ((JcrFeedManagerFeed) feedManagerFeed).getNode();
+        feedManagerFeed.getDependentFeeds().forEach(feed -> feedManagerFeed.removeDependentFeed((JcrFeed) feed));
+        JcrMetadataAccess.getCheckedoutNodes().removeIf(node::equals);
+
+        // Delete feed
         feedManagerFeed.getTemplate().removeFeed(feedManagerFeed);
         super.delete(feedManagerFeed);
     }

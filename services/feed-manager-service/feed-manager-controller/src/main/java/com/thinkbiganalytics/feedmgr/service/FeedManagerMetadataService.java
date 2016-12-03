@@ -39,6 +39,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -154,7 +155,13 @@ public class FeedManagerMetadataService implements MetadataService {
             throw new IllegalArgumentException("Unknown feed: " + feedId);
         }
 
-        // Step 2: Delete hadoop authorization security policies if they exists
+        // Step 2: Check for dependent feeds
+        if (feed.getUsedByFeeds() != null && !feed.getUsedByFeeds().isEmpty()) {
+            final List<String> systemNames = feed.getUsedByFeeds().stream().map(FeedSummary::getCategoryAndFeedSystemName).collect(Collectors.toList());
+            throw new IllegalStateException("Feed is referenced by " + feed.getUsedByFeeds().size() + " other feeds: " + systemNames);
+        }
+
+        // Step 3: Delete hadoop authorization security policies if they exists
         if(hadoopAuthorizationService != null) {
             metadataAccess.read(() -> {
                 FeedManagerFeed domainFeed = feedModelTransform.feedToDomain(feed);
@@ -166,7 +173,7 @@ public class FeedManagerMetadataService implements MetadataService {
 
         }
 
-        // Step 3: Enable NiFi cleanup flow
+        // Step 4: Enable NiFi cleanup flow
         boolean needsCleanup = false;
         final ProcessGroupDTO feedProcessGroup;
         final ProcessGroupDTO categoryProcessGroup = nifiRestClient.getProcessGroupByName("root", feed.getSystemCategoryName(), false, true);
@@ -178,7 +185,7 @@ public class FeedManagerMetadataService implements MetadataService {
             }
         }
 
-        // Step 4: Run NiFi cleanup flow
+        // Step 5: Run NiFi cleanup flow
         if (needsCleanup) {
             // Wait for input processor to start
             try {
@@ -190,7 +197,7 @@ public class FeedManagerMetadataService implements MetadataService {
             cleanupFeed(feed);
         }
 
-        // Step 5: Remove feed from NiFi
+        // Step 6: Remove feed from NiFi
         if (categoryProcessGroup != null) {
             final Set<ConnectionDTO> connections = categoryProcessGroup.getContents().getConnections();
             for (ProcessGroupDTO processGroup : NifiProcessUtil.findProcessGroupsByFeedName(categoryProcessGroup.getContents().getProcessGroups(), feed.getSystemFeedName())) {
@@ -199,7 +206,7 @@ public class FeedManagerMetadataService implements MetadataService {
         }
 
 
-        // Step 6: Delete database entries
+        // Step 7: Delete database entries
         feedProvider.deleteFeed(feedId);
 
     }

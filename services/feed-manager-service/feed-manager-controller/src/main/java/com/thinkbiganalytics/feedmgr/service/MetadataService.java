@@ -56,6 +56,7 @@ public interface MetadataService {
      * @throws FeedCleanupFailedException if the cleanup flow was started but failed to complete successfully
      * @throws FeedCleanupTimeoutException if the cleanup flow was started but failed to complete in the allotted time
      * @throws IllegalArgumentException if the feed does not exist
+     * @throws IllegalStateException if there are dependent feeds
      * @throws NifiClientRuntimeException if the feed cannot be deleted from NiFi
      * @throws RuntimeException if the feed could not be deleted for any other reason
      */

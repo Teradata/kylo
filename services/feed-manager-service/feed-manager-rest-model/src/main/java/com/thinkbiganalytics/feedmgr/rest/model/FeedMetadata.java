@@ -102,6 +102,9 @@ public class FeedMetadata implements UIFeed {
 
     private List<HadoopSecurityGroup> securityGroups;
 
+    /** List of feed IDs dependent on this feed */
+    private List<FeedSummary> usedByFeeds;
+
     public FeedMetadata() {}
 
     @Override
@@ -429,5 +432,13 @@ public class FeedMetadata implements UIFeed {
 
     public void setOptions(FeedProcessingOptions options) {
         this.options = options;
+    }
+
+    public List<FeedSummary> getUsedByFeeds() {
+        return usedByFeeds;
+    }
+
+    public void setUsedByFeeds(List<FeedSummary> usedByFeeds) {
+        this.usedByFeeds = usedByFeeds;
     }
 }

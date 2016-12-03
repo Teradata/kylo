@@ -244,7 +244,7 @@ public class FeedModelTransform {
      * @return the Feed Manager feed
      */
     @Nonnull
-    private FeedMetadata domainToFeedMetadata(@Nonnull final FeedManagerFeed domain, @Nullable final Map<Category, Set<UserFieldDescriptor>> userFieldMap) {
+    private FeedMetadata domainToFeedMetadata(@Nonnull final FeedManagerFeed<?> domain, @Nullable final Map<Category, Set<UserFieldDescriptor>> userFieldMap) {
 
         FeedMetadata feed = deserializeFeedMetadata(domain);
         feed.setId(domain.getId().toString());
@@ -299,6 +299,13 @@ public class FeedModelTransform {
         }
         feed.setSecurityGroups(restSecurityGroups);
 
+        if (domain.getUsedByFeeds() != null) {
+            final List<FeedSummary> usedByFeeds = domain.getUsedByFeeds().stream()
+                    .map(this::domainToFeedSummary)
+                    .collect(Collectors.toList());
+            feed.setUsedByFeeds(usedByFeeds);
+        }
+
         return feed;
     }
 
@@ -314,8 +321,10 @@ public class FeedModelTransform {
         feedSummary.setId(feedManagerFeed.getId().toString());
         feedSummary.setFeedId(feedManagerFeed.getId().toString());
         feedSummary.setCategoryId(feedManagerFeed.getCategory().getId().toString());
-        feedSummary.setCategoryIcon(((FeedManagerCategory) feedManagerFeed.getCategory()).getIcon());
-        feedSummary.setCategoryIconColor(((FeedManagerCategory) feedManagerFeed.getCategory()).getIconColor());
+        if (feedManagerFeed.getCategory() instanceof FeedManagerCategory) {
+            feedSummary.setCategoryIcon(((FeedManagerCategory) feedManagerFeed.getCategory()).getIcon());
+            feedSummary.setCategoryIconColor(((FeedManagerCategory) feedManagerFeed.getCategory()).getIconColor());
+        }
         feedSummary.setCategoryName(feedManagerFeed.getCategory().getDisplayName());
         feedSummary.setSystemCategoryName(feedManagerFeed.getCategory().getName());
         feedSummary.setUpdateDate(feedManagerFeed.getModifiedTime() != null ? feedManagerFeed.getModifiedTime().toDate() : null);

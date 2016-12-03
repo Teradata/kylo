@@ -93,6 +93,26 @@
          * Displays a confirmation dialog for deleting the feed.
          */
         this.confirmDeleteFeed = function() {
+            // Verify there are no dependent feeds
+            if (angular.isArray(self.model.usedByFeeds) && self.model.usedByFeeds.length > 0) {
+                var list = "<ul>";
+                list += _.map(self.model.usedByFeeds, function(feed) {
+                    return "<li>" + _.escape(feed.feedName) + "</li>";
+                });
+                list += "</ul>";
+
+                var alert = $mdDialog.alert()
+                        .parent($("body"))
+                        .clickOutsideToClose(true)
+                        .title("Feed is referenced")
+                        .htmlContent("This feed is referenced by other feeds and cannot be deleted. The following feeds should be deleted first: " + list)
+                        .ariaLabel("feed is referenced")
+                        .ok("Got it!");
+                $mdDialog.show(alert);
+                return;
+            }
+
+            // Display delete dialog
             var $dialogScope = $scope.$new();
             $dialogScope.dialog = $mdDialog;
             $dialogScope.vm = self;

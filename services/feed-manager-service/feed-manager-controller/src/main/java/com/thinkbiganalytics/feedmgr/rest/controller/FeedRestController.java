@@ -54,6 +54,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
+import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -125,7 +126,7 @@ public class FeedRestController {
             feed = getMetadataService().createFeed(feedMetadata);
         } catch (DuplicateFeedNameException e) {
             log.info("Failed to create a new feed due to another feed having the same category/feed name: " + feedMetadata.getCategoryAndFeedDisplayName());
-            
+
             // Create an error message
             String msg = "A feed already exists in the cantegory \"" + e.getCategoryName() + "\" with name name \"" + e.getFeedName() + "\"";
 
@@ -242,6 +243,9 @@ public class FeedRestController {
         } catch (IllegalArgumentException e) {
             log.error("Error deleting feed: Illegal Argument", e);
             throw new NotFoundException(STRINGS.getString("deleteFeed.notFound"), e);
+        } catch (final IllegalStateException e) {
+            log.error("Error deleting feed: Illegal state", e);
+            throw new ClientErrorException(STRINGS.getString("deleteFeed.hasDependents"), Response.Status.CONFLICT, e);
         } catch (NifiClientRuntimeException e) {
             log.error("Error deleting feed: NiFi error", e);
             throw new InternalServerErrorException(STRINGS.getString("deleteFeed.nifiError"), e);
