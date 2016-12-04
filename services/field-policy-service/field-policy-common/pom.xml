@@ -58,6 +58,12 @@
       <artifactId>commons-beanutils</artifactId>
     </dependency>
 
+    <!-- Required by clients who need to de-serialize -->
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-orm</artifactId>
+    </dependency>
+
     <dependency>
       <groupId>org.reflections</groupId>
       <artifactId>reflections</artifactId>

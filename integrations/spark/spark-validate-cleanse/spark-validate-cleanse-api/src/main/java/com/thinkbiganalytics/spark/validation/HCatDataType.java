@@ -175,22 +175,23 @@ public class HCatDataType implements Cloneable, Serializable {
             }
         }
         HCatDataType hcatType = dataTypes.get(dataType);
-        hcatType = (hcatType == null ? UNCHECKED_TYPE : hcatType);
-        try {
-            hcatType = (HCatDataType) hcatType.clone();
-            hcatType.name = name;
-            hcatType.nativeType = dataType;
-            // Determine min max based on column precision
-            if (decSize != null) {
-                hcatType.digits = decDigits;
-                hcatType.max =
-                    BigDecimal.valueOf(Long.parseLong(StringUtils.repeat("9", decSize)) + (1 - Math.pow(.1, hcatType.digits)));
-                hcatType.min = ((BigDecimal) hcatType.max).negate();
-            } else if (strLen != null) {
-                hcatType.maxlength = strLen;
+        if (hcatType != null) {
+            try {
+                hcatType = (HCatDataType) hcatType.clone();
+                hcatType.name = name;
+                hcatType.nativeType = dataType;
+                // Determine min max based on column precision
+                if (decSize != null) {
+                    hcatType.digits = decDigits;
+                    hcatType.max =
+                        BigDecimal.valueOf(Long.parseLong(StringUtils.repeat("9", decSize)) + (1 - Math.pow(.1, hcatType.digits)));
+                    hcatType.min = ((BigDecimal) hcatType.max).negate();
+                } else if (strLen != null) {
+                    hcatType.maxlength = strLen;
+                }
+            } catch (CloneNotSupportedException e) {
+                throw new RuntimeException("Unexpected clone exception", e);
             }
-        } catch (CloneNotSupportedException e) {
-            throw new RuntimeException("Unexpected clone exception", e);
         }
         return (hcatType == null ? UNCHECKED_TYPE : hcatType);
     }
@@ -309,5 +310,9 @@ public class HCatDataType implements Cloneable, Serializable {
 
     public static Map<String, HCatDataType> getDataTypes() {
         return dataTypes;
+    }
+
+    public boolean isUnchecked() {
+        return unchecked;
     }
 }

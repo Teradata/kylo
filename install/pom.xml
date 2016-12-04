@@ -316,7 +316,7 @@
                 <source>
                   <location>../plugins/schema-discovery-default/target</location>
                   <includes>
-                    <include>thinkbig-discovery-default-${project.version}.jar</include>
+                    <include>thinkbig-schema-discovery-default-${project.version}.jar</include>
                   </includes>
                 </source>
               </sources>

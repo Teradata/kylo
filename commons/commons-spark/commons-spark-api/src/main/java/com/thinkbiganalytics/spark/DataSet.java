@@ -29,4 +29,6 @@ public interface DataSet {
     StructType schema();
 
     List<Row> collectAsList();
+
+    void writeToTable(String partitionColumn, String fqnTable);
 }

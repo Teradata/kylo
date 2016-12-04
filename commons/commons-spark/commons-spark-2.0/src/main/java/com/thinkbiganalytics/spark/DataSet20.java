@@ -4,6 +4,7 @@ package com.thinkbiganalytics.spark;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SaveMode;
 import org.apache.spark.sql.types.StructType;
 import org.springframework.stereotype.Component;
 
@@ -67,5 +68,10 @@ public class DataSet20 implements DataSet {
     @Override
     public List<Row> collectAsList() {
         return dataset.collectAsList();
+    }
+
+    @Override
+    public void writeToTable(String partitionColumn, String fqnTable) {
+        dataset.write().partitionBy(partitionColumn).mode(SaveMode.Append).saveAsTable(fqnTable);
     }
 }

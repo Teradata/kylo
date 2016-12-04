@@ -44,6 +44,8 @@ public class TableMergeSyncSupport implements Serializable {
     public void enableDynamicPartitions() {
         doExecuteSQL("set hive.exec.dynamic.partition=true");
         doExecuteSQL("set hive.exec.dynamic.partition.mode=nonstrict");
+        // Required for ORC and Parquet
+        doExecuteSQL("set hive.optimize.index.filter=false");
     }
 
     public void setHiveConf(String[] configurations){

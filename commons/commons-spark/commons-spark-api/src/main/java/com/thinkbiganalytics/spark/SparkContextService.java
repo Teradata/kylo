@@ -17,9 +17,9 @@ public interface SparkContextService extends Serializable {
 
     DataSet toDataSet(Object adaptee);
 
-    DataSet toDataSet(HiveContext context, String tableName);
+    DataSet toDataSet(SQLContext context, String tableName);
 
-    DataSet toDataSet(HiveContext context, JavaRDD<Row> rdd, StructType schema);
+    DataSet toDataSet(SQLContext context, JavaRDD<Row> rdd, StructType schema);
 
     DataSet sql(HiveContext context, String sql);
 

@@ -317,7 +317,7 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
 
             // If all 3 fields are filled out then assume kerberos is enabled and we want to authenticate the user
             boolean authenticateUser = false;
-            if (!(StringUtils.isEmpty(principal) && StringUtils.isEmpty(keyTab) && StringUtils.isEmpty(hadoopConfigurationResources))) {
+            if (!StringUtils.isEmpty(principal) && !StringUtils.isEmpty(keyTab) && !StringUtils.isEmpty(hadoopConfigurationResources)) {
                 authenticateUser = true;
             }
 

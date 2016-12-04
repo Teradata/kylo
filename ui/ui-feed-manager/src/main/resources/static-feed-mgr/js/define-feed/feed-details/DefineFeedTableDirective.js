@@ -507,11 +507,9 @@
                         col.dataType = field.derivedDataType;
                     }
                     // add exotic data type to available columns if needed
-                    if (!$.inArray(col.dataType, self.availableDefinitionDataTypes)) {
-                        console.debug('adding', col.dataType);
+                    if ($.inArray(col.dataType, self.availableDefinitionDataTypes) == -1) {
                         self.availableDefinitionDataTypes.push(col.dataType);
                     }
-                    console.debug('col.dataType', col.dataType, 'self.avail', self.availableDefinitionDataTypes)
                     self.addColumn(col, false);
                 });
                 FeedService.syncTableFieldPolicyNames();

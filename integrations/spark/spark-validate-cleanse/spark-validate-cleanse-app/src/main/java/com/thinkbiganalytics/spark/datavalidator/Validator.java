@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.spark.datavalidator;
 
 import com.thinkbiganalytics.hive.util.HiveUtils;
+import com.beust.jcommander.JCommander;
 import com.thinkbiganalytics.policy.FieldPoliciesJsonTransformer;
 import com.thinkbiganalytics.policy.FieldPolicy;
 import com.thinkbiganalytics.policy.FieldPolicyBuilder;
@@ -12,6 +13,7 @@ import com.thinkbiganalytics.spark.DataSet;
 import com.thinkbiganalytics.spark.SparkContextService;
 import com.thinkbiganalytics.spark.util.InvalidFormatException;
 import com.thinkbiganalytics.spark.validation.HCatDataType;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.spark.Accumulator;
 import org.apache.spark.SparkContext;
@@ -93,6 +95,7 @@ public class Validator implements Serializable {
     private String fieldPolicyJsonPath;
 
     private final Vector<Accumulator<Integer>> accumList = new Vector<>();
+    private CommandLineParams params;
 
     public void setArguments(String targetDatabase, String entity, String partition, String fieldPolicyJsonPath) {
         this.validTableName = entity + "_valid";
@@ -106,6 +109,11 @@ public class Validator implements Serializable {
         this.targetDatabase = targetDatabase;
         this.fieldPolicyJsonPath = fieldPolicyJsonPath;
     }
+
+    protected SQLContext getSQLContext() {
+        return hiveContext;
+    }
+
 
     /**
      * read the JSON file path and return the JSON string
@@ -131,7 +139,7 @@ public class Validator implements Serializable {
             log.info("Couldn't find Field Policy JSON file at {} ", fieldPolicyJsonPath);
             log.info("Checking in classpath..");
             String fieldPolicyJsonFileName = fieldPolicyJsonFile.getName();
-            fieldPolicyJsonPath = "./"+fieldPolicyJsonFileName;
+            fieldPolicyJsonPath = "./" + fieldPolicyJsonFileName;
         }
 
         try (BufferedReader br = new BufferedReader(new FileReader(fieldPolicyJsonPath))) {
@@ -168,9 +176,15 @@ public class Validator implements Serializable {
         try {
             SparkContext sparkContext = SparkContext.getOrCreate();
             hiveContext = new org.apache.spark.sql.hive.HiveContext(sparkContext);
+
+            for (Param param : params.getHiveParams()) {
+                log.info("Adding Hive parameter {}={}", param.getName(), param.getValue());
+                hiveContext.setConf(param.getName(), param.getValue());
+            }
+
             sqlContext = new SQLContext(sparkContext);
 
-            log.info("Deployment Node - " + sparkContext.getConf().get("spark.submit.deployMode"));
+            log.info("Deployment Mode - " + sparkContext.getConf().get("spark.submit.deployMode"));
             loadPolicies();
 
             // Extract fields from a source table
@@ -178,11 +192,14 @@ public class Validator implements Serializable {
             this.schema = resolveDataTypes(fields);
             this.policies = resolvePolicies(fields);
 
-            DataSet dataFrame = scs.sql(hiveContext, "SELECT * FROM " + feedTablename + " WHERE processing_dttm = '" + partition + "'");
+            String sql = "SELECT * FROM " + feedTablename + " WHERE processing_dttm = '" + partition + "'";
+            log.info("Executing query {}", sql);
+            DataSet dataFrame = scs.sql(getSQLContext(), sql);
             JavaRDD<Row> rddData = dataFrame.javaRDD().cache();
 
             // Extract schema from the source table
             StructType sourceSchema = createModifiedSchema(feedTablename);
+            log.info("sourceSchema {}", sourceSchema);
 
             // Initialize accumulators to track error statistics on each column
             JavaSparkContext javaSparkContext = new JavaSparkContext(SparkContext.getOrCreate());
@@ -198,21 +215,23 @@ public class Validator implements Serializable {
                 }
             });
 
-            final DataSet validatedDF = scs.toDataSet(hiveContext, newResults, sourceSchema);
+            final DataSet validatedDF = scs.toDataSet(getSQLContext(), newResults, sourceSchema);
+            log.info("validatedDF count {}", validatedDF.count());
 
             // Pull out just the valid or invalid records
-            DataSet invalidDF = validatedDF.filter(VALID_INVALID_COL + " = '0'").drop(VALID_INVALID_COL).drop(PROCESSING_DTTM_COL).toDF();
+            DataSet invalidDF = validatedDF.filter(VALID_INVALID_COL + " = '0'").drop(VALID_INVALID_COL).toDF();
             invalidDF.show(1);
             writeToTargetTable(invalidDF, invalidTableName);
 
             // Write out the valid records (dropping our two columns)
             DataSet
                 validDF =
-                validatedDF.filter(VALID_INVALID_COL + " = '1'").drop(VALID_INVALID_COL).drop("dlp_reject_reason").drop(PROCESSING_DTTM_COL).toDF();
+                validatedDF.filter(VALID_INVALID_COL + " = '1'").drop(VALID_INVALID_COL).drop("dlp_reject_reason").toDF();
             writeToTargetTable(validDF, validTableName);
 
             long invalidCount = invalidDF.count();
             long validCount = validDF.count();
+            log.info("Valid count {} invalid count {}", validCount, invalidCount);
 
             // Record the validation stats
             writeStatsToProfileTable(validCount, invalidCount);
@@ -259,16 +278,17 @@ public class Validator implements Serializable {
                     }
                 });
 
-            DataSet df = scs.toDataSet(hiveContext, statsRDD, statsSchema);
+            DataSet df = scs.toDataSet(getSQLContext(), statsRDD, statsSchema);
             df.registerTempTable(tempTable);
 
             String insertSQL = "INSERT OVERWRITE TABLE " + qualifiedProfileName
                                + " PARTITION (processing_dttm='" + partition + "')"
                                + " SELECT columnname, metrictype, metricvalue FROM " + HiveUtils.quoteIdentifier(tempTable);
 
-            scs.sql(hiveContext, insertSQL);
+            log.info("Writing profile stats {}", insertSQL);
+            scs.sql(getSQLContext(), insertSQL);
         } catch (Exception e) {
-            System.out.println("FAILED TO ADD VALIDATION STATS");
+            log.error("Failed to insert validation stats", e);
             throw new RuntimeException(e);
         }
     }
@@ -278,7 +298,7 @@ public class Validator implements Serializable {
      */
     private StructType createModifiedSchema(String sourceTable) {
         // Extract schema from the source table
-        StructType schema = scs.toDataSet(hiveContext, feedTablename).schema();
+        StructType schema = scs.toDataSet(getSQLContext(), feedTablename).schema();
         StructField[] fields = schema.fields();
         List<StructField> fieldsList = new Vector<>();
         Collections.addAll(fieldsList, fields);
@@ -291,14 +311,27 @@ public class Validator implements Serializable {
 
 
     private void writeToTargetTable(DataSet sourceDF, String targetTable) throws Exception {
+        final String qualifiedTable = HiveUtils.quoteIdentifier(targetDatabase, targetTable);
 
+        if (true) {
+
+            getSQLContext().setConf("hive.exec.dynamic.partition", "true");
+            getSQLContext().setConf("hive.exec.dynamic.partition.mode", "nonstrict");
+            // Required for ORC and Parquet
+            getSQLContext().setConf("set hive.optimize.index.filter", "false");
+
+            sourceDF.writeToTable(PROCESSING_DTTM_COL, qualifiedTable);
+            return;
+        }
+        // Legacy
         // Create a temporary table we can use to copy data from. Writing directly to our partition from a spark dataframe doesn't work.
         String tempTable = targetTable + "_" + System.currentTimeMillis();
         sourceDF.registerTempTable(tempTable);
 
         // Insert the data into our partition
-        final String qualifiedTable = HiveUtils.quoteIdentifier(targetDatabase, targetTable);
-        scs.sql(hiveContext, "INSERT OVERWRITE TABLE " + qualifiedTable + " PARTITION (processing_dttm='" + partition + "') SELECT * FROM " + HiveUtils.quoteIdentifier(tempTable));
+        final String sql = "INSERT OVERWRITE TABLE " + qualifiedTable + " PARTITION (processing_dttm='" + partition + "') SELECT * FROM " + HiveUtils.quoteIdentifier(tempTable);
+        log.info("Writing to target {}", sql);
+        scs.sql(getSQLContext(), sql);
     }
 
     /**
@@ -309,7 +342,7 @@ public class Validator implements Serializable {
         int nulls = 1;
 
         // Create placeholder for our new values plus two columns for validation and reject_reason
-        String[] newValues = new String[schema.length + 2];
+        Object[] newValues = new Object[schema.length + 2];
         boolean valid = true;
         String sbRejectReason = null;
         List<ValidationResult> results = null;
@@ -320,25 +353,35 @@ public class Validator implements Serializable {
             HCatDataType dataType = schema[idx];
 
             // Extract the value (allowing for null or missing field for odd-ball data)
-            String fieldValue = (idx == row.length() || row.isNullAt(idx) ? null : row.getString(idx));
-            if (StringUtils.isEmpty(fieldValue)) {
-                nulls++;
-            }
+            Object val = (idx == row.length() || row.isNullAt(idx) ? null : row.get(idx));
+            // Handle complex types by passing them through
+            if (dataType.isUnchecked() || (!(val instanceof String))) {
+                if (val == null) {
+                    nulls++;
+                }
+                //log.info("Unchecked type with val {}", val);
+                newValues[idx] = val;
+            } else {
+                //log.info("Checked type with type {} val {}", dataType.getName(), val);
+                String fieldValue = (val != null ? val.toString() : null);
+                if (StringUtils.isEmpty(fieldValue)) {
+                    nulls++;
+                }
 
-            // Perform cleansing operations
-            fieldValue = standardizeField(fieldPolicy, fieldValue);
-            newValues[idx] = fieldValue;
+                // Perform cleansing operations
+                fieldValue = standardizeField(fieldPolicy, fieldValue);
+                newValues[idx] = fieldValue;
 
-            // Record results in our appended columns
-            result = validateField(fieldPolicy, dataType, fieldValue);
-            if (!result.isValid()) {
-                valid = false;
-                results = (results == null ? new Vector<ValidationResult>() : results);
-                results.add(result);
-                // Record fact that we had an invalid column
-                accumList.get(idx).add(1);
+                // Record results in our appended columns
+                result = validateField(fieldPolicy, dataType, fieldValue);
+                if (!result.isValid()) {
+                    valid = false;
+                    results = (results == null ? new Vector<ValidationResult>() : results);
+                    results.add(result);
+                    // Record fact that we had an invalid column
+                    accumList.get(idx).add(1);
+                }
             }
-        }
         // Return success unless all values were null.  That would indicate a blank line in the file
         if (nulls >= schema.length) {
             valid = false;
@@ -353,7 +396,7 @@ public class Validator implements Serializable {
         newValues[schema.length + 1] = newValues[schema.length - 1];
         newValues[schema.length] = sbRejectReason;
         newValues[schema.length - 1] = (valid ? "1" : "0");
-
+        // log.info("Creating row with values {}", newValues);
         return RowFactory.create(newValues);
     }
 
@@ -440,8 +483,8 @@ public class Validator implements Serializable {
 
             Object t = validator.getClass().getGenericInterfaces()[0];
             if (t instanceof ParameterizedType) {
-                ParameterizedType type = (ParameterizedType)t;
-                expectedParamClazz = (Class)type.getActualTypeArguments()[0];
+                ParameterizedType type = (ParameterizedType) t;
+                expectedParamClazz = (Class) type.getActualTypeArguments()[0];
             } else {
                 expectedParamClazz = String.class;
             }
@@ -475,6 +518,7 @@ public class Validator implements Serializable {
         List<HCatDataType> cols = new Vector<>();
 
         for (StructField field : fields) {
+            // log.info("Found field {}",field);
             String colName = field.name();
             String dataType = field.dataType().simpleString();
             cols.add(HCatDataType.createFromDataType(colName, dataType));
@@ -504,12 +548,23 @@ public class Validator implements Serializable {
         return pols.toArray(new FieldPolicy[0]);
     }
 
+    private void addParameters(CommandLineParams params) {
+        this.params = params;
+    }
+
+    static CommandLineParams parseRemainingParameters(String[] args, int from) {
+        CommandLineParams params = new CommandLineParams();
+        new JCommander(params, Arrays.copyOfRange(args, from, args.length));
+        return params;
+    }
+
     public static void main(String[] args) {
+        log.info("Running Spark Validator with the following command line args (comma separated):" + StringUtils.join(args, ","));
 
         // Check how many arguments were passed in
         if (args.length < 4) {
             System.out.println("Proper Usage is: <targetDatabase> <entity> <partition> <path-to-policy-file>");
-
+            System.out.println("You can optionally add: --hiveConf hive.setting=value --hiveConf hive.other.setting=value");
             System.out.println("You provided " + args.length + " args which are (comma separated): " + StringUtils.join(args, ","));
             System.exit(1);
         }
@@ -517,6 +572,7 @@ public class Validator implements Serializable {
             ApplicationContext ctx = new AnnotationConfigApplicationContext("com.thinkbiganalytics.spark");
             Validator app = ctx.getBean(Validator.class);
             app.setArguments(args[0], args[1], args[2], args[3]);
+            app.addParameters(parseRemainingParameters(args, 4));
             app.doValidate();
         } catch (Exception e) {
             System.out.println(e);

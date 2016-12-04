@@ -18,12 +18,12 @@ public class SparkContextService20 implements SparkContextService {
     }
 
     @Override
-    public DataSet toDataSet(HiveContext context, String tableName) {
+    public DataSet toDataSet(SQLContext context, String tableName) {
         return toDataSet(context.table(tableName));
     }
 
     @Override
-    public DataSet toDataSet(HiveContext context, JavaRDD<Row> rdd, StructType schema) {
+    public DataSet toDataSet(SQLContext context, JavaRDD<Row> rdd, StructType schema) {
         return toDataSet(context.createDataFrame(rdd, schema));
     }
 
