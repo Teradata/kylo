@@ -1,7 +1,6 @@
 package com.thinkbiganalytics.spark.datavalidator;
 
 import com.thinkbiganalytics.hive.util.HiveUtils;
-import com.beust.jcommander.JCommander;
 import com.thinkbiganalytics.policy.FieldPoliciesJsonTransformer;
 import com.thinkbiganalytics.policy.FieldPolicy;
 import com.thinkbiganalytics.policy.FieldPolicyBuilder;
@@ -40,7 +39,12 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Vector;
 
 /**
  * Cleanses and validates a table of strings according to defined field-level policies. Records are split into good and bad. <p> blog.cloudera.com/blog/2015/07/how-to-do-data-quality-checks-using-apache-spark-dataframes/
@@ -51,7 +55,6 @@ public class Validator implements Serializable {
     private static final Logger log = LoggerFactory.getLogger(Validator.class);
 
     private static String REJECT_REASON_COL = "dlp_reject_reason";
-
     private static String VALID_INVALID_COL = "dlp_valid";
     private static String PROCESSING_DTTM_COL = "processing_dttm";
 
@@ -63,6 +66,9 @@ public class Validator implements Serializable {
     /* Initialize Spark */
     private HiveContext hiveContext;
     private SQLContext sqlContext;
+
+    // Optimization to write directly from dataframe to the table vs. temporary table (not tested with < 1.6.x)
+    private boolean useDirectInsert = true;
 
     /*
     Valid target schema
@@ -95,7 +101,6 @@ public class Validator implements Serializable {
     private String fieldPolicyJsonPath;
 
     private final Vector<Accumulator<Integer>> accumList = new Vector<>();
-    private CommandLineParams params;
 
     public void setArguments(String targetDatabase, String entity, String partition, String fieldPolicyJsonPath) {
         this.validTableName = entity + "_valid";
@@ -133,11 +138,10 @@ public class Validator implements Serializable {
          */
 
         File fieldPolicyJsonFile = new File(fieldPolicyJsonPath);
-        if(fieldPolicyJsonFile.exists() && fieldPolicyJsonFile.isFile())
-            log.info("Loading Field Policy JSON file at {} ", fieldPolicyJsonPath);
-        else {
-            log.info("Couldn't find Field Policy JSON file at {} ", fieldPolicyJsonPath);
-            log.info("Checking in classpath..");
+        if (fieldPolicyJsonFile.exists() && fieldPolicyJsonFile.isFile()) {
+            log.info("Loading field policies at {} ", fieldPolicyJsonPath);
+        } else {
+            log.info("Couldn't find field policy file at {} will check classpath.", fieldPolicyJsonPath);
             String fieldPolicyJsonFileName = fieldPolicyJsonFile.getName();
             fieldPolicyJsonPath = "./" + fieldPolicyJsonFileName;
         }
@@ -146,7 +150,7 @@ public class Validator implements Serializable {
             StringBuilder sb = new StringBuilder();
             String line = br.readLine();
             if (line == null) {
-                log.error("Field Policy JSON file at {} is empty ", fieldPolicyJsonPath);
+                log.error("Field policies file at {} is empty ", fieldPolicyJsonPath);
             }
 
             while (line != null) {
@@ -156,7 +160,7 @@ public class Validator implements Serializable {
             fieldPolicyJson = sb.toString();
         } catch (Exception e) {
             //LOG THE ERROR
-            log.error("Error reading Field Policy JSON Path {}", e.getMessage(), e);
+            log.error("Error parsing field policy file. Please verify valid JSON at path {}", e.getMessage(), e);
         }
         return fieldPolicyJson;
     }
@@ -168,7 +172,7 @@ public class Validator implements Serializable {
 
         String fieldPolicyJson = readFieldPolicyJsonFile();
         policyMap = new FieldPoliciesJsonTransformer(fieldPolicyJson).buildPolicies();
-        log.info("Finished building FieldPolicies for JSON file: {} with entity that has {} fields ", fieldPolicyJsonPath,
+        log.info("Finished building field policies for file: {} with entity that has {} fields ", fieldPolicyJsonPath,
                  policyMap.size());
     }
 
@@ -176,15 +180,9 @@ public class Validator implements Serializable {
         try {
             SparkContext sparkContext = SparkContext.getOrCreate();
             hiveContext = new org.apache.spark.sql.hive.HiveContext(sparkContext);
-
-            for (Param param : params.getHiveParams()) {
-                log.info("Adding Hive parameter {}={}", param.getName(), param.getValue());
-                hiveContext.setConf(param.getName(), param.getValue());
-            }
-
             sqlContext = new SQLContext(sparkContext);
 
-            log.info("Deployment Mode - " + sparkContext.getConf().get("spark.submit.deployMode"));
+            log.info("Deployment Node - " + sparkContext.getConf().get("spark.submit.deployMode"));
             loadPolicies();
 
             // Extract fields from a source table
@@ -216,17 +214,24 @@ public class Validator implements Serializable {
             });
 
             final DataSet validatedDF = scs.toDataSet(getSQLContext(), newResults, sourceSchema);
-            log.info("validatedDF count {}", validatedDF.count());
 
             // Pull out just the valid or invalid records
-            DataSet invalidDF = validatedDF.filter(VALID_INVALID_COL + " = '0'").drop(VALID_INVALID_COL).toDF();
+            DataSet invalidDF = null;
+            if (useDirectInsert) {
+                invalidDF = validatedDF.filter(VALID_INVALID_COL + " = '0'").drop(VALID_INVALID_COL).toDF();
+            } else {
+                invalidDF = validatedDF.filter(VALID_INVALID_COL + " = '0'").drop(VALID_INVALID_COL).drop(PROCESSING_DTTM_COL).toDF();
+            }
             invalidDF.show(1);
             writeToTargetTable(invalidDF, invalidTableName);
 
             // Write out the valid records (dropping our two columns)
-            DataSet
-                validDF =
-                validatedDF.filter(VALID_INVALID_COL + " = '1'").drop(VALID_INVALID_COL).drop("dlp_reject_reason").toDF();
+            DataSet validDF = null;
+            if (useDirectInsert) {
+                validDF = validatedDF.filter(VALID_INVALID_COL + " = '1'").drop(VALID_INVALID_COL).drop("dlp_reject_reason").toDF();
+            } else {
+                validDF = validatedDF.filter(VALID_INVALID_COL + " = '1'").drop(VALID_INVALID_COL).drop("dlp_reject_reason").drop(PROCESSING_DTTM_COL).toDF();
+            }
             writeToTargetTable(validDF, validTableName);
 
             long invalidCount = invalidDF.count();
@@ -284,6 +289,7 @@ public class Validator implements Serializable {
             String insertSQL = "INSERT OVERWRITE TABLE " + qualifiedProfileName
                                + " PARTITION (processing_dttm='" + partition + "')"
                                + " SELECT columnname, metrictype, metricvalue FROM " + HiveUtils.quoteIdentifier(tempTable);
+            log.info("Writing profile stats {}", insertSQL);
 
             log.info("Writing profile stats {}", insertSQL);
             scs.sql(getSQLContext(), insertSQL);
@@ -313,7 +319,8 @@ public class Validator implements Serializable {
     private void writeToTargetTable(DataSet sourceDF, String targetTable) throws Exception {
         final String qualifiedTable = HiveUtils.quoteIdentifier(targetDatabase, targetTable);
 
-        if (true) {
+        // Direct insert into the table partition vs. writing into a temporary table
+        if (useDirectInsert) {
 
             getSQLContext().setConf("hive.exec.dynamic.partition", "true");
             getSQLContext().setConf("hive.exec.dynamic.partition.mode", "nonstrict");
@@ -322,16 +329,17 @@ public class Validator implements Serializable {
 
             sourceDF.writeToTable(PROCESSING_DTTM_COL, qualifiedTable);
             return;
-        }
-        // Legacy
-        // Create a temporary table we can use to copy data from. Writing directly to our partition from a spark dataframe doesn't work.
-        String tempTable = targetTable + "_" + System.currentTimeMillis();
-        sourceDF.registerTempTable(tempTable);
+        } else {
+            // Legacy
+            // Create a temporary table we can use to copy data from. Writing directly to our partition from a spark dataframe doesn't work.
+            String tempTable = targetTable + "_" + System.currentTimeMillis();
+            sourceDF.registerTempTable(tempTable);
 
-        // Insert the data into our partition
-        final String sql = "INSERT OVERWRITE TABLE " + qualifiedTable + " PARTITION (processing_dttm='" + partition + "') SELECT * FROM " + HiveUtils.quoteIdentifier(tempTable);
-        log.info("Writing to target {}", sql);
-        scs.sql(getSQLContext(), sql);
+            // Insert the data into our partition
+            final String sql = "INSERT OVERWRITE TABLE " + qualifiedTable + " PARTITION (processing_dttm='" + partition + "') SELECT * FROM " + HiveUtils.quoteIdentifier(tempTable);
+            log.info("Writing to target {}", sql);
+            scs.sql(getSQLContext(), sql);
+        }
     }
 
     /**
@@ -382,6 +390,7 @@ public class Validator implements Serializable {
                     accumList.get(idx).add(1);
                 }
             }
+        }
         // Return success unless all values were null.  That would indicate a blank line in the file
         if (nulls >= schema.length) {
             valid = false;
@@ -548,23 +557,12 @@ public class Validator implements Serializable {
         return pols.toArray(new FieldPolicy[0]);
     }
 
-    private void addParameters(CommandLineParams params) {
-        this.params = params;
-    }
-
-    static CommandLineParams parseRemainingParameters(String[] args, int from) {
-        CommandLineParams params = new CommandLineParams();
-        new JCommander(params, Arrays.copyOfRange(args, from, args.length));
-        return params;
-    }
-
     public static void main(String[] args) {
-        log.info("Running Spark Validator with the following command line args (comma separated):" + StringUtils.join(args, ","));
 
         // Check how many arguments were passed in
         if (args.length < 4) {
             System.out.println("Proper Usage is: <targetDatabase> <entity> <partition> <path-to-policy-file>");
-            System.out.println("You can optionally add: --hiveConf hive.setting=value --hiveConf hive.other.setting=value");
+
             System.out.println("You provided " + args.length + " args which are (comma separated): " + StringUtils.join(args, ","));
             System.exit(1);
         }
@@ -572,7 +570,6 @@ public class Validator implements Serializable {
             ApplicationContext ctx = new AnnotationConfigApplicationContext("com.thinkbiganalytics.spark");
             Validator app = ctx.getBean(Validator.class);
             app.setArguments(args[0], args[1], args[2], args[3]);
-            app.addParameters(parseRemainingParameters(args, 4));
             app.doValidate();
         } catch (Exception e) {
             System.out.println(e);

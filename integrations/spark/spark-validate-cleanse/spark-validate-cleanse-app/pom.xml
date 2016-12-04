@@ -101,11 +101,6 @@
       <version>${jackson.version}</version>
       <scope>provided</scope>
     </dependency>
-    <dependency>
-      <groupId>com.beust</groupId>
-      <artifactId>jcommander</artifactId>
-    </dependency>
-
 
     <!-- Testing -->
     <dependency>
