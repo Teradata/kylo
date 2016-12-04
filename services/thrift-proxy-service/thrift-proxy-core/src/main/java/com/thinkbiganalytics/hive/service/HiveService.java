@@ -187,6 +187,8 @@ public class HiveService {
             query = safeQuery(query);
         }
         try {
+            //  Setting in order to query complex formats like parquet
+            jdbcTemplate.execute("set hive.optimize.index.filter=false");
             jdbcTemplate.query(query, new RowMapper<Map<String, Object>>() {
                 @Override
                 public Map<String, Object> mapRow(ResultSet rs, int rowNum) throws SQLException {

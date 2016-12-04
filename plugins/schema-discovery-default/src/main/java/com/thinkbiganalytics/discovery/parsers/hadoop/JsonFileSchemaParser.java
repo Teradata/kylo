@@ -17,16 +17,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 
-@SchemaParser(name = "JSON", description = "Supports JSON formatted files.", tags = {"JSON"})
-public class JsonFileSchemaParser implements FileSchemaParser {
+import javax.inject.Inject;
 
-    @Autowired
-    @JsonIgnore
-    private transient SparkFileSchemaParserService parserService;
+@SchemaParser(name = "JSON", description = "Supports JSON formatted files.", tags = {"JSON"})
+public class JsonFileSchemaParser extends AbstractSparkFileSchemaParser implements FileSchemaParser {
 
     @Override
     public Schema parse(InputStream is, Charset charset, TableSchemaType target) throws IOException {
-        HiveTableSchema schema = (HiveTableSchema) parserService.doParse(is, SparkFileSchemaParserService.SparkFileType.JSON, target);
+        HiveTableSchema schema = (HiveTableSchema) getSparkParserService().doParse(is, SparkFileSchemaParserService.SparkFileType.JSON, target);
         schema.setHiveFormat("ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe' STORED AS TEXTFILE");
         return schema;
     }

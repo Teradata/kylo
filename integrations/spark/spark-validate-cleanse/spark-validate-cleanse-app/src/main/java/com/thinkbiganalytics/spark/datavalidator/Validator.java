@@ -363,7 +363,8 @@ public class Validator implements Serializable {
             // Extract the value (allowing for null or missing field for odd-ball data)
             Object val = (idx == row.length() || row.isNullAt(idx) ? null : row.get(idx));
             // Handle complex types by passing them through
-            if (dataType.isUnchecked() || (!(val instanceof String))) {
+
+            if (dataType.isUnchecked()) { // || (!(val instanceof String))) {
                 if (val == null) {
                     nulls++;
                 }
@@ -375,10 +376,14 @@ public class Validator implements Serializable {
                 if (StringUtils.isEmpty(fieldValue)) {
                     nulls++;
                 }
-
                 // Perform cleansing operations
                 fieldValue = standardizeField(fieldPolicy, fieldValue);
-                newValues[idx] = fieldValue;
+                try {
+                    newValues[idx] = dataType.toNativeValue(fieldValue);
+                } catch (InvalidFormatException e) {
+                    log.warn("Failed to process field could not convert value to native type {} ",dataType.getName());
+                    throw new RuntimeException("Failed to convert type");
+                }
 
                 // Record results in our appended columns
                 result = validateField(fieldPolicy, dataType, fieldValue);

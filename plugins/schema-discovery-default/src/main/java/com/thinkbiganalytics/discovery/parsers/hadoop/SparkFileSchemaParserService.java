@@ -16,6 +16,7 @@ import com.thinkbiganalytics.spark.rest.model.TransformResponse;
 import com.thinkbiganalytics.spark.shell.SparkShellProcess;
 import com.thinkbiganalytics.spark.shell.SparkShellProcessManager;
 import com.thinkbiganalytics.spark.shell.SparkShellRestClient;
+import com.thinkbiganalytics.spring.SpringApplicationContext;
 
 import org.apache.commons.io.IOUtils;
 import org.springframework.stereotype.Component;
@@ -59,6 +60,7 @@ public class SparkFileSchemaParserService {
      * Delegate to spark shell service to load the file into a temporary table and loading it
      */
     public Schema doParse(InputStream inputStream, SparkFileType fileType, TableSchemaType tableSchemaType) throws IOException {
+
         File tempFile = toFile(inputStream);
         try {
             SparkShellProcess shellProcess = shellProcessManager.getSystemProcess();

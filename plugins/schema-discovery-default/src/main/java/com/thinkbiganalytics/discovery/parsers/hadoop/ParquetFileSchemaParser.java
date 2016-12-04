@@ -16,15 +16,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 
-@SchemaParser(name = "Parquet", description = "Supports parquet formatted files.", tags = {"Parquet"})
-public class ParquetFileSchemaParser implements FileSchemaParser {
+import javax.inject.Inject;
 
-    @Autowired
-    @JsonIgnore
-    private transient SparkFileSchemaParserService parserService;
+@SchemaParser(name = "Parquet", description = "Supports parquet formatted files.", tags = {"Parquet"})
+public class ParquetFileSchemaParser extends AbstractSparkFileSchemaParser implements FileSchemaParser {
 
     @Override
     public Schema parse(InputStream is, Charset charset, TableSchemaType target) throws IOException {
-        return parserService.doParse(is, SparkFileSchemaParserService.SparkFileType.PARQUET, target);
+        return getSparkParserService().doParse(is, SparkFileSchemaParserService.SparkFileType.PARQUET, target);
     }
 }
