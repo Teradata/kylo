@@ -13,7 +13,7 @@ import com.thinkbiganalytics.servicemonitor.rest.client.RestClientConfig;
 public class ClouderaClientConfig {
 
   @Bean(name = "clouderaRestClientConfig")
-  @ConfigurationProperties("ambariRestClientConfig")
+  @ConfigurationProperties("clouderaRestClientConfig")
   public RestClientConfig getConfig() {
     return new RestClientConfig();
   }
