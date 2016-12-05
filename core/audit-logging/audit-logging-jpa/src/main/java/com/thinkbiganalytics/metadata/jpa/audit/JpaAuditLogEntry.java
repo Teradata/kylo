@@ -39,7 +39,7 @@ public class JpaAuditLogEntry implements AuditLogEntry {
     private DateTime createdTime;
 
     @Convert(converter = UsernamePrincipalConverter.class)
-    @Column(name = "USER", columnDefinition="varchar(100)")
+    @Column(name = "USER", columnDefinition = "varchar(100)")
     private UsernamePrincipal user;
 
     @Column(name = "LOG_TYPE", length = 45, nullable = false)
@@ -51,15 +51,19 @@ public class JpaAuditLogEntry implements AuditLogEntry {
     @Column(name = "ENTITY_ID", columnDefinition = "binary(16)")
     private UUID entityId;
 
+    public JpaAuditLogEntry() {
+        super();
+    }
 
     public JpaAuditLogEntry(Principal user, String type, String description, UUID entityId) {
         super();
+        this.id = AuditLogId.create();
         this.user = user instanceof UsernamePrincipal ? (UsernamePrincipal) user : new UsernamePrincipal(user.getName());
         this.type = type;
         this.description = description;
         this.entityId = entityId;
     }
-    
+
 
     @Override
     public ID getId() {
@@ -89,6 +93,30 @@ public class JpaAuditLogEntry implements AuditLogEntry {
     @Override
     public UUID getEntityId() {
         return entityId;
+    }
+
+    public void setId(AuditLogId id) {
+        this.id = id;
+    }
+
+    public void setCreatedTime(DateTime createdTime) {
+        this.createdTime = createdTime;
+    }
+
+    public void setUser(UsernamePrincipal user) {
+        this.user = user;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setEntityId(UUID entityId) {
+        this.entityId = entityId;
     }
 
 
@@ -122,7 +150,7 @@ public class JpaAuditLogEntry implements AuditLogEntry {
             this.uuid = uuid;
         }
     }
-    
+
     public static class UsernamePrincipalConverter implements AttributeConverter<Principal, String> {
         @Override
         public String convertToDatabaseColumn(Principal principal) {

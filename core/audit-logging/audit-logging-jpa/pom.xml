@@ -87,9 +87,15 @@
 
         <!-- Testing -->
         <dependency>
+            <groupId>com.thinkbiganalytics.metadata</groupId>
+            <artifactId>thinkbig-metadata-persistence</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-commons-test-jpa</artifactId>
-            <version>0.5.0-SNAPSHOT</version>
+            <artifactId>thinkbig-commons-test-persistence</artifactId>
+            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

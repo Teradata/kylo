@@ -6,11 +6,14 @@ package com.thinkbiganalytics.metadata.jpa.audit;
 import java.io.Serializable;
 import java.security.Principal;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import javax.inject.Inject;
 
-import org.springframework.stereotype.Service;
+import org.springframework.data.domain.PageRequest;
 
 import com.thinkbiganalytics.metadata.api.audit.AuditLogEntry;
 import com.thinkbiganalytics.metadata.api.audit.AuditLogEntry.ID;
@@ -21,6 +24,8 @@ import com.thinkbiganalytics.metadata.api.audit.AuditLogProvider;
  * @author Sean Felten
  */
 public class JpaAuditLogProvider implements AuditLogProvider {
+    
+    public static final int DEFAULT_LIMIT = 100;
     
     private AuditLogRepository repository;
 
@@ -41,13 +46,30 @@ public class JpaAuditLogProvider implements AuditLogProvider {
             return new JpaAuditLogEntry.AuditLogId(id);
         }
     }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.audit.AuditLogProvider#list()
+     */
+    @Override
+    public List<AuditLogEntry> list() {
+        return list(DEFAULT_LIMIT);
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.audit.AuditLogProvider#list(int)
+     */
+    @Override
+    public List<AuditLogEntry> list(int limit) {
+        PageRequest pager = new PageRequest(0, limit);
+        return StreamSupport.stream(this.repository.findAll(pager).spliterator(), false).collect(Collectors.toList());
+    }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.audit.AuditLogProvider#findById(com.thinkbiganalytics.metadata.api.audit.AuditLogEntry.ID)
      */
     @Override
-    public AuditLogEntry findById(ID id) {
-        return repository.findOne(id);
+    public Optional<AuditLogEntry> findById(ID id) {
+        return Optional.ofNullable(repository.findOne(id));
     }
 
     /* (non-Javadoc)
@@ -55,7 +77,7 @@ public class JpaAuditLogProvider implements AuditLogProvider {
      */
     @Override
     public List<AuditLogEntry> findByUser(Principal user) {
-        return this.repository.findByUsername(user.getName());
+        return this.repository.findByUsername(user);
     }
 
     /* (non-Javadoc)

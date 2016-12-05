@@ -3,6 +3,7 @@
  */
 package com.thinkbiganalytics.metadata.jpa.audit;
 
+import java.security.Principal;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,6 +20,6 @@ public interface AuditLogRepository extends JpaRepository<JpaAuditLogEntry, Audi
 
 
     @Query("select entry from JpaAuditLogEntry as entry where entry.user = :user")
-    List<AuditLogEntry> findByUsername(@Param("user") String username);
+    List<AuditLogEntry> findByUsername(@Param("user") Principal username);
 
 }
