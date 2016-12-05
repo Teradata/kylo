@@ -115,10 +115,9 @@ public class Validator implements Serializable {
         this.fieldPolicyJsonPath = fieldPolicyJsonPath;
     }
 
-    protected SQLContext getSQLContext() {
+    protected HiveContext getHiveContext() {
         return hiveContext;
     }
-
 
     /**
      * read the JSON file path and return the JSON string
@@ -182,6 +181,12 @@ public class Validator implements Serializable {
             hiveContext = new org.apache.spark.sql.hive.HiveContext(sparkContext);
             sqlContext = new SQLContext(sparkContext);
 
+            // Setup defaults
+            hiveContext.setConf("hive.exec.dynamic.partition", "true");
+            hiveContext.setConf("hive.exec.dynamic.partition.mode", "nonstrict");
+            // Required for ORC and Parquet
+            hiveContext.setConf("set hive.optimize.index.filter", "false");
+
             log.info("Deployment Node - " + sparkContext.getConf().get("spark.submit.deployMode"));
             loadPolicies();
 
@@ -192,7 +197,7 @@ public class Validator implements Serializable {
 
             String sql = "SELECT * FROM " + feedTablename + " WHERE processing_dttm = '" + partition + "'";
             log.info("Executing query {}", sql);
-            DataSet dataFrame = scs.sql(getSQLContext(), sql);
+            DataSet dataFrame = scs.sql(getHiveContext(), sql);
             JavaRDD<Row> rddData = dataFrame.javaRDD().cache();
 
             // Extract schema from the source table
@@ -213,7 +218,7 @@ public class Validator implements Serializable {
                 }
             });
 
-            final DataSet validatedDF = scs.toDataSet(getSQLContext(), newResults, sourceSchema);
+            final DataSet validatedDF = scs.toDataSet(getHiveContext(), newResults, sourceSchema);
 
             // Pull out just the valid or invalid records
             DataSet invalidDF = null;
@@ -222,7 +227,7 @@ public class Validator implements Serializable {
             } else {
                 invalidDF = validatedDF.filter(VALID_INVALID_COL + " = '0'").drop(VALID_INVALID_COL).drop(PROCESSING_DTTM_COL).toDF();
             }
-            invalidDF.show(1);
+            //invalidDF.show(1);
             writeToTargetTable(invalidDF, invalidTableName);
 
             // Write out the valid records (dropping our two columns)
@@ -283,7 +288,7 @@ public class Validator implements Serializable {
                     }
                 });
 
-            DataSet df = scs.toDataSet(getSQLContext(), statsRDD, statsSchema);
+            DataSet df = scs.toDataSet(getHiveContext(), statsRDD, statsSchema);
             df.registerTempTable(tempTable);
 
             String insertSQL = "INSERT OVERWRITE TABLE " + qualifiedProfileName
@@ -292,7 +297,7 @@ public class Validator implements Serializable {
             log.info("Writing profile stats {}", insertSQL);
 
             log.info("Writing profile stats {}", insertSQL);
-            scs.sql(getSQLContext(), insertSQL);
+            scs.sql(getHiveContext(), insertSQL);
         } catch (Exception e) {
             log.error("Failed to insert validation stats", e);
             throw new RuntimeException(e);
@@ -304,7 +309,7 @@ public class Validator implements Serializable {
      */
     private StructType createModifiedSchema(String sourceTable) {
         // Extract schema from the source table
-        StructType schema = scs.toDataSet(getSQLContext(), feedTablename).schema();
+        StructType schema = scs.toDataSet(getHiveContext(), feedTablename).schema();
         StructField[] fields = schema.fields();
         List<StructField> fieldsList = new Vector<>();
         Collections.addAll(fieldsList, fields);
@@ -322,10 +327,10 @@ public class Validator implements Serializable {
         // Direct insert into the table partition vs. writing into a temporary table
         if (useDirectInsert) {
 
-            getSQLContext().setConf("hive.exec.dynamic.partition", "true");
-            getSQLContext().setConf("hive.exec.dynamic.partition.mode", "nonstrict");
+            getHiveContext().setConf("hive.exec.dynamic.partition", "true");
+            getHiveContext().setConf("hive.exec.dynamic.partition.mode", "nonstrict");
             // Required for ORC and Parquet
-            getSQLContext().setConf("set hive.optimize.index.filter", "false");
+            getHiveContext().setConf("set hive.optimize.index.filter", "false");
 
             sourceDF.writeToTable(PROCESSING_DTTM_COL, qualifiedTable);
             return;
@@ -338,7 +343,7 @@ public class Validator implements Serializable {
             // Insert the data into our partition
             final String sql = "INSERT OVERWRITE TABLE " + qualifiedTable + " PARTITION (processing_dttm='" + partition + "') SELECT * FROM " + HiveUtils.quoteIdentifier(tempTable);
             log.info("Writing to target {}", sql);
-            scs.sql(getSQLContext(), sql);
+            scs.sql(getHiveContext(), sql);
         }
     }
 
@@ -364,7 +369,7 @@ public class Validator implements Serializable {
             Object val = (idx == row.length() || row.isNullAt(idx) ? null : row.get(idx));
             // Handle complex types by passing them through
 
-            if (dataType.isUnchecked()) { // || (!(val instanceof String))) {
+            if (dataType.isUnchecked() || (!(val instanceof String))) {
                 if (val == null) {
                     nulls++;
                 }
@@ -378,12 +383,7 @@ public class Validator implements Serializable {
                 }
                 // Perform cleansing operations
                 fieldValue = standardizeField(fieldPolicy, fieldValue);
-                try {
-                    newValues[idx] = dataType.toNativeValue(fieldValue);
-                } catch (InvalidFormatException e) {
-                    log.warn("Failed to process field could not convert value to native type {} ",dataType.getName());
-                    throw new RuntimeException("Failed to convert type");
-                }
+                newValues[idx] = fieldValue;
 
                 // Record results in our appended columns
                 result = validateField(fieldPolicy, dataType, fieldValue);

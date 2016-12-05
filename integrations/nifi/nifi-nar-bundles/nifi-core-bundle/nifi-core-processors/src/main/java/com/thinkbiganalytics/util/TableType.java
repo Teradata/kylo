@@ -71,13 +71,23 @@ public enum TableType {
         return sb.toString();
     }
 
-    public String deriveColumnSpecification(ColumnSpec[] columns, ColumnSpec[] partitionColumns) {
+    public String deriveColumnSpecification(ColumnSpec[] columns, ColumnSpec[] partitionColumns, String feedFormatOptions) {
+        boolean allStrings = isStrings();
         Set<String> partitionSet = new HashSet<>();
         if (!feedPartition && partitionColumns != null && partitionColumns.length > 0) {
             for (ColumnSpec partition : partitionColumns) {
                 partitionSet.add(partition.getName());
             }
         }
+        // Hack for now. Need a better way to identify if this is text file (no schema enforced or schema enforced)
+        if (allStrings && feedFormatOptions != null) {
+            String urawFormatOptions = feedFormatOptions.toUpperCase();
+            if (urawFormatOptions.contains(" PARQUET") || urawFormatOptions.contains(" ORC") || urawFormatOptions.contains(" AVRO")) {
+                // Structured file so we will use native
+                allStrings = false;
+            }
+        }
+
         StringBuffer sb = new StringBuffer();
         int i = 0;
         for (ColumnSpec spec : columns) {
@@ -85,7 +95,7 @@ public enum TableType {
                 if (i++ > 0) {
                     sb.append(", ");
                 }
-                sb.append(spec.toCreateSQL(isStrings()));
+                sb.append(spec.toCreateSQL(allStrings));
             }
         }
         // Handle the special case for writing error reason in invalid table

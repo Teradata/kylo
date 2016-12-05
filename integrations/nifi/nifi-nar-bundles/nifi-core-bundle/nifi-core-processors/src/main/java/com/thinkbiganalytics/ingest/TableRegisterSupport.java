@@ -159,7 +159,7 @@ public class TableRegisterSupport {
                                TableType tableType) {
         String tableName = tableType.deriveQualifiedName(source, entity);
         String partitionSQL = tableType.derivePartitionSpecification(partitions);
-        String columnsSQL = tableType.deriveColumnSpecification(columnSpecs, partitions);
+        String columnsSQL = tableType.deriveColumnSpecification(columnSpecs, partitions, feedFormatOptions);
         String locationSQL = tableType.deriveLocationSpecification(config.pathForTableType(tableType), source, entity);
         String formatOptionsSQL = tableType.deriveFormatSpecification(feedFormatOptions, targetFormatOptions);
         String tblPropertiesSQL = tableType.deriveTableProperties(targetTableProperties);
