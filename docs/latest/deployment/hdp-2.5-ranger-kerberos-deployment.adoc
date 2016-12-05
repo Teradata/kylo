@@ -11,9 +11,7 @@ December 2016
 == About
 This guide will help you understand the steps involved with deploying Kylo to a kerberos cluster
 with minimal admin privileges. No super user privileges will be provided to the "nifi" or "thinkbig"
-user. The only place administrative privileges will be required will be:
-
- * Ranger admin access to create policies (if the Ranger plugin is installed)
+user. The only usage for an administrative account will be for thinkbig-services to access the Ranger REST API
 
 There are two ways you can configure hive to manage users on the cluster.
 
@@ -26,10 +24,17 @@ This document will configure option #2 to show how you can configure Kylo to gra
 to both hive and HDFS for the end user.
 
 == Cluster Topography
-Show the list of whats configured on each node
+The cluster used in this example contains the following
 
- * MIT KDC
- * Linux file system based authorization (not LDAP or AD)
+* 3 master nodes
+* 3 data nodes
+* 1 Kylo edge node
+* 1 NiFi edge node
+
+A couple of other things two notes are:
+
+* The cluster is leveraging the MIT KDC for Kerberos
+* Linux file system based authorization (not LDAP or AD)
 
 == Known Issues
 
@@ -46,26 +51,38 @@ HA and zookeeper you will need to connect directly to the thrift server
 == Prepare the HDP Cluster
 Before installing the Kylo stack the below needs to be done on the cluster.
 
-[options=interactive]
-- [ ] Ensure Kerberos is enabled
-- [ ] Enable Ranger including the HDFS and Hive plugin
-- [ ] Change Hive to run both Hive and HDFS as the end user
+. Ensure Kerberos is enabled
+. Enable Ranger including the HDFS and Hive plugin
+. Change Hive to run both Hive and HDFS as the end user
 
-    * Login to Ambari
-    * Go to Hive --> Config
-    * Change "Run as end user instead of Hive user" to true
-    * Restart required applications
+    .. Login to Ambari
+    .. Go to Hive --> Config
+    .. Change "Run as end user instead of Hive user" to true
+    .. Restart required applications
 
-- [ ] Create an Ambari user for Kylo to query the status REST API's
+. Create an Ambari user for Kylo to query the status REST API's
 
-    * Login to Ambari
-    * Got to "Manage Ambari" -> Users
-    * Click on "Create Cluster User"
-    * Create a user called "kylo" and save the password for later
-    * Go to the "Roles" screen
-    * Assign the "kylo" user to the "Cluster User" role
+    .. Login to Ambari
+    .. Got to "Manage Ambari" -> Users
+    .. Click on "Create Local User"
+    .. Create a user called "kylo" and save the password for later
+    .. Go to the "Roles" screen
+    .. Assign the "kylo" user to the "Cluster User" role
 
-- [ ] Create "nifi" and "thinkbig" user on the master and data nodes (Linux authorization only)
+. Apply the Spark ORC fix
+
+    https://wiki.thinkbiganalytics.com/display/RD/Spark+SQL+fails+on+empty+ORC+table%2C+HDP+2.4.2%2C+HDP+2.5
+
+    You can add this property in Ambari rather than editing the configuration file
+
+    .. Login to Ambari
+    .. Go to the Spark config section
+    .. Go to "custom spark defaults"
+    .. Add the property "spark.sql.hive.convertMetastoreOrc" and set to "false"
+
+. Create the "nifi" and "thinkbig" user on the master and data nodes
+
+ NOTE: If the operations team uses a user management tool then create the users that way
 
     If you are using linux /etc/group based authorization in your cluster you are required to create any users that will have access to HDFS or Hive on the following
 
@@ -77,37 +94,29 @@ Before installing the Kylo stack the below needs to be done on the cluster.
         $ useradd -r -m -s /bin/bash nifi
         $ useradd -r -m -s /bin/bash thinkbig
 
-- [ ] Apply the Spark ORC fix
-
-    https://wiki.thinkbiganalytics.com/display/RD/Spark+SQL+fails+on+empty+ORC+table%2C+HDP+2.4.2%2C+HDP+2.5
-
-    You can add this property in Ambari rather than editing the configuration file
-    * Login to Ambari
-    * Go to the Spark config section
-    * Go to "custom spark defaults"
-    * Add the property
 
 == Prepare the Kylo Edge Node
-[options=interactive]
-- [ ] Install the MySQL client on the edge node if not already there
+
+. Install the MySQL client on the edge node if not already there
 
     $ yum install mysql
 
-- [ ] Create a MySQL admin user or use root user to grant "create schema" access from the Kylo edge node
+. Create a MySQL admin user or use root user to grant "create schema" access from the Kylo edge node
 
     This is required to install the "thinkbig" schema during Kylo installation
 
     Example:
+
     GRANT ALL PRIVILEGES ON *.* TO 'root'@'KYLO_EDGE_NODE_HOSTNAME' IDENTIFIED BY 'abc123' WITH GRANT OPTION;
     FLUSH PRIVILEGES;
 
-- [ ] Create the "kylo" MySQL user
+. Create the "kylo" MySQL user
 
     CREATE USER 'kylo'@'<KYLO_EDGE_NODE>' IDENTIFIED BY 'abc123';
     grant create,select,insert,update,delete ON thinkbig.* to 'kylo'@'KYLO_EDGE_NODE_HOSTNAME';
     FLUSH PRIVILEGES;
 
-- [ ] Grant kylo user access to the hive MySQL metadata
+. Grant kylo user access to the hive MySQL metadata
 
     GRANT select ON hive.SDS TO 'kylo'@'KYLO_EDGE_NODE_HOSTNAME';
     GRANT select ON hive.TBLS TO 'kylo'@'KYLO_EDGE_NODE_HOSTNAME';
@@ -116,25 +125,25 @@ Before installing the Kylo stack the below needs to be done on the cluster.
 
     NOTE: If the hive database is installed in a seperate MySQL instance then you will need to create the "kylo" non priviledged user in that database before running the grants
 
-- [ ] Make sure the spark client and hive client is installed
-- [ ] Create the "thinkbig" user on edge node
+. Make sure the spark client and hive client is installed
+. Create the "thinkbig" user on edge node
 
     Kylo Edge Node:
     $ useradd -r -m -s /bin/bash thinkbig
-    $ useradd -r -m -s /bin/bash  activemq
+    $ useradd -r -m -s /bin/bash activemq
 
-- [ ] Optional - Create offline TAR file for an offline Kylo installation
+. Optional - Create offline TAR file for an offline Kylo installation
 
     [root]# cd /opt/thinkbig/setup/
     [root setup]# ./generate-offline-install.sh
 
     Copy the TAR file to both the Kylo edge node as well as the NiFi edge node
 
-- [ ] Prepare a list of feed categories you wish to create
+. Prepare a list of feed categories you wish to create
 
     This is required due to the fact that we are installing Kylo without privileged access. We will create Ranger policies ahead of time to all Kylo access to the Hive Schema and HDFS folders
 
-- [ ] Create "thinkbig" home folder in HDFS
+. Create "thinkbig" home folder in HDFS
 
     This is required for hive queries to work in HDP
 
@@ -144,35 +153,39 @@ Before installing the Kylo stack the below needs to be done on the cluster.
     [hdfs]$ hdfs dfs -chown thinkbig:thinkbig /user/thinkbig
     [hdfs]$ hdfs dfs -ls /user
 
+    TIP: If you don't know the HDFS Kerberos principal name run "klist -kt /etc/security/keytabs/hdfs.headless.keytab"
+
 == Prepare the NiFi Edge Node
-[options=interactive]
-- [ ] Install the MySQL client on the edge node if not already there
+. Install the MySQL client on the edge node if not already there
 
     $ yum install mysql
 
-- [ ] Grant MySQL access from the NiFi edge node
+. Grant MySQL access from the NiFi edge node
 
     Example:
-    GRANT ALL PRIVILEGES ON *.* TO 'root'@'nifi_edge_node' IDENTIFIED BY 'abc123';
+
+    GRANT ALL PRIVILEGES ON *.* TO 'kylo'@'nifi_edge_node' IDENTIFIED BY 'abc123';
     FLUSH PRIVILEGES;
 
-- [ ] Make sure the spark client and hive client is installed
-- [ ] Create the "nifi" user on edge node, master nodes, and data nodes
+. Make sure the spark client and hive client is installed
+. Create the "nifi" user on edge node, master nodes, and data nodes
 
     Edge Nodes:
     $ useradd -r -m -s /bin/bash nifi
 
-- [ ] Optional - Copy the offline TAR file created above to this edge node if necessary
+. Optional - Copy the offline TAR file created above to this edge node if necessary
 
-- [ ] Create "thinkbig" and "nifi" home folders in HDFS
+. Create the "nifi" home folders in HDFS
 
     This is required for hive queries to work in HDP
 
     [root]$ su - hdfs
-    [hdfs]$ kinit -kt /etc/security/keytabs/hdfs.headless.keytab hdfs-cb-kylo-0-4-3-test@US-WEST-2.COMPUTE.INTERNAL
+    [hdfs]$ kinit -kt /etc/security/keytabs/hdfs.headless.keytab <hdfs_principal_name>
     [hdfs]$ hdfs dfs -mkdir /user/nifi
     [hdfs]$ hdfs dfs -chown nifi:nifi /user/nifi
     [hdfs]$ hdfs dfs -ls /user
+
+    TIP: If you don't know the HDFS Kerberos principal name run "klist -kt /etc/security/keytabs/hdfs.headless.keytab"
 
 == Prepare a checklist
 Ahead of time prepare the list below to speed up installation
@@ -186,7 +199,6 @@ Ahead of time prepare the list below to speed up installation
 - [ ] NiFi Edge Hostname/IP Address:
 - [ ] Kylo MySQL Installation User username/password (Create Schema Required):
 - [ ] Kylo MySQL application username/password (For the thinkbig-services application and Hive metadata access):
-- [ ] REMOVE ME REMOVE ME - ONCE WE ADD GRANTS FOR HIVE ACCESS TO KYLO DB USER
 - [ ] List of feed categories that should be created ahead of time
 
 == Create the Keytabs for "nifi" and "thinkbig" users
@@ -194,10 +206,10 @@ Ahead of time prepare the list below to speed up installation
 . Login to the host that is running the KDC and create the keytabs
 
     [root]# kadmin.local
-    kadmin.local:  addprinc -randkey "thinkbig/ip-172-31-42-133.us-west-2.compute.internal@US-WEST-2.COMPUTE.INTERNAL"
-    kadmin.local:  addprinc -randkey "nifi/ip-172-31-42-133.us-west-2.compute.internal@US-WEST-2.COMPUTE.INTERNAL"
-    kadmin.local:  xst -k /tmp/thinkbig.service.keytab thinkbig/ip-172-31-42-133.us-west-2.compute.internal@US-WEST-2.COMPUTE.INTERNAL
-    kadmin.local:  xst -k /tmp/nifi.service.keytab nifi/ip-172-31-42-133.us-west-2.compute.internal@US-WEST-2.COMPUTE.INTERNAL
+    kadmin.local:  addprinc -randkey "thinkbig/<KYLO_EDGE_HOSTNAME>@US-WEST-2.COMPUTE.INTERNAL"
+    kadmin.local:  addprinc -randkey "nifi/<NIFI_EDGE_HOSTNAME>@US-WEST-2.COMPUTE.INTERNAL"
+    kadmin.local:  xst -k /tmp/thinkbig.service.keytab thinkbig/<KYLO_EDGE_HOSTNAME>@US-WEST-2.COMPUTE.INTERNAL
+    kadmin.local:  xst -k /tmp/nifi.service.keytab nifi/<NIFI_EDGE_HOSTNAME>@US-WEST-2.COMPUTE.INTERNAL
     kadmin.local: exit
 
 . Move the keytabs to the correct edge nodes
@@ -292,7 +304,7 @@ https://github.com/ThinkBigAnalytics/data-lake-accelerator/tree/master/core/kerb
 
 . Install the RPM
 
-    $ rpm -ivh /tmp/thinkbig-datalake-accelerator-0.5.0-SNAPSHOT20161122151341.noarch.rpm
+    $ rpm -ivh /tmp/thinkbig-datalake-accelerator-0.4.3-1.noarch.rpm
 
 . SCP the thinkbig-install.tar tar file to /tmp (if running in offline mode)
 
@@ -326,39 +338,39 @@ https://github.com/ThinkBigAnalytics/data-lake-accelerator/tree/master/core/kerb
 
     [root /]# vi /opt/thinkbig/thinkbig-services/conf/application.properties
 
-    spring.datasource.url=jdbc:mysql://172.31.42.166:3306/thinkbig
-    spring.datasource.username=root
-    spring.datasource.password=abc123
+    spring.datasource.url=jdbc:mysql://<MYSQL_HOSTNAME>:3306/thinkbig
+    spring.datasource.username=kylo
+    spring.datasource.password=password
 
-    ambariRestClientConfig.host=172.31.38.86
+    ambariRestClientConfig.host=<AMBARI_SERVER_HOSTNAME>
     ambariRestClientConfig.username=kylo
-    ambariRestClientConfig.password=abc123
+    ambariRestClientConfig.password=password
 
-    metadata.datasource.url=jdbc:mysql://172.31.42.166:3306/thinkbig
-    metadata.datasource.username=root
-    metadata.datasource.password=abc123
+    metadata.datasource.url=jdbc:mysql://<MYSQL_HOSTNAME>:3306/thinkbig
+    metadata.datasource.username=kylo
+    metadata.datasource.password=password
 
-    hive.datasource.url=jdbc:hive2://ip-172-31-42-166.us-west-2.compute.internal:10000/default;principal=hive/ip-172-31-42-166.us-west-2.compute.internal@US-WEST-2.COMPUTE.INTERNAL
+    hive.datasource.url=jdbc:hive2://<HIVE_SERVER2_HOSTNAME>:10000/default;principal=<HIVE_PRINCIPAL_NAME>
 
-    hive.metastore.datasource.url=jdbc:mysql://172.31.42.166:3306/hive
+    hive.metastore.datasource.url=jdbc:mysql://<MYSQL_HOSTNAME>:3306/hive
     hive.metastore.datasource.username=kylo
-    hive.metastore.datasource.password=abc123
+    hive.metastore.datasource.password=password
 
-    modeshape.datasource.url=jdbc:mysql://172.31.42.166:3306/thinkbig
-    modeshape.datasource.username=root
-    modeshape.datasource.password=abc123
+    modeshape.datasource.url=jdbc:mysql://<MYSQL_HOSTNAME>:3306/thinkbig
+    modeshape.datasource.username=kylo
+    modeshape.datasource.password=password
 
     kerberos.hive.kerberosEnabled=true
     kerberos.hive.hadoopConfigurationResources=/etc/hadoop/conf/core-site.xml,/etc/hadoop/conf/hdfs-site.xml
-    kerberos.hive.kerberosPrincipal=thinkbig/ip-172-31-42-133.us-west-2.compute.internal@US-WEST-2.COMPUTE.INTERNAL
+    kerberos.hive.kerberosPrincipal=<THINKBIG_PRINCIPAL_NAME>
     kerberos.hive.keytabLocation=/etc/security/keytabs/thinkbig.service.keytab
 
-    nifi.service.mysql.database_user=root
-    nifi.service.mysql.password=abc123
-    nifi.service.mysql.database_connection_url=jdbc:mysql://172.31.42.166
+    nifi.service.mysql.database_user=kylo
+    nifi.service.mysql.password=password
+    nifi.service.mysql.database_connection_url=jdbc:mysql://<MYSQL_HOSTNAME>
 
-    nifi.service.hive_thrift_service.database_connection_url=jdbc:hive2://35.161.50.202:10000/default;principal=nifi/nifi-cb-kylo-0-4-3-test@US-WEST-2.COMPUTE.INTERNAL
-    nifi.service.hive_thrift_service.kerberos_principal=nifi/ip-172-31-42-133.us-west-2.compute.internal@US-WEST-2.COMPUTE.INTERNAL
+    nifi.service.hive_thrift_service.database_connection_url=jdbc:hive2://<HIVE_SERVER2_HOSTNAME>:10000/default;principal=nifi/nifi-cb-kylo-0-4-3-test@US-WEST-2.COMPUTE.INTERNAL
+    nifi.service.hive_thrift_service.kerberos_principal=<NIFI_PRINCIPAL_NAME>
     nifi.service.hive_thrift_service.kerberos_keytab=/etc/security/keytabs/nifi.service.keytab
     nifi.service.hive_thrift_service.hadoop_configuration_resources=/etc/hadoop/conf/core-site.xml,/etc/hadoop/conf/hdfs-site.xml
 
@@ -366,7 +378,7 @@ https://github.com/ThinkBigAnalytics/data-lake-accelerator/tree/master/core/kerb
     nifi.executesparkjob.extra_jars=/usr/hdp/current/spark-client/lib/datanucleus-api-jdo-3.2.6.jar,/usr/hdp/current/spark-client/lib/datanucleus-core-3.2.10.jar,/usr/hdp/current/spark-client/lib/datanucleus-rdbms-3.2.9.jar
     nifi.executesparkjob.extra_files=/usr/hdp/current/spark-client/conf/hive-site.xml
 
-    nifi.all_processors.kerberos_principal=nifi/ip-172-31-42-133.us-west-2.compute.internal@US-WEST-2.COMPUTE.INTERNAL
+    nifi.all_processors.kerberos_principal=<NIFI_PRINCIPAL_NAME>
     nifi.all_processors.kerberos_keytab=/etc/security/keytabs/nifi.service.keytab
     nifi.all_processors.hadoop_configuration_resources=/etc/hadoop/conf/core-site.xml,/etc/hadoop/conf/hdfs-site.xml
 
@@ -377,8 +389,8 @@ https://github.com/ThinkBigAnalytics/data-lake-accelerator/tree/master/core/kerb
 
 .. Install the Ranger plugin
 
-    [root plugin]# mv /tmp/thinkbig-hadoop-authorization-ranger-0.5.0-SNAPSHOT.jar /opt/thinkbig/thinkbig-services/plugin
-    [root plugin]# chown thinkbig:thinkbig /opt/thinkbig/thinkbig-services/plugin/thinkbig-hadoop-authorization-ranger-0.5.0-SNAPSHOT.jar
+    [root plugin]# mv /tmp/thinkbig-hadoop-authorization-ranger-0.4.3.jar /opt/thinkbig/thinkbig-services/plugin
+    [root plugin]# chown thinkbig:thinkbig /opt/thinkbig/thinkbig-services/plugin/thinkbig-hadoop-authorization-ranger-0.4.3.jar
     [root plugin]# vi /opt/thinkbig/thinkbig-services/conf/authorization.ranger.properties
     [root plugin]# chown thinkbig:thinkbig /opt/thinkbig/thinkbig-services/conf/authorization.ranger.properties
 
@@ -409,9 +421,9 @@ https://github.com/ThinkBigAnalytics/data-lake-accelerator/tree/master/core/kerb
 
 . Login to the Kylo UI
 
-    http://<KYLO_EDGE_NODE>:8400
+    http://<KYLO_EDGE_HOSTNAME>:8400
 
-== Create HDFS Folders for NiFi Feeds
+== Create HDFS Folders for NiFi standard-ingest Feed
 
 This will be required since we are running under non-privileged users
 
