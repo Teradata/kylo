@@ -5,11 +5,17 @@ import com.thinkbiganalytics.nifi.provenance.StreamConfiguration;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.nifi.provenance.v2.ProvenanceEventRecordConverter;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.provenance.ProvenanceEventRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import javax.annotation.PostConstruct;
 
@@ -38,6 +44,17 @@ public class ThinkbigProvenanceEventWriter {
     @Autowired
     private StreamConfiguration configuration;
 
+    /**
+     * Comma separated string of JMS queu names that should skip Kylo Processing
+     */
+    @Value("${thinkbig.provenance.jmsQueueSkip:}")
+    private String jmsQueueNamesToSkip;
+
+    /**
+     * Resolved list of queue names parsed from the {@code jmsQueueNamesToSkip}
+     */
+    private List<String> queueNamesToSkip;
+
 
     public ThinkbigProvenanceEventWriter() {
 
@@ -45,13 +62,25 @@ public class ThinkbigProvenanceEventWriter {
 
 
     public ThinkbigProvenanceEventWriter(StreamConfiguration configuration) {
-this.configuration = configuration;
+        this.configuration = configuration;
 
     }
 
     @PostConstruct
     public void postConstruct() {
         log.info("New ProvenanceEventWriter with Stream Configuration {}, and aggregator: {} ", configuration, producer);
+
+
+        log.info("Queues names to skip {}", jmsQueueNamesToSkip);
+        if(StringUtils.isNotBlank(jmsQueueNamesToSkip)) {
+            queueNamesToSkip = Arrays.asList(jmsQueueNamesToSkip.split(","));
+            queueNamesToSkip.replaceAll(String::trim);
+        }
+        else {
+            queueNamesToSkip = Collections.emptyList();
+        }
+        log.info("Going to skip following queues {}", queueNamesToSkip);
+
     }
 
     /**
@@ -61,13 +90,32 @@ this.configuration = configuration;
         try {
 
             ProvenanceEventRecordDTO dto = ProvenanceEventRecordConverter.convert(event);
-            dto.setEventId(eventId);
-            producer.prepareAndAdd(dto);
-            return dto.getEventId();
+            if(isSkipProcessing(dto)){
+                log.trace("Skipping event {}", event);
+                return eventId;
+            }
+            else {
+                log.trace("Processing event {}", event);
+                dto.setEventId(eventId);
+                producer.prepareAndAdd(dto);
+                return dto.getEventId();
+            }
         }catch (Exception e){
             log.error("ERROR occurred processing event ",event);
         }
         return null;
+    }
+
+    /**
+     * Check to see if the Attributes contain a "Destination Name" property whose value matches a defined Queue name found in the config.properties file that is to be skipped from Kylo Processing
+     * @param dto
+     * @return
+     */
+    private boolean isSkipProcessing(ProvenanceEventRecordDTO dto) {
+        log.trace("Event attribute map {}", dto.getAttributeMap());
+        String queueToSkip = dto.getAttributeMap().getOrDefault("jms_destination", null);
+        return (queueToSkip != null && queueNamesToSkip.contains(queueToSkip));
+
     }
 
 

@@ -22,14 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -164,8 +157,7 @@ public class ProvenanceEventAggregator implements NifiRestConnectionListener {
         if (!eventsPriorToNifiConnection.isEmpty()) {
             log.info("About to process {} events that were stored prior to making the NiFi rest connection ", eventsPriorToNifiConnection.size());
         }
-        eventsPriorToNifiConnection.stream().filter(e -> e != null).forEach(e -> {
-//        eventsPriorToNifiConnection.forEach(e -> {
+        eventsPriorToNifiConnection.stream().filter(Objects::nonNull).forEach(e -> {
             log.debug("Processing onConnected {}", e);
             process(e);
 
@@ -184,7 +176,7 @@ public class ProvenanceEventAggregator implements NifiRestConnectionListener {
                     log.info("DROPPING FLOW FILES Event: {}", event);
                     return;
                 }
-                log.info("Process Event {} ", event);
+                log.trace("Process Event {} ", event);
                 try {
                     cacheUtil.cacheAndBuildFlowFileGraph(event);
 
@@ -221,7 +213,7 @@ public class ProvenanceEventAggregator implements NifiRestConnectionListener {
                     jobFlowFileIdEarlyChildrenMap.asMap().computeIfAbsent(event.getFlowFileUuid(), (flowFileId) -> new ConcurrentLinkedQueue<ProvenanceEventRecordDTO>()).add(event);
 
                 }
-                log.info("Processed Event {} ", event);
+                log.trace("Processed Event {} ", event);
             }
         } catch (Exception e) {
             log.error("ERROR PROCESSING EVENT! {}.  ERROR: {} ", event, e.getMessage(), e);
@@ -332,9 +324,9 @@ public class ProvenanceEventAggregator implements NifiRestConnectionListener {
      */
     private void collectCompletionEvents(ProvenanceEventRecordDTO event) {
         if (event.isEndOfJob()) {
-            log.info("collectCompletition {}  - {} - {} ", event.getJobFlowFileId(), event.getFlowFile().getRootFlowFile().getFirstEventType(), event.getFlowFile().getRootFlowFile().isBatch());
+            log.debug("collectCompletition {}  - {} - {} ", event.getJobFlowFileId(), event.getFlowFile().getRootFlowFile().getFirstEventType(), event.getFlowFile().getRootFlowFile().isBatch());
             if (event.getFlowFile() != null && event.getFlowFile().getRootFlowFile() != null) {
-                log.info("Setting event {} as batch? {} ", event, event.getFlowFile().getRootFlowFile().isBatch());
+                log.debug("Setting event {} as batch? {} ", event, event.getFlowFile().getRootFlowFile().isBatch());
                 event.setIsBatchJob(event.getFlowFile().getRootFlowFile().isBatch());
             }
 
