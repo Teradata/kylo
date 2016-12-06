@@ -113,7 +113,7 @@ Before installing the Kylo stack the below needs to be done on the cluster.
 . Create the "kylo" MySQL user
 
     CREATE USER 'kylo'@'<KYLO_EDGE_NODE>' IDENTIFIED BY 'abc123';
-    grant create,select,insert,update,delete ON thinkbig.* to 'kylo'@'KYLO_EDGE_NODE_HOSTNAME';
+    grant create,select,insert,update,delete,execute ON thinkbig.* to 'kylo'@'KYLO_EDGE_NODE_HOSTNAME';
     FLUSH PRIVILEGES;
 
 . Grant kylo user access to the hive MySQL metadata
@@ -192,13 +192,16 @@ Ahead of time prepare the list below to speed up installation
 
 - [ ] Hive Hostname/IP Address:
 - [ ] Ambari IP Hostname/IP Address:
-- [ ] Ambari "kylo" user username/password
+- [ ] Ambari "kylo" user username/password:
 - [ ] KDC Hostname/IP Address:
 - [ ] MySQL Hostname/IP Address:
 - [ ] Kylo Edge Hostname/IP Address:
 - [ ] NiFi Edge Hostname/IP Address:
 - [ ] Kylo MySQL Installation User username/password (Create Schema Required):
 - [ ] Kylo MySQL application username/password (For the thinkbig-services application and Hive metadata access):
+- [ ] Kerberos Principal for "thinkbig":
+- [ ] Kerberos Principal for "nifi":
+- [ ] Kerberos Principal for "hive" on the KDC Host:
 - [ ] List of feed categories that should be created ahead of time
 
 == Create the Keytabs for "nifi" and "thinkbig" users
@@ -210,6 +213,12 @@ Ahead of time prepare the list below to speed up installation
     kadmin.local:  addprinc -randkey "nifi/<NIFI_EDGE_HOSTNAME>@US-WEST-2.COMPUTE.INTERNAL"
     kadmin.local:  xst -k /tmp/thinkbig.service.keytab thinkbig/<KYLO_EDGE_HOSTNAME>@US-WEST-2.COMPUTE.INTERNAL
     kadmin.local:  xst -k /tmp/nifi.service.keytab nifi/<NIFI_EDGE_HOSTNAME>@US-WEST-2.COMPUTE.INTERNAL
+
+. Note the hive principal name for the thrift connection later
+
+    # Write down the principal name for hive for the KDC node
+    kadmin.local:  listprincs
+
     kadmin.local: exit
 
 . Move the keytabs to the correct edge nodes
@@ -225,7 +234,7 @@ Ahead of time prepare the list below to speed up installation
 . Test the keytab on the Kylo edge node
 
     [root keytabs]# su - thinkbig
-    [thinkbig ~]$ kinit -kt /etc/security/keytabs/thinkbig.service.keytab thinkbig/ip-172-31-42-133.us-west-2.compute.internal@US-WEST-2.COMPUTE.INTERNAL
+    [thinkbig ~]$ kinit -kt /etc/security/keytabs/thinkbig.service.keytab thinkbig/<KYLO_EDGE_HOSTNAME>@US-WEST-2.COMPUTE.INTERNAL
     [thinkbig ~]$ klist
     [thinkbig ~]$ klist
     Ticket cache: FILE:/tmp/krb5cc_496
@@ -288,13 +297,25 @@ https://github.com/ThinkBigAnalytics/data-lake-accelerator/tree/master/core/kerb
     * NiFi
     * Java (Option #2 most likely)
 
+. Stop NiFi
+
+    $ service nifi stop
+
 . Edit nifi.properties to set Kerberos setting
 
     [root]# vi /opt/nifi/current/conf/nifi.properties
 
     nifi.kerberos.krb5.file=/etc/krb5.conf
 
-    [root]# service nifi restart
+. Edit the config.properties file
+
+    [root]# vi /opt/nifi/ext-config/config.properties
+
+    jms.activemq.broker.url=tcp://<KYLO_EDGE_HOST>:61616
+
+. Start NiFi
+
+ [root]# service nifi start
 
 .  Tail the logs to look for errors
 
@@ -338,7 +359,7 @@ https://github.com/ThinkBigAnalytics/data-lake-accelerator/tree/master/core/kerb
 
     [root /]# vi /opt/thinkbig/thinkbig-services/conf/application.properties
 
-    spring.datasource.url=jdbc:mysql://<MYSQL_HOSTNAME>:3306/thinkbig
+    spring.datasource.url=jdbc:mysql://<MYSQL_HOSTNAME>:3306/thinkbig?noAccessToProcedureBodies=true
     spring.datasource.username=kylo
     spring.datasource.password=password
 
@@ -346,7 +367,7 @@ https://github.com/ThinkBigAnalytics/data-lake-accelerator/tree/master/core/kerb
     ambariRestClientConfig.username=kylo
     ambariRestClientConfig.password=password
 
-    metadata.datasource.url=jdbc:mysql://<MYSQL_HOSTNAME>:3306/thinkbig
+    metadata.datasource.url=jdbc:mysql://<MYSQL_HOSTNAME>:3306/thinkbig?noAccessToProcedureBodies=true
     metadata.datasource.username=kylo
     metadata.datasource.password=password
 
@@ -356,9 +377,11 @@ https://github.com/ThinkBigAnalytics/data-lake-accelerator/tree/master/core/kerb
     hive.metastore.datasource.username=kylo
     hive.metastore.datasource.password=password
 
-    modeshape.datasource.url=jdbc:mysql://<MYSQL_HOSTNAME>:3306/thinkbig
+    modeshape.datasource.url=jdbc:mysql://<MYSQL_HOSTNAME>:3306/thinkbig?noAccessToProcedureBodies=true
     modeshape.datasource.username=kylo
     modeshape.datasource.password=password
+
+    nifi.rest.host=<NIFI_EDGE_HOST>
 
     kerberos.hive.kerberosEnabled=true
     kerberos.hive.hadoopConfigurationResources=/etc/hadoop/conf/core-site.xml,/etc/hadoop/conf/hdfs-site.xml
@@ -369,10 +392,12 @@ https://github.com/ThinkBigAnalytics/data-lake-accelerator/tree/master/core/kerb
     nifi.service.mysql.password=password
     nifi.service.mysql.database_connection_url=jdbc:mysql://<MYSQL_HOSTNAME>
 
-    nifi.service.hive_thrift_service.database_connection_url=jdbc:hive2://<HIVE_SERVER2_HOSTNAME>:10000/default;principal=nifi/nifi-cb-kylo-0-4-3-test@US-WEST-2.COMPUTE.INTERNAL
+    nifi.service.hive_thrift_service.database_connection_url=jdbc:hive2://<HIVE_SERVER2_HOSTNAME>:10000/default;principal=<HIVE_PRINCIPAL_NAME>
     nifi.service.hive_thrift_service.kerberos_principal=<NIFI_PRINCIPAL_NAME>
     nifi.service.hive_thrift_service.kerberos_keytab=/etc/security/keytabs/nifi.service.keytab
     nifi.service.hive_thrift_service.hadoop_configuration_resources=/etc/hadoop/conf/core-site.xml,/etc/hadoop/conf/hdfs-site.xml
+
+    nifi.service.think_big_metadata_service.rest_client_url=http://ip-10-0-158-39.us-west-2.compute.internal:8400/proxy/metadata
 
     nifi.executesparkjob.sparkmaster=yarn-cluster
     nifi.executesparkjob.extra_jars=/usr/hdp/current/spark-client/lib/datanucleus-api-jdo-3.2.6.jar,/usr/hdp/current/spark-client/lib/datanucleus-core-3.2.10.jar,/usr/hdp/current/spark-client/lib/datanucleus-rdbms-3.2.9.jar
@@ -382,6 +407,10 @@ https://github.com/ThinkBigAnalytics/data-lake-accelerator/tree/master/core/kerb
     nifi.all_processors.kerberos_keytab=/etc/security/keytabs/nifi.service.keytab
     nifi.all_processors.hadoop_configuration_resources=/etc/hadoop/conf/core-site.xml,/etc/hadoop/conf/hdfs-site.xml
 
+    # Add this to the properties file
+    nifi.getjmstopic.url=tcp://<KYLO_EDGE_HOSTNAME>:61616
+    nifi.putjms.url=tcp://<KYLO_EDGE_HOSTNAME>:61616
+    nifi.indexelasticsearch.hostname=<KYLO_EDGE_HOSTNAME>
 
 . Install the Ranger Plugin
 
@@ -404,7 +433,7 @@ https://github.com/ThinkBigAnalytics/data-lake-accelerator/tree/master/core/kerb
         ranger.password=admin
 
 
-. Create the dropzone directory
+. Create the dropzone directory on the NiFi edge node
 
     $ mkdir -p /var/dropzone
     $ chown nifi /var/dropzone
@@ -442,15 +471,28 @@ This will be required since we are running under non-privileged users
 
 == Create Ranger Policies
 
+. Add the "thinkbig" and "nifi user to Ranger if they don't exist
+
 . Create the HDFS NiFi policy
 
-    name:kylo-nifi-access
-    /model.db/*
-    /archive/*
-    /etl/*
-    /app/warehouse/*
+    .. Click into the HDFS repository
+
+    .. Click on "Add New Policy"
+
+    name: kylo-nifi-access
+    Resource Path:
+        /model.db/*
+        /archive/*
+        /etl/*
+        /app/warehouse/*
+    user: nifi
+    permissions: all
 
 . Create the Hive NiFi policy
+
+    .. Click into the Hive repository
+
+    .. Click on "Add New Policy"
 
     Policy Name: kylo-nifi-access
     Hive Database: userdata, default (required for access for some reason)
@@ -465,8 +507,11 @@ Grant hive access to "thinkbig" user for hive tables, profile, and wrangler
 
 Note: Kylo supports user impersonation ( add doc and reference it)
 
+    .. Click into the Hive repository
 
-    Policy Name: kylo-nifi-access
+    .. Click on "Add New Policy"
+
+    Policy Name: kylo-thinkbig-access
     Hive Database: userdata
     table: *
     column: *
@@ -479,6 +524,7 @@ Note: Kylo supports user impersonation ( add doc and reference it)
 
 . Import data ingest template
 .. manually update the spark validate process to add - ${table_field_policy_json_file}
+.. Edit the "Upload to HDFS" and remove "Remote Owner" and "Remote Group"
 
 . Create a userdata feed to test
 
