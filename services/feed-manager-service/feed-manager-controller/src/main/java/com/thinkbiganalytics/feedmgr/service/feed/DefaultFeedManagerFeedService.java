@@ -481,10 +481,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
             serviceLevelAgreementService.unscheduleServiceLevelAgreement(feed.getId());
             feedRepository.deleteFeed(feed.getCategory().getName(), feed.getName());
             feedManagerFeedProvider.deleteById(feed.getId());
-            metadataAccess.commit(() -> {
-                opsManagerFeedProvider.delete(opsManagerFeedProvider.resolveId(feedId));
-                return null;
-            });
+            opsManagerFeedProvider.delete(opsManagerFeedProvider.resolveId(feedId));
             return true;
         });
     }

@@ -5,9 +5,11 @@ package com.thinkbiganalytics.metadata.modeshape;
 
 import java.security.Principal;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -60,6 +62,12 @@ public class JcrMetadataAccess implements MetadataAccess {
             return null;
         }
     };
+    
+    private static final ThreadLocal<Set<Consumer<Boolean>>> postTransactionActions = new ThreadLocal<Set<Consumer<Boolean>>>() {
+        protected Set<Consumer<Boolean>> initialValue() {
+            return new HashSet<Consumer<Boolean>>();
+        }
+    };
 
     private static final ThreadLocal<Set<Node>> checkedOutNodes = new ThreadLocal<Set<Node>>() {
         protected java.util.Set<Node> initialValue() {
@@ -75,6 +83,8 @@ public class JcrMetadataAccess implements MetadataAccess {
     private static MetadataRollbackCommand nullRollbackCommand = (e) -> {
         nullRollbackAction.execute(e);
     };
+    
+    
     @Inject
     @Named("metadataJcrRepository")
     private Repository repository;
@@ -129,6 +139,10 @@ public class JcrMetadataAccess implements MetadataAccess {
             JcrVersionUtil.checkin(element);
             itr.remove();
         }
+    }
+    
+    public static void addPostTransactionAction(Consumer<Boolean> action) {
+        postTransactionActions.get().add(action);
     }
     
     /* (non-Javadoc)
@@ -194,17 +208,18 @@ public class JcrMetadataAccess implements MetadataAccess {
                     checkinNodes();
 
                     txnMgr.commit();
+                    performPostTransactionActions(true);
                     return result;
                 } catch (Exception e) {
                     log.warn("Exception while execution a transactional operation - rolling back", e);
 
                     try {
                         txnMgr.rollback();
-
                     } catch (SystemException se) {
                         log.error("Failed to rollback tranaction as a result of other transactional errors", se);
                     }
-                    if(rollbackCmd != null){
+                    
+                    if (rollbackCmd != null){
                         try {
                             rollbackCmd.execute(e);
                         } catch (Exception rbe) {
@@ -213,11 +228,13 @@ public class JcrMetadataAccess implements MetadataAccess {
                     }
 
                     activeSession.get().refresh(false);
+                    performPostTransactionActions(false);
 
                     throw e;
                 } finally {
                     activeSession.get().logout();
                     activeSession.remove();
+                    postTransactionActions.remove();
                     checkedOutNodes.remove();
                 }
             } catch (RuntimeException e) {
@@ -303,6 +320,15 @@ public class JcrMetadataAccess implements MetadataAccess {
                 throw new MetadataExecutionException(e);
             }
         }
+    }
+
+
+    /**
+     * Invokes all of the post-commit consumers; passing the transaction success flag to each.
+     * @param success true if the transaction committed successfully, otherwise false
+     */
+    private void performPostTransactionActions(boolean success) {
+        postTransactionActions.get().stream().forEach(action -> action.accept(success));
     }
 
 

@@ -5,8 +5,11 @@ package com.thinkbiganalytics.metadata.api.event;
 
 import java.io.Serializable;
 import java.security.Principal;
+import java.util.Objects;
 
 import org.joda.time.DateTime;
+
+import com.thinkbiganalytics.metadata.api.event.feed.FeedChange;
 
 /**
  *
@@ -47,4 +50,22 @@ public abstract class AbstractMetadataEvent<C extends Serializable> implements M
     public Principal getUserPrincipal() {
         return userPrincipal;
     }
+    
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.timestamp, this.userPrincipal, this.data);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof AbstractMetadataEvent) {
+            AbstractMetadataEvent<?> that = (AbstractMetadataEvent<?>) obj;
+            return Objects.equals(this.userPrincipal, this.userPrincipal) &&
+                   Objects.equals(this.timestamp, that.timestamp) &&
+                   Objects.equals(this.data, that.data);
+        } else {
+            return false;
+        }
+    }
+
 }

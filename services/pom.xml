@@ -22,6 +22,7 @@
         <module>security-service</module>
         <module>schema-discovery-service</module>
         <module>operational-metadata-service</module>
+        <module>audit-logging-service</module>
         <module>service-app</module>
     </modules>
 </project>

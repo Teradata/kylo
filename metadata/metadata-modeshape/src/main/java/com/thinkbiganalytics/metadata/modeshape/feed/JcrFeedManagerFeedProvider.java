@@ -1,6 +1,10 @@
 package com.thinkbiganalytics.metadata.modeshape.feed;
 
 import com.thinkbiganalytics.metadata.api.category.Category;
+import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
+import com.thinkbiganalytics.metadata.api.event.MetadataChange.ChangeType;
+import com.thinkbiganalytics.metadata.api.event.feed.FeedChange;
+import com.thinkbiganalytics.metadata.api.event.feed.FeedChangeEvent;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
@@ -13,16 +17,22 @@ import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
+import com.thinkbiganalytics.security.UsernamePrincipal;
 
 import java.io.Serializable;
+import java.security.Principal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import javax.inject.Inject;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.query.QueryResult;
+
+import org.joda.time.DateTime;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
  * Created by sr186054 on 6/8/16.
@@ -50,7 +60,10 @@ public class JcrFeedManagerFeedProvider extends BaseJcrProvider<FeedManagerFeed,
     @Inject
     private FeedProvider feedProvider;
 
+    @Inject
+    private MetadataEventService metadataEventService;
 
+    
     @Override
     public FeedManagerFeed findBySystemName(String categorySystemName, String systemName) {
 
@@ -115,6 +128,8 @@ public class JcrFeedManagerFeedProvider extends BaseJcrProvider<FeedManagerFeed,
 
     @Override
     public void delete(FeedManagerFeed feedManagerFeed) {
+        addPostFeedChangeAction(feedManagerFeed, ChangeType.DELETE);
+
         // Remove dependent feeds
         final Node node = ((JcrFeedManagerFeed) feedManagerFeed).getNode();
         feedManagerFeed.getDependentFeeds().forEach(feed -> feedManagerFeed.removeDependentFeed((JcrFeed) feed));
@@ -123,5 +138,22 @@ public class JcrFeedManagerFeedProvider extends BaseJcrProvider<FeedManagerFeed,
         // Delete feed
         feedManagerFeed.getTemplate().removeFeed(feedManagerFeed);
         super.delete(feedManagerFeed);
+    }
+    
+    private void addPostFeedChangeAction(FeedManagerFeed feed, ChangeType changeType) {
+        Principal principal = new UsernamePrincipal(SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString());
+        Feed.State state = feed.getState();
+        Feed.ID id = feed.getId();
+        DateTime createTime = feed.getCreatedTime();
+
+        Consumer<Boolean> action = (success) -> {
+            if (success) {
+                FeedChange change = new FeedChange(changeType, id, state);
+                FeedChangeEvent event = new FeedChangeEvent(change, createTime, principal);
+                metadataEventService.notify(event);
+            }
+        };
+        
+        JcrMetadataAccess.addPostTransactionAction(action);
     }
 }

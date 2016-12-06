@@ -45,7 +45,7 @@ public class JpaAuditLogEntry implements AuditLogEntry {
     @Column(name = "LOG_TYPE", length = 45, nullable = false)
     private String type;
 
-    @Column(name = "NAME", length = 255, nullable = false)
+    @Column(name = "DESCRIPTION", length = 255, nullable = false)
     private String description;
 
     @Column(name = "ENTITY_ID", columnDefinition = "binary(16)")

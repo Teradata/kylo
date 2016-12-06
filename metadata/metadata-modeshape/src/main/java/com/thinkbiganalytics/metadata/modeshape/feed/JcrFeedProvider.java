@@ -1,5 +1,25 @@
 package com.thinkbiganalytics.metadata.modeshape.feed;
 
+import java.io.Serializable;
+import java.security.Principal;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Consumer;
+
+import javax.annotation.Nonnull;
+import javax.inject.Inject;
+import javax.jcr.Node;
+import javax.jcr.NodeIterator;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+
+import org.joda.time.DateTime;
+import org.springframework.security.core.context.SecurityContextHolder;
+
 import com.google.common.base.Predicate;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.category.Category;
@@ -8,7 +28,10 @@ import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceNotFoundException;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
+import com.thinkbiganalytics.metadata.api.event.MetadataChange.ChangeType;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
+import com.thinkbiganalytics.metadata.api.event.feed.FeedChange;
+import com.thinkbiganalytics.metadata.api.event.feed.FeedChangeEvent;
 import com.thinkbiganalytics.metadata.api.event.feed.FeedPropertyChangeEvent;
 import com.thinkbiganalytics.metadata.api.event.feed.PropertyChange;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
@@ -47,22 +70,8 @@ import com.thinkbiganalytics.metadata.sla.spi.ObligationGroupBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 import com.thinkbiganalytics.security.AccessController;
+import com.thinkbiganalytics.security.UsernamePrincipal;
 import com.thinkbiganalytics.support.FeedNameUtil;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.Nonnull;
-import javax.inject.Inject;
-import javax.jcr.Node;
-import javax.jcr.NodeIterator;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
 
 /**
  * A JCR provider for {@link Feed} objects.
@@ -261,6 +270,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             throw new CategoryNotFoundException("Unable to find Category for " + categorySystemName, null);
         }
 
+        boolean newFeed = ! JcrUtil.hasNode(category.getNode(), feedSystemName);
         Node feedNode = findOrCreateEntityNode(categoryPath, feedSystemName, getJcrEntityClass());
         boolean versionable = JcrUtil.isVersionable(feedNode);
         
@@ -269,7 +279,33 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         JcrFeed<?> feed = new JcrFeed(feedNode, category);
 
         feed.setSystemName(feedSystemName);
+        
+        if (newFeed) {
+            addPostFeedChangeAction(feed, ChangeType.CREATE);
+        }
+        
         return feed;
+    }
+
+    /**
+     * Registers an action that produces a feed change event upon a successful transaction commit.
+     * @param feed the feed to being created
+     */
+    private void addPostFeedChangeAction(JcrFeed<?> feed, ChangeType changeType) {
+        Principal principal = new UsernamePrincipal(SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString());
+        Feed.State state = feed.getState();
+        Feed.ID id = feed.getId();
+        DateTime createTime = feed.getCreatedTime();
+
+        Consumer<Boolean> action = (success) -> {
+            if (success) {
+                FeedChange change = new FeedChange(changeType, id, state);
+                FeedChangeEvent event = new FeedChangeEvent(change, createTime, principal);
+                metadataEventService.notify(event);
+            }
+        };
+        
+        JcrMetadataAccess.addPostTransactionAction(action);
     }
 
     @Override
@@ -511,7 +547,12 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
     @Override
     public void deleteFeed(ID feedId) {
-        deleteById(feedId);
+        JcrFeed<?> feed = (JcrFeed<?>) getFeed(feedId);
+        
+        if (feed != null) {
+            addPostFeedChangeAction(feed, ChangeType.DELETE);
+            deleteById(feedId);
+        }
     }
 
     private static class Criteria extends AbstractMetadataCriteria<FeedCriteria> implements FeedCriteria, Predicate<Feed> {

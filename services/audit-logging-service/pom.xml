@@ -2,14 +2,16 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>com.thinkbiganalytics.datalake</groupId>
-    <artifactId>thinkbig-core</artifactId>
+    <artifactId>thinkbig-services</artifactId>
     <version>0.5.0-SNAPSHOT</version>
   </parent>
-  <artifactId>thinkbig-audit-logging</artifactId>
+  <artifactId>thinkbig-audit-logging-service</artifactId>
   <packaging>pom</packaging>
   <modules>
       <module>audit-logging-api</module>
       <module>audit-logging-jpa</module>
       <module>audit-logging-core</module>
+      <module>audit-logging-rest-model</module>
+      <module>audit-logging-controller</module>
   </modules>
 </project>
