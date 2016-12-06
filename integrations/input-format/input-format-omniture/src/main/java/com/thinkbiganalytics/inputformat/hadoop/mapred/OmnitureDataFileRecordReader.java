@@ -94,7 +94,7 @@ public class OmnitureDataFileRecordReader implements RecordReader<LongWritable, 
                 return false;
             }
 
-            String line = value.toString().replaceAll("\\\\\t", " ").replaceAll("\\\\(\n|\r|\r\n)", " ");
+            String line = value.toString().replaceAll("\\\\\\\\","").replaceAll("\\\\\t", " ").replaceAll("\\\\(\n|\r|\r\n)", " ");
             value.set(line);
 
             if (newSize < maxLineLength) {
