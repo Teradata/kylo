@@ -13,6 +13,7 @@ import com.thinkbiganalytics.policy.validation.ValidationPolicy;
 import com.thinkbiganalytics.policy.validation.ValidationResult;
 import com.thinkbiganalytics.spark.validation.HCatDataType;
 
+import javafx.util.Pair;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -37,6 +38,31 @@ public class ValidatorTest {
         Path pathToPolicyFile = Paths.get(url.toURI());
         validator = new Validator();
         validator.setArguments("emp", "sampletable", "20001", pathToPolicyFile.toString());
+    }
+
+
+    @Test
+    public void testParseRemainingParameters() {
+        String[] args = {"targetDatabase", "entity", "partition", "path-to-policy-file", "-h", "hive.setting.1=value.1", "--hiveConf", "hive.setting.2=value.2"};
+        CommandLineParams params = Validator.parseRemainingParameters(args, 4);
+        List<Param> hiveParams = params.getHiveParams();
+
+        Param first = hiveParams.get(0);
+        assertEquals("hive.setting.1",  first.getName());
+        assertEquals("value.1",  first.getValue());
+
+        Param second = hiveParams.get(1);
+        assertEquals("hive.setting.2",  second.getName());
+        assertEquals("value.2",  second.getValue());
+    }
+
+    @Test
+    public void testParseRemainingParameters_missingParameters() {
+        String[] args = {"targetDatabase", "entity", "partition", "path-to-policy-file"};
+        CommandLineParams params = Validator.parseRemainingParameters(args, 4);
+        List<Param> hiveParams = params.getHiveParams();
+
+        assertTrue(hiveParams.isEmpty());
     }
 
     @Test

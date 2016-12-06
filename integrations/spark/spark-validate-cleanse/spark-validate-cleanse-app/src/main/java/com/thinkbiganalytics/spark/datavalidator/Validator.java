@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.spark.datavalidator;
 
 import com.thinkbiganalytics.hive.util.HiveUtils;
+import com.beust.jcommander.JCommander;
 import com.thinkbiganalytics.policy.FieldPoliciesJsonTransformer;
 import com.thinkbiganalytics.policy.FieldPolicy;
 import com.thinkbiganalytics.policy.FieldPolicyBuilder;
@@ -39,12 +40,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Vector;
+import java.util.*;
 
 /**
  * Cleanses and validates a table of strings according to defined field-level policies. Records are split into good and bad. <p> blog.cloudera.com/blog/2015/07/how-to-do-data-quality-checks-using-apache-spark-dataframes/
@@ -101,6 +97,7 @@ public class Validator implements Serializable {
     private String fieldPolicyJsonPath;
 
     private final Vector<Accumulator<Integer>> accumList = new Vector<>();
+    private CommandLineParams params;
 
     public void setArguments(String targetDatabase, String entity, String partition, String fieldPolicyJsonPath) {
         this.validTableName = entity + "_valid";
@@ -179,15 +176,15 @@ public class Validator implements Serializable {
         try {
             SparkContext sparkContext = SparkContext.getOrCreate();
             hiveContext = new org.apache.spark.sql.hive.HiveContext(sparkContext);
+
+            for (Param param : params.getHiveParams()) {
+                log.info("Adding Hive parameter {}={}", param.getName(), param.getValue());
+                hiveContext.setConf(param.getName(), param.getValue());
+            }
+
             sqlContext = new SQLContext(sparkContext);
 
-            // Setup defaults
-            hiveContext.setConf("hive.exec.dynamic.partition", "true");
-            hiveContext.setConf("hive.exec.dynamic.partition.mode", "nonstrict");
-            // Required for ORC and Parquet
-            hiveContext.setConf("set hive.optimize.index.filter", "false");
-
-            log.info("Deployment Node - " + sparkContext.getConf().get("spark.submit.deployMode"));
+            log.info("Deployment Mode - " + sparkContext.getConf().get("spark.submit.deployMode"));
             loadPolicies();
 
             // Extract fields from a source table
@@ -562,12 +559,23 @@ public class Validator implements Serializable {
         return pols.toArray(new FieldPolicy[0]);
     }
 
+    private void addParameters(CommandLineParams params) {
+        this.params = params;
+    }
+
+    static CommandLineParams parseRemainingParameters(String[] args, int from) {
+        CommandLineParams params = new CommandLineParams();
+        new JCommander(params, Arrays.copyOfRange(args, from, args.length));
+        return params;
+    }
+
     public static void main(String[] args) {
+        log.info("Running Spark Validator with the following command line args (comma separated):" + StringUtils.join(args, ","));
 
         // Check how many arguments were passed in
         if (args.length < 4) {
             System.out.println("Proper Usage is: <targetDatabase> <entity> <partition> <path-to-policy-file>");
-
+            System.out.println("You can optionally add: --hiveConf hive.setting=value --hiveConf hive.other.setting=value");
             System.out.println("You provided " + args.length + " args which are (comma separated): " + StringUtils.join(args, ","));
             System.exit(1);
         }
@@ -575,10 +583,12 @@ public class Validator implements Serializable {
             ApplicationContext ctx = new AnnotationConfigApplicationContext("com.thinkbiganalytics.spark");
             Validator app = ctx.getBean(Validator.class);
             app.setArguments(args[0], args[1], args[2], args[3]);
+            app.addParameters(parseRemainingParameters(args, 4));
             app.doValidate();
         } catch (Exception e) {
             System.out.println(e);
         }
     }
+
 }
 
