@@ -3,8 +3,6 @@
  */
 package com.thinkbiganalytics.metadata.audit.core;
 
-import java.io.Serializable;
-
 import javax.inject.Inject;
 
 import org.slf4j.Logger;
@@ -12,9 +10,9 @@ import org.slf4j.LoggerFactory;
 
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.audit.AuditLogProvider;
-import com.thinkbiganalytics.metadata.api.event.MetadataEvent;
-import com.thinkbiganalytics.metadata.api.event.MetadataEventListener;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
+import com.thinkbiganalytics.metadata.api.event.feed.FeedChangeEvent;
+import com.thinkbiganalytics.metadata.api.event.template.TemplateChangeEvent;
 
 /**
  * A service responsible for producing audit log entries from things like metadata events
@@ -32,34 +30,37 @@ public class AuditLoggingService {
     @Inject 
     private MetadataAccess metadataAccess;
     
-    private MetadataEventListener<MetadataEvent<? extends Serializable>> listener;
-
     public AuditLoggingService() {
-        // Creates a catch-all listener for every metadata event and logs it.
-        // TODO: should we be more selective?
-        this.listener = new MetadataEventListener<MetadataEvent<? extends Serializable>>() {
-            @Override
-            public void notify(MetadataEvent<? extends Serializable> event) {
-                createAuditEntry(event);
-            }
-        };
     }
     
     /**
      * @param eventService
      */
     public void addListeners(MetadataEventService eventService) {
-        eventService.addListener(listener);
+        eventService.addListener((FeedChangeEvent event) -> createAuditEntry(event));
+        eventService.addListener((TemplateChangeEvent event) -> createAuditEntry(event));
     }
     
-    /**
-     * @param event
-     */
-    protected void createAuditEntry(MetadataEvent<? extends Serializable> event) {
+    protected void createAuditEntry(FeedChangeEvent event) {
         this.metadataAccess.commit(() -> {
             // Assume the toString() of the event's data contains the useful info for this event.
             log.debug("Audit: {} - {}", event.getData().getClass().getSimpleName(), event.getData().toString());
-            provider.createEntry(event.getUserPrincipal(), event.getData().getClass().getSimpleName(), event.getData().toString());
+            provider.createEntry(event.getUserPrincipal(), 
+                                 event.getData().getClass().getSimpleName(), 
+                                 event.getData().toString(),
+                                 event.getData().getFeedId().toString());
+        }, MetadataAccess.SERVICE);
+        
+    }
+    
+    protected void createAuditEntry(TemplateChangeEvent event) {
+        this.metadataAccess.commit(() -> {
+            // Assume the toString() of the event's data contains the useful info for this event.
+            log.debug("Audit: {} - {}", event.getData().getClass().getSimpleName(), event.getData().toString());
+            provider.createEntry(event.getUserPrincipal(), 
+                                 event.getData().getClass().getSimpleName(), 
+                                 event.getData().toString(),
+                                 event.getData().getTemplateId().toString());
         }, MetadataAccess.SERVICE);
         
     }

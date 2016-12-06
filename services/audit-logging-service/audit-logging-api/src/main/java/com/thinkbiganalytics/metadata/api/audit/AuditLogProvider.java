@@ -27,5 +27,5 @@ public interface AuditLogProvider {
     
     AuditLogEntry createEntry(Principal user, String type, String description);
     
-    AuditLogEntry createEntry(Principal user, String type, String description, UUID entityId);
+    AuditLogEntry createEntry(Principal user, String type, String description, String entityId);
 }

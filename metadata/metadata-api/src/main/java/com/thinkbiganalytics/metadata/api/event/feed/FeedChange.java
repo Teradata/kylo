@@ -30,6 +30,14 @@ public class FeedChange extends MetadataChange {
         this.feedId = feedId;
         this.feedState = feedState;
     }
+    
+    public Feed.ID getFeedId() {
+        return feedId;
+    }
+
+    public Feed.State getFeedState() {
+        return feedState;
+    }
 
     @Override
     public int hashCode() {

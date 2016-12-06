@@ -1,22 +1,33 @@
 package com.thinkbiganalytics.metadata.modeshape.template;
 
+import java.io.Serializable;
+import java.security.Principal;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Consumer;
+
+import javax.inject.Inject;
+
+import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
+import org.springframework.security.core.context.SecurityContextHolder;
+
+import com.thinkbiganalytics.metadata.api.event.MetadataChange.ChangeType;
+import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
+import com.thinkbiganalytics.metadata.api.event.template.TemplateChange;
+import com.thinkbiganalytics.metadata.api.event.template.TemplateChangeEvent;
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.TemplateDeletionException;
 import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
-
-import org.apache.commons.lang3.StringUtils;
-
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.inject.Inject;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.security.UsernamePrincipal;
 
 /**
  * Created by sr186054 on 6/8/16.
@@ -25,6 +36,9 @@ public class JcrFeedTemplateProvider extends BaseJcrProvider<FeedManagerTemplate
 
     @Inject
     FeedManagerFeedProvider feedManagerFeedProvider;
+
+    @Inject
+    private MetadataEventService metadataEventService;
 
     @Override
     public Class<? extends FeedManagerTemplate> getEntityClass() {
@@ -46,7 +60,14 @@ public class JcrFeedTemplateProvider extends BaseJcrProvider<FeedManagerTemplate
         String path = EntityUtil.pathForTemplates();
         Map<String, Object> props = new HashMap<>();
         props.put(JcrFeedTemplate.TITLE, sanitiezedName);
-        return findOrCreateEntity(path, sanitiezedName, props);
+        boolean newTemplate = ! JcrUtil.hasNode(getSession(), path, sanitiezedName);
+        JcrFeedTemplate template = (JcrFeedTemplate) findOrCreateEntity(path, sanitiezedName, props);
+        
+        if (newTemplate) {
+            addPostFeedChangeAction(template, ChangeType.CREATE);
+        }
+        
+        return template;
     }
 
     @Override
@@ -115,6 +136,7 @@ public class JcrFeedTemplateProvider extends BaseJcrProvider<FeedManagerTemplate
     public boolean deleteTemplate(FeedManagerTemplate feedManagerTemplate) throws TemplateDeletionException {
         if (feedManagerTemplate != null && (feedManagerTemplate.getFeeds() == null || feedManagerTemplate.getFeeds().size() == 0)) {
             super.delete(feedManagerTemplate);
+            addPostFeedChangeAction(feedManagerTemplate, ChangeType.DELETE);
             return true;
         } else {
             throw new TemplateDeletionException(feedManagerTemplate.getName(), feedManagerTemplate.getId().toString(), "There are still feeds assigned to this template.");
@@ -130,4 +152,26 @@ public class JcrFeedTemplateProvider extends BaseJcrProvider<FeedManagerTemplate
     public void deleteById(FeedManagerTemplate.ID id) {
         deleteTemplate(id);
     }
+
+    /**
+     * Registers an action that produces a template change event upon a successful transaction commit.
+     * @param template the feed to being created
+     */
+    private void addPostFeedChangeAction(FeedManagerTemplate template, ChangeType changeType) {
+        Principal principal = new UsernamePrincipal(SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString());
+        FeedManagerTemplate.State state = template.getState();
+        FeedManagerTemplate.ID id = template.getId();
+        DateTime createTime = template.getCreatedTime();
+
+        Consumer<Boolean> action = (success) -> {
+            if (success) {
+                TemplateChange change = new TemplateChange(changeType, id, state);
+                TemplateChangeEvent event = new TemplateChangeEvent(change, createTime, principal);
+                metadataEventService.notify(event);
+            }
+        };
+        
+        JcrMetadataAccess.addPostTransactionAction(action);
+    }
+
 }

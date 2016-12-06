@@ -27,5 +27,5 @@ public interface AuditLogEntry {
     
     String getDescription();
     
-    UUID getEntityId();
+    String getEntityId();
 }

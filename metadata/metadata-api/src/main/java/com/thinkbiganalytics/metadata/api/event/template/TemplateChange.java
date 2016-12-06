@@ -32,6 +32,14 @@ public class TemplateChange extends MetadataChange {
     }
 
 
+    public FeedManagerTemplate.ID getTemplateId() {
+        return templateId;
+    }
+
+    public FeedManagerTemplate.State getTemplateState() {
+        return templateState;
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(super.hashCode(), this.templateId, this.templateState);

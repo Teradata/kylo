@@ -48,14 +48,14 @@ public class JpaAuditLogEntry implements AuditLogEntry {
     @Column(name = "DESCRIPTION", length = 255, nullable = false)
     private String description;
 
-    @Column(name = "ENTITY_ID", columnDefinition = "binary(16)")
-    private UUID entityId;
+    @Column(name = "ENTITY_ID", length = 45, nullable = false)
+    private String entityId;
 
     public JpaAuditLogEntry() {
         super();
     }
 
-    public JpaAuditLogEntry(Principal user, String type, String description, UUID entityId) {
+    public JpaAuditLogEntry(Principal user, String type, String description, String entityId) {
         super();
         this.id = AuditLogId.create();
         this.user = user instanceof UsernamePrincipal ? (UsernamePrincipal) user : new UsernamePrincipal(user.getName());
@@ -91,7 +91,7 @@ public class JpaAuditLogEntry implements AuditLogEntry {
     }
 
     @Override
-    public UUID getEntityId() {
+    public String getEntityId() {
         return entityId;
     }
 
@@ -115,7 +115,7 @@ public class JpaAuditLogEntry implements AuditLogEntry {
         this.description = description;
     }
 
-    public void setEntityId(UUID entityId) {
+    public void setEntityId(String entityId) {
         this.entityId = entityId;
     }
 

@@ -1,17 +1,21 @@
 /**
  * 
  */
-package com.thinkbiganalytics.audit.rest;
+package com.thinkbiganalytics.audit.rest.controller;
 
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 
 import org.springframework.stereotype.Component;
@@ -28,7 +32,7 @@ import io.swagger.annotations.Api;
  */
 @Component
 @Api(value = "audit-log", produces = "application/json")
-@Path("/v1/metadata/auditlog")
+@Path("/v1/auditlog")
 public class AuditLogController {
     
     @Inject
@@ -38,9 +42,10 @@ public class AuditLogController {
     private AuditLogProvider auditProvider;
 
     @GET
-    public List<AuditLogEntry> getList() {
+    @Produces({MediaType.APPLICATION_JSON})
+    public List<AuditLogEntry> getList(@QueryParam("limit") @DefaultValue("10") int limit) {
         return metadataAccess.read(() -> {
-            return this.auditProvider.list().stream()
+            return this.auditProvider.list(limit).stream()
                             .map(transformer)
                             .collect(Collectors.toList());
         });
@@ -48,6 +53,7 @@ public class AuditLogController {
     
     @GET
     @Path("/{id}")
+    @Produces({MediaType.APPLICATION_JSON})
     public AuditLogEntry findById(@PathParam("id") String idStr) {
         return metadataAccess.read(() -> {
             com.thinkbiganalytics.metadata.api.audit.AuditLogEntry.ID id = auditProvider.resolveId(idStr);

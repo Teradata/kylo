@@ -48,7 +48,9 @@ public class JerseyConfig extends ResourceConfig {
                  "com.thinkbiganalytics.metadata.migration.rest.controller",
                  "com.thinkbiganalytics.spark.rest.controller",
                  "com.thinkbiganalytics.rest.exception",
-                 "com.thinkbiganalytics.discovery.rest.controller");
+                 "com.thinkbiganalytics.discovery.rest.controller",
+                 "com.thinkbiganalytics.audit.rest.controller"
+                 );
 
         register(JacksonFeature.class);
         register(MultiPartFeature.class);

@@ -144,12 +144,11 @@ public class JcrFeedManagerFeedProvider extends BaseJcrProvider<FeedManagerFeed,
         Principal principal = new UsernamePrincipal(SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString());
         Feed.State state = feed.getState();
         Feed.ID id = feed.getId();
-        DateTime createTime = feed.getCreatedTime();
 
         Consumer<Boolean> action = (success) -> {
             if (success) {
                 FeedChange change = new FeedChange(changeType, id, state);
-                FeedChangeEvent event = new FeedChangeEvent(change, createTime, principal);
+                FeedChangeEvent event = new FeedChangeEvent(change, DateTime.now(), principal);
                 metadataEventService.notify(event);
             }
         };

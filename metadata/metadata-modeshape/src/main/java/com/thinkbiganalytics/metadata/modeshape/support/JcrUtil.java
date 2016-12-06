@@ -111,6 +111,15 @@ public class JcrUtil {
                         .collect(Collectors.toList());
     }
     
+    public static boolean hasNode(Session session, String absParentPath, String name) {
+        try {
+            Node parentNode = session.getNode(absParentPath);
+            return hasNode(parentNode, name);
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to check for the existence of the node named " + name, e);
+        }
+    }
+    
     public static boolean hasNode(Node parentNode, String name) {
         try {
             return parentNode.hasNode(name);

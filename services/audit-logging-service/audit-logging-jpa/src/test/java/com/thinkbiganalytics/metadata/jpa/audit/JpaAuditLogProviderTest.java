@@ -46,7 +46,7 @@ public class JpaAuditLogProviderTest extends AbstractTestNGSpringContextTests {
     public void testAddAdminLogs() {
         List<AuditLogEntry.ID> ids = this.metadataAccess.commit(() -> { 
             AuditLogEntry log1 = provider.createEntry(ADMIN, "simple", "Admin: Simple, non-entity entry");
-            AuditLogEntry log2 = provider.createEntry(ADMIN, "entity", "Admin: Entity entry", UUID.randomUUID());
+            AuditLogEntry log2 = provider.createEntry(ADMIN, "entity", "Admin: Entity entry", UUID.randomUUID().toString());
             return Arrays.asList(log1.getId(), log2.getId());
         }, MetadataAccess.SERVICE);
         
@@ -58,7 +58,7 @@ public class JpaAuditLogProviderTest extends AbstractTestNGSpringContextTests {
         List<AuditLogEntry.ID> ids = this.metadataAccess.commit(() -> { 
             AuditLogEntry log1 = provider.createEntry(USER, "simple", "User: Simple, non-entity entry");
             AuditLogEntry log2 = provider.createEntry(USER, "simple", "User: Simple, non-entity entry");
-            AuditLogEntry log3 = provider.createEntry(USER, "entity", "User: Entity entry", UUID.randomUUID());
+            AuditLogEntry log3 = provider.createEntry(USER, "entity", "User: Entity entry", UUID.randomUUID().toString());
             return Arrays.asList(log1.getId(), log2.getId(), log3.getId());
         }, MetadataAccess.SERVICE);
         

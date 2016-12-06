@@ -291,16 +291,15 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
      * Registers an action that produces a feed change event upon a successful transaction commit.
      * @param feed the feed to being created
      */
-    private void addPostFeedChangeAction(JcrFeed<?> feed, ChangeType changeType) {
+    private void addPostFeedChangeAction(Feed<?> feed, ChangeType changeType) {
         Principal principal = new UsernamePrincipal(SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString());
         Feed.State state = feed.getState();
         Feed.ID id = feed.getId();
-        DateTime createTime = feed.getCreatedTime();
 
         Consumer<Boolean> action = (success) -> {
             if (success) {
                 FeedChange change = new FeedChange(changeType, id, state);
-                FeedChangeEvent event = new FeedChangeEvent(change, createTime, principal);
+                FeedChangeEvent event = new FeedChangeEvent(change, DateTime.now(), principal);
                 metadataEventService.notify(event);
             }
         };

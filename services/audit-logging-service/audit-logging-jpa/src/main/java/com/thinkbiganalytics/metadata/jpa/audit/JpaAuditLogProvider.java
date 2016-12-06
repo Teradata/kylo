@@ -92,7 +92,7 @@ public class JpaAuditLogProvider implements AuditLogProvider {
      * @see com.thinkbiganalytics.metadata.api.audit.AuditLogProvider#createEntry(java.security.Principal, java.lang.String, java.lang.String, java.util.UUID)
      */
     @Override
-    public AuditLogEntry createEntry(Principal user, String type, String description, UUID entityId) {
+    public AuditLogEntry createEntry(Principal user, String type, String description, String entityId) {
         JpaAuditLogEntry entry = new JpaAuditLogEntry(user, type, description, entityId);
         return repository.save(entry);
     }

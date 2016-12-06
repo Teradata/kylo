@@ -7,6 +7,6 @@ CREATE TABLE IF NOT EXISTS `AUDIT_LOG` (
   `user` varchar(100) DEFAULT NULL,
   `description` varchar(255) DEFAULT NULL,
   `log_type` varchar(45) DEFAULT NULL,
-  `entity_id` binary(16), 
+  `entity_id` varchar(45), 
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB;
