@@ -149,6 +149,7 @@ The configuration is setup to work out of the box with the Hortonworks sandbox. 
     spring.datasource.password=cloudera
     metadata.datasource.password=cloudera
     hive.metastore.datasource.password=cloudera
+    modeshape.datasource.password=cloudera
 
     .. Update the Hive username
 
@@ -162,7 +163,3 @@ The configuration is setup to work out of the box with the Hortonworks sandbox. 
 
     config.hive.schema=metastore
     nifi.executesparkjob.sparkhome=/usr/lib/spark
-
-    . /opt/thinkbig/thinkbig-services/conf/metadata-repository.json
-
-    .. Set the Storage --> persistence --> password field to "cloudera"
