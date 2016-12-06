@@ -75,7 +75,13 @@
               </md-expansion-panel-collapsed>
               <md-expansion-panel-expanded>
                 <div style="margin-top:10px">
-                  <div class="md-subhead layout-padding">Define table schema</div>
+                  <div class="md-subhead layout-padding" layout-fill layout="row" layout-align="start top">Define table schema
+                    <span flex></span>
+                    <md-button class="icon-btn md-icon-button md-primary" ng-click="vm.toggleHeight()">
+                      <ng-md-icon ng-if="!vm.expandedView" icon="fullscreen"></ng-md-icon>
+                      <ng-md-icon ng-if="vm.expandedView"icon="fullscreen_exit"></ng-md-icon>
+                    </md-button>
+                  </div>
                   <div ng-show="vm.model.table.tableSchema.fields.length ==0" class="hint layout-padding-top-bottom layout-padding-indent-20">
                     No fields are defined. Click <i>Add Field</i> to define a new field for this table.
                   </div>
@@ -113,7 +119,8 @@
                         </div>
 
                       </div>
-                      <md-virtual-repeat-container style="min-height:100px" browser-height browser-height-offset="650" md-auto-shrink id="define-feed-dest-schema-container">
+                      <md-virtual-repeat-container browser-height browser-height-offset="650" md-auto-shrink id="define-feed-dest-schema-container"
+                                                   ng-style="{'min-height': vm.schemaHeight}">
                         <div layout="row" layout-fill layout="row" class=" repeated-item" md-virtual-repeat="columnDef in vm.model.table.tableSchema.fields" md-item-size="60"
                              style="height:100%;max-height:100%;"
                              ng-click="vm.onSelectedColumn(columnDef)">
@@ -323,7 +330,7 @@
         <div layout="column" class="layout-padding-top">
           <div layout="column" class="layout-padding-top-bottom">
             <span>Field Description</span>
-            <textarea ng-model="vm.selectedColumn.description" md-maxlength="150" rows="5" md-select-on-focus=""></textarea>
+            <textarea ng-model="vm.selectedColumn.description" rows="5" md-select-on-focus=""></textarea>
           </div>
         </div>
       </body-section>

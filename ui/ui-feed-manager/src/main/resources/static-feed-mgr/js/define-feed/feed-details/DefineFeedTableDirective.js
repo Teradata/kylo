@@ -37,6 +37,8 @@
         self.useUnderscoreInsteadOfSpaces = true;
         this.selectedColumn = null;
         this.fieldNamesUniqueRetryAmount = 0;
+        this.expandedView = false;
+        this.schemaHeight = "100px";
 
         /**
          * The possibly Partition formulas
@@ -457,6 +459,22 @@
             }
 
         });
+
+        /*
+        Toggle the viewable window for schema
+         */
+        this.toggleHeight = function() {
+            if (!self.expandedView && self.model.table.tableSchema.fields != '') {
+                var numfields = self.model.table.tableSchema.fields.length;
+                var height = (numfields * 60) + 'px';
+                self.schemaHeight = height;
+                self.expandedView = true;
+            } else {
+                self.schemaHeight ='100px';
+                self.expandedView = false;
+            }
+            angular.element(window).triggerHandler('resize');
+        }
 
         var sampleFileWatch = $scope.$watch(function () {
             return self.sampleFile;
