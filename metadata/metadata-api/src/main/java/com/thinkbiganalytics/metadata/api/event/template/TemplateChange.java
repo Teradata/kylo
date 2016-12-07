@@ -56,5 +56,16 @@ public class TemplateChange extends MetadataChange {
             return false;
         }
     }
+    
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("Template change ");
+        return sb
+                        .append("(").append(getChange()).append(") - ")
+                        .append("ID: ").append(this.templateId)
+                        .append(" state: ").append(this.templateState)
+                        .toString();
+            
+    }
 
 }

@@ -135,8 +135,8 @@ public class JcrFeedTemplateProvider extends BaseJcrProvider<FeedManagerTemplate
 
     public boolean deleteTemplate(FeedManagerTemplate feedManagerTemplate) throws TemplateDeletionException {
         if (feedManagerTemplate != null && (feedManagerTemplate.getFeeds() == null || feedManagerTemplate.getFeeds().size() == 0)) {
-            super.delete(feedManagerTemplate);
             addPostFeedChangeAction(feedManagerTemplate, ChangeType.DELETE);
+            super.delete(feedManagerTemplate);
             return true;
         } else {
             throw new TemplateDeletionException(feedManagerTemplate.getName(), feedManagerTemplate.getId().toString(), "There are still feeds assigned to this template.");
@@ -158,11 +158,13 @@ public class JcrFeedTemplateProvider extends BaseJcrProvider<FeedManagerTemplate
      * @param template the feed to being created
      */
     private void addPostFeedChangeAction(FeedManagerTemplate template, ChangeType changeType) {
-        Principal principal = new UsernamePrincipal(SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString());
         FeedManagerTemplate.State state = template.getState();
         FeedManagerTemplate.ID id = template.getId();
         DateTime createTime = template.getCreatedTime();
-
+        final Principal principal = SecurityContextHolder.getContext().getAuthentication() != null 
+                        ? SecurityContextHolder.getContext().getAuthentication() 
+                        : null;
+                        
         Consumer<Boolean> action = (success) -> {
             if (success) {
                 TemplateChange change = new TemplateChange(changeType, id, state);

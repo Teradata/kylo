@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.audit.AuditLogProvider;
+import com.thinkbiganalytics.metadata.api.event.MetadataEventListener;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.event.feed.FeedChangeEvent;
 import com.thinkbiganalytics.metadata.api.event.template.TemplateChangeEvent;
@@ -37,32 +38,33 @@ public class AuditLoggingService {
      * @param eventService
      */
     public void addListeners(MetadataEventService eventService) {
-        eventService.addListener((FeedChangeEvent event) -> createAuditEntry(event));
-        eventService.addListener((TemplateChangeEvent event) -> createAuditEntry(event));
+        eventService.addListener(new FeedChangeEventListener());
+        eventService.addListener(new TemplateChangeEventListener());
     }
     
-    protected void createAuditEntry(FeedChangeEvent event) {
-        this.metadataAccess.commit(() -> {
-            // Assume the toString() of the event's data contains the useful info for this event.
-            log.debug("Audit: {} - {}", event.getData().getClass().getSimpleName(), event.getData().toString());
-            provider.createEntry(event.getUserPrincipal(), 
-                                 event.getData().getClass().getSimpleName(), 
-                                 event.getData().toString(),
-                                 event.getData().getFeedId().toString());
-        }, MetadataAccess.SERVICE);
-        
+    private class FeedChangeEventListener implements MetadataEventListener<FeedChangeEvent> {
+        @Override
+        public void notify(FeedChangeEvent event) {
+            metadataAccess.commit(() -> {
+                log.debug("Audit: {} - {}", event.getData().getClass().getSimpleName(), event.getData().toString());
+                provider.createEntry(event.getUserPrincipal(), 
+                                     event.getData().getClass().getSimpleName(), 
+                                     event.getData().toString(),
+                                     event.getData().getFeedId().toString());
+            }, MetadataAccess.SERVICE);
+        }
     }
     
-    protected void createAuditEntry(TemplateChangeEvent event) {
-        this.metadataAccess.commit(() -> {
-            // Assume the toString() of the event's data contains the useful info for this event.
-            log.debug("Audit: {} - {}", event.getData().getClass().getSimpleName(), event.getData().toString());
-            provider.createEntry(event.getUserPrincipal(), 
-                                 event.getData().getClass().getSimpleName(), 
-                                 event.getData().toString(),
-                                 event.getData().getTemplateId().toString());
-        }, MetadataAccess.SERVICE);
-        
+    private class TemplateChangeEventListener implements MetadataEventListener<TemplateChangeEvent> {
+        @Override
+        public void notify(TemplateChangeEvent event) {
+            metadataAccess.commit(() -> {
+                log.debug("Audit: {} - {}", event.getData().getClass().getSimpleName(), event.getData().toString());
+                provider.createEntry(event.getUserPrincipal(), 
+                                     event.getData().getClass().getSimpleName(), 
+                                     event.getData().toString(),
+                                     event.getData().getTemplateId().toString());   
+            }, MetadataAccess.SERVICE);
+        }
     }
-
 }

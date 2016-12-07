@@ -35,8 +35,8 @@ public class JpaAuditLogEntry implements AuditLogEntry {
     private AuditLogId id;
 
     @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
-    @Column(name = "CREATE_TIME")
-    private DateTime createdTime;
+    @Column(name = "CREATE_TIME", nullable = false)
+    private DateTime createdTime = DateTime.now();
 
     @Convert(converter = UsernamePrincipalConverter.class)
     @Column(name = "USER", columnDefinition = "varchar(100)")
@@ -45,10 +45,10 @@ public class JpaAuditLogEntry implements AuditLogEntry {
     @Column(name = "LOG_TYPE", length = 45, nullable = false)
     private String type;
 
-    @Column(name = "DESCRIPTION", length = 255, nullable = false)
+    @Column(name = "DESCRIPTION", length = 255)
     private String description;
 
-    @Column(name = "ENTITY_ID", length = 45, nullable = false)
+    @Column(name = "ENTITY_ID", length = 45)
     private String entityId;
 
     public JpaAuditLogEntry() {

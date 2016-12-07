@@ -14,6 +14,8 @@ import java.util.stream.StreamSupport;
 import javax.inject.Inject;
 
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 
 import com.thinkbiganalytics.metadata.api.audit.AuditLogEntry;
 import com.thinkbiganalytics.metadata.api.audit.AuditLogEntry.ID;
@@ -60,7 +62,7 @@ public class JpaAuditLogProvider implements AuditLogProvider {
      */
     @Override
     public List<AuditLogEntry> list(int limit) {
-        PageRequest pager = new PageRequest(0, limit);
+        PageRequest pager = new PageRequest(0, limit, new Sort(Direction.DESC, "createdTime"));
         return StreamSupport.stream(this.repository.findAll(pager).spliterator(), false).collect(Collectors.toList());
     }
 

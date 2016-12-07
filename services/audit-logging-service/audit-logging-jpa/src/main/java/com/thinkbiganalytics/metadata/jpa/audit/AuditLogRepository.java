@@ -19,7 +19,7 @@ import com.thinkbiganalytics.metadata.api.audit.AuditLogEntry;
 public interface AuditLogRepository extends JpaRepository<JpaAuditLogEntry, AuditLogEntry.ID> {
 
 
-    @Query("select entry from JpaAuditLogEntry as entry where entry.user = :user")
+    @Query("select entry from JpaAuditLogEntry as entry where entry.user = :user order by entry.createdTime desc")
     List<AuditLogEntry> findByUsername(@Param("user") Principal username);
 
 }

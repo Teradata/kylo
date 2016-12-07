@@ -141,9 +141,11 @@ public class JcrFeedManagerFeedProvider extends BaseJcrProvider<FeedManagerFeed,
     }
     
     private void addPostFeedChangeAction(FeedManagerFeed feed, ChangeType changeType) {
-        Principal principal = new UsernamePrincipal(SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString());
         Feed.State state = feed.getState();
         Feed.ID id = feed.getId();
+        final Principal principal = SecurityContextHolder.getContext().getAuthentication() != null 
+                        ? SecurityContextHolder.getContext().getAuthentication() 
+                        : null;
 
         Consumer<Boolean> action = (success) -> {
             if (success) {

@@ -292,9 +292,11 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
      * @param feed the feed to being created
      */
     private void addPostFeedChangeAction(Feed<?> feed, ChangeType changeType) {
-        Principal principal = new UsernamePrincipal(SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString());
         Feed.State state = feed.getState();
         Feed.ID id = feed.getId();
+        final Principal principal = SecurityContextHolder.getContext().getAuthentication() != null 
+                        ? SecurityContextHolder.getContext().getAuthentication() 
+                        : null;
 
         Consumer<Boolean> action = (success) -> {
             if (success) {
