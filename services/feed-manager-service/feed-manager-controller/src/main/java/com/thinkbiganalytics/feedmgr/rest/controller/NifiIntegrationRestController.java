@@ -7,6 +7,7 @@ import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.SpringEnvironmentProperties;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
+import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.layout.AlignNiFiComponents;
 import com.thinkbiganalytics.nifi.rest.client.layout.AlignProcessGroupComponents;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowDeserializer;
@@ -15,22 +16,29 @@ import com.thinkbiganalytics.rest.model.RestResponseStatus;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.ControllerServiceDTO;
+import org.apache.nifi.web.api.dto.DocumentedTypeDTO;
 import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.entity.ControllerServiceTypesEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.inject.Inject;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -49,21 +57,26 @@ import io.swagger.annotations.Api;
 public class NifiIntegrationRestController {
 
     private static final Logger log = LoggerFactory.getLogger(NifiIntegrationRestController.class);
-    @Autowired
-    private LegacyNifiRestClient nifiRestClient;
 
-    @Autowired
+    /** Messages for the default locale */
+    private static final ResourceBundle STRINGS = ResourceBundle.getBundle("com.thinkbiganalytics.feedmgr.rest.controller.NiFiIntegrationMessages");
+
+    /** Legacy NiFi REST client */
+    @Inject
+    private LegacyNifiRestClient legacyNifiRestClient;
+
+    /** New NiFi REST client */
+    @Inject
+    private NiFiRestClient nifiRestClient;
+
+    @Inject
     private SpringEnvironmentProperties environmentProperties;
 
-    @Autowired
+    @Inject
     DBCPConnectionPoolTableInfo dbcpConnectionPoolTableInfo;
 
-    @Autowired
+    @Inject
     FeedManagerTemplateService feedManagerTemplateService;
-
-
-    public NifiIntegrationRestController() {
-    }
 
     @GET
     @Path("/auto-align/{processGroupId}")
@@ -72,7 +85,7 @@ public class NifiIntegrationRestController {
         RestResponseStatus status;
         if ("all".equals(processGroupId)) {
             AlignNiFiComponents alignNiFiComponents = new AlignNiFiComponents();
-            alignNiFiComponents.setNiFiRestClient(nifiRestClient.getNiFiRestClient());
+            alignNiFiComponents.setNiFiRestClient(legacyNifiRestClient.getNiFiRestClient());
             alignNiFiComponents.autoLayout();
             String message = "";
             if (alignNiFiComponents.isAligned()) {
@@ -84,7 +97,7 @@ public class NifiIntegrationRestController {
             }
             status = new RestResponseStatus.ResponseStatusBuilder().message(message).buildSuccess();
         } else {
-            AlignProcessGroupComponents alignProcessGroupComponents = new AlignProcessGroupComponents(nifiRestClient.getNiFiRestClient(), processGroupId);
+            AlignProcessGroupComponents alignProcessGroupComponents = new AlignProcessGroupComponents(legacyNifiRestClient.getNiFiRestClient(), processGroupId);
             ProcessGroupDTO alignedGroup = alignProcessGroupComponents.autoLayout();
             String message = "";
             if (alignProcessGroupComponents.isAligned()) {
@@ -102,7 +115,7 @@ public class NifiIntegrationRestController {
     @Path("/flow/{processGroupId}")
     @Produces({MediaType.APPLICATION_JSON})
     public Response getFlow(@PathParam("processGroupId") String processGroupId) {
-        NifiFlowProcessGroup flow = nifiRestClient.getFeedFlow(processGroupId);
+        NifiFlowProcessGroup flow = legacyNifiRestClient.getFeedFlow(processGroupId);
         NifiFlowDeserializer.prepareForSerialization(flow);
         return Response.ok(flow).build();
     }
@@ -111,7 +124,7 @@ public class NifiIntegrationRestController {
     @Path("/flow/feed/{categoryAndFeedName}")
     @Produces({MediaType.APPLICATION_JSON})
     public Response getFlowForCategoryAndFeed(@PathParam("categoryAndFeedName") String categoryAndFeedName) {
-        NifiFlowProcessGroup flow = nifiRestClient.getFeedFlowForCategoryAndFeed(categoryAndFeedName);
+        NifiFlowProcessGroup flow = legacyNifiRestClient.getFeedFlowForCategoryAndFeed(categoryAndFeedName);
         NifiFlowDeserializer.prepareForSerialization(flow);
         return Response.ok(flow).build();
     }
@@ -122,7 +135,7 @@ public class NifiIntegrationRestController {
     @Path("/flows")
     @Produces({MediaType.APPLICATION_JSON})
     public Response getFlows() {
-        List<NifiFlowProcessGroup> feedFlows = nifiRestClient.getFeedFlows();
+        List<NifiFlowProcessGroup> feedFlows = legacyNifiRestClient.getFeedFlows();
         if (feedFlows != null) {
             log.info("********************** getAllFlows  ({})", feedFlows.size());
             feedFlows.stream().forEach(group -> NifiFlowDeserializer.prepareForSerialization(group));
@@ -150,35 +163,44 @@ public class NifiIntegrationRestController {
         return Response.ok(ports).build();
     }
 
-
+    /**
+     * Finds controller services of the specified type.
+     *
+     * @param processGroupId the process group id
+     * @param type the type to match
+     * @return the list of matching controller services
+     */
     @GET
     @Path("/controller-services/{processGroupId}")
     @Produces({MediaType.APPLICATION_JSON})
-    public Response getControllerServices(@PathParam("processGroupId") String processGroupId, @QueryParam("type") String type) {
-        Set<ControllerServiceDTO> controllerServiceDTOs = null;
-        if ("all".equalsIgnoreCase(processGroupId)) {
-            controllerServiceDTOs = nifiRestClient.getControllerServices();
-        } else {
-            if ("root".equalsIgnoreCase(processGroupId)) {
-                processGroupId = nifiRestClient.getRootProcessGroup().getId();
-            }
-            controllerServiceDTOs = nifiRestClient.getNiFiRestClient().processGroups().getControllerServices(processGroupId);
+    public Response getControllerServices(@Nonnull @PathParam("processGroupId") final String processGroupId, @Nullable @QueryParam("type") final String type) {
+        // Verify parameters
+        if (StringUtils.isBlank(processGroupId)) {
+            throw new NotFoundException(STRINGS.getString("getControllerServices.missingProcessGroup"));
+        }
+        if (StringUtils.isBlank(type)) {
+            throw new BadRequestException(STRINGS.getString("getControllerServices.missingType"));
         }
 
-        if (controllerServiceDTOs != null && StringUtils.isNotBlank(type)) {
-            controllerServiceDTOs = controllerServiceDTOs.stream().filter(controllerServiceDTO -> controllerServiceDTO.getType().equalsIgnoreCase(type)).collect(Collectors.toSet());
-        }
-        return Response.ok(controllerServiceDTOs).build();
+        // Determine allowed service types
+        final Stream<String> subTypes = nifiRestClient.controllerServices().getTypes(type).stream().map(DocumentedTypeDTO::getType);
+        final Set<String> allowedTypes = Stream.concat(Stream.of(type), subTypes).collect(Collectors.toSet());
+
+        // Filter controller services
+        final Set<ControllerServiceDTO> controllerServices = ("all".equalsIgnoreCase(processGroupId) || "root".equalsIgnoreCase(processGroupId))
+                                                           ? nifiRestClient.processGroups().getControllerServices("root")
+                                                           : nifiRestClient.processGroups().getControllerServices(processGroupId);
+        final Set<ControllerServiceDTO> matchingControllerServices = controllerServices.stream()
+                .filter(controllerService -> allowedTypes.contains(controllerService.getType()))
+                .collect(Collectors.toSet());
+        return Response.ok(matchingControllerServices).build();
     }
-
-
-
 
     @GET
     @Path("/controller-services")
     @Produces({MediaType.APPLICATION_JSON})
     public Response getServices() {
-        final Set<ControllerServiceDTO> controllerServices = nifiRestClient.getControllerServices();
+        final Set<ControllerServiceDTO> controllerServices = legacyNifiRestClient.getControllerServices();
         return Response.ok(ImmutableMap.of("controllerServices", controllerServices)).build();
     }
 
@@ -188,7 +210,7 @@ public class NifiIntegrationRestController {
     @Produces({MediaType.APPLICATION_JSON})
     public Response getServiceTypes() {
         final ControllerServiceTypesEntity entity = new ControllerServiceTypesEntity();
-        entity.setControllerServiceTypes(nifiRestClient.getControllerServiceTypes());
+        entity.setControllerServiceTypes(legacyNifiRestClient.getControllerServiceTypes());
         return Response.ok(entity).build();
     }
 

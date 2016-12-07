@@ -10,6 +10,7 @@ import org.apache.nifi.web.api.entity.ControllerServiceEntity;
 import org.apache.nifi.web.api.entity.ControllerServiceTypesEntity;
 import org.apache.nifi.web.api.entity.ControllerServicesEntity;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.Set;
@@ -68,6 +69,12 @@ public class NiFiControllerServicesRestClientV0 implements NiFiControllerService
     @Override
     public Set<DocumentedTypeDTO> getTypes() {
         return client.get("/controller/controller-service-types", null, ControllerServiceTypesEntity.class).getControllerServiceTypes();
+    }
+
+    @Nonnull
+    @Override
+    public Set<DocumentedTypeDTO> getTypes(@Nonnull final String serviceType) {
+        return client.get("/controller/controller-service-types", Collections.singletonMap("serviceType", serviceType), ControllerServiceTypesEntity.class).getControllerServiceTypes();
     }
 
     @Nonnull

@@ -206,5 +206,15 @@ angular.module(MODULE_FEED_MGR).service('RestUrlService', function () {
 
     this.FEED_LINEAGE_URL = function (feedId) {
         return self.ROOT + "/proxy/metadata/feed/" + feedId + "/lineage";
+    };
+
+    /**
+     * Generates a URL for listing the controller services under the specified process group.
+     *
+     * @param {string} processGroupId the process group id
+     * @returns {string} the URL for listing controller services
+     */
+    this.LIST_SERVICES_URL = function(processGroupId) {
+        return this.ROOT + "/proxy/v1/feedmgr/nifi/controller-services/" + processGroupId;
     }
 });

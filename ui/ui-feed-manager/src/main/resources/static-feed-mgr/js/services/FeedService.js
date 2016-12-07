@@ -559,11 +559,20 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
                 .then(function(response) {
                     return response.data;
                 });
+    },
+
+    /**
+     * Gets the controller services of the specified type.
+     *
+     * @param {string} type a type class
+     * @returns {Array}
+     */
+    getAvailableControllerServices: function(type) {
+        return $http.get(RestUrlService.LIST_SERVICES_URL("root"), {params: {type: type}})
+                .then(function(response) {
+                    return response.data;
+                });
     }
-
-
-
-
 };
     data.init();
 return data;

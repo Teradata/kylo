@@ -50,6 +50,15 @@ public interface NiFiControllerServicesRestClient {
     Set<DocumentedTypeDTO> getTypes();
 
     /**
+     * Retrieves the types of controller services that implement the specified type.
+     *
+     * @param serviceType the base type to find
+     * @return the controller service types
+     */
+    @Nonnull
+    Set<DocumentedTypeDTO> getTypes(@Nonnull String serviceType);
+
+    /**
      * Updates a controller service.
      *
      * @param controllerService the controller service

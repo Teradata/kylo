@@ -12,6 +12,7 @@ import org.apache.nifi.web.api.entity.ControllerServiceEntity;
 import org.apache.nifi.web.api.entity.ControllerServiceTypesEntity;
 import org.apache.nifi.web.api.entity.ControllerServicesEntity;
 
+import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -72,6 +73,12 @@ public class NiFiControllerServicesRestClientV1 implements NiFiControllerService
     @Override
     public Set<DocumentedTypeDTO> getTypes() {
         return client.get("/flow/controller-service-types", null, ControllerServiceTypesEntity.class).getControllerServiceTypes();
+    }
+
+    @Nonnull
+    @Override
+    public Set<DocumentedTypeDTO> getTypes(@Nonnull final String serviceType) {
+        return client.get("/flow/controller-service-types", Collections.singletonMap("serviceType", serviceType), ControllerServiceTypesEntity.class).getControllerServiceTypes();
     }
 
     @Nonnull
