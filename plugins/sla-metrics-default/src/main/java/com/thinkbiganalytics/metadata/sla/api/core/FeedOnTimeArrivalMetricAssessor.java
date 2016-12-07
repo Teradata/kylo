@@ -110,4 +110,12 @@ public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTim
         return this.calendarService.getCalendar(metric.getCalendarName());
     }
 
+
+    public MetadataAccess getMetadataAccess() {
+        return metadataAccess;
+    }
+
+    public void setMetadataAccess(MetadataAccess metadataAccess) {
+        this.metadataAccess = metadataAccess;
+    }
 }

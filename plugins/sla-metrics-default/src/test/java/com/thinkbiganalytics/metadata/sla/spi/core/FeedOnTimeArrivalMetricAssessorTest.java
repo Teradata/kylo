@@ -1,6 +1,11 @@
 package com.thinkbiganalytics.metadata.sla.spi.core;
 
 import com.thinkbiganalytics.calendar.HolidayCalendarService;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.MetadataAction;
+import com.thinkbiganalytics.metadata.api.MetadataCommand;
+import com.thinkbiganalytics.metadata.api.MetadataRollbackAction;
+import com.thinkbiganalytics.metadata.api.MetadataRollbackCommand;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
@@ -25,6 +30,7 @@ import org.quartz.CronExpression;
 import org.quartz.impl.calendar.HolidayCalendar;
 import org.testng.Assert;
 
+import java.security.Principal;
 import java.text.ParseException;
 
 import static org.mockito.Matchers.any;
@@ -53,10 +59,13 @@ public class FeedOnTimeArrivalMetricAssessorTest {
     @Mock
     private MetricAssessmentBuilder builder;
 
+    private MetadataAccess metadataAccess = new MockMetadataAccess();
+
     @InjectMocks
     private FeedOnTimeArrivalMetricAssessor assessor = new FeedOnTimeArrivalMetricAssessor();
 
     private int lateTimeGracePeriod = 4;
+
 
     @Before
     public void setUp() throws Exception {
@@ -66,6 +75,8 @@ public class FeedOnTimeArrivalMetricAssessorTest {
         when(this.builder.message(any(String.class))).thenReturn(this.builder);
         when(this.builder.metric(any(Metric.class))).thenReturn(this.builder);
         when(this.builder.result(any(AssessmentResult.class))).thenReturn(this.builder);
+
+        this.assessor.setMetadataAccess(this.metadataAccess);
 
         CronExpression cron = new CronExpression("0 0 12 1/1 * ? *");  // Noon every day
 
@@ -237,4 +248,70 @@ public class FeedOnTimeArrivalMetricAssessorTest {
 //        feed.setEndTime(endTime);
         return feed;
     }
+
+
+    public class MockMetadataAccess implements MetadataAccess {
+
+        public MockMetadataAccess() {
+
+        }
+
+        @Override
+        public <R> R commit(MetadataCommand<R> cmd, Principal... principals) {
+            try {
+                return cmd.execute();
+            } catch (Exception e) {
+
+            }
+            return null;
+        }
+
+        @Override
+        public <R> R commit(MetadataCommand<R> cmd, MetadataRollbackCommand rollbackCmd, Principal... principals) {
+            try {
+                return cmd.execute();
+            } catch (Exception e) {
+
+            }
+            return null;
+        }
+
+        @Override
+        public void commit(MetadataAction cmd, Principal... principals) {
+            try {
+                cmd.execute();
+            } catch (Exception e) {
+
+            }
+        }
+
+        @Override
+        public void commit(MetadataAction cmd, MetadataRollbackAction rollbackAction, Principal... principals) {
+            try {
+                cmd.execute();
+            } catch (Exception e) {
+
+            }
+        }
+
+        @Override
+        public <R> R read(MetadataCommand<R> cmd, Principal... principals) {
+            try {
+                return cmd.execute();
+            } catch (Exception e) {
+
+            }
+            return null;
+        }
+
+        @Override
+        public void read(MetadataAction cmd, Principal... principals) {
+            try {
+                cmd.execute();
+            } catch (Exception e) {
+
+            }
+        }
+    }
+
 }
