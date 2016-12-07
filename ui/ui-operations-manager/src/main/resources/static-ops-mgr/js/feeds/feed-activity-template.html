@@ -6,11 +6,11 @@
     <header-section transclude-to="head" layout="row" style="width:100%;">
         <div class="card-title" style="white-space:nowrap" flex>Job Activity</div>
         <span flex  layout-align="end top" class="md-button-group">
-              <md-button flex="none" class="border-btn small"  ng-class="{'selected': vm.dateSelection == '3-day'}" ng-click="vm.dateSelection = '3-day'">3 Days</md-button>
+              <md-button flex="none" class="border-btn small"  ng-class="{'selected': vm.dateSelection == '3-D'}" ng-click="vm.dateSelection = '3-D'">3 Days</md-button>
           <!--  <md-button flex="none" class="border-btn small"  ng-class="{'selected': vm.dateSelection == '10-day'}" ng-click="vm.dateSelection = '10-day'">10 Days</md-button> -->
-            <md-button flex="none" class="border-btn small"  ng-class="{'selected': vm.dateSelection == '1-month'}" ng-click="vm.dateSelection = '1-month'">1 Month</md-button>
-            <md-button flex="none" class="border-btn small"  ng-class="{'selected': vm.dateSelection == '3-month'}" ng-click="vm.dateSelection = '3-month'">3 Months</md-button>
-            <md-button flex="none" class="border-btn small"  ng-class="{'selected': vm.dateSelection == '1-year'}" ng-click="vm.dateSelection = '1-year'">1 Year</md-button>
+            <md-button flex="none" class="border-btn small"  ng-class="{'selected': vm.dateSelection == '1-M'}" ng-click="vm.dateSelection = '1-M'">1 Month</md-button>
+            <md-button flex="none" class="border-btn small"  ng-class="{'selected': vm.dateSelection == '3-M'}" ng-click="vm.dateSelection = '3-M'">3 Months</md-button>
+            <md-button flex="none" class="border-btn small"  ng-class="{'selected': vm.dateSelection == '1-Y'}" ng-click="vm.dateSelection = '1-Y'">1 Year</md-button>
         </span>
     </header-section>
     <body-section transclude-to="body" id="feed-activity-chart" ng-cloak>

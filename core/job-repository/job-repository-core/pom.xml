@@ -21,9 +21,10 @@
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-commons-jdbc</artifactId>
+      <artifactId>thinkbig-operational-metadata-api</artifactId>
       <version>${project.version}</version>
     </dependency>
+
 
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -35,10 +36,6 @@
       <artifactId>spring-boot-autoconfigure</artifactId>
     </dependency>
 
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-jdbc</artifactId>
-    </dependency>
 
     <dependency>
       <groupId>org.springframework</groupId>
@@ -63,13 +60,6 @@
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
     </dependency>
-
-    <!-- Spring batch is needed just to get access to the core Job objects -->
-    <dependency>
-      <groupId>org.springframework.batch</groupId>
-      <artifactId>spring-batch-core</artifactId>
-    </dependency>
-
 
 
 

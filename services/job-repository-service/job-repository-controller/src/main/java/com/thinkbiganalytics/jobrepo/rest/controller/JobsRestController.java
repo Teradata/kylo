@@ -1,36 +1,36 @@
 package com.thinkbiganalytics.jobrepo.rest.controller;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.thinkbiganalytics.jobrepo.query.job.JobQueryConstants;
+import com.thinkbiganalytics.DateTimeUtil;
 import com.thinkbiganalytics.jobrepo.query.model.ExecutedJob;
 import com.thinkbiganalytics.jobrepo.query.model.ExecutedStep;
-import com.thinkbiganalytics.jobrepo.query.model.JobParameterType;
 import com.thinkbiganalytics.jobrepo.query.model.JobStatusCount;
 import com.thinkbiganalytics.jobrepo.query.model.RelatedJobExecution;
 import com.thinkbiganalytics.jobrepo.query.model.SearchResult;
-import com.thinkbiganalytics.jobrepo.query.substitution.DatabaseQuerySubstitution;
-import com.thinkbiganalytics.jobrepo.query.support.ColumnFilter;
-import com.thinkbiganalytics.jobrepo.query.support.OrderBy;
-import com.thinkbiganalytics.jobrepo.query.support.QueryColumnFilterSqlString;
-import com.thinkbiganalytics.jobrepo.repository.JobRepository;
 import com.thinkbiganalytics.jobrepo.repository.rest.model.JobAction;
-import com.thinkbiganalytics.jobrepo.rest.support.DataTableColumnFactory;
-import com.thinkbiganalytics.jobrepo.rest.support.RestUtil;
-import com.thinkbiganalytics.jobrepo.rest.support.WebColumnFilterUtil;
+import com.thinkbiganalytics.jobrepo.query.model.transform.JobModelTransform;
+import com.thinkbiganalytics.jobrepo.query.model.transform.JobStatusTransform;
+import com.thinkbiganalytics.jobrepo.query.model.transform.ModelUtils;
 import com.thinkbiganalytics.jobrepo.security.OperationsAccessControl;
 import com.thinkbiganalytics.jobrepo.service.JobExecutionException;
 import com.thinkbiganalytics.jobrepo.service.JobService;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
+import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;
+import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecution;
+import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecutionProvider;
 import com.thinkbiganalytics.security.AccessController;
 
-import org.joda.time.DateTime;
+import org.apache.commons.lang3.StringUtils;
+import org.joda.time.Period;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -44,10 +44,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 
 /**
  * Provides rest endpoints for control and monitoring of the pipeline
@@ -56,461 +54,357 @@ import io.swagger.annotations.ApiOperation;
 @Path("/v1/jobs")
 public class JobsRestController {
 
-  private static final Logger LOG = LoggerFactory.getLogger(JobsRestController.class);
-
-  @Inject
-  private JobRepository jobRepository;
-
-  @Inject
-  private JobService jobService;
-
-  @Inject
-  private AccessController accessController;
+    private static final Logger LOG = LoggerFactory.getLogger(JobsRestController.class);
 
 
-  @GET
-  @Path("/{executionId}")
-  @Produces({MediaType.APPLICATION_JSON})
-  public Response getJob(@PathParam("executionId") String executionId,
-                         @QueryParam(value = "includeSteps") @DefaultValue("false") boolean includeSteps) {
-    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+    @Inject
+    BatchJobExecutionProvider jobExecutionProvider;
 
-    ExecutedJob executedJob = jobRepository.findByExecutionId(executionId);
-    if (includeSteps) {
-      List<ExecutedStep> steps = jobRepository.getJobProgress(executionId);
-      executedJob.setExecutedSteps(steps);
-    }
-    return Response.ok(executedJob).build();
-  }
+    @Inject
+    BatchStepExecutionProvider stepExecutionProvider;
 
-  @GET
-  @Path("/{executionId}/related")
-  @Produces({MediaType.APPLICATION_JSON})
-  public List<RelatedJobExecution> getRelatedJobExecutions(@PathParam("executionId") String executionId) {
-    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+    @Inject
+    private MetadataAccess metadataAccess;
 
-    if (executionId != null) {
-      return jobRepository.findRelatedJobExecutions(new Long(executionId));
-    } else {
-      return null;
-    }
-  }
+    @Inject
+    private JobService jobService;
+
+    @Inject
+    private AccessController accessController;
 
 
-  /**
-   * Get the progress of each of the steps of the job execution for the given job instance id
-   *
-   * @return A list of each step and its progress, or an HTTP error code on failure
-   */
-  @GET
-  @Path("/{executionId}/steps")
-  @Produces({MediaType.APPLICATION_JSON})
-  public List<ExecutedStep> getJobSteps(@PathParam("executionId") String executionId) {
-    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+    @GET
+    @Path("/{executionId}")
+    @Produces({MediaType.APPLICATION_JSON})
+    public ExecutedJob getJob(@PathParam("executionId") String executionId,
+                              @QueryParam(value = "includeSteps") @DefaultValue("false") boolean includeSteps) {
+        this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
 
-    return jobRepository.getJobProgress(executionId);
-  }
+        return metadataAccess.read(() -> {
+            ExecutedJob executedJob = null;
+            BatchJobExecution jobExecution = jobExecutionProvider.findByJobExecutionId(Long.parseLong(executionId));
+            if (jobExecution != null) {
+                if (includeSteps) {
+                    executedJob = JobModelTransform.executedJob(jobExecution);
+                } else {
+                    executedJob = JobModelTransform.executedJobSimple(jobExecution);
+                }
+            }
+            return executedJob;
+        });
 
-  /**
-   * Restart the job associated with the given instance id
-   *
-   * @return A status message and the apropriate http status code
-   */
-  @POST
-  @Path("/{executionId}/restart")
-  @Produces({MediaType.APPLICATION_JSON})
-  public ExecutedJob restartJob(@PathParam("executionId") Long executionId) throws JobExecutionException {
-    
-    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ADMIN_OPS);
-
-    ExecutedJob job = null;
-
-    // Verify the job instance exists
-    Long foundId = this.jobRepository.findJobInstanceIdForJobExecutionId(executionId);
-    if (foundId != null) {
-      Long newJobExecutionId = this.jobService.restartJobExecution(executionId);
-      Long newJobInstanceId = null;
-      if (newJobExecutionId != null) {
-        job = this.jobRepository.findByExecutionId(newJobExecutionId + "");
-      }
-    }
-    if (job == null) {
-      throw new JobExecutionException("Could not find the job with execution Id of " + executionId);
-    }
-    return job;
-  }
-
-  /**
-   * Stop the job associated with the given instance id
-   *
-   * @param executionId The job instance id
-   * @return A status message and the apropriate http status code
-   */
-  @POST
-  @Path("/{executionId}/stop")
-  @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
-  @Produces({MediaType.APPLICATION_JSON})
-  public ExecutedJob stopJob(@PathParam("executionId") Long executionId, JobAction jobAction) throws JobExecutionException {
-
-      this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ADMIN_OPS);
-
-    boolean stopped = this.jobService.stopJobExecution(executionId);
-    ExecutedJob job = this.jobRepository.findByExecutionId(executionId + "");
-    if (jobAction.isIncludeSteps()) {
-      List<ExecutedStep> steps = jobRepository.getJobProgress(executionId + "");
-      job.setExecutedSteps(steps);
-    }
-    return job;
-  }
-
-  /**
-   * Abandon the job associated with the given instance id
-   *
-   * @param executionId The job instance id
-   * @return A status message and the apropriate http status code
-   */
-  @POST
-  @Path("/{executionId}/abandon")
-  @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
-  @Produces({MediaType.APPLICATION_JSON})
-  public ExecutedJob abandonJob(@PathParam("executionId") Long executionId, JobAction jobAction) throws JobExecutionException {
-
-    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ADMIN_OPS);
-
-    this.jobService.abandonJobExecution(executionId);
-    //abandon any previous runs as well.
-    List<RelatedJobExecution> previousJobs = this.jobRepository.findPreviousJobExecutions(executionId);
-    if (previousJobs != null && !previousJobs.isEmpty()) {
-      for (RelatedJobExecution previousJob : previousJobs) {
-        if (previousJob != null && !previousJob.getJobExecutionId().equals(executionId)) {
-        this.jobService.abandonJobExecution(previousJob.getJobExecutionId());
-      }
-    }
     }
 
-    ExecutedJob job = this.jobRepository.findByExecutionId(executionId + "");
-    if (jobAction.isIncludeSteps()) {
-      List<ExecutedStep> steps = jobRepository.getJobProgress(executionId + "");
-      job.setExecutedSteps(steps);
+    @GET
+    @Path("/{executionId}/related")
+    @Produces({MediaType.APPLICATION_JSON})
+    public List<RelatedJobExecution> getRelatedJobExecutions(@PathParam("executionId") String executionId) {
+        this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+
+        //TODO IMPLEMENT
+
+        return null;
     }
-    return job;
-  }
 
-  /**
-   * Fail the job associated with the given instance id
-   *
-   * @param executionId The job instance id
-   * @return A status message and the appropriate http status code
-   */
-  @POST
-  @Path("/{executionId}/fail")
-  @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
-  @Produces({MediaType.APPLICATION_JSON})
-  public ExecutedJob failJob(@PathParam("executionId") Long executionId, JobAction jobAction) {
-      
-    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ADMIN_OPS);
 
-    this.jobService.failJobExecution(executionId);
-    //requery for status
-    ExecutedJob job = this.jobRepository.findByExecutionId(executionId + "");
-    if (jobAction.isIncludeSteps()) {
-      List<ExecutedStep> steps = jobRepository.getJobProgress(executionId + "");
-      job.setExecutedSteps(steps);
+    /**
+     * Get the progress of each of the steps of the job execution for the given job instance id
+     *
+     * @return A list of each step and its progress, or an HTTP error code on failure
+     */
+    @GET
+    @Path("/{executionId}/steps")
+    @Produces({MediaType.APPLICATION_JSON})
+    public List<ExecutedStep> getJobSteps(@PathParam("executionId") String executionId) {
+        this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+        return metadataAccess.read(() -> {
+            List<? extends BatchStepExecution> steps = stepExecutionProvider.getSteps(Long.parseLong(executionId));
+            return JobModelTransform.executedSteps(steps);
+        });
     }
-    return job;
-  }
 
+    /**
+     * Restart the job associated with the given instance id
+     *
+     * @return A status message and the apropriate http status code
+     */
+    @POST
+    @Path("/{executionId}/restart")
+    @Produces({MediaType.APPLICATION_JSON})
+    public ExecutedJob restartJob(@PathParam("executionId") Long executionId) throws JobExecutionException {
 
-  @GET
-  @Path("/")
-  @Produces({MediaType.APPLICATION_JSON})
-  public SearchResult findJobs(@QueryParam("sort") @DefaultValue("") String sort,
-                               @QueryParam("limit") @DefaultValue("10") Integer limit,
-                               @QueryParam("start") @DefaultValue("1") Integer start, @Context HttpServletRequest request) {
-
-    List<ColumnFilter>
-        filters =
-        WebColumnFilterUtil.buildFiltersFromRequestForDatatable(request, DataTableColumnFactory.PIPELINE_DATA_TYPE.JOB);
-    List<OrderBy> orderByList = RestUtil.buildOrderByList(sort, DataTableColumnFactory.PIPELINE_DATA_TYPE.JOB);
-    SearchResult searchResult = jobRepository.getDataTablesSearchResult(filters, null, orderByList, start, limit);
-    return searchResult;
-
-  }
-
-  @GET
-  @Path("/list")
-  public List<ExecutedJob> findJobsList(@QueryParam("sort") @DefaultValue("") String sort,
-                                        @QueryParam("limit") @DefaultValue("10") Integer limit,
-                                        @QueryParam("start") @DefaultValue("1") Integer start,
-                                        @Context HttpServletRequest request) {
-    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
-
-    List<ExecutedJob> jobs = new ArrayList<>();
-    List<ColumnFilter>
-        filters =
-        WebColumnFilterUtil.buildFiltersFromRequestForDatatable(request, DataTableColumnFactory.PIPELINE_DATA_TYPE.JOB);
-    List<OrderBy> orderByList = RestUtil.buildOrderByList(sort, DataTableColumnFactory.PIPELINE_DATA_TYPE.JOB);
-    jobs = jobRepository.findLatestJobs(filters, orderByList, start, limit);
-    return jobs;
-  }
-
-
-  @GET
-  @Path("/running")
-  @Produces({MediaType.APPLICATION_JSON})
-  public SearchResult findRunningJobs(@QueryParam("sort") @DefaultValue("") String sort,
-                                      @QueryParam("limit") @DefaultValue("10") Integer limit,
-                                      @QueryParam("start") @DefaultValue("1") Integer start,
-                                      @Context HttpServletRequest request) {
-
-    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
-
-    List<ColumnFilter>
-        filters =
-        WebColumnFilterUtil.buildFiltersFromRequestForDatatable(request, DataTableColumnFactory.PIPELINE_DATA_TYPE.JOB);
-    List<OrderBy> orderByList = RestUtil.buildOrderByList(sort, DataTableColumnFactory.PIPELINE_DATA_TYPE.JOB);
-    ColumnFilter runningFilter = new QueryColumnFilterSqlString();
-    runningFilter.setSqlString(" AND END_TIME IS NULL");
-    filters.add(runningFilter);
-    SearchResult searchResult = jobRepository.getDataTablesSearchResult(filters, null, orderByList, start, limit);
-    return searchResult;
-
-  }
-
-
-  @GET
-  @Path("/failed")
-  @Produces({MediaType.APPLICATION_JSON})
-  public SearchResult findFailedJobs(@QueryParam("sort") @DefaultValue("") String sort,
-                                     @QueryParam("limit") @DefaultValue("10") Integer limit,
-                                     @QueryParam("start") @DefaultValue("1") Integer start, @Context HttpServletRequest request) {
-
-    List<ColumnFilter>
-        filters =
-        WebColumnFilterUtil.buildFiltersFromRequestForDatatable(request, DataTableColumnFactory.PIPELINE_DATA_TYPE.JOB);
-    List<OrderBy> orderByList = RestUtil.buildOrderByList(sort, DataTableColumnFactory.PIPELINE_DATA_TYPE.JOB);
-    ColumnFilter failedFilter = new QueryColumnFilterSqlString();
-    failedFilter.setSqlString(" AND (STATUS <> 'ABANDONED' AND ( STATUS IN('FAILED','UNKNOWN') or EXIT_CODE = 'FAILED')) ");
-    filters.add(failedFilter);
-    SearchResult searchResult = jobRepository.getDataTablesSearchResult(filters, null, orderByList, start, limit);
-    return searchResult;
-
-  }
-
-
-  @GET
-  @Path("/stopped")
-  @Produces({MediaType.APPLICATION_JSON})
-  public SearchResult findStoppedJobs(@QueryParam("sort") @DefaultValue("") String sort,
-                                      @QueryParam("limit") @DefaultValue("10") Integer limit,
-                                      @QueryParam("start") @DefaultValue("1") Integer start,
-                                      @Context HttpServletRequest request) {
-
-    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
-
-    List<ColumnFilter>
-        filters =
-        WebColumnFilterUtil.buildFiltersFromRequestForDatatable(request, DataTableColumnFactory.PIPELINE_DATA_TYPE.JOB);
-    List<OrderBy> orderByList = RestUtil.buildOrderByList(sort, DataTableColumnFactory.PIPELINE_DATA_TYPE.JOB);
-    ColumnFilter failedFilter = new QueryColumnFilterSqlString();
-    failedFilter.setSqlString(" AND STATUS IN('STOPPED','STOPPING') ");
-    filters.add(failedFilter);
-    SearchResult searchResult = jobRepository.getDataTablesSearchResult(filters, null, orderByList, start, limit);
-    return searchResult;
-
-  }
-
-  @GET
-  @Path("/completed")
-  @Produces({MediaType.APPLICATION_JSON})
-  public SearchResult findCompletedJobs(@QueryParam("sort") @DefaultValue("") String sort,
-                                        @QueryParam("limit") @DefaultValue("10") Integer limit,
-                                        @QueryParam("start") @DefaultValue("1") Integer start,
-                                        @Context HttpServletRequest request) {
-
-    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
-
-    List<ColumnFilter>
-        filters =
-        WebColumnFilterUtil.buildFiltersFromRequestForDatatable(request, DataTableColumnFactory.PIPELINE_DATA_TYPE.JOB);
-    List<OrderBy> orderByList = RestUtil.buildOrderByList(sort, DataTableColumnFactory.PIPELINE_DATA_TYPE.JOB);
-    ColumnFilter failedFilter = new QueryColumnFilterSqlString();
-    failedFilter.setSqlString(" AND STATUS = 'COMPLETED' AND EXIT_CODE = 'COMPLETED' ");
-    filters.add(failedFilter);
-    SearchResult searchResult = jobRepository.getDataTablesSearchResult(filters, null, orderByList, start, limit);
-    return searchResult;
-
-  }
-
-
-  @GET
-  @Path("/abandoned")
-  @Produces({MediaType.APPLICATION_JSON})
-  public SearchResult findAbandonedJobs(@QueryParam("sort") @DefaultValue("") String sort,
-                                        @QueryParam("limit") @DefaultValue("10") Integer limit,
-                                        @QueryParam("start") @DefaultValue("1") Integer start,
-                                        @Context HttpServletRequest request) {
-
-    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
-
-    List<ColumnFilter>
-        filters =
-        WebColumnFilterUtil.buildFiltersFromRequestForDatatable(request, DataTableColumnFactory.PIPELINE_DATA_TYPE.JOB);
-    List<OrderBy> orderByList = RestUtil.buildOrderByList(sort, DataTableColumnFactory.PIPELINE_DATA_TYPE.JOB);
-    ColumnFilter runningFilter = new QueryColumnFilterSqlString();
-    runningFilter.setSqlString(" AND STATUS = 'ABANDONED'");
-    filters.add(runningFilter);
-    SearchResult searchResult = jobRepository.getDataTablesSearchResult(filters, null, orderByList, start, limit);
-    return searchResult;
-
-  }
-
-
-  @GET
-  @Path("/since/{timeframe}")
-  @Produces({MediaType.APPLICATION_JSON})
-  public SearchResult findJobActivity(@PathParam("timeframe") String timeframe, @QueryParam("sort") @DefaultValue("") String sort,
-                                      @QueryParam("limit") @DefaultValue("10") Integer limit,
-                                      @QueryParam("start") @DefaultValue("1") Integer start,
-                                      @Context HttpServletRequest request) {
-
-    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
-
-    List<ColumnFilter>
-        filters =
-        WebColumnFilterUtil.buildFiltersFromRequestForDatatable(request, DataTableColumnFactory.PIPELINE_DATA_TYPE.JOB);
-    if (org.apache.commons.lang3.StringUtils.isNotBlank(timeframe)) {
-      DatabaseQuerySubstitution.DATE_PART datePart = DatabaseQuerySubstitution.DATE_PART.valueOf(timeframe);
-      if (datePart != null) {
-        ColumnFilter filter = new QueryColumnFilterSqlString();
-        String filterName = JobQueryConstants.DAY_DIFF_FROM_NOW;
-        switch (datePart) {
-          case DAY:
-            filterName = JobQueryConstants.DAY_DIFF_FROM_NOW;
-          case WEEK:
-            filterName = JobQueryConstants.WEEK_DIFF_FROM_NOW;
-          case MONTH:
-            filterName = JobQueryConstants.MONTH_DIFF_FROM_NOW;
-          case YEAR:
-            filterName = JobQueryConstants.YEAR_DIFF_FROM_NOW;
-
+        this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ADMIN_OPS);
+       ExecutedJob job = metadataAccess.commit(() -> {
+            Long newJobExecutionId = this.jobService.restartJobExecution(executionId);
+            if (newJobExecutionId != null) {
+                BatchJobExecution jobExecution = jobExecutionProvider.findByJobExecutionId(newJobExecutionId);
+                if (jobExecution != null) {
+                    return JobModelTransform.executedJob(jobExecution);
+                } else {
+                    return null;
+                }
+            } else {
+                return null;
+            }
+        });
+        if (job == null) {
+            throw new JobExecutionException("Could not restart the job with execution Id of " + executionId);
         }
-        filter.setName(filterName);
-
-
-      }
+        return job;
     }
-    List<OrderBy> orderByList = RestUtil.buildOrderByList(sort, DataTableColumnFactory.PIPELINE_DATA_TYPE.JOB);
-    SearchResult searchResult = jobRepository.getDataTablesSearchResult(filters, null, orderByList, start, limit);
-    return searchResult;
-  }
 
+    /**
+     * Stop the job associated with the given instance id
+     *
+     * @param executionId The job instance id
+     * @return A status message and the apropriate http status code
+     */
+    @POST
+    @Path("/{executionId}/stop")
+    @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
+    @Produces({MediaType.APPLICATION_JSON})
+    public ExecutedJob stopJob(@PathParam("executionId") Long executionId, JobAction jobAction) {
 
-  @GET
-  @Path("/daily-status-count/{timeframe}")
-  @Produces({MediaType.APPLICATION_JSON})
-  public List<JobStatusCount> findDailyStatusCount(@PathParam("timeframe") String timeframe) {
-
-    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
-
-    return findDailyStatusCount(timeframe, 1);
-  }
-
-
-  @GET
-  @Path("/daily-status-count/{timeframe}/{amount}")
-  @Produces({MediaType.APPLICATION_JSON})
-  public List<JobStatusCount> findDailyStatusCount(@PathParam("timeframe") String timeframe,
-                                                   @PathParam("amount") Integer amount) {
-
-    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
-
-    DatabaseQuerySubstitution.DATE_PART datePart = DatabaseQuerySubstitution.DATE_PART.DAY;
-    if (org.apache.commons.lang3.StringUtils.isNotBlank(timeframe)) {
-      try {
-        datePart = DatabaseQuerySubstitution.DATE_PART.valueOf(timeframe.toUpperCase());
-      } catch (IllegalArgumentException e) {
-
-      }
+        this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ADMIN_OPS);
+        metadataAccess.commit(() -> {
+            boolean stopped = this.jobService.stopJobExecution(executionId);
+            return stopped;
+        });
+        return getJob(executionId.toString(), jobAction.isIncludeSteps());
     }
-    List<JobStatusCount> list = jobRepository.getJobStatusCountByDay(datePart, amount);
-    return list;
-  }
 
+    /**
+     * Abandon the job associated with the given instance id
+     *
+     * @param executionId The job instance id
+     * @return A status message and the apropriate http status code
+     */
+    @POST
+    @Path("/{executionId}/abandon")
+    @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
+    @Produces({MediaType.APPLICATION_JSON})
+    public ExecutedJob abandonJob(@PathParam("executionId") Long executionId, JobAction jobAction) {
 
-  @GET
-  @Path("/running-failed-counts")
-  @Produces({MediaType.APPLICATION_JSON})
-  public List<JobStatusCount> getRunningOrFailedJobCounts() {
-    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
-
-    return jobRepository.getRunningOrFailedJobCounts();
-  }
-
-
-  private Map<String, Object> convertJsonToJobParametersMap(final JsonNode json) {
-    Map<String, Object> params = new HashMap<String, Object>();
-
-    for (JsonNode parameter : json) {
-      String key = parameter.path("name").asText();
-      if (parameter.path("type").textValue().equalsIgnoreCase("string") ||
-          (parameter.path("type").textValue().equalsIgnoreCase("uuid"))) {
-        params.put(key, parameter.path("value").asText());
-      } else if (parameter.path("type").textValue().equalsIgnoreCase("number")) {
-        params.put(key, Long.valueOf(parameter.path("value").asText()));
-      } else if (parameter.path("type").textValue().equalsIgnoreCase("date")) {
-        params.put(key, new DateTime(parameter.path("value").asText()).toDate());
-      }
+        this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ADMIN_OPS);
+        metadataAccess.commit(() -> {
+            this.jobService.abandonJobExecution(executionId);
+            return null;
+        });
+            return getJob(executionId.toString(), jobAction.isIncludeSteps());
     }
-    return params;
-  }
 
+    /**
+     * Fail the job associated with the given instance id
+     *
+     * @param executionId The job instance id
+     * @return A status message and the appropriate http status code
+     */
+    @POST
+    @Path("/{executionId}/fail")
+    @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
+    @Produces({MediaType.APPLICATION_JSON})
+    public ExecutedJob failJob(@PathParam("executionId") Long executionId, JobAction jobAction) {
 
-  @POST
-  @Path("/")
-  @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
-  @Produces({MediaType.APPLICATION_JSON})
-  public ExecutedJob createJob(String job) throws Exception {
-    
-    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ADMIN_OPS);
-
-    ExecutedJob executedJob = null;
-
-    ObjectMapper objectMapper = new ObjectMapper();
-    JsonNode json = objectMapper.readTree(job);
-    if (json.path("jobName").isMissingNode() || json.path("jobParameters").isMissingNode()) {
-      throw new IllegalArgumentException("jobName and jobParameters are required");
-    } else {
-      String jobName = json.path("jobName").asText();
-      Map<String, Object> jobParameters = convertJsonToJobParametersMap(json.path("jobParameters"));
-      executedJob = this.jobService.createJob(jobName, jobParameters);
+        this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ADMIN_OPS);
+            metadataAccess.commit(() -> {
+                this.jobService.failJobExecution(executionId);
+                return null;
+            });
+            return getJob(executionId.toString(), jobAction.isIncludeSteps());
     }
-    return executedJob;
-  }
 
 
-  @GET
-  @Path("/{executionId}/parameters")
-  @Produces({MediaType.APPLICATION_JSON})
-  public List<JobParameterType> jobParameters(@PathParam("executionId") Long executionId) {
+    @GET
+    @Path("/")
+    @Produces({MediaType.APPLICATION_JSON})
+    public SearchResult findJobs(@QueryParam("sort") @DefaultValue("") String sort,
+                                 @QueryParam("limit") @DefaultValue("10") Integer limit,
+                                 @QueryParam("start") @DefaultValue("1") Integer start,
+                                 @QueryParam("filter") String filter,
+                                 @Context HttpServletRequest request) {
+        return metadataAccess.read(() -> {
+            Page<ExecutedJob> page = jobExecutionProvider.findAll(filter, pageRequest(start, limit, sort)).map(jobExecution -> JobModelTransform.executedJobSimple(jobExecution));
+            return ModelUtils.toSearchResult(page);
+        });
 
-    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ADMIN_OPS);
 
-    List<JobParameterType> jobParameters = jobService.getJobParametersForJob(executionId);
-    return jobParameters;
-  }
+    }
 
-  /**
-   * Get all of the unique job names of any previously run job
-   *
-   * @return A list of unique job names, or an HTTP error code on failure
-   */
-  @ApiOperation(value = "/api/v1/jobs/names", notes = "Returns a list of unique Job Names for any previously run job.")
-  @GET
-  @Path("/names")
-  @Produces({MediaType.APPLICATION_JSON})
-  public List<String> jobNameValues() {
-    return jobRepository.uniqueJobNames();
-  }
+    @GET
+    @Path("/list")
+    public List<ExecutedJob> findJobsList(@QueryParam("sort") @DefaultValue("") String sort,
+                                          @QueryParam("limit") @DefaultValue("10") Integer limit,
+                                          @QueryParam("start") @DefaultValue("1") Integer start,
+                                          @QueryParam("filter") String filter,
+                                          @Context HttpServletRequest request) {
+        this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+
+        return metadataAccess.read(() -> {
+            Page<ExecutedJob> page = jobExecutionProvider.findAll(filter, pageRequest(start, limit, sort)).map(jobExecution -> JobModelTransform.executedJobSimple(jobExecution));
+            return page != null ? page.getContent() : Collections.emptyList();
+        });
+    }
+
+
+    @GET
+    @Path("/running")
+    @Produces({MediaType.APPLICATION_JSON})
+    public SearchResult findRunningJobs(@QueryParam("sort") @DefaultValue("") String sort,
+                                        @QueryParam("limit") @DefaultValue("10") Integer limit,
+                                        @QueryParam("start") @DefaultValue("1") Integer start,
+                                        @QueryParam("filter") String filter,
+                                        @Context HttpServletRequest request) {
+
+        this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+
+        return metadataAccess.read(() -> {
+            String defaultFilter = ensureDefaultFilter(filter, jobExecutionProvider.RUNNING_FILTER);
+            Page<ExecutedJob> page = jobExecutionProvider.findAll(defaultFilter, pageRequest(start, limit, sort)).map(jobExecution -> JobModelTransform.executedJobSimple(jobExecution));
+            return ModelUtils.toSearchResult(page);
+        });
+
+    }
+
+
+    @GET
+    @Path("/failed")
+    @Produces({MediaType.APPLICATION_JSON})
+    public SearchResult findFailedJobs(@QueryParam("sort") @DefaultValue("") String sort,
+                                       @QueryParam("limit") @DefaultValue("10") Integer limit,
+                                       @QueryParam("start") @DefaultValue("1") Integer start,
+                                       @QueryParam("filter") String filter,
+                                       @Context HttpServletRequest request) {
+
+        return metadataAccess.read(() -> {
+            String defaultFilter = ensureDefaultFilter(filter, jobExecutionProvider.FAILED_FILTER);
+            Page<ExecutedJob> page = jobExecutionProvider.findAll(defaultFilter, pageRequest(start, limit, sort)).map(jobExecution -> JobModelTransform.executedJobSimple(jobExecution));
+            return ModelUtils.toSearchResult(page);
+        });
+    }
+
+
+    @GET
+    @Path("/stopped")
+    @Produces({MediaType.APPLICATION_JSON})
+    public SearchResult findStoppedJobs(@QueryParam("sort") @DefaultValue("") String sort,
+                                        @QueryParam("limit") @DefaultValue("10") Integer limit,
+                                        @QueryParam("start") @DefaultValue("1") Integer start,
+                                        @QueryParam("filter") String filter,
+                                        @Context HttpServletRequest request) {
+
+        this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+
+        return metadataAccess.read(() -> {
+            String defaultFilter = ensureDefaultFilter(filter, jobExecutionProvider.STOPPED_FILTER);
+            Page<ExecutedJob> page = jobExecutionProvider.findAll(defaultFilter, pageRequest(start, limit, sort)).map(jobExecution -> JobModelTransform.executedJobSimple(jobExecution));
+            return ModelUtils.toSearchResult(page);
+        });
+
+    }
+
+    @GET
+    @Path("/completed")
+    @Produces({MediaType.APPLICATION_JSON})
+    public SearchResult findCompletedJobs(@QueryParam("sort") @DefaultValue("") String sort,
+                                          @QueryParam("limit") @DefaultValue("10") Integer limit,
+                                          @QueryParam("start") @DefaultValue("1") Integer start,
+                                          @QueryParam("filter") String filter,
+                                          @Context HttpServletRequest request) {
+
+        this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+
+        return metadataAccess.read(() -> {
+            String defaultFilter = ensureDefaultFilter(filter, jobExecutionProvider.COMPLETED_FILTER);
+            Page<ExecutedJob> page = jobExecutionProvider.findAll(defaultFilter, pageRequest(start, limit, sort)).map(jobExecution -> JobModelTransform.executedJobSimple(jobExecution));
+            return ModelUtils.toSearchResult(page);
+        });
+
+    }
+
+
+    @GET
+    @Path("/abandoned")
+    @Produces({MediaType.APPLICATION_JSON})
+    public SearchResult findAbandonedJobs(@QueryParam("sort") @DefaultValue("") String sort,
+                                          @QueryParam("limit") @DefaultValue("10") Integer limit,
+                                          @QueryParam("start") @DefaultValue("1") Integer start,
+                                          @QueryParam("filter") String filter,
+                                          @Context HttpServletRequest request) {
+
+        this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+
+        return metadataAccess.read(() -> {
+            String defaultFilter = ensureDefaultFilter(filter, jobExecutionProvider.ABANDONED_FILTER);
+            Page<ExecutedJob> page = jobExecutionProvider.findAll(defaultFilter, pageRequest(start, limit, sort)).map(jobExecution -> JobModelTransform.executedJobSimple(jobExecution));
+            return ModelUtils.toSearchResult(page);
+        });
+    }
+
+
+    @GET
+    @Path("/daily-status-count")
+    @Produces({MediaType.APPLICATION_JSON})
+    public List<JobStatusCount> findDailyStatusCount(@QueryParam("period") String periodString) {
+
+        this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+
+        Period period = DateTimeUtil.period(periodString);
+        return metadataAccess.read(() -> {
+            List<com.thinkbiganalytics.metadata.api.jobrepo.job.JobStatusCount> counts = jobExecutionProvider.getJobStatusCountByDateFromNow(period, null);
+            if (counts != null) {
+                return counts.stream().map(c -> JobStatusTransform.jobStatusCount(c)).collect(Collectors.toList());
+            }
+            return Collections.emptyList();
+        });
+    }
+
+
+    @GET
+    @Path("/running-failed-counts")
+    @Produces({MediaType.APPLICATION_JSON})
+    public List<JobStatusCount> getRunningOrFailedJobCounts() {
+        this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+
+        return metadataAccess.read(() -> {
+            List<com.thinkbiganalytics.metadata.api.jobrepo.job.JobStatusCount> counts = jobExecutionProvider.getJobStatusCount(jobExecutionProvider.RUNNING_OR_FAILED_FILTER);
+            if (counts != null) {
+                return counts.stream().map(c -> JobStatusTransform.jobStatusCount(c)).collect(Collectors.toList());
+            }
+            return Collections.emptyList();
+        });
+
+    }
+
+    /**
+     * This will evaluate the {@code incomingFilter} and append/set the value including the {@code defaultFilter} and return a new String with the updated filter
+     */
+    private String ensureDefaultFilter(String incomingFilter, String defaultFilter) {
+        String filter = incomingFilter;
+        if (StringUtils.isBlank(filter) || !StringUtils.containsIgnoreCase(filter, defaultFilter)) {
+            if (StringUtils.isNotBlank(filter)) {
+                if (StringUtils.endsWith(filter, ",")) {
+                    filter += defaultFilter;
+                } else {
+                    filter += "," + defaultFilter;
+                }
+            } else {
+                filter = defaultFilter;
+            }
+        }
+        return filter;
+    }
+
+    private PageRequest pageRequest(Integer start, Integer limit, String sort) {
+        if (sort != null) {
+            Sort.Direction dir = Sort.Direction.ASC;
+            if (sort.startsWith("-")) {
+                dir = Sort.Direction.DESC;
+                sort = sort.substring(1);
+            }
+            return new PageRequest((start / limit), limit, dir, sort);
+        } else {
+            return new PageRequest((start / limit), limit);
+        }
+    }
 
 }

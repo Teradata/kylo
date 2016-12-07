@@ -69,16 +69,6 @@
 
         <!-- end service monitoring -->
 
-        <!-- Job Repo -->
-
-        <!--
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-job-repository-spring-batch</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        -->
-
       <dependency>
         <groupId>com.thinkbiganalytics.datalake</groupId>
         <artifactId>thinkbig-operational-metadata-integration-service</artifactId>
@@ -124,11 +114,7 @@
         <version>${project.version}</version>
       </dependency>
 
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-job-repository-nifi</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
             <artifactId>thinkbig-job-repository-api</artifactId>

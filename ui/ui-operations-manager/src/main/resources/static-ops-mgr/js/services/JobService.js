@@ -6,7 +6,6 @@ var JobService = angular.module(MODULE_OPERATIONS).factory('JobData', ['$q', '$h
     JobData.JOBS_QUERY_URL = RestUrlService.JOBS_QUERY_URL;
     JobData.JOBS_CHARTS_QUERY_URL = RestUrlService.JOBS_CHARTS_QUERY_URL;
     JobData.JOB_NAMES_URL = RestUrlService.JOB_NAMES_URL;
-    JobData.JOB_PARAMETERS_URL = RestUrlService.JOB_PARAMETERS_URL;
     JobData.DAILY_STATUS_COUNT_URL = RestUrlService.DAILY_STATUS_COUNT_URL;
 
     JobData.RUNNING_OR_FAILED_COUNTS_URL = RestUrlService.RUNNING_OR_FAILED_COUNTS_URL;

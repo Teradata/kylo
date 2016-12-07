@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QueryDslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
+import org.springframework.data.repository.query.QueryByExampleExecutor;
 
 import java.util.List;
 import java.util.Set;
@@ -13,7 +14,7 @@ import java.util.Set;
 /**
  * Created by sr186054 on 8/23/16.
  */
-public interface BatchJobExecutionRepository extends JpaRepository<JpaBatchJobExecution, Long>, QueryDslPredicateExecutor<Long> {
+public interface BatchJobExecutionRepository extends JpaRepository<JpaBatchJobExecution, Long>, QueryDslPredicateExecutor<JpaBatchJobExecution> {
 
 
     @Query(value = "select job from JpaBatchJobExecution as job "
@@ -138,5 +139,21 @@ public interface BatchJobExecutionRepository extends JpaRepository<JpaBatchJobEx
                    + "where nifiEvent.feedName = :feedName "
                    + "and job.endTime is null")
     Boolean isFeedRunning(@Param("feedName") String feedName);
+
+/*
+    @Query("select new JpaOpsManagerFeedHealth(f,"
+           + "count(*) as ALL_COUNT,"
+           + "count(case when job.status <> 'ABANDONED' AND (job.status = 'FAILED' or job.EXIT_CODE = 'FAILED') then 1 else null end _) as UNHEALTHY_COUNT,"
+           + "count(case when job.status <> 'ABANDONED' AND job.EXIT_CODE = 'COMPLETED' then 1 else null end) as HEALTHY_COUNT,"
+           + "count(case when job.status = 'ABANDONED' then 1 else null end) as ABANDONED_COUNT,"
+           + "MAX(job.JOB_EXECUTION_ID) as LATEST_JOB_EXECUTION_ID "
+           + "FROM JpaBatchJobExecution as job "
+           + " join JpaBatchJobInstance inst on inst.jobExecution.id = job.id "
+           + "join JoaOpsManagerFeed f on f.id = inst.feed.id"
+           + "group by f.id, f.name")
+
+
+*/
+
 
 }

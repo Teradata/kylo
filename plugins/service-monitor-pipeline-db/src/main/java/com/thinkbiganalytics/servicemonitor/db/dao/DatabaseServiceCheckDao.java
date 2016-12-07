@@ -41,7 +41,7 @@ public class DatabaseServiceCheckDao implements InitializingBean {
 
   public ServiceStatusResponse healthCheck() {
     String serviceName = "database";
-    String componentName = "Pipeline Database";
+    String componentName = "Kylo Database";
     ServiceComponent component = null;
 
     Map<String, Object> properties = new HashMap<>();

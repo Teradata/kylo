@@ -1,7 +1,9 @@
 package com.thinkbiganalytics.metadata.jpa.jobrepo.job;
 
+import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobInstance;
+import com.thinkbiganalytics.metadata.jpa.feed.JpaOpsManagerFeed;
 
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
@@ -16,6 +18,8 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
@@ -51,6 +55,10 @@ public class JpaBatchJobInstance implements BatchJobInstance {
 
     @OneToMany(targetEntity = JpaBatchJobExecution.class, mappedBy = "jobInstance", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BatchJobExecution> jobExecutions = new ArrayList<>();
+
+    @ManyToOne(targetEntity = JpaOpsManagerFeed.class, fetch = FetchType.LAZY)
+    @JoinColumn(name = "FEED_ID", nullable = true, insertable = true, updatable = true)
+    private OpsManagerFeed feed;
 
 
     public JpaBatchJobInstance() {
@@ -100,5 +108,13 @@ public class JpaBatchJobInstance implements BatchJobInstance {
 
     public void setJobExecutions(List<BatchJobExecution> jobExecutions) {
         this.jobExecutions = jobExecutions;
+    }
+
+    public OpsManagerFeed getFeed() {
+        return feed;
+    }
+
+    public void setFeed(OpsManagerFeed feed) {
+        this.feed = feed;
     }
 }

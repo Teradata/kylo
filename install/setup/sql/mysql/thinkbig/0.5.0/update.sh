@@ -1,7 +1,7 @@
 #!/bin/bash
 
 MY_DIR=$(dirname $0)
-mysql -u$2 --password=$3 --database=thinkbig -B -N -e "SHOW TABLES" | awk '{print "SET foreign_key_checks = 0; ALTER TABLE", $1, "CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci; SET foreign_key_checks = 1; "}' | mysql --database=thinkbig -u$2 --password=$3
 mysql -f -h $1 -u$2 --password=$3 < ${MY_DIR}/schema-0.5.0-upgrade.sql
+mysql -f -h $1 -u$2 --password=$3 < ${MY_DIR}/check_data_job_relationships.sql
 echo "Updated to 0.5.0 release";
 

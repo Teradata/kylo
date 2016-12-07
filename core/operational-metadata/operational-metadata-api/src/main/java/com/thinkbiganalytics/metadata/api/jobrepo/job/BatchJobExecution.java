@@ -46,6 +46,8 @@ public interface BatchJobExecution {
 
     Set<? extends BatchJobExecutionParameter> getJobParameters();
 
+    Map<String, String> getJobParametersAsMap();
+
     Set<BatchStepExecution> getStepExecutions();
 
     Set<BatchJobExecutionContextValue> getJobExecutionContext();

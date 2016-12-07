@@ -1,15 +1,31 @@
-/*
- * Copyright (c) 2015.
- */
-
 package com.thinkbiganalytics.jobrepo.rest.controller;
 
-import java.util.ArrayList;
+import com.google.common.collect.Lists;
+import com.thinkbiganalytics.DateTimeUtil;
+import com.thinkbiganalytics.jobrepo.query.model.ExecutedFeed;
+import com.thinkbiganalytics.jobrepo.query.model.FeedHealth;
+import com.thinkbiganalytics.jobrepo.query.model.FeedStatus;
+import com.thinkbiganalytics.jobrepo.query.model.JobStatusCount;
+import com.thinkbiganalytics.jobrepo.query.model.transform.FeedModelTransform;
+import com.thinkbiganalytics.jobrepo.query.model.transform.JobStatusTransform;
+import com.thinkbiganalytics.jobrepo.security.OperationsAccessControl;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
+import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
+import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
+import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;
+import com.thinkbiganalytics.security.AccessController;
+
+import org.joda.time.Period;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -17,29 +33,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.thinkbiganalytics.jobrepo.query.feed.FeedQueryConstants;
-import com.thinkbiganalytics.jobrepo.query.job.JobQueryConstants;
-import com.thinkbiganalytics.jobrepo.query.model.ExecutedFeed;
-import com.thinkbiganalytics.jobrepo.query.model.FeedHealth;
-import com.thinkbiganalytics.jobrepo.query.model.FeedStatus;
-import com.thinkbiganalytics.jobrepo.query.model.JobStatusCount;
-import com.thinkbiganalytics.jobrepo.query.model.SearchResult;
-import com.thinkbiganalytics.jobrepo.query.substitution.DatabaseQuerySubstitution;
-import com.thinkbiganalytics.jobrepo.query.support.ColumnFilter;
-import com.thinkbiganalytics.jobrepo.query.support.OrderBy;
-import com.thinkbiganalytics.jobrepo.query.support.QueryColumnFilterSqlString;
-import com.thinkbiganalytics.jobrepo.repository.FeedRepository;
-import com.thinkbiganalytics.jobrepo.rest.support.DataTableColumnFactory;
-import com.thinkbiganalytics.jobrepo.rest.support.RestUtil;
-import com.thinkbiganalytics.jobrepo.rest.support.WebColumnFilterUtil;
-import com.thinkbiganalytics.jobrepo.security.OperationsAccessControl;
-import com.thinkbiganalytics.security.AccessController;
 
 import io.swagger.annotations.Api;
 
@@ -47,214 +40,123 @@ import io.swagger.annotations.Api;
 @Path("/v1/feeds")
 public class FeedsRestController {
 
-  private static final Logger LOG = LoggerFactory.getLogger(FeedsRestController.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FeedsRestController.class);
 
-  @Inject
-  private FeedRepository feedRepository;
+    // @Inject
+    // private FeedRepository feedRepository;
 
-  @Inject
-  private AccessController accessController;
+    @Inject
+    OpsManagerFeedProvider opsFeedManagerFeedProvider;
 
+    @Inject
+    BatchJobExecutionProvider batchJobExecutionProvider;
 
-  @GET
-  @Path("/{feedName}/latest")
-  @Produces({MediaType.APPLICATION_JSON})
-  public ExecutedFeed findLatestFeedsByName(@PathParam("feedName") String feedName, @Context HttpServletRequest request) {
-    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
-    
-    return feedRepository.findLastCompletedFeed(feedName);
-  }
+    @Inject
+    private AccessController accessController;
 
-
-  @GET
-  @Path("/")
-  @Produces({MediaType.APPLICATION_JSON})
-  public Response findFeeds(@QueryParam("sort") @DefaultValue("") String sort,
-                            @QueryParam("limit") @DefaultValue("10") Integer limit,
-                            @QueryParam("start") @DefaultValue("1") Integer start, @Context HttpServletRequest request) {
-    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
-      
-    List<ColumnFilter>
-        filters =
-        WebColumnFilterUtil.buildFiltersFromRequestForDatatable(request, DataTableColumnFactory.PIPELINE_DATA_TYPE.FEED);
-    List<OrderBy> orderByList = RestUtil.buildOrderByList(sort, DataTableColumnFactory.PIPELINE_DATA_TYPE.FEED);
-    SearchResult searchResult = feedRepository.getDataTablesSearchResult(filters, null, orderByList, start, limit);
-    return Response.ok(searchResult).build();
-  }
-
-  @GET
-  @Path("/since/{timeframe}")
-  @Produces({MediaType.APPLICATION_JSON})
-  public SearchResult findFeedActivity(@PathParam("timeframe") String timeframe,
-                                       @QueryParam("sort") @DefaultValue("") String sort,
-                                       @QueryParam("limit") @DefaultValue("10") Integer limit,
-                                       @QueryParam("start") @DefaultValue("1") Integer start,
-                                       @Context HttpServletRequest request) {
-    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
-
-    List<ColumnFilter>
-        filters =
-        WebColumnFilterUtil.buildFiltersFromRequestForDatatable(request, DataTableColumnFactory.PIPELINE_DATA_TYPE.FEED);
-    if (StringUtils.isNotBlank(timeframe)) {
-      DatabaseQuerySubstitution.DATE_PART datePart = DatabaseQuerySubstitution.DATE_PART.valueOf(timeframe);
-      if (datePart != null) {
-        ColumnFilter filter = new QueryColumnFilterSqlString();
-        String filterName = JobQueryConstants.DAY_DIFF_FROM_NOW;
-        switch (datePart) {
-          case DAY:
-            filterName = JobQueryConstants.DAY_DIFF_FROM_NOW;
-          case WEEK:
-            filterName = JobQueryConstants.WEEK_DIFF_FROM_NOW;
-          case MONTH:
-            filterName = JobQueryConstants.MONTH_DIFF_FROM_NOW;
-          case YEAR:
-            filterName = JobQueryConstants.YEAR_DIFF_FROM_NOW;
-
-        }
-        filter.setName(filterName);
+    @Inject
+    private MetadataAccess metadataAccess;
 
 
-      }
+    @GET
+    @Path("/{feedName}/latest")
+    @Produces({MediaType.APPLICATION_JSON})
+    public ExecutedFeed findLatestFeedsByName(@PathParam("feedName") String feedName, @Context HttpServletRequest request) {
+        this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+        return metadataAccess.read(() -> {
+
+            BatchJobExecution latestJob = batchJobExecutionProvider.findLatestCompletedJobForFeed(feedName);
+            OpsManagerFeed feed = opsFeedManagerFeedProvider.findByName(feedName);
+            return FeedModelTransform.executedFeed(latestJob, feed);
+        });
     }
-    List<OrderBy> orderByList = RestUtil.buildOrderByList(sort, DataTableColumnFactory.PIPELINE_DATA_TYPE.FEED);
-    SearchResult searchResult = feedRepository.getDataTablesSearchResult(filters, null, orderByList, start, limit);
-    return searchResult;
-  }
-
-  @GET
-  @Path("/{feedName}/daily-status-count/{timeframe}")
-  @Produces({MediaType.APPLICATION_JSON})
-  public List<JobStatusCount> findFeedDailyStatusCount(@PathParam("feedName") String feedName,
-                                                       @PathParam("timeframe") String timeframe) {
-    return findFeedDailyStatusCount(feedName, timeframe, 1);
-  }
 
 
-  @GET
-  @Path("/{feedName}/daily-status-count/{timeframe}/{amount}")
-  @Produces({MediaType.APPLICATION_JSON})
-  public List<JobStatusCount> findFeedDailyStatusCount(@PathParam("feedName") String feedName,
-                                                       @PathParam("timeframe") String timeframe,
-                                                       @PathParam("amount") Integer amount) {
-    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+    @GET
+    @Path("/health")
+    @Produces({MediaType.APPLICATION_JSON})
+    public FeedStatus getFeedHealth(@Context HttpServletRequest request) {
 
-    DatabaseQuerySubstitution.DATE_PART datePart = DatabaseQuerySubstitution.DATE_PART.DAY;
-    if (StringUtils.isNotBlank(timeframe)) {
-      try {
-        datePart = DatabaseQuerySubstitution.DATE_PART.valueOf(timeframe.toUpperCase());
-      } catch (IllegalArgumentException e) {
-
-      }
+        this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+        return metadataAccess.read(() -> {
+            List<FeedHealth> feedHealth = getFeedHealthCounts(request);
+            FeedStatus status = FeedModelTransform.feedStatus(feedHealth);
+            return status;
+        });
     }
-    ;
 
-    List<JobStatusCount> list = feedRepository.getFeedStatusCountByDay(feedName, datePart, amount);
-    return list;
-  }
-
-
-  @GET
-  @Path("/running")
-  @Produces({MediaType.APPLICATION_JSON})
-  public SearchResult findRunningFeeds(@QueryParam("sort") @DefaultValue("") String sort,
-                                       @QueryParam("limit") @DefaultValue("10") Integer limit,
-                                       @QueryParam("start") @DefaultValue("1") Integer start,
-                                       @Context HttpServletRequest request) {
-    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
-
-    List<ColumnFilter>
-        filters =
-        WebColumnFilterUtil.buildFiltersFromRequestForDatatable(request, DataTableColumnFactory.PIPELINE_DATA_TYPE.FEED);
-    ColumnFilter filter = new QueryColumnFilterSqlString();
-    filter.setSqlString(" AND END_TIME IS NULL");
-    filters.add(filter);
-    List<OrderBy> orderByList = RestUtil.buildOrderByList(sort, DataTableColumnFactory.PIPELINE_DATA_TYPE.FEED);
-    SearchResult searchResult = feedRepository.getDataTablesSearchResult(filters, null, orderByList, start, limit);
-    return searchResult;
-  }
-
-  @GET
-  @Path("/completed")
-  @Produces({MediaType.APPLICATION_JSON})
-  public SearchResult findCompletedFeeds(@QueryParam("sort") @DefaultValue("") String sort,
-                                         @QueryParam("limit") @DefaultValue("10") Integer limit,
-                                         @QueryParam("start") @DefaultValue("1") Integer start,
-                                         @Context HttpServletRequest request) {
-    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
-
-    List<ColumnFilter>
-        filters =
-        WebColumnFilterUtil.buildFiltersFromRequestForDatatable(request, DataTableColumnFactory.PIPELINE_DATA_TYPE.FEED);
-    ColumnFilter filter = new QueryColumnFilterSqlString();
-    filter.setSqlString(" AND STATUS = 'COMPLETED' AND EXIT_CODE = 'COMPLETED' ");
-    filters.add(filter);
-    List<OrderBy> orderByList = RestUtil.buildOrderByList(sort, DataTableColumnFactory.PIPELINE_DATA_TYPE.FEED);
-    SearchResult searchResult = feedRepository.getDataTablesSearchResult(filters, null, orderByList, start, limit);
-    return searchResult;
-  }
-
-
-  @GET
-  @Path("/health")
-  @Produces({MediaType.APPLICATION_JSON})
-  public FeedStatus getFeedHealth(@Context HttpServletRequest request) {
-
-    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
-
-    List<ColumnFilter> filters = WebColumnFilterUtil.buildFiltersFromRequest(request, null);
-    if (filters == null) {
-      filters = new ArrayList<ColumnFilter>();
+    @GET
+    @Path("/health-count")
+    @Produces({MediaType.APPLICATION_JSON})
+    public List<FeedHealth> getFeedHealthCounts(@Context HttpServletRequest request) {
+        this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+        return metadataAccess.read(() -> {
+            List<? extends com.thinkbiganalytics.metadata.api.feed.FeedHealth> feedHealthList = opsFeedManagerFeedProvider.getFeedHealth();
+            //Transform to list
+            return FeedModelTransform.feedHealth(feedHealthList);
+        });
     }
-    return this.feedRepository.getFeedStatusAndSummary(filters);
-  }
-
-  @GET
-  @Path("/health-count")
-  @Produces({MediaType.APPLICATION_JSON})
-  public List<FeedHealth> getFeedHealthCounts(@Context HttpServletRequest request) {
-    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
-
-    return this.feedRepository.getFeedHealthCounts();
-  }
 
 
-  @GET
-  @Path("/health-count/{feedName}")
-  @Produces({MediaType.APPLICATION_JSON})
-  public FeedHealth getFeedHealthCounts(@Context HttpServletRequest request, @PathParam("feedName") String feedName) {
-    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
-
-    List<FeedHealth> feedHealthList = this.feedRepository.getFeedHealthCounts(feedName);
-    if (feedHealthList != null && !feedHealthList.isEmpty()) {
-      return feedHealthList.get(0);
-    } else {
-      return null;
+    @GET
+    @Path("/health-count/{feedName}")
+    @Produces({MediaType.APPLICATION_JSON})
+    public FeedHealth getFeedHealthCounts(@Context HttpServletRequest request, @PathParam("feedName") String feedName) {
+        this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+        return metadataAccess.read(() -> {
+            com.thinkbiganalytics.metadata.api.feed.FeedHealth feedHealth = opsFeedManagerFeedProvider.getFeedHealth(feedName);
+            if (feedHealth != null) {
+                return FeedModelTransform.feedHealth(feedHealth);
+            } else {
+                return null;
+            }
+        });
     }
-  }
 
 
-  @GET
-  @Path("/health/{feedName}")
-  @Produces({MediaType.APPLICATION_JSON})
-  public FeedStatus getFeedHealthForFeed(@Context HttpServletRequest request, @PathParam("feedName") String feedName) {
+    @GET
+    @Path("/health/{feedName}")
+    @Produces({MediaType.APPLICATION_JSON})
+    public FeedStatus getFeedHealthForFeed(@Context HttpServletRequest request, @PathParam("feedName") String feedName) {
 
-    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
-
-    List<ColumnFilter> filters = WebColumnFilterUtil.buildFiltersFromRequest(request, null);
-    if (filters == null) {
-      filters = new ArrayList<ColumnFilter>();
+        this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+        return metadataAccess.read(() -> {
+            FeedHealth feedHealth = getFeedHealthCounts(request, feedName);
+            if (feedHealth != null) {
+                return FeedModelTransform.feedStatus(Lists.newArrayList(feedHealth));
+            } else {
+                return null;
+            }
+        });
     }
-    filters.add(new QueryColumnFilterSqlString(FeedQueryConstants.QUERY_FEED_NAME_COLUMN, feedName));
-    return this.feedRepository.getFeedStatusAndSummary(filters);
-  }
 
-  @GET
-  @Path("/names")
-  @Produces({MediaType.APPLICATION_JSON})
-  public List<String> getFeedNames() {
-    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
 
-    return feedRepository.getFeedNames();
-  }
+    @GET
+    @Path("/{feedName}/daily-status-count")
+    @Produces({MediaType.APPLICATION_JSON})
+    public List<JobStatusCount> findFeedDailyStatusCount(@PathParam("feedName") String feedName,
+                                                         @QueryParam("period") String periodString) {
+        this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+        return metadataAccess.read(() -> {
+            Period period = DateTimeUtil.period(periodString);
+            List<com.thinkbiganalytics.metadata.api.jobrepo.job.JobStatusCount> counts = opsFeedManagerFeedProvider.getJobStatusCountByDateFromNow(feedName, period);
+            if (counts != null) {
+                return counts.stream().map(c -> JobStatusTransform.jobStatusCount(c)).collect(Collectors.toList());
+            } else {
+                return Collections.emptyList();
+            }
+        });
+    }
+
+
+    @GET
+    @Path("/names")
+    @Produces({MediaType.APPLICATION_JSON})
+    public List<String> getFeedNames() {
+        this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+        return metadataAccess.read(() -> {
+            return opsFeedManagerFeedProvider.getFeedNames();
+        });
+    }
 
 }

@@ -1,5 +1,9 @@
 package com.thinkbiganalytics.metadata.api.feed;
 
+import com.thinkbiganalytics.metadata.api.jobrepo.job.JobStatusCount;
+
+import org.joda.time.ReadablePeriod;
+
 import java.io.Serializable;
 import java.util.List;
 
@@ -17,6 +21,12 @@ public interface OpsManagerFeedProvider {
 
     List<? extends OpsManagerFeed> findByFeedIds(List<OpsManagerFeed.ID> ids);
 
+    /**
+     * Returns a list of all the Feed Names registered in the FEED table
+     * @return
+     */
+    List<String> getFeedNames();
+
     void save(List<? extends OpsManagerFeed> feeds);
 
     OpsManagerFeed save(OpsManagerFeed.ID feedManagerId, String systemName);
@@ -24,6 +34,16 @@ public interface OpsManagerFeedProvider {
     void delete(OpsManagerFeed.ID id);
 
     boolean isFeedRunning(OpsManagerFeed.ID id);
+
+    List<? extends FeedHealth> getFeedHealth();
+
+    FeedHealth getFeedHealth(String feedName);
+
+    List<JobStatusCount>  getJobStatusCountByDateFromNow(String feedName, ReadablePeriod period);
+
+    List<? extends LatestFeedJobExecution> findLatestCheckDataJobs();
+
+
 
 
 }

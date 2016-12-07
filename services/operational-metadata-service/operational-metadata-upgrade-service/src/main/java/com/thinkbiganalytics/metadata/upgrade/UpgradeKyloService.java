@@ -199,11 +199,11 @@ public class UpgradeKyloService implements ModeShapeAvailabilityListener {
                     }
                 }
 
-                List<JpaOpsManagerFeed> feedsToAdd = new ArrayList<JpaOpsManagerFeed>();
+                List<OpsManagerFeed> feedsToAdd = new ArrayList<>();
                 for (FeedManagerFeed feed : feedManagerFeedMap.values()) {
                     String fullName = FeedNameUtil.fullName(feed.getCategory().getName(), feed.getName());
                     OpsManagerFeed.ID opsManagerFeedId = opsManagerFeedProvider.resolveId(feed.getId().toString());
-                    JpaOpsManagerFeed opsManagerFeed = new JpaOpsManagerFeed(opsManagerFeedId, fullName);
+                    OpsManagerFeed opsManagerFeed = new JpaOpsManagerFeed(opsManagerFeedId, fullName);
                     feedsToAdd.add(opsManagerFeed);
                 }
                 log.info("Synchronizing Feeds from Feed Manager. About to insert {} feed ids/names into Operations Manager", feedsToAdd.size());

@@ -1,13 +1,11 @@
 package com.thinkbiganalytics.metadata.config;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.sql.DataSource;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.thinkbiganalytics.metadata.jpa.sla.JpaServiceLevelAssessor;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessor;
 
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
-import org.springframework.batch.core.repository.ExecutionContextSerializer;
-import org.springframework.batch.core.repository.dao.XStreamExecutionContextStringSerializer;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,10 +18,9 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.support.AbstractPlatformTransactionManager;
 
-import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.thinkbiganalytics.metadata.jpa.jobrepo.ExecutionContextSerializationHelper;
-import com.thinkbiganalytics.metadata.jpa.sla.JpaServiceLevelAssessor;
-import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessor;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.sql.DataSource;
 
 /**
  * Created by sr186054 on 9/15/16.
@@ -98,19 +95,6 @@ public class OperationalMetadataConfig {
     @Bean(name = "slaAssessor")
     public ServiceLevelAssessor serviceLevelAssessor() {
         return new JpaServiceLevelAssessor();
-    }
-
-
-    @Bean
-    public ExecutionContextSerializer executionContextSerializer() throws Exception {
-        XStreamExecutionContextStringSerializer defaultSerializer = new XStreamExecutionContextStringSerializer();
-        defaultSerializer.afterPropertiesSet();
-        return defaultSerializer;
-    }
-
-    @Bean
-    ExecutionContextSerializationHelper executionContextSerializationHelper() {
-        return new ExecutionContextSerializationHelper();
     }
 
 

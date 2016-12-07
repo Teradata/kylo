@@ -18,9 +18,12 @@ angular.module(MODULE_OPERATIONS).service('RestUrlService', function () {
     this.SPECIFIC_FEED_HEALTH_URL = function(feedName) {
         return self.FEED_HEALTH_URL+'/'+feedName+'/';
     }
-    this.FEED_DAILY_STATUS_COUNT_URL = function(feedName,datePart,amount){
-        return self.FEEDS_BASE+"/"+feedName+"/daily-status-count/"+datePart+"/"+amount;
+    this.FEED_DAILY_STATUS_COUNT_URL = function(feedName){
+        return self.FEEDS_BASE+"/"+feedName+"/daily-status-count";
     }
+
+
+
 
 
 
@@ -31,12 +34,8 @@ angular.module(MODULE_OPERATIONS).service('RestUrlService', function () {
     this.JOBS_QUERY_URL = this.JOBS_BASE;
     this.JOBS_CHARTS_QUERY_URL = this.JOBS_BASE+'/list';
     this.JOB_NAMES_URL = this.JOBS_BASE+'/names';
-    this.JOB_PARAMETERS_URL = function(jobExecutionId) {
-        return self.JOBS_BASE+'/'+jobExecutionId+'/parameters';
-    }
-    this.DAILY_STATUS_COUNT_URL = function(datePart,amount){
-        return self.JOBS_BASE+"/daily-status-count/"+datePart+"/"+amount;
-    }
+
+    this.DAILY_STATUS_COUNT_URL = self.JOBS_BASE+"/daily-status-count/";
 
     this.RUNNING_OR_FAILED_COUNTS_URL = this.JOBS_BASE+'/running-failed-counts';
 

@@ -3,7 +3,7 @@ package com.thinkbiganalytics.jobrepo.service;
 /**
  * Created by sr186054 on 4/14/16.
  */
-public class JobExecutionException extends Exception {
+public class JobExecutionException extends RuntimeException {
 
   public JobExecutionException() {
     super();

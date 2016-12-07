@@ -64,6 +64,12 @@
 
         this.sortOptions = loadSortOptions();
 
+        /**
+         * The filter supplied in the page
+         * @type {string}
+         */
+        this.filter = '';
+
         //Load the data
         //   loadJobs();
 
@@ -78,6 +84,13 @@
             return self.viewType;
         }, function(newVal) {
             self.onViewTypeChange(newVal);
+        });
+
+
+        $scope.$watch(function() {
+            return self.filter;
+        }, function(newVal) {
+            return loadJobs(true).promise;
         })
 
         this.onViewTypeChange = function(viewType) {
@@ -181,12 +194,20 @@
                 self.activeJobRequests.push(canceler);
                 self.deferred = canceler;
                 self.promise = self.deferred.promise;
+                var filter = self.filter;
 
-                var params = {start: start, limit: limit, sort: sort};
+                var params = {start: start, limit: limit, sort: sort, filter:filter};
                 if (self.feedFilter) {
-                    params.feed = self.feedFilter;
+                    if(!params.filter){
+                        params.filter = '';
+                    }
+                    if(params.filter != ''){
+                        params.filter +=',';
+                    }
+                    params.filter += "jobInstance.feed.name=="+self.feedFilter;
                 }
                 var query = tabTitle != 'All' ? tabTitle.toLowerCase() : '';
+               // console.log('QUERY WITH ',params)
 
                 $http.get(JobData.JOBS_QUERY_URL + "/" + query, {timeout: canceler.promise, params: params}).then(successFn, errorFn);
             }

@@ -103,6 +103,11 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener{
         public int hashCode() {
             return super.hashCode();
         }
+
+        @Override
+        public FeedType getFeedType() {
+            return null;
+        }
     };
 
 
@@ -178,6 +183,8 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener{
         log.debug("Received ProvenanceEvent {}.  is end of Job: {}.  is ending flowfile:{}, isBatch: {}", event, event.isEndOfJob(), event.isEndingFlowFileEvent(), event.isBatchJob());
         nifiEvent = nifiEventProvider.create(event);
         if (event.isBatchJob()) {
+            //query it again
+            jobExecution = batchJobExecutionProvider.findByJobExecutionId(jobExecution.getJobExecutionId());
             BatchJobExecution job = batchJobExecutionProvider.save(jobExecution, event, nifiEvent);
             if (job == null) {
                 log.error(" Detected a Batch event, but could not find related Job record. for event: {}  is end of Job: {}.  is ending flowfile:{}, isBatch: {}", event, event.isEndOfJob(),

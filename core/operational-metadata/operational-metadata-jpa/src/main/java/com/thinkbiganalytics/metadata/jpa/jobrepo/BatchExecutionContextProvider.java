@@ -20,9 +20,6 @@ public class BatchExecutionContextProvider {
 
     }
 
-    @Autowired
-    ExecutionContextSerializationHelper exectionContextSerializationHelper;
-
     private BatchStepExecutionContextRepository batchStepExecutionContextRepository;
     private BatchJobExecutionContextRepository batchJobExecutionContextRepository;
 
@@ -41,9 +38,6 @@ public class BatchExecutionContextProvider {
                 stepExecutionContext = new JpaBatchStepExecutionContext();
                 stepExecutionContext.setStepExecutionId(stepExecutionId);
             }
-            String serializedContext = exectionContextSerializationHelper.serializeStringMapContext(attrs);
-            stepExecutionContext.setShortContext(serializedContext);
-            stepExecutionContext.setSerializedContext(serializedContext);
             batchStepExecutionContextRepository.save(stepExecutionContext);
         }
 
@@ -57,9 +51,6 @@ public class BatchExecutionContextProvider {
                 executionContext = new JpaBatchJobExecutionContext();
                 executionContext.setJobExecutionId(jobExecutionId);
             }
-            String serializedContext = exectionContextSerializationHelper.serializeStringMapContext(attrs);
-            executionContext.setShortContext(serializedContext);
-            executionContext.setSerializedContext(serializedContext);
             batchJobExecutionContextRepository.save(executionContext);
         }
 

@@ -136,7 +136,7 @@ public class DefaultFeedHealth implements FeedHealth {
 
   @JsonIgnore
   public static List<FeedHealth> parseToList(List<ExecutedFeed> latestOpFeeds, Map<String, Long> avgRunTimes) {
-    return FeedHealthUtil.parseToList(latestOpFeeds, avgRunTimes, null);
+    return FeedHealthUtil.parseToList(latestOpFeeds, avgRunTimes);
 
   }
 

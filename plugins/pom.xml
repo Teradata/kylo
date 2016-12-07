@@ -9,9 +9,6 @@
     <artifactId>thinkbig-plugins</artifactId>
     <packaging>pom</packaging>
     <modules>
-        <module>job-repository-spring-batch-common</module>
-        <module>job-repository-spring-batch</module>
-        <module>job-repository-nifi</module>
         <module>service-monitor-ambari</module>
         <module>service-monitor-cloudera</module>
         <module>service-monitor-nifi</module>

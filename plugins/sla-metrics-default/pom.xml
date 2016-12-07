@@ -49,7 +49,7 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <artifactId>thinkbig-job-repository-api</artifactId>
+      <artifactId>thinkbig-operational-metadata-api</artifactId>
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <version>${project.version}</version>
     </dependency>

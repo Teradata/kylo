@@ -34,7 +34,7 @@
         var self = this;
         this.pageName = 'feed-activity';
         this.dataLoaded = false;
-        this.dateSelection = '1-month';
+        this.dateSelection = '1-M';
         this.chartData = [];
         this.chartApi = {};
         this.chartOptions =  {
@@ -160,7 +160,7 @@
 
             }
 
-            $http.get(FeedData.DAILY_STATUS_COUNT_URL(self.feedName,self.datePart,self.interval)).then( successFn, errorFn);
+            $http.get(FeedData.DAILY_STATUS_COUNT_URL(self.feedName),{params:{"period":self.interval+self.datePart}}).then( successFn, errorFn);
 
         }
 

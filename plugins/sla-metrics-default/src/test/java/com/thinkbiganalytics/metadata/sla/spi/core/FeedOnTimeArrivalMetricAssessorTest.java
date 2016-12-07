@@ -1,8 +1,8 @@
 package com.thinkbiganalytics.metadata.sla.spi.core;
 
 import com.thinkbiganalytics.calendar.HolidayCalendarService;
-import com.thinkbiganalytics.jobrepo.query.model.ExecutedFeed;
-import com.thinkbiganalytics.jobrepo.repository.FeedRepository;
+import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
+import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.core.FeedOnTimeArrivalMetric;
@@ -42,7 +42,7 @@ public class FeedOnTimeArrivalMetricAssessorTest {
     private FeedOnTimeArrivalMetric metric;
 
     @Mock
-    private FeedRepository feedRepository;
+    private BatchJobExecutionProvider jobExecutionProvider;
 
     @Mock
     private HolidayCalendar calendar;
@@ -80,8 +80,8 @@ public class FeedOnTimeArrivalMetricAssessorTest {
     @Test
     public void testMinuteBeforeLate() throws ParseException {
         DateTime feedEnd = this.lateTime.minusMinutes(1);
-        ExecutedFeed feed = createExecutedFeed(feedEnd);
-        when(this.feedRepository.findLastCompletedFeed("feed")).thenReturn(feed);
+        BatchJobExecution feed = createFeedJobExecution(feedEnd);
+        when(this.jobExecutionProvider.findLatestCompletedJobForFeed("feed")).thenReturn(feed);
         when(this.calendar.isTimeIncluded(anyLong())).thenReturn(true);
 
         this.assessor.assess(metric, this.builder);
@@ -112,8 +112,8 @@ public class FeedOnTimeArrivalMetricAssessorTest {
         //window is = (now - 3)  - (now -3) + lateTime)
         //Some Feed End Time to a time not within this window
         DateTime lastFeedTime = new DateTime().minusWeeks(2);
-        ExecutedFeed feed = createExecutedFeed(lastFeedTime);
-        when(this.feedRepository.findLastCompletedFeed("feed")).thenReturn(feed);
+        BatchJobExecution feed = createFeedJobExecution(lastFeedTime);
+        when(this.jobExecutionProvider.findLatestCompletedJobForFeed("feed")).thenReturn(feed);
 
         this.metric = new FeedOnTimeArrivalMetric("feed", cron, Period.hours(lateTimeGracePeriod), Period.days(2), "USA");
 
@@ -145,8 +145,8 @@ public class FeedOnTimeArrivalMetricAssessorTest {
         //window is = (now - 3)  - (now -3) + lateTime)
         //Some Feed End Time to a time within this window
         DateTime lastFeedTime = new DateTime(previousFireTime).plus(lateTimeGracePeriod - 1);
-        ExecutedFeed feed = createExecutedFeed(lastFeedTime);
-        when(this.feedRepository.findLastCompletedFeed("feed")).thenReturn(feed);
+        BatchJobExecution feed = createFeedJobExecution(lastFeedTime);
+        when(this.jobExecutionProvider.findLatestCompletedJobForFeed("feed")).thenReturn(feed);
         when(this.calendar.isTimeIncluded(anyLong())).thenReturn(true);
         this.metric = new FeedOnTimeArrivalMetric("feed", cron, Period.hours(lateTimeGracePeriod), Period.days(2), "USA");
 
@@ -177,8 +177,8 @@ public class FeedOnTimeArrivalMetricAssessorTest {
         //window is = (now - 4)  - (now -4) + lateTimeGracePeriod)
         //Some Feed End Time to a time outside the window
         DateTime lastFeedTime = new DateTime(previousFireTime).minusHours(lateTimeGracePeriod + 1);
-        ExecutedFeed feed = createExecutedFeed(lastFeedTime);
-        when(this.feedRepository.findLastCompletedFeed("feed")).thenReturn(feed);
+        BatchJobExecution feed = createFeedJobExecution(lastFeedTime);
+        when(this.jobExecutionProvider.findLatestCompletedJobForFeed("feed")).thenReturn(feed);
         when(this.calendar.isTimeIncluded(anyLong())).thenReturn(true);
         this.metric = new FeedOnTimeArrivalMetric("feed", cron, Period.hours(lateTimeGracePeriod), Period.days(2), "USA");
 
@@ -192,11 +192,11 @@ public class FeedOnTimeArrivalMetricAssessorTest {
     public void testMinuteAfterLate() throws ParseException {
         DateTime now = this.lateTime.plusMinutes(2);
         DateTime feedEnd = this.lateTime.plusMinutes(1);
-        ExecutedFeed feed = createExecutedFeed(feedEnd);
+        BatchJobExecution feed = createFeedJobExecution(feedEnd);
 
         PowerMockito.mockStatic(DateTime.class);
         BDDMockito.given(DateTime.now()).willReturn(now);
-        when(this.feedRepository.findLastCompletedFeed("feed")).thenReturn(feed);
+        when(this.jobExecutionProvider.findLatestCompletedJobForFeed("feed")).thenReturn(feed);
         when(this.calendar.isTimeIncluded(anyLong())).thenReturn(true);
 
         this.assessor.assess(metric, this.builder);
@@ -208,11 +208,11 @@ public class FeedOnTimeArrivalMetricAssessorTest {
     public void testLateButHoliday() throws ParseException {
         DateTime now = this.lateTime.plusMinutes(2);
         DateTime feedEnd = this.lateTime.plusMinutes(1);
-        ExecutedFeed feed = createExecutedFeed(feedEnd);
+        BatchJobExecution feed = createFeedJobExecution(feedEnd);
 
         PowerMockito.mockStatic(DateTime.class);
         BDDMockito.given(DateTime.now()).willReturn(now);
-        when(this.feedRepository.findLastCompletedFeed("feed")).thenReturn(feed);
+        when(this.jobExecutionProvider.findLatestCompletedJobForFeed("feed")).thenReturn(feed);
         when(this.calendar.isTimeIncluded(anyLong())).thenReturn(false);
 
         this.assessor.assess(metric, this.builder);
@@ -222,7 +222,7 @@ public class FeedOnTimeArrivalMetricAssessorTest {
 
     @Test
     public void testFeedNotFound() throws ParseException {
-        when(this.feedRepository.findLastCompletedFeed("feed")).thenReturn(null);
+        when(this.jobExecutionProvider.findLatestCompletedJobForFeed("feed")).thenReturn(null);
         when(this.calendar.isTimeIncluded(anyLong())).thenReturn(true);
         this.assessor.assess(metric, this.builder);
 
@@ -230,8 +230,8 @@ public class FeedOnTimeArrivalMetricAssessorTest {
     }
 
 
-    private ExecutedFeed createExecutedFeed(DateTime endTime) {
-        ExecutedFeed feed = mock(ExecutedFeed.class);
+    private BatchJobExecution createFeedJobExecution(DateTime endTime) {
+        BatchJobExecution feed = mock(BatchJobExecution.class);
         when(feed.getEndTime()).thenReturn(endTime);
 //        ExecutedFeed feed = new ExecutedFeed();
 //        feed.setEndTime(endTime);

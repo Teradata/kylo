@@ -23,82 +23,77 @@ import javax.sql.DataSource;
 @Configuration
 public class DatabaseConfiguration {
 
-  /**
-   * Access to the jdbc template for querying Job Data
-   * NOTE: This will be removed when everything is switched to JPA
-   *
-   * @param dataSource The datasource  from the {@see this#jdbcDataSource()}
-   * @return The jdbc template
-   */
-  @Bean
-  @Primary
-  public JdbcTemplate jdbcTemplate(@Qualifier("jdbcDataSource") final DataSource dataSource) {
-    return new JdbcTemplate(dataSource);
-  }
+
+    /**
+     * This is the datasource used by JPA
+     */
+    @Bean(name = "dataSource")
+    @Primary
+    @ConfigurationProperties(prefix = "spring.datasource")
+    public DataSource dataSource() {
+        DataSource newDataSource = DataSourceBuilder.create().build();
+
+        return newDataSource;
+    }
+
+    /**
+     * Access to the jdbc template for querying operational Data     *
+     *
+     * @param dataSource The datasource  from the {@see this#jdbcDataSource()}
+     * @return The jdbc template
+     */
+     @Bean
+     @Primary public JdbcTemplate jdbcTemplate(@Qualifier("dataSource") final DataSource dataSource) {
+     return new JdbcTemplate(dataSource);
+     }
 
 
-  /**
-   * This is the datasource used by JPA
-   */
-  @Bean(name = "dataSource")
-  @Primary
-  @ConfigurationProperties(prefix = "spring.datasource")
-  public DataSource dataSource() {
-    DataSource newDataSource = DataSourceBuilder.create().build();
 
-    return newDataSource;
-  }
+    /**
+     * This the datasource used by the jdbcTemplate NOTE:  This datasource will be removed along with the {@see this#jdbcTemplate(Datasource)}
+     *
+     * @return the JDBC Datasource
+     * @Bean(name = "jdbcDataSource")
+     * @ConfigurationProperties(prefix = "spring.datasource") public DataSource jdbcDataSource() { DataSource newDataSource = DataSourceBuilder.create().build();
+     *
+     * return newDataSource; }
+     */
 
-  /**
-   * This the datasource used by the jdbcTemplate
-   * NOTE:  This datasource will be removed along with the {@see this#jdbcTemplate(Datasource)}
-   * @return the JDBC Datasource
-   */
-  @Bean(name = "jdbcDataSource")
-  @ConfigurationProperties(prefix = "spring.datasource")
-  public DataSource jdbcDataSource() {
-    DataSource newDataSource = DataSourceBuilder.create().build();
-
-    return newDataSource;
-  }
-
-
-  @Configuration
-  @ConditionalOnWebApplication
-  @ConditionalOnClass(WebMvcConfigurerAdapter.class)
-  @ConditionalOnMissingBean({ OpenEntityManagerInViewInterceptor.class,
-          OpenEntityManagerInViewFilter.class })
-  @ConditionalOnProperty(prefix = "spring.jpa", name = "open-in-view", havingValue = "true", matchIfMissing = true)
-  protected static class JpaWebConfiguration {
-
-    // Defined as a nested config to ensure WebMvcConfigurerAdapter is not read when
-    // not on the classpath
     @Configuration
-    protected static class JpaWebMvcConfiguration extends WebMvcConfigurerAdapter {
+    @ConditionalOnWebApplication
+    @ConditionalOnClass(WebMvcConfigurerAdapter.class)
+    @ConditionalOnMissingBean({OpenEntityManagerInViewInterceptor.class,
+                               OpenEntityManagerInViewFilter.class})
+    @ConditionalOnProperty(prefix = "spring.jpa", name = "open-in-view", havingValue = "true", matchIfMissing = true)
+    protected static class JpaWebConfiguration {
 
-      @Bean
-      public OpenEntityManagerInViewInterceptor openEntityManagerInViewInterceptor() {
-        return new OpenEntityManagerInViewInterceptor();
-      }
+        // Defined as a nested config to ensure WebMvcConfigurerAdapter is not read when
+        // not on the classpath
+        @Configuration
+        protected static class JpaWebMvcConfiguration extends WebMvcConfigurerAdapter {
 
-      @Override
-      public void addInterceptors(InterceptorRegistry registry) {
-        registry.addWebRequestInterceptor(openEntityManagerInViewInterceptor());
-      }
+            @Bean
+            public OpenEntityManagerInViewInterceptor openEntityManagerInViewInterceptor() {
+                return new OpenEntityManagerInViewInterceptor();
+            }
+
+            @Override
+            public void addInterceptors(InterceptorRegistry registry) {
+                registry.addWebRequestInterceptor(openEntityManagerInViewInterceptor());
+            }
+
+        }
 
     }
 
-  }
 
-
-  @Bean
-  public FilterRegistrationBean openEntityManagerInViewFilter() {
-    FilterRegistrationBean reg = new FilterRegistrationBean();
-    reg.setName("OpenEntityManagerInViewFilter");
-    reg.setFilter(new OpenEntityManagerInViewFilter());
-    return reg;
-  }
-
+    @Bean
+    public FilterRegistrationBean openEntityManagerInViewFilter() {
+        FilterRegistrationBean reg = new FilterRegistrationBean();
+        reg.setName("OpenEntityManagerInViewFilter");
+        reg.setFilter(new OpenEntityManagerInViewFilter());
+        return reg;
+    }
 
 
 }

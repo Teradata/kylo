@@ -12,4 +12,6 @@ public interface NifiEventJobExecution {
     void setEventId(Long eventId);
 
     Long getEventId();
+
+    String getFlowFileId();
 }

@@ -2,6 +2,7 @@ package com.thinkbiganalytics.metadata.jpa.jobrepo.job;
 
 import com.thinkbiganalytics.DateTimeUtil;
 import com.thinkbiganalytics.jobrepo.common.constants.FeedConstants;
+import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.api.jobrepo.ExecutionConstants;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionContextValue;
@@ -9,11 +10,15 @@ import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionParameter
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobInstance;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiEventJobExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecution;
+import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecutionContextValue;
+import com.thinkbiganalytics.metadata.jpa.feed.JpaOpsManagerFeed;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiEventJobExecution;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.step.JpaBatchStepExecution;
 
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
+import org.hibernate.annotations.LazyToOne;
+import org.hibernate.annotations.LazyToOneOption;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
@@ -22,6 +27,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -34,16 +40,34 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedAttributeNode;
+import javax.persistence.NamedEntityGraph;
+import javax.persistence.NamedNativeQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
+import javax.persistence.Transient;
 import javax.persistence.Version;
 
 /**
  * Created by sr186054 on 8/31/16.
  */
 @Entity
+@NamedNativeQuery(name="BatchJobExecution.findLatestByFeed", query="SELECT e.* "
+                                                        + "FROM   BATCH_JOB_EXECUTION e "
+                                                        + "INNER JOIN BATCH_JOB_INSTANCE i on i.JOB_INSTANCE_ID = e.JOB_INSTANCE_ID "
+                                                        + "INNER JOIN FEED f on f.ID = i.FEED_ID "
+                                                        + "inner JOIN (SELECT f2.ID as FEED_ID,MAX(END_TIME) END_TIME "
+                                                        + "                             FROM BATCH_JOB_EXECUTION e2 "
+                                                        + "                             INNER JOIN BATCH_JOB_INSTANCE i2 on i2.JOB_INSTANCE_ID = e2.JOB_INSTANCE_ID "
+                                                        + " INNER JOIN FEED f2 on f2.ID = i2.FEED_ID "
+                                                        + "  group by f2.ID) maxJobs "
+                                                        + "                             on maxJobs.FEED_ID = f.ID "
+                                                        + "                             and maxJobs.END_TIME =e.END_TIME ")
+@NamedEntityGraph(name = "summary", attributeNodes = {
+    @NamedAttributeNode("jobInstance"),
+    @NamedAttributeNode("nifiEventJobExecution")})
 @Table(name = "BATCH_JOB_EXECUTION")
 public class JpaBatchJobExecution implements BatchJobExecution {
 
@@ -94,27 +118,27 @@ public class JpaBatchJobExecution implements BatchJobExecution {
     private DateTime lastUpdated;
 
 
-    @ManyToOne(targetEntity = JpaBatchJobInstance.class)
+    @ManyToOne(targetEntity = JpaBatchJobInstance.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "JOB_INSTANCE_ID", nullable = false, insertable = true, updatable = true)
     private BatchJobInstance jobInstance;
 
     @OneToMany(targetEntity = JpaBatchJobExecutionParameter.class, mappedBy = "jobExecution",fetch = FetchType.LAZY, orphanRemoval = true)
-    @Fetch(FetchMode.JOIN)
-    private Set<BatchJobExecutionParameter> jobParameters = new HashSet<>();
+   // @Fetch(FetchMode.JOIN)
+    private Set<BatchJobExecutionParameter> jobParameters =null;
 
 
     @OneToMany(targetEntity = JpaBatchStepExecution.class, mappedBy = "jobExecution", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @Fetch(FetchMode.JOIN)
-    private Set<BatchStepExecution> stepExecutions = new HashSet<>();
+    private Set<BatchStepExecution> stepExecutions = null;
 
     @OneToMany(targetEntity = JpaBatchJobExecutionContextValue.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "JOB_EXECUTION_ID", referencedColumnName = "JOB_EXECUTION_ID")
-    private Set<BatchJobExecutionContextValue> jobExecutionContext = new HashSet<>();
+    private Set<BatchJobExecutionContextValue> jobExecutionContext = null;
 
 
-    @OneToOne(targetEntity = JpaNifiEventJobExecution.class, mappedBy = "jobExecution", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @Fetch(FetchMode.JOIN)
+    @OneToOne(targetEntity = JpaNifiEventJobExecution.class, mappedBy = "jobExecution", cascade = CascadeType.ALL, fetch = FetchType.LAZY,optional = false)
     private NifiEventJobExecution nifiEventJobExecution;
+
+
 
 
     public JpaBatchJobExecution() {
@@ -244,40 +268,45 @@ public class JpaBatchJobExecution implements BatchJobExecution {
     }
 
     public void setJobExecutionContext(Set<BatchJobExecutionContextValue> jobExecutionContext) {
+        if(this.jobExecutionContext == null ){
+            this.jobExecutionContext = jobExecutionContext != null ? jobExecutionContext :  new HashSet<>();
+        }
         this.jobExecutionContext.clear();
-        if (this.jobExecutionContext != null) {
+        if (jobExecutionContext != null && !jobExecutionContext.isEmpty()) {
             this.jobExecutionContext.addAll(jobExecutionContext);
         }
     }
 
     public void addJobExecutionContext(BatchJobExecutionContextValue context) {
+        if(getJobExecutionContext() == null){
+            setJobExecutionContext(new HashSet<>());
+        }
         if (!getJobExecutionContext().contains(context)) {
             getJobExecutionContext().add(context);
-            //JpaBatchJobExecutionContextValue existing = (JpaBatchJobExecutionContextValue)getJobExecutionContextKeyMap().get(context.getKeyName());
-            //existing.setStringVal(context.getStringVal());
         }
 
     }
 
+
     @Override
     public Map<String, String> getJobExecutionContextAsMap() {
-        if (!getJobExecutionContext().isEmpty()) {
-            Map<String, String> map = new HashMap<>();
-            getJobExecutionContext().forEach(ctx -> {
-                map.put(ctx.getKeyName(), ctx.getStringVal());
-            });
-            return map;
+        if (getJobExecutionContext() != null && !getJobExecutionContext().isEmpty()) {
+            return getJobExecutionContext().stream().collect(Collectors.toMap(ctx -> ctx.getKeyName(), ctx -> ctx.getStringVal()));
         }
         return null;
     }
 
     public Map<String, BatchJobExecutionContextValue> getJobExecutionContextKeyMap() {
-        if (!getJobExecutionContext().isEmpty()) {
-            Map<String, BatchJobExecutionContextValue> map = new HashMap<>();
-            getJobExecutionContext().forEach(ctx -> {
-                map.put(ctx.getKeyName(), ctx);
-            });
-            return map;
+        if (getJobExecutionContext() != null && !getJobExecutionContext().isEmpty()) {
+            return getJobExecutionContext().stream().collect(Collectors.toMap(ctx -> ctx.getKeyName(), ctx -> ctx));
+        }
+        return null;
+    }
+
+
+    public Map<String, String> getJobParametersAsMap(){
+        if (getJobParameters() != null && !getJobParameters().isEmpty()) {
+            return getJobParameters().stream().collect(Collectors.toMap(param -> param.getKeyName(), param -> param.getStringVal()));
         }
         return null;
     }
@@ -300,18 +329,20 @@ public class JpaBatchJobExecution implements BatchJobExecution {
         if(endTime == null){
             endTime = DateTimeUtil.getNowUTCTime();
         }
-        for (BatchStepExecution se : getStepExecutions()) {
-            if (BatchStepExecution.StepStatus.FAILED.equals(se.getStatus())) {
-                if (stringBuffer == null) {
-                    stringBuffer = new StringBuffer();
-                } else {
-                    stringBuffer.append(",");
+        Set<BatchStepExecution> steps = getStepExecutions();
+        if(steps != null) {
+            for (BatchStepExecution se : steps) {
+                if (BatchStepExecution.StepStatus.FAILED.equals(se.getStatus())) {
+                    if (stringBuffer == null) {
+                        stringBuffer = new StringBuffer();
+                    } else {
+                        stringBuffer.append(",");
+                    }
+                    stringBuffer.append("Failed Step " + se.getStepName());
                 }
-                stringBuffer.append("Failed Step " + se.getStepName());
-            }
-            if(se.getEndTime() == null)
-            {
-                ((JpaBatchStepExecution)se).setEndTime(DateTimeUtil.getNowUTCTime());
+                if (se.getEndTime() == null) {
+                    ((JpaBatchStepExecution) se).setEndTime(DateTimeUtil.getNowUTCTime());
+                }
             }
         }
     }
@@ -327,19 +358,21 @@ public class JpaBatchJobExecution implements BatchJobExecution {
     public void completeOrFailJob() {
         StringBuffer stringBuffer = null;
         boolean failedJob = false;
-        for (BatchStepExecution se : getStepExecutions()) {
-            if (BatchStepExecution.StepStatus.FAILED.equals(se.getStatus())) {
-                failedJob = true;
-                if (stringBuffer == null) {
-                    stringBuffer = new StringBuffer();
-                } else {
-                    stringBuffer.append(",");
+        Set<BatchStepExecution> steps = getStepExecutions();
+        if(steps != null) {
+            for (BatchStepExecution se : steps) {
+                if (BatchStepExecution.StepStatus.FAILED.equals(se.getStatus())) {
+                    failedJob = true;
+                    if (stringBuffer == null) {
+                        stringBuffer = new StringBuffer();
+                    } else {
+                        stringBuffer.append(",");
+                    }
+                    stringBuffer.append("Failed Step " + se.getStepName());
                 }
-                stringBuffer.append("Failed Step " + se.getStepName());
-            }
-            if(se.getEndTime() == null)
-            {
-                ((JpaBatchStepExecution)se).setEndTime(DateTimeUtil.getNowUTCTime());
+                if (se.getEndTime() == null) {
+                    ((JpaBatchStepExecution) se).setEndTime(DateTimeUtil.getNowUTCTime());
+                }
             }
         }
         if (failedJob) {

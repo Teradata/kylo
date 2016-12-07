@@ -7,6 +7,7 @@ import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecutionProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.step.FailedStepExecutionListener;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.BatchExecutionContextProvider;
+import com.thinkbiganalytics.metadata.jpa.jobrepo.job.JpaBatchJobExecution;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiEventStepExecution;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.NifiEventStepExecutionRepository;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
@@ -18,8 +19,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by sr186054 on 10/24/16.
@@ -29,7 +32,7 @@ public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider
 
     private static final Logger log = LoggerFactory.getLogger(JpaBatchStepExecutionProvider.class);
 
-    private BatchStepExecutionRepository nifiStepExecutionRepository;
+    private BatchStepExecutionRepository batchStepExecutionRepository;
 
     private NifiEventStepExecutionRepository nifiEventStepExecutionRepository;
 
@@ -48,7 +51,7 @@ public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider
                                          NifiEventStepExecutionRepository nifiEventStepExecutionRepository
     ) {
 
-        this.nifiStepExecutionRepository = nifiStepExecutionRepository;
+        this.batchStepExecutionRepository = nifiStepExecutionRepository;
         this.nifiEventStepExecutionRepository = nifiEventStepExecutionRepository;
 
     }
@@ -68,7 +71,7 @@ public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider
     public boolean ensureFailureSteps(BatchJobExecution jobExecution) {
 
         //find all the Steps for this Job that have records in the Failure table for this job flow file
-        List<JpaBatchStepExecution> stepsNeedingToBeFailed = nifiStepExecutionRepository.findStepsInJobThatNeedToBeFailed(jobExecution.getJobExecutionId());
+        List<JpaBatchStepExecution> stepsNeedingToBeFailed = batchStepExecutionRepository.findStepsInJobThatNeedToBeFailed(jobExecution.getJobExecutionId());
         if (stepsNeedingToBeFailed != null) {
             for (JpaBatchStepExecution se : stepsNeedingToBeFailed) {
                 //find the event associated to this step
@@ -82,14 +85,14 @@ public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider
                 failStep(jobExecution, se, flowFileId, componentId);
             }
             //save them
-            nifiStepExecutionRepository.save(stepsNeedingToBeFailed);
+            batchStepExecutionRepository.save(stepsNeedingToBeFailed);
             return true;
         }
         return false;
     }
 
     public BatchStepExecution update(BatchStepExecution stepExecution) {
-        return nifiStepExecutionRepository.save((JpaBatchStepExecution) stepExecution);
+        return batchStepExecutionRepository.save((JpaBatchStepExecution) stepExecution);
     }
 
     private void failStep(BatchJobExecution jobExecution, BatchStepExecution stepExecution, String flowFileId, String componentId) {
@@ -108,7 +111,7 @@ public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider
     public BatchStepExecution createStepExecution(BatchJobExecution jobExecution, ProvenanceEventRecordDTO event) {
 
         //only create the step if it doesnt exist yet for this event
-        JpaBatchStepExecution stepExecution = nifiStepExecutionRepository.findByProcessorAndJobFlowFile(event.getComponentId(), event.getJobFlowFileId());
+        JpaBatchStepExecution stepExecution = batchStepExecutionRepository.findByProcessorAndJobFlowFile(event.getComponentId(), event.getJobFlowFileId());
         if (stepExecution == null) {
 
             stepExecution = new JpaBatchStepExecution();
@@ -138,23 +141,26 @@ public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider
             eventStepExecution.setComponentId(event.getComponentId());
             eventStepExecution.setJobFlowFileId(event.getJobFlowFileId());
             stepExecution.setNifiEventStepExecution(eventStepExecution);
-
+            Set<BatchStepExecution> steps = jobExecution.getStepExecutions();
+            if(steps == null){
+                ((JpaBatchJobExecution)jobExecution).setStepExecutions(new HashSet<>());
+            }
             jobExecution.getStepExecutions().add(stepExecution);
             //saving the StepExecution will cascade and save the nifiEventStep
-            stepExecution = nifiStepExecutionRepository.save(stepExecution);
+            stepExecution = batchStepExecutionRepository.save(stepExecution);
             //also persist to spring batch tables
             //TODO to be removed in next release once Spring batch is completely removed.  Needed since the UI references this table
-            batchExecutionContextProvider.saveStepExecutionContext(stepExecution.getStepExecutionId(), event.getUpdatedAttributes());
+         //   batchExecutionContextProvider.saveStepExecutionContext(stepExecution.getStepExecutionId(), event.getUpdatedAttributes());
 
 
         } else {
             //update it
             assignStepExecutionContextMap(event, stepExecution);
             //log.info("Update Step Execution {} ({}) on Job: {} using event {} ", stepExecution.getStepName(), stepExecution.getStepExecutionId(), jobExecution, event);
-            stepExecution = nifiStepExecutionRepository.save(stepExecution);
+            stepExecution = batchStepExecutionRepository.save(stepExecution);
             //also persist to spring batch tables
             //TODO to be removed in next release once Spring batch is completely removed.  Needed since the UI references this table
-            batchExecutionContextProvider.saveStepExecutionContext(stepExecution.getStepExecutionId(), stepExecution.getStepExecutionContextAsMap());
+         //   batchExecutionContextProvider.saveStepExecutionContext(stepExecution.getStepExecutionId(), stepExecution.getStepExecutionContextAsMap());
         }
 
         return stepExecution;
@@ -171,4 +177,13 @@ public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider
             }
         }
     }
+
+
+    public List<? extends BatchStepExecution> getSteps(Long jobExecutionId){
+        return batchStepExecutionRepository.findSteps(jobExecutionId);
+    }
+
+
+
+
 }

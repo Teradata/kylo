@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.metadata.api.jobrepo.job;
 
+import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
+
 import java.util.List;
 
 /**
@@ -16,4 +18,6 @@ public interface BatchJobInstance {
     String getJobKey();
 
     List<BatchJobExecution> getJobExecutions();
+
+    OpsManagerFeed getFeed();
 }

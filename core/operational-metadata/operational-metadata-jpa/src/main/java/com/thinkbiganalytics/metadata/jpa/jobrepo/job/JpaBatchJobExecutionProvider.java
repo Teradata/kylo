@@ -1,30 +1,51 @@
 package com.thinkbiganalytics.metadata.jpa.jobrepo.job;
 
+import com.google.common.collect.ImmutableList;
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.EntityPath;
+import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.EntityPathBase;
+import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.JPQLQuery;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.thinkbiganalytics.DateTimeUtil;
 import com.thinkbiganalytics.jobrepo.common.constants.CheckDataStepConstants;
 import com.thinkbiganalytics.jobrepo.common.constants.FeedConstants;
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.SearchCriteria;
+import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.api.jobrepo.ExecutionConstants;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobInstance;
+import com.thinkbiganalytics.metadata.api.jobrepo.job.JobStatusCount;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiEvent;
 import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecutionProvider;
+import com.thinkbiganalytics.metadata.jpa.feed.JpaOpsManagerFeed;
+import com.thinkbiganalytics.metadata.jpa.feed.OpsManagerFeedRepository;
+import com.thinkbiganalytics.metadata.jpa.feed.QJpaOpsManagerFeed;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.BatchExecutionContextProvider;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiEventJobExecution;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiRelatedRootFlowFiles;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.NifiRelatedRootFlowFilesRepository;
+import com.thinkbiganalytics.metadata.jpa.support.CommonFilterTranslations;
+import com.thinkbiganalytics.metadata.jpa.support.GenericQueryDslFilter;
+import com.thinkbiganalytics.metadata.jpa.support.QueryDslFetchJoin;
+import com.thinkbiganalytics.metadata.jpa.support.QueryDslPagingSupport;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
+import org.joda.time.ReadablePeriod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;
@@ -42,11 +63,12 @@ import java.util.UUID;
 import javax.inject.Inject;
 import javax.persistence.OptimisticLockException;
 
+
 /**
  * Created by sr186054 on 8/31/16.
  */
 @Service
-public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
+public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatchJobExecution> implements BatchJobExecutionProvider {
 
     private static final Logger log = LoggerFactory.getLogger(JpaBatchJobExecutionProvider.class);
 
@@ -60,11 +82,6 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
     @Autowired
     private BatchExecutionContextProvider batchExecutionContextProvider;
 
-    @Inject
-    private MetadataAccess metadataAccess;
-
-
-
     @Autowired
     private JPAQueryFactory factory;
 
@@ -75,28 +92,29 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
     private BatchJobParametersRepository jobParametersRepository;
 
 
+    private OpsManagerFeedRepository opsManagerFeedRepository;
+
+
     private NifiRelatedRootFlowFilesRepository relatedRootFlowFilesRepository;
 
     @Inject
     private BatchStepExecutionProvider batchStepExecutionProvider;
 
 
-
-
-
     @Autowired
     public JpaBatchJobExecutionProvider(BatchJobExecutionRepository jobExecutionRepository, BatchJobInstanceRepository jobInstanceRepository,
                                         NifiRelatedRootFlowFilesRepository relatedRootFlowFilesRepository,
-                                        BatchJobParametersRepository jobParametersRepository
+                                        BatchJobParametersRepository jobParametersRepository,
+                                        OpsManagerFeedRepository opsManagerFeedRepository
     ) {
-
+        super(JpaBatchJobExecution.class);
         this.jobExecutionRepository = jobExecutionRepository;
         this.jobInstanceRepository = jobInstanceRepository;
         this.relatedRootFlowFilesRepository = relatedRootFlowFilesRepository;
         this.jobParametersRepository = jobParametersRepository;
+        this.opsManagerFeedRepository = opsManagerFeedRepository;
 
     }
-
 
 
     @Override
@@ -105,9 +123,12 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
         JpaBatchJobInstance jobInstance = new JpaBatchJobInstance();
         jobInstance.setJobKey(jobKeyGenerator(event));
         jobInstance.setJobName(event.getFeedName());
-        return this.jobInstanceRepository.save(jobInstance);
+        //wire this instance to the Feed
+        OpsManagerFeed feed = opsManagerFeedRepository.findByName(event.getFeedName());
+        jobInstance.setFeed(feed);
+        BatchJobInstance batchJobInstance = this.jobInstanceRepository.save(jobInstance);
+        return batchJobInstance;
     }
-
 
 
     /**
@@ -146,13 +167,11 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
 
         //create the job params
         Map<String, Object> jobParameters = new HashMap<>();
-        if(event.isStartOfJob() && event.getAttributeMap() != null) {
+        if (event.isStartOfJob() && event.getAttributeMap() != null) {
             jobParameters = new HashMap<>(event.getAttributeMap());
         } else {
             jobParameters = new HashMap<>();
         }
-
-
 
         //save the params
         JpaNifiEventJobExecution eventJobExecution = new JpaNifiEventJobExecution(jobExecution, event.getEventId(), event.getJobFlowFileId());
@@ -224,6 +243,14 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
             if (FeedConstants.PARAM_VALUE__JOB_TYPE_CHECK.equalsIgnoreCase(jobType)) {
                 Set<JpaBatchJobExecutionParameter> updatedParams = ((JpaBatchJobExecution) jobExecution).setAsCheckDataJob(feedName);
                 jobParametersRepository.save(updatedParams);
+
+                //update feed type
+                JpaOpsManagerFeed checkDataFeed = (JpaOpsManagerFeed) opsManagerFeedRepository.findByName(event.getFeedName());
+                checkDataFeed.setFeedType(OpsManagerFeed.FeedType.CHECK);
+                //relate to this feed
+                JpaOpsManagerFeed feedToCheck = (JpaOpsManagerFeed) opsManagerFeedRepository.findByName(feedName);
+                feedToCheck.getCheckDataFeeds().add(checkDataFeed);
+
                 return true;
             }
         }
@@ -238,10 +265,9 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
         if (jobExecution.getJobExecutionId() == null) {
             log.error("Warning execution id is null for ending event {} ", event);
         }
-        if(event.isHasFailedEvents()){
+        if (event.isHasFailedEvents()) {
             jobExecution.failJob();
-        }
-        else {
+        } else {
             jobExecution.completeJob();
         }
 
@@ -275,7 +301,7 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
 
             }
             //also persist to spring batch tables
-            batchExecutionContextProvider.saveJobExecutionContext(jobExecution.getJobExecutionId(), allAttrs);
+           // batchExecutionContextProvider.saveJobExecutionContext(jobExecution.getJobExecutionId(), allAttrs);
         }
 
         //If you want to know when a feed is truely finished along with any of its related feeds you can use this method below.
@@ -287,60 +313,58 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
 
     /**
      * Get or Create the JobExecution for a given ProvenanceEvent
-     * @param event
-     * @return
      */
-   public synchronized  JpaBatchJobExecution getOrCreateJobExecution(ProvenanceEventRecordDTO event){
-           JpaBatchJobExecution jobExecution = null;
-       boolean isNew = false;
+    public synchronized JpaBatchJobExecution getOrCreateJobExecution(ProvenanceEventRecordDTO event) {
+        JpaBatchJobExecution jobExecution = null;
+        boolean isNew = false;
         try {
             jobExecution = jobExecutionRepository.findByFlowFile(event.getJobFlowFileId());
             if (jobExecution == null) {
-              jobExecution =  createNewJobExecution(event);
+                jobExecution = createNewJobExecution(event);
                 isNew = true;
             }
-        }catch(OptimisticLockException e){
+        } catch (OptimisticLockException e) {
             //read
             jobExecution = jobExecutionRepository.findByFlowFile(event.getJobFlowFileId());
         }
 
-       //if the attrs coming in change the type to a CHECK job then update the entity
-      boolean updatedJobType = updateJobType(jobExecution, event);
-       boolean save = isNew || updatedJobType;
-       if (event.isEndOfJob()) {
-           finishJob(event, jobExecution);
-           save = true;
-       }
+        //if the attrs coming in change the type to a CHECK job then update the entity
+        boolean updatedJobType = updateJobType(jobExecution, event);
+        boolean save = isNew || updatedJobType;
+        if (event.isEndOfJob()) {
+            finishJob(event, jobExecution);
+            save = true;
+        }
 
-       //if the event is the start of the Job, but the job execution was created from another downstream event, ensure the start time and event are related correctly
-       if(event.isStartOfJob() && !isNew ){
-           jobExecution.getNifiEventJobExecution().setEventId(event.getEventId());
-           jobExecution.setStartTime(DateTimeUtil.convertToUTC(event.getEventTime()));
-           //create the job params
-           Map<String, Object> jobParameters = new HashMap<>();
-           if(event.isStartOfJob() && event.getAttributeMap() != null) {
-               jobParameters = new HashMap<>(event.getAttributeMap());
-           } else {
-               jobParameters = new HashMap<>();
-           }
+        //if the event is the start of the Job, but the job execution was created from another downstream event, ensure the start time and event are related correctly
+        if (event.isStartOfJob() && !isNew) {
+            jobExecution.getNifiEventJobExecution().setEventId(event.getEventId());
+            jobExecution.setStartTime(DateTimeUtil.convertToUTC(event.getEventTime()));
+            //create the job params
+            Map<String, Object> jobParameters = new HashMap<>();
+            if (event.isStartOfJob() && event.getAttributeMap() != null) {
+                jobParameters = new HashMap<>(event.getAttributeMap());
+            } else {
+                jobParameters = new HashMap<>();
+            }
 
-           this.jobParametersRepository.save(addJobParameters(jobExecution, jobParameters));
-           save = true;
-       }
-       if(save) {
-           jobExecutionRepository.save(jobExecution);
-       }
-    return jobExecution;
+            this.jobParametersRepository.save(addJobParameters(jobExecution, jobParameters));
+            save = true;
+        }
+        if (save) {
+            jobExecutionRepository.save(jobExecution);
+        }
+        return jobExecution;
     }
 
     public BatchJobExecution save(BatchJobExecution jobExecution, ProvenanceEventRecordDTO event, NifiEvent nifiEvent) {
-        if(jobExecution == null){
+        if (jobExecution == null) {
             //log
             return null;
         }
-            JpaBatchJobExecution jpaBatchJobExecution = (JpaBatchJobExecution)jobExecution;
-            checkAndRelateJobs(event, nifiEvent);
-           BatchStepExecution stepExecution = batchStepExecutionProvider.createStepExecution(jobExecution, event);
+        JpaBatchJobExecution jpaBatchJobExecution = (JpaBatchJobExecution) jobExecution;
+        checkAndRelateJobs(event, nifiEvent);
+        BatchStepExecution stepExecution = batchStepExecutionProvider.createStepExecution(jobExecution, event);
 
           /*  if (event.isEndOfJob()) {
                 finishJob(event, jpaBatchJobExecution);
@@ -367,9 +391,6 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
     public BatchJobExecution save(BatchJobExecution jobExecution) {
         return jobExecutionRepository.save((JpaBatchJobExecution) jobExecution);
     }
-
-
-
 
 
     /**
@@ -412,7 +433,7 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
         }
     }
 
-    private void ensureRelatedJobsAreFinished(ProvenanceEventRecordDTO event,BatchJobExecution jobExecution) {
+    private void ensureRelatedJobsAreFinished(ProvenanceEventRecordDTO event, BatchJobExecution jobExecution) {
         //Check related jobs
         if (event.isFinalJobEvent() && jobExecutionRepository.hasRelatedJobs(jobExecution.getJobExecutionId())) {
 
@@ -463,5 +484,174 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
     public Boolean isFeedRunning(String feedName) {
         return jobExecutionRepository.isFeedRunning(feedName);
     }
+
+
+    /**
+     * Find all BatchJobExecution objects with the provided filter. the filter needs to match
+     */
+    public Page<? extends BatchJobExecution> findAll(String filter, Pageable pageable) {
+        QJpaBatchJobExecution jobExecution = QJpaBatchJobExecution.jpaBatchJobExecution;
+        //if the filter contains a filter on the feed then delegate to the findAllForFeed method to include any check data jobs
+        List<SearchCriteria> searchCriterias = GenericQueryDslFilter.parseFilterString(filter);
+        SearchCriteria feedFilter = searchCriterias.stream().map(searchCriteria -> searchCriteria.withKey(CommonFilterTranslations.resolvedFilter(jobExecution, searchCriteria.getKey()))).filter(
+            sc -> sc.getKey().equalsIgnoreCase(CommonFilterTranslations.jobExecutionFeedNameFilterKey)).findFirst().orElse(null);
+        if (feedFilter != null && feedFilter.getPreviousSearchCriteria() != null) {
+            //remove the feed filter from the list and filter by this feed
+            searchCriterias.remove(feedFilter.getPreviousSearchCriteria());
+            return findAllForFeed(feedFilter.getValue().toString(), searchCriterias, pageable);
+        } else {
+            pageable = CommonFilterTranslations.resolveSortFilters(jobExecution, pageable);
+            QJpaBatchJobInstance jobInstancePath = new QJpaBatchJobInstance("jobInstance");
+            return findAllWithFetch(jobExecution, GenericQueryDslFilter.buildFilter(jobExecution, filter), pageable, QueryDslFetchJoin.innerJoin(jobExecution.nifiEventJobExecution),
+                                    QueryDslFetchJoin.innerJoin(jobExecution.jobInstance,jobInstancePath ), QueryDslFetchJoin.innerJoin(jobInstancePath.feed));
+        }
+
+    }
+
+    /**
+     * Finds all job Executions for a Feed, including any related Check Data Jobs
+     */
+    public Page<? extends BatchJobExecution> findAllForFeed(String feedName, String filter, Pageable pageable) {
+
+        List<SearchCriteria> searchCriterias = GenericQueryDslFilter.parseFilterString(filter);
+        return findAllForFeed(feedName, searchCriterias, pageable);
+
+
+    }
+
+    private Page<? extends BatchJobExecution> findAllForFeed(String feedName, List<SearchCriteria> filters, Pageable pageable) {
+        QJpaBatchJobExecution jobExecution = QJpaBatchJobExecution.jpaBatchJobExecution;
+        QJpaOpsManagerFeed feed = QJpaOpsManagerFeed.jpaOpsManagerFeed;
+        QJpaOpsManagerFeed checkDataFeed = new QJpaOpsManagerFeed("checkDataFeed");
+        QJpaBatchJobInstance jobInstance = QJpaBatchJobInstance.jpaBatchJobInstance;
+        JPQLQuery checkFeedQuery = JPAExpressions.select(checkDataFeed.id).from(feed).join(feed.checkDataFeeds, checkDataFeed).where(feed.name.eq(feedName));
+
+        JPAQuery
+            query = factory.select(jobExecution)
+            .from(jobExecution)
+            .join(jobExecution.jobInstance, jobInstance)
+            .join(jobInstance.feed, feed)
+            .where((feed.name.eq(feedName).or(feed.id.in(checkFeedQuery)))
+                       .and(GenericQueryDslFilter.buildFilter(jobExecution, filters))).fetchAll();
+
+        pageable = CommonFilterTranslations.resolveSortFilters(jobExecution, pageable);
+        return findAll(query, pageable);
+    }
+
+
+    /**
+     * Get count of Jobs grouped by Status
+     */
+    public List<JobStatusCount> getJobStatusCount(String filter) {
+
+        QJpaBatchJobExecution jobExecution = QJpaBatchJobExecution.jpaBatchJobExecution;
+
+        List<BatchJobExecution.JobStatus> runningStatus = ImmutableList.of(BatchJobExecution.JobStatus.STARTED, BatchJobExecution.JobStatus.STARTING);
+
+        com.querydsl.core.types.dsl.StringExpression jobState = new CaseBuilder().when(jobExecution.status.eq(BatchJobExecution.JobStatus.FAILED)).then("FAILED")
+            .when(jobExecution.status.in(runningStatus)).then("RUNNING")
+            .otherwise(jobExecution.status.stringValue());
+
+        BooleanBuilder whereBuilder = new BooleanBuilder();
+        if (StringUtils.isNotBlank(filter)) {
+            whereBuilder.and(GenericQueryDslFilter.buildFilter(jobExecution, filter));
+        }
+
+        JPAQuery
+            query = factory.select(
+            Projections.constructor(JpaBatchJobExecutionStatusCounts.class,
+                                    jobState.as("status"),
+                                    jobExecution.count().as("count")))
+            .from(jobExecution)
+            .where(whereBuilder)
+            .groupBy(jobState);
+
+        return (List<JobStatusCount>) query.fetch();
+
+    }
+
+
+    public List<JobStatusCount> getJobStatusCountByDate() {
+
+        QJpaBatchJobExecution jobExecution = QJpaBatchJobExecution.jpaBatchJobExecution;
+
+        List<BatchJobExecution.JobStatus> runningStatus = ImmutableList.of(BatchJobExecution.JobStatus.STARTED, BatchJobExecution.JobStatus.STARTING);
+
+        com.querydsl.core.types.dsl.StringExpression jobState = new CaseBuilder().when(jobExecution.status.eq(BatchJobExecution.JobStatus.FAILED)).then("FAILED")
+            .when(jobExecution.status.in(runningStatus)).then("RUNNING")
+            .otherwise(jobExecution.status.stringValue());
+
+        JPAQuery
+            query = factory.select(
+            Projections.constructor(JpaBatchJobExecutionStatusCounts.class,
+                                    jobState.as("status"),
+                                    jobExecution.startTime.year(),
+                                    jobExecution.startTime.month(),
+                                    jobExecution.startTime.dayOfMonth(),
+                                    jobExecution.count().as("count")))
+            //  SQLExpressions.datetrunc(DatePart.day, jobExecution.startTime).as("date"))
+            .from(jobExecution)
+            .groupBy(jobState, jobExecution.startTime.year(), jobExecution.startTime.month(), jobExecution.startTime.dayOfMonth());
+
+        return (List<JobStatusCount>) query.fetch();
+
+    }
+
+    /**
+     * gets job executions grouped by status and Day looking back from Now - the supplied {@code period}
+     *
+     * @param period period to look back from the current time to get job execution status
+     */
+    public List<JobStatusCount> getJobStatusCountByDateFromNow(ReadablePeriod period, String filter) {
+
+        QJpaBatchJobExecution jobExecution = QJpaBatchJobExecution.jpaBatchJobExecution;
+
+        List<BatchJobExecution.JobStatus> runningStatus = ImmutableList.of(BatchJobExecution.JobStatus.STARTED, BatchJobExecution.JobStatus.STARTING);
+
+        com.querydsl.core.types.dsl.StringExpression jobState = new CaseBuilder().when(jobExecution.status.eq(BatchJobExecution.JobStatus.FAILED)).then("FAILED")
+            .when(jobExecution.status.in(runningStatus)).then("RUNNING")
+            .otherwise(jobExecution.status.stringValue());
+
+        BooleanBuilder whereBuilder = new BooleanBuilder();
+        whereBuilder.and(jobExecution.startTime.after(DateTime.now().minus(period)));
+        if (StringUtils.isNotBlank(filter)) {
+            whereBuilder.and(GenericQueryDslFilter.buildFilter(jobExecution, filter));
+        }
+
+        JPAQuery
+            query = factory.select(
+            Projections.constructor(JpaBatchJobExecutionStatusCounts.class,
+                                    jobState.as("status"),
+                                    jobExecution.startTime.year(),
+                                    jobExecution.startTime.month(),
+                                    jobExecution.startTime.dayOfMonth(),
+                                    jobExecution.count().as("count")))
+            .from(jobExecution)
+            .where(whereBuilder)
+            .groupBy(jobState, jobExecution.startTime.year(), jobExecution.startTime.month(), jobExecution.startTime.dayOfMonth());
+
+        return (List<JobStatusCount>) query.fetch();
+
+    }
+
+
+
+
+
+
+    /*
+    public Page<? extends BatchJobExecution> findAllByExample(String filter, Pageable pageable){
+
+        //construct new instance of JpaBatchExecution for searching
+        JpaBatchJobExecution example = new JpaBatchJobExecution();
+        example.setStatus(BatchJobExecution.JobStatus.valueOf("status"));
+        ExampleMatcher matcher = ExampleMatcher.matching()
+            .withIgnoreCase().withIgnoreCase(true);
+
+      return   jobExecutionRepository.findAll(Example.of(example,matcher),pageable);
+
+    }
+    */
+
 
 }

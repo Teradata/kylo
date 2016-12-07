@@ -17,6 +17,17 @@
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>thinkbig-job-repository-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>thinkbig-job-repository-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>thinkbig-commons-util</artifactId>
       <version>${project.version}</version>
     </dependency>

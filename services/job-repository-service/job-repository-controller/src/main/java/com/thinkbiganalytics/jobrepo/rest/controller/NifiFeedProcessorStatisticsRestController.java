@@ -1,10 +1,13 @@
 package com.thinkbiganalytics.jobrepo.rest.controller;
 
 import com.google.common.collect.Lists;
+import com.thinkbiganalytics.jobrepo.security.OperationsAccessControl;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStatisticsProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStats;
 import com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStatsTransform;
 import com.thinkbiganalytics.rest.model.LabelValue;
+import com.thinkbiganalytics.security.AccessController;
 
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.inject.Inject;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -30,6 +34,12 @@ import io.swagger.annotations.Api;
 public class NifiFeedProcessorStatisticsRestController {
 
 
+    @Inject
+    private MetadataAccess metadataAccess;
+
+    @Inject
+    private AccessController accessController;
+
     @Autowired
     private NifiFeedProcessorStatisticsProvider statsProvider;
 
@@ -40,29 +50,36 @@ public class NifiFeedProcessorStatisticsRestController {
     @Path("/all")
     @Produces({MediaType.APPLICATION_JSON})
     public Response findStats() {
+        this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+        return metadataAccess.read(() -> {
         List<? extends NifiFeedProcessorStats> list = statsProvider.findWithinTimeWindow(DateTime.now().minusDays(1), DateTime.now());
         List<com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStats> model = NifiFeedProcessorStatsTransform.toModel(list);
         return Response.ok(model).build();
+        });
     }
 
     @GET
     @Path("/{feedName}/processor-duration/{timeframe}")
     @Produces({MediaType.APPLICATION_JSON})
     public Response findStats(@PathParam("feedName") String feedName, @PathParam("timeframe") @DefaultValue("HOUR") NifiFeedProcessorStatisticsProvider.TimeFrame timeframe) {
-
-        List<? extends NifiFeedProcessorStats> list = statsProvider.findForFeedProcessorStatistics(feedName, timeframe);
-        List<com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStats> model = NifiFeedProcessorStatsTransform.toModel(list);
-        return Response.ok(model).build();
+        this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+        return metadataAccess.read(() -> {
+            List<? extends NifiFeedProcessorStats> list = statsProvider.findForFeedProcessorStatistics(feedName, timeframe);
+            List<com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStats> model = NifiFeedProcessorStatsTransform.toModel(list);
+            return Response.ok(model).build();
+        });
     }
 
     @GET
     @Path("/{feedName}/{timeframe}")
     @Produces({MediaType.APPLICATION_JSON})
     public Response findFeedStats(@PathParam("feedName") String feedName, @PathParam("timeframe") @DefaultValue("HOUR") NifiFeedProcessorStatisticsProvider.TimeFrame timeframe) {
-
-        List<? extends NifiFeedProcessorStats> list = statsProvider.findForFeedStatisticsGroupedByTime(feedName, timeframe);
-        List<com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStats> model = NifiFeedProcessorStatsTransform.toModel(list);
-        return Response.ok(model).build();
+        this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+        return metadataAccess.read(() -> {
+            List<? extends NifiFeedProcessorStats> list = statsProvider.findForFeedStatisticsGroupedByTime(feedName, timeframe);
+            List<com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStats> model = NifiFeedProcessorStatsTransform.toModel(list);
+            return Response.ok(model).build();
+        });
     }
 
     @GET

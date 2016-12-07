@@ -4,8 +4,10 @@
 package com.thinkbiganalytics.metadata.sla.api.core;
 
 import com.thinkbiganalytics.calendar.HolidayCalendarService;
-import com.thinkbiganalytics.jobrepo.query.model.ExecutedFeed;
-import com.thinkbiganalytics.jobrepo.repository.FeedRepository;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
+import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
+import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.spi.MetricAssessmentBuilder;
@@ -30,7 +32,13 @@ public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTim
     private static final Logger LOG = LoggerFactory.getLogger(FeedOnTimeArrivalMetricAssessor.class);
 
     @Inject
-    private FeedRepository feedRepository;
+    private OpsManagerFeedProvider feedProvider;
+
+    @Inject
+    private BatchJobExecutionProvider batchJobExecutionProvider;
+
+    @Inject
+    private MetadataAccess metadataAccess;
 
     @Inject
     private HolidayCalendarService calendarService;
@@ -55,11 +63,13 @@ public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTim
         builder.metric(metric);
 
         String feedName = metric.getFeedName();
-        ExecutedFeed feed = this.feedRepository.findLastCompletedFeed(feedName);
+        BatchJobExecution jobExecution = metadataAccess.read(() -> {
+            return batchJobExecutionProvider.findLatestCompletedJobForFeed(feedName);
+        });
 
         DateTime lastFeedTime = null;
-        if (feed != null) {
-            lastFeedTime = feed.getEndTime();
+        if (jobExecution != null) {
+            lastFeedTime = jobExecution.getEndTime();
         }
         Date expectedDate = CronExpressionUtil.getPreviousFireTime(metric.getExpectedExpression());
         DateTime expectedTime = new DateTime(expectedDate);

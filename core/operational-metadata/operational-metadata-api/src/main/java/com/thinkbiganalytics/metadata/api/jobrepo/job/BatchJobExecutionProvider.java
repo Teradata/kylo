@@ -4,17 +4,23 @@ import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiEvent;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 
 import org.joda.time.DateTime;
+import org.joda.time.ReadablePeriod;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
+import java.util.List;
 import java.util.Set;
 
 /**
  * Created by sr186054 on 9/18/16.
  */
-public interface BatchJobExecutionProvider {
+public interface BatchJobExecutionProvider extends BatchJobExecutionFilters{
 
     String NIFI_JOB_TYPE_PROPERTY = "tb.jobType";
     String NIFI_FEED_PROPERTY = "feed";
     String NIFI_CATEGORY_PROPERTY = "category";
+
+
 
     BatchJobInstance createJobInstance(ProvenanceEventRecordDTO event);
 
@@ -53,6 +59,16 @@ public interface BatchJobExecutionProvider {
     BatchJobExecution findLatestCompletedJobForFeed(String feedName);
 
     Boolean isFeedRunning(String feedName);
+
+    Page<? extends BatchJobExecution> findAll(String filter, Pageable pageable);
+
+    Page<? extends BatchJobExecution> findAllForFeed(String feedName,String filter, Pageable pageable);
+
+    List<JobStatusCount> getJobStatusCountByDate();
+
+    List<JobStatusCount> getJobStatusCountByDateFromNow(ReadablePeriod period, String filter);
+
+    List<JobStatusCount> getJobStatusCount(String filter);
 
 
 }

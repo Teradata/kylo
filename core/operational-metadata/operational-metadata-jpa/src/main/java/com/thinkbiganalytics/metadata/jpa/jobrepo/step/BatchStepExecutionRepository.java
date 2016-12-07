@@ -42,4 +42,8 @@ public interface BatchStepExecutionRepository extends JpaRepository<JpaBatchStep
                    + "where nifiEventStep.componentId = :componentId and nifiEventStep.jobFlowFileId = :flowFileId")
     JpaBatchStepExecution findByProcessorAndJobFlowFile(@Param("componentId") String processorId, @Param("flowFileId") String flowFileId);
 
+
+    @Query(" select step from JpaBatchStepExecution as step where step.jobExecution.jobExecutionId = :jobExecutionId")
+    List<JpaBatchStepExecution> findSteps(@Param("jobExecutionId") Long jobExecutionId);
+
 }

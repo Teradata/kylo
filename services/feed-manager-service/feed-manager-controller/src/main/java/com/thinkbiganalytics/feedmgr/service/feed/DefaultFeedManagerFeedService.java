@@ -15,7 +15,6 @@ import com.thinkbiganalytics.feedmgr.service.UserPropertyTransform;
 import com.thinkbiganalytics.feedmgr.service.feed.datasource.DerivedDatasourceFactory;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
-import com.thinkbiganalytics.jobrepo.repository.FeedRepository;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
@@ -106,9 +105,6 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     ServiceLevelAgreementService serviceLevelAgreementService;
 
 
-    /** Operations manager feed repository */
-    @Inject
-    FeedRepository feedRepository;
 
 
     @Inject
@@ -143,7 +139,9 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     @Qualifier("hadoopAuthorizationService")
     private HadoopAuthorizationService hadoopAuthorizationService;
 
-    /** Event listener for precondition events */
+    /**
+     * Event listener for precondition events
+     */
     private final MetadataEventListener<FeedPropertyChangeEvent> feedPropertyChangeListener = new FeedPropertyChangeDispatcher();
 
     /**
@@ -317,7 +315,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
 
             List<HadoopSecurityGroup> previousSavedSecurityGroups = null;
             // Store the old security groups before saving beccause we need to compare afterward
-            if(feed.isNew()) {
+            if (feed.isNew()) {
                 FeedManagerFeed existing = feedManagerFeedProvider.findBySystemName(feed.getCategory().getSystemName(), feed.getSystemFeedName());
                 // Since we know this is expected to be new check if the category/feed name combo is already being used.
                 if (existing != null) {
@@ -341,7 +339,6 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
                 domainFeed = feedManagerFeedProvider.update(domainFeed);
             }
 
-
             final String domainId = domainFeed.getId().toString();
             final String feedName = FeedNameUtil.fullName(domainFeed.getCategory().getName(), domainFeed.getName());
 
@@ -355,7 +352,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
             metadataAccess.commit(() -> opsManagerFeedProvider.save(opsManagerFeedProvider.resolveId(domainId), feedName));
 
             // Update hadoop security group polices if the groups changed
-            if(!feed.isNew() && !ListUtils.isEqualList(previousSavedSecurityGroups, domainFeed.getSecurityGroups())) {
+            if (!feed.isNew() && !ListUtils.isEqualList(previousSavedSecurityGroups, domainFeed.getSecurityGroups())) {
                 List<HadoopSecurityGroup> securityGroups = domainFeed.getSecurityGroups();
                 List<String> groupsAsCommaList = securityGroups.stream().map(group -> group.getName()).collect(Collectors.toList());
                 hadoopAuthorizationService.updateSecurityGroupsForAllPolicies(feed.getSystemCategoryName(), feed.getSystemFeedName(), groupsAsCommaList, domainFeed.getProperties());
@@ -471,6 +468,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
         //TODO deal with inputs changing sources?
 
     }
+
     @Override
     public void deleteFeed(@Nonnull final String feedId) {
         metadataAccess.commit(() -> {
@@ -479,7 +477,6 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
             Feed feed = feedProvider.getFeed(feedProvider.resolveFeed(feedId));
             //unschedule any SLAs
             serviceLevelAgreementService.unscheduleServiceLevelAgreement(feed.getId());
-            feedRepository.deleteFeed(feed.getCategory().getName(), feed.getName());
             feedManagerFeedProvider.deleteById(feed.getId());
             opsManagerFeedProvider.delete(opsManagerFeedProvider.resolveId(feedId));
             return true;

@@ -94,7 +94,7 @@ public class JpaBatchStepExecution implements Serializable, BatchStepExecution {
 
 
     @OneToMany(targetEntity = JpaBatchStepExecutionContextValue.class, mappedBy = "stepExecution", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<BatchStepExecutionContextValue> stepExecutionContext = new HashSet<>();
+    private Set<BatchStepExecutionContextValue> stepExecutionContext;
 
     @OneToOne(targetEntity = JpaNifiEventStepExecution.class, mappedBy = "stepExecution", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private NifiEventStepExecution nifiEventStepExecution;
@@ -173,13 +173,19 @@ public class JpaBatchStepExecution implements Serializable, BatchStepExecution {
     }
 
     public void setStepExecutionContext(Set<BatchStepExecutionContextValue> stepExecutionContext) {
+        if(this.stepExecutionContext == null ){
+           this.stepExecutionContext = stepExecutionContext != null ? stepExecutionContext :  new HashSet<>();
+        }
         this.stepExecutionContext.clear();
-        if (this.stepExecutionContext != null) {
+        if (stepExecutionContext != null && !stepExecutionContext.isEmpty()) {
             this.stepExecutionContext.addAll(stepExecutionContext);
         }
     }
 
     public void addStepExecutionContext(BatchStepExecutionContextValue context) {
+        if(getStepExecutionContext() == null){
+            setStepExecutionContext(new HashSet<>());
+        }
         if (getStepExecutionContext().contains(context)) {
             getStepExecutionContext().remove(context);
         }
@@ -188,7 +194,7 @@ public class JpaBatchStepExecution implements Serializable, BatchStepExecution {
 
     @Override
     public Map<String, String> getStepExecutionContextAsMap() {
-        if (!getStepExecutionContext().isEmpty()) {
+        if (getStepExecutionContext() != null && !getStepExecutionContext().isEmpty()) {
             Map<String, String> map = new HashMap<>();
             getStepExecutionContext().forEach(ctx -> {
                 map.put(ctx.getKeyName(), ctx.getStringVal());
