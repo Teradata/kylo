@@ -381,6 +381,7 @@ angular.module(COMMON_APP_MODULE_NAME).directive("cardLayout", function($compile
             cardTitle:'=',
             viewType:'=',
             filterModel:'=',
+            filterModelOptions:'=',
             sortOptions:'=',
             pageName:'@',
             onSelectedOption:'&'

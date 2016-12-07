@@ -5,6 +5,7 @@ angular.module(COMMON_APP_MODULE_NAME).directive("tbaCardFilterHeader", function
             cardTitle:'=',
             viewType:'=',
             filterModel:'=',
+            filterModelOptions:'=',
             sortOptions:'=',
             pageName:'@',
             onSelectedOption:'&'
