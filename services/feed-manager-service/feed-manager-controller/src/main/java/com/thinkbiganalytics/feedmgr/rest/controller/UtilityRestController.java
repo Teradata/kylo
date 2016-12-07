@@ -11,7 +11,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
@@ -22,7 +21,10 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -34,24 +36,18 @@ import javax.ws.rs.core.Response;
 
 import io.swagger.annotations.Api;
 
-/**
- * Created by sr186054 on 1/13/16.
- */
 @Api(value = "feed-manager-util", produces = "application/json")
 @Path("/v1/feedmgr/util")
 @Component
 public class UtilityRestController {
 
     private static final Logger log = LoggerFactory.getLogger(UtilityRestController.class);
-    @Autowired
+
+    @Inject
     Environment env;
 
     @Inject
     FileResourceService fileResourceService;
-
-    public UtilityRestController() {
-    }
-
 
     @GET
     @Path("/cron-expression/validate")
@@ -80,7 +76,6 @@ public class UtilityRestController {
         }
         return Response.ok(dateStrings).build();
     }
-
 
     @GET
     @Path("/system-name")
@@ -132,7 +127,6 @@ public class UtilityRestController {
         return Response.ok(colors).build();
     }
 
-
     @GET
     @Path("/icons")
     @Produces(MediaType.APPLICATION_JSON)
@@ -158,8 +152,18 @@ public class UtilityRestController {
         return Response.ok(icons).build();
     }
 
-
-
-
-
+    /**
+     * Gets the list of functions that can be used to produce partition values.
+     *
+     * @return an HTTP response containing the list of formulas
+     */
+    @GET
+    @Path("/partition-functions")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Nonnull
+    public Response partitionFunctions() {
+        final Stream<String> kyloFunctions = Stream.of("val", "year", "month", "day", "hour", "minute");
+        final Stream<String> userFunctions = Arrays.stream(env.getProperty("kylo.metadata.udfs", "").split(",")).map(String::trim).filter(StringUtils::isNotEmpty);
+        return Response.ok(Stream.concat(kyloFunctions, userFunctions).collect(Collectors.toSet())).build();
+    }
 }

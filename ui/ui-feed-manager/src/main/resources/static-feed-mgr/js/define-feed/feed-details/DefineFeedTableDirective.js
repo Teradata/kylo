@@ -41,10 +41,10 @@
         this.schemaHeight = "100px";
 
         /**
-         * The possibly Partition formulas
+         * Functions that may be used for partition values.
          * @type {string[]}
          */
-        this.partitionFormulas = ['val', 'year', 'month', 'day', 'hour', 'min', 'sec'];
+        this.partitionFormulas = [];
 
         this.feedFormat = '';
 
@@ -554,10 +554,15 @@
             FileUpload.uploadFileToUrl(file, uploadUrl, successFn, errorFn, params);
         };
 
+        // Retrieve partition formulas
+        FeedService.getPartitionFunctions()
+                .then(function(functions) {
+                    self.partitionFormulas = functions;
+                });
+
         $scope.$on('$destroy', function () {
             systemFeedNameWatch();
-        })
-
+        });
     };
 
     angular.module(MODULE_FEED_MGR).controller('DefineFeedTableController', controller);
@@ -565,30 +570,20 @@
     angular.module(MODULE_FEED_MGR)
         .directive('thinkbigDefineFeedTable', directive);
 
-    angular.module(MODULE_FEED_MGR).filter('filterPartitionFormula', ['FeedService', function (FeedService) {
-        return function (formulas, partition) {
-
-            if (partition && partition.sourceField) {
-                var columnDef = FeedService.getColumnDefinitionByName(partition.sourceField);
-                if (columnDef) {
-                    return _.filter(formulas, function (formula) {
-                        if (columnDef.dataType != 'date' && columnDef.dataType != 'timestamp' && formula != 'val') {
-                            return false;
-                        }
-                        else {
-                            return true;
-                        }
-                    })
-
-                }
-                else {
-                    return formulas;
-                }
-            }
-            else {
+    angular.module(MODULE_FEED_MGR).filter("filterPartitionFormula", ["FeedService", function(FeedService) {
+        return function(formulas, partition) {
+            // Find column definition
+            var columnDef = (partition && partition.sourceField) ? FeedService.getColumnDefinitionByName(partition.sourceField) : null;
+            if (columnDef == null) {
                 return formulas;
+            }
+
+            // Filter formulas based on column type
+            if (columnDef.dataType === "date" || columnDef.dataType === "timestamp") {
+                return _.without(formulas, "val");
+            } else {
+                return _.without(formulas, "year", "month", "day", "hour", "minute");
             }
         };
     }]);
-
 })();

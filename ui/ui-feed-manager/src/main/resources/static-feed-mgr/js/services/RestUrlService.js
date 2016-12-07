@@ -216,5 +216,12 @@ angular.module(MODULE_FEED_MGR).service('RestUrlService', function () {
      */
     this.LIST_SERVICES_URL = function(processGroupId) {
         return this.ROOT + "/proxy/v1/feedmgr/nifi/controller-services/" + processGroupId;
-    }
+    };
+
+    /**
+     * The endpoint for retrieving the list of available Hive partition functions.
+     *
+     * @type {string}
+     */
+    this.PARTITION_FUNCTIONS_URL = this.ROOT + "/proxy/v1/feedmgr/util/partition-functions";
 });

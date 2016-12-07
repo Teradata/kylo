@@ -572,6 +572,18 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
                 .then(function(response) {
                     return response.data;
                 });
+    },
+
+    /**
+     * Gets the list of available Hive partition functions.
+     *
+     * @returns {Array.<string>} list of function names
+     */
+    getPartitionFunctions: function() {
+        return $http.get(RestUrlService.PARTITION_FUNCTIONS_URL)
+                .then(function(response) {
+                    return response.data;
+                });
     }
 };
     data.init();
