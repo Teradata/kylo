@@ -39,6 +39,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.jcr.Node;
+import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 
@@ -66,6 +67,7 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
     public static final String INIT_STATUS_TYPE = "tba:initStatus";
     public static final String INITIALIZATION = "tba:initialization";
     public static final String INIT_HISTORY = "tba:history";
+    public static final int MAX_INIT_HISTORY = 10;
     public static final String INIT_STATE = "tba:state";
     public static final String CURRENT_INIT_STATUS = "tba:currentStatus";
 
@@ -198,6 +200,16 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
             Node statusNode = initNode.addNode(INIT_HISTORY, INIT_STATUS_TYPE);
             statusNode.setProperty(INIT_STATE, status.getState().toString());
             initNode.setProperty(CURRENT_INIT_STATUS, statusNode);
+            
+            // Trim the history if necessary
+            NodeIterator itr = initNode.getNodes(INIT_HISTORY);
+            if (itr.getSize() > MAX_INIT_HISTORY) {
+                long excess = itr.getSize() - MAX_INIT_HISTORY;
+                for (int cnt = 0; cnt < excess; cnt++) {
+                    Node node = itr.nextNode();
+                    node.remove();
+                }
+            }
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to access initializations statuses", e);
         }
@@ -211,7 +223,7 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
             return JcrUtil.getNodeList(initNode, INIT_HISTORY).stream()
                             .map(n -> createInitializationStatus(n))
                             .sorted(Comparator.comparing(InitializationStatus::getTimestamp).reversed())
-                            .limit(10)
+                            .limit(MAX_INIT_HISTORY)
                             .collect(Collectors.toList());
         } else {
             return Collections.emptyList();
