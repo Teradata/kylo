@@ -68,7 +68,7 @@ END IF;
 IF NOT EXISTS(SELECT table_name
             FROM INFORMATION_SCHEMA.COLUMNS
            WHERE table_schema = 'thinkbig'
-             AND table_name = 'BATCH_STEP_EXECUTION' and column_name = 'START_TIME' and LOWER(data_type) =='bigint') then
+             AND table_name = 'BATCH_STEP_EXECUTION' and column_name = 'START_TIME' and LOWER(data_type) = 'bigint') then
 
 ALTER TABLE BATCH_STEP_EXECUTION
 ADD COLUMN `START_TIME_MILLIS` BIGINT NULL COMMENT '' AFTER `LAST_UPDATED`,
