@@ -176,11 +176,15 @@ public class JerseyRestClient {
         } else {
             LOG.info("Created new Jersey Client without SSL connecting to {} ", config.getUrl());
             client = JerseyClientBuilder.createClient(clientConfig);
-
         }
-        client.register(JacksonFeature.class);
-        //  client.register(MultiPartFeature.class);
 
+        // Register Jackson
+        objectMapper = new JacksonObjectMapperProvider().getContext(null);
+
+        client.register(JacksonObjectMapperProvider.class);
+        client.register(JacksonFeature.class);
+
+        // Configure authentication
         if (StringUtils.isNotBlank(config.getUsername())) {
             HttpAuthenticationFeature feature = HttpAuthenticationFeature.basic(config.getUsername(), config.getPassword());
             client.register(feature);
@@ -193,10 +197,6 @@ public class JerseyRestClient {
         } else {
             LOG.info("Jersey Rest Client not initialized.  Host name is Not set!!");
         }
-
-        objectMapper = new ObjectMapper();
-
-
     }
 
 

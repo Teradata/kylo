@@ -92,7 +92,12 @@
             <version>${httpclient.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+        </dependency>
     </dependencies>
+
     <build>
         <plugins>
             <plugin>
