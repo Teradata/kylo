@@ -17,7 +17,21 @@ CREATE TABLE IF NOT EXISTS `AUDIT_LOG` (
 ) ENGINE=InnoDB;
 
 
+/**
+If the VARCHAR version of the FEED_ID was added by mistake remove the column.
+ */
+IF EXISTS(SELECT table_name
+            FROM INFORMATION_SCHEMA.COLUMNS
+           WHERE table_schema = 'thinkbig'
+             AND table_name = 'BATCH_JOB_INSTANCE' and column_name = 'FEED_ID' and lower(DATA_TYPE) = 'varchar') THEN
 
+   ALTER TABLE BATCH_JOB_INSTANCE
+             DROP COLUMN FEED_ID;
+END IF;
+
+/**
+Add the FEED_ID column
+ */
 IF NOT EXISTS(SELECT table_name
             FROM INFORMATION_SCHEMA.COLUMNS
            WHERE table_schema = 'thinkbig'
