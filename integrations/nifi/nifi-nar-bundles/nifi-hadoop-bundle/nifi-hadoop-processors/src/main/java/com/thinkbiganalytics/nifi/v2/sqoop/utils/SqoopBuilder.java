@@ -569,7 +569,7 @@ public class SqoopBuilder {
                 }
                 catch (Exception e) {
                     sourceEnteredPassword = UNABLE_TO_DECRYPT_STRING;
-                    logger.warn("Unable to decrypt entered password (encrypted, Base 64). [{}]", new Object[] { e.getMessage() });
+                    logger.error("Unable to decrypt entered password (encrypted, Base 64). [{}]", new Object[] { e.getMessage() });
                 }
             }
 

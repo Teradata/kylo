@@ -472,7 +472,7 @@ public class ImportSqoop extends AbstractNiFiProcessor {
             session.transfer(flowFile, REL_SUCCESS);
         }
         else {
-            logger.info("Sqoop Import FAIL [Code {}]", new Object[] { resultStatus });
+            logger.error("Sqoop Import FAIL [Code {}]", new Object[] { resultStatus });
             session.transfer(flowFile, REL_FAILURE);
         }
     }

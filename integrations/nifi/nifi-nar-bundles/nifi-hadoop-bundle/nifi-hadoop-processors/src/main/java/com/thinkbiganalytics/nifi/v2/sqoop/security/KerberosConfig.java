@@ -62,12 +62,12 @@ public class KerberosConfig {
     @SuppressWarnings("unused")
     public KerberosConfig setKerberosKinitLocation (String kerberosKinitLocation) {
         if (kerberosKinitLocation == null) {
-            logger.info("Kerberos Kinit location is provided as null."
+            logger.warn("Kerberos Kinit location is provided as null."
                         + " Skipping setting it. Will use default value of " + this.kerberosKinitLocation);
             return this;
         }
         else if (!kerberosKinitLocation.contains("kinit")) {
-            logger.info("Kerberos Kinit location is provided as " + kerberosKinitLocation
+            logger.warn("Kerberos Kinit location is provided as " + kerberosKinitLocation
                         + ". Appears invalid since it does not include 'kinit'. Skipping setting it. Will use default value of " + this.kerberosKinitLocation);
             return this;
         }

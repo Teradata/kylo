@@ -67,7 +67,7 @@ public class SqoopUtils {
         String[] logLines = sqoopProcessResult.getLogLines();
 
         if ((sqoopProcessResult.getExitValue() != 0) || (logLines[0] == null)) {
-            logger.info("Skipping attempt to retrieve number of records extracted");
+            logger.warn("Skipping attempt to retrieve number of records extracted");
             return -1;
         }
 
@@ -88,7 +88,7 @@ public class SqoopUtils {
             return Integer.parseInt(numberString);
         }
         catch (Exception e) {
-            logger.info("Unable to parse number of records extracted. " + e.getMessage());
+            logger.warn("Unable to parse number of records extracted. " + e.getMessage());
             return -1;
         }
     }
@@ -103,7 +103,7 @@ public class SqoopUtils {
         String[] logLines = sqoopExportProcessResult.getLogLines();
 
         if ((sqoopExportProcessResult.getExitValue() != 0) || (logLines[0] == null)) {
-            logger.info("Skipping attempt to retrieve number of records exported");
+            logger.warn("Skipping attempt to retrieve number of records exported");
             return -1;
         }
 
@@ -121,7 +121,7 @@ public class SqoopUtils {
             return Integer.parseInt(numberString);
         }
         catch (Exception e) {
-            logger.info("Unable to parse number of records exported. " + e.getMessage());
+            logger.warn("Unable to parse number of records exported. " + e.getMessage());
             return -1;
         }
     }
