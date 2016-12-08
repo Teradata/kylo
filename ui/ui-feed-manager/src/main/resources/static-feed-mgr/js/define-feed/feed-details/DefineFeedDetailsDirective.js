@@ -101,7 +101,7 @@
             }
 
             // Find controller services
-            _.chain(template.nonInputProcessors)
+            _.chain(template.inputProcessors.concat(template.nonInputProcessors))
                     .pluck("properties")
                     .flatten(true)
                     .filter(function(property) {
