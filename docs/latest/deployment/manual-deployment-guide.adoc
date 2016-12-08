@@ -360,8 +360,6 @@ Perform the following step on the node NiFI is installed on
 
 === Edit the Properties Files
 
-    NOTE: The MySQL username and password is required in both the application.properties file and the metadata-repository.json file
-
 === Final Step: Start the 3 Think Big services
 
            $ /opt/thinkbig/start-thinkbig-apps.sh
