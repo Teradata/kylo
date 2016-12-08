@@ -61,8 +61,17 @@ angular.module(COMMON_APP_MODULE_NAME, [] );
                         NotificationService.errorWithGroupKey("Unauthorized","You are unauthorized to view this content.","Unauthorized");
                     }
                     else if(rejection.status <=0){
-                        //internet is down
-                        NotificationService.errorWithGroupKey("Connection Error","Not Connected. Server is down.","Connection Error");
+                        //Usually -1 means aborted request
+                        //for now remove this logic as it is cause errors to appear which are not errors.
+                        //re visit if needed
+                     /*   if(rejection.config && rejection.config.timeout && rejection.config.timeout.$$state && rejection.config.timeout.$$state ==1){
+                            //aborted
+                        }
+                        else {
+                            //internet is down
+                            NotificationService.errorWithGroupKey("Connection Error", "Not Connected. Server is down.", "Connection Error");
+                        }
+                        */
                     }
                     else  if(rejection.status === 400) {
                         // Bad Request
