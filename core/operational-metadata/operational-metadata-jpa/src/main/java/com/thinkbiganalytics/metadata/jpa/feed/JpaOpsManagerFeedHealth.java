@@ -9,7 +9,6 @@ import com.thinkbiganalytics.metadata.api.feed.FeedHealth;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.api.jobrepo.ExecutionConstants;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
-import com.thinkbiganalytics.metadata.jpa.jobrepo.job.JpaBatchJobExecution;
 
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
@@ -24,9 +23,6 @@ import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
@@ -47,11 +43,11 @@ public class JpaOpsManagerFeedHealth implements FeedHealth {
     private Long jobInstanceId;
 
 
-    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
+    @Type(type = "com.thinkbiganalytics.jpa.PersistentDateTimeAsMillisLong")
     @Column(name = "START_TIME")
     private DateTime startTime;
 
-    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
+    @Type(type = "com.thinkbiganalytics.jpa.PersistentDateTimeAsMillisLong")
     @Column(name = "END_TIME")
     private DateTime endTime;
 

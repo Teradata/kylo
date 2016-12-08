@@ -1,8 +1,9 @@
 package com.thinkbiganalytics.metadata.jpa.jobrepo.job;
 
+import com.querydsl.core.annotations.PropertyType;
+import com.querydsl.core.annotations.QueryType;
 import com.thinkbiganalytics.DateTimeUtil;
 import com.thinkbiganalytics.jobrepo.common.constants.FeedConstants;
-import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.api.jobrepo.ExecutionConstants;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionContextValue;
@@ -10,20 +11,13 @@ import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionParameter
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobInstance;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiEventJobExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecution;
-import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecutionContextValue;
-import com.thinkbiganalytics.metadata.jpa.feed.JpaOpsManagerFeed;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiEventJobExecution;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.step.JpaBatchStepExecution;
 
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
-import org.hibernate.annotations.LazyToOne;
-import org.hibernate.annotations.LazyToOneOption;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -47,7 +41,6 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
-import javax.persistence.Transient;
 import javax.persistence.Version;
 
 /**
@@ -89,16 +82,38 @@ public class JpaBatchJobExecution implements BatchJobExecution {
     private Long version = 0L;
 
 
-    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
+    @Type(type = "com.thinkbiganalytics.jpa.PersistentDateTimeAsMillisLong")
     @Column(name = "CREATE_TIME")
+    @QueryType(PropertyType.COMPARABLE)
     private DateTime createTime;
-    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
+    @Type(type = "com.thinkbiganalytics.jpa.PersistentDateTimeAsMillisLong")
     @Column(name = "START_TIME")
+    @QueryType(PropertyType.COMPARABLE)
     private DateTime startTime;
 
-    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
+    @Type(type = "com.thinkbiganalytics.jpa.PersistentDateTimeAsMillisLong")
     @Column(name = "END_TIME")
+    @QueryType(PropertyType.COMPARABLE)
     private DateTime endTime;
+
+
+    @Column(name = "START_YEAR")
+    private Integer startYear;
+
+    @Column(name = "START_MONTH")
+    private Integer startMonth;
+
+    @Column(name = "START_DAY")
+    private Integer startDay;
+
+    @Column(name = "END_YEAR")
+    private Integer endYear;
+
+    @Column(name = "END_MONTH")
+    private Integer endMonth;
+
+    @Column(name = "END_DAY")
+    private Integer endDay;
 
 
     @Enumerated(EnumType.STRING)
@@ -113,7 +128,8 @@ public class JpaBatchJobExecution implements BatchJobExecution {
     @Column(name = "EXIT_MESSAGE")
     @Type(type = "com.thinkbiganalytics.jpa.TruncateStringUserType", parameters = {@Parameter(name = "length", value = "2500")})
     private String exitMessage;
-    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
+
+    @Type(type = "com.thinkbiganalytics.jpa.PersistentDateTimeAsMillisLong")
     @Column(name = "LAST_UPDATED")
     private DateTime lastUpdated;
 
@@ -137,6 +153,7 @@ public class JpaBatchJobExecution implements BatchJobExecution {
 
     @OneToOne(targetEntity = JpaNifiEventJobExecution.class, mappedBy = "jobExecution", cascade = CascadeType.ALL, fetch = FetchType.LAZY,optional = false)
     private NifiEventJobExecution nifiEventJobExecution;
+
 
 
 
@@ -193,6 +210,11 @@ public class JpaBatchJobExecution implements BatchJobExecution {
     @Override
     public void setStartTime(DateTime startTime) {
         this.startTime = startTime;
+        if(startTime != null) {
+            this.startYear = startTime.getYear();
+            this.startMonth = startTime.getMonthOfYear();
+            this.startDay = startTime.getDayOfMonth();
+        }
     }
 
     @Override
@@ -203,6 +225,11 @@ public class JpaBatchJobExecution implements BatchJobExecution {
     @Override
     public void setEndTime(DateTime endTime) {
         this.endTime = endTime;
+        if(endTime != null) {
+            this.endYear = endTime.getYear();
+            this.endMonth = endTime.getMonthOfYear();
+            this.endDay = endTime.getDayOfMonth();
+        }
     }
 
     @Override
@@ -320,6 +347,29 @@ public class JpaBatchJobExecution implements BatchJobExecution {
         this.nifiEventJobExecution = nifiEventJobExecution;
     }
 
+    public Integer getStartYear() {
+        return startYear;
+    }
+
+    public Integer getStartMonth() {
+        return startMonth;
+    }
+
+    public Integer getStartDay() {
+        return startDay;
+    }
+
+    public Integer getEndYear() {
+        return endYear;
+    }
+
+    public Integer getEndMonth() {
+        return endMonth;
+    }
+
+    public Integer getEndDay() {
+        return endDay;
+    }
 
     public void failJob(){
         StringBuffer stringBuffer = null;

@@ -2,7 +2,6 @@ package com.thinkbiganalytics.metadata.jpa.feed;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
@@ -20,7 +19,6 @@ import com.thinkbiganalytics.metadata.jpa.jobrepo.job.QJpaBatchJobExecution;
 import com.thinkbiganalytics.metadata.jpa.support.GenericQueryDslFilter;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
-import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.ReadablePeriod;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -168,14 +166,17 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
             Projections.constructor(JpaBatchJobExecutionStatusCounts.class,
                                     jobState.as("status"),
                                     Expressions.constant(feedName),
-                                    jobExecution.startTime.year(),
-                                    jobExecution.startTime.month(),
-                                    jobExecution.startTime.dayOfMonth(),
-                                    jobExecution.count().as("count")))
+            jobExecution.startYear,
+            jobExecution.startMonth,
+            jobExecution.startDay ,
+            jobExecution.count().as("count")))
             .from(jobExecution)
-            .where(jobExecution.startTime.after(DateTime.now().minus(period))
+
+            .where(jobExecution.startTime.goe(DateTime.now().minus(period))
             .and(jobExecution.jobInstance.feed.name.eq(feedName)))
-            .groupBy(jobState, jobExecution.startTime.year(), jobExecution.startTime.month(), jobExecution.startTime.dayOfMonth());
+        .groupBy(jobState, jobExecution.startYear,
+                 jobExecution.startMonth,
+                 jobExecution.startDay);
 
         return (List<JobStatusCount>) query.fetch();
 

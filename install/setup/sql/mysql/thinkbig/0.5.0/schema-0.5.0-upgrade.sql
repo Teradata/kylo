@@ -28,6 +28,13 @@ ADD COLUMN `FEED_ID` VARCHAR(45) NULL;
 end if;
 
 
+
+
+
+
+
+
+
 /**
 CREATE the table to store the Check data feed refs
  */

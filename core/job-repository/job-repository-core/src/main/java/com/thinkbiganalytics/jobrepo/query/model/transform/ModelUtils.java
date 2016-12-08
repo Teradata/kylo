@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.jobrepo.query.model.transform;
 
+import com.thinkbiganalytics.DateTimeUtil;
 import com.thinkbiganalytics.jobrepo.query.model.SearchResult;
 import com.thinkbiganalytics.jobrepo.query.model.SearchResultImpl;
 
@@ -15,11 +16,13 @@ public class ModelUtils {
         if(start == null){
             return 0L;
         }
-        return (stop != null ? (stop.getMillis() - start.getMillis()) : DateTime.now().getMillis() - start.getMillis());
+        return (stop != null ? (stop.getMillis() - start.getMillis()) : DateTimeUtil.getNowUTCTime().getMillis() - start.getMillis());
     }
 
-    public static Long timeSinceEndTime( DateTime stop){
-        return (stop != null ? (DateTime.now().getMillis() - stop.getMillis()) : 0L);
+    public static Long timeSince(DateTime start, DateTime stop) {
+        DateTime now = DateTimeUtil.getNowUTCTime();
+        DateTime startTime = start != null ? start : now;
+        return (stop != null ? (now.getMillis() - stop.getMillis()) : now.getMillis() - startTime.getMillis());
     }
 
     public static SearchResult toSearchResult(Page page){

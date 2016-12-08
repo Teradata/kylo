@@ -57,7 +57,7 @@ public class JobModelTransform {
         job.setStatus(ExecutionStatus.valueOf(jobExecution.getStatus().name()));
         job.setJobName(jobExecution.getJobInstance().getJobName());
         job.setRunTime(ModelUtils.runTime(jobExecution.getStartTime(), jobExecution.getEndTime()));
-        job.setTimeSinceEndTime(ModelUtils.timeSinceEndTime(jobExecution.getEndTime()));
+        job.setTimeSinceEndTime(ModelUtils.timeSince(jobExecution.getStartTime(), jobExecution.getEndTime()));
         job.setInstanceId(jobExecution.getJobInstance().getJobInstanceId());
         if (jobExecution.getJobInstance() != null && jobExecution.getJobInstance().getFeed() != null) {
             job.setFeedName(jobExecution.getJobInstance().getFeed().getName());
@@ -80,7 +80,7 @@ public class JobModelTransform {
         step.setExitDescription(stepExecution.getExitMessage());
         step.setExitCode(stepExecution.getExitCode().name());
         step.setId(stepExecution.getStepExecutionId());
-        step.setTimeSinceEndTime(ModelUtils.timeSinceEndTime(stepExecution.getEndTime()));
+        step.setTimeSinceEndTime(ModelUtils.timeSince(stepExecution.getStartTime(), stepExecution.getEndTime()));
         step.setRunTime(ModelUtils.runTime(stepExecution.getStartTime(), stepExecution.getEndTime()));
         Map<String, String> stepExecutionContext = stepExecution.getStepExecutionContextAsMap();
         if (stepExecutionContext != null) {
@@ -101,7 +101,7 @@ public class JobModelTransform {
         executedJob.setStatus(ExecutionStatus.valueOf(jobExecution.getStatus().name()));
         executedJob.setJobName(jobExecution.getFeedName());
         executedJob.setRunTime(ModelUtils.runTime(jobExecution.getStartTime(), jobExecution.getEndTime()));
-        executedJob.setTimeSinceEndTime(ModelUtils.timeSinceEndTime(jobExecution.getEndTime()));
+        executedJob.setTimeSinceEndTime(ModelUtils.timeSince(jobExecution.getStartTime(), jobExecution.getEndTime()));
         executedJob.setInstanceId(jobExecution.getJobInstanceId());
         return executedJob;
 

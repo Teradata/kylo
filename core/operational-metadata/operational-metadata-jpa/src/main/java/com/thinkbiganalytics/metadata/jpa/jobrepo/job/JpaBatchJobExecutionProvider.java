@@ -2,10 +2,8 @@ package com.thinkbiganalytics.metadata.jpa.jobrepo.job;
 
 import com.google.common.collect.ImmutableList;
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.CaseBuilder;
-import com.querydsl.core.types.dsl.EntityPathBase;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -585,13 +583,12 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
             query = factory.select(
             Projections.constructor(JpaBatchJobExecutionStatusCounts.class,
                                     jobState.as("status"),
-                                    jobExecution.startTime.year(),
-                                    jobExecution.startTime.month(),
-                                    jobExecution.startTime.dayOfMonth(),
+                                    jobExecution.startYear,
+                                    jobExecution.startMonth,
+                                    jobExecution.startDay,
                                     jobExecution.count().as("count")))
-            //  SQLExpressions.datetrunc(DatePart.day, jobExecution.startTime).as("date"))
             .from(jobExecution)
-            .groupBy(jobState, jobExecution.startTime.year(), jobExecution.startTime.month(), jobExecution.startTime.dayOfMonth());
+            .groupBy(jobState, jobExecution.startYear,jobExecution.startMonth,jobExecution.startDay);
 
         return (List<JobStatusCount>) query.fetch();
 
@@ -613,7 +610,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
             .otherwise(jobExecution.status.stringValue());
 
         BooleanBuilder whereBuilder = new BooleanBuilder();
-        whereBuilder.and(jobExecution.startTime.after(DateTime.now().minus(period)));
+        whereBuilder.and(jobExecution.startTime.goe(DateTime.now().minus(period)));
         if (StringUtils.isNotBlank(filter)) {
             whereBuilder.and(GenericQueryDslFilter.buildFilter(jobExecution, filter));
         }
@@ -622,13 +619,13 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
             query = factory.select(
             Projections.constructor(JpaBatchJobExecutionStatusCounts.class,
                                     jobState.as("status"),
-                                    jobExecution.startTime.year(),
-                                    jobExecution.startTime.month(),
-                                    jobExecution.startTime.dayOfMonth(),
+                                    jobExecution.startYear,
+                                    jobExecution.startMonth,
+                                    jobExecution.startDay,
                                     jobExecution.count().as("count")))
             .from(jobExecution)
             .where(whereBuilder)
-            .groupBy(jobState, jobExecution.startTime.year(), jobExecution.startTime.month(), jobExecution.startTime.dayOfMonth());
+            .groupBy(jobState,  jobExecution.startYear,jobExecution.startMonth,jobExecution.startDay);
 
         return (List<JobStatusCount>) query.fetch();
 

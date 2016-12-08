@@ -38,7 +38,7 @@ public class FeedModelTransform {
         executedFeed.setStatus(ExecutionStatus.valueOf(jobExecution.getStatus().name()));
         executedFeed.setName(feedName);
         executedFeed.setRunTime(ModelUtils.runTime(jobExecution.getStartTime(), jobExecution.getEndTime()));
-        executedFeed.setTimeSinceEndTime(ModelUtils.timeSinceEndTime(jobExecution.getEndTime()));
+        executedFeed.setTimeSinceEndTime(ModelUtils.timeSince(jobExecution.getStartTime(), jobExecution.getEndTime()));
         executedFeed.setFeedInstanceId(jobExecution.getJobInstance().getJobInstanceId());
         return executedFeed;
 
@@ -56,7 +56,7 @@ public class FeedModelTransform {
         executedFeed.setStatus(ExecutionStatus.valueOf(jobExecution.getStatus().name()));
         executedFeed.setName(jobExecution.getFeedName());
         executedFeed.setRunTime(ModelUtils.runTime(jobExecution.getStartTime(), jobExecution.getEndTime()));
-        executedFeed.setTimeSinceEndTime(ModelUtils.timeSinceEndTime(jobExecution.getEndTime()));
+        executedFeed.setTimeSinceEndTime(ModelUtils.timeSince(jobExecution.getStartTime(), jobExecution.getEndTime()));
         executedFeed.setFeedInstanceId(jobExecution.getJobInstanceId());
         return executedFeed;
 
@@ -73,7 +73,7 @@ public class FeedModelTransform {
         executedFeed.setStatus(ExecutionStatus.valueOf(feedHealth.getStatus().name()));
         executedFeed.setName(feedHealth.getFeedName());
         executedFeed.setRunTime(ModelUtils.runTime(feedHealth.getStartTime(), feedHealth.getEndTime()));
-        executedFeed.setTimeSinceEndTime(ModelUtils.timeSinceEndTime(feedHealth.getEndTime()));
+        executedFeed.setTimeSinceEndTime(ModelUtils.timeSince(feedHealth.getStartTime(), feedHealth.getEndTime()));
         executedFeed.setFeedInstanceId(feedHealth.getJobInstanceId());
         return executedFeed;
 
