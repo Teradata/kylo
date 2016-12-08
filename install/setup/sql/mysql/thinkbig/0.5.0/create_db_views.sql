@@ -1,3 +1,4 @@
+use thinkbig;
 
 /**
  View that maps a Check Data Feed to its corresponding Job Feed
