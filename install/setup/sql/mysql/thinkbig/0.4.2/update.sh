@@ -1,4 +1,3 @@
-use thinkbig;
 #!/bin/bash
 
 MY_DIR=$(dirname $0)
