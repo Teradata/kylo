@@ -216,7 +216,7 @@ public class DerivedDatasourceFactory {
         types.add(feedMetadata.getInputProcessorType());
         if(feedMetadata.getInputProcessorType().equals("com.thinkbiganalytics.nifi.v2.core.watermark.LoadHighWaterMark")){
            types.add("com.thinkbiganalytics.nifi.v2.sqoop.core.ImportSqoop");
-            types.add("com.thinkbiganalytics.nifi.v2.ingest.GetTableData");
+           types.add("com.thinkbiganalytics.nifi.v2.ingest.GetTableData");
         }
         return types;
     }

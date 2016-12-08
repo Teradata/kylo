@@ -373,7 +373,7 @@ public class PropertyExpressionResolver {
                     String replacedString = property.getValue();
                     //cannot contain itself
 
-                    if (!replacedString.contains("${" + property.getKey() + "}") && replacedString != null && (!resolvedValues.containsKey(property.getKey()) || (!resolvedValues.get(property.getKey())
+                    if (replacedString != null && !replacedString.contains("${" + property.getKey() + "}") && (!resolvedValues.containsKey(property.getKey()) || (!resolvedValues.get(property.getKey())
                         .contains(replacedString)))) {
                         resolvedValues.computeIfAbsent(property.getKey(), (key) -> new HashSet<String>()).add(replacedString);
                         ResolvedVariables resolvedVariables = resolveVariables(replacedString, properties, resolvedValues);
