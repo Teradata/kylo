@@ -272,9 +272,9 @@ Ahead of time prepare the list below to speed up installation
 
 . Test with Kerberos test client
 
-Kylo provides a kerberos test client to ensure the keytabs work in the JVM. There have been cases where kinit works on the command line but getting a kerberos ticket breaks in the JVM.
+  Kylo provides a kerberos test client to ensure the keytabs work in the JVM. There have been cases where kinit works on the command line but getting a kerberos ticket breaks in the JVM.
 
-https://github.com/ThinkBigAnalytics/data-lake-accelerator/tree/master/core/kerberos/kerberos-test-client
+  https://github.com/ThinkBigAnalytics/data-lake-accelerator/tree/master/core/kerberos/kerberos-test-client
 
 . Optional - Test Beeline connection
 
@@ -346,6 +346,13 @@ https://github.com/ThinkBigAnalytics/data-lake-accelerator/tree/master/core/kerb
     * ActiveMQ
     * Java (Option #2 most likely)
 
+. Update Elasticsearch configuration
+
+    In order for Elasticsearch to allow access from an external server you need to specify the hostname in addition to localhost
+
+    $ vi /etc/elasticsearch/elasticsearch.yml
+    network.host: localhost,<KYLO_EDGE_HOST>
+
 . Edit the thinbig-spark-shell configuration file
 
     [root thinkbig]# vi /opt/thinkbig/thinkbig-spark-shell/conf/application.properties
@@ -397,7 +404,7 @@ https://github.com/ThinkBigAnalytics/data-lake-accelerator/tree/master/core/kerb
     nifi.service.hive_thrift_service.kerberos_keytab=/etc/security/keytabs/nifi.service.keytab
     nifi.service.hive_thrift_service.hadoop_configuration_resources=/etc/hadoop/conf/core-site.xml,/etc/hadoop/conf/hdfs-site.xml
 
-    nifi.service.think_big_metadata_service.rest_client_url=http://ip-10-0-158-39.us-west-2.compute.internal:8400/proxy/metadata
+    nifi.service.think_big_metadata_service.rest_client_url=http://<KYLO_EDGE_HOSTNAME>:8400/proxy/metadata
 
     nifi.executesparkjob.sparkmaster=yarn-cluster
     nifi.executesparkjob.extra_jars=/usr/hdp/current/spark-client/lib/datanucleus-api-jdo-3.2.6.jar,/usr/hdp/current/spark-client/lib/datanucleus-core-3.2.10.jar,/usr/hdp/current/spark-client/lib/datanucleus-rdbms-3.2.9.jar
@@ -407,10 +414,10 @@ https://github.com/ThinkBigAnalytics/data-lake-accelerator/tree/master/core/kerb
     nifi.all_processors.kerberos_keytab=/etc/security/keytabs/nifi.service.keytab
     nifi.all_processors.hadoop_configuration_resources=/etc/hadoop/conf/core-site.xml,/etc/hadoop/conf/hdfs-site.xml
 
-    # Add this to the properties file
-    nifi.getjmstopic.url=tcp://<KYLO_EDGE_HOSTNAME>:61616
-    nifi.putjms.url=tcp://<KYLO_EDGE_HOSTNAME>:61616
-    nifi.indexelasticsearch.hostname=<KYLO_EDGE_HOSTNAME>
+    # Set the elasticsearch hostname
+    config.elasticsearch.hostName=<KYLO_EDGE_HOSTNAME>
+    # Set the JMS server hostname for the Kylo hosted JMS server
+    config.elasticsearch.jms.url=tcp://<KYLO_EDGE_HOSTNAME>:61616
 
 . Install the Ranger Plugin
 
@@ -520,18 +527,83 @@ Note: Kylo supports user impersonation ( add doc and reference it)
 
 == Import Kylo Templates
 
-. Import Elasticsearch templates
+. Import Index Schema Template (For Elasticsearch)
 
-. Import data ingest template
-.. manually update the spark validate process to add - ${table_field_policy_json_file}
-.. Edit the "Upload to HDFS" and remove "Remote Owner" and "Remote Group"
+    .. Locate the index_schema_service.zip file. You will need the file locally to upload it. You can find it in one of two places:
+      ... <data_lake_accelerator_project>/samples/feeds/nifi-1.0/
+      ... /opt/thinkbig/setup/data/feeds/nifi-1.0
+    .. Go to the the Feeds page in Kylo
+    .. Click on the plus icon to add a feed
+    .. Select "Import from a file"
+    .. Choose the index_schema_service.zip file
+    .. Click "Import Feed"
+
+. Import Index Text Template (For Elasticsearch)
+
+    .. Locate the index_text_service.zip file. You will need the file locally to upload it. You can find it in one of two places:
+      ... <data_lake_accelerator_project>/samples/feeds/nifi-1.0/
+      ... /opt/thinkbig/setup/data/feeds/nifi-1.0
+    .. Go to the the Feeds page in Kylo
+    .. Click on the plus icon to add a feed
+    .. Select "Import from a file"
+    .. Choose the index_text_service.zip file
+    .. Click "Import Feed"
+
+. Note: An issue was found with the getJmsTopic processor URL. If you import the template using localhost and need to change it there is a bug that won't allow the URL to be changed. The value is peristed to a file.
+
+    [root@ip-10-0-178-60 conf]# pwd
+    /opt/nifi/current/conf
+    [root@ip-10-0-178-60 conf]# ls -l
+    total 48
+    -rw-rw-r-- 1 nifi users 3132 Dec  6 22:05 bootstrap.conf
+    -rw-rw-r-- 1 nifi users 2119 Aug 26 13:51 bootstrap-notification-services.xml
+    -rw-rw-r-- 1 nifi nifi   142 Dec  7 00:36 jms-subscription-2bd64d8a-2b1f-1ef0-e961-e50680e34686
+    -rw-rw-r-- 1 nifi nifi   142 Dec  7 00:54 jms-subscription-2bd64d97-2b1f-1ef0-7fc9-279eacf076dd
+    -rw-rw-r-- 1 nifi users 8243 Aug 26 13:51 logback.xml
+    -rw-rw-r-- 1 nifi users 8701 Dec  7 00:52 nifi.properties
+    -rw-rw-r-- 1 nifi users 3637 Aug 26 13:51 state-management.xml
+    -rw-rw-r-- 1 nifi users 1437 Aug 26 13:51 zookeeper.properties
+
+    .. Edit the file named named "jms-subscription-<processor_id>"
+    .. Change the hostname
+    .. Restart NiFi
+
+. Import the data ingest template
+    .. Go to the templates page and import the data ingest template
+    .. Manually update the spark validate processor to add
+        ... Add this variable to the ${table_field_policy_json_file}. It should look like this
+
+           ${table_field_policy_json_file},/usr/hdp/current/spark-client/conf/hive-site.xml
+
+    .. Edit the "Upload to HDFS" and remove "Remote Owner" and "Remote Group" (since we aren't using superuser)
+
+. Update NiFi processors for Kylo template versions prior to 0.5.0
+
+    We need to update a few settings in the elasticsearch and data ingest template. This is not required for templates in 0.5.0 or greater since they will be set during import
+
+    .. Login to NiFi
+    .. Go to the reusable_templates -> standard-ingest process group
+        ... Edit the "Register Index" processor and set the URL to the <KYLO_EDGE_HOSTNAME>
+        ... Edit the "Update Index" processor and set teh URL to the <KYLO_EDGE_HOSTNAME>
+    .. Go to the system -> index_schema_service process group
+        ... Edit the "Receive Schema Index Request" processor and set the URL value to <KYLO_EDGE_HOSTNAME>
+        ... In addition to the URL field you might have to edit the jms-subscription property file as instructed above
+        ... Edit the "Index Metadata Elasticsearch" processor and set the HostName value to <KYLO_EDGE_HOSTNAME>
+    .. Go to the system -> index_text_service process group
+        ... Edit the "Receive Index Request" processor and set the URL value to <KYLO_EDGE_HOSTNAME>
+        ... In addition to the URL field you might have to edit the jms-subscription property file as instructed above
+        ... Edit the "Update Elasticsearch" processor and set the HostName value to <KYLO_EDGE_HOSTNAME>
+
+
+. # Import the transform feed
+
+  Create a feed off a table and test
+
+
+== Create Data Ingest Feed Test
 
 . Create a userdata feed to test
 
 . Test the feed
 
     cp -p /opt/thinkbig/setup/data/sample-data/userdata1.csv /var/dropzone/
-
-. # Import the transform feed
-
-  Create a feed off a table and test
