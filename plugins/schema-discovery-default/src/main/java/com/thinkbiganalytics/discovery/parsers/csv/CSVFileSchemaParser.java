@@ -15,12 +15,12 @@ import com.thinkbiganalytics.discovery.util.ParserHelper;
 import com.thinkbiganalytics.discovery.util.TableSchemaType;
 import com.thinkbiganalytics.policy.PolicyProperty;
 import com.thinkbiganalytics.policy.PolicyPropertyTypes;
-import com.thinkbiganalytics.policy.PropertyLabelValue;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.csv.QuoteMode;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.LoggerFactory;
@@ -32,6 +32,8 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+
+import javax.annotation.Nonnull;
 
 @SchemaParser(name = "CSV", description = "Supports delimited text files with a field delimiter and optional escape and quote characters.", tags = {"CSV", "TSV"})
 public class CSVFileSchemaParser implements FileSchemaParser {
@@ -68,13 +70,13 @@ public class CSVFileSchemaParser implements FileSchemaParser {
             format = CSVFormat.DEFAULT.withAllowMissingColumnNames();
 
             if (StringUtils.isNotEmpty(separatorChar)) {
-                format = format.withDelimiter(separatorChar.charAt(0));
+                format = format.withDelimiter(toChar(separatorChar).charAt(0));
             }
             if (StringUtils.isNotEmpty(escapeChar)) {
-                format = format.withEscape(escapeChar.charAt(0));
+                format = format.withEscape(toChar(escapeChar).charAt(0));
             }
             if (StringUtils.isNotEmpty(quoteChar)) {
-                format = format.withQuoteMode(QuoteMode.MINIMAL).withQuote(quoteChar.charAt(0));
+                format = format.withQuoteMode(QuoteMode.MINIMAL).withQuote(toChar(quoteChar).charAt(0));
             }
         }
 
@@ -184,7 +186,7 @@ public class CSVFileSchemaParser implements FileSchemaParser {
 
     private String deriveSeparatorRecordFormat() {
         String template = " 'separatorChar' = '%s'";
-        return String.format(template, separatorChar);
+        return String.format(template, escapeChar(separatorChar));
     }
 
     private String deriveQuoteRecordFormat() {
@@ -192,7 +194,7 @@ public class CSVFileSchemaParser implements FileSchemaParser {
             return "";
         }
         String template = " ,'quoteChar' = '%s'";
-        return String.format(template, quoteChar);
+        return String.format(template, escapeChar(quoteChar));
     }
 
     private String deriveEscapeCharRecordFormat() {
@@ -200,18 +202,14 @@ public class CSVFileSchemaParser implements FileSchemaParser {
             return "";
         }
         String template = " ,'escapeChar' = '%s'";
-        return String.format(template, escapeChar);
+        return String.format(template, escapeChar(escapeChar));
     }
 
 
     private void validate() {
-        Validate.isTrue(separatorChar != null && separatorChar.length() == 1, "Legal separator character required.");
-        if (!StringUtils.isEmpty(quoteChar)) {
-            Validate.isTrue(quoteChar != null && quoteChar.length() == 1, "Legal quote character required.");
-        }
-        if (!StringUtils.isEmpty(escapeChar)) {
-            Validate.isTrue(escapeChar != null && escapeChar.length() == 1, "Legal escape character required.");
-        }
+        Validate.isTrue(separatorChar != null && (separatorChar.length() == 1 || separatorChar.length() == 2), "Legal separator character required.");
+        Validate.isTrue(StringUtils.isEmpty(quoteChar) || quoteChar.length() <= 2, "Legal quote character required.");
+        Validate.isTrue(StringUtils.isEmpty(escapeChar) || escapeChar.length() <= 2, "Legal escape character required.");
         Validate.inclusiveBetween(1, MAX_ROWS, numRowsToSample, "Cannot sample more than " + MAX_ROWS + ".");
     }
 
@@ -249,5 +247,32 @@ public class CSVFileSchemaParser implements FileSchemaParser {
 
     public String getEscapeChar() {
         return escapeChar;
+    }
+
+    /**
+     * Escapes the specified character for use in a Hive query.
+     *
+     * @param character the character to escape
+     * @return the escaped character
+     */
+    @Nonnull
+    private String escapeChar(@Nonnull final String character) {
+        return (character.length() == 1) ? StringEscapeUtils.escapeJava(character) : character;
+    }
+
+    /**
+     * Converts the specified string to a character.
+     *
+     * @param character the escaped string
+     * @return the character
+     */
+    @Nonnull
+    private String toChar(@Nonnull final String character) {
+        if (character.length() == 1) {
+            return character;
+        } else if (character.length() == 2 && character.charAt(0) == '\\') {
+            return StringEscapeUtils.unescapeJava(character);
+        }
+        throw new IllegalArgumentException("Not a valid character: " + character);
     }
 }
