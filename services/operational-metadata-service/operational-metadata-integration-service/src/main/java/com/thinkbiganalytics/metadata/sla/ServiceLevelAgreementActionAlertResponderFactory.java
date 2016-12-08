@@ -59,7 +59,7 @@ public class ServiceLevelAgreementActionAlertResponderFactory implements AlertRe
                     response.handle("Handled SLA Alert");
                 } catch (Exception e) {
                     log.error("ERROR Handling Alert Error {} ", e.getMessage());
-                    response.unHandle("Failed to handle violation");
+                    response.unhandle("Failed to handle violation");
                 }
             }
         }

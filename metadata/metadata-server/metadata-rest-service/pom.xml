@@ -37,8 +37,8 @@
             </exclusions>
         </dependency>
         <!-- <dependency> <groupId>io.projectreactor</groupId> <artifactId>reactor-bus</artifactId> 
-            <version>${projectreactor.version}</version> </dependency> <dependency> <groupId>io.projectreactor</groupId> 
-            <artifactId>reactor-net</artifactId> <version>${projectreactor.version}</version> 
+            <version>${projectprojectreactor.version}</version> </dependency> <dependency> <groupId>io.projectreactor</groupId> 
+            <artifactId>reactor-net</artifactId> <version>${projectprojectreactor.version}</version> 
             </dependency> <dependency> <groupId>io.netty</groupId> <artifactId>netty-all</artifactId> 
             <version>${netty.version}</version> </dependency> -->
 

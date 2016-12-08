@@ -4,7 +4,7 @@
 package com.thinkbiganalytics.alerts.api;
 
 /**
- * Defines a kind of listener that may respond to, and change again, the change of the state 
+ * Defines a kind of listener that may respond to and the change of the state 
  * of an alert.  All responders that have been registered with the same alert provider are
  * guaranteed to see the latest state of the alert by the time this responder is invoked.
  * In other words, all responders will see any subsequent state changes that preceding responders

@@ -1,23 +1,42 @@
 package com.thinkbiganalytics.alerts.api.core;
 
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import java.io.Serializable;
 import java.lang.reflect.Proxy;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import javax.inject.Inject;
 
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Scope;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
@@ -34,16 +53,23 @@ import com.thinkbiganalytics.alerts.api.core.AggregatingAlertProvider.AlertInvoc
 import com.thinkbiganalytics.alerts.api.core.AggregatingAlertProvider.SourceAlertID;
 import com.thinkbiganalytics.alerts.spi.AlertManager;
 import com.thinkbiganalytics.alerts.spi.AlertSource;
+import com.thinkbiganalytics.metadata.event.reactor.ReactorContiguration;
 
+@RunWith(SpringJUnit4ClassRunner.class)
+@SpringApplicationConfiguration(classes = { ReactorContiguration.class, AggregatingAlertProviderTest.TestConfig.class })
 public class AggregatingAlertProviderTest {
     
-    private AggregatingAlertProvider provider = new AggregatingAlertProvider();
+    @Inject
+    private AggregatingAlertProvider provider;
     
     @Mock
     private AlertSource source;
     
     @Mock
     private AlertManager manager;
+    
+    @Mock
+    private AlertResponse response;
     
     @Mock
     private AlertListener listener;
@@ -55,8 +81,6 @@ public class AggregatingAlertProviderTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         
-        provider.setListenersExecutor(MoreExecutors.directExecutor());
-        provider.setRespondersExecutor(MoreExecutors.directExecutor());
         provider.addListener(this.listener);
         provider.addResponder(this.responder);
     }
@@ -97,8 +121,8 @@ public class AggregatingAlertProviderTest {
         this.provider.addAlertSource(this.source);
         this.provider.addAlertManager(this.manager);
         
-        when(this.source.getAlert(any(Alert.ID.class))).thenReturn(srcAlert);
-        when(this.manager.getAlert(any(Alert.ID.class))).thenReturn(mgrAlert);
+        when(this.source.getAlert(any(Alert.ID.class))).thenReturn(Optional.of(srcAlert));
+        when(this.manager.getAlert(any(Alert.ID.class))).thenReturn(Optional.of(mgrAlert));
         
         Alert getMgrAlert = providerToSourceAlertFunction().apply(this.provider.getAlert(mgrId));
         Alert getSrcAlert = providerToSourceAlertFunction().apply(this.provider.getAlert(srcId));
@@ -114,7 +138,7 @@ public class AggregatingAlertProviderTest {
         
         this.provider.addAlertSource(this.source);
         
-        when(this.source.getAlertsSince(any(DateTime.class))).thenAnswer(iteratorAnswer(srcAlert));
+        when(this.source.getAlerts(any(DateTime.class))).thenAnswer(iteratorAnswer(srcAlert));
         
         Iterator<? extends Alert> results = this.provider.getAlerts(since);
         Iterator<? extends Alert> itr = Iterators.transform(results, providerToSourceAlertFunction());
@@ -130,7 +154,7 @@ public class AggregatingAlertProviderTest {
         
         this.provider.addAlertManager(this.manager);
         
-        when(this.manager.getAlertsSince(any(DateTime.class))).thenAnswer(iteratorAnswer(mgrAlert));
+        when(this.manager.getAlerts(any(DateTime.class))).thenAnswer(iteratorAnswer(mgrAlert));
         
         Iterator<? extends Alert> results = this.provider.getAlerts(since);
         Iterator<? extends Alert> itr = Iterators.transform(results, providerToSourceAlertFunction());
@@ -148,8 +172,8 @@ public class AggregatingAlertProviderTest {
         this.provider.addAlertSource(this.source);
         this.provider.addAlertManager(this.manager);
         
-        when(this.source.getAlertsSince(any(DateTime.class))).thenAnswer(iteratorAnswer(srcAlert));
-        when(this.manager.getAlertsSince(any(DateTime.class))).thenAnswer(iteratorAnswer(mgrAlert));
+        when(this.source.getAlerts(any(DateTime.class))).thenAnswer(iteratorAnswer(srcAlert));
+        when(this.manager.getAlerts(any(DateTime.class))).thenAnswer(iteratorAnswer(mgrAlert));
         
         Iterator<? extends Alert> results = this.provider.getAlerts(since);
         Iterator<? extends Alert> itr = Iterators.transform(results, providerToSourceAlertFunction());
@@ -168,9 +192,9 @@ public class AggregatingAlertProviderTest {
         this.provider.addAlertSource(this.source);
         this.provider.addAlertManager(this.manager);
         
-        when(this.source.getAlert(any(Alert.ID.class))).thenReturn(sinceAlert);
-        when(this.source.getAlertsSince(any(DateTime.class))).thenAnswer(iteratorAnswer(srcAlert));
-        when(this.manager.getAlertsSince(any(DateTime.class))).thenAnswer(iteratorAnswer(mgrAlert));
+        when(this.source.getAlert(any(Alert.ID.class))).thenReturn(Optional.of(sinceAlert));
+        when(this.source.getAlerts(any(DateTime.class))).thenAnswer(iteratorAnswer(srcAlert));
+        when(this.manager.getAlerts(any(DateTime.class))).thenAnswer(iteratorAnswer(mgrAlert));
         
         Iterator<? extends Alert> results = this.provider.getAlerts(new SourceAlertID(sinceAlert.getId(), this.source));
         Iterator<? extends Alert> itr = Iterators.transform(results, providerToSourceAlertFunction());
@@ -185,7 +209,7 @@ public class AggregatingAlertProviderTest {
         
         this.provider.addAlertManager(this.manager);
         
-        when(this.manager.getAlert(any(Alert.ID.class))).thenReturn(mgrAlert);
+        when(this.manager.getAlert(any(Alert.ID.class))).thenReturn(Optional.of(mgrAlert));
         
         this.provider.respondTo(new SourceAlertID(mgrAlert.getId(), this.manager), this.responder);
         
@@ -198,7 +222,7 @@ public class AggregatingAlertProviderTest {
         
         this.provider.addAlertManager(this.manager);
         
-        when(this.manager.getAlert(any(Alert.ID.class))).thenReturn(mgrAlert);
+        when(this.manager.getAlert(any(Alert.ID.class))).thenReturn(Optional.of(mgrAlert));
         
         this.provider.respondTo(new SourceAlertID(mgrAlert.getId(), this.manager), this.responder);
         
@@ -206,14 +230,22 @@ public class AggregatingAlertProviderTest {
     }
     
     @Test
-    public void testRespondToChange() {
+    public void testRespondToChange() throws InterruptedException {
         TestAlert initMgrAlert = new TestAlert(this.manager, true);
-        TestAlert resultMgrAlert = new TestAlert(this.manager, true);
-        
+        CountDownLatch latch = new CountDownLatch(1);
+
         this.provider.addAlertManager(this.manager);
         
-        when(this.manager.getAlert(any(Alert.ID.class))).thenReturn(initMgrAlert);
-        when(this.manager.changeState(any(Alert.class), any(Alert.State.class), any())).thenReturn(resultMgrAlert);
+        when(this.manager.getAlert(any(Alert.ID.class))).thenReturn(Optional.of(initMgrAlert));
+        when(this.manager.getResponse(any(Alert.class))).thenReturn(this.response);
+        when(this.response.handle(any(Serializable.class))).thenReturn(initMgrAlert);
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                latch.countDown();
+                return null;
+            }
+        }).when(this.listener).alertChange(any(Alert.class));
         
         this.provider.respondTo(new SourceAlertID(initMgrAlert.getId(), this.manager), new AlertResponder() {
             @Override
@@ -222,24 +254,41 @@ public class AggregatingAlertProviderTest {
             }
         });
         
-        verify(this.manager).changeState(any(Alert.class), eq(Alert.State.HANDLED), eq("handled"));
+        latch.await(10, TimeUnit.SECONDS);
+        
+        verify(this.response).handle(eq("handled"));
         verify(this.listener, atLeastOnce()).alertChange(any(Alert.class));
-        verify(this.responder, atLeastOnce()).alertChange(any(Alert.class), any(AlertResponse.class));
     }
 
     @Test
-    public void testAlertsAvailable() {
+    public void testAlertsAvailable() throws InterruptedException {
         TestAlert mgrAlert = new TestAlert(this.manager, true);
         TestAlert srcAlert = new TestAlert(this.source);
+        CountDownLatch latch = new CountDownLatch(3);
         
         this.provider.addAlertSource(this.source);
         this.provider.addAlertManager(this.manager);
         
-        when(this.source.getAlertsSince(any(DateTime.class))).thenAnswer(iteratorAnswer(srcAlert));
-        when(this.manager.getAlertsSince(any(DateTime.class))).thenAnswer(iteratorAnswer(mgrAlert));
-        when(this.manager.getAlert(any(Alert.ID.class))).thenReturn(mgrAlert);
+        when(this.source.getAlerts(any(DateTime.class))).thenAnswer(iteratorAnswer(srcAlert));
+        when(this.manager.getAlerts(any(DateTime.class))).thenAnswer(iteratorAnswer(mgrAlert));
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                latch.countDown();
+                return null;
+            }
+        }).when(this.listener).alertChange(any(Alert.class));
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) throws Throwable {
+                latch.countDown();
+                return null;
+            }
+        }).when(this.responder).alertChange(any(Alert.class), any(AlertResponse.class));
         
         this.provider.alertsAvailable(2);
+        
+        latch.await(10, TimeUnit.SECONDS);
         
         verify(this.listener, times(2)).alertChange(any(Alert.class));
         verify(this.responder, times(1)).alertChange(any(Alert.class), any(AlertResponse.class));
@@ -263,9 +312,12 @@ public class AggregatingAlertProviderTest {
         return new Function<Alert, Alert>() {
             @Override
             public Alert apply(Alert input) {
-                Proxy.isProxyClass(input.getClass());
-                AlertInvocationHandler handler = (AlertInvocationHandler) Proxy.getInvocationHandler(input);
-                return handler.getWrappedAlert();
+                if (Proxy.isProxyClass(input.getClass())) {
+                    AlertInvocationHandler handler = (AlertInvocationHandler) Proxy.getInvocationHandler(input);
+                    return handler.getWrappedAlert();
+                } else {
+                    return input;
+                }
             }
         };
     }
@@ -325,6 +377,11 @@ public class AggregatingAlertProviderTest {
         }
 
         @Override
+        public DateTime getCreatedTime() {
+            return this.createdTime;
+        }
+
+        @Override
         public AlertSource getSource() {
             return this.source;
         }
@@ -341,7 +398,7 @@ public class AggregatingAlertProviderTest {
 
         @Override
         @SuppressWarnings("unchecked")
-        public <C> C getContent() {
+        public <C extends Serializable> C getContent() {
             return (C) new Boolean(this.actionable);
         }
     }
@@ -372,9 +429,20 @@ public class AggregatingAlertProviderTest {
         }
 
         @Override
-        public <C> C getContent() {
+        public <C extends Serializable> C getContent() {
             return null;
         }
     }
 
+    @Configuration
+    public static class TestConfig {
+        @Bean(name = "alertProvider")
+        @Primary
+        @Scope("prototype")
+        public AggregatingAlertProvider alertProvider() {
+            AggregatingAlertProvider provider = new AggregatingAlertProvider();
+            provider.setAvailableAlertsExecutor(MoreExecutors.directExecutor());
+            return provider;
+        }
+    }
 }

@@ -7,6 +7,8 @@ import java.io.Serializable;
 import java.net.URI;
 import java.util.List;
 
+import org.joda.time.DateTime;
+
 import com.thinkbiganalytics.alerts.spi.AlertSource;
 
 /**
@@ -36,7 +38,7 @@ public interface Alert {
     
     /**
      * A unique URI defining the type of alert this is.  URIs allow for a more heirarichical 
-     * type structure.
+     * name space defining the type.
      * @return the unique type URI
      */
     URI getType();
@@ -51,6 +53,13 @@ public interface Alert {
      */
     Level getLevel();
     
+    /**
+     * Gets the time when this alert was created.  Note that it is usually the same
+     * time as the change time of the oldest event in the change event list.
+     * @return the time this alert was created.
+     */
+    DateTime getCreatedTime();
+
     /**
      * @return the alert source that produced this alert
      */
@@ -75,5 +84,5 @@ public interface Alert {
      * returned from this method is defined by the type of alert this is.
      * @return a particular content object based this alert type
      */
-    <C> C getContent();
+    <C extends Serializable> C getContent();
 }

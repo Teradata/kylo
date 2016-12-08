@@ -12,10 +12,6 @@
     </parent>
     <packaging>pom</packaging>
     
-    <properties>
-        <reactor.version>2.0.8.RELEASE</reactor.version>
-    </properties>
-    
     <modules>
         <module>metadata-orientdb</module>
         <module>metadata-api</module>

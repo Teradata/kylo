@@ -5,6 +5,7 @@ package com.thinkbiganalytics.alerts.spi;
 
 import java.io.Serializable;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.Set;
 
 import org.joda.time.DateTime;
@@ -23,11 +24,11 @@ public interface AlertSource {
     
     void addReceiver(AlertNotifyReceiver receiver);
     
-    Alert getAlert(Alert.ID id);
+    Optional<Alert> getAlert(Alert.ID id);
     
-    Iterator<? extends Alert> getAlerts();
+    Iterator<Alert> getAlerts();
 
-    Iterator<? extends Alert> getAlertsSince(DateTime since);
+    Iterator<Alert> getAlerts(DateTime since);
     
-    Iterator<? extends Alert> getAlertsSince(Alert.ID since);
+    Iterator<Alert> getAlerts(Alert.ID since);
 }

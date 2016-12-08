@@ -78,13 +78,19 @@
 
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-          <artifactId>thinkbig-operational-metadata-upgrade-service</artifactId>
+          <artifactId>thinkbig-alerts-core</artifactId>
           <version>${project.version}</version>
         </dependency>
 
 
-      <dependency>
-        <groupId>com.thinkbiganalytics.datalake</groupId>
+        <dependency>
+            <groupId>com.thinkbiganalytics.datalake</groupId>
+            <artifactId>thinkbig-security-auth</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.thinkbiganalytics.datalake</groupId>
             <artifactId>thinkbig-security-auth</artifactId>
             <version>${project.version}</version>
         </dependency>

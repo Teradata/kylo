@@ -24,16 +24,40 @@ public class ReactorContiguration {
     public Environment reactorEnvironment() {
         return Environment.initializeIfEmpty();
     }
-
-    @Bean(name="metadataEventBus")
-    public EventBus metadataEventBus() {
+    
+    @Bean(name="alertsEventBus")
+    public EventBus alertsEventBus() {
         Environment env = reactorEnvironment();
-        Logger log = LoggerFactory.getLogger(EventBus.class);
+        Logger log = LoggerFactory.getLogger(EventBus.class.getName() + "- Alerts event bus");
         
         return EventBus.config()
                         .env(env)
                         .dispatcher(env.getDefaultDispatcher())
-                        .dispatchErrorHandler((t) -> { log.error("Event bus dispatch error", t); })
+                        .dispatchErrorHandler((t) -> { log.error("Alert event bus dispatch error", t); })
+                        .get();
+    }
+    
+    @Bean(name="respondableAlertsEventBus")
+    public EventBus respondibleAlertsEventBus() {
+        Environment env = reactorEnvironment();
+        Logger log = LoggerFactory.getLogger(EventBus.class.getName() + "- Respondavle alerts event bus");
+        
+        return EventBus.config()
+                        .env(env)
+                        .dispatcher(env.getDefaultDispatcher())
+                        .dispatchErrorHandler((t) -> { log.error("Alert event bus dispatch error", t); })
+                        .get();
+    }
+
+    @Bean(name="metadataEventBus")
+    public EventBus metadataEventBus() {
+        Environment env = reactorEnvironment();
+        Logger log = LoggerFactory.getLogger(EventBus.class.getName() + "- Metadata event bus");
+        
+        return EventBus.config()
+                        .env(env)
+                        .dispatcher(env.getDefaultDispatcher())
+                        .dispatchErrorHandler((t) -> { log.error("Metadata event bus dispatch error", t); })
                         .get();
     }
     

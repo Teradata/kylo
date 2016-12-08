@@ -3,9 +3,11 @@
  */
 package com.thinkbiganalytics.alerts.spi;
 
+import java.io.Serializable;
 import java.net.URI;
 
 import com.thinkbiganalytics.alerts.api.Alert;
+import com.thinkbiganalytics.alerts.api.AlertResponse;
 
 /**
  * A kind of AlertSource that provides alert creation and change management functions.
@@ -30,17 +32,24 @@ public interface AlertManager extends AlertSource {
      * @param content optional content, the type of which is specific to the kind of alert
      * @return
      */
-    <C> Alert create(URI type, Alert.Level level, String description, C content);
+    <C extends Serializable> Alert create(URI type, Alert.Level level, String description, C content);
     
+//    /**
+//     * Creates a new alert from the given alert with with a new state and associated content.
+//     * 
+//     * @param alert the source alert
+//     * @param newState the new state for the resulting alert
+//     * @param content optional content, the type of which is specific to the kind of alert and state
+//     * @return the new alert
+//     */
+//    <C extends Serializable> Alert changeState(Alert alert, Alert.State newState, C content);
+//    
     /**
-     * Creates a new alert from the given alert with with a new state and associated content.
-     * 
-     * @param alert the source alert
-     * @param newState the new state for the resulting alert
-     * @param content optional content, the type of which is specific to the kind of alert and state
-     * @return the new alert
+     * Obtains an AlertResponse object through which AlertResponders will perform updates to the given alert.
+     * @param alert the alert that the AlertResponse will update
+     * @return an AlertResponse that may be used to update the alert
      */
-    <C> Alert changeState(Alert alert, Alert.State newState, C content);
+    AlertResponse getResponse(Alert alert);
     
     /**
      * Removes an alert from the manager.

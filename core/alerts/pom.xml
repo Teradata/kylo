@@ -11,5 +11,6 @@
     <modules>
         <module>alerts-api</module>
         <module>alerts-core</module>
+        <module>alerts-kylo</module>
     </modules>
 </project>

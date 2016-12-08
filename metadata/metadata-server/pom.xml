@@ -9,7 +9,7 @@
     <artifactId>thinkbig-metadata-server</artifactId>
     <packaging>pom</packaging>
     <properties>
-        <projectreactor.version>2.0.7.RELEASE</projectreactor.version>
+        <projectprojectreactor.version>2.0.7.RELEASE</projectprojectreactor.version>
         <netty.version>4.0.31.Final</netty.version>
     </properties>
     <modules>

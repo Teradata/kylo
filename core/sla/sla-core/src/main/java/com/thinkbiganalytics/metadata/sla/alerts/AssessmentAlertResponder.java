@@ -37,7 +37,7 @@ public class AssessmentAlertResponder implements AlertResponder {
                 handleViolation(alert);
                 response.handle("Handled violation");
             } catch (Exception e) {
-                response.unHandle("Failed to handle violation");
+                response.unhandle("Failed to handle violation");
             }
         }
     }

@@ -8,7 +8,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.ConcurrentModificationException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -16,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.UUID;
@@ -32,12 +32,11 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Iterators;
 import com.thinkbiganalytics.alerts.api.Alert;
 import com.thinkbiganalytics.alerts.api.Alert.ID;
 import com.thinkbiganalytics.alerts.api.Alert.State;
 import com.thinkbiganalytics.alerts.api.AlertChangeEvent;
+import com.thinkbiganalytics.alerts.api.AlertResponse;
 import com.thinkbiganalytics.alerts.spi.AlertDescriptor;
 import com.thinkbiganalytics.alerts.spi.AlertManager;
 import com.thinkbiganalytics.alerts.spi.AlertNotifyReceiver;
@@ -53,15 +52,18 @@ public class InMemoryAlertManager implements AlertManager {
     
     public static final int MAX_ALERTS = 2000;
     
+    private static AtomicReference<GenericAlert> NULL_REF = new AtomicReference<GenericAlert>(null);
+    
     private final Set<AlertDescriptor> descriptors;
     private final Set<AlertNotifyReceiver> alertReceivers;
-    private final Map<Alert.ID, AtomicReference<Alert>> alertsById;
-    private final NavigableMap<DateTime, AtomicReference<Alert>> alertsByTime;
+    private final Map<Alert.ID, AtomicReference<GenericAlert>> alertsById;
+    private final NavigableMap<DateTime, AtomicReference<GenericAlert>> alertsByTime;
     private final ReadWriteLock alertsLock = new ReentrantReadWriteLock();
 
     private volatile Executor receiversExecutor;
     private AtomicInteger changeCount = new AtomicInteger(0);
-
+    
+    
     /**
      * 
      */
@@ -114,14 +116,8 @@ public class InMemoryAlertManager implements AlertManager {
     }
 
     @Override
-    public Alert getAlert(ID id) {
-        AtomicReference<Alert> ref = this.alertsById.get(id);
-        
-        if (ref != null) {
-            return ref.get();
-        } else {
-            return null;
-        }
+    public Optional<Alert> getAlert(ID id) {
+        return Optional.ofNullable(this.alertsById.getOrDefault(id, NULL_REF).get());
     }
     
     @Override
@@ -138,32 +134,19 @@ public class InMemoryAlertManager implements AlertManager {
     }
 
     @Override
-    public Iterator<? extends Alert> getAlerts() {
-        return Iterators.transform(this.alertsByTime.values().iterator(), 
-                new Function<AtomicReference<Alert>, Alert>() { 
-                    @Override
-                    public Alert apply(AtomicReference<Alert> ref) {
-                        return ref.get();
-                    }
-                });
+    public Iterator<Alert> getAlerts() {
+        return this.alertsByTime.values().stream().map(ref -> (Alert) ref.get()).iterator();
     }
 
     @Override
-    public Iterator<? extends Alert> getAlertsSince(DateTime since) {
+    public Iterator<Alert> getAlerts(DateTime since) {
         this.alertsLock.readLock().lock();
         try {
             DateTime higher = this.alertsByTime.higherKey(since);
             
             if (higher != null) {
-                SortedMap<DateTime, AtomicReference<Alert>> submap = this.alertsByTime.subMap(higher, DateTime.now());
-                
-                return Iterators.transform(submap.values().iterator(),
-                        new Function<AtomicReference<Alert>, Alert>() {
-                            @Override
-                            public Alert apply(AtomicReference<Alert> ref) {
-                                return ref.get();
-                            }
-                        });
+                SortedMap<DateTime, AtomicReference<GenericAlert>> submap = this.alertsByTime.subMap(higher, DateTime.now());
+                return submap.values().stream().map(ref -> (Alert) ref.get()).iterator();
             } else {
                 return Collections.<Alert>emptySet().iterator();
             }
@@ -173,63 +156,55 @@ public class InMemoryAlertManager implements AlertManager {
     }
 
     @Override
-    public Iterator<? extends Alert> getAlertsSince(ID since) {
-        AtomicReference<Alert> ref = this.alertsById.get(since);
+    public Iterator<Alert> getAlerts(ID since) {
+        AtomicReference<GenericAlert> ref = this.alertsById.get(since);
         
         if (ref == null) {
             return Collections.<Alert>emptySet().iterator();
         } else {
-            DateTime createdTime = DateTime.now();
-            for (AlertChangeEvent event : ref.get().getEvents()) {
-                if (event.getState() == State.CREATED || event.getState() == State.UNHANDLED) {
-                    createdTime = event.getChangeTime();
-                    break;
-                }
-            }
-        
-            return getAlertsSince(createdTime);
+            GenericAlert alert = ref.get();
+            int index = alert.getEvents().size() - 1;
+            DateTime createdTime = alert.getEvents().get(index).getChangeTime();
+            
+            return getAlerts(createdTime);
         }
     }
 
     @Override
-    public <C> Alert create(URI type, Alert.Level level, String description, C content) {
+    public <C extends Serializable> Alert create(URI type, Alert.Level level, String description, C content) {
         GenericAlert alert = new GenericAlert(type, level, description, content);
         DateTime createdTime = alert.getEvents().get(0).getChangeTime();
         
         addAlert(alert, createdTime);
         return alert;
     }
-
+    
+    private void updated(GenericAlert alert) {
+        this.alertsById.computeIfPresent(alert.getId(), 
+                                         (id, ref) -> { ref.set(alert); return ref; });
+    }
+    
+    private void cleared(GenericAlert alert) {
+        remove(alert.getId());
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.alerts.spi.AlertManager#getUpdator(com.thinkbiganalytics.alerts.api.Alert)
+     */
     @Override
-    public <C> Alert changeState(Alert alert, State newState, C content) {
-        AtomicReference<Alert> ref = this.alertsById.get(alert.getId());
-        
-        if (ref != null) {
-            GenericAlert oldAlert = (GenericAlert) alert;
-            GenericAlert newAlert = new GenericAlert(oldAlert, newState, content);
-            boolean changed = ref.compareAndSet(oldAlert, newAlert);
-            
-            if (changed) {
-                this.changeCount.incrementAndGet();
-                signalReceivers();
-                return newAlert;
-            } else {
-                throw new ConcurrentModificationException("The state of this alert has aready been changed");
-            }
-        } else {
-            return null;
-        }
+    public AlertResponse getResponse(Alert alert) {
+        return new InternalAlertResponse((GenericAlert) alert);
     }
 
     @Override
     public Alert remove(ID id) {
         this.alertsLock.writeLock().lock();
         try {
-            AtomicReference<Alert> ref = this.alertsById.get(id);
+            AtomicReference<GenericAlert> ref = this.alertsById.remove(id);
             
             if (ref != null) {
                 this.alertsByTime.values().remove(ref);
-                return this.alertsById.remove(id).get();
+                return ref.get();
             } else {
                 return null;
             }
@@ -240,7 +215,7 @@ public class InMemoryAlertManager implements AlertManager {
 
 
     protected void addAlert(GenericAlert alert, DateTime createdTime) {
-        AtomicReference<Alert> ref = new AtomicReference<Alert>(alert);
+        AtomicReference<GenericAlert> ref = new AtomicReference<>(alert);
         int count = 0;
         
         this.alertsLock.writeLock().lock();
@@ -268,22 +243,100 @@ public class InMemoryAlertManager implements AlertManager {
             receivers = new HashSet<>(this.alertReceivers);
         }
         
-        exec.execute(new Runnable() {
-            @Override
-            public void run() {
-                int count = InMemoryAlertManager.this.changeCount.get();
-                
-                LOG.info("Notifying receivers: {} about events: {}", receivers.size(), count);
-                
-                for (AlertNotifyReceiver receiver : receivers) {
-                    receiver.alertsAvailable(count);
-                }
-                
-                InMemoryAlertManager.this.changeCount.getAndAdd(-count);
+        exec.execute(() -> {
+            int count = InMemoryAlertManager.this.changeCount.get();
+            
+            LOG.info("Notifying receivers: {} about events: {}", receivers.size(), count);
+            
+            for (AlertNotifyReceiver receiver : receivers) {
+                receiver.alertsAvailable(count);
             }
+            
+            InMemoryAlertManager.this.changeCount.getAndAdd(-count);
         });
     }
 
+    private class InternalAlertResponse implements AlertResponse {
+        
+        private GenericAlert current;
+        
+        public InternalAlertResponse(GenericAlert alert) {
+            this.current = alert;
+        }
+
+        /* (non-Javadoc)
+         * @see com.thinkbiganalytics.alerts.api.#inProgress()
+         */
+        @Override
+        public Alert inProgress() {
+            return inProgress(null);
+        }
+
+        /* (non-Javadoc)
+         * @see com.thinkbiganalytics.alerts.api.#inProgress(java.io.Serializable)
+         */
+        @Override
+        public <C extends Serializable> Alert inProgress(C content) {
+            checkCleared();
+            this.current = new GenericAlert(this.current, State.IN_PROGRESS, content);
+            updated(current);
+            return this.current;
+        }
+
+        /* (non-Javadoc)
+         * @see com.thinkbiganalytics.alerts.api.#handle()
+         */
+        @Override
+        public Alert handle() {
+            return handle(null);
+        }
+
+        /* (non-Javadoc)
+         * @see com.thinkbiganalytics.alerts.api.#handle(java.io.Serializable)
+         */
+        @Override
+        public <C extends Serializable> Alert handle(C content) {
+            checkCleared();
+            this.current = new GenericAlert(this.current, State.HANDLED, content);
+            updated(current);
+            return this.current;
+        }
+
+        /* (non-Javadoc)
+         * @see com.thinkbiganalytics.alerts.api.#unHandle()
+         */
+        @Override
+        public Alert unHandle() {
+            return unhandle(null);
+        }
+
+        /* (non-Javadoc)
+         * @see com.thinkbiganalytics.alerts.api.#unHandle(java.io.Serializable)
+         */
+        @Override
+        public <C extends Serializable> Alert unhandle(C content) {
+            checkCleared();
+            this.current = new GenericAlert(this.current, State.UNHANDLED, content);
+            updated(current);
+            return this.current;
+        }
+
+        /* (non-Javadoc)
+         * @see com.thinkbiganalytics.alerts.api.AlertResponse#clear()
+         */
+        @Override
+        public void clear() {
+            checkCleared();
+            cleared(this.current);
+            this.current = null;
+        }
+        
+        private void checkCleared() {
+            if (this.current == null) {
+                throw new IllegalStateException("The alert cannot be updated as it has been already cleared.");
+            }
+        }
+    }
 
     private class AlertByIdMap extends LinkedHashMap<Alert.ID, AtomicReference<Alert>> {
         @Override
@@ -335,6 +388,9 @@ public class InMemoryAlertManager implements AlertManager {
         }
     }
     
+    /**
+     * Immutable implementation of an Alert.
+     */
     protected class GenericAlert implements Alert {
         
         private final AlertID id;
@@ -352,8 +408,12 @@ public class InMemoryAlertManager implements AlertManager {
             this.description = description;
             this.content = content;
             this.source = InMemoryAlertManager.this;
-            this.events = Collections.unmodifiableList(Collections.singletonList(
-                    new GenericChangeEvent(this.id, State.UNHANDLED)));
+            
+            if (content != null) {
+                this.events = Collections.unmodifiableList(Collections.singletonList(new GenericChangeEvent(this.id, State.UNHANDLED, content)));
+            } else {
+                this.events = Collections.emptyList();
+            }
         }
 
         public GenericAlert(URI type, Level level, Object content) {
@@ -392,6 +452,11 @@ public class InMemoryAlertManager implements AlertManager {
         public Level getLevel() {
             return this.level;
         }
+        
+        @Override
+        public DateTime getCreatedTime() {
+            return this.events.get(this.events.size() - 1).getChangeTime();
+        }
 
         @Override
         public AlertSource getSource() {
@@ -410,7 +475,7 @@ public class InMemoryAlertManager implements AlertManager {
 
         @Override
         @SuppressWarnings("unchecked")
-        public <C> C getContent() {
+        public <C extends Serializable> C getContent() {
             return (C) this.content;
         }
     }
@@ -452,7 +517,7 @@ public class InMemoryAlertManager implements AlertManager {
 
         @Override
         @SuppressWarnings("unchecked")
-        public <C> C getContent() {
+        public <C extends Serializable> C getContent() {
             return (C) this.content;
         }
         

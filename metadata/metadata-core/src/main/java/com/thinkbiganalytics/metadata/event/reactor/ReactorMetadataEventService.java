@@ -77,7 +77,7 @@ public class ReactorMetadataEventService implements MetadataEventService {
        log.debug("Adding event listener: {}", listener);
         
        Registration<?,?> reg = this.eventBus.on(asSelector(matcher), asConsumer(listener));
-        this.registrations.put(listener, reg);
+       this.registrations.put(listener, reg);
     }
 
     @Override

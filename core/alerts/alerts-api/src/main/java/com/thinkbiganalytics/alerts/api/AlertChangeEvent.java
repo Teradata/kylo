@@ -3,6 +3,8 @@
  */
 package com.thinkbiganalytics.alerts.api;
 
+import java.io.Serializable;
+
 import org.joda.time.DateTime;
 
 import com.thinkbiganalytics.alerts.api.Alert.State;
@@ -35,6 +37,6 @@ public interface AlertChangeEvent {
      * returned by this method is specific to the type of alert that was changed.
      * @return an alert-specific piece of data that may be associated with this state
      */
-    <C> C getContent();
+    <C extends Serializable> C getContent();
 
 }

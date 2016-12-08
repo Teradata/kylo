@@ -7,6 +7,7 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.joda.time.DateTime;
@@ -80,11 +81,12 @@ public class InMemoryAlertManagerTest {
     public void testGetAlertById() {
         Alert alert = this.manager.create(URI.create("urn:alert:test"), Alert.Level.INFO, "test", "content"); 
         
-        Alert returned = this.manager.getAlert(alert.getId());
+        Optional<Alert> returned = this.manager.getAlert(alert.getId());
         
-        assertThat(returned.getId()).isEqualTo(alert.getId());
-        assertThat(returned.getType()).isEqualTo(alert.getType());
-        assertThat(returned.getLevel()).isEqualTo(alert.getLevel());
+        assertThat(returned.isPresent()).isTrue();
+        assertThat(returned.get().getId()).isEqualTo(alert.getId());
+        assertThat(returned.get().getType()).isEqualTo(alert.getType());
+        assertThat(returned.get().getLevel()).isEqualTo(alert.getLevel());
     }
 
     @Test
@@ -150,26 +152,19 @@ public class InMemoryAlertManagerTest {
     public void testChangeState() {
         Alert alert = this.manager.create(URI.create("urn:alert:test1"), Alert.Level.INFO, "test1", "created"); 
         
-        Alert changed = this.manager.changeState(alert, Alert.State.IN_PROGRESS, "in progress");
+        Alert changed = this.manager.getResponse(alert).inProgress("in progress");
         
-        Alert retrieved = this.manager.getAlert(alert.getId());
+        Optional<Alert> retrieved = this.manager.getAlert(alert.getId());
         
         assertThat(changed.getEvents()).hasSize(2).extracting("state").contains(Alert.State.UNHANDLED, Alert.State.IN_PROGRESS);
-        assertThat(retrieved.getEvents()).hasSize(2).extracting("state").contains(Alert.State.UNHANDLED, Alert.State.IN_PROGRESS);
+        assertThat(retrieved.isPresent()).isTrue();
+        assertThat(retrieved.get().getEvents()).hasSize(2).extracting("state").contains(Alert.State.UNHANDLED, Alert.State.IN_PROGRESS);
     }
 
     @Test
     public void testNotifyRecieverCreate() {
         this.manager.create(URI.create("urn:alert:test1"), Alert.Level.INFO, "test1", "created"); 
         
-        verify(this.receiver).alertsAvailable(any(Integer.class));
-    }
-    
-    @Test
-    public void testNotifyRecieverChange() {
-        Alert alert = this.manager.create(URI.create("urn:alert:test1"), Alert.Level.INFO, "test1", "created"); 
-        this.manager.changeState(alert, Alert.State.IN_PROGRESS, "in progress");
-        
-        verify(this.receiver, times(2)).alertsAvailable(any(Integer.class));
+        verify(this.receiver, times(1)).alertsAvailable(any(Integer.class));
     }
 }
