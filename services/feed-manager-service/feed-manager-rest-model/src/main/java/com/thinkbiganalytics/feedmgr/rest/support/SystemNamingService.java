@@ -18,13 +18,14 @@ import java.text.StringCharacterIterator;
 public class SystemNamingService {
 
   public static String generateSystemName(String name){
-    String[] controlChars = {"\"","'","!","@","#","$","%","^","&","*","(",")"};
     //first trim it
     String systemName = StringUtils.trimToEmpty(name);
     if (StringUtils.isBlank(systemName)) {
       return systemName;
     }
     systemName = systemName.replaceAll(" +", "_");
+    systemName = systemName.replaceAll("[^\\w_]", "");
+
     int i = 0;
 
     StringBuilder s = new StringBuilder();
@@ -64,9 +65,8 @@ public class SystemNamingService {
     systemName = CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, systemName);
     systemName = CaseFormat.LOWER_HYPHEN.to(CaseFormat.LOWER_UNDERSCORE, systemName);
     systemName = StringUtils.replace(systemName, "__", "_");
-    for(String controlChar: controlChars){
-      systemName = StringUtils.remove(systemName, controlChar);
-    }
+    // Truncate length if exceeds Hive limit
+    systemName = (systemName.length() > 128 ? systemName.substring(0, 127) : systemName);
     return systemName;
   }
 

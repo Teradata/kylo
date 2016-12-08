@@ -11,8 +11,8 @@ public class SystemNamingServiceTest {
 
     @Test
     public void testSystemName() {
-
         String name = "MYFeedName";
+
         String systemName = SystemNamingService.generateSystemName(name);
         Assert.assertEquals("my_feed_name", systemName);
         name = "myFeedNameTEST";
@@ -40,6 +40,15 @@ public class SystemNamingServiceTest {
         name = "ALPHA13242TEST";
         systemName = SystemNamingService.generateSystemName(name);
         Assert.assertEquals("alpha13242_test", systemName);
+
+        name = "m;,y_feed_name";
+        systemName = SystemNamingService.generateSystemName(name);
+        Assert.assertEquals("my_feed_name", systemName);
+
+        name = ";,my feed name";
+        systemName = SystemNamingService.generateSystemName(name);
+        Assert.assertEquals("my_feed_name", systemName);
+
     }
 
 

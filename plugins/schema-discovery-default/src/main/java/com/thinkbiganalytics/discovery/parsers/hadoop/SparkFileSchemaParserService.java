@@ -16,9 +16,10 @@ import com.thinkbiganalytics.spark.rest.model.TransformResponse;
 import com.thinkbiganalytics.spark.shell.SparkShellProcess;
 import com.thinkbiganalytics.spark.shell.SparkShellProcessManager;
 import com.thinkbiganalytics.spark.shell.SparkShellRestClient;
-import com.thinkbiganalytics.spring.SpringApplicationContext;
 
 import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -29,8 +30,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 
@@ -96,9 +95,6 @@ public class SparkFileSchemaParserService {
     private String toScript(File localFile, SparkFileType fileType) {
         String path = "file://" + localFile.getAbsolutePath();
         //path = "file:///var/sampledata/HiveGroup.parquet";
-        //path = "file:///var/sampledata/users.parquet";
-        //path = "file:///var/sampledata/signups.orc";
-        //path = "file:///var/sampledata/books.json";
         StringBuffer sb = new StringBuffer();
         sb.append("import sqlContext.implicits._\n");
         sb.append("import org.apache.spark.sql._\n");
@@ -158,10 +154,11 @@ public class SparkFileSchemaParserService {
     }
 
     private File toFile(InputStream is) throws IOException {
-        File tempFile = File.createTempFile("kylo-spark-parser", "dat");
+        File tempFile = File.createTempFile("kylo-spark-parser", ".dat");
         try (FileOutputStream fos = new FileOutputStream(tempFile)) {
             IOUtils.copyLarge(is, fos);
         }
+        log.info("Created temporary file {} success?",tempFile.getAbsoluteFile().toURI(), tempFile.exists());
         return tempFile;
     }
 
