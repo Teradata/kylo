@@ -52,7 +52,7 @@
             angular.forEach(self.activeRequests,function(canceler,i){
                 canceler.resolve();
             });
-            self.activeJobRequests = [];
+            self.activeRequests = [];
         }
 
         function finishedRequest(canceler) {
@@ -130,6 +130,7 @@
 
         $scope.$on('$destroy', function(){
             clearRefreshInterval();
+            abortActiveRequests();
         });
 
 

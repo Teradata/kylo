@@ -2,6 +2,7 @@ package com.thinkbiganalytics.jpa;
 
 import org.jadira.usertype.spi.shared.AbstractVersionableLongColumnMapper;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.joda.time.Instant;
 
 /**
@@ -13,13 +14,12 @@ public class LongColumnDateTimeMapper extends AbstractVersionableLongColumnMappe
 
     public LongColumnDateTimeMapper() {
     }
-
     public DateTime fromNonNullString(String s) {
-        return new Instant(s).toDateTime();
+        return new Instant(s).toDateTime(DateTimeZone.UTC);
     }
 
     public DateTime fromNonNullValue(Long value) {
-        return new Instant(value).toDateTime();
+        return new Instant(value).toDateTime(DateTimeZone.UTC);
     }
 
     public String toNonNullString(DateTime value) {

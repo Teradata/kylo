@@ -171,6 +171,7 @@
 
   <build>
     <plugins>
+      <!--
       <plugin>
         <groupId>org.hibernate.orm.tooling</groupId>
         <artifactId>hibernate-enhance-maven-plugin</artifactId>
@@ -180,8 +181,8 @@
             <configuration>
               <failOnError>true</failOnError>
               <enableLazyInitialization>true</enableLazyInitialization>
-              <!-- enableAssociationManagement>true</enableAssociationManagement -->
               <enableDirtyTracking>true</enableDirtyTracking>
+                 enableAssociationManagement>true</enableAssociationManagement
             </configuration>
             <goals>
               <goal>enhance</goal>
@@ -189,7 +190,7 @@
           </execution>
         </executions>
       </plugin>
-
+-->
       <plugin>
         <groupId>com.mysema.maven</groupId>
         <artifactId>apt-maven-plugin</artifactId>

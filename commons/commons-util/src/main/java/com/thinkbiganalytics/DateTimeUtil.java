@@ -4,13 +4,10 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Period;
 import org.joda.time.ReadWritablePeriod;
-import org.joda.time.convert.DurationConverter;
 import org.joda.time.format.PeriodFormatter;
 import org.joda.time.format.PeriodFormatterBuilder;
 import org.joda.time.format.PeriodParser;
-import org.springframework.util.ReflectionUtils;
 
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
@@ -19,7 +16,7 @@ import java.util.Locale;
  * Created by sr186054 on 2/29/16.
  */
 public class DateTimeUtil {
-/*
+
     public static Date convertToUTC(Date date) {
         DateTime time = new DateTime(date.getTime());
         DateTimeZone dtZone = DateTimeZone.forID("UTC");
@@ -32,18 +29,19 @@ public class DateTimeUtil {
         DateTime utc = date.withZone(dtZone);
         return new DateTime(utc);
     }
-    */
-public static Date convertToUTC(Date date) {
+    /*
+public static Date convertToUTCx(Date date) {
     DateTimeZone tz = DateTimeZone.getDefault();
     Date utc = new Date(tz.convertLocalToUTC(date.getTime(), false));
     return utc;
 }
 
-    public static DateTime convertToUTC(DateTime date) {
+    public static DateTime convertToUTCx(DateTime date) {
         DateTimeZone tz = DateTimeZone.getDefault();
         Date utc = new Date(tz.convertLocalToUTC(date.getMillis(), false));
         return new DateTime(utc);
     }
+    */
 
     public static Date getUTCTime() {
         return convertToUTC(new Date());
@@ -53,16 +51,6 @@ public static Date convertToUTC(Date date) {
         return convertToUTC(DateTime.now());
     }
 
-
-    static PeriodParser periodParser = new PeriodFormatterBuilder()
-        .appendYears().appendSuffix("Y").appendSeparatorIfFieldsAfter(" ")
-        .appendMonths().appendSuffix("M").appendSeparatorIfFieldsAfter(" ")
-        .appendWeeks().appendSuffix("W").appendSeparatorIfFieldsAfter(" ")
-        .appendDays().appendSuffix("D").appendSeparatorIfFieldsAfter(" ")
-        .appendHours().appendSuffix("h").appendSeparatorIfFieldsAfter(" ")
-        .appendMinutes().appendSuffix("m").appendSeparatorIfFieldsAfter(" ")
-        .appendMinutes().appendSuffix("s")
-        .toParser();
 
 
     public static class StringPeriodParser implements PeriodParser {

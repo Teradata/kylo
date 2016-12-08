@@ -34,8 +34,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.NamedAttributeNode;
-import javax.persistence.NamedEntityGraph;
 import javax.persistence.NamedNativeQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
@@ -58,9 +56,6 @@ import javax.persistence.Version;
                                                         + "  group by f2.ID) maxJobs "
                                                         + "                             on maxJobs.FEED_ID = f.ID "
                                                         + "                             and maxJobs.END_TIME =e.END_TIME ")
-@NamedEntityGraph(name = "summary", attributeNodes = {
-    @NamedAttributeNode("jobInstance"),
-    @NamedAttributeNode("nifiEventJobExecution")})
 @Table(name = "BATCH_JOB_EXECUTION")
 public class JpaBatchJobExecution implements BatchJobExecution {
 
@@ -143,7 +138,7 @@ public class JpaBatchJobExecution implements BatchJobExecution {
     private Set<BatchJobExecutionParameter> jobParameters =null;
 
 
-    @OneToMany(targetEntity = JpaBatchStepExecution.class, mappedBy = "jobExecution", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(targetEntity = JpaBatchStepExecution.class, mappedBy = "jobExecution", fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.DETACH}, orphanRemoval = true)
     private Set<BatchStepExecution> stepExecutions = null;
 
     @OneToMany(targetEntity = JpaBatchJobExecutionContextValue.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)

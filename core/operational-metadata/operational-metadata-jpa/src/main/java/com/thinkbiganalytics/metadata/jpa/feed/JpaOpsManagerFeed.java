@@ -1,23 +1,14 @@
 package com.thinkbiganalytics.metadata.jpa.feed;
 
-import com.thinkbiganalytics.jpa.BaseJpaId;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
-import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionParameter;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobInstance;
-import com.thinkbiganalytics.metadata.jpa.jobrepo.job.JpaBatchJobExecutionParameter;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.job.JpaBatchJobInstance;
 
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
-
-import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
-import javax.persistence.Embeddable;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -56,9 +47,7 @@ public class JpaOpsManagerFeed implements OpsManagerFeed {
     private Set<BatchJobInstance> jobInstances = new HashSet<>();
 
 
-
-
-    @ManyToMany(targetEntity=JpaOpsManagerFeed.class,cascade = {CascadeType.ALL})
+    @ManyToMany(targetEntity = JpaOpsManagerFeed.class, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(name="FEED_CHECK_DATA_FEEDS",
                joinColumns={@JoinColumn(name="FEED_ID")},
                inverseJoinColumns={@JoinColumn(name="CHECK_DATA_FEED_ID")})

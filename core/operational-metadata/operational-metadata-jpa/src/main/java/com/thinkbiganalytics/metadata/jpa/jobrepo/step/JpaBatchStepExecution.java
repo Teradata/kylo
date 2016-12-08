@@ -64,10 +64,10 @@ public class JpaBatchStepExecution implements Serializable, BatchStepExecution {
     private String stepName;
 
 
-    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
+    @Type(type = "com.thinkbiganalytics.jpa.PersistentDateTimeAsMillisLong")
     @Column(name = "START_TIME")
     private DateTime startTime;
-    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
+    @Type(type = "com.thinkbiganalytics.jpa.PersistentDateTimeAsMillisLong")
     @Column(name = "END_TIME")
     private DateTime endTime;
 
@@ -83,7 +83,7 @@ public class JpaBatchStepExecution implements Serializable, BatchStepExecution {
     @Column(name = "EXIT_MESSAGE")
     private String exitMessage;
 
-    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
+    @Type(type = "com.thinkbiganalytics.jpa.PersistentDateTimeAsMillisLong")
     @Column(name = "LAST_UPDATED")
     private DateTime lastUpdated;
 
