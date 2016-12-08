@@ -43,6 +43,11 @@ public class ThinkbigRecordWriterDelegate implements RecordWriter {
     }
 
     @Override
+    public void flush() throws IOException {
+        recordWriter.flush();
+    }
+
+    @Override
     public int getRecordsWritten() {
         return recordWriter.getRecordsWritten();
     }
