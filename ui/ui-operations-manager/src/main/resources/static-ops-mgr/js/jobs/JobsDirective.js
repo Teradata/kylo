@@ -58,7 +58,7 @@
         this.viewType = PaginationDataService.viewType(this.pageName);
 
         //Setup the Tabs
-        var tabNames = ['All', 'Running', 'Failed', 'Completed', 'Abandoned', 'Stopped'];
+        var tabNames = ['All', 'Running', 'Failed', 'Completed', 'Abandoned'] //, 'Stopped'];
         this.tabs = TabService.registerTabs(this.pageName, tabNames, this.paginationData.activeTab);
         this.tabMetadata = TabService.metadata(this.pageName);
 
