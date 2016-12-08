@@ -7,7 +7,6 @@ $MYSQL_DIR/thinkbig/0.2.0/setup-mysql.sh $1 $2 $3
 $MYSQL_DIR/thinkbig/0.3.0/update.sh $1 $2 $3
 $MYSQL_DIR/thinkbig/0.3.1/update.sh $1 $2 $3
 $MYSQL_DIR/thinkbig/0.4.0/update.sh $1 $2 $3
-$MYSQL_DIR/thinkbig/0.4.1/update.sh $1 $2 $3
 $MYSQL_DIR/thinkbig/0.4.2/update.sh $1 $2 $3
 $MYSQL_DIR/thinkbig/0.5.0/update.sh $1 $2 $3
 
