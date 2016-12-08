@@ -24,7 +24,7 @@ IF NOT EXISTS(SELECT table_name
              AND table_name = 'BATCH_JOB_INSTANCE' and column_name = 'FEED_ID') then
 /** Adds the FEED column to the INSTANCE TABLE */
 ALTER TABLE BATCH_JOB_INSTANCE
-ADD COLUMN `FEED_ID` VARCHAR(45) NULL;
+ADD COLUMN `FEED_ID` BINARY(16) NULL;
 end if;
 
 
