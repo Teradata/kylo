@@ -6,6 +6,7 @@ import com.thinkbiganalytics.nifi.v2.sqoop.enums.ExtractDataFormat;
 import com.thinkbiganalytics.nifi.v2.sqoop.enums.HiveDelimStrategy;
 import com.thinkbiganalytics.nifi.v2.sqoop.enums.HiveNullEncodingStrategy;
 import com.thinkbiganalytics.nifi.v2.sqoop.enums.SqoopLoadStrategy;
+import com.thinkbiganalytics.nifi.v2.sqoop.enums.TargetHdfsDirExistsStrategy;
 import com.thinkbiganalytics.nifi.v2.sqoop.security.DecryptPassword;
 
 import org.apache.nifi.logging.ComponentLog;
@@ -56,6 +57,8 @@ public class SqoopBuilder {
     private String sourceTableSplitField;
     private final static String targetHdfsDirectoryLabel = "--target-dir";
     private String targetHdfsDirectory;
+    private final static String targetHdfsDirDeleteLabel = "--delete-target-dir";
+    private TargetHdfsDirExistsStrategy targetHdfsDirExistsStrategy;
 
     private final static String extractDataFormatTextLabel = "--as-textfile";
     private final static String extractDataFormatAvroLabel = "--as-avrodatafile";
@@ -319,6 +322,17 @@ public class SqoopBuilder {
     public SqoopBuilder setTargetHdfsDirectory (String targetHdfsDirectory) {
         this.targetHdfsDirectory = targetHdfsDirectory;
         logMessage("info", "Target HDFS Directory", this.targetHdfsDirectory);
+        return this;
+    }
+
+    /**
+     * Set strategy for handling the case where target HDFS directory exists
+     * @param targetHdfsDirExistsStrategy strategy {@link TargetHdfsDirExistsStrategy}
+     * @return {@link SqoopBuilder}
+     */
+    public SqoopBuilder setTargetHdfsDirExistsStrategy (TargetHdfsDirExistsStrategy targetHdfsDirExistsStrategy) {
+        this.targetHdfsDirExistsStrategy = targetHdfsDirExistsStrategy;
+        logMessage("info", "Target HDFS Directory - If Exists?", this.targetHdfsDirExistsStrategy);
         return this;
     }
 
@@ -608,6 +622,11 @@ public class SqoopBuilder {
             .append(targetHdfsDirectory)                                                        //"user provided"
             .append(END_QUOTE_SPACE);
 
+        if (targetHdfsDirExistsStrategy == TargetHdfsDirExistsStrategy.DELETE_DIR_AND_IMPORT) {
+            commandStringBuffer
+                .append(targetHdfsDirDeleteLabel)                                               //--delete-target-dir
+                .append(SPACE_STRING);
+        }
 
         switch (extractDataFormat) {
             case TEXT:

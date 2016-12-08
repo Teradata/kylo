@@ -9,6 +9,7 @@ import com.thinkbiganalytics.nifi.v2.sqoop.enums.CompressionAlgorithm;
 import com.thinkbiganalytics.nifi.v2.sqoop.enums.ExtractDataFormat;
 import com.thinkbiganalytics.nifi.v2.sqoop.enums.HiveDelimStrategy;
 import com.thinkbiganalytics.nifi.v2.sqoop.enums.SqoopLoadStrategy;
+import com.thinkbiganalytics.nifi.v2.sqoop.enums.TargetHdfsDirExistsStrategy;
 import com.thinkbiganalytics.nifi.v2.sqoop.process.SqoopProcessResult;
 import com.thinkbiganalytics.nifi.v2.sqoop.process.SqoopProcessRunner;
 import com.thinkbiganalytics.nifi.v2.sqoop.security.KerberosConfig;
@@ -182,6 +183,19 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .build();
 
+    public static final PropertyDescriptor TARGET_HDFS_DIRECTORY_EXISTS_STRATEGY = new PropertyDescriptor.Builder()
+        .name("Target HDFS Directory - If Exists?")
+        .description("Strategy for handling the case where target HDFS directory exists. "
+                     + "By default, the import job will fail (to prevent accidental data corruption). "
+                     + "This behavior can be modified to delete existing HDFS directory, and create it again during data import. "
+                     + "If delete option is chosen, and the target HDFS directory does not exist, the data import will proceed and create it.")
+        .required(true)
+        .expressionLanguageSupported(false)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .allowableValues(TargetHdfsDirExistsStrategy.values())
+        .defaultValue(TargetHdfsDirExistsStrategy.FAIL_IMPORT.toString())
+        .build();
+
     public static final PropertyDescriptor TARGET_EXTRACT_DATA_FORMAT = new PropertyDescriptor.Builder()
         .name("Target Extract Data Format")
         .description("Format to land the extracted data in on HDFS.")
@@ -300,6 +314,7 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         properties.add(CLUSTER_MAP_TASKS);
         properties.add(CLUSTER_UI_JOB_NAME);
         properties.add(TARGET_HDFS_DIRECTORY);
+        properties.add(TARGET_HDFS_DIRECTORY_EXISTS_STRATEGY);
         properties.add(TARGET_EXTRACT_DATA_FORMAT);
         properties.add(TARGET_HDFS_FILE_DELIMITER);
         properties.add(TARGET_HIVE_DELIM_STRATEGY);
@@ -354,6 +369,7 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         final Integer clusterMapTasks = context.getProperty(CLUSTER_MAP_TASKS).evaluateAttributeExpressions(flowFile).asInteger();
         final String clusterUIJobName = context.getProperty(CLUSTER_UI_JOB_NAME).evaluateAttributeExpressions(flowFile).getValue();
         final String targetHdfsDirectory = context.getProperty(TARGET_HDFS_DIRECTORY).evaluateAttributeExpressions(flowFile).getValue();
+        final TargetHdfsDirExistsStrategy targetHdfsDirExistsStrategy = TargetHdfsDirExistsStrategy.valueOf(context.getProperty(TARGET_HDFS_DIRECTORY_EXISTS_STRATEGY).getValue());
         final ExtractDataFormat targetExtractDataFormat = ExtractDataFormat.valueOf(context.getProperty(TARGET_EXTRACT_DATA_FORMAT).getValue());
         final String targetHdfsFileDelimiter = context.getProperty(TARGET_HDFS_FILE_DELIMITER).evaluateAttributeExpressions(flowFile).getValue();
         final HiveDelimStrategy targetHiveDelimStrategy = HiveDelimStrategy.valueOf(context.getProperty(TARGET_HIVE_DELIM_STRATEGY).getValue());
@@ -393,6 +409,7 @@ public class ImportSqoop extends AbstractNiFiProcessor {
             .setClusterMapTasks(clusterMapTasks)
             .setClusterUIJobName(clusterUIJobName)
             .setTargetHdfsDirectory(targetHdfsDirectory)
+            .setTargetHdfsDirExistsStrategy(targetHdfsDirExistsStrategy)
             .setTargetExtractDataFormat(targetExtractDataFormat)
             .setTargetHdfsFileDelimiter(targetHdfsFileDelimiter)
             .setTargetHiveDelimStrategy(targetHiveDelimStrategy)
