@@ -1,22 +1,5 @@
 package com.thinkbiganalytics.metadata.modeshape.datasource;
 
-import java.io.Serializable;
-import java.lang.reflect.Field;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
-import javax.inject.Inject;
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-
-import org.apache.commons.lang3.reflect.FieldUtils;
-import org.joda.time.DateTime;
-import org.modeshape.common.text.Jsr283Encoder;
-
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.MetadataException;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
@@ -33,6 +16,23 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrObjectTypeResolver;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrTool;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+
+import org.apache.commons.lang3.reflect.FieldUtils;
+import org.joda.time.DateTime;
+import org.modeshape.common.text.Jsr283Encoder;
+
+import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
+import javax.inject.Inject;
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
 
 /**
  * Created by sr186054 on 6/7/16.
@@ -102,7 +102,7 @@ public class JcrDatasourceProvider extends BaseJcrProvider<Datasource, Datasourc
                     getSession().getRootNode().getNode("metadata/datasources").addNode("derived");
                 }
                 Node parentNode = getSession().getNode(EntityUtil.pathForDerivedDatasource());
-                String nodeName = identityString;
+                String nodeName = datasourceType + "-" + identityString;
                 if (Jsr283Encoder.containsEncodeableCharacters(identityString)) {
                     nodeName = new Jsr283Encoder().encode(nodeName);
                 }
