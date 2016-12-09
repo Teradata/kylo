@@ -6,7 +6,6 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SaveMode;
 import org.apache.spark.sql.types.StructType;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 
@@ -17,11 +16,11 @@ public class DataSet20 implements DataSet {
 
     private final Dataset<Row> dataset;
 
-    public DataSet20(Object adaptee) {
+    DataSet20(Object adaptee) {
         this((Dataset) adaptee);
     }
 
-    public DataSet20(Dataset<Row> dataset) {
+    private DataSet20(Dataset<Row> dataset) {
         this.dataset = dataset;
     }
 
@@ -72,6 +71,6 @@ public class DataSet20 implements DataSet {
 
     @Override
     public void writeToTable(String partitionColumn, String fqnTable) {
-        dataset.write().partitionBy(partitionColumn).mode(SaveMode.Append).saveAsTable(fqnTable);
+        dataset.write().mode(SaveMode.Append).insertInto(fqnTable);
     }
 }
