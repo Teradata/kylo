@@ -13,7 +13,7 @@
         </div>
       </header-section>
       <body-section>
-        <md-expansion-panel-group auto-expand="true">
+        <md-expansion-panel-group auto-expand="true" ng-if="vm.model.table.method != 'EXISTING_TABLE'>
           <md-expansion-panel md-component-id="panelOne">
             <md-expansion-panel-collapsed>
               <div flex class="md-subhead layout-padding-top">Choose method</div>

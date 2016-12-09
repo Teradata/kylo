@@ -537,6 +537,7 @@
                 hideProgress();
                 self.uploadBtnDisabled = false;
                 self.collapseMethodPanel();
+                self.toggleHeight();
                 self.expandSchemaPanel();
 
                 validate();

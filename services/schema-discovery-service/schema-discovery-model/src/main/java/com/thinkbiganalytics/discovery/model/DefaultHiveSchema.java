@@ -12,12 +12,24 @@ public class DefaultHiveSchema extends DefaultTableSchema implements HiveTableSc
 
     private String hiveFormat;
 
+    private Boolean structured = false;
+
     public String getHiveFormat() {
         return hiveFormat;
     }
 
     public void setHiveFormat(String hiveFormat) {
         this.hiveFormat = hiveFormat;
+    }
+
+    @Override
+    public Boolean isStructured() {
+        return structured;
+    }
+
+    @Override
+    public Boolean setStructured(boolean structured) {
+        return structured;
     }
 }
 

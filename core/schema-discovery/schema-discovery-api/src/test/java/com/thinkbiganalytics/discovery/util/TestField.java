@@ -4,6 +4,7 @@
 
 package com.thinkbiganalytics.discovery.util;
 
+import com.thinkbiganalytics.discovery.schema.DataTypeDescriptor;
 import com.thinkbiganalytics.discovery.schema.Field;
 
 import java.util.List;
@@ -22,6 +23,20 @@ public class TestField implements Field {
     private Boolean primaryKey = false;
 
     private Boolean nullable = true;
+
+    private Boolean modifiable = false;
+
+    private DataTypeDescriptor dataTypeDescriptor;
+
+    @Override
+    public DataTypeDescriptor getDataTypeDescriptor() {
+        return dataTypeDescriptor;
+    }
+
+    @Override
+    public void setDataTypeDescriptor(DataTypeDescriptor dataTypeDescriptor) {
+        this.dataTypeDescriptor = dataTypeDescriptor;
+    }
 
     public List<String> sampleValues = new Vector<>();
 
@@ -99,5 +114,13 @@ public class TestField implements Field {
         return this.nativeDataType;
     }
 
+    @Override
+    public Boolean isModifiable() {
+        return modifiable;
+    }
 
+    @Override
+    public void setModifiable(Boolean isModifiable) {
+        modifiable = isModifiable;
+    }
 }

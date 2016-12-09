@@ -4,6 +4,7 @@
 
 package com.thinkbiganalytics.discovery.util;
 
+import com.thinkbiganalytics.discovery.schema.DataTypeDescriptor;
 import com.thinkbiganalytics.discovery.schema.Field;
 
 import org.apache.commons.io.IOUtils;
@@ -60,7 +61,9 @@ public class ParserHelper {
                 linesRead++;
                 line = br.readLine();
             }
-            if (linesRead <= 1 && sw.toString().length() >= MAX_CHARS) throw new IOException("Failed to detect newlines for sample file.");
+            if (linesRead <= 1 && sw.toString().length() >= MAX_CHARS) {
+                throw new IOException("Failed to detect newlines for sample file.");
+            }
         }
 
         return sw.toString();
@@ -159,6 +162,7 @@ public class ParserHelper {
                     case HIVE:
                         String hiveType = sqlTypeToHiveType(jdbcType);
                         field.setDerivedDataType(hiveType);
+                        field.setDataTypeDescriptor(hiveTypeToDescriptor(hiveType));
                         break;
                     case RDBMS:
                         field.setDerivedDataType(jdbcType.getName());
@@ -167,5 +171,69 @@ public class ParserHelper {
         }
     }
 
+    /*
+    Returns whether the provided field represents a complex structure such as ARRAY, STRUCT, or BINARY
+ */
+    public static DataTypeDescriptor hiveTypeToDescriptor(String hiveType) {
+        HiveDataTypeDescriptor descriptor = new HiveDataTypeDescriptor();
+        if (hiveType != null) {
+            hiveType = hiveType.toLowerCase();
+            switch (hiveType) {
+                case "boolean":
+                case "string":
+                    break;
+                case "bigint":
+                case "double":
+                case "int":
+                case "float":
+                case "tinyint":
+                    descriptor.setNumeric(true);
+                    break;
+                case "date":
+                case "timestamp":
+                    descriptor.setDate(true);
+                    break;
+                default:
+                    descriptor.setComplex(true);
+            }
+        }
+        return descriptor;
+    }
 
+    static class HiveDataTypeDescriptor implements DataTypeDescriptor {
+
+        boolean isDate;
+
+        boolean isNumeric;
+
+        boolean isComplex;
+
+        @Override
+        public Boolean isDate() {
+            return isDate;
+        }
+
+        @Override
+        public Boolean isNumeric() {
+            return isNumeric;
+        }
+
+        @Override
+        public Boolean isComplex() {
+            return isComplex;
+        }
+
+        public void setDate(boolean date) {
+            isDate = date;
+        }
+
+        public void setNumeric(boolean numeric) {
+            isNumeric = numeric;
+        }
+
+        public void setComplex(boolean complex) {
+            isComplex = complex;
+        }
+
+    }
 }

@@ -5,6 +5,7 @@
 package com.thinkbiganalytics.discovery.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.thinkbiganalytics.discovery.schema.DataTypeDescriptor;
 import com.thinkbiganalytics.discovery.schema.Field;
 
 import java.util.List;
@@ -24,6 +25,10 @@ public class DefaultField implements Field {
     private Boolean primaryKey = false;
 
     private Boolean nullable = true;
+
+    private Boolean modifiable = true;
+
+    private DataTypeDescriptor dataTypeDescriptor;
 
     public List<String> sampleValues = new Vector<>();
 
@@ -101,5 +106,23 @@ public class DefaultField implements Field {
         return this.nativeDataType;
     }
 
+    @Override
+    public Boolean isModifiable() {
+        return this.modifiable;
+    }
 
+    @Override
+    public void setModifiable(Boolean isModifiable) {
+        this.modifiable = isModifiable;
+    }
+
+    @Override
+    public DataTypeDescriptor getDataTypeDescriptor() {
+        return dataTypeDescriptor;
+    }
+
+    @Override
+    public void setDataTypeDescriptor(DataTypeDescriptor dataTypeDescriptor) {
+        this.dataTypeDescriptor = dataTypeDescriptor;
+    }
 }

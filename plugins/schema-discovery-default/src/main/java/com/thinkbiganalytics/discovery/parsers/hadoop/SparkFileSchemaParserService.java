@@ -11,6 +11,7 @@ import com.thinkbiganalytics.db.model.query.QueryResultColumn;
 import com.thinkbiganalytics.discovery.model.DefaultField;
 import com.thinkbiganalytics.discovery.model.DefaultHiveSchema;
 import com.thinkbiganalytics.discovery.schema.Schema;
+import com.thinkbiganalytics.discovery.util.ParserHelper;
 import com.thinkbiganalytics.discovery.util.TableSchemaType;
 import com.thinkbiganalytics.spark.rest.model.TransformRequest;
 import com.thinkbiganalytics.spark.rest.model.TransformResponse;
@@ -139,12 +140,15 @@ public class SparkFileSchemaParserService {
     private DefaultHiveSchema toHiveSchema(QueryResult result, SparkFileType fileType) {
         DefaultHiveSchema schema = new DefaultHiveSchema();
         schema.setHiveFormat("STORED AS " + fileType);
+        schema.setStructured(true);
         ArrayList<DefaultField> fields = new ArrayList<>();
         List<QueryResultColumn> columns = result.getColumns();
         for (QueryResultColumn column : columns) {
             DefaultField field = new DefaultField();
             field.setName(column.getDisplayName());
+            field.setNativeDataType(column.getDataType());
             field.setDerivedDataType(column.getDataType());
+            field.setDataTypeDescriptor(ParserHelper.hiveTypeToDescriptor(column.getDataType()));
             // Add sample values
             List<Map<String, Object>> values = result.getRows();
             for (Map<String, Object> colMap : values) {
