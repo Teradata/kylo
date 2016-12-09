@@ -73,11 +73,16 @@ public class DBSchemaParser {
      * @param catalog the catalog name pattern, or {@code null}
      * @param schema the schema name pattern, or {@code null}
      * @param tableName the table name pattern   @return a result set containing the matching table metadata
-     * @throws SQLException if a database access error occurs
+     * @return the list of tables or {@code null} if there was a problem
      */
-    @Nonnull
-    private ResultSet getTables(@Nonnull final Connection conn, @Nullable String catalog, @Nullable final String schema, @Nonnull final String tableName) throws SQLException {
-        return conn.getMetaData().getTables(catalog, schema, tableName, new String[]{"TABLE", "VIEW"});
+    @Nullable
+    private ResultSet getTables(@Nonnull final Connection conn, @Nullable String catalog, @Nullable final String schema, @Nonnull final String tableName) {
+        try {
+            return conn.getMetaData().getTables(catalog, schema, tableName, new String[]{"TABLE", "VIEW"});
+        } catch (final SQLException e) {
+            log.debug("Failed to list tables for catalog:{} schema:{} tableName:{}", catalog, schema, tableName, e);
+            return null;
+        }
     }
 
     /**
@@ -95,7 +100,7 @@ public class DBSchemaParser {
         try (final Connection conn = ds.getConnection()) {
             for (final String catalog : listCatalogs()) {
                 try (final ResultSet result = getTables(conn, catalog, "%", "%")) {
-                    while (result.next()) {
+                    while (result != null && result.next()) {
                         final String tableName = result.getString("TABLE_NAME");
                         final String tableSchem = result.getString("TABLE_SCHEM");
                         final String tableCat = result.getString("TABLE_CAT");
@@ -127,7 +132,7 @@ public class DBSchemaParser {
 
         try (final Connection conn = kerberosTicketConfiguration.isKerberosEnabled() ? KerberosUtil.getConnectionWithOrWithoutKerberos(ds, kerberosTicketConfiguration) : ds.getConnection()) {
             try (final ResultSet result = getTables(conn, catalog, (catalog == null) ? schema : "%", table)) {
-                while (result.next()) {
+                while (result != null && result.next()) {
                     final String cat = result.getString(1);
                     final String schem = result.getString(2);
                     final String tableName = result.getString(3);
