@@ -536,6 +536,14 @@ Note: Kylo supports user impersonation ( add doc and reference it)
     .. Choose the index_schema_service.zip file
     .. Click "Import Feed"
 
+. Update the Index Schema processors
+
+    .. Login to NiFi
+    .. Go to the system -> index_schema_service process group
+        ... Edit the "Receive Schema Index Request" processor and set the URL value to <KYLO_EDGE_HOSTNAME>
+        ... In addition to the URL field you might have to edit the jms-subscription property file as instructed above
+        ... Edit the "Index Metadata Elasticsearch" processor and set the HostName value to <KYLO_EDGE_HOSTNAME>
+
 . Import Index Text Template (For Elasticsearch)
 
     .. Locate the index_text_service.zip file. You will need the file locally to upload it. You can find it in one of two places:
@@ -546,6 +554,13 @@ Note: Kylo supports user impersonation ( add doc and reference it)
     .. Select "Import from a file"
     .. Choose the index_text_service.zip file
     .. Click "Import Feed"
+
+. Update the Index Text processors
+    .. Login to NiFi
+    .. Go to the system -> index_text_service process group
+        ... Edit the "Receive Index Request" processor and set the URL value to <KYLO_EDGE_HOSTNAME>
+        ... In addition to the URL field you might have to edit the jms-subscription property file as instructed above
+        ... Edit the "Update Elasticsearch" processor and set the HostName value to <KYLO_EDGE_HOSTNAME>
 
 . Note: An issue was found with the getJmsTopic processor URL. If you import the template using localhost and need to change it there is a bug that won't allow the URL to be changed. The value is peristed to a file.
 
@@ -577,20 +592,12 @@ Note: Kylo supports user impersonation ( add doc and reference it)
 
 . Update NiFi processors for Kylo template versions prior to 0.5.0
 
-    We need to update a few settings in the elasticsearch and data ingest template. This is not required for templates in 0.5.0 or greater since they will be set during import
+    We need to update a few settings in the elasticsearch and standard ingest template. This is not required with 0.5.0 or greater since they will be set during import
 
     .. Login to NiFi
     .. Go to the reusable_templates -> standard-ingest process group
         ... Edit the "Register Index" processor and set the URL to the <KYLO_EDGE_HOSTNAME>
         ... Edit the "Update Index" processor and set teh URL to the <KYLO_EDGE_HOSTNAME>
-    .. Go to the system -> index_schema_service process group
-        ... Edit the "Receive Schema Index Request" processor and set the URL value to <KYLO_EDGE_HOSTNAME>
-        ... In addition to the URL field you might have to edit the jms-subscription property file as instructed above
-        ... Edit the "Index Metadata Elasticsearch" processor and set the HostName value to <KYLO_EDGE_HOSTNAME>
-    .. Go to the system -> index_text_service process group
-        ... Edit the "Receive Index Request" processor and set the URL value to <KYLO_EDGE_HOSTNAME>
-        ... In addition to the URL field you might have to edit the jms-subscription property file as instructed above
-        ... Edit the "Update Elasticsearch" processor and set the HostName value to <KYLO_EDGE_HOSTNAME>
 
 
 . # Import the transform feed
