@@ -110,6 +110,10 @@ as a different user
 
 link:./deployment/kylo-tar-install{outfilesuffix}[Kylo TAR File Installation Guide ]
 
+=== Install Procedure 5: HDP 2.5 Cluster Ranger/Kerberos with 2 Edge Nodes
+This document provides an example on how to install Kylo on an HDP 2.5 cluster with minimal admin priviledges and shows how to configure installation with NiFi on a seperate edge node.
+
+link:./deployment/hdp-2.5-ranger-kerberos-deployment{outfilesuffix}[HDP 2.5 Ranger/Kerberos Deployment Guide ]
 
 == Configuration
 
