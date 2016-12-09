@@ -4,9 +4,6 @@
 
 package com.thinkbiganalytics.nifi.v2.hdfs;
 
-import com.thinkbiganalytics.nifi.security.ApplySecurityPolicy;
-import com.thinkbiganalytics.nifi.security.SecurityUtil;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -134,41 +131,8 @@ public class CreateHDFSFolder extends AbstractHadoopProcessor {
 
         final StopWatch stopWatch = new StopWatch(true);
         try {
-            final Configuration configuration = getConfiguration();
-
-            String principal = context.getProperty(kerberosPrincipal).getValue();
-            String keyTab = context.getProperty(kerberosKeytab).getValue();
-            String hadoopConfigurationResources = context.getProperty(HADOOP_CONFIGURATION_RESOURCES).getValue();
-
-            if (SecurityUtil.isSecurityEnabled(configuration)) {
-                if (principal.equals("") && keyTab.equals("")) {
-                    getLog().error("Kerberos Principal and Kerberos KeyTab information missing in Kerberos enabled cluster.");
-                    session.transfer(flowFile, REL_FAILURE);
-                    return;
-                }
-
-                try {
-                    getLog().info("User authentication initiated");
-                    ApplySecurityPolicy applySecurityObject = new ApplySecurityPolicy();
-                    boolean authenticationStatus = applySecurityObject.validateUserWithKerberos(getLog(), hadoopConfigurationResources, principal, keyTab);
-                    if (authenticationStatus) {
-                        getLog().info("User authenticated successfully.");
-                    } else {
-                        getLog().info("User authentication failed.");
-                        session.transfer(flowFile, REL_FAILURE);
-                        return;
-                    }
-
-                } catch (Exception unknownException) {
-                    getLog().error("Unknown exception occured while validating user :" + unknownException.getMessage());
-                    session.transfer(flowFile, REL_FAILURE);
-                    return;
-                }
-
-            }
-
-            final FileSystem hdfs = getFileSystem();
-            if (configuration == null || hdfs == null) {
+            final FileSystem hdfs = getFileSystem(context);
+            if (hdfs == null) {
                 getLog().error("HDFS not configured properly");
                 session.transfer(flowFile, REL_FAILURE);
                 context.yield();

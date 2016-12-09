@@ -18,7 +18,9 @@ package com.thinkbiganalytics.nifi.v2.hdfs;
 
 
 import com.thinkbiganalytics.nifi.processor.AbstractNiFiProcessor;
+import com.thinkbiganalytics.nifi.security.ApplySecurityPolicy;
 import com.thinkbiganalytics.nifi.security.KerberosProperties;
+import com.thinkbiganalytics.nifi.security.SecurityUtil;
 import com.thinkbiganalytics.nifi.security.SpringSecurityContextLoader;
 
 import org.apache.commons.io.IOUtils;
@@ -50,6 +52,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.net.SocketFactory;
 
 /**
@@ -298,6 +301,58 @@ public abstract class AbstractHadoopProcessor extends AbstractNiFiProcessor {
             tryKerberosRelogin(hdfsResources.get().getUserGroupInformation());
         }
         return hdfsResources.get().getFileSystem();
+    }
+
+    /**
+     * Gets the Hadoop file system for the specified context.
+     *
+     * @param context the process context
+     * @return the Hadoop file system, or {@code null} if an error occurred
+     */
+    @Nullable
+    protected FileSystem getFileSystem(@Nonnull final ProcessContext context) {
+        // Get Hadoop configuration
+        final Configuration configuration = getConfiguration();
+        if (configuration == null) {
+            getLog().error("Missing Hadoop configuration.");
+            return null;
+        }
+
+        // Validate user if security is enabled
+        if (SecurityUtil.isSecurityEnabled(configuration)) {
+            // Get properties
+            String hadoopConfigurationResources = context.getProperty(HADOOP_CONFIGURATION_RESOURCES).getValue();
+            String keyTab = context.getProperty(kerberosKeytab).getValue();
+            String principal = context.getProperty(kerberosPrincipal).getValue();
+
+            if (keyTab.isEmpty() || principal.isEmpty()) {
+                getLog().error("Kerberos keytab or principal information missing in Kerberos enabled cluster.");
+                return null;
+            }
+
+            // Authenticate
+            try {
+                getLog().debug("User authentication initiated.");
+                if (new ApplySecurityPolicy().validateUserWithKerberos(getLog(), hadoopConfigurationResources, principal, keyTab)) {
+                    getLog().debug("User authenticated successfully.");
+                } else {
+                    getLog().error("User authentication failed.");
+                    return null;
+                }
+            } catch (Exception e) {
+                getLog().error("Failed to authenticate:" + e, e);
+                return null;
+            }
+        }
+
+        // Get file system
+        final FileSystem fileSystem = getFileSystem();
+        if (fileSystem != null) {
+            return fileSystem;
+        } else {
+            getLog().error("Hadoop FileSystem not properly configured.");
+            return null;
+        }
     }
 
     protected void tryKerberosRelogin(UserGroupInformation ugi) {
