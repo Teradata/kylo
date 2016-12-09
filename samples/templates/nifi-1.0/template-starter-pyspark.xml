@@ -1,0 +1,585 @@
+<?xml version="1.0" ?>
+<template encoding-version="1.0">
+  <description>A starter template for executing PySpark jobs.
+</description>
+  <groupId>38097692-3cba-4316-b20b-747bf78d0aee</groupId>
+  <name>template-starter-pyspark</name>
+  <snippet>
+    <connections>
+      <id>db848003-0158-1000-0000-000000000000</id>
+      <parentGroupId>38097692-3cba-4316-0000-000000000000</parentGroupId>
+      <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
+      <backPressureObjectThreshold>10000</backPressureObjectThreshold>
+      <destination>
+        <groupId>38097692-3cba-4316-0000-000000000000</groupId>
+        <id>db7a221b-0158-1000-0000-000000000000</id>
+        <type>PROCESSOR</type>
+      </destination>
+      <flowFileExpiration>0 sec</flowFileExpiration>
+      <labelIndex>1</labelIndex>
+      <name></name>
+      <selectedRelationships>success</selectedRelationships>
+      <source>
+        <groupId>38097692-3cba-4316-0000-000000000000</groupId>
+        <id>db845c64-0158-1000-0000-000000000000</id>
+        <type>PROCESSOR</type>
+      </source>
+      <zIndex>0</zIndex>
+    </connections>
+    <connections>
+      <id>db849224-0158-1000-0000-000000000000</id>
+      <parentGroupId>38097692-3cba-4316-0000-000000000000</parentGroupId>
+      <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
+      <backPressureObjectThreshold>10000</backPressureObjectThreshold>
+      <destination>
+        <groupId>38097692-3cba-4316-0000-000000000000</groupId>
+        <id>db7a3a7f-0158-1000-0000-000000000000</id>
+        <type>PROCESSOR</type>
+      </destination>
+      <flowFileExpiration>0 sec</flowFileExpiration>
+      <labelIndex>1</labelIndex>
+      <name></name>
+      <selectedRelationships>failure</selectedRelationships>
+      <source>
+        <groupId>38097692-3cba-4316-0000-000000000000</groupId>
+        <id>db845c64-0158-1000-0000-000000000000</id>
+        <type>PROCESSOR</type>
+      </source>
+      <zIndex>0</zIndex>
+    </connections>
+    <connections>
+      <id>e54e5460-0158-1000-0000-000000000000</id>
+      <parentGroupId>38097692-3cba-4316-0000-000000000000</parentGroupId>
+      <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
+      <backPressureObjectThreshold>10000</backPressureObjectThreshold>
+      <destination>
+        <groupId>38097692-3cba-4316-0000-000000000000</groupId>
+        <id>db845c64-0158-1000-0000-000000000000</id>
+        <type>PROCESSOR</type>
+      </destination>
+      <flowFileExpiration>0 sec</flowFileExpiration>
+      <labelIndex>1</labelIndex>
+      <name></name>
+      <selectedRelationships>success</selectedRelationships>
+      <source>
+        <groupId>38097692-3cba-4316-0000-000000000000</groupId>
+        <id>e54cae16-0158-1000-0000-000000000000</id>
+        <type>PROCESSOR</type>
+      </source>
+      <zIndex>0</zIndex>
+    </connections>
+    <connections>
+      <id>e5513a18-0158-1000-0000-000000000000</id>
+      <parentGroupId>38097692-3cba-4316-0000-000000000000</parentGroupId>
+      <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
+      <backPressureObjectThreshold>10000</backPressureObjectThreshold>
+      <destination>
+        <groupId>38097692-3cba-4316-0000-000000000000</groupId>
+        <id>e54cae16-0158-1000-0000-000000000000</id>
+        <type>PROCESSOR</type>
+      </destination>
+      <flowFileExpiration>0 sec</flowFileExpiration>
+      <labelIndex>1</labelIndex>
+      <name></name>
+      <selectedRelationships>success</selectedRelationships>
+      <source>
+        <groupId>38097692-3cba-4316-0000-000000000000</groupId>
+        <id>e54fc0f7-0158-1000-0000-000000000000</id>
+        <type>PROCESSOR</type>
+      </source>
+      <zIndex>0</zIndex>
+    </connections>
+    <processors>
+      <id>db7a221b-0158-1000-0000-000000000000</id>
+      <parentGroupId>38097692-3cba-4316-0000-000000000000</parentGroupId>
+      <position>
+        <x>1227.9762505292142</x>
+        <y>0.0</y>
+      </position>
+      <config>
+        <bulletinLevel>DEBUG</bulletinLevel>
+        <comments></comments>
+        <concurrentlySchedulableTaskCount>1</concurrentlySchedulableTaskCount>
+        <descriptors>
+          <entry>
+            <key>Log Level</key>
+            <value>
+              <name>Log Level</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Log Payload</key>
+            <value>
+              <name>Log Payload</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Attributes to Log</key>
+            <value>
+              <name>Attributes to Log</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Attributes to Ignore</key>
+            <value>
+              <name>Attributes to Ignore</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Log prefix</key>
+            <value>
+              <name>Log prefix</name>
+            </value>
+          </entry>
+        </descriptors>
+        <lossTolerant>false</lossTolerant>
+        <penaltyDuration>30 sec</penaltyDuration>
+        <properties>
+          <entry>
+            <key>Log Level</key>
+            <value>info</value>
+          </entry>
+          <entry>
+            <key>Log Payload</key>
+            <value>false</value>
+          </entry>
+          <entry>
+            <key>Attributes to Log</key>
+          </entry>
+          <entry>
+            <key>Attributes to Ignore</key>
+          </entry>
+          <entry>
+            <key>Log prefix</key>
+          </entry>
+        </properties>
+        <runDurationMillis>0</runDurationMillis>
+        <schedulingPeriod>0 sec</schedulingPeriod>
+        <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
+        <yieldDuration>1 sec</yieldDuration>
+      </config>
+      <name>PySpark Job Success</name>
+      <relationships>
+        <autoTerminate>true</autoTerminate>
+        <name>success</name>
+      </relationships>
+      <style></style>
+      <type>org.apache.nifi.processors.standard.LogAttribute</type>
+    </processors>
+    <processors>
+      <id>db7a3a7f-0158-1000-0000-000000000000</id>
+      <parentGroupId>38097692-3cba-4316-0000-000000000000</parentGroupId>
+      <position>
+        <x>632.550358157278</x>
+        <y>290.3623238315381</y>
+      </position>
+      <config>
+        <bulletinLevel>DEBUG</bulletinLevel>
+        <comments></comments>
+        <concurrentlySchedulableTaskCount>1</concurrentlySchedulableTaskCount>
+        <descriptors>
+          <entry>
+            <key>Log Level</key>
+            <value>
+              <name>Log Level</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Log Payload</key>
+            <value>
+              <name>Log Payload</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Attributes to Log</key>
+            <value>
+              <name>Attributes to Log</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Attributes to Ignore</key>
+            <value>
+              <name>Attributes to Ignore</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Log prefix</key>
+            <value>
+              <name>Log prefix</name>
+            </value>
+          </entry>
+        </descriptors>
+        <lossTolerant>false</lossTolerant>
+        <penaltyDuration>30 sec</penaltyDuration>
+        <properties>
+          <entry>
+            <key>Log Level</key>
+            <value>info</value>
+          </entry>
+          <entry>
+            <key>Log Payload</key>
+            <value>false</value>
+          </entry>
+          <entry>
+            <key>Attributes to Log</key>
+          </entry>
+          <entry>
+            <key>Attributes to Ignore</key>
+          </entry>
+          <entry>
+            <key>Log prefix</key>
+          </entry>
+        </properties>
+        <runDurationMillis>0</runDurationMillis>
+        <schedulingPeriod>0 sec</schedulingPeriod>
+        <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
+        <yieldDuration>1 sec</yieldDuration>
+      </config>
+      <name>PySpark Job Failure</name>
+      <relationships>
+        <autoTerminate>true</autoTerminate>
+        <name>success</name>
+      </relationships>
+      <style></style>
+      <type>org.apache.nifi.processors.standard.LogAttribute</type>
+    </processors>
+    <processors>
+      <id>db845c64-0158-1000-0000-000000000000</id>
+      <parentGroupId>38097692-3cba-4316-0000-000000000000</parentGroupId>
+      <position>
+        <x>638.6761088208818</x>
+        <y>7.351127538489436</y>
+      </position>
+      <config>
+        <bulletinLevel>WARN</bulletinLevel>
+        <comments></comments>
+        <concurrentlySchedulableTaskCount>1</concurrentlySchedulableTaskCount>
+        <descriptors>
+          <entry>
+            <key>Kerberos Principal</key>
+            <value>
+              <name>Kerberos Principal</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Kerberos Keytab</key>
+            <value>
+              <name>Kerberos Keytab</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Hadoop Configuration Resources</key>
+            <value>
+              <name>Hadoop Configuration Resources</name>
+            </value>
+          </entry>
+          <entry>
+            <key>PySpark App File</key>
+            <value>
+              <name>PySpark App File</name>
+            </value>
+          </entry>
+          <entry>
+            <key>PySpark App Args</key>
+            <value>
+              <name>PySpark App Args</name>
+            </value>
+          </entry>
+          <entry>
+            <key>PySpark App Name</key>
+            <value>
+              <name>PySpark App Name</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Additional Python files/zips/eggs</key>
+            <value>
+              <name>Additional Python files/zips/eggs</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Spark Master</key>
+            <value>
+              <name>Spark Master</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Spark YARN Deploy Mode</key>
+            <value>
+              <name>Spark YARN Deploy Mode</name>
+            </value>
+          </entry>
+          <entry>
+            <key>YARN Queue</key>
+            <value>
+              <name>YARN Queue</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Spark Home</key>
+            <value>
+              <name>Spark Home</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Driver Memory</key>
+            <value>
+              <name>Driver Memory</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Executor Memory</key>
+            <value>
+              <name>Executor Memory</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Executor Instances</key>
+            <value>
+              <name>Executor Instances</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Executor Cores</key>
+            <value>
+              <name>Executor Cores</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Network Timeout</key>
+            <value>
+              <name>Network Timeout</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Additional Spark Configuration</key>
+            <value>
+              <name>Additional Spark Configuration</name>
+            </value>
+          </entry>
+        </descriptors>
+        <lossTolerant>false</lossTolerant>
+        <penaltyDuration>30 sec</penaltyDuration>
+        <properties>
+          <entry>
+            <key>Kerberos Principal</key>
+          </entry>
+          <entry>
+            <key>Kerberos Keytab</key>
+          </entry>
+          <entry>
+            <key>Hadoop Configuration Resources</key>
+          </entry>
+          <entry>
+            <key>PySpark App File</key>
+            <value>${pyspark-app}</value>
+          </entry>
+          <entry>
+            <key>PySpark App Args</key>
+            <value>${pyspark-app-args}</value>
+          </entry>
+          <entry>
+            <key>PySpark App Name</key>
+            <value>${pyspark-app-name}</value>
+          </entry>
+          <entry>
+            <key>Additional Python files/zips/eggs</key>
+          </entry>
+          <entry>
+            <key>Spark Master</key>
+            <value>yarn</value>
+          </entry>
+          <entry>
+            <key>Spark YARN Deploy Mode</key>
+            <value>client</value>
+          </entry>
+          <entry>
+            <key>YARN Queue</key>
+          </entry>
+          <entry>
+            <key>Spark Home</key>
+            <value>/usr/hdp/current/spark-client/</value>
+          </entry>
+          <entry>
+            <key>Driver Memory</key>
+            <value>512m</value>
+          </entry>
+          <entry>
+            <key>Executor Memory</key>
+            <value>512m</value>
+          </entry>
+          <entry>
+            <key>Executor Instances</key>
+            <value>1</value>
+          </entry>
+          <entry>
+            <key>Executor Cores</key>
+            <value>1</value>
+          </entry>
+          <entry>
+            <key>Network Timeout</key>
+            <value>120s</value>
+          </entry>
+          <entry>
+            <key>Additional Spark Configuration</key>
+          </entry>
+        </properties>
+        <runDurationMillis>0</runDurationMillis>
+        <schedulingPeriod>15 sec</schedulingPeriod>
+        <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
+        <yieldDuration>1 sec</yieldDuration>
+      </config>
+      <name>Execute PySpark Job</name>
+      <relationships>
+        <autoTerminate>false</autoTerminate>
+        <name>failure</name>
+      </relationships>
+      <relationships>
+        <autoTerminate>false</autoTerminate>
+        <name>success</name>
+      </relationships>
+      <style></style>
+      <type>com.thinkbiganalytics.nifi.pyspark.core.ExecutePySpark</type>
+    </processors>
+    <processors>
+      <id>e54cae16-0158-1000-0000-000000000000</id>
+      <parentGroupId>38097692-3cba-4316-0000-000000000000</parentGroupId>
+      <position>
+        <x>3.6756896712736307</x>
+        <y>9.174194234917195</y>
+      </position>
+      <config>
+        <bulletinLevel>WARN</bulletinLevel>
+        <comments></comments>
+        <concurrentlySchedulableTaskCount>1</concurrentlySchedulableTaskCount>
+        <descriptors>
+          <entry>
+            <key>Delete Attributes Expression</key>
+            <value>
+              <name>Delete Attributes Expression</name>
+            </value>
+          </entry>
+          <entry>
+            <key>pyspark-app</key>
+            <value>
+              <name>pyspark-app</name>
+            </value>
+          </entry>
+          <entry>
+            <key>pyspark-app-args</key>
+            <value>
+              <name>pyspark-app-args</name>
+            </value>
+          </entry>
+          <entry>
+            <key>pyspark-app-name</key>
+            <value>
+              <name>pyspark-app-name</name>
+            </value>
+          </entry>
+        </descriptors>
+        <lossTolerant>false</lossTolerant>
+        <penaltyDuration>30 sec</penaltyDuration>
+        <properties>
+          <entry>
+            <key>Delete Attributes Expression</key>
+          </entry>
+          <entry>
+            <key>pyspark-app</key>
+            <value>&lt;location of pyspark code file&gt;</value>
+          </entry>
+          <entry>
+            <key>pyspark-app-args</key>
+            <value>&lt;command line args to app separated by commas, otherwise blank&gt;</value>
+          </entry>
+          <entry>
+            <key>pyspark-app-name</key>
+            <value>&lt;name of app&gt;</value>
+          </entry>
+        </properties>
+        <runDurationMillis>0</runDurationMillis>
+        <schedulingPeriod>0 sec</schedulingPeriod>
+        <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
+        <yieldDuration>1 sec</yieldDuration>
+      </config>
+      <name>Set PySpark Job Params</name>
+      <relationships>
+        <autoTerminate>false</autoTerminate>
+        <name>success</name>
+      </relationships>
+      <style></style>
+      <type>org.apache.nifi.processors.attributes.UpdateAttribute</type>
+    </processors>
+    <processors>
+      <id>e54fc0f7-0158-1000-0000-000000000000</id>
+      <parentGroupId>38097692-3cba-4316-0000-000000000000</parentGroupId>
+      <position>
+        <x>0.0</x>
+        <y>279.9338703228341</y>
+      </position>
+      <config>
+        <bulletinLevel>WARN</bulletinLevel>
+        <comments></comments>
+        <concurrentlySchedulableTaskCount>1</concurrentlySchedulableTaskCount>
+        <descriptors>
+          <entry>
+            <key>File Size</key>
+            <value>
+              <name>File Size</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Batch Size</key>
+            <value>
+              <name>Batch Size</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Data Format</key>
+            <value>
+              <name>Data Format</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Unique FlowFiles</key>
+            <value>
+              <name>Unique FlowFiles</name>
+            </value>
+          </entry>
+        </descriptors>
+        <lossTolerant>false</lossTolerant>
+        <penaltyDuration>30 sec</penaltyDuration>
+        <properties>
+          <entry>
+            <key>File Size</key>
+            <value>1 KB</value>
+          </entry>
+          <entry>
+            <key>Batch Size</key>
+            <value>1</value>
+          </entry>
+          <entry>
+            <key>Data Format</key>
+            <value>Text</value>
+          </entry>
+          <entry>
+            <key>Unique FlowFiles</key>
+            <value>true</value>
+          </entry>
+        </properties>
+        <runDurationMillis>0</runDurationMillis>
+        <schedulingPeriod>300 sec</schedulingPeriod>
+        <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
+        <yieldDuration>1 sec</yieldDuration>
+      </config>
+      <name>Kick-start PySpark Job Flow</name>
+      <relationships>
+        <autoTerminate>false</autoTerminate>
+        <name>success</name>
+      </relationships>
+      <style></style>
+      <type>org.apache.nifi.processors.standard.GenerateFlowFile</type>
+    </processors>
+  </snippet>
+  <timestamp>12/09/2016 23:15:05 UTC</timestamp>
+</template>
