@@ -49,7 +49,7 @@
 [tba:metadataFolder] 
 	+ feeds (tba:feedsFolder) = tba:feedsFolder autocreated mandatory
 	+ datasources (tba:datasourcesFolder) = tba:datasourcesFolder autocreated mandatory
-	+ datasourceDefinitions (tba:datasourceDefinitionsFolder) = tba:datasourceDefinitionsFolder autocreated mandatory
+	+ datasourceDefinitions (tba:datasourceDefinitionsFolder) = tba:datasourceDefinitionsFolder autocreated
 	+ templates (tba:templatesFolder) = tba:templatesFolder autocreated mandatory
 	+ sla (tba:slaFolder) = tba:slaFolder autocreated mandatory
 	+ extensions (tba:extensionsFolder) = tba:extensionsFolder autocreated mandatory
