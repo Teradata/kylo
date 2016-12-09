@@ -3,9 +3,9 @@
  */
 package com.thinkbiganalytics.metadata.jpa;
 
-import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
-import com.thinkbiganalytics.metadata.sla.spi.core.InMemorySLAProvider;
+import javax.sql.DataSource;
 
+import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -14,7 +14,12 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
-import javax.sql.DataSource;
+import com.thinkbiganalytics.alerts.api.core.AggregatingAlertProvider;
+import com.thinkbiganalytics.alerts.spi.AlertManager;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
+import com.thinkbiganalytics.metadata.sla.spi.core.InMemorySLAProvider;
+
+import reactor.bus.EventBus;
 
 @EnableAutoConfiguration
 @ComponentScan(basePackages = {"com.thinkbiganalytics"})
@@ -38,5 +43,16 @@ public class TestJpaConfiguration {
     public ServiceLevelAgreementProvider slaProvider() {
         return new InMemorySLAProvider();
     }
-
+    
+    @Bean(name = "alertsEventBus")
+    @Primary
+    public EventBus alertsEventBus() {
+        return Mockito.mock(EventBus.class);
+    }
+    
+    @Bean(name = "respondableAlertsEventBus")
+    @Primary
+    public EventBus respondableAlertsEventBus() {
+        return Mockito.mock(EventBus.class);
+    }
 }
