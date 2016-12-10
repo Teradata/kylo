@@ -386,7 +386,7 @@
         }
 
         this.onManualTableNameChange = function () {
-            if (self.table.method != 'EXISTING_TABLE') {
+            if (self.model.table.method != 'EXISTING_TABLE') {
                 self.model.table.method = 'EXISTING_TABLE';
             }
             self.model.table.sourceTableSchema.name = self.tableProperty.value
@@ -394,7 +394,7 @@
         }
 
         this.onManualFieldNameChange = function () {
-            if (self.table.method != 'EXISTING_TABLE') {
+            if (self.model.table.method != 'EXISTING_TABLE') {
                 self.model.table.method = 'EXISTING_TABLE';
             }
             var fields = [];
