@@ -87,7 +87,7 @@
                                                     <div class="md-checkbox-div-top" ng-repeat="v in [0]">
                                                         <md-checkbox aria-label="User can supply input"
                                                                      ng-model="property.userEditable">
-                                                            Allow user to supply value when defining the feed?
+                                                          Allow user input?
                                                         </md-checkbox>
                                                     </div>
                                                 </md-input-container>
@@ -114,6 +114,7 @@
                                                        type="text"
                                                        ng-model="property.renderOptions['trueValue']" size="20"/>
                                                 </md-input-container>
+
                                               <md-input-container
                                                   style="height:30px;margin-bottom:5px; padding-left:10px;"
                                                   class="md-block" ng-if="property.userEditable && property.renderType == 'checkbox-custom'">
@@ -123,6 +124,13 @@
                                                        type="text"
                                                        ng-model="property.renderOptions['falseValue']" size="20"/>
                                               </md-input-container>
+
+                                              <div style="padding-left:10px;">
+                                                <md-chips md-on-add="vm.customSelectOptionChanged(property)" md-on-remove="vm.customSelectOptionChanged(property)" placeholder="Add Select Options"
+                                                          ng-model="property.selectOptions"
+                                                          ng-if="property.userEditable  && property.propertyDescriptor.identifiesControllerService == null && property.renderOptions['selectCustom'] == 'true'">
+                                                </md-chips>
+                                              </div>
                                             </div>
                                         </ng-form>
 

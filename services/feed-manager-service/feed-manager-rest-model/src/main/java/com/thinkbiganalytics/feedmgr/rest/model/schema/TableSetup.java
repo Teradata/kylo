@@ -78,6 +78,9 @@ public class TableSetup {
     @MetadataField(description = "List of source table field names separated by a new line")
     private String sourceFields;
 
+    @MetadataField(description = "List of source table field names separated by a comma")
+    private String sourceFieldsCommaString;
+
     @Deprecated
     //this is now referenced in the sourceTableSchema.name
     //${metadata.table.existingTableName} will still work, but it is advised to switch it to ${metadata.table.sourceTableSchema.name}
@@ -210,12 +213,24 @@ public class TableSetup {
         if (sourceTableSchema != null && sourceTableSchema.getFields() != null) {
             for (Field field : sourceTableSchema.getFields()) {
                 setStringBuffer(sb, field.getName(), "\n");
-
             }
+            setSourceFields(sb.toString());
         }
-        setSourceFields(sb.toString());
 
     }
+
+    @JsonIgnore
+    public void updateSourceFieldsCommaString() {
+        StringBuffer sb = new StringBuffer();
+        if (sourceTableSchema != null && sourceTableSchema.getFields() != null) {
+            for (Field field : sourceTableSchema.getFields()) {
+                setStringBuffer(sb, field.getName(), ",");
+            }
+            setSourceFieldsCommaString(sb.toString());
+        }
+
+    }
+
 
     @JsonIgnore
     public void updateFieldStructure() {
@@ -328,6 +343,9 @@ public class TableSetup {
         if (StringUtils.isBlank(sourceFields)) {
             sourceFields = "NA";
         }
+        if (StringUtils.isBlank(sourceFieldsCommaString)) {
+            sourceFieldsCommaString = "NA";
+        }
         if (sourceTableSchema != null) {
             if (StringUtils.isBlank(sourceTableSchema.getName())) {
                 sourceTableSchema.setName("NA");
@@ -341,6 +359,7 @@ public class TableSetup {
         updateFieldStructure();
         updateFieldStringData();
         updateSourceFieldsString();
+        updateSourceFieldsCommaString();
         updateFieldIndexString();
         updatePartitionSpecs();
         updateFieldPolicyNames();
@@ -496,5 +515,11 @@ public class TableSetup {
         this.targetMergeStrategy = targetMergeStrategy;
     }
 
+    public String getSourceFieldsCommaString() {
+        return sourceFieldsCommaString;
+    }
 
+    public void setSourceFieldsCommaString(String sourceFieldsCommaString) {
+        this.sourceFieldsCommaString = sourceFieldsCommaString;
+    }
 }

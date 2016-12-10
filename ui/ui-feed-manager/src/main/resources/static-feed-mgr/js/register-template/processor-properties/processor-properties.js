@@ -72,6 +72,24 @@
         this.onShowOnlySelected = function(){
             transformPropertiesToArray();
         }
+        this.onRenderTypeChange = function(property){
+            if(property.renderType == 'select' && (property.propertyDescriptor.allowableValues == undefined || property.propertyDescriptor.allowableValues == null || property.propertyDescriptor.allowableValues.length == 0)) {
+                if(property.selectOptions == undefined){
+                    property.selectOptions = [];
+                }
+                property.renderOptions['selectCustom'] = 'true';
+            }
+            else {
+                property.renderOptions['selectCustom'] ='false';
+                property.selectOptions = undefined;
+            }
+        }
+
+        this.customSelectOptionChanged = function(property){
+            var str = JSON.stringify(property.selectOptions);
+            property.renderOptions['selectOptions'] = str;
+
+        }
 
 
         function initializeRenderTypes() {

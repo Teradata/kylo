@@ -537,6 +537,17 @@ angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($ht
           if(property.renderOptions == undefined){
             property.renderOptions = {};
           }
+
+          // convert the saved Select options store as JSON to the array for the chips to work.
+          if(property.renderOptions['selectCustom'] == 'true' ) {
+            if(property.renderOptions['selectOptions']){
+              property.selectOptions = angular.fromJson(property.renderOptions['selectOptions']);
+            }
+            else {
+              property.selectOptions = [];
+            }
+          }
+
           // if(property.propertyDescriptor.required == true && ( property.value =='' || property.value ==undefined)) {
           //     property.selected = true;
           //  }

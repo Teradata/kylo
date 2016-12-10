@@ -1,13 +1,12 @@
 package com.thinkbiganalytics.feedmgr.nifi;
 
 import com.thinkbiganalytics.nifi.feedmgr.NifiEnvironmentProperties;
+import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
-import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 
 import org.apache.commons.collections.map.CaseInsensitiveMap;
 import org.apache.nifi.web.api.dto.ControllerServiceDTO;
-import org.apache.nifi.web.api.entity.ControllerServiceEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -99,6 +98,22 @@ public class NifiControllerServiceProperties {
             return propertyMap;
         }
         return null;
+    }
+
+    /**
+     * for a given nifi controller service return the application.properties value for the passed in key suffix
+     * example
+     * mysql, password
+     * will return the value from the property  nifi.service.mysql.password
+     * @param serviceName
+     * @param envPropertyKeySuffix
+     * @return
+     */
+    public String getEnvironmentPropertyValueForControllerService(String serviceName, String envPropertyKeySuffix){
+
+            String servicePrefix = NifiEnvironmentProperties.getEnvironmentControllerServicePropertyPrefix(serviceName);
+            return environmentProperties.getPropertyValueAsString(servicePrefix+"."+envPropertyKeySuffix);
+
     }
 
     /**

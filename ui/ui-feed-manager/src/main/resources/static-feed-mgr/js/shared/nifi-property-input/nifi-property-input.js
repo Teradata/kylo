@@ -27,6 +27,21 @@
                     }
                 }
 
+                if( $scope.property.renderType == 'select'){
+                    if($scope.property.renderOptions == null || $scope.property.renderOptions == undefined){
+                        $scope.property.renderOptions ={};
+                    }
+                    if($scope.property.renderOptions['selectCustom'] == 'true' ) {
+                    if($scope.property.renderOptions['selectOptions']){
+                        $scope.property.selectOptions = angular.fromJson($scope.property.renderOptions['selectOptions']);
+                    }
+                    else {
+                        $scope.property.selectOptions = [];
+                    }
+                }
+            }
+
+
                 if( $scope.property.renderType == 'checkbox-custom' ) {
                     if($scope.property.renderOptions == null || $scope.property.renderOptions == undefined){
                        $scope.property.renderOptions ={};
@@ -40,6 +55,8 @@
                         $scope.property.renderOptions['falseValue'] = 'false';
                     }
                 }
+
+
 
             }
 

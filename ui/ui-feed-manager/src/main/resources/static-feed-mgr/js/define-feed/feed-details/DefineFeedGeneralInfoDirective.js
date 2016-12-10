@@ -89,7 +89,7 @@
 
             function _validate() {
                 //validate to ensure the name is unique in this category
-                if (self.existingFeedNames[existingFeedNameKey(self.model.category.id, self.model.systemFeedName)]) {
+                if (self.model && self.model.category && self.existingFeedNames[existingFeedNameKey(self.model.category.id, self.model.systemFeedName)]) {
                     self.defineFeedGeneralForm['feedName'].$setValidity('notUnique', false);
                 }
                 else {

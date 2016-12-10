@@ -7,7 +7,15 @@
             bindToController: {
                 mode: '@',
                 processor: '=',
-                theForm: '='
+                theForm: '=',
+                sourceTableKey: '@?',
+                sourceFieldsKey: '@?',
+                connectionServiceKey: '@?',
+                loadStrategyKey: '@?',
+                incrementalPropertyKey: '@?',
+                renderLoadStrategyOptions: '=',
+                loadStrategyOptions: '=?',
+                defaultLoadStrategyValue: '@?'
             },
             controllerAs: 'ctl',
             scope: {},
@@ -21,10 +29,23 @@
 
     var controller =  function($scope, $q,$http,$mdToast,RestUrlService, FeedService,EditFeedNifiPropertiesService,DBCPTableSchemaService) {
 
-
-         var self = this;
+        var self = this;
+        /**
+         * The object storing the table selected via the autocomplete
+         * @type {null}
+         */
         this.selectedTable = null;
+
+        /**
+         * The table Schema, parsed from the table autocomplete
+         * @type {null}
+         */
         this.tableSchema = null;
+
+        /**
+         * If we are creating a new feed then use the Create Model, otherwise use the Edit Model
+         * If the processor is undefined, attempt to get it via the inputProcessor of the model
+         */
         if(this.mode == 'create') {
             if (this.processor == undefined) {
                 this.processor = FeedService.createFeedModel.inputProcessor;
@@ -40,31 +61,82 @@
 
         }
 
+        /**
+         * Cache of the Table objects returned from the initial autocomplete call out
+         * @type {{}}
+         */
         this.allTables = {};
 
-        this.SOURCE_TABLE_PROPERTY_KEY = 'Source Table';
-        this.SOURCE_FIELDS_PROPERTY_KEY = 'Source Fields';
-        this.DB_CONNECTION_SERVICE_PROPERTY_KEY = 'Source Database Connection'; //''
-        this.LOAD_STRATEGY_PROPERTY_KEY = 'Load Strategy';
-        this.INCREMENTAL_DATE_PROPERTY_KEY = 'Date Field';
+        /**
+         * Flag to indicate if the controller service has connection errors.
+         * if there are erros the UI will display input boxes for the user to defin the correct table name
+         * @type {boolean}
+         */
+        this.databaseConnectionError = false;
 
+        /**
+         *  load strategies either passed in via the directive, or defaulted
+         */
+        this.loadStrategyOptions =
+            angular.isDefined(this.loadStrategyOptions) ? this.loadStrategyOptions : [{name: 'Full Load', type: 'SNAPSHOT', strategy: 'FULL_LOAD', hint: 'Replace entire table'}, {
+                name: 'Incremental', type: 'DELTA', strategy: 'INCREMENTAL', hint: 'Incremental load'
+                                                                                   + ' based on a '
+                                                                                   + ' high watermark', incremental: true, restrictDates: true
+            }];
+
+        /**
+         * Default the property keys that are used to look up the
+         *
+         */
+
+        this.SOURCE_TABLE_PROPERTY_KEY = angular.isDefined(this.sourceTableKey) ? this.sourceTableKey : 'Source Table';
+        this.SOURCE_FIELDS_PROPERTY_KEY = angular.isDefined(this.sourceFieldsKey) ? this.sourceFieldsKey : 'Source Fields';
+        this.DB_CONNECTION_SERVICE_PROPERTY_KEY = angular.isDefined(this.connectionServiceKey) ? this.connectionServiceKey : 'Source Database Connection'; //''
+        this.LOAD_STRATEGY_PROPERTY_KEY = angular.isDefined(this.loadStrategyKey) ? this.loadStrategyKey : 'Load Strategy';
+        this.INCREMENTALPROPERTY_KEY = angular.isDefined(this.incrementalPropertyKey) ? this.incrementalPropertyKey : 'Date Field';
+        this.defaultLoadStrategyValue = angular.isDefined(this.defaultLoadStrategyValue) ? this.defaultLoadStrategyValue : 'INCREMENTAL';
+        this.dbConnectionProperty = findProperty(self.DB_CONNECTION_SERVICE_PROPERTY_KEY, false)
+        /**
+         * The 2 properties are not used right now
+         */
         this.RETENTION_PERIOD_PROPERTY_KEY = 'Backoff Period';
         this.ARCHIVE_UNIT_PROPERTY_KEY = 'Minimum Time Unit';
 
-        this.dbConnectionProperty = findProperty(self.DB_CONNECTION_SERVICE_PROPERTY_KEY, false)
-
+        /**
+         * Cache of the fields related to the table selected
+         * This is used the the dropdown when showing the fields for the incremtal options
+         * @type {Array}
+         */
         this.tableFields = [];
+
+        /**
+         * property that stores the selected table fields and maps it to the hive table schema
+         * @type {Array}
+         */
         this.originalTableFields = [];
 
-        this.tableFieldsDirty = false;
-        var customPropertyKeys = [self.DB_CONNECTION_SERVICE_PROPERTY_KEY,self.SOURCE_TABLE_PROPERTY_KEY, self.SOURCE_FIELDS_PROPERTY_KEY, self.LOAD_STRATEGY_PROPERTY_KEY, self.INCREMENTAL_DATE_PROPERTY_KEY, self.RETENTION_PERIOD_PROPERTY_KEY,self.ARCHIVE_UNIT_PROPERTY_KEY];
+        /**
+         * Array of the Nifi property keys that are marked as custom.  any keys here will not be loaded by the default nifi-property rendering  mechanism and be required to be implemented by this
+         * template.
+         * @type {*[]}
+         */
+        var customPropertyKeys = [self.DB_CONNECTION_SERVICE_PROPERTY_KEY, self.SOURCE_TABLE_PROPERTY_KEY, self.SOURCE_FIELDS_PROPERTY_KEY, self.LOAD_STRATEGY_PROPERTY_KEY,
+                                  self.INCREMENTALPROPERTY_KEY, self.RETENTION_PERIOD_PROPERTY_KEY, self.ARCHIVE_UNIT_PROPERTY_KEY];
+
+        /**
+         * lookup and find the respective Nifi Property objects that map to the custom property keys
+         */
         initPropertyLookup();
+
+        /**
+         * lookup and find the respective Nifi Property objects that map to the custom property keys
+         */
         function initPropertyLookup() {
             self.tableProperty = findProperty(self.SOURCE_TABLE_PROPERTY_KEY);
             self.fieldsProperty = findProperty(self.SOURCE_FIELDS_PROPERTY_KEY);
             self.loadStrategyProperty = findProperty(self.LOAD_STRATEGY_PROPERTY_KEY);
             if(self.loadStrategyProperty && (self.loadStrategyProperty.value == null || self.loadStrategyProperty.value == undefined)){
-                self.loadStrategyProperty.value = 'INCREMENTAL'; //default to 'INCREMENTAL'
+                self.loadStrategyProperty.value = self.defaultLoadStrategyValue;
             }
 
 
@@ -72,37 +144,44 @@
             self.archiveUnitProperty = findProperty(self.ARCHIVE_UNIT_PROPERTY_KEY);
 
             self.deleteSourceProperty = {value:'false',key:'Delete Source'};
-            self.incrementalDateFieldProperty =  findProperty(self.INCREMENTAL_DATE_PROPERTY_KEY);
+            self.incrementalFieldProperty = findProperty(self.INCREMENTALPROPERTY_KEY);
         }
 
-        if(self.model.table.method == 'EXISTING_TABLE'){
-            self.selectedTable = self.model.table.existingTableName;
-        }
+        //   if(self.model.table.method == 'EXISTING_TABLE'){
+        //       self.selectedTable = self.model.table.existingTableName;
+        //   }
 
+        /**
+         * Check to see if the property is in the list of custom ones.
+         * if so it will bypass the nifi-property directive for rendering
+         * @param property
+         * @returns {boolean|*}
+         */
         this.isCustomProperty = function(property){
             return _.contains(customPropertyKeys,property.key);
         }
 
-        this.customPropertiesFilter =function(property) {
-            return self.isCustomProperty(property)
+        /**
+         * Determine if the incoming value or if the current selected LoadStrategy is of type incremental
+         * Incremental properties need additional option to define the field used for incrementing
+         * @param val
+         * @returns {*|{}}
+         */
+        this.isIncrementalLoadStrategy = function (val) {
+            var checkValue = val;
+            if (checkValue == undefined) {
+                checkValue = (self.loadStrategyProperty) ? self.loadStrategyProperty.value : undefined;
+            }
+
+            return checkValue && _.find(self.loadStrategyOptions, function (v) {
+                    return v.strategy == checkValue && v.incremental == true;
+                });
         }
 
-        this.notCustomPropertiesFilter =function(property) {
-            return !self.isCustomProperty(property)
-        }
-
-        this.tableFieldsDragEnd = function(event){
-            self.tableFieldsDirty = true;
-        }
-        this.removeTableField = function($index){
-            self.tableFields.splice($index, 1);
-            self.tableFieldsDirty = true;
-        }
-
-        this.resetTableFields = function(){
-            self.tableFields = angular.copy(self.originalTableFields);
-        }
-
+        /**
+         * Change listener when the user changes the controller service in the UI
+         * @param dbConnectionProperty
+         */
         this.onDbConnectionPropertyChanged = function (dbConnectionProperty) {
             //clear out rest of the model
             self.selectedTable = undefined;
@@ -110,6 +189,13 @@
 
         }
 
+        /**
+         * Finds the correct NiFi processor Property associated with the incoming key.
+         *
+         * @param key
+         * @param clone
+         * @returns {*}
+         */
         function findProperty(key, clone) {
             //get all the props for this input
 
@@ -141,8 +227,11 @@
             return matchingProperty;
         }
 
-        /** TABLE AUTO COMPLETE **/
-
+        /**
+         * match query term case insensitive
+         * @param query
+         * @returns {Function}
+         */
         function createFilterForTable(query) {
             var lowercaseQuery = angular.lowercase(query);
             return function filterFn(item) {
@@ -167,9 +256,13 @@
                if (self.allTables[serviceId] == undefined) {
                    var deferred = $q.defer();
                    var tables = $http.get(DBCPTableSchemaService.LIST_TABLES_URL(serviceId),{params:{serviceName:serviceName}}).then(function (response) {
+                       self.databaseConnectionError = false;
                       self.allTables[serviceId] = parseTableResponse(response.data);
                        var results = query ?  self.allTables[serviceId].filter(createFilterForTable(query)) : self.allTables;
                        deferred.resolve(results);
+                   }, function (err) {
+                       self.databaseConnectionError = true;
+
                    });
                    return deferred.promise;
                }
@@ -201,8 +294,10 @@
             return allTables;
         }
 
-
-
+        /**
+         * Autocomplete objected used in the UI html page
+         * @type {{clear: Function, searchText: string, selectedTable: null, searchTextChange: Function, selectedItemChange: Function, querySearch: Function}}
+         */
         this.tablesAutocomplete = {
             clear:function(){
                 this.searchText = '';
@@ -223,6 +318,9 @@
             }
         }
 
+        /**
+         * if we are editing then get the selectedTable saved on this model.
+         */
         if(this.mode == 'edit'){
             var processorTableName = this.model.table.existingTableName;
             this.tablesAutocomplete.selectedTable = this.model.table.existingTableName;
@@ -241,11 +339,18 @@
 
         /** END TABLE AUTO COMPLETE **/
 
+        /**
+         * Describe the table
+         * This is called once a user selects a table from the autocomplete
+         * This will setup the model populating the destination table fields
+         * @returns {HttpPromise}
+         */
         function describeTable(){
             //get the property that stores the DBCPController Service
             var dbcpProperty = self.dbConnectionProperty;
             if(dbcpProperty != null && dbcpProperty.value != null && self.selectedTable != null) {
                 var successFn = function (response) {
+                    self.databaseConnectionError = false;
 
                     self.tableSchema = response.data;
                     self.tableFields = self.tableSchema.fields;
@@ -272,19 +377,56 @@
                 });
                 var serviceName = serviceNameValue != null && serviceNameValue != undefined ?serviceNameValue.displayName : '';
                 var promise = $http.get(DBCPTableSchemaService.DESCRIBE_TABLE_URL(serviceId,self.selectedTable.tableName),{params:{schema:self.selectedTable.schema, serviceName:serviceName}})
-                promise.then(successFn,function(err){});
+                promise.then(successFn, function (err) {
+                    self.databaseConnectionError = true;
+                });
                 return promise;
 
             }
         }
 
+        this.onManualTableNameChange = function () {
+            if (self.table.method != 'EXISTING_TABLE') {
+                self.model.table.method = 'EXISTING_TABLE';
+            }
+            self.model.table.sourceTableSchema.name = self.tableProperty.value
+            self.model.table.existingTableName = self.tableProperty.value;
+        }
+
+        this.onManualFieldNameChange = function () {
+            if (self.table.method != 'EXISTING_TABLE') {
+                self.model.table.method = 'EXISTING_TABLE';
+            }
+            var fields = [];
+            var val = self.fieldsProperty.value;
+            var fieldNames = [];
+            _.each(val.split(","), function (field) {
+                var col = FeedService.newTableFieldDefinition();
+                col.name = field.trim();
+                col.dataType = 'string';
+                fields.push(col);
+                fieldNames.push(col.name);
+            });
+            self.model.table.sourceTableSchema.fields = angular.copy(fields);
+            FeedService.setTableFields(fields);
+
+            self.model.table.sourceFieldsCommaString = fieldNames.join(",")
+            self.model.table.sourceFields = fieldNames.join("\n")
+
+        }
+
+        /**
+         * Filter for fields that are Date types
+         * @param field
+         * @returns {boolean}
+         */
         this.filterFieldDates = function(field){
             return field.dataType == 'date' || field.dataType == 'timestamp';
         }
 
 
         this.onIncrementalDateFieldChange = function(){
-            var prop = self.incrementalDateFieldProperty;
+            var prop = self.incrementalFieldProperty;
             if(prop != null) {
                 prop.value =  self.model.table.sourceTableIncrementalDateField;
             }
@@ -328,21 +470,27 @@
             }
         })
 
-        this.loadStrategies = [{name:'Full Load',type:'SNAPSHOT',strategy:'FULL_LOAD',hint:'Replace entire table'},{name:'Incremental',type:'DELTA',strategy:'INCREMENTAL',hint:'Incremental load'
-                                                                                                                                                                               + ' based on a '
-                                                                                                                                                                               + ' high watermark'}];
-
+        /**
+         * If there is a LOAD_STRATEGY property then watch for changes to show/hide additional options
+         */
         if(self.loadStrategyProperty){
             $scope.$watch(function () {
                 return self.loadStrategyProperty.value
             }, function (newVal) {
               if(newVal == 'FULL_LOAD'){
                   self.model.table.tableType = 'SNAPSHOT';
+                  self.restrictIncrementalToDateOnly = false;
               }
-                else if(newVal == 'INCREMENTAL'){
+              else if (self.isIncrementalLoadStrategy(newVal)) {
                   self.model.table.tableType = 'DELTA';
                   //reset the date field
                   self.model.table.sourceTableIncrementalDateField = '';
+                  var option = _.find(self.loadStrategyOptions, function (opt) {
+                      return opt.strategy == newVal
+                  });
+                  if (option) {
+                      self.restrictIncrementalToDateOnly = option.restrictDates != undefined ? option.restrictDates : false;
+                  }
               }
 
             });

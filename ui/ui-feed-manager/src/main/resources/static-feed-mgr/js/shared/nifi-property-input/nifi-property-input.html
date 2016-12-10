@@ -38,7 +38,14 @@
         </md-radio-button>
     </md-radio-group>
 
-    <md-select ng-model="property.value" ng-if="property.renderType == 'select' && property.propertyDescriptor.allowableValues != null" ng-disabled="propertyDisabled"
+  <md-select ng-model="property.value" ng-if="property.renderType == 'select' && property.propertyDescriptor.allowableValues == null" ng-disabled="propertyDisabled"
+             ng-change="onPropertyChanged(property)">
+    <md-option ng-repeat="allowableValue in property.selectOptions" value="{{allowableValue}}">
+      {{allowableValue}}
+    </md-option>
+  </md-select>
+
+  <md-select ng-model="property.value" ng-if="property.renderType == 'select' &&  property.propertyDescriptor.allowableValues != null" ng-disabled="propertyDisabled"
                ng-change="onPropertyChanged(property)">
         <md-option ng-repeat="allowableValue in property.propertyDescriptor.allowableValues" value="{{allowableValue.value}}">
             {{allowableValue.displayName}}
