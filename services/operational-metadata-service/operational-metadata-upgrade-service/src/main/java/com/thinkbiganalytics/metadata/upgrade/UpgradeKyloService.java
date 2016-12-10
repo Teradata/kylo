@@ -1,7 +1,6 @@
 package com.thinkbiganalytics.metadata.upgrade;
 
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.app.KyloVersion;
 import com.thinkbiganalytics.metadata.api.app.KyloVersionProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
@@ -116,10 +115,12 @@ public class UpgradeKyloService implements ModeShapeAvailabilityListener {
             if (feeds != null) {
                 feeds.stream().forEach(feed -> {
                     FeedManagerTemplate template = feed.getTemplate();
-                    //ensure the template has feeds
-                    if (template.getFeeds() == null || !template.getFeeds().contains(feed)) {
-                        template.addFeed(feed);
-                        feedManagerTemplateProvider.update(template);
+                    if (template != null) {
+                        //ensure the template has feeds
+                        if (template.getFeeds() == null || !template.getFeeds().contains(feed)) {
+                            template.addFeed(feed);
+                            feedManagerTemplateProvider.update(template);
+                        }
                     }
                 });
 

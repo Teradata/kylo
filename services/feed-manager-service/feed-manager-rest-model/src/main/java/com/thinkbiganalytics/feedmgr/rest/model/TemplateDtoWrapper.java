@@ -1,7 +1,5 @@
 package com.thinkbiganalytics.feedmgr.rest.model;
 
-import com.wordnik.swagger.annotations.ApiModelProperty;
-
 import org.apache.nifi.web.api.dto.FlowSnippetDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
 import org.apache.nifi.web.api.dto.util.DateTimeAdapter;
@@ -9,6 +7,8 @@ import org.apache.nifi.web.api.dto.util.DateTimeAdapter;
 import java.util.Date;
 
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * Created by sr186054 on 3/21/16.
