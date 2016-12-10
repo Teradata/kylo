@@ -62,7 +62,9 @@
                 self.model.category.id = null;
                 self.model.category.systemName = null;
                 self.existingFeedNames = {};
-                self.defineFeedGeneralForm['feedName'].$setValidity('notUnique', true);
+                if (self.defineFeedGeneralForm && self.defineFeedGeneralForm['feedName']) {
+                    self.defineFeedGeneralForm['feedName'].$setValidity('notUnique', true);
+                }
             }
         }
 
@@ -90,10 +92,14 @@
             function _validate() {
                 //validate to ensure the name is unique in this category
                 if (self.model && self.model.category && self.existingFeedNames[existingFeedNameKey(self.model.category.id, self.model.systemFeedName)]) {
-                    self.defineFeedGeneralForm['feedName'].$setValidity('notUnique', false);
+                    if (self.defineFeedGeneralForm && self.defineFeedGeneralForm['feedName']) {
+                        self.defineFeedGeneralForm['feedName'].$setValidity('notUnique', false);
+                    }
                 }
                 else {
-                    self.defineFeedGeneralForm['feedName'].$setValidity('notUnique', true);
+                    if (self.defineFeedGeneralForm && self.defineFeedGeneralForm['feedName']) {
+                        self.defineFeedGeneralForm['feedName'].$setValidity('notUnique', true);
+                    }
                 }
             }
 
