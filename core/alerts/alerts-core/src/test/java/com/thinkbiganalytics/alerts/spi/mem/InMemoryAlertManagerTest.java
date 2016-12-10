@@ -1,7 +1,9 @@
 package com.thinkbiganalytics.alerts.spi.mem;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.net.URI;
 import java.util.HashMap;
@@ -113,7 +115,7 @@ public class InMemoryAlertManagerTest {
         this.manager.create(URI.create("urn:alert:test2"), Alert.Level.CRITICAL, "test2", "content"); 
         Thread.sleep(25);
         
-        Iterator<? extends Alert> itr = this.manager.getAlertsSince(since);
+        Iterator<? extends Alert> itr = this.manager.getAlerts(since);
 
         assertThat(itr.hasNext()).isTrue();
         assertThat(itr.next().getLevel()).isEqualTo(Level.CRITICAL);
@@ -127,7 +129,7 @@ public class InMemoryAlertManagerTest {
         this.manager.create(URI.create("urn:alert:test2"), Alert.Level.CRITICAL, "test2", "content"); 
         Thread.sleep(25);
         
-        Iterator<? extends Alert> itr = this.manager.getAlertsSince(id);
+        Iterator<? extends Alert> itr = this.manager.getAlerts(id);
 
         assertThat(itr.hasNext()).isTrue();
         assertThat(itr.next().getLevel()).isEqualTo(Level.CRITICAL);
