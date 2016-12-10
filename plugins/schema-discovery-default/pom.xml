@@ -48,6 +48,7 @@
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-annotations</artifactId>
     </dependency>
+
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-csv</artifactId>
@@ -57,16 +58,6 @@
       <artifactId>commons-io</artifactId>
     </dependency>
 
-    <!--
-    Parquet support -->
-
-    <!--
-        <dependency>
-          <groupId>org.apache.parquet</groupId>
-          <artifactId>parquet-format</artifactId>
-          <version>1.7.0</version>
-        </dependency>
-    -->
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>thinkbig-spark-shell-api</artifactId>
@@ -85,45 +76,6 @@
       <version>${project.version}</version>
     </dependency>
 
-
-
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-client</artifactId>
-      <version>2.6.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-common</artifactId>
-      <version>2.6.0</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.parquet</groupId>
-      <artifactId>parquet-hadoop</artifactId>
-      <version>1.7.0</version>
-    </dependency>
-    <!--
-        <dependency>
-          <groupId>org.apache.parquet</groupId>
-          <artifactId>parquet-common</artifactId>
-        </dependency>
-
-        <dependency>
-          <groupId>org.apache.parquet</groupId>
-          <artifactId>parquet-encoding</artifactId>
-        </dependency>
-
-        <dependency>
-          <groupId>org.apache.parquet</groupId>
-          <artifactId>parquet-column</artifactId>
-        </dependency>
-
-        <dependency>
-          <groupId>org.apache.parquet</groupId>
-          <artifactId>parquet-hadoop</artifactId>
-        </dependency>
-    -->
   </dependencies>
 
 

@@ -149,9 +149,13 @@
             <version>${project.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.thinkbiganalytics.datalake</groupId>
+            <artifactId>thinkbig-schema-discovery-default</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
-        <!-- scheduler -->
-
+      <!-- scheduler -->
 
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>

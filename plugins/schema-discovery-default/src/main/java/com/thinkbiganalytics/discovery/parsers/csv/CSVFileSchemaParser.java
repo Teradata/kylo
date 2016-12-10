@@ -35,7 +35,7 @@ import java.util.ArrayList;
 
 import javax.annotation.Nonnull;
 
-@SchemaParser(name = "CSV", description = "Supports delimited text files with a field delimiter and optional escape and quote characters.", tags = {"CSV", "TSV"})
+@SchemaParser(name = "CSV", allowSkipHeader = true, description = "Supports delimited text files with a field delimiter and optional escape and quote characters.", tags = {"CSV", "TSV"})
 public class CSVFileSchemaParser implements FileSchemaParser {
 
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(CSVFileSchemaParser.class);

@@ -17,6 +17,7 @@ public class SchemaParserDescriptor extends BaseUiPolicyRule {
     private boolean generatesHiveSerde;
     private String[] tags;
     private String clientHelper;
+    private boolean allowSkipHeader;
 
     public boolean isSupportsBinary() {
         return supportsBinary;
@@ -48,5 +49,13 @@ public class SchemaParserDescriptor extends BaseUiPolicyRule {
 
     public void setClientHelper(String clientHelper) {
         this.clientHelper = clientHelper;
+    }
+
+    public boolean isAllowSkipHeader() {
+        return allowSkipHeader;
+    }
+
+    public void setAllowSkipHeader(boolean allowSkipHeader) {
+        this.allowSkipHeader = allowSkipHeader;
     }
 }

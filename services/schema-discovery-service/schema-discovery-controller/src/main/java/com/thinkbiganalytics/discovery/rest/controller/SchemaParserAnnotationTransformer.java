@@ -28,6 +28,7 @@ public class SchemaParserAnnotationTransformer extends BasePolicyAnnotationTrans
         descriptor.setTags(annotation.tags());
         descriptor.setGeneratesHiveSerde(annotation.generatesHiveSerde());
         descriptor.setSupportsBinary(annotation.supportsBinary());
+        descriptor.setAllowSkipHeader(annotation.allowSkipHeader());
         return descriptor;
     }
 

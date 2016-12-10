@@ -17,6 +17,7 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -62,6 +64,8 @@ public class SchemaDiscoveryRestController {
             FileSchemaParser p = transformer.fromUiModel(descriptor);
             // TODO: Detect charset
             schema = p.parse(fileInputStream, Charset.defaultCharset(), TableSchemaType.HIVE);
+        } catch (IOException e) {
+            throw new WebApplicationException(e.getMessage());
         } catch (PolicyTransformException e) {
             log.warn("Failed to convert parser", e);
             throw new InternalServerErrorException(STRINGS.getString("discovery.transformError"), e);

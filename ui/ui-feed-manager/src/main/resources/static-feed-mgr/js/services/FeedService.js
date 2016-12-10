@@ -110,6 +110,7 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
                     sourceTableSchema: {name: null, fields: []},
                     method: 'SAMPLE_FILE',
                     existingTableName: null,
+                    structured: false,
                     targetMergeStrategy: 'DEDUPE_AND_MERGE',
                     feedFormat: 'ROW FORMAT SERDE \'org.apache.hadoop.hive.serde2.OpenCSVSerde\' WITH SERDEPROPERTIES ( \'separatorChar\' = \',\' ,\'escapeChar\' = \'\\\\\' ,\'quoteChar\' = \'"\')'
                                 + ' STORED AS'

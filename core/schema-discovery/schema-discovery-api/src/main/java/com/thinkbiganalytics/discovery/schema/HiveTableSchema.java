@@ -27,7 +27,7 @@ public interface HiveTableSchema extends TableSchema {
     /**
      * Whether the data represents a binary format or structured format like AVRO, ORC
      */
-    Boolean setStructured(boolean binary);
+    void setStructured(boolean binary);
 
 
 

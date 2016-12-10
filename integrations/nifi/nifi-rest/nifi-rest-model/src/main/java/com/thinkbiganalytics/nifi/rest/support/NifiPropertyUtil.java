@@ -247,7 +247,7 @@ public class NifiPropertyUtil {
      * @param value the value to validate
      * @return {@code true} if the value is valid for the property, or {@code false} otherwise
      */
-    private static boolean isValidPropertyValue(@Nonnull final NifiProperty property, @Nonnull final String value) {
+    private static boolean isValidPropertyValue(@Nonnull final NifiProperty property, final String value) {
         // Check for list of allowable values
         final Optional<List<NiFiAllowableValue>> allowableValues = Optional.of(property)
                 .map(NifiProperty::getPropertyDescriptor)

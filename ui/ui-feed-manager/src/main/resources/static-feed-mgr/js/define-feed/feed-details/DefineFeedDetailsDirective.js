@@ -186,6 +186,8 @@
 
             if (renderGetTableData) {
                 self.model.table.method = 'EXISTING_TABLE';
+                self.model.options.skipHeader = true;
+                self.model.allowSkipHeaderOption = false;
             } else {
                 self.model.table.method = 'SAMPLE_FILE';
             }

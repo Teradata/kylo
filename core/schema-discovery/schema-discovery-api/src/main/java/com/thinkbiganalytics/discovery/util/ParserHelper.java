@@ -115,22 +115,24 @@ public class ParserHelper {
         JDBCType guess = null;
         if (values != null) {
             for (String v : values) {
-                JDBCType currentPass;
-                try {
-                    Integer.parseInt(v);
-                    currentPass = JDBCType.INTEGER;
-                } catch (NumberFormatException e) {
+                if (!StringUtils.isEmpty(v)) {
+                    JDBCType currentPass;
                     try {
-                        Double.parseDouble(v);
-                        currentPass = JDBCType.DOUBLE;
-                    } catch (NumberFormatException ex) {
-                        // return immediately if we know its non-numeric
-                        return JDBCType.VARCHAR;
+                        Integer.parseInt(v);
+                        currentPass = JDBCType.INTEGER;
+                    } catch (NumberFormatException e) {
+                        try {
+                            Double.parseDouble(v);
+                            currentPass = JDBCType.DOUBLE;
+                        } catch (NumberFormatException ex) {
+                            // return immediately if we know its non-numeric
+                            return JDBCType.VARCHAR;
+                        }
                     }
-                }
-                // If we ever see a double then use that
-                if (guess == null || currentPass == JDBCType.DOUBLE) {
-                    guess = currentPass;
+                    // If we ever see a double then use that
+                    if (guess == null || currentPass == JDBCType.DOUBLE) {
+                        guess = currentPass;
+                    }
                 }
             }
         }

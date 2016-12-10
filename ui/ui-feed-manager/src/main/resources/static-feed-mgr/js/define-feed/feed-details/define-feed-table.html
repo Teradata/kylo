@@ -13,7 +13,7 @@
         </div>
       </header-section>
       <body-section>
-        <md-expansion-panel-group auto-expand="true" ng-if="vm.model.table.method != 'EXISTING_TABLE'>
+        <md-expansion-panel-group auto-expand="true" ng-if="vm.model.table.method != 'EXISTING_TABLE'">
           <md-expansion-panel md-component-id="panelOne">
             <md-expansion-panel-collapsed>
               <div flex class="md-subhead layout-padding-top">Choose method</div>
@@ -77,10 +77,12 @@
                 <div style="margin-top:10px">
                   <div class="md-subhead layout-padding" layout-fill layout="row" layout-align="start top">Define table schema
                     <span flex></span>
+
                     <md-button class="icon-btn md-icon-button md-primary" ng-click="vm.toggleHeight()">
                       <ng-md-icon ng-if="!vm.expandedView" icon="fullscreen"></ng-md-icon>
                       <ng-md-icon ng-if="vm.expandedView"icon="fullscreen_exit"></ng-md-icon>
                     </md-button>
+
                   </div>
                   <div ng-show="vm.model.table.tableSchema.fields.length ==0" class="hint layout-padding-top-bottom layout-padding-indent-20">
                     No fields are defined. Click <i>Add Field</i> to define a new field for this table.
@@ -128,7 +130,7 @@
                             <md-input-container md-no-float class="md-block condensed" flex-gt-sm>
                               <input ng-model="columnDef.name" placeholder="Field Name" required name="name_{{columnDef._id}}" ng-change="vm.onFieldNameChange(columnDef)"
                                      ng-pattern="/^[a-zA-Z0-9_-\s\)\(]*$/"
-                                     ng-disabled="vm.model.dataTransformationFeed"/>
+                                     ng-disabled="vm.model.dataTransformationFeed || vm.model.table.structured"/>
 
                               <div ng-messages="vm.defineFeedTableForm['name_'+columnDef._id].$error" md-auto-hide="false">
                                 <div ng-message="notUnique">Name must be unique</div>
@@ -140,7 +142,8 @@
                           <div flex="35" class="md-list-item-text " style="padding-left:5px;">
                             <div layout="column">
                               <md-input-container class="md-block md-dense condensed" flex-gt-sm>
-                                <md-select ng-model="columnDef.dataType" placeholder="Data Type" name="datatype_{{columnDef._id}}" required ng-disabled="vm.model.dataTransformationFeed">
+                                <md-select ng-model="columnDef.dataType" placeholder="Data Type" name="datatype_{{columnDef._id}}" required
+                                           ng-disabled="(vm.model.dataTransformationFeed || vm.model.table.structured)">
                                   <md-option ng-repeat="dataType in vm.availableDefinitionDataTypes | orderBy:'toString()' track by $index" value="{{dataType}}" aria-label="{{dataType}}">
                                     {{dataType}}
                                   </md-option>
@@ -161,7 +164,8 @@
                           </div>
 
                           <div flex="10" class="md-list-item-text " layout-align="start center" layout="column">
-                            <md-checkbox flex-gt-sm ng-model="columnDef.primaryKey" aria-label="Primary" class="table-schema-checkbox">
+                            <md-checkbox flex-gt-sm ng-model="columnDef.primaryKey" aria-label="Primary" class="table-schema-checkbox"
+                                         ng-disabled="columnDef.dataTypeDescriptor.complex">
                             </md-checkbox>
                           </div>
                           <div flex="10" class="md-list-item-text " layout-align="start center" layout="column">
@@ -177,7 +181,8 @@
                           </div>
                           <div flex="5" class="md-list-item-text">
                             <md-button class="md-icon-button" ng-click="vm.removeColumn($index)" aria-label="Remove Field"
-                                       ng-if="vm.model.table.method != 'SAMPLE_FILE' && vm.model.dataTransformationFeed == false">
+                                       ng-if="vm.model.table.method != 'SAMPLE_FILE' && vm.model.dataTransformationFeed == false"
+                                        ng-disabled="vm.model.dataTransformationFeed || vm.model.table.structured">
                               <ng-md-icon md-icon icon="clear"></ng-md-icon>
                             </md-button>
                             <span ng-if="vm.model.table.method == 'SAMPLE_FILE'"></span>
@@ -289,7 +294,7 @@
                 </div>
               </md-expansion-panel-expanded>
             </md-expansion-panel>
-            <div class="layout-padding-top" ng-if="vm.model.table.method != 'EXISTING_TABLE'">
+            <div class="layout-padding-top" ng-if="(vm.model.table.method != 'EXISTING_TABLE' && v.model.table.structured == false)">
               <a href="" ng-click="vm.showRecordFormat=!vm.showRecordFormat">Advanced Options</a>
 
               <div class="layout-padding-indent-20">

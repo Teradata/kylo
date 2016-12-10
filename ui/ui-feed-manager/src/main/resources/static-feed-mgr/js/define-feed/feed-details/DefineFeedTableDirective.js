@@ -34,7 +34,7 @@
         this.columnDefinitionDataTypes = ['string', 'int', 'bigint', 'tinyint', 'decimal', 'double', 'float', 'date', 'timestamp', 'boolean', 'binary'];
         this.availableDefinitionDataTypes = self.columnDefinitionDataTypes.slice();
         this.schemaParser = {};
-        self.useUnderscoreInsteadOfSpaces = true;
+        this.useUnderscoreInsteadOfSpaces = true;
         this.selectedColumn = null;
         this.fieldNamesUniqueRetryAmount = 0;
         this.expandedView = false;
@@ -47,6 +47,13 @@
         this.partitionFormulas = [];
 
         this.feedFormat = '';
+
+        $scope.$evalAsync(function() {
+            if (self.model.table.fields && self.model.table.fields.length > 0) {
+                self.toggleHeight();
+                self.expandSchemaPanel();
+            }
+        });
 
         BroadcastService.subscribe($scope, 'DATA_TRANSFORM_SCHEMA_LOADED', onDataTransformSchemaLoaded);
 
@@ -533,6 +540,14 @@
                 FeedService.syncTableFieldPolicyNames();
                 //set the feedFormat property
                 self.model.table.feedFormat = response.hiveFormat;
+                self.model.table.structured = response.structured;
+                if (self.schemaParser.allowSkipHeader) {
+                    self.model.allowSkipHeaderOption = true;
+                    self.model.skipHeader = true;
+                } else {
+                    self.model.allowSkipHeaderOption = false;
+                    self.model.options.skipHeader = false;
+                }
                 fieldNamesUnique();
                 hideProgress();
                 self.uploadBtnDisabled = false;

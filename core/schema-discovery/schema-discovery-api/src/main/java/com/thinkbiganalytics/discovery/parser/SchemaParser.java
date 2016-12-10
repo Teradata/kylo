@@ -21,6 +21,8 @@ public @interface SchemaParser {
 
     boolean supportsPreview() default true;
 
+    boolean allowSkipHeader() default false;
+
     boolean generatesHiveSerde() default true;
 
     String[] tags() default "";

@@ -28,8 +28,8 @@ public class DefaultHiveSchema extends DefaultTableSchema implements HiveTableSc
     }
 
     @Override
-    public Boolean setStructured(boolean structured) {
-        return structured;
+    public void setStructured(boolean structured) {
+        this.structured = true;
     }
 }
 
