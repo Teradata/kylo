@@ -64,14 +64,14 @@ public class ComputeHDFSChecksums extends AbstractHadoopProcessor {
             .name("files")
             .description("JSON-encoded list of files with their checksums, given like: " +
                     "[{\n" +
-                    "                \"name\": \"example\",\n" +
-                    "                \"size\": 123456,\n" +
-                    "                \"checksum\": {\n" +
-                    "                        \"length\": 28,\n" +
-                    "                        \"value\": \"AAAAAAAAAAAAAAAAcLyPS3KoaSFGi/joRB3OUQAAAAA=\",\n" +
-                    "                        \"algorithm\": \"MD5-of-0MD5-of-0CRC32\"\n" +
-                    "                }\n" +
-                    "        }]")
+                    "   \"name\": \"example\",\n" +
+                    "   \"size\": 123456,\n" +
+                    "   \"checksum\": {\n" +
+                    "      \"length\": 28,\n" +
+                    "      \"value\": \"AAAAAAAAAAAAAAAAcLyPS3KoaSFGi/joRB3OUQAAAAA=\",\n" +
+                    "      \"algorithm\": \"MD5-of-0MD5-of-0CRC32\"\n" +
+                    "   }\n" +
+                    "}]")
             .required(true)
             .addValidator(StandardValidators.ATTRIBUTE_EXPRESSION_LANGUAGE_VALIDATOR)
             .expressionLanguageSupported(true)
@@ -164,28 +164,28 @@ public class ComputeHDFSChecksums extends AbstractHadoopProcessor {
         }
 
         public String getName() {
-                              return name;
-                                          }
+            return name;
+        }
 
         public void setName(String name) {
-                                       this.name = name;
-                                                        }
+            this.name = name;
+        }
 
         public Integer getSize() {
-                               return size;
-                                           }
+            return size;
+        }
 
         public void setSize(Integer size) {
-                                        this.size = size;
-                                                         }
+            this.size = size;
+        }
 
         public Checksum getChecksum() {
-                                    return checksum;
-                                                    }
+            return checksum;
+        }
 
         public void setChecksum(Checksum checksum) {
-                                                 this.checksum = checksum;
-                                                                          }
+            this.checksum = checksum;
+        }
     }
     class Checksum {
         private Integer length;
@@ -199,27 +199,27 @@ public class ComputeHDFSChecksums extends AbstractHadoopProcessor {
         }
 
         public Integer getLength() {
-                                 return length;
-                                               }
+            return length;
+        }
 
         public void setLength(Integer length) {
-                                            this.length = length;
-                                                                 }
+            this.length = length;
+        }
 
         public String getValue() {
-                               return value;
-                                            }
+            return value;
+        }
 
         public void setValue(String value) {
-                                         this.value = value;
-                                                            }
+            this.value = value;
+        }
 
         public String getAlgorithm() {
-                                   return algorithm;
-                                                    }
+            return algorithm;
+        }
 
         public void setAlgorithm(String algorithm) {
-                                                 this.algorithm = algorithm;
-                                                                            }
+            this.algorithm = algorithm;
+        }
     }
 }
