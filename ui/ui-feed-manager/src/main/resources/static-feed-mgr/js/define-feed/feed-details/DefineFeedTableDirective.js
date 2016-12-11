@@ -37,20 +37,21 @@
         this.useUnderscoreInsteadOfSpaces = true;
         this.selectedColumn = null;
         this.fieldNamesUniqueRetryAmount = 0;
-        this.expandedView = false;
+        this.expandedView = true;
         this.schemaHeight = "100px";
-
-        /**
-         * Functions that may be used for partition values.
-         * @type {string[]}
-         */
+        this.tableLocked = false
+        this.canRemoveFields = true;
+        this.showMethodPanel = true;
+        this.showTablePanel = true;
+        this.uploadBtnDisabled = false;
         this.partitionFormulas = [];
 
         this.feedFormat = '';
 
         $scope.$evalAsync(function() {
-            if (self.model.table.fields && self.model.table.fields.length > 0) {
-                self.toggleHeight();
+            self.calcTableState();
+            if (self.model.table.tableSchema.fields && self.model.table.tableSchema.fields.length > 0) {
+                self.calcfitTable();
                 self.expandSchemaPanel();
             }
         });
@@ -61,7 +62,12 @@
             validate();
         }
 
-        this.uploadBtnDisabled = false;
+        this.calcTableState = function() {
+            self.tableLocked = (self.model.dataTransformationFeed || self.model.table.structured || self.model.table.method == 'EXISTING_TABLE');
+            self.canRemoveFields = (!self.model.dataTransformationFeed && (self.model.table.method == 'EXISTING_TABLE' || self.model.table.method == 'MANUAL'));
+            self.showMethodPanel = (self.model.table.method != 'EXISTING_TABLE');
+            self.showTablePanel = (self.model.table.tableSchema.fields.length > 0);
+        }
 
         /**
          * when adding a new column
@@ -242,7 +248,7 @@
             if (syncFieldPolicies == undefined || syncFieldPolicies == true) {
                 FeedService.syncTableFieldPolicyNames();
             }
-
+            self.calcfitTable();
         }
 
         /**
@@ -272,6 +278,8 @@
             partitionNamesUnique();
             FeedService.syncTableFieldPolicyNames();
             validate();
+            self.calcfitTable();
+
         }
 
         /**
@@ -452,6 +460,13 @@
 
         };
 
+        var tableMethodWatch = $scope.$watch(function() {
+            return self.model.table.method;
+        }, function(newVal) {
+            self.model.table.method = newVal;
+            self.calcTableState();
+        });
+
         //Set the Table Name to be the System Feed Name
         var systemFeedNameWatch = $scope.$watch(function () {
             return self.model.systemFeedName;
@@ -480,15 +495,19 @@
          */
         this.toggleHeight = function() {
             if (!self.expandedView && self.model.table.tableSchema.fields != '') {
-                var numfields = self.model.table.tableSchema.fields.length;
-                var height = (numfields * 60) + 'px';
-                self.schemaHeight = height;
+                self.calcfitTable();
                 self.expandedView = true;
             } else {
                 self.schemaHeight ='100px';
                 self.expandedView = false;
             }
             angular.element(window).triggerHandler('resize');
+        }
+
+        this.calcfitTable = function() {
+            var numfields = self.model.table.tableSchema.fields.length;
+            var height = (numfields * 59) + 'px';
+            self.schemaHeight = height;
         }
 
         var sampleFileWatch = $scope.$watch(function () {
@@ -573,10 +592,10 @@
                 fieldNamesUnique();
                 hideProgress();
                 self.uploadBtnDisabled = false;
+                self.calcTableState();
                 self.collapseMethodPanel();
-                self.toggleHeight();
                 self.expandSchemaPanel();
-
+                self.calcfitTable();
                 validate();
                 angular.element('#upload-sample-file-btn').removeClass('md-primary');
             }

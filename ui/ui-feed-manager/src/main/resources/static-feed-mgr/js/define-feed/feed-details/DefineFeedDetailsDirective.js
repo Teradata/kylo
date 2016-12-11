@@ -190,6 +190,7 @@
                 self.model.allowSkipHeaderOption = false;
             } else {
                 self.model.table.method = 'SAMPLE_FILE';
+                self.model.table.tableSchema.fields = [];
             }
 
             // Update model

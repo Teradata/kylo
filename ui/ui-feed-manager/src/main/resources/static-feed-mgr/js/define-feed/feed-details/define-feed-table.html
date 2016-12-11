@@ -14,14 +14,14 @@
       </header-section>
       <body-section>
         <md-expansion-panel-group>
-          <md-expansion-panel md-component-id="panelOne" ng-if="vm.model.table.method != 'EXISTING_TABLE'">
+          <md-expansion-panel md-component-id="panelOne" ng-if="vm.showMethodPanel">
             <md-expansion-panel-collapsed>
               <div flex class="md-subhead layout-padding-top">
                 <span ng-if="vm.model.table.method == 'SAMPLE_FILE'">Choose method: Sample file </span>
                 <span ng-if="vm.model.table.method == 'MANUAL'">Choose method: Manual </span>
                 <span ng-if="vm.model.table.method != 'MANUAL' && vm.model.table.method != 'SAMPLE_FILE'">Choose method</span>
               </div>
-              <md-button class="md-info" ng-click="$panel.collapse()">Expand</md-button>
+              <md-button aria-label="Expand panel" class="md-info" ng-click="$panel.collapse()">Expand</md-button>
             </md-expansion-panel-collapsed>
             <md-expansion-panel-expanded>
 
@@ -32,7 +32,7 @@
                   <div layout="column" layout-align="start start" class="layout-padding-top-bottom">
                     <div class="layout-padding-indent-20" style="padding-top:8px;">
                       <md-radio-group ng-model="vm.model.table.method" layout="row">
-                        <md-radio-button ng-repeat="method in vm.tableCreateMethods"
+                        <md-radio-button aria-label="Select option" ng-repeat="method in vm.tableCreateMethods"
                                          ng-value="method.type"
                                          aria-label="{{method.name}}"
                                          ng-click="vm.updateSelectedMethod()">
@@ -52,7 +52,8 @@
                           Replace spaces in field names
                         </md-checkbox>
                         -->
-                        <md-button id="upload-sample-file-btn" class="md-raised md-block md-primary" ng-click="vm.uploadSampleFile();" ng-if="vm.sampleFile != null" ng-disabled="vm.uploadBtnDisabled">
+                        <md-button aria-label="Upload sample file" id="upload-sample-file-btn" class="md-raised md-block md-primary" ng-click="vm.uploadSampleFile();" ng-if="vm.sampleFile != null"
+                        ng-disabled="vm.uploadBtnDisabled">
                           Upload
                         </md-button>
                       </div>
@@ -62,7 +63,7 @@
 
               <md-expansion-panel-footer md-no-sticky>
                 <div flex></div>
-                <md-button class="md-warn" ng-click="$panel.collapse()">Collapse</md-button>
+                <md-button class="md-warn" aria-label="Collapse panel" ng-click="$panel.collapse()">Collapse</md-button>
               </md-expansion-panel-footer>
 
             </md-expansion-panel-expanded>
@@ -73,14 +74,14 @@
                   <span ng-if="vm.model.table.tableSchema.fields.length ==0">Define table schema</span>
                   <span ng-if="vm.model.table.tableSchema.fields.length >0">Table schema: {{vm.model.table.tableSchema.fields.length}} fields</span>
                 </div>
-                <md-button class="md-info" ng-click="$panel.collapse()">Expand</md-button>
+                <md-button class="md-info" aria-label="Expand panel" ng-click="$panel.collapse()">Expand</md-button>
               </md-expansion-panel-collapsed>
               <md-expansion-panel-expanded>
                 <md-expansion-panel-header md-no-sticky>
                   <div class="md-subhead layout-padding" layout-fill layout="row" layout-align="start top">Define table schema
                     <span flex></span>
 
-                    <md-button class="icon-btn md-icon-button md-primary" ng-click="vm.toggleHeight()" style="margin-top: -10px;">
+                    <md-button aria-label="Toggle height" class="icon-btn md-icon-button md-primary" ng-click="vm.toggleHeight()" style="margin-top: -10px;">
                       <ng-md-icon ng-if="!vm.expandedView" icon="fullscreen"></ng-md-icon>
                       <ng-md-icon ng-if="vm.expandedView"icon="fullscreen_exit"></ng-md-icon>
                       <md-tooltip md-direction="left">
@@ -136,7 +137,7 @@
                             <md-input-container md-no-float class="md-block condensed" flex-gt-sm>
                               <input ng-model="columnDef.name" placeholder="Field Name" required name="name_{{columnDef._id}}" ng-change="vm.onFieldNameChange(columnDef)"
                                      ng-pattern="/^[a-zA-Z0-9_-\s\)\(]*$/"
-                                     ng-disabled="vm.model.dataTransformationFeed || vm.model.table.structured"/>
+                                     ng-disabled="vm.tableLocked"/>
 
                               <div ng-messages="vm.defineFeedTableForm['name_'+columnDef._id].$error" md-auto-hide="false">
                                 <div ng-message="notUnique">Name must be unique</div>
@@ -149,7 +150,7 @@
                             <div layout="column">
                               <md-input-container class="md-block md-dense condensed" flex-gt-sm>
                                 <md-select ng-model="columnDef.dataType" placeholder="Data Type" name="datatype_{{columnDef._id}}" required
-                                           ng-disabled="(vm.model.dataTransformationFeed || vm.model.table.structured)">
+                                           ng-disabled="vm.tableLocked">
                                   <md-option ng-repeat="dataType in vm.availableDefinitionDataTypes | orderBy:'toString()' track by $index" value="{{dataType}}" aria-label="{{dataType}}">
                                     {{dataType}}
                                   </md-option>
@@ -160,7 +161,8 @@
                               </md-input-container>
                               <md-input-container class="md-dense md-block condensed" flex-gt-sm style="margin-top:10px;" ng-show="columnDef.dataType == 'decimal'">
                                 <label>Precision</label>
-                                <input ng-model="columnDef.precisionScale" placeholder="10,0" ng-pattern="/^\d+,\d+$/" name="precisionScale_{{columnDef._id}}" style="width:120px;"/>
+                                <input ng-model="columnDef.precisionScale" placeholder="10,0" ng-pattern="/^\d+,\d+$/" name="precisionScale_{{columnDef._id}}" style="width:120px;"
+                                       ng-disabled="vm.tableLocked"/>
 
                                 <div ng-messages="vm.defineFeedTableForm['precisionScale_'+columnDef._id].$error" md-auto-hide="false">
                                   <div ng-message="pattern">Format expected in form precision, scale (e.g. 10,0)</div>
@@ -171,7 +173,7 @@
 
                           <div flex="10" class="md-list-item-text " layout-align="start center" layout="column">
                             <md-checkbox flex-gt-sm ng-model="columnDef.primaryKey" aria-label="Primary" class="table-schema-checkbox"
-                                         ng-disabled="columnDef.dataTypeDescriptor.complex">
+                                         ng-disabled="columnDef.dataTypeDescriptor.complex" ng-disabled="columnDef.complex">
                             </md-checkbox>
                           </div>
                           <div flex="10" class="md-list-item-text " layout-align="start center" layout="column">
@@ -186,9 +188,9 @@
                                          class="table-schema-checkbox"></md-checkbox>
                           </div>
                           <div flex="5" class="md-list-item-text">
-                            <md-button class="md-icon-button" ng-click="vm.removeColumn($index)" aria-label="Remove Field"
+                            <md-button aria-label="Remove field" class="md-icon-button" ng-click="vm.removeColumn($index)" aria-label="Remove Field"
                                        ng-if="vm.model.table.method != 'SAMPLE_FILE' && vm.model.dataTransformationFeed == false"
-                                        ng-disabled="vm.model.dataTransformationFeed || vm.model.table.structured">
+                                        ng-disabled="vm.tableLocked">
                               <ng-md-icon md-icon icon="clear"></ng-md-icon>
                             </md-button>
                             <span ng-if="vm.model.table.method == 'SAMPLE_FILE'"></span>
@@ -198,7 +200,7 @@
                     </div>
                   </div>
                   <div class="layout-padding-top-bottom layout-padding-indent-20" ng-if="vm.model.table.method == 'MANUAL'">
-                    <md-button class="md-raised" ng-click="vm.addColumn()">
+                    <md-button aria-label="New field" class="md-raised" ng-click="vm.addColumn()">
                       Add Field
                     </md-button>
                   </div>
@@ -206,7 +208,7 @@
 
                 <md-expansion-panel-footer md-no-sticky>
                   <div flex></div>
-                  <md-button class="md-warn" ng-click="$panel.collapse()">Collapse</md-button>
+                  <md-button aria-label="Collapse panel" class="md-warn" ng-click="$panel.collapse()">Collapse</md-button>
                 </md-expansion-panel-footer>
 
               </md-expansion-panel-expanded>
@@ -218,7 +220,7 @@
                   <span ng-if="vm.model.table.partitions.length ==0">Define table partitions</span>
                   <span ng-if="vm.model.table.partitions.length >0">Table partitions: {{vm.model.table.partitions.length}} partitions</span>
                 </div>
-                <md-button class="md-info" ng-click="$panel.collapse()">Expand</md-button>
+                <md-button aria-label="Expand panel" class="md-info" ng-click="$panel.collapse()">Expand</md-button>
               </md-expansion-panel-collapsed>
               <md-expansion-panel-expanded>
 
@@ -298,7 +300,7 @@
 
 
                           <div class="md-list-item-text">
-                            <md-button class="md-icon-button" ng-click="vm.removePartitionField($index)">
+                            <md-button aria-label="Remove partition" class="md-icon-button" ng-click="vm.removePartitionField($index)">
                               <ng-md-icon md-icon icon="clear"></ng-md-icon>
                             </md-button>
                           </div>
@@ -307,7 +309,7 @@
                     </md-list>
                   </div>
                   <div class="layout-padding-bottom layout-padding-indent-20">
-                    <md-button class="md-raised" ng-click="vm.addPartitionField()">
+                    <md-button aria-label="Add partition" class="md-raised" ng-click="vm.addPartitionField()">
                       Add Partition
                     </md-button>
                   </div>
@@ -316,7 +318,7 @@
 
                 <md-expansion-panel-footer md-no-sticky>
                   <div flex></div>
-                  <md-button class="md-warn" ng-click="$panel.collapse()">Collapse</md-button>
+                  <md-button aria-label="Collapse panel" class="md-warn" ng-click="$panel.collapse()">Collapse</md-button>
                 </md-expansion-panel-footer>
 
               </md-expansion-panel-expanded>
