@@ -186,6 +186,7 @@
             //clear out rest of the model
             self.selectedTable = undefined;
             self.model.table.sourceTableIncrementalDateField = null;
+            self.databaseConnectionError = false;
 
         }
 
