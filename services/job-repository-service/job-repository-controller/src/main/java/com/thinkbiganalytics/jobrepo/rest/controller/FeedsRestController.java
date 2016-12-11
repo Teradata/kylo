@@ -141,7 +141,9 @@ public class FeedsRestController {
             Period period = DateTimeUtil.period(periodString);
             List<com.thinkbiganalytics.metadata.api.jobrepo.job.JobStatusCount> counts = opsFeedManagerFeedProvider.getJobStatusCountByDateFromNow(feedName, period);
             if (counts != null) {
-                return counts.stream().map(c -> JobStatusTransform.jobStatusCount(c)).collect(Collectors.toList());
+                List<JobStatusCount> jobStatusCounts = counts.stream().map(c -> JobStatusTransform.jobStatusCount(c)).collect(Collectors.toList());
+                JobStatusTransform.ensureDateFromPeriodExists(jobStatusCounts, period);
+                return jobStatusCounts;
             } else {
                 return Collections.emptyList();
             }

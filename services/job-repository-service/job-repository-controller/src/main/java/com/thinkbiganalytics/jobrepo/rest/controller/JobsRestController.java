@@ -6,10 +6,10 @@ import com.thinkbiganalytics.jobrepo.query.model.ExecutedStep;
 import com.thinkbiganalytics.jobrepo.query.model.JobStatusCount;
 import com.thinkbiganalytics.jobrepo.query.model.RelatedJobExecution;
 import com.thinkbiganalytics.jobrepo.query.model.SearchResult;
-import com.thinkbiganalytics.jobrepo.repository.rest.model.JobAction;
 import com.thinkbiganalytics.jobrepo.query.model.transform.JobModelTransform;
 import com.thinkbiganalytics.jobrepo.query.model.transform.JobStatusTransform;
 import com.thinkbiganalytics.jobrepo.query.model.transform.ModelUtils;
+import com.thinkbiganalytics.jobrepo.repository.rest.model.JobAction;
 import com.thinkbiganalytics.jobrepo.security.OperationsAccessControl;
 import com.thinkbiganalytics.jobrepo.service.JobExecutionException;
 import com.thinkbiganalytics.jobrepo.service.JobService;
@@ -352,7 +352,9 @@ public class JobsRestController {
         return metadataAccess.read(() -> {
             List<com.thinkbiganalytics.metadata.api.jobrepo.job.JobStatusCount> counts = jobExecutionProvider.getJobStatusCountByDateFromNow(period, null);
             if (counts != null) {
-                return counts.stream().map(c -> JobStatusTransform.jobStatusCount(c)).collect(Collectors.toList());
+                List<JobStatusCount> jobStatusCounts = counts.stream().map(c -> JobStatusTransform.jobStatusCount(c)).collect(Collectors.toList());
+                JobStatusTransform.ensureDateFromPeriodExists(jobStatusCounts, period);
+                return jobStatusCounts;
             }
             return Collections.emptyList();
         });

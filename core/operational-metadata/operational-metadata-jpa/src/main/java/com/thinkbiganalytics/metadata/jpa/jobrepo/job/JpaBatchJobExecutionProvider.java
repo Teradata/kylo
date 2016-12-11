@@ -610,7 +610,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
             .otherwise(jobExecution.status.stringValue());
 
         BooleanBuilder whereBuilder = new BooleanBuilder();
-        whereBuilder.and(jobExecution.startTime.goe(DateTime.now().minus(period)));
+        whereBuilder.and(jobExecution.startTime.goe(DateTimeUtil.getNowUTCTime().minus(period)));
         if (StringUtils.isNotBlank(filter)) {
             whereBuilder.and(GenericQueryDslFilter.buildFilter(jobExecution, filter));
         }

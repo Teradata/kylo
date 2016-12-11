@@ -5,8 +5,6 @@ import com.thinkbiganalytics.metadata.api.jobrepo.job.JobStatusCount;
 
 import org.joda.time.DateTime;
 
-import java.util.Date;
-
 /**
  * Created by sr186054 on 12/1/16.
  */
@@ -36,7 +34,7 @@ public class JpaBatchJobExecutionStatusCounts  implements JobStatusCount {
         this.status = status;
         this.count = count;
         this.feedName = feedName;
-        this.date = new DateTime().withDate(year,month,day);
+        this.date = new DateTime().withDate(year, month, day).withMillisOfDay(0);
     }
 
 
