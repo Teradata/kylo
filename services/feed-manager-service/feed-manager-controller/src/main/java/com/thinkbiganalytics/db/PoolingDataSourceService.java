@@ -85,13 +85,12 @@ public class PoolingDataSourceService {
 
 
     public static DataSource getDataSource(DataSourceProperties props) {
-        String cacheKey = cacheKey(props.getUrl(), props.getUser(), props.getPassword());
+        String cacheKey = cacheKey(props.getUrl(), props.getUser());
         return datasources.computeIfAbsent(cacheKey, key -> createDatasource(props));
     }
 
 
     private static DataSource createDatasource(DataSourceProperties props) {
-        String cacheKey = cacheKey(props.getUrl(), props.getUser(), props.getPassword());
         DataSource ds = DataSourceBuilder.create().url(props.getUrl()).username(props.getUser()).password(props.getPassword()).build();
         if (props.isTestOnBorrow() && StringUtils.isNotBlank(props.getValidationQuery())) {
             if (ds instanceof org.apache.tomcat.jdbc.pool.DataSource) {
@@ -108,8 +107,8 @@ public class PoolingDataSourceService {
         return ds;
     }
 
-    private static String cacheKey(String connectURI, String user, String password) {
-        return connectURI + "." + user + "." + password;
+    private static String cacheKey(String connectURI, String user) {
+        return connectURI + "." + user;
     }
 
 }
