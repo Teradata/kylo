@@ -1318,3 +1318,8 @@ md-list-item .md-list-item-inner > md-checkbox.permissions-indent-2 {
 .feed.import.category {
   width: 410px;
 }
+
+.no-outline {
+  outline:none;
+}
+

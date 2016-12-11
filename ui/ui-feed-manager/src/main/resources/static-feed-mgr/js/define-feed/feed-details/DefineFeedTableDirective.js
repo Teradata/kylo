@@ -21,7 +21,7 @@
         };
     }
 
-    var controller = function ($scope, $http, $timeout, $mdToast, $filter, $mdDialog, $mdExpansionPanel, RestUrlService, FeedService, FileUpload, BroadcastService) {
+    var controller = function ($scope, $http, $timeout, $mdToast, $filter, $mdDialog, $mdExpansionPanel, RestUrlService, FeedService, FileUpload, BroadcastService, Utils) {
 
         this.defineFeedTableForm = {};
         var self = this;
@@ -298,7 +298,15 @@
         };
 
         this.onSelectedColumn = function (selectedColumn) {
+            var firstSelection = self.selectedColumn == null;
             self.selectedColumn = selectedColumn;
+
+            if(firstSelection){
+                //trigger scroll to stick the selection to the screen
+                Utils.waitForDomElementReady('#selectedColumnPanel',function() {
+                    angular.element('#selectedColumnPanel').triggerHandler('stickIt');
+                })
+            }
         };
 
         /**
@@ -433,14 +441,14 @@
 
         function validate(validForm) {
             if (validForm == undefined) {
-                validForm = self.defineFeedTableForm.$valid;
+                validForm = self.defineFeedTableForm.$valid ;
             }
             var valid = self.model.templateId != null && self.model.table.method != null && self.model.table.tableSchema.name != null && self.model.table.tableSchema.name != ''
                         && self.model.table.tableSchema.fields.length > 0;
             if (valid) {
                 ensurePartitionData();
             }
-            self.isValid = valid && validForm;
+            self.isValid = valid && validForm;//&& self.model.table.tableSchema.invalidFields.length ==0;
 
         };
 
@@ -510,6 +518,20 @@
             $mdExpansionPanel().waitFor('panelTwo').then(function (instance) {
                 instance.expand();
             });
+        }
+
+        this.expandChooseMethodPanel = function () {
+            $mdExpansionPanel().waitFor('panelOne').then(function (instance) {
+                instance.expand();
+            });
+        }
+
+        // choose to expand the choose method initially if no fields have been defined yet
+        if(self.model.table.tableSchema.fields.length == 0){
+            self.expandChooseMethodPanel();
+        }
+        else {
+            self.expandSchemaPanel();
         }
 
         this.uploadSampleFile = function () {
