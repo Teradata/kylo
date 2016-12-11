@@ -14,7 +14,7 @@
       </header-section>
       <body-section>
         <md-expansion-panel-group>
-          <md-expansion-panel md-component-id="panelOne" ng-if="vm.model.table.method != 'EXISTING_TABLE'" md-no-sticky>
+          <md-expansion-panel md-component-id="panelOne" ng-if="vm.model.table.method != 'EXISTING_TABLE'">
             <md-expansion-panel-collapsed>
               <div flex class="md-subhead layout-padding-top">
                 <span ng-if="vm.model.table.method == 'SAMPLE_FILE'">Choose method: Sample file </span>
@@ -25,7 +25,7 @@
             </md-expansion-panel-collapsed>
             <md-expansion-panel-expanded>
 
-                <md-expansion-panel-header>
+              <md-expansion-panel-header md-no-sticky>
                   <div class="md-subhead layout-padding">Choose method</div>
                 </md-expansion-panel-header>
                 <md-expansion-panel-content>
@@ -60,14 +60,14 @@
                   </div>
                 </md-expansion-panel-content>
 
-              <md-expansion-panel-footer>
+              <md-expansion-panel-footer md-no-sticky>
                 <div flex></div>
                 <md-button class="md-warn" ng-click="$panel.collapse()">Collapse</md-button>
               </md-expansion-panel-footer>
 
             </md-expansion-panel-expanded>
           </md-expansion-panel>
-          <md-expansion-panel md-component-id="panelTwo" md-no-sticky>
+          <md-expansion-panel md-component-id="panelTwo">
               <md-expansion-panel-collapsed>
                 <div flex class="md-subhead layout-padding-top">
                   <span ng-if="vm.model.table.tableSchema.fields.length ==0">Define table schema</span>
@@ -76,7 +76,7 @@
                 <md-button class="md-info" ng-click="$panel.collapse()">Expand</md-button>
               </md-expansion-panel-collapsed>
               <md-expansion-panel-expanded>
-                <md-expansion-panel-header>
+                <md-expansion-panel-header md-no-sticky>
                   <div class="md-subhead layout-padding" layout-fill layout="row" layout-align="start top">Define table schema
                     <span flex></span>
 
@@ -204,7 +204,7 @@
                   </div>
                 </md-expansion-panel-content>
 
-                <md-expansion-panel-footer>
+                <md-expansion-panel-footer md-no-sticky>
                   <div flex></div>
                   <md-button class="md-warn" ng-click="$panel.collapse()">Collapse</md-button>
                 </md-expansion-panel-footer>
@@ -212,7 +212,7 @@
               </md-expansion-panel-expanded>
 
             </md-expansion-panel>
-          <md-expansion-panel md-component-id="panelThree" md-no-sticky>
+          <md-expansion-panel md-component-id="panelThree">
               <md-expansion-panel-collapsed>
                 <div flex class="md-subhead layout-padding-top">
                   <span ng-if="vm.model.table.partitions.length ==0">Define table partitions</span>
@@ -222,7 +222,7 @@
               </md-expansion-panel-collapsed>
               <md-expansion-panel-expanded>
 
-                <md-expansion-panel-header>
+                <md-expansion-panel-header md-no-sticky>
                   <div class="md-subhead layout-padding">Define table partitions</div>
                 </md-expansion-panel-header>
 
@@ -314,7 +314,7 @@
                 </md-expansion-panel-content>
 
 
-                <md-expansion-panel-footer>
+                <md-expansion-panel-footer md-no-sticky>
                   <div flex></div>
                   <md-button class="md-warn" ng-click="$panel.collapse()">Collapse</md-button>
                 </md-expansion-panel-footer>
