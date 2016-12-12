@@ -279,7 +279,22 @@
             FeedService.syncTableFieldPolicyNames();
             validate();
             self.calcfitTable();
+            //reset selected column
+            self.selectedColumn = null;
 
+
+        }
+
+        /**
+         * Removes the column matching the passed in {@code columnDef} with the array of columns
+         * @param columnDef
+         */
+        this.removeColumnUsingReference = function (columnDef) {
+
+            var idx = _.indexOf(self.model.table.tableSchema.fields, columnDef)
+            if (idx >= 0) {
+                self.removeColumn(idx);
+            }
         }
 
         /**

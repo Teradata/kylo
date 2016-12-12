@@ -1,6 +1,6 @@
 <ng-form name="vm.defineFeedTableForm">
   <div layout="row">
-    <card-layout body-css="md-padding" flex="65">
+    <card-layout body-css="md-padding" flex="70">
       <header-section>
 
         <div layout="row" layout-align="space-between-center" flex>
@@ -105,7 +105,7 @@
                       <div flex="30" class="md-list-item-text hint">
                         Field Name
                       </div>
-                      <div flex="35" class="md-list-item-text hint" style="padding-left:5px;">
+                      <div flex="30" class="md-list-item-text hint" style="padding-left:5px;">
                         Data Type
                       </div>
                       <div flex="10" class="md-list-item-text hint" layout-align="start center" layout="column">
@@ -126,7 +126,7 @@
                           Is this field an indicator of when the row was updated?
                         </md-tooltip>
                       </div>
-                      <div flex="5" class="md-list-item-text hint">
+                      <div flex="5" class="md-list-item-text hint" hide-sm>
 
                       </div>
 
@@ -148,7 +148,7 @@
                             </div>
                           </md-input-container>
                         </div>
-                        <div flex="35" class="md-list-item-text " style="padding-left:5px;">
+                        <div flex="30" class="md-list-item-text " style="padding-left:5px;">
                           <div layout="column">
                             <md-input-container class="md-block md-dense condensed" flex-gt-sm>
                               <md-select ng-model="columnDef.dataType" placeholder="Data Type" name="datatype_{{columnDef._id}}" required
@@ -189,7 +189,7 @@
                           <md-checkbox flex-gt-sm ng-model="columnDef.updatedTracker" aria-label="lastModified" ng-disabled="!(columnDef.dataType == 'date' || columnDef.dataType == 'timestamp')"
                                        class="table-schema-checkbox"></md-checkbox>
                         </div>
-                        <div flex="5" class="md-list-item-text">
+                        <div flex="5" class="md-list-item-text" hide-sm>
                           <md-button aria-label="Remove field" class="md-icon-button" ng-click="vm.removeColumn($index)" aria-label="Remove Field"
                                      ng-if="vm.model.table.method != 'SAMPLE_FILE' && vm.model.dataTransformationFeed == false"
                                      ng-disabled="vm.tableLocked">
@@ -378,7 +378,7 @@
       </body-section>
     </card-layout>
 
-    <card-layout flex="35" body-css="md-padding" ng-if="vm.selectedColumn != null" sticky scroll-selector="#content" style="width:100%;right:10px;" id="selectedColumnPanel">
+    <card-layout flex="30" body-css="md-padding" ng-if="vm.selectedColumn != null" sticky scroll-selector="#content" style="width:100%;right:10px;" id="selectedColumnPanel">
 
       <header-section>
         <div class="card-title" flex>Field Details</div>
@@ -403,6 +403,11 @@
             <span>Field Description</span>
             <textarea ng-model="vm.selectedColumn.description" rows="5" md-select-on-focus=""></textarea>
           </div>
+        </div>
+        <div layout="column" class="layout-align-start-start layout-padding-top-bottom">
+          <md-button aria-label="Remove field" ng-click="vm.removeColumnUsingReference(vm.selectedColumn)" aria-label="Remove Field"
+                     ng-if="!vm.tableLocked && vm.model.table.method != 'SAMPLE_FILE' && vm.model.dataTransformationFeed == false">Remove
+          </md-button>
         </div>
       </body-section>
     </card-layout>
