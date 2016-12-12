@@ -21,18 +21,31 @@
         };
     }
 
-    var controller = function ($scope, $http, $mdDialog, RestUrlService, FeedService, BroadcastService, StepperService) {
+    var controller = function ($scope, $http, $mdDialog, $mdExpansionPanel, RestUrlService, FeedService, BroadcastService, StepperService) {
         this.isValid = true;
 
         var self = this;
         this.model = FeedService.createFeedModel;
         this.stepNumber = parseInt(this.stepIndex)+1
+        this.schemaHeight = "100px";
 
         /**
          * The form in angular
          * @type {{}}
          */
         this.dataProcessingForm = {};
+
+        this.calcfitTable = function() {
+            var numfields = self.model.table.tableSchema.fields.length;
+            var height = (numfields * 59) + 'px';
+            self.schemaHeight = height;
+        }
+
+        this.expandFieldPoliciesPanel = function () {
+            $mdExpansionPanel().waitFor('panelFieldPolicies').then(function (instance) {
+                instance.expand();
+            });
+        }
 
         this.mergeStrategies = angular.copy(FeedService.mergeStrategies);
         FeedService.enableDisablePkMergeStrategy(self.model, self.mergeStrategies);
@@ -51,6 +64,11 @@
         this.allCompressionOptions = FeedService.compressionOptions;
 
         this.targetFormatOptions = FeedService.targetFormatOptions;
+
+        // Open panel by default
+        self.calcfitTable();
+        self.expandFieldPoliciesPanel();
+
 
         this.transformChip = function(chip) {
             // If it is an object, it's already a known chip

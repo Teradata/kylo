@@ -5,7 +5,7 @@
       <h2 class="md-subheader">{{vm.stepNumber}} of {{vm.totalSteps}}</h2>
     </div>
     <div layout="row" layout-align="space-between-center" flex class="layout-padding-top">
-      <div class="md-subheader" flex>Define validation, standardization, and cleansing rules</div>
+      <div class="md-subheader" flex>Define field validation, standardization, and cleansing policies</div>
       <thinkbig-feed-errors-card-header></thinkbig-feed-errors-card-header>
     </div>
 
@@ -56,7 +56,7 @@
                   </div>
                 </md-list-item>
 
-                <md-virtual-repeat-container style="height:600px;" md-auto-shrink id="define-feed-data-processing-container">
+                <md-virtual-repeat-container  ng-style="{'min-height': vm.schemaHeight}" style="overflow-x:hidden" md-auto-shrink id="define-feed-data-processing-container">
                   <div md-virtual-repeat="policy in vm.model.table.fieldPolicies" md-item-size="60" class="repeated-item" layout="row" layout-fill style="max-height:100%;">
 
                     <div flex="40" class="md-list-item-text">
