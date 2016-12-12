@@ -95,76 +95,83 @@ public class MetadataJcrConfigurator {
     private void removeVersionableFeedType(Session session) throws RepositoryException {
         Node feedsNode = session.getRootNode().getNode("metadata/feeds");
         
-        for (Node catNode : JcrUtil.getNodesOfType(feedsNode, "tba:category")) {
-            for (Node feedNode : JcrUtil.getNodesOfType(catNode, "tba:feed")) {
-                log.info("Removing prior versions of feed: {}.{}", catNode.getName(), feedNode.getName());
-                
-                VersionManager versionManager = session.getWorkspace().getVersionManager(); 
-                VersionHistory versionHistory = versionManager.getVersionHistory(feedNode.getPath()); 
-                VersionIterator vIt = versionHistory.getAllVersions(); 
-                int count = 0;
-                String last = "";
-                
-                while (vIt.hasNext()) { 
-                    Version version = vIt.nextVersion(); 
-                    if (!"jcr:rootVersion".equals(version.getName())) { 
-                        last = version.getName();
-                        // removeVersion writes directly to workspace, no session.save is necessary 
-                        versionHistory.removeVersion(version.getName()); 
-                        count++;
+        NodeTypeManager typeMgr = (NodeTypeManager) session.getWorkspace().getNodeTypeManager();
+        NodeType currentFeedType = typeMgr.getNodeType("tba:feed");
+        List<String> currentSupertypes = Arrays.asList(currentFeedType.getDeclaredSupertypeNames());
+        
+        if (currentSupertypes.contains("mix:versionable")) {
+            // Remove feed version history
+            for (Node catNode : JcrUtil.getNodesOfType(feedsNode, "tba:category")) {
+                for (Node feedNode : JcrUtil.getNodesOfType(catNode, "tba:feed")) {
+                    log.info("Removing prior versions of feed: {}.{}", catNode.getName(), feedNode.getName());
+                    
+                    VersionManager versionManager = session.getWorkspace().getVersionManager(); 
+                    VersionHistory versionHistory = versionManager.getVersionHistory(feedNode.getPath()); 
+                    VersionIterator vIt = versionHistory.getAllVersions(); 
+                    int count = 0;
+                    String last = "";
+                    
+                    while (vIt.hasNext()) { 
+                        Version version = vIt.nextVersion(); 
+                        if (!"jcr:rootVersion".equals(version.getName())) { 
+                            last = version.getName();
+                            // removeVersion writes directly to workspace, no session.save is necessary 
+                            versionHistory.removeVersion(version.getName()); 
+                            count++;
+                        } 
                     } 
-                } 
-                
-                if (count > 0) {
-                    log.info("Removed {} versions through {} of feed {}", count, last, feedNode.getName());
-                } else {
-                    log.info("Feed {} had no versions", feedNode.getName());
+                    
+                    if (count > 0) {
+                        log.info("Removed {} versions through {} of feed {}", count, last, feedNode.getName());
+                    } else {
+                        log.info("Feed {} had no versions", feedNode.getName());
+                    }
                 }
             }
             
-            NodeTypeManager typeMgr = (NodeTypeManager) session.getWorkspace().getNodeTypeManager();
-            NodeType currentFeedType = typeMgr.getNodeType("tba:feed");
-            List<String> currentSupertypes = Arrays.asList(currentFeedType.getDeclaredSupertypeNames());
+            // Redefine the NodeType of tba:feed to remove versionable but retain the versionable properties with weaker constraints
+            // Retaining the properties seems to override some residual properties on feed nodes that causes a failure later.
+            // In particular, jcr:predecessors was accessed later but redefining all mix:versionable properties to be safe.
+            NodeTypeTemplate template = typeMgr.createNodeTypeTemplate(currentFeedType);
+            List<String> newSupertypes = currentSupertypes.stream().filter(type -> ! type.equals("mix:versionable")).collect(Collectors.toList());
             
-            if (currentSupertypes.contains("mix:versionable")) {
-                List<Node> currentFeeds = JcrUtil.getNodesOfType(catNode, "tba:feed");
-                NodeTypeTemplate template = typeMgr.createNodeTypeTemplate(currentFeedType);
-                
-                List<String> newSupertypes = currentSupertypes.stream().filter(type -> ! type.equals("mix:versionable")).collect(Collectors.toList());
-                template.setDeclaredSuperTypeNames(newSupertypes.toArray(new String[newSupertypes.size()]));
-                @SuppressWarnings("unchecked")
-                List<PropertyDefinitionTemplate> propTemplates = template.getPropertyDefinitionTemplates();
-                PropertyDefinitionTemplate prop = typeMgr.createPropertyDefinitionTemplate();
-                prop.setName("jcr:versionHistory");
-                prop.setRequiredType(PropertyType.WEAKREFERENCE);
-                propTemplates.add(prop);
-                prop = typeMgr.createPropertyDefinitionTemplate();
-                prop.setName("jcr:baseVersion");
-                prop.setRequiredType(PropertyType.WEAKREFERENCE);
-                propTemplates.add(prop);
-                prop = typeMgr.createPropertyDefinitionTemplate();
-                prop.setName("jcr:predecessors");
-                prop.setRequiredType(PropertyType.WEAKREFERENCE);
-                prop.setMultiple(true);
-                propTemplates.add(prop);
-                prop = typeMgr.createPropertyDefinitionTemplate();
-                prop.setName("jcr:mergeFailed");
-                prop.setRequiredType(PropertyType.WEAKREFERENCE);
-                propTemplates.add(prop);
-                prop = typeMgr.createPropertyDefinitionTemplate();
-                prop.setName("jcr:activity");
-                prop.setRequiredType(PropertyType.WEAKREFERENCE);
-                propTemplates.add(prop);
-                prop = typeMgr.createPropertyDefinitionTemplate();
-                prop.setName("jcr:configuration");
-                prop.setRequiredType(PropertyType.WEAKREFERENCE);
-                propTemplates.add(prop);
-                
-                log.info("Replacing the versionable feed type '{}' with a non-versionable type", currentFeedType);
-                NodeType newType = typeMgr.registerNodeType(template, true);
-                log.info("Replaced with new feed type '{}' with a non-versionavble type", newType);
-                
-                for (Node feedNode : currentFeeds) {
+            template.setDeclaredSuperTypeNames(newSupertypes.toArray(new String[newSupertypes.size()]));
+            
+            @SuppressWarnings("unchecked")
+            List<PropertyDefinitionTemplate> propTemplates = template.getPropertyDefinitionTemplates();
+            PropertyDefinitionTemplate prop = typeMgr.createPropertyDefinitionTemplate();
+            prop.setName("jcr:versionHistory");
+            prop.setRequiredType(PropertyType.WEAKREFERENCE);
+            propTemplates.add(prop);
+            prop = typeMgr.createPropertyDefinitionTemplate();
+            prop.setName("jcr:baseVersion");
+            prop.setRequiredType(PropertyType.WEAKREFERENCE);
+            propTemplates.add(prop);
+            prop = typeMgr.createPropertyDefinitionTemplate();
+            prop.setName("jcr:predecessors");
+            prop.setRequiredType(PropertyType.WEAKREFERENCE);
+            prop.setMultiple(true);
+            propTemplates.add(prop);
+            prop = typeMgr.createPropertyDefinitionTemplate();
+            prop.setName("jcr:mergeFailed");
+            prop.setRequiredType(PropertyType.WEAKREFERENCE);
+            propTemplates.add(prop);
+            prop = typeMgr.createPropertyDefinitionTemplate();
+            prop.setName("jcr:activity");
+            prop.setRequiredType(PropertyType.WEAKREFERENCE);
+            propTemplates.add(prop);
+            prop = typeMgr.createPropertyDefinitionTemplate();
+            prop.setName("jcr:configuration");
+            prop.setRequiredType(PropertyType.WEAKREFERENCE);
+            propTemplates.add(prop);
+            
+            log.info("Replacing the versionable feed type '{}' with a non-versionable type", currentFeedType);
+            NodeType newType = typeMgr.registerNodeType(template, true);
+            log.info("Replaced with new feed type '{}' with a non-versionavble type", newType);
+            
+            // This step may not be necessary.
+            for (Node catNode : JcrUtil.getNodesOfType(feedsNode, "tba:category")) {
+                for (Node feedNode : JcrUtil.getNodesOfType(catNode, "tba:feed")) {
                     feedNode.setPrimaryType(newType.getName());
                     log.info("Replaced type of node {}", feedNode);
                     
