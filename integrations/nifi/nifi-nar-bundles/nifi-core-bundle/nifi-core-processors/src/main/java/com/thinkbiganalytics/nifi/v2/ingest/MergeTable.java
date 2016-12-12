@@ -141,9 +141,6 @@ public class MergeTable extends AbstractNiFiProcessor {
         String targetTable = context.getProperty(TARGET_TABLE).evaluateAttributeExpressions(flowFile).getValue();
         String feedPartitionValue = context.getProperty(FEED_PARTITION).evaluateAttributeExpressions(flowFile).getValue();
         String mergeStrategyValue = context.getProperty(MERGE_STRATEGY).evaluateAttributeExpressions(flowFile).getValue();
-        String strategyOverride = flowFile.getAttribute("MERGE_STRATEGY_OVERRIDE");
-
-        mergeStrategyValue = StringUtils.isEmpty(strategyOverride) ? mergeStrategyValue : strategyOverride;
 
         final ColumnSpec[] columnSpecs = Optional.ofNullable(context.getProperty(FIELD_SPECIFICATION).evaluateAttributeExpressions(flowFile).getValue())
             .filter(StringUtils::isNotEmpty)
