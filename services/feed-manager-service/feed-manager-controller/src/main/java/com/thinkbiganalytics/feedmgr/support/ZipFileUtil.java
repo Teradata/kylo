@@ -27,14 +27,14 @@ public class ZipFileUtil {
         }
         List<String> validNamesList = validNames.stream().map(String::toLowerCase).collect(Collectors.toList());
         Set<String> fileNames = getFileNames(zipFile).stream().map(String::toLowerCase).collect(Collectors.toSet());
-        ;
-        boolean isValid = fileNames != null && !fileNames.isEmpty() && fileNames.stream().allMatch(name -> validNamesList.contains(name));
+
+        boolean isValid = fileNames != null && !fileNames.isEmpty() && validNamesList.stream().allMatch(fileNames::contains);
         if (isValid && matchAllValidNames) {
-            isValid &= fileNames.size() == validNames.size();
+            isValid = fileNames.size() == validNames.size();
         }
 
         if (isValid && requiredNames != null && !requiredNames.isEmpty()) {
-            isValid &= requiredNames.stream().allMatch(name -> fileNames.contains(name));
+            isValid = requiredNames.stream().allMatch(fileNames::contains);
         }
         return isValid;
     }

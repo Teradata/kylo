@@ -1,26 +1,7 @@
 package com.thinkbiganalytics.feedmgr.service.feed;
 
 import com.google.common.collect.Sets;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
-
-import javax.inject.Inject;
-
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
-import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
-import com.thinkbiganalytics.feedmgr.rest.model.ImportOptions;
-import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
-import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
+import com.thinkbiganalytics.feedmgr.rest.model.*;
 import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
 import com.thinkbiganalytics.feedmgr.service.ExportImportTemplateService;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
@@ -28,11 +9,12 @@ import com.thinkbiganalytics.feedmgr.support.ZipFileUtil;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.security.AccessController;
-
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.inject.Inject;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -41,8 +23,6 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
-
-import javax.inject.Inject;
 
 /**
  * Created by sr186054 on 5/6/16.
@@ -85,9 +65,9 @@ public class ExportImportFeedService {
     }
 
     private Set<String> getValidZipFileEntries(){
+        // do not include nifiConnectingReusableTemplate.xml - it may or may not be there or there can be many of them if flow connects to multiple reusable templates
         String[] entries = {
             "feed.json",
-            "nifiConnectingReusableTemplate.xml",
             "nifiTemplate.xml",
             "template.json"
         };
