@@ -56,11 +56,11 @@ for them to work in a Kerberos cluster some configuration is required. Some exam
 
 . Modify thinkbig-spark-shell Configuration
 
-    [root]# vi  /opt/thinkbig/thinkbig-spark-shell/conf/application.properties
+    [root]# vi /opt/thinkbig/thinkbig-services/conf/spark.properties
 
     kerberos.thinkbig.kerberosEnabled=true
 
-    [root]# vi  /opt/thinkbig/thinkbig-spark-shell/bin/run-thinkbig-spark-shell.sh
+    [root]# vi  /opt/thinkbig/thinkbig-services/bin/run-thinkbig-spark-shell.sh
 
     #!/bin/bash
     spark-submit --principal 'thinkbig@sandbox.hortonworks.com' --keytab /etc/security/keytabs/thinkbig.headless.keytab ...
