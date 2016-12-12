@@ -3,6 +3,38 @@
  */
 package com.thinkbiganalytics.metadata.modeshape;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Matcher;
+import java.util.stream.Collectors;
+
+import javax.inject.Inject;
+import javax.jcr.Node;
+import javax.jcr.NodeIterator;
+import javax.jcr.PropertyType;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.Value;
+import javax.jcr.nodetype.NodeType;
+import javax.jcr.nodetype.NodeTypeIterator;
+import javax.jcr.nodetype.NodeTypeTemplate;
+import javax.jcr.nodetype.PropertyDefinition;
+import javax.jcr.nodetype.PropertyDefinitionTemplate;
+import javax.jcr.security.Privilege;
+import javax.jcr.version.Version;
+import javax.jcr.version.VersionHistory;
+import javax.jcr.version.VersionIterator;
+import javax.jcr.version.VersionManager;
+
+import org.apache.tika.metadata.Property;
+import org.modeshape.jcr.api.nodetype.NodeTypeManager;
+import org.modeshape.jcr.security.SimplePrincipal;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.annotation.AnnotationAwareOrderComparator;
+
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
 import com.thinkbiganalytics.metadata.modeshape.common.SecurityPaths;
@@ -10,31 +42,15 @@ import com.thinkbiganalytics.metadata.modeshape.extension.ExtensionsConstants;
 import com.thinkbiganalytics.metadata.modeshape.security.AdminCredentials;
 import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
 import com.thinkbiganalytics.metadata.modeshape.security.ModeShapeAdminPrincipal;
-
-import org.modeshape.jcr.security.SimplePrincipal;
-import org.springframework.core.annotation.AnnotationAwareOrderComparator;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.regex.Matcher;
-
-import javax.inject.Inject;
-import javax.jcr.Node;
-import javax.jcr.NodeIterator;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.jcr.nodetype.NodeType;
-import javax.jcr.nodetype.NodeTypeIterator;
-import javax.jcr.nodetype.NodeTypeManager;
-import javax.jcr.nodetype.PropertyDefinition;
-import javax.jcr.security.Privilege;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
 /**
  *
  * @author Sean Felten
  */
 public class MetadataJcrConfigurator {
+    
+    private static final Logger log = LoggerFactory.getLogger(MetadataJcrConfigurator.class);
     
     @Inject
     private MetadataAccess metadataAccess;
@@ -57,15 +73,110 @@ public class MetadataJcrConfigurator {
                 ensureLayout(session);
                 ensureTypes(session);
                 ensureAccessControl(session);
-                this.configured.set(true);
-                firePostConfigActions();
-                return null;
             } catch (RepositoryException e) {
                 throw new MetadataRepositoryException("Could not create initial JCR metadata", e);
             }
         }, MetadataAccess.SERVICE);
+        
+        this.metadataAccess.commit(() -> {
+            try {
+                Session session = JcrMetadataAccess.getActiveSession();
+                
+                removeVersionableFeedType(session);
+            } catch (RepositoryException e) {
+                throw new MetadataRepositoryException("Could remove versioning from feeds", e);
+            }
+        }, MetadataAccess.SERVICE);
+        
+        this.configured.set(true);
+        firePostConfigActions();
     }
     
+    private void removeVersionableFeedType(Session session) throws RepositoryException {
+        Node feedsNode = session.getRootNode().getNode("metadata/feeds");
+        
+        for (Node catNode : JcrUtil.getNodesOfType(feedsNode, "tba:category")) {
+            for (Node feedNode : JcrUtil.getNodesOfType(catNode, "tba:feed")) {
+                log.info("Removing prior versions of feed: {}.{}", catNode.getName(), feedNode.getName());
+                
+                VersionManager versionManager = session.getWorkspace().getVersionManager(); 
+                VersionHistory versionHistory = versionManager.getVersionHistory(feedNode.getPath()); 
+                VersionIterator vIt = versionHistory.getAllVersions(); 
+                int count = 0;
+                String last = "";
+                
+                while (vIt.hasNext()) { 
+                    Version version = vIt.nextVersion(); 
+                    if (!"jcr:rootVersion".equals(version.getName())) { 
+                        last = version.getName();
+                        // removeVersion writes directly to workspace, no session.save is necessary 
+                        versionHistory.removeVersion(version.getName()); 
+                        count++;
+                    } 
+                } 
+                
+                if (count > 0) {
+                    log.info("Removed {} versions through {} of feed {}", count, last, feedNode.getName());
+                } else {
+                    log.info("Feed {} had no versions", feedNode.getName());
+                }
+            }
+            
+            NodeTypeManager typeMgr = (NodeTypeManager) session.getWorkspace().getNodeTypeManager();
+            NodeType currentFeedType = typeMgr.getNodeType("tba:feed");
+            List<String> currentSupertypes = Arrays.asList(currentFeedType.getDeclaredSupertypeNames());
+            
+            if (currentSupertypes.contains("mix:versionable")) {
+                List<Node> currentFeeds = JcrUtil.getNodesOfType(catNode, "tba:feed");
+                NodeTypeTemplate template = typeMgr.createNodeTypeTemplate(currentFeedType);
+                
+                List<String> newSupertypes = currentSupertypes.stream().filter(type -> ! type.equals("mix:versionable")).collect(Collectors.toList());
+                template.setDeclaredSuperTypeNames(newSupertypes.toArray(new String[newSupertypes.size()]));
+                @SuppressWarnings("unchecked")
+                List<PropertyDefinitionTemplate> propTemplates = template.getPropertyDefinitionTemplates();
+                PropertyDefinitionTemplate prop = typeMgr.createPropertyDefinitionTemplate();
+                prop.setName("jcr:versionHistory");
+                prop.setRequiredType(PropertyType.WEAKREFERENCE);
+                propTemplates.add(prop);
+                prop = typeMgr.createPropertyDefinitionTemplate();
+                prop.setName("jcr:baseVersion");
+                prop.setRequiredType(PropertyType.WEAKREFERENCE);
+                propTemplates.add(prop);
+                prop = typeMgr.createPropertyDefinitionTemplate();
+                prop.setName("jcr:predecessors");
+                prop.setRequiredType(PropertyType.WEAKREFERENCE);
+                prop.setMultiple(true);
+                propTemplates.add(prop);
+                prop = typeMgr.createPropertyDefinitionTemplate();
+                prop.setName("jcr:mergeFailed");
+                prop.setRequiredType(PropertyType.WEAKREFERENCE);
+                propTemplates.add(prop);
+                prop = typeMgr.createPropertyDefinitionTemplate();
+                prop.setName("jcr:activity");
+                prop.setRequiredType(PropertyType.WEAKREFERENCE);
+                propTemplates.add(prop);
+                prop = typeMgr.createPropertyDefinitionTemplate();
+                prop.setName("jcr:configuration");
+                prop.setRequiredType(PropertyType.WEAKREFERENCE);
+                propTemplates.add(prop);
+                
+                log.info("Replacing the versionable feed type '{}' with a non-versionable type", currentFeedType);
+                NodeType newType = typeMgr.registerNodeType(template, true);
+                log.info("Replaced with new feed type '{}' with a non-versionavble type", newType);
+                
+                for (Node feedNode : currentFeeds) {
+                    feedNode.setPrimaryType(newType.getName());
+                    log.info("Replaced type of node {}", feedNode);
+                    
+                    if (feedNode.hasProperty("jcr:predecessors")) {
+                        feedNode.getProperty("jcr:predecessors").setValue(new Value[0]);;
+                        feedNode.getProperty("jcr:predecessors").remove();
+                    }
+                }
+            }
+        }
+    }
+
     private void firePostConfigActions() {
         for (PostMetadataConfigAction action : this.postConfigActions) {
             // TODO: catch exceptions and continue?  Currently propagates runtime exceptions and will fail startup.
@@ -112,7 +223,7 @@ public class MetadataJcrConfigurator {
 
     protected void ensureTypes(Session session) throws RepositoryException {
         Node typesNode = session.getRootNode().getNode(ExtensionsConstants.TYPES);
-        NodeTypeManager typeMgr = session.getWorkspace().getNodeTypeManager();
+        NodeTypeManager typeMgr = (NodeTypeManager) session.getWorkspace().getNodeTypeManager();
         NodeTypeIterator typeItr = typeMgr.getPrimaryNodeTypes();
         NodeType extensionsType = typeMgr.getNodeType(ExtensionsConstants.EXTENSIBLE_ENTITY_TYPE);
         

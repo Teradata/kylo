@@ -503,15 +503,16 @@ public class JcrUtil {
      */
     public static <T extends JcrObject> T createJcrObject(Node node, Class<T> type, Object... constructorArgs) {
         T obj = constructNodeObject(node, type, constructorArgs);
-        if(JcrUtil.isVersionable(obj) && !node.isNew()){
-            try {
-                String versionName = JcrVersionUtil.getBaseVersion(node).getName();
-                obj.setVersionName(versionName);
-                obj.setVersionableIdentifier(JcrVersionUtil.getBaseVersion(node).getContainingHistory().getVersionableIdentifier());
-            } catch (RepositoryException e) {
-              //this is fine... versionName is a nice to have on the object
-            }
-        }
+        // TODO Removed since no nodes currently are versionable (Feed versioning removed)
+//        if(JcrUtil.isVersionable(obj) && !node.isNew()){
+//            try {
+//                String versionName = JcrVersionUtil.getBaseVersion(node).getName();
+//                obj.setVersionName(versionName);
+//                obj.setVersionableIdentifier(JcrVersionUtil.getBaseVersion(node).getContainingHistory().getVersionableIdentifier());
+//            } catch (RepositoryException e) {
+//              //this is fine... versionName is a nice to have on the object
+//            }
+//        }
         return obj;
     }
 
