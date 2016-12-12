@@ -44,17 +44,18 @@ public class CSVFileSchemaParser implements FileSchemaParser {
 
     private int numRowsToSample = 10;
 
-    @PolicyProperty(name = "Auto Detect?", hint = "Auto detect will attempt to infer delimiter from the sample file.", type = PolicyPropertyTypes.PROPERTY_TYPE.select, selectableValues = {"true","false"})
+    @PolicyProperty(name = "Auto Detect?", hint = "Auto detect will attempt to infer delimiter from the sample file.", type = PolicyPropertyTypes.PROPERTY_TYPE.select,
+                    selectableValues = {"true", "false"})
     private boolean autoDetect = true;
 
-    @PolicyProperty(name = "Header?", hint = "Whether file has a header.", value = "true", type = PolicyPropertyTypes.PROPERTY_TYPE.select, selectableValues = {"true","false"})
+    @PolicyProperty(name = "Header?", hint = "Whether file has a header.", value = "true", type = PolicyPropertyTypes.PROPERTY_TYPE.select, selectableValues = {"true", "false"})
     private boolean headerRow = true;
 
     @PolicyProperty(name = "Delimiter Char", hint = "Character separating fields", value = ",")
     private String separatorChar = ",";
 
-    @PolicyProperty(name = "Quote Char", hint = "Character enclosing a quoted string", value = "'")
-    private String quoteChar = "'";
+    @PolicyProperty(name = "Quote Char", hint = "Character enclosing a quoted string", value = "\'")
+    private String quoteChar = "\'";
 
     @PolicyProperty(name = "Escape Char", hint = "Escape character", value = "\\")
     private String escapeChar = "\\";
@@ -174,6 +175,27 @@ public class CSVFileSchemaParser implements FileSchemaParser {
         return targetSchema;
     }
 
+
+    private String stringForCharacter(String s) {
+        if (StringUtils.isEmpty(s)) {
+            return null;
+        }
+        Character c = s.charAt(0);
+
+        switch (c) {
+            case ';':
+                return "\\;";
+            case '\t':
+                return "\\t";
+            case '\'':
+                return "\\\'";
+            case '\\':
+                return "\\\\";
+            default:
+                return StringEscapeUtils.escapeJava(c.toString());
+        }
+    }
+
     public String deriveHiveRecordFormat() {
         String template = "ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'\n" +
                           " WITH SERDEPROPERTIES (" +
@@ -186,7 +208,7 @@ public class CSVFileSchemaParser implements FileSchemaParser {
 
     private String deriveSeparatorRecordFormat() {
         String template = " 'separatorChar' = '%s'";
-        return String.format(template, escapeChar(separatorChar));
+        return String.format(template, stringForCharacter(separatorChar));
     }
 
     private String deriveQuoteRecordFormat() {
@@ -194,7 +216,7 @@ public class CSVFileSchemaParser implements FileSchemaParser {
             return "";
         }
         String template = " ,'quoteChar' = '%s'";
-        return String.format(template, escapeChar(quoteChar));
+        return String.format(template, stringForCharacter(quoteChar));
     }
 
     private String deriveEscapeCharRecordFormat() {
@@ -202,7 +224,7 @@ public class CSVFileSchemaParser implements FileSchemaParser {
             return "";
         }
         String template = " ,'escapeChar' = '%s'";
-        return String.format(template, escapeChar(escapeChar));
+        return String.format(template, stringForCharacter(escapeChar));
     }
 
 
@@ -247,17 +269,6 @@ public class CSVFileSchemaParser implements FileSchemaParser {
 
     public String getEscapeChar() {
         return escapeChar;
-    }
-
-    /**
-     * Escapes the specified character for use in a Hive query.
-     *
-     * @param character the character to escape
-     * @return the escaped character
-     */
-    @Nonnull
-    private String escapeChar(@Nonnull final String character) {
-        return (character.length() == 1) ? StringEscapeUtils.escapeJava(character) : character;
     }
 
     /**

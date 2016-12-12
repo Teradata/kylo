@@ -202,7 +202,6 @@ public class CSVFileSchemaParserTest {
         return (HiveTableSchema) schema;
     }
 
-
     private HiveTableSchema validateSchema1(String text) throws IOException {
         try (InputStream is = toInputStream(text)) {
             HiveTableSchema schema = toHiveTableSchema(is);
@@ -213,6 +212,7 @@ public class CSVFileSchemaParserTest {
                 assertEquals(fields.get(idx).getName(), "col" + (idx + 1));
                 assertEquals(fields.get(idx).getSampleValues().size(), 2);
             });
+            //System.out.println(schema.getHiveFormat());
             return schema;
         }
     }
