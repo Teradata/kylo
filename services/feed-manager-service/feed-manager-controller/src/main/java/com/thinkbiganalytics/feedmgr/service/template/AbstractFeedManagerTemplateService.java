@@ -144,19 +144,23 @@ public abstract class AbstractFeedManagerTemplateService {
             oldId = "";
         }
         String nifiTemplateId = templateIdForTemplateName(template.getTemplateName());
-        template.setNifiTemplateId(nifiTemplateId);
+        if (nifiTemplateId != null && !oldId.equalsIgnoreCase(nifiTemplateId)) {
+            template.setNifiTemplateId(nifiTemplateId);
 
-        RegisteredTemplate t = getRegisteredTemplate(template.getId());
-        template.setProperties(t.getProperties());
-        if (!oldId.equalsIgnoreCase(template.getNifiTemplateId())) {
-            log.info("Updating Registered Template {} with new Nifi Template Id.  Old Id: {}, New Id: {} ", template.getTemplateName(), oldId, template.getNifiTemplateId());
+            RegisteredTemplate t = getRegisteredTemplate(template.getId());
+            template.setProperties(t.getProperties());
+            if (!oldId.equalsIgnoreCase(template.getNifiTemplateId())) {
+                log.info("Updating Registered Template {} with new Nifi Template Id.  Old Id: {}, New Id: {} ", template.getTemplateName(), oldId, template.getNifiTemplateId());
+            }
+            RegisteredTemplate updatedTemplate = saveRegisteredTemplate(template);
+            if (!oldId.equalsIgnoreCase(template.getNifiTemplateId())) {
+                log.info("Successfully updated and synchronized Registered Template {} with new Nifi Template Id.  Old Id: {}, New Id: {} ", template.getTemplateName(), oldId,
+                         template.getNifiTemplateId());
+            }
+            return updatedTemplate;
+        } else {
+            return template;
         }
-        RegisteredTemplate updatedTemplate = saveRegisteredTemplate(template);
-        if (!oldId.equalsIgnoreCase(template.getNifiTemplateId())) {
-            log.info("Successfully updated and synchronized Registered Template {} with new Nifi Template Id.  Old Id: {}, New Id: {} ", template.getTemplateName(), oldId,
-                     template.getNifiTemplateId());
-        }
-        return updatedTemplate;
     }
 
     public abstract RegisteredTemplate getRegisteredTemplateForNifiProperties(String nifiTemplateId, String nifiTemplateName);
@@ -224,7 +228,8 @@ public abstract class AbstractFeedManagerTemplateService {
 
             if (properties == null || matchCount == 0) {
                 if (properties != null) {
-                    NifiPropertyUtil.matchAndSetPropertyByProcessorName(properties, registeredTemplate.getProperties(),NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_NON_EXPRESSION_PROPERTIES);
+                    List<NifiProperty> mergedProperties = NifiPropertyUtil.matchAndSetPropertyByProcessorName(properties, registeredTemplate.getProperties(),
+                                                                                                              NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_NON_EXPRESSION_PROPERTIES);
                 }
                 syncTemplateId(registeredTemplate);
 

@@ -111,7 +111,7 @@ public class NiFiControllerServicesRestClientV1 implements NiFiControllerService
     @Nonnull
     private Optional<ControllerServiceEntity> findEntityById(@Nonnull final String id) {
         try {
-            return Optional.of(client.get(BASE_PATH + id, null, ControllerServiceEntity.class));
+            return Optional.ofNullable(client.get(BASE_PATH + id, null, ControllerServiceEntity.class));
         } catch (final NotFoundException e) {
             return Optional.empty();
         }

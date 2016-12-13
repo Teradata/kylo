@@ -253,17 +253,11 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
     }
 
     public FeedManagerTemplate ensureNifiTemplateId(FeedManagerTemplate feedManagerTemplate) {
-        return metadataAccess.commit(() -> {
-
             if (feedManagerTemplate.getNifiTemplateId() == null) {
                 String nifiTemplateId = templateIdForTemplateName(feedManagerTemplate.getName());
                 feedManagerTemplate.setNifiTemplateId(nifiTemplateId);
-                templateProvider.update(feedManagerTemplate);
             }
-
             return feedManagerTemplate;
-
-        });
     }
 
     @Override

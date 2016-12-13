@@ -472,7 +472,7 @@ public class TemplateCreationHelper {
         //attempt to stop all processors
         try {
             restClient.stopInputs(processGroup.getId());
-            log.error("Stopped Input Ports for {}, ", processGroup.getName());
+            log.info("Stopped Input Ports for {}, ", processGroup.getName());
         } catch (Exception e) {
             log.error("Error trying to stop Input Ports for {} while creating a new version ", processGroup.getName());
         }

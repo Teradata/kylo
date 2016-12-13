@@ -106,14 +106,14 @@ public class FeedManagerMetadataService implements MetadataService {
     @Override
     //@Transactional(transactionManager = "metadataTransactionManager")
     public RegisteredTemplate getRegisteredTemplateWithAllProperties(final String templateId, String templateName) {
-        return metadataAccess.read(() -> {
+        return metadataAccess.commit(() -> {
             return templateProvider.getRegisteredTemplateWithAllProperties(templateId, templateName);
         });
     }
 
     @Override
     public RegisteredTemplate getRegisteredTemplateForNifiProperties(final String nifiTemplateId, final String nifiTemplateName) {
-        return metadataAccess.read(() -> {
+        return metadataAccess.commit(() -> {
             return templateProvider.getRegisteredTemplateForNifiProperties(nifiTemplateId, nifiTemplateName);
         });
     }
