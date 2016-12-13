@@ -3,6 +3,22 @@
  */
 package com.thinkbiganalytics.metadata.modeshape;
 
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
+import com.thinkbiganalytics.metadata.modeshape.common.SecurityPaths;
+import com.thinkbiganalytics.metadata.modeshape.extension.ExtensionsConstants;
+import com.thinkbiganalytics.metadata.modeshape.security.AdminCredentials;
+import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
+import com.thinkbiganalytics.metadata.modeshape.security.ModeShapeAdminPrincipal;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrVersionUtil;
+
+import org.modeshape.jcr.api.nodetype.NodeTypeManager;
+import org.modeshape.jcr.security.SimplePrincipal;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.annotation.AnnotationAwareOrderComparator;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -27,22 +43,6 @@ import javax.jcr.version.Version;
 import javax.jcr.version.VersionHistory;
 import javax.jcr.version.VersionIterator;
 import javax.jcr.version.VersionManager;
-
-import org.apache.tika.metadata.Property;
-import org.modeshape.jcr.api.nodetype.NodeTypeManager;
-import org.modeshape.jcr.security.SimplePrincipal;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.core.annotation.AnnotationAwareOrderComparator;
-
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
-import com.thinkbiganalytics.metadata.modeshape.common.SecurityPaths;
-import com.thinkbiganalytics.metadata.modeshape.extension.ExtensionsConstants;
-import com.thinkbiganalytics.metadata.modeshape.security.AdminCredentials;
-import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
-import com.thinkbiganalytics.metadata.modeshape.security.ModeShapeAdminPrincipal;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
 /**
  *
@@ -104,27 +104,30 @@ public class MetadataJcrConfigurator {
             for (Node catNode : JcrUtil.getNodesOfType(feedsNode, "tba:category")) {
                 for (Node feedNode : JcrUtil.getNodesOfType(catNode, "tba:feed")) {
                     log.info("Removing prior versions of feed: {}.{}", catNode.getName(), feedNode.getName());
-                    
-                    VersionManager versionManager = session.getWorkspace().getVersionManager(); 
-                    VersionHistory versionHistory = versionManager.getVersionHistory(feedNode.getPath()); 
-                    VersionIterator vIt = versionHistory.getAllVersions(); 
-                    int count = 0;
-                    String last = "";
-                    
-                    while (vIt.hasNext()) { 
-                        Version version = vIt.nextVersion(); 
-                        if (!"jcr:rootVersion".equals(version.getName())) { 
-                            last = version.getName();
-                            // removeVersion writes directly to workspace, no session.save is necessary 
-                            versionHistory.removeVersion(version.getName()); 
-                            count++;
-                        } 
-                    } 
-                    
-                    if (count > 0) {
-                        log.info("Removed {} versions through {} of feed {}", count, last, feedNode.getName());
-                    } else {
-                        log.info("Feed {} had no versions", feedNode.getName());
+                    if (JcrUtil.isVersionable(feedNode)) {
+                        VersionManager versionManager = session.getWorkspace().getVersionManager();
+                        VersionHistory versionHistory = versionManager.getVersionHistory(feedNode.getPath());
+                        VersionIterator vIt = versionHistory.getAllVersions();
+                        int count = 0;
+                        String last = "";
+
+                        while (vIt.hasNext()) {
+                            Version version = vIt.nextVersion();
+                            String versionName = version.getName();
+                            String baseVersion = JcrVersionUtil.getBaseVersion(feedNode).getName();
+                            if (!"jcr:rootVersion".equals(versionName) && versionName.equalsIgnoreCase(baseVersion)) {
+                                last = version.getName();
+                                // removeVersion writes directly to workspace, no session.save is necessary
+                                versionHistory.removeVersion(version.getName());
+                                count++;
+                            }
+                        }
+
+                        if (count > 0) {
+                            log.info("Removed {} versions through {} of feed {}", count, last, feedNode.getName());
+                        } else {
+                            log.info("Feed {} had no versions", feedNode.getName());
+                        }
                     }
                 }
             }
