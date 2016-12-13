@@ -8,6 +8,7 @@ import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.web.api.dto.TemplateDTO;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -59,6 +60,9 @@ public class RegisteredTemplate {
      * The number of feeds that use this template
      */
     private Integer feedsCount;
+
+    @JsonIgnore
+    private TemplateDTO nifiTemplate;
 
     public RegisteredTemplate(){
 
@@ -456,5 +460,13 @@ public class RegisteredTemplate {
 
     public void setRegisteredDatasourceDefinitions(List<TemplateProcessorDatasourceDefinition> registeredDatasources) {
         this.registeredDatasourceDefinitions = registeredDatasources;
+    }
+
+    public TemplateDTO getNifiTemplate() {
+        return nifiTemplate;
+    }
+
+    public void setNifiTemplate(TemplateDTO nifiTemplate) {
+        this.nifiTemplate = nifiTemplate;
     }
 }

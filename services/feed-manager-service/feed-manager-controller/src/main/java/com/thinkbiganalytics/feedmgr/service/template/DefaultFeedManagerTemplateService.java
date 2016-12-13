@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,6 +66,7 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
                 ensureRegisteredTemplateInputProcessors(registeredTemplate);
 
                 FeedManagerTemplate domain = templateModelTransform.REGISTERED_TEMPLATE_TO_DOMAIN.apply(registeredTemplate);
+                ensureNifiTemplateId(domain);
                 log.info("Domain Object is {} ({}), nifi template Id of {}", domain.getName(), domain.getId(), domain.getNifiTemplateId());
                 domain = templateProvider.update(domain);
                 //query it back to display to the ui
@@ -126,7 +128,7 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
     public List<RegisteredTemplate.Processor> getRegisteredTemplateProcessors(String templateId, boolean includeReusableProcessors) {
         List<RegisteredTemplate.Processor> processorProperties = new ArrayList<>();
 
-        RegisteredTemplate template = getRegisteredTemplateWithAllProperties(templateId);
+        RegisteredTemplate template = getRegisteredTemplateWithAllProperties(templateId, null);
         if(template != null){
             template.initializeProcessors();
             processorProperties.addAll(template.getInputProcessors());
@@ -155,8 +157,10 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
      */
     public void ensureRegisteredTemplateInputProcessors(RegisteredTemplate registeredTemplate) {
         registeredTemplate.initializeInputProcessors();
-        List<RegisteredTemplate.Processor> nifiProcessors = getInputProcessorsInNifTemplate(registeredTemplate.getNifiTemplateId());
-
+        List<RegisteredTemplate.Processor> nifiProcessors = getInputProcessorsInNifTemplate(registeredTemplate);
+        if (nifiProcessors == null) {
+            nifiProcessors = Collections.emptyList();
+        }
         List<RegisteredTemplate.Processor> validInputProcessors = nifiProcessors.stream().filter(RegisteredTemplate.isValidInputProcessor()).collect(Collectors.toList());
 
         //add in any processors not in the map
@@ -194,8 +198,9 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
                 //transform it
                 registeredTemplate = templateModelTransform.DOMAIN_TO_REGISTERED_TEMPLATE.apply(domainTemplate);
             }
-            if(registeredTemplate != null) {
+            if (registeredTemplate != null) {
                 registeredTemplate.initializeProcessors();
+                ensureNifiTemplate(registeredTemplate);
             }
 
             return registeredTemplate;
@@ -247,6 +252,20 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
 
     }
 
+    public FeedManagerTemplate ensureNifiTemplateId(FeedManagerTemplate feedManagerTemplate) {
+        return metadataAccess.commit(() -> {
+
+            if (feedManagerTemplate.getNifiTemplateId() == null) {
+                String nifiTemplateId = templateIdForTemplateName(feedManagerTemplate.getName());
+                feedManagerTemplate.setNifiTemplateId(nifiTemplateId);
+                templateProvider.update(feedManagerTemplate);
+            }
+
+            return feedManagerTemplate;
+
+        });
+    }
+
     @Override
     public List<RegisteredTemplate> getRegisteredTemplates() {
         return metadataAccess.read(() -> {
@@ -255,7 +274,12 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
             List<RegisteredTemplate> registeredTemplates = null;
             List<FeedManagerTemplate> templates = templateProvider.findAll();
             if (templates != null) {
+                templates.stream().filter(t -> t.getNifiTemplateId() == null).forEach(t -> {
+                    ensureNifiTemplateId(t);
+                });
+
                 registeredTemplates = templateModelTransform.domainToRegisteredTemplate(templates);
+
             }
             return registeredTemplates;
         });

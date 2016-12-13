@@ -263,7 +263,7 @@ public class FeedRestController {
         //gets the feed data and then gets the latest template associated with that feed and merges the properties into the feed
         RegisteredTemplate registeredTemplate = null;
         try {
-            registeredTemplate = getMetadataService().getRegisteredTemplateWithAllProperties(feed.getTemplateId());
+            registeredTemplate = getMetadataService().getRegisteredTemplateWithAllProperties(feed.getTemplateId(), feed.getTemplateName());
         } catch (Exception e) {
             registeredTemplate = getMetadataService().getRegisteredTemplateByName(feed.getTemplateName());
             if (registeredTemplate != null) {

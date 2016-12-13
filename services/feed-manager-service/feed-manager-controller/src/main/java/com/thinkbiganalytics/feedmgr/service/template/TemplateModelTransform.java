@@ -32,6 +32,7 @@ public class TemplateModelTransform {
                     RegisteredTemplate template = ObjectMapperSerializer.deserialize(json, RegisteredTemplate.class);
                     template.setId(domain.getId().toString());
                     template.setState(domain.getState().name());
+                    template.setNifiTemplateId(domain.getNifiTemplateId());
                     List<FeedManagerFeed> feeds = domain.getFeeds();
                     template.setFeedsCount(feeds == null ? 0 : feeds.size());
                     if(domain.getCreatedTime() != null) {

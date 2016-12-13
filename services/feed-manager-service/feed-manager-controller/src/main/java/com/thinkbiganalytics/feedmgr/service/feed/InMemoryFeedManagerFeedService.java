@@ -196,7 +196,7 @@ public class InMemoryFeedManagerFeedService extends AbstractFeedManagerFeedServi
 
     @Override
     protected RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId) {
-        return templateProvider.getRegisteredTemplateWithAllProperties(templateId);
+        return templateProvider.getRegisteredTemplateWithAllProperties(templateId,null);
     }
 
     @Override

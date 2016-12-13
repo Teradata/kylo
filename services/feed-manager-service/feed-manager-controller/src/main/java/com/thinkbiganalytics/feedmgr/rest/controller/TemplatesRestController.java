@@ -88,8 +88,6 @@ public class TemplatesRestController {
     @Produces({MediaType.APPLICATION_JSON})
     public Response getTemplates(@QueryParam("includeDetails") boolean includeDetails) {
         Set<TemplateDTO> nifiTemplates = nifiRestClient.getTemplates(includeDetails);
-        List<RegisteredTemplate> registeredTemplates = metadataService.getRegisteredTemplates();
-
         Set<TemplateDtoWrapper> dtos = new HashSet<>();
         for (final TemplateDTO dto : nifiTemplates) {
             RegisteredTemplate match = metadataService.getRegisteredTemplateForNifiProperties(dto.getId(), dto.getName());
@@ -168,33 +166,33 @@ public class TemplatesRestController {
     @Path("/nifi/{templateId}/datasource-definitions")
     @Produces({MediaType.APPLICATION_JSON})
     public Response getDatasourceDefinitionsForProcessors(@PathParam("templateId") String templateId, @QueryParam("inputPorts") String inputPortIds) {
-
-        Map<RegisteredTemplate.Processor, DatasourceDefinition> map = new HashMap<>();
-        List<RegisteredTemplate.Processor> processors = new ArrayList<>();
-        List<RegisteredTemplate.Processor> reusableProcessors = getReusableTemplateProcessorsForInputPorts(inputPortIds);
-
-        List<RegisteredTemplate.Processor> thisTemplateProcessors = feedManagerTemplateService.getNiFiTemplateProcessors(templateId);
-
-        Set<DatasourceDefinition> defs = datasourceService.getDatasourceDefinitions();
-        Map<String, DatasourceDefinition> datasourceDefinitionMap = new HashMap<>();
-        if (defs != null) {
-            defs.stream().forEach(def -> datasourceDefinitionMap.put(def.getProcessorType(), def));
-        }
-
-        //join the two lists
-        processors.addAll(thisTemplateProcessors);
-        processors.addAll(reusableProcessors);
-
         List<TemplateProcessorDatasourceDefinition> templateProcessorDatasourceDefinitions = new ArrayList<>();
 
-        templateProcessorDatasourceDefinitions = processors.stream().filter(processor -> datasourceDefinitionMap.containsKey(processor.getType())).map(p -> {
-            TemplateProcessorDatasourceDefinition definition = new TemplateProcessorDatasourceDefinition();
-            definition.setProcessorType(p.getType());
-            definition.setProcessorName(p.getName());
-            definition.setProcessorId(p.getId());
-            definition.setDatasourceDefinition(datasourceDefinitionMap.get(p.getType()));
-            return definition;
-        }).collect(Collectors.toList());
+        if (StringUtils.isNotBlank(templateId)) {
+            List<RegisteredTemplate.Processor> processors = new ArrayList<>();
+            List<RegisteredTemplate.Processor> reusableProcessors = getReusableTemplateProcessorsForInputPorts(inputPortIds);
+
+            List<RegisteredTemplate.Processor> thisTemplateProcessors = feedManagerTemplateService.getNiFiTemplateProcessors(templateId);
+
+            Set<DatasourceDefinition> defs = datasourceService.getDatasourceDefinitions();
+            Map<String, DatasourceDefinition> datasourceDefinitionMap = new HashMap<>();
+            if (defs != null) {
+                defs.stream().forEach(def -> datasourceDefinitionMap.put(def.getProcessorType(), def));
+            }
+
+            //join the two lists
+            processors.addAll(thisTemplateProcessors);
+            processors.addAll(reusableProcessors);
+
+            templateProcessorDatasourceDefinitions = processors.stream().filter(processor -> datasourceDefinitionMap.containsKey(processor.getType())).map(p -> {
+                TemplateProcessorDatasourceDefinition definition = new TemplateProcessorDatasourceDefinition();
+                definition.setProcessorType(p.getType());
+                definition.setProcessorName(p.getName());
+                definition.setProcessorId(p.getId());
+                definition.setDatasourceDefinition(datasourceDefinitionMap.get(p.getType()));
+                return definition;
+            }).collect(Collectors.toList());
+        }
 
         return Response.ok(templateProcessorDatasourceDefinitions).build();
 
@@ -277,19 +275,16 @@ public class TemplatesRestController {
     @GET
     @Path("/registered/{templateId}")
     @Produces({MediaType.APPLICATION_JSON})
-    public Response getRegisteredTemplate(@PathParam("templateId") String templateId, @QueryParam("allProperties") boolean allProperties, @QueryParam("feedName") String feedName) {
+    public Response getRegisteredTemplate(@PathParam("templateId") String templateId, @QueryParam("allProperties") boolean allProperties, @QueryParam("feedName") String feedName,
+                                          @QueryParam("templateName") String templateName) {
         RegisteredTemplate registeredTemplate = null;
         if (allProperties) {
-            registeredTemplate = getMetadataService().getRegisteredTemplateWithAllProperties(templateId);
+            registeredTemplate = getMetadataService().getRegisteredTemplateWithAllProperties(templateId, templateName);
         } else {
             registeredTemplate = getMetadataService().getRegisteredTemplate(templateId);
         }
 
         log.info("Returning Registered template for id {} as {} ", templateId, (registeredTemplate != null ? registeredTemplate.getTemplateName() : null));
-
-
-
-
 
         //if savedFeedId is passed in merge the properties with the saved values
         if(feedName != null) {
@@ -308,7 +303,11 @@ public class TemplatesRestController {
         Set<PortDTO> ports = null;
         // fetch ports for this template
         try {
-            ports = nifiRestClient.getPortsForTemplate(registeredTemplate.getNifiTemplateId());
+            if (registeredTemplate.getNifiTemplate() != null) {
+                ports = nifiRestClient.getPortsForTemplate(registeredTemplate.getNifiTemplate());
+            } else {
+                ports = nifiRestClient.getPortsForTemplate(registeredTemplate.getNifiTemplateId());
+            }
         } catch (NifiComponentNotFoundException notFoundException) {
             feedManagerTemplateService.syncTemplateId(registeredTemplate);
             ports = nifiRestClient.getPortsForTemplate(registeredTemplate.getNifiTemplateId());
@@ -316,18 +315,12 @@ public class TemplatesRestController {
         if (ports == null) {
             ports = new HashSet<>();
         }
-        List<PortDTO> outputPorts = Lists.newArrayList(Iterables.filter(ports, new Predicate<PortDTO>() {
-            @Override
-            public boolean apply(PortDTO portDTO) {
-                return portDTO.getType().equalsIgnoreCase(NifiConstants.NIFI_PORT_TYPE.OUTPUT_PORT.name());
-            }
+        List<PortDTO> outputPorts = Lists.newArrayList(Iterables.filter(ports, portDTO -> {
+            return portDTO.getType().equalsIgnoreCase(NifiConstants.NIFI_PORT_TYPE.OUTPUT_PORT.name());
         }));
 
-        List<PortDTO> inputPorts = Lists.newArrayList(Iterables.filter(ports, new Predicate<PortDTO>() {
-            @Override
-            public boolean apply(PortDTO portDTO) {
-                return portDTO.getType().equalsIgnoreCase(NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name());
-            }
+        List<PortDTO> inputPorts = Lists.newArrayList(Iterables.filter(ports, portDTO -> {
+            return portDTO.getType().equalsIgnoreCase(NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name());
         }));
         registeredTemplate.setReusableTemplate(inputPorts != null && !inputPorts.isEmpty());
         List<ReusableTemplateConnectionInfo> reusableTemplateConnectionInfos = registeredTemplate.getReusableTemplateConnections();
@@ -338,15 +331,9 @@ public class TemplatesRestController {
             ReusableTemplateConnectionInfo reusableTemplateConnectionInfo = null;
             if (reusableTemplateConnectionInfos != null && !reusableTemplateConnectionInfos.isEmpty()) {
                 reusableTemplateConnectionInfo = Iterables.tryFind(reusableTemplateConnectionInfos,
-                                                                   new Predicate<ReusableTemplateConnectionInfo>() {
-                                                                       @Override
-                                                                       public boolean apply(
-                                                                           ReusableTemplateConnectionInfo reusableTemplateConnectionInfo) {
-                                                                           return reusableTemplateConnectionInfo
-                                                                               .getFeedOutputPortName()
-                                                                               .equalsIgnoreCase(port.getName());
-                                                                       }
-                                                                   }).orNull();
+                                                                   reusableTemplateConnectionInfo1 -> reusableTemplateConnectionInfo1
+                                                                       .getFeedOutputPortName()
+                                                                       .equalsIgnoreCase(port.getName())).orNull();
             }
             if (reusableTemplateConnectionInfo == null) {
                 reusableTemplateConnectionInfo = new ReusableTemplateConnectionInfo();

@@ -35,7 +35,7 @@ public interface MetadataService {
 
     RegisteredTemplate getRegisteredTemplateByName(String templateName);
 
-    RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId);
+    RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId, String templateName);
 
     RegisteredTemplate getRegisteredTemplateForNifiProperties(final String nifiTemplateId, final String nifiTemplateName);
 

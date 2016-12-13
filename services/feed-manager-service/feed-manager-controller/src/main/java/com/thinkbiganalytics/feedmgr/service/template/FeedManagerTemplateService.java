@@ -25,7 +25,7 @@ public interface FeedManagerTemplateService {
 
     RegisteredTemplate getRegisteredTemplateForNifiProperties(String nifiTemplateId, String nifiTemplateName);
 
-    RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId);
+    RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId, String templateName);
 
     boolean deleteRegisteredTemplate(String templateId);
 

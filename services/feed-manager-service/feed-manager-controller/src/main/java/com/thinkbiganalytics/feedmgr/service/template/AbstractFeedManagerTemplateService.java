@@ -5,6 +5,7 @@ import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
 import com.thinkbiganalytics.nifi.feedmgr.TemplateCreationHelper;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
+import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
 import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptorTransform;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiConnectionUtil;
@@ -66,19 +67,31 @@ public abstract class AbstractFeedManagerTemplateService {
         return list;
     }
 
-    public List<RegisteredTemplate.Processor> getInputProcessorsInNifTemplate(String nifiTemplateId) {
-        List<RegisteredTemplate.Processor> processors = new ArrayList<>();
-        List<ProcessorDTO> inputProcessors = NifiTemplateUtil.getInputProcessorsForTemplate(nifiRestClient.getTemplateById(nifiTemplateId));
-        if (inputProcessors != null) {
-            inputProcessors.stream().forEach(processorDTO -> {
-                RegisteredTemplate.Processor p = new RegisteredTemplate.Processor(processorDTO.getId());
-                p.setInputProcessor(true);
-                p.setGroupId(processorDTO.getParentGroupId());
-                p.setName(processorDTO.getName());
-                p.setType(processorDTO.getType());
-                processors.add(p);
-            });
+    public List<RegisteredTemplate.Processor> getInputProcessorsInNifTemplate(RegisteredTemplate registeredTemplate) {
+        TemplateDTO nifiTemplate = registeredTemplate.getNifiTemplate();
+        if(nifiTemplate == null) {
+            nifiTemplate = ensureNifiTemplate(registeredTemplate);
         }
+        return getInputProcessorsInNifTemplate(nifiTemplate);
+    }
+
+
+
+    public List<RegisteredTemplate.Processor> getInputProcessorsInNifTemplate(TemplateDTO nifiTemplate) {
+            List<RegisteredTemplate.Processor> processors = new ArrayList<>();
+            if(nifiTemplate != null) {
+                List<ProcessorDTO> inputProcessors = NifiTemplateUtil.getInputProcessorsForTemplate(nifiTemplate);
+                if (inputProcessors != null) {
+                    inputProcessors.stream().forEach(processorDTO -> {
+                        RegisteredTemplate.Processor p = new RegisteredTemplate.Processor(processorDTO.getId());
+                        p.setInputProcessor(true);
+                        p.setGroupId(processorDTO.getParentGroupId());
+                        p.setName(processorDTO.getName());
+                        p.setType(processorDTO.getType());
+                        processors.add(p);
+                    });
+                }
+            }
         return processors;
     }
 
@@ -87,23 +100,25 @@ public abstract class AbstractFeedManagerTemplateService {
      * Get Registered Template for incoming RegisteredTemplate.id or Nifi Template Id if there is no RegisteredTEmplate matching the incoming id it is assumed to be a new Tempate and it tries to fetch
      * it from Nifi
      */
-    public RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId) {
+    public RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId, String templateName) {
         RegisteredTemplate registeredTemplate = getRegisteredTemplate(templateId);
         //if it is null check to see if the template exists in nifi and is already registered
         if (registeredTemplate == null) {
             log.info("Attempt to get Template with ID {}, returned Null.  This ID must be one registed in Nifi... attempt to query Nifi for this template ", templateId);
-            registeredTemplate = getRegisteredTemplateForNifiProperties(templateId, null);
+            registeredTemplate = getRegisteredTemplateForNifiProperties(templateId, templateName);
         }
         if (registeredTemplate == null) {
-            List<NifiProperty> properties = nifiRestClient.getPropertiesForTemplate(templateId);
+            List<NifiProperty> properties = new ArrayList<>();
+                TemplateDTO nifiTemplate = nifiRestClient.getTemplateById(templateId);
             registeredTemplate = new RegisteredTemplate();
-            registeredTemplate.setProperties(properties);
             registeredTemplate.setNifiTemplateId(templateId);
-            //get the template Name
-            TemplateDTO templateDTO = nifiRestClient.getTemplateById(templateId);
-            if (templateDTO != null) {
-                registeredTemplate.setTemplateName(templateDTO.getName());
+
+            if(nifiTemplate != null) {
+                properties = nifiRestClient.getPropertiesForTemplate(nifiTemplate);
+                registeredTemplate.setNifiTemplate(nifiTemplate);
+                registeredTemplate.setTemplateName(nifiTemplate.getName());
             }
+            registeredTemplate.setProperties(properties);
         } else {
             registeredTemplate = mergeRegisteredTemplateProperties(registeredTemplate);
 
@@ -125,6 +140,9 @@ public abstract class AbstractFeedManagerTemplateService {
      */
     public RegisteredTemplate syncTemplateId(RegisteredTemplate template) {
         String oldId = template.getNifiTemplateId();
+        if(oldId == null) {
+            oldId = "";
+        }
         String nifiTemplateId = templateIdForTemplateName(template.getTemplateName());
         template.setNifiTemplateId(nifiTemplateId);
 
@@ -148,6 +166,41 @@ public abstract class AbstractFeedManagerTemplateService {
     public abstract RegisteredTemplate getRegisteredTemplate(String id);
 
 
+    /**
+     * Gets the NiFi TemplateDTO object fully populated.  first looking at the registered nifiTemplateId associated with the {@code registeredTemplate}. If not found it will attempt to lookup the template by the Name
+     * @param registeredTemplate
+     * @return
+     */
+    protected  TemplateDTO ensureNifiTemplate(RegisteredTemplate registeredTemplate){
+        TemplateDTO templateDTO = null;
+        try {
+            try {
+             templateDTO = nifiRestClient.getTemplateById(registeredTemplate.getNifiTemplateId());
+            } catch (NifiComponentNotFoundException e) {
+                //this is fine... we can safely proceeed if not found.
+            }
+            if(templateDTO == null) {
+                templateDTO = nifiRestClient.getTemplateByName(registeredTemplate.getTemplateName());
+                if (templateDTO != null) {
+                    //getting the template by the name will not get all the properties.
+                    //refetch it by the name to get the FlowSnippet
+                    //populate the snippet
+                    templateDTO = nifiRestClient.getTemplateById(templateDTO.getId());
+
+                }
+            }
+            if(templateDTO != null){
+                registeredTemplate.setNifiTemplate(templateDTO);
+                registeredTemplate.setNifiTemplateId(registeredTemplate.getNifiTemplate().getId());
+            }
+
+        } catch (NifiClientRuntimeException e) {
+            log.error("Error attempting to get the NifiTemplate TemplateDTO object for {} using nifiTemplateId of {} ",registeredTemplate.getTemplateName(),registeredTemplate.getNifiTemplateId());
+        }
+        return templateDTO;
+    }
+
+
     public RegisteredTemplate mergeRegisteredTemplateProperties(RegisteredTemplate registeredTemplate) {
         if (registeredTemplate != null) {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_TEMPLATES);
@@ -155,24 +208,23 @@ public abstract class AbstractFeedManagerTemplateService {
             log.info("Merging properties for template {} ({})", registeredTemplate.getTemplateName(), registeredTemplate.getId());
             List<NifiProperty> properties = null;
             int matchCount = 0;
-            try {
-                properties = nifiRestClient.getPropertiesForTemplate(registeredTemplate.getNifiTemplateId());
-                List<NifiProperty> matchedProperties = NifiPropertyUtil
-                    .matchAndSetPropertyByIdKey(properties, registeredTemplate.getProperties(), NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_NON_EXPRESSION_PROPERTIES);
-                matchCount = matchedProperties.size();
-            } catch (NifiClientRuntimeException e) {
-
+            //get the nifi template associated with this one that is registered
+            TemplateDTO templateDTO = registeredTemplate.getNifiTemplate();
+            if(templateDTO == null){
+                templateDTO = ensureNifiTemplate(registeredTemplate);
             }
+
+            if(templateDTO != null) {
+                    registeredTemplate.setNifiTemplate(templateDTO);
+                    properties = nifiRestClient.getPropertiesForTemplate(templateDTO);
+                    List<NifiProperty> matchedProperties = NifiPropertyUtil
+                        .matchAndSetPropertyByIdKey(properties, registeredTemplate.getProperties(), NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_NON_EXPRESSION_PROPERTIES);
+                    matchCount = matchedProperties.size();
+            }
+
             if (properties == null || matchCount == 0) {
-                log.info(
-                    "Unable to find Nifi Template associated with saved Id of {}.  Possibly the Nifi Template was updated and saved again.  Attempt to query Nifi for template with the name of {}",
-                    registeredTemplate.getNifiTemplateId(), registeredTemplate.getTemplateName());
-                //sync templateId for name
-                properties = nifiRestClient.getPropertiesForTemplateByName(registeredTemplate.getTemplateName());
                 if (properties != null) {
-                    //   property = NifiPropertyUtil.findPropertyByProcessorType(properties, "com.thinkbiganalytics.nifi.GetTableData", "Archive Unit");
                     NifiPropertyUtil.matchAndSetPropertyByProcessorName(properties, registeredTemplate.getProperties(),NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_NON_EXPRESSION_PROPERTIES);
-                    //    registeredTemplate.setProperties(properties);
                 }
                 syncTemplateId(registeredTemplate);
 
@@ -184,6 +236,7 @@ public abstract class AbstractFeedManagerTemplateService {
 
             RegisteredTemplate copy = new RegisteredTemplate(registeredTemplate);
             copy.setProperties(properties);
+            copy.setNifiTemplate(registeredTemplate.getNifiTemplate());
 
             registeredTemplate = copy;
 
