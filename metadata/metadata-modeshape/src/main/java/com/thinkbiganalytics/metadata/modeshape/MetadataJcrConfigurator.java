@@ -114,7 +114,11 @@ public class MetadataJcrConfigurator {
                         while (vIt.hasNext()) {
                             Version version = vIt.nextVersion();
                             String versionName = version.getName();
-                            String baseVersion = JcrVersionUtil.getBaseVersion(feedNode).getName();
+                            String baseVersion = "";
+                            if (!"jcr:rootVersion".equals(versionName)) {
+                                //baseVersion requires actual versionable node to get the base version name
+                              baseVersion = JcrVersionUtil.getBaseVersion(feedNode).getName();
+                            }
                             if (!"jcr:rootVersion".equals(versionName) && !versionName.equalsIgnoreCase(baseVersion)) {
                                 last = version.getName();
                                 // removeVersion writes directly to workspace, no session.save is necessary
