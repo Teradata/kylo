@@ -55,11 +55,15 @@
             }
         }
 
-        function findRegisteredTemplateDtoWrapper(){
-           return _.find(self.templates,function(template){
-
-                return template.registeredTemplateId != null && template.registeredTemplateId != undefined && self.registeredTemplateId == template.registeredTemplateId;
-            })
+        function findSelectedTemplate(){
+            if( self.nifiTemplateId != undefined ) {
+                return _.find(self.templates, function (template) {
+                    return template.id == self.nifiTemplateId;
+                });
+            }
+            else {
+                return null;
+            }
         }
 
         /**
@@ -79,7 +83,12 @@
         this.changeTemplate = function(){
             showProgress();
                 //Wait for the properties to come back before allowing hte user to go to the next step
-                  RegisterTemplateService.loadTemplateWithProperties(null, self.nifiTemplateId).then(function(response) {
+                 var selectedTemplate = findSelectedTemplate();
+            var templateName = null;
+            if(selectedTemplate != null && selectedTemplate != undefined) {
+                templateName = selectedTemplate.name;
+            }
+                  RegisterTemplateService.loadTemplateWithProperties(null, self.nifiTemplateId,templateName).then(function(response) {
                       $timeout(function() {
                           hideProgress();
                       },10);

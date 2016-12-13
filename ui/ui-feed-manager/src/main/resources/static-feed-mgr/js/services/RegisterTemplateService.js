@@ -467,11 +467,16 @@ angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($ht
     },
     getTemplateProcessorDatasourceDefinitions : function(nifiTemplateId, inputPortIds){
       var deferred = $q.defer();
-      $http.get(RestUrlService.TEMPLATE_PROCESSOR_DATASOURCE_DEFINITIONS(nifiTemplateId),{params:{inputPorts:inputPortIds}}).then(function(response){
-        deferred.resolve(response);
-      }, function(response){
-        deferred.reject(response);
-      });
+      if(nifiTemplateId != null) {
+        $http.get(RestUrlService.TEMPLATE_PROCESSOR_DATASOURCE_DEFINITIONS(nifiTemplateId), {params: {inputPorts: inputPortIds}}).then(function (response) {
+          deferred.resolve(response);
+        }, function (response) {
+          deferred.reject(response);
+        });
+      }
+      else {
+        deferred.resolve({data:[]});
+      }
       return deferred.promise;
 
     },
@@ -480,7 +485,7 @@ angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($ht
      * Returns a promise
      * @returns {*}
      */
-    loadTemplateWithProperties:function(registeredTemplateId, nifiTemplateId){
+    loadTemplateWithProperties:function(registeredTemplateId, nifiTemplateId, templateName){
       var isValid = true;
 
       var self = this;
@@ -625,8 +630,9 @@ angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($ht
             var templateData = response.data;
             transformPropertiesToArray(templateData.properties);
             self.model.exportUrl = RestUrlService.ADMIN_EXPORT_TEMPLATE_URL + "/" + templateData.id;
-            self.model.nifiTemplateId = templateData.nifiTemplateId;
-            self.nifiTemplateId = templateData.nifiTemplateId;
+            var nifiTemplateId = templateData.nifiTemplateId != null ? templateData.nifiTemplateId : self.model.nifiTemplateId;
+            self.model.nifiTemplateId = nifiTemplateId;
+            self.nifiTemplateId = nifiTemplateId;
             self.model.templateName = templateData.templateName;
             self.model.defineTable = templateData.defineTable;
             self.model.state = templateData.state;
@@ -659,7 +665,7 @@ angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($ht
             self.model.loading = false;
           }
           var id = registeredTemplateId != undefined && registeredTemplateId != null ? registeredTemplateId : self.model.nifiTemplateId;
-          var promise = $http.get(RestUrlService.GET_REGISTERED_TEMPLATE_URL(id), {params: {allProperties: true}});
+          var promise = $http.get(RestUrlService.GET_REGISTERED_TEMPLATE_URL(id), {params: {allProperties: true, templateName:templateName}});
           promise.then(successFn, errorFn);
           return promise;
         }
