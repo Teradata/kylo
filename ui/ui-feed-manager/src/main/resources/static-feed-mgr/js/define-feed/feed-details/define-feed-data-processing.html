@@ -67,7 +67,7 @@
                     </div>
                     <div flex="20" class="md-list-item-text " layout="column">
                       <md-input-container class="md-block" flex-gt-sm>
-                        <md-checkbox flex-gt-sm ng-model="policy.index" aria-label="Index" ng-disabled="(vm.model.dataTransformationFeed || vm.model.table.structured)">
+                        <md-checkbox flex-gt-sm ng-model="policy.index" aria-label="Index" ng-disabled="(vm.model.dataTransformationFeed || policy.field.complex)">
                         </md-checkbox>
                       </md-input-container>
                     </div>
@@ -79,14 +79,14 @@
                      -->
                     <!-- Standardization rule -->
                     <div flex="20" class="md-list-item-text hint" layout-align="start center">
-                      <div style="color:rgba(0, 0, 0, 0.54)" ng-if="(vm.model.dataTransformationFeed || vm.model.table.structured)">
-                        <md-button class="icon-btn" style="padding-left:2px;padding-right:2px;">
+                      <div style="color:rgba(0, 0, 0, 0.54)" ng-if="(vm.model.dataTransformationFeed ||  policy.field.dataTypeDescriptor.complex)">
+                        <md-button class="icon-btn" style="padding-left:2px;padding-right:2px;" ng-disabled="true">
                           <ng-md-icon icon="add_circle_outline"></ng-md-icon>
                         </md-button>
                         ADD
                       </div>
 
-                      <div style="color:#2D78B1" ng-click="vm.showFieldRuleDialog(policy,'standardization')" ng-if="!(vm.model.dataTransformationFeed || vm.model.table.structured)">
+                      <div style="color:#2D78B1" ng-click="vm.showFieldRuleDialog(policy,'standardization')" ng-if="!(vm.model.dataTransformationFeed || policy.field.dataTypeDescriptor.complex)">
                         <md-button class="icon-btn" style="padding-left:2px;padding-right:2px;">
                           <ng-md-icon icon="add_circle_outline" style="fill:#2D78B1;"></ng-md-icon>
                         </md-button>
@@ -100,13 +100,13 @@
 
                     <!-- Validation rule -->
                     <div flex="20" class="md-list-item-text hint" layout-align="start center">
-                      <div style="color:rgba(0, 0, 0, 0.54)" ng-if="(vm.model.dataTransformationFeed || vm.model.table.structured)">
-                        <md-button class="icon-btn" style="padding-left:2px;padding-right:2px;">
+                      <div style="color:rgba(0, 0, 0, 0.54)" ng-if="(vm.model.dataTransformationFeed || policy.field.dataTypeDescriptor.complex)">
+                        <md-button class="icon-btn" style="padding-left:2px;padding-right:2px;" ng-disabled="true">
                           <ng-md-icon icon="add_circle_outline"></ng-md-icon>
                         </md-button>
                         ADD
                       </div>
-                      <div style="color:#2D78B1" ng-click="vm.showFieldRuleDialog(policy,'validation')" ng-if="!(vm.model.dataTransformationFeed || vm.model.table.structured)">
+                      <div style="color:#2D78B1" ng-click="vm.showFieldRuleDialog(policy,'validation')" ng-if="!(vm.model.dataTransformationFeed || policy.field.dataTypeDescriptor.complex)">
                         <md-button class="icon-btn" style="padding-left:2px;padding-right:2px;">
                           <ng-md-icon icon="add_circle_outline"
                                       style="fill:#2D78B1;"></ng-md-icon>

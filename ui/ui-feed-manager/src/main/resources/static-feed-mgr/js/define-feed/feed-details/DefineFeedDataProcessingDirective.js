@@ -49,9 +49,8 @@
 
         this.mergeStrategies = angular.copy(FeedService.mergeStrategies);
         FeedService.enableDisablePkMergeStrategy(self.model, self.mergeStrategies);
-        this.permissionGroups = ['Marketing','Human Resources','Administrators','IT'];
 
-       // this.compressionOptions = ['NONE','SNAPPY','ZLIB'];
+        this.permissionGroups = ['Marketing','Human Resources','Administrators','IT'];
 
         BroadcastService.subscribe($scope, StepperService.ACTIVE_STEP_EVENT, onActiveStep)
 
@@ -82,6 +81,7 @@
         this.compressionOptions = ['NONE'];
 
         this.onTableFormatChange = function(opt){
+
             var format = self.model.table.targetFormat;
             if(format == 'STORED AS ORC' ){
                 self.compressionOptions = self.allCompressionOptions['ORC'];
@@ -93,9 +93,6 @@
                 self.compressionOptions = ['NONE'];
             }
         }
-
-
-
 
         function findProperty(key){
             return _.find(self.model.inputProcessor.properties,function(property){
