@@ -42,6 +42,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -183,22 +184,39 @@ public class LegacyNifiRestClient implements NifiFlowVisitorClient {
      */
     public List<NifiProperty> getPropertiesForTemplate(String templateId) {
         TemplateDTO dto = getTemplateById(templateId);
+       return getPropertiesForTemplate(dto);
+    }
+
+    /**
+     * Expose all Properties for a given Template as parameters for external use
+     */
+    public List<NifiProperty> getPropertiesForTemplate(TemplateDTO dto) {
         ProcessGroupDTO rootProcessGroup = getProcessGroup("root", false, false);
-        return NifiPropertyUtil.getPropertiesForTemplate(rootProcessGroup, dto, propertyDescriptorTransform);
+        return getPropertiesForTemplate(rootProcessGroup, dto);
     }
 
 
+    public List<NifiProperty> getPropertiesForTemplate(ProcessGroupDTO processGroup, TemplateDTO dto) {
+        return NifiPropertyUtil.getPropertiesForTemplate(processGroup, dto, propertyDescriptorTransform);
+    }
+
 
     public Set<PortDTO> getPortsForTemplate(String templateId) throws NifiComponentNotFoundException {
-        Set<PortDTO> ports = new HashSet<>();
         TemplateDTO dto = getTemplateById(templateId);
-        Set<PortDTO> inputPorts = dto.getSnippet().getInputPorts();
-        if (inputPorts != null) {
-            ports.addAll(inputPorts);
-        }
-        Set<PortDTO> outputPorts = dto.getSnippet().getOutputPorts();
-        if (outputPorts != null) {
-            ports.addAll(outputPorts);
+        return getPortsForTemplate(dto);
+    }
+
+    public Set<PortDTO> getPortsForTemplate(TemplateDTO templateDTO) throws NifiComponentNotFoundException {
+        Set<PortDTO> ports = new HashSet<>();
+        if(templateDTO != null && templateDTO.getSnippet() != null) {
+            Set<PortDTO> inputPorts = templateDTO.getSnippet().getInputPorts();
+            if (inputPorts != null) {
+                ports.addAll(inputPorts);
+            }
+            Set<PortDTO> outputPorts = templateDTO.getSnippet().getOutputPorts();
+            if (outputPorts != null) {
+                ports.addAll(outputPorts);
+            }
         }
         return ports;
     }
@@ -741,9 +759,12 @@ public class LegacyNifiRestClient implements NifiFlowVisitorClient {
      */
     public Set<ProcessorDTO> getProcessorsForTemplate(String templateId) throws NifiComponentNotFoundException {
         TemplateDTO dto = getTemplateById(templateId);
-        Set<ProcessorDTO> processors = NifiProcessUtil.getProcessors(dto);
-
-        return processors;
+        if(dto != null) {
+            return NifiProcessUtil.getProcessors(dto);
+        }
+        else {
+            return Collections.emptySet();
+        }
 
     }
 
