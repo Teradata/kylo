@@ -447,7 +447,7 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
 
                     $mdToast.show(
                         $mdToast.simple()
-                            .textContent('Saved the Feed, version '+model.versionName)
+                            .textContent('Saved the Feed')
                             .hideDelay(3000)
                     );
                     deferred.resolve(response);
