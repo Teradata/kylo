@@ -11,22 +11,13 @@
           "name": "HISTORYSERVER"
         },
         {
-          "name": "OOZIE_CLIENT"
-        },
-        {
           "name": "NAMENODE"
-        },
-        {
-          "name": "OOZIE_SERVER"
         },
         {
           "name": "HDFS_CLIENT"
         },
         {
           "name": "YARN_CLIENT"
-        },
-        {
-          "name": "FALCON_SERVER"
         },
         {
           "name": "METRICS_MONITOR"
@@ -43,9 +34,6 @@
       "components": [
         {
           "name": "ZOOKEEPER_SERVER"
-        },
-        {
-          "name": "PIG"
         },
         {
           "name": "ZOOKEEPER_CLIENT"
@@ -103,12 +91,6 @@
           "name": "TEZ_CLIENT"
         },
         {
-          "name": "HBASE_MASTER"
-        },
-        {
-          "name": "HBASE_CLIENT"
-        },
-        {
           "name": "HDFS_CLIENT"
         },
         {
@@ -125,37 +107,10 @@
       "configurations": [],
       "components": [
         {
-          "name": "ZOOKEEPER_CLIENT"
-        },
-        {
-          "name": "PIG"
-        },
-        {
-          "name": "OOZIE_CLIENT"
-        },
-        {
-          "name": "HBASE_CLIENT"
-        },
-        {
-          "name": "HCAT"
-        },
-        {
-          "name": "KNOX_GATEWAY"
-        },
-        {
           "name": "METRICS_MONITOR"
         },
         {
-          "name": "FALCON_CLIENT"
-        },
-        {
           "name": "TEZ_CLIENT"
-        },
-        {
-          "name": "SLIDER"
-        },
-        {
-          "name": "SQOOP"
         },
         {
           "name": "HDFS_CLIENT"
@@ -183,34 +138,10 @@
       "configurations": [],
       "components": [
         {
-          "name": "ZOOKEEPER_CLIENT"
-        },
-        {
-          "name": "PIG"
-        },
-        {
-          "name": "OOZIE_CLIENT"
-        },
-        {
-          "name": "HBASE_CLIENT"
-        },
-        {
-          "name": "HCAT"
-        },
-        {
-          "name": "KNOX_GATEWAY"
-        },
-        {
           "name": "METRICS_MONITOR"
         },
         {
-          "name": "FALCON_CLIENT"
-        },
-        {
           "name": "TEZ_CLIENT"
-        },
-        {
-          "name": "SLIDER"
         },
         {
           "name": "SQOOP"
@@ -237,9 +168,6 @@
       "name": "host_group_slave_1",
       "configurations": [],
       "components": [
-        {
-          "name": "HBASE_REGIONSERVER"
-        },
         {
           "name": "NODEMANAGER"
         },
