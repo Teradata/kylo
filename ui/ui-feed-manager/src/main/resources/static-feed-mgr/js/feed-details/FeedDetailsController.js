@@ -285,8 +285,6 @@
                             if (tabIndex != null && tabIndex != undefined && tabIndex != self.selectedTabIndex) {
                                 self.selectedTabIndex = tabIndex;
                             }
-
-
                             RegisterTemplateService.initializeProperties(updatedFeedResponse.data.registeredTemplate,'edit');
                             self.model.inputProcessors = RegisterTemplateService.removeNonUserEditableProperties(updatedFeedResponse.data.registeredTemplate.inputProcessors,true);
                             self.model.inputProcessor = _.find(self.model.inputProcessors,function(processor){
@@ -295,49 +293,6 @@
                             self.model.nonInputProcessors = RegisterTemplateService.removeNonUserEditableProperties(updatedFeedResponse.data.registeredTemplate.nonInputProcessors,false);
                             self.loadingFeedData = false;
                             FeedService.updateEditModelStateIcon();
-
-                            /*
-
-                            //get those properties that are Input properties
-                            var processors = {};
-                            var inputProcessors = [];
-
-                            var nonInputProcessors = [];
-                            angular.forEach(self.model.properties, function(property) {
-                                if (property.userEditable) {
-
-                                    if (processors[property.processorId] === undefined) {
-                                        processors[property.processorId] = {
-                                            name: property.processorName,
-                                            properties: [],
-                                            processorId: property.processorId,
-                                            inputProcessor: property.inputProperty,
-                                            type: property.processorType
-                                        }
-                                        if (property.inputProperty) {
-                                            inputProcessors.push(processors[property.processorId]);
-                                            if (self.model.inputProcessorType == property.processorType) {
-                                                self.model.inputProcessor = processors[property.processorId];
-                                            }
-                                        }
-                                        else {
-                                            nonInputProcessors.push(processors[property.processorId]);
-                                        }
-                                    }
-
-                                    var processor = processors[property.processorId];
-                                    processor.properties.push(property);
-                                }
-                                property.value = RegisterTemplateService.deriveExpression(property.value);
-                                property.renderWithCodeMirror = RegisterTemplateService.isRenderPropertyWithCodeMirror(property);
-
-                            });
-
-                            self.model.inputProcessors = inputProcessors;
-                            self.model.nonInputProcessors = nonInputProcessors;
-                            self.loadingFeedData = false;
-                            FeedService.updateEditModelStateIcon();
-                            */
                         }
                     }, function(err) {
                         //handle err
