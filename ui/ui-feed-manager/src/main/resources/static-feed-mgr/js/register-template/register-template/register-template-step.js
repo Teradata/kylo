@@ -49,7 +49,9 @@
             _.each(self.model.reusableTemplateConnections,function(conn) {
                 var inputPort = conn.inputPortDisplayName;
                 var port = self.connectionMap[inputPort];
-                assignedPortIds.push(port.id);
+                if(port != undefined) {
+                    assignedPortIds.push(port.id);
+                }
             });
             var selectedPortIds = '';
             if(assignedPortIds.length >0) {
@@ -59,33 +61,37 @@
             RegisterTemplateService.getTemplateProcessorDatasourceDefinitions(self.model.nifiTemplateId,selectedPortIds ).then(function(response){
                 var map = {};
 
-                //merge in those already selected/saved on this template
-                _.each(response.data,function(def) {
-                    def.selectedDatasource = false;
-                    if(self.model.registeredDatasourceDefinitions.length == 0) {
-                        def.selectedDatasource = true;
-                    }
-                    else {
+                if(response && response.data) {
+                    //merge in those already selected/saved on this template
+                    _.each(response.data, function (def) {
+                        def.selectedDatasource = false;
+                        if (self.model.registeredDatasourceDefinitions.length == 0) {
+                            def.selectedDatasource = true;
+                        }
+                        else {
 
-                   var matchingTypes = _.filter(self.model.registeredDatasourceDefinitions,function(ds) {
-                        return (def.processorType == ds.processorType && ( ds.processorId == def.processorId || ds.processorName == def.processorName));
+                            var matchingTypes = _.filter(self.model.registeredDatasourceDefinitions, function (ds) {
+                                return (def.processorType == ds.processorType && ( ds.processorId == def.processorId || ds.processorName == def.processorName));
+                            });
+                            if (matchingTypes.length > 0) {
+                                def.selectedDatasource = true;
+                            }
+                        }
                     });
-                    if(matchingTypes.length >0){
-                        def.selectedDatasource = true;
-                    }
-                  }
+                    //sort with SOURCEs first
+                    self.processorDatasourceDefinitions = _.sortBy(response.data, function (def) {
+                        if (def.datasourceDefinition.connectionType == 'SOURCE') {
+                            return 1;
+                        }
+                        else {
+                            return 2;
+                        }
                     });
-                //sort with SOURCEs first
-                self.processorDatasourceDefinitions = _.sortBy(response.data, function (def) {
-                    if (def.datasourceDefinition.connectionType == 'SOURCE') {
-                        return 1;
-                    }
-                    else {
-                        return 2;
-                    }
-                });
+
+                }
                 self.loadingProcessorDatasources = false;
             });
+
         };
 
 
