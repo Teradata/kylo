@@ -16,7 +16,7 @@
                 renderLoadStrategyOptions: '=',
                 loadStrategyOptions: '=?',
                 defaultLoadStrategyValue: '@?',
-                useTableNameOnly:'='
+                useTableNameOnly: '=?'
             },
             controllerAs: 'ctl',
             scope: {},
