@@ -3,6 +3,7 @@ package com.thinkbiganalytics.nifi.rest.support;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -11,8 +12,12 @@ import java.util.List;
 public class NifiTemplateUtil {
 
     public static List<ProcessorDTO>getInputProcessorsForTemplate(TemplateDTO template ){
-        List<String> sourceIds =  NifiConnectionUtil.getInputProcessorIds(template.getSnippet().getConnections());
-        return NifiProcessUtil.findProcessorsByIds(template.getSnippet().getProcessors(), sourceIds);
+        if (template != null && template.getSnippet() != null) {
+            List<String> sourceIds = NifiConnectionUtil.getInputProcessorIds(template.getSnippet().getConnections());
+            return NifiProcessUtil.findProcessorsByIds(template.getSnippet().getProcessors(), sourceIds);
+        } else {
+            return Collections.emptyList();
+        }
     }
 
 }
