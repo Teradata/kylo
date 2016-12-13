@@ -23,14 +23,11 @@
                 }
 
                 elem.bind("stickIt", function () {
-                    console.log('stick it')
                     stickIt();
                 });
 
                 scope.$on('$destroy', function () {
                     elem.unbind("stickIt");
-                    console.log('destroy stick it')
-
                 });
 
             }
