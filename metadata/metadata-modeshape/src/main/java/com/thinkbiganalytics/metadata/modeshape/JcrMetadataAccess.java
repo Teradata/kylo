@@ -91,6 +91,11 @@ public class JcrMetadataAccess implements MetadataAccess {
 
     @Inject
     private TransactionManagerLookup txnLookup;
+    
+    
+    public static boolean hasActiveSession() {
+        return activeSession.get() != null;
+    }
 
     public static Session getActiveSession() {
         Session active = activeSession.get();

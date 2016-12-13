@@ -77,28 +77,36 @@ public class AggregateMetadataAccess implements MetadataAccess {
 
     
     private MetadataAction wrap(final MetadataAction action, final boolean readOnly) {
-        return () -> {
-            if (readOnly) {
-                jpaMetadataAccess.read(() -> {
-                    action.execute();
-                    return null;
-                });
-            } else {
-                jpaMetadataAccess.commit(() -> {
-                    action.execute();
-                    return null;
-                });
-            }
-        };
+        if (JcrMetadataAccess.hasActiveSession()) {
+            return action;
+        } else {
+            return () -> {
+                if (readOnly) {
+                    jpaMetadataAccess.read(() -> {
+                        action.execute();
+                        return null;
+                    });
+                } else {
+                    jpaMetadataAccess.commit(() -> {
+                        action.execute();
+                        return null;
+                    });
+                }
+            };
+        }
     }
     
     private <R> MetadataCommand<R> wrap(final MetadataCommand<R> cmd, final boolean readOnly) {
-        return () -> {
-            if (readOnly) {
-                return jpaMetadataAccess.read(() -> cmd.execute());
-            } else {
-                return jpaMetadataAccess.commit(() -> cmd.execute());
-            }
-        };
+        if (JcrMetadataAccess.hasActiveSession()) {
+            return cmd;
+        } else {
+            return () -> {
+                if (readOnly) {
+                    return jpaMetadataAccess.read(() -> cmd.execute());
+                } else {
+                    return jpaMetadataAccess.commit(() -> cmd.execute());
+                }
+            };
+        }
     }
 }
