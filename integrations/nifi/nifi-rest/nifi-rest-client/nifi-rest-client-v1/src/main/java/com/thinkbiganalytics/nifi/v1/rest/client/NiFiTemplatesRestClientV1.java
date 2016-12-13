@@ -84,8 +84,12 @@ public class NiFiTemplatesRestClientV1 extends AbstractNiFiTemplatesRestClient {
     public Optional<TemplateDTO> findById(@Nonnull final String id) {
         try {
             final TemplateDTO template = client.get(BASE_PATH + id + "/download", null, TemplateDTO.class);
-            template.setId(id);
-            return Optional.of(template);
+            if (template == null) {
+                return Optional.empty();
+            } else {
+                template.setId(id);
+                return Optional.of(template);
+            }
         } catch (final NotFoundException e) {
             return Optional.empty();
         }
