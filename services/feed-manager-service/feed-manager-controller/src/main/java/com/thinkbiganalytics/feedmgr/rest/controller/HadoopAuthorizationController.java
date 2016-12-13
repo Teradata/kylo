@@ -49,7 +49,7 @@ public class HadoopAuthorizationController {
 
             return Response.ok(groups).build();
         }catch (Exception e){
-            throw new RuntimeException("Unable to get the external security groups "+e.getMessage());
+            throw new RuntimeException("Unable to get the external security groups ", e);
         }
     }
 
@@ -66,7 +66,7 @@ public class HadoopAuthorizationController {
 
             return Response.ok("[{\"enabled\":" + isEnabled + "}]").build();
         }catch (Exception e){
-            throw new RuntimeException("Unable to get the external security groups "+e.getMessage());
+            throw new RuntimeException("Unable to get the external security groups ", e);
         }
     }
 
