@@ -328,6 +328,9 @@ var BroadcastConstants = (function () {
                     if(scrollX) {
                         ele.css('overflow-x','scroll');
                     }
+                    else {
+                        ele.css('overflow-x','hidden');
+                    }
                 }
 
                 if(browserHeightWaitAndCalc){
