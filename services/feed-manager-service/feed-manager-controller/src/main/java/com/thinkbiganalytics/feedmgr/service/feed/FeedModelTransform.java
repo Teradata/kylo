@@ -331,6 +331,14 @@ public class FeedModelTransform {
         feedSummary.setFeedName(feedManagerFeed.getDisplayName());
         feedSummary.setSystemFeedName(feedManagerFeed.getName());
         feedSummary.setActive(feedManagerFeed.getState() != null && feedManagerFeed.getState().equals(Feed.State.ENABLED));
+        if (feedManagerFeed instanceof FeedManagerFeed) {
+
+            FeedManagerFeed fmf = (FeedManagerFeed) feedManagerFeed;
+            if (fmf.getTemplate() != null) {
+                feedSummary.setTemplateId(fmf.getTemplate().getId().toString());
+                feedSummary.setTemplateName(fmf.getTemplate().getName());
+            }
+        }
         return feedSummary;
     }
 

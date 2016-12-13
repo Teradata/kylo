@@ -17,7 +17,6 @@ import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventListener;
@@ -230,15 +229,17 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
 
     @Override
     public List<FeedSummary> getFeedSummaryData() {
-        Collection<FeedMetadata> feeds = getFeeds();
-        List<FeedSummary> summaryList = new ArrayList<>();
-        if (feeds != null && !feeds.isEmpty()) {
-            for (FeedMetadata feed : feeds) {
-                summaryList.add(new FeedSummary(feed));
-            }
-        }
-        return summaryList;
 
+        return metadataAccess.read(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
+
+            List<FeedSummary> feeds = null;
+            Collection<? extends Feed> domainFeeds = feedManagerFeedProvider.findAll();
+            if (domainFeeds != null) {
+                feeds = feedModelTransform.domainToFeedSummary(domainFeeds);
+            }
+            return feeds;
+        });
 
     }
 
