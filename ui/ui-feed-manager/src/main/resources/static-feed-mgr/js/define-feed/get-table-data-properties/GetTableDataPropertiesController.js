@@ -15,7 +15,8 @@
                 incrementalPropertyKey: '@?',
                 renderLoadStrategyOptions: '=',
                 loadStrategyOptions: '=?',
-                defaultLoadStrategyValue: '@?'
+                defaultLoadStrategyValue: '@?',
+                useTableNameOnly:'='
             },
             controllerAs: 'ctl',
             scope: {},
@@ -96,6 +97,7 @@
         this.INCREMENTALPROPERTY_KEY = angular.isDefined(this.incrementalPropertyKey) ? this.incrementalPropertyKey : 'Date Field';
         this.defaultLoadStrategyValue = angular.isDefined(this.defaultLoadStrategyValue) ? this.defaultLoadStrategyValue : 'INCREMENTAL';
         this.dbConnectionProperty = findProperty(self.DB_CONNECTION_SERVICE_PROPERTY_KEY, false)
+        this.useTableNameOnly = angular.isDefined(this.useTableNameOnly)? this.useTableNameOnly : false;
         /**
          * The 2 properties are not used right now
          */
@@ -458,7 +460,15 @@
             var tableProperty = self.tableProperty
             validate();
             if(tableProperty && newVal != undefined) {
-                tableProperty.value = newVal.fullName;
+
+               if(self.useTableNameOnly){
+                   tableProperty.value = newVal.tableName;
+               }
+                else {
+                   tableProperty.value = newVal.fullName;
+               }
+
+
                 if (newVal != null && newVal != undefined) {
                     if(self.mode == 'create') {
                         //only describe on the Create as the Edit will be disabled and we dont want to change the field data
