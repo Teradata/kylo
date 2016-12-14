@@ -84,6 +84,7 @@
         <module>ui</module>
         <module>install</module>
         <module>docs</module>
+        <module>samples</module>
     </modules>
     <repositories>
         <repository>

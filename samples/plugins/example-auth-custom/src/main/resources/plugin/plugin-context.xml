@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans 
+                        http://www.springframework.org/schema/beans/spring-beans.xsd
+                        http://www.springframework.org/schema/context
+                        http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <!-- This Spring configuration file is required to bootstrap the configuration of this plugin -->
+    <!-- Since the actual configuration of the plugin is handle via a java config class we only need to expose 
+         that class as a Spring bean to have it processed -->
+    <bean id="exampleLoginConfig" class="com.example.kylo.plugin.ExampleLoginConfig"></bean>
+
+</beans>

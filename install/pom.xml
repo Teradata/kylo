@@ -143,6 +143,12 @@
               <username>${rpm.user}</username>
               <groupname>${rpm.user}</groupname>
             </mapping>
+            <mapping>
+              <directory>${rpm.install.dir}/thinkbig-ui/plugin</directory>
+              <filemode>${file.permissions}</filemode>
+              <username>${rpm.user}</username>
+              <groupname>${rpm.user}</groupname>
+            </mapping>
 
             <!-- thinkbig services mappings -->
             <mapping>

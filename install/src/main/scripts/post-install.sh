@@ -26,7 +26,7 @@ export JAVA_HOME=/opt/java/current
 export PATH=\$JAVA_HOME/bin:\$PATH
 export THINKBIG_UI_OPTS=
 [ -f $rpmInstallDir/encrypt.key ] && export ENCRYPT_KEY="\$(cat $rpmInstallDir/encrypt.key)"
-java \$THINKBIG_UI_OPTS -cp $rpmInstallDir/thinkbig-ui/conf:$rpmInstallDir/thinkbig-ui/lib/* com.thinkbiganalytics.ThinkbigDataLakeUiApplication --pgrep-marker=$pgrepMarkerThinkbigUi > /var/log/thinkbig-ui/thinkbig-ui.log 2>&1 &
+java \$THINKBIG_UI_OPTS -cp $rpmInstallDir/thinkbig-ui/conf:$rpmInstallDir/thinkbig-ui/lib/*:$rpmInstallDir/thinkbig-ui/plugin/* com.thinkbiganalytics.ThinkbigDataLakeUiApplication --pgrep-marker=$pgrepMarkerThinkbigUi > /var/log/thinkbig-ui/thinkbig-ui.log 2>&1 &
 EOF
 cat << EOF > $rpmInstallDir/thinkbig-ui/bin/run-thinkbig-ui-with-debug.sh
   #!/bin/bash
@@ -35,7 +35,7 @@ export PATH=\$JAVA_HOME/bin:\$PATH
 export THINKBIG_UI_OPTS=
 [ -f $rpmInstallDir/encrypt.key ] && export ENCRYPT_KEY="\$(cat $rpmInstallDir/encrypt.key)"
 JAVA_DEBUG_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=9997
-java \$THINKBIG_UI_OPTS \$JAVA_DEBUG_OPTS -cp $rpmInstallDir/thinkbig-ui/conf:$rpmInstallDir/thinkbig-ui/lib/* com.thinkbiganalytics.ThinkbigDataLakeUiApplication --pgrep-marker=$pgrepMarkerThinkbigUi > /var/log/thinkbig-ui/thinkbig-ui.log 2>&1 &
+java \$THINKBIG_UI_OPTS \$JAVA_DEBUG_OPTS -cp $rpmInstallDir/thinkbig-ui/conf:$rpmInstallDir/thinkbig-ui/lib/*:$rpmInstallDir/thinkbig-ui/plugin/* com.thinkbiganalytics.ThinkbigDataLakeUiApplication --pgrep-marker=$pgrepMarkerThinkbigUi > /var/log/thinkbig-ui/thinkbig-ui.log 2>&1 &
 EOF
 chmod +x $rpmInstallDir/thinkbig-ui/bin/run-thinkbig-ui.sh
 chmod +x $rpmInstallDir/thinkbig-ui/bin/run-thinkbig-ui-with-debug.sh

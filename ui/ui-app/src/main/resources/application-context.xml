@@ -13,7 +13,11 @@
         <context:exclude-filter type="assignable" expression="com.thinkbiganalytics.ThinkbigDataLakeUiApplication" />
     </context:component-scan>
     
-    <import resource="classpath*:plugin/component-context.xml"/>
+    <!-- Deprecate the use of the name component-context.xml in favor of plugin-context.xml. 
+        The latter more clearly states its purpose: how we identify and bootstrap a plugin's configuration.
+        Leaving both in place for now. -->
+    <import resource="classpath*:plugin/component-context.xml" />
+    <import resource="classpath*:plugin/plugin-context.xml" />
     <import resource="classpath*:conf/*.xml"/>
     <import resource="classpath*:feed-manager/*.xml"/>
 
