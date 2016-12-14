@@ -192,7 +192,7 @@
                         <div flex="5" class="md-list-item-text" hide-sm>
                           <md-button aria-label="Remove field" class="md-icon-button" ng-click="vm.removeColumn($index)" aria-label="Remove Field"
                                      ng-if="vm.model.table.method != 'SAMPLE_FILE' && vm.model.dataTransformationFeed == false"
-                                     ng-disabled="vm.tableLocked">
+                                     ng-disabled="!vm.canRemoveFields">
                             <ng-md-icon md-icon icon="clear"></ng-md-icon>
                           </md-button>
                           <span ng-if="vm.model.table.method == 'SAMPLE_FILE'"></span>
