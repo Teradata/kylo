@@ -195,7 +195,8 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
                 feedMetadata = feedModelTransform.domainToFeedMetadata(domainFeed);
             }
             if (refreshTargetTableSchema && feedMetadata != null) {
-                feedModelTransform.refreshTableSchemaFromHive(feedMetadata);
+           //commented out for now as some issues were found with feeds with TEXTFILE as their output
+          //      feedModelTransform.refreshTableSchemaFromHive(feedMetadata);
             }
             return feedMetadata;
         });
