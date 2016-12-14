@@ -36,8 +36,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -237,6 +239,7 @@ NifiControllerServiceProperties nifiControllerServiceProperties;
         RegisteredTemplate template = metadataService.getRegisteredTemplate(templateId);
         if (template != null) {
             List<String> connectingReusableTemplates = new ArrayList<>();
+            Set<String> connectedTemplateIds = new HashSet<>();
             //if this template uses any reusable templates then export those reusable ones as well
             if (template.usesReusableTemplate()) {
                 List<ReusableTemplateConnectionInfo> reusableTemplateConnectionInfos = template.getReusableTemplateConnections();
@@ -246,9 +249,14 @@ NifiControllerServiceProperties nifiControllerServiceProperties;
                     Map<String, String> map = nifiRestClient.getTemplatesAsXmlMatchingInputPortName(inputName);
                     if (map != null && !map.isEmpty()) {
                         //get the first one??
-                        connectingReusableTemplates.add(Lists.newArrayList(map.values()).get(0));
+                        for(Map.Entry<String,String> entry: map.entrySet()){
+                            String portTemplateId = entry.getKey();
+                            if(!connectedTemplateIds.contains(portTemplateId)) {
+                                connectedTemplateIds.add(portTemplateId);
+                                connectingReusableTemplates.add(entry.getValue());
+                            }
+                        }
                     }
-
                 }
             }
 
