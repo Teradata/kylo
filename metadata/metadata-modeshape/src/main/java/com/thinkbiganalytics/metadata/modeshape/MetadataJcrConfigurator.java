@@ -180,7 +180,7 @@ public class MetadataJcrConfigurator {
             for (Node catNode : JcrUtil.getNodesOfType(feedsNode, "tba:category")) {
                 for (Node feedNode : JcrUtil.getNodesOfType(catNode, "tba:feed")) {
                     feedNode.setPrimaryType(newType.getName());
-                    log.info("Replaced type of node {}", feedNode);
+                   // log.info("Replaced type of node {}", feedNode);
                     
                     if (feedNode.hasProperty("jcr:predecessors")) {
                         feedNode.getProperty("jcr:predecessors").setValue(new Value[0]);;
