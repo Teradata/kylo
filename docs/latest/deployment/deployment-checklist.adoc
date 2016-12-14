@@ -55,6 +55,7 @@ Collect the following information to speed up configuration of Kylo
 - [ ] Kylo MySQL application username/password (For the thinkbig-services application and Hive metadata access):
 
 === Kerberos Principals
+Note the following Kerberos principals after the step of creating the Keytabs
 
 - [ ] Kerberos Principal for "thinkbig":
 - [ ] Kerberos Principal for "nifi":

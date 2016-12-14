@@ -48,6 +48,12 @@ HA and zookeeper you will need to connect directly to the thrift server
   .. Login to Ambari and edit the yarn "Advanced yarn-env"
   .. Set the "Minimum user ID for submitting job" = 450
 
+
+== Prepare a checklist
+Leverage the deployment checklist to take note of information you will need to speed up configuration
+
+link:./deployment-checklist{outfilesuffix}[Deployment Checklist]
+
 == Prepare the HDP Cluster
 Before installing the Kylo stack the below needs to be done on the cluster.
 
@@ -187,10 +193,6 @@ Before installing the Kylo stack the below needs to be done on the cluster.
 
     TIP: If you don't know the HDFS Kerberos principal name run "klist -kt /etc/security/keytabs/hdfs.headless.keytab"
 
-== Prepare a checklist
-Ahead of time prepare the list below to speed up installation
-
-link:./deployment-checklist{outfilesuffix}[Deployment Checklist]
 
 == Create the Keytabs for "nifi" and "thinkbig" users
 
