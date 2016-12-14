@@ -198,6 +198,14 @@
     "datasourceType": "HDFSDatasource",
     "connectionType": "DESTINATION",
     "title": "${Directory}"
+  },
+  {
+    "processorType": "com.thinkbiganalytics.nifi.v2.sqoop.core.ImportSqoop",
+    "datasourcePropertyKeys": [
+      "Source Table"
+    ],
+    "datasourceType": "DatabaseDatasource",
+    "connectionType": "SOURCE"
   }
 ]
 
