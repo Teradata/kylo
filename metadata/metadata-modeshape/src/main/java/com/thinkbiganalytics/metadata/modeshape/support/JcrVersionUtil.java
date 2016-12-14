@@ -52,7 +52,7 @@ public class JcrVersionUtil {
      * @param node node to check-out
      */
     public static void checkout(Node node) throws RepositoryException {
-        getVersionManager(node.getSession()).checkout(node.getPath());
+        //getVersionManager(node.getSession()).checkout(node.getPath());
     }
 
 
@@ -64,7 +64,8 @@ public class JcrVersionUtil {
      */
     public static Version checkin(Node node) throws RepositoryException {
         if (node.getSession().isLive()) {
-            return getVersionManager(node.getSession()).checkin(node.getPath());
+            //return getVersionManager(node.getSession()).checkin(node.getPath());
+            return null;
         } else {
             return null;
         }
