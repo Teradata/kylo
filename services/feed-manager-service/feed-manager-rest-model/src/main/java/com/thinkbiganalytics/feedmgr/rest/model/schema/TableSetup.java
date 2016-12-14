@@ -267,7 +267,7 @@ public class TableSetup {
 
     @JsonIgnore
     public void updateFieldPolicyNames() {
-        if (tableSchema != null && tableSchema.getFields() != null && fieldPolicies != null) {
+        if (tableSchema != null && tableSchema.getFields() != null && fieldPolicies != null && fieldPolicies.size() == tableSchema.getFields().size()) {
             int idx = 0;
             for (FieldPolicy field : fieldPolicies) {
                 field.setFieldName(tableSchema.getFields().get(idx).getName());

@@ -394,7 +394,12 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
             });
             model.properties = properties;
 
-
+            //remove any extra columns in the policies
+            if(model.table && model.fieldPolicies && model.table.tableSchema && model.table.tableSchema.fields && model.table.fieldPolicies.length != model.table.tableSchema.fields.length) {
+                while(model.table.fieldPolicies.length > model.table.tableSchema.fields.length) {
+                    model.table.fieldPolicies.splice(model.table.tableSchema.fields.length, 1);
+                }
+            }
         },
         /**
          * Show a dialog indicating that the feed is saving
