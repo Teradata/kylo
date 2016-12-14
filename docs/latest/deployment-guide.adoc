@@ -24,16 +24,9 @@ install it depending on whether or not you are installing all components on one 
 The Data Lake Accelerator services should be installed on an edge node.  The following should be available prior to the installing the Data Lake Starter.
 
 .Dependencies
-|===
-|Redhat/GNU/Linux distributions
-|RPM (for install)
-|Java 1.8 (or greater)
-|Hadoop 2.4+
-|Spark 1.5.x+
-|Apache NiFi 0.5+ (or Hortonworks DataFlow)
-|Hive
-|MySQL
-|===
+See the Dependencies section in the deployment checklist
+
+link:./deployment/deployment-checklist{outfilesuffix}[Deployment Checklist]
 
 .Tested Platforms
 |===

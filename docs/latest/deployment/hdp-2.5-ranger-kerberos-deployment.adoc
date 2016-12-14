@@ -190,19 +190,7 @@ Before installing the Kylo stack the below needs to be done on the cluster.
 == Prepare a checklist
 Ahead of time prepare the list below to speed up installation
 
-- [ ] Hive Hostname/IP Address:
-- [ ] Ambari IP Hostname/IP Address:
-- [ ] Ambari "kylo" user username/password:
-- [ ] KDC Hostname/IP Address:
-- [ ] MySQL Hostname/IP Address:
-- [ ] Kylo Edge Hostname/IP Address:
-- [ ] NiFi Edge Hostname/IP Address:
-- [ ] Kylo MySQL Installation User username/password (Create Schema Required):
-- [ ] Kylo MySQL application username/password (For the thinkbig-services application and Hive metadata access):
-- [ ] Kerberos Principal for "thinkbig":
-- [ ] Kerberos Principal for "nifi":
-- [ ] Kerberos Principal for "hive" on the KDC Host:
-- [ ] List of feed categories that should be created ahead of time
+link:./deployment-checklist{outfilesuffix}[Deployment Checklist]
 
 == Create the Keytabs for "nifi" and "thinkbig" users
 
