@@ -175,7 +175,7 @@ public class MetadataJcrConfigurator {
             
             log.info("Replacing the versionable feed type '{}' with a non-versionable type", currentFeedType);
             NodeType newType = typeMgr.registerNodeType(template, true);
-            log.info("Replaced with new feed type '{}' with a non-versionavble type", newType);
+            log.info("Replaced with new feed type '{}' with a non-versionable type", newType);
             
             // This step may not be necessary.
             for (Node catNode : JcrUtil.getNodesOfType(feedsNode, "tba:category")) {

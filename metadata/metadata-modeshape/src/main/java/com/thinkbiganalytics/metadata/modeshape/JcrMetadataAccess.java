@@ -221,7 +221,7 @@ public class JcrMetadataAccess implements MetadataAccess {
                     try {
                         txnMgr.rollback();
                     } catch (SystemException se) {
-                        log.error("Failed to rollback tranaction as a result of other transactional errors", se);
+                        log.error("Failed to rollback transaction as a result of other transactional errors", se);
                     }
                     
                     if (rollbackCmd != null){
