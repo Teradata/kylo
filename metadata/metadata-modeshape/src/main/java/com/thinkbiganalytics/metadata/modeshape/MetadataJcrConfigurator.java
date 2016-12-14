@@ -100,10 +100,11 @@ public class MetadataJcrConfigurator {
         List<String> currentSupertypes = Arrays.asList(currentFeedType.getDeclaredSupertypeNames());
         
         if (currentSupertypes.contains("mix:versionable")) {
+            log.info("Removing versionable feed type {} ", currentFeedType);
             // Remove feed version history
             for (Node catNode : JcrUtil.getNodesOfType(feedsNode, "tba:category")) {
                 for (Node feedNode : JcrUtil.getNodesOfType(catNode, "tba:feed")) {
-                    log.info("Removing prior versions of feed: {}.{}", catNode.getName(), feedNode.getName());
+                    log.debug("Removing prior versions of feed: {}.{}", catNode.getName(), feedNode.getName());
                     if (JcrUtil.isVersionable(feedNode)) {
                         VersionManager versionManager = session.getWorkspace().getVersionManager();
                         VersionHistory versionHistory = versionManager.getVersionHistory(feedNode.getPath());
@@ -130,7 +131,7 @@ public class MetadataJcrConfigurator {
                         if (count > 0) {
                             log.info("Removed {} versions through {} of feed {}", count, last, feedNode.getName());
                         } else {
-                            log.info("Feed {} had no versions", feedNode.getName());
+                            log.debug("Feed {} had no versions", feedNode.getName());
                         }
                     }
                 }
