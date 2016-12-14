@@ -43,7 +43,7 @@ public class QueryDslPathInspector {
 
         String currPath = paths.pop();
         Object o = getObjectForField(basePath, currPath);
-        if (o instanceof EntityPathBase && !paths.isEmpty()) {
+        if (o != null && o instanceof EntityPathBase && !paths.isEmpty()) {
             return getFieldObject((EntityPathBase) o, paths);
         }
         return o;
@@ -51,9 +51,15 @@ public class QueryDslPathInspector {
 
     private static Object getObjectForField(EntityPathBase basePath, String field) throws IllegalAccessException {
         Map<String, Field> fieldSet = getFields(basePath.getClass());
-        Field f = fieldSet.get(field);
-        Object o = f.get(basePath);
-        return o;
+        if(StringUtils.isNotBlank(field)) {
+            Field f = fieldSet.get(field);
+            if (f != null) {
+                Object o = f.get(basePath);
+                return o;
+            }
+        }
+         return null;
+
     }
 
 
