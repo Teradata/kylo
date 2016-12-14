@@ -331,6 +331,9 @@ public class FeedModelTransform {
         feedSummary.setFeedName(feedManagerFeed.getDisplayName());
         feedSummary.setSystemFeedName(feedManagerFeed.getName());
         feedSummary.setActive(feedManagerFeed.getState() != null && feedManagerFeed.getState().equals(Feed.State.ENABLED));
+
+        feedSummary.setState(feedManagerFeed.getState() != null ? feedManagerFeed.getState().name() : null);
+
         if (feedManagerFeed instanceof FeedManagerFeed) {
 
             FeedManagerFeed fmf = (FeedManagerFeed) feedManagerFeed;
