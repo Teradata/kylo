@@ -153,8 +153,9 @@ public class JcrPropertyTest {
         JcrFeed.FeedId readFeedId = metadata.read(new AdminCredentials(), () -> {
             Session s = null;
             JcrFeed f = (JcrFeed) ((JcrFeedProvider) feedProvider).findById(createdFeedId);
-            int versions = printVersions(f);
-            Assert.assertTrue(versions > 1, "Expecting more than 1 version: jcr:rootVersion, 1.0");
+            // TODO: Feed vesioning disabled for Kylo v0.5.0
+//            int versions = printVersions(f);
+//            Assert.assertTrue(versions > 1, "Expecting more than 1 version: jcr:rootVersion, 1.0");
 
             @SuppressWarnings("unchecked")
             List<? extends FeedSource> sources = f.getSources();
@@ -191,27 +192,28 @@ public class JcrPropertyTest {
         //read it again and find the versions
         readFeedId = metadata.read(new AdminCredentials(), () -> {
             JcrFeed f = (JcrFeed) ((JcrFeedProvider) feedProvider).findById(updatedFeed);
-            int versions = printVersions(f);
-            Assert.assertTrue(versions > 2, "Expecting more than 2 versions: jcr:rootVersion, 1.0, 1.1");
-            JcrFeed v1 = JcrVersionUtil.getVersionedNode(f, "1.0", JcrFeed.class);
-            JcrFeed v11 = JcrVersionUtil.getVersionedNode(f, "1.1", JcrFeed.class);
-            String v1Prop1 = v1.getProperty("prop1", String.class);
-            String v11Prop1 = v11.getProperty("prop1", String.class);
-            JcrFeed baseVersion = JcrVersionUtil.getVersionedNode(JcrVersionUtil.getBaseVersion(f.getNode()), JcrFeed.class);
+            // TODO: Feed vesioning disabled for Kylo v0.5.0
+//            int versions = printVersions(f);
+//            Assert.assertTrue(versions > 2, "Expecting more than 2 versions: jcr:rootVersion, 1.0, 1.1");
+//            JcrFeed v1 = JcrVersionUtil.getVersionedNode(f, "1.0", JcrFeed.class);
+//            JcrFeed v11 = JcrVersionUtil.getVersionedNode(f, "1.1", JcrFeed.class);
+//            String v1Prop1 = v1.getProperty("prop1", String.class);
+//            String v11Prop1 = v11.getProperty("prop1", String.class);
+//            JcrFeed baseVersion = JcrVersionUtil.getVersionedNode(JcrVersionUtil.getBaseVersion(f.getNode()), JcrFeed.class);
 
             //Assert the Props get versioned
 
-            Assert.assertEquals(v1Prop1, "my prop1");
-            Assert.assertEquals(v11Prop1, "my updated prop1");
-            Assert.assertEquals(v1.getDescription(), "my feed desc");
-            Assert.assertEquals(v11.getDescription(), "My Feed Updated Description");
-            String v = v11.getVersionName();
-            Feed.ID v1Id = v1.getId();
-            Feed.ID v11Id = v11.getId();
-            Feed.ID baseId = baseVersion.getId();
+//            Assert.assertEquals(v1Prop1, "my prop1");
+//            Assert.assertEquals(v11Prop1, "my updated prop1");
+//            Assert.assertEquals(v1.getDescription(), "my feed desc");
+//            Assert.assertEquals(v11.getDescription(), "My Feed Updated Description");
+//            String v = v11.getVersionName();
+//            Feed.ID v1Id = v1.getId();
+//            Feed.ID v11Id = v11.getId();
+//            Feed.ID baseId = baseVersion.getId();
             //assert all ids are equal
-            Assert.assertEquals(v1Id, v11Id);
-            Assert.assertEquals(v1Id, baseId);
+//            Assert.assertEquals(v1Id, v11Id);
+//            Assert.assertEquals(v1Id, baseId);
             return f.getId();
         });
 
