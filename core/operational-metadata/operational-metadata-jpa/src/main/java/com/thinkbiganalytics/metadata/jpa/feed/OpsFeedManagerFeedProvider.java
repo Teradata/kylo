@@ -139,7 +139,7 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
 
     public FeedHealth getFeedHealth(String feedName){
         List<? extends FeedHealth> feedHealthList = findFeedHealth(feedName);
-        if(feedHealthList != null){
+        if(feedHealthList != null && !feedHealthList.isEmpty()){
             return feedHealthList.get(0);
         }
         else {
