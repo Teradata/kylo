@@ -1,0 +1,1332 @@
+<?xml version="1.0" ?>
+<template encoding-version="1.0">
+  <description>A starter template for executing Sqoop import jobs.</description>
+  <groupId>fae61cd4-0158-1000-53ac-41bde7de2141</groupId>
+  <name>template-starter-sqoop-import</name>
+  <snippet>
+    <connections>
+      <id>01a84158-0b38-14f2-0000-000000000000</id>
+      <parentGroupId>fae61cd4-0158-1000-0000-000000000000</parentGroupId>
+      <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
+      <backPressureObjectThreshold>10000</backPressureObjectThreshold>
+      <destination>
+        <groupId>fae61cd4-0158-1000-0000-000000000000</groupId>
+        <id>fd10bee6-0158-1000-0000-000000000000</id>
+        <type>PROCESSOR</type>
+      </destination>
+      <flowFileExpiration>0 sec</flowFileExpiration>
+      <labelIndex>1</labelIndex>
+      <name></name>
+      <selectedRelationships>success</selectedRelationships>
+      <source>
+        <groupId>fae61cd4-0158-1000-0000-000000000000</groupId>
+        <id>01a84157-0b38-14f2-0000-000000000000</id>
+        <type>PROCESSOR</type>
+      </source>
+      <zIndex>0</zIndex>
+    </connections>
+    <connections>
+      <id>01a8415b-0b38-14f2-0000-000000000000</id>
+      <parentGroupId>fae61cd4-0158-1000-0000-000000000000</parentGroupId>
+      <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
+      <backPressureObjectThreshold>10000</backPressureObjectThreshold>
+      <destination>
+        <groupId>fae61cd4-0158-1000-0000-000000000000</groupId>
+        <id>01a8415a-0b38-14f2-0000-000000000000</id>
+        <type>PROCESSOR</type>
+      </destination>
+      <flowFileExpiration>0 sec</flowFileExpiration>
+      <labelIndex>1</labelIndex>
+      <name></name>
+      <selectedRelationships>activeFailure</selectedRelationships>
+      <selectedRelationships>failure</selectedRelationships>
+      <source>
+        <groupId>fae61cd4-0158-1000-0000-000000000000</groupId>
+        <id>01a84157-0b38-14f2-0000-000000000000</id>
+        <type>PROCESSOR</type>
+      </source>
+      <zIndex>0</zIndex>
+    </connections>
+    <connections>
+      <id>01a8415e-0b38-14f2-0000-000000000000</id>
+      <parentGroupId>fae61cd4-0158-1000-0000-000000000000</parentGroupId>
+      <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
+      <backPressureObjectThreshold>10000</backPressureObjectThreshold>
+      <destination>
+        <groupId>fae61cd4-0158-1000-0000-000000000000</groupId>
+        <id>01a8415d-0b38-14f2-0000-000000000000</id>
+        <type>PROCESSOR</type>
+      </destination>
+      <flowFileExpiration>0 sec</flowFileExpiration>
+      <labelIndex>1</labelIndex>
+      <name></name>
+      <selectedRelationships>failure</selectedRelationships>
+      <source>
+        <groupId>fae61cd4-0158-1000-0000-000000000000</groupId>
+        <id>fd10bee6-0158-1000-0000-000000000000</id>
+        <type>PROCESSOR</type>
+      </source>
+      <zIndex>0</zIndex>
+    </connections>
+    <connections>
+      <id>01a84161-0b38-14f2-0000-000000000000</id>
+      <parentGroupId>fae61cd4-0158-1000-0000-000000000000</parentGroupId>
+      <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
+      <backPressureObjectThreshold>10000</backPressureObjectThreshold>
+      <destination>
+        <groupId>fae61cd4-0158-1000-0000-000000000000</groupId>
+        <id>01a84160-0b38-14f2-0000-000000000000</id>
+        <type>PROCESSOR</type>
+      </destination>
+      <flowFileExpiration>0 sec</flowFileExpiration>
+      <labelIndex>1</labelIndex>
+      <name></name>
+      <selectedRelationships>success</selectedRelationships>
+      <source>
+        <groupId>fae61cd4-0158-1000-0000-000000000000</groupId>
+        <id>fd10bee6-0158-1000-0000-000000000000</id>
+        <type>PROCESSOR</type>
+      </source>
+      <zIndex>0</zIndex>
+    </connections>
+    <connections>
+      <id>01a84167-0b38-14f2-0000-000000000000</id>
+      <parentGroupId>fae61cd4-0158-1000-0000-000000000000</parentGroupId>
+      <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
+      <backPressureObjectThreshold>10000</backPressureObjectThreshold>
+      <destination>
+        <groupId>fae61cd4-0158-1000-0000-000000000000</groupId>
+        <id>01a84165-0b38-14f2-0000-000000000000</id>
+        <type>PROCESSOR</type>
+      </destination>
+      <flowFileExpiration>0 sec</flowFileExpiration>
+      <labelIndex>1</labelIndex>
+      <name></name>
+      <selectedRelationships>success</selectedRelationships>
+      <source>
+        <groupId>fae61cd4-0158-1000-0000-000000000000</groupId>
+        <id>01a8415d-0b38-14f2-0000-000000000000</id>
+        <type>PROCESSOR</type>
+      </source>
+      <zIndex>0</zIndex>
+    </connections>
+    <connections>
+      <id>01a84168-0b38-14f2-0000-000000000000</id>
+      <parentGroupId>fae61cd4-0158-1000-0000-000000000000</parentGroupId>
+      <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
+      <backPressureObjectThreshold>10000</backPressureObjectThreshold>
+      <destination>
+        <groupId>fae61cd4-0158-1000-0000-000000000000</groupId>
+        <id>01a84166-0b38-14f2-0000-000000000000</id>
+        <type>PROCESSOR</type>
+      </destination>
+      <flowFileExpiration>0 sec</flowFileExpiration>
+      <labelIndex>1</labelIndex>
+      <name></name>
+      <selectedRelationships>failure</selectedRelationships>
+      <source>
+        <groupId>fae61cd4-0158-1000-0000-000000000000</groupId>
+        <id>01a8415d-0b38-14f2-0000-000000000000</id>
+        <type>PROCESSOR</type>
+      </source>
+      <zIndex>0</zIndex>
+    </connections>
+    <connections>
+      <id>01a8416b-0b38-14f2-0000-000000000000</id>
+      <parentGroupId>fae61cd4-0158-1000-0000-000000000000</parentGroupId>
+      <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
+      <backPressureObjectThreshold>10000</backPressureObjectThreshold>
+      <destination>
+        <groupId>fae61cd4-0158-1000-0000-000000000000</groupId>
+        <id>01a8416a-0b38-14f2-0000-000000000000</id>
+        <type>PROCESSOR</type>
+      </destination>
+      <flowFileExpiration>0 sec</flowFileExpiration>
+      <labelIndex>1</labelIndex>
+      <name></name>
+      <selectedRelationships>success</selectedRelationships>
+      <source>
+        <groupId>fae61cd4-0158-1000-0000-000000000000</groupId>
+        <id>01a84160-0b38-14f2-0000-000000000000</id>
+        <type>PROCESSOR</type>
+      </source>
+      <zIndex>0</zIndex>
+    </connections>
+    <connections>
+      <id>01a8416e-0b38-14f2-0000-000000000000</id>
+      <parentGroupId>fae61cd4-0158-1000-0000-000000000000</parentGroupId>
+      <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
+      <backPressureObjectThreshold>10000</backPressureObjectThreshold>
+      <destination>
+        <groupId>fae61cd4-0158-1000-0000-000000000000</groupId>
+        <id>01a8416d-0b38-14f2-0000-000000000000</id>
+        <type>PROCESSOR</type>
+      </destination>
+      <flowFileExpiration>0 sec</flowFileExpiration>
+      <labelIndex>1</labelIndex>
+      <name></name>
+      <selectedRelationships>failure</selectedRelationships>
+      <source>
+        <groupId>fae61cd4-0158-1000-0000-000000000000</groupId>
+        <id>01a84160-0b38-14f2-0000-000000000000</id>
+        <type>PROCESSOR</type>
+      </source>
+      <zIndex>0</zIndex>
+    </connections>
+    <controllerServices>
+      <id>fa763cd8-0158-1000-0000-000000000000</id>
+      <parentGroupId>d0abd5ca-0158-1000-0000-000000000000</parentGroupId>
+      <comments></comments>
+      <descriptors>
+        <entry>
+          <key>Implementation</key>
+          <value>
+            <name>Implementation</name>
+          </value>
+        </entry>
+        <entry>
+          <key>rest-client-url</key>
+          <value>
+            <name>rest-client-url</name>
+          </value>
+        </entry>
+        <entry>
+          <key>client-username</key>
+          <value>
+            <name>client-username</name>
+          </value>
+        </entry>
+        <entry>
+          <key>client-password</key>
+          <value>
+            <name>client-password</name>
+          </value>
+        </entry>
+        <entry>
+          <key>SSL Context Service</key>
+          <value>
+            <identifiesControllerService>org.apache.nifi.ssl.SSLContextService</identifiesControllerService>
+            <name>SSL Context Service</name>
+          </value>
+        </entry>
+      </descriptors>
+      <name>Think Big Metadata Service</name>
+      <properties>
+        <entry>
+          <key>Implementation</key>
+          <value>REMOTE</value>
+        </entry>
+        <entry>
+          <key>rest-client-url</key>
+          <value>http://localhost:8400/proxy/metadata</value>
+        </entry>
+        <entry>
+          <key>client-username</key>
+          <value>dladmin</value>
+        </entry>
+        <entry>
+          <key>client-password</key>
+        </entry>
+        <entry>
+          <key>SSL Context Service</key>
+        </entry>
+      </properties>
+      <state>ENABLED</state>
+      <type>com.thinkbiganalytics.nifi.v2.core.metadata.MetadataProviderSelectorService</type>
+    </controllerServices>
+    <controllerServices>
+      <id>fb3767b1-0158-1000-0000-000000000000</id>
+      <parentGroupId>fae61cd4-0158-1000-0000-000000000000</parentGroupId>
+      <comments></comments>
+      <descriptors>
+        <entry>
+          <key>Source Driver</key>
+          <value>
+            <name>Source Driver</name>
+          </value>
+        </entry>
+        <entry>
+          <key>Source Connection String</key>
+          <value>
+            <name>Source Connection String</name>
+          </value>
+        </entry>
+        <entry>
+          <key>Source User Name</key>
+          <value>
+            <name>Source User Name</name>
+          </value>
+        </entry>
+        <entry>
+          <key>Password Mode</key>
+          <value>
+            <name>Password Mode</name>
+          </value>
+        </entry>
+        <entry>
+          <key>Source Password File</key>
+          <value>
+            <name>Source Password File</name>
+          </value>
+        </entry>
+        <entry>
+          <key>Source Password Passphrase</key>
+          <value>
+            <name>Source Password Passphrase</name>
+          </value>
+        </entry>
+        <entry>
+          <key>Source Password (Encrypted Base64/Clear Text)</key>
+          <value>
+            <name>Source Password (Encrypted Base64/Clear Text)</name>
+          </value>
+        </entry>
+      </descriptors>
+      <name>Sqoop-MySQL-Connection</name>
+      <properties>
+        <entry>
+          <key>Source Driver</key>
+          <value>com.mysql.jdbc.Driver</value>
+        </entry>
+        <entry>
+          <key>Source Connection String</key>
+          <value>jdbc:mysql://localhost/default</value>
+        </entry>
+        <entry>
+          <key>Source User Name</key>
+          <value>root</value>
+        </entry>
+        <entry>
+          <key>Password Mode</key>
+          <value>CLEAR_TEXT_ENTRY</value>
+        </entry>
+        <entry>
+          <key>Source Password File</key>
+        </entry>
+        <entry>
+          <key>Source Password Passphrase</key>
+        </entry>
+        <entry>
+          <key>Source Password (Encrypted Base64/Clear Text)</key>
+        </entry>
+      </properties>
+      <state>ENABLED</state>
+      <type>com.thinkbiganalytics.nifi.v2.sqoop.StandardSqoopConnectionService</type>
+    </controllerServices>
+    <processors>
+      <id>fd10bee6-0158-1000-0000-000000000000</id>
+      <parentGroupId>fae61cd4-0158-1000-0000-000000000000</parentGroupId>
+      <position>
+        <x>619.4819655631211</x>
+        <y>1.4457933616620267</y>
+      </position>
+      <config>
+        <bulletinLevel>WARN</bulletinLevel>
+        <comments></comments>
+        <concurrentlySchedulableTaskCount>1</concurrentlySchedulableTaskCount>
+        <descriptors>
+          <entry>
+            <key>Kerberos Principal</key>
+            <value>
+              <name>Kerberos Principal</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Kerberos Keytab</key>
+            <value>
+              <name>Kerberos Keytab</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Sqoop Connection Service</key>
+            <value>
+              <identifiesControllerService>com.thinkbiganalytics.nifi.v2.sqoop.SqoopConnectionService</identifiesControllerService>
+              <name>Sqoop Connection Service</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Source Table</key>
+            <value>
+              <name>Source Table</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Source Fields</key>
+            <value>
+              <name>Source Fields</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Source Table WHERE Clause</key>
+            <value>
+              <name>Source Table WHERE Clause</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Source Load Strategy</key>
+            <value>
+              <name>Source Load Strategy</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Source Check Column Name (INCR)</key>
+            <value>
+              <name>Source Check Column Name (INCR)</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Source Check Column Last Value (INCR)</key>
+            <value>
+              <name>Source Check Column Last Value (INCR)</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Watermark Property (INCR)</key>
+            <value>
+              <name>Watermark Property (INCR)</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Source Split By Field</key>
+            <value>
+              <name>Source Split By Field</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Source Boundary Query</key>
+            <value>
+              <name>Source Boundary Query</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Cluster Map Tasks</key>
+            <value>
+              <name>Cluster Map Tasks</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Cluster UI Job Name</key>
+            <value>
+              <name>Cluster UI Job Name</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Target HDFS Directory</key>
+            <value>
+              <name>Target HDFS Directory</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Target HDFS Directory - If Exists?</key>
+            <value>
+              <name>Target HDFS Directory - If Exists?</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Target Extract Data Format</key>
+            <value>
+              <name>Target Extract Data Format</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Target HDFS File Delimiter</key>
+            <value>
+              <name>Target HDFS File Delimiter</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Target Hive Delimiter Strategy</key>
+            <value>
+              <name>Target Hive Delimiter Strategy</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Target Hive Replacement Delimiter</key>
+            <value>
+              <name>Target Hive Replacement Delimiter</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Target Compression Algorithm</key>
+            <value>
+              <name>Target Compression Algorithm</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Target Column Type Mapping</key>
+            <value>
+              <name>Target Column Type Mapping</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Sqoop Code Generation Directory</key>
+            <value>
+              <name>Sqoop Code Generation Directory</name>
+            </value>
+          </entry>
+        </descriptors>
+        <lossTolerant>false</lossTolerant>
+        <penaltyDuration>30 sec</penaltyDuration>
+        <properties>
+          <entry>
+            <key>Kerberos Principal</key>
+          </entry>
+          <entry>
+            <key>Kerberos Keytab</key>
+          </entry>
+          <entry>
+            <key>Sqoop Connection Service</key>
+            <value>fb3767b1-0158-1000-0000-000000000000</value>
+          </entry>
+          <entry>
+            <key>Source Table</key>
+            <value>${source.table.name}</value>
+          </entry>
+          <entry>
+            <key>Source Fields</key>
+            <value>${metadata.table.sourceFieldsCommaString}</value>
+          </entry>
+          <entry>
+            <key>Source Table WHERE Clause</key>
+          </entry>
+          <entry>
+            <key>Source Load Strategy</key>
+            <value>FULL_LOAD</value>
+          </entry>
+          <entry>
+            <key>Source Check Column Name (INCR)</key>
+          </entry>
+          <entry>
+            <key>Source Check Column Last Value (INCR)</key>
+            <value>${water.mark}</value>
+          </entry>
+          <entry>
+            <key>Watermark Property (INCR)</key>
+            <value>water.mark</value>
+          </entry>
+          <entry>
+            <key>Source Split By Field</key>
+          </entry>
+          <entry>
+            <key>Source Boundary Query</key>
+          </entry>
+          <entry>
+            <key>Cluster Map Tasks</key>
+            <value>4</value>
+          </entry>
+          <entry>
+            <key>Cluster UI Job Name</key>
+          </entry>
+          <entry>
+            <key>Target HDFS Directory</key>
+            <value>${config.sqoop.hdfs.ingest.root}/${now():format('yyyyMMddHHmmss')}_${UUID()}</value>
+          </entry>
+          <entry>
+            <key>Target HDFS Directory - If Exists?</key>
+            <value>FAIL_IMPORT</value>
+          </entry>
+          <entry>
+            <key>Target Extract Data Format</key>
+            <value>TEXT</value>
+          </entry>
+          <entry>
+            <key>Target HDFS File Delimiter</key>
+            <value>,</value>
+          </entry>
+          <entry>
+            <key>Target Hive Delimiter Strategy</key>
+            <value>DROP</value>
+          </entry>
+          <entry>
+            <key>Target Hive Replacement Delimiter</key>
+          </entry>
+          <entry>
+            <key>Target Compression Algorithm</key>
+            <value>NONE</value>
+          </entry>
+          <entry>
+            <key>Target Column Type Mapping</key>
+          </entry>
+          <entry>
+            <key>Sqoop Code Generation Directory</key>
+          </entry>
+        </properties>
+        <runDurationMillis>0</runDurationMillis>
+        <schedulingPeriod>0 sec</schedulingPeriod>
+        <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
+        <yieldDuration>1 sec</yieldDuration>
+      </config>
+      <name>Import Data - Sqoop</name>
+      <relationships>
+        <autoTerminate>false</autoTerminate>
+        <name>failure</name>
+      </relationships>
+      <relationships>
+        <autoTerminate>false</autoTerminate>
+        <name>success</name>
+      </relationships>
+      <style>
+        <entry>
+          <key>background-color</key>
+          <value>#4aa110</value>
+        </entry>
+      </style>
+      <type>com.thinkbiganalytics.nifi.v2.sqoop.core.ImportSqoop</type>
+    </processors>
+    <processors>
+      <id>01a84157-0b38-14f2-0000-000000000000</id>
+      <parentGroupId>fae61cd4-0158-1000-0000-000000000000</parentGroupId>
+      <position>
+        <x>2.87560526507923</x>
+        <y>0.0</y>
+      </position>
+      <config>
+        <bulletinLevel>WARN</bulletinLevel>
+        <comments></comments>
+        <concurrentlySchedulableTaskCount>1</concurrentlySchedulableTaskCount>
+        <descriptors>
+          <entry>
+            <key>Metadata Service</key>
+            <value>
+              <identifiesControllerService>com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService</identifiesControllerService>
+              <name>Metadata Service</name>
+            </value>
+          </entry>
+          <entry>
+            <key>System feed category</key>
+            <value>
+              <name>System feed category</name>
+            </value>
+          </entry>
+          <entry>
+            <key>System feed name</key>
+            <value>
+              <name>System feed name</name>
+            </value>
+          </entry>
+          <entry>
+            <key>High-Water Mark</key>
+            <value>
+              <name>High-Water Mark</name>
+            </value>
+          </entry>
+          <entry>
+            <key>High-Water Mark Value Property Name</key>
+            <value>
+              <name>High-Water Mark Value Property Name</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Active Water Mark Strategy</key>
+            <value>
+              <name>Active Water Mark Strategy</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Max Yield Count</key>
+            <value>
+              <name>Max Yield Count</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Initial Value</key>
+            <value>
+              <name>Initial Value</name>
+            </value>
+          </entry>
+        </descriptors>
+        <lossTolerant>false</lossTolerant>
+        <penaltyDuration>30 sec</penaltyDuration>
+        <properties>
+          <entry>
+            <key>Metadata Service</key>
+            <value>fa763cd8-0158-1000-0000-000000000000</value>
+          </entry>
+          <entry>
+            <key>System feed category</key>
+            <value>${metadata.category.systemName}</value>
+          </entry>
+          <entry>
+            <key>System feed name</key>
+            <value>${metadata.systemFeedName}</value>
+          </entry>
+          <entry>
+            <key>High-Water Mark</key>
+            <value>highWaterMark</value>
+          </entry>
+          <entry>
+            <key>High-Water Mark Value Property Name</key>
+            <value>water.mark</value>
+          </entry>
+          <entry>
+            <key>Active Water Mark Strategy</key>
+            <value>YIELD</value>
+          </entry>
+          <entry>
+            <key>Max Yield Count</key>
+            <value>1000</value>
+          </entry>
+          <entry>
+            <key>Initial Value</key>
+            <value>1900-01-01 00:00:00</value>
+          </entry>
+        </properties>
+        <runDurationMillis>0</runDurationMillis>
+        <schedulingPeriod>0 sec</schedulingPeriod>
+        <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
+        <yieldDuration>1 sec</yieldDuration>
+      </config>
+      <name>Load High Watermark</name>
+      <relationships>
+        <autoTerminate>false</autoTerminate>
+        <name>activeFailure</name>
+      </relationships>
+      <relationships>
+        <autoTerminate>false</autoTerminate>
+        <name>failure</name>
+      </relationships>
+      <relationships>
+        <autoTerminate>false</autoTerminate>
+        <name>success</name>
+      </relationships>
+      <style>
+        <entry>
+          <key>background-color</key>
+          <value>#1430cf</value>
+        </entry>
+      </style>
+      <type>com.thinkbiganalytics.nifi.v2.core.watermark.LoadHighWaterMark</type>
+    </processors>
+    <processors>
+      <id>01a8415a-0b38-14f2-0000-000000000000</id>
+      <parentGroupId>fae61cd4-0158-1000-0000-000000000000</parentGroupId>
+      <position>
+        <x>0.0</x>
+        <y>271.1851933505244</y>
+      </position>
+      <config>
+        <bulletinLevel>WARN</bulletinLevel>
+        <comments></comments>
+        <concurrentlySchedulableTaskCount>1</concurrentlySchedulableTaskCount>
+        <descriptors>
+          <entry>
+            <key>Log Level</key>
+            <value>
+              <name>Log Level</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Log Payload</key>
+            <value>
+              <name>Log Payload</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Attributes to Log</key>
+            <value>
+              <name>Attributes to Log</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Attributes to Ignore</key>
+            <value>
+              <name>Attributes to Ignore</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Log prefix</key>
+            <value>
+              <name>Log prefix</name>
+            </value>
+          </entry>
+        </descriptors>
+        <lossTolerant>false</lossTolerant>
+        <penaltyDuration>30 sec</penaltyDuration>
+        <properties>
+          <entry>
+            <key>Log Level</key>
+            <value>info</value>
+          </entry>
+          <entry>
+            <key>Log Payload</key>
+            <value>false</value>
+          </entry>
+          <entry>
+            <key>Attributes to Log</key>
+          </entry>
+          <entry>
+            <key>Attributes to Ignore</key>
+          </entry>
+          <entry>
+            <key>Log prefix</key>
+          </entry>
+        </properties>
+        <runDurationMillis>0</runDurationMillis>
+        <schedulingPeriod>0 sec</schedulingPeriod>
+        <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
+        <yieldDuration>1 sec</yieldDuration>
+      </config>
+      <name>Load High Watermark Failure</name>
+      <relationships>
+        <autoTerminate>true</autoTerminate>
+        <name>success</name>
+      </relationships>
+      <style>
+        <entry>
+          <key>background-color</key>
+          <value>#1430cf</value>
+        </entry>
+      </style>
+      <type>org.apache.nifi.processors.standard.LogAttribute</type>
+    </processors>
+    <processors>
+      <id>01a8415d-0b38-14f2-0000-000000000000</id>
+      <parentGroupId>fae61cd4-0158-1000-0000-000000000000</parentGroupId>
+      <position>
+        <x>1327.22638374218</x>
+        <y>0.6162933230464205</y>
+      </position>
+      <config>
+        <bulletinLevel>WARN</bulletinLevel>
+        <comments></comments>
+        <concurrentlySchedulableTaskCount>1</concurrentlySchedulableTaskCount>
+        <descriptors>
+          <entry>
+            <key>Metadata Service</key>
+            <value>
+              <identifiesControllerService>com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService</identifiesControllerService>
+              <name>Metadata Service</name>
+            </value>
+          </entry>
+          <entry>
+            <key>System feed category</key>
+            <value>
+              <name>System feed category</name>
+            </value>
+          </entry>
+          <entry>
+            <key>System feed name</key>
+            <value>
+              <name>System feed name</name>
+            </value>
+          </entry>
+          <entry>
+            <key>High-Water Mark</key>
+            <value>
+              <name>High-Water Mark</name>
+            </value>
+          </entry>
+          <entry>
+            <key>High-Water Mark Value Property Name</key>
+            <value>
+              <name>High-Water Mark Value Property Name</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Mode</key>
+            <value>
+              <name>Mode</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Release All</key>
+            <value>
+              <name>Release All</name>
+            </value>
+          </entry>
+        </descriptors>
+        <lossTolerant>false</lossTolerant>
+        <penaltyDuration>30 sec</penaltyDuration>
+        <properties>
+          <entry>
+            <key>Metadata Service</key>
+            <value>fa763cd8-0158-1000-0000-000000000000</value>
+          </entry>
+          <entry>
+            <key>System feed category</key>
+            <value>${metadata.category.systemName}</value>
+          </entry>
+          <entry>
+            <key>System feed name</key>
+            <value>${metadata.systemFeedName}</value>
+          </entry>
+          <entry>
+            <key>High-Water Mark</key>
+            <value>highWaterMark</value>
+          </entry>
+          <entry>
+            <key>High-Water Mark Value Property Name</key>
+            <value>water.mark</value>
+          </entry>
+          <entry>
+            <key>Mode</key>
+            <value>REJECT</value>
+          </entry>
+          <entry>
+            <key>Release All</key>
+            <value>true</value>
+          </entry>
+        </properties>
+        <runDurationMillis>0</runDurationMillis>
+        <schedulingPeriod>0 sec</schedulingPeriod>
+        <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
+        <yieldDuration>1 sec</yieldDuration>
+      </config>
+      <name>Reject High Watermark</name>
+      <relationships>
+        <autoTerminate>false</autoTerminate>
+        <name>failure</name>
+      </relationships>
+      <relationships>
+        <autoTerminate>false</autoTerminate>
+        <name>success</name>
+      </relationships>
+      <style>
+        <entry>
+          <key>background-color</key>
+          <value>#d1641b</value>
+        </entry>
+      </style>
+      <type>com.thinkbiganalytics.nifi.v2.core.watermark.ReleaseHighWaterMark</type>
+    </processors>
+    <processors>
+      <id>01a84160-0b38-14f2-0000-000000000000</id>
+      <parentGroupId>fae61cd4-0158-1000-0000-000000000000</parentGroupId>
+      <position>
+        <x>616.8054853046799</x>
+        <y>281.8131317019528</y>
+      </position>
+      <config>
+        <bulletinLevel>WARN</bulletinLevel>
+        <comments></comments>
+        <concurrentlySchedulableTaskCount>1</concurrentlySchedulableTaskCount>
+        <descriptors>
+          <entry>
+            <key>Metadata Service</key>
+            <value>
+              <identifiesControllerService>com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService</identifiesControllerService>
+              <name>Metadata Service</name>
+            </value>
+          </entry>
+          <entry>
+            <key>System feed category</key>
+            <value>
+              <name>System feed category</name>
+            </value>
+          </entry>
+          <entry>
+            <key>System feed name</key>
+            <value>
+              <name>System feed name</name>
+            </value>
+          </entry>
+          <entry>
+            <key>High-Water Mark</key>
+            <value>
+              <name>High-Water Mark</name>
+            </value>
+          </entry>
+          <entry>
+            <key>High-Water Mark Value Property Name</key>
+            <value>
+              <name>High-Water Mark Value Property Name</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Mode</key>
+            <value>
+              <name>Mode</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Release All</key>
+            <value>
+              <name>Release All</name>
+            </value>
+          </entry>
+        </descriptors>
+        <lossTolerant>false</lossTolerant>
+        <penaltyDuration>30 sec</penaltyDuration>
+        <properties>
+          <entry>
+            <key>Metadata Service</key>
+            <value>fa763cd8-0158-1000-0000-000000000000</value>
+          </entry>
+          <entry>
+            <key>System feed category</key>
+            <value>${metadata.category.systemName}</value>
+          </entry>
+          <entry>
+            <key>System feed name</key>
+            <value>${metadata.systemFeedName}</value>
+          </entry>
+          <entry>
+            <key>High-Water Mark</key>
+            <value>highWaterMark</value>
+          </entry>
+          <entry>
+            <key>High-Water Mark Value Property Name</key>
+            <value>water.mark</value>
+          </entry>
+          <entry>
+            <key>Mode</key>
+            <value>COMMIT</value>
+          </entry>
+          <entry>
+            <key>Release All</key>
+            <value>true</value>
+          </entry>
+        </properties>
+        <runDurationMillis>0</runDurationMillis>
+        <schedulingPeriod>0 sec</schedulingPeriod>
+        <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
+        <yieldDuration>1 sec</yieldDuration>
+      </config>
+      <name>Commit High Watermark</name>
+      <relationships>
+        <autoTerminate>false</autoTerminate>
+        <name>failure</name>
+      </relationships>
+      <relationships>
+        <autoTerminate>false</autoTerminate>
+        <name>success</name>
+      </relationships>
+      <style>
+        <entry>
+          <key>background-color</key>
+          <value>#7d1e4a</value>
+        </entry>
+      </style>
+      <type>com.thinkbiganalytics.nifi.v2.core.watermark.ReleaseHighWaterMark</type>
+    </processors>
+    <processors>
+      <id>01a84165-0b38-14f2-0000-000000000000</id>
+      <parentGroupId>fae61cd4-0158-1000-0000-000000000000</parentGroupId>
+      <position>
+        <x>1583.6062657526784</x>
+        <y>286.66532832914197</y>
+      </position>
+      <config>
+        <bulletinLevel>WARN</bulletinLevel>
+        <comments></comments>
+        <concurrentlySchedulableTaskCount>1</concurrentlySchedulableTaskCount>
+        <descriptors>
+          <entry>
+            <key>Log Level</key>
+            <value>
+              <name>Log Level</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Log Payload</key>
+            <value>
+              <name>Log Payload</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Attributes to Log</key>
+            <value>
+              <name>Attributes to Log</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Attributes to Ignore</key>
+            <value>
+              <name>Attributes to Ignore</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Log prefix</key>
+            <value>
+              <name>Log prefix</name>
+            </value>
+          </entry>
+        </descriptors>
+        <lossTolerant>false</lossTolerant>
+        <penaltyDuration>30 sec</penaltyDuration>
+        <properties>
+          <entry>
+            <key>Log Level</key>
+            <value>info</value>
+          </entry>
+          <entry>
+            <key>Log Payload</key>
+            <value>false</value>
+          </entry>
+          <entry>
+            <key>Attributes to Log</key>
+          </entry>
+          <entry>
+            <key>Attributes to Ignore</key>
+          </entry>
+          <entry>
+            <key>Log prefix</key>
+          </entry>
+        </properties>
+        <runDurationMillis>0</runDurationMillis>
+        <schedulingPeriod>0 sec</schedulingPeriod>
+        <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
+        <yieldDuration>1 sec</yieldDuration>
+      </config>
+      <name>Reject High Watermark Success</name>
+      <relationships>
+        <autoTerminate>true</autoTerminate>
+        <name>success</name>
+      </relationships>
+      <style>
+        <entry>
+          <key>background-color</key>
+          <value>#d1641b</value>
+        </entry>
+      </style>
+      <type>org.apache.nifi.processors.standard.LogAttribute</type>
+    </processors>
+    <processors>
+      <id>01a84166-0b38-14f2-0000-000000000000</id>
+      <parentGroupId>fae61cd4-0158-1000-0000-000000000000</parentGroupId>
+      <position>
+        <x>1142.5020747071615</x>
+        <y>279.995624871632</y>
+      </position>
+      <config>
+        <bulletinLevel>WARN</bulletinLevel>
+        <comments></comments>
+        <concurrentlySchedulableTaskCount>1</concurrentlySchedulableTaskCount>
+        <descriptors>
+          <entry>
+            <key>Log Level</key>
+            <value>
+              <name>Log Level</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Log Payload</key>
+            <value>
+              <name>Log Payload</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Attributes to Log</key>
+            <value>
+              <name>Attributes to Log</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Attributes to Ignore</key>
+            <value>
+              <name>Attributes to Ignore</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Log prefix</key>
+            <value>
+              <name>Log prefix</name>
+            </value>
+          </entry>
+        </descriptors>
+        <lossTolerant>false</lossTolerant>
+        <penaltyDuration>30 sec</penaltyDuration>
+        <properties>
+          <entry>
+            <key>Log Level</key>
+            <value>info</value>
+          </entry>
+          <entry>
+            <key>Log Payload</key>
+            <value>false</value>
+          </entry>
+          <entry>
+            <key>Attributes to Log</key>
+          </entry>
+          <entry>
+            <key>Attributes to Ignore</key>
+          </entry>
+          <entry>
+            <key>Log prefix</key>
+          </entry>
+        </properties>
+        <runDurationMillis>0</runDurationMillis>
+        <schedulingPeriod>0 sec</schedulingPeriod>
+        <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
+        <yieldDuration>1 sec</yieldDuration>
+      </config>
+      <name>Reject High Watermark Failure</name>
+      <relationships>
+        <autoTerminate>true</autoTerminate>
+        <name>success</name>
+      </relationships>
+      <style>
+        <entry>
+          <key>background-color</key>
+          <value>#d1641b</value>
+        </entry>
+      </style>
+      <type>org.apache.nifi.processors.standard.LogAttribute</type>
+    </processors>
+    <processors>
+      <id>01a8416a-0b38-14f2-0000-000000000000</id>
+      <parentGroupId>fae61cd4-0158-1000-0000-000000000000</parentGroupId>
+      <position>
+        <x>999.5376622370534</x>
+        <y>512.2787316494545</y>
+      </position>
+      <config>
+        <bulletinLevel>WARN</bulletinLevel>
+        <comments></comments>
+        <concurrentlySchedulableTaskCount>1</concurrentlySchedulableTaskCount>
+        <descriptors>
+          <entry>
+            <key>Log Level</key>
+            <value>
+              <name>Log Level</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Log Payload</key>
+            <value>
+              <name>Log Payload</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Attributes to Log</key>
+            <value>
+              <name>Attributes to Log</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Attributes to Ignore</key>
+            <value>
+              <name>Attributes to Ignore</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Log prefix</key>
+            <value>
+              <name>Log prefix</name>
+            </value>
+          </entry>
+        </descriptors>
+        <lossTolerant>false</lossTolerant>
+        <penaltyDuration>30 sec</penaltyDuration>
+        <properties>
+          <entry>
+            <key>Log Level</key>
+            <value>info</value>
+          </entry>
+          <entry>
+            <key>Log Payload</key>
+            <value>false</value>
+          </entry>
+          <entry>
+            <key>Attributes to Log</key>
+          </entry>
+          <entry>
+            <key>Attributes to Ignore</key>
+          </entry>
+          <entry>
+            <key>Log prefix</key>
+          </entry>
+        </properties>
+        <runDurationMillis>0</runDurationMillis>
+        <schedulingPeriod>0 sec</schedulingPeriod>
+        <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
+        <yieldDuration>1 sec</yieldDuration>
+      </config>
+      <name>Commit High Watermark Success</name>
+      <relationships>
+        <autoTerminate>true</autoTerminate>
+        <name>success</name>
+      </relationships>
+      <style>
+        <entry>
+          <key>background-color</key>
+          <value>#7d1e4a</value>
+        </entry>
+      </style>
+      <type>org.apache.nifi.processors.standard.LogAttribute</type>
+    </processors>
+    <processors>
+      <id>01a8416d-0b38-14f2-0000-000000000000</id>
+      <parentGroupId>fae61cd4-0158-1000-0000-000000000000</parentGroupId>
+      <position>
+        <x>256.10131787122396</x>
+        <y>511.904316277882</y>
+      </position>
+      <config>
+        <bulletinLevel>WARN</bulletinLevel>
+        <comments></comments>
+        <concurrentlySchedulableTaskCount>1</concurrentlySchedulableTaskCount>
+        <descriptors>
+          <entry>
+            <key>Log Level</key>
+            <value>
+              <name>Log Level</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Log Payload</key>
+            <value>
+              <name>Log Payload</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Attributes to Log</key>
+            <value>
+              <name>Attributes to Log</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Attributes to Ignore</key>
+            <value>
+              <name>Attributes to Ignore</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Log prefix</key>
+            <value>
+              <name>Log prefix</name>
+            </value>
+          </entry>
+        </descriptors>
+        <lossTolerant>false</lossTolerant>
+        <penaltyDuration>30 sec</penaltyDuration>
+        <properties>
+          <entry>
+            <key>Log Level</key>
+            <value>info</value>
+          </entry>
+          <entry>
+            <key>Log Payload</key>
+            <value>false</value>
+          </entry>
+          <entry>
+            <key>Attributes to Log</key>
+          </entry>
+          <entry>
+            <key>Attributes to Ignore</key>
+          </entry>
+          <entry>
+            <key>Log prefix</key>
+          </entry>
+        </properties>
+        <runDurationMillis>0</runDurationMillis>
+        <schedulingPeriod>0 sec</schedulingPeriod>
+        <schedulingStrategy>TIMER_DRIVEN</schedulingStrategy>
+        <yieldDuration>1 sec</yieldDuration>
+      </config>
+      <name>Commit High Watermark Failure</name>
+      <relationships>
+        <autoTerminate>true</autoTerminate>
+        <name>success</name>
+      </relationships>
+      <style>
+        <entry>
+          <key>background-color</key>
+          <value>#7d1e4a</value>
+        </entry>
+      </style>
+      <type>org.apache.nifi.processors.standard.LogAttribute</type>
+    </processors>
+  </snippet>
+  <timestamp>12/14/2016 14:25:41 UTC</timestamp>
+</template>

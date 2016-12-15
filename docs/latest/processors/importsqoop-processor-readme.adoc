@@ -4,6 +4,21 @@
 The ImportSqoop processor allows loading data from a relational system into HDFS.
 This document discusses the setup required to use this processor.
 
+=== Starter Template
+A starter template for using the processor is provided at:
+
+_samples/templates/nifi-1.0/template-starter-sqoop-import.xml_
+
+
+=== Configuration update
+For use with Kylo UI, configure values in the section starting with the below header in the deployment location: _/opt/thinkbig/thinkbig-services/conf/application.properties_
+
+_\### Sqoop import_
+
+_# DB Connection password_
+
+_# config.sqoop.hdfs.ingest.root_
+
 === Drivers
 Sqoop requires the JDBC drivers for the specific database server in order to transfer data.
 The processor has been tested on MySQL, Oracle and Teradata databases, using Sqoop v1.4.6.
