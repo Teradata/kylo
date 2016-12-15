@@ -40,7 +40,8 @@ public class ExampleLoginModule extends AbstractLoginModule {
         super.initialize(subject, callbackHandler, sharedState, options);
         
         // Retrieve the configured username and optional password that must match the incoming values entered by the user.
-        this.username = (String) getOption(USERNAME).orElseThrow(() -> new IllegalArgumentException("The \"" + USERNAME + "\" option is required"));
+        this.username = (String) getOption(USERNAME)
+                        .orElseThrow(() -> new IllegalArgumentException("The \"" + USERNAME + "\" option is required"));
         this.password = (char[]) getOption(PASSWORD).orElse(new char[0]);
     }
 

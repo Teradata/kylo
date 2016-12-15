@@ -6,9 +6,12 @@
                         http://www.springframework.org/schema/context
                         http://www.springframework.org/schema/context/spring-context.xsd">
 
-    <!-- This Spring configuration file is required to bootstrap the configuration of this plugin -->
-    <!-- Since the actual configuration of the plugin is handle via a java config class we only need to expose 
-         that class as a Spring bean to have it processed -->
-    <bean class="com.example.kylo.plugin.ExampleLoginConfig"></bean>
+    <!-- Note that prior to Kylo 0.6 this file's name is the required file name of a 
+         plugin context XML file.
+         
+         This file name has been deprecated (although it still works) in favor of the
+         name "plugin-context.xml" to make it clear what its purpose is.  This file
+         is purposely left empty.  But if your plugin is to be deployed to a Kylo version
+         earlier than 0.6 then you should use this file name instead of plugin-context.xml -->
 
 </beans>
