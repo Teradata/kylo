@@ -154,6 +154,7 @@
                 </md-radio-group>
                 <div ng-messages="vm.dataProcessingForm['targetMergeStrategy'].$error" md-auto-hide="false">
                   <div ng-message="invalidPKOption">A primary key must be selected to use this strategy</div>
+                  <div ng-message="invalidRollingSyncOption">A Partition must be added to use this strategy</div>
                 </div>
 
               </md-input-container>

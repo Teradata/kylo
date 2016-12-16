@@ -130,6 +130,9 @@
         function validateMergeStrategies() {
             var valid = FeedService.enableDisablePkMergeStrategy(self.editModel, self.mergeStrategies);
             self.editFeedDataPoliciesForm['targetMergeStrategy'].$setValidity('invalidPKOption', valid);
+
+            valid = FeedService.enableDisableRollingSyncMergeStrategy(self.model, self.mergeStrategies);
+            self.editFeedDataPoliciesForm['targetMergeStrategy'].$setValidity('invalidRollingSyncOption', valid);
         }
 
         this.onEdit = function () {

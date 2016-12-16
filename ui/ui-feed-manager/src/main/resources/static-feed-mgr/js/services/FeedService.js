@@ -49,7 +49,9 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
          */
         mergeStrategies: [{name: 'Sync', type: 'SYNC', hint: 'Sync and overwrite table', disabled: false}, {name: 'Merge', type: 'MERGE', hint: 'Merges content into table', disabled: false},
             {name: 'Dedupe and Merge', type: 'DEDUPE_AND_MERGE', hint: 'Dedupe and Merge content into table', disabled: false},
-            {name: 'Merge using Primary Key', type: 'PK_MERGE', hint: 'Insert/update using primary keys'}],
+            {name: 'Merge using Primary Key', type: 'PK_MERGE', hint: 'Insert/update using primary keys'},
+            {name: 'Rolling Sync', type: 'ROLLING_SYNC', hint: 'Upsert content by partition'},
+            ],
 
         /**
          * The available Target Format options
@@ -346,6 +348,38 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
             }
 
         },
+
+        /**
+        * return true/false if there is a
+        */
+        enableDisableRollingSyncMergeStrategy: function (feedModel, strategies) {
+            var rollingSyncStrategy = _.find(strategies, s => s.type == 'ROLLING_SYNC');
+
+            var selectedStrategy = feedModel.table.targetMergeStrategy;
+
+            if (rollingSyncStrategy) {
+                if (!this.hasPartitions(feedModel)) {
+                    rollingSyncStrategy.disabled = true;
+                } else {
+                    rollingSyncStrategy.disabled = false;
+                }
+            }
+            if (rollingSyncStrategy && selectedStrategy == rollingSyncStrategy.type) {
+                return !rollingSyncStrategy.disabled;
+            } else {
+                return true;
+            }
+
+            return strategy != null && strategy != undefined;
+        },
+
+
+        hasPartitions: function (feedModel) {
+            return feedModel.table.partitions != null
+                && feedModel.table.partitions != undefined
+                && feedModel.table.partitions.length > 0;
+        },
+
         /**
          * This will clear the Table Schema resetting the method, fields, and policies
          */

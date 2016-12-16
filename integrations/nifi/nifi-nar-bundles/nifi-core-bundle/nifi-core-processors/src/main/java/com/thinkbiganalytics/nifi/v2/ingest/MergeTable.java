@@ -72,18 +72,24 @@ public class MergeTable extends AbstractNiFiProcessor {
      **/
     public static final String STRATEGY_SYNC = "SYNC";
 
+    /**
+     * Rolling SYNC same as SYNC but at a partition level overwriting only partitions present in source.
+     **/
+    public static final String STRATEGY_ROLLING_SYNC = "ROLLING_SYNC";
+
     private final Set<Relationship> relationships;
 
     public static final PropertyDescriptor MERGE_STRATEGY = new PropertyDescriptor.Builder()
         .name("Merge Strategy")
-        .description("Specifies the algorithm used to merge. Valid values are SYNC,MERGE,PK_MERGE,DEDUPE_AND_MERGE.  Sync will completely overwrite the target table with the source data. "
+        .description("Specifies the algorithm used to merge. Valid values are SYNC,MERGE, PK_MERGE, DEDUPE_AND_MERGE, and ROLLING_SYNC.  Sync will completely overwrite the target table with the source data. "
+                     + "Rolling Sync will overwrite target partitions only when present in source. "
                      + "Merge will append "
                      + "the data into the target partitions. Dedupe will insert into the target partition but ensure no duplicate rows are remaining. PK Merge will insert or update existing rows "
                      + "matching the"
                      + " same primary key.")
         .required(true)
         .expressionLanguageSupported(true)
-        .allowableValues(STRATEGY_MERGE, STRATEGY_DEDUPE_MERGE, STRATEGY_PK_MERGE, STRATEGY_SYNC, "${metadata.table.targetMergeStrategy}")
+        .allowableValues(STRATEGY_MERGE, STRATEGY_DEDUPE_MERGE, STRATEGY_PK_MERGE, STRATEGY_SYNC, STRATEGY_ROLLING_SYNC, "${metadata.table.targetMergeStrategy}")
         .defaultValue("${metadata.table.targetMergeStrategy}")
         .build();
 
@@ -184,6 +190,8 @@ public class MergeTable extends AbstractNiFiProcessor {
                 mergeSupport.doMerge(sourceSchema, sourceTable, targetSchema, targetTable, partitionSpec, feedPartitionValue, false);
             } else if (STRATEGY_SYNC.equals(mergeStrategyValue)) {
                 mergeSupport.doSync(sourceSchema, sourceTable, targetSchema, targetTable, partitionSpec, feedPartitionValue);
+            } else if (STRATEGY_ROLLING_SYNC.equals(mergeStrategyValue)) {
+                mergeSupport.doRollingSync(sourceSchema, sourceTable, targetSchema, targetTable, partitionSpec, feedPartitionValue);
             } else if (STRATEGY_PK_MERGE.equals(mergeStrategyValue)) {
                 mergeSupport.doPKMerge(sourceSchema, sourceTable, targetSchema, targetTable, partitionSpec, feedPartitionValue, columnSpecs);
             } else {

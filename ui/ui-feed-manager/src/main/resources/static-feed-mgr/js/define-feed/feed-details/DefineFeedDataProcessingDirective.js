@@ -49,7 +49,7 @@
 
         this.mergeStrategies = angular.copy(FeedService.mergeStrategies);
         FeedService.enableDisablePkMergeStrategy(self.model, self.mergeStrategies);
-
+        FeedService.enableDisableRollingSyncMergeStrategy(self.model, self.mergeStrategies);
         this.permissionGroups = ['Marketing','Human Resources','Administrators','IT'];
 
         BroadcastService.subscribe($scope, StepperService.ACTIVE_STEP_EVENT, onActiveStep)
@@ -107,10 +107,15 @@
         }
 
         function validateMergeStrategies() {
-            var valid = FeedService.enableDisablePkMergeStrategy(self.model, self.mergeStrategies);
-            self.dataProcessingForm['targetMergeStrategy'].$setValidity('invalidPKOption', valid);
+            var validPK = FeedService.enableDisablePkMergeStrategy(self.model, self.mergeStrategies);
 
-            self.isValid = valid;
+            self.dataProcessingForm['targetMergeStrategy'].$setValidity('invalidPKOption', validPK);
+
+            validRollingSync = FeedService.enableDisableRollingSyncMergeStrategy(self.model, self.mergeStrategies);
+
+            self.dataProcessingForm['targetMergeStrategy'].$setValidity('invalidRollingSyncOption', validRollingSync);
+
+            self.isValid = validRollingSync && validPK;
         }
 
 

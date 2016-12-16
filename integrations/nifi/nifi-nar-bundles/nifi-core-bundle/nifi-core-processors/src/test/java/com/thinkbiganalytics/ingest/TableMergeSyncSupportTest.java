@@ -377,6 +377,56 @@ public class TableMergeSyncSupportTest {
         verifyUnique(results);
     }
 
+    @Test
+    /**
+     * Test Rolling Sync.
+     */
+    public void testRollingSync() throws Exception {
+
+        List<String> results = fetchEmployees(targetSchema, targetTable);
+        assertEquals(0, results.size());
+
+        doTestRollingSyncMerge(processingPartition);
+
+        //Target table is empty.  All 4 records should be inserted.
+        results = fetchEmployees(targetSchema, targetTable);
+        assertEquals(4, results.size());
+
+        //update existing partition
+        String job1 = "20110119074340";
+        hiveShell.execute("insert into emp_sr.employee_valid partition(processing_dttm='" + job1 + "') (  `id`,  `name`,`company`,`zip`,`phone`,`email`,  `hired`,`country`) values (101,'Harry',"
+                + "'ABC',"
+                + "'94550','555-1212','harry@acme.org','2016-01-01','Canada');");
+
+        doTestRollingSyncMerge(job1);
+
+        //Target table should still have 4 records.  Partition Canada/2016 had one record before merge.  It should now have 1 updated record.
+        results = fetchEmployees(targetSchema, targetTable);
+        assertEquals(4, results.size());
+
+        //Record Jen is gone and replaced by Hary
+        assertFalse(results.stream().anyMatch(x -> x.contains("Jen")));
+        assertTrue(results.stream().anyMatch(x -> x.contains("Harry")));
+
+
+        //add new existing partition
+        String job2 = "20120119074340";
+        hiveShell.execute("insert into emp_sr.employee_valid partition(processing_dttm='" + job2 + "') (  `id`,  `name`,`company`,`zip`,`phone`,`email`,  `hired`,`country`) values (101,'Flora',"
+                + "'ABC',"
+                + "'94550','555-1212','harry@acme.org','2017-01-01','France');");
+
+        doTestRollingSyncMerge(job2);
+
+        //Target table should now have 5 records.  Partition France/2017 has new data.  No other partitions are disturbed.
+        results = fetchEmployees(targetSchema, targetTable);
+        assertEquals(5, results.size());
+
+    }
+
+    private void doTestRollingSyncMerge(String processingPartition)  throws SQLException {
+        mergeSyncSupport.doRollingSync(sourceSchema, sourceTable, targetSchema, targetTable, spec, processingPartition);
+    }
+
 
 
     private void doTestMergeNoProcessingDttm(String targetTable, PartitionSpec spec) throws SQLException {

@@ -96,6 +96,44 @@ public class TableMergeSyncSupport implements Serializable {
         renameTable(targetSchema, syncTable, targetTable);
     }
 
+    public void doRollingSync(@Nonnull final String sourceSchema, @Nonnull final String sourceTable, @Nonnull final String targetSchema, @Nonnull final String targetTable,
+                       @Nonnull final PartitionSpec partitionSpec, @Nonnull final String feedPartitionValue) throws SQLException {
+
+        Validate.notEmpty(sourceSchema);
+        Validate.notEmpty(sourceTable);
+        Validate.notEmpty(targetSchema);
+        Validate.notEmpty(targetTable);
+        Validate.notNull(partitionSpec);
+        Validate.notNull(feedPartitionValue);
+
+        List<PartitionBatch> batches = createPartitionBatches(partitionSpec, sourceSchema, sourceTable, feedPartitionValue);
+
+        final String[] selectFields = getSelectFields(sourceSchema, sourceTable, targetSchema, targetTable, partitionSpec);
+
+        final String syncSQL = generateRollingSyncQuery(selectFields, partitionSpec, sourceSchema, sourceTable, targetSchema, targetTable, batches, feedPartitionValue);
+
+        doExecuteSQL(syncSQL);
+
+    }
+
+    private String generateRollingSyncQuery(String[] selectFields, PartitionSpec partitionSpec, String sourceSchema,
+                                            String sourceTable, String targetSchema, String targetTable,
+                                            List<PartitionBatch> batches, String feedPartitionValue) {
+
+        final String selectSQL = StringUtils.join(selectFields, ",");
+        String partitionWhere = targetPartitionsWhereClause(batches, true);
+
+        //something went horribly wrong if there are no partitions
+        Validate.notEmpty(partitionWhere);
+
+        return "insert overwrite table " + HiveUtils.quoteIdentifier(targetSchema, targetTable) + " " +
+                partitionSpec.toDynamicPartitionSpec() +
+                " select " + selectSQL + "," + partitionSpec.toDynamicSelectSQLSpec() +
+                " from " + HiveUtils.quoteIdentifier(sourceSchema, sourceTable) +
+                " where processing_dttm = " + HiveUtils.quoteString(feedPartitionValue)
+                + " and (" + partitionWhere + ")";
+    }
+
     /**
      * Performs the doMerge and insert into the target table from the source table.
      *
@@ -303,10 +341,12 @@ public class TableMergeSyncSupport implements Serializable {
     /*
     Produces a where clause that limits to the impacted partitions of the target table
      */
-    private String targetPartitionsWhereClause(List<PartitionBatch> batches) {
+    private String targetPartitionsWhereClause(List<PartitionBatch> batches, boolean useSourceColumns) {
         List<String> targetPartitionsItems = new Vector<>();
         for (PartitionBatch batch : batches) {
-            targetPartitionsItems.add("(" + batch.getPartitionSpec().toTargetSQLWhere(batch.getPartitionValues()) + ")");
+            String column = useSourceColumns ? batch.getPartitionSpec().toSourceSQLWhere(batch.getPartitionValues())
+                    : batch.getPartitionSpec().toTargetSQLWhere(batch.getPartitionValues());
+            targetPartitionsItems.add("(" + column + ")");
         }
         return (targetPartitionsItems.size() == 0 ? null : StringUtils.join(targetPartitionsItems.toArray(new String[0]), " or "));
     }
@@ -335,7 +375,7 @@ public class TableMergeSyncSupport implements Serializable {
         final String selectAggregateSQL = StringUtils.join(distinctSelectFields, ",")+", min(processing_dttm) processing_dttm, "+spec.toPartitionSelectSQL();
         final String groupBySQL = StringUtils.join(distinctSelectFields, ",")+","+spec.toPartitionSelectSQL();
         final String selectSQL = StringUtils.join(selectFields, ",");
-        final String targetPartitionWhereClause = targetPartitionsWhereClause(batches);
+        final String targetPartitionWhereClause = targetPartitionsWhereClause(batches, false);
 
         final StringBuilder sb = new StringBuilder();
         sb.append("insert into table ").append(HiveUtils.quoteIdentifier(targetSchema, targetTable)).append(" ")
@@ -373,7 +413,7 @@ public class TableMergeSyncSupport implements Serializable {
                                                            @Nonnull final String sourceSchema, @Nonnull final String sourceTable, @Nonnull final String targetSchema,
                                                            @Nonnull final String targetTable, @Nonnull final String feedPartitionValue) {
         final String selectSQL = StringUtils.join(selectFields, ",");
-        final String targetPartitionWhereClause = targetPartitionsWhereClause(batches);
+        final String targetPartitionWhereClause = targetPartitionsWhereClause(batches, false);
 
         final StringBuilder sb = new StringBuilder();
         sb.append("insert overwrite table ").append(HiveUtils.quoteIdentifier(targetSchema, targetTable)).append(" ")
@@ -556,7 +596,7 @@ public class TableMergeSyncSupport implements Serializable {
         String anyPK = primaryKeys[0];
 
         List<PartitionBatch> batches = createPartitionBatchesforPKMerge(partitionSpec, sourceSchema, sourceTable, targetSchema, targetTable, feedPartitionValue, joinOnClause);
-        String targetPartitionWhereClause = targetPartitionsWhereClause(PartitionBatch.toPartitionBatchesForAlias(batches, "a"));
+        String targetPartitionWhereClause = targetPartitionsWhereClause(PartitionBatch.toPartitionBatchesForAlias(batches, "a"), false);
 
         // TODO: If the records matching the primary key between the source and target are in a different partition
         // AND the matching records are the only remaining records of the partition, then the following sql will fail to overwrite the
