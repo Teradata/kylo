@@ -44,11 +44,6 @@
       <artifactId>spring-jdbc</artifactId>
     </dependency>
 
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-annotations</artifactId>
-    </dependency>
-
     <!-- Spring -->
     <dependency>
       <groupId>org.springframework</groupId>

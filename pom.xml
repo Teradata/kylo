@@ -53,7 +53,6 @@
         <mockito.version>1.10.19</mockito.version>
         <nifi.version>1.1.0</nifi.version>
         <powermock.version>1.6.3</powermock.version>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <quartz.version>2.2.1</quartz.version>
         <slf4j.version>1.7.12</slf4j.version>
         <scala.version>2.10.6</scala.version>
@@ -72,6 +71,9 @@
         <org.reflections.version>0.9.9</org.reflections.version>
         <querydsl.version>4.1.4</querydsl.version>
         <findbugs.version>3.0.1</findbugs.version>
+        <pig.version>0.15.0</pig.version>
+        <gson.version>2.2.4</gson.version>
+        <h2.version>1.4.187</h2.version>
     </properties>
     <modules>
         <module>commons</module>
@@ -743,7 +745,11 @@
                 <version>${querydsl.version}</version>
             </dependency>
 
-
+            <dependency>
+                <groupId>com.h2database</groupId>
+                <artifactId>h2</artifactId>
+                <version>${h2.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -792,6 +798,11 @@
                     <groupId>org.scala-tools</groupId>
                     <artifactId>maven-scala-plugin</artifactId>
                     <version>2.15.2</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-shade-plugin</artifactId>
+                    <version>2.4.3</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
