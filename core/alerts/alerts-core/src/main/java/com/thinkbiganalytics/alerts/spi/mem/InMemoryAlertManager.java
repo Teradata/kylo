@@ -149,7 +149,7 @@ public class InMemoryAlertManager implements AlertManager {
     }
 
     @Override
-    public Iterator<? extends Alert> getAlerts(DateTime since) {
+    public Iterator<? extends Alert> getAlertsSince(DateTime since) {
         this.alertsLock.readLock().lock();
         try {
             DateTime higher = this.alertsByTime.higherKey(since);
@@ -173,7 +173,7 @@ public class InMemoryAlertManager implements AlertManager {
     }
 
     @Override
-    public Iterator<? extends Alert> getAlerts(ID since) {
+    public Iterator<? extends Alert> getAlertsSince(ID since) {
         AtomicReference<Alert> ref = this.alertsById.get(since);
         
         if (ref == null) {
@@ -187,7 +187,7 @@ public class InMemoryAlertManager implements AlertManager {
                 }
             }
         
-            return getAlerts(createdTime);
+            return getAlertsSince(createdTime);
         }
     }
 

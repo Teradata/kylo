@@ -114,7 +114,7 @@ public class AggregatingAlertProviderTest {
         
         this.provider.addAlertSource(this.source);
         
-        when(this.source.getAlerts(any(DateTime.class))).thenAnswer(iteratorAnswer(srcAlert));
+        when(this.source.getAlertsSince(any(DateTime.class))).thenAnswer(iteratorAnswer(srcAlert));
         
         Iterator<? extends Alert> results = this.provider.getAlerts(since);
         Iterator<? extends Alert> itr = Iterators.transform(results, providerToSourceAlertFunction());
@@ -130,7 +130,7 @@ public class AggregatingAlertProviderTest {
         
         this.provider.addAlertManager(this.manager);
         
-        when(this.manager.getAlerts(any(DateTime.class))).thenAnswer(iteratorAnswer(mgrAlert));
+        when(this.manager.getAlertsSince(any(DateTime.class))).thenAnswer(iteratorAnswer(mgrAlert));
         
         Iterator<? extends Alert> results = this.provider.getAlerts(since);
         Iterator<? extends Alert> itr = Iterators.transform(results, providerToSourceAlertFunction());
@@ -148,8 +148,8 @@ public class AggregatingAlertProviderTest {
         this.provider.addAlertSource(this.source);
         this.provider.addAlertManager(this.manager);
         
-        when(this.source.getAlerts(any(DateTime.class))).thenAnswer(iteratorAnswer(srcAlert));
-        when(this.manager.getAlerts(any(DateTime.class))).thenAnswer(iteratorAnswer(mgrAlert));
+        when(this.source.getAlertsSince(any(DateTime.class))).thenAnswer(iteratorAnswer(srcAlert));
+        when(this.manager.getAlertsSince(any(DateTime.class))).thenAnswer(iteratorAnswer(mgrAlert));
         
         Iterator<? extends Alert> results = this.provider.getAlerts(since);
         Iterator<? extends Alert> itr = Iterators.transform(results, providerToSourceAlertFunction());
@@ -169,8 +169,8 @@ public class AggregatingAlertProviderTest {
         this.provider.addAlertManager(this.manager);
         
         when(this.source.getAlert(any(Alert.ID.class))).thenReturn(sinceAlert);
-        when(this.source.getAlerts(any(DateTime.class))).thenAnswer(iteratorAnswer(srcAlert));
-        when(this.manager.getAlerts(any(DateTime.class))).thenAnswer(iteratorAnswer(mgrAlert));
+        when(this.source.getAlertsSince(any(DateTime.class))).thenAnswer(iteratorAnswer(srcAlert));
+        when(this.manager.getAlertsSince(any(DateTime.class))).thenAnswer(iteratorAnswer(mgrAlert));
         
         Iterator<? extends Alert> results = this.provider.getAlerts(new SourceAlertID(sinceAlert.getId(), this.source));
         Iterator<? extends Alert> itr = Iterators.transform(results, providerToSourceAlertFunction());
@@ -235,8 +235,8 @@ public class AggregatingAlertProviderTest {
         this.provider.addAlertSource(this.source);
         this.provider.addAlertManager(this.manager);
         
-        when(this.source.getAlerts(any(DateTime.class))).thenAnswer(iteratorAnswer(srcAlert));
-        when(this.manager.getAlerts(any(DateTime.class))).thenAnswer(iteratorAnswer(mgrAlert));
+        when(this.source.getAlertsSince(any(DateTime.class))).thenAnswer(iteratorAnswer(srcAlert));
+        when(this.manager.getAlertsSince(any(DateTime.class))).thenAnswer(iteratorAnswer(mgrAlert));
         when(this.manager.getAlert(any(Alert.ID.class))).thenReturn(mgrAlert);
         
         this.provider.alertsAvailable(2);

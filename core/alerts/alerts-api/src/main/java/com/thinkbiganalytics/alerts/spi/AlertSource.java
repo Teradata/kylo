@@ -27,7 +27,7 @@ public interface AlertSource {
     
     Iterator<? extends Alert> getAlerts();
 
-    Iterator<? extends Alert> getAlerts(DateTime since);
+    Iterator<? extends Alert> getAlertsSince(DateTime since);
     
-    Iterator<? extends Alert> getAlerts(Alert.ID since);
+    Iterator<? extends Alert> getAlertsSince(Alert.ID since);
 }

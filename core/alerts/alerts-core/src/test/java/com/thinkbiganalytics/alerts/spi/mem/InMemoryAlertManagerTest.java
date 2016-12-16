@@ -111,7 +111,7 @@ public class InMemoryAlertManagerTest {
         this.manager.create(URI.create("urn:alert:test2"), Alert.Level.CRITICAL, "test2", "content"); 
         Thread.sleep(25);
         
-        Iterator<? extends Alert> itr = this.manager.getAlerts(since);
+        Iterator<? extends Alert> itr = this.manager.getAlertsSince(since);
 
         assertThat(itr.hasNext()).isTrue();
         assertThat(itr.next().getLevel()).isEqualTo(Level.CRITICAL);
@@ -125,7 +125,7 @@ public class InMemoryAlertManagerTest {
         this.manager.create(URI.create("urn:alert:test2"), Alert.Level.CRITICAL, "test2", "content"); 
         Thread.sleep(25);
         
-        Iterator<? extends Alert> itr = this.manager.getAlerts(id);
+        Iterator<? extends Alert> itr = this.manager.getAlertsSince(id);
 
         assertThat(itr.hasNext()).isTrue();
         assertThat(itr.next().getLevel()).isEqualTo(Level.CRITICAL);

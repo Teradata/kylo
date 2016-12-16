@@ -262,7 +262,7 @@ public class AggregatingAlertProvider implements AlertProvider, AlertNotifyRecei
         
         for (AlertSource src : srcs.values()) {
             Function<Alert, Alert> func = wrapAlertFunction(src);
-            Iterator<? extends Alert> itr = src.getAlerts(since);
+            Iterator<? extends Alert> itr = src.getAlertsSince(since);
             
             LOG.debug("{} alerts available from {} since: {}", itr.hasNext() ? "There are " : "No", src, since);
             
