@@ -22,6 +22,7 @@ import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.exception.ProcessException;
+import org.apache.nifi.processor.util.StandardValidators;
 import org.apache.nifi.util.StopWatch;
 
 import java.sql.Connection;
@@ -92,6 +93,14 @@ public class MergeTable extends AbstractNiFiProcessor {
         .defaultValue("${metadata.table.targetMergeStrategy}")
         .build();
 
+    public static final PropertyDescriptor HIVE_CONFIGURATIONS = new PropertyDescriptor.Builder()
+        .name("Hive Configurations")
+        .description("Pipe separated list of Hive Configurations that you would like to set for Hive queries ")
+        .required(false)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .build();
+
 
     private final List<PropertyDescriptor> propDescriptors;
 
@@ -111,6 +120,7 @@ public class MergeTable extends AbstractNiFiProcessor {
         pds.add(FEED_PARTITION);
         pds.add(PARTITION_SPECIFICATION);
         pds.add(FIELD_SPECIFICATION);
+        pds.add(HIVE_CONFIGURATIONS);
 
         propDescriptors = Collections.unmodifiableList(pds);
     }
@@ -141,7 +151,7 @@ public class MergeTable extends AbstractNiFiProcessor {
         String targetTable = context.getProperty(TARGET_TABLE).evaluateAttributeExpressions(flowFile).getValue();
         String feedPartitionValue = context.getProperty(FEED_PARTITION).evaluateAttributeExpressions(flowFile).getValue();
         String mergeStrategyValue = context.getProperty(MERGE_STRATEGY).evaluateAttributeExpressions(flowFile).getValue();
-
+        String hiveConfigurations = context.getProperty(HIVE_CONFIGURATIONS).evaluateAttributeExpressions(flowFile).getValue();
         final ColumnSpec[] columnSpecs = Optional.ofNullable(context.getProperty(FIELD_SPECIFICATION).evaluateAttributeExpressions(flowFile).getValue())
             .filter(StringUtils::isNotEmpty)
             .map(ColumnSpec::createFromString)
@@ -158,7 +168,8 @@ public class MergeTable extends AbstractNiFiProcessor {
             mergeStrategyValue = STRATEGY_DEDUPE_MERGE;
         }
 
-        logger.info("Merge strategy: " + mergeStrategyValue + " Using Source: " + sourceTable + " Target: " + targetTable + " feed partition:" + feedPartitionValue + " partSpec: " + partitionSpecString);
+        logger.info(
+            "Merge strategy: " + mergeStrategyValue + " Using Source: " + sourceTable + " Target: " + targetTable + " feed partition:" + feedPartitionValue + " partSpec: " + partitionSpecString);
 
         final StopWatch stopWatch = new StopWatch(true);
 
@@ -166,6 +177,10 @@ public class MergeTable extends AbstractNiFiProcessor {
 
             TableMergeSyncSupport mergeSupport = new TableMergeSyncSupport(conn);
             mergeSupport.enableDynamicPartitions();
+
+            if (StringUtils.isNotEmpty(hiveConfigurations)) {
+                mergeSupport.setHiveConf(hiveConfigurations.split("\\|"));
+            }
 
             PartitionSpec partitionSpec = new PartitionSpec(partitionSpecString);
 
@@ -188,7 +203,7 @@ public class MergeTable extends AbstractNiFiProcessor {
             session.transfer(flowFile, REL_SUCCESS);
 
         } catch (final Exception e) {
-            logger.error("Unable to execute merge doMerge for {} due to {}; routing to failure", new Object[]{flowFile, e});
+            logger.error("Unable to execute merge doMerge for {} due to {}; routing to failure", new Object[]{flowFile, e}, e);
             session.transfer(flowFile, REL_FAILURE);
         }
     }
