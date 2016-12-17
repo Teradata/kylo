@@ -40,6 +40,7 @@
         this.expandedView = true;
         this.schemaHeight = "100px";
         this.tableLocked = false
+        this.dataTypeLocked = false;
         this.canRemoveFields = true;
         this.showMethodPanel = true;
         this.showTablePanel = true;
@@ -64,6 +65,7 @@
 
         this.calcTableState = function() {
             self.tableLocked = (self.model.dataTransformationFeed || self.model.table.structured || self.model.table.method == 'EXISTING_TABLE');
+            self.dataTypeLocked = (self.model.dataTransformationFeed || self.model.table.structured);
             self.canRemoveFields = (!self.model.dataTransformationFeed && (self.model.table.method == 'EXISTING_TABLE' || self.model.table.method == 'MANUAL'));
             self.showMethodPanel = (self.model.table.method != 'EXISTING_TABLE');
             self.showTablePanel = (self.model.table.tableSchema.fields.length > 0);
