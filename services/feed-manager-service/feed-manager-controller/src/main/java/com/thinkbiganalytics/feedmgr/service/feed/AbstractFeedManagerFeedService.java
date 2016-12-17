@@ -116,7 +116,8 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
         }
 
         CreateFeedBuilder
-            feedBuilder = CreateFeedBuilder.newFeed(nifiRestClient, feedMetadata, registeredTemplate.getNifiTemplateId(), propertyExpressionResolver).enabled(enabled);
+            feedBuilder = CreateFeedBuilder.newFeed(nifiRestClient, feedMetadata, registeredTemplate.getNifiTemplateId(), propertyExpressionResolver).enabled(enabled)
+            .versionProcessGroup(false);
 
         if (registeredTemplate.isReusableTemplate()) {
             feedBuilder.setReusableTemplate(true);

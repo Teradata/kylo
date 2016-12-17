@@ -12,6 +12,7 @@ import org.apache.nifi.web.api.dto.ControllerServiceDTO;
 import org.apache.nifi.web.api.dto.FlowSnippetDTO;
 import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
+import org.apache.nifi.web.api.dto.status.ProcessGroupStatusDTO;
 import org.apache.nifi.web.api.entity.ConnectionEntity;
 import org.apache.nifi.web.api.entity.ConnectionsEntity;
 import org.apache.nifi.web.api.entity.FlowSnippetEntity;
@@ -20,6 +21,7 @@ import org.apache.nifi.web.api.entity.InputPortsEntity;
 import org.apache.nifi.web.api.entity.OutputPortEntity;
 import org.apache.nifi.web.api.entity.OutputPortsEntity;
 import org.apache.nifi.web.api.entity.ProcessGroupEntity;
+import org.apache.nifi.web.api.entity.ProcessGroupStatusEntity;
 import org.apache.nifi.web.api.entity.ProcessGroupsEntity;
 
 import java.util.Collections;
@@ -27,6 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.ws.rs.ClientErrorException;
@@ -143,6 +146,15 @@ public class NiFiProcessGroupsRestClientV0 extends AbstractNiFiProcessGroupsRest
             params.put("verbose", verbose);
             return Optional.of(client.get(BASE_PATH + "/" + processGroupId, params, ProcessGroupEntity.class).getProcessGroup());
         } catch (NotFoundException e) {
+            return Optional.empty();
+        }
+    }
+
+
+    public Optional<ProcessGroupStatusDTO> getStatus(String processGroupId) {
+        try {
+            return Optional.ofNullable(client.get(BASE_PATH + "/" + processGroupId + "/status", null, ProcessGroupStatusEntity.class).getProcessGroupStatus());
+        }catch (final NotFoundException e) {
             return Optional.empty();
         }
     }

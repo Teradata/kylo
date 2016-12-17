@@ -15,6 +15,7 @@ import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.RevisionDTO;
 import org.apache.nifi.web.api.dto.flow.FlowDTO;
+import org.apache.nifi.web.api.dto.status.ProcessGroupStatusDTO;
 import org.apache.nifi.web.api.entity.ConnectionEntity;
 import org.apache.nifi.web.api.entity.ConnectionsEntity;
 import org.apache.nifi.web.api.entity.ControllerServiceEntity;
@@ -28,6 +29,7 @@ import org.apache.nifi.web.api.entity.OutputPortsEntity;
 import org.apache.nifi.web.api.entity.PortEntity;
 import org.apache.nifi.web.api.entity.ProcessGroupEntity;
 import org.apache.nifi.web.api.entity.ProcessGroupFlowEntity;
+import org.apache.nifi.web.api.entity.ProcessGroupStatusEntity;
 import org.apache.nifi.web.api.entity.ProcessGroupsEntity;
 import org.apache.nifi.web.api.entity.ProcessorEntity;
 import org.apache.nifi.web.api.entity.RemoteProcessGroupEntity;
@@ -181,6 +183,29 @@ public class NiFiProcessGroupsRestClientV1 extends AbstractNiFiProcessGroupsRest
                 });
     }
 
+    /**
+     * Gets a process group entity.
+     *
+     * @param processGroupId the process group id
+     * @return the process group entity, if found
+     */
+    @Nonnull
+    public Optional<ProcessGroupEntity> findEntityById(@Nonnull final String processGroupId) {
+        try {
+            return Optional.of(client.get(BASE_PATH + processGroupId, null, ProcessGroupEntity.class));
+        } catch (final NotFoundException e) {
+            return Optional.empty();
+        }
+    }
+
+
+
+    public Optional<ProcessGroupStatusDTO> getStatus(String processGroupId) {
+        return  Optional.ofNullable(findEntityById(processGroupId).map(processGroupEntity -> processGroupEntity.getStatus()).orElse(null));
+    }
+
+
+
     @Nonnull
     @Override
     public Set<ConnectionDTO> getConnections(@Nonnull final String processGroupId) {
@@ -300,20 +325,7 @@ public class NiFiProcessGroupsRestClientV1 extends AbstractNiFiProcessGroupsRest
                 });
     }
 
-    /**
-     * Gets a process group entity.
-     *
-     * @param processGroupId the process group id
-     * @return the process group entity, if found
-     */
-    @Nonnull
-    private Optional<ProcessGroupEntity> findEntityById(@Nonnull final String processGroupId) {
-        try {
-            return Optional.of(client.get(BASE_PATH + processGroupId, null, ProcessGroupEntity.class));
-        } catch (final NotFoundException e) {
-            return Optional.empty();
-        }
-    }
+
 
     /**
      * Fetches the flow snippet for the specified process group.
@@ -341,6 +353,15 @@ public class NiFiProcessGroupsRestClientV1 extends AbstractNiFiProcessGroupsRest
 
         // Return flow
         return snippet;
+    }
+
+    private Set<ProcessGroupEntity> findAllEntities(@Nonnull final String parentGroupId) {
+        try {
+            return client.get(BASE_PATH + parentGroupId + "/process-groups", null, ProcessGroupsEntity.class)
+                .getProcessGroups();
+        } catch (final NotFoundException e) {
+            throw new NifiComponentNotFoundException(parentGroupId, NifiConstants.NIFI_COMPONENT_TYPE.PROCESS_GROUP, e);
+        }
     }
 
     /**

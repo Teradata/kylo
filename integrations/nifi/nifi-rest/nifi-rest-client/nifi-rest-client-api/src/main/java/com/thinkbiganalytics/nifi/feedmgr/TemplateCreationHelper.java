@@ -25,6 +25,7 @@ import org.apache.nifi.web.api.dto.ControllerServiceDTO;
 import org.apache.nifi.web.api.dto.FlowSnippetDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
+import org.apache.nifi.web.api.dto.status.ProcessGroupStatusDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -346,13 +347,13 @@ public class TemplateCreationHelper {
                     final String value1 = a.getValue();
                     final String value2 = b.getValue();
                     return ComparisonChain.start()
-                            // 1. Matches property value
-                            .compareTrueFirst(value1.equals(propertyValue), value2.equals(propertyValue))
+                        // 1. Matches property value
+                        .compareTrueFirst(value1.equals(propertyValue), value2.equals(propertyValue))
                             // 2. Service is enabled
-                            .compareTrueFirst(enabledServices.containsKey(value1), enabledServices.containsKey(value2))
+                        .compareTrueFirst(enabledServices.containsKey(value1), enabledServices.containsKey(value2))
                             // 3. Similar service is enabled
-                            .compareTrueFirst(enabledServices.containsKey(a.getDisplayName()), enabledServices.containsKey(b.getDisplayName()))
-                            .result();
+                        .compareTrueFirst(enabledServices.containsKey(a.getDisplayName()), enabledServices.containsKey(b.getDisplayName()))
+                        .result();
                 })
 
                 // Map to controller service DTO
@@ -464,7 +465,14 @@ public class TemplateCreationHelper {
         return NifiTemplateNameUtil.parseVersionedProcessGroupName(name);
     }
 
-    public void versionProcessGroup(ProcessGroupDTO processGroup) {
+
+    /**
+     * Version a ProcessGroup renaming it with the name - {timestamp millis}.
+     * If {@code removeIfInactive} is true it will not version but just delete it
+     * @param processGroup the group to verision
+     * @param removeIfInactive flag if true it will try to just delete rather than version
+     */
+    public ProcessGroupDTO versionProcessGroup(ProcessGroupDTO processGroup) {
         log.info("Versioning Process Group {} ", processGroup.getName());
 
         restClient.disableAllInputProcessors(processGroup.getId());
@@ -479,17 +487,22 @@ public class TemplateCreationHelper {
         //delete input connections
         try {
             deleteInputPortConnections(processGroup);
+
         } catch (NifiClientRuntimeException e) {
             log.error("Error trying to delete input port connections for Process Group {} while creating a new version. ", processGroup.getName(), e);
             getErrors().add(new NifiError(NifiError.SEVERITY.FATAL, "The input port connections to the process group " + processGroup.getName() + " could not be deleted. Please delete them manually "
                                                                     + "in NiFi and try again."));
         }
 
-        //rename the feedGroup to be name+timestamp
-        //TODO change to work with known version passed in (get the rename to current version -1 or something.
-        processGroup.setName(getVersionedProcessGroupName(processGroup.getName()));
-        restClient.updateProcessGroup(processGroup);
-        log.info("Renamed ProcessGroup to  {}, ", processGroup.getName());
+        String versionedProcessGroupName = getVersionedProcessGroupName(processGroup.getName());
+
+            //rename the feedGroup to be name+timestamp
+            processGroup.setName(versionedProcessGroupName);
+            restClient.updateProcessGroup(processGroup);
+            log.info("Renamed ProcessGroup to  {}, ", processGroup.getName());
+
+
+        return processGroup;
     }
 
     public void markProcessorsAsRunning(NifiProcessGroup newProcessGroup) {

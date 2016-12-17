@@ -2,6 +2,7 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
 
 import com.google.common.collect.ImmutableMap;
 import com.thinkbiganalytics.db.model.schema.TableSchema;
+import com.thinkbiganalytics.feedmgr.nifi.CleanupStaleFeedRevisions;
 import com.thinkbiganalytics.feedmgr.nifi.DBCPConnectionPoolTableInfo;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.SpringEnvironmentProperties;
@@ -107,6 +108,20 @@ public class NifiIntegrationRestController {
             }
             status = new RestResponseStatus.ResponseStatusBuilder().message(message).buildSuccess();
         }
+
+        return Response.ok(status).build();
+    }
+
+
+    @GET
+    @Path("/cleanup-versions/{processGroupId}")
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response cleanupVersionedProcessGroups(@PathParam("processGroupId") String processGroupId) {
+        RestResponseStatus status;
+        CleanupStaleFeedRevisions cleanupStaleFeedRevisions = new CleanupStaleFeedRevisions(legacyNifiRestClient,processGroupId);
+        cleanupStaleFeedRevisions.cleanup();
+        String msg = "Cleaned up "+cleanupStaleFeedRevisions.getDeletedProcessGroups().size()+" Process Groups";
+        status = new RestResponseStatus.ResponseStatusBuilder().message(msg).buildSuccess();
 
         return Response.ok(status).build();
     }

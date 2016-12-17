@@ -9,6 +9,8 @@ import java.util.Date;
  */
 public class NifiTemplateNameUtil {
 
+     static String VERSION_NAME_REGEX = "(.*) - (\\d{13})";
+
     public static String getVersionedProcessGroupName(String name) {
         return name + " - " + new Date().getTime();
     }
@@ -21,6 +23,6 @@ public class NifiTemplateNameUtil {
     }
 
     public static boolean isVersionedProcessGroup(String name) {
-        return StringUtils.contains(name, " - ");
+        return StringUtils.isNotBlank(name) && name.matches(VERSION_NAME_REGEX);
     }
 }

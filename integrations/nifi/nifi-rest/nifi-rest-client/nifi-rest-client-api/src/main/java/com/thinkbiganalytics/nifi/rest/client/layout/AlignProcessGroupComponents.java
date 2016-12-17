@@ -64,6 +64,13 @@ public class AlignProcessGroupComponents {
      */
     private Map<String, PortDTO> inputPortMap = new HashMap<>();
 
+
+    /**
+     * Map of the processGroupId to object with connections
+     */
+    private Map<String,ProcessGroupAndConnections> processGroupWithConnectionsMap = new HashMap<>();
+
+
     /**
      * Flag to indicate when Alignment is complete
      */
@@ -89,23 +96,7 @@ public class AlignProcessGroupComponents {
      */
     public ProcessGroupDTO autoLayout() {
         try {
-            //find the parent and children
-            if (parentProcessGroupId == "root") {
-                parentProcessGroup = niFiRestClient.processGroups().findRoot();
-            } else {
-                parentProcessGroup = niFiRestClient.processGroups().findById(parentProcessGroupId, false, true).orElse(null);
-            }
-            final Set<ProcessGroupDTO> children = parentProcessGroup.getContents().getProcessGroups();
-            processGroupDTOMap = new HashMap<>();
-            children.stream().forEach(group -> processGroupDTOMap.put(group.getId(), group));
-
-            parentProcessGroup.getContents().getOutputPorts().stream().forEach(portDTO -> outputPortMap.put(portDTO.getId(), portDTO));
-
-            parentProcessGroup.getContents().getInputPorts().stream().forEach(portDTO -> inputPortMap.put(portDTO.getId(), portDTO));
-
-            //map any ports to processgroups
-            //group the items by their respective output ports
-            createLayoutGroups();
+            groupItems();
             //organize each group of items on the screen
             layoutGroups.entrySet().stream().sorted(Map.Entry.<String, LayoutGroup>comparingByKey()).forEachOrdered(entry -> arrangeProcessGroup(entry.getValue()));
             aligned = true;
@@ -113,6 +104,35 @@ public class AlignProcessGroupComponents {
             log.error("Error Aligning items in Process Group {}. {}", parentProcessGroupId, e.getMessage());
         }
         return parentProcessGroup;
+    }
+
+
+    /**
+     * Group the items together into different {@code LayoutGroup} based upon connections from the ProcessGroup to its various ports.
+     * @return
+     */
+    public Map<String, LayoutGroup> groupItems(){
+        layoutGroups = new HashMap<>();
+        //find the parent and children
+        if (parentProcessGroupId == "root") {
+            parentProcessGroup = niFiRestClient.processGroups().findRoot();
+        } else {
+            parentProcessGroup = niFiRestClient.processGroups().findById(parentProcessGroupId, false, true).orElse(null);
+        }
+        final Set<ProcessGroupDTO> children = parentProcessGroup.getContents().getProcessGroups();
+        processGroupDTOMap = new HashMap<>();
+        children.stream().forEach(group -> processGroupDTOMap.put(group.getId(), group));
+        children.stream().forEach(group -> processGroupWithConnectionsMap.put(group.getId(), new ProcessGroupAndConnections(group)));
+
+        parentProcessGroup.getContents().getOutputPorts().stream().forEach(portDTO -> outputPortMap.put(portDTO.getId(), portDTO));
+
+        parentProcessGroup.getContents().getInputPorts().stream().forEach(portDTO -> inputPortMap.put(portDTO.getId(), portDTO));
+
+        //map any ports to processgroups
+        //group the items by their respective output ports
+        createLayoutGroups();
+        return layoutGroups;
+
     }
 
     /**
@@ -140,6 +160,10 @@ public class AlignProcessGroupComponents {
 
     }
 
+
+    public Map<String, ProcessGroupAndConnections> getProcessGroupWithConnectionsMap() {
+        return processGroupWithConnectionsMap;
+    }
 
     public boolean isAligned() {
         return aligned;
@@ -291,11 +315,17 @@ public class AlignProcessGroupComponents {
                     ProcessGroupDTO processGroup = destinationGroup == null ? sourceGroup : destinationGroup;
                     outputPortIdToGroup.computeIfAbsent(outputPort.getId(), (key) -> new HashSet<ProcessGroupDTO>()).add(processGroup);
                     groupIdToOutputPorts.computeIfAbsent(processGroup.getId(), (key) -> new HashSet<PortDTO>()).add(outputPort);
+                   if(processGroupWithConnectionsMap.containsKey(processGroup.getId())){
+                       processGroupWithConnectionsMap.get(processGroup.getId()).addConnection(connectionDTO).addPort(outputPort);
+                   }
                 }
                 if (inputPort != null) {
                     ProcessGroupDTO processGroup = destinationGroup == null ? sourceGroup : destinationGroup;
                     inputPortIdToGroup.computeIfAbsent(inputPort.getId(), (key) -> new HashSet<ProcessGroupDTO>()).add(processGroup);
                     groupIdToInputPorts.computeIfAbsent(processGroup.getId(), (key) -> new HashSet<PortDTO>()).add(inputPort);
+                    if(processGroupWithConnectionsMap.containsKey(processGroup.getId())){
+                        processGroupWithConnectionsMap.get(processGroup.getId()).addConnection(connectionDTO).addPort(outputPort);
+                    }
                 } else if (destinationGroup != null && sourceGroup != null) {
                     groupIdToGroup.computeIfAbsent(sourceGroup.getId(), (key) -> new HashSet<String>()).add(destinationGroup.getId());
                 }

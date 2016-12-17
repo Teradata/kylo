@@ -6,6 +6,8 @@ import org.apache.nifi.web.api.dto.ControllerServiceDTO;
 import org.apache.nifi.web.api.dto.FlowSnippetDTO;
 import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
+import org.apache.nifi.web.api.dto.status.ProcessGroupStatusDTO;
+import org.apache.nifi.web.api.entity.ProcessGroupEntity;
 
 import java.util.Optional;
 import java.util.Set;
@@ -117,6 +119,15 @@ public interface NiFiProcessGroupsRestClient {
      */
     @Nonnull
     Optional<ProcessGroupDTO> findByName(@Nonnull String parentGroupId, @Nonnull String groupName, boolean recursive, boolean verbose);
+
+
+    /**
+     * Get the Status for a processGroup
+     * @param processGroupId
+     * @return
+     */
+    Optional<ProcessGroupStatusDTO> getStatus(String processGroupId);
+
 
     /**
      * Gets the root process group.

@@ -19,17 +19,22 @@ import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
+import org.apache.nifi.web.api.dto.status.ProcessGroupStatusDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 
@@ -51,6 +56,12 @@ public class CreateFeedBuilder {
     private String inputProcessorType;
     private String reusableTemplateCategoryName = "reusable_templates";
     private boolean isReusableTemplate;
+
+    /**
+     * if true it will version off the existing feed process group to a <feed> - timestamp name
+     * These can be cleaned up later through the {@code CleanupStaleFeedRevisions} class
+     */
+    private boolean versionProcessGroup;
 
     /** List of Input / Output Port connections */
     @Nonnull
@@ -99,6 +110,11 @@ public class CreateFeedBuilder {
 
     public CreateFeedBuilder enabled(boolean enabled) {
         this.enabled = enabled;
+        return this;
+    }
+
+    public CreateFeedBuilder versionProcessGroup(boolean versionProcessGroup){
+        this.versionProcessGroup = versionProcessGroup;
         return this;
     }
 
@@ -181,6 +197,8 @@ public class CreateFeedBuilder {
                     //mark the new services that were created as a result of creating the new flow from the template
                     templateCreationHelper.identifyNewlyCreatedControllerServiceReferences();
 
+
+
                     //match the properties incoming to the defined properties
                     updateProcessGroupProperties(processGroupId);
 
@@ -191,6 +209,8 @@ public class CreateFeedBuilder {
                     ProcessorDTO cleanupProcessor = NifiProcessUtil.findFirstProcessorsByType(NifiProcessUtil.getInputProcessors(entity),
                                                                                               "com.thinkbiganalytics.nifi.v2.metadata.TriggerCleanup");
                     List<ProcessorDTO> nonInputProcessors = NifiProcessUtil.getNonInputProcessors(entity);
+
+
 
                     //update any references to the controller services and try to assign the value to an enabled service if it is not already
                     if (input != null) {
@@ -206,13 +226,10 @@ public class CreateFeedBuilder {
                     nonInputProcessors = NifiProcessUtil.getNonInputProcessors(entity);
 
                     newProcessGroup = new NifiProcessGroup(entity, input, nonInputProcessors);
-                    //align items
-                    AlignProcessGroupComponents alignProcessGroupComponents = new AlignProcessGroupComponents(restClient.getNiFiRestClient(), entity.getParentGroupId());
-                    alignProcessGroupComponents.autoLayout();
 
                     //Validate and if invalid Delete the process group
                     if (newProcessGroup.hasFatalErrors()) {
-                        restClient.deleteProcessGroup(entity);
+                       removeProcessGroup(entity);
                         // cleanupControllerServices();
                         newProcessGroup.setSuccess(false);
                     } else {
@@ -266,9 +283,18 @@ public class CreateFeedBuilder {
                                 }
                             }
                         }
+                        else {
+                            //now that the new one has been created attempt to remove the old one if we dont want to version it
+                            if(!versionProcessGroup){
+                                removeVersionedProcessGroup();
+
+                            }
+                        }
                     }
                     templateCreationHelper.cleanupControllerServices();
-
+                    //align items
+                    AlignProcessGroupComponents alignProcessGroupComponents = new AlignProcessGroupComponents(restClient.getNiFiRestClient(), entity.getParentGroupId());
+                    alignProcessGroupComponents.autoLayout();
                 }
             }
             return newProcessGroup;
@@ -308,7 +334,7 @@ public class CreateFeedBuilder {
     public ProcessGroupDTO rollback() throws FeedRollbackException {
         if (newProcessGroup != null) {
             try {
-                restClient.deleteProcessGroup(newProcessGroup.getProcessGroupEntity());
+                removeProcessGroup(newProcessGroup.getProcessGroupEntity());
             } catch (NifiClientRuntimeException e) {
                 log.error("Unable to delete the ProcessGroup on rollback {} ", e.getMessage());
             }
@@ -409,6 +435,46 @@ public class CreateFeedBuilder {
         }
         return processGroupId;
     }
+
+
+    /**
+     * removes the {@code previousFeedProcessGroup} from nifi
+     */
+    private void removeVersionedProcessGroup(){
+        if(!this.versionProcessGroup && previousFeedProcessGroup != null) {
+          removeProcessGroup(previousFeedProcessGroup);
+        }
+    }
+
+
+    /**
+     * Removes a given processGroup from NiFi
+     * @param processGroupDTO
+     */
+    private void removeProcessGroup(ProcessGroupDTO processGroupDTO){
+        if(processGroupDTO != null) {
+            try {
+                //validate if nothing is in the queue then remove it
+                Optional<ProcessGroupStatusDTO> statusDTO = restClient.getNiFiRestClient().processGroups().getStatus(processGroupDTO.getId());
+                if (statusDTO.isPresent() && statusDTO.get().getAggregateSnapshot().getQueuedCount().equalsIgnoreCase("0")) {
+                    //get connections linking to this group, delete them
+                    Set<ConnectionDTO> connectionDTOs = restClient.getProcessGroupConnections(processGroupDTO.getParentGroupId());
+                    if(connectionDTOs == null){
+                        connectionDTOs = new HashSet<>();
+                    }
+                    Set<ConnectionDTO> versionedConnections = connectionDTOs.stream().filter(connectionDTO -> connectionDTO.getDestination().getGroupId().equalsIgnoreCase(processGroupDTO.getId()) || connectionDTO.getSource().getGroupId().equalsIgnoreCase(processGroupDTO.getId()) )
+                        .collect(Collectors.toSet());
+                    restClient.deleteProcessGroupAndConnections(processGroupDTO, versionedConnections);
+                    log.info("removed the versioned processgroup {} ", processGroupDTO.getName());
+                } else {
+                    log.info("Unable to remove the versioned processgroup {} ", processGroupDTO.getName());
+                }
+            } catch (Exception e) {
+                log.error("Unable to remove the versioned processgroup {} ", processGroupDTO.getName(), e);
+            }
+        }
+    }
+
 
 
     /**
