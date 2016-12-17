@@ -343,6 +343,15 @@ Before installing the Kylo stack the below needs to be done on the cluster.
     $ vi /etc/elasticsearch/elasticsearch.yml
     network.host: localhost,<KYLO_EDGE_HOST>
 
+. Edit the thinbig-spark-shell configuration file
+
+    [root thinkbig]# vi /opt/thinkbig/thinkbig-services/conf/spark.properties
+
+    kerberos.thinkbig.kerberosEnabled=true
+    kerberos.thinkbig.hadoopConfigurationResources=/etc/hadoop/conf/core-site.xml,/etc/hadoop/conf/hdfs-site.xml
+    kerberos.thinkbig.kerberosPrincipal=<thinkbig_principal_name>
+    kerberos.thinkbig.keytabLocation=/etc/security/keytabs/thinkbig.service.keytab
+
 . Edit the thinbig-services configuration file
 
     [root /]# vi /opt/thinkbig/thinkbig-services/conf/application.properties
