@@ -601,4 +601,4 @@ Note: Kylo supports user impersonation ( add doc and reference it)
 
 . Test the feed
 
-    cp -p /opt/thinkbig/setup/data/sample-data/userdata1.csv /var/dropzone/
+    cp -p <PATH_TO_FILE>/userdata1.csv /var/dropzone/
