@@ -415,7 +415,7 @@ Before installing the Kylo stack the below needs to be done on the cluster.
 
     [root plugin]# mv /tmp/thinkbig-hadoop-authorization-ranger-<VERSION>.jar /opt/thinkbig/thinkbig-services/plugin
     [root plugin]# chown thinkbig:thinkbig /opt/thinkbig/thinkbig-services/plugin/thinkbig-hadoop-authorization-ranger-<VERSION>.jar
-    [root plugin]# vi /opt/thinkbig/thinkbig-services/conf/authorization.ranger.properties
+    [root plugin]# touch /opt/thinkbig/thinkbig-services/conf/authorization.ranger.properties
     [root plugin]# chown thinkbig:thinkbig /opt/thinkbig/thinkbig-services/conf/authorization.ranger.properties
 
 .. Edit the properties file
