@@ -592,9 +592,7 @@ Note: Kylo supports user impersonation ( add doc and reference it)
         ... Edit the "Update Index" processor and set teh URL to the <KYLO_EDGE_HOSTNAME>
 
 
-. # Import the transform feed
-
-  Create a feed off a table and test
+. Import the transform feed (Optional)
 
 
 == Create Data Ingest Feed Test
