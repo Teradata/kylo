@@ -653,10 +653,10 @@
             }
 
             // Filter formulas based on column type
-            if (columnDef.dataType === "date" || columnDef.dataType === "timestamp") {
-                return _.without(formulas, "val");
-            } else {
+            if (columnDef.dataType !== "date" && columnDef.dataType !== "timestamp") {
                 return _.without(formulas, "year", "month", "day", "hour", "minute");
+            } else {
+               return formulas;
             }
         };
     }]);
