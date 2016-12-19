@@ -352,7 +352,7 @@ Before installing the Kylo stack the below needs to be done on the cluster.
     kerberos.thinkbig.kerberosPrincipal=<thinkbig_principal_name>
     kerberos.thinkbig.keytabLocation=/etc/security/keytabs/thinkbig.service.keytab
 
-. Edit the thinbkig-services configuration file
+. Edit the thinkbig-services configuration file
 
     [root /]# vi /opt/thinkbig/thinkbig-services/conf/application.properties
 
