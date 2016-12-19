@@ -428,11 +428,6 @@ Before installing the Kylo stack the below needs to be done on the cluster.
         ranger.password=admin
 
 
-. Create the dropzone directory on the NiFi edge node
-
-    $ mkdir -p /var/dropzone
-    $ chown nifi /var/dropzone
-
 . Start the Kylo applications
 
     [root]# /opt/thinkbig/start-thinkbig-apps.sh
@@ -447,9 +442,16 @@ Before installing the Kylo stack the below needs to be done on the cluster.
 
     http://<KYLO_EDGE_HOSTNAME>:8400
 
-== Create HDFS Folders for NiFi standard-ingest Feed
+== Create Folders for NiFi standard-ingest Feed
 
-This will be required since we are running under non-privileged users
+. Create the dropzone directory on the NiFi edge node
+
+    $ mkdir -p /var/dropzone
+    $ chown nifi /var/dropzone
+
+. Create the HDFS root folders
+
+    This will be required since we are running under non-privileged users
 
     [root]# su - hdfs
     [hdfs ~]$ kinit -kt /etc/security/keytabs/hdfs.service.keytab <HDFS_PRINCIPAL_NAME>
