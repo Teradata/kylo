@@ -315,7 +315,7 @@ Before installing the Kylo stack the below needs to be done on the cluster.
 
 . Install the RPM
 
-    $ rpm -ivh /tmp/thinkbig-datalake-accelerator-0.4.3-1.noarch.rpm
+    $ rpm -ivh /tmp/thinkbig-datalake-accelerator-<VERSION>.noarch.rpm
 
 . SCP the thinkbig-install.tar tar file to /tmp (if running in offline mode)
 
@@ -413,8 +413,8 @@ Before installing the Kylo stack the below needs to be done on the cluster.
 
 .. Install the Ranger plugin
 
-    [root plugin]# mv /tmp/thinkbig-hadoop-authorization-ranger-0.4.3.jar /opt/thinkbig/thinkbig-services/plugin
-    [root plugin]# chown thinkbig:thinkbig /opt/thinkbig/thinkbig-services/plugin/thinkbig-hadoop-authorization-ranger-0.4.3.jar
+    [root plugin]# mv /tmp/thinkbig-hadoop-authorization-ranger-<VERSION>.jar /opt/thinkbig/thinkbig-services/plugin
+    [root plugin]# chown thinkbig:thinkbig /opt/thinkbig/thinkbig-services/plugin/thinkbig-hadoop-authorization-ranger-<VERSION>.jar
     [root plugin]# vi /opt/thinkbig/thinkbig-services/conf/authorization.ranger.properties
     [root plugin]# chown thinkbig:thinkbig /opt/thinkbig/thinkbig-services/conf/authorization.ranger.properties
 
