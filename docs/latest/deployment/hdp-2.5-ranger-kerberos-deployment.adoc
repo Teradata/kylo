@@ -405,7 +405,7 @@ Before installing the Kylo stack the below needs to be done on the cluster.
     nifi.all_processors.hadoop_configuration_resources=/etc/hadoop/conf/core-site.xml,/etc/hadoop/conf/hdfs-site.xml
 
     # Set the JMS server hostname for the Kylo hosted JMS server
-    config.elasticsearch.jms.url=tcp://localhost:61616
+    config.elasticsearch.jms.url=tcp://<KYLO_EDGE_HOST>:61616
 
 . Install the Ranger Plugin
 
