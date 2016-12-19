@@ -441,7 +441,7 @@ Before installing the Kylo stack the below needs to be done on the cluster.
 
     /var/log/thinkbig-services.log
     /var/log/thinkbig-ui/thinkbig-ui.log
-    /var/log/thinkbig-spark-shell/thinkbig-spark-shell.err
+    /var/log/thinkbig-services/thinkbig-spark-shell.err
 
 . Login to the Kylo UI
 
