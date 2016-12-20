@@ -129,6 +129,17 @@ public class JcrPropertyTest {
             JcrDerivedDatasource datasource1 = (JcrDerivedDatasource) datasourceProvider.ensureDerivedDatasource("HiveDatasource","mysql.table1","mysql.table1","mysql table source 1", null);
             JcrDerivedDatasource datasource2 = (JcrDerivedDatasource) datasourceProvider.ensureDerivedDatasource("HiveDatasource","mysql.table2","mysql.table2","mysql table source 2", null);
 
+            JcrDerivedDatasource emptySource1 = (JcrDerivedDatasource) datasourceProvider.ensureDerivedDatasource("HDFSDatasource","","","empty hdfs source", null);
+            JcrDerivedDatasource emptySource2 = (JcrDerivedDatasource) datasourceProvider.ensureDerivedDatasource("HDFSDatasource","","","empty hdfs source", null);
+            Assert.assertEquals(emptySource1.getId(),emptySource2.getId());
+            JcrDerivedDatasource emptySource3 = (JcrDerivedDatasource) datasourceProvider.ensureDerivedDatasource("HDFSDatasource",null,null,"empty hdfs source", null);
+            JcrDerivedDatasource emptySource4 = (JcrDerivedDatasource) datasourceProvider.ensureDerivedDatasource("HDFSDatasource",null,null,"empty hdfs source", null);
+            Assert.assertEquals(emptySource3.getId(),emptySource4.getId());
+            JcrDerivedDatasource datasource3 = (JcrDerivedDatasource) datasourceProvider.ensureDerivedDatasource("HDFSDatasource","/etl/customers/swert/012320342","/etl/customers/swert/012320342","mysql hdfs source", null);
+            JcrDerivedDatasource datasource4 = (JcrDerivedDatasource) datasourceProvider.ensureDerivedDatasource("HDFSDatasource","/etl/customers/swert/012320342","/etl/customers/swert/012320342","mysql hdfs source", null);
+            Assert.assertEquals(datasource3.getId(),datasource4.getId());
+
+
 
             String feedSystemName = "my_feed_"+ UUID.randomUUID();
 //                JcrFeed feed = (JcrFeed) feedProvider.ensureFeed(categorySystemName, feedSystemName, "my feed desc", datasource1.getId(), null);

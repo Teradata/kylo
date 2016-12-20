@@ -20,6 +20,8 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.joda.time.DateTime;
 import org.modeshape.common.text.Jsr283Encoder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
@@ -32,6 +34,7 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.jcr.Node;
+import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
 
 /**
@@ -39,23 +42,27 @@ import javax.jcr.RepositoryException;
  */
 public class JcrDatasourceProvider extends BaseJcrProvider<Datasource, Datasource.ID> implements DatasourceProvider {
 
+    private static final Logger log = LoggerFactory.getLogger(JcrDatasourceProvider.class);
+
     @Inject
     private MetadataAccess metadataAccess;
-    
+
     private static final Map<Class<? extends Datasource>, Class<? extends JcrDatasource>> DOMAIN_TYPES_MAP;
+
     static {
         Map<Class<? extends Datasource>, Class<? extends JcrDatasource>> map = new HashMap<>();
         map.put(DerivedDatasource.class, JcrDerivedDatasource.class);
         DOMAIN_TYPES_MAP = map;
     }
-    
+
     private static final Map<String, Class<? extends JcrDatasource>> NODE_TYPES_MAP;
+
     static {
         Map<String, Class<? extends JcrDatasource>> map = new HashMap<>();
         map.put(JcrDerivedDatasource.NODE_TYPE, JcrDerivedDatasource.class);
         NODE_TYPES_MAP = map;
     }
-    
+
     public static JcrObjectTypeResolver<? extends JcrDatasource> TYPE_RESOLVER = new JcrObjectTypeResolver<JcrDatasource>() {
         @Override
         public Class<? extends JcrDatasource> resolve(Node node) {
@@ -85,11 +92,31 @@ public class JcrDatasourceProvider extends BaseJcrProvider<Datasource, Datasourc
         return JcrQueryUtil.findFirst(getSession(), query, bindParams, JcrDerivedDatasource.class);
     }
 
+    private JcrDerivedDatasource findDerivedDatasourceByNodeName(String nodeName) throws RepositoryException {
+        Node parentNode = getSession().getNode(EntityUtil.pathForDerivedDatasource());
+        try {
+            Node child = parentNode.getNode(nodeName);
+            if (child != null) {
+                JcrDerivedDatasource jcrDerivedDatasource = new JcrDerivedDatasource(child);
+                return jcrDerivedDatasource;
+            }
+        } catch (PathNotFoundException e) {
+            //this is ok if we cant find it we will try to create it.
+        }
+        return null;
+    }
 
     /**
      * gets or creates the Derived datasource
      */
     public DerivedDatasource ensureDerivedDatasource(String datasourceType, String identityString, String title, String desc, Map<String, Object> properties) {
+       //ensure the identity String is not null
+        if (identityString == null) {
+            identityString = "";
+        }
+        if (datasourceType == null) {
+            datasourceType = "Datasource";
+        }
 
         DerivedDatasource derivedDatasource = findDerivedDatasource(datasourceType, identityString);
         if (derivedDatasource == null) {
@@ -106,26 +133,36 @@ public class JcrDatasourceProvider extends BaseJcrProvider<Datasource, Datasourc
                 if (Jsr283Encoder.containsEncodeableCharacters(identityString)) {
                     nodeName = new Jsr283Encoder().encode(nodeName);
                 }
-                Node derivedDatasourceNode = JcrUtil.createNode(parentNode, nodeName, JcrDerivedDatasource.NODE_TYPE);
-                JcrDerivedDatasource jcrDerivedDatasource = new JcrDerivedDatasource(derivedDatasourceNode);
-                jcrDerivedDatasource.setSystemName(identityString);
-                jcrDerivedDatasource.setDatasourceType(datasourceType);
-                jcrDerivedDatasource.setTitle(title);
-                jcrDerivedDatasource.setDescription(desc);
+                JcrDerivedDatasource jcrDerivedDatasource = null;
+                try {
+                    jcrDerivedDatasource = findDerivedDatasourceByNodeName(nodeName);
+                } catch (RepositoryException e) {
+                    log.warn("An exception ocurred trying to find the DerivedDatasource by node name {}.  {} ", nodeName, e.getMessage());
+                }
                 derivedDatasource = jcrDerivedDatasource;
+                if (jcrDerivedDatasource == null) {
+                    Node derivedDatasourceNode = JcrUtil.createNode(parentNode, nodeName, JcrDerivedDatasource.NODE_TYPE);
+                    jcrDerivedDatasource = new JcrDerivedDatasource(derivedDatasourceNode);
+                    jcrDerivedDatasource.setSystemName(identityString);
+                    jcrDerivedDatasource.setDatasourceType(datasourceType);
+                    jcrDerivedDatasource.setTitle(title);
+                    jcrDerivedDatasource.setDescription(desc);
+                    derivedDatasource = jcrDerivedDatasource;
+                }
             } catch (RepositoryException e) {
-                throw new MetadataRepositoryException("Failed to create Derived Datasource for " + datasourceType + ", " + identityString, e);
+                log.error("Failed to create Derived Datasource for DatasourceType: {}, IdentityString: {}, Error: {}", datasourceType, identityString, e.getMessage(), e);
             }
         }
-        // ((JcrDerivedDatasource)derivedDatasource).mergeProperties()
-        if(properties != null) {
-            derivedDatasource.setProperties(properties);
+        if (derivedDatasource != null) {
+            // ((JcrDerivedDatasource)derivedDatasource).mergeProperties()
+            if (properties != null) {
+                derivedDatasource.setProperties(properties);
+            }
+            derivedDatasource.setTitle(title);
         }
-        derivedDatasource.setTitle(title);
 
         return derivedDatasource;
     }
-
 
 
     public static Class<? extends JcrEntity> resolveJcrEntityClass(String jcrNodeType) {
@@ -135,7 +172,7 @@ public class JcrDatasourceProvider extends BaseJcrProvider<Datasource, Datasourc
             return JcrDatasource.class;
         }
     }
-    
+
     public static Class<? extends JcrEntity> resolveJcrEntityClass(Node node) {
         try {
             return resolveJcrEntityClass(node.getPrimaryNodeType().getName());
@@ -153,7 +190,7 @@ public class JcrDatasourceProvider extends BaseJcrProvider<Datasource, Datasourc
     public Class<? extends JcrEntity> getJcrEntityClass() {
         return JcrDatasource.class;
     }
-    
+
     @Override
     public Class<? extends JcrEntity> getJcrEntityClass(String jcrNodeType) {
         return resolveJcrEntityClass(jcrNodeType);
@@ -207,7 +244,7 @@ public class JcrDatasourceProvider extends BaseJcrProvider<Datasource, Datasourc
     @Override
     public void removeDatasource(Datasource.ID id) {
         Datasource ds = getDatasource(id);
-        if(ds != null){
+        if (ds != null) {
             try {
                 ((JcrMetadataAccess) metadataAccess).ensureCheckoutNode(((JcrDatasource) ds).getNode().getParent());
                 ((JcrDatasource) ds).getNode().remove();
@@ -238,16 +275,15 @@ public class JcrDatasourceProvider extends BaseJcrProvider<Datasource, Datasourc
             String dsPath = EntityUtil.pathForDataSource();
             Node dsNode = getSession().getNode(dsPath);
             Node subfolderNode = tool.findOrCreateChild(dsNode, subfolderName, "nt:folder");
-            
+
             Map<String, Object> props = new HashMap<>();
             props.put(JcrDatasource.SYSTEM_NAME, name);
-
 
             String encodedName = org.modeshape.jcr.value.Path.DEFAULT_ENCODER.encode(name);
 
             @SuppressWarnings("unchecked")
             J datasource = (J) findOrCreateEntity(subfolderNode.getPath(), encodedName, implType, props);
-            
+
             datasource.setTitle(name);
             datasource.setDescription(descr);
             return datasource;
@@ -259,7 +295,7 @@ public class JcrDatasourceProvider extends BaseJcrProvider<Datasource, Datasourc
     @SuppressWarnings("unchecked")
     private <J extends JcrDatasource> Class<J> deriveImplType(Class<? extends Datasource> domainType) {
         Class<? extends JcrDatasource> implType = DOMAIN_TYPES_MAP.get(domainType);
-        
+
         if (implType != null) {
             return (Class<J>) implType;
         } else {
@@ -270,9 +306,9 @@ public class JcrDatasourceProvider extends BaseJcrProvider<Datasource, Datasourc
 
     // TODO Replace this implementation with a query restricting version.  This is just a 
     // workaround that filters on the results set.
-    private static class Criteria extends AbstractMetadataCriteria<DatasourceCriteria> 
+    private static class Criteria extends AbstractMetadataCriteria<DatasourceCriteria>
         implements DatasourceCriteria, Predicate<Datasource>, Comparator<Datasource> {
-        
+
         private String name;
         private DateTime createdOn;
         private DateTime createdAfter;
@@ -281,14 +317,24 @@ public class JcrDatasourceProvider extends BaseJcrProvider<Datasource, Datasourc
 
         @Override
         public boolean test(Datasource input) {
-            if (this.type != null && ! this.type.isAssignableFrom(input.getClass())) return false;
-            if (this.name != null && ! name.equals(input.getName())) return false;
-            if (this.createdOn != null && ! this.createdOn.equals(input.getCreatedTime())) return false;
-            if (this.createdAfter != null && ! this.createdAfter.isBefore(input.getCreatedTime())) return false;
-            if (this.createdBefore != null && ! this.createdBefore.isBefore(input.getCreatedTime())) return false;
+            if (this.type != null && !this.type.isAssignableFrom(input.getClass())) {
+                return false;
+            }
+            if (this.name != null && !name.equals(input.getName())) {
+                return false;
+            }
+            if (this.createdOn != null && !this.createdOn.equals(input.getCreatedTime())) {
+                return false;
+            }
+            if (this.createdAfter != null && !this.createdAfter.isBefore(input.getCreatedTime())) {
+                return false;
+            }
+            if (this.createdBefore != null && !this.createdBefore.isBefore(input.getCreatedTime())) {
+                return false;
+            }
             return true;
         }
-        
+
         @Override
         public int compare(Datasource o1, Datasource o2) {
             return o2.getCreatedTime().compareTo(o1.getCreatedTime());
