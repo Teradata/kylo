@@ -6,14 +6,19 @@
     <parent>
         <groupId>com.thinkbiganalytics.datalake</groupId>
         <artifactId>thinkbig-alerts</artifactId>
-        <version>0.5.0-SNAPSHOT</version>
+        <version>0.6.0-SNAPSHOT</version>
     </parent>
     
     <dependencies>
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
             <artifactId>thinkbig-alerts-api</artifactId>
-            <version>0.6.0-SNAPSHOT</version>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.thinkbiganalytics.metadata</groupId>
+            <artifactId>thinkbig-metadata-persistence</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
@@ -83,9 +88,8 @@
 
         <!-- Testing -->
         <dependency>
-            <groupId>com.thinkbiganalytics.metadata</groupId>
-            <artifactId>thinkbig-metadata-persistence</artifactId>
-            <version>${project.version}</version>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

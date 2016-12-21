@@ -43,7 +43,6 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.thinkbiganalytics.alerts.api.Alert;
-import com.thinkbiganalytics.alerts.api.Alert.ID;
 import com.thinkbiganalytics.alerts.api.Alert.State;
 import com.thinkbiganalytics.alerts.api.AlertChangeEvent;
 import com.thinkbiganalytics.alerts.api.AlertListener;
@@ -392,7 +391,7 @@ public class AggregatingAlertProviderTest {
         }
 
         @Override
-        public List<? extends AlertChangeEvent> getEvents() {
+        public List<AlertChangeEvent> getEvents() {
             return Collections.singletonList(new TestChangeEvent(this));
         }
 
@@ -411,11 +410,6 @@ public class AggregatingAlertProviderTest {
         public TestChangeEvent(TestAlert alert) {
             this.alert = alert;
             this.time = alert.createdTime;
-        }
-
-        @Override
-        public ID getAlertId() {
-            return this.alert.getId();
         }
 
         @Override

@@ -399,7 +399,7 @@ public class InMemoryAlertManager implements AlertManager {
         private final String description;
         private final AlertSource source;
         private final Object content;
-        private final List<? extends AlertChangeEvent> events;
+        private final List<AlertChangeEvent> events;
 
         public GenericAlert(URI type, Level level, String description, Object content) {
             this.id = new AlertID();
@@ -469,7 +469,7 @@ public class InMemoryAlertManager implements AlertManager {
         }
 
         @Override
-        public List<? extends AlertChangeEvent> getEvents() {
+        public List<AlertChangeEvent> getEvents() {
             return this.events;
         }
 
@@ -498,11 +498,6 @@ public class InMemoryAlertManager implements AlertManager {
             this.state = state;
             this.content = content;
             this.changeTime = DateTime.now();
-        }
-
-        @Override
-        public AlertID getAlertId() {
-            return alertId;
         }
 
         @Override

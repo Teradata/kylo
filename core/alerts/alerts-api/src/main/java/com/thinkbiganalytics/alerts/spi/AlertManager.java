@@ -34,16 +34,6 @@ public interface AlertManager extends AlertSource {
      */
     <C extends Serializable> Alert create(URI type, Alert.Level level, String description, C content);
     
-//    /**
-//     * Creates a new alert from the given alert with with a new state and associated content.
-//     * 
-//     * @param alert the source alert
-//     * @param newState the new state for the resulting alert
-//     * @param content optional content, the type of which is specific to the kind of alert and state
-//     * @return the new alert
-//     */
-//    <C extends Serializable> Alert changeState(Alert alert, Alert.State newState, C content);
-//    
     /**
      * Obtains an AlertResponse object through which AlertResponders will perform updates to the given alert.
      * @param alert the alert that the AlertResponse will update

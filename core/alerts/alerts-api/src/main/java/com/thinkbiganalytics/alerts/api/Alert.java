@@ -77,7 +77,7 @@ public interface Alert {
      * has gone through.
      * @return the list of state changes
      */
-    List<? extends AlertChangeEvent> getEvents();
+    List<AlertChangeEvent> getEvents();
     
     /**
      * The payload containing type-specific data for this alert.  The kind of object
