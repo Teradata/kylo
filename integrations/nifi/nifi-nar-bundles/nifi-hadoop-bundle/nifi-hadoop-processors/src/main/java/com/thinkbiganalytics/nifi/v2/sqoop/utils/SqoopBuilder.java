@@ -36,8 +36,6 @@ public class SqoopBuilder {
     private final static String sourcePasswordLoaderClassValue = "org.apache.sqoop.util.password.CryptoFileLoader";
     private final static String sourcePasswordPassphraseLabel = "-Dorg.apache.sqoop.credentials.loader.crypto.passphrase";
     private String sourcePasswordPassphrase;
-    private final static String sourceDriverLabel = "--driver";
-    private String sourceDriver;
     private final static String sourceConnectionStringLabel = "--connect";
     private String sourceConnectionString;
     private final static String sourceUserNameLabel = "--username";
@@ -47,6 +45,10 @@ public class SqoopBuilder {
     private String sourcePasswordHdfsFile;
     private final static String sourcePasswordClearTextLabel = "--password";
     private String sourceEnteredPassword;
+    private final static String sourceConnectionManagerLabel = "--connection-manager";
+    private String sourceConnectionManager;
+    private final static String sourceDriverLabel = "--driver";
+    private String sourceDriver;
     private final static String sourceTableNameLabel = "--table";
     private String sourceTableName;
     private final static String sourceTableFieldsLabel = "--columns";
@@ -116,17 +118,6 @@ public class SqoopBuilder {
     }
 
     /**
-     * Set JDBC driver for source system
-     * @param sourceDriver source driver
-     * @return {@link SqoopBuilder}
-     */
-    public SqoopBuilder setSourceDriver (String sourceDriver) {
-        this.sourceDriver = sourceDriver;
-        logMessage("info", "Source Driver", this.sourceDriver);
-        return this;
-    }
-
-    /**
      * Set connection string for source system
      * @param sourceConnectionString source connection string
      * @return {@link SqoopBuilder}
@@ -189,6 +180,28 @@ public class SqoopBuilder {
     public SqoopBuilder setSourceEnteredPassword(String sourceEnteredPassword) {
         this.sourceEnteredPassword = sourceEnteredPassword;
         logMessage("info", "Source Entered Password", MASK_STRING);
+        return this;
+    }
+
+    /**
+     * Set Connection Manager class for source system
+     * @param sourceConnectionManager connection manager class
+     * @return {@link SqoopBuilder}
+     */
+    public SqoopBuilder setSourceConnectionManager (String sourceConnectionManager) {
+        this.sourceConnectionManager = sourceConnectionManager;
+        logMessage("info", "Source Connection Manager", this.sourceConnectionManager);
+        return this;
+    }
+
+    /**
+     * Set JDBC driver for source system
+     * @param sourceDriver source driver
+     * @return {@link SqoopBuilder}
+     */
+    public SqoopBuilder setSourceDriver (String sourceDriver) {
+        this.sourceDriver = sourceDriver;
+        logMessage("info", "Source Driver", this.sourceDriver);
         return this;
     }
 
@@ -508,7 +521,6 @@ public class SqoopBuilder {
      */
     private String buildSqoopCommand() {
         StringBuffer commandStringBuffer = new StringBuffer();
-        SqoopUtils sqoopUtils = new SqoopUtils();
 
         /* Identify operation */
         commandStringBuffer.append(operationName)                                               //sqoop
@@ -528,17 +540,6 @@ public class SqoopBuilder {
                 .append(QUOTE)
                 .append(sourcePasswordPassphrase)                                               //"user provided"
                 .append(END_QUOTE_SPACE);
-        }
-
-        /* Handle Oracle case */
-        if (!sqoopUtils.isOracleDatabase(sourceDriver)) {
-            commandStringBuffer.append(sourceDriverLabel)                                       //--driver
-                .append(START_SPACE_QUOTE)
-                .append(sourceDriver)                                                           //"user provided"
-                .append(END_QUOTE_SPACE);
-        }
-        else {
-            logger.info("Skipping provided --driver parameter for Oracle database.");
         }
 
         /* Handle authentication */
@@ -576,6 +577,20 @@ public class SqoopBuilder {
             commandStringBuffer.append(sourcePasswordClearTextLabel)                            //--password
                 .append(START_SPACE_QUOTE)
                 .append(sourceEnteredPassword)                                                  //"user provided"
+                .append(END_QUOTE_SPACE);
+        }
+
+        if ((sourceConnectionManager != null) && (!sourceConnectionManager.isEmpty())) {
+            commandStringBuffer.append(sourceConnectionManagerLabel)                            //--connection-manager
+                .append(START_SPACE_QUOTE)
+                .append(sourceConnectionManager)                                                //"user provided"
+                .append(END_QUOTE_SPACE);
+        }
+
+        if ((sourceDriver != null) && (!sourceDriver.isEmpty())) {
+            commandStringBuffer.append(sourceDriverLabel)                                       //--driver
+                .append(START_SPACE_QUOTE)
+                .append(sourceDriver)                                                           //"user provided"
                 .append(END_QUOTE_SPACE);
         }
 

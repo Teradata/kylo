@@ -24,8 +24,6 @@ public class SqoopExportBuilder {
     private final static String targetPasswordLoaderClassValue = "org.apache.sqoop.util.password.CryptoFileLoader";
     private final static String targetPasswordPassphraseLabel = "-Dorg.apache.sqoop.credentials.loader.crypto.passphrase";
     private String targetPasswordPassphrase;
-    private final static String targetDriverLabel = "--driver";
-    private String targetDriver;
     private final static String targetConnectionStringLabel = "--connect";
     private String targetConnectionString;
     private final static String targetUserNameLabel = "--username";
@@ -35,6 +33,10 @@ public class SqoopExportBuilder {
     private String targetPasswordHdfsFile;
     private final static String targetPasswordClearTextLabel = "--password";
     private String targetEnteredPassword;
+    private final static String targetConnectionManagerLabel = "--connection-manager";
+    private String targetConnectionManager;
+    private final static String targetDriverLabel = "--driver";
+    private String targetDriver;
     private final static String targetTableNameLabel = "--table";
     private String targetTableName;
     private final static String sourceHdfsDirectoryLabel = "--export-dir";
@@ -64,17 +66,6 @@ public class SqoopExportBuilder {
     public SqoopExportBuilder setLogger (ComponentLog logger) {
         this.logger = logger;
         logger.info("Logger set to: {}", new Object[] { this.logger });
-        return this;
-    }
-
-    /**
-     * Set JDBC driver for target system
-     * @param targetDriver target driver
-     * @return {@link SqoopExportBuilder}
-     */
-    public SqoopExportBuilder setTargetDriver (String targetDriver) {
-        this.targetDriver = targetDriver;
-        if (logger!=null) { logger.info("Target Driver set to: {}", new Object[] { this.targetDriver }); }
         return this;
     }
 
@@ -141,6 +132,28 @@ public class SqoopExportBuilder {
     public SqoopExportBuilder setTargetEnteredPassword (String targetEnteredPassword) {
         this.targetEnteredPassword = targetEnteredPassword;
         if (logger!=null) { logger.info("Target Entered Password set to: {}", new Object[] { MASK_STRING }); }
+        return this;
+    }
+
+    /**
+     * Set Connection Manager class for target system
+     * @param targetConnectionManager connection manager class
+     * @return {@link SqoopExportBuilder}
+     */
+    public SqoopExportBuilder setTargetConnectionManager (String targetConnectionManager) {
+        this.targetConnectionManager = targetConnectionManager;
+        if (logger!=null) { logger.info("Target Connection Manager set to: {}", new Object[] { this.targetConnectionManager }); }
+        return this;
+    }
+
+    /**
+     * Set JDBC driver for target system
+     * @param targetDriver target driver
+     * @return {@link SqoopExportBuilder}
+     */
+    public SqoopExportBuilder setTargetDriver (String targetDriver) {
+        this.targetDriver = targetDriver;
+        if (logger!=null) { logger.info("Target Driver set to: {}", new Object[] { this.targetDriver }); }
         return this;
     }
 
@@ -242,7 +255,6 @@ public class SqoopExportBuilder {
      */
     private String buildSqoopExportCommand() {
         StringBuffer commandStringBuffer = new StringBuffer();
-        SqoopUtils sqoopUtils = new SqoopUtils();
 
         /* Identify operation */
         commandStringBuffer.append(operationName)                                               //sqoop
@@ -262,17 +274,6 @@ public class SqoopExportBuilder {
                 .append(QUOTE)
                 .append(targetPasswordPassphrase)                                               //"user provided"
                 .append(END_QUOTE_SPACE);
-        }
-
-        /* Handle Oracle case */
-        if (!sqoopUtils.isOracleDatabase(targetDriver)) {
-            commandStringBuffer.append(targetDriverLabel)                                       //--driver
-                .append(START_SPACE_QUOTE)
-                .append(targetDriver)                                                           //"user provided"
-                .append(END_QUOTE_SPACE);
-        }
-        else {
-            logger.info("Skipping provided --driver parameter for Oracle database.");
         }
 
         /* Handle authentication */
@@ -310,6 +311,20 @@ public class SqoopExportBuilder {
             commandStringBuffer.append(targetPasswordClearTextLabel)                            //--password
                 .append(START_SPACE_QUOTE)
                 .append(targetEnteredPassword)                                                  //"user provided"
+                .append(END_QUOTE_SPACE);
+        }
+
+        if ((targetConnectionManager != null) && (!targetConnectionManager.isEmpty())) {
+            commandStringBuffer.append(targetConnectionManagerLabel)                            //--connection-manager
+                .append(START_SPACE_QUOTE)
+                .append(targetConnectionManager)                                                //"user provided"
+                .append(END_QUOTE_SPACE);
+        }
+
+        if ((targetDriver != null) && (!targetDriver.isEmpty())) {
+            commandStringBuffer.append(targetDriverLabel)                                       //--driver
+                .append(START_SPACE_QUOTE)
+                .append(targetDriver)                                                           //"user provided"
                 .append(END_QUOTE_SPACE);
         }
 

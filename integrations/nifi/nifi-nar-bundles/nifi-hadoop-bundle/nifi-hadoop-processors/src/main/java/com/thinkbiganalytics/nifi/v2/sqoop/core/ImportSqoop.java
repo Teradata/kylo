@@ -391,13 +391,14 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         SqoopBuilder sqoopBuilder = new SqoopBuilder();
         String sqoopCommand = sqoopBuilder
             .setLogger(logger)
-            .setSourceDriver(sqoopConnectionService.getDriver())
             .setSourceConnectionString(sqoopConnectionService.getConnectionString())
             .setSourceUserName(sqoopConnectionService.getUserName())
             .setPasswordMode(sqoopConnectionService.getPasswordMode())
             .setSourcePasswordHdfsFile(sqoopConnectionService.getPasswordHdfsFile())
             .setSourcePasswordPassphrase(sqoopConnectionService.getPasswordPassphrase())
             .setSourceEnteredPassword(sqoopConnectionService.getEnteredPassword())
+            .setSourceConnectionManager(sqoopConnectionService.getConnectionManager())
+            .setSourceDriver(sqoopConnectionService.getDriver())
             .setSourceTableName(sourceTableName)
             .setSourceTableFields(sourceTableFields)
             .setSourceTableWhereClause(sourceTableWhereClause)
@@ -552,7 +553,7 @@ public class ImportSqoop extends AbstractNiFiProcessor {
 
         }
 
-        if ((sqoopUtils.isTeradataDatabase(sqoopConnectionService.getDriver()) && (sourceLoadStrategy == SqoopLoadStrategy.INCREMENTAL_LASTMODIFIED))) {
+        if ((sqoopUtils.isTeradataDatabase(sqoopConnectionService.getConnectionString()) && (sourceLoadStrategy == SqoopLoadStrategy.INCREMENTAL_LASTMODIFIED))) {
             results.add(new ValidationResult.Builder()
                             .subject(this.getClass().getSimpleName())
                             .valid(false)

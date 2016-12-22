@@ -19,17 +19,16 @@ public class StandardSqoopConnectionService
     extends AbstractControllerService
     implements SqoopConnectionService {
 
-    public static final PropertyDescriptor SOURCE_DRIVER = new PropertyDescriptor.Builder()
-        .name("Source Driver")
-        .description("The driver for accessing the relational source system")
-        .required(true)
-        .expressionLanguageSupported(true)
-        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .build();
-
     public static final PropertyDescriptor SOURCE_CONNECTION_STRING = new PropertyDescriptor.Builder()
         .name("Source Connection String")
-        .description("The connection string for accessing the relational source system")
+        .description("The connection string for accessing the relational source system. "
+                     + "Sqoop will attempt to determine the best connector and driver based upon this value. "
+                     + "In most cases, this behavior should be OK and acceptable. "
+                     + "[*** Note 1: If you need to manually specify a connector, provide it via the (optional) Source Connection Manager property.] "
+                     + "[*** Note 2: Based upon the connector, Sqoop will automatically choose a best Source Driver. "
+                     + "In the rare case that you need to manually specify a driver, provide it via the (optional) Source Driver property. "
+                     + "Please be careful: If a driver is manually provided, the Generic JDBC Connector will always be used and any other optimized connectors will be ignored, even if available. "
+                     + " *---> So, in most cases, you should not need to provide a Source Driver value <---*]")
         .required(true)
         .expressionLanguageSupported(true)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
@@ -83,17 +82,37 @@ public class StandardSqoopConnectionService
         .sensitive(true)
         .build();
 
+    public static final PropertyDescriptor SOURCE_CONNECTION_MANAGER = new PropertyDescriptor.Builder()
+        .name("Source Connection Manager")
+        .description("The connection manager (also called connector) to use for accessing the relational source system. "
+                     + "Note: Sqoop will try to detect the best connection manager automatically. So, providing this value is optional, and may even be not recommended in some cases. "
+                     + "See description of Source Connection String property for full explanation.")
+        .required(false)
+        .expressionLanguageSupported(true)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .build();
+
+    public static final PropertyDescriptor SOURCE_DRIVER = new PropertyDescriptor.Builder()
+        .name("Source Driver (Avoid providing value)")
+        .description("The driver for accessing the relational source system. "
+                     + "Note: This should be auto-detected. Try to avoid providing a value for this property. See description of Source Connection String property for full explanation.")
+        .required(false)
+        .expressionLanguageSupported(true)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .build();
+
     private static final List<PropertyDescriptor> sqoopConnectionProperties;
 
     static {
         final List<PropertyDescriptor> properties = new ArrayList<>();
-        properties.add(SOURCE_DRIVER);
         properties.add(SOURCE_CONNECTION_STRING);
         properties.add(SOURCE_USERNAME);
         properties.add(PASSWORD_MODE);
         properties.add(SOURCE_PASSWORD_HDFS_FILE);
         properties.add(SOURCE_PASSWORD_PASSPHRASE);
         properties.add(SOURCE_ENTERED_PASSWORD);
+        properties.add(SOURCE_CONNECTION_MANAGER);
+        properties.add(SOURCE_DRIVER);
 
         sqoopConnectionProperties = Collections.unmodifiableList(properties);
     }
@@ -103,29 +122,26 @@ public class StandardSqoopConnectionService
         return sqoopConnectionProperties;
     }
 
-    private String sourceDriver;
     private String sourceConnectionString;
     private String sourceUserName;
     private PasswordMode passwordMode;
     private String sourcePasswordHdfsFile;
     private String sourcePasswordPassphrase;
     private String sourceEnteredPassword;
+    private String sourceConnectionManager;
+    private String sourceDriver;
 
     @OnEnabled
     public void onConfigured(final ConfigurationContext context) throws InitializationException {
 
-        sourceDriver = context.getProperty(SOURCE_DRIVER).evaluateAttributeExpressions().getValue();
         sourceConnectionString = context.getProperty(SOURCE_CONNECTION_STRING).evaluateAttributeExpressions().getValue();
         sourceUserName = context.getProperty(SOURCE_USERNAME).evaluateAttributeExpressions().getValue();
         passwordMode = PasswordMode.valueOf(context.getProperty(PASSWORD_MODE).getValue());
         sourcePasswordHdfsFile = context.getProperty(SOURCE_PASSWORD_HDFS_FILE).evaluateAttributeExpressions().getValue();
         sourcePasswordPassphrase = context.getProperty(SOURCE_PASSWORD_PASSPHRASE).evaluateAttributeExpressions().getValue();
         sourceEnteredPassword = context.getProperty(SOURCE_ENTERED_PASSWORD).evaluateAttributeExpressions().getValue();
-    }
-
-    @Override
-    public String getDriver() {
-        return this.sourceDriver;
+        sourceConnectionManager = context.getProperty(SOURCE_CONNECTION_MANAGER).evaluateAttributeExpressions().getValue();
+        sourceDriver = context.getProperty(SOURCE_DRIVER).evaluateAttributeExpressions().getValue();
     }
 
     @Override
@@ -156,5 +172,15 @@ public class StandardSqoopConnectionService
     @Override
     public String getEnteredPassword() {
         return this.sourceEnteredPassword;
+    }
+
+    @Override
+    public String getConnectionManager() {
+        return this.sourceConnectionManager;
+    }
+
+    @Override
+    public String getDriver() {
+        return this.sourceDriver;
     }
 }

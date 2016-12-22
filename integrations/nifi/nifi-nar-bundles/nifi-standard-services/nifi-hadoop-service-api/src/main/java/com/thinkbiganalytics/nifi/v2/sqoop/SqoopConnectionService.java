@@ -14,11 +14,6 @@ import org.apache.nifi.controller.ControllerService;
 
 public interface SqoopConnectionService extends ControllerService {
     /**
-     * Driver to access source system
-     */
-    String getDriver();
-
-    /**
      * Connection string to access source system
      */
     String getConnectionString();
@@ -48,5 +43,14 @@ public interface SqoopConnectionService extends ControllerService {
      */
     String getEnteredPassword();
 
+    /**
+     * Connection manager to access source system
+     */
+    String getConnectionManager();
+
+    /**
+     * Driver to access source system
+     */
+    String getDriver();
 }
 

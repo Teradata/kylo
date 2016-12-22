@@ -41,6 +41,7 @@ import javax.annotation.Nonnull;
 
 /**
  * NiFi Processor to export data from HDFS to a relational system via Sqoop
+ * @author jagrut sharma
  */
 @Tags({"thinkbig", "export", "sqoop", "rdbms", "database", "table"})
 @CapabilityDescription("Export data from HDFS to a relational system via Sqoop")
@@ -224,13 +225,14 @@ public class ExportSqoop extends AbstractNiFiProcessor {
         SqoopExportBuilder sqoopExportBuilder = new SqoopExportBuilder();
         String sqoopExportCommand = sqoopExportBuilder
             .setLogger(logger)
-            .setTargetDriver(sqoopConnectionService.getDriver())
             .setTargetConnectionString(sqoopConnectionService.getConnectionString())
             .setTargetUserName(sqoopConnectionService.getUserName())
             .setPasswordMode(sqoopConnectionService.getPasswordMode())
             .setTargetPasswordHdfsFile(sqoopConnectionService.getPasswordHdfsFile())
             .setTargetPasswordPassphrase(sqoopConnectionService.getPasswordPassphrase())
             .setTargetEnteredPassword(sqoopConnectionService.getEnteredPassword())
+            .setTargetConnectionManager(sqoopConnectionService.getConnectionManager())
+            .setTargetDriver(sqoopConnectionService.getDriver())
             .setTargetTableName(targetTableName)
             .setSourceHdfsDirectory(sourceHdfsDirectory)
             .setSourceHdfsFileDelimiter(sourceHdfsFileDelimiter)

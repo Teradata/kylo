@@ -155,22 +155,12 @@ public class SqoopUtils {
 
     /**
      * Check if source relational system is Teradata
-     * @param driver Driver for source relational system
+     * @param sourceConnectionString Connection string for source relational system
      * @return true/false indicating if source system is Teradata
      */
-    public Boolean isTeradataDatabase(@Nonnull String driver) {
-        final String TERADATA_IDENTIFIER = "teradata";
-        return driver.toLowerCase().contains(TERADATA_IDENTIFIER);
-    }
-
-    /**
-     * Check if source relational system is Oracle
-     * @param driver Driver for source relational system
-     * @return true/false indicating if source system is Teradata
-     */
-    public Boolean isOracleDatabase(@Nonnull String driver) {
-        final String ORACLE_IDENTIFIER = "oracle";
-        return driver.toLowerCase().contains(ORACLE_IDENTIFIER);
+    public Boolean isTeradataDatabase(@Nonnull String sourceConnectionString) {
+        final String TERADATA_IDENTIFIER = "jdbc:teradata";
+        return sourceConnectionString.toLowerCase().contains(TERADATA_IDENTIFIER);
     }
 
     /**
