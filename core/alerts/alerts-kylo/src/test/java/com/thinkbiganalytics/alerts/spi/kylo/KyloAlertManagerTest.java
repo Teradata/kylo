@@ -149,19 +149,19 @@ public class KyloAlertManagerTest extends AbstractTestNGSpringContextTests {
         Alert alert = this.manager.getAlert(id1).get();
         AlertResponse resp = this.manager.getResponse(alert);
         
-        alert = resp.inProgress();
+        alert = resp.inProgress("Change in progress");
         
         assertThat(alert.getEvents())
             .hasSize(2)
-            .extracting("state", "content")
-            .contains(tuple(State.UNHANDLED, null), tuple(State.IN_PROGRESS, null));
+            .extracting("state", "description", "content")
+            .contains(tuple(State.UNHANDLED, null, null), tuple(State.IN_PROGRESS, "Change in progress", null));
         
-        alert = resp.handle(new Integer(42));
+        alert = resp.handle("Change handled", new Integer(42));
         
         assertThat(alert.getEvents())
             .hasSize(3)
-            .extracting("state", "content")
-            .contains(tuple(State.UNHANDLED, null), tuple(State.IN_PROGRESS, null), tuple(State.HANDLED, 42));
+            .extracting("state", "description", "content")
+            .contains(tuple(State.UNHANDLED, null, null), tuple(State.IN_PROGRESS, "Change in progress", null), tuple(State.HANDLED, "Change handled", 42));
         
         verify(this.alertReceiver, times(2)).alertsAvailable(anyInt());
     }

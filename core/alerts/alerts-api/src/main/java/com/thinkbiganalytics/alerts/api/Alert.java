@@ -73,6 +73,13 @@ public interface Alert {
     boolean isActionable();
     
     /**
+     * Retrieves teh current state of this alert.  If this alert supports has events then this is
+     * the state last change event.
+     * @return the current state of this alert
+     */
+    State getCurrentState();
+    
+    /**
      * Gets ordered list of state change events showing the state transitions this alert
      * has gone through.
      * @return the list of state changes

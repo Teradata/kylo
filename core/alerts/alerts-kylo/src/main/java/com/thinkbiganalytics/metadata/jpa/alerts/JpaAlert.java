@@ -9,8 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import javax.persistence.AttributeOverride;
-import javax.persistence.AttributeOverrides;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -123,6 +121,14 @@ public class JpaAlert implements Alert {
     @Override
     public Level getLevel() {
         return this.level;
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.alerts.api.Alert#getCurrentState()
+     */
+    @Override
+    public Alert.State getCurrentState() {
+        return getEvents().get(0).getState();
     }
 
     /* (non-Javadoc)

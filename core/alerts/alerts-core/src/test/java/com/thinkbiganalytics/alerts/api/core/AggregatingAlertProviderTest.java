@@ -237,7 +237,7 @@ public class AggregatingAlertProviderTest {
         
         when(this.manager.getAlert(any(Alert.ID.class))).thenReturn(Optional.of(initMgrAlert));
         when(this.manager.getResponse(any(Alert.class))).thenReturn(this.response);
-        when(this.response.handle(any(Serializable.class))).thenReturn(initMgrAlert);
+        when(this.response.handle(any(String.class), any(Serializable.class))).thenReturn(initMgrAlert);
         doAnswer(new Answer<Void>() {
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
@@ -249,13 +249,13 @@ public class AggregatingAlertProviderTest {
         this.provider.respondTo(new SourceAlertID(initMgrAlert.getId(), this.manager), new AlertResponder() {
             @Override
             public void alertChange(Alert alert, AlertResponse response) {
-                response.handle("handled");
+                response.handle(null, "handled");
             }
         });
         
         latch.await(10, TimeUnit.SECONDS);
         
-        verify(this.response).handle(eq("handled"));
+        verify(this.response).handle(eq(null), eq("handled"));
         verify(this.listener, atLeastOnce()).alertChange(any(Alert.class));
     }
 
@@ -389,6 +389,11 @@ public class AggregatingAlertProviderTest {
         public boolean isActionable() {
             return this.actionable;
         }
+        
+        @Override
+        public State getCurrentState() {
+            return this.getEvents().get(0).getState();
+        }
 
         @Override
         public List<AlertChangeEvent> getEvents() {
@@ -415,6 +420,11 @@ public class AggregatingAlertProviderTest {
         @Override
         public DateTime getChangeTime() {
             return this.time;
+        }
+        
+        @Override
+        public String getDescription() {
+            return null;
         }
 
         @Override

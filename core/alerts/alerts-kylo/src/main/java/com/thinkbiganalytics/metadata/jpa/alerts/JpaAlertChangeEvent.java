@@ -42,6 +42,9 @@ public class JpaAlertChangeEvent implements AlertChangeEvent, Comparable<AlertCh
     @Column(name = "STATE")
     private Alert.State state;
     
+    @Column(name = "DESCRIPTION", length = 255)
+    private String description;
+    
     @Column(name = "CONTENT")
     @Convert(converter = AlertContentConverter.class)
     private Serializable content;
@@ -52,12 +55,17 @@ public class JpaAlertChangeEvent implements AlertChangeEvent, Comparable<AlertCh
     
     
     public JpaAlertChangeEvent(State state) {
-        this(state, null);
+        this(state, null, null);
     }
     
-    public JpaAlertChangeEvent(State state, Serializable content) {
+    public JpaAlertChangeEvent(State state, String descr) {
+        this(state, descr, null);
+    }
+    
+    public JpaAlertChangeEvent(State state, String descr, Serializable content) {
         super();
         this.state = state;
+        this.description = descr;
         this.content = content;
     }
 
@@ -76,6 +84,14 @@ public class JpaAlertChangeEvent implements AlertChangeEvent, Comparable<AlertCh
     @Override
     public Alert.State getState() {
         return this.state;
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.alerts.api.AlertChangeEvent#getDescription()
+     */
+    @Override
+    public String getDescription() {
+        return this.description;
     }
 
     /* (non-Javadoc)

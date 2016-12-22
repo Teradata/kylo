@@ -538,33 +538,33 @@ public class AggregatingAlertProvider implements AlertProvider, AlertSourceAggre
         }
 
         @Override
-        public Alert inProgress() {
-            return inProgress(null);
+        public Alert inProgress(String description) {
+            return inProgress(description, null);
         }
 
         @Override
-        public <C extends Serializable> Alert inProgress(C content) {
-            return changed(this.delegate.inProgress(content));
+        public <C extends Serializable> Alert inProgress(String description, C content) {
+            return changed(this.delegate.inProgress(description, content));
         }
 
         @Override
-        public Alert handle() {
-            return handle(null);
+        public Alert handle(String description) {
+            return handle(description, null);
         }
 
         @Override
-        public <C extends Serializable> Alert handle(C content) {
-            return changed(this.delegate.handle(content));
+        public <C extends Serializable> Alert handle(String description, C content) {
+            return changed(this.delegate.handle(description, content));
         }
 
         @Override
-        public Alert unHandle() {
-            return unhandle(null);
+        public Alert unHandle(String description) {
+            return unhandle(description, null);
         }
 
         @Override
-        public <C extends Serializable> Alert unhandle(C content) {
-            return changed(this.unhandle(content));
+        public <C extends Serializable> Alert unhandle(String description, C content) {
+            return changed(this.unhandle(description, content));
         }
 
         @Override

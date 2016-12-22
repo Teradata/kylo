@@ -15,36 +15,42 @@ public interface AlertResponse {
 
     /**
      * Changes an alert status to in-progress.
+     * @param description a description of the change (may be null)
      */
-    Alert inProgress();
+    Alert inProgress(String description);
     
     /**
      * Changes an alert status to in-progress.
+     * @param description a description of the change (may be null)
      * @param content alert type-specific content associated with the state change
      */
-    <C extends Serializable> Alert inProgress(C content);
+    <C extends Serializable> Alert inProgress(String description, C content);
     
     /**
      * Changes an alert status to handled.
+     * @param description a description of the change (may be null)
      */
-    Alert handle();
+    Alert handle(String description);
     
     /**
      * Changes an alert status to handled.
+     * @param description a description of the change (may be null)
      * @param content alert type-specific content associated with the state change
      */
-    <C extends Serializable> Alert handle(C content);
+    <C extends Serializable> Alert handle(String description, C content);
     
     /**
      * Changes an alert status to unhandled.
+     * @param description a description of the change (may be null)
      */
-    Alert unHandle();
+    Alert unHandle(String description);
     
     /**
      * Changes an alert status to unhandled.
+     * @param description a description of the change (may be null)
      * @param content alert type-specific content associated with the state change
      */
-    <C extends Serializable> Alert unhandle(C content);
+    <C extends Serializable> Alert unhandle(String description, C content);
     
     /**
      * clears (effectively removes) an alert.  No other responder will see this alert if cleared.

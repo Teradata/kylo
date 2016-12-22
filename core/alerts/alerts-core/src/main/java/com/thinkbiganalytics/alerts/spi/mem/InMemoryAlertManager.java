@@ -273,15 +273,15 @@ public class InMemoryAlertManager implements AlertManager {
          * @see com.thinkbiganalytics.alerts.api.#inProgress()
          */
         @Override
-        public Alert inProgress() {
-            return inProgress(null);
+        public Alert inProgress(String description) {
+            return inProgress(description, null);
         }
 
         /* (non-Javadoc)
          * @see com.thinkbiganalytics.alerts.api.#inProgress(java.io.Serializable)
          */
         @Override
-        public <C extends Serializable> Alert inProgress(C content) {
+        public <C extends Serializable> Alert inProgress(String description, C content) {
             checkCleared();
             this.current = new GenericAlert(this.current, State.IN_PROGRESS, content);
             updated(current);
@@ -292,7 +292,7 @@ public class InMemoryAlertManager implements AlertManager {
          * @see com.thinkbiganalytics.alerts.api.#handle()
          */
         @Override
-        public Alert handle() {
+        public Alert handle(String description) {
             return handle(null);
         }
 
@@ -300,7 +300,7 @@ public class InMemoryAlertManager implements AlertManager {
          * @see com.thinkbiganalytics.alerts.api.#handle(java.io.Serializable)
          */
         @Override
-        public <C extends Serializable> Alert handle(C content) {
+        public <C extends Serializable> Alert handle(String description, C content) {
             checkCleared();
             this.current = new GenericAlert(this.current, State.HANDLED, content);
             updated(current);
@@ -311,15 +311,15 @@ public class InMemoryAlertManager implements AlertManager {
          * @see com.thinkbiganalytics.alerts.api.#unHandle()
          */
         @Override
-        public Alert unHandle() {
-            return unhandle(null);
+        public Alert unHandle(String description) {
+            return unhandle(description, null);
         }
 
         /* (non-Javadoc)
          * @see com.thinkbiganalytics.alerts.api.#unHandle(java.io.Serializable)
          */
         @Override
-        public <C extends Serializable> Alert unhandle(C content) {
+        public <C extends Serializable> Alert unhandle(String description, C content) {
             checkCleared();
             this.current = new GenericAlert(this.current, State.UNHANDLED, content);
             updated(current);
@@ -415,7 +415,7 @@ public class InMemoryAlertManager implements AlertManager {
             this.source = InMemoryAlertManager.this;
             
             if (content != null) {
-                this.events = Collections.unmodifiableList(Collections.singletonList(new GenericChangeEvent(this.id, State.UNHANDLED, content)));
+                this.events = Collections.unmodifiableList(Collections.singletonList(new GenericChangeEvent(this.id, State.UNHANDLED, null, content)));
             } else {
                 this.events = Collections.emptyList();
             }
@@ -434,7 +434,7 @@ public class InMemoryAlertManager implements AlertManager {
             this.content = alert.content;
             
             ArrayList<AlertChangeEvent> evList = new ArrayList<>(alert.events);
-            evList.add(0, new GenericChangeEvent(this.id, newState, eventContent));
+            evList.add(0, new GenericChangeEvent(this.id, newState, null, eventContent));
             this.events = Collections.unmodifiableList(evList);
         }
 
@@ -456,6 +456,11 @@ public class InMemoryAlertManager implements AlertManager {
         @Override
         public Level getLevel() {
             return this.level;
+        }
+        
+        @Override
+        public State getCurrentState() {
+            return this.events.get(0).getState();
         }
         
         @Override
@@ -490,17 +495,19 @@ public class InMemoryAlertManager implements AlertManager {
         private final AlertID alertId;
         private final DateTime changeTime;
         private final State state;
+        private final String description;
         private final Object content;
 
         
         public GenericChangeEvent(AlertID id, State state) {
-            this(id, state, null);
+            this(id, state, null, null);
         }
 
-        public GenericChangeEvent(AlertID alertId, State state, Object content) {
+        public GenericChangeEvent(AlertID alertId, State state, String descr, Object content) {
             super();
             this.alertId = alertId;
             this.state = state;
+            this.description = descr;
             this.content = content;
             this.changeTime = DateTime.now();
         }
@@ -514,12 +521,16 @@ public class InMemoryAlertManager implements AlertManager {
         public State getState() {
             return state;
         }
+        
+        @Override
+        public String getDescription() {
+            return this.description;
+        }
 
         @Override
         @SuppressWarnings("unchecked")
         public <C extends Serializable> C getContent() {
             return (C) this.content;
         }
-        
     }
 }

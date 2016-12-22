@@ -196,10 +196,10 @@ public class KyloAlertManager implements AlertManager {
         }, MetadataAccess.SERVICE);
     }
 
-    protected <C extends Serializable> Alert changeAlert(JpaAlert.AlertId id, State state, C content) {
+    protected <C extends Serializable> Alert changeAlert(JpaAlert.AlertId id, State state, String descr, C content) {
         Alert changed = this.metadataAccess.commit(() -> {
             JpaAlert alert = findAlert(id).orElseThrow(() -> new AlertNotfoundException(id));
-            JpaAlertChangeEvent event = new JpaAlertChangeEvent(state, content);
+            JpaAlertChangeEvent event = new JpaAlertChangeEvent(state, descr, content);
             alert.getEvents().add(event);
             return asValue(alert);
         }, MetadataAccess.SERVICE);
@@ -229,48 +229,48 @@ public class KyloAlertManager implements AlertManager {
          * @see com.thinkbiganalytics.alerts.api.AlertResponse#inProgress()
          */
         @Override
-        public Alert inProgress() {
-            return inProgress(null);
+        public Alert inProgress(String descr) {
+            return inProgress(descr, null);
         }
 
         /* (non-Javadoc)
          * @see com.thinkbiganalytics.alerts.api.AlertResponse#inProgress(java.io.Serializable)
          */
         @Override
-        public <C extends Serializable> Alert inProgress(C content) {
-            return changeAlert(this.id, State.IN_PROGRESS, content);
+        public <C extends Serializable> Alert inProgress(String descr, C content) {
+            return changeAlert(this.id, State.IN_PROGRESS, descr, content);
         }
 
         /* (non-Javadoc)
          * @see com.thinkbiganalytics.alerts.api.AlertResponse#handle()
          */
         @Override
-        public Alert handle() {
-            return handle(null);
+        public Alert handle(String descr) {
+            return handle(descr, null);
         }
 
         /* (non-Javadoc)
          * @see com.thinkbiganalytics.alerts.api.AlertResponse#handle(java.io.Serializable)
          */
         @Override
-        public <C extends Serializable> Alert handle(C content) {
-            return changeAlert(this.id, State.HANDLED, content);
+        public <C extends Serializable> Alert handle(String descr, C content) {
+            return changeAlert(this.id, State.HANDLED, descr, content);
         }
 
         /* (non-Javadoc)
          * @see com.thinkbiganalytics.alerts.api.AlertResponse#unHandle()
          */
         @Override
-        public Alert unHandle() {
-            return unhandle(null);
+        public Alert unHandle(String descr) {
+            return unhandle(descr, null);
         }
 
         /* (non-Javadoc)
          * @see com.thinkbiganalytics.alerts.api.AlertResponse#unhandle(java.io.Serializable)
          */
         @Override
-        public <C extends Serializable> Alert unhandle(C content) {
-            return changeAlert(this.id, State.UNHANDLED, content);
+        public <C extends Serializable> Alert unhandle(String descr, C content) {
+            return changeAlert(this.id, State.UNHANDLED, descr, content);
         }
 
         /* (non-Javadoc)
@@ -330,6 +330,14 @@ public class KyloAlertManager implements AlertManager {
         public URI getType() {
             return type;
         }
+        
+        /* (non-Javadoc)
+         * @see com.thinkbiganalytics.alerts.api.Alert#getCurrentState()
+         */
+        @Override
+        public State getCurrentState() {
+            return this.events.get(0).getState();
+        }
 
         @Override
         @SuppressWarnings("unchecked")
@@ -358,11 +366,13 @@ public class KyloAlertManager implements AlertManager {
         
         private final DateTime changeTime;
         private final State state;
+        private final String description;
         private final Serializable content;
         
         public ImmutableAlertChangeEvent(AlertChangeEvent event) {
             this.changeTime = event.getChangeTime();
             this.state = event.getState();
+            this.description = event.getDescription();
             this.content = event.getContent();
         }
 
@@ -374,8 +384,13 @@ public class KyloAlertManager implements AlertManager {
             return state;
         }
 
+        @Override
+        public String getDescription() {
+            return this.description;
+        }
+        
         public Serializable getContent() {
-            return content;
+            return this.content;
         }
     }
 }

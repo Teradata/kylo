@@ -31,6 +31,11 @@ public interface AlertChangeEvent {
      * @return the new state
      */
     State getState();
+    
+    /**
+     * @return a description of the change (may be null)
+     */
+    String getDescription();
 
     /**
      * Any state change may have a piece of information associated with it.  The type of object
