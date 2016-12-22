@@ -17,7 +17,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.jms.Topic;
+import javax.jms.Queue;
 
 /**
  * Listens for metadata events that should be transferred to a JMS topic.
@@ -26,8 +26,8 @@ public class JmsChangeEventDispatcher {
 
     /** JMS topic for triggering feeds for cleanup */
     @Inject
-    @Named("cleanupTriggerTopic")
-    private Topic cleanupTriggerTopic;
+    @Named("cleanupTriggerQueue")
+    private Queue cleanupTriggerQueue;
 
     /** Metadata event bus */
     @Inject
@@ -48,8 +48,8 @@ public class JmsChangeEventDispatcher {
 
     /** JMS topic for triggering feeds based on preconditions */
     @Inject
-    @Named("preconditionTriggerTopic")
-    private Topic preconditionTriggerTopic;
+    @Named("preconditionTriggerQueue")
+    private Queue preconditionTriggerQueue;
 
     /** Event listener for cleanup events */
     private final MetadataEventListener<CleanupTriggerEvent> cleanupListener = new CleanupTriggerDispatcher();
@@ -91,7 +91,7 @@ public class JmsChangeEventDispatcher {
                 return jmsEvent;
             }, MetadataAccess.SERVICE);
 
-            jmsMessagingTemplate.convertAndSend(cleanupTriggerTopic, jmsEvent);
+            jmsMessagingTemplate.convertAndSend(cleanupTriggerQueue, jmsEvent);
         }
     }
 
@@ -111,7 +111,7 @@ public class JmsChangeEventDispatcher {
                 return triggerEv;
             }, MetadataAccess.SERVICE);
 
-            jmsMessagingTemplate.convertAndSend(preconditionTriggerTopic, triggerEv);
+            jmsMessagingTemplate.convertAndSend(preconditionTriggerQueue, triggerEv);
         }
     }
 }

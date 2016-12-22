@@ -98,6 +98,9 @@ public class ProvenanceEventAggregator implements NifiRestConnectionListener {
      */
     private AtomicBoolean isProcessingConnectionEvents = new AtomicBoolean(false);
 
+    /** Executor for sending events to JMS */
+    private ScheduledExecutorService service;
+
 
     @PostConstruct
     private void init() {
@@ -200,7 +203,9 @@ public class ProvenanceEventAggregator implements NifiRestConnectionListener {
                     }
 
                     //add to delayed queue for processing
-                    aggregateEvent(event, stats);
+                    if (stats != null) {
+                        aggregateEvent(event, stats);
+                    }
 
                     if (event.isStartOfJob()) {
                         processEarlyChildren(event.getJobFlowFileId());
@@ -385,18 +390,25 @@ public class ProvenanceEventAggregator implements NifiRestConnectionListener {
         lastCollectionTime = DateTime.now();
     }
 
+    /**
+     * Executes {@code checkAndProcess} and logs any exceptions.
+     */
+    private void runCheckAndProcess() {
+        try {
+            checkAndProcess();
+        } catch (final Exception e) {
+            log.error("Failed to check for events to send to JMS: {}", e.toString(), e);
+        }
+    }
 
     /**
-     * Start a timer to run and get any leftover events and send to JMS This is where the events are not calculated because there is a long delay in provenacne events and they are still waiting in the
+     * Start a timer to run and get any leftover events and send to JMS This is where the events are not calculated because there is a long delay in provenance events and they are still waiting in the
      * caches
      */
     private void initCheckAndSendTimer() {
         long millis = this.configuration.getProcessDelay();
-        ScheduledExecutorService service = Executors
-            .newSingleThreadScheduledExecutor();
-        service.scheduleAtFixedRate(() -> {
-            checkAndProcess();
-        }, millis, millis, TimeUnit.MILLISECONDS);
+        service = Executors.newSingleThreadScheduledExecutor();
+        service.scheduleAtFixedRate(this::runCheckAndProcess, millis, millis, TimeUnit.MILLISECONDS);
     }
 
     @Override

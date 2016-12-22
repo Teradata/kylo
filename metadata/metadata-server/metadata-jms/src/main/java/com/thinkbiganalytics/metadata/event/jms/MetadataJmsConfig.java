@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.metadata.event.jms;
 
+import org.apache.activemq.command.ActiveMQQueue;
 import org.apache.activemq.command.ActiveMQTopic;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -11,6 +12,7 @@ import org.springframework.jms.support.converter.SimpleMessageConverter;
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.jms.ConnectionFactory;
+import javax.jms.Queue;
 import javax.jms.Topic;
 
 /**
@@ -25,14 +27,14 @@ public class MetadataJmsConfig {
     private ConnectionFactory connectionFactory;
 
     /**
-     * Gets the topic for triggering feeds for cleanup.
+     * Gets the queue for triggering feeds for cleanup.
      *
-     * @return the cleanup trigger topic
+     * @return the cleanup trigger queue
      */
-    @Bean(name = "cleanupTriggerTopic")
+    @Bean(name = "cleanupTriggerQueue")
     @Nonnull
-    public Topic cleanupTriggerTopic() {
-        return new ActiveMQTopic(MetadataTopics.CLEANUP_TRIGGER);
+    public Queue cleanupTriggerQueue() {
+        return new ActiveMQQueue(MetadataQueues.CLEANUP_TRIGGER);
     }
 
     /**
@@ -66,20 +68,19 @@ public class MetadataJmsConfig {
     @Nonnull
     public DefaultJmsListenerContainerFactory listenerContainerFactory() {
         DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
-        factory.setPubSubDomain(true);
         factory.setConnectionFactory(connectionFactory);
         factory.setMessageConverter(new SimpleMessageConverter());
         return factory;
     }
 
     /**
-     * Gets the topic for triggering feeds based on preconditions.
+     * Gets the queue for triggering feeds based on preconditions.
      *
-     * @return the precondition trigger topic
+     * @return the precondition trigger queue
      */
-    @Bean(name = "preconditionTriggerTopic")
+    @Bean(name = "preconditionTriggerQueue")
     @Nonnull
-    public Topic preconditionTriggerTopic() {
-        return new ActiveMQTopic(MetadataTopics.PRECONDITION_TRIGGER);
+    public Queue preconditionTriggerQueue() {
+        return new ActiveMQQueue(MetadataQueues.PRECONDITION_TRIGGER);
     }
 }
