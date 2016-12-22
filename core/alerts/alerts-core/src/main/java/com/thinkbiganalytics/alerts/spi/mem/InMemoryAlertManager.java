@@ -114,6 +114,11 @@ public class InMemoryAlertManager implements AlertManager {
     public void addReceiver(AlertNotifyReceiver receiver) {
         this.alertReceivers.add(receiver);
     }
+    
+    @Override
+    public void removeReceiver(AlertNotifyReceiver receiver) {
+        this.alertReceivers.remove(receiver);
+    }
 
     @Override
     public Optional<Alert> getAlert(ID id) {

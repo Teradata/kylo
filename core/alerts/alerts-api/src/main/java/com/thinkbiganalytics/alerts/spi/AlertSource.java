@@ -24,6 +24,8 @@ public interface AlertSource {
     
     void addReceiver(AlertNotifyReceiver receiver);
     
+    void removeReceiver(AlertNotifyReceiver receiver);
+    
     Optional<Alert> getAlert(Alert.ID id);
     
     Iterator<Alert> getAlerts();

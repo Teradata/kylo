@@ -80,6 +80,14 @@ public class KyloAlertManager implements AlertManager {
     public void addReceiver(AlertNotifyReceiver receiver) {
         this.alertReceivers.add(receiver);
     }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.alerts.spi.AlertSource#removeReceiver(com.thinkbiganalytics.alerts.spi.AlertNotifyReceiver)
+     */
+    @Override
+    public void removeReceiver(AlertNotifyReceiver receiver) {
+        this.alertReceivers.remove(receiver);
+    }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.alerts.spi.AlertSource#getAlert(com.thinkbiganalytics.alerts.api.Alert.ID)

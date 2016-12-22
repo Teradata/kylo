@@ -40,6 +40,7 @@ import com.thinkbiganalytics.alerts.api.AlertResponse;
 import com.thinkbiganalytics.alerts.spi.AlertManager;
 import com.thinkbiganalytics.alerts.spi.AlertNotifyReceiver;
 import com.thinkbiganalytics.alerts.spi.AlertSource;
+import com.thinkbiganalytics.alerts.spi.AlertSourceAggregator;
 
 import reactor.bus.Event;
 import reactor.bus.EventBus;
@@ -51,7 +52,7 @@ import reactor.fn.Consumer;
  *
  * @author Sean Felten
  */
-public class AggregatingAlertProvider implements AlertProvider, AlertNotifyReceiver, Consumer<Event<Alert>> {
+public class AggregatingAlertProvider implements AlertProvider, AlertSourceAggregator, AlertNotifyReceiver, Consumer<Event<Alert>> {
     
     private static final Logger LOG = LoggerFactory.getLogger(AggregatingAlertProvider.class);
     
@@ -135,13 +136,43 @@ public class AggregatingAlertProvider implements AlertProvider, AlertNotifyRecei
         this.responders.add(responder);
     }
     
-    public void addAlertSource(AlertSource src) {
-        this.sources.put(createAlertSourceId(src), src);
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.alerts.spi.AlertSourceAggregator#addAlertSource(com.thinkbiganalytics.alerts.spi.AlertSource)
+     */
+    @Override
+    public boolean addAlertSource(AlertSource src) {
+        return this.sources.put(createAlertSourceId(src), src) == null;
     }
     
-    public void addAlertManager(AlertManager mgr) {
-        this.managers.put(createAlertSourceId(mgr), mgr);
-        mgr.addReceiver(this);
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.alerts.spi.AlertSourceAggregator#removeAlertSource(com.thinkbiganalytics.alerts.spi.AlertSource)
+     */
+    @Override
+    public boolean removeAlertSource(AlertSource src) {
+        return this.sources.remove(createAlertSourceId(src)) != null;
+    }
+    
+    @Override
+    public boolean addAlertManager(AlertManager mgr) {
+        if (this.managers.put(createAlertSourceId(mgr), mgr) == null) {
+            mgr.addReceiver(this);
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.alerts.spi.AlertSourceAggregator#removeAlertManager(com.thinkbiganalytics.alerts.spi.AlertManager)
+     */
+    @Override
+    public boolean removeAlertManager(AlertManager mgr) {
+        if (this.managers.remove(createAlertSourceId(mgr)) != null) {
+            mgr.removeReceiver(this);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /* (non-Javadoc)
