@@ -121,7 +121,8 @@ public class DistCopyHDFS extends AbstractHadoopProcessor {
             }
             else {
                 if (source == null || source.isEmpty()) {
-                    getLog().error("At least one of attributes: %s or %s needs to be set");
+                    getLog().error(String.format("At least one of attributes: %s or %s needs to be set",
+                            SOURCE.getName(), FILES.getName()));
 
                     session.transfer(flowFile, REL_FAILURE);
                     return;
