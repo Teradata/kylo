@@ -5,6 +5,7 @@ package com.thinkbiganalytics.alerts.spi.mem;
 
 import java.io.Serializable;
 import java.net.URI;
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -415,7 +416,7 @@ public class InMemoryAlertManager implements AlertManager {
             this.source = InMemoryAlertManager.this;
             
             if (content != null) {
-                this.events = Collections.unmodifiableList(Collections.singletonList(new GenericChangeEvent(this.id, State.UNHANDLED, null, content)));
+                this.events = Collections.unmodifiableList(Collections.singletonList(new GenericChangeEvent(this.id, State.UNHANDLED, null, null, content)));
             } else {
                 this.events = Collections.emptyList();
             }
@@ -434,7 +435,7 @@ public class InMemoryAlertManager implements AlertManager {
             this.content = alert.content;
             
             ArrayList<AlertChangeEvent> evList = new ArrayList<>(alert.events);
-            evList.add(0, new GenericChangeEvent(this.id, newState, null, eventContent));
+            evList.add(0, new GenericChangeEvent(this.id, newState, null, null, eventContent));
             this.events = Collections.unmodifiableList(evList);
         }
 
@@ -495,18 +496,20 @@ public class InMemoryAlertManager implements AlertManager {
         private final AlertID alertId;
         private final DateTime changeTime;
         private final State state;
+        private final Principal user;
         private final String description;
         private final Object content;
 
         
         public GenericChangeEvent(AlertID id, State state) {
-            this(id, state, null, null);
+            this(id, state, null, null, null);
         }
 
-        public GenericChangeEvent(AlertID alertId, State state, String descr, Object content) {
+        public GenericChangeEvent(AlertID alertId, State state, Principal user, String descr, Object content) {
             super();
             this.alertId = alertId;
             this.state = state;
+            this.user = user;
             this.description = descr;
             this.content = content;
             this.changeTime = DateTime.now();
@@ -522,6 +525,14 @@ public class InMemoryAlertManager implements AlertManager {
             return state;
         }
         
+        public AlertID getAlertId() {
+            return alertId;
+        }
+
+        public Principal getUser() {
+            return user;
+        }
+
         @Override
         public String getDescription() {
             return this.description;

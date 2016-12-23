@@ -4,6 +4,7 @@
 package com.thinkbiganalytics.alerts.api;
 
 import java.io.Serializable;
+import java.security.Principal;
 
 import org.joda.time.DateTime;
 
@@ -27,6 +28,11 @@ public interface AlertChangeEvent {
      */
     DateTime getChangeTime();
     
+    /**
+     * @return the principal of the user that created the alert
+     */
+    Principal getUser();
+
     /**
      * @return the new state
      */

@@ -4,7 +4,9 @@
 package com.thinkbiganalytics.metadata.jpa.alerts;
 
 import java.io.Serializable;
+import java.security.Principal;
 
+import javax.persistence.AttributeConverter;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Embeddable;
@@ -21,6 +23,7 @@ import com.thinkbiganalytics.alerts.api.Alert.State;
 import com.thinkbiganalytics.alerts.api.AlertChangeEvent;
 import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlert.AlertContentConverter;
 import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlert.AlertId;
+import com.thinkbiganalytics.security.UsernamePrincipal;
 
 /**
  *
@@ -37,9 +40,13 @@ public class JpaAlertChangeEvent implements AlertChangeEvent, Comparable<AlertCh
     @Type(type = "com.thinkbiganalytics.jpa.PersistentDateTimeAsMillisLong")
     @Column(name = "CHANGE_TIME")
     private DateTime changeTime;
-    
+
+    @Convert(converter = UsernamePrincipalConverter.class)
+    @Column(name = "USER", columnDefinition = "varchar(128)")
+    private UsernamePrincipal user;
+
     @Enumerated(EnumType.STRING)
-    @Column(name = "STATE")
+    @Column(name = "STATE", nullable = false)
     private Alert.State state;
     
     @Column(name = "DESCRIPTION", length = 255)
@@ -54,15 +61,15 @@ public class JpaAlertChangeEvent implements AlertChangeEvent, Comparable<AlertCh
     }
     
     
-    public JpaAlertChangeEvent(State state) {
-        this(state, null, null);
+    public JpaAlertChangeEvent(State state, Principal user) {
+        this(state, user, null, null);
     }
     
-    public JpaAlertChangeEvent(State state, String descr) {
-        this(state, descr, null);
+    public JpaAlertChangeEvent(State state, Principal user, String descr) {
+        this(state, user, descr, null);
     }
     
-    public JpaAlertChangeEvent(State state, String descr, Serializable content) {
+    public JpaAlertChangeEvent(State state, Principal user, String descr, Serializable content) {
         super();
         this.state = state;
         this.description = descr;
@@ -76,6 +83,14 @@ public class JpaAlertChangeEvent implements AlertChangeEvent, Comparable<AlertCh
     @Override
     public DateTime getChangeTime() {
         return this.changeTime;
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.alerts.api.AlertChangeEvent#getUser()
+     */
+    @Override
+    public Principal getUser() {
+        return this.user;
     }
 
     /* (non-Javadoc)
@@ -114,6 +129,10 @@ public class JpaAlertChangeEvent implements AlertChangeEvent, Comparable<AlertCh
     public void setChangeTime(DateTime changeTime) {
         this.changeTime = changeTime;
     }
+    
+    public void setUser(UsernamePrincipal user) {
+        this.user = user;
+    }
 
     public void setState(Alert.State state) {
         this.state = state;
@@ -132,5 +151,18 @@ public class JpaAlertChangeEvent implements AlertChangeEvent, Comparable<AlertCh
         int result = that.getChangeTime().compareTo(this.changeTime);
         return result == 0 ? this.state.compareTo(that.getState()) : result;
     }
+
     
+    public static class UsernamePrincipalConverter implements AttributeConverter<Principal, String> {
+        @Override
+        public String convertToDatabaseColumn(Principal principal) {
+            return principal.getName();
+        }
+
+        @Override
+        public Principal convertToEntityAttribute(String dbData) {
+            return new UsernamePrincipal(dbData);
+        }
+    }
+
 }

@@ -24,6 +24,8 @@
         <module>operational-metadata-service</module>
         <module>audit-logging-service</module>
         <module>service-app</module>
+<!--
         <module>alerts-service</module>
+-->
     </modules>
 </project>

@@ -5,6 +5,7 @@ package com.thinkbiganalytics.metadata.jpa.alerts;
 
 import java.io.Serializable;
 import java.net.URI;
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -48,21 +49,20 @@ public class JpaAlert implements Alert {
     private URI type;
     
     @Type(type = "com.thinkbiganalytics.jpa.PersistentDateTimeAsMillisLong")
-    @Column(name = "CHANGE_TIME")
+    @Column(name = "CREATE_TIME")
     private DateTime createdTime;
     
     @Column(name = "DESCRIPTION", length = 255)
     private String description;
     
     @Enumerated(EnumType.STRING)
-    @Column(name = "STATUS", length = 10, nullable = false)
+    @Column(name = "LEVEL", nullable = false)
     private Level level;
     
     @Column(name = "CONTENT")
     @Convert(converter = AlertContentConverter.class)
     private Serializable content;
     
-//    @OneToMany(targetEntity = JpaAlertChangeEvent.class, mappedBy = "alertId", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     @ElementCollection(targetClass=JpaAlertChangeEvent.class)
     @CollectionTable(name="KYLO_ALERT_CHANGE", joinColumns=@JoinColumn(name="ALERT_ID"))
     @OrderBy("changeTime DESC, state ASC")
@@ -75,11 +75,11 @@ public class JpaAlert implements Alert {
         super();
     }
     
-    public JpaAlert(URI type, Level level, String description, Serializable content) {
-        this(type, level, description, State.UNHANDLED, content);
+    public JpaAlert(URI type, Level level, Principal user, String description, Serializable content) {
+        this(type, level, user, description, State.UNHANDLED, content);
     }
 
-    public JpaAlert(URI type, Level level, String description, State state, Serializable content) {
+    public JpaAlert(URI type, Level level, Principal user, String description, State state, Serializable content) {
         this.id = AlertId.create();
         this.type = type;
         this.level = level;
@@ -87,7 +87,7 @@ public class JpaAlert implements Alert {
         this.content = content;
         this.createdTime = DateTime.now();
         
-        JpaAlertChangeEvent event = new JpaAlertChangeEvent(state);
+        JpaAlertChangeEvent event = new JpaAlertChangeEvent(state, user);
         this.events.add(event);
     }
 

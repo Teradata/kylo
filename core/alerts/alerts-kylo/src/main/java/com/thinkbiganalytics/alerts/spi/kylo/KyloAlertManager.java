@@ -5,6 +5,7 @@ package com.thinkbiganalytics.alerts.spi.kylo;
 
 import java.io.Serializable;
 import java.net.URI;
+import java.security.Principal;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 
 import org.joda.time.DateTime;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.thinkbiganalytics.alerts.api.Alert;
 import com.thinkbiganalytics.alerts.api.Alert.ID;
@@ -151,8 +153,12 @@ public class KyloAlertManager implements AlertManager {
      */
     @Override
     public <C extends Serializable> Alert create(URI type, Level level, String description, C content) {
+        final Principal user = SecurityContextHolder.getContext().getAuthentication() != null 
+                        ? SecurityContextHolder.getContext().getAuthentication() 
+                        : null;
+                        
         Alert created = this.metadataAccess.commit(() -> {
-            JpaAlert alert = new JpaAlert(type, level, description, content);
+            JpaAlert alert = new JpaAlert(type, level, user, description, content);
             this.repository.save(alert);
             return asValue(alert);
         }, MetadataAccess.SERVICE);
@@ -197,9 +203,13 @@ public class KyloAlertManager implements AlertManager {
     }
 
     protected <C extends Serializable> Alert changeAlert(JpaAlert.AlertId id, State state, String descr, C content) {
+        final Principal user = SecurityContextHolder.getContext().getAuthentication() != null 
+                        ? SecurityContextHolder.getContext().getAuthentication() 
+                        : null;
+                        
         Alert changed = this.metadataAccess.commit(() -> {
             JpaAlert alert = findAlert(id).orElseThrow(() -> new AlertNotfoundException(id));
-            JpaAlertChangeEvent event = new JpaAlertChangeEvent(state, descr, content);
+            JpaAlertChangeEvent event = new JpaAlertChangeEvent(state, user, descr, content);
             alert.getEvents().add(event);
             return asValue(alert);
         }, MetadataAccess.SERVICE);
@@ -366,12 +376,14 @@ public class KyloAlertManager implements AlertManager {
         
         private final DateTime changeTime;
         private final State state;
+        private final Principal user;
         private final String description;
         private final Serializable content;
         
         public ImmutableAlertChangeEvent(AlertChangeEvent event) {
             this.changeTime = event.getChangeTime();
             this.state = event.getState();
+            this.user = event.getUser();
             this.description = event.getDescription();
             this.content = event.getContent();
         }
@@ -382,6 +394,11 @@ public class KyloAlertManager implements AlertManager {
 
         public State getState() {
             return state;
+        }
+        
+        @Override
+        public Principal getUser() {
+            return user;
         }
 
         @Override

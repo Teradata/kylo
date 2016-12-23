@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 import java.io.Serializable;
 import java.lang.reflect.Proxy;
 import java.net.URI;
+import java.security.Principal;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
@@ -53,6 +54,7 @@ import com.thinkbiganalytics.alerts.api.core.AggregatingAlertProvider.SourceAler
 import com.thinkbiganalytics.alerts.spi.AlertManager;
 import com.thinkbiganalytics.alerts.spi.AlertSource;
 import com.thinkbiganalytics.metadata.event.reactor.ReactorContiguration;
+import com.thinkbiganalytics.security.UsernamePrincipal;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = { ReactorContiguration.class, AggregatingAlertProviderTest.TestConfig.class })
@@ -430,6 +432,11 @@ public class AggregatingAlertProviderTest {
         @Override
         public State getState() {
             return alert.isActionable() ? State.CREATED : State.UNHANDLED;
+        }
+        
+        @Override
+        public Principal getUser() {
+            return new UsernamePrincipal("test");
         }
 
         @Override
