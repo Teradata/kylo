@@ -37,4 +37,4 @@ delimiter ;
 call update_to_060();
 
 -- Drop the procedure
-drop procedure update_to_050;
+drop procedure update_to_060;
