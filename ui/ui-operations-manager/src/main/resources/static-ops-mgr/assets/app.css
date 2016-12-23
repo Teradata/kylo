@@ -6,11 +6,10 @@ html, body {
 }
 
 .kylo-logo {
-  height: 70%;
-  width: 70%;
-  margin-top: -18px;
-  margin-bottom: -25px;
-  margin-left: 20px;
+  height: 60%;
+  width: 60%;
+  margin-top: -7px;
+  margin-bottom: -12px;
 }
 
 /* Toolbar area */
