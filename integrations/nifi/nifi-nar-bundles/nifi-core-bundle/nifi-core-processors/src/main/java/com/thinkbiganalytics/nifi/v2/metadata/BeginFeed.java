@@ -3,8 +3,8 @@
  */
 package com.thinkbiganalytics.nifi.v2.metadata;
 
+import com.thinkbiganalytics.Formatters;
 import com.thinkbiganalytics.metadata.api.sla.DatasourceUpdatedSinceFeedExecuted;
-import com.thinkbiganalytics.metadata.rest.model.Formatters;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.event.FeedPreconditionTriggerEvent;
 import com.thinkbiganalytics.metadata.rest.model.feed.Feed;

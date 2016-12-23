@@ -68,6 +68,24 @@
          </dependency>
 
         <!-- end service monitoring -->
+        
+        <!-- Alerts -->
+        <dependency>
+            <groupId>com.thinkbiganalytics.datalake</groupId>
+            <artifactId>thinkbig-alerts-controller</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.thinkbiganalytics.datalake</groupId>
+            <artifactId>thinkbig-alerts-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.thinkbiganalytics.datalake</groupId>
+            <artifactId>thinkbig-alerts-kylo</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        
 
       <dependency>
         <groupId>com.thinkbiganalytics.datalake</groupId>

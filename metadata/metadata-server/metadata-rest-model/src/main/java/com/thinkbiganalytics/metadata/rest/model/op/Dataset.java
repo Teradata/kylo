@@ -14,7 +14,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.thinkbiganalytics.metadata.rest.model.Formatters;
+import com.thinkbiganalytics.Formatters;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 
 /**
