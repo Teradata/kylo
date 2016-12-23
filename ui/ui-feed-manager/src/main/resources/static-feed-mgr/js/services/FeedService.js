@@ -352,27 +352,23 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
         /**
         * return true/false if there is a
         */
-        enableDisableRollingSyncMergeStrategy: function (feedModel, strategies) {
-            var rollingSyncStrategy = _.find(strategies, s => s.type == 'ROLLING_SYNC');
+        enableDisableRollingSyncMergeStrategy: function(feedModel, strategies) {
+            var rollingSyncStrategy = _.find(strategies, function(strategy) {
+                return strategy.type == 'ROLLING_SYNC';
+            });
 
             var selectedStrategy = feedModel.table.targetMergeStrategy;
 
             if (rollingSyncStrategy) {
-                if (!this.hasPartitions(feedModel)) {
-                    rollingSyncStrategy.disabled = true;
-                } else {
-                    rollingSyncStrategy.disabled = false;
-                }
+                rollingSyncStrategy.disabled = !this.hasPartitions(feedModel);
             }
+
             if (rollingSyncStrategy && selectedStrategy == rollingSyncStrategy.type) {
                 return !rollingSyncStrategy.disabled;
             } else {
                 return true;
             }
-
-            return strategy != null && strategy != undefined;
         },
-
 
         hasPartitions: function (feedModel) {
             return feedModel.table.partitions != null
