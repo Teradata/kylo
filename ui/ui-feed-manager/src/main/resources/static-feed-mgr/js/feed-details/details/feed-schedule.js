@@ -16,7 +16,7 @@
         };
     }
 
-    var controller = function ($scope, $mdDialog, AccessControlService, FeedService) {
+    var controller = function ($scope, $http, $mdDialog, AccessControlService, FeedService, RestUrlService) {
 
         var self = this;
 
@@ -64,6 +64,13 @@
         self.scheduleFeedForm = {};
 
         /**
+         * Indicates that NiFi is clustered.
+         *
+         * @type {boolean}
+         */
+        this.isClustered = true;
+
+        /**
          * Watch the model and update it if not set.
          */
         $scope.$watch(function(){
@@ -79,24 +86,24 @@
          * All possible schedule strategies
          * @type {*[]}
          */
-        var allScheduleStrategies = [{label: "Cron", value: "CRON_DRIVEN"}, {label: "Timer", value: "TIMER_DRIVEN"}, {label: "Trigger/Event", value: "TRIGGER_DRIVEN"}];
+        var allScheduleStrategies = [{label: "Cron", value: "CRON_DRIVEN"}, {label: "Timer", value: "TIMER_DRIVEN"}, {label: "Trigger/Event", value: "TRIGGER_DRIVEN"},
+            {label: "On primary node", value: "PRIMARY_NODE_ONLY"}];
 
         /**
          * Different templates have different schedule strategies.
          * Filter out those that are not needed based upon the template
          */
         function updateScheduleStrategies() {
-            self.scheduleStrategies = allScheduleStrategies;
-            if (self.model.registeredTemplate.allowPreconditions) {
-                self.scheduleStrategies = _.reject(allScheduleStrategies, function (strategy) {
-                    return strategy.value != 'TRIGGER_DRIVEN';
-                });
-            }
-            else {
-                self.scheduleStrategies = _.reject(allScheduleStrategies, function (strategy) {
-                    return strategy.value == 'TRIGGER_DRIVEN';
-                });
-            }
+            // Filter schedule strategies
+            self.scheduleStrategies = _.filter(allScheduleStrategies, function(strategy) {
+                if (self.model.registeredTemplate.allowPreconditions) {
+                    return (strategy.value === "TRIGGER_DRIVEN");
+                } else if (strategy.value === "PRIMARY_NODE_ONLY") {
+                    return (self.isClustered);
+                } else {
+                    return (strategy.value !== "TRIGGER_DRIVEN");
+                }
+            });
         }
 
         /**
@@ -137,7 +144,17 @@
         }
 
         /**
-         * Force the modelt o be set to the Default strategy
+         * Set the scheduling strategy to 'On primary node'.
+         */
+        function setPrimaryNodeOnly() {
+            self.model.schedule.schedulingStrategy = "PRIMARY_NODE_ONLY";
+            self.timerAmount = 5;
+            self.timerUnits = "min";
+            self.model.schedule.schedulingPeriod = "5 min";
+        }
+
+        /**
+         * Force the model to be set to the Default strategy
          */
         function setDefaultScheduleStrategy() {
             if (self.editModel.inputProcessorType != '' && (self.editModel.schedule.schedulingStrategy.touched == false || self.editModel.schedule.schedulingStrategy.touched == undefined)) {
@@ -188,7 +205,8 @@
             //cron expression validation is handled via the cron-expression validator
             var valid = (self.editModel.schedule.schedulingStrategy == 'CRON_DRIVEN') ||
                         (self.editModel.schedule.schedulingStrategy == 'TIMER_DRIVEN' && self.timerAmount != undefined && self.timerAmount != null) ||
-                        (self.editModel.schedule.schedulingStrategy == 'TRIGGER_DRIVEN' && self.editModel.schedule.preconditions != null && self.editModel.schedule.preconditions.length > 0 );
+                        (self.editModel.schedule.schedulingStrategy == 'TRIGGER_DRIVEN' && self.editModel.schedule.preconditions != null && self.editModel.schedule.preconditions.length > 0 ) ||
+                        (self.editModel.schedule.schedulingStrategy == "PRIMARY_NODE_ONLY" && self.timerAmount != undefined && self.timerAmount != null);
             self.isValid = valid;
             return self.isValid;
         }
@@ -202,13 +220,14 @@
          * When the strategy changes ensure the defaults are set
          */
         this.onScheduleStrategyChange = function() {
-            if(self.editModel.schedule.schedulingStrategy == 'CRON_DRIVEN') {
+            if(self.editModel.schedule.schedulingStrategy == "CRON_DRIVEN") {
                 if (self.editModel.schedule.schedulingPeriod != FeedService.DEFAULT_CRON) {
                     setCronDriven();
                 }
-            }
-            else if(self.editModel.schedule.schedulingStrategy == 'TIMER_DRIVEN'){
+            } else if(self.editModel.schedule.schedulingStrategy == "TIMER_DRIVEN") {
                 setTimerDriven();
+            } else if(self.editModel.schedule.schedulingStrategy == "PRIMARY_NODE_ONLY") {
+                setPrimaryNodeOnly();
             }
         };
 
@@ -222,11 +241,14 @@
             self.editModel.systemFeedName = FeedService.editFeedModelsystemFeedName;
             self.editModel.schedule = angular.copy(FeedService.editFeedModel.schedule);
             self.editModel.inputProcessorType = FeedService.editFeedModel.inputProcessorType;
-            if (self.editModel.schedule.schedulingStrategy == 'TIMER_DRIVEN') {
+            if (self.editModel.schedule.schedulingStrategy === "PRIMARY_NODE_ONLY" && !self.isClustered) {
+                self.editModel.schedule.schedulingStrategy = "TIMER_DRIVEN";
+            }
+            if (self.editModel.schedule.schedulingStrategy == "TIMER_DRIVEN" || self.editModel.schedule.schedulingStrategy === "PRIMARY_NODE_ONLY") {
                 parseTimer();
             }
             validate();
-        }
+        };
 
         this.onCancel = function() {
 
@@ -296,6 +318,12 @@
                 .then(function(actionSet) {
                     self.allowEdit = AccessControlService.hasAction(AccessControlService.FEEDS_EDIT, actionSet.actions);
                 });
+
+        // Detect if NiFi is clustered
+        $http.get(RestUrlService.NIFI_CLUSTER_SUMMARY_URL).then(function(response) {
+            self.isClustered = (angular.isDefined(response.data.clustered) && response.data.clustered);
+            updateScheduleStrategies();
+        });
     };
 
 

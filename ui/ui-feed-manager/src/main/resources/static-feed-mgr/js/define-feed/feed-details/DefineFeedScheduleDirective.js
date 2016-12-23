@@ -138,29 +138,13 @@
         }
 
         /**
-         * The model stores the timerAmount and timerUnits together as 1 string.
-         * This will parse that string and set each component in the controller
-         */
-        function parseTimer() {
-            if (self.model.schedule.schedulingPeriod && self.model.schedule.schedulingStrategy == "TIMER_DRIVEN") {
-                self.timerAmount = parseInt(self.model.schedule.schedulingPeriod);
-                var startIndex = self.model.schedule.schedulingPeriod.indexOf(" ");
-                if (startIndex != -1) {
-                    self.timerUnits = self.model.schedule.schedulingPeriod.substring(startIndex + 1);
-                }
-            }
-        }
-
-        /**
          * Force the model and timer to be set to Timer with the defaults
          */
         function setTimerDriven() {
-
             self.model.schedule.schedulingStrategy = 'TIMER_DRIVEN';
             self.timerAmount = 5;
             self.timerUnits = "min";
             self.model.schedule.schedulingPeriod = "5 min";
-
         }
 
         /**
@@ -176,6 +160,16 @@
          */
         function setTriggerDriven() {
             self.model.schedule.schedulingStrategy = 'TRIGGER_DRIVEN'
+        }
+
+        /**
+         * Set the scheduling strategy to 'On primary node'.
+         */
+        function setPrimaryNodeOnly() {
+            self.model.schedule.schedulingStrategy = "PRIMARY_NODE_ONLY";
+            self.timerAmount = 5;
+            self.timerUnits = "min";
+            self.model.schedule.schedulingPeriod = "5 min";
         }
 
         function setDefaultScheduleStrategy() {
@@ -256,13 +250,14 @@
          */
         this.onScheduleStrategyChange = function() {
             self.model.schedule.schedulingStrategyTouched = true;
-            if (self.model.schedule.schedulingStrategy == 'CRON_DRIVEN') {
+            if (self.model.schedule.schedulingStrategy == "CRON_DRIVEN") {
                 if (self.model.schedule.schedulingPeriod != FeedService.DEFAULT_CRON) {
                     setCronDriven();
                 }
-            }
-            else if (self.model.schedule.schedulingStrategy == 'TIMER_DRIVEN') {
+            } else if (self.model.schedule.schedulingStrategy == "TIMER_DRIVEN") {
                 setTimerDriven();
+            } else if (self.model.schedule.schedulingStrategy === "PRIMARY_NODE_ONLY") {
+                setPrimaryNodeOnly();
             }
             validate();
         };
@@ -290,10 +285,10 @@
          */
         function validate() {
             //cron expression validation is handled via the cron-expression validator
-            var valid = (self.model.schedule.schedulingStrategy == 'CRON_DRIVEN') ||
-                        (self.model.schedule.schedulingStrategy == 'TIMER_DRIVEN' && self.timerAmount != undefined && self.timerAmount != null) ||
-                        (self.model.schedule.schedulingStrategy == 'TRIGGER_DRIVEN' && self.model.schedule.preconditions != null && self.model.schedule.preconditions.length > 0
-                        );
+            var valid = (self.model.schedule.schedulingStrategy == "CRON_DRIVEN") ||
+                        (self.model.schedule.schedulingStrategy == "TIMER_DRIVEN" && self.timerAmount != undefined && self.timerAmount != null) ||
+                        (self.model.schedule.schedulingStrategy == "TRIGGER_DRIVEN" && self.model.schedule.preconditions != null && self.model.schedule.preconditions.length > 0) ||
+                        (self.model.schedule.schedulingStrategy == "PRIMARY_NODE_ONLY" && self.timerAmount != undefined && self.timerAmount != null);
             if (valid) {
                 waitForStepperController(function() {
                     self.isValid = !self.stepperController.arePreviousStepsDisabled(self.stepIndex)
