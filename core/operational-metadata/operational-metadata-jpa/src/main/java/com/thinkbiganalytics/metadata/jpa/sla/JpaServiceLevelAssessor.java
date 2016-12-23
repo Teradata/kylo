@@ -159,6 +159,7 @@ public class JpaServiceLevelAssessor implements ServiceLevelAssessor {
                     Condition condition = group.getCondition();
                     AssessmentResult groupResult = AssessmentResult.SUCCESS;
                     Set<ObligationAssessment> obligationAssessments = new HashSet<>();
+                    log.debug("Assessing obligation group {} with {} obligations", group, group.getObligations().size());
                     for (Obligation ob : group.getObligations()) {
                         ObligationAssessment obAssessment = assess(ob, slaAssessment);
                         obligationAssessments.add(obAssessment);
@@ -397,11 +398,14 @@ public class JpaServiceLevelAssessor implements ServiceLevelAssessor {
 
         @Override
         public void assess(Obligation obligation, ObligationAssessmentBuilder builder) {
+            log.debug("Assessing obligation '{}' with {} metrics", obligation, obligation.getMetrics().size());
+
             Set<MetricAssessment> metricAssessments = new HashSet<MetricAssessment>();
             ObligationAssessmentBuilderImpl obligationAssessmentBuilder = (ObligationAssessmentBuilderImpl) builder;
             AssessmentResult result = AssessmentResult.SUCCESS;
 
             for (Metric metric : obligation.getMetrics()) {
+                log.debug("Assessing obligation metric '{}'", metric);
                 MetricAssessment assessment = obligationAssessmentBuilder.assess(metric);
                 metricAssessments.add(assessment);
             }
@@ -414,6 +418,8 @@ public class JpaServiceLevelAssessor implements ServiceLevelAssessor {
             if (result != AssessmentResult.SUCCESS) {
                 message = "At least one metric assessment resulted in the status: " + result;
             }
+
+            log.debug("Assessment outcome '{}'", message);
 
             builder
                 .result(result)

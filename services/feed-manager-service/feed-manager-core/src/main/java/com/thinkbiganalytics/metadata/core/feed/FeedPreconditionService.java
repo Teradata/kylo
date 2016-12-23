@@ -7,20 +7,20 @@ import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventListener;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.event.feed.FeedOperationStatusEvent;
+import com.thinkbiganalytics.metadata.api.event.feed.OperationStatus;
 import com.thinkbiganalytics.metadata.api.event.feed.PreconditionTriggerEvent;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.op.FeedOperation;
+import com.thinkbiganalytics.metadata.api.sla.FeedExecutedSinceFeed;
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
+import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessor;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -63,40 +63,35 @@ public class FeedPreconditionService {
         return this.assessor.assess(sla);
     }
 
-    public void checkPrecondition(String feedName) {
-        List<Feed> feeds = feedProvider.getFeeds(feedProvider.feedCriteria().name(feedName).limit(1));
-
-        if (!feeds.isEmpty()) {
-            Feed<?> feed = feeds.get(0);
-
-            checkPrecondition(feed);
-        }
-    }
-
-    protected void checkPrecondition(Feed.ID feedId) {
-        Feed<?> feed = feedProvider.getFeed(feedId);
-
-        if (feed != null) {
-            checkPrecondition(feed);
-        }
-    }
-
-    protected void checkPrecondition(Feed<?> feed) {
+    private void checkPrecondition(Feed<?> feed, OperationStatus operationStatus) {
         FeedPrecondition precond = feed.getPrecondition();
 
         if (precond != null) {
             log.debug("Checking precondition of feed: {} ({})", feed.getName(), feed.getId());
 
             ServiceLevelAgreement sla = precond.getAgreement();
-            ServiceLevelAssessment assessment = this.assessor.assess(sla);
+            boolean isAssess = sla.getObligationGroups().stream()
+                    .flatMap(obligationGroup -> obligationGroup.getObligations().stream())
+                    .flatMap(obligation -> obligation.getMetrics().stream())
+                    .anyMatch(metric -> isMetricDependentOnStatus(metric, operationStatus));
 
-            if (assessment.getResult() == AssessmentResult.SUCCESS) {
-                log.info("Firing precondition trigger event for feed:{} ({})", feed.getName(), feed.getId());
-                this.eventService.notify(new PreconditionTriggerEvent(feed.getId()));
+            if(isAssess) {
+                ServiceLevelAssessment assessment = this.assessor.assess(sla);
+
+                if (assessment.getResult() == AssessmentResult.SUCCESS) {
+                    log.info("Firing precondition trigger event for feed:{} ({})", feed.getName(), feed.getId());
+                    this.eventService.notify(new PreconditionTriggerEvent(feed.getId()));
+                }
+            } else {
+                log.debug("Feed {}.{} does not depend on feed {} with id ({})", feed.getCategory(), feed.getName(), operationStatus.getFeedName(), operationStatus.getFeedId());
             }
         }
     }
 
+    /** To avoid feeds being triggered by feeds they do not depend on    */
+    private boolean isMetricDependentOnStatus(Metric metric, OperationStatus operationStatus) {
+        return !(metric instanceof FeedExecutedSinceFeed) || operationStatus.getFeedName().equalsIgnoreCase(((FeedExecutedSinceFeed) metric).getCategoryAndFeed());
+    }
 
     private class FeedOperationListener implements MetadataEventListener<FeedOperationStatusEvent> {
 
@@ -113,7 +108,7 @@ public class FeedPreconditionService {
                         // TODO: this might not be the correct behavior but none of our current metrics
                         // need to be assessed when the feed itself containing the precondition has changed state.
                         if (! feed.getQualifiedName().equals(event.getData().getFeedName())) {
-                            checkPrecondition(feed);
+                            checkPrecondition(feed, event.getData());
                         }
                     }
                     return null;
