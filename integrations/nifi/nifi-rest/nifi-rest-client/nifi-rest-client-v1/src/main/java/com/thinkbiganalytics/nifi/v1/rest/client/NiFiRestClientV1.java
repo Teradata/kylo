@@ -9,15 +9,18 @@ import com.thinkbiganalytics.nifi.rest.client.NiFiProcessorsRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiTemplatesRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClientConfig;
+import com.thinkbiganalytics.nifi.rest.model.NiFiClusterSummary;
 import com.thinkbiganalytics.rest.JerseyRestClient;
 
 import org.apache.nifi.web.api.dto.AboutDTO;
 import org.apache.nifi.web.api.dto.BulletinBoardDTO;
 import org.apache.nifi.web.api.dto.BulletinDTO;
+import org.apache.nifi.web.api.dto.ClusterSummaryDTO;
 import org.apache.nifi.web.api.dto.search.SearchResultsDTO;
 import org.apache.nifi.web.api.entity.AboutEntity;
 import org.apache.nifi.web.api.entity.BulletinBoardEntity;
 import org.apache.nifi.web.api.entity.BulletinEntity;
+import org.apache.nifi.web.api.entity.ClusteSummaryEntity;
 import org.apache.nifi.web.api.entity.SearchResultsEntity;
 
 import java.util.Collections;
@@ -68,6 +71,19 @@ public class NiFiRestClientV1 extends JerseyRestClient implements NiFiRestClient
     @Override
     public AboutDTO about() {
         return get("/flow/about", null, AboutEntity.class).getAbout();
+    }
+
+    @Nonnull
+    @Override
+    public NiFiClusterSummary clusterSummary() {
+        final ClusterSummaryDTO dto = get("/flow/cluster/summary", null, ClusteSummaryEntity.class).getClusterSummary();
+        final NiFiClusterSummary clusterSummary = new NiFiClusterSummary();
+        clusterSummary.setClustered(dto.getClustered());
+        clusterSummary.setConnectedNodeCount(dto.getConnectedNodeCount());
+        clusterSummary.setConnectedNodes(dto.getConnectedNodes());
+        clusterSummary.setConnectedToCluster(dto.getConnectedToCluster());
+        clusterSummary.setTotalNodeCount(dto.getTotalNodeCount());
+        return clusterSummary;
     }
 
     @Nonnull

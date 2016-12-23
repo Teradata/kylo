@@ -9,6 +9,7 @@ import com.thinkbiganalytics.nifi.rest.client.NiFiProcessorsRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiTemplatesRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClientConfig;
+import com.thinkbiganalytics.nifi.rest.model.NiFiClusterSummary;
 import com.thinkbiganalytics.rest.JerseyRestClient;
 
 import org.apache.nifi.web.api.dto.AboutDTO;
@@ -84,6 +85,17 @@ public class NiFiRestClientV0 extends JerseyRestClient implements NiFiRestClient
     @Override
     public AboutDTO about() {
         return get("/controller/about", null, AboutEntity.class).getAbout();
+    }
+
+    @Nonnull
+    @Override
+    public NiFiClusterSummary clusterSummary() {
+        final NiFiClusterSummary clusterSummary = new NiFiClusterSummary();
+        clusterSummary.setClustered(false);
+        clusterSummary.setConnectedToCluster(false);
+        clusterSummary.setConnectedNodeCount(0);
+        clusterSummary.setTotalNodeCount(0);
+        return clusterSummary;
     }
 
     @Nonnull

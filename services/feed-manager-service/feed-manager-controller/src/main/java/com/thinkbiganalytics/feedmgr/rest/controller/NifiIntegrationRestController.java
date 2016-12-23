@@ -11,6 +11,7 @@ import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.layout.AlignNiFiComponents;
 import com.thinkbiganalytics.nifi.rest.client.layout.AlignProcessGroupComponents;
+import com.thinkbiganalytics.nifi.rest.model.NiFiClusterSummary;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowDeserializer;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
@@ -249,5 +250,16 @@ public class NifiIntegrationRestController {
         return Response.ok(tableSchema).build();
     }
 
-
+    /**
+     * Gets the NiFi cluster status.
+     *
+     * @return the cluster summary
+     */
+    @GET
+    @Path("/cluster/summary")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getClusterSummary() {
+        final NiFiClusterSummary clusterSummary = nifiRestClient.clusterSummary();
+        return Response.ok(clusterSummary).build();
+    }
 }

@@ -39,7 +39,7 @@
           <cron-expression-preview cron-expression="vm.model.schedule.schedulingPeriod"
                                    ng-if="vm.model.schedule.schedulingStrategy == 'CRON_DRIVEN' && vm.defineFeedScheduleForm.cronExpression.$valid"></cron-expression-preview>
         </md-input-container>
-        <div ng-if="vm.model.schedule.schedulingStrategy == 'TIMER_DRIVEN'" layout="row">
+        <div ng-if="vm.model.schedule.schedulingStrategy == 'TIMER_DRIVEN' || vm.model.schedule.schedulingStrategy == 'PRIMARY_NODE_ONLY'" layout="row">
           <md-input-container class="md-block" flex-gt-sm>
             <label>Run Schedule</label>
             <input ng-model="vm.timerAmount" required string-to-number type="number" ng-change="vm.timerChanged()"  ng-model-options="{ updateOn: 'default blur', debounce: {'default': 500, 'blur': 0} }"/>

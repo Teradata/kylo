@@ -224,4 +224,10 @@ angular.module(MODULE_FEED_MGR).service('RestUrlService', function () {
      * @type {string}
      */
     this.PARTITION_FUNCTIONS_URL = this.ROOT + "/proxy/v1/feedmgr/util/partition-functions";
+
+    /**
+     * The endpoint for retrieving the NiFi cluster status.
+     * @type {string}
+     */
+    this.NIFI_CLUSTER_SUMMARY_URL = this.ROOT + "/proxy/v1/feedmgr/nifi/cluster/summary";
 });

@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.nifi.rest.client;
 
+import com.thinkbiganalytics.nifi.rest.model.NiFiClusterSummary;
+
 import org.apache.nifi.web.api.dto.AboutDTO;
 import org.apache.nifi.web.api.dto.BulletinDTO;
 import org.apache.nifi.web.api.dto.search.SearchResultsDTO;
@@ -20,6 +22,14 @@ public interface NiFiRestClient {
      */
     @Nonnull
     AboutDTO about();
+
+    /**
+     * Gets the cluster status for the NiFi.
+     *
+     * @return cluster summary
+     */
+    @Nonnull
+    NiFiClusterSummary clusterSummary();
 
     /**
      * Gets the client for managing connections, including creating a connection, setting queue priority, and updating the connection destination.
