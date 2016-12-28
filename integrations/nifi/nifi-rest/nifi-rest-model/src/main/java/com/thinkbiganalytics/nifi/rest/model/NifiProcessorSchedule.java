@@ -1,7 +1,7 @@
 package com.thinkbiganalytics.nifi.rest.model;
 
 
-import com.thinkbiganalytics.feedmgr.metadata.MetadataField;
+import com.thinkbiganalytics.metadata.MetadataField;
 
 /**
  * Created by sr186054 on 1/13/16.

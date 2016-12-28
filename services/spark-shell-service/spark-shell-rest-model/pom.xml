@@ -29,7 +29,7 @@
         <!-- Kylo -->
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-schema-discovery-model</artifactId>
+            <artifactId>thinkbig-schema-discovery-model2</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

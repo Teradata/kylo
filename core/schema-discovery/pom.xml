@@ -13,14 +13,10 @@
 
     <modules>
       <module>schema-discovery-api</module>
-      <module>schema-discovery-model</module>
-      <module>schema-discovery-parser</module>
+      <module>schema-discovery-rdbms</module>
     </modules>
 
-
     <dependencies>
-
-
 
     </dependencies>
 

@@ -6,10 +6,11 @@ package com.thinkbiganalytics.discovery.parsers.hadoop;
 
 
 import com.google.common.util.concurrent.Uninterruptibles;
-import com.thinkbiganalytics.db.model.query.QueryResult;
-import com.thinkbiganalytics.db.model.query.QueryResultColumn;
 import com.thinkbiganalytics.discovery.model.DefaultField;
 import com.thinkbiganalytics.discovery.model.DefaultHiveSchema;
+import com.thinkbiganalytics.discovery.schema.Field;
+import com.thinkbiganalytics.discovery.schema.QueryResult;
+import com.thinkbiganalytics.discovery.schema.QueryResultColumn;
 import com.thinkbiganalytics.discovery.schema.Schema;
 import com.thinkbiganalytics.discovery.util.ParserHelper;
 import com.thinkbiganalytics.discovery.util.TableSchemaType;
@@ -34,9 +35,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javax.inject.Inject;
 
 /**
@@ -52,7 +50,7 @@ public class SparkFileSchemaParserService {
     }
 
     @Inject
-    SparkShellProcessManager shellProcessManager;
+    private SparkShellProcessManager shellProcessManager;
 
     /**
      * Communicates with Spark Shell processes
@@ -143,8 +141,8 @@ public class SparkFileSchemaParserService {
         DefaultHiveSchema schema = new DefaultHiveSchema();
         schema.setHiveFormat("STORED AS " + fileType);
         schema.setStructured(true);
-        ArrayList<DefaultField> fields = new ArrayList<>();
-        List<QueryResultColumn> columns = result.getColumns();
+        ArrayList<Field> fields = new ArrayList<>();
+        List<? extends QueryResultColumn> columns = result.getColumns();
         for (QueryResultColumn column : columns) {
             DefaultField field = new DefaultField();
             field.setName(column.getDisplayName());
@@ -170,7 +168,7 @@ public class SparkFileSchemaParserService {
         try (FileOutputStream fos = new FileOutputStream(tempFile)) {
             IOUtils.copyLarge(is, fos);
         }
-        log.info("Created temporary file {} success?",tempFile.getAbsoluteFile().toURI(), tempFile.exists());
+        log.info("Created temporary file {} success?", tempFile.getAbsoluteFile().toURI(), tempFile.exists());
         return tempFile;
     }
 

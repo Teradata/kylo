@@ -4,8 +4,11 @@
 
 package com.thinkbiganalytics.schema;
 
-import com.thinkbiganalytics.db.model.schema.Field;
-import com.thinkbiganalytics.db.model.schema.TableSchema;
+import com.thinkbiganalytics.discovery.model.DefaultField;
+import com.thinkbiganalytics.discovery.model.DefaultTableSchema;
+import com.thinkbiganalytics.discovery.schema.Field;
+import com.thinkbiganalytics.discovery.schema.TableSchema;
+import com.thinkbiganalytics.discovery.util.ParserHelper;
 import com.thinkbiganalytics.kerberos.KerberosTicketConfiguration;
 import com.thinkbiganalytics.kerberos.KerberosUtil;
 
@@ -15,8 +18,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
+import java.sql.JDBCType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -137,10 +142,10 @@ public class DBSchemaParser {
                     final String schem = result.getString(2);
                     final String tableName = result.getString(3);
                     if (table.equalsIgnoreCase(tableName) && (schema == null || schem == null || schema.equalsIgnoreCase(schem))) {
-                        final TableSchema tableSchema = new TableSchema();
+                        final DefaultTableSchema tableSchema = new DefaultTableSchema();
                         tableSchema.setFields(listColumns(conn, schema, tableName));
                         tableSchema.setName(tableName);
-                        tableSchema.setSchemaName(StringUtils.isBlank(schem) ? cat : schem);
+                        tableSchema.setTableSchema(StringUtils.isBlank(schem) ? cat : schem);
                         return tableSchema;
                     }
                 }
@@ -194,10 +199,11 @@ public class DBSchemaParser {
         List<Field> fields = new Vector<>();
         if (columns != null) {
             while (columns.next()) {
-                Field field = new Field();
+                DefaultField field = new DefaultField();
                 field.setName(columns.getString("COLUMN_NAME"));
                 Integer dataType = columns.getInt("DATA_TYPE");
-                field.setDataType(Field.sqlTypeToDataType(dataType));
+                field.setNativeDataType(ParserHelper.toNativeType(dataType));
+                field.setDerivedDataType(ParserHelper.sqlTypeToHiveType(dataType));
                 field.setDescription(columns.getString("REMARKS"));
                 String isNullableString = columns.getString("IS_NULLABLE");
                 if ("NO".equals(isNullableString)) {

@@ -19,5 +19,4 @@ public interface TableSchema extends Schema {
      */
     String getDatabaseName();
 
-
 }

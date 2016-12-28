@@ -25,8 +25,8 @@ public class SimpleRegexReplacer implements StandardizationPolicy {
     private String inputPattern;
 
     private Pattern pattern;
-    @PolicyProperty(name = "Replacement", hint = "Text to replace the regex match")
-    private String replacement;
+    @PolicyProperty(name = "Replacement", hint = "Text to replace the regex match", placeholder = "")
+    private String replacement = "";
     boolean valid;
 
     public SimpleRegexReplacer(@PolicyPropertyRef(name = "Regex Pattern") String regex,

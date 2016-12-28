@@ -2,9 +2,10 @@ package com.thinkbiganalytics.feedmgr.rest.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.thinkbiganalytics.feedmgr.metadata.MetadataField;
+import com.thinkbiganalytics.metadata.MetadataField;
 import com.thinkbiganalytics.feedmgr.rest.model.json.UserPropertyDeserializer;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.FeedProcessingOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.TableSetup;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
  * The specification for a feed and how it should interact with various components.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class FeedMetadata implements UIFeed {
 
     public static enum STATE {

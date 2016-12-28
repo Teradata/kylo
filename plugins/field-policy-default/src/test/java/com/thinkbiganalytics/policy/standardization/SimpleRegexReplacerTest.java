@@ -20,4 +20,12 @@ public class SimpleRegexReplacerTest {
         assertEquals("", regexReplacer.convertValue(""));
         assertEquals("barfeebarfie", regexReplacer.convertValue("barfeebarfie"));
     }
+
+
+    @Test
+    public void testSpaces() throws Exception {
+        SimpleRegexReplacer regexReplacer = new SimpleRegexReplacer("\\s", "");
+        assertEquals("", regexReplacer.convertValue("        "));
+    }
+
 }

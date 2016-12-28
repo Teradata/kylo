@@ -16,7 +16,7 @@
   <dependencies>
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-feed-manager-api</artifactId>
+      <artifactId>thinkbig-field-policy-api</artifactId>
       <version>${project.version}</version>
     </dependency>
 

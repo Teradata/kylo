@@ -34,7 +34,7 @@ public class ParserHelper {
     /**
      * Maximum number of characters to sample from a file protecting from memory
      */
-    private static int MAX_CHARS = 64000;
+    private static int MAX_CHARS = 128000;
 
     private static int MAX_ROWS = 1000;
 
@@ -69,37 +69,40 @@ public class ParserHelper {
         return sw.toString();
     }
 
-
+    public static String sqlTypeToHiveType(Integer type) {
+        switch (type) {
+            case Types.BIGINT:
+                return "bigint";
+            case Types.NUMERIC:
+            case Types.DOUBLE:
+            case Types.DECIMAL:
+                return "double";
+            case Types.INTEGER:
+                return "int";
+            case Types.FLOAT:
+                return "float";
+            case Types.TINYINT:
+                return "tinyint";
+            case Types.DATE:
+                return "date";
+            case Types.TIMESTAMP:
+                return "timestamp";
+            case Types.BOOLEAN:
+                return "boolean";
+            case Types.BINARY:
+                return "binary";
+            default:
+                return "string";
+        }
+    }
     /*
     Convert the JDBC sql type to a hive type
      */
     public static String sqlTypeToHiveType(JDBCType jdbcType) {
         if (jdbcType != null) {
             Integer type = jdbcType.getVendorTypeNumber();
-            switch (type) {
-                case Types.BIGINT:
-                    return "bigint";
-                case Types.NUMERIC:
-                case Types.DOUBLE:
-                case Types.DECIMAL:
-                    return "double";
-                case Types.INTEGER:
-                    return "int";
-                case Types.FLOAT:
-                    return "float";
-                case Types.TINYINT:
-                    return "tinyint";
-                case Types.DATE:
-                    return "date";
-                case Types.TIMESTAMP:
-                    return "timestamp";
-                case Types.BOOLEAN:
-                    return "boolean";
-                case Types.BINARY:
-                    return "binary";
-                default:
-                    return "string";
-            }
+            return sqlTypeToHiveType(type);
+
         }
         return null;
     }
@@ -200,6 +203,10 @@ public class ParserHelper {
             }
         }
         return descriptor;
+    }
+
+    public static String toNativeType(Integer dataType) {
+        return JDBCType.valueOf(dataType).getName();
     }
 
     static class HiveDataTypeDescriptor implements DataTypeDescriptor {

@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.thinkbiganalytics.feedmgr.metadata.MetadataField;
+import com.thinkbiganalytics.metadata.MetadataField;
 import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
 
 import java.util.ArrayList;

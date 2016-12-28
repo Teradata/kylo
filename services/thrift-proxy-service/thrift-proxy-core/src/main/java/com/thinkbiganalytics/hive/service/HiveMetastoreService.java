@@ -1,9 +1,12 @@
 package com.thinkbiganalytics.hive.service;
 
 
-import com.thinkbiganalytics.db.model.schema.DatabaseMetadata;
-import com.thinkbiganalytics.db.model.schema.Field;
-import com.thinkbiganalytics.db.model.schema.TableSchema;
+import com.thinkbiganalytics.discovery.model.DefaultDatabaseMetadata;
+import com.thinkbiganalytics.discovery.model.DefaultField;
+import com.thinkbiganalytics.discovery.model.DefaultTableSchema;
+import com.thinkbiganalytics.discovery.schema.DatabaseMetadata;
+import com.thinkbiganalytics.discovery.schema.Field;
+import com.thinkbiganalytics.discovery.schema.TableSchema;
 import com.thinkbiganalytics.jdbc.util.DatabaseType;
 
 import org.slf4j.Logger;
@@ -86,7 +89,7 @@ public class HiveMetastoreService {
        metadata = hiveMetatoreJdbcTemplate.query(query, new RowMapper<DatabaseMetadata>() {
             @Override
             public DatabaseMetadata mapRow(ResultSet rs, int i) throws SQLException {
-                DatabaseMetadata row = new DatabaseMetadata();
+                DefaultDatabaseMetadata row = new DefaultDatabaseMetadata();
                 row.setDatabaseName(rs.getString("DATABASE_NAME"));
                 row.setColumnName(rs.getString("COLUMN_NAME"));
                 row.setTableName(rs.getString("TBL_NAME"));
@@ -160,7 +163,7 @@ public class HiveMetastoreService {
                 }
                 Map<String,TableSchema>tables = databaseTables.get(dbName);
                 if(!tables.containsKey(tableName)){
-                    TableSchema schema = new TableSchema();
+                    DefaultTableSchema schema = new DefaultTableSchema();
                     schema.setName(tableName);
                     schema.setSchemaName(dbName);
                     schema.setFields(new ArrayList<Field>());
@@ -168,9 +171,10 @@ public class HiveMetastoreService {
                     metadata.add(schema);
                 }
                 TableSchema schema = tables.get(tableName);
-                Field field = new Field();
+                DefaultField field = new DefaultField();
                 field.setName(columnName);
-                field.setDataType(columnType);
+                field.setNativeDataType(columnType);
+                field.setDerivedDataType(columnType);
                 schema.getFields().add(field);
                 return schema;
             }

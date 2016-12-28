@@ -1,8 +1,7 @@
 package com.thinkbiganalytics.feedmgr.rest.controller;
 
 import com.google.common.collect.Lists;
-import com.thinkbiganalytics.db.model.query.QueryResult;
-import com.thinkbiganalytics.db.model.schema.TableSchema;
+import com.thinkbiganalytics.discovery.schema.QueryResult;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
@@ -27,12 +26,9 @@ import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 import com.thinkbiganalytics.policy.rest.model.PreconditionRule;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
-import com.thinkbiganalytics.schema.TextFileParser;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.PortDTO;
-import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
-import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.hibernate.JDBCException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +37,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
 
-import java.io.InputStream;
 import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -330,19 +325,6 @@ public class FeedRestController {
         });
 
 
-    }
-
-
-    @POST
-    @Path("/table/sample-file")
-    @Consumes({MediaType.MULTIPART_FORM_DATA})
-    @Produces({MediaType.APPLICATION_JSON})
-    public Response uploadFile(@FormDataParam("delimiter") Character delimiter,
-                               @FormDataParam("file") InputStream fileInputStream,
-                               @FormDataParam("file") FormDataContentDisposition fileMetaData) throws Exception {
-        TextFileParser parser = new TextFileParser();
-        TableSchema schema = parser.parse(fileInputStream, delimiter);
-        return Response.ok(schema).build();
     }
 
     @GET

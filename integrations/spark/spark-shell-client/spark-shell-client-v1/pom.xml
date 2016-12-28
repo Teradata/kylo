@@ -57,6 +57,18 @@
             <artifactId>thinkbig-spark-shell-client-app</artifactId>
             <version>${project.version}</version>
         </dependency>
+
+      <dependency>
+        <groupId>com.thinkbiganalytics.datalake</groupId>
+        <artifactId>thinkbig-schema-discovery-api</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.thinkbiganalytics.datalake</groupId>
+        <artifactId>thinkbig-schema-discovery-model2</artifactId>
+        <version>${project.version}</version>
+      </dependency>
     </dependencies>
 
     <build>

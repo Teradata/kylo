@@ -4,9 +4,9 @@ import java.util
 import java.util.concurrent.Callable
 import java.util.regex.Pattern
 
+import com.thinkbiganalytics.discovery.model.{DefaultQueryResult, DefaultQueryResultColumn}
+import com.thinkbiganalytics.discovery.schema.{QueryResult, QueryResultColumn}
 import com.thinkbiganalytics.hive.util.HiveUtils
-import com.thinkbiganalytics.db.model.query.{QueryResult, QueryResultColumn}
-import com.thinkbiganalytics.spark.rest.model.TransformRequest
 import com.thinkbiganalytics.spark.rest.model.TransformResponse
 import com.thinkbiganalytics.spark.util.DataTypeUtils
 import org.apache.spark.sql.types.StructType
@@ -105,7 +105,7 @@ abstract class TransformScript(destination: String, sendResults: Boolean, sqlCon
         }
     }
 
-    /** Stores the `DataFrame` results in a [[com.thinkbiganalytics.db.model.query.QueryResult]] and returns the object. */
+    /** Stores the `DataFrame` results in a [[QueryResultColumn]] and returns the object. */
     private class QueryResultCallable extends Callable[TransformResponse] {
         override def call(): TransformResponse = {
             // Cache data frame
@@ -113,7 +113,7 @@ abstract class TransformScript(destination: String, sendResults: Boolean, sqlCon
             cache.registerTempTable(destination)
 
             // Build result object
-            val result = new QueryResult("SELECT * FROM " + destination)
+            val result = new DefaultQueryResult("SELECT * FROM " + destination)
 
             val transform = new QueryResultRowTransform(cache.schema)
             result.setColumns(JavaConversions.seqAsJavaList(transform.columns))
@@ -129,7 +129,7 @@ abstract class TransformScript(destination: String, sendResults: Boolean, sqlCon
         }
     }
 
-    /** Transforms a Spark SQL `Row` into a [[com.thinkbiganalytics.db.model.query.QueryResult]] row. */
+    /** Transforms a Spark SQL `Row` into a [[QueryResult]] row. */
     private object QueryResultRowTransform {
         /** Prefix for display names that are different from the field name */
         val DISPLAY_NAME_PREFIX = "col"
@@ -139,11 +139,11 @@ abstract class TransformScript(destination: String, sendResults: Boolean, sqlCon
     }
 
     private class QueryResultRowTransform(schema: StructType) extends (Row => util.HashMap[String, Object]) {
-        /** Array of columns for the [[com.thinkbiganalytics.db.model.query.QueryResult]] */
+        /** Array of columns for the [[com.thinkbiganalytics.discovery.schema.QueryResultColumn]] */
         val columns = {
             var index = 1
             schema.fields.map(field => {
-                val column = new QueryResultColumn
+                val column = new DefaultQueryResultColumn
                 column.setDataType(DataTypeUtils.getHiveObjectInspector(field.dataType).getTypeName)
                 column.setHiveColumnLabel(field.name)
                 column.setTableName(destination)

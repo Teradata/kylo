@@ -4,8 +4,14 @@
 
 package com.thinkbiganalytics.discovery.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.collect.Maps;
 import com.thinkbiganalytics.discovery.schema.Field;
 import com.thinkbiganalytics.discovery.schema.Schema;
+import com.thinkbiganalytics.metadata.MetadataField;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,6 +23,7 @@ public class AbstractSchema implements Schema {
 
     private UUID uuid = UUID.randomUUID();
 
+    @MetadataField
     private String name;
 
     private String description;
@@ -25,7 +32,11 @@ public class AbstractSchema implements Schema {
 
     private Map<String, String> properties = new HashMap<>();
 
-    private List<? extends Field> fields = new ArrayList<>();
+    @JsonDeserialize(contentAs=DefaultField.class)
+    @JsonSerialize(contentAs=DefaultField.class)
+    private List<Field> fields = new ArrayList<>();
+
+    private String schemaName;
 
 
     @Override
@@ -54,11 +65,11 @@ public class AbstractSchema implements Schema {
     }
 
     @Override
-    public List<? extends Field> getFields() {
+    public List<Field> getFields() {
         return fields;
     }
 
-    public void setFields(List<? extends Field> fields) {
+    public void setFields(List<Field> fields) {
         this.fields = fields;
     }
 
@@ -74,11 +85,29 @@ public class AbstractSchema implements Schema {
         this.name = name;
     }
 
+    public void setSchemaName(String schemaName) {
+        this.schemaName = schemaName;
+    }
+
+    @Override
+    public String getSchemaName() {
+        return this.schemaName;
+    }
+
     public void setDescription(String description) {
         this.description = description;
     }
 
     public void setCharset(String charset) {
         this.charset = charset;
+    }
+
+    @JsonIgnore
+    public Map<String, Field> getFieldsAsMap() {
+        Map<String, Field> map = new HashMap<>();
+        if (fields != null) {
+            map = Maps.uniqueIndex(fields, field -> field.getName());
+        }
+        return map;
     }
 }

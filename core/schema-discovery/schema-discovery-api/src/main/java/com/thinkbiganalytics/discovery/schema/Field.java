@@ -4,8 +4,9 @@
 
 package com.thinkbiganalytics.discovery.schema;
 
-import java.util.List;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
+import java.util.List;
 
 public interface Field {
 
@@ -49,10 +50,23 @@ public interface Field {
      */
     DataTypeDescriptor getDataTypeDescriptor();
 
-   /**
-    * Additional description about the derived data type
-    */
+    /**
+     * Additional description about the derived data type
+     */
     void setDataTypeDescriptor(DataTypeDescriptor dataTypeDescriptor);
+
+    String getDataTypeWithPrecisionAndScale();
+
+    String getPrecisionScale();
+
+    Boolean getCreatedTracker();
+
+    Boolean getUpdatedTracker();
+
+    /**
+     * Returns the structure in the format: Name | DataType | Desc | Primary \ CreatedTracker | UpdatedTracker
+     */
+    String asFieldStructure();
 
 }
 

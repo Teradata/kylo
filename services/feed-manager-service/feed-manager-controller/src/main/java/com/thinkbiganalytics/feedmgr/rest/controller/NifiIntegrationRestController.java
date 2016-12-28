@@ -1,7 +1,7 @@
 package com.thinkbiganalytics.feedmgr.rest.controller;
 
 import com.google.common.collect.ImmutableMap;
-import com.thinkbiganalytics.db.model.schema.TableSchema;
+import com.thinkbiganalytics.discovery.schema.TableSchema;
 import com.thinkbiganalytics.feedmgr.nifi.CleanupStaleFeedRevisions;
 import com.thinkbiganalytics.feedmgr.nifi.DBCPConnectionPoolTableInfo;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;

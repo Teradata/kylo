@@ -1,15 +1,16 @@
-package com.thinkbiganalytics.db.model.schema;
-
-/**
- * Created by sr186054 on 2/17/16.
+/*
+ * Copyright (c) 2016. Teradata Inc.
  */
-@Deprecated
-public class DatabaseMetadata {
+
+package com.thinkbiganalytics.discovery.model;
+
+public class DefaultDatabaseMetadata implements com.thinkbiganalytics.discovery.schema.DatabaseMetadata {
 
     private String databaseName;
     private String tableName;
     private String columnName;
 
+    @Override
     public String getDatabaseName() {
         return databaseName;
     }
@@ -18,6 +19,7 @@ public class DatabaseMetadata {
         this.databaseName = databaseName;
     }
 
+    @Override
     public String getTableName() {
         return tableName;
     }
@@ -26,6 +28,7 @@ public class DatabaseMetadata {
         this.tableName = tableName;
     }
 
+    @Override
     public String getColumnName() {
         return columnName;
     }
@@ -33,4 +36,5 @@ public class DatabaseMetadata {
     public void setColumnName(String columnName) {
         this.columnName = columnName;
     }
+
 }

@@ -2,7 +2,7 @@ package com.thinkbiganalytics.feedmgr.rest.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.thinkbiganalytics.feedmgr.metadata.MetadataField;
+import com.thinkbiganalytics.metadata.MetadataField;
 
 import java.util.Collection;
 import java.util.HashSet;

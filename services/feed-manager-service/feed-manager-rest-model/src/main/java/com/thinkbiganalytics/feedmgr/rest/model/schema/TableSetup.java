@@ -4,9 +4,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.thinkbiganalytics.db.model.schema.Field;
-import com.thinkbiganalytics.db.model.schema.TableSchema;
-import com.thinkbiganalytics.feedmgr.metadata.MetadataField;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.thinkbiganalytics.discovery.model.DefaultTableSchema;
+import com.thinkbiganalytics.discovery.schema.Field;
+import com.thinkbiganalytics.discovery.schema.TableSchema;
+import com.thinkbiganalytics.metadata.MetadataField;
 import com.thinkbiganalytics.policy.rest.model.FieldPolicy;
 
 import org.apache.commons.lang3.StringUtils;
@@ -23,8 +26,12 @@ public class TableSetup {
 
     private static final Logger log = LoggerFactory.getLogger(TableSetup.class);
 
+    @JsonSerialize(as = DefaultTableSchema.class)
+    @JsonDeserialize(as = DefaultTableSchema.class)
     private TableSchema tableSchema;
 
+    @JsonSerialize(as = DefaultTableSchema.class)
+    @JsonDeserialize(as = DefaultTableSchema.class)
     private TableSchema sourceTableSchema;
 
     private String method;
@@ -193,10 +200,10 @@ public class TableSetup {
         if (tableSchema != null && tableSchema.getFields() != null) {
             for (Field field : tableSchema.getFields()) {
                 setStringBuffer(fieldsString, field.getName(), "\n");
-                if (field.getNullable()) {
+                if (field.isNullable()) {
                     setStringBuffer(nullableFieldsString, field.getName(), ",");
                 }
-                if (field.getPrimaryKey()) {
+                if (field.isPrimaryKey()) {
                     setStringBuffer(primaryKeyFieldsString, field.getName(), ",");
                 }
             }

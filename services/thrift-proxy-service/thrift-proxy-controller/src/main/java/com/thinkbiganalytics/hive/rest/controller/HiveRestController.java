@@ -2,9 +2,9 @@ package com.thinkbiganalytics.hive.rest.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.thinkbiganalytics.db.model.query.QueryResult;
-import com.thinkbiganalytics.db.model.schema.DatabaseMetadata;
-import com.thinkbiganalytics.db.model.schema.TableSchema;
+import com.thinkbiganalytics.discovery.schema.DatabaseMetadata;
+import com.thinkbiganalytics.discovery.schema.QueryResult;
+import com.thinkbiganalytics.discovery.schema.TableSchema;
 import com.thinkbiganalytics.hive.service.HiveMetastoreService;
 import com.thinkbiganalytics.hive.service.HiveService;
 
@@ -48,17 +48,18 @@ public class HiveRestController {
     @Autowired
     HiveMetastoreService hiveMetadataService;
 
-    public HiveService getHiveService(){
+    public HiveService getHiveService() {
         return hiveService;
     }
 
-    public HiveMetastoreService getHiveMetadataService(){
+    public HiveMetastoreService getHiveMetadataService() {
         return hiveMetadataService;
     }
 
-    public HiveRestController(){
+    public HiveRestController() {
 
     }
+
     @PostConstruct
     private void init() {
 
@@ -67,13 +68,13 @@ public class HiveRestController {
 
     @GET
     @Path("/test-connection")
-    @Produces({MediaType.TEXT_PLAIN })
+    @Produces({MediaType.TEXT_PLAIN})
     public Response testConnection() {
         boolean valid = false;
         try {
-         valid =   hiveService.testConnection();
-        }catch (SQLException e){
-            throw new RuntimeException("SQL exception ",e);
+            valid = hiveService.testConnection();
+        } catch (SQLException e) {
+            throw new RuntimeException("SQL exception ", e);
         }
         return Response.ok(valid).build();
     }
@@ -81,21 +82,20 @@ public class HiveRestController {
 
     @GET
     @Path("/table-columns")
-    @Produces({MediaType.APPLICATION_JSON })
+    @Produces({MediaType.APPLICATION_JSON})
     public Response getTableColumns() {
         List<DatabaseMetadata> list = null;
         try {
             boolean userImpersonationEnabled = Boolean.valueOf(env.getProperty("hive.userImpersonation.enabled"));
-            if(userImpersonationEnabled) {
+            if (userImpersonationEnabled) {
                 List<String> tables = getHiveService().getAllTablesForImpersonatedUser();
                 list = getHiveMetadataService().getTableColumns(tables);
-            }
-            else {
+            } else {
                 list = getHiveMetadataService().getTableColumns(null);
             }
 
         } catch (DataAccessException e) {
-            log.error("Error Querying Hive Tables  for columns from the Metastore ",e);
+            log.error("Error Querying Hive Tables  for columns from the Metastore ", e);
             throw e;
         }
         return Response.ok(asJson(list)).build();
@@ -103,13 +103,13 @@ public class HiveRestController {
 
     @GET
     @Path("/browse/{schema}/{table}")
-    @Produces({MediaType.APPLICATION_JSON })
-    public Response browseTable(@PathParam("schema") String schema, @PathParam("table") String table, @QueryParam("where") String where,@QueryParam("limit") @DefaultValue("20") Integer limit) {
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response browseTable(@PathParam("schema") String schema, @PathParam("table") String table, @QueryParam("where") String where, @QueryParam("limit") @DefaultValue("20") Integer limit) {
         QueryResult list = null;
         try {
             list = getHiveService().browse(schema, table, where, limit);
         } catch (DataAccessException e) {
-            log.error("Error Querying Hive Tables  for schema: "+schema+", table: "+table+" where: "+where+", limit: "+limit,e);
+            log.error("Error Querying Hive Tables  for schema: " + schema + ", table: " + table + " where: " + where + ", limit: " + limit, e);
             throw e;
         }
         return Response.ok(asJson(list)).build();
@@ -118,13 +118,13 @@ public class HiveRestController {
 
     @GET
     @Path("/query")
-    @Produces({MediaType.APPLICATION_JSON })
+    @Produces({MediaType.APPLICATION_JSON})
     public Response browseTable(@QueryParam("query") String query) {
         QueryResult list = null;
         try {
             list = getHiveService().browse(query);
         } catch (DataAccessException e) {
-            log.error("Error Querying Hive for query: "+query,e);
+            log.error("Error Querying Hive for query: " + query, e);
             throw e;
         }
         return Response.ok(asJson(list)).build();
@@ -133,16 +133,15 @@ public class HiveRestController {
 
     @GET
     @Path("/query-result")
-    @Produces({MediaType.APPLICATION_JSON })
+    @Produces({MediaType.APPLICATION_JSON})
     public Response queryResult(@QueryParam("query") String query) {
         QueryResult list = null;
         try {
             list = getHiveService().query(query);
         } catch (DataAccessException e) {
-            if(e.getCause().getMessage().contains("HiveAccessControlException Permission denied")) {
+            if (e.getCause().getMessage().contains("HiveAccessControlException Permission denied")) {
                 throw new AccessControlException("You do not have permission to execute this hive query");
-            }
-            else {
+            } else {
                 log.error("Error Querying Hive for query: " + query);
                 throw e;
             }
@@ -152,10 +151,9 @@ public class HiveRestController {
     }
 
 
-
     @GET
     @Path("/schemas/{schema}/tables/{table}")
-    @Produces({MediaType.APPLICATION_JSON })
+    @Produces({MediaType.APPLICATION_JSON})
     public Response getTableSchema(@PathParam("schema") String schema, @PathParam("table") String table) {
 
         TableSchema tableSchema = getHiveService().getTableSchema(schema, table);
@@ -164,42 +162,37 @@ public class HiveRestController {
 
     @GET
     @Path("/schemas")
-    @Produces({MediaType.APPLICATION_JSON })
-    public Response getSchemaNames()
-    {
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response getSchemaNames() {
         List<String> schemas = getHiveService().getSchemaNames();
         return Response.ok(asJson(schemas)).build();
     }
 
     @GET
     @Path("/table-schemas")
-    @Produces({MediaType.APPLICATION_JSON })
-    public Response getAllTableSchemas()
-    {
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response getAllTableSchemas() {
         //  List<TableSchema> schemas = getHiveService().getAllTableSchemas();
         List<TableSchema> schemas = null;
         try {
             schemas = getHiveMetadataService().getTableSchemas();
-        }catch(DataAccessException e){
-            log.error("Error listing Hive Table schemas from the metastore ",e);
+        } catch (DataAccessException e) {
+            log.error("Error listing Hive Table schemas from the metastore ", e);
             throw e;
         }
         return Response.ok(asJson(schemas)).build();
     }
 
 
-
     @GET
     @Path("/tables")
-    @Produces({MediaType.APPLICATION_JSON })
-    public Response getTables()
-    {
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response getTables() {
         List<String> tables = null;
         boolean userImpersonationEnabled = Boolean.valueOf(env.getProperty("hive.userImpersonation.enabled"));
-        if(userImpersonationEnabled) {
+        if (userImpersonationEnabled) {
             tables = getHiveService().getAllTablesForImpersonatedUser();
-        }
-        else {
+        } else {
             try {
                 tables = getHiveMetadataService().getAllTables();
             } catch (DataAccessException e) {
@@ -212,27 +205,25 @@ public class HiveRestController {
 
     @GET
     @Path("/schemas/{schema}/tables")
-    @Produces({MediaType.APPLICATION_JSON })
-    public Response getTableNames(@PathParam("schema")String schema)
-    {
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response getTableNames(@PathParam("schema") String schema) {
         boolean userImpersonationEnabled = Boolean.valueOf(env.getProperty("hive.userImpersonation.enabled"));
         List<String> tables = null;
-        if(userImpersonationEnabled) {
+        if (userImpersonationEnabled) {
             tables = getHiveService().getTablesForImpersonatedUser(schema);
-        }
-        else {
+        } else {
             tables = getHiveService().getTables(schema);
         }
         return Response.ok(asJson(tables)).build();
     }
 
-    private String asJson(Object object){
+    private String asJson(Object object) {
         String json = null;
         ObjectMapper mapper = new ObjectMapper();
         try {
             json = mapper.writeValueAsString(object);
         } catch (JsonProcessingException e) {
-            log.error("Error converting object to JSON String ",e);
+            log.error("Error converting object to JSON String ", e);
         }
         return json;
     }

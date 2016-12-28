@@ -2,8 +2,8 @@ package com.thinkbiganalytics.feedmgr.service.feed;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.thinkbiganalytics.db.model.schema.Field;
-import com.thinkbiganalytics.db.model.schema.TableSchema;
+import com.thinkbiganalytics.discovery.schema.Field;
+import com.thinkbiganalytics.discovery.schema.TableSchema;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
@@ -70,36 +70,6 @@ public class FeedModelTransform {
 
     @Inject
     private HadoopSecurityGroupProvider hadoopSecurityGroupProvider;
-
-    public void refreshTableSchemaFromHive(FeedMetadata feed) {
-        //Merge back in the hive table schema ?
-        if (feed.getRegisteredTemplate() != null && (feed.getRegisteredTemplate().isDefineTable() || feed.getRegisteredTemplate().isDataTransformation()) && feed.getTable() != null
-            && feed.getTable().getTableSchema() != null) {
-            TableSchema existingSchema = feed.getTable().getTableSchema();
-            Map<String, Field> existingFields = existingSchema.getFieldsAsMap();
-            String hiveTable = feed.getTable().getTableSchema().getName();
-            String categoryName = feed.getCategory().getSystemName();
-            try {
-                TableSchema schema = hiveService.getTableSchema(categoryName, hiveTable);
-                //merge back in previous nuillable/pk values for each of the fields
-                if (schema != null && schema.getFields() != null) {
-                    for (Field field : schema.getFields()) {
-                        Field existingField = existingFields.get(field.getName());
-                        if (existingField != null) {
-                            field.setPrimaryKey(existingField.getPrimaryKey());
-                            field.setNullable(existingField.getNullable());
-                            field.setCreatedTracker(existingField.getCreatedTracker());
-                            field.setUpdatedTracker(existingField.getUpdatedTracker());
-                        }
-                    }
-                    feed.getTable().setTableSchema(schema);
-                }
-            } catch (Exception e) {
-                //swallow exception.  refreshing of the hive schema is just a nice to have feature. JSON should be up to date.
-            }
-        }
-    }
-
 
     /**
      *

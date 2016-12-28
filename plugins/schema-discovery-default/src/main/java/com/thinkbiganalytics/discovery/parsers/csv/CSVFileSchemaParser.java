@@ -10,6 +10,7 @@ import com.thinkbiganalytics.discovery.model.DefaultHiveSchema;
 import com.thinkbiganalytics.discovery.model.DefaultTableSchema;
 import com.thinkbiganalytics.discovery.parser.FileSchemaParser;
 import com.thinkbiganalytics.discovery.parser.SchemaParser;
+import com.thinkbiganalytics.discovery.schema.Field;
 import com.thinkbiganalytics.discovery.schema.Schema;
 import com.thinkbiganalytics.discovery.util.ParserHelper;
 import com.thinkbiganalytics.discovery.util.TableSchemaType;
@@ -42,7 +43,7 @@ public class CSVFileSchemaParser implements FileSchemaParser {
 
     private static final int MAX_ROWS = 1000;
 
-    private int numRowsToSample = 10;
+    private int numRowsToSample = 100;
 
     @PolicyProperty(name = "Auto Detect?", hint = "Auto detect will attempt to infer delimiter from the sample file.", type = PolicyPropertyTypes.PROPERTY_TYPE.select,
                     selectableValues = {"true", "false"})
@@ -111,7 +112,7 @@ public class CSVFileSchemaParser implements FileSchemaParser {
     private DefaultFileSchema populateSchema(CSVParser parser) {
         DefaultFileSchema fileSchema = new DefaultFileSchema();
         int i = 0;
-        ArrayList<DefaultField> fields = new ArrayList<>();
+        ArrayList<Field> fields = new ArrayList<>();
         for (CSVRecord record : parser) {
             if (i > numRowsToSample) {
                 break;
@@ -130,7 +131,7 @@ public class CSVFileSchemaParser implements FileSchemaParser {
                 } else {
                     // Add sample values for rows
                     try {
-                        field = fields.get(j);
+                        field = (DefaultField) fields.get(j);
                         field.getSampleValues().add(StringUtils.defaultString(record.get(j), ""));
                     } catch (IndexOutOfBoundsException e) {
                         LOG.warn("Sample file has potential sparse column problem at row [?] field [?]", i + 1, j + 1);

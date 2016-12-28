@@ -14,13 +14,13 @@
   <dependencies>
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-schema-discovery-model</artifactId>
+      <artifactId>thinkbig-schema-discovery-model2</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-schema-discovery-parser</artifactId>
+      <artifactId>thinkbig-schema-discovery-rdbms</artifactId>
       <version>${project.version}</version>
     </dependency>
 
@@ -55,6 +55,11 @@
       <groupId>org.springframework</groupId>
       <artifactId>spring-jdbc</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-core</artifactId>
+    </dependency>
+
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-annotations</artifactId>

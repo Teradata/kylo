@@ -11,8 +11,6 @@
     <version>0.6.0-SNAPSHOT</version>
   </parent>
 
-
-
   <dependencies>
 
     <dependency>
@@ -20,6 +18,7 @@
       <artifactId>thinkbig-job-repository-core</artifactId>
       <version>${project.version}</version>
     </dependency>
+
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>thinkbig-job-repository-api</artifactId>
@@ -90,10 +89,16 @@
     </dependency>
 
     <dependency>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
-    <artifactId>thinkbig-schema-discovery-parser</artifactId>
-    <version>${project.version}</version>
-  </dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>thinkbig-schema-discovery-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>thinkbig-schema-discovery-model2</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>

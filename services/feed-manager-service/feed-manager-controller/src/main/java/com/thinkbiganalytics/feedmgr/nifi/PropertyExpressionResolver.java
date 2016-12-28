@@ -4,7 +4,7 @@ package com.thinkbiganalytics.feedmgr.nifi;
 import com.thinkbiganalytics.annotations.AnnotatedFieldProperty;
 import com.thinkbiganalytics.feedmgr.MetadataFieldAnnotationFieldNameResolver;
 import com.thinkbiganalytics.feedmgr.MetadataFields;
-import com.thinkbiganalytics.feedmgr.metadata.MetadataField;
+import com.thinkbiganalytics.metadata.MetadataField;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.nifi.feedmgr.ConfigurationPropertyReplacer;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;

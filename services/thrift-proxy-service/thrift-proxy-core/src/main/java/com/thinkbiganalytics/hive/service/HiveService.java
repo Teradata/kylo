@@ -1,10 +1,13 @@
 package com.thinkbiganalytics.hive.service;
 
 
-import com.thinkbiganalytics.db.model.query.QueryResult;
-import com.thinkbiganalytics.db.model.query.QueryResultColumn;
-import com.thinkbiganalytics.db.model.schema.Field;
-import com.thinkbiganalytics.db.model.schema.TableSchema;
+import com.thinkbiganalytics.discovery.model.DefaultQueryResult;
+import com.thinkbiganalytics.discovery.model.DefaultQueryResultColumn;
+import com.thinkbiganalytics.discovery.schema.Field;
+import com.thinkbiganalytics.discovery.schema.QueryResult;
+import com.thinkbiganalytics.discovery.schema.QueryResultColumn;
+import com.thinkbiganalytics.discovery.schema.TableSchema;
+import com.thinkbiganalytics.discovery.util.ParserHelper;
 import com.thinkbiganalytics.hive.util.HiveUtils;
 import com.thinkbiganalytics.kerberos.KerberosTicketConfiguration;
 import com.thinkbiganalytics.schema.DBSchemaParser;
@@ -17,11 +20,9 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -36,6 +37,7 @@ import javax.sql.DataSource;
  * Created by sr186054 on 2/11/16.
  */
 public class HiveService {
+
     private static final Logger log = LoggerFactory.getLogger(HiveService.class);
 
     @Inject
@@ -48,11 +50,12 @@ public class HiveService {
 
     private DBSchemaParser schemaParser = null;
 
-    public DataSource getDataSource(){
+    public DataSource getDataSource() {
         return jdbcTemplate.getDataSource();
     }
-    public DBSchemaParser getDBSchemaParser(){
-        if(schemaParser == null) {
+
+    public DBSchemaParser getDBSchemaParser() {
+        if (schemaParser == null) {
             schemaParser = new DBSchemaParser(getDataSource(), kerberosHiveConfiguration);
         }
         return schemaParser;
@@ -69,17 +72,16 @@ public class HiveService {
 
     /**
      * returns a list of schemanName.TableName
-     * @return
      */
-    private List<String> getAllTables(){
+    private List<String> getAllTables() {
         List<String> allTables = new ArrayList<>();
         List<String> schemas = getSchemaNames();
-        if(schemas != null) {
+        if (schemas != null) {
             for (String schema : schemas) {
                 List<String> tables = getTables(schema);
-                if(tables != null) {
-                    for (String table :tables) {
-                        allTables.add(schema+"."+table);
+                if (tables != null) {
+                    for (String table : tables) {
+                        allTables.add(schema + "." + table);
                     }
                 }
             }
@@ -117,17 +119,16 @@ public class HiveService {
 
     /**
      * returns a list of populated TableSchema objects
-     * @return
      */
-    public List<TableSchema> getAllTableSchemas(){
+    public List<TableSchema> getAllTableSchemas() {
         List<TableSchema> allTables = new ArrayList<>();
         List<String> schemas = getSchemaNames();
-        if(schemas != null) {
+        if (schemas != null) {
             for (String schema : schemas) {
                 List<String> tables = getTables(schema);
-                if(tables != null) {
-                    for (String table :tables) {
-                        allTables.add(getTableSchema(schema,table));
+                if (tables != null) {
+                    for (String table : tables) {
+                        allTables.add(getTableSchema(schema, table));
                     }
                 }
             }
@@ -137,29 +138,24 @@ public class HiveService {
 
     /**
      * Describes the given Table
-     * @param schema
-     * @param table
-     * @return
      */
     public TableSchema getTableSchema(String schema, String table) {
-        return  getDBSchemaParser().describeTable(schema, table);
+        return getDBSchemaParser().describeTable(schema, table);
     }
 
 
-
-    public List<Field> getFields(String schema, String table) {
+    public List<? extends Field> getFields(String schema, String table) {
         TableSchema tableSchema = getTableSchema(schema, table);
-        if(tableSchema != null) {
-           return tableSchema.getFields();
+        if (tableSchema != null) {
+            return tableSchema.getFields();
         }
         return null;
     }
 
 
+    public QueryResult browse(String schema, String table, String where, Integer limit) throws DataAccessException {
 
-    public  QueryResult browse(String schema, String table, String where, Integer limit) throws DataAccessException{
-
-        if(where == null){
+        if (where == null) {
             where = "";
         }
         String query = "SELECT * from " + HiveUtils.quoteIdentifier(schema, table) + " " + where + " LIMIT " + limit;
@@ -167,23 +163,22 @@ public class HiveService {
     }
 
 
-
-    public QueryResult browse(String query) throws DataAccessException{
+    public QueryResult browse(String query) throws DataAccessException {
         return query(query);
 
     }
 
     // TODO: Temporary until we determine how we want to ensure DDL isn't sent through
     private String safeQuery(String query) {
-        return "SELECT kylo_.* FROM ("+query+") kylo_ LIMIT 1000";
+        return "SELECT kylo_.* FROM (" + query + ") kylo_ LIMIT 1000";
     }
 
 
-    public QueryResult query(String query) throws DataAccessException{
-       final QueryResult queryResult = new QueryResult(query);
+    public QueryResult query(String query) throws DataAccessException {
+        final DefaultQueryResult queryResult = new DefaultQueryResult(query);
         final List<QueryResultColumn> columns = new ArrayList<>();
-        final Map<String,Integer> displayNameMap = new HashMap<>();
-        if(query != null && !query.toLowerCase().startsWith("show")) {
+        final Map<String, Integer> displayNameMap = new HashMap<>();
+        if (query != null && !query.toLowerCase().startsWith("show")) {
             query = safeQuery(query);
         }
         try {
@@ -196,7 +191,7 @@ public class HiveService {
                         ResultSetMetaData rsMetaData = rs.getMetaData();
                         for (int i = 1; i <= rsMetaData.getColumnCount(); i++) {
                             String colName = rsMetaData.getColumnName(i);
-                            QueryResultColumn column = new QueryResultColumn();
+                            DefaultQueryResultColumn column = new DefaultQueryResultColumn();
                             column.setField(rsMetaData.getColumnName(i));
                             String displayName = rsMetaData.getColumnLabel(i);
                             column.setHiveColumnLabel(displayName);
@@ -210,10 +205,8 @@ public class HiveService {
                             displayNameMap.put(displayName, count);
                             column.setDisplayName(displayName + "" + (count > 0 ? count : ""));
 
-                            //HiveResultSetMetaData object doesnt support accesss to the rsMetadata.getSchemaName or getTableName())
-                            //    column.setDatabaseName(rsMetaData.getSchemaName(i));
                             column.setTableName(StringUtils.substringAfterLast(rsMetaData.getColumnName(i), "."));
-                            column.setDataType(Field.sqlTypeToDataType(rsMetaData.getColumnType(i)));
+                            column.setDataType(ParserHelper.sqlTypeToHiveType(rsMetaData.getColumnType(i)));
                             columns.add(column);
                         }
                         queryResult.setColumns(columns);
@@ -236,30 +229,5 @@ public class HiveService {
     }
 
 
-    public class SchemaTable {
-        private String schema;
-        private String table;
-
-        public SchemaTable(String schema, String table) {
-            this.schema = schema;
-            this.table = table;
-        }
-
-        public String getSchema() {
-            return schema;
-        }
-
-        public void setSchema(String schema) {
-            this.schema = schema;
-        }
-
-        public String getTable() {
-            return table;
-        }
-
-        public void setTable(String table) {
-            this.table = table;
-        }
-    }
 
 }

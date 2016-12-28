@@ -1,7 +1,7 @@
 package com.thinkbiganalytics.spark.rest.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.thinkbiganalytics.db.model.query.QueryResult;
+import com.thinkbiganalytics.discovery.schema.QueryResult;
 
 /**
  * The result of a Spark transformation.

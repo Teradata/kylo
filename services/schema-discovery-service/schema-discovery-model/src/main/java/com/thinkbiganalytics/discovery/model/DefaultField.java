@@ -8,6 +8,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.thinkbiganalytics.discovery.schema.DataTypeDescriptor;
 import com.thinkbiganalytics.discovery.schema.Field;
 
+import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.List;
 import java.util.Vector;
 
@@ -31,6 +34,12 @@ public class DefaultField implements Field {
     private DataTypeDescriptor dataTypeDescriptor;
 
     public List<String> sampleValues = new Vector<>();
+
+    private boolean updatedTracker;
+
+    private String precisionScale;
+
+    private Boolean createdTracker;
 
 
     public void setNativeDataType(String nativeDataType) {
@@ -97,10 +106,6 @@ public class DefaultField implements Field {
         this.derivedDataType = type;
     }
 
-    public String asFieldStructure() {
-        return name + "|" + derivedDataType;
-    }
-
     @Override
     public String getNativeDataType() {
         return this.nativeDataType;
@@ -124,5 +129,44 @@ public class DefaultField implements Field {
     @Override
     public void setDataTypeDescriptor(DataTypeDescriptor dataTypeDescriptor) {
         this.dataTypeDescriptor = dataTypeDescriptor;
+    }
+
+    /**
+     * Returns the structure in the format: Name | DataType | Desc | Primary \ CreatedTracker | UpdatedTracker
+     */
+    public String asFieldStructure() {
+        return name + "|" + getDataTypeWithPrecisionAndScale() + "|" + description + "|" + BooleanUtils.toInteger(primaryKey) + "|" + BooleanUtils.toInteger(createdTracker) + "|" + BooleanUtils
+            .toInteger(updatedTracker);
+    }
+
+    public String getDataTypeWithPrecisionAndScale() {
+        return derivedDataType + (StringUtils.isNotBlank(precisionScale) ? "(" + precisionScale + ")" : "");
+    }
+
+    @Override
+    public String getPrecisionScale() {
+        return precisionScale;
+    }
+
+    public void setPrecisionScale(String precisionScale) {
+        this.precisionScale = precisionScale;
+    }
+
+    @Override
+    public Boolean getCreatedTracker() {
+        return createdTracker;
+    }
+
+    public void setCreatedTracker(Boolean createdTracker) {
+        this.createdTracker = createdTracker;
+    }
+
+    @Override
+    public Boolean getUpdatedTracker() {
+        return updatedTracker;
+    }
+
+    public void setUpdatedTracker(Boolean updatedTracker) {
+        this.updatedTracker = updatedTracker;
     }
 }

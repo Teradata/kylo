@@ -69,6 +69,16 @@ public class DateTimeStandardizerTest {
     }
 
     @Test
+    public void testIsoConversion() throws Exception {
+        DateTimeStandardizer
+            standardizer =
+            new DateTimeStandardizer("YYYY-MM-dd'T'HH:mm:ss.SSS'Z'", OutputFormats.DATETIME_NOMILLIS);
+        assertEquals("2004-10-19 07:00:00", standardizer.convertValue("2004-10-19T07:00:00.000Z"));
+
+
+    }
+
+    @Test
     public void testDateTimeConversion1() throws Exception {
         DateTimeStandardizer
             standardizer =

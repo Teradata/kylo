@@ -123,4 +123,24 @@ public class TestField implements Field {
     public void setModifiable(Boolean isModifiable) {
         modifiable = isModifiable;
     }
+
+    @Override
+    public String getDataTypeWithPrecisionAndScale() {
+        return null;
+    }
+
+    @Override
+    public String getPrecisionScale() {
+        return null;
+    }
+
+    @Override
+    public Boolean getCreatedTracker() {
+        return null;
+    }
+
+    @Override
+    public Boolean getUpdatedTracker() {
+        return null;
+    }
 }

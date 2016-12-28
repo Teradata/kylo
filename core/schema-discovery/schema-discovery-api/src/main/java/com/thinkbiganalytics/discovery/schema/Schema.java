@@ -25,6 +25,11 @@ public interface Schema {
     String getName();
 
     /**
+     * Sets the unique name
+     */
+    void setName(String name);
+
+    /**
      * Business description of the object
      */
     String getDescription();
@@ -42,6 +47,11 @@ public interface Schema {
     /**
      * Returns the field structure
      */
-    List<? extends Field> getFields();
+    List<Field> getFields();
+
+    /**
+     * Returns the database schema this object is a part of
+     */
+    public String getSchemaName();
 
 }

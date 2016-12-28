@@ -350,7 +350,7 @@
             //update the partitions with "val" on this column so the name matches
             _.each(self.model.table.partitions, function (partition) {
                 if (partition.columnDef == columnDef) {
-                    partition.sourceDataType = columnDef.dataType;
+                    partition.sourceDataType = columnDef.derivedDataType;
                     partition.sourceField = columnDef.name;
                     self.updatePartitionFieldName(partition);
                 }
@@ -370,7 +370,7 @@
             //set the partition data to match the selected sourceField
             if (partition.columnDef != null) {
                 partition.sourceField = partition.columnDef.name
-                partition.sourceDataType = partition.columnDef.dataType;
+                partition.sourceDataType = partition.columnDef.derivedDataType;
             }
             else {
                 //  console.error("NO FIELD FOR partition ",partition)
@@ -442,7 +442,7 @@
                 }
 
                 if (partition.columnDef) {
-                    partition.sourceDataType = partition.columnDef.dataType;
+                    partition.sourceDataType = partition.columnDef.derivedDataType;
                     partition.sourceField = partition.columnDef.name;
                 }
             });
@@ -653,7 +653,7 @@
             }
 
             // Filter formulas based on column type
-            if (columnDef.dataType !== "date" && columnDef.dataType !== "timestamp") {
+            if (columnDef.derivedDataType !== "date" && columnDef.derivedDataType !== "timestamp") {
                 return _.without(formulas, "year", "month", "day", "hour", "minute");
             } else {
                return formulas;

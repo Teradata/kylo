@@ -157,7 +157,7 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
                     var field = self.editFeedModel.table.tableSchema.fields[i];
                     if(field != null && field != undefined) {
                         policy.name = field.name;
-                        policy.dataType = field.dataType;
+                        policy.derivedDataType = field.derivedDataType;
                         policy.nullable = field.nullable;
                         policy.primaryKey = field.primaryKey;
                     }
@@ -236,7 +236,7 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
         },
 
         getDataTypeDisplay: function (columnDef) {
-            return columnDef.precisionScale != null ? columnDef.dataType + "(" + columnDef.precisionScale + ")" : columnDef.dataType;
+            return columnDef.precisionScale != null ? columnDef.derivedDataType + "(" + columnDef.precisionScale + ")" : columnDef.derivedDataType;
         },
 
         /**
@@ -248,10 +248,10 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
          */
         newTableFieldDefinition: function() {
             return {
-                name: '', description: '', dataType: '', precisionScale: null, dataTypeDisplay: function () {
+                name: '', description: '', derivedDataType: '', precisionScale: null, dataTypeDisplay: function () {
                     return data.getDataTypeDisplay(this)
                 }, primaryKey: false, nullable: false, createdTracker: false, updatedTracker: false, sampleValues: [], selectedSampleValue: '', isValid: function () {
-                    return this.name != '' && this.dataType != '';
+                    return this.name != '' && this.derivedDataType != '';
                 }, _id: _.uniqueId()
             };
         },
