@@ -119,7 +119,7 @@
 
         }
         this.onSave = function (ev) {
-            FeedService.showFeedSavingDialog(ev, "Saving Feed " + self.model.feedName, self.model.feedName);
+            FeedService.showFeedSavingDialog(ev, "Saving...", self.model.feedName);
             var copy = angular.copy(FeedService.editFeedModel);
 
             copy.inputProcessors = self.editModel.inputProcessors;

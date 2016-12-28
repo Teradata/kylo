@@ -25,11 +25,7 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
          //return str.replace(/([A-Z])/g, "_$1").replace(/^_/,'').toLowerCase();
     }
 
-
-
     var data = {
-
-
 
         /**
          * The Feed model in the Create Feed Stepper
@@ -47,10 +43,12 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
         /**
          * In the Data Processing section these are the available Strategies a user can choose when defining the feed
          */
-        mergeStrategies: [{name: 'Sync', type: 'SYNC', hint: 'Sync and overwrite table', disabled: false}, {name: 'Merge', type: 'MERGE', hint: 'Merges content into table', disabled: false},
-            {name: 'Dedupe and Merge', type: 'DEDUPE_AND_MERGE', hint: 'Dedupe and Merge content into table', disabled: false},
-            {name: 'Merge using Primary Key', type: 'PK_MERGE', hint: 'Insert/update using primary keys'},
-            {name: 'Rolling Sync', type: 'ROLLING_SYNC', hint: 'Upsert content by partition'},
+        mergeStrategies: [
+            {name: 'Sync', type: 'SYNC', hint: 'Replace table content', disabled: false},
+            {name: 'Rolling sync', type: 'ROLLING_SYNC', hint: 'Replace content in matching partitions'},
+            {name: 'Merge', type: 'MERGE', hint: 'Insert all rows', disabled: false},
+            {name: 'Dedupe and merge', type: 'DEDUPE_AND_MERGE', hint: 'Insert rows ignoring duplicates', disabled: false},
+            {name: 'Merge using primary key', type: 'PK_MERGE', hint: 'Upsert using primary key'}
             ],
 
         /**
@@ -482,7 +480,7 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
 
                     $mdToast.show(
                         $mdToast.simple()
-                            .textContent('Saved the Feed')
+                            .textContent('Feed successfully saved')
                             .hideDelay(3000)
                     );
                     deferred.resolve(response);
