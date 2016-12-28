@@ -114,7 +114,7 @@ public class CSVFileSchemaParser implements FileSchemaParser {
         int i = 0;
         ArrayList<Field> fields = new ArrayList<>();
         for (CSVRecord record : parser) {
-            if (i > numRowsToSample) {
+            if (i > 9) {
                 break;
             }
             int size = record.size();
@@ -129,10 +129,10 @@ public class CSVFileSchemaParser implements FileSchemaParser {
                     }
                     fields.add(field);
                 } else {
-                    // Add sample values for rows
                     try {
                         field = (DefaultField) fields.get(j);
                         field.getSampleValues().add(StringUtils.defaultString(record.get(j), ""));
+
                     } catch (IndexOutOfBoundsException e) {
                         LOG.warn("Sample file has potential sparse column problem at row [?] field [?]", i + 1, j + 1);
                     }

@@ -49,7 +49,7 @@ public class ParserHelperTest {
 
     @Test
     public void testInvalidFile() throws Exception {
-        String text = StringUtils.leftPad("Z", 64001, "Z");
+        String text = StringUtils.leftPad("Z", ParserHelper.MAX_CHARS, "Z");
         try {
             textExtract(text, 100, 1);
             fail();

@@ -4,14 +4,21 @@
 
 package com.thinkbiganalytics.discovery.schema;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-
 import java.util.List;
 
+/**
+ * Field of a schema object such as a table or file
+ */
 public interface Field {
 
+    /**
+     * Field or column name
+     */
     String getName();
 
+    /**
+     * Business description of the field
+     */
     String getDescription();
 
     /**
@@ -55,16 +62,28 @@ public interface Field {
      */
     void setDataTypeDescriptor(DataTypeDescriptor dataTypeDescriptor);
 
+    /**
+     * Returns the data type with the precision and scale
+     */
     String getDataTypeWithPrecisionAndScale();
 
+    /**
+     * Returns the precision and scale portion of the data type
+     */
     String getPrecisionScale();
 
+    /**
+     * Whether field represents a record creation timestamp
+     */
     Boolean getCreatedTracker();
 
+    /**
+     * Whether field represents a record update timestamp
+     */
     Boolean getUpdatedTracker();
 
     /**
-     * Returns the structure in the format: Name | DataType | Desc | Primary \ CreatedTracker | UpdatedTracker
+     * Returns the structure in a canonical format as follows: Name | DataType | Desc | Primary \ CreatedTracker | UpdatedTracker
      */
     String asFieldStructure();
 

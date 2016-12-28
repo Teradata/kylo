@@ -34,9 +34,9 @@ public class ParserHelper {
     /**
      * Maximum number of characters to sample from a file protecting from memory
      */
-    private static int MAX_CHARS = 128000;
+    protected static int MAX_CHARS = 128000;
 
-    private static int MAX_ROWS = 1000;
+    protected static int MAX_ROWS = 1000;
 
     /**
      * Extracts the given number of rows from the file and returns a new reader for the sample.  This method protects memory in the case where a large file can be submitted with no delimiters.

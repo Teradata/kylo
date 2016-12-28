@@ -58,7 +58,7 @@ class CSVAutoDetect {
         String line;
         int rows = 0;
         br.mark(32765);
-        while ((line = br.readLine()) != null && rows < 10) {
+        while ((line = br.readLine()) != null && rows < 100) {
             LineStats stats = new LineStats(line);
             rows++;
             lineStats.add(stats);

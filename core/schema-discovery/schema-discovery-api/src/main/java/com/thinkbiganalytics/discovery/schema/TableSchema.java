@@ -5,7 +5,7 @@
 package com.thinkbiganalytics.discovery.schema;
 
 /**
- * Schema of a table
+ * Schema of a table object
  */
 public interface TableSchema extends Schema {
 
