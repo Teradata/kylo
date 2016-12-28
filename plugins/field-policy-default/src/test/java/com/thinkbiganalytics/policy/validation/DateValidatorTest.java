@@ -20,7 +20,7 @@ public class DateValidatorTest {
     public void testInstance() throws Exception {
         DateValidator ts = DateValidator.instance();
         assertTrue(ts.validate("2015-01-15"));
-        assertTrue(ts.validate("2015-01-15 11:00:15"));
+        assertFalse(ts.validate("2015-01-15 11:00:15"));
         assertFalse(ts.validate("2015/01/15 11:10:20"));
         assertFalse(ts.validate("12/01/2015"));
         assertFalse(ts.validate("13/01/2015"));

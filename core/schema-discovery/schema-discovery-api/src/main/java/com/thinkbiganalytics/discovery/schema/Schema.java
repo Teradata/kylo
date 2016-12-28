@@ -52,6 +52,6 @@ public interface Schema {
     /**
      * Returns the database schema this object is a part of
      */
-    public String getSchemaName();
+    String getSchemaName();
 
 }
