@@ -4,6 +4,7 @@ import com.thinkbiganalytics.metadata.api.feed.FeedProperties;
 import com.thinkbiganalytics.metadata.rest.model.event.FeedCleanupTriggerEvent;
 import com.thinkbiganalytics.nifi.core.api.cleanup.CleanupEventService;
 import com.thinkbiganalytics.nifi.core.api.cleanup.CleanupListener;
+import com.thinkbiganalytics.nifi.core.api.metadata.KyloNiFiFlowProvider;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProvider;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder;
@@ -167,6 +168,12 @@ public class TriggerCleanupTest {
                 return properties;
             });
             return provider;
+        }
+
+
+        @Override
+        public KyloNiFiFlowProvider getKyloNiFiFlowProvider() {
+            return null;
         }
 
         @Override

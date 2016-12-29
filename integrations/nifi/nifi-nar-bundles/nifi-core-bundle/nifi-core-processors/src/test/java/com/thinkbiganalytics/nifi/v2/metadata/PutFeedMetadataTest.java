@@ -1,22 +1,19 @@
 package com.thinkbiganalytics.nifi.v2.metadata;
 
 import com.thinkbiganalytics.metadata.api.feed.FeedProperties;
+import com.thinkbiganalytics.nifi.core.api.metadata.KyloNiFiFlowProvider;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProvider;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder;
 
 import org.apache.nifi.controller.AbstractControllerService;
-import org.apache.nifi.util.MockFlowFile;
 import org.apache.nifi.util.TestRunner;
 import org.apache.nifi.util.TestRunners;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import java.util.List;
 import java.util.Properties;
-import static org.junit.Assert.*;
 
 /**
  * Created by Jeremy Merrifield on 10/6/16.
@@ -89,6 +86,11 @@ public class PutFeedMetadataTest {
                 return properties;
             });
             return provider;
+        }
+
+        @Override
+        public KyloNiFiFlowProvider getKyloNiFiFlowProvider() {
+            return null;
         }
 
         @Override
