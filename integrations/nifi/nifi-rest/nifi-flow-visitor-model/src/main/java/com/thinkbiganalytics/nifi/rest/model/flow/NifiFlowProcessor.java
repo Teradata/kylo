@@ -271,7 +271,7 @@ public class NifiFlowProcessor implements Serializable {
     }
 
     public KyloProcessorFlowType getProcessorFlowType() {
-        return processorFlowType;
+        return processorFlowType != null ? processorFlowType : KyloProcessorFlowType.NORMAL_FLOW;
     }
 
     public void setProcessorFlowType(KyloProcessorFlowType processorFlowType) {
