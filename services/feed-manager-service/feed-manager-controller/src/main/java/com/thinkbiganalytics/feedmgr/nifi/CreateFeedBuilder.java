@@ -14,6 +14,9 @@ import com.thinkbiganalytics.nifi.rest.model.NifiError;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessorSchedule;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
+import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
+import com.thinkbiganalytics.nifi.rest.model.visitor.NifiFlowBuilder;
+import com.thinkbiganalytics.nifi.rest.model.visitor.NifiVisitableProcessGroup;
 import com.thinkbiganalytics.nifi.rest.support.NifiFeedConstants;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
@@ -47,6 +50,8 @@ public class CreateFeedBuilder {
 
     LegacyNifiRestClient restClient;
 
+    private NifiFlowCache nifiFlowCache;
+
     private String templateId;
     private String category;
     private String feedName;
@@ -54,7 +59,7 @@ public class CreateFeedBuilder {
     private FeedMetadata feedMetadata;
     private PropertyExpressionResolver propertyExpressionResolver;
     private String inputProcessorType;
-    private String reusableTemplateCategoryName = "reusable_templates";
+    private String reusableTemplateCategoryName = TemplateCreationHelper.REUSABLE_TEMPLATES_PROCESS_GROUP_NAME;
     private boolean isReusableTemplate;
 
     /**
@@ -83,8 +88,9 @@ public class CreateFeedBuilder {
     TemplateCreationHelper templateCreationHelper;
 
 
-    protected CreateFeedBuilder(LegacyNifiRestClient restClient, FeedMetadata feedMetadata, String templateId, PropertyExpressionResolver propertyExpressionResolver) {
+    protected CreateFeedBuilder(LegacyNifiRestClient restClient, NifiFlowCache nifiFlowCache, FeedMetadata feedMetadata, String templateId, PropertyExpressionResolver propertyExpressionResolver) {
         this.restClient = restClient;
+        this.nifiFlowCache = nifiFlowCache;
         this.feedMetadata = feedMetadata;
         this.category = feedMetadata.getCategory().getSystemName();
         this.feedName = feedMetadata.getSystemFeedName();
@@ -94,8 +100,8 @@ public class CreateFeedBuilder {
     }
 
 
-    public static CreateFeedBuilder newFeed(LegacyNifiRestClient restClient, FeedMetadata feedMetadata, String templateId, PropertyExpressionResolver propertyExpressionResolver) {
-        return new CreateFeedBuilder(restClient, feedMetadata, templateId, propertyExpressionResolver);
+    public static CreateFeedBuilder newFeed(LegacyNifiRestClient restClient, NifiFlowCache nifiFlowCache, FeedMetadata feedMetadata, String templateId, PropertyExpressionResolver propertyExpressionResolver) {
+        return new CreateFeedBuilder(restClient, nifiFlowCache, feedMetadata, templateId, propertyExpressionResolver);
     }
 
     public CreateFeedBuilder feedSchedule(NifiProcessorSchedule feedSchedule) {
@@ -236,6 +242,12 @@ public class CreateFeedBuilder {
 
                         //update the input schedule
                         updateFeedSchedule(newProcessGroup, input);
+
+                        //Cache the processorIds to the respective flowIds for availability in the ProvenanceReportingTask
+                        NifiVisitableProcessGroup group = restClient.getFlowOrder(newProcessGroup.getProcessGroupEntity(),null);
+                        NifiFlowProcessGroup flow = new NifiFlowBuilder().processorFlowIdToProcessorFlowTypeMap(feedMetadata.getRegisteredTemplate().getProcessorFlowTypeMap()).inspectForFailureRelationships(false).build(
+                            group);
+                        nifiFlowCache.updateFlow(feedMetadata,flow);
 
                         //disable all inputs
                        restClient.disableInputProcessors(newProcessGroup.getProcessGroupEntity().getId());

@@ -20,14 +20,25 @@
     </properties>
 
     <dependencies>
+
+        <dependency>
+            <groupId>com.thinkbiganalytics.nifi.services</groupId>
+            <artifactId>thinkbig-nifi-core-service-nar</artifactId>
+            <version>${project.version}</version>
+            <type>nar</type>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjrt</artifactId>
+            <version>1.8.9</version>
+        </dependency>
+
+
+
         <dependency>
             <groupId>com.thinkbiganalytics.nifi.provenance</groupId>
             <artifactId>thinkbig-nifi-provenance-repo</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-nifi-rest-client-v0</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

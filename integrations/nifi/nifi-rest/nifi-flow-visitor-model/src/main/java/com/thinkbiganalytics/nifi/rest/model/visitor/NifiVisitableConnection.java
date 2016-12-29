@@ -5,12 +5,12 @@ import org.apache.nifi.web.api.dto.ConnectionDTO;
 /**
  * Created by sr186054 on 2/14/16.
  */
-public class NifiVisitableConnection implements  NifiVisitable{
+public class NifiVisitableConnection implements NifiVisitable {
 
     private ConnectionDTO dto;
     private NifiVisitableProcessGroup group;
 
-    public NifiVisitableConnection(NifiVisitableProcessGroup group,ConnectionDTO dto ){
+    public NifiVisitableConnection(NifiVisitableProcessGroup group, ConnectionDTO dto) {
         this.group = group;
         this.dto = dto;
     }

@@ -20,6 +20,7 @@ public class RootFlowFile extends ActiveFlowFile {
 
     private boolean canExpire;
 
+
     private DateTime minimiumExpireTime;
 
 
@@ -39,6 +40,9 @@ public class RootFlowFile extends ActiveFlowFile {
         setFirstEventType(FIRST_EVENT_TYPE.BATCH);
     }
 
+    public void markAsStream() {
+        setFirstEventType(FIRST_EVENT_TYPE.STREAM);
+    }
 
     public void setFirstEventType(FIRST_EVENT_TYPE firstEventType) {
         this.firstEventType = firstEventType;
@@ -192,7 +196,7 @@ public class RootFlowFile extends ActiveFlowFile {
     }
 
     @Override
-    public Set<ProvenanceEventRecordDTO> getFailedEvents(boolean inclusive) {
+    public Set<Long> getFailedEvents(boolean inclusive) {
         return flowFile.getFailedEvents(inclusive);
     }
 
@@ -246,18 +250,8 @@ public class RootFlowFile extends ActiveFlowFile {
     }
 
     @Override
-    public List<ProvenanceEventRecordDTO> getCompletedEvents() {
-        return flowFile.getCompletedEvents();
-    }
-
-    @Override
-    public List<ProvenanceEventRecordDTO> getCompletedEventsForProcessorId(String processorId) {
-        return flowFile.getCompletedEventsForProcessorId(processorId);
-    }
-
-    @Override
-    public ProvenanceEventRecordDTO getFirstCompletedEventsForProcessorId(String processorId) {
-        return flowFile.getFirstCompletedEventsForProcessorId(processorId);
+    public List<Long> getEventIds() {
+        return flowFile.getEventIds();
     }
 
     @Override
@@ -300,17 +294,6 @@ public class RootFlowFile extends ActiveFlowFile {
         return flowFile.toString();
     }
 
-    @Override
-    public IdReferenceFlowFile toIdReferenceFlowFile() {
-        return flowFile.toIdReferenceFlowFile();
-    }
-
-    @Override
-    public void findEventMatchingDestinationConnection(String connectionIdentifier) {
-        flowFile.findEventMatchingDestinationConnection(connectionIdentifier);
-    }
-
-
     public Set<RootFlowFile> getRelatedRootFlowFiles() {
         return relatedRootFlowFiles;
     }
@@ -323,20 +306,6 @@ public class RootFlowFile extends ActiveFlowFile {
         this.relatedRootFlowFiles.add(rootFlowFile);
     }
 
-    public boolean areRelatedRootFlowFilesCompleteOld() {
-        if (getRelatedRootFlowFiles() != null || getRelatedRootFlowFiles().isEmpty()) {
-            return true;
-        } else {
-            boolean allComplete = isFlowComplete();
-            if (allComplete) {
-                for (RootFlowFile rootFlowFile : getRelatedRootFlowFiles()) {
-                    allComplete &= !rootFlowFile.equals(this) && rootFlowFile.isFlowComplete();
-                }
-            }
-            return allComplete;
-
-        }
-    }
 
     public boolean isFlowAndRelatedRootFlowFilesComplete() {
         boolean thisComplete = isFlowComplete();
@@ -351,16 +320,11 @@ public class RootFlowFile extends ActiveFlowFile {
                 if (relatedCompleted) {
                     getRootFlowFile().getRelatedRootFlowFiles().stream().forEach(ff -> ff.setMinimiumExpireTime(now));
                     this.setMinimiumExpireTime(now);
-
                     //if complete then mark all related as complete too
                     getRelatedRootFlowFiles().stream().forEach(ff -> ff.setMinimiumExpireTime(now));
                 }
-
-
             }
             thisComplete &= relatedCompleted;
-
-
         }
         return thisComplete;
     }

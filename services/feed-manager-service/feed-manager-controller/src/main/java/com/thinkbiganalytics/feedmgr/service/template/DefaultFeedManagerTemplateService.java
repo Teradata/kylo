@@ -272,7 +272,7 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
                     ensureNifiTemplateId(t);
                 });
 
-                registeredTemplates = templateModelTransform.domainToRegisteredTemplate(templates);
+                registeredTemplates = templateModelTransform.domainToRegisteredTemplateWithFeedNames(templates);
 
             }
             return registeredTemplates;

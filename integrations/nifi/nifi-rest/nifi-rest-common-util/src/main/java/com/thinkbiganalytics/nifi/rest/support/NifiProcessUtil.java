@@ -183,7 +183,7 @@ public class NifiProcessUtil {
         return groups;
     }
 
-    private static Collection<ProcessGroupDTO> getProcessGroups(ProcessGroupDTO group) {
+    public static Collection<ProcessGroupDTO> getProcessGroups(ProcessGroupDTO group) {
        return getProcessGroupsMap(group).values();
     }
 

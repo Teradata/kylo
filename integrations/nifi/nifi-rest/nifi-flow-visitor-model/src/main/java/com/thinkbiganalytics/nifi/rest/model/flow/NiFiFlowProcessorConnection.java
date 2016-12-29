@@ -25,6 +25,10 @@ public class NiFiFlowProcessorConnection {
         return connectionIdentifier;
     }
 
+    public void setConnectionIdentifier(String connectionIdentifier) {
+        this.connectionIdentifier = connectionIdentifier;
+    }
+
     public Set<String> getSelectedRelationships() {
         if (selectedRelationships == null) {
             this.selectedRelationships = new HashSet<>();
@@ -34,10 +38,6 @@ public class NiFiFlowProcessorConnection {
 
     public void setSelectedRelationships(Set<String> selectedRelationships) {
         this.selectedRelationships = selectedRelationships;
-    }
-
-    public void setConnectionIdentifier(String connectionIdentifier) {
-        this.connectionIdentifier = connectionIdentifier;
     }
 
     public String getName() {

@@ -13,6 +13,13 @@
 
 
   <dependencies>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>thinkbig-commons-constants</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
@@ -29,11 +36,6 @@
     </dependency>
 
 
-    <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-nifi-flow-visitor-model</artifactId>
-      <version>${project.version}</version>
-    </dependency>
 
     <dependency>
       <groupId>joda-time</groupId>

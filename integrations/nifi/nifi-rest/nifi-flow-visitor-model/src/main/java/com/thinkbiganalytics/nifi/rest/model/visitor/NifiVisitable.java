@@ -5,5 +5,6 @@ package com.thinkbiganalytics.nifi.rest.model.visitor;
  */
 
 public interface NifiVisitable {
+
     void accept(NifiFlowVisitor nifiVisitor);
 }

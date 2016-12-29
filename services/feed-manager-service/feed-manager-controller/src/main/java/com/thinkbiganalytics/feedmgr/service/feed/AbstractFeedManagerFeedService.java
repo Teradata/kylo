@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.feedmgr.service.feed;
 
 import com.thinkbiganalytics.feedmgr.nifi.CreateFeedBuilder;
+import com.thinkbiganalytics.feedmgr.nifi.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
@@ -40,6 +41,9 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
     @Autowired
     PropertyExpressionResolver propertyExpressionResolver;
 
+    @Autowired
+    NifiFlowCache nifiFlowCache;
+
     @Inject
     private AccessController accessController;
 
@@ -76,6 +80,7 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
                     .matchAndSetPropertyByProcessorName(registeredTemplate.getProperties(), feedMetadata.getProperties(), NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_ALL_PROPERTIES);
         }
         feedMetadata.setProperties(registeredTemplate.getProperties());
+        feedMetadata.setRegisteredTemplate(registeredTemplate);
         //resolve any ${metadata.} properties
         List<NifiProperty> resolvedProperties = propertyExpressionResolver.resolvePropertyExpressions(feedMetadata);
 
@@ -116,7 +121,7 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
         }
 
         CreateFeedBuilder
-            feedBuilder = CreateFeedBuilder.newFeed(nifiRestClient, feedMetadata, registeredTemplate.getNifiTemplateId(), propertyExpressionResolver).enabled(enabled)
+            feedBuilder = CreateFeedBuilder.newFeed(nifiRestClient,nifiFlowCache, feedMetadata, registeredTemplate.getNifiTemplateId(), propertyExpressionResolver).enabled(enabled)
             .versionProcessGroup(false);
 
         if (registeredTemplate.isReusableTemplate()) {

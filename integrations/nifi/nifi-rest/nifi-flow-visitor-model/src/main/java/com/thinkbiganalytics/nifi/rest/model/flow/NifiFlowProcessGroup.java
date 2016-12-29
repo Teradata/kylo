@@ -2,6 +2,10 @@ package com.thinkbiganalytics.nifi.rest.model.flow;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.thinkbiganalytics.common.constants.KyloProcessorFlowType;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,6 +28,7 @@ import java.util.stream.Collectors;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class NifiFlowProcessGroup {
 
+    private static final Logger log = LoggerFactory.getLogger(NifiFlowProcessGroup.class);
 
     private String id;
     private String name;
@@ -46,7 +51,7 @@ public class NifiFlowProcessGroup {
      * used for lookups to determine if an event has failed or not
      */
     private Map<String, List<NifiFlowProcessor>> failureConnectionIdToSourceProcessorMap;
-
+    private Set<NifiFlowProcessor> startingProcessors;
 
     public NifiFlowProcessGroup() {
 
@@ -57,8 +62,6 @@ public class NifiFlowProcessGroup {
         this.id = id;
         this.name = name;
     }
-
-    private Set<NifiFlowProcessor> startingProcessors;
 
     public String getId() {
         return id;
@@ -98,10 +101,6 @@ public class NifiFlowProcessGroup {
         return endingProcessors;
     }
 
-    public void setFailureProcessors(Map<String, NifiFlowProcessor> failureProcessors) {
-        this.failureProcessors = failureProcessors;
-    }
-
     public void setEndingProcessors(Map<String, NifiFlowProcessor> endingProcessors) {
         this.endingProcessors = endingProcessors;
     }
@@ -110,6 +109,19 @@ public class NifiFlowProcessGroup {
         for (NifiFlowProcessor processor : getStartingProcessors()) {
             processor.print();
         }
+    }
+
+    public void assignFlowIds() {
+        Integer flowId = 0;
+        Integer maxCount = 0;
+        for (NifiFlowProcessor processor : getStartingProcessors()) {
+            processor.assignFlowIds(flowId);
+            Integer count = processor.countNodes();
+            if (count > maxCount) {
+                maxCount = count;
+            }
+        }
+        log.info("Total Processors {} :  {}", getName(), maxCount);
     }
 
     public Map<String, NifiFlowProcessor> getProcessorMap() {
@@ -134,6 +146,10 @@ public class NifiFlowProcessGroup {
 
     public Map<String, NifiFlowProcessor> getFailureProcessors() {
         return failureProcessors;
+    }
+
+    public void setFailureProcessors(Map<String, NifiFlowProcessor> failureProcessors) {
+        this.failureProcessors = failureProcessors;
     }
 
     public String getParentGroupId() {
@@ -170,6 +186,14 @@ public class NifiFlowProcessGroup {
 
     public void setFeedName(String feedName) {
         this.feedName = feedName;
+    }
+
+
+    public void resetProcessorsFlowType(final Map<String, KyloProcessorFlowType> processorFlowTypeMap) {
+        if (processorFlowTypeMap != null) {
+            getProcessorMap().values().stream()
+                .forEach(flowProcessor -> flowProcessor.setProcessorFlowType(processorFlowTypeMap.getOrDefault(flowProcessor.getFlowId(), KyloProcessorFlowType.NORMAL_FLOW)));
+        }
     }
 
 

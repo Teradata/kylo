@@ -119,7 +119,7 @@ public class StatsModel {
         event.setIsEndOfJob(true);
         Long jobTime = calculateJobDuration(rootFlowFile, event);
         stats.setJobDuration(jobTime);
-        Set<ProvenanceEventRecordDTO> failedEvents = rootFlowFile.getFailedEvents(true);
+        Set<Long> failedEvents = rootFlowFile.getFailedEvents(true);
         if (failedEvents != null && !failedEvents.isEmpty()) {
             stats.setJobsFailed(1L);
         } else {

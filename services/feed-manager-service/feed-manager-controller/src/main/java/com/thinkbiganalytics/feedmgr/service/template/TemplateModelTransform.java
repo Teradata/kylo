@@ -7,10 +7,12 @@ import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
+import com.thinkbiganalytics.support.FeedNameUtil;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -22,29 +24,39 @@ public class TemplateModelTransform {
     @Inject
     FeedManagerTemplateProvider templateProvider;
 
+    public final Function<FeedManagerTemplate, RegisteredTemplate>
+    DOMAIN_TO_REGISTERED_TEMPLATE = DOMAIN_TO_REGISTERED_TEMPLATE(true);
 
     public final Function<FeedManagerTemplate, RegisteredTemplate>
-            DOMAIN_TO_REGISTERED_TEMPLATE =
-            new Function<FeedManagerTemplate, RegisteredTemplate>() {
-                @Override
-                public RegisteredTemplate apply(FeedManagerTemplate domain) {
-                    String json = domain.getJson();
-                    RegisteredTemplate template = ObjectMapperSerializer.deserialize(json, RegisteredTemplate.class);
-                    template.setId(domain.getId().toString());
-                    template.setState(domain.getState().name());
-                    template.setNifiTemplateId(domain.getNifiTemplateId());
-                    List<FeedManagerFeed> feeds = domain.getFeeds();
-                    template.setFeedsCount(feeds == null ? 0 : feeds.size());
-                    if(domain.getCreatedTime() != null) {
-                         template.setCreateDate(domain.getCreatedTime().toDate());
-                    }
-                    if(domain.getModifiedTime() != null) {
-                         template.setUpdateDate(domain.getModifiedTime().toDate());
-                    }
-                    template.setOrder(domain.getOrder());
-                    return template;
+        DOMAIN_TO_REGISTERED_TEMPLATE(boolean includeFeedNames) {
+
+        return new Function<FeedManagerTemplate, RegisteredTemplate>() {
+            @Override
+            public RegisteredTemplate apply(FeedManagerTemplate domain) {
+                String json = domain.getJson();
+                RegisteredTemplate template = ObjectMapperSerializer.deserialize(json, RegisteredTemplate.class);
+                template.setId(domain.getId().toString());
+                template.setState(domain.getState().name());
+                template.setNifiTemplateId(domain.getNifiTemplateId());
+                List<FeedManagerFeed> feeds = domain.getFeeds();
+                template.setFeedsCount(feeds == null ? 0 : feeds.size());
+                if(includeFeedNames && feeds != null){
+                    template.setFeedNames( feeds.stream().map(feedManagerFeed -> FeedNameUtil.fullName(feedManagerFeed.getCategory().getName(),feedManagerFeed.getName())).collect(
+                        Collectors.toSet()));
                 }
-            };
+                if(domain.getCreatedTime() != null) {
+                    template.setCreateDate(domain.getCreatedTime().toDate());
+                }
+                if(domain.getModifiedTime() != null) {
+                    template.setUpdateDate(domain.getModifiedTime().toDate());
+                }
+                template.setOrder(domain.getOrder());
+                return template;
+            }
+        };
+
+    }
+
 
     public final Function<RegisteredTemplate, FeedManagerTemplate>
             REGISTERED_TEMPLATE_TO_DOMAIN =
@@ -90,12 +102,21 @@ public class TemplateModelTransform {
                 }
             };
 
-    public List<RegisteredTemplate> domainToRegisteredTemplate(Collection<FeedManagerTemplate> domain) {
-        return new ArrayList<>(Collections2.transform(domain, DOMAIN_TO_REGISTERED_TEMPLATE));
+    public List<RegisteredTemplate> domainToRegisteredTemplateWithFeedNames(Collection<FeedManagerTemplate> domain) {
+        return new ArrayList<>(Collections2.transform(domain, DOMAIN_TO_REGISTERED_TEMPLATE(true)));
     }
 
+    public List<RegisteredTemplate> domainToRegisteredTemplate(Collection<FeedManagerTemplate> domain) {
+        return new ArrayList<>(Collections2.transform(domain, DOMAIN_TO_REGISTERED_TEMPLATE(false)));
+    }
+
+    public RegisteredTemplate domainToRegisteredTemplateWithFeedNames(FeedManagerTemplate domain) {
+        return DOMAIN_TO_REGISTERED_TEMPLATE(true).apply(domain);
+    }
+
+
     public RegisteredTemplate domainToRegisteredTemplate(FeedManagerTemplate domain) {
-        return DOMAIN_TO_REGISTERED_TEMPLATE.apply(domain);
+        return DOMAIN_TO_REGISTERED_TEMPLATE(false).apply(domain);
     }
 
     public List<FeedManagerTemplate> registeredTemplateToDomain(Collection<RegisteredTemplate> registeredTemplates) {

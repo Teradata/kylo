@@ -17,6 +17,8 @@ public class AggregatedFeedProcessorStatistics implements Serializable {
     DateTime maxTime;
     private String collectionId;
     private Long totalEvents = 0L;
+    private Long minEventId = 0L;
+    private Long maxEventId = 0L;
 
     Map<String, AggregatedProcessorStatistics> processorStats = new ConcurrentHashMap<>();
 
@@ -32,6 +34,12 @@ public class AggregatedFeedProcessorStatistics implements Serializable {
     public void addEventStats(ProvenanceEventStats stats) {
         processorStats.computeIfAbsent(stats.getProcessorId(), processorId -> new AggregatedProcessorStatistics(processorId, stats.getProcessorName(), collectionId)).add(stats);
         totalEvents++;
+        if (stats.getEventId() < minEventId) {
+            minEventId = stats.getEventId();
+        }
+        if (stats.getEventId() > maxEventId) {
+            maxEventId = stats.getEventId();
+        }
     }
 
     public String getFeedName() {
@@ -83,4 +91,11 @@ public class AggregatedFeedProcessorStatistics implements Serializable {
         this.totalEvents = total;
     }
 
+    public Long getMinEventId() {
+        return minEventId;
+    }
+
+    public Long getMaxEventId() {
+        return maxEventId;
+    }
 }

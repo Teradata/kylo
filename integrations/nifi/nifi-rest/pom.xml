@@ -13,12 +13,9 @@
 
 
   <modules>
+    <module>nifi-flow-visitor-model</module>
     <module>nifi-rest-common-api</module>
     <module>nifi-rest-common-util</module>
-    <module>nifi-flow-visitor-rest-client-api</module>
-    <module>nifi-flow-visitor-model</module>
-    <module>nifi-flow-visitor</module>
-    <module>nifi-flow-rest-client-spring</module>
     <module>nifi-rest-model</module>
     <module>nifi-rest-client</module>
   </modules>

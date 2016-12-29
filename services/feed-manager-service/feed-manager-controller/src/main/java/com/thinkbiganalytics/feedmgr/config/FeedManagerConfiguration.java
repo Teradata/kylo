@@ -3,6 +3,7 @@ package com.thinkbiganalytics.feedmgr.config;
 
 import com.thinkbiganalytics.es.ElasticSearch;
 import com.thinkbiganalytics.es.ElasticSearchClientConfig;
+import com.thinkbiganalytics.feedmgr.nifi.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.SpringCloudContextEnvironmentChangedListener;
 import com.thinkbiganalytics.feedmgr.nifi.SpringEnvironmentProperties;
@@ -117,7 +118,10 @@ public class FeedManagerConfiguration {
         return new PropertyExpressionResolver();
     }
 
-
+@Bean
+public NifiFlowCache nifiFlowCache(){
+    return new NifiFlowCache();
+}
 
 
     @Bean

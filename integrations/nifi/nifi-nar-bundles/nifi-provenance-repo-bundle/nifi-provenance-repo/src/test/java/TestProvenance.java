@@ -1,9 +1,9 @@
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.activemq.config.ActiveMqConfig;
-import com.thinkbiganalytics.nifi.config.NifiProvenanceConfig;
+import com.thinkbiganalytics.nifi.provenance.ProvenanceEventRecordConverter;
+import com.thinkbiganalytics.nifi.provenance.config.NifiProvenanceConfig;
+import com.thinkbiganalytics.nifi.provenance.jms.ProvenanceEventActiveMqWriter;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTOHolder;
-import com.thinkbiganalytics.nifi.provenance.v2.ProvenanceEventRecordConverter;
-import com.thinkbiganalytics.nifi.provenance.v2.writer.ProvenanceEventActiveMqWriter;
 
 import org.apache.nifi.provenance.ProvenanceEventRecord;
 import org.apache.nifi.provenance.ProvenanceEventType;

@@ -15,13 +15,15 @@ public class AggregatedFeedProcessorStatisticsHolder implements Serializable {
 
     DateTime minTime;
     DateTime maxTime;
-    Integer collectionInterval;
     String collectionId;
     AtomicLong eventCount = new AtomicLong(0L);
 
-    public AggregatedFeedProcessorStatisticsHolder(Integer collectionInterval) {
+    private Long minEventId = 0L;
+    private Long maxEventId = 0L;
+
+    public AggregatedFeedProcessorStatisticsHolder() {
+
         this.collectionId = UUID.randomUUID().toString();
-        this.collectionInterval = collectionInterval;
     }
 
     Map<String, AggregatedFeedProcessorStatistics> feedStatistics = new ConcurrentHashMap<>();
@@ -35,6 +37,13 @@ public class AggregatedFeedProcessorStatisticsHolder implements Serializable {
         }
         feedStatistics.computeIfAbsent(stats.getFeedName(), (feedName) -> new AggregatedFeedProcessorStatistics(feedName, collectionId)).addEventStats(
             stats);
+
+        if (stats.getEventId() < minEventId) {
+            minEventId = stats.getEventId();
+        }
+        if (stats.getEventId() > maxEventId) {
+            maxEventId = stats.getEventId();
+        }
 
         eventCount.incrementAndGet();
     }
@@ -56,13 +65,6 @@ public class AggregatedFeedProcessorStatisticsHolder implements Serializable {
         this.maxTime = maxTime;
     }
 
-    public Integer getCollectionInterval() {
-        return collectionInterval;
-    }
-
-    public void setCollectionInterval(Integer collectionInterval) {
-        this.collectionInterval = collectionInterval;
-    }
 
     public String getCollectionId() {
         return collectionId;
@@ -76,6 +78,14 @@ public class AggregatedFeedProcessorStatisticsHolder implements Serializable {
         return eventCount;
     }
 
+    public Long getMinEventId() {
+        return minEventId;
+    }
+
+    public Long getMaxEventId() {
+        return maxEventId;
+    }
+
     public Map<String, AggregatedFeedProcessorStatistics> getFeedStatistics() {
         return feedStatistics;
     }
@@ -85,7 +95,6 @@ public class AggregatedFeedProcessorStatisticsHolder implements Serializable {
         final StringBuilder sb = new StringBuilder("AggregatedFeedProcessorStatisticsHolder{");
         sb.append("minTime=").append(minTime);
         sb.append(", maxTime=").append(maxTime);
-        sb.append(", collectionInterval=").append(collectionInterval);
         sb.append(", collectionId='").append(collectionId).append('\'');
         sb.append(", eventCount=").append(eventCount.get());
         sb.append('}');

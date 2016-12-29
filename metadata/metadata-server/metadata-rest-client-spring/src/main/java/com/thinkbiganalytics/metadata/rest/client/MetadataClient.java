@@ -22,6 +22,7 @@ import com.thinkbiganalytics.metadata.rest.model.feed.FeedCriteria;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedDependencyGraph;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.rest.model.feed.InitializationStatus;
+import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheSync;
 import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment;
@@ -351,7 +352,17 @@ public class MetadataClient {
     private DirectoryDatasource postDatasource(DirectoryDatasource ds) {
         return post(path("datasource", "directory"), ds, MediaType.APPLICATION_JSON, DirectoryDatasource.class);
     }
-    
+
+
+    public NiFiFlowCacheSync getFlowUpdates(String syncId) {
+        return get(path("nifi-flow-cache", "get-flow-updates"), new NifiFlowSyncParameters(syncId), NiFiFlowCacheSync.class);
+    }
+
+    public NiFiFlowCacheSync resetFlowUpdates(String syncId) {
+        return get(path("nifi-flow-cache","reset-flow-updates"), new NifiFlowSyncParameters(syncId), NiFiFlowCacheSync.class);
+    }
+
+
     private UriComponentsBuilder base(Path path) {
         return UriComponentsBuilder.fromUri(this.base).path("/").path(path.toString());
     }
@@ -429,6 +440,24 @@ public class MetadataClient {
     private static class Form extends LinkedMultiValueMap<String, String> {
     }
 
+
+    private static class NifiFlowSyncParameters implements Function<UriComponentsBuilder, UriComponentsBuilder> {
+        private String syncId;
+
+        public NifiFlowSyncParameters(String syncId){
+            this.syncId = syncId;
+        }
+
+        public UriComponentsBuilder apply(UriComponentsBuilder target) {
+            UriComponentsBuilder result = target;
+
+            if (!Strings.isNullOrEmpty(this.syncId)) result = result.queryParam("syncId", this.syncId);
+            return result;
+        }
+
+    }
+
+        private String category;
 
     private class FeedBuilderImpl implements FeedBuilder {
         private String displayName;

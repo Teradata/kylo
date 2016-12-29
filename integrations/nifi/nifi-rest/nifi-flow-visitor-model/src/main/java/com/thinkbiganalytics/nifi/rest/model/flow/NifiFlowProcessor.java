@@ -3,7 +3,9 @@ package com.thinkbiganalytics.nifi.rest.model.flow;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.thinkbiganalytics.common.constants.KyloProcessorFlowType;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,8 +15,7 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * Created by sr186054 on 8/11/16.
- * Object in a NifiFlow that has pointers to all its sources (parents)  and children (destinations)
+ * Created by sr186054 on 8/11/16. Object in a NifiFlow that has pointers to all its sources (parents)  and children (destinations)
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class NifiFlowProcessor implements Serializable {
@@ -25,8 +26,15 @@ public class NifiFlowProcessor implements Serializable {
     private String id;
     @JsonProperty("name")
     private String name;
+
+    private String type;
+
     private boolean isFailure;
     private boolean isEnd;
+
+    private String flowId;
+
+    private KyloProcessorFlowType processorFlowType;
 
 
     private NifiFlowProcessGroup processGroup;
@@ -55,6 +63,12 @@ public class NifiFlowProcessor implements Serializable {
     public NifiFlowProcessor(@JsonProperty("id") String id, @JsonProperty("name") String name) {
         this.id = id;
         this.name = name;
+    }
+
+    public NifiFlowProcessor(@JsonProperty("id") String id, @JsonProperty("name") String name, @JsonProperty("type") String type) {
+        this.id = id;
+        this.name = name;
+        this.type = type;
     }
 
     public String getId() {
@@ -170,6 +184,10 @@ public class NifiFlowProcessor implements Serializable {
         return destinationIds;
     }
 
+    public void setDestinationIds(Set<String> destinationIds) {
+        this.destinationIds = destinationIds;
+    }
+
     public Set<String> getAllDestinationIds() {
         Set<String> destinationIds = new HashSet<>();
         destinationIds.addAll(getDestinationIds());
@@ -178,10 +196,6 @@ public class NifiFlowProcessor implements Serializable {
         }
         return destinationIds;
 
-    }
-
-    public void setDestinationIds(Set<String> destinationIds) {
-        this.destinationIds = destinationIds;
     }
 
     public Set<NiFiFlowProcessorConnection> getSourceConnectionIds() {
@@ -213,7 +227,7 @@ public class NifiFlowProcessor implements Serializable {
 
     public void print(Integer level) {
 
-        log.info(level + ". " + getName());
+        log.info(flowId + ", " + level + ". " + getName());
         System.out.println(level + ". " + getName());
         Set<String> printed = new HashSet<>();
         printed.add(this.getId());
@@ -227,12 +241,71 @@ public class NifiFlowProcessor implements Serializable {
         }
     }
 
+    public Integer assignFlowIds(Integer flowId) {
+        flowId++;
+        setFlowId(StringUtils.substringAfterLast(this.type, ".") + "__" + flowId);
+        //   log.info(getFlowId() + " - " + getName() + " (" + getId() + ")");
+        Set<String> printed = new HashSet<>();
+        printed.add(this.getId());
+
+        for (NifiFlowProcessor child : getDestinations()) {
+            if (!child.containsDestination(this) && !child.containsDestination(child) && !child.equals(this) && !printed.contains(child.getId())) {
+                flowId = child.assignFlowIds(flowId);
+                printed.add(child.getId());
+            }
+        }
+        return flowId;
+    }
+
+    public Integer countNodes() {
+        Integer count = getDestinations().size();
+        Set<String> printed = new HashSet<>();
+        printed.add(this.getId());
+        for (NifiFlowProcessor child : getDestinations()) {
+            if (!child.containsDestination(this) && !child.containsDestination(child) && !child.equals(this) && !printed.contains(child.getId())) {
+                count += child.countNodes();
+                printed.add(child.getId());
+            }
+        }
+        return count;
+    }
+
+    public KyloProcessorFlowType getProcessorFlowType() {
+        return processorFlowType;
+    }
+
+    public void setProcessorFlowType(KyloProcessorFlowType processorFlowType) {
+        this.processorFlowType = processorFlowType;
+        if (KyloProcessorFlowType.CRITICAL_FAILURE.equals(processorFlowType)) {
+            setIsFailure(true);
+        } else {
+            setIsFailure(false);
+        }
+    }
+
     public boolean containsDestination(NifiFlowProcessor parent) {
         final String thisId = getId();
         final String parentId = parent.getId();
 
         return getDestinations().stream().anyMatch(processor -> processor.getId().equalsIgnoreCase(thisId) || processor.getId()
             .equalsIgnoreCase(parentId));
+    }
+
+    public String getFlowId() {
+        return flowId;
+    }
+
+    public void setFlowId(String flowId) {
+        this.flowId = flowId;
+    }
+
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     @Override

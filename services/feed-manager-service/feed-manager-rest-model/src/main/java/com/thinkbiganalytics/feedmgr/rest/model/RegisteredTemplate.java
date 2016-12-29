@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
+import com.thinkbiganalytics.common.constants.KyloProcessorFlowType;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 
@@ -15,6 +16,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -56,6 +58,13 @@ public class RegisteredTemplate {
 
     private List<String> templateOrder;
 
+    private Map<String,KyloProcessorFlowType> processorFlowTypeMap;
+
+    private boolean isStream;
+
+    @JsonIgnore
+    private Set<String> feedNames;
+
     /**
      * The number of feeds that use this template
      */
@@ -92,6 +101,8 @@ public class RegisteredTemplate {
         this.feedsCount= registeredTemplate.getFeedsCount();
         this.registeredDatasourceDefinitions = registeredTemplate.getRegisteredDatasourceDefinitions();
         this.order = registeredTemplate.getOrder();
+        this.processorFlowTypeMap = new HashMap<>(getProcessorFlowTypeMap());
+        this.isStream = registeredTemplate.isStream();
         this.initializeProcessors();
     }
 
@@ -468,5 +479,34 @@ public class RegisteredTemplate {
 
     public void setNifiTemplate(TemplateDTO nifiTemplate) {
         this.nifiTemplate = nifiTemplate;
+    }
+
+    public Map<String, KyloProcessorFlowType> getProcessorFlowTypeMap() {
+        if(processorFlowTypeMap == null){
+            processorFlowTypeMap = new HashMap<>();
+        }
+        return processorFlowTypeMap;
+    }
+
+    public void setProcessorFlowTypeMap(Map<String, KyloProcessorFlowType> processorFlowTypeMap) {
+        this.processorFlowTypeMap = processorFlowTypeMap;
+    }
+
+    @JsonIgnore
+    public Set<String> getFeedNames() {
+        return feedNames;
+    }
+    @JsonIgnore
+    public void setFeedNames(Set<String> feedNames) {
+        this.feedNames = feedNames;
+    }
+
+
+    public boolean isStream() {
+        return isStream;
+    }
+
+    public void setIsStream(boolean isStream) {
+        this.isStream = isStream;
     }
 }

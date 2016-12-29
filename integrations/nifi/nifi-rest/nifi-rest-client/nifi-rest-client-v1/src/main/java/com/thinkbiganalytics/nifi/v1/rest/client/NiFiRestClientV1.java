@@ -1,8 +1,10 @@
 package com.thinkbiganalytics.nifi.v1.rest.client;
 
 import com.google.common.collect.ImmutableMap;
+import com.thinkbiganalytics.nifi.rest.client.DefaultNiFiFlowVisitorClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiConnectionsRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiControllerServicesRestClient;
+import com.thinkbiganalytics.nifi.rest.client.NiFiFlowVisitorClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiPortsRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiProcessGroupsRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiProcessorsRestClient;
@@ -57,6 +59,10 @@ public class NiFiRestClientV1 extends JerseyRestClient implements NiFiRestClient
     /** NiFi Templates REST client */
     @Nullable
     private NiFiTemplatesRestClientV1 templates;
+
+    /** NiFi Flows REST client */
+    @Nullable
+    private NiFiFlowVisitorClient flows;
 
     /**
      * Constructs a {@code NiFiRestClientV1} with the specified NiFi REST client configuration.
@@ -155,6 +161,16 @@ public class NiFiRestClientV1 extends JerseyRestClient implements NiFiRestClient
         }
         return templates;
     }
+
+    @Nonnull
+    @Override
+    public NiFiFlowVisitorClient flows() {
+        if (flows == null) {
+            flows = new DefaultNiFiFlowVisitorClient(this);
+        }
+        return flows;
+    }
+
 
     @Override
     protected WebTarget getBaseTarget() {

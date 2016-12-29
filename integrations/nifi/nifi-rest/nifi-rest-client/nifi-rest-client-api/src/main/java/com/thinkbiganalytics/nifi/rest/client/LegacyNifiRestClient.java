@@ -5,22 +5,18 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.nifi.feedmgr.ConfigurationPropertyReplacer;
 import com.thinkbiganalytics.nifi.feedmgr.NifiEnvironmentProperties;
-import com.thinkbiganalytics.nifi.feedmgr.TemplateCreationHelper;
 import com.thinkbiganalytics.nifi.feedmgr.TemplateInstanceCreator;
 import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptor;
 import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptorTransform;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
-import com.thinkbiganalytics.nifi.rest.model.visitor.NifiFlowBuilder;
 import com.thinkbiganalytics.nifi.rest.model.visitor.NifiVisitableProcessGroup;
-import com.thinkbiganalytics.nifi.rest.model.visitor.NifiVisitableProcessor;
 import com.thinkbiganalytics.nifi.rest.support.NifiConnectionUtil;
 import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
-import com.thinkbiganalytics.nifi.rest.visitor.NifiConnectionOrderVisitor;
-import com.thinkbiganalytics.support.FeedNameUtil;
+import com.thinkbiganalytics.nifi.rest.visitor.NifiConnectionOrderVisitorCache;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.AboutDTO;
@@ -55,7 +51,7 @@ import javax.inject.Inject;
 import javax.ws.rs.ClientErrorException;
 
 @Deprecated
-public class LegacyNifiRestClient implements NifiFlowVisitorClient {
+public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
 
     private static final Logger log = LoggerFactory.getLogger(LegacyNifiRestClient.class);
 
@@ -1119,26 +1115,7 @@ public class LegacyNifiRestClient implements NifiFlowVisitorClient {
     }
 
 
-    public NifiVisitableProcessGroup getFlowOrder(String processGroupId) throws NifiComponentNotFoundException {
-        NifiVisitableProcessGroup group = null;
-        ProcessGroupDTO processGroupEntity = getProcessGroup(processGroupId, true, true);
-        if (processGroupEntity != null) {
-            group = new NifiVisitableProcessGroup(processGroupEntity);
-            NifiConnectionOrderVisitor orderVisitor = new NifiConnectionOrderVisitor(this, group);
-            try {
-                //find the parent just to get hte names andids
-                ProcessGroupDTO parent = getProcessGroup(processGroupEntity.getParentGroupId(), false, false);
-                group.setParentProcessGroup(parent);
-            } catch (NifiComponentNotFoundException e) {
-                //cant find the parent
-            }
 
-            group.accept(orderVisitor);
-           //  orderVisitor.printOrder();
-            //orderVisitor.printOrder();
-        }
-        return group;
-    }
 
     @Deprecated
     public SearchResultsDTO search(String query) {
@@ -1165,68 +1142,34 @@ public class LegacyNifiRestClient implements NifiFlowVisitorClient {
         return null;
     }
 
+    public NifiVisitableProcessGroup getFlowOrder(String processGroupId, NifiConnectionOrderVisitorCache cache) throws NifiComponentNotFoundException {
+        return client.flows().getFlowOrder(processGroupId, cache);
+    }
+
+    public NifiVisitableProcessGroup getFlowOrder(ProcessGroupDTO processGroupEntity, NifiConnectionOrderVisitorCache cache) throws NifiComponentNotFoundException {
+
+        return client.flows().getFlowOrder(processGroupEntity, cache);
+
+    }
+
 
     public NifiFlowProcessGroup getFeedFlow(String processGroupId) throws NifiComponentNotFoundException {
-        NifiFlowProcessGroup group = null;
-        NifiVisitableProcessGroup visitableGroup = getFlowOrder(processGroupId);
-        NifiFlowProcessGroup flow = new NifiFlowBuilder().build(visitableGroup);
-        String categoryName = flow.getParentGroupName();
-        String feedName = flow.getName();
-        feedName = FeedNameUtil.fullName(categoryName, feedName);
-        //if it is a versioned feed then strip the version to get the correct feed name
-        feedName = TemplateCreationHelper.parseVersionedProcessGroupName(feedName);
-        flow.setFeedName(feedName);
-        return flow;
+       return client.flows().getFeedFlow(processGroupId);
     }
 
     public Set<ProcessorDTO> getProcessorsForFlow(String processGroupId) throws NifiComponentNotFoundException {
-        NifiVisitableProcessGroup group = getFlowOrder(processGroupId);
-        Set<ProcessorDTO> processors = new HashSet<>();
-        for (NifiVisitableProcessor p : group.getStartingProcessors()) {
-            processors.addAll(p.getProcessors());
-        }
-        return processors;
+       return client.flows().getProcessorsForFlow(processGroupId);
     }
 
 
     public NifiFlowProcessGroup getFeedFlowForCategoryAndFeed(String categoryAndFeedName) {
-        NifiFlowProcessGroup flow = null;
-        String category = FeedNameUtil.category(categoryAndFeedName);
-        String feed = FeedNameUtil.feed(categoryAndFeedName);
-        //1 find the ProcessGroup under "root" matching the name category
-        ProcessGroupDTO processGroupEntity = getRootProcessGroup();
-        ProcessGroupDTO root = processGroupEntity;
-        ProcessGroupDTO categoryGroup = root.getContents().getProcessGroups().stream().filter(group -> category.equalsIgnoreCase(group.getName())).findAny().orElse(null);
-        if (categoryGroup != null) {
-            ProcessGroupDTO feedGroup = categoryGroup.getContents().getProcessGroups().stream().filter(group -> feed.equalsIgnoreCase(group.getName())).findAny().orElse(null);
-            if (feedGroup != null) {
-                flow = getFeedFlow(feedGroup.getId());
-            }
-        }
-        return flow;
+      return client.flows().getFeedFlowForCategoryAndFeed(categoryAndFeedName);
     }
 
 
     //walk entire graph
     public List<NifiFlowProcessGroup> getFeedFlows() {
-        log.info("get Graph of Nifi Flows");
-        List<NifiFlowProcessGroup> feedFlows = new ArrayList<>();
-        ProcessGroupDTO processGroupEntity = getRootProcessGroup();
-        ProcessGroupDTO root = processGroupEntity;
-        //first level is the category
-        for (ProcessGroupDTO category : root.getContents().getProcessGroups()) {
-            for (ProcessGroupDTO feedProcessGroup : category.getContents().getProcessGroups()) {
-                //second level is the feed
-                String feedName = FeedNameUtil.fullName(category.getName(), feedProcessGroup.getName());
-                //if it is a versioned feed then strip the version to get the correct feed name
-                feedName = TemplateCreationHelper.parseVersionedProcessGroupName(feedName);
-                NifiFlowProcessGroup feedFlow = getFeedFlow(feedProcessGroup.getId());
-                feedFlow.setFeedName(feedName);
-                feedFlows.add(feedFlow);
-            }
-        }
-        log.info("finished Graph of Nifi Flows.  Returning {} flows", feedFlows.size());
-        return feedFlows;
+       return client.flows().getFeedFlows();
     }
 
 
@@ -1235,14 +1178,7 @@ public class LegacyNifiRestClient implements NifiFlowVisitorClient {
      * Wallk the flow for a given Root Process Group and return all those Processors who are marked with a Failure Relationship
      */
     public Set<ProcessorDTO> getFailureProcessors(String processGroupId) throws NifiComponentNotFoundException {
-        NifiVisitableProcessGroup g = getFlowOrder(processGroupId);
-        Set<ProcessorDTO> failureProcessors = new HashSet<>();
-        for (NifiVisitableProcessor p : g.getStartingProcessors()) {
-
-            failureProcessors.addAll(p.getFailureProcessors());
-        }
-
-        return failureProcessors;
+        return client.flows().getFailureProcessors(processGroupId);
     }
 
     /**
@@ -1261,5 +1197,9 @@ public class LegacyNifiRestClient implements NifiFlowVisitorClient {
      */
     public NiFiRestClient getNiFiRestClient() {
         return client;
+    }
+
+    public void setClient(NiFiRestClient client) {
+        this.client = client;
     }
 }

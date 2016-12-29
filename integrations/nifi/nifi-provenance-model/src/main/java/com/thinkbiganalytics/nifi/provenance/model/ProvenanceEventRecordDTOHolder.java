@@ -18,6 +18,20 @@ public class ProvenanceEventRecordDTOHolder implements Serializable {
 
     }
 
+    public Long getMaxEventId() {
+        if (events != null) {
+            return events.stream().mapToLong(e -> e.getEventId()).max().getAsLong();
+        }
+        return -1L;
+    }
+
+    public Long getMinEventId() {
+        if (events != null) {
+            return events.stream().mapToLong(e -> e.getEventId()).min().getAsLong();
+        }
+        return -1L;
+    }
+
     public List<ProvenanceEventRecordDTO> getEvents() {
         return events;
     }

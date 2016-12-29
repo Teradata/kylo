@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.thinkbiganalytics.common.constants.KyloProcessorFlowType;
 import com.thinkbiganalytics.nifi.provenance.model.util.ProvenanceEventUtil;
 
 import org.joda.time.DateTime;
@@ -28,7 +29,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ProvenanceEventRecordDTO implements Serializable {
 
+    private static final long serialVersionUID = 4464985246055158127L;
+
     private static final Logger log = LoggerFactory.getLogger(ProvenanceEventRecordDTO.class);
+
 
     private transient AtomicBoolean processed = new AtomicBoolean(false);
 
@@ -74,9 +78,12 @@ public class ProvenanceEventRecordDTO implements Serializable {
      */
     private DateTime previousEventTime;
 
+    private DateTime startTime;
+
     private String id;
     private Long eventId;
     private DateTime eventTime;
+
     private Long eventDuration;
     private String eventType;
     private String flowFileUuid;
@@ -100,7 +107,12 @@ public class ProvenanceEventRecordDTO implements Serializable {
     private Long outputContentClaimFileSizeBytes;
     private String outputContentClaimFileSize;
 
-    private Set<String>relatedRootFlowFiles;
+    private Set<String> relatedRootFlowFiles;
+
+    /**
+     * Indicates if the processor attached to this event {@code componentId}  is a FAILURE, WARNING,
+     */
+    private KyloProcessorFlowType processorType;
 
 
     /**
@@ -142,8 +154,10 @@ public class ProvenanceEventRecordDTO implements Serializable {
 
     private String batchId;
 
-    public ProvenanceEventRecordDTO() {
 
+    private String relationship;
+
+    public ProvenanceEventRecordDTO() {
 
     }
 
@@ -168,9 +182,16 @@ public class ProvenanceEventRecordDTO implements Serializable {
     }
 
 
-
     public boolean isEndingFlowFileEvent() {
         return ProvenanceEventUtil.isEndingFlowFileEvent(this);
+    }
+
+    public String getRelationship() {
+        return relationship;
+    }
+
+    public void setRelationship(String relationship) {
+        this.relationship = relationship;
     }
 
     @JsonProperty("updatedAttributes")
@@ -395,8 +416,11 @@ public class ProvenanceEventRecordDTO implements Serializable {
     }
 
     public boolean isStartOfCurrentFlowFile() {
-        Integer index = flowFile.getCompletedEvents().indexOf(this);
-        return index == 0;
+        if (flowFile != null) {
+            Integer index = flowFile.getEventIds().indexOf(this);
+            return index == 0;
+        }
+        return false;
     }
 
     public ProvenanceEventRecordDTO getPreviousEvent() {
@@ -424,12 +448,6 @@ public class ProvenanceEventRecordDTO implements Serializable {
         return previousEventTime;
     }
 
-    public String getPreviousFlowfileId() {
-        if (previousFlowfileId == null && previousEvent != null) {
-            this.previousFlowfileId = previousEvent.getFlowFileUuid();
-        }
-        return previousFlowfileId;
-    }
 
     public DateTime getEventTime() {
         return eventTime;
@@ -560,7 +578,7 @@ public class ProvenanceEventRecordDTO implements Serializable {
         this.batchId = batchId;
     }
 
-    private void addRelatedRootFlowFile(String rootFlowFileId){
+    private void addRelatedRootFlowFile(String rootFlowFileId) {
 
     }
 
@@ -600,6 +618,24 @@ public class ProvenanceEventRecordDTO implements Serializable {
         this.isBatchJob = isBatchJob;
     }
 
+
+    public DateTime getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(DateTime startTime) {
+        this.startTime = startTime;
+    }
+
+
+    public KyloProcessorFlowType getProcessorType() {
+        return processorType;
+    }
+
+    public void setProcessorType(KyloProcessorFlowType processorType) {
+        this.processorType = processorType;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -617,6 +653,7 @@ public class ProvenanceEventRecordDTO implements Serializable {
         return !(flowFileUuid != null ? !flowFileUuid.equals(that.flowFileUuid) : that.flowFileUuid != null);
 
     }
+
 
     @Override
     public int hashCode() {

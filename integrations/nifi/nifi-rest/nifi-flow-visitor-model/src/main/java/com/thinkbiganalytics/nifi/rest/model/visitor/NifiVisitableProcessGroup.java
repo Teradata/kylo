@@ -12,15 +12,18 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Created by sr186054 on 2/14/16.
  */
-public class NifiVisitableProcessGroup implements  NifiVisitable {
+public class NifiVisitableProcessGroup implements NifiVisitable {
 
     private ProcessGroupDTO dto;
 
     private ProcessGroupDTO parentProcessGroup;
+
 
     private Set<NifiVisitableProcessor> startingProcessors;
 
@@ -29,12 +32,8 @@ public class NifiVisitableProcessGroup implements  NifiVisitable {
     public Set<NifiVisitableProcessor> processors;
 
 
-    private NifiVisitableProcessor inputPortProcessor;
-
-    private NifiVisitableProcessor outputPortProcessor;
-
-    private Map<String,Set<NifiVisitableProcessor>> outputPortProcessors;
-    private Map<String,Set<NifiVisitableProcessor>> inputPortProcessors;
+    private Map<String, Set<NifiVisitableProcessor>> outputPortProcessors;
+    private Map<String, Set<NifiVisitableProcessor>> inputPortProcessors;
 
     private Set<ConnectionDTO> connections;
 
@@ -52,23 +51,55 @@ public class NifiVisitableProcessGroup implements  NifiVisitable {
         outputPortProcessors = new HashMap<>();
         inputPortProcessors = new HashMap<>();
         processors = new HashSet<>();
-        if(dto.getContents() != null) {
+        if (dto.getContents() != null) {
             this.connections = dto.getContents().getConnections();
         }
 
     }
 
+    private NifiVisitableProcessGroup(NifiVisitableProcessGroup group) {
+        this.dto = group.getDto();
+        Map<String, NifiVisitableProcessor> processorMap = group.getProcessors().stream()
+            .map(NifiVisitableProcessor::asCacheableProcessor)
+            .collect(Collectors.toMap(processor1 -> processor1.getDto().getId(), Function.identity()));
+        this.processors = new HashSet<>(processorMap.values());
+        this.startingProcessors = group.getStartingProcessors().stream().map(processor -> processorMap.get(processor.getId())).collect(Collectors.toSet());
+        this.endingProcessors = group.getEndingProcessors().stream().map(processor -> processorMap.get(processor.getId())).collect(Collectors.toSet());
+
+        this.inputPortProcessors = transform(group.getInputPortProcessors(), set -> set.stream().map(p -> processorMap.get(p.getId())).collect(Collectors.toSet()));
+
+        this.outputPortProcessors = transform(group.getOutputPortProcessors(), set -> set.stream().map(p -> processorMap.get(p.getId())).collect(Collectors.toSet()));
+
+    }
+
+    public NifiVisitableProcessGroup asCacheableProcessGroup() {
+        return new NifiVisitableProcessGroup(this);
+    }
+
+    static <X, Y, Z> Map<X, Z> transform(Map<? extends X, ? extends Y> input,
+                                         Function<Y, Z> function) {
+        return input.keySet().stream()
+            .collect(Collectors.toMap(Function.identity(),
+                                      key -> function.apply(input.get(key))));
+    }
+
+    public void clearConnectedProcessors() {
+        processors.stream().forEach(processor -> processor.clearConnectedProcessors());
+    }
+
+
     private NifiVisitableProcessor getOrCreateProcessor(NifiFlowVisitor nifiVisitor, ProcessorDTO processorDTO) {
         NifiVisitableProcessor processor = nifiVisitor.getProcessor(processorDTO.getId());
-        if(processor == null){
+        if (processor == null) {
             processor = new NifiVisitableProcessor(processorDTO);
             addProcessor(processor);
         }
         return processor;
     }
+
     private NifiVisitableProcessGroup getOrCreateProcessGroup(NifiFlowVisitor nifiVisitor, ProcessGroupDTO processGroupDTO) {
         NifiVisitableProcessGroup group = nifiVisitor.getProcessGroup(processGroupDTO.getId());
-        if(group == null) {
+        if (group == null) {
             group = new NifiVisitableProcessGroup(processGroupDTO);
         }
         return group;
@@ -84,7 +115,7 @@ public class NifiVisitableProcessGroup implements  NifiVisitable {
 
     @Override
     public void accept(NifiFlowVisitor nifiVisitor) {
-        if(dto.getContents()!= null) {
+        if (dto.getContents() != null) {
             //GET DATA IN THIS ORDER
             //1. Get Processor Info
             //2. get Process Group info
@@ -92,7 +123,7 @@ public class NifiVisitableProcessGroup implements  NifiVisitable {
 
             if (dto.getContents().getProcessors() != null) {
                 for (ProcessorDTO processorDTO : dto.getContents().getProcessors()) {
-                    NifiVisitableProcessor processor =   getOrCreateProcessor(nifiVisitor,processorDTO);
+                    NifiVisitableProcessor processor = getOrCreateProcessor(nifiVisitor, processorDTO);
                     nifiVisitor.visitProcessor(processor);
                 }
             }
@@ -100,7 +131,7 @@ public class NifiVisitableProcessGroup implements  NifiVisitable {
             if (dto.getContents().getProcessGroups() != null) {
                 for (ProcessGroupDTO processGroupDTO : dto.getContents().getProcessGroups()) {
                     if (processGroupDTO != null) {
-                        nifiVisitor.visitProcessGroup(getOrCreateProcessGroup(nifiVisitor,processGroupDTO));
+                        nifiVisitor.visitProcessGroup(getOrCreateProcessGroup(nifiVisitor, processGroupDTO));
                     }
                 }
             }
@@ -123,7 +154,7 @@ public class NifiVisitableProcessGroup implements  NifiVisitable {
     }
 
 
-    public void addProcessor(NifiVisitableProcessor processor){
+    public void addProcessor(NifiVisitableProcessor processor) {
         processors.add(processor);
     }
 
@@ -135,7 +166,7 @@ public class NifiVisitableProcessGroup implements  NifiVisitable {
         return endingProcessors;
     }
 
-    public NifiVisitableProcessor getProcessorMatchingId(final String processorId){
+    public NifiVisitableProcessor getProcessorMatchingId(final String processorId) {
         return Iterables.tryFind(processors, new Predicate<NifiVisitableProcessor>() {
             @Override
             public boolean apply(NifiVisitableProcessor processor) {
@@ -144,12 +175,12 @@ public class NifiVisitableProcessGroup implements  NifiVisitable {
         }).orNull();
     }
 
-    public boolean containsProcessor(String processorId){
+    public boolean containsProcessor(String processorId) {
         return getProcessorMatchingId(processorId) != null;
     }
 
-    public ConnectionDTO getConnectionMatchingSourceId(final String connectionId){
-        if(connections != null) {
+    public ConnectionDTO getConnectionMatchingSourceId(final String connectionId) {
+        if (connections != null) {
             return Iterables.tryFind(connections, new Predicate<ConnectionDTO>() {
                 @Override
                 public boolean apply(ConnectionDTO connection) {
@@ -160,8 +191,8 @@ public class NifiVisitableProcessGroup implements  NifiVisitable {
         return null;
     }
 
-    public ConnectionDTO getConnectionMatchingDestinationId(final String connectionId){
-        if(connections != null) {
+    public ConnectionDTO getConnectionMatchingDestinationId(final String connectionId) {
+        if (connections != null) {
             return Iterables.tryFind(connections, new Predicate<ConnectionDTO>() {
                 @Override
                 public boolean apply(ConnectionDTO connection) {
@@ -173,8 +204,8 @@ public class NifiVisitableProcessGroup implements  NifiVisitable {
     }
 
 
-    public ConnectionDTO getConnectionMatchingId(final String connectionId){
-        if(connections != null) {
+    public ConnectionDTO getConnectionMatchingId(final String connectionId) {
+        if (connections != null) {
             return Iterables.tryFind(connections, new Predicate<ConnectionDTO>() {
                 @Override
                 public boolean apply(ConnectionDTO connection) {
@@ -185,13 +216,13 @@ public class NifiVisitableProcessGroup implements  NifiVisitable {
         return null;
     }
 
-    private void populateStartingAndEndingProcessors(){
+    private void populateStartingAndEndingProcessors() {
 
-        for(NifiVisitableProcessor processor : processors) {
-            if(processor.isStart()){
+        for (NifiVisitableProcessor processor : processors) {
+            if (processor.isStart()) {
                 startingProcessors.add(processor);
             }
-            if(processor.isEnd()){
+            if (processor.isEnd()) {
                 endingProcessors.add(processor);
             }
         }
@@ -203,9 +234,9 @@ public class NifiVisitableProcessGroup implements  NifiVisitable {
         return inputPortProcessors.get(inputProcessorId);
     }
 
-    public void addInputPortProcessor(String id,NifiVisitableProcessor inputPortProcessor) {
-        if(!this.inputPortProcessors.containsKey(id)){
-            this.inputPortProcessors.put(id,new HashSet<>());
+    public void addInputPortProcessor(String id, NifiVisitableProcessor inputPortProcessor) {
+        if (!this.inputPortProcessors.containsKey(id)) {
+            this.inputPortProcessors.put(id, new HashSet<>());
         }
         this.inputPortProcessors.get(id).add(inputPortProcessor);
     }
@@ -215,15 +246,15 @@ public class NifiVisitableProcessGroup implements  NifiVisitable {
     }
 
     public NifiVisitableProcessor getOutputPortProcessor(String connectionSourceId) {
-        if(outputPortProcessors.containsKey(connectionSourceId)){
+        if (outputPortProcessors.containsKey(connectionSourceId)) {
             return Lists.newArrayList(outputPortProcessors.get(connectionSourceId)).get(0);
         }
         return null;
     }
 
-    public void addOutputPortProcessor(String id,NifiVisitableProcessor outputPortProcessor) {
-        if(!this.outputPortProcessors.containsKey(id)){
-            this.outputPortProcessors.put(id,new HashSet<>());
+    public void addOutputPortProcessor(String id, NifiVisitableProcessor outputPortProcessor) {
+        if (!this.outputPortProcessors.containsKey(id)) {
+            this.outputPortProcessors.put(id, new HashSet<>());
         }
         this.outputPortProcessors.get(id).add(outputPortProcessor);
     }
@@ -234,5 +265,19 @@ public class NifiVisitableProcessGroup implements  NifiVisitable {
 
     public void setFailureConnectionIdToSourceProcessorIds(Map<String, Set<String>> failureConnectionIdToSourceProcessorIds) {
         this.failureConnectionIdToSourceProcessorIds = failureConnectionIdToSourceProcessorIds;
+    }
+
+
+    public Map<String, Set<NifiVisitableProcessor>> getInputPortProcessors() {
+        return inputPortProcessors;
+    }
+
+    public Map<String, Set<NifiVisitableProcessor>> getOutputPortProcessors() {
+        return outputPortProcessors;
+    }
+
+
+    public Set<NifiVisitableProcessor> getProcessors() {
+        return processors;
     }
 }

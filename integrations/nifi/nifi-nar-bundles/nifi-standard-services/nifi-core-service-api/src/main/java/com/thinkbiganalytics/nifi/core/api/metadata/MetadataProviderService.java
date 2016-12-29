@@ -22,4 +22,6 @@ public interface MetadataProviderService extends ControllerService {
     MetadataProvider getProvider();
     
     MetadataRecorder getRecorder();
+
+    KyloNiFiFlowProvider getKyloNiFiFlowProvider();
 }

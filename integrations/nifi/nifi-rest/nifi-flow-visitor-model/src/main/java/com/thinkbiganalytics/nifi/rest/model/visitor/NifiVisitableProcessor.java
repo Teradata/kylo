@@ -9,15 +9,14 @@ import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 /**
  * Created by sr186054 on 2/14/16.
  */
-public class NifiVisitableProcessor implements  NifiVisitable {
+public class NifiVisitableProcessor implements NifiVisitable {
+
     private static final Logger log = LoggerFactory.getLogger(NifiVisitableProcessor.class);
 
 
@@ -26,14 +25,6 @@ public class NifiVisitableProcessor implements  NifiVisitable {
 
     private String id;
 
-    private String inputPortId;
-
-    private String outputPortId;
-
-    private Map<String,NifiVisitableProcessor> inputPortIdProcessorMap;
-
-    private Map<String,NifiVisitableProcessor> outputPortIdProcessorMap;
-
     private boolean isFailureProcessor;
 
     private Set<NiFiFlowProcessorConnection> sourceConnectionIdentifiers;
@@ -41,27 +32,47 @@ public class NifiVisitableProcessor implements  NifiVisitable {
     private Set<NiFiFlowProcessorConnection> destinationConnectionIdentifiers;
 
     private ProcessorDTO dto;
+
+
     public NifiVisitableProcessor(ProcessorDTO dto) {
         this.dto = dto;
         this.id = dto.getId();
-        this.inputPortIdProcessorMap = new HashMap<>();
-        this.outputPortIdProcessorMap = new HashMap<>();
+    }
+
+
+    private NifiVisitableProcessor(NifiVisitableProcessor processor) {
+
+        this.dto = processor.getDto();
+        this.id = processor.getId();
+
+        //   this.setSources(this.getSources().stream().map(source -> new NifiVisitableProcessor(source)).collect(Collectors.toSet()));
+        // this.setDestinations(this.getDestinations().stream().map(dest -> new NifiVisitableProcessor(dest)).collect(Collectors.toSet()));
+    }
+
+    public NifiVisitableProcessor asCacheableProcessor() {
+        return new NifiVisitableProcessor(this);
+    }
+
+    public void clearConnectedProcessors() {
+        getSources().clear();
+        getDestinations().clear();
     }
 
     @Override
     public void accept(NifiFlowVisitor nifiVisitor) {
-       nifiVisitor.visitProcessor(this);
+        nifiVisitor.visitProcessor(this);
     }
-    public void addSource(NifiVisitableProcessor dto){
+
+    public void addSource(NifiVisitableProcessor dto) {
         getSources().add(dto);
     }
 
     public void addDestination(NifiVisitableProcessor dto) {
         getDestinations().add(dto);
-     }
+    }
 
     public Set<NifiVisitableProcessor> getSources() {
-        if(sources == null){
+        if (sources == null) {
             sources = new HashSet<>();
         }
         return sources;
@@ -72,7 +83,7 @@ public class NifiVisitableProcessor implements  NifiVisitable {
     }
 
     public Set<NifiVisitableProcessor> getDestinations() {
-        if(destinations == null){
+        if (destinations == null) {
             destinations = new HashSet<>();
         }
         return destinations;
@@ -91,18 +102,22 @@ public class NifiVisitableProcessor implements  NifiVisitable {
     }
 
 
-    public boolean isStart(){
+    public boolean isStart() {
         return !getDestinations().isEmpty() && getSources().isEmpty();
     }
 
-    public  boolean isEnd(){
+    public boolean isEnd() {
         return !getSources().isEmpty() && getDestinations().isEmpty();
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         NifiVisitableProcessor processor = (NifiVisitableProcessor) o;
 
@@ -116,21 +131,20 @@ public class NifiVisitableProcessor implements  NifiVisitable {
     }
 
 
-
-    public void print(){
+    public void print() {
 
         print(0);
     }
 
-    public void print(Integer level){
+    public void print(Integer level) {
 
         log.info(level + ". " + getDto().getName());
-        Set<String> printed= new HashSet<>();
+        Set<String> printed = new HashSet<>();
         printed.add(this.getId());
-        Integer nextLevel = level +1;
+        Integer nextLevel = level + 1;
 
-        for(NifiVisitableProcessor child: getDestinations()){
-            if(!child.containsDestination(this) &&  !child.containsDestination(child) && !child.equals(this) && !printed.contains(child.getId())){
+        for (NifiVisitableProcessor child : getDestinations()) {
+            if (!child.containsDestination(this) && !child.containsDestination(child) && !child.equals(this) && !printed.contains(child.getId())) {
                 child.print(nextLevel);
                 printed.add(child.getId());
             }
@@ -139,7 +153,7 @@ public class NifiVisitableProcessor implements  NifiVisitable {
 
     //used for connections with input/output ports
 
-    public boolean containsDestination(NifiVisitableProcessor parent){
+    public boolean containsDestination(NifiVisitableProcessor parent) {
         final String thisId = getDto().getId();
         final String parentId = parent.getDto().getId();
         NifiVisitableProcessor p = Iterables.tryFind(getDestinations(), new Predicate<NifiVisitableProcessor>() {
@@ -151,7 +165,6 @@ public class NifiVisitableProcessor implements  NifiVisitable {
         }).orNull();
         return p != null;
     }
-
 
 
     public Set<ProcessorDTO> getFailureProcessors() {
@@ -166,8 +179,8 @@ public class NifiVisitableProcessor implements  NifiVisitable {
         return failureProcessors;
     }
 
-    public Set<ProcessorDTO> getProcessors(){
-       return getProcessors(null);
+    public Set<ProcessorDTO> getProcessors() {
+        return getProcessors(null);
     }
 
     public void populateChildProcessors(Set<NifiVisitableProcessor> set) {
@@ -182,19 +195,19 @@ public class NifiVisitableProcessor implements  NifiVisitable {
         }
     }
 
-    public Set<ProcessorDTO> getProcessors(Set<NifiVisitableProcessor> set){
-          if(set == null) {
-              set = new HashSet<>();
-          }
-          set.add(this);
+    public Set<ProcessorDTO> getProcessors(Set<NifiVisitableProcessor> set) {
+        if (set == null) {
+            set = new HashSet<>();
+        }
+        set.add(this);
         for (NifiVisitableProcessor child : getDestinations()) {
-            if(!set.contains(child)) {
+            if (!set.contains(child)) {
                 child.getProcessors(set);
             }
         }
 
         Set<ProcessorDTO> p = new HashSet<>();
-        for(NifiVisitableProcessor x: set){
+        for (NifiVisitableProcessor x : set) {
             p.add(x.getDto());
         }
         return p;

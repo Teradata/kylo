@@ -8,6 +8,7 @@
 package com.thinkbiganalytics.nifi.v2.core.metadata;
 
 import com.thinkbiganalytics.metadata.rest.client.MetadataClient;
+import com.thinkbiganalytics.nifi.core.api.metadata.KyloNiFiFlowProvider;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProvider;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder;
@@ -112,6 +113,7 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
 
     private volatile MetadataProvider provider;
     private volatile MetadataRecorder recorder;
+    private volatile KyloProvenanceClientProvider kyloProvenanceClientProvider;
 
     /**
      * The Service holding the SSL Context information
@@ -147,6 +149,7 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
             
             this.provider = new MetadataClientProvider(client);
             this.recorder = new MetadataClientRecorder(client);
+            this.kyloProvenanceClientProvider = new KyloProvenanceClientProvider(client);
         } else {
             throw new UnsupportedOperationException("Provider implementations not currently supported: " + impl.getValue());
         }
@@ -162,6 +165,10 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
     @Override
     public MetadataRecorder getRecorder() {
         return recorder;
+    }
+
+    public KyloNiFiFlowProvider getKyloNiFiFlowProvider() {
+        return this.kyloProvenanceClientProvider;
     }
 
 

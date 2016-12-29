@@ -30,11 +30,6 @@
             <version>${project.version}</version>
         </dependency>
 
-        <dependency>
-            <artifactId>thinkbig-nifi-flow-visitor-rest-client-api</artifactId>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <version>${project.version}</version>
-        </dependency>
 
         <dependency>
             <artifactId>thinkbig-commons-feed-util</artifactId>
@@ -42,11 +37,6 @@
             <version>${project.version}</version>
         </dependency>
 
-        <dependency>
-            <artifactId>thinkbig-nifi-flow-visitor</artifactId>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <version>${project.version}</version>
-        </dependency>
 
         <dependency>
             <groupId>org.springframework</groupId>

@@ -96,4 +96,12 @@ public interface NiFiRestClient {
      */
     @Nonnull
     NiFiTemplatesRestClient templates();
+
+
+    /**
+     * Gets the client that will walk the NiFi flow graph of processors starting with a specified Process Group
+     * @return
+     */
+    @Nonnull
+    NiFiFlowVisitorClient flows();
 }
