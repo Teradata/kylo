@@ -39,10 +39,10 @@ import org.springframework.util.Assert;
  */
 @Configuration
 @PropertySource("classpath:application.properties")
-@ComponentScan(basePackages={"com.thinkbiganalytics"})
+@ComponentScan(basePackages = {"com.thinkbiganalytics"})
 public class FeedManagerConfiguration {
 
-    public FeedManagerConfiguration(){
+    public FeedManagerConfiguration() {
     }
 
     @Autowired
@@ -50,38 +50,37 @@ public class FeedManagerConfiguration {
 
 
     @Bean
-    public FeedManagerFeedService feedManagerFeedService(){
+    public FeedManagerFeedService feedManagerFeedService() {
         return new DefaultFeedManagerFeedService();
     }
 
     @Bean
-    public FeedManagerCategoryService feedManagerCategoryService(){
+    public FeedManagerCategoryService feedManagerCategoryService() {
         return new DefaultFeedManagerCategoryService();
     }
 
 
     @Bean
-    public FeedManagerTemplateService feedManagerTemplateService(){
+    public FeedManagerTemplateService feedManagerTemplateService() {
         return new DefaultFeedManagerTemplateService();
     }
 
     @Bean
-    public FeedModelTransform feedModelTransformer(){
+    public FeedModelTransform feedModelTransformer() {
         return new FeedModelTransform();
     }
 
 
     @Bean
-    public TemplateModelTransform templateModelTransform(){
+    public TemplateModelTransform templateModelTransform() {
         return new TemplateModelTransform();
     }
 
 
     @Bean
-    public CategoryModelTransform categoryModelTransform(){
+    public CategoryModelTransform categoryModelTransform() {
         return new CategoryModelTransform();
     }
-
 
 
     @Bean
@@ -100,7 +99,7 @@ public class FeedManagerConfiguration {
     }
 
     @Bean
-    public MetadataService metadataService(){
+    public MetadataService metadataService() {
         return new FeedManagerMetadataService();
     }
 
@@ -113,15 +112,16 @@ public class FeedManagerConfiguration {
     public ExportImportFeedService exportImportFeedService() {
         return new ExportImportFeedService();
     }
+
     @Bean
-    public PropertyExpressionResolver propertyExpressionResolver(){
+    public PropertyExpressionResolver propertyExpressionResolver() {
         return new PropertyExpressionResolver();
     }
 
-@Bean
-public NifiFlowCache nifiFlowCache(){
-    return new NifiFlowCache();
-}
+    @Bean
+    public NifiFlowCache nifiFlowCache() {
+        return new NifiFlowCache();
+    }
 
 
     @Bean
@@ -130,35 +130,35 @@ public NifiFlowCache nifiFlowCache(){
     }
 
 
-    @Bean(name="elasticSearchClientConfig")
-    public ElasticSearchClientConfig elasticSearchClientConfig(){
-            String host = env.getProperty("elasticsearch.host");
-            String configPort = env.getProperty("elasticsearch.port");
-            String clusterName = env.getProperty("elasticsearch.clustername");
-            Integer port = null;
-            try {
-                port = Integer.parseInt(configPort);
-            } catch (NumberFormatException e) {
-                Assert.notNull(port,
-                        "The Elastic Search Port property 'elasticsearch.port' must be configured and must be a valid number in the application.properties file. ");
-            }
-            Assert.notNull(host,
-                    "The Elastic Search Host property: 'elasticsearch.host' must be configured in the application.properties file. ");
+    @Bean(name = "elasticSearchClientConfig")
+    public ElasticSearchClientConfig elasticSearchClientConfig() {
+        String host = env.getProperty("elasticsearch.host");
+        String configPort = env.getProperty("elasticsearch.port");
+        String clusterName = env.getProperty("elasticsearch.clustername");
+        Integer port = null;
+        try {
+            port = Integer.parseInt(configPort);
+        } catch (NumberFormatException e) {
+            Assert.notNull(port,
+                           "The Elastic Search Port property 'elasticsearch.port' must be configured and must be a valid number in the application.properties file. ");
+        }
+        Assert.notNull(host,
+                       "The Elastic Search Host property: 'elasticsearch.host' must be configured in the application.properties file. ");
 
         Assert.notNull(clusterName,
-                "The Elastic Search cluster property: 'elasticsearch.clustername' must be configured in the application.properties file. ");
+                       "The Elastic Search cluster property: 'elasticsearch.clustername' must be configured in the application.properties file. ");
 
-            ElasticSearchClientConfig config = new ElasticSearchClientConfig();
-            config.setHost(host);
-            config.setPort(port);
+        ElasticSearchClientConfig config = new ElasticSearchClientConfig();
+        config.setHost(host);
+        config.setPort(port);
         config.setClusterName(clusterName);
-            return config;
+        return config;
 
     }
 
 
     @Bean
-    public ElasticSearch elasticSearch(){
+    public ElasticSearch elasticSearch() {
         return new ElasticSearch(elasticSearchClientConfig());
     }
 
