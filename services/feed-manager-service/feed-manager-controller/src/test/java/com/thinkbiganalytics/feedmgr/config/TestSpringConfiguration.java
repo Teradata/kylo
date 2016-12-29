@@ -1,7 +1,10 @@
 package com.thinkbiganalytics.feedmgr.config;
 
+import com.thinkbiganalytics.feedmgr.nifi.NifiConnectionService;
+import com.thinkbiganalytics.feedmgr.nifi.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.SpringEnvironmentProperties;
+import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.category.FeedManagerCategoryService;
 import com.thinkbiganalytics.feedmgr.service.category.InMemoryFeedManagerCategoryService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService;
@@ -67,6 +70,21 @@ public class TestSpringConfiguration {
     @Bean
     public ServiceLevelAgreementProvider serviceLevelAgreementProvider() {
         return new InMemorySLAProvider();
+    }
+
+    @Bean
+    public NifiFlowCache nifiFlowCache() {
+        return new NifiFlowCache();
+    }
+
+    @Bean
+    public MetadataService metadataService() {
+        return Mockito.mock(MetadataService.class);
+    }
+
+    @Bean
+    public NifiConnectionService nifiConnectionService() {
+        return new NifiConnectionService();
     }
 
     @Bean
