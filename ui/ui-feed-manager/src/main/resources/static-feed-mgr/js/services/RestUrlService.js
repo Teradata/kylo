@@ -79,6 +79,12 @@ angular.module(MODULE_FEED_MGR).service('RestUrlService', function () {
         return self.TEMPLATES_BASE_URL + "/nifi/" + nifiTemplateId + "/datasource-definitions";
     }
 
+    this.TEMPLATE_FLOW_INFORMATION = function (nifiTemplateId) {
+        return self.TEMPLATES_BASE_URL + "/nifi/" + nifiTemplateId + "/flow-info";
+    }
+
+
+
     this.DISABLE_REGISTERED_TEMPLATE_URL = function (templateId) {
         console.log('DISABLE URL ', self.GET_REGISTERED_TEMPLATES_URL + "/" + templateId + "/disable")
         return self.GET_REGISTERED_TEMPLATES_URL + "/" + templateId + "/disable";

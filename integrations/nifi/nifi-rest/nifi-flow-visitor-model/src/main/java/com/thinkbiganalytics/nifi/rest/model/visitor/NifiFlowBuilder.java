@@ -117,6 +117,7 @@ public class NifiFlowBuilder {
             flowProcessor.setDestinationIds(destinations.stream().map(dest -> dest.getId()).collect(Collectors.toSet()));
             flowProcessor.setSources(sources);
             flowProcessor.setDestinations(destinations);
+            flowProcessor.setParentGroupId(processor.getDto().getParentGroupId());
             if (inspectForFailureRelationships) {
                 flowProcessor.setFailureProcessors(failureProcessors);
             }

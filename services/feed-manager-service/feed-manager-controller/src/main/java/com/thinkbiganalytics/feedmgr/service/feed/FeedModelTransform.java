@@ -2,8 +2,6 @@ package com.thinkbiganalytics.feedmgr.service.feed;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.thinkbiganalytics.discovery.schema.Field;
-import com.thinkbiganalytics.discovery.schema.TableSchema;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
@@ -81,6 +79,7 @@ public class FeedModelTransform {
         if(feedMetadata.getTable() != null){
             feedMetadata.getTable().simplifyFieldPoliciesForSerialization();
         }
+        feedMetadata.setRegisteredTemplate(null);
 
     }
 
@@ -123,11 +122,6 @@ public class FeedModelTransform {
 
         feedMetadata.setId(domain.getId().toString());
 
-        RegisteredTemplate template = feedMetadata.getRegisteredTemplate();
-        if (template != null) {
-            FeedManagerTemplate domainTemplate = templateModelTransform.REGISTERED_TEMPLATE_TO_DOMAIN.apply(template);
-            domain.setTemplate(domainTemplate);
-        }
         if (StringUtils.isNotBlank(feedMetadata.getState())) {
             Feed.State state = Feed.State.valueOf(feedMetadata.getState().toUpperCase());
             domain.setState(state);
@@ -138,18 +132,11 @@ public class FeedModelTransform {
         simplifyFeedMetadataForSerialization(feedMetadata);
 
         domain.setJson(ObjectMapperSerializer.serialize(feedMetadata));
-        // if (feedMetadata.getVersion() == null) {
-        //     feedMetadata.setVersion(1L);
-        // }
-
-        //Datasource datasource = NifiFeedDatasourceFactory.transformSources(feedMetadata);
-        // feedProvider.ensureFeedSource()
 
         if (domain.getTemplate() == null) {
             FeedManagerTemplate.ID templateId = templateProvider.resolveId(feedMetadata.getTemplateId());
             FeedManagerTemplate domainTemplate = templateProvider.findById(templateId);
             domain.setTemplate(domainTemplate);
-
         }
 
         // Set user-defined properties

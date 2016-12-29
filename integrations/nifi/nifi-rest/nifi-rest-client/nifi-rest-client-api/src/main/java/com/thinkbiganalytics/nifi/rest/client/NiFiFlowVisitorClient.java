@@ -6,6 +6,7 @@ import com.thinkbiganalytics.nifi.rest.visitor.NifiConnectionOrderVisitorCache;
 
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
+import org.apache.nifi.web.api.dto.TemplateDTO;
 
 import java.util.List;
 import java.util.Set;
@@ -30,6 +31,23 @@ public interface NiFiFlowVisitorClient {
     Set<ProcessorDTO> getProcessorsForFlow(String processGroupId);
 
     Set<ProcessorDTO> getFailureProcessors(String processGroupId);
+
+    /**
+     * Walks a Template and returns the graph of connected processors
+     * @param template
+     * @return
+     */
+    NifiFlowProcessGroup getTemplateFeedFlow(TemplateDTO template);
+
+
+    /**
+     * Walks a Template and returns the graph of connected processors
+     * @param templateId
+     * @return
+     */
+    NifiFlowProcessGroup getTemplateFeedFlow(String templateId);
+
+
 
 
 }

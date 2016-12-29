@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.feedmgr.service.template;
 
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
+import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
 import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
 import com.thinkbiganalytics.nifi.feedmgr.TemplateCreationHelper;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
@@ -8,12 +9,14 @@ import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
 import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptorTransform;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
+import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
 import com.thinkbiganalytics.nifi.rest.support.NifiConnectionUtil;
 import com.thinkbiganalytics.nifi.rest.support.NifiFeedConstants;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 import com.thinkbiganalytics.nifi.rest.support.NifiTemplateUtil;
 import com.thinkbiganalytics.security.AccessController;
 
+import org.apache.nifi.web.api.dto.ConnectableDTO;
 import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
@@ -26,7 +29,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -34,7 +40,7 @@ import javax.inject.Inject;
 /**
  * Created by sr186054 on 5/4/16.
  */
-public abstract class AbstractFeedManagerTemplateService {
+public abstract class AbstractFeedManagerTemplateService implements FeedManagerTemplateService {
 
     private static final Logger log = LoggerFactory.getLogger(AbstractFeedManagerTemplateService.class);
 
@@ -69,29 +75,28 @@ public abstract class AbstractFeedManagerTemplateService {
 
     public List<RegisteredTemplate.Processor> getInputProcessorsInNifTemplate(RegisteredTemplate registeredTemplate) {
         TemplateDTO nifiTemplate = registeredTemplate.getNifiTemplate();
-        if(nifiTemplate == null) {
+        if (nifiTemplate == null) {
             nifiTemplate = ensureNifiTemplate(registeredTemplate);
         }
         return getInputProcessorsInNifTemplate(nifiTemplate);
     }
 
 
-
     public List<RegisteredTemplate.Processor> getInputProcessorsInNifTemplate(TemplateDTO nifiTemplate) {
-            List<RegisteredTemplate.Processor> processors = new ArrayList<>();
-            if(nifiTemplate != null) {
-                List<ProcessorDTO> inputProcessors = NifiTemplateUtil.getInputProcessorsForTemplate(nifiTemplate);
-                if (inputProcessors != null) {
-                    inputProcessors.stream().forEach(processorDTO -> {
-                        RegisteredTemplate.Processor p = new RegisteredTemplate.Processor(processorDTO.getId());
-                        p.setInputProcessor(true);
-                        p.setGroupId(processorDTO.getParentGroupId());
-                        p.setName(processorDTO.getName());
-                        p.setType(processorDTO.getType());
-                        processors.add(p);
-                    });
-                }
+        List<RegisteredTemplate.Processor> processors = new ArrayList<>();
+        if (nifiTemplate != null) {
+            List<ProcessorDTO> inputProcessors = NifiTemplateUtil.getInputProcessorsForTemplate(nifiTemplate);
+            if (inputProcessors != null) {
+                inputProcessors.stream().forEach(processorDTO -> {
+                    RegisteredTemplate.Processor p = new RegisteredTemplate.Processor(processorDTO.getId());
+                    p.setInputProcessor(true);
+                    p.setGroupId(processorDTO.getParentGroupId());
+                    p.setName(processorDTO.getName());
+                    p.setType(processorDTO.getType());
+                    processors.add(p);
+                });
             }
+        }
         return processors;
     }
 
@@ -109,11 +114,11 @@ public abstract class AbstractFeedManagerTemplateService {
         }
         if (registeredTemplate == null) {
             List<NifiProperty> properties = new ArrayList<>();
-                TemplateDTO nifiTemplate = nifiRestClient.getTemplateById(templateId);
+            TemplateDTO nifiTemplate = nifiRestClient.getTemplateById(templateId);
             registeredTemplate = new RegisteredTemplate();
             registeredTemplate.setNifiTemplateId(templateId);
 
-            if(nifiTemplate != null) {
+            if (nifiTemplate != null) {
                 properties = nifiRestClient.getPropertiesForTemplate(nifiTemplate);
                 registeredTemplate.setNifiTemplate(nifiTemplate);
                 registeredTemplate.setTemplateName(nifiTemplate.getName());
@@ -123,12 +128,10 @@ public abstract class AbstractFeedManagerTemplateService {
             registeredTemplate = mergeRegisteredTemplateProperties(registeredTemplate);
 
         }
-        if(registeredTemplate != null)
-        {
+        if (registeredTemplate != null) {
             if (NifiPropertyUtil.containsPropertiesForProcessorMatchingType(registeredTemplate.getProperties(), NifiFeedConstants.TRIGGER_FEED_PROCESSOR_CLASS)) {
                 registeredTemplate.setAllowPreconditions(true);
-            }
-            else {
+            } else {
                 registeredTemplate.setAllowPreconditions(false);
             }
         }
@@ -140,7 +143,7 @@ public abstract class AbstractFeedManagerTemplateService {
      */
     public RegisteredTemplate syncTemplateId(RegisteredTemplate template) {
         String oldId = template.getNifiTemplateId();
-        if(oldId == null) {
+        if (oldId == null) {
             oldId = "";
         }
         String nifiTemplateId = templateIdForTemplateName(template.getTemplateName());
@@ -171,19 +174,18 @@ public abstract class AbstractFeedManagerTemplateService {
 
 
     /**
-     * Gets the NiFi TemplateDTO object fully populated.  first looking at the registered nifiTemplateId associated with the {@code registeredTemplate}. If not found it will attempt to lookup the template by the Name
-     * @param registeredTemplate
-     * @return
+     * Gets the NiFi TemplateDTO object fully populated.  first looking at the registered nifiTemplateId associated with the {@code registeredTemplate}. If not found it will attempt to lookup the
+     * template by the Name
      */
-    protected  TemplateDTO ensureNifiTemplate(RegisteredTemplate registeredTemplate){
+    protected TemplateDTO ensureNifiTemplate(RegisteredTemplate registeredTemplate) {
         TemplateDTO templateDTO = null;
         try {
             try {
-             templateDTO = nifiRestClient.getTemplateById(registeredTemplate.getNifiTemplateId());
+                templateDTO = nifiRestClient.getTemplateById(registeredTemplate.getNifiTemplateId());
             } catch (NifiComponentNotFoundException e) {
                 //this is fine... we can safely proceeed if not found.
             }
-            if(templateDTO == null) {
+            if (templateDTO == null) {
                 templateDTO = nifiRestClient.getTemplateByName(registeredTemplate.getTemplateName());
                 if (templateDTO != null) {
                     //getting the template by the name will not get all the properties.
@@ -193,13 +195,13 @@ public abstract class AbstractFeedManagerTemplateService {
 
                 }
             }
-            if(templateDTO != null){
+            if (templateDTO != null) {
                 registeredTemplate.setNifiTemplate(templateDTO);
                 registeredTemplate.setNifiTemplateId(registeredTemplate.getNifiTemplate().getId());
             }
 
         } catch (NifiClientRuntimeException e) {
-            log.error("Error attempting to get the NifiTemplate TemplateDTO object for {} using nifiTemplateId of {} ",registeredTemplate.getTemplateName(),registeredTemplate.getNifiTemplateId());
+            log.error("Error attempting to get the NifiTemplate TemplateDTO object for {} using nifiTemplateId of {} ", registeredTemplate.getTemplateName(), registeredTemplate.getNifiTemplateId());
         }
         return templateDTO;
     }
@@ -214,23 +216,23 @@ public abstract class AbstractFeedManagerTemplateService {
             int matchCount = 0;
             //get the nifi template associated with this one that is registered
             TemplateDTO templateDTO = registeredTemplate.getNifiTemplate();
-            if(templateDTO == null){
+            if (templateDTO == null) {
                 templateDTO = ensureNifiTemplate(registeredTemplate);
             }
 
-            if(templateDTO != null) {
-                    registeredTemplate.setNifiTemplate(templateDTO);
-                    properties = nifiRestClient.getPropertiesForTemplate(templateDTO);
-                    List<NifiProperty> matchedProperties = NifiPropertyUtil
-                        .matchAndSetPropertyByIdKey(properties, registeredTemplate.getProperties(), NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_NON_EXPRESSION_PROPERTIES);
-                    matchCount = matchedProperties.size();
+            if (templateDTO != null) {
+                registeredTemplate.setNifiTemplate(templateDTO);
+                properties = nifiRestClient.getPropertiesForTemplate(templateDTO);
+                List<NifiProperty> matchedProperties = NifiPropertyUtil
+                    .matchAndSetPropertyByIdKey(properties, registeredTemplate.getProperties(), NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_NON_EXPRESSION_PROPERTIES);
+                matchCount = matchedProperties.size();
             }
 
-            if (properties == null || matchCount == 0) {
-                if (properties != null) {
-                    List<NifiProperty> mergedProperties = NifiPropertyUtil.matchAndSetPropertyByProcessorName(properties, registeredTemplate.getProperties(),
-                                                                                                              NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_NON_EXPRESSION_PROPERTIES);
-                }
+            if (properties != null) {
+                List<NifiProperty> mergedProperties = NifiPropertyUtil.matchAndSetPropertyByProcessorName(properties, registeredTemplate.getProperties(),
+                                                                                                          NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_NON_EXPRESSION_PROPERTIES);
+            }
+            if (!templateDTO.getId().equalsIgnoreCase(registeredTemplate.getNifiTemplateId())) {
                 syncTemplateId(registeredTemplate);
 
             }
@@ -264,10 +266,11 @@ public abstract class AbstractFeedManagerTemplateService {
         return ports;
     }
 
+
     /**
      * gets a List of Processors and their properties for the incoming template
      */
-    public List<RegisteredTemplate.Processor> getNiFiTemplateProcessors(String nifiTemplateId) {
+    public List<RegisteredTemplate.Processor> getNiFiTemplateProcessorsWithProperties(String nifiTemplateId) {
         Set<ProcessorDTO> processorDTOs = nifiRestClient.getProcessorsForTemplate(nifiTemplateId);
         List<RegisteredTemplate.Processor> processorProperties = processorDTOs.stream().map(processorDTO -> {
             RegisteredTemplate.Processor p = new RegisteredTemplate.Processor(processorDTO.getId());
@@ -280,6 +283,59 @@ public abstract class AbstractFeedManagerTemplateService {
         return processorProperties;
 
     }
+
+
+    /**
+     * For a given Template and its related connection info to the reusable templates, walk the graph to return the Processors and associate them with the correct 'flowId' so the processors can be
+     * matched up to the correct processorId in a feed flow using this template
+     */
+    public List<RegisteredTemplate.FlowProcessor> getNiFiTemplateFlowProcessors(String nifiTemplateId, List<ReusableTemplateConnectionInfo> connectionInfo) {
+
+        TemplateDTO templateDTO = nifiRestClient.getTemplateById(nifiTemplateId);
+
+        //make the connection
+        if (connectionInfo != null && !connectionInfo.isEmpty()) {
+            Set<PortDTO> templatePorts = templateDTO.getSnippet().getOutputPorts();
+            Map<String, PortDTO> outputPorts = templateDTO.getSnippet().getOutputPorts().stream().collect(Collectors.toMap(portDTO -> portDTO.getName(), Function.identity()));
+            Map<String, PortDTO> inputPorts = getReusableFeedInputPorts().stream().collect(Collectors.toMap(portDTO -> portDTO.getName(), Function.identity()));
+            connectionInfo.stream().forEach(reusableTemplateConnectionInfo -> {
+                PortDTO outputPort = outputPorts.get(reusableTemplateConnectionInfo.getFeedOutputPortName());
+                PortDTO inputPort = inputPorts.get(reusableTemplateConnectionInfo.getReusableTemplateInputPortName());
+
+                ConnectionDTO connectionDTO = new ConnectionDTO();
+                ConnectableDTO source = new ConnectableDTO();
+                source.setName(reusableTemplateConnectionInfo.getFeedOutputPortName());
+                source.setType(outputPort.getType());
+                source.setId(outputPort.getId());
+                source.setGroupId(outputPort.getParentGroupId());
+
+                ConnectableDTO dest = new ConnectableDTO();
+                dest.setName(inputPort.getName());
+                dest.setType(inputPort.getType());
+                dest.setId(inputPort.getId());
+                dest.setGroupId(inputPort.getParentGroupId());
+
+                connectionDTO.setSource(source);
+                connectionDTO.setDestination(dest);
+                connectionDTO.setId(UUID.randomUUID().toString());
+                templateDTO.getSnippet().getConnections().add(connectionDTO);
+
+            });
+        }
+
+        NifiFlowProcessGroup template = nifiRestClient.getTemplateFeedFlow(templateDTO);
+        return template.getProcessorMap().values().stream().map(flowProcessor -> {
+            RegisteredTemplate.FlowProcessor p = new RegisteredTemplate.FlowProcessor(flowProcessor.getId());
+            p.setGroupId(flowProcessor.getParentGroupId());
+            p.setType(flowProcessor.getType());
+            p.setName(flowProcessor.getName());
+            p.setFlowId(flowProcessor.getFlowId());
+            p.setIsLeaf(flowProcessor.isLeaf());
+            p.setFlowType(flowProcessor.getProcessorFlowType());
+            return p;
+        }).collect(Collectors.toList());
+    }
+
 
     public List<RegisteredTemplate.Processor> getReusableTemplateProcessorsForInputPorts(List<String> inputPortIds) {
         Set<ProcessorDTO> processorDTOs = new HashSet<>();

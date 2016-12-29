@@ -37,13 +37,16 @@
 
         self.processorDatasourceDefinitions = [];
 
+
+        self.allFlowProcessors = [];
+
         /**
          * flag to tell when the system is loading datasources
          * @type {boolean}
          */
         self.loadingProcessorDatasources = true;
 
-        var buildTemplateProcessorDatasourcesMap = function(){
+        var buildTemplateFlowData = function(){
             self.loadingProcessorDatasources = true;
             var assignedPortIds = [];
             _.each(self.model.reusableTemplateConnections,function(conn) {
@@ -58,12 +61,17 @@
               selectedPortIds = assignedPortIds.join(",");
             }
 
-            RegisterTemplateService.getTemplateProcessorDatasourceDefinitions(self.model.nifiTemplateId,selectedPortIds ).then(function(response){
+            RegisterTemplateService.getNiFiTemplateFlowInformation(self.model.nifiTemplateId,self.model.reusableTemplateConnections).then(function(response){
                 var map = {};
 
                 if(response && response.data) {
+
+                    var datasourceDefinitions = response.data.templateProcessorDatasourceDefinitions;
+
+                    self.flowProcessors = response.data.processors;
+
                     //merge in those already selected/saved on this template
-                    _.each(response.data, function (def) {
+                    _.each(datasourceDefinitions, function (def) {
                         def.selectedDatasource = false;
                         if (self.model.registeredDatasourceDefinitions.length == 0) {
                             def.selectedDatasource = true;
@@ -79,7 +87,7 @@
                         }
                     });
                     //sort with SOURCEs first
-                    self.processorDatasourceDefinitions = _.sortBy(response.data, function (def) {
+                    self.processorDatasourceDefinitions = _.sortBy(datasourceDefinitions, function (def) {
                         if (def.datasourceDefinition.connectionType == 'SOURCE') {
                             return 1;
                         }
@@ -87,6 +95,19 @@
                             return 2;
                         }
                     });
+
+                    //get the map of processors by flowId
+                    var flowIdProcessorMap = _.indexBy(self.flowProcessors,'flowId');
+
+                    //merge in the saved flowprocessor types with the ones on the template
+                    _.each(self.model.processorFlowTypeMap,function(flowType,processorFlowId){
+
+
+
+                    });
+
+
+
 
                 }
                 self.loadingProcessorDatasources = false;
@@ -167,11 +188,11 @@
                     }
                 });
 
-                buildTemplateProcessorDatasourcesMap();
+                buildTemplateFlowData();
             });
         }
         else {
-            buildTemplateProcessorDatasourcesMap();
+            buildTemplateFlowData();
         }
 
 
@@ -180,7 +201,7 @@
             connection.reusableTemplateInputPortName = port.name;
             //mark as valid
             self.registerTemplateForm["port-" + connection.feedOutputPortName].$setValidity("invalidConnection", true);
-            buildTemplateProcessorDatasourcesMap();
+            buildTemplateFlowData();
         };
 
         this.showIconPicker = function() {

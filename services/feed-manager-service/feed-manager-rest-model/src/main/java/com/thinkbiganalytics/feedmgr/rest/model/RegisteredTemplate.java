@@ -321,7 +321,44 @@ public class RegisteredTemplate {
     }
 
 
+    public static class FlowProcessor extends RegisteredTemplate.Processor {
 
+        private String flowId;
+        private boolean isLeaf;
+        private KyloProcessorFlowType flowType;
+
+        public FlowProcessor() {
+            super();
+        }
+
+        public FlowProcessor(String processorId) {
+            super(processorId);
+        }
+
+        public String getFlowId() {
+            return flowId;
+        }
+
+        public void setFlowId(String flowId) {
+            this.flowId = flowId;
+        }
+
+        public boolean isLeaf() {
+            return isLeaf;
+        }
+
+        public void setIsLeaf(boolean isLeaf) {
+            this.isLeaf = isLeaf;
+        }
+
+        public KyloProcessorFlowType getFlowType() {
+            return flowType;
+        }
+
+        public void setFlowType(KyloProcessorFlowType flowType) {
+            this.flowType = flowType;
+        }
+    }
 
     public static class Processor {
         private String type;
@@ -331,10 +368,7 @@ public class RegisteredTemplate {
         private String groupId;
         private boolean inputProcessor;
         private boolean userDefinedInputProcessor;
-
         List<NifiProperty> properties;
-
-
 
         public Processor(){
 
@@ -435,6 +469,8 @@ public class RegisteredTemplate {
         public void setProperties(List<NifiProperty> properties) {
             this.properties = properties;
         }
+
+
     }
 
 
@@ -509,4 +545,6 @@ public class RegisteredTemplate {
     public void setIsStream(boolean isStream) {
         this.isStream = isStream;
     }
+
+
 }

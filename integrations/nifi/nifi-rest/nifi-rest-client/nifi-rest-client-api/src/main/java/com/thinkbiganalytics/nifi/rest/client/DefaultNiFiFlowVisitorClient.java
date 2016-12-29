@@ -5,6 +5,7 @@ import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.visitor.NifiFlowBuilder;
 import com.thinkbiganalytics.nifi.rest.model.visitor.NifiVisitableProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.visitor.NifiVisitableProcessor;
+import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 import com.thinkbiganalytics.nifi.rest.visitor.NifiConnectionOrderVisitor;
 import com.thinkbiganalytics.nifi.rest.visitor.NifiConnectionOrderVisitorCache;
@@ -12,6 +13,7 @@ import com.thinkbiganalytics.support.FeedNameUtil;
 
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
+import org.apache.nifi.web.api.dto.TemplateDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,6 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Created by sr186054 on 12/27/16.
@@ -62,7 +65,7 @@ public class DefaultNiFiFlowVisitorClient implements NiFiFlowVisitorClient {
                 if (!parent.isPresent()) {
                     parent = restClient.processGroups().findById(processGroupEntity.getParentGroupId(), false, false);
                 }
-                if (parent != null) {
+                if (parent.isPresent()) {
                     group.setParentProcessGroup(parent.get());
                 }
             } catch (NifiComponentNotFoundException e) {
@@ -169,6 +172,23 @@ public class DefaultNiFiFlowVisitorClient implements NiFiFlowVisitorClient {
 
         return failureProcessors;
     }
+
+    public NifiFlowProcessGroup getTemplateFeedFlow(TemplateDTO template) {
+        ProcessGroupDTO parentProcessGroup = new ProcessGroupDTO();
+        parentProcessGroup.setId(UUID.randomUUID().toString());
+        parentProcessGroup.setParentGroupId(UUID.randomUUID().toString());
+        parentProcessGroup.setName(template.getName());
+        parentProcessGroup.setContents(template.getSnippet());
+        NifiVisitableProcessGroup visitableGroup =  getFlowOrder(parentProcessGroup,new NifiConnectionOrderVisitorCache());
+        NifiFlowProcessGroup flow = new NifiFlowBuilder().build(visitableGroup);
+        return flow;
+    }
+
+    public NifiFlowProcessGroup getTemplateFeedFlow(String templateId) {
+        TemplateDTO template = restClient.templates().findById(templateId).orElseThrow(() -> new NifiComponentNotFoundException(templateId, NifiConstants.NIFI_COMPONENT_TYPE.TEMPLATE, null));
+        return getTemplateFeedFlow(template);
+    }
+
 
 
 }

@@ -49,6 +49,7 @@ angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($ht
       needsReusableTemplate: false,
       ports: [],
       reusableTemplateConnections:[],  //[{reusableTemplateFeedName:'', feedOutputPortName: '', reusableTemplateInputPortName: ''}]
+      processorFlowTypeMap:{},
       icon: {title: null, color: null},
       state:'NOT REGISTERED',
         updateDate:null,
@@ -83,6 +84,7 @@ angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($ht
         reusableTemplate: this.model.reusableTemplate,
         needsReusableTemplate: this.model.needsReusableTemplate,
         reusableTemplateConnections: this.model.reusableTemplateConnections,
+        processorFlowTypeMap : this.model.processorFlowTypeMap,
         state:this.model.state
       }
     },
@@ -480,6 +482,39 @@ angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($ht
       return deferred.promise;
 
     },
+
+    /**
+     * Walks the NiFi template and its related connections(if any) to the reusable flow and returns data about the graph, its processors, and any Datasource definitions
+     *
+     * @param nifiTemplateId
+     * @param reusableTemplateConnections
+     * @returns {processors:[{type:"",name:"",id:"",flowId:"",isLeaf:true/false},...],
+     *                        templateProcessorDatasourceDefinitions:[{processorName:"",processorType:"",
+     *                                                                 datasourceDefinition:{identityString:"",title:"",description:""}},...],
+     *            request:{connectionInfo:reusableTemplateConnections}}
+     */
+    getNiFiTemplateFlowInformation : function(nifiTemplateId, reusableTemplateConnections){
+      var deferred = $q.defer();
+      if(nifiTemplateId != null) {
+        //build the request
+        var flowRequest = {};
+        flowRequest.connectionInfo = reusableTemplateConnections;
+
+
+        $http.post(RestUrlService.TEMPLATE_FLOW_INFORMATION(nifiTemplateId), flowRequest).then(function (response) {
+          deferred.resolve(response);
+        }, function (response) {
+          deferred.reject(response);
+        });
+      }
+      else {
+        deferred.resolve({data:[]});
+      }
+      return deferred.promise;
+
+    },
+
+
     /**
      * Assigns the model properties and render types
      * Returns a promise
@@ -652,6 +687,7 @@ angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($ht
             self.model.reusableTemplateConnections = templateData.reusableTemplateConnections;
             self.model.needsReusableTemplate = templateData.reusableTemplateConnections != undefined && templateData.reusableTemplateConnections.length>0;
             self.model.registeredDatasourceDefinitions = templateData.registeredDatasourceDefinitions;
+            self.model.processorFlowTypeMap = templateData.processorFlowTypeMap;
             if (templateData.state == 'ENABLED') {
               self.model.stateIcon = 'check_circle'
             }

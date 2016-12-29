@@ -5,6 +5,8 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
+import com.thinkbiganalytics.feedmgr.rest.model.NiFiTemplateFlowRequest;
+import com.thinkbiganalytics.feedmgr.rest.model.NiFiTemplateFlowResponse;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
 import com.thinkbiganalytics.feedmgr.rest.model.TemplateDtoWrapper;
@@ -158,7 +160,7 @@ public class TemplatesRestController {
     @Path("/nifi/{templateId}/processors")
     @Produces({MediaType.APPLICATION_JSON})
     public Response getNiFiTemplateProcessors(@PathParam("templateId") String templateId) {
-        List<RegisteredTemplate.Processor> processorProperties = feedManagerTemplateService.getNiFiTemplateProcessors(templateId);
+        List<RegisteredTemplate.Processor> processorProperties = feedManagerTemplateService.getNiFiTemplateProcessorsWithProperties(templateId);
         return Response.ok(processorProperties).build();
     }
 
@@ -172,7 +174,7 @@ public class TemplatesRestController {
             List<RegisteredTemplate.Processor> processors = new ArrayList<>();
             List<RegisteredTemplate.Processor> reusableProcessors = getReusableTemplateProcessorsForInputPorts(inputPortIds);
 
-            List<RegisteredTemplate.Processor> thisTemplateProcessors = feedManagerTemplateService.getNiFiTemplateProcessors(templateId);
+            List<RegisteredTemplate.FlowProcessor> thisTemplateProcessors = feedManagerTemplateService.getNiFiTemplateFlowProcessors(templateId, null);
 
             Set<DatasourceDefinition> defs = datasourceService.getDatasourceDefinitions();
             Map<String, DatasourceDefinition> datasourceDefinitionMap = new HashMap<>();
@@ -195,6 +197,46 @@ public class TemplatesRestController {
         }
 
         return Response.ok(templateProcessorDatasourceDefinitions).build();
+
+
+    }
+
+
+    /**
+     * Returns data about the NiFiTemplate and its processors related to the input connections, along with the Datasources in the flow
+     */
+    @POST
+    @Path("/nifi/{templateId}/flow-info")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response getNiFiTemplateFlowInfo(@PathParam("templateId") String templateId, NiFiTemplateFlowRequest flowRequest) {
+        List<TemplateProcessorDatasourceDefinition> templateProcessorDatasourceDefinitions = new ArrayList<>();
+        NiFiTemplateFlowResponse response = new NiFiTemplateFlowResponse();
+        response.setRequest(flowRequest);
+        if (StringUtils.isNotBlank(templateId)) {
+
+            List<RegisteredTemplate.FlowProcessor> processors = feedManagerTemplateService.getNiFiTemplateFlowProcessors(templateId, flowRequest.getConnectionInfo());
+
+            Set<DatasourceDefinition> defs = datasourceService.getDatasourceDefinitions();
+            Map<String, DatasourceDefinition> datasourceDefinitionMap = new HashMap<>();
+            if (defs != null) {
+                defs.stream().forEach(def -> datasourceDefinitionMap.put(def.getProcessorType(), def));
+            }
+
+            templateProcessorDatasourceDefinitions = processors.stream().filter(processor -> datasourceDefinitionMap.containsKey(processor.getType())).map(p -> {
+                TemplateProcessorDatasourceDefinition definition = new TemplateProcessorDatasourceDefinition();
+                definition.setProcessorType(p.getType());
+                definition.setProcessorName(p.getName());
+                definition.setProcessorId(p.getId());
+                definition.setDatasourceDefinition(datasourceDefinitionMap.get(p.getType()));
+                return definition;
+            }).collect(Collectors.toList());
+
+            response.setProcessors(processors);
+            response.setTemplateProcessorDatasourceDefinitions(templateProcessorDatasourceDefinitions);
+
+        }
+        return Response.ok(response).build();
 
 
     }

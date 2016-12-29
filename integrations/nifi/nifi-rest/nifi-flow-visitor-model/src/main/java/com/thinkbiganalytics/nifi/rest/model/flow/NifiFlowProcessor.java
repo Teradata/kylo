@@ -29,6 +29,8 @@ public class NifiFlowProcessor implements Serializable {
 
     private String type;
 
+    private String parentGroupId;
+
     private boolean isFailure;
     private boolean isEnd;
 
@@ -306,6 +308,23 @@ public class NifiFlowProcessor implements Serializable {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+
+    public boolean isLeaf(){
+        return getDestinationIds().isEmpty();
+    }
+
+    public boolean isRoot(){
+        return getSourceIds().isEmpty();
+    }
+
+    public String getParentGroupId() {
+        return parentGroupId;
+    }
+
+    public void setParentGroupId(String parentGroupId) {
+        this.parentGroupId = parentGroupId;
     }
 
     @Override

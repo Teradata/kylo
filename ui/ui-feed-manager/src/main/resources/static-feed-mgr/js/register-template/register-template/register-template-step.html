@@ -79,7 +79,7 @@
 
             <thinkbig-template-order model="vm.templateOrder" template-id="vm.model.id" template-name="vm.model.templateName" add-as-new="true" add-save-btn="false"></thinkbig-template-order>
 
-
+            <div layout="row">
             <div layout="column">
                 <md-subheader class="md-subhead left-aligned">Feed Lineage Datasources</md-subheader>
                 <span class="hint">Select datasources that should track feed lineage</span>
@@ -113,6 +113,39 @@
 
             </div>
 
+                <div layout="column">
+                    <md-subheader class="md-subhead left-aligned">Define Processor Flow Types</md-subheader>
+                    <span class="hint">Select processors that are Failure processors</span>
+
+                    <div ng-if="vm.loadingProcessorDatasources" layout="column" layout-align="start center" class="layout-padding-top-bottom">
+                        <md-progress-circular md-mode="indeterminate"></md-progress-circular>
+                        <span>Loading ...</span>
+                    </div>
+
+                    <div layout="row" layout-fill layout-align="space-between center" ng-if="!vm.loadingProcessorDatasources" class="layout-padding-top-bottom">
+                        <div layout="column">
+
+                            <div ng-repeat="dsDef in vm.processorDatasourceDefinitions" layout="column">
+
+                                <div layout="row">
+                                    <md-checkbox ng-model="dsDef.selectedDatasource"
+                                                 aria-label="Processor Datasource Definition">{{dsDef.processorName}} - {{dsDef.datasourceDefinition.datasourceType}} -
+                                        {{dsDef.datasourceDefinition.connectionType}}
+                                    </md-checkbox>
+                                </div>
+
+                            </div>
+
+                            <div ng-if="vm.processorDatasourceDefinitions.length ==0" class="layout-padding-top-bottom">
+                                No processors were found in the flow matching the configured datasource definitions
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
 
             <thinkbig-step-buttons can-continue="vm.registerTemplateForm.$valid &&!vm.loadingProcessorDatasources && vm.model.reusableTemplate == false" step-index="{{::vm.stepIndex}}"
                                    final-step="Register"

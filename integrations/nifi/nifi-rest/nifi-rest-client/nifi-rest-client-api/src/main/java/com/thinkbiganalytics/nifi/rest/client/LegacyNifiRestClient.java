@@ -761,7 +761,6 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
         else {
             return Collections.emptySet();
         }
-
     }
 
     /**
@@ -1147,9 +1146,7 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
     }
 
     public NifiVisitableProcessGroup getFlowOrder(ProcessGroupDTO processGroupEntity, NifiConnectionOrderVisitorCache cache) throws NifiComponentNotFoundException {
-
         return client.flows().getFlowOrder(processGroupEntity, cache);
-
     }
 
 
@@ -1159,6 +1156,14 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
 
     public Set<ProcessorDTO> getProcessorsForFlow(String processGroupId) throws NifiComponentNotFoundException {
        return client.flows().getProcessorsForFlow(processGroupId);
+    }
+
+    public NifiFlowProcessGroup getTemplateFeedFlow(String templateId) {
+       return client.flows().getTemplateFeedFlow(templateId);
+    }
+
+    public NifiFlowProcessGroup getTemplateFeedFlow(TemplateDTO template) {
+        return client.flows().getTemplateFeedFlow(template);
     }
 
 

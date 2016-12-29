@@ -29,7 +29,6 @@ import org.apache.nifi.web.api.entity.OutputPortsEntity;
 import org.apache.nifi.web.api.entity.PortEntity;
 import org.apache.nifi.web.api.entity.ProcessGroupEntity;
 import org.apache.nifi.web.api.entity.ProcessGroupFlowEntity;
-import org.apache.nifi.web.api.entity.ProcessGroupStatusEntity;
 import org.apache.nifi.web.api.entity.ProcessGroupsEntity;
 import org.apache.nifi.web.api.entity.ProcessorEntity;
 import org.apache.nifi.web.api.entity.RemoteProcessGroupEntity;
@@ -173,7 +172,7 @@ public class NiFiProcessGroupsRestClientV1 extends AbstractNiFiProcessGroupsRest
     @Nonnull
     @Override
     public Optional<ProcessGroupDTO> findById(@Nonnull final String processGroupId, final boolean recursive, final boolean verbose) {
-        return findEntityById(processGroupId)
+        return findEntityById(processGroupId).filter(processGroupEntity -> processGroupEntity != null)
                 .map(ProcessGroupEntity::getComponent)
                 .map(processGroup -> {
                     if (verbose) {
@@ -192,7 +191,7 @@ public class NiFiProcessGroupsRestClientV1 extends AbstractNiFiProcessGroupsRest
     @Nonnull
     public Optional<ProcessGroupEntity> findEntityById(@Nonnull final String processGroupId) {
         try {
-            return Optional.of(client.get(BASE_PATH + processGroupId, null, ProcessGroupEntity.class));
+            return Optional.ofNullable(client.get(BASE_PATH + processGroupId, null, ProcessGroupEntity.class));
         } catch (final NotFoundException e) {
             return Optional.empty();
         }
