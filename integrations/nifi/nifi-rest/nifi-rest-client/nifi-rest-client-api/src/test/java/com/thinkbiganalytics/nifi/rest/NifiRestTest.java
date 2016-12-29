@@ -126,9 +126,9 @@ public class NifiRestTest {
         }
     }
 
-    //@Test
+    // @Test
     public void testOrder() throws Exception {
-        NifiVisitableProcessGroup g = restClient.getFlowOrder("7f836b40-e79d-4964-8cb7-0bd34264998d");
+        NifiVisitableProcessGroup g = restClient.getFlowOrder("3d3a44ae-7365-1c62-a7da-eba606844af3", null);
         NifiFlowProcessGroup flow = new NifiFlowBuilder().build(g);
 
         //   Set<ProcessorDTO> processors = restClient.getProcessorsForFlow("c4c7c4be-5421-45a0-87e9-fdef211297c5");
