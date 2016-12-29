@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.thinkbiganalytics.alerts.api.Alert;
 import com.thinkbiganalytics.alerts.api.Alert.ID;
+import com.thinkbiganalytics.alerts.api.AlertCriteria;
 import com.thinkbiganalytics.alerts.api.AlertListener;
 import com.thinkbiganalytics.alerts.api.AlertProvider;
 import com.thinkbiganalytics.alerts.api.AlertResponder;
@@ -107,6 +108,14 @@ public class AggregatingAlertProvider implements AlertProvider, AlertSourceAggre
         });
     }
     
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.alerts.api.AlertProvider#criteria()
+     */
+    @Override
+    public AlertCriteria criteria() {
+        return new Criteria();
+    }
+
     @Override
     public ID resolve(Serializable value) {
         if (value instanceof String) {
@@ -189,31 +198,59 @@ public class AggregatingAlertProvider implements AlertProvider, AlertSourceAggre
             return null;
         }
     }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.alerts.api.AlertProvider#getAlerts(com.thinkbiganalytics.alerts.api.AlertCriteria)
+     */
+    @Override
+    public Iterator<? extends Alert> getAlerts(AlertCriteria criteria) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.alerts.api.AlertProvider#getAlerts(org.joda.time.DateTime)
      */
     @Override
-    public Iterator<? extends Alert> getAlerts(DateTime since) {
+    public Iterator<? extends Alert> getAlertsAfter(DateTime time) {
         Map<String, AlertSource> srcs = snapshotAllSources();
-        return combineAlerts(since, srcs).iterator();
+        return combineAlerts(criteria().after(time), srcs).iterator();
     }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.alerts.api.AlertProvider#getAlerts(com.thinkbiganalytics.alerts.api.Alert.ID)
      */
     @Override
-    public Iterator<? extends Alert> getAlerts(ID sinceId) {
-        Alert sinceAlert = getAlert(sinceId);
+    public Iterator<? extends Alert> getAlertsAfter(ID id) {
+        // TODO Don't make a separate query for this alert when the after(ID) on criteria is working
+        Alert sinceAlert = getAlert(id);
         
         if (sinceAlert != null) {
             DateTime created = sinceAlert.getCreatedTime();
             Map<String, AlertSource> srcs = snapshotAllSources();
             
-            return combineAlerts(created, srcs).iterator();
+            return combineAlerts(criteria().after(created), srcs).iterator();
         } else {
             return Collections.<Alert>emptySet().iterator();
         }
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.alerts.api.AlertProvider#getAlertsBefore(org.joda.time.DateTime)
+     */
+    @Override
+    public Iterator<? extends Alert> getAlertsBefore(DateTime time) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.alerts.api.AlertProvider#getAlertsBefore(com.thinkbiganalytics.alerts.api.Alert.ID)
+     */
+    @Override
+    public Iterator<? extends Alert> getAlertsBefore(ID id) {
+        // TODO Auto-generated method stub
+        return null;
     }
 
     /* (non-Javadoc)
@@ -236,7 +273,7 @@ public class AggregatingAlertProvider implements AlertProvider, AlertSourceAggre
             final AtomicReference<DateTime> sinceTime = new AtomicReference<>(AggregatingAlertProvider.this.lastAlertsTime);
             Map<String, AlertSource> sources = snapshotAllSources();
             
-            combineAlerts(sinceTime.get(), sources).forEach(alert -> {
+            combineAlerts(criteria().after(sinceTime.get()), sources).forEach(alert -> {
                 LOG.debug("Alert {} received from {}", alert.getId(), alert.getSource());
                 
                 notifyListeners(alert);
@@ -292,20 +329,31 @@ public class AggregatingAlertProvider implements AlertProvider, AlertSourceAggre
         return srcAlertId.sourceId;
     }
 
-    private Stream<Alert> combineAlerts(DateTime since, Map<String, AlertSource> srcs) {
-        // Note: this returned iterator aggregates all alerts of all sources since the time given
-        // but they will be grouped by the source.  If we want to order all by time then we should
-        // uncomment the sort step below, but that would cause all alerts to be iterated first.
-        // Avoiding that for now.
+    private Stream<Alert> combineAlerts(AlertCriteria criteria, Map<String, AlertSource> srcs) {
+        Criteria critImpl = (Criteria) criteria;
+        
         return srcs.values().stream()
             .map(src -> { 
-                Iterable<Alert> alerts = () -> src.getAlerts(since);
+                AlertCriteria srcCrit = src.criteria();
+                critImpl.transfer(srcCrit);
+                Iterable<Alert> alerts = () -> src.getAlerts(srcCrit);
                 return StreamSupport.stream(alerts.spliterator(), false);
                 })
             .flatMap(s -> s)
-            .map(alert -> wrapAlert(alert, alert.getSource()));
-//            .sorted((a1, a2) -> a1.getCreatedTime().compareTo(a2.getCreatedTime()));
+            .map(alert -> wrapAlert(alert, alert.getSource()))
+            .sorted((a1, a2) -> a1.getCreatedTime().compareTo(a2.getCreatedTime()));
     }
+//
+//    private Stream<Alert> combineAlerts(DateTime since, Map<String, AlertSource> srcs) {
+//        return srcs.values().stream()
+//            .map(src -> { 
+//                Iterable<Alert> alerts = () -> src.getAlerts(since);
+//                return StreamSupport.stream(alerts.spliterator(), false);
+//                })
+//            .flatMap(s -> s)
+//            .map(alert -> wrapAlert(alert, alert.getSource()))
+//            .sorted((a1, a2) -> a1.getCreatedTime().compareTo(a2.getCreatedTime()));
+//    }
     
     private void notifyChanged(Alert alert) {
         notifyListeners(alert);
@@ -577,5 +625,10 @@ public class AggregatingAlertProvider implements AlertProvider, AlertSourceAggre
             this.latestAlert = alert;
             return alert;
         }
+    }
+    
+    protected static class Criteria extends BaseAlertCriteria {
+        
+        
     }
 }

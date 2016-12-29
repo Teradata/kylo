@@ -37,7 +37,9 @@ import com.thinkbiganalytics.alerts.api.Alert;
 import com.thinkbiganalytics.alerts.api.Alert.ID;
 import com.thinkbiganalytics.alerts.api.Alert.State;
 import com.thinkbiganalytics.alerts.api.AlertChangeEvent;
+import com.thinkbiganalytics.alerts.api.AlertCriteria;
 import com.thinkbiganalytics.alerts.api.AlertResponse;
+import com.thinkbiganalytics.alerts.api.core.BaseAlertCriteria;
 import com.thinkbiganalytics.alerts.spi.AlertDescriptor;
 import com.thinkbiganalytics.alerts.spi.AlertManager;
 import com.thinkbiganalytics.alerts.spi.AlertNotifyReceiver;
@@ -127,6 +129,11 @@ public class InMemoryAlertManager implements AlertManager {
     }
     
     @Override
+    public AlertCriteria criteria() {
+        return new BaseAlertCriteria();
+    }
+    
+    @Override
     public ID resolve(Serializable ser) {
         if (ser instanceof String) {
             return new AlertID((String) ser);
@@ -140,41 +147,46 @@ public class InMemoryAlertManager implements AlertManager {
     }
 
     @Override
-    public Iterator<Alert> getAlerts() {
-        return this.alertsByTime.values().stream().map(ref -> (Alert) ref.get()).iterator();
+    public Iterator<Alert> getAlerts(AlertCriteria criteria) {
+        BaseAlertCriteria predicate = (BaseAlertCriteria) (criteria == null ? criteria() : criteria);
+        // TODO Grab a partition of the map first based on before/after times of criteria
+        return this.alertsByTime.values().stream()
+                        .map(ref -> (Alert) ref.get())
+                        .filter(predicate)
+                        .iterator();
     }
-
-    @Override
-    public Iterator<Alert> getAlerts(DateTime since) {
-        this.alertsLock.readLock().lock();
-        try {
-            DateTime higher = this.alertsByTime.higherKey(since);
-            
-            if (higher != null) {
-                SortedMap<DateTime, AtomicReference<GenericAlert>> submap = this.alertsByTime.subMap(higher, DateTime.now());
-                return submap.values().stream().map(ref -> (Alert) ref.get()).iterator();
-            } else {
-                return Collections.<Alert>emptySet().iterator();
-            }
-        } finally {
-            this.alertsLock.readLock().unlock();
-        }
-    }
-
-    @Override
-    public Iterator<Alert> getAlerts(ID since) {
-        AtomicReference<GenericAlert> ref = this.alertsById.get(since);
-        
-        if (ref == null) {
-            return Collections.<Alert>emptySet().iterator();
-        } else {
-            GenericAlert alert = ref.get();
-            int index = alert.getEvents().size() - 1;
-            DateTime createdTime = alert.getEvents().get(index).getChangeTime();
-            
-            return getAlerts(createdTime);
-        }
-    }
+//
+//    @Override
+//    public Iterator<Alert> getAlerts(DateTime since) {
+//        this.alertsLock.readLock().lock();
+//        try {
+//            DateTime higher = this.alertsByTime.higherKey(since);
+//            
+//            if (higher != null) {
+//                SortedMap<DateTime, AtomicReference<GenericAlert>> submap = this.alertsByTime.subMap(higher, DateTime.now());
+//                return submap.values().stream().map(ref -> (Alert) ref.get()).iterator();
+//            } else {
+//                return Collections.<Alert>emptySet().iterator();
+//            }
+//        } finally {
+//            this.alertsLock.readLock().unlock();
+//        }
+//    }
+//
+//    @Override
+//    public Iterator<Alert> getAlerts(ID since) {
+//        AtomicReference<GenericAlert> ref = this.alertsById.get(since);
+//        
+//        if (ref == null) {
+//            return Collections.<Alert>emptySet().iterator();
+//        } else {
+//            GenericAlert alert = ref.get();
+//            int index = alert.getEvents().size() - 1;
+//            DateTime createdTime = alert.getEvents().get(index).getChangeTime();
+//            
+//            return getAlerts(createdTime);
+//        }
+//    }
 
     @Override
     public <C extends Serializable> Alert create(URI type, Alert.Level level, String description, C content) {
@@ -460,7 +472,7 @@ public class InMemoryAlertManager implements AlertManager {
         }
         
         @Override
-        public State getCurrentState() {
+        public State getState() {
             return this.events.get(0).getState();
         }
         
@@ -544,4 +556,5 @@ public class InMemoryAlertManager implements AlertManager {
             return (C) this.content;
         }
     }
+    
 }

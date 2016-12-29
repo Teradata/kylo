@@ -10,7 +10,8 @@ CREATE TABLE IF NOT EXISTS `KYLO_ALERT` (
   `id` binary(16) NOT NULL,
   `type` varchar(128) NOT NULL,
   `level` varchar(10) NOT NULL,
-  `create_time` timestamp,
+  `state` varchar(15) NOT NULL,
+  `create_time` bigint,
   `description` varchar(255) DEFAULT NULL,
   `content` text DEFAULT NULL, 
   PRIMARY KEY (`id`)
@@ -19,15 +20,12 @@ CREATE TABLE IF NOT EXISTS `KYLO_ALERT` (
 CREATE TABLE IF NOT EXISTS `KYLO_ALERT_CHANGE` (
   `alert_id` binary(16) NOT NULL,
   `state` varchar(15) NOT NULL,
-  `change_time` timestamp,
+  `change_time` bigint,
   `user` varchar(128) DEFAULT NULL,
   `description` varchar(255) DEFAULT NULL,
   `content` text DEFAULT NULL, 
   PRIMARY KEY (`alert_id`)
 ) ENGINE=InnoDB;
-
-
-
 
 END//
 

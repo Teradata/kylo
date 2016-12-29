@@ -65,7 +65,7 @@ public class KyloAlertManagerTest extends AbstractTestNGSpringContextTests {
         Mockito.reset(this.alertReceiver);
     }
 
-    @Test
+    @Test(groups="create")
     public void testCreateAlert() throws Exception {
         this.beforeTime = DateTime.now().minusMillis(50);
         Alert alert1 = this.manager.create(URI.create("test:alert"), Level.MINOR, "1st description", "1st content");
@@ -94,9 +94,9 @@ public class KyloAlertManagerTest extends AbstractTestNGSpringContextTests {
         this.id2 = alert2.getId();
     }
     
-    @Test(dependsOnMethods="testCreateAlert")
+    @Test(dependsOnGroups="create", groups="read1")
     public void testGetAlerts() {
-        Iterator<Alert> itr = this.manager.getAlerts();
+        Iterator<Alert> itr = this.manager.getAlerts(null);
         
         assertThat(itr)
             .isNotNull()
@@ -106,7 +106,7 @@ public class KyloAlertManagerTest extends AbstractTestNGSpringContextTests {
                       tuple(URI.create("test:alert"), Level.CRITICAL, "2nd description", "2nd content"));
     }
     
-    @Test(dependsOnMethods="testCreateAlert")
+    @Test(dependsOnGroups="create", groups="read1")
     public void testGetAlertById() {
         Optional<Alert> optional = this.manager.getAlert(id2);
         
@@ -121,30 +121,33 @@ public class KyloAlertManagerTest extends AbstractTestNGSpringContextTests {
             .contains(tuple(State.UNHANDLED, null));
     }
     
-    @Test(dependsOnMethods="testCreateAlert")
+    @Test(dependsOnGroups="create", groups="read1")
     public void testGetAlertsSinceAlert() {
-        Iterator<Alert> itr = this.manager.getAlerts(id1);
-        
-        assertThat(itr).isNotNull().hasSize(1).extracting("id").contains(this.id2);
-    }
-    
-    @Test(dependsOnMethods="testCreateAlert")
-    public void testGetAlertsSinceTime() {
-        Iterator<Alert> itr = this.manager.getAlerts(this.beforeTime);
-        
-        assertThat(itr).isNotNull().hasSize(2).extracting("id").contains(this.id1, this.id2);
-        
-        itr = this.manager.getAlerts(this.middleTime);
+        Iterator<Alert> itr = this.manager.getAlerts(this.manager.criteria().after(id1));
         
         assertThat(itr).isNotNull().hasSize(1).extracting("id").contains(this.id2);
         
-        itr = this.manager.getAlerts(this.afterTime);
+        itr = this.manager.getAlerts(this.manager.criteria().after(id2));
         
         assertThat(itr).isNotNull().hasSize(0);
     }
     
+    @Test(dependsOnGroups="create", groups="read1")
+    public void testGetAlertsSinceTime() {
+        Iterator<Alert> itr = this.manager.getAlerts(this.manager.criteria().after(this.beforeTime));
+        
+        assertThat(itr).isNotNull().hasSize(2).extracting("id").contains(this.id1, this.id2);
+        
+        itr = this.manager.getAlerts(this.manager.criteria().after(this.middleTime));
+        
+        assertThat(itr).isNotNull().hasSize(1).extracting("id").contains(this.id2);
+        
+        itr = this.manager.getAlerts(this.manager.criteria().after(this.afterTime));
+        
+        assertThat(itr).isNotNull().hasSize(0);
+    }
     
-    @Test(dependsOnMethods="testCreateAlert")
+    @Test(dependsOnGroups="create", groups="update1")
     public void testAlertResponding() {
         Alert alert = this.manager.getAlert(id1).get();
         AlertResponse resp = this.manager.getResponse(alert);
@@ -164,5 +167,20 @@ public class KyloAlertManagerTest extends AbstractTestNGSpringContextTests {
             .contains(tuple(State.UNHANDLED, null, null), tuple(State.IN_PROGRESS, "Change in progress", null), tuple(State.HANDLED, "Change handled", 42));
         
         verify(this.alertReceiver, times(2)).alertsAvailable(anyInt());
+    }
+    
+    @Test(dependsOnGroups="update1", groups="read2")
+    public void testGetAlertsByState() {
+        Iterator<Alert> itr = this.manager.getAlerts(this.manager.criteria().state(Alert.State.UNHANDLED));
+        
+        assertThat(itr).isNotNull().hasSize(1).extracting("id").contains(this.id2);
+        
+        itr = this.manager.getAlerts(this.manager.criteria().state(Alert.State.HANDLED));
+        
+        assertThat(itr).isNotNull().hasSize(1);
+
+        itr = this.manager.getAlerts(this.manager.criteria().state(Alert.State.CLEARED));
+        
+        assertThat(itr).isNotNull().hasSize(0);
     }
 }

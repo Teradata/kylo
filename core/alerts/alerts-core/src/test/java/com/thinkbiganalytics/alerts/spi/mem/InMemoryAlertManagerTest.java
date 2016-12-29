@@ -97,7 +97,7 @@ public class InMemoryAlertManagerTest {
         Thread.sleep(25);
         this.manager.create(URI.create("urn:alert:test2"), Alert.Level.CRITICAL, "test2", "content"); 
         
-        Iterator<? extends Alert> itr = this.manager.getAlerts();
+        Iterator<? extends Alert> itr = this.manager.getAlerts(null);
 
         assertThat(itr.hasNext()).isTrue();
         assertThat(itr.next().getLevel()).isEqualTo(Level.INFO);
@@ -115,26 +115,26 @@ public class InMemoryAlertManagerTest {
         this.manager.create(URI.create("urn:alert:test2"), Alert.Level.CRITICAL, "test2", "content"); 
         Thread.sleep(25);
         
-        Iterator<? extends Alert> itr = this.manager.getAlerts(since);
+        Iterator<? extends Alert> itr = this.manager.getAlerts(this.manager.criteria().after(since));
 
         assertThat(itr.hasNext()).isTrue();
         assertThat(itr.next().getLevel()).isEqualTo(Level.CRITICAL);
         assertThat(itr.hasNext()).isFalse();
     }
-
-    @Test
-    public void testGetAlertsSinceID() throws InterruptedException {
-        Alert.ID id = this.manager.create(URI.create("urn:alert:test1"), Alert.Level.INFO, "test1", "content").getId(); 
-        Thread.sleep(25);
-        this.manager.create(URI.create("urn:alert:test2"), Alert.Level.CRITICAL, "test2", "content"); 
-        Thread.sleep(25);
-        
-        Iterator<? extends Alert> itr = this.manager.getAlerts(id);
-
-        assertThat(itr.hasNext()).isTrue();
-        assertThat(itr.next().getLevel()).isEqualTo(Level.CRITICAL);
-        assertThat(itr.hasNext()).isFalse();
-    }
+//
+//    @Test
+//    public void testGetAlertsSinceID() throws InterruptedException {
+//        Alert.ID id = this.manager.create(URI.create("urn:alert:test1"), Alert.Level.INFO, "test1", "content").getId(); 
+//        Thread.sleep(25);
+//        this.manager.create(URI.create("urn:alert:test2"), Alert.Level.CRITICAL, "test2", "content"); 
+//        Thread.sleep(25);
+//        
+//        Iterator<? extends Alert> itr = this.manager.getAlerts(id);
+//
+//        assertThat(itr.hasNext()).isTrue();
+//        assertThat(itr.next().getLevel()).isEqualTo(Level.CRITICAL);
+//        assertThat(itr.hasNext()).isFalse();
+//    }
     
     @Test
     public void testRemove() {
@@ -143,7 +143,7 @@ public class InMemoryAlertManagerTest {
         
         Alert alert2 = this.manager.remove(id2);
         Alert alert1 = this.manager.remove(id1);
-        Iterator<? extends Alert> itr = this.manager.getAlerts();
+        Iterator<? extends Alert> itr = this.manager.getAlerts(null);
 
         assertThat(itr.hasNext()).isFalse();
         assertThat(alert1.getId()).isEqualTo(id1);

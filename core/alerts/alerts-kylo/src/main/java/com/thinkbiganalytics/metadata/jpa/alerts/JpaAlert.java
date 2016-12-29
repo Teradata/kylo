@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.net.URI;
 import java.security.Principal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -59,6 +60,10 @@ public class JpaAlert implements Alert {
     @Column(name = "LEVEL", nullable = false)
     private Level level;
     
+    @Enumerated(EnumType.STRING)
+    @Column(name = "STATE", nullable = false)
+    private Alert.State state;
+    
     @Column(name = "CONTENT")
     @Convert(converter = AlertContentConverter.class)
     private Serializable content;
@@ -86,6 +91,7 @@ public class JpaAlert implements Alert {
         this.description = description;
         this.content = content;
         this.createdTime = DateTime.now();
+        this.state = state;
         
         JpaAlertChangeEvent event = new JpaAlertChangeEvent(state, user);
         this.events.add(event);
@@ -127,8 +133,8 @@ public class JpaAlert implements Alert {
      * @see com.thinkbiganalytics.alerts.api.Alert#getCurrentState()
      */
     @Override
-    public Alert.State getCurrentState() {
-        return getEvents().get(0).getState();
+    public Alert.State getState() {
+        return this.state;
     }
 
     /* (non-Javadoc)
@@ -161,7 +167,7 @@ public class JpaAlert implements Alert {
      */
     @Override
     public List<AlertChangeEvent> getEvents() {
-        return this.events;
+        return Collections.unmodifiableList(this.events);
     }
 
     /* (non-Javadoc)
@@ -199,6 +205,11 @@ public class JpaAlert implements Alert {
 
     public void setSource(AlertSource source) {
         this.source = source;
+    }
+
+    public void addEvent(JpaAlertChangeEvent event) {
+        this.state = event.getState();
+        this.events.add(event);
     }
 
     @Embeddable

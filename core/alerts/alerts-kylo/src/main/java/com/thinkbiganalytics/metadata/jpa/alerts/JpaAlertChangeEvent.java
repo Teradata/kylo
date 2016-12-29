@@ -29,7 +29,6 @@ import com.thinkbiganalytics.security.UsernamePrincipal;
  *
  * @author Sean Felten
  */
-//@Entity
 @Embeddable
 @Table(name = "KYLO_ALERT_CHANGE")
 public class JpaAlertChangeEvent implements AlertChangeEvent, Comparable<AlertChangeEvent> {

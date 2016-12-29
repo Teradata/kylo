@@ -11,12 +11,15 @@ import java.util.Set;
 import org.joda.time.DateTime;
 
 import com.thinkbiganalytics.alerts.api.Alert;
+import com.thinkbiganalytics.alerts.api.AlertCriteria;
 
 /**
  *
  * @author Sean Felten
  */
 public interface AlertSource {
+    
+    AlertCriteria criteria();
 
     Alert.ID resolve(Serializable value);
 
@@ -28,9 +31,9 @@ public interface AlertSource {
     
     Optional<Alert> getAlert(Alert.ID id);
     
-    Iterator<Alert> getAlerts();
-
-    Iterator<Alert> getAlerts(DateTime since);
-    
-    Iterator<Alert> getAlerts(Alert.ID since);
+    Iterator<Alert> getAlerts(AlertCriteria criteria);
+//
+//    Iterator<Alert> getAlerts(DateTime since);
+//    
+//    Iterator<Alert> getAlerts(Alert.ID since);
 }

@@ -11,14 +11,18 @@ import org.joda.time.DateTime;
 /**
  * This provider is the primary facade over one or more alert sources.  It allows
  * for synchronously retrieving and responding to alerts, as well as registering listeners/
- * responders to react to new events enter the system.
+ * responders to react to new alerts that enter the system.
+ * 
  * @author Sean Felten
  */
 public interface AlertProvider {
     
-    // TODO: add criteria-based alert search
-    
     // TODO: add criteria-based listener/responder alert filtering
+    
+    /**
+     * @return a criteria used to filter alerts
+     */
+    AlertCriteria criteria();
     
     /**
      * Resolves and reconstitutes one of the acceptable serializable ID formats (such as its toString() form) into 
@@ -51,19 +55,39 @@ public interface AlertProvider {
     Alert getAlert(Alert.ID id);
     
     /**
-     * Gets a stream of all alerts that may have been created after the given time.  
-     * @param since the time from which newer alerts should be returned
+     * Retrieves alerts matching the given criteria.  Specifying null retrieve all known alerts.
+     * @param criteria
+     * @return
+     */
+    Iterator<? extends Alert> getAlerts(AlertCriteria criteria);
+
+    /**
+     * Retrieves all alerts that may have been created after the given time.  
+     * @param time the time from which newer alerts should be returned
      * @return an iterator on all alerts created after the specified time
      */
-    Iterator<? extends Alert> getAlerts(DateTime since);
+    Iterator<? extends Alert> getAlertsAfter(DateTime time);
     
     /**
-     * Gets a stream of all alerts that may have been crreated since the alert specified by the
-     * given ID was created.  Specifying null retrieve all known alerts.
-     * @param since the ID of an alert
+     * Retrieves all alerts that may have been created since the alert specified by the given ID.  
+     * @param id the ID of an alert
      * @return an iterator on all alerts created after the given alert ID
      */
-    Iterator<? extends Alert> getAlerts(Alert.ID since);
+    Iterator<? extends Alert> getAlertsAfter(Alert.ID id);
+    
+    /**
+     * Retrieves all alerts that may have been created after the given time.  
+     * @param time the time from which newer alerts should be returned
+     * @return an iterator on all alerts created after the specified time
+     */
+    Iterator<? extends Alert> getAlertsBefore(DateTime time);
+    
+    /**
+     * Retrieves all alerts that may have been created before the alert specified by the given ID.
+     * @param id the ID of an alert
+     * @return an iterator on all alerts created after the given alert ID
+     */
+    Iterator<? extends Alert> getAlertsBefore(Alert.ID id);
 
     /**
      * Allows a synchronous update of a particular alert using the supplied responder.  This method will block

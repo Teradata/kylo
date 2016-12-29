@@ -6,6 +6,7 @@ package com.thinkbiganalytics.alerts.spi.kylo;
 import java.io.Serializable;
 import java.net.URI;
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -17,15 +18,21 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 
 import org.joda.time.DateTime;
+import org.springframework.data.jpa.repository.support.QueryDslRepositorySupport;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import com.querydsl.core.types.Predicate;
+import com.querydsl.jpa.impl.JPAQuery;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.thinkbiganalytics.alerts.api.Alert;
 import com.thinkbiganalytics.alerts.api.Alert.ID;
 import com.thinkbiganalytics.alerts.api.Alert.Level;
 import com.thinkbiganalytics.alerts.api.Alert.State;
 import com.thinkbiganalytics.alerts.api.AlertChangeEvent;
+import com.thinkbiganalytics.alerts.api.AlertCriteria;
 import com.thinkbiganalytics.alerts.api.AlertNotfoundException;
 import com.thinkbiganalytics.alerts.api.AlertResponse;
+import com.thinkbiganalytics.alerts.api.core.BaseAlertCriteria;
 import com.thinkbiganalytics.alerts.spi.AlertDescriptor;
 import com.thinkbiganalytics.alerts.spi.AlertManager;
 import com.thinkbiganalytics.alerts.spi.AlertNotifyReceiver;
@@ -34,23 +41,29 @@ import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlert;
 import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlert.AlertId;
 import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlertChangeEvent;
 import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlertRepository;
+import com.thinkbiganalytics.metadata.jpa.alerts.QJpaAlert;
 
 /**
  *
  * @author Sean Felten
  */
-public class KyloAlertManager implements AlertManager {
+public class KyloAlertManager extends QueryDslRepositorySupport implements AlertManager {
     
+    @Inject
+    private JPAQueryFactory queryFactory;
+
     @Inject
     private MetadataAccess metadataAccess;
 
     private Set<AlertNotifyReceiver> alertReceivers = Collections.synchronizedSet(new HashSet<>());
     private JpaAlertRepository repository;
     
+
     /**
      * @param repo
      */
     public KyloAlertManager(JpaAlertRepository repo) {
+        super(JpaAlert.class);
         this.repository = repo;
     }
 
@@ -92,6 +105,14 @@ public class KyloAlertManager implements AlertManager {
     }
 
     /* (non-Javadoc)
+     * @see com.thinkbiganalytics.alerts.spi.AlertSource#criteria()
+     */
+    @Override
+    public AlertCriteria criteria() {
+        return new Criteria();
+    }
+
+    /* (non-Javadoc)
      * @see com.thinkbiganalytics.alerts.spi.AlertSource#getAlert(com.thinkbiganalytics.alerts.api.Alert.ID)
      */
     @Override
@@ -105,39 +126,40 @@ public class KyloAlertManager implements AlertManager {
      * @see com.thinkbiganalytics.alerts.spi.AlertSource#getAlerts()
      */
     @Override
-    public Iterator<Alert> getAlerts() {
+    public Iterator<Alert> getAlerts(AlertCriteria criteria) {
         return this.metadataAccess.read(() -> {
-            return repository.findAll().stream()
-                            .map(a -> (Alert) a)
-                            .collect(Collectors.toList()) // Need to terminate the stream while still in a transaction
-                            .iterator();
+            Criteria critImpl = (Criteria) (criteria == null ? criteria() : criteria);
+            return critImpl.createQuery().fetch().stream()
+                          .map(a -> asValue(a))
+                          .collect(Collectors.toList()) // Need to terminate the stream while still in a transaction
+                          .iterator();
         }, MetadataAccess.SERVICE);
     }
-
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.alerts.spi.AlertSource#getAlerts(org.joda.time.DateTime)
-     */
-    @Override
-    public Iterator<Alert> getAlerts(DateTime since) {
-        return this.metadataAccess.read(() -> {
-            return repository.findAlertsSince(since).stream()
-                            .map(a -> asValue(a))
-                            .collect(Collectors.toList()) // Need to terminate the stream while still in a transaction
-                            .iterator();
-        }, MetadataAccess.SERVICE);
-    }
-
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.alerts.spi.AlertSource#getAlerts(com.thinkbiganalytics.alerts.api.Alert.ID)
-     */
-    @Override
-    public Iterator<Alert> getAlerts(ID since) {
-        return this.metadataAccess.read(() -> {
-            return getAlert(since)
-                            .map(a -> getAlerts(a.getCreatedTime()))
-                            .orElseThrow(() -> new AlertNotfoundException(since));
-        }, MetadataAccess.SERVICE);
-    }
+//
+//    /* (non-Javadoc)
+//     * @see com.thinkbiganalytics.alerts.spi.AlertSource#getAlerts(org.joda.time.DateTime)
+//     */
+//    @Override
+//    public Iterator<Alert> getAlerts(DateTime since) {
+//        return this.metadataAccess.read(() -> {
+//            return repository.findAlertsAfter(since).stream()
+//                            .map(a -> asValue(a))
+//                            .collect(Collectors.toList()) // Need to terminate the stream while still in a transaction
+//                            .iterator();
+//        }, MetadataAccess.SERVICE);
+//    }
+//
+//    /* (non-Javadoc)
+//     * @see com.thinkbiganalytics.alerts.spi.AlertSource#getAlerts(com.thinkbiganalytics.alerts.api.Alert.ID)
+//     */
+//    @Override
+//    public Iterator<Alert> getAlerts(ID since) {
+//        return this.metadataAccess.read(() -> {
+//            return getAlert(since)
+//                            .map(a -> getAlerts(a.getCreatedTime()))
+//                            .orElseThrow(() -> new AlertNotfoundException(since));
+//        }, MetadataAccess.SERVICE);
+//    }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.alerts.spi.AlertManager#addDescriptor(com.thinkbiganalytics.alerts.spi.AlertDescriptor)
@@ -210,7 +232,7 @@ public class KyloAlertManager implements AlertManager {
         Alert changed = this.metadataAccess.commit(() -> {
             JpaAlert alert = findAlert(id).orElseThrow(() -> new AlertNotfoundException(id));
             JpaAlertChangeEvent event = new JpaAlertChangeEvent(state, user, descr, content);
-            alert.getEvents().add(event);
+            alert.addEvent(event);
             return asValue(alert);
         }, MetadataAccess.SERVICE);
         
@@ -341,11 +363,8 @@ public class KyloAlertManager implements AlertManager {
             return type;
         }
         
-        /* (non-Javadoc)
-         * @see com.thinkbiganalytics.alerts.api.Alert#getCurrentState()
-         */
         @Override
-        public State getCurrentState() {
+        public State getState() {
             return this.events.get(0).getState();
         }
 
@@ -363,7 +382,6 @@ public class KyloAlertManager implements AlertManager {
         @Override
         public DateTime getCreatedTime() {
             return this.createdTime;
-//            return this.events.get(0).getChangeTime();
         }
 
         @Override
@@ -410,4 +428,63 @@ public class KyloAlertManager implements AlertManager {
             return this.content;
         }
     }
+    
+    private class Criteria extends BaseAlertCriteria {
+        
+        public JPAQuery<JpaAlert> createQuery() {
+            List<Predicate> preds = new ArrayList<>();
+            QJpaAlert alert = QJpaAlert.jpaAlert;
+            
+            JPAQuery<JpaAlert> query = queryFactory
+                            .select(alert)
+                            .from(alert)
+                            .limit(getLimit());
+            
+            // The "state" criteria now means filter by an alert's current state.
+            // To support filtering by any state the alert has transitioned through
+            // we can add the commented out code below (the old state behavior)
+//            if (getTransitions().size() > 0) {
+//                QAlertChangeEvent event = QAlertChangeEvent.alertChangeEvent;
+//                query.join(alert.events, event);
+//                preds.add(event.state.in(getTransitions()));
+//            }
+
+            if (getBeforeId() != null) {
+                AlertId idImpl = (AlertId) getBeforeId();
+                QJpaAlert beforeAlert = new QJpaAlert("beforeAlert");
+
+                query.join(beforeAlert).on(beforeAlert.id.eq(idImpl));
+                preds.add(alert.createdTime.lt(beforeAlert.createdTime));
+            }
+
+            if (getAfterId() != null) {
+                AlertId idImpl = (AlertId) getAfterId();
+                QJpaAlert afterAlert = new QJpaAlert("afterAlert");
+
+                query.join(afterAlert).on(afterAlert.id.eq(idImpl));
+                preds.add(alert.createdTime.gt(afterAlert.createdTime));
+            }
+
+            if (getStates().size() > 0) preds.add(alert.state.in(getStates()));
+            if (getTypes().size() > 0) preds.add(alert.type.in(getTypes()));
+            if (getLevels().size() > 0) preds.add(alert.level.in(getLevels()));
+            if (getAfterTime() != null) preds.add(alert.createdTime.gt(getAfterTime()));
+            if (getBeforeTime() != null) preds.add(alert.createdTime.lt(getBeforeTime()));
+            
+            // When limiting and using "after" criteria only, we need to sort ascending to get the next n values after the given id/time.
+            // In all other cases sort descending. The results will be ordered correctly when aggregated by the provider.
+            if (getLimit() != Integer.MAX_VALUE && (getAfterId() != null || getAfterTime() != null) && getBeforeId() == null && getBeforeTime() == null) {
+                query.orderBy(alert.createdTime.asc());
+            } else {
+                query.orderBy(alert.createdTime.desc());
+            }
+
+            if (preds.isEmpty()) {
+                return query;
+            } else {
+                return query.where(preds.toArray(new Predicate[preds.size()]));
+            }
+        }
+    }
+    
 }
