@@ -49,9 +49,15 @@
 
         this.feedFormat = '';
 
+        //map of names to array of columnDefinitions
+        //this.columnMap = {};
+        //this.sourceColumns = [];
+
         $scope.$evalAsync(function() {
             self.calcTableState();
             if (self.model.table.tableSchema.fields && self.model.table.tableSchema.fields.length > 0) {
+                self.syncFeedsColumns();
+                self.calcTableState();
                 self.calcfitTable();
                 self.expandSchemaPanel();
             }
@@ -64,11 +70,29 @@
         }
 
         this.calcTableState = function() {
-            self.tableLocked = (self.model.dataTransformationFeed || self.model.table.structured || self.model.table.method == 'EXISTING_TABLE');
-            self.dataTypeLocked = (self.model.dataTransformationFeed || self.model.table.structured);
-            self.canRemoveFields = (!self.model.dataTransformationFeed && (self.model.table.method == 'EXISTING_TABLE' || self.model.table.method == 'MANUAL'));
+            self.tableLocked = false; //(self.model.dataTransformationFeed || self.model.table.structured || self.model.table.method == 'EXISTING_TABLE');
+            self.dataTypeLocked = false; //(self.model.dataTransformationFeed || self.model.table.structured);
+            self.canRemoveFields = true; //(!self.model.dataTransformationFeed && (self.model.table.method == 'EXISTING_TABLE' || self.model.table.method == 'MANUAL'));
             self.showMethodPanel = (self.model.table.method != 'EXISTING_TABLE');
             self.showTablePanel = (self.model.table.tableSchema.fields.length > 0);
+        }
+
+        this.syncFeedsColumns = function() {
+
+            var i = 0;
+            _.each(self.model.table.tableSchema.fields, function (columnDef) {
+                columnDef.origPos = i;
+                columnDef.origName = columnDef.name;
+                columnDef.deleted = false;
+                columnDef.history = [];
+                columnDef.history.push (createHistoryRecord(columnDef));
+                i++;
+            });
+        }
+
+
+        function createHistoryRecord(columnDef) {
+            return { name: columnDef.name, derivedDataType: columnDef.derivedDataType, deleted: columnDef.deleted, primaryKey: columnDef.primaryKey, updatedTracker: columnDef.updatedTracker, createdTracker: columnDef.createdTracker }
         }
 
         /**
@@ -127,6 +151,7 @@
          * If not add the angular $error to invalidate the form
          */
         function fieldNamesUnique(resetFormReadyCheck) {
+
             //map of names that are not unique
             var notUnique = {}
 
@@ -253,14 +278,41 @@
             self.calcfitTable();
         }
 
+        this.undoColumn = function (index) {
+            var columnDef = self.model.table.tableSchema.fields[index];
+
+            // Unwind
+            var currentState = createHistoryRecord(columnDef);
+            var prevValue = (columnDef.history.length > 1 ? columnDef.history.pop() : columnDef.history[0]);
+            if (angular.equals(currentState, prevValue)) {
+                prevValue = (columnDef.history.length > 1 ? columnDef.history.pop() : columnDef.history[0]);
+            }
+            // Set to previous history value
+            columnDef.name = prevValue.name;
+            columnDef.derivedDataType = prevValue.derivedDataType;
+            columnDef.deleted = prevValue.deleted;
+            columnDef.primaryKey = prevValue.primaryKey;
+            columnDef.createdTracker = prevValue.createdTracker;
+            columnDef.updatedTracker = prevValue.updatedTracker;
+
+            fieldNamesUnique();
+            partitionNamesUnique();
+            FeedService.syncTableFieldPolicyNames();
+            validate();
+        }
+
+        this.addHistoryItem = function(columnDef) {
+            columnDef.history.push(createHistoryRecord(columnDef));
+        }
+
         /**
          * Remove a column from the schema
          * @param index
          */
         this.removeColumn = function (index) {
             var columnDef = self.model.table.tableSchema.fields[index];
-            self.model.table.tableSchema.fields.splice(index, 1);
-            self.model.table.sourceTableSchema.fields.splice(index, 1);
+            columnDef.deleted = true;
+            self.addHistoryItem(columnDef);
 
             //remove any partitions using this field
             var matchingPartitions = _.filter(self.model.table.partitions, function (partition) {
@@ -280,11 +332,9 @@
             partitionNamesUnique();
             FeedService.syncTableFieldPolicyNames();
             validate();
-            self.calcfitTable();
+            //self.calcfitTable();
             //reset selected column
-            self.selectedColumn = null;
-
-
+            //self.selectedColumn = null;
         }
 
         /**
@@ -341,11 +391,13 @@
          *  - ensure that partition names are unique since the new field name could clash with an existing partition
          * @param columnDef
          */
-        this.onFieldNameChange = function (columnDef) {
+        this.onNameFieldChange = function(columnDef) {
             self.selectedColumn = columnDef;
             if (self.useUnderscoreInsteadOfSpaces) {
                 columnDef.name = replaceSpaces(columnDef.name);
             }
+            self.addHistoryItem(columnDef);
+
             fieldNamesUnique(true);
             //update the partitions with "val" on this column so the name matches
             _.each(self.model.table.partitions, function (partition) {
@@ -357,6 +409,11 @@
             });
             partitionNamesUnique();
             FeedService.syncTableFieldPolicyNames();
+        }
+
+        this.onFieldChange = function (columnDef) {
+            self.selectedColumn = columnDef;
+            self.addHistoryItem(columnDef);
         }
 
         /**
@@ -523,7 +580,7 @@
 
         this.calcfitTable = function() {
             var numfields = self.model.table.tableSchema.fields.length;
-            var height = (numfields * 59) + 'px';
+            var height = (numfields * 58) + 'px';
             self.schemaHeight = height;
         }
 
@@ -609,6 +666,7 @@
                 fieldNamesUnique();
                 hideProgress();
                 self.uploadBtnDisabled = false;
+                self.syncFeedsColumns();
                 self.calcTableState();
                 self.collapseMethodPanel();
                 self.expandSchemaPanel();

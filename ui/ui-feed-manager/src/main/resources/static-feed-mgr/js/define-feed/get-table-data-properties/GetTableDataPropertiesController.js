@@ -406,7 +406,7 @@
             _.each(val.split(","), function (field) {
                 var col = FeedService.newTableFieldDefinition();
                 col.name = field.trim();
-                col.dataType = 'string';
+                col.derivedDataType = 'string';
                 fields.push(col);
                 fieldNames.push(col.name);
             });
@@ -424,7 +424,7 @@
          * @returns {boolean}
          */
         this.filterFieldDates = function(field){
-            return field.dataType == 'date' || field.dataType == 'timestamp';
+            return field.derivedDataType == 'date' || field.derivedDataType == 'timestamp';
         }
 
 

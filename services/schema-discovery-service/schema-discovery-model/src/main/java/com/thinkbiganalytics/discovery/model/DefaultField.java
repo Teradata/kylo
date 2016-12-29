@@ -25,11 +25,11 @@ public class DefaultField implements Field {
 
     private String derivedDataType;
 
-    private Boolean primaryKey = false;
+    private boolean primaryKey = false;
 
-    private Boolean nullable = true;
+    private boolean nullable = true;
 
-    private Boolean modifiable = true;
+    private boolean modifiable = true;
 
     private DataTypeDescriptor dataTypeDescriptor;
 
@@ -39,7 +39,7 @@ public class DefaultField implements Field {
 
     private String precisionScale;
 
-    private Boolean createdTracker;
+    private boolean createdTracker;
 
 
     public void setNativeDataType(String nativeDataType) {

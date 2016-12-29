@@ -151,10 +151,10 @@ angular.module(MODULE_OPERATIONS).service('DataTablesVisualSearchService', funct
                 var operators = ['=', '!=', 'in', 'not in', 'like', 'not like'];
                 var numbersArr = ["long", "integer", "float", "double"];
 
-                if ($.inArray(columnDef.dataType, numbersArr) >= 0) {
+                if ($.inArray(columnDef.derivedDataType, numbersArr) >= 0) {
                     operators = ["=", "!=", "<", ">", "<=", ">=", 'in', 'not in']
                 }
-                else if (columnDef.dataType == "date") {
+                else if (columnDef.derivedDataType == "date") {
                     operators = ["=", "!=", "<", ">", "<=", ">="]
                 }
                 var inputType = 'text';
@@ -181,7 +181,7 @@ angular.module(MODULE_OPERATIONS).service('DataTablesVisualSearchService', funct
                     editing: false,
                     maxlength: null,
                     uiInputType: columnDef.uiInputType,
-                    dataType: columnDef.dataType || 'string',
+                    dataType: columnDef.derivedDataType || 'string',
                     useFacetSelectedCallback: columnDef.useFacetSelectedCallback
                 });
 
