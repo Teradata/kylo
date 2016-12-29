@@ -1,25 +1,23 @@
 package com.thinkbiganalytics.nifi.rest;
 
 import com.thinkbiganalytics.feedmgr.nifi.CreateFeedBuilder;
+import com.thinkbiganalytics.feedmgr.nifi.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.nifi.feedmgr.InputOutputPort;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
+import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClientConfig;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessorSchedule;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
+import com.thinkbiganalytics.nifi.v1.rest.client.NiFiRestClientV1;
 import com.thinkbiganalytics.rest.JerseyClientException;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.http.NoHttpResponseException;
-import org.apache.http.conn.HttpHostConnectException;
-import org.apache.nifi.web.api.dto.ConnectionDTO;
-import org.apache.nifi.web.api.dto.ListingRequestDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
-import org.apache.nifi.web.api.entity.ProvenanceEventEntity;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,9 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.ProcessingException;
-
 /**
  * Created by sr186054 on 4/28/16.
  */
@@ -38,11 +33,19 @@ public class NifiRestTest {
 
 
     private LegacyNifiRestClient restClient;
+    private NifiFlowCache nifiFlowCache;
 
     //@Before
     public void setupRestClient() {
         restClient = new LegacyNifiRestClient();
+        NifiRestClientConfig clientConfig = new NifiRestClientConfig();
+        clientConfig.setHost("localhost");
+        clientConfig.setPort(8079);
+        NiFiRestClient c = new NiFiRestClientV1(clientConfig);
+        restClient.setClient(c);
+        nifiFlowCache = new NifiFlowCache();
     }
+
 
     //@Test
     public void testCreateFeed1() throws JerseyClientException {
@@ -61,7 +64,7 @@ public class NifiRestTest {
         feedMetadata.getCategory().setSystemName("online");
         feedMetadata.setSystemFeedName("Scotts Feed");
 
-        CreateFeedBuilder.newFeed(restClient, feedMetadata, templateDTO.getId(), new PropertyExpressionResolver()).inputProcessorType(inputType)
+        CreateFeedBuilder.newFeed(restClient, nifiFlowCache, feedMetadata, templateDTO.getId(), new PropertyExpressionResolver()).inputProcessorType(inputType)
             .feedSchedule(schedule).addInputOutputPort(new InputOutputPort(inputPortName, feedOutputPortName)).build();
     }
 
@@ -115,7 +118,7 @@ public class NifiRestTest {
                 feedMetadata.getCategory().setSystemName(processGroupName);
                 feedMetadata.setSystemFeedName("feedPrefix + i");
 
-                 CreateFeedBuilder.newFeed(restClient,feedMetadata, template.getId(),new PropertyExpressionResolver()).inputProcessorType(inputType)
+                CreateFeedBuilder.newFeed(restClient, nifiFlowCache, feedMetadata, template.getId(), new PropertyExpressionResolver()).inputProcessorType(inputType)
                     .feedSchedule(schedule).properties(instanceProperties).build();
 
             }
@@ -141,10 +144,18 @@ public class NifiRestTest {
         feedMetadata.getCategory().setSystemName("online");
         feedMetadata.setSystemFeedName("Scotts Feed");
 
-        CreateFeedBuilder.newFeed(restClient,feedMetadata,templateDTO.getId(), new PropertyExpressionResolver()).inputProcessorType(inputType)
+        CreateFeedBuilder.newFeed(restClient, nifiFlowCache, feedMetadata, templateDTO.getId(), new PropertyExpressionResolver()).inputProcessorType(inputType)
             .feedSchedule(schedule).addInputOutputPort(new InputOutputPort(inputPortName, feedOutputPortName)).build();
     }
 
+
+    // @Test
+    public void testOrder() throws Exception {
+
+        restClient.getFeedFlows();
+
+
+    }
 
 
 
