@@ -19,6 +19,14 @@ public class SimpleRegexReplacerTest {
         assertEquals("barfeebarfie", regexReplacer.convertValue("foofeefoofie"));
         assertEquals("", regexReplacer.convertValue(""));
         assertEquals("barfeebarfie", regexReplacer.convertValue("barfeebarfie"));
+
+        SimpleRegexReplacer regexReplacer2 = new SimpleRegexReplacer("N/A", null);
+        assertEquals("", regexReplacer2.convertValue("N/A"));
+
+        SimpleRegexReplacer regexReplacer3 = new SimpleRegexReplacer("N/A", "");
+        assertEquals("", regexReplacer3.convertValue("N/A"));
+
+
     }
 
 

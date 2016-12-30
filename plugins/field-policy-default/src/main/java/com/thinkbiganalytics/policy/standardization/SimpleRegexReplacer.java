@@ -34,7 +34,10 @@ public class SimpleRegexReplacer implements StandardizationPolicy {
         try {
             this.inputPattern = regex;
             this.pattern = Pattern.compile(regex);
-            this.replacement = replace;
+            if (replace != null) {
+                this.replacement = replace;
+            }
+
             valid = true;
         } catch (PatternSyntaxException e) {
             log.error("Invalid regex [" + e + "].No substitution will be performed.", e);
