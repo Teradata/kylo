@@ -221,7 +221,6 @@
 
                     self.processorFlowTypeOptions = response.data.processorFlowTypes;
 
-                    console.log('self.processorFlowTypeOptions', self.processorFlowTypeOptions)
                     //merge in those already selected/saved on this template
                     _.each(datasourceDefinitions, function (def) {
                         def.selectedDatasource = false;
@@ -424,7 +423,6 @@
             savedTemplate.processorFlowTypeMap = _.object(_.map(self.templateFlowTypeProcessors, function (processor) {
                 return [processor.flowId, processor.flowType];
             }));
-            console.log('savedTemplate.processorFlowTypeMap ', savedTemplate.processorFlowTypeMap)
 
             var thisOrder = order.length - 1;
             if (self.model.id != undefined) {
