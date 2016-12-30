@@ -368,7 +368,6 @@
             var firstSelection = self.selectedColumn == null;
             self.selectedColumn = selectedColumn;
             // Show an item in dropdown
-            console.debug('self.selectedColumn',self.selectedColumn);
             if (self.selectedColumn.selectedSampleValue == null && self.selectedColumn.sampleValues.length > 0) {
                 self.selectedColumn.selectedSampleValue = self.selectedColumn.sampleValues[0];
             }

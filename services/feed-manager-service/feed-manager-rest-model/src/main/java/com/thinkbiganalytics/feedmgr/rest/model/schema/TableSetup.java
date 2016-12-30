@@ -34,6 +34,11 @@ public class TableSetup {
     @JsonDeserialize(as = DefaultTableSchema.class)
     private TableSchema sourceTableSchema;
 
+    @JsonSerialize(as = DefaultTableSchema.class)
+    @JsonDeserialize(as = DefaultTableSchema.class)
+    private TableSchema feedTableSchema;
+
+
     private String method;
 
     private String description = "";
@@ -443,6 +448,14 @@ public class TableSetup {
 
     public TableSchema getSourceTableSchema() {
         return sourceTableSchema;
+    }
+
+    public TableSchema getFeedTableSchema() {
+        return feedTableSchema;
+    }
+
+    public void setFeedTableSchema(TableSchema feedTableSchema) {
+        this.feedTableSchema = feedTableSchema;
     }
 
     public void setSourceTableSchema(TableSchema sourceTableSchema) {

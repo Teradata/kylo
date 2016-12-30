@@ -108,6 +108,7 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
                 table: {
                     tableSchema: {name: null, fields: []},
                     sourceTableSchema: {name: null, fields: []},
+                    feedTableSchema: {name: null, fields: []},
                     method: 'SAMPLE_FILE',
                     existingTableName: null,
                     structured: false,
