@@ -12,7 +12,7 @@
                 pageName: '@',
                 feedFilter: '=',
                 onJobAction: '&',
-                hideFeedColumn: '=?',
+                hideFeedColumn: '=?'
             },
             controllerAs: 'vm',
             scope: true,

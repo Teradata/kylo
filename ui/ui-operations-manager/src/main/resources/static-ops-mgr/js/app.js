@@ -61,7 +61,22 @@ app.config(function($stateProvider,$urlRouterProvider) {
             breadcrumbRoot:true,
             displayName:'Jobs'
         }
-    }).state('scheduler',{
+    }).state('alerts', {
+        url: '/alerts',
+        params: {
+            tab: null
+        },
+        views: {
+            'content': {
+                templateUrl: 'js/alerts/alerts-table.html'
+            }
+        },
+        data: {
+            breadcrumbRoot: true,
+            displayName: 'Jobs'
+        }
+    })
+        .state('scheduler', {
         url:'/scheduler',
         views: {
             'content': {

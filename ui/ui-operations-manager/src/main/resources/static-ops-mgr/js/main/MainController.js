@@ -23,6 +23,7 @@
             menu.push({sref: "home", icon: "home", text: "Overview", defaultActive: true});
             menu.push({sref: "service-health", icon: "vector_triangle", text: "Services", defaultActive: false});
             menu.push({sref: "jobs", icon: "settings", text: "Jobs", defaultActive: false});
+            menu.push({sref: "alerts", icon: "notifications", text: "Alerts", defaultActive: false});
             menu.push({sref: "scheduler", icon: "today", text: "Scheduler", defaultActive: false});
             menu.push({sref: "charts", icon: "insert_chart", text: "Charts", defaultActive: false});
             self.selectedMenuItem = menu[0];
