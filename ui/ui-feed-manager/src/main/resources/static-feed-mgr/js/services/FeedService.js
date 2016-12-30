@@ -277,7 +277,7 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
             self.createFeedModel.table.tableSchema.fields = fields;
         },
         /**
-         * Ensure that the Table Schema has a Field Policy for each of the fields and that their indicies are matching.
+         * Ensure that the Table Schema has a Field Policy for each of the fields and that their indices are matching.
          */
         syncTableFieldPolicyNames :function() {
             var self = this;
@@ -288,7 +288,7 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
                 var name = self.createFeedModel.table.tableSchema.fields[index].name;
                 if (name != undefined) {
                     self.createFeedModel.table.fieldPolicies[index].name = name;
-                    //assign pointer tot he field?
+                    //assign pointer to the field?
                     self.createFeedModel.table.fieldPolicies[index].field = columnDef;
                 }
                 else {

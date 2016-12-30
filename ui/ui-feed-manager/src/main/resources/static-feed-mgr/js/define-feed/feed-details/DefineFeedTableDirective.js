@@ -37,8 +37,7 @@
         this.useUnderscoreInsteadOfSpaces = true;
         this.selectedColumn = null;
         this.fieldNamesUniqueRetryAmount = 0;
-        this.expandedView = true;
-        this.schemaHeight = "100px";
+
         this.tableLocked = false
         this.dataTypeLocked = false;
         this.canRemoveFields = true;
@@ -49,16 +48,11 @@
 
         this.feedFormat = '';
 
-        //map of names to array of columnDefinitions
-        //this.columnMap = {};
-        //this.sourceColumns = [];
-
         $scope.$evalAsync(function() {
             self.calcTableState();
             if (self.model.table.tableSchema.fields && self.model.table.tableSchema.fields.length > 0) {
                 self.syncFeedsColumns();
                 self.calcTableState();
-                self.calcfitTable();
                 self.expandSchemaPanel();
             }
         });
@@ -70,29 +64,38 @@
         }
 
         this.calcTableState = function() {
-            self.tableLocked = false; //(self.model.dataTransformationFeed || self.model.table.structured || self.model.table.method == 'EXISTING_TABLE');
-            self.dataTypeLocked = false; //(self.model.dataTransformationFeed || self.model.table.structured);
-            self.canRemoveFields = true; //(!self.model.dataTransformationFeed && (self.model.table.method == 'EXISTING_TABLE' || self.model.table.method == 'MANUAL'));
+            self.tableLocked = (self.model.dataTransformationFeed); // || self.model.table.structured || self.model.table.method == 'EXISTING_TABLE');
+            self.dataTypeLocked = (self.model.dataTransformationFeed); // || self.model.table.structured);
+            self.canRemoveFields = (!self.model.dataTransformationFeed); //&& (self.model.table.method == 'EXISTING_TABLE' || self.model.table.method == 'MANUAL'));
             self.showMethodPanel = (self.model.table.method != 'EXISTING_TABLE');
             self.showTablePanel = (self.model.table.tableSchema.fields.length > 0);
         }
 
+        /*
+        Create columns for tracking changes between original source and the target table schema
+         */
         this.syncFeedsColumns = function() {
 
-            var i = 0;
             _.each(self.model.table.tableSchema.fields, function (columnDef) {
-                columnDef.origPos = i;
-                columnDef.origName = columnDef.name;
-                columnDef.deleted = false;
-                columnDef.history = [];
-                columnDef.history.push (createHistoryRecord(columnDef));
-                i++;
+                if (columnDef.origName == undefined) {
+                    columnDef.origName = columnDef.name;
+                    columnDef.deleted = false;
+                    columnDef.history = [];
+                    self.addHistoryItem(columnDef);
+                }
             });
         }
 
-
+        /*
+        Adds record of changed state
+         */
         function createHistoryRecord(columnDef) {
             return { name: columnDef.name, derivedDataType: columnDef.derivedDataType, deleted: columnDef.deleted, primaryKey: columnDef.primaryKey, updatedTracker: columnDef.updatedTracker, createdTracker: columnDef.createdTracker }
+        }
+
+        this.addHistoryItem = function(columnDef) {
+            var historyItem = createHistoryRecord(columnDef);
+            columnDef.history.push(historyItem);
         }
 
         /**
@@ -165,6 +168,7 @@
             //map of names to array of columnDefinitions
             var nameMap = {};
             _.each(self.model.table.tableSchema.fields, function (columnDef) {
+
                 if (nameMap[columnDef.name] == undefined) {
                     nameMap[columnDef.name] = [];
                 }
@@ -172,6 +176,7 @@
                 if (nameMap[columnDef.name].length > 1) {
                     notUnique[columnDef.name] = columnDef.name;
                 }
+
             });
 
             //invalidate the form if needed
@@ -211,7 +216,6 @@
          * If Not add a angular error
          */
         function partitionNamesUnique() {
-
 
             // Validate the Partition names are unique respective to other partition names
             _.chain(self.model.table.partitions).groupBy(function (partition) {
@@ -275,18 +279,13 @@
             if (syncFieldPolicies == undefined || syncFieldPolicies == true) {
                 FeedService.syncTableFieldPolicyNames();
             }
-            self.calcfitTable();
         }
 
         this.undoColumn = function (index) {
             var columnDef = self.model.table.tableSchema.fields[index];
+            columnDef.history.pop();
+            var prevValue = columnDef.history[columnDef.history.length-1];
 
-            // Unwind
-            var currentState = createHistoryRecord(columnDef);
-            var prevValue = (columnDef.history.length > 1 ? columnDef.history.pop() : columnDef.history[0]);
-            if (angular.equals(currentState, prevValue)) {
-                prevValue = (columnDef.history.length > 1 ? columnDef.history.pop() : columnDef.history[0]);
-            }
             // Set to previous history value
             columnDef.name = prevValue.name;
             columnDef.derivedDataType = prevValue.derivedDataType;
@@ -299,10 +298,6 @@
             partitionNamesUnique();
             FeedService.syncTableFieldPolicyNames();
             validate();
-        }
-
-        this.addHistoryItem = function(columnDef) {
-            columnDef.history.push(createHistoryRecord(columnDef));
         }
 
         /**
@@ -332,9 +327,6 @@
             partitionNamesUnique();
             FeedService.syncTableFieldPolicyNames();
             validate();
-            //self.calcfitTable();
-            //reset selected column
-            //self.selectedColumn = null;
         }
 
         /**
@@ -375,7 +367,11 @@
         this.onSelectedColumn = function (selectedColumn) {
             var firstSelection = self.selectedColumn == null;
             self.selectedColumn = selectedColumn;
-
+            // Show an item in dropdown
+            console.debug('self.selectedColumn',self.selectedColumn);
+            if (self.selectedColumn.selectedSampleValue == null && self.selectedColumn.sampleValues.length > 0) {
+                self.selectedColumn.selectedSampleValue = self.selectedColumn.sampleValues[0];
+            }
             if(firstSelection){
                 //trigger scroll to stick the selection to the screen
                 Utils.waitForDomElementReady('#selectedColumnPanel',function() {
@@ -564,25 +560,6 @@
 
         });
 
-        /*
-        Toggle the viewable window for schema
-         */
-        this.toggleHeight = function() {
-            if (!self.expandedView && self.model.table.tableSchema.fields != '') {
-                self.calcfitTable();
-                self.expandedView = true;
-            } else {
-                self.schemaHeight ='100px';
-                self.expandedView = false;
-            }
-            angular.element(window).triggerHandler('resize');
-        }
-
-        this.calcfitTable = function() {
-            var numfields = self.model.table.tableSchema.fields.length;
-            var height = (numfields * 58) + 'px';
-            self.schemaHeight = height;
-        }
 
         var sampleFileWatch = $scope.$watch(function () {
             return self.sampleFile;
@@ -670,7 +647,7 @@
                 self.calcTableState();
                 self.collapseMethodPanel();
                 self.expandSchemaPanel();
-                self.calcfitTable();
+
                 validate();
                 angular.element('#upload-sample-file-btn').removeClass('md-primary');
             }

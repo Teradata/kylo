@@ -21,13 +21,13 @@
         };
     }
 
-    var controller = function ($scope, $http, $mdDialog, $mdExpansionPanel, RestUrlService, FeedService, BroadcastService, StepperService) {
+    var controller = function ($scope, $http, $mdDialog, $mdExpansionPanel, RestUrlService, FeedService, BroadcastService, StepperService, Utils) {
         this.isValid = true;
 
         var self = this;
         this.model = FeedService.createFeedModel;
         this.stepNumber = parseInt(this.stepIndex)+1
-        this.schemaHeight = "100px";
+        this.selectedColumn = {};
 
         /**
          * The form in angular
@@ -35,11 +35,6 @@
          */
         this.dataProcessingForm = {};
 
-        this.calcfitTable = function() {
-            var numfields = self.model.table.tableSchema.fields.length;
-            var height = (numfields * 59) + 'px';
-            self.schemaHeight = height;
-        }
 
         this.expandFieldPoliciesPanel = function () {
             $mdExpansionPanel().waitFor('panelFieldPolicies').then(function (instance) {
@@ -56,7 +51,6 @@
 
         function onActiveStep(event, index) {
             if (index == parseInt(self.stepIndex)) {
-                self.calcfitTable();
                 validateMergeStrategies();
             }
         }
@@ -66,7 +60,6 @@
         this.targetFormatOptions = FeedService.targetFormatOptions;
 
         // Open panel by default
-        self.calcfitTable();
         self.expandFieldPoliciesPanel();
 
 
@@ -118,6 +111,23 @@
             self.isValid = validRollingSync && validPK;
         }
 
+        this.getSelectedColumn = function () {
+            return self.selectedColumn;
+        };
+
+        this.onSelectedColumn = function (index) {
+
+            var selectedColumn = self.model.table.tableSchema.fields[index];
+            var firstSelection = self.selectedColumn == null;
+            self.selectedColumn = selectedColumn;
+
+            if(firstSelection){
+                //trigger scroll to stick the selection to the screen
+                Utils.waitForDomElementReady('#selectedColumnPanel2',function() {
+                    angular.element('#selectedColumnPanel2').triggerHandler('stickIt');
+                })
+            }
+        };
 
         this.showFieldRuleDialog = function(field,policyParam) {
             $mdDialog.show({

@@ -125,13 +125,14 @@
                       </div>
 
                     </div>
-                    <div browser-height browser-height-offset="650" md-auto-shrink id="define-feed-dest-schema-container"
-                         ng-style="{'min-height': vm.schemaHeight}" style="overflow-x:hidden ">
+                    <div id="define-feed-dest-schema-container"
+                         style="overflow-x:hidden ">
                       <div layout="row" class="no-outline" ng-repeat="columnDef in vm.model.table.tableSchema.fields"
                            ng-click="vm.onSelectedColumn(columnDef)">
                         <div flex="30" class="md-list-item-text  ">
                           <md-input-container md-no-float class="md-block condensed" flex-gt-sm>
-                            <input ng-model="columnDef.name" placeholder="Field Name" required name="name_{{columnDef._id}}" ng-blur="vm.onFieldChange(columnDef)"
+                            <input ng-model="columnDef.name" placeholder="Field Name" required name="name_{{columnDef._id}}" ng-change="vm.onFieldChange(columnDef)"
+                                   ng-model-options="{updateOn: 'blur'}"
                                    ng-pattern="/^[a-zA-Z0-9_-\s\)\(]*$/"
                                    ng-disabled="vm.tableLocked || columnDef.deleted"
                                    ng-class="{strike: columnDef.deleted}"
@@ -148,7 +149,8 @@
                           <div layout="column">
                             <md-input-container class="md-block md-dense condensed" flex-gt-sm>
                               <md-select ng-model="columnDef.derivedDataType" placeholder="Data Type" name="datatype_{{columnDef._id}}" required
-                                         ng-disabled="vm.dataTypeLocked || columnDef.deleted" ng-blur="vm.onNameFieldChange(columnDef)">
+                                         ng-disabled="vm.dataTypeLocked || columnDef.deleted" ng-change="vm.onNameFieldChange(columnDef)"
+                                         ng-model-options="{updateOn: 'blur'}">
                                 <md-option ng-repeat="dataType in vm.availableDefinitionDataTypes | orderBy:'toString()' track by $index" value="{{dataType}}" aria-label="{{dataType}}">
                                   {{dataType}}
                                 </md-option>
@@ -262,7 +264,7 @@
                           <md-input-container class="md-block condensed" flex-gt-sm>
                             <md-select ng-model="partition.columnDef" placeholder="Source Field" ng-change="vm.onPartitionSourceFieldChange(partition)" name="partition_sourceField{{partition._id}}"
                                        required>
-                              <md-option ng-repeat="field in vm.model.table.tableSchema.fields track by $index" ng-value="field" aria-label="{{field.name}}">
+                              <md-option ng-repeat="field in vm.model.table.tableSchema.fields | filter:{deleted:false} track by $index" ng-value="field" aria-label="{{field.name}}">
                                 {{field.name}}
                               </md-option>
                             </md-select>
@@ -390,8 +392,8 @@
         <div layout="column" class="layout-padding-top-bottom">
           <span>Sample field values</span>
           <span class="hint"> <md-input-container class="md-block condensed" flex-gt-sm>
-                      <md-select ng-model="vm.selectedColumn.selectedSampleValue" placeholder="Preview Data">
-                        <md-option ng-repeat="data in vm.selectedColumn.sampleValues | unique  track by $index" value="{{data}}" aria-label="{{data}}">
+                      <md-select ng-model="vm.selectedColumn.selectedSampleValue" placeholder="Preview Data" ng-model-options="{trackBy: '$value'}">>
+                        <md-option ng-repeat="data in vm.selectedColumn.sampleValues | unique" ng-value="data" aria-label="{{data}}">
                           {{data}}
                         </md-option>
                       </md-select>
