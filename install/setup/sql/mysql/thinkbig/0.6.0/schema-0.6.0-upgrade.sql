@@ -23,8 +23,7 @@ CREATE TABLE IF NOT EXISTS `KYLO_ALERT_CHANGE` (
   `change_time` bigint,
   `user` varchar(128) DEFAULT NULL,
   `description` varchar(255) DEFAULT NULL,
-  `content` text DEFAULT NULL, 
-  PRIMARY KEY (`alert_id`)
+  `content` text DEFAULT NULL
 ) ENGINE=InnoDB;
 
 END//

@@ -6,10 +6,15 @@ package com.thinkbiganalytics.alerts.rest.controller;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
+import javax.inject.Named;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
@@ -22,9 +27,17 @@ import org.springframework.stereotype.Component;
 
 import com.thinkbiganalytics.Formatters;
 import com.thinkbiganalytics.alerts.api.Alert;
+import com.thinkbiganalytics.alerts.api.AlertChangeEvent;
 import com.thinkbiganalytics.alerts.api.AlertCriteria;
 import com.thinkbiganalytics.alerts.api.AlertProvider;
+import com.thinkbiganalytics.alerts.api.AlertResponder;
+import com.thinkbiganalytics.alerts.api.AlertResponse;
+import com.thinkbiganalytics.alerts.rest.model.Alert.State;
+import com.thinkbiganalytics.alerts.rest.model.Alert.Level;
+import com.thinkbiganalytics.alerts.rest.model.AlertCreateRequest;
 import com.thinkbiganalytics.alerts.rest.model.AlertRange;
+import com.thinkbiganalytics.alerts.rest.model.AlertUpdateRequest;
+import com.thinkbiganalytics.alerts.spi.AlertManager;
 
 import io.swagger.annotations.Api;
 
@@ -39,6 +52,10 @@ public class AlertsController {
     
     @Inject
     private AlertProvider provider;
+    
+    @Inject
+    @Named("kyloAlertManager")
+    private AlertManager alertManager;
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -47,13 +64,111 @@ public class AlertsController {
         AlertCriteria criteria = createCriteria(uriInfo);
         
         provider.getAlerts(criteria).forEachRemaining(a -> alerts.add(a));
-        return new AlertRange(alerts);
+        return new AlertRange(alerts.stream().map(a -> toModel(a)).collect(Collectors.toList()));
+    }
+    
+    @GET
+    @Path("{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public com.thinkbiganalytics.alerts.rest.model.Alert getAlert(@PathParam("id") String idStr) {
+        Alert.ID id = provider.resolve(idStr);
+        
+        return provider.getAlert(id)
+                        .map(a -> toModel(a))
+                        .orElseThrow(() -> new WebApplicationException("An alert with the given ID does not exists: " + idStr, Status.NOT_FOUND));
+    }
+    
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public com.thinkbiganalytics.alerts.rest.model.Alert createAlert(AlertCreateRequest req) {
+        Alert.Level level = toDomain(req.getLevel());
+        Alert alert = alertManager.create(req.getType(), level, req.getDescription(), null);
+        return toModel(alert);
+    }
+    
+    
+    @POST
+    @Path("{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public com.thinkbiganalytics.alerts.rest.model.Alert updateAlert(@PathParam("id") String idStr,
+                                                                     AlertUpdateRequest req) {
+        Alert.ID id = provider.resolve(idStr);
+        final Alert.State state = toDomain(req.getState());
+        
+        class UpdateResponder implements AlertResponder {
+            Alert result = null;
+            
+            @Override
+            public void alertChange(Alert alert, AlertResponse response) {
+                switch (state) {
+                    case CLEARED:
+                        response.clear();
+                        result = alert;
+                        break;
+                    case HANDLED:
+                        result = response.handle(req.getDescription());
+                        break;
+                    case IN_PROGRESS:
+                        result = response.inProgress(req.getDescription());
+                        break;
+                    case UNHANDLED:
+                        result = response.unHandle(req.getDescription());
+                        break;
+                    default:
+                        result = alert;
+                        break;
+                }
+            }
+        }
+        
+        UpdateResponder responder = new UpdateResponder();
+        
+        provider.respondTo(id, responder);
+        return toModel(responder.result);
+    }
+    
+
+    private com.thinkbiganalytics.alerts.rest.model.Alert toModel(Alert alert) {
+        com.thinkbiganalytics.alerts.rest.model.Alert result = new com.thinkbiganalytics.alerts.rest.model.Alert();
+        result.setId(alert.getId().toString());
+        result.setActionable(alert.isActionable());
+        result.setCreatedTime(alert.getCreatedTime());
+        result.setLevel(toModel(alert.getLevel()));
+        result.setState(toModel(alert.getState()));
+        result.setType(alert.getType());
+        alert.getEvents().forEach(e -> result.getEvents().add(toModel(e)));
+        return result;
     }
 
-    /**
-     * @param uriInfo
-     * @return
-     */
+    private com.thinkbiganalytics.alerts.rest.model.AlertChangeEvent toModel(AlertChangeEvent event) {
+        com.thinkbiganalytics.alerts.rest.model.AlertChangeEvent result = new com.thinkbiganalytics.alerts.rest.model.AlertChangeEvent();
+        result.setCreatedTime(event.getChangeTime());
+        result.setDescription(event.getDescription());
+        result.setState(toModel(event.getState()));
+        return result;
+    }
+
+    private Level toModel(Alert.Level level) {
+        // Currently identical
+        return Level.valueOf(level.name());
+    }
+
+    private State toModel(Alert.State state) {
+        // Currently identical
+        return State.valueOf(state.name());
+    }
+
+    private Alert.State toDomain(State state) {
+        return Alert.State.valueOf(state.name());
+    }
+
+    private Alert.Level toDomain(Level level) {
+        // Currently identical
+        return Alert.Level.valueOf(level.name());
+    }
+
     private AlertCriteria createCriteria(UriInfo uriInfo) {
         // Query params: limit, state, level, before-time, after-time, before-alert, after-alert
         MultivaluedMap<String, String> params = uriInfo.getQueryParameters();

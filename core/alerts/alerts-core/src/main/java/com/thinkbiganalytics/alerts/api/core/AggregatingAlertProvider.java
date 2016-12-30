@@ -15,6 +15,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
@@ -97,7 +98,7 @@ public class AggregatingAlertProvider implements AlertProvider, AlertSourceAggre
      */
     @Override
     public void accept(Event<Alert> event) {
-        final Alert alert = event.getData();
+        final Alert alert = unwrapAlert(event.getData());
         final AlertManager mgr = (AlertManager) alert.getSource();
         final List<AlertResponder> responders = snapshotResponderts();
         
@@ -188,7 +189,7 @@ public class AggregatingAlertProvider implements AlertProvider, AlertSourceAggre
      * @see com.thinkbiganalytics.alerts.api.AlertProvider#getAlert(com.thinkbiganalytics.alerts.api.Alert.ID)
      */
     @Override
-    public Alert getAlert(ID id) {
+    public Optional<Alert> getAlert(ID id) {
         SourceAlertID alertId = asSourceAlertId(id);
         AlertSource src = getSource(alertId.sourceId);
         
@@ -204,8 +205,8 @@ public class AggregatingAlertProvider implements AlertProvider, AlertSourceAggre
      */
     @Override
     public Iterator<? extends Alert> getAlerts(AlertCriteria criteria) {
-        // TODO Auto-generated method stub
-        return null;
+        Map<String, AlertSource> srcs = snapshotAllSources();
+        return combineAlerts(criteria, srcs).iterator();
     }
 
     /* (non-Javadoc)
@@ -213,8 +214,7 @@ public class AggregatingAlertProvider implements AlertProvider, AlertSourceAggre
      */
     @Override
     public Iterator<? extends Alert> getAlertsAfter(DateTime time) {
-        Map<String, AlertSource> srcs = snapshotAllSources();
-        return combineAlerts(criteria().after(time), srcs).iterator();
+        return getAlerts(criteria().after(time));
     }
 
     /* (non-Javadoc)
@@ -222,17 +222,7 @@ public class AggregatingAlertProvider implements AlertProvider, AlertSourceAggre
      */
     @Override
     public Iterator<? extends Alert> getAlertsAfter(ID id) {
-        // TODO Don't make a separate query for this alert when the after(ID) on criteria is working
-        Alert sinceAlert = getAlert(id);
-        
-        if (sinceAlert != null) {
-            DateTime created = sinceAlert.getCreatedTime();
-            Map<String, AlertSource> srcs = snapshotAllSources();
-            
-            return combineAlerts(criteria().after(created), srcs).iterator();
-        } else {
-            return Collections.<Alert>emptySet().iterator();
-        }
+        return getAlerts(criteria().after(id));
     }
     
     /* (non-Javadoc)
@@ -311,10 +301,8 @@ public class AggregatingAlertProvider implements AlertProvider, AlertSourceAggre
         }
     }
 
-    private Alert getAlert(Alert.ID id, AlertSource src) {
-        return src.getAlert(id)
-                        .map(alert -> wrapAlert(alert, src))
-                        .orElse(null);
+    private Optional<Alert> getAlert(Alert.ID id, AlertSource src) {
+        return src.getAlert(id).map(alert -> wrapAlert(alert, src));
     }
 
     /**
@@ -343,17 +331,6 @@ public class AggregatingAlertProvider implements AlertProvider, AlertSourceAggre
             .map(alert -> wrapAlert(alert, alert.getSource()))
             .sorted((a1, a2) -> a1.getCreatedTime().compareTo(a2.getCreatedTime()));
     }
-//
-//    private Stream<Alert> combineAlerts(DateTime since, Map<String, AlertSource> srcs) {
-//        return srcs.values().stream()
-//            .map(src -> { 
-//                Iterable<Alert> alerts = () -> src.getAlerts(since);
-//                return StreamSupport.stream(alerts.spliterator(), false);
-//                })
-//            .flatMap(s -> s)
-//            .map(alert -> wrapAlert(alert, alert.getSource()))
-//            .sorted((a1, a2) -> a1.getCreatedTime().compareTo(a2.getCreatedTime()));
-//    }
     
     private void notifyChanged(Alert alert) {
         notifyListeners(alert);
@@ -436,13 +413,10 @@ public class AggregatingAlertProvider implements AlertProvider, AlertSourceAggre
         AlertManager mgr = this.managers.get(srcId.sourceId);
         
         if (mgr !=  null) {
-            Alert alert = getAlert(srcId.alertId, mgr);
-            
-            if (alert != null && alert.isActionable()) {
-                return new SimpleEntry<>(alert, mgr);
-            } else {
-                return null;
-            } 
+            return getAlert(srcId.alertId, mgr)
+                            .filter(alert -> alert.isActionable())
+                            .map(alert -> new SimpleEntry<>(unwrapAlert(alert), mgr))
+                            .orElse(null);
         } else {
             return null;
         }
@@ -612,7 +586,7 @@ public class AggregatingAlertProvider implements AlertProvider, AlertSourceAggre
 
         @Override
         public <C extends Serializable> Alert unhandle(String description, C content) {
-            return changed(this.unhandle(description, content));
+            return changed(this.delegate.unhandle(description, content));
         }
 
         @Override

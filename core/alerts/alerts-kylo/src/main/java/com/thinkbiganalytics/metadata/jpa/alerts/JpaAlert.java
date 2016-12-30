@@ -33,6 +33,7 @@ import com.thinkbiganalytics.alerts.api.AlertChangeEvent;
 import com.thinkbiganalytics.alerts.spi.AlertSource;
 import com.thinkbiganalytics.jpa.BaseJpaId;
 import com.thinkbiganalytics.jpa.JsonAttributeConverter;
+import com.thinkbiganalytics.jpa.UriConverter;
 
 /**
  * Implements the JPA-based alert type managed in the Kylo alert store.
@@ -46,6 +47,7 @@ public class JpaAlert implements Alert {
     @EmbeddedId
     private AlertId id;
     
+    @Convert(converter = AlertTypeConverter.class)
     @Column(name = "TYPE", length = 128, nullable = false)
     private URI type;
     
@@ -218,7 +220,7 @@ public class JpaAlert implements Alert {
         private static final long serialVersionUID = 1L;
 
         @Column(name = "id", columnDefinition = "binary(16)")
-        private UUID uuid;
+        private UUID value;
 
         public static AlertId create() {
             return new AlertId(UUID.randomUUID());
@@ -233,15 +235,18 @@ public class JpaAlert implements Alert {
 
         @Override
         public UUID getUuid() {
-            return this.uuid;
+            return this.value;
         }
 
         @Override
         public void setUuid(UUID uuid) {
-            this.uuid = uuid;
+           this.value = uuid;
         }
+
     }
 
     public static class AlertContentConverter extends JsonAttributeConverter<Serializable> { }
+    
+    public static class AlertTypeConverter extends UriConverter { }
 
 }

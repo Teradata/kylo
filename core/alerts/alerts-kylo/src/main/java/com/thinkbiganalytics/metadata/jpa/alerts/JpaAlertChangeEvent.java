@@ -32,9 +32,6 @@ import com.thinkbiganalytics.security.UsernamePrincipal;
 @Embeddable
 @Table(name = "KYLO_ALERT_CHANGE")
 public class JpaAlertChangeEvent implements AlertChangeEvent, Comparable<AlertChangeEvent> {
-
-    @Embedded
-    private AlertId alertId;
     
     @Type(type = "com.thinkbiganalytics.jpa.PersistentDateTimeAsMillisLong")
     @Column(name = "CHANGE_TIME")
@@ -115,14 +112,6 @@ public class JpaAlertChangeEvent implements AlertChangeEvent, Comparable<AlertCh
     @SuppressWarnings("unchecked")
     public <C extends Serializable> C getContent() {
         return (C) this.content;
-    }
-    
-    public AlertId getAlertId() {
-        return alertId;
-    }
-    
-    public void setAlertId(AlertId alertId) {
-        this.alertId = alertId;
     }
 
     public void setChangeTime(DateTime changeTime) {

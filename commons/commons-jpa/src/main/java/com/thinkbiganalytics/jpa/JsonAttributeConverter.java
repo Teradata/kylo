@@ -59,9 +59,13 @@ public class JsonAttributeConverter<O> implements AttributeConverter<O, String> 
     @Override
     public String convertToDatabaseColumn(O attribute) {
         try {
-            JsonWrapper<O> wrapper = new JsonWrapper<O>(attribute, writer);
-            String value = writer.writeValueAsString(wrapper);
-            return value;
+            if (attribute != null) {
+                JsonWrapper<O> wrapper = new JsonWrapper<O>(attribute, writer);
+                String value = writer.writeValueAsString(wrapper);
+                return value;
+            } else {
+                return null;
+            }
         } catch (JsonProcessingException e) {
             // TODO Throw a runtime exception?
             LOG.error("Failed to serialize as object into JSON: {}", attribute, e);
@@ -75,10 +79,13 @@ public class JsonAttributeConverter<O> implements AttributeConverter<O, String> 
     @Override
     public O convertToEntityAttribute(String dbData) {
         try {
-//            return reader.readValue(dbData);
-            JsonWrapper<O> wrapper = reader.readValue(dbData);
-            O obj = wrapper.readValue(reader);
-            return obj;
+            if (dbData != null) {
+                JsonWrapper<O> wrapper = reader.readValue(dbData);
+                O obj = wrapper.readValue(reader);
+                return obj;
+            } else {
+                return null;
+            }
         } catch (IOException e) {
             // TODO Throw a runtime exception?
             LOG.error("Failed to deserialize as object from JSON: {}", dbData, e);

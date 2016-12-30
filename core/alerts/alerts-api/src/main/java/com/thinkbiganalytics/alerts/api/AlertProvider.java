@@ -5,6 +5,7 @@ package com.thinkbiganalytics.alerts.api;
 
 import java.io.Serializable;
 import java.util.Iterator;
+import java.util.Optional;
 
 import org.joda.time.DateTime;
 
@@ -52,7 +53,7 @@ public interface AlertProvider {
      * @param id the alert's ID
      * @return the alert, or null if no alert exists with that ID
      */
-    Alert getAlert(Alert.ID id);
+    Optional<Alert> getAlert(Alert.ID id);
     
     /**
      * Retrieves alerts matching the given criteria.  Specifying null retrieve all known alerts.

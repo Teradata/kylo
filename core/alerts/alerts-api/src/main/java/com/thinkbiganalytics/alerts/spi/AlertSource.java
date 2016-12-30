@@ -8,8 +8,6 @@ import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
 
-import org.joda.time.DateTime;
-
 import com.thinkbiganalytics.alerts.api.Alert;
 import com.thinkbiganalytics.alerts.api.AlertCriteria;
 
@@ -32,8 +30,4 @@ public interface AlertSource {
     Optional<Alert> getAlert(Alert.ID id);
     
     Iterator<Alert> getAlerts(AlertCriteria criteria);
-//
-//    Iterator<Alert> getAlerts(DateTime since);
-//    
-//    Iterator<Alert> getAlerts(Alert.ID since);
 }

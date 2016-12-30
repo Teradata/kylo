@@ -85,6 +85,9 @@ public class AggregatingAlertProviderTest {
         
         provider.addListener(this.listener);
         provider.addResponder(this.responder);
+        
+        when(this.source.criteria()).thenReturn(new BaseAlertCriteria());
+        when(this.manager.criteria()).thenReturn(new BaseAlertCriteria());
     }
     
     @Test
@@ -126,8 +129,8 @@ public class AggregatingAlertProviderTest {
         when(this.source.getAlert(any(Alert.ID.class))).thenReturn(Optional.of(srcAlert));
         when(this.manager.getAlert(any(Alert.ID.class))).thenReturn(Optional.of(mgrAlert));
         
-        Alert getMgrAlert = providerToSourceAlertFunction().apply(this.provider.getAlert(mgrId));
-        Alert getSrcAlert = providerToSourceAlertFunction().apply(this.provider.getAlert(srcId));
+        Alert getMgrAlert = providerToSourceAlertFunction().apply(this.provider.getAlert(mgrId).get());
+        Alert getSrcAlert = providerToSourceAlertFunction().apply(this.provider.getAlert(srcId).get());
         
         assertThat(getMgrAlert).isEqualTo(mgrAlert);
         assertThat(getSrcAlert).isEqualTo(srcAlert);

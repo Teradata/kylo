@@ -9,10 +9,10 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.thinkbiganalytics.alerts.api.Alert;
 
 /**
- *
+ * Contains the range of alerts as a result of a query.  There are also attributes for 
+ * the result size and the alert IDs that bound the result.
  * @author Sean Felten
  */
 @JsonInclude(Include.NON_EMPTY)

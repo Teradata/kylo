@@ -17,11 +17,6 @@ import com.thinkbiganalytics.alerts.api.Alert.State;
  * @author Sean Felten
  */
 public interface AlertChangeEvent {
-//    
-//    /**
-//     * @return the ID of the alert that changed
-//     */
-//    Alert.ID getAlertId();
     
     /**
      * @return the time when the the alert transitioned to this state
