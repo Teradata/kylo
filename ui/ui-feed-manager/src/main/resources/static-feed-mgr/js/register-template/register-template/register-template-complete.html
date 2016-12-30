@@ -1,30 +1,27 @@
-<md-dialog aria-label="Registration Results"  ng-cloak>
-    <form>
-        <md-toolbar>
-            <div  class="md-toolbar-tools">
-                <h4 class="md-title">Registration Results for {{templateName}}</h4>
-                <span flex></span>
-                <md-button class="md-icon-button" ng-click="cancel()">
-                    <ng-md-icon md-icon icon="close" aria-label="Close dialog"></ng-md-icon>
-                </md-button>
-            </div>
-        </md-toolbar>
-        <md-dialog-content layout="column" flex style="min-width:500px;" layout-padding>
-          <div>{{message}}</div>
-            <md-list ng-if="registrationSuccess">
-                <md-list-item ng-click="defineNewFeed()">
-                    Would you like to create a new Feed using this template?
-                </md-list-item>
-                <md-list-item ng-click="registerNewTemplate()">
-                    Would you like to register another template?
-                </md-list-item>
-                <md-list-item ng-click="exploreFeeds()">
-                    Explore other feeds?
-                </md-list-item>
-            </md-list>
-            <md-list ng-if="registrationSuccess == false">
-                <md-list-item> Errors were found.  Please go back and fix</md-list-item>
-                </md-list>
-        </md-dialog-content>
-    </form>
-</md-dialog>
+<div ng-controller="RegisterTemplateCompleteController as vm">
+
+  <div layout="column" ng-if="vm.error == null" layout-align="center center" layout-fill style="background-color:#ffffff">
+
+    <div layout="row">
+      <ng-md-icon icon="done_all" size="50" style="fill:#EF8E43"></ng-md-icon>
+      <div class="md-headline" style="padding-left:40px;padding-top:40px;">Congratulations! Your template has been successfully registered/updated.</div>
+    </div>
+    <span>{{vm.message}}</span>
+    <span flex style="padding-top:40px;"></span>
+    <div flex layout="row" style="padding-left:520px;">
+      <md-button class="md-primary md-raised" ng-click="vm.gotIt()">Got It</md-button>
+    </div>
+  </div>
+
+  <div ng-if="vm.error != null" layout-align="center center" layout-fill style="background-color:#ffffff">
+    <div layout="row">
+      <ng-md-icon icon="error" size="50" style="fill:#FF9901"></ng-md-icon>
+      <div class="md-headline" style="padding-left:40px;padding-top:40px;"> Errors were found while registering the template. Please go back and fix</div>
+    </div>
+    <span>{{vm.message}}</span>
+  </div>
+
+</div>
+
+
+

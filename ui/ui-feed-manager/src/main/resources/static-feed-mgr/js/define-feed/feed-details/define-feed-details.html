@@ -40,7 +40,7 @@
 
 
             <div ng-repeat="processor in vm.model.nonInputProcessors track by processor.processorId" flex ng-if="processor.userEditable">
-              <div class="md-subhead">{{processor.name}}</div>
+              <div class="md-subhead" ng-if="processor.feedPropertiesUrl == null  || processor.feedPropertiesUrl == undefined">{{processor.name}}</div>
                 <div class="layout-padding-indent" ng-if="processor.feedPropertiesUrl == null  || processor.feedPropertiesUrl == undefined">
                     <div ng-repeat="property in processor.properties | filter:{userEditable:true} track by property.key">
                          <md-input-container ng-class="{'condensed':property.renderType == 'radio' }" nifi-property-input property="property" class="md-block layout-padding-top-bottom" flex-gt-sm />

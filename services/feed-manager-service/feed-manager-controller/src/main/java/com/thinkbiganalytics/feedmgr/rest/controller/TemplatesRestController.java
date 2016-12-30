@@ -164,6 +164,11 @@ public class TemplatesRestController {
         return Response.ok(processorProperties).build();
     }
 
+    /**
+     * Gets a templates datasource definitions
+     * This is now all done in the {@link #getNiFiTemplateFlowInfo}
+     */
+    @Deprecated
     @GET
     @Path("/nifi/{templateId}/datasource-definitions")
     @Produces({MediaType.APPLICATION_JSON})

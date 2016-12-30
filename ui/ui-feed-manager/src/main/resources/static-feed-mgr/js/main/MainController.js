@@ -107,11 +107,16 @@
                     buildAdminMenu(actionSet.actions);
                 });
 
-        $rootScope.$on('$stateChangeSuccess', function(event, toState) {
+        $rootScope.previousState;
+        $rootScope.currentState;
+
+        $rootScope.$on('$stateChangeSuccess', function (event, toState, toParams, fromState, fromParams) {
             self.currentState = toState;
             if (self.currentState.name != 'search') {
                 self.searchQuery = '';
             }
+            $rootScope.previousState = fromState.name;
+            $rootScope.currentState = toState.name;
         });
     };
 

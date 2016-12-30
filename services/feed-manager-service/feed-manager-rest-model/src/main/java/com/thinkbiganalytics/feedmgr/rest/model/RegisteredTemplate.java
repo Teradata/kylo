@@ -101,7 +101,7 @@ public class RegisteredTemplate {
         this.feedsCount= registeredTemplate.getFeedsCount();
         this.registeredDatasourceDefinitions = registeredTemplate.getRegisteredDatasourceDefinitions();
         this.order = registeredTemplate.getOrder();
-        this.processorFlowTypeMap = new HashMap<>(getProcessorFlowTypeMap());
+        this.processorFlowTypeMap = new HashMap<>(registeredTemplate.getProcessorFlowTypeMap());
         this.isStream = registeredTemplate.isStream();
         this.initializeProcessors();
     }

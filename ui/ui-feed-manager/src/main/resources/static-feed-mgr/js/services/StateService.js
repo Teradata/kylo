@@ -29,6 +29,10 @@ angular.module(MODULE_FEED_MGR).service('StateService', function ($state) {
         $state.go('register-template');
     }
 
+    this.navigateToRegisterTemplateComplete = function (message, templateModel, error) {
+        $state.go('register-template-complete', {message: message, templateModel: templateModel, error: error});
+    }
+
     this.navigateToImportTemplate = function(){
         $state.go('import-template');
     }

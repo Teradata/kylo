@@ -1,6 +1,6 @@
-(function() {
+(function () {
 
-    var directive = function() {
+    var directive = function () {
         return {
             restrict: "EA",
             bindToController: {
@@ -10,12 +10,17 @@
             controllerAs: 'vm',
             templateUrl: 'js/register-template/register-template/register-template-step.html',
             controller: "RegisterCompleteRegistrationController",
-            link: function($scope, element, attrs, controller) {
+            link: function ($scope, element, attrs, controller) {
             }
         };
     };
 
-    function RegisterCompleteRegistrationController($scope, $http, $mdToast, $mdDialog, RestUrlService, StateService, RegisterTemplateService) {
+    function RegisterCompleteRegistrationController($scope, $http, $mdToast, $rootScope, $mdPanel, $mdDialog, RestUrlService, StateService, RegisterTemplateService) {
+
+        /**
+         * ref back to this controller
+         * @type {RegisterCompleteRegistrationController}
+         */
         var self = this;
 
         /**
@@ -24,7 +29,7 @@
          */
         this.templateOrder = [];
 
-            /**
+        /**
          * the angular form
          */
         self.registerTemplateForm = {};
@@ -35,41 +40,188 @@
          */
         self.isValid = false;
 
+        /**
+         * The Source/Destination Datasources assigned to this template
+         * @type {Array}
+         */
         self.processorDatasourceDefinitions = [];
 
+        /**
+         * The processors that have been marked as special flow types for this template
+         * @type {Array}
+         */
+        self.templateFlowTypeProcessors = []
 
-        self.allFlowProcessors = [];
+        /**
+         * Available FlowType options (i.e. Critical Failure, Non Critical Failure...)
+         * @type {Array}
+         */
+        self.processorFlowTypeOptions = [];
+
+        /**
+         * The Leaf processors in this template (and joining reusable flows) along with their 'flowId' and 'flowtype'
+         * @type {Array}
+         */
+        self.leafProcessors = [];
+
+        /**
+         * A map with the processor FlowId and its corresponding FlowType.
+         * @type {{}}
+         */
+        self.flowIdFlowProcessorMap = {};
 
         /**
          * flag to tell when the system is loading datasources
          * @type {boolean}
          */
-        self.loadingProcessorDatasources = true;
+        self.loadingFlowData = true;
 
-        var buildTemplateFlowData = function(){
-            self.loadingProcessorDatasources = true;
+        /**
+         * The Template Model
+         */
+        this.model = RegisterTemplateService.model;
+
+        this.message = null;
+
+        /**
+         * Flag indicating if the template succeeded registration
+         * @type {boolean}
+         */
+        this.registrationSuccess = false;
+        /**
+         * The Step number
+         * @type {number}
+         */
+        this.stepNumber = parseInt(this.stepIndex) + 1
+
+        /**
+         * The possible options to choose how this template should be displayed in the Feed Stepper
+         * @type {[*]}
+         */
+        this.templateTableOptions =
+            [{type: 'NO_TABLE', displayName: 'No table customization', description: 'User will not be given option to customize destination table'},
+                {type: 'DEFINE_TABLE', displayName: 'Customize destination table', description: 'Allow users to define and customize the destination data table.'}, {
+                type: 'DATA_TRANSFORMATION',
+                displayName: 'Data Transformation',
+                description: 'Users pick and choose different data tables and columns and apply functions to transform the data to their desired destination table'
+            }]
+
+        /**
+         * the selected option for the template
+         * @type {*}
+         */
+        this.templateTableOption = this.model.templateTableOption;
+
+        /**
+         * A map of the port names to the port Object
+         * used for the connections from the outputs to input ports
+         * @type {{}}
+         */
+        self.connectionMap = {};
+
+        /**
+         * The available options in the list of possible inputPorts to connect to
+         * @type {Array} of {label: port.name, value: port.name}
+         */
+        self.inputPortList = [];
+
+        // setup the Stepper types
+        var initTemplateTableOptions = function () {
+            if (self.templateTableOption == undefined) {
+
+                if (self.model.defineTable) {
+                    self.templateTableOption = 'DEFINE_TABLE'
+                }
+                else if (self.model.dataTransformation) {
+                    self.templateTableOption = 'DATA_TRANSFORMATION'
+                }
+                else if (self.model.reusableTemplate) {
+                    self.templateTableOption = 'COMMON_REUSABLE_TEMPLATE'
+                }
+                else {
+                    self.templateTableOption = 'NO_TABLE'
+                }
+            }
+        }
+
+        /**
+         * Fetches the output/input ports and walks the flow to build the processor graph for the Data sources and the flow types
+         */
+        var initTemplateFlowData = function () {
+            if (self.model.needsReusableTemplate) {
+                RegisterTemplateService.fetchRegisteredReusableFeedInputPorts().then(function (response) {
+                    // Update connectionMap and inputPortList
+                    self.inputPortList = [];
+                    if (response.data) {
+                        angular.forEach(response.data, function (port, i) {
+                            self.inputPortList.push({label: port.name, value: port.name});
+                            self.connectionMap[port.name] = port;
+                        });
+                    }
+
+                    // Check for invalid connections
+                    angular.forEach(self.model.reusableTemplateConnections, function (connection) {
+                        //initially mark as valid
+                        self.registerTemplateForm["port-" + connection.feedOutputPortName].$setValidity("invalidConnection", true);
+                        if (!angular.isDefined(self.connectionMap[connection.inputPortDisplayName])) {
+                            connection.inputPortDisplayName = null;
+                            // self.$error["port-" + connection.feedOutputPortName] = true;
+                            //mark as invalid
+                            self.registerTemplateForm["port-" + connection.feedOutputPortName].$setValidity("invalidConnection", false);
+                        }
+                    });
+
+                    buildTemplateFlowData();
+                });
+            }
+            else {
+                buildTemplateFlowData();
+            }
+        }
+
+        /**
+         * Initialze the template options
+         */
+        initTemplateTableOptions();
+
+        /**
+         * Initialize the connections and flow data
+         */
+        initTemplateFlowData();
+
+        /**
+         * Calls the server to get all the Datasources and the Flow processors and flow types
+         * Caled initially when the page loads and then any time a user changes a input port connection
+         */
+        var buildTemplateFlowData = function () {
+            self.loadingFlowData = true;
             var assignedPortIds = [];
-            _.each(self.model.reusableTemplateConnections,function(conn) {
+            _.each(self.model.reusableTemplateConnections, function (conn) {
                 var inputPort = conn.inputPortDisplayName;
                 var port = self.connectionMap[inputPort];
-                if(port != undefined) {
+                if (port != undefined) {
                     assignedPortIds.push(port.id);
                 }
             });
             var selectedPortIds = '';
-            if(assignedPortIds.length >0) {
-              selectedPortIds = assignedPortIds.join(",");
+            if (assignedPortIds.length > 0) {
+                selectedPortIds = assignedPortIds.join(",");
             }
 
-            RegisterTemplateService.getNiFiTemplateFlowInformation(self.model.nifiTemplateId,self.model.reusableTemplateConnections).then(function(response){
+            RegisterTemplateService.getNiFiTemplateFlowInformation(self.model.nifiTemplateId, self.model.reusableTemplateConnections).then(function (response) {
                 var map = {};
 
-                if(response && response.data) {
+                if (response && response.data) {
 
                     var datasourceDefinitions = response.data.templateProcessorDatasourceDefinitions;
 
-                    self.flowProcessors = response.data.processors;
+                    self.leafProcessors = _.filter(response.data.processors, function (processor) {
+                        return processor.leaf == true;
+                    });
 
+                    self.processorFlowTypeOptions = response.data.processorFlowTypes;
+
+                    console.log('self.processorFlowTypeOptions', self.processorFlowTypeOptions)
                     //merge in those already selected/saved on this template
                     _.each(datasourceDefinitions, function (def) {
                         def.selectedDatasource = false;
@@ -96,58 +248,84 @@
                         }
                     });
 
+                    //reset the array
+                    self.templateFlowTypeProcessors = [];
+
                     //get the map of processors by flowId
-                    var flowIdProcessorMap = _.indexBy(self.flowProcessors,'flowId');
+                    self.flowIdFlowProcessorMap = _.indexBy(self.leafProcessors, 'flowId');
 
                     //merge in the saved flowprocessor types with the ones on the template
-                    _.each(self.model.processorFlowTypeMap,function(flowType,processorFlowId){
+                    _.each(self.model.processorFlowTypeMap, function (flowType, processorFlowId) {
 
-
-
+                        var flowProcessor = self.flowIdFlowProcessorMap[processorFlowId];
+                        if (flowProcessor != undefined) {
+                            self.templateFlowTypeProcessors.push(flowProcessor);
+                            flowProcessor.flowType = flowType;
+                        }
                     });
 
+                    if (self.templateFlowTypeProcessors.length == 0) {
+                        //push items parsed from the flow into here
 
+                        var inspectedFlowRelationshipProcessors = _.filter(self.leafProcessors, function (flowProcessor) {
+                            return flowProcessor.flowType != 'NORMAL_FLOW';
+                        });
 
+                        if (inspectedFlowRelationshipProcessors.length > 0) {
+                            _.each(inspectedFlowRelationshipProcessors, function (processor) {
+                                self.templateFlowTypeProcessors.push(processor);
+                            })
+                        }
+
+                    }
 
                 }
-                self.loadingProcessorDatasources = false;
+                self.loadingFlowData = false;
             });
 
         };
 
-
-        this.model = RegisterTemplateService.model;
-        this.message = null;
-        this.registrationSuccess = false;
-        this.stepNumber = parseInt(this.stepIndex) + 1
-        this.templateTableOption = this.model.templateTableOption;
-
-        // setup the Stepper types
-        if (this.templateTableOption == undefined) {
-
-            if (this.model.defineTable) {
-                this.templateTableOption = 'DEFINE_TABLE'
+        this.removeProcessorFlowType = function (processor) {
+            var item = _.find(self.templateFlowTypeProcessors, function (flowProcessor) {
+                return flowProcessor.flowId == processor.flowId;
+            });
+            if (item != undefined) {
+                //remove it
+                self.templateFlowTypeProcessors.splice(_.indexOf(self.templateFlowTypeProcessors, processor), 1);
             }
-            else if (this.model.dataTransformation) {
-                this.templateTableOption = 'DATA_TRANSFORMATION'
-            }
-            else if (this.model.reusableTemplate) {
-                self.templateTableOption = 'COMMON_REUSABLE_TEMPLATE'
-            }
-            else {
-                this.templateTableOption = 'NO_TABLE'
-            }
-
         }
-        this.templateTableOptions =
-                [{type: 'NO_TABLE', displayName: 'No table customization', description: 'User will not be given option to customize destination table'},
-                    {type: 'DEFINE_TABLE', displayName: 'Customize destination table', description: 'Allow users to define and customize the destination data table.'}, {
-                    type: 'DATA_TRANSFORMATION',
-                    displayName: 'Data Transformation',
-                    description: 'Users pick and choose different data tables and columns and apply functions to transform the data to their desired destination table'
-                }]
 
-        this.onTableOptionChange = function() {
+        /**
+         * Adds a placeholder processor type with a marker field of 'isEmpty' to indicate this processortype is new and needs to be set
+         */
+        this.addFlowProcessorType = function () {
+            var alreadyAdding = _.find(self.templateFlowTypeProcessors, function (flowProcessor) {
+                return flowProcessor.isEmpty != undefined && flowProcessor.isEmpty == true;
+            });
+            if (alreadyAdding == undefined) {
+                self.templateFlowTypeProcessors.push({isNew: true, isEmpty: true, name: '', flowId: '', flowType: 'NORMAL_FLOW'})
+            }
+        }
+
+        /**
+         * Called when the user changes the processor in the select for defining the flow types
+         * @param processor
+         */
+        this.changeProcessorFlowType = function (processor) {
+
+            //remove the isEmpty marker to allow for another Add
+            if (processor.isEmpty != undefined) {
+                processor.isEmpty = undefined
+            }
+            //reassign the incoming processor to
+            var matchingProcessor = self.flowIdFlowProcessorMap[processor.flowId];
+            angular.extend(processor, matchingProcessor);
+        }
+
+        /**
+         * Called when the user changes the radio buttons
+         */
+        this.onTableOptionChange = function () {
 
             if (self.templateTableOption == 'DEFINE_TABLE') {
                 self.model.defineTable = true;
@@ -163,40 +341,11 @@
             }
         }
 
-        self.connectionMap = {};
-        self.inputPortList = [];
-        if (self.model.needsReusableTemplate) {
-            RegisterTemplateService.fetchRegisteredReusableFeedInputPorts().then(function(response) {
-                // Update connectionMap and inputPortList
-                self.inputPortList = [];
-                if (response.data) {
-                    angular.forEach(response.data, function(port, i) {
-                        self.inputPortList.push({label: port.name, value: port.name});
-                        self.connectionMap[port.name] = port;
-                    });
-                }
-
-                // Check for invalid connections
-                angular.forEach(self.model.reusableTemplateConnections, function(connection) {
-                    //initially mark as valid
-                    self.registerTemplateForm["port-" + connection.feedOutputPortName].$setValidity("invalidConnection", true);
-                    if (!angular.isDefined(self.connectionMap[connection.inputPortDisplayName])) {
-                        connection.inputPortDisplayName = null;
-                        // self.$error["port-" + connection.feedOutputPortName] = true;
-                        //mark as invalid
-                        self.registerTemplateForm["port-" + connection.feedOutputPortName].$setValidity("invalidConnection", false);
-                    }
-                });
-
-                buildTemplateFlowData();
-            });
-        }
-        else {
-            buildTemplateFlowData();
-        }
-
-
-        self.onNeedsReusableTemplateConnectionChange = function(connection) {
+        /**
+         * Called when the user changes the output port connections
+         * @param connection
+         */
+        self.onReusableTemplateConnectionChange = function (connection) {
             var port = self.connectionMap[connection.inputPortDisplayName];
             connection.reusableTemplateInputPortName = port.name;
             //mark as valid
@@ -204,7 +353,10 @@
             buildTemplateFlowData();
         };
 
-        this.showIconPicker = function() {
+        /**
+         * Called when the user clicks to change the icon
+         */
+        this.showIconPicker = function () {
             var iconModel = {icon: self.model.icon.title, iconColor: self.model.icon.color};
             iconModel.name = self.model.templateName;
 
@@ -217,67 +369,78 @@
                 locals: {
                     iconModel: iconModel
                 }
-            })
-                    .then(function(msg) {
-                        if (msg) {
-                            self.model.icon.title = msg.icon;
-                            self.model.icon.color = msg.color;
-                        }
+            }).then(function (msg) {
+                if (msg) {
+                    self.model.icon.title = msg.icon;
+                    self.model.icon.color = msg.color;
+                }
 
-                    }, function() {
+            }, function () {
 
-                    });
+            });
         };
 
-        this.registerTemplate = function() {
-            var successFn = function(response) {
-                //toast created!!!
-                var message = 'Template Registered with ' + response.data.properties.length + ' properties';
-                self.message = message;
-                self.registrationSuccess = true;
-                $mdToast.show(
-                        $mdToast.simple()
-                                .textContent(message)
-                                .hideDelay(3000)
-                );
-                self.showCompleteDialog()
+        /**
+         * Called when the user clicks Register
+         * @returns {*}
+         */
+        this.registerTemplate = function () {
 
-            }
-            var errorFn = function(err) {
-                var message = 'Error Registering Template ' + err;
-                self.message = message;
-                self.registrationSuccess = false;
-                $mdToast.simple()
+            showRegistrationInProgressDialog();
+            var successFn = function (response) {
+                $mdDialog.hide();
+                var message = 'Template Registered with ' + response.data.properties.length + ' properties';
+                self.registrationSuccess = true;
+
+                $mdToast.show(
+                    $mdToast.simple()
                         .textContent(message)
-                        .hideDelay(3000);
-                self.showCompleteDialog()
+                        .hideDelay(3000)
+                );
+                StateService.navigateToRegisterTemplateComplete(message, self.model, null);
+            }
+            var errorFn = function (err) {
+                $mdDialog.hide();
+                var message = 'Error Registering Template ' + err;
+                self.registrationSuccess = false;
+                $mdToast.show(
+                    $mdToast.simple()
+                        .textContent(message)
+                        .hideDelay(3000)
+                );
+                showErrorDialog(message);
             }
 
             //get all properties that are selected
             var savedTemplate = RegisterTemplateService.getModelForSave();
             //get template order
             var order = [];
-            _.each(self.templateOrder,function(template) {
+            _.each(self.templateOrder, function (template) {
                 order.push(template.id);
             });
             savedTemplate.templateOrder = order;
+            //create the flowid,flowtype map that wil be persisted back to the template on save
 
-            var thisOrder = order.length -1;
-            if(self.model.id != undefined) {
-                 thisOrder = _.indexOf(order, self.model.id)
+            savedTemplate.processorFlowTypeMap = _.object(_.map(self.templateFlowTypeProcessors, function (processor) {
+                return [processor.flowId, processor.flowType];
+            }));
+            console.log('savedTemplate.processorFlowTypeMap ', savedTemplate.processorFlowTypeMap)
+
+            var thisOrder = order.length - 1;
+            if (self.model.id != undefined) {
+                thisOrder = _.indexOf(order, self.model.id)
             }
             else {
-                thisOrder = _.indexOf(order,'NEW');
+                thisOrder = _.indexOf(order, 'NEW');
             }
             savedTemplate.order = thisOrder
 
             //add in the datasources
-           var selectedDatasourceDefinitions =  _.filter(self.processorDatasourceDefinitions,function(ds){
+            var selectedDatasourceDefinitions = _.filter(self.processorDatasourceDefinitions, function (ds) {
                 return ds.selectedDatasource == true;
             })
 
             savedTemplate.registeredDatasourceDefinitions = selectedDatasourceDefinitions;
-
 
             var promise = $http({
                 url: RestUrlService.REGISTER_TEMPLATE_URL(),
@@ -290,76 +453,125 @@
             return promise;
         }
 
-        $scope.$watch(function() {
+        $scope.$watch(function () {
             return self.model.nifiTemplateId;
-        }, function(newVal) {
+        }, function (newVal) {
             if (newVal != null) {
                 self.registrationSuccess = false;
             }
         });
 
-        this.showCompleteDialog = function(ev) {
+        /**
+         * Shows a dialog with a progress when the registration is in progress
+         */
+        var showRegistrationInProgressDialog = function () {
+            //hide any dialogs
+            $mdDialog.hide();
+            $mdDialog.show({
+                controller: RegistrationInProgressDialogController,
+                templateUrl: 'js/register-template/register-template/register-template-inprogress-dialog.html',
+                parent: angular.element(document.body),
+                clickOutsideToClose: false,
+                fullscreen: true,
+                locals: {
+                    templateName: self.model.templateName
+                }
+            })
+
+        }
+
+        /**
+         * Shows an Error dialog with a message
+         * @param message
+         */
+        var showErrorDialog = function (message) {
 
             $mdDialog.show({
-                controller: RegistrationCompleteDialogController,
-                templateUrl: 'js/register-template/register-template/register-template-complete.html',
+                controller: RegistrationErrorDialogController,
+                templateUrl: 'js/register-template/register-template/register-template-error-dialog.html',
                 parent: angular.element(document.body),
-                targetEvent: ev,
-                clickOutsideToClose: false,
+                clickOutsideToClose: true,
                 fullscreen: true,
                 locals: {
                     nifiTemplateId: self.model.nifiTemplateId,
                     templateName: self.model.templateName,
-                    message: self.message,
-                    registrationSuccess: self.registrationSuccess
+                    message: message
                 }
-            })
-                    .then(function(msg) {
-                        if (msg == 'explore') {
-                            StateService.navigateToFeeds();
-                        }
-                        if (msg == 'newTemplate') {
-                            StateService.navigateToRegisterTemplate();
-                        }
-                        if (msg == 'newFeed') {
-                            StateService.navigateToDefineFeed(self.model.nifiTemplateId);
-                        }
-
-                    }, function() {
-
-                    });
+            });
         };
 
+        this.showFlowTypeOptionsHelpPanel = function (ev) {
+            var position = $mdPanel.newPanelPosition()
+                .relativeTo('.flow-type-options-help-button')
+                .addPanelPosition($mdPanel.xPosition.ALIGN_START, $mdPanel.yPosition.BELOW);
+
+            var config = {
+                attachTo: angular.element(document.body),
+                controller: FlowTypeOptionsHelpPanelMenuCtrl,
+                controllerAs: 'ctrl',
+                template: '<div class="register-template-flow-type-help" ' +
+                          '     aria-label="Processor flow types." ' +
+                          '     role="listbox" layout="column" layout-align="center center">' +
+                          '      <span class="md-subheader layout-padding-top-bottom ">Processor Flow Types</span> ' +
+                          '  <div class="register-template-flow-type-help-item" ' +
+                          '       tabindex="-1" ' +
+                          '       role="option" ' +
+                          '       ng-repeat="option in ctrl.processorFlowTypeOptions" layout="column">' +
+                          '       <span>{{ option.displayName}}</span>' +
+                          '       <span class="hint">{{option.description}}</span>' +
+                          '  </div>' +
+                          '</div>',
+                panelClass: 'register-template-flow-type-help',
+                position: position,
+                locals: {
+                    'processorFlowTypeOptions': self.processorFlowTypeOptions
+                },
+                openFrom: ev,
+                clickOutsideToClose: true,
+                escapeToClose: true,
+                focusOnOpen: false,
+                zIndex: 2
+            };
+
+            $mdPanel.open(config);
+        };
 
     }
 
     angular.module(MODULE_FEED_MGR).controller("RegisterCompleteRegistrationController", RegisterCompleteRegistrationController);
+    angular.module(MODULE_FEED_MGR).controller("RegisterTemplateCompleteController", RegisterTemplateCompleteController);
+
     angular.module(MODULE_FEED_MGR).directive("thinkbigRegisterCompleteRegistration", directive);
 })();
 
-function RegistrationCompleteDialogController($scope, $mdDialog, $mdToast, $http, StateService, nifiTemplateId, templateName, message, registrationSuccess) {
+function RegistrationErrorDialogController($scope, $mdDialog, $mdToast, $http, StateService, nifiTemplateId, templateName, message) {
     $scope.nifiTemplateId = nifiTemplateId;
     $scope.templateName = templateName;
     $scope.message = message;
-    $scope.registrationSuccess = registrationSuccess;
 
-    $scope.exploreFeeds = function() {
-        $mdDialog.hide('explore');
-    };
-
-    $scope.registerNewTemplate = function() {
-        $mdDialog.hide('newTemplate');
-    };
-
-    $scope.defineNewFeed = function() {
-        $mdDialog.hide('newFeed');
-    };
-
-    $scope.hide = function() {
-        $mdDialog.hide();
-    };
-
-    $scope.cancel = function() {
+    $scope.gotIt = function () {
         $mdDialog.cancel();
     };
+}
+
+function RegistrationInProgressDialogController($scope, $mdDialog, templateName) {
+
+    $scope.templateName = templateName;
+}
+
+function RegisterTemplateCompleteController(StateService, $rootScope, $state, $stateParams) {
+
+    var self = this;
+    self.message = $stateParams.message;
+    self.model = $stateParams.templateModel;
+
+    this.gotIt = function () {
+        StateService.navigateToRegisteredTemplates();
+    }
+
+}
+
+function FlowTypeOptionsHelpPanelMenuCtrl(mdPanelRef, $timeout) {
+    this._mdPanelRef = mdPanelRef;
+
 }
