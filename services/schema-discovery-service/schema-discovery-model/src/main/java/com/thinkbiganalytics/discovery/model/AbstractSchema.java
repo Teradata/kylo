@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.base.Function;
 import com.google.common.collect.Maps;
 import com.thinkbiganalytics.discovery.schema.Field;
 import com.thinkbiganalytics.discovery.schema.Schema;
@@ -18,6 +19,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
+import javax.annotation.Nullable;
 
 public class AbstractSchema implements Schema {
 
@@ -106,7 +109,13 @@ public class AbstractSchema implements Schema {
     public Map<String, Field> getFieldsAsMap() {
         Map<String, Field> map = new HashMap<>();
         if (fields != null) {
-            map = Maps.uniqueIndex(fields, field -> field.getName());
+            map = Maps.uniqueIndex(fields, new Function<Field, String>() {
+                @Nullable
+                @Override
+                public String apply(@Nullable Field field) {
+                    return field.getName();
+                }
+            });
         }
         return map;
     }

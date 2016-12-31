@@ -9,11 +9,11 @@ import java.util.Map;
 
 public interface QueryResult {
 
-    List<? extends QueryResultColumn> getColumns();
+    List<QueryResultColumn> getColumns();
 
     boolean isEmpty();
 
-    void setColumns(List<? extends QueryResultColumn> columns);
+    void setColumns(List<QueryResultColumn> columns);
 
     List<Map<String,Object>> getRows();
 
@@ -21,7 +21,7 @@ public interface QueryResult {
 
     String getQuery();
 
-    Map<String, ? extends QueryResultColumn> getColumnFieldMap();
+    Map<String,QueryResultColumn> getColumnFieldMap();
 
-    Map<String, ? extends QueryResultColumn> getColumnDisplayNameMap();
+    Map<String, QueryResultColumn> getColumnDisplayNameMap();
 }

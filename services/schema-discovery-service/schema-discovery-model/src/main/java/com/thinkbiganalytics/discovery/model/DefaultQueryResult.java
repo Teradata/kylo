@@ -30,7 +30,7 @@ public class DefaultQueryResult implements QueryResult {
         this.query = query;
     }
 
-    private List<? extends QueryResultColumn> columns;
+    private List<QueryResultColumn> columns;
 
     private Map<String, QueryResultColumn> columnFieldMap;
 
@@ -40,7 +40,7 @@ public class DefaultQueryResult implements QueryResult {
     private List<Map<String, Object>> rows;
 
     @Override
-    public List<? extends QueryResultColumn> getColumns() {
+    public List<QueryResultColumn> getColumns() {
         return columns;
     }
 
@@ -50,7 +50,7 @@ public class DefaultQueryResult implements QueryResult {
     }
 
     @Override
-    public void setColumns(List<? extends QueryResultColumn> columns) {
+    public void setColumns(List<QueryResultColumn> columns) {
         this.columns = columns;
         this.columnFieldMap = new HashMap<>();
         this.columnDisplayNameMap = new HashMap<>();
@@ -84,12 +84,15 @@ public class DefaultQueryResult implements QueryResult {
     }
 
     @Override
-    public Map<String, ? extends QueryResultColumn> getColumnFieldMap() {
+    public Map<String, QueryResultColumn> getColumnFieldMap() {
         return columnFieldMap;
     }
 
     @Override
-    public Map<String, ? extends QueryResultColumn> getColumnDisplayNameMap() {
+    public Map<String, QueryResultColumn> getColumnDisplayNameMap() {
         return columnDisplayNameMap;
     }
 }
+
+
+
