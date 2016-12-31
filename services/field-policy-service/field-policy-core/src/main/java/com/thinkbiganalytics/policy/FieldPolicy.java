@@ -15,6 +15,7 @@ public class FieldPolicy implements Serializable {
 
     private String table;
     private String field;
+    private String feedField;
 
     /**
      * Will preserve the value and show the row as valid even if it fails to conform to the target schema type.
@@ -36,10 +37,11 @@ public class FieldPolicy implements Serializable {
     protected FieldPolicy() {
     }
 
-    public FieldPolicy(String table, String field, boolean skipSchemaValidation, boolean nullable, List<ValidationPolicy> validators,
+    public FieldPolicy(String table, String field, String feedField, boolean skipSchemaValidation, boolean nullable, List<ValidationPolicy> validators,
                        List<StandardizationPolicy> policies, boolean typeDiscovery, int piiScan) {
         this.table = table;
         this.field = field;
+        this.feedField = feedField;
         this.skipSchemaValidation = skipSchemaValidation;
         this.nullable = nullable;
         this.validators = validators;
@@ -78,6 +80,14 @@ public class FieldPolicy implements Serializable {
 
     protected void setField(String field) {
         this.field = field;
+    }
+
+    public String getFeedField() {
+        return feedField;
+    }
+
+    protected void setFeedField(String feedField) {
+        this.feedField = feedField;
     }
 
     /**

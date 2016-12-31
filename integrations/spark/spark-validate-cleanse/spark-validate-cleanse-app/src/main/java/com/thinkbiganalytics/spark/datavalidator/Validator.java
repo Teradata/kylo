@@ -191,7 +191,8 @@ public class Validator implements Serializable {
             this.schema = resolveDataTypes(fields);
             this.policies = resolvePolicies(fields);
 
-            String sql = "SELECT * FROM " + feedTablename + " WHERE processing_dttm = '" + partition + "'";
+            String selectStmt = toSelectFields();
+            String sql = "SELECT "+selectStmt+" FROM " + feedTablename + " WHERE processing_dttm = '" + partition + "'";
             log.info("Executing query {}", sql);
             DataSet dataFrame = scs.sql(getHiveContext(), sql);
             JavaRDD<Row> rddData = dataFrame.javaRDD().cache();
@@ -229,9 +230,9 @@ public class Validator implements Serializable {
             // Write out the valid records (dropping our two columns)
             DataSet validDF = null;
             if (useDirectInsert) {
-                validDF = validatedDF.filter(VALID_INVALID_COL + " = '1'").drop(VALID_INVALID_COL).drop("dlp_reject_reason").toDF();
+                validDF = validatedDF.filter(VALID_INVALID_COL + " = '1'").drop(VALID_INVALID_COL).drop(REJECT_REASON_COL).toDF();
             } else {
-                validDF = validatedDF.filter(VALID_INVALID_COL + " = '1'").drop(VALID_INVALID_COL).drop("dlp_reject_reason").drop(PROCESSING_DTTM_COL).toDF();
+                validDF = validatedDF.filter(VALID_INVALID_COL + " = '1'").drop(VALID_INVALID_COL).drop(REJECT_REASON_COL).drop(PROCESSING_DTTM_COL).toDF();
             }
             writeToTargetTable(validDF, validTableName);
 
@@ -248,6 +249,24 @@ public class Validator implements Serializable {
             log.error("Failed to perform validation", e);
             System.exit(1);
         }
+    }
+
+    protected String toSelectFields(FieldPolicy[] policies1) {
+        List<String> fields = new ArrayList<>();
+        log.info("Building select statement for # of policies {}",policies1.length);
+        for (int i = 0; i < policies1.length; i++) {
+            if (policies1[i].getField() != null) {
+                log.info("policy [{}] name {} feedName", i, policies1[i].getField(), policies1[i].getFeedField());
+                String feedField = StringUtils.defaultIfEmpty(policies1[i].getFeedField(), policies1[i].getField());
+                fields.add("`" + feedField + "` as `" + policies1[i].getField()+"`");
+            }
+        }
+        fields.add("`processing_dttm`");
+        return StringUtils.join(fields.toArray(new String[0]), ",");
+    }
+
+    private String toSelectFields() {
+        return toSelectFields(this.policies);
     }
 
     private void writeStatsToProfileTable(long validCount, long invalidCount) {
@@ -308,8 +327,15 @@ public class Validator implements Serializable {
         StructType schema = scs.toDataSet(getHiveContext(), feedTablename).schema();
         StructField[] fields = schema.fields();
         List<StructField> fieldsList = new Vector<>();
-        Collections.addAll(fieldsList, fields);
+        for (int i = 0; i < fields.length; i++) {
+            if (policyMap.containsKey(fields[i].name().toLowerCase())) {
+                log.info("Adding field {}",fields[i].name());
+                fieldsList.add(fields[i]);
+            }
+        }
+        //Collections.addAll(fieldsList, fields);
         // Insert our two custom fields before the processing partition column
+        fieldsList.add(new StructField(PROCESSING_DTTM_COL, DataTypes.StringType, true, Metadata.empty()));
         fieldsList.add(fieldsList.size() - 1, new StructField(VALID_INVALID_COL, DataTypes.StringType, true, Metadata.empty()));
         fieldsList.add(fieldsList.size() - 1, new StructField(REJECT_REASON_COL, DataTypes.StringType, true, Metadata.empty()));
 
@@ -542,7 +568,7 @@ public class Validator implements Serializable {
     }
 
     /**
-     * Returns an array of field-leve policies for data validation and cleansing
+     * Returns an array of field-level policies for data validation and cleansing
      */
     protected FieldPolicy[] resolvePolicies(StructField[] fields) {
         List<FieldPolicy> pols = new Vector<>();

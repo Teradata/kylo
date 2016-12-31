@@ -269,7 +269,7 @@ public class TableSetup {
 
     @JsonIgnore
     public void updateFeedStructure() {
-        setFeedFieldStructure(getFieldStructure(tableSchema));
+        setFeedFieldStructure(getFieldStructure(feedTableSchema));
     }
 
     @JsonIgnore

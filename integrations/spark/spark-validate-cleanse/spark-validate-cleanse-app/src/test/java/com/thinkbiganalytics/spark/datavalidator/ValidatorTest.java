@@ -4,6 +4,7 @@
 
 package com.thinkbiganalytics.spark.datavalidator;
 
+import com.thinkbiganalytics.policy.FieldPoliciesJsonTransformer;
 import com.thinkbiganalytics.policy.FieldPolicy;
 import com.thinkbiganalytics.policy.standardization.SimpleRegexReplacer;
 import com.thinkbiganalytics.policy.standardization.StandardizationPolicy;
@@ -13,7 +14,6 @@ import com.thinkbiganalytics.policy.validation.ValidationPolicy;
 import com.thinkbiganalytics.policy.validation.ValidationResult;
 import com.thinkbiganalytics.spark.validation.HCatDataType;
 
-import javafx.util.Pair;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -22,6 +22,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -48,12 +49,12 @@ public class ValidatorTest {
         List<Param> hiveParams = params.getHiveParams();
 
         Param first = hiveParams.get(0);
-        assertEquals("hive.setting.1",  first.getName());
-        assertEquals("value.1",  first.getValue());
+        assertEquals("hive.setting.1", first.getName());
+        assertEquals("value.1", first.getValue());
 
         Param second = hiveParams.get(1);
-        assertEquals("hive.setting.2",  second.getName());
-        assertEquals("value.2",  second.getValue());
+        assertEquals("hive.setting.2", second.getName());
+        assertEquals("value.2", second.getValue());
     }
 
     @Test
@@ -84,7 +85,7 @@ public class ValidatorTest {
         List<ValidationPolicy> validationPolicies = new ArrayList<>();
         validationPolicies.add(validatorPolicy);
         List<StandardizationPolicy> standardizationPolicies = new ArrayList<>();
-        FieldPolicy fieldPolicy = new FieldPolicy("emp", "field1", false, false, validationPolicies, standardizationPolicies, false, 0);
+        FieldPolicy fieldPolicy = new FieldPolicy("emp", "field1", "field1", false, false, validationPolicies, standardizationPolicies, false, 0);
         return validator.validateField(fieldPolicy, HCatDataType.createFromDataType("field1", dataType), value);
     }
 
@@ -95,7 +96,7 @@ public class ValidatorTest {
         List<ValidationPolicy> validationPolicies = new ArrayList<>();
         List<StandardizationPolicy> standardizationPolicies = new ArrayList<>();
         standardizationPolicies.add(standardizer);
-        FieldPolicy fieldPolicy = new FieldPolicy("emp", "field1", false, false, validationPolicies, standardizationPolicies, false, 0);
+        FieldPolicy fieldPolicy = new FieldPolicy("emp", "field1", "field1", false, false, validationPolicies, standardizationPolicies, false, 0);
         assertEquals(validator.standardizeField(fieldPolicy, "aafooaa"), "aabaraa");
         assertNull(validator.standardizeField(fieldPolicy, null));
         assertEquals(validator.standardizeField(fieldPolicy, ""), "");
@@ -111,5 +112,14 @@ public class ValidatorTest {
     private ValidationResult notNullValidate(String dataType, String value, boolean allowEmptyString, boolean trimString) {
         NotNullValidator validatorPolicy = new NotNullValidator(allowEmptyString, trimString);
         return validator.validateValue(validatorPolicy, HCatDataType.createFromDataType("field1", dataType), value);
+    }
+
+    @Test
+    public void testPolicyMap() {
+        String fieldPolicyJson = "[{\"profile\":true,\"index\":false,\"fieldName\":\"fieldA\",\"feedFieldName\":\"fieldA\",\"standardization\":null,\"validation\":[{\"name\":\"Not Null\","
+                                 + "\"displayName\":null,\"description\":null,\"shortDescription\":null,\"properties\":[{\"name\":\"EMPTY_STRING\",\"displayName\":null,\"value\":\"false\",\"values\":null,\"placeholder\":null,\"type\":null,\"hint\":null,\"objectProperty\":\"allowEmptyString\",\"selectableValues\":[],\"required\":false,\"group\":null,\"groupOrder\":null,\"layout\":null,\"hidden\":false,\"pattern\":null,\"patternInvalidMessage\":null},{\"name\":\"TRIM_STRING\",\"displayName\":null,\"value\":\"true\",\"values\":null,\"placeholder\":null,\"type\":null,\"hint\":null,\"objectProperty\":\"trimString\",\"selectableValues\":[],\"required\":false,\"group\":null,\"groupOrder\":null,\"layout\":null,\"hidden\":false,\"pattern\":null,\"patternInvalidMessage\":null}],\"objectClassType\":\"com.thinkbiganalytics.policy.validation.NotNullValidator\",\"objectShortClassType\":\"NotNullValidator\",\"propertyValuesDisplayString\":null,\"regex\":null,\"type\":null}]},{\"profile\":true,\"index\":false,\"fieldName\":\"id\",\"feedFieldName\":\"id\",\"standardization\":null,\"validation\":null},{\"profile\":true,\"index\":false,\"fieldName\":\"email\",\"feedFieldName\":\"email\",\"standardization\":null,\"validation\":null},{\"profile\":true,\"index\":false,\"fieldName\":\"gender\",\"feedFieldName\":\"gender\",\"standardization\":null,\"validation\":null},{\"profile\":true,\"index\":false,\"fieldName\":\"ip_address\",\"feedFieldName\":\"ip_address\",\"standardization\":null,\"validation\":null},{\"profile\":true,\"index\":false,\"fieldName\":\"credit_card\",\"feedFieldName\":\"credit_card\",\"standardization\":null,\"validation\":null},{\"profile\":true,\"index\":false,\"fieldName\":\"country\",\"feedFieldName\":\"country\",\"standardization\":null,\"validation\":null},{\"profile\":true,\"index\":false,\"fieldName\":\"birthdate\",\"feedFieldName\":\"birthdate\",\"standardization\":null,\"validation\":null},{\"profile\":true,\"index\":false,\"fieldName\":\"salary\",\"feedFieldName\":\"salary\",\"standardization\":null,\"validation\":null},{\"profile\":true,\"index\":false,\"fieldName\":\"fieldB\",\"feedFieldName\":\"fieldB\",\"standardization\":null,\"validation\":null}]";
+        Map<String, FieldPolicy> policyMap = new FieldPoliciesJsonTransformer(fieldPolicyJson).buildPolicies();
+        assertEquals(policyMap.size(), 10);
+
     }
 }
