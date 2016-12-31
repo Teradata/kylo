@@ -2,13 +2,13 @@
 
     var directive = function () {
         return {
-            restrict: "EA",
+            restrict: "E",
             bindToController: {
                 cardTitle: "@",
                 pageName: '@'
             },
             controllerAs: 'vm',
-            scope: true,
+            scope: {},
             templateUrl: 'js/alerts/alerts-table-template.html',
             controller: "AlertsTableController",
             link: function ($scope, element, attrs, controller) {
@@ -17,8 +17,8 @@
         };
     }
 
-    function JobsCardController($scope, $http, $stateParams, $interval, $timeout, $q, TableOptionsService, PaginationDataService, AlertsService, StateService, IconService, TabService,
-                                AccessControlService) {
+    function AlertsTableController($scope, $http, $stateParams, $interval, $timeout, $q, TableOptionsService, PaginationDataService, AlertsService, StateService, IconService, TabService,
+                                   AccessControlService, RestUrlService) {
         var self = this;
 
         /**
@@ -27,10 +27,6 @@
          */
         self.allowAdmin = false;
 
-        if (this.hideFeedColumn == undefined) {
-            this.hideFeedColumn = false;
-        }
-
         this.pageName = angular.isDefined(this.pageName) ? this.pageName : 'alerts';
         //Page State
         this.loading = true;
@@ -38,15 +34,21 @@
 
         //Pagination and view Type (list or table)
         this.paginationData = PaginationDataService.paginationData(this.pageName);
+
         PaginationDataService.setRowsPerPageOptions(this.pageName, ['5', '10', '20', '50', '100']);
         this.viewType = PaginationDataService.viewType(this.pageName);
 
         //Setup the Tabs
         var tabNames = ['All', 'Recent', 'Failures', 'Handled', 'Kylo']
+
         this.tabs = TabService.registerTabs(this.pageName, tabNames, this.paginationData.activeTab);
+
         this.tabMetadata = TabService.metadata(this.pageName);
 
         this.sortOptions = loadSortOptions();
+
+        var PAGE_DIRECTION = {forward: 'f', backward: 'b'}
+
 
         /**
          * The filter supplied in the page
@@ -73,10 +75,14 @@
             self.onViewTypeChange(newVal);
         });
 
+        /**
+         * This will be called the first time the page loads and then whenever the filter changes.
+         *
+         */
         $scope.$watch(function () {
             return self.filter;
         }, function (newVal) {
-            return loadAlerts(true).promise;
+            return loadAlerts().promise;
         })
 
         this.onViewTypeChange = function (viewType) {
@@ -87,22 +93,27 @@
 
         this.onTabSelected = function (tab) {
             TabService.selectedTab(self.pageName, tab);
-            return loadAlerts(true).promise;
+            return loadAlerts().promise;
         };
 
         this.onOrderChange = function (order) {
             PaginationDataService.sort(self.pageName, order);
             TableOptionsService.setSortOption(self.pageName, order);
-            return loadAlerts(true).promise;
+            return loadAlerts().promise;
             //return self.deferred.promise;
         };
 
         this.onPaginationChange = function (page, limit) {
             var activeTab = TabService.getActiveTab(self.pageName);
-            activeTab.currentPage = page;
+            var prevPage = PaginationDataService.currentPage(self.pageName, activeTab.title);
+            var direction = PAGE_DIRECTION.forward;
+            if (prevPage > page) {
+                direction = PAGE_DIRECTION.backward;
+            }
             PaginationDataService.currentPage(self.pageName, activeTab.title, page);
-            return loadAlerts(true).promise;
+            return loadAlerts(direction).promise;
         };
+
 
         //Sort Functions
         /**
@@ -130,21 +141,35 @@
             PaginationDataService.sort(self.pageName, sortString);
             var updatedOption = TableOptionsService.toggleSort(self.pageName, option);
             TableOptionsService.setSortOption(self.pageName, sortString);
-            loadAlerts(true);
+            loadAlerts();
+        }
+
+        /**
+         * Sample set of alerts... remove once $http is working
+         * @returns {Array}
+         */
+        function sampleAlerts() {
+            var alerts = [];
+            for (var i = 0; i < 200; i++) {
+                alerts.push({name: "test alert " + i, state: "Handled", startTime: new Date().getTime()})
+            }
+            return alerts;
         }
 
         //Load Alerts
 
-        function loadAlerts(force) {
-            if (force || !self.refreshing) {
+        function loadAlerts(direction) {
+            if (direction == undefined) {
+                direction = PAGE_DIRECTION.forward;
+            }
 
-                if (force) {
+            if (!self.refreshing) {
                     //cancel any active requests
                     angular.forEach(self.activeAlertRequests, function (canceler, i) {
                         canceler.resolve();
                     });
                     self.activeAlertRequests = [];
-                }
+
                 var activeTab = TabService.getActiveTab(self.pageName);
 
                 self.refreshing = true;
@@ -152,7 +177,6 @@
                 var tabTitle = activeTab.title;
                 var filters = {tabTitle: tabTitle};
                 var limit = self.paginationData.rowsPerPage;
-
                 var start = (limit * activeTab.currentPage) - limit;
 
                 var sort = PaginationDataService.sort(self.pageName);
@@ -160,9 +184,14 @@
 
                 var successFn = function (response) {
                     if (response.data) {
+                        var alertHolder = response.data;
+
+                        self.firstId = alertHolder.firstId;
+                        self.lastId = alertHolder.lastId;
+
                         //transform the data for UI
-                        transformAlertData(tabTitle, response.data.data);
-                        TabService.setTotal(self.pageName, tabTitle, response.data.recordsFiltered)
+                        transformAlertData(tabTitle, alertHolder.alerts);
+                        TabService.setTotal(self.pageName, tabTitle, response.data.size)
 
                         if (self.loading) {
                             self.loading = false;
@@ -179,32 +208,43 @@
                 self.activeAlertRequests.push(canceler);
                 self.deferred = canceler;
                 self.promise = self.deferred.promise;
+
                 var filter = self.filter;
 
-                var params = {start: start, limit: limit, sort: sort, filter: filter};
-                if (self.feedFilter) {
-                    if (!params.filter) {
-                        params.filter = '';
-                    }
-                    if (params.filter != '') {
-                        params.filter += ',';
-                    }
+                var params = {};
+
+                if (self.lastId) {
+                    params.lastId = self.lastId;
                 }
+
+                if (self.firstId) {
+                    params.firstId = self.firstId;
+                }
+
+                //LOGIC TO DO WORK BASED UPON DIRECTION
+                if (direction == PAGE_DIRECTION.forward) {
+
+                }
+
                 var query = tabTitle != 'All' ? tabTitle.toLowerCase() : '';
 
+                console.log('QUERY FOR ', tabTitle, params, direction)
+
                 ///TODO FILL IN THIS CALL OUT with the correct URL
-                //$http.get(JobData.JOBS_QUERY_URL + "/" + query, {timeout: canceler.promise, params: params}).then(successFn, errorFn);
+                //    $http.get(RestUrlService.JOBS_QUERY_URL(adsfasd) + "/" + query, {timeout: canceler.promise, params: params}).then(successFn, errorFn);
 
                 //Remove this timeout below as its just dummy alert data
                 $timeout(function () {
 
-                    transformAlertData(tabTitle, [{name: "test alert", state: "Handled", startTime: new Date().getTime()}]);
-                    TabService.setTotal(self.pageName, tabTitle, 1)
+                    var sampleData = sampleAlerts();
+                    transformAlertData(tabTitle, sampleData);
+                    TabService.setTotal(self.pageName, tabTitle, sampleData.length);
                     if (self.loading) {
                         self.loading = false;
                     }
                     finishedRequest(canceler);
                 }, 2000);
+                //Remove this timeout below above its just dummy alert data
             }
             self.showProgress = true;
 
@@ -249,7 +289,6 @@
          * @returns {*}
          */
         function transformAlert(alert) {
-
             return alert;
         }
 
@@ -272,6 +311,6 @@
             });
     }
 
-    angular.module(MODULE_OPERATIONS).controller("AlertsTableController", JobsCardController);
+    angular.module(MODULE_OPERATIONS).controller("AlertsTableController", AlertsTableController);
     angular.module(MODULE_OPERATIONS).directive('tbaAlertsTable', directive);
 })();
