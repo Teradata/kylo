@@ -145,7 +145,7 @@ public class DBSchemaParser {
                         final DefaultTableSchema tableSchema = new DefaultTableSchema();
                         tableSchema.setFields(listColumns(conn, schema, tableName));
                         tableSchema.setName(tableName);
-                        tableSchema.setTableSchema(StringUtils.isBlank(schem) ? cat : schem);
+                        tableSchema.setSchemaName(StringUtils.isBlank(schem) ? cat : schem);
                         return tableSchema;
                     }
                 }

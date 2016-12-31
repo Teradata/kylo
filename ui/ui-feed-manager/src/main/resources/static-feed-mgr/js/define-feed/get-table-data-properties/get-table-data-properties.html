@@ -35,7 +35,7 @@
 
       </md-item-template>
       <md-not-found>
-        No tables matching "{{ctl.tablesAutocomplete.searchText}}" were found.
+        No tables matching "{{ctl.tablesAutocomplete.searchText}}" found.
       </md-not-found>
       <div ng-messages="ctl.theForm.tableAutocompleteInput.$error" md-auto-hide="false">
         <div ng-message="required">This field is required.</div>
@@ -44,7 +44,7 @@
   </div>
   <div ng-if="ctl.databaseConnectionError == true">
     <div>
-      Unable to connect to the selected controller service.
+      Unable to connect to selected data source.
     </div>
     <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="" ng-if="ctl.renderLoadStrategyOptions">
       <label class="label-small md-container-ignore">Table Name</label>

@@ -117,7 +117,7 @@ angular.module(MODULE_FEED_MGR).factory('FeedService',
                     dataTransformationFeed: false,
                     table: {
                         tableSchema: {name: null, fields: []},
-                        sourceTableSchema: {name: null, fields: []},
+                        sourceTableSchema: {name: null, tableSchema: null, fields: []},
                         feedTableSchema: {name: null, fields: []},
                         method: 'SAMPLE_FILE',
                         existingTableName: null,

@@ -6,26 +6,31 @@ package com.thinkbiganalytics.discovery.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.thinkbiganalytics.discovery.schema.TableSchema;
+import com.thinkbiganalytics.metadata.MetadataField;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DefaultTableSchema extends AbstractSchema implements TableSchema {
 
-    private String tableSchema;
+    @MetadataField
+    private String schemaName;
+
     private String databaseName;
 
     @Override
-    public String getTableSchemaName() {
-        return tableSchema;
+    public String getSchemaName() {
+        return schemaName;
     }
+
+    public void setSchemaName(String schemaName) {
+        this.schemaName = schemaName;
+    }
+
 
     @Override
     public String getDatabaseName() {
         return databaseName;
     }
 
-    public void setTableSchema(String tableSchema) {
-        this.tableSchema = tableSchema;
-    }
 
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;

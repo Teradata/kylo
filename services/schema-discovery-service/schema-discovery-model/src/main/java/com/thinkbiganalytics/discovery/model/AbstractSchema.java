@@ -88,15 +88,6 @@ public class AbstractSchema implements Schema {
         this.name = name;
     }
 
-    public void setSchemaName(String schemaName) {
-        this.schemaName = schemaName;
-    }
-
-    @Override
-    public String getSchemaName() {
-        return this.schemaName;
-    }
-
     public void setDescription(String description) {
         this.description = description;
     }

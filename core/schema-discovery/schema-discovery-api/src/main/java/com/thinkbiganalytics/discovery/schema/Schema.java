@@ -49,9 +49,4 @@ public interface Schema {
      */
     List<Field> getFields();
 
-    /**
-     * Returns the database schema this object is a part of
-     */
-    String getSchemaName();
-
 }

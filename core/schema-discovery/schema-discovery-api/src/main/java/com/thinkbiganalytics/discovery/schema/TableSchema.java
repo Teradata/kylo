@@ -12,7 +12,7 @@ public interface TableSchema extends Schema {
     /**
      * Name of the table schema
      */
-    String getTableSchemaName();
+    String getSchemaName();
 
     /**
      * Database name
