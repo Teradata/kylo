@@ -4,6 +4,8 @@
 
 package com.thinkbiganalytics.discovery.util;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import com.thinkbiganalytics.discovery.schema.DataTypeDescriptor;
 import com.thinkbiganalytics.discovery.schema.Field;
 
@@ -211,10 +213,13 @@ public class ParserHelper {
 
     static class HiveDataTypeDescriptor implements DataTypeDescriptor {
 
+        @JsonProperty("date")
         boolean isDate;
 
+        @JsonProperty("numeric")
         boolean isNumeric;
 
+        @JsonProperty("complex")
         boolean isComplex;
 
         @Override

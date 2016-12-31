@@ -93,6 +93,9 @@ public class TableSetup {
     @MetadataField(description = "List of source table field names separated by a comma")
     private String sourceFieldsCommaString;
 
+    @MetadataField(description = "Structure of the feed table")
+    private String feedFieldStructure;
+
     @Deprecated
     //this is now referenced in the sourceTableSchema.name
     //${metadata.table.existingTableName} will still work, but it is advised to switch it to ${metadata.table.sourceTableSchema.name}
@@ -160,7 +163,7 @@ public class TableSetup {
         sb.append(name);
     }
 
-    private Field getFieldForName(String name){
+    private Field getFieldForName(String name) {
         if (tableSchema != null && tableSchema.getFields() != null) {
             return tableSchema.getFields().stream().filter(field -> field.getName().equalsIgnoreCase(name)).findFirst().orElse(null);
         }
@@ -171,11 +174,11 @@ public class TableSetup {
      * Ensure that the partition sourceFieldDataType matches the referencing source datatype
      * This is needed for the partitoins with the "val" as it needs to use that datatype
      */
-    private void ensurePartitionSourceDataTypes(){
-        if(partitions != null){
-            partitions.stream().forEach(partition ->  {
+    private void ensurePartitionSourceDataTypes() {
+        if (partitions != null) {
+            partitions.stream().forEach(partition -> {
                 Field field = getFieldForName(partition.getSourceField());
-                if(field != null){
+                if (field != null) {
                     partition.setSourceDataType(field.getDataTypeWithPrecisionAndScale());
                 }
             });
@@ -183,8 +186,8 @@ public class TableSetup {
     }
 
     @JsonIgnore
-    public void simplifyFieldPoliciesForSerialization(){
-        if(fieldPolicies != null) {
+    public void simplifyFieldPoliciesForSerialization() {
+        if (fieldPolicies != null) {
             getFieldPolicies().stream().forEach(fieldPolicy -> {
                 if (fieldPolicy.getStandardization() != null) {
                     fieldPolicy.getStandardization().stream().forEach(policy -> policy.simplifyForSerialization());
@@ -243,12 +246,11 @@ public class TableSetup {
 
     }
 
-
     @JsonIgnore
-    public void updateFieldStructure() {
+    public String getFieldStructure(TableSchema schema) {
         StringBuffer sb = new StringBuffer();
-        if (tableSchema != null && tableSchema.getFields() != null) {
-            for (Field field : tableSchema.getFields()) {
+        if (schema != null && schema.getFields() != null) {
+            for (Field field : schema.getFields()) {
                 if (StringUtils.isNotBlank(sb.toString())) {
                     sb.append("\n");
                 }
@@ -256,7 +258,18 @@ public class TableSetup {
 
             }
         }
-        setFieldStructure(sb.toString());
+        return sb.toString();
+    }
+
+
+    @JsonIgnore
+    public void updateFieldStructure() {
+        setFieldStructure(getFieldStructure(tableSchema));
+    }
+
+    @JsonIgnore
+    public void updateFeedStructure() {
+        setFeedFieldStructure(getFieldStructure(tableSchema));
     }
 
     @JsonIgnore
@@ -335,7 +348,6 @@ public class TableSetup {
     }
 
 
-
     private void updateTargetTblProperties() {
         this.targetTblProperties = "";
 
@@ -369,6 +381,7 @@ public class TableSetup {
         ensurePartitionSourceDataTypes();
         updatePartitionStructure();
         updateFieldStructure();
+        updateFeedStructure();
         updateFieldStringData();
         updateSourceFieldsString();
         updateSourceFieldsCommaString();
@@ -541,5 +554,13 @@ public class TableSetup {
 
     public void setSourceFieldsCommaString(String sourceFieldsCommaString) {
         this.sourceFieldsCommaString = sourceFieldsCommaString;
+    }
+
+    public String getFeedFieldStructure() {
+        return feedFieldStructure;
+    }
+
+    public void setFeedFieldStructure(String feedFieldStructure) {
+        this.feedFieldStructure = feedFieldStructure;
     }
 }

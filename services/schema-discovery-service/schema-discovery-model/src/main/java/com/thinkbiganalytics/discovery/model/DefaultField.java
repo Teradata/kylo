@@ -5,6 +5,8 @@
 package com.thinkbiganalytics.discovery.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.thinkbiganalytics.discovery.schema.DataTypeDescriptor;
 import com.thinkbiganalytics.discovery.schema.Field;
 
@@ -31,6 +33,7 @@ public class DefaultField implements Field {
 
     private boolean modifiable = true;
 
+    @JsonDeserialize(as = DefaultDataTypeDescriptor.class)
     private DataTypeDescriptor dataTypeDescriptor;
 
     public List<String> sampleValues = new Vector<>();

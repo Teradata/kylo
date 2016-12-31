@@ -55,7 +55,7 @@ public class TableRegisterSupport {
 
         } catch (final SQLException e) {
             logger.error("Failed to create tables DDL {}", ddl, e);
-            return false;
+            result = false;
         }
         return result;
     }
@@ -65,6 +65,7 @@ public class TableRegisterSupport {
      *
      * @param source                the name of the database
      * @param tableEntity           the name of the table
+     * @param feedColumnSpecs       the column specification for the feed table
      * @param feedFormatOptions     the format for the feed table
      * @param targetFormatOptions   the format for the target table
      * @param partitions            the partitions for the target table
@@ -74,9 +75,11 @@ public class TableRegisterSupport {
      * @param registerDatabase      {@code true} to create the database if it does not exist, or {@code false} to require an existing database
      * @return {@code true} if the table was registered, or {@code false} if there was an error
      */
-    public boolean registerTable(String source, String tableEntity, String feedFormatOptions, String targetFormatOptions, ColumnSpec[] partitions, ColumnSpec[] columnSpecs,
-                                 String targetTableProperties, TableType tableType, boolean registerDatabase) {
+    public boolean registerTable(String source, String tableEntity, ColumnSpec[] feedColumnSpecs, String feedFormatOptions, String targetFormatOptions, ColumnSpec[] partitions, ColumnSpec[]
+        columnSpecs, String targetTableProperties, TableType tableType, boolean registerDatabase) {
         Validate.notNull(conn);
+
+        ColumnSpec[] useColumnSpecs = (tableType == TableType.FEED ? feedColumnSpecs : columnSpecs);
 
         // Register the database
         if (registerDatabase && !registerDatabase(source)) {
@@ -84,7 +87,7 @@ public class TableRegisterSupport {
         }
 
         // Register the table
-        String ddl = createDDL(source, tableEntity, columnSpecs, partitions, feedFormatOptions, targetFormatOptions, targetTableProperties, tableType);
+        String ddl = createDDL(source, tableEntity, useColumnSpecs, partitions, feedFormatOptions, targetFormatOptions, targetTableProperties, tableType);
         return createTable(ddl);
     }
 
@@ -128,7 +131,8 @@ public class TableRegisterSupport {
         return createTable(ddl);
     }
 
-    public boolean registerStandardTables(String source, String tableEntity, String feedFormatOptions, String targetFormatOptions, ColumnSpec[] partitions, ColumnSpec[] columnSpecs,
+    public boolean registerStandardTables(String source, String tableEntity, ColumnSpec[] feedColumnSpecs, String feedFormatOptions, String targetFormatOptions, ColumnSpec[] partitions, ColumnSpec[]
+        columnSpecs,
                                           String tblProperties) {
         boolean result = true;
         registerDatabase(source);
@@ -136,7 +140,7 @@ public class TableRegisterSupport {
         TableType[] tableTypes = new TableType[]{TableType.FEED, TableType.INVALID, TableType.VALID, TableType.MASTER};
         for (TableType tableType : tableTypes) {
             if (!existingTables.contains(tableType.deriveTablename(tableEntity))) {
-                result = registerTable(source, tableEntity, feedFormatOptions, targetFormatOptions, partitions, columnSpecs, tblProperties, tableType, false) && result;
+                result = registerTable(source, tableEntity, feedColumnSpecs, feedFormatOptions, targetFormatOptions, partitions, columnSpecs, tblProperties, tableType, false) && result;
             }
         }
         if (!existingTables.contains(TableType.PROFILE.deriveTablename(tableEntity))) {
@@ -168,7 +172,7 @@ public class TableRegisterSupport {
     }
 
     protected String createDDL(String tableName, String columnsSQL, String partitionSQL, String formatOptionsSQL, String locationSQL, String targetTablePropertiesSQL, boolean external) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         String externalString = (external ? " EXTERNAL " : " ");
         sb.append("CREATE").append(externalString).append("TABLE IF NOT EXISTS ")
                 .append(tableName)

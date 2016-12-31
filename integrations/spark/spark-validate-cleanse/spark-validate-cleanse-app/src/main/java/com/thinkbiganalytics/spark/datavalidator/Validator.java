@@ -132,7 +132,6 @@ public class Validator implements Serializable {
          * You can also use sparkcontext object to get the value of sparkContext.getConf().get("spark.submit.deployMode")
          * and use this to decide which readFieldPolicyJsonPath to choose.
          */
-
         File fieldPolicyJsonFile = new File(fieldPolicyJsonPath);
         if (fieldPolicyJsonFile.exists() && fieldPolicyJsonFile.isFile()) {
             log.info("Loading field policies at {} ", fieldPolicyJsonPath);

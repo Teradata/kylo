@@ -90,7 +90,7 @@
         Adds record of changed state
          */
         function createHistoryRecord(columnDef) {
-            return { name: columnDef.name, derivedDataType: columnDef.derivedDataType, deleted: columnDef.deleted, primaryKey: columnDef.primaryKey, updatedTracker: columnDef.updatedTracker, createdTracker: columnDef.createdTracker }
+            return { name: columnDef.name, derivedDataType: columnDef.derivedDataType, precisionScale: columnDef.precisionScale, deleted: columnDef.deleted, primaryKey: columnDef.primaryKey, updatedTracker: columnDef.updatedTracker, createdTracker: columnDef.createdTracker }
         }
 
         this.addHistoryItem = function(columnDef) {
@@ -289,6 +289,7 @@
             // Set to previous history value
             columnDef.name = prevValue.name;
             columnDef.derivedDataType = prevValue.derivedDataType;
+            columnDef.precisionScale = prevValue.precisionScale;
             columnDef.deleted = prevValue.deleted;
             columnDef.primaryKey = prevValue.primaryKey;
             columnDef.createdTracker = prevValue.createdTracker;
@@ -325,7 +326,7 @@
             //ensure the field names on the columns are unique again as removing a column might fix a "notUnique" error
             fieldNamesUnique();
             partitionNamesUnique();
-            FeedService.syncTableFieldPolicyNames();
+            //FeedService.syncTableFieldPolicyNames();
             validate();
         }
 
@@ -387,11 +388,11 @@
          * @param columnDef
          */
         this.onNameFieldChange = function(columnDef) {
-            self.selectedColumn = columnDef;
+
             if (self.useUnderscoreInsteadOfSpaces) {
                 columnDef.name = replaceSpaces(columnDef.name);
             }
-            self.addHistoryItem(columnDef);
+            self.onFieldChange(columnDef);
 
             fieldNamesUnique(true);
             //update the partitions with "val" on this column so the name matches

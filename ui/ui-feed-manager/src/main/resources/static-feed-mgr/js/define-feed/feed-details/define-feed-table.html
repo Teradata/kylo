@@ -162,7 +162,7 @@
                             <md-input-container class="md-dense md-block condensed" flex-gt-sm style="margin-top:10px;" ng-show="columnDef.derivedDataType == 'decimal'">
                               <label>Precision</label>
                               <input ng-model="columnDef.precisionScale" placeholder="10,0" ng-pattern="/^\d+,\d+$/" name="precisionScale_{{columnDef._id}}" style="width:120px;"
-                                     ng-disabled="vm.dataTypeLocked"/>
+                                     ng-disabled="vm.dataTypeLocked" ng-change="vm.onFieldChange(columnDef)"/>
 
                               <div ng-messages="vm.defineFeedTableForm['precisionScale_'+columnDef._id].$error" md-auto-hide="false">
                                 <div ng-message="pattern">Format expected in form precision, scale (e.g. 10,0)</div>
@@ -191,7 +191,7 @@
                         <div flex="15" class="md-list-item-text" hide-sm>
                           <md-button aria-label="Remove field" class="md-icon-button" ng-click="vm.removeColumn($index)"
                                      ng-disabled="(!vm.canRemoveFields || columnDef.deleted)">
-                            <ng-md-icon md-icon icon="delete"></ng-md-icon>
+                            <ng-md-icon md-icon icon="delete" style="fill:gray"></ng-md-icon>
                           </md-button>
                           <md-button aria-label="Include field" class="md-icon-button" ng-click="vm.undoColumn($index)"  ng-show="columnDef.history.length > 1">
                             <ng-md-icon md-icon icon="undo"></ng-md-icon>

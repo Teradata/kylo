@@ -67,7 +67,7 @@
                       <div flex="40" class="md-list-item-text">
                         <md-input-container class="md-block" flex-gt-sm>
                           <div>{{policy.name}}</div>
-                          <div class="hint">{{policy.field.dataTypeDisplay()}}</div>
+                          <div class="hint">{{vm.model.table.tableSchema.fields[$index].dataTypeDisplay}}</div>
                         </md-input-container>
                       </div>
                       <div flex="20" class="md-list-item-text " layout="column">

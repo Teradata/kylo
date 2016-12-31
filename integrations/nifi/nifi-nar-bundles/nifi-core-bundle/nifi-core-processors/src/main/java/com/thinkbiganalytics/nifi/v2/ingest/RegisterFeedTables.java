@@ -35,6 +35,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.FEED_CATEGORY;
+import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.FEED_FIELD_SPECIFICATION;
 import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.FEED_FORMAT_SPECS;
 import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.FEED_NAME;
 import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.FIELD_SPECIFICATION;
@@ -117,6 +118,7 @@ public class RegisterFeedTables extends AbstractNiFiProcessor {
         pds.add(TABLE_TYPE);
         pds.add(FIELD_SPECIFICATION);
         pds.add(PARTITION_SPECS);
+        pds.add(FEED_FIELD_SPECIFICATION);
         pds.add(FEED_FORMAT_SPECS);
         pds.add(TARGET_FORMAT_SPECS);
         pds.add(TARGET_TBLPROPERTIES);
@@ -170,6 +172,15 @@ public class RegisterFeedTables extends AbstractNiFiProcessor {
             return;
         }
 
+        ColumnSpec[] feedColumnSpecs = Optional.ofNullable(context.getProperty(FEED_FIELD_SPECIFICATION).evaluateAttributeExpressions(flowFile).getValue())
+            .filter(StringUtils::isNotEmpty)
+            .map(ColumnSpec::createFromString)
+            .orElse(new ColumnSpec[0]);
+        if (feedColumnSpecs == null || feedColumnSpecs.length == 0) {
+            // Backwards compatibility with older templates we set the source and target to the same
+            feedColumnSpecs = columnSpecs;
+        }
+
         final String entity = context.getProperty(IngestProperties.FEED_NAME).evaluateAttributeExpressions(flowFile).getValue();
         if (entity == null || entity.isEmpty()) {
             getLog().error("Missing feed name");
@@ -198,9 +209,10 @@ public class RegisterFeedTables extends AbstractNiFiProcessor {
 
             final boolean result;
             if (ALL_TABLES.equals(tableType)) {
-                result = register.registerStandardTables(source, entity, feedFormatOptions, targetFormatOptions, partitions, columnSpecs, targetTableProperties);
+                result = register.registerStandardTables(source, entity, feedColumnSpecs, feedFormatOptions, targetFormatOptions, partitions, columnSpecs, targetTableProperties);
             } else {
-                result = register.registerTable(source, entity, feedFormatOptions, targetFormatOptions, partitions, columnSpecs, targetTableProperties, TableType.valueOf(tableType), true);
+                result = register.registerTable(source, entity, feedColumnSpecs, feedFormatOptions, targetFormatOptions, partitions, columnSpecs, targetTableProperties, TableType.valueOf(tableType),
+                                                true);
             }
 
             final Relationship relnResult = (result ? REL_SUCCESS : REL_FAILURE);

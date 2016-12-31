@@ -11,6 +11,7 @@ public class FieldPolicyBuilder {
   private boolean profile;
   private boolean index;
   private String fieldName;
+  private String feedFieldName;
 
   private List<FieldStandardizationRule> standardization;
 
@@ -18,6 +19,7 @@ public class FieldPolicyBuilder {
 
   public FieldPolicyBuilder(String fieldName){
     this.fieldName = fieldName;
+    this.feedFieldName = fieldName;
     this.standardization = new ArrayList<>();
     this.validation = new ArrayList<>();
   }
@@ -47,6 +49,7 @@ public class FieldPolicyBuilder {
   public FieldPolicy build(){
     FieldPolicy policy = new FieldPolicy();
     policy.setFieldName(this.fieldName);
+    policy.setFeedFieldName(this.feedFieldName);
     policy.setStandardization(this.standardization);
     policy.setValidation(this.validation);
     policy.setProfile(this.profile);

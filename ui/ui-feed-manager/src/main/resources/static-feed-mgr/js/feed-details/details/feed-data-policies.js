@@ -79,14 +79,6 @@
 
         this.targetFormatOptions = FeedService.targetFormatOptions;
 
-        this.fieldDataTypeDisplay = function (columnDef) {
-            if (columnDef != undefined) {
-                return FeedService.getDataTypeDisplay(columnDef);
-            }
-
-        }
-
-
         this.transformChip = function (chip) {
             // If it is an object, it's already a known chip
             if (angular.isObject(chip)) {

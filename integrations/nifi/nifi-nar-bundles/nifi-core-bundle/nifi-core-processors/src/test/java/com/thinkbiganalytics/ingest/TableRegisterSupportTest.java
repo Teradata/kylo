@@ -15,17 +15,11 @@ import com.thinkbiganalytics.util.ColumnSpec;
 import com.thinkbiganalytics.util.TableType;
 
 import org.apache.commons.collections.MapUtils;
-import org.apache.nifi.dbcp.DBCPService;
-import org.apache.nifi.util.TestRunner;
-import org.apache.nifi.util.TestRunners;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
-import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -53,7 +47,7 @@ public class TableRegisterSupportTest {
      * Cater for all the parameters in the script that we want to test. Note that the "hadoop.tmp.dir" is one of the dirs defined by the test harness
      */
     @HiveProperties
-    public Map<String, String> hiveProperties = MapUtils.putAll(new HashMap(), new Object[]{
+    public Map<String, String> hiveProperties = MapUtils.putAll(new HashMap<String, String>(), new String[]{
         "MY.HDFS.DIR", "${hadoop.tmp.dir}",
         "my.schema", "bar",
     });
@@ -116,15 +110,12 @@ public class TableRegisterSupportTest {
     public void testDropTable() throws Exception {
         // Mock SQL objects
         final Statement statement = Mockito.mock(Statement.class);
-        Mockito.when(statement.execute(Mockito.anyString())).then(new Answer<Boolean>() {
-            @Override
-            public Boolean answer(final InvocationOnMock invocation) throws Throwable {
-                final String sql = (String)invocation.getArguments()[0];
-                if (sql.equals("DROP TABLE IF EXISTS `invalid`")) {
-                    throw new SQLException();
-                }
-                return true;
+        Mockito.when(statement.execute(Mockito.anyString())).then(invocation -> {
+            final String sql = (String)invocation.getArguments()[0];
+            if (sql.equals("DROP TABLE IF EXISTS `invalid`")) {
+                throw new SQLException();
             }
+            return true;
         });
 
         Mockito.when(connection.createStatement()).thenReturn(statement);
@@ -149,15 +140,12 @@ public class TableRegisterSupportTest {
     public void testDropTables() throws Exception {
         // Mock SQL objects
         final Statement statement = Mockito.mock(Statement.class);
-        Mockito.when(statement.execute(Mockito.anyString())).then(new Answer<Boolean>() {
-            @Override
-            public Boolean answer(InvocationOnMock invocation) throws Throwable {
-                final String sql = (String)invocation.getArguments()[0];
-                if (sql.startsWith("DROP TABLE IF EXISTS `invalid`")) {
-                    throw new SQLException();
-                }
-                return true;
+        Mockito.when(statement.execute(Mockito.anyString())).then(invocation -> {
+            final String sql = (String)invocation.getArguments()[0];
+            if (sql.startsWith("DROP TABLE IF EXISTS `invalid`")) {
+                throw new SQLException();
             }
+            return true;
         });
 
         final Connection connection = Mockito.mock(Connection.class);

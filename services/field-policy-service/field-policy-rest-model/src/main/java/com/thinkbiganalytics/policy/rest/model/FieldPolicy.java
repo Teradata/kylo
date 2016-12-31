@@ -13,14 +13,16 @@ public class FieldPolicy {
     private boolean profile;
     private boolean index;
     private String fieldName;
+    private String feedFieldName;
 
     private List<FieldStandardizationRule> standardization;
 
     private List<FieldValidationRule> validation;
 
-    public FieldPolicy(){
+    public FieldPolicy() {
 
     }
+
     public boolean isProfile() {
         return profile;
     }
@@ -53,7 +55,6 @@ public class FieldPolicy {
         this.index = index;
     }
 
-
     public String getFieldName() {
         return fieldName;
     }
@@ -62,4 +63,11 @@ public class FieldPolicy {
         this.fieldName = fieldName;
     }
 
+    public String getFeedFieldName() {
+        return feedFieldName;
+    }
+
+    public void setFeedFieldName(String feedFieldName) {
+        this.feedFieldName = feedFieldName;
+    }
 }

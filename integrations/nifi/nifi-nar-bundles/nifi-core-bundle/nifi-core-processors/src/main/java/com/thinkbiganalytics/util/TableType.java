@@ -71,14 +71,8 @@ public enum TableType {
         return sb.toString();
     }
 
-    public String deriveColumnSpecification(ColumnSpec[] columns, ColumnSpec[] partitionColumns, String feedFormatOptions) {
-        boolean allStrings = isStrings();
-        Set<String> partitionSet = new HashSet<>();
-        if (!feedPartition && partitionColumns != null && partitionColumns.length > 0) {
-            for (ColumnSpec partition : partitionColumns) {
-                partitionSet.add(partition.getName());
-            }
-        }
+    public boolean isStrings(String feedFormatOptions) {
+        boolean allStrings = strings;
         // Hack for now. Need a better way to identify if this is text file (no schema enforced or schema enforced)
         if (allStrings && feedFormatOptions != null) {
             String urawFormatOptions = feedFormatOptions.toUpperCase();
@@ -87,7 +81,17 @@ public enum TableType {
                 allStrings = false;
             }
         }
+        return allStrings;
+    }
 
+    public String deriveColumnSpecification(ColumnSpec[] columns, ColumnSpec[] partitionColumns, String feedFormatOptions) {
+        boolean allStrings = isStrings(feedFormatOptions);
+        Set<String> partitionSet = new HashSet<>();
+        if (!feedPartition && partitionColumns != null && partitionColumns.length > 0) {
+            for (ColumnSpec partition : partitionColumns) {
+                partitionSet.add(partition.getName());
+            }
+        }
         StringBuffer sb = new StringBuffer();
         int i = 0;
         for (ColumnSpec spec : columns) {
@@ -126,10 +130,6 @@ public enum TableType {
 
     public boolean isUseTargetStorageSpec() {
         return useTargetStorageSpec;
-    }
-
-    public boolean isStrings() {
-        return strings;
     }
 
     public boolean isFeedPartition() {

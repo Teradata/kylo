@@ -52,6 +52,14 @@
         function onActiveStep(event, index) {
             if (index == parseInt(self.stepIndex)) {
                 validateMergeStrategies();
+
+                // Update the data type display
+                _.each(self.model.table.tableSchema.fields, function(columnDef, idx) {
+                    columnDef.dataTypeDisplay = FeedService.getDataTypeDisplay(columnDef);
+                    var policy = self.model.table.fieldPolicies[idx];
+                    policy.name = columnDef.name;
+                });
+
             }
         }
 

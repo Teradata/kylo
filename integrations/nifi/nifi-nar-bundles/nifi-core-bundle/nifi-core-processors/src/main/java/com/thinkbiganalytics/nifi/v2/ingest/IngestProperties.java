@@ -91,9 +91,20 @@ public interface IngestProperties extends CommonProperties {
 
     PropertyDescriptor FIELD_SPECIFICATION = new PropertyDescriptor.Builder()
         .name("Field specification")
-        .description("Pipe-delim format with the specifications for the fields (column name|data type|comment")
+        .description("Pipe-delim and newline for each field: column name|data type|comment|primary_key?|created_dt?|modified_dt?")
         .required(true)
         .defaultValue("${metadata.table.fieldStructure}")
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .build();
+
+    /**
+     * Field structure of the feed table
+     */
+    PropertyDescriptor FEED_FIELD_SPECIFICATION = new PropertyDescriptor.Builder()
+        .name("Feed Field specification")
+        .description("Pipe-delim and newline for each field: column name|data type|comment")
+        .defaultValue("${metadata.table.feedFieldStructure}")
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
