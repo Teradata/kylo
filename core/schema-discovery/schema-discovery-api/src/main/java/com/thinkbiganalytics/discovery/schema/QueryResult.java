@@ -7,6 +7,7 @@ package com.thinkbiganalytics.discovery.schema;
 import java.util.List;
 import java.util.Map;
 
+
 public interface QueryResult {
 
     List<QueryResultColumn> getColumns();

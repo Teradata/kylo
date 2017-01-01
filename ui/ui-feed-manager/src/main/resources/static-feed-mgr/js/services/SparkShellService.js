@@ -250,10 +250,10 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
             return _.map(columns, function(col) {
                 var dataType;
                 //comment out decimal to double.  Decimals are supported ... will remove after testing
-                if (col.derivedDataType.startsWith("decimal")) {
+                if (col.dataType.startsWith("decimal")) {
                     dataType = "decimal";
                 }
-                else if (col.derivedDataType === "smallint") {
+                else if (col.dataType === "smallint") {
                     dataType = "int";
                 } else {
                     dataType = col.dataType;
@@ -269,6 +269,7 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
                     }
                     colDef.precisionScale = precisionScale;
                 }
+                colDef.derivedDataType = dataType;
                 return colDef;
             });
         },

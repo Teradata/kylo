@@ -6,6 +6,8 @@ package com.thinkbiganalytics.discovery.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.thinkbiganalytics.discovery.schema.QueryResult;
 import com.thinkbiganalytics.discovery.schema.QueryResultColumn;
 
@@ -30,12 +32,17 @@ public class DefaultQueryResult implements QueryResult {
         this.query = query;
     }
 
+    @JsonDeserialize(contentAs=DefaultQueryResultColumn.class)
+    @JsonSerialize(contentAs=DefaultQueryResultColumn.class)
     private List<QueryResultColumn> columns;
 
+    @JsonDeserialize(contentAs=DefaultQueryResultColumn.class)
+    @JsonSerialize(contentAs=DefaultQueryResultColumn.class)
     private Map<String, QueryResultColumn> columnFieldMap;
 
+    @JsonDeserialize(contentAs=DefaultQueryResultColumn.class)
+    @JsonSerialize(contentAs=DefaultQueryResultColumn.class)
     private Map<String, QueryResultColumn> columnDisplayNameMap;
-
 
     private List<Map<String, Object>> rows;
 
