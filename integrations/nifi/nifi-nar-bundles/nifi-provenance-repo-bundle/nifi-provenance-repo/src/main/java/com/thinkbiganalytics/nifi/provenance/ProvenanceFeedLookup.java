@@ -74,13 +74,22 @@ public class ProvenanceFeedLookup {
     }
 
     public KyloProcessorFlowType setProcessorFlowType(ProvenanceEventRecordDTO event) {
-        KyloProcessorFlowType type = getFlowCache().getProcessorFlowType(event.getComponentId());
+        KyloProcessorFlowType type = getFlowCache().getProcessorFlowType(event.getFeedName(), event.getComponentId());
         event.setProcessorType(type);
         return type;
     }
 
     public boolean isFailureEvent(ProvenanceEventRecordDTO eventRecordDTO) {
-        return getFlowCache().getAddFailureProcessorIds().contains(eventRecordDTO.getComponentId());
+        KyloProcessorFlowType processorFlowType = eventRecordDTO.getProcessorType();
+        if (processorFlowType == null) {
+            processorFlowType = setProcessorFlowType(eventRecordDTO);
+        }
+        ;
+        if (processorFlowType != null) {
+            return KyloProcessorFlowType.CRITICAL_FAILURE.equals(processorFlowType);
+        } else {
+            return false;
+        }
     }
 
     public boolean assignFeedInformationToFlowFile(ActiveFlowFile flowFile) {

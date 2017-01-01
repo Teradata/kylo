@@ -5,7 +5,6 @@ import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatisticsHolder;
 import com.thinkbiganalytics.nifi.provenance.model.stats.ProvenanceEventStats;
 import com.thinkbiganalytics.nifi.provenance.model.stats.StatsModel;
-import com.thinkbiganalytics.nifi.provenance.util.SpringApplicationContext;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,10 +20,6 @@ import java.util.List;
 public class ProvenanceStatsCalculator {
 
     private static final Logger log = LoggerFactory.getLogger(ProvenanceStatsCalculator.class);
-
-    public static ProvenanceStatsCalculator instance() {
-        return (ProvenanceStatsCalculator) SpringApplicationContext.getInstance().getBean("provenanceStatsCalculatorV2");
-    }
 
     private AggregatedFeedProcessorStatisticsHolder statsHolder;
 

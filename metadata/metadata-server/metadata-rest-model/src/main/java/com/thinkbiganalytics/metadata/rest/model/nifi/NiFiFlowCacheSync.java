@@ -3,7 +3,6 @@ package com.thinkbiganalytics.metadata.rest.model.nifi;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.thinkbiganalytics.common.constants.KyloProcessorFlowType;
 
 import org.joda.time.DateTime;
 
@@ -81,15 +80,6 @@ public class NiFiFlowCacheSync {
         return diff.entriesOnlyOnRight();
     }
 
-    public Map<String, KyloProcessorFlowType> getProcessorToProcessorFlowTypeMapUpdatedSinceLastSync(Map<String, KyloProcessorFlowType> processorToFlowTypeMap) {
-        MapDifference<String, KyloProcessorFlowType> diff = Maps.difference(snapshot.getProcessorIdToProcessorFlowTypeMap(), processorToFlowTypeMap);
-        return diff.entriesOnlyOnRight();
-    }
-
-    public Set<String> getFailureProcessorIdsUpdatedSinceLastSync(Set<String> failureProcessorIds) {
-        com.google.common.collect.Sets.SetView<String> diff = Sets.difference(failureProcessorIds, snapshot.getAddFailureProcessorIds());
-        return diff.copyInto(new HashSet<>());
-    }
 
     public Set<String> getStreamingFeedsUpdatedSinceLastSync(Set<String> streamingFeeds) {
         com.google.common.collect.Sets.SetView<String> diff = Sets.difference(streamingFeeds, snapshot.getAddStreamingFeeds());

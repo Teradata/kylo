@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.metadata.jpa.jobrepo.step;
 
 import com.thinkbiganalytics.DateTimeUtil;
+import com.thinkbiganalytics.common.constants.KyloProcessorFlowType;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiEventStepExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecution;
@@ -116,7 +117,7 @@ public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider
 
             stepExecution = new JpaBatchStepExecution();
             stepExecution.setJobExecution(jobExecution);
-            stepExecution.setStartTime(
+            stepExecution.setStartTime(event.getStartTime() != null ? DateTimeUtil.convertToUTC(event.getStartTime()) :
                 event.getPreviousEventTime() != null ? DateTimeUtil.convertToUTC(event.getPreviousEventTime())
                                                      : DateTimeUtil.convertToUTC((event.getEventTime().minus(event.getEventDuration()))));
             stepExecution.setEndTime(DateTimeUtil.convertToUTC(event.getEventTime()));
@@ -148,19 +149,12 @@ public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider
             jobExecution.getStepExecutions().add(stepExecution);
             //saving the StepExecution will cascade and save the nifiEventStep
             stepExecution = batchStepExecutionRepository.save(stepExecution);
-            //also persist to spring batch tables
-            //TODO to be removed in next release once Spring batch is completely removed.  Needed since the UI references this table
-         //   batchExecutionContextProvider.saveStepExecutionContext(stepExecution.getStepExecutionId(), event.getUpdatedAttributes());
-
 
         } else {
             //update it
             assignStepExecutionContextMap(event, stepExecution);
             //log.info("Update Step Execution {} ({}) on Job: {} using event {} ", stepExecution.getStepName(), stepExecution.getStepExecutionId(), jobExecution, event);
             stepExecution = batchStepExecutionRepository.save(stepExecution);
-            //also persist to spring batch tables
-            //TODO to be removed in next release once Spring batch is completely removed.  Needed since the UI references this table
-         //   batchExecutionContextProvider.saveStepExecutionContext(stepExecution.getStepExecutionId(), stepExecution.getStepExecutionContextAsMap());
         }
 
         return stepExecution;
@@ -169,12 +163,22 @@ public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider
 
     private void assignStepExecutionContextMap(ProvenanceEventRecordDTO event, JpaBatchStepExecution stepExecution) {
         Map<String, String> updatedAttrs = event.getUpdatedAttributes();
+
         if (updatedAttrs != null && !updatedAttrs.isEmpty()) {
             for (Map.Entry<String, String> entry : updatedAttrs.entrySet()) {
                 JpaBatchStepExecutionContextValue stepExecutionContext = new JpaBatchStepExecutionContextValue(stepExecution, entry.getKey());
                 stepExecutionContext.setStringVal(entry.getValue());
                 stepExecution.addStepExecutionContext(stepExecutionContext);
             }
+        }
+        //add in the flow type if its there
+        if (event.getProcessorType() != null && !KyloProcessorFlowType.NORMAL_FLOW.equals(event.getProcessorType())) {
+            KyloProcessorFlowType processorFlowType = event.getProcessorType();
+
+            JpaBatchStepExecutionContextValue stepExecutionContext = new JpaBatchStepExecutionContextValue(stepExecution, "Kylo Flow Processor Type");
+            stepExecutionContext.setStringVal(processorFlowType != null ? processorFlowType.getDisplayName() : "NULL");
+            stepExecution.addStepExecutionContext(stepExecutionContext);
+
         }
     }
 

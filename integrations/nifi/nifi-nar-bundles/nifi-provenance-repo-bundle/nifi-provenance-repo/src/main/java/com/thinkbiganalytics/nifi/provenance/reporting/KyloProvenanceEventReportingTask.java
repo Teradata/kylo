@@ -206,12 +206,12 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
 
 
     private void loadSpring() {
-        getLogger().error("loadSpring spring configurations");
+        getLogger().info("loadSpring spring configurations");
         try {
             SpringApplicationContext.getInstance().initializeSpring();
-            getLogger().error("LOADED spring configurations");
+            getLogger().info("LOADED spring configurations");
         } catch (BeansException | IllegalStateException e) {
-            getLogger().error("Failed to load spring configurations", e);
+            getLogger().info("Failed to load spring configurations", e);
         }
     }
 
@@ -280,7 +280,7 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
             NiFiFlowCacheSync updates = getKyloNiFiFlowProvider().getNiFiFlowUpdates(nifiFlowSyncId);
             nifiFlowSyncId = updates.getSyncId();
             getProvenanceFeedLookup().updateFlowCache(updates);
-            getLogger().debug("Finished updateNifiFlowCache with syncId: {}, mapSize: {} ", new Object[]{nifiFlowSyncId, getProvenanceFeedLookup().getProcessorIdMapSize()});
+            getLogger().info("Finished updateNifiFlowCache with syncId: {}, mapSize: {} ", new Object[]{nifiFlowSyncId, getProvenanceFeedLookup().getProcessorIdMapSize()});
         } catch (Exception e) {
             abortProcessing();
             throw e;

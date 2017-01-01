@@ -2,11 +2,13 @@ package com.thinkbiganalytics.nifi.rest.model.flow;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.google.common.collect.Lists;
 import com.thinkbiganalytics.common.constants.KyloProcessorFlowType;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -111,10 +113,19 @@ public class NifiFlowProcessGroup {
         }
     }
 
+
+    public List<NifiFlowProcessor> getSortedStartingProcessors() {
+        List<NifiFlowProcessor> startingProcessors = Lists.newArrayList(getStartingProcessors());
+        Collections.sort(startingProcessors, new NifiFlowProcessor.FlowIdComparator());
+        return startingProcessors;
+    }
+
+
+
     public void assignFlowIds() {
         Integer flowId = 0;
         Integer maxCount = 0;
-        for (NifiFlowProcessor processor : getStartingProcessors()) {
+        for (NifiFlowProcessor processor : getSortedStartingProcessors()) {
             flowId = processor.assignFlowIds(flowId);
             Integer count = processor.countNodes();
             if (count > maxCount) {

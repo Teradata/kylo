@@ -3,6 +3,7 @@ package com.thinkbiganalytics.nifi.rest.model.flow;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Lists;
 import com.thinkbiganalytics.common.constants.KyloProcessorFlowType;
 
 import org.apache.commons.lang3.StringUtils;
@@ -10,7 +11,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -243,6 +247,15 @@ public class NifiFlowProcessor implements Serializable {
         }
     }
 
+    public List<NifiFlowProcessor> getSortedDestinations() {
+        if (destinations == null) {
+            destinations = new HashSet<>();
+        }
+        List<NifiFlowProcessor> list = Lists.newArrayList(destinations);
+        Collections.sort(list, new NifiFlowProcessor.FlowIdComparator());
+        return list;
+    }
+
     public Integer assignFlowIds(Integer flowId) {
         flowId++;
         setFlowId(flowId + "__" + StringUtils.substringAfterLast(this.type, "."));
@@ -250,7 +263,7 @@ public class NifiFlowProcessor implements Serializable {
         Set<String> printed = new HashSet<>();
         printed.add(this.getId());
 
-        for (NifiFlowProcessor child : getDestinations()) {
+        for (NifiFlowProcessor child : getSortedDestinations()) {
             if (!child.containsDestination(this) && !child.containsDestination(child) && !child.equals(this) && !printed.contains(child.getId())) {
                 flowId = child.assignFlowIds(flowId);
                 printed.add(child.getId());
@@ -335,4 +348,30 @@ public class NifiFlowProcessor implements Serializable {
         sb.append('}');
         return sb.toString();
     }
+
+
+    public static class FlowIdComparator implements Comparator<NifiFlowProcessor> {
+
+        @Override
+        public int compare(NifiFlowProcessor o1, NifiFlowProcessor o2) {
+            int compare = 0;
+
+            if (o1 == null && o2 == null) {
+                compare = 0;
+            } else if (o1 == null && o2 != null) {
+                compare = -1;
+            } else if (o1 != null && o2 == null) {
+                compare = 1;
+            } else if (o1.getName() != null && o2.getName() != null) {
+                compare = o1.getName().compareTo(o2.getName());
+            }
+
+            if (compare == 0 && o1.getType() != null && o2.getType() != null) {
+                compare = o1.getType().compareTo(o2.getType());
+            }
+            return compare;
+        }
+    }
+
+
 }

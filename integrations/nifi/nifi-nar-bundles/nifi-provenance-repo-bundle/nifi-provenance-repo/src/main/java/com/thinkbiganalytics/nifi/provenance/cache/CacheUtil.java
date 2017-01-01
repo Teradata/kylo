@@ -121,6 +121,7 @@ public class CacheUtil {
         }
 
         event.setComponentName(provenanceFeedLookup.getProcessorName(event.getComponentId()));
+
         //assign the feed info for quick lookup on the flow file?
         boolean assignedFeedInfo = provenanceFeedLookup.assignFeedInformationToFlowFile(flowFile);
         if (!assignedFeedInfo && !flowFile.hasFeedInformationAssigned()) {
@@ -130,6 +131,7 @@ public class CacheUtil {
             event.setFeedProcessGroupId(flowFile.getFeedProcessGroupId());
             event.setComponentName(provenanceFeedLookup.getProcessorName(event.getComponentId()));
         }
+        provenanceFeedLookup.setProcessorFlowType(event);
         event.setStream(provenanceFeedLookup.isStream(event));
 
         event.setJobFlowFileId(flowFile.getRootFlowFile().getId());

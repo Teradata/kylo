@@ -35,10 +35,16 @@ public class NifiFlowCacheRestController {
     @Path("/get-flow-updates")
     @Produces({MediaType.APPLICATION_JSON})
     public Response getFlowUpdates(@QueryParam("syncId") String syncId) {
-        log.info("get cache flow updates for {} ", syncId);
         NiFiFlowCacheSync updates = nifiFlowCache.syncAndReturnUpdates(syncId);
-        log.info("finished get cache flow updates starting id: {}, ending id: {} ", syncId, updates.getSyncId());
         return Response.ok(updates).build();
+    }
+
+    @GET
+    @Path("/get-cache")
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response getCache(@QueryParam("syncId") String syncId) {
+        NiFiFlowCacheSync cache = nifiFlowCache.getCache(syncId);
+        return Response.ok(cache).build();
     }
 
     @GET
