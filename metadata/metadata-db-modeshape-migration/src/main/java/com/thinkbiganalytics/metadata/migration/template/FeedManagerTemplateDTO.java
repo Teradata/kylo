@@ -40,6 +40,8 @@ public class FeedManagerTemplateDTO implements FeedManagerTemplate {
 
     private DateTime modifiedTime;
 
+    private boolean isStream;
+
     @Override
     public ID getId() {
         return id;
@@ -177,5 +179,15 @@ public class FeedManagerTemplateDTO implements FeedManagerTemplate {
     @Override
     public void setOrder(Long order) {
 
+    }
+
+    @Override
+    public boolean isStream() {
+        return isStream;
+    }
+
+    @Override
+    public void setStream(boolean stream) {
+        isStream = stream;
     }
 }

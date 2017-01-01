@@ -35,6 +35,8 @@ public class JcrFeedTemplate extends AbstractJcrAuditableSystemEntity implements
 
     public static String JSON = "tba:json";
 
+    public static String IS_STREAM = "tba:isStream";
+
     public JcrFeedTemplate(Node node) {
         super(node);
     }
@@ -190,5 +192,21 @@ public class JcrFeedTemplate extends AbstractJcrAuditableSystemEntity implements
     public void setOrder(Long order) {
         setProperty(ORDER, order);
     }
+
+
+    @Override
+    public boolean isStream() {
+        if (!hasProperty(IS_STREAM)) {
+            setStream(false);
+        }
+        return getProperty(IS_STREAM, Boolean.class, true);
+    }
+
+
+    @Override
+    public void setStream(boolean isStream) {
+        setProperty(IS_STREAM, isStream);
+    }
+
 }
 

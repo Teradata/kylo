@@ -162,6 +162,7 @@
     - tba:json (STRING)
     - tba:feeds (REFERENCE) multiple
     - tba:order (LONG)
+    - tba:isStream (BOOLEAN) = 'false'
 
 [tba:category] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied, tba:accessControlled
 	- tba:systemName (STRING) mandatory

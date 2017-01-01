@@ -75,4 +75,8 @@ public interface FeedManagerTemplate {
 
     void setOrder(Long order);
 
+    boolean isStream();
+
+    void setStream(boolean stream);
+
 }

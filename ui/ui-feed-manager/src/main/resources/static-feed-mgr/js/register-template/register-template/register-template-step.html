@@ -16,8 +16,19 @@
                     <textarea ng-model="vm.model.description"></textarea>
                 </md-input-container>
 
+                <div layout="column">
+                    <md-subheader class="md-subhead left-aligned">Streaming template</md-subheader>
+
+                    <div layout="row" layout-align="start start">
+                        <md-checkbox ng-model="vm.model.isStream" aria-label="Streaming Template">
+                            Streaming template
+                        </md-checkbox>
+                        <span>If checked individual jobs and steps will not be tracked in Operations Manager.  Summary statistics and critical failures will be tracked</span>
+                    </div>
+                </div>
+
                 <div layout="column" ng-if="!vm.model.reusableTemplate">
-                    <md-subheader class="md-subhead left-aligned layout-padding-bottom">Feed Destination Table Options</md-subheader>
+                    <md-subheader class="md-subhead left-aligned">Feed Destination Table Options</md-subheader>
                     <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="">
                         <label class="label-small md-container-ignore">Destination Table</label>
                         <md-radio-group ng-model="vm.templateTableOption" flex layout="row" ng-change="vm.onTableOptionChange()">
@@ -111,7 +122,7 @@
 
                 </div>
 
-                </div layout>
+                </div>
 
                 <div flex="50" layout="column">
                     <md-subheader class="md-subhead left-aligned">Define Processor Flow Types</md-subheader>

@@ -40,6 +40,7 @@ public class TemplateModelTransform {
                 template.setNifiTemplateId(domain.getNifiTemplateId());
                 List<FeedManagerFeed> feeds = domain.getFeeds();
                 template.setFeedsCount(feeds == null ? 0 : feeds.size());
+                template.setStream(domain.isStream());
                 if(includeFeedNames && feeds != null){
                     template.setFeedNames( feeds.stream().map(feedManagerFeed -> FeedNameUtil.fullName(feedManagerFeed.getCategory().getName(),feedManagerFeed.getName())).collect(
                         Collectors.toSet()));
@@ -85,6 +86,7 @@ public class TemplateModelTransform {
                     domain.setIconColor(registeredTemplate.getIconColor());
                     domain.setDescription(registeredTemplate.getDescription());
                     domain.setOrder(registeredTemplate.getOrder());
+                    domain.setStream(registeredTemplate.isStream());
                     domain.setJson(json);
                     FeedManagerTemplate.State state = FeedManagerTemplate.State.ENABLED;
                     try {

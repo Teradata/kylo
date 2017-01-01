@@ -60,6 +60,7 @@ public class RegisteredTemplate {
 
     private Map<String,KyloProcessorFlowType> processorFlowTypeMap;
 
+    @JsonProperty("isStream")
     private boolean isStream;
 
     @JsonIgnore
@@ -542,7 +543,7 @@ public class RegisteredTemplate {
         return isStream;
     }
 
-    public void setIsStream(boolean isStream) {
+    public void setStream(boolean isStream) {
         this.isStream = isStream;
     }
 

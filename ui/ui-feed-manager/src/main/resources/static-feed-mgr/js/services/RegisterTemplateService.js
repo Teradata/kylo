@@ -54,7 +54,8 @@ angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($ht
       state:'NOT REGISTERED',
         updateDate:null,
         feedsCount:0,
-      registeredDatasources:[]
+        registeredDatasources: [],
+        isStream: false
     },
     newModel: function () {
       this.model = angular.copy(this.emptyModel);
@@ -85,7 +86,8 @@ angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($ht
         needsReusableTemplate: this.model.needsReusableTemplate,
         reusableTemplateConnections: this.model.reusableTemplateConnections,
         processorFlowTypeMap : this.model.processorFlowTypeMap,
-        state:this.model.state
+          state: this.model.state,
+          isStream: this.model.isStream
       }
     },
     newReusableConnectionInfo: function() {
@@ -688,6 +690,7 @@ angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($ht
             self.model.needsReusableTemplate = templateData.reusableTemplateConnections != undefined && templateData.reusableTemplateConnections.length>0;
             self.model.registeredDatasourceDefinitions = templateData.registeredDatasourceDefinitions;
             self.model.processorFlowTypeMap = templateData.processorFlowTypeMap;
+              self.model.isStream = templateData.isStream;
             if (templateData.state == 'ENABLED') {
               self.model.stateIcon = 'check_circle'
             }
