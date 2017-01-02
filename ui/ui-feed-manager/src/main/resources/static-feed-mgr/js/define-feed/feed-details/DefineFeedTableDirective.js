@@ -619,13 +619,9 @@
                 angular.forEach(response.fields, function (field) {
                     var col = newColumnDefinition();
                     col = angular.extend(col, field)
-                    // backwards compatibility
-                    if (col.dataType == '' && field.derivedDataType) {
-                        col.dataType = field.derivedDataType;
-                    }
                     // add exotic data type to available columns if needed
-                    if ($.inArray(col.dataType, self.availableDefinitionDataTypes) == -1) {
-                        self.availableDefinitionDataTypes.push(col.dataType);
+                    if ($.inArray(col.derivedDataType, self.availableDefinitionDataTypes) == -1) {
+                        self.availableDefinitionDataTypes.push(col.derivedDataType);
                     }
                     self.addColumn(col, false);
                 });
