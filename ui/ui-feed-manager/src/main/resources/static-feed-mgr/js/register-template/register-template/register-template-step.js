@@ -145,55 +145,10 @@
         }
 
         /**
-         * Fetches the output/input ports and walks the flow to build the processor graph for the Data sources and the flow types
-         */
-        var initTemplateFlowData = function () {
-            if (self.model.needsReusableTemplate) {
-                RegisterTemplateService.fetchRegisteredReusableFeedInputPorts().then(function (response) {
-                    // Update connectionMap and inputPortList
-                    self.inputPortList = [];
-                    if (response.data) {
-                        angular.forEach(response.data, function (port, i) {
-                            self.inputPortList.push({label: port.name, value: port.name});
-                            self.connectionMap[port.name] = port;
-                        });
-                    }
-
-                    // Check for invalid connections
-                    angular.forEach(self.model.reusableTemplateConnections, function (connection) {
-                        //initially mark as valid
-                        self.registerTemplateForm["port-" + connection.feedOutputPortName].$setValidity("invalidConnection", true);
-                        if (!angular.isDefined(self.connectionMap[connection.inputPortDisplayName])) {
-                            connection.inputPortDisplayName = null;
-                            // self.$error["port-" + connection.feedOutputPortName] = true;
-                            //mark as invalid
-                            self.registerTemplateForm["port-" + connection.feedOutputPortName].$setValidity("invalidConnection", false);
-                        }
-                    });
-
-                    buildTemplateFlowData();
-                });
-            }
-            else {
-                buildTemplateFlowData();
-            }
-        }
-
-        /**
-         * Initialze the template options
-         */
-        initTemplateTableOptions();
-
-        /**
-         * Initialize the connections and flow data
-         */
-        initTemplateFlowData();
-
-        /**
          * Calls the server to get all the Datasources and the Flow processors and flow types
          * Caled initially when the page loads and then any time a user changes a input port connection
          */
-        var buildTemplateFlowData = function () {
+        function buildTemplateFlowData() {
             self.loadingFlowData = true;
             var assignedPortIds = [];
             _.each(self.model.reusableTemplateConnections, function (conn) {
@@ -283,6 +238,53 @@
             });
 
         };
+
+        /**
+         * Fetches the output/input ports and walks the flow to build the processor graph for the Data sources and the flow types
+         */
+        var initTemplateFlowData = function () {
+            if (self.model.needsReusableTemplate) {
+                RegisterTemplateService.fetchRegisteredReusableFeedInputPorts().then(function (response) {
+                    // Update connectionMap and inputPortList
+                    self.inputPortList = [];
+                    if (response.data) {
+                        angular.forEach(response.data, function (port, i) {
+                            self.inputPortList.push({label: port.name, value: port.name});
+                            self.connectionMap[port.name] = port;
+                        });
+                    }
+
+                    // Check for invalid connections
+                    angular.forEach(self.model.reusableTemplateConnections, function (connection) {
+                        //initially mark as valid
+                        self.registerTemplateForm["port-" + connection.feedOutputPortName].$setValidity("invalidConnection", true);
+                        if (!angular.isDefined(self.connectionMap[connection.inputPortDisplayName])) {
+                            connection.inputPortDisplayName = null;
+                            // self.$error["port-" + connection.feedOutputPortName] = true;
+                            //mark as invalid
+                            self.registerTemplateForm["port-" + connection.feedOutputPortName].$setValidity("invalidConnection", false);
+                        }
+                    });
+
+                    buildTemplateFlowData();
+                });
+            }
+            else {
+                buildTemplateFlowData();
+            }
+        }
+
+        /**
+         * Initialze the template options
+         */
+        initTemplateTableOptions();
+
+        /**
+         * Initialize the connections and flow data
+         */
+        initTemplateFlowData();
+
+
 
         this.removeProcessorFlowType = function (processor) {
             var item = _.find(self.templateFlowTypeProcessors, function (flowProcessor) {
