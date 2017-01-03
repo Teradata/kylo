@@ -320,7 +320,11 @@ public abstract class BasePolicyAnnotationTransformer<U extends BaseUiPolicyRule
 
         if (constructor != null) {
             //call that constructor
-            standardizationPolicy = ConstructorUtils.invokeConstructor(standardizationPolicyClass, paramValues);
+            try {
+                standardizationPolicy = ConstructorUtils.invokeConstructor(standardizationPolicyClass, paramValues);
+            } catch (NoSuchMethodException e) {
+                standardizationPolicy = standardizationPolicyClass.newInstance();
+            }
         } else {
             //if the class has no public constructor then attempt to call the static instance method
             if (!hasConstructor) {
