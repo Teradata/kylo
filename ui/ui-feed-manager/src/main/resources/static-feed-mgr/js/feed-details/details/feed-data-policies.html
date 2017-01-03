@@ -94,7 +94,7 @@
         <div layout="row" layout-fill>
           <div flex="30" class="md-list-item-text">
             <div>{{policy.name}}</div>
-            <div class="hint">{{vm.fieldDataTypeDisplay(vm.fieldNameMap[policy.name])}}</div>
+            <div class="hint">{{vm.fieldNameMap[policy.name].derivedDataType}}</div>
           </div>
           <div flex="10" class="md-list-item-text ">
             <ng-md-icon class="primary-color-1" icon="check_box" ng-if="vm.fieldNameMap[policy.name].primaryKey"></ng-md-icon>

@@ -23,6 +23,8 @@ public class NifiRestClientExceptionTranslator {
         }
         if (e instanceof NotFoundException) {
             return new NifiComponentNotFoundException(e.getMessage());
+        } else if (e instanceof NullPointerException) {
+            return new NifiConnectionException("Verify NiFi is running and try again", e);
         } else if (e instanceof ProcessingException) {
             int throwables = ExceptionUtils.getThrowableCount(e);
             if (throwables > 1) {
