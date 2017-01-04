@@ -232,7 +232,7 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
 
                 return -1L;
             }
-            final StateMap stateMap = stateManager.getState(Scope.CLUSTER);
+            final StateMap stateMap = stateManager.getState(Scope.LOCAL);
             final String lastEventIdStr = stateMap.get(LAST_EVENT_ID_KEY);
             final long lastEventId = lastEventIdStr != null ? Long.parseLong(lastEventIdStr) : -1L;
             return lastEventId;
@@ -252,10 +252,10 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
      * @param eventId      the event Id to store
      */
     private void setLastEventId(StateManager stateManager, long eventId) throws IOException {
-        final StateMap stateMap = stateManager.getState(Scope.CLUSTER);
+        final StateMap stateMap = stateManager.getState(Scope.LOCAL);
         final Map<String, String> statePropertyMap = new HashMap<>(stateMap.toMap());
         statePropertyMap.put(LAST_EVENT_ID_KEY, Long.toString(eventId));
-        stateManager.setState(statePropertyMap, Scope.CLUSTER);
+        stateManager.setState(statePropertyMap, Scope.LOCAL);
         getLogger().info("KyloReportingTask EventId Info: Setting the Last Event Id to be {} ", new Object[]{eventId});
     }
 
