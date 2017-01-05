@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * A POJO implementation of {@link Feed}.
@@ -250,7 +251,7 @@ public class BaseFeed<C extends Category> implements Feed<C> {
         this.destinations.add(dest);
         return dest;
     }
-//    
+//
 //    @Override
 //    public FeedDestination getDestination(FeedDestination.ID id) {
 //        return this.destinations.get(id);
@@ -317,6 +318,11 @@ public class BaseFeed<C extends Category> implements Feed<C> {
         this.waterMarkValues.put(waterMarkName, waterMarkName);
     }
 
+    @Override
+    public void setTags(@Nullable final Set<String> tags) {
+        // ignored
+    }
+
     private static class BaseId {
 
         private final UUID uuid;
@@ -367,7 +373,7 @@ public class BaseFeed<C extends Category> implements Feed<C> {
             super(ser);
         }
     }
-//    
+//
 //    protected static class SourceId extends BaseId implements FeedSource.ID {
 //        public SourceId() {
 //            super();
@@ -375,9 +381,9 @@ public class BaseFeed<C extends Category> implements Feed<C> {
 //
 //        public SourceId(Serializable ser) {
 //            super(ser);
-//        } 
+//        }
 //    }
-//    
+//
 //    protected static class DestinationId extends BaseId implements FeedDestination.ID {
 //        public DestinationId() {
 //            super();
@@ -385,7 +391,7 @@ public class BaseFeed<C extends Category> implements Feed<C> {
 //
 //        public DestinationId(Serializable ser) {
 //            super(ser);
-//        } 
+//        }
 //    }
 //    @Override
 //    public String getVersionName() {
@@ -423,7 +429,7 @@ public class BaseFeed<C extends Category> implements Feed<C> {
 //            this.id = new SourceId();
             this.agreement = agreement;
         }
-// 
+//
 //        @Override
 //        public ID getId() {
 //            return this.id;
@@ -499,7 +505,7 @@ public class BaseFeed<C extends Category> implements Feed<C> {
     @Override
     public void updateInitStatus(InitializationStatus status) {
         // TODO Auto-generated method stub
-        
+
     }
 
     /* (non-Javadoc)

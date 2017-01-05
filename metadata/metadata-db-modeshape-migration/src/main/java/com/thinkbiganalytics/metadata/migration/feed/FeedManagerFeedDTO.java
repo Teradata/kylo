@@ -26,6 +26,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * A POJO for migrating feeds to a ModeShape repository.
@@ -63,9 +64,9 @@ public class FeedManagerFeedDTO implements FeedManagerFeed {
     private FeedManagerTemplate template;
 
     private Set<Feed<?>> dependentFeeds;
-    
+
     private Map<String, String> waterMarkValues = new HashMap<>();
-    
+
     private InitializationStatus currentInitStatus = new InitializationStatus(InitializationStatus.State.PENDING);
 
     //template
@@ -147,7 +148,7 @@ public class FeedManagerFeedDTO implements FeedManagerFeed {
     public void setName(String name) {
         this.name = name;
     }
-    
+
     @Override
     public String getQualifiedName() {
         return getCategory().getName() + "." + getName();
@@ -177,8 +178,8 @@ public class FeedManagerFeedDTO implements FeedManagerFeed {
     public boolean isInitialized() {
         return initialized;
     }
-    
-    
+
+
 
     @Override
     public InitializationStatus getCurrentInitStatus() {
@@ -351,5 +352,10 @@ public class FeedManagerFeedDTO implements FeedManagerFeed {
     @Override
     public boolean removeUsedByFeed(Feed feed) {
         return false;
+    }
+
+    @Override
+    public void setTags(@Nullable Set tags) {
+        // ignored
     }
 }
