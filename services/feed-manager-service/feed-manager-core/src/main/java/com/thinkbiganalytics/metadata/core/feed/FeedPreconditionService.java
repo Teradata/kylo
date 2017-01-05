@@ -83,7 +83,7 @@ public class FeedPreconditionService {
                     this.eventService.notify(new PreconditionTriggerEvent(feed.getId()));
                 }
             } else {
-                log.debug("Feed {}.{} does not depend on feed {} with id ({})", feed.getCategory(), feed.getName(), operationStatus.getFeedName(), operationStatus.getFeedId());
+                log.debug("Feed {}.{} does not depend on feed {}", feed.getCategory(), feed.getName(), operationStatus.getFeedName());
             }
         }
     }
