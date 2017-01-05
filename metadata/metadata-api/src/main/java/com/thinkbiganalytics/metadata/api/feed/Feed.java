@@ -18,6 +18,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * A feed is a specification for how data should flow into and out of a system.
@@ -43,11 +44,11 @@ public interface Feed<C extends Category> extends Propertied, AccessControlled, 
     State getState();
 
     boolean isInitialized();
-    
+
     InitializationStatus getCurrentInitStatus();
-    
+
     void updateInitStatus(InitializationStatus status);
-    
+
     List<InitializationStatus> getInitHistory();
 
     FeedPrecondition getPrecondition();
@@ -122,15 +123,22 @@ public interface Feed<C extends Category> extends Propertied, AccessControlled, 
      * @return an optional string value of the high water mark
      */
     Optional<String> getWaterMarkValue(String waterMarkName);
-    
+
     /**
      * @return the set of existing high water mark names
      */
     Set<String> getWaterMarkNames();
-    
+
     /**
      * @param waterMarkName the name of the high water mark
      * @param value the current value of the water mark
      */
     void setWaterMarkValue(String waterMarkName, String value);
+
+    /**
+     * Sets the tags for this feed.
+     *
+     * @param tags set of tags
+     */
+    void setTags(@Nullable Set<String> tags);
 }

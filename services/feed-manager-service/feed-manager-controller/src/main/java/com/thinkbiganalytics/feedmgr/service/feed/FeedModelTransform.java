@@ -6,6 +6,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
+import com.thinkbiganalytics.feedmgr.rest.model.Tag;
 import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
 import com.thinkbiganalytics.feedmgr.service.UserPropertyTransform;
 import com.thinkbiganalytics.feedmgr.service.category.CategoryModelTransform;
@@ -160,6 +161,7 @@ public class FeedModelTransform {
         domain.setSecurityGroups(securityGroups);
 
         domain.setVersionName(feedMetadata.getVersionName());
+        domain.setTags(feedMetadata.getTags().stream().map(Tag::getName).collect(Collectors.toSet()));
         return domain;
     }
 
