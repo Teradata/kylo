@@ -70,25 +70,11 @@ public interface AlertProvider {
     Iterator<? extends Alert> getAlertsAfter(DateTime time);
     
     /**
-     * Retrieves all alerts that may have been created since the alert specified by the given ID.  
-     * @param id the ID of an alert
-     * @return an iterator on all alerts created after the given alert ID
-     */
-    Iterator<? extends Alert> getAlertsAfter(Alert.ID id);
-    
-    /**
      * Retrieves all alerts that may have been created after the given time.  
      * @param time the time from which newer alerts should be returned
      * @return an iterator on all alerts created after the specified time
      */
     Iterator<? extends Alert> getAlertsBefore(DateTime time);
-    
-    /**
-     * Retrieves all alerts that may have been created before the alert specified by the given ID.
-     * @param id the ID of an alert
-     * @return an iterator on all alerts created after the given alert ID
-     */
-    Iterator<? extends Alert> getAlertsBefore(Alert.ID id);
 
     /**
      * Allows a synchronous update of a particular alert using the supplied responder.  This method will block

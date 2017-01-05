@@ -449,22 +449,6 @@ public class KyloAlertManager extends QueryDslRepositorySupport implements Alert
 //                preds.add(event.state.in(getTransitions()));
 //            }
 
-            if (getBeforeId() != null) {
-                AlertId idImpl = (AlertId) getBeforeId();
-                QJpaAlert beforeAlert = new QJpaAlert("beforeAlert");
-
-                query.join(beforeAlert).on(beforeAlert.id.eq(idImpl));
-                preds.add(alert.createdTime.lt(beforeAlert.createdTime));
-            }
-
-            if (getAfterId() != null) {
-                AlertId idImpl = (AlertId) getAfterId();
-                QJpaAlert afterAlert = new QJpaAlert("afterAlert");
-
-                query.join(afterAlert).on(afterAlert.id.eq(idImpl));
-                preds.add(alert.createdTime.gt(afterAlert.createdTime));
-            }
-
             if (getStates().size() > 0) preds.add(alert.state.in(getStates()));
             if (getTypes().size() > 0) preds.add(alert.type.in(getTypes()));
             if (getLevels().size() > 0) preds.add(alert.level.in(getLevels()));
@@ -473,7 +457,7 @@ public class KyloAlertManager extends QueryDslRepositorySupport implements Alert
             
             // When limiting and using "after" criteria only, we need to sort ascending to get the next n values after the given id/time.
             // In all other cases sort descending. The results will be ordered correctly when aggregated by the provider.
-            if (getLimit() != Integer.MAX_VALUE && (getAfterId() != null || getAfterTime() != null) && getBeforeId() == null && getBeforeTime() == null) {
+            if (getLimit() != Integer.MAX_VALUE && getAfterTime() != null && getBeforeTime() == null) {
                 query.orderBy(alert.createdTime.asc());
             } else {
                 query.orderBy(alert.createdTime.desc());

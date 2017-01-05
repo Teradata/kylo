@@ -216,31 +216,13 @@ public class AggregatingAlertProvider implements AlertProvider, AlertSourceAggre
     public Iterator<? extends Alert> getAlertsAfter(DateTime time) {
         return getAlerts(criteria().after(time));
     }
-
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.alerts.api.AlertProvider#getAlerts(com.thinkbiganalytics.alerts.api.Alert.ID)
-     */
-    @Override
-    public Iterator<? extends Alert> getAlertsAfter(ID id) {
-        return getAlerts(criteria().after(id));
-    }
     
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.alerts.api.AlertProvider#getAlertsBefore(org.joda.time.DateTime)
      */
     @Override
     public Iterator<? extends Alert> getAlertsBefore(DateTime time) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-    
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.alerts.api.AlertProvider#getAlertsBefore(com.thinkbiganalytics.alerts.api.Alert.ID)
-     */
-    @Override
-    public Iterator<? extends Alert> getAlertsBefore(ID id) {
-        // TODO Auto-generated method stub
-        return null;
+        return getAlerts(criteria().before(time));
     }
 
     /* (non-Javadoc)

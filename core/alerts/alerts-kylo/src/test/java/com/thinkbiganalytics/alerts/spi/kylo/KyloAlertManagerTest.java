@@ -122,17 +122,6 @@ public class KyloAlertManagerTest extends AbstractTestNGSpringContextTests {
     }
     
     @Test(dependsOnGroups="create", groups="read1")
-    public void testGetAlertsSinceAlert() {
-        Iterator<Alert> itr = this.manager.getAlerts(this.manager.criteria().after(id1));
-        
-        assertThat(itr).isNotNull().hasSize(1).extracting("id").contains(this.id2);
-        
-        itr = this.manager.getAlerts(this.manager.criteria().after(id2));
-        
-        assertThat(itr).isNotNull().hasSize(0);
-    }
-    
-    @Test(dependsOnGroups="create", groups="read1")
     public void testGetAlertsSinceTime() {
         Iterator<Alert> itr = this.manager.getAlerts(this.manager.criteria().after(this.beforeTime));
         

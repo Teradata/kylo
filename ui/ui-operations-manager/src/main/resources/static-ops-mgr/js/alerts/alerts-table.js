@@ -39,7 +39,7 @@
         this.viewType = PaginationDataService.viewType(this.pageName);
 
         //Setup the Tabs
-        var tabNames = ['All', 'Recent', 'Failures', 'Handled', 'Kylo']
+        var tabNames = ['All', 'INFO', 'WARNING', 'MINOR', 'MAJOR', 'CRITICAL', 'FATAL']
 
         this.tabs = TabService.registerTabs(this.pageName, tabNames, this.paginationData.activeTab);
 
@@ -121,7 +121,7 @@
          * @returns {*[]}
          */
         function loadSortOptions() {
-            var options = {'Alert Name': 'name', 'Start Time': 'startTime', 'Alert Type': 'type', 'State': 'state'};
+            var options = {'Start Time': 'startTime', 'Level': 'level', 'State': 'state'};
 
             var sortOptions = TableOptionsService.newSortOptions(self.pageName, options, 'startTime', 'desc');
             var currentOption = TableOptionsService.getCurrentSort(self.pageName);
@@ -150,8 +150,8 @@
          */
         function sampleAlerts() {
             var alerts = [];
-            for (var i = 0; i < 200; i++) {
-                alerts.push({name: "test alert " + i, state: "Handled", startTime: new Date().getTime()})
+            for (var i = 0; i < 50; i++) {
+                alerts.push({level: "MAJOR", state: "UNHANDLED", startTime: new Date().getTime(), description: "Test alert " + i})
             }
             return alerts;
         }
@@ -177,20 +177,20 @@
                 var tabTitle = activeTab.title;
                 var filters = {tabTitle: tabTitle};
                 var limit = self.paginationData.rowsPerPage;
-                var start = (limit * activeTab.currentPage) - limit;
+//                var start = start + limit;
 
                 var sort = PaginationDataService.sort(self.pageName);
                 var canceler = $q.defer();
 
                 var successFn = function (response) {
                     if (response.data) {
-                        var alertHolder = response.data;
+                        var alertRange = response.data;
 
-                        self.firstId = alertHolder.firstId;
-                        self.lastId = alertHolder.lastId;
+                        self.newestTime = alertRange.newestTime;
+                        self.oldestTime = alertRange.oldestTime;
 
                         //transform the data for UI
-                        transformAlertData(tabTitle, alertHolder.alerts);
+                        transformAlertData(tabTitle, alertRange.alerts);
                         TabService.setTotal(self.pageName, tabTitle, response.data.size)
 
                         if (self.loading) {
@@ -213,38 +213,21 @@
 
                 var params = {};
 
-                if (self.lastId) {
-                    params.lastId = self.lastId;
-                }
-
-                if (self.firstId) {
-                    params.firstId = self.firstId;
-                }
-
-                //LOGIC TO DO WORK BASED UPON DIRECTION
+                // Get the next oldest or next newest alerts depending on paging direction.
                 if (direction == PAGE_DIRECTION.forward) {
-
+                	if (self.oldestTime) {
+                		// Filter alerts to those created before the oldest alert of the previous results
+                		params.before = self.oldestTime;
+                	}
+                } else {
+                	if (self.newestTime) {
+                		// Filter alerts to those created after the newest alert of the previous results
+                		params.after = self.newestTime;
+                	}
                 }
-
-                var query = tabTitle != 'All' ? tabTitle.toLowerCase() : '';
-
-                console.log('QUERY FOR ', tabTitle, params, direction)
 
                 ///TODO FILL IN THIS CALL OUT with the correct URL
-                //    $http.get(RestUrlService.JOBS_QUERY_URL(adsfasd) + "/" + query, {timeout: canceler.promise, params: params}).then(successFn, errorFn);
-
-                //Remove this timeout below as its just dummy alert data
-                $timeout(function () {
-
-                    var sampleData = sampleAlerts();
-                    transformAlertData(tabTitle, sampleData);
-                    TabService.setTotal(self.pageName, tabTitle, sampleData.length);
-                    if (self.loading) {
-                        self.loading = false;
-                    }
-                    finishedRequest(canceler);
-                }, 2000);
-                //Remove this timeout below above its just dummy alert data
+                $http.get(RestUrlService.ALERTS_URL, {timeout: canceler.promise, params: params}).then(successFn, errorFn);
             }
             self.showProgress = true;
 

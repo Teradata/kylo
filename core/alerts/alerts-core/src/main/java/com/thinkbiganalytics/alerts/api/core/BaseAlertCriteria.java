@@ -13,7 +13,6 @@ import java.util.function.Predicate;
 import org.joda.time.DateTime;
 
 import com.thinkbiganalytics.alerts.api.Alert;
-import com.thinkbiganalytics.alerts.api.Alert.ID;
 import com.thinkbiganalytics.alerts.api.Alert.Level;
 import com.thinkbiganalytics.alerts.api.Alert.State;
 import com.thinkbiganalytics.alerts.api.AlertCriteria;
@@ -34,8 +33,6 @@ public class BaseAlertCriteria implements AlertCriteria, Predicate<Alert> {
     private Set<URI> types = new HashSet<>();
     private Set<Alert.State> states = new HashSet<>();
     private Set<Alert.Level> levels = new HashSet<>();
-    private Alert.ID afterId;
-    private Alert.ID beforeId;
     private DateTime afterTime;
     private DateTime beforeTime;
     
@@ -46,8 +43,6 @@ public class BaseAlertCriteria implements AlertCriteria, Predicate<Alert> {
     public AlertCriteria transfer(AlertCriteria criteria) {
         AtomicReference<AlertCriteria> updated = new AtomicReference<AlertCriteria>(criteria);
         updated.set(updated.get().limit(this.limit));
-        updated.set(updated.get().after(this.afterId));
-        updated.set(updated.get().before(this.beforeId));
         updated.set(updated.get().after(this.afterTime));
         updated.set(updated.get().before(this.beforeTime));
         this.types.forEach((t) -> updated.set(updated.get().type(t)));
@@ -62,8 +57,6 @@ public class BaseAlertCriteria implements AlertCriteria, Predicate<Alert> {
      */
     @Override
     public boolean test(Alert alert) {
-        if (this.afterId != null && ! testAfterId(alert)) return false;
-        if (this.beforeId != null && ! testBeforeId(alert)) return false;
         if (this.types.size() > 0 && ! testTypes(alert)) return false;
         if (this.states.size() > 0 && ! testStates(alert)) return false;
         if (this.levels.size() > 0 && ! testLevels(alert)) return false;
@@ -113,24 +106,6 @@ public class BaseAlertCriteria implements AlertCriteria, Predicate<Alert> {
     }
 
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.alerts.api.AlertCriteria#after(com.thinkbiganalytics.alerts.api.Alert.ID)
-     */
-    @Override
-    public AlertCriteria after(ID id) {
-        this.afterId = id;
-        return this;
-    }
-
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.alerts.api.AlertCriteria#before(com.thinkbiganalytics.alerts.api.Alert.ID)
-     */
-    @Override
-    public AlertCriteria before(ID id) {
-        this.beforeId = id;
-        return this;
-    }
-
-    /* (non-Javadoc)
      * @see com.thinkbiganalytics.alerts.api.AlertCriteria#after(org.joda.time.DateTime)
      */
     @Override
@@ -146,15 +121,6 @@ public class BaseAlertCriteria implements AlertCriteria, Predicate<Alert> {
     public AlertCriteria before(DateTime time) {
         this.beforeTime = time;
         return this;
-    }
-
-    protected boolean testAfterId(Alert alert) {
-        throw new UnsupportedOperationException("This criteria, when used as a predicate, does support after(ID)");
-    }
-
-
-    protected boolean testBeforeId(Alert alert) {
-        throw new UnsupportedOperationException("This criteria, when used as a predicate, does support before(ID)");
     }
 
 
@@ -200,14 +166,6 @@ public class BaseAlertCriteria implements AlertCriteria, Predicate<Alert> {
 
     protected Set<Alert.Level> getLevels() {
         return levels;
-    }
-
-    protected Alert.ID getAfterId() {
-        return afterId;
-    }
-
-    protected Alert.ID getBeforeId() {
-        return beforeId;
     }
 
     protected DateTime getAfterTime() {

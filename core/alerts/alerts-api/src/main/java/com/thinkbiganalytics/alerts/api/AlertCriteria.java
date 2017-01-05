@@ -46,20 +46,6 @@ public interface AlertCriteria {
     AlertCriteria level(Level level, Level... others);
 
     /**
-     * Filters alerts to retrieve only those newer than the alert with the give ID.
-     * @param id the ID of the oldest alert
-     * @return the updated criteria
-     */
-    AlertCriteria after(Alert.ID id);
-
-    /**
-     * Filters alerts to retrieve only those older than the alert with the give ID.
-     * @param id the ID of the newest alert
-     * @return the updated criteria
-     */
-    AlertCriteria before(Alert.ID id);
-
-    /**
      * Filters alerts to retrieve only those newer than the specified time.
      * @param time the maximum time
      * @return the updated criteria

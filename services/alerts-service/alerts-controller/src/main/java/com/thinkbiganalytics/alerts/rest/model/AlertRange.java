@@ -6,6 +6,8 @@ package com.thinkbiganalytics.alerts.rest.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.joda.time.DateTime;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -19,8 +21,8 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AlertRange {
 
-    private String firstId;
-    private String lastId;
+    private DateTime newestTime;
+    private DateTime oldestTime;
     private int size;
     private List<Alert> alerts;
     
@@ -31,31 +33,31 @@ public class AlertRange {
         assert alerts != null;
         
         if (alerts.size() > 0) {
-            this.firstId = alerts.get(0).getId().toString();
-            this.lastId = alerts.get(alerts.size() - 1).getId().toString();
+            this.newestTime = alerts.get(0).getCreatedTime();
+            this.oldestTime = alerts.get(alerts.size() - 1).getCreatedTime();
         } else {
-            this.firstId = null;
-            this.lastId = null;
+            this.newestTime = null;
+            this.newestTime = null;
         }
         
         this.alerts = new ArrayList<>(alerts);
         this.size = alerts.size();
     }
 
-    public String getFirstId() {
-        return firstId;
+    public DateTime getNewestTime() {
+        return newestTime;
     }
 
-    public void setFirstId(String firstId) {
-        this.firstId = firstId;
+    public void setNewestTime(DateTime firstTime) {
+        this.newestTime = firstTime;
     }
 
-    public String getLastId() {
-        return lastId;
+    public DateTime getOldestTime() {
+        return oldestTime;
     }
 
-    public void setLastId(String lastId) {
-        this.lastId = lastId;
+    public void setOldestTime(DateTime lastTime) {
+        this.oldestTime = lastTime;
     }
 
     public int getSize() {

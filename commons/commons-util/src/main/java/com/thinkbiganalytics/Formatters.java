@@ -8,6 +8,8 @@ import java.util.Collection;
 import java.util.List;
 
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.joda.time.ReadableInstant;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
@@ -31,12 +33,17 @@ public interface Formatters {
     static final DateTimeFormatter SHORT_TIME_FORMATTER = DateTimeFormat.shortTime();
     static final DateTimeFormatter HMS_TIME_FORMATTER = DateTimeFormat.forPattern("HH:MM");
     static final DateTimeFormatter HM_TIME_FORMATTER = DateTimeFormat.forPattern("HH:MM");
+    static final DateTimeFormatter MILLIS_FORMATTER = new MillisDateTimeFormat();
     
     /** A list of date/time-related formatters in order of most specific to least specific */
     static final DateTimeFormatter[] DATE_TIME_FORMATTERS 
         = new DateTimeFormatter[] { 
                                     ISO_DATE_TIME_FORMATTER_NO_MILLIS, 
-                                    ISO_DATE_TIME_FORMATTER 
+                                    ISO_DATE_TIME_FORMATTER,
+                                    SHORT_TIME_FORMATTER,
+                                    HMS_TIME_FORMATTER,
+                                    HM_TIME_FORMATTER,
+                                    MILLIS_FORMATTER
                                     };
     
     static DateTime parseDateTime(String timeStr) {
@@ -60,7 +67,31 @@ public interface Formatters {
         examples.add(ISO_DATE_TIME_FORMATTER_NO_MILLIS.print(time));
         examples.add(SHORT_TIME_FORMATTER.print(time));
         examples.add(HMS_TIME_FORMATTER.print(time));
-        examples.add(HM_TIME_FORMATTER.print(time));
+        examples.add(HM_TIME_FORMATTER.print(time)); 
+        examples.add(MILLIS_FORMATTER.print(time)); 
         return examples;
+    }
+    
+    
+    
+    class MillisDateTimeFormat extends DateTimeFormatter {
+
+        public MillisDateTimeFormat() {
+            super(null, null);
+        }
+        
+        @Override
+        public DateTime parseDateTime(String text) {
+            try {
+                return new DateTime(Long.parseLong(text), DateTimeZone.UTC);
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException(e);
+            }
+        }
+        
+        @Override
+        public String print(ReadableInstant instant) {
+            return Long.toString(instant.getMillis());
+        }
     }
 }

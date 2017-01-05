@@ -188,27 +188,6 @@ public class AggregatingAlertProviderTest {
     }
     
     @Test
-    public void testGetAlertsIdAllSources() {
-        DateTime since = DateTime.now().minusSeconds(1);
-        TestAlert sinceAlert = new TestAlert(this.source, since);
-        TestAlert srcAlert = new TestAlert(this.source);
-        TestAlert mgrAlert = new TestAlert(this.manager);
-        
-        this.provider.addAlertSource(this.source);
-        this.provider.addAlertManager(this.manager);
-        
-        when(this.source.getAlert(any(Alert.ID.class))).thenReturn(Optional.of(sinceAlert));
-        when(this.source.getAlerts(any(AlertCriteria.class))).thenAnswer(iteratorAnswer(srcAlert));
-        when(this.manager.getAlerts(any(AlertCriteria.class))).thenAnswer(iteratorAnswer(mgrAlert));
-        
-        Iterator<? extends Alert> results = this.provider.getAlertsAfter(new SourceAlertID(sinceAlert.getId(), this.source));
-        Iterator<? extends Alert> itr = Iterators.transform(results, providerToSourceAlertFunction());
-        List<Alert> alerts = Lists.newArrayList(itr);
-        
-        assertThat(alerts).hasSize(2).contains(srcAlert, mgrAlert);
-    }
-    
-    @Test
     public void testRespondToActionable() {
         TestAlert mgrAlert = new TestAlert(this.manager, true);
         

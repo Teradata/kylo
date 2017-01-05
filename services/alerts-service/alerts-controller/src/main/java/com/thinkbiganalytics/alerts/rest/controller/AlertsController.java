@@ -11,18 +11,20 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
+import org.joda.time.DateTime;
 import org.springframework.stereotype.Component;
 
 import com.thinkbiganalytics.Formatters;
@@ -32,8 +34,8 @@ import com.thinkbiganalytics.alerts.api.AlertCriteria;
 import com.thinkbiganalytics.alerts.api.AlertProvider;
 import com.thinkbiganalytics.alerts.api.AlertResponder;
 import com.thinkbiganalytics.alerts.api.AlertResponse;
-import com.thinkbiganalytics.alerts.rest.model.Alert.State;
 import com.thinkbiganalytics.alerts.rest.model.Alert.Level;
+import com.thinkbiganalytics.alerts.rest.model.Alert.State;
 import com.thinkbiganalytics.alerts.rest.model.AlertCreateRequest;
 import com.thinkbiganalytics.alerts.rest.model.AlertRange;
 import com.thinkbiganalytics.alerts.rest.model.AlertUpdateRequest;
@@ -59,13 +61,27 @@ public class AlertsController {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public AlertRange getAlerts(@Context UriInfo uriInfo) {
+    public AlertRange getAlerts(@QueryParam("limit") Integer limit,
+                                @QueryParam("state") String state,
+                                @QueryParam("level") String level,
+                                @QueryParam("before") String before,
+                                @QueryParam("after") String after) {
         List<Alert> alerts = new ArrayList<>();
-        AlertCriteria criteria = createCriteria(uriInfo);
+        AlertCriteria criteria = createCriteria(limit, state, level, before, after);
         
         provider.getAlerts(criteria).forEachRemaining(a -> alerts.add(a));
         return new AlertRange(alerts.stream().map(a -> toModel(a)).collect(Collectors.toList()));
     }
+//    
+//    @GET
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public AlertRange getAlerts(@Context UriInfo uriInfo) {
+//        List<Alert> alerts = new ArrayList<>();
+//        AlertCriteria criteria = createCriteria(uriInfo);
+//        
+//        provider.getAlerts(criteria).forEachRemaining(a -> alerts.add(a));
+//        return new AlertRange(alerts.stream().map(a -> toModel(a)).collect(Collectors.toList()));
+//    }
     
     @GET
     @Path("{id}")
@@ -138,6 +154,7 @@ public class AlertsController {
         result.setLevel(toModel(alert.getLevel()));
         result.setState(toModel(alert.getState()));
         result.setType(alert.getType());
+        result.setDescription(alert.getDescription());
         alert.getEvents().forEach(e -> result.getEvents().add(toModel(e)));
         return result;
     }
@@ -169,6 +186,18 @@ public class AlertsController {
         return Alert.Level.valueOf(level.name());
     }
 
+    private AlertCriteria createCriteria(Integer limit, String stateStr, String levelStr, String before, String after) {
+        AlertCriteria criteria = provider.criteria();
+        
+        if (limit != null) criteria.limit(limit);
+        if (stateStr != null) criteria.state(Alert.State.valueOf(stateStr.toUpperCase()));
+        if (levelStr != null) criteria.level(Alert.Level.valueOf(levelStr.toUpperCase()));
+        if (before != null) criteria.before(Formatters.parseDateTime(before));
+        if (after != null) criteria.after(Formatters.parseDateTime(after));
+        
+        return criteria;
+    }
+
     private AlertCriteria createCriteria(UriInfo uriInfo) {
         // Query params: limit, state, level, before-time, after-time, before-alert, after-alert
         MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
@@ -177,11 +206,9 @@ public class AlertsController {
         try {
             Optional.ofNullable(params.get("limit")).ifPresent(list -> list.forEach(limitStr -> criteria.limit(Integer.parseInt(limitStr))));
             Optional.ofNullable(params.get("state")).ifPresent(list -> list.forEach(stateStr -> criteria.state(Alert.State.valueOf(stateStr.toUpperCase()))));
-            Optional.ofNullable(params.get("level")).ifPresent(list -> list.forEach(limitStr -> criteria.level(Alert.Level.valueOf(limitStr.toUpperCase()))));
-            Optional.ofNullable(params.get("before-time")).ifPresent(list -> list.forEach(timeStr -> criteria.before(Formatters.parseDateTime(timeStr))));
-            Optional.ofNullable(params.get("after-time")).ifPresent(list -> list.forEach(timeStr -> criteria.after(Formatters.parseDateTime(timeStr))));
-            Optional.ofNullable(params.get("before-alert")).ifPresent(list -> list.forEach(idStr -> criteria.before(provider.resolve(idStr))));
-            Optional.ofNullable(params.get("after-alert")).ifPresent(list -> list.forEach(idStr -> criteria.after(provider.resolve(idStr))));
+            Optional.ofNullable(params.get("level")).ifPresent(list -> list.forEach(levelStr -> criteria.level(Alert.Level.valueOf(levelStr.toUpperCase()))));
+            Optional.ofNullable(params.get("before")).ifPresent(list -> list.forEach(timeStr -> criteria.before(Formatters.parseDateTime(timeStr))));
+            Optional.ofNullable(params.get("after")).ifPresent(list -> list.forEach(timeStr -> criteria.after(Formatters.parseDateTime(timeStr))));
             
             return criteria;
         } catch (IllegalArgumentException e) {

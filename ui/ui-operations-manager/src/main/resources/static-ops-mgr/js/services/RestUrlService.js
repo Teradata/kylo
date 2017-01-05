@@ -22,6 +22,7 @@ angular.module(MODULE_OPERATIONS).service('RestUrlService', function () {
         return self.FEEDS_BASE+"/"+feedName+"/daily-status-count";
     }
 
+    this.ALERTS_URL = this.ROOT + "/proxy/v1/alerts";
 
 
 

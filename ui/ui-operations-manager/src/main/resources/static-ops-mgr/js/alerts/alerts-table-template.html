@@ -23,22 +23,26 @@
               <md-list-item dir-paginate="alert in tab.data.content|itemsPerPage:vm.paginationData.rowsPerPage" pagination-id="vm.paginationId(tab)" total-items="tab.data.total"
                             current-page="tab.currentPage">
                 <div layout="row" layout-fill>
-                  <div flex="30" layout="column" style="overflow:hidden; text-overflow:ellipsis;" class="item-column  md-list-item-text" ng-click="vm.alertDetails($event,alert)">
+                  <div flex="15" layout="column" style="overflow:hidden; text-overflow:ellipsis;" class="item-column  md-list-item-text" ng-click="vm.alertDetails($event,alert)">
                                    <span class="item-title">
-                                       {{alert.name}}
+                                       {{alert.level}}
                                    </span>
-                    <span class="column-title column-title-bottom">Name</span>
+                    <span class="column-title column-title-bottom">Level</span>
                   </div>
 
-                  <div flex="25" layout="column" hide show-gt-xs show-lg show-xl show-sm show-md class="item-column  md-list-item-text" ng-click="vm.alertDetails($event,alert)">
+                  <div flex="15" layout="column" hide show-gt-xs show-lg show-xl show-sm show-md class="item-column  md-list-item-text" ng-click="vm.alertDetails($event,alert)">
                     <span class="item-title">{{alert.state }}</span>
                     <span class="column-title column-title-bottom">State</span>
                   </div>
 
-                  <div flex="25" layout="column" hide show-gt-xs show-lg show-xl show-sm show-md class="item-column  md-list-item-text" ng-click="vm.alertDetails($event,alert)">
-                    <span class="item-title" ng-if="alert.startTime">{{alert.startTime | date: 'MMM d, yyyy HH:mm:ss'}}</span>
-                    <span class="item-title" ng-if="alert.startTime == undefined"> N/A </span>
+                  <div flex="20" layout="column" hide show-gt-xs show-lg show-xl show-sm show-md class="item-column  md-list-item-text" ng-click="vm.alertDetails($event,alert)">
+                    <span class="item-title">{{alert.createdTime | date: 'MMM d, yyyy HH:mm:ss'}}</span>
                     <span class="column-title column-title-bottom">Start Time</span>
+                  </div>
+
+                  <div flex="50" layout="column" hide show-gt-xs show-lg show-xl show-sm show-md class="item-column  md-list-item-text" ng-click="vm.alertDetails($event,alert)">
+                    <span class="item-title">{{alert.description }}</span>
+                    <span class="column-title column-title-bottom">Description</span>
                   </div>
 
                 </div>
@@ -73,16 +77,18 @@
               <table md-table md-progress="vm.deferred.promise">
                 <thead md-head md-order="vm.paginationData.sort" md-on-reorder="vm.onOrderChange">
                 <tr md-row>
-                  <th md-column name="Alert Name" md-order-by="jobName">Job Name</th>
+                  <th md-column name="Level">Level</th>
                   <th md-column name="State">State</th>
                   <th md-column name="Start Time" md-order-by="startTime" hide show-gt-sm>Start Time</th>
+                  <th md-column name="Description">Description</th>
                 </tr>
                 </thead>
                 <tbody md-body>
                 <tr md-row ng-repeat="alert in tab.data.content" ng-click="vm.alertDetails($event,alert)">
-                  <td md-cell>{{alert.name}}</td>
+                  <td md-cell>{{alert.level}}</td>
                   <td md-cell>{{alert.state}}</td>
-                  <td md-cell hide show-gt-sm>{{alert.startTime | date:'MMM d, yyyy HH:mm:ss'}}</td>
+                  <td md-cell hide show-gt-sm>{{alert.createdTime | date:'MMM d, yyyy HH:mm:ss'}}</td>
+                  <td md-cell>{{alert.description}}</td>
                 </tr>
                 </tbody>
               </table>

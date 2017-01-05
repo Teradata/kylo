@@ -36,6 +36,7 @@ public class Alert {
     private Level level;
     private State state;
     private DateTime createdTime;
+    private String description;
     private boolean actionable;
     private List<AlertChangeEvent> events = new ArrayList<>();
     
@@ -81,6 +82,14 @@ public class Alert {
 
     public void setCreatedTime(DateTime createdTime) {
         this.createdTime = createdTime;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public boolean isActionable() {
