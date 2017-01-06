@@ -311,7 +311,7 @@ public class AggregatingAlertProvider implements AlertProvider, AlertSourceAggre
                 })
             .flatMap(s -> s)
             .map(alert -> wrapAlert(alert, alert.getSource()))
-            .sorted((a1, a2) -> a1.getCreatedTime().compareTo(a2.getCreatedTime()));
+            .sorted((a1, a2) -> a2.getCreatedTime().compareTo(a1.getCreatedTime()));
     }
     
     private void notifyChanged(Alert alert) {

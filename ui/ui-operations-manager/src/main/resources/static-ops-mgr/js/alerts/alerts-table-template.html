@@ -59,7 +59,7 @@
                                          max-size="5"
                                          direction-links="true"
                                          boundary-links="false"
-                                         template-url="js/vendor/dirPagination/dirPagination.tpl.html"
+                                         template-url="js/alerts/alerts-pagination.tpl.html"
                                          on-page-change="vm.onPaginationChange(newPageNumber)"
                                          label="Rows per page"
                                          rows-per-page="vm.paginationData.rowsPerPage"
@@ -94,8 +94,18 @@
               </table>
             </md-table-container>
 
-            <md-table-pagination md-limit="vm.paginationData.rowsPerPage" md-page="tab.currentPage" md-total="{{tab.data.total}}" md-on-paginate="vm.onPaginationChange"
-                                 md-limit-options="[5,10,20,50,100]"></md-table-pagination>
+                <dir-pagination-controls pagination-id="vm.paginationId(tab)"
+                                         auto-hide="false"
+                                         max-size="5"
+                                         direction-links="true"
+                                         boundary-links="false"
+                                         template-url="js/alerts/alerts-pagination.tpl.html"
+                                         on-page-change="vm.onPaginationChange(newPageNumber)"
+                                         label="Rows per page"
+                                         rows-per-page="vm.paginationData.rowsPerPage"
+                                         rows-per-page-options="vm.paginationData.rowsPerPageOptions"
+                                         class="pagination-row">
+                </dir-pagination-controls>
 
           </div>
 

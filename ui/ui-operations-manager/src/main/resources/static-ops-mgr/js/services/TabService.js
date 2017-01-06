@@ -81,7 +81,13 @@ angular.module(MODULE_OPERATIONS).service('TabService',function(PaginationDataSe
                 var data = {total:0,content:[]};
                 //if there is a currentPage saved... use it
                 var currentPage = PaginationDataService.currentPage(self.pageName,name) || 1;
-                var tab = {title:name, data:data, currentPage:currentPage, active:false, setTotal:function(total) { this.data.total = total;}, clearContent:function() {this.data.content = []; this.data.total = 0;}, addContent:function(content) { this.data.content.push(content);}};
+                var tab = {title:name, 
+                		   data:data, 
+                		   currentPage:currentPage, 
+                		   active:false, 
+                		   setTotal:function(total) { this.data.total = total;}, 
+                		   clearContent:function() {this.data.content = []; this.data.total = 0;}, 
+                		   addContent:function(content) { this.data.content.push(content);}};
                 if(currentTabName && name == currentTabName) {
                     self.tabMetadata[pageName].selectedIndex = i;
                     tab.active = true;

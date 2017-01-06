@@ -46,8 +46,10 @@
         this.tabMetadata = TabService.metadata(this.pageName);
 
         this.sortOptions = loadSortOptions();
+        
+        this.total = 1;
 
-        var PAGE_DIRECTION = {forward: 'f', backward: 'b'}
+        var PAGE_DIRECTION = {forward: 'f', backward: 'b', none: 'n'}
 
 
         /**
@@ -106,10 +108,16 @@
         this.onPaginationChange = function (page, limit) {
             var activeTab = TabService.getActiveTab(self.pageName);
             var prevPage = PaginationDataService.currentPage(self.pageName, activeTab.title);
-            var direction = PAGE_DIRECTION.forward;
+            
+            // Current page number is only used for comparison in determining the direction, i.e. the value is not relevant.
             if (prevPage > page) {
                 direction = PAGE_DIRECTION.backward;
+            } else if (prevPage < page) {
+            	direction = PAGE_DIRECTION.forward;
+            } else {
+            	direction = PAGE_DIRECTION.none;
             }
+            
             PaginationDataService.currentPage(self.pageName, activeTab.title, page);
             return loadAlerts(direction).promise;
         };
@@ -160,7 +168,7 @@
 
         function loadAlerts(direction) {
             if (direction == undefined) {
-                direction = PAGE_DIRECTION.forward;
+                direction = PAGE_DIRECTION.none;
             }
 
             if (!self.refreshing) {
@@ -185,13 +193,17 @@
                 var successFn = function (response) {
                     if (response.data) {
                         var alertRange = response.data;
+                        var size = alertRange.size;
+                        var total = 1000;
+//                        var total = size * 10;
+//                        var total = size == limit ? (limit * 1 + 10000) : size;
 
-                        self.newestTime = alertRange.newestTime;
-                        self.oldestTime = alertRange.oldestTime;
+                        self.newestTime = alertRange.newestTime ? alertRange.newestTime : self.newestTime;
+                        self.oldestTime = alertRange.oldestTime ? alertRange.oldestTime : self.oldestTime;
 
                         //transform the data for UI
                         transformAlertData(tabTitle, alertRange.alerts);
-                        TabService.setTotal(self.pageName, tabTitle, response.data.size)
+                        TabService.setTotal(self.pageName, tabTitle, total)
 
                         if (self.loading) {
                             self.loading = false;
@@ -211,7 +223,7 @@
 
                 var filter = self.filter;
 
-                var params = {};
+                var params = {limit: limit};
 
                 // Get the next oldest or next newest alerts depending on paging direction.
                 if (direction == PAGE_DIRECTION.forward) {
@@ -219,11 +231,15 @@
                 		// Filter alerts to those created before the oldest alert of the previous results
                 		params.before = self.oldestTime;
                 	}
-                } else {
+                } else if (direction == PAGE_DIRECTION.backward) {
                 	if (self.newestTime) {
                 		// Filter alerts to those created after the newest alert of the previous results
                 		params.after = self.newestTime;
                 	}
+                }
+                
+                if (tabTitle != 'All') {
+                	params.level=tabTitle;
                 }
 
                 ///TODO FILL IN THIS CALL OUT with the correct URL
