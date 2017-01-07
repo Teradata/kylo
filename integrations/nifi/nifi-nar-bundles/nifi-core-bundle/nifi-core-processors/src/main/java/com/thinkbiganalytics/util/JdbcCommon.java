@@ -22,7 +22,9 @@ package com.thinkbiganalytics.util;
  */
 
 
+import com.google.common.base.Preconditions;
 import com.thinkbiganalytics.nifi.thrift.api.RowVisitor;
+
 import org.apache.avro.Schema;
 import org.apache.avro.SchemaBuilder;
 import org.apache.avro.SchemaBuilder.FieldAssembler;
@@ -31,8 +33,9 @@ import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.DatumWriter;
-import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.text.translate.CharSequenceTranslator;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
@@ -42,12 +45,47 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
-import java.sql.*;
+import java.sql.Date;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.sql.Types;
 
-import static java.sql.Types.*;
+import javax.annotation.Nonnull;
+
+import static java.sql.Types.ARRAY;
+import static java.sql.Types.BIGINT;
+import static java.sql.Types.BINARY;
+import static java.sql.Types.BIT;
+import static java.sql.Types.BLOB;
+import static java.sql.Types.BOOLEAN;
+import static java.sql.Types.CHAR;
+import static java.sql.Types.CLOB;
+import static java.sql.Types.DATE;
+import static java.sql.Types.DECIMAL;
+import static java.sql.Types.DOUBLE;
+import static java.sql.Types.FLOAT;
+import static java.sql.Types.INTEGER;
+import static java.sql.Types.LONGNVARCHAR;
+import static java.sql.Types.LONGVARBINARY;
+import static java.sql.Types.LONGVARCHAR;
+import static java.sql.Types.NCHAR;
+import static java.sql.Types.NUMERIC;
+import static java.sql.Types.NVARCHAR;
+import static java.sql.Types.REAL;
+import static java.sql.Types.ROWID;
+import static java.sql.Types.SMALLINT;
+import static java.sql.Types.TIME;
+import static java.sql.Types.TIMESTAMP;
+import static java.sql.Types.TINYINT;
+import static java.sql.Types.VARBINARY;
+import static java.sql.Types.VARCHAR;
 
 /**
  * JDBC / SQL common functions.
@@ -56,7 +94,18 @@ public class JdbcCommon {
 
     public static Logger logger = LoggerFactory.getLogger(JdbcCommon.class);
 
-    public static long convertToCSVStream(final ResultSet rs, final OutputStream outStream, final RowVisitor visitor) throws SQLException, IOException {
+    /**
+     * Converts the specified SQL result set to a delimited text file written to the specified output stream.
+     *
+     * @param rs the SQL result set
+     * @param outStream the output stream for the delimited text file
+     * @param visitor records position of the result set
+     * @param delimiter the column delimiter for the delimited text file
+     * @return the number of rows written
+     * @throws SQLException if a SQL error occurs while reading the result set
+     * @throws IOException if an I/O error occurs while writing to the output stream
+     */
+    public static long convertToDelimitedStream(final ResultSet rs, final OutputStream outStream, final RowVisitor visitor, String delimiter) throws SQLException, IOException {
         // avoid overflowing log with redundant messages
         int dateConversionWarning = 0;
 
@@ -66,15 +115,16 @@ public class JdbcCommon {
         }
         OutputStreamWriter writer = new OutputStreamWriter(outStream);
         final ResultSetMetaData meta = rs.getMetaData();
+        final DelimiterEscaper escaper = new DelimiterEscaper(delimiter);
 
         // Write header
         final int nrOfColumns = meta.getColumnCount();
         StringBuffer sb = new StringBuffer();
         for (int i = 1; i <= nrOfColumns; i++) {
             String columnName = meta.getColumnName(i);
-            sb.append(columnName);
+            sb.append(escaper.translate(columnName));
             if (i != nrOfColumns) {
-                sb.append(",");
+                sb.append(delimiter);
             } else {
                 sb.append("\n");
             }
@@ -82,7 +132,9 @@ public class JdbcCommon {
         writer.append(sb.toString());
         long nrOfRows = 0;
         while (rs.next()) {
-            if (visitor != null) visitor.visitRow(rs);
+            if (visitor != null) {
+                visitor.visitRow(rs);
+            }
             sb = new StringBuffer();
             nrOfRows++;
             for (int i = 1; i <= nrOfColumns; i++) {
@@ -93,39 +145,37 @@ public class JdbcCommon {
                     Timestamp sqlDate = null;
                     try {
                         // Extract timestamp
-                        sqlDate = rs.getTimestamp(i);
-                    } catch (SQLException e) {
-                        try {
-                            // Attempt to extract date
-                            Date sqlDateDate = (rs.getDate(i));
-                            if (sqlDateDate != null) {
-                                Long timeInMillis = sqlDateDate.getTime();
-                                sqlDate = new Timestamp(timeInMillis);
-                            }
-                        } catch (Exception e2) {
-                            // Still failed, maybe exotic date type
-                            if (dateConversionWarning++ < 10)
-                                logger.warn(rs.getMetaData().getColumnName(i) + " is not convertible to timestamp or date");
+                        sqlDate = extractSqlDate(rs, i);
+                    } catch (Exception e) {
+                        // Still failed, maybe exotic date type
+                        if (dateConversionWarning++ < 10) {
+                            logger.warn("{} is not convertible to timestamp or date", rs.getMetaData().getColumnName(i));
                         }
                     }
 
-                    if (visitor != null) visitor.visitColumn(rs.getMetaData().getColumnName(i), colType, sqlDate);
+                    if (visitor != null) {
+                        visitor.visitColumn(rs.getMetaData().getColumnName(i), colType, sqlDate);
+                    }
                     if (sqlDate != null) {
                         DateTimeFormatter formatter = ISODateTimeFormat.dateTime().withZoneUTC();
                         val = formatter.print(new DateTime(sqlDate.getTime()));
                     }
                 } else if (colType == Types.TIME) {
                     Time time = rs.getTime(i);
-                    if (visitor != null) visitor.visitColumn(rs.getMetaData().getColumnName(i), colType, time);
+                    if (visitor != null) {
+                        visitor.visitColumn(rs.getMetaData().getColumnName(i), colType, time);
+                    }
                     DateTimeFormatter formatter = ISODateTimeFormat.time().withZoneUTC();
                     val = formatter.print(new DateTime(time.getTime()));
                 } else {
                     val = rs.getString(i);
-                    if (visitor != null) visitor.visitColumn(rs.getMetaData().getColumnName(i), colType, val);
+                    if (visitor != null) {
+                        visitor.visitColumn(rs.getMetaData().getColumnName(i), colType, val);
+                    }
                 }
-                sb.append((val == null ? "" : StringEscapeUtils.escapeCsv(val)));
+                sb.append((val == null ? "" : escaper.translate(val)));
                 if (i != nrOfColumns) {
-                    sb.append(",");
+                    sb.append(delimiter);
                 } else {
                     sb.append("\n");
                 }
@@ -137,18 +187,42 @@ public class JdbcCommon {
     }
 
 
-    public static long convertToAvroStream(final ResultSet rs, final OutputStream outStream) throws SQLException, IOException {
+    /**
+     * Extracts a resultset col to a SQL timestamp
+     */
+    private static Timestamp extractSqlDate(ResultSet rs, int col) throws SQLException {
+        Timestamp sqlDate = null;
+        try {
+            // Extract timestamp
+            sqlDate = rs.getTimestamp(col);
+        } catch (SQLException e) {
+            // Attempt to extract date
+            Date sqlDateDate = rs.getDate(col);
+            if (sqlDateDate != null) {
+                Long timeInMillis = sqlDateDate.getTime();
+                sqlDate = new Timestamp(timeInMillis);
+            }
+        }
+        return sqlDate;
+    }
+
+
+    public static long convertToAvroStream(final ResultSet rs, final OutputStream outStream, final RowVisitor visitor) throws SQLException, IOException {
+        int dateConversionWarning = 0;
         final Schema schema = createSchema(rs);
         final GenericRecord rec = new GenericData.Record(schema);
 
-        final DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<GenericRecord>(schema);
-        try (final DataFileWriter<GenericRecord> dataFileWriter = new DataFileWriter<GenericRecord>(datumWriter)) {
+        final DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<>(schema);
+        try (final DataFileWriter<GenericRecord> dataFileWriter = new DataFileWriter<>(datumWriter)) {
             dataFileWriter.create(schema, outStream);
 
             final ResultSetMetaData meta = rs.getMetaData();
             final int nrOfColumns = meta.getColumnCount();
             long nrOfRows = 0;
             while (rs.next()) {
+                if (visitor != null) {
+                    visitor.visitRow(rs);
+                }
                 for (int i = 1; i <= nrOfColumns; i++) {
                     final int javaSqlType = meta.getColumnType(i);
                     final Object value = rs.getObject(i);
@@ -177,12 +251,51 @@ public class JdbcCommon {
                     } else if (value instanceof Number || value instanceof Boolean) {
                         rec.put(i - 1, value);
 
+                    } else if (value instanceof Date) {
+                        final DateTimeFormatter formatter = ISODateTimeFormat.dateTime().withZoneUTC();
+                        rec.put(i - 1, formatter.print(new DateTime(((Date) value).getTime())));
+
+                    } else if (value instanceof Time) {
+                        final DateTimeFormatter formatter = ISODateTimeFormat.time().withZoneUTC();
+                        rec.put(i - 1, formatter.print(new DateTime(((Time) value).getTime())));
+
+                    } else if (value instanceof Timestamp) {
+                        final DateTimeFormatter formatter = ISODateTimeFormat.dateTime().withZoneUTC();
+                        rec.put(i - 1, formatter.print(new DateTime(((Timestamp) value).getTime())));
+
                     } else {
                         // The different types that we support are numbers (int, long, double, float),
                         // as well as boolean values and Strings. Since Avro doesn't provide
                         // timestamp types, we want to convert those to Strings. So we will cast anything other
                         // than numbers or booleans to strings by using the toString() method.
                         rec.put(i - 1, value.toString());
+                    }
+
+                    //notify the visitor
+                    if (javaSqlType == Types.DATE || javaSqlType == Types.TIMESTAMP) {
+                        Timestamp sqlDate = null;
+                        try {
+                            // Extract timestamp
+                            sqlDate = extractSqlDate(rs, i);
+
+                        } catch (Exception e) {
+                            if (dateConversionWarning++ < 10) {
+                                logger.warn("{} is not convertible to timestamp or date", rs.getMetaData().getColumnName(i));
+                            }
+                        }
+
+                        if (visitor != null) {
+                            visitor.visitColumn(rs.getMetaData().getColumnName(i), javaSqlType, sqlDate);
+                        }
+                    } else if (javaSqlType == Types.TIME) {
+                        Time time = rs.getTime(i);
+                        if (visitor != null) {
+                            visitor.visitColumn(rs.getMetaData().getColumnName(i), javaSqlType, time);
+                        }
+                    } else {
+                        if (visitor != null) {
+                            visitor.visitColumn(rs.getMetaData().getColumnName(i), javaSqlType, (value != null) ? value.toString() : null);
+                        }
                     }
                 }
                 dataFileWriter.append(rec);
@@ -200,7 +313,7 @@ public class JdbcCommon {
         try {
             tableName = meta.getTableName(1);
         } catch (SQLException e) {
-
+            // ignored
         }
         if (StringUtils.isBlank(tableName)) {
             tableName = "NiFi_ExecuteSQL_Record";
@@ -208,9 +321,7 @@ public class JdbcCommon {
 
         final FieldAssembler<Schema> builder = SchemaBuilder.record(tableName).namespace("any.data").fields();
 
-        /**
-         * Some missing Avro types - Decimal, Date types. May need some additional work.
-         */
+        // Some missing Avro types - Decimal, Date types. May need some additional work.
         for (int i = 1; i <= nrOfColumns; i++) {
             switch (meta.getColumnType(i)) {
                 case CHAR:
@@ -280,7 +391,6 @@ public class JdbcCommon {
                     builder.name(meta.getColumnName(i)).type().unionOf().nullBuilder().endNull().and().bytesType().endUnion().noDefault();
                     break;
 
-
                 default:
                     throw new IllegalArgumentException("createSchema: Unknown SQL type " + meta.getColumnType(i) + " cannot be converted to Avro type");
             }
@@ -289,26 +399,42 @@ public class JdbcCommon {
         return builder.endRecord();
     }
 
-    public static void main(String[] args) throws SQLException, IOException {
+    /**
+     * Escapes values in delimited text files.
+     */
+    static class DelimiterEscaper extends CharSequenceTranslator {
 
-        //CREATE USER 'thinkbig'@'localhost' IDENTIFIED BY 'thinkbig';
-        //GRANT ALL PRIVILEGES ON *.* TO 'thinkbig'@'localhost' IDENTIFIED BY 'thinkbig' WITH GRANT OPTION;
-        //FLUSH PRIVILEGES;
-        /*
-        com.mysql.jdbc.jdbc2.optional.MysqlDataSource ds
-                = new com.mysql.jdbc.jdbc2.optional.MysqlDataSource();
-        ds.setServerName("localhost");
-        ds.setPortNumber(3306);
-        ds.setDatabaseName("pipeline_db");
-        ds.setUser("thinkbig");
-        ds.setPassword("thinkbig");
+        /** Character for quoting values */
+        private static final char QUOTE = '"';
 
-        Connection conn = ds.getConnection();
-        Statement st = conn.createStatement();
-        ResultSet rs = st.executeQuery("SELECT * FROM BATCH_STEP_EXECUTION");
-        OutputStream os = new ByteArrayOutputStream();
-        JdbcCommon.convertToCSVStream(rs, os, null);
-        System.out.println(os.toString());
-    */
+        /** String for quoting values */
+        private static final String QUOTE_STR = String.valueOf(QUOTE);
+
+        /** Strings that, if found, require a value to be escaped */
+        private final String[] searchStrings;
+
+        /**
+         * Constructs a {@code DelimiterEscaper} with the specified delimiter.
+         *
+         * @param delimiter the delimiter
+         */
+        DelimiterEscaper(@Nonnull  final String delimiter) {
+            searchStrings = new String[]{delimiter, QUOTE_STR, Character.toString(CharUtils.CR), Character.toString(CharUtils.LF)};
+        }
+
+        @Override
+        public int translate(@Nonnull final CharSequence input, final int index, @Nonnull final Writer out) throws IOException {
+            Preconditions.checkState(index == 0, "Unsupported translation index %d", index);
+
+            if (StringUtils.containsAny(input.toString(), searchStrings)) {
+                out.write(QUOTE);
+                out.write(StringUtils.replace(input.toString(), QUOTE_STR, QUOTE_STR + QUOTE_STR));
+                out.write(QUOTE);
+            } else {
+                out.write(input.toString());
+            }
+
+            return Character.codePointCount(input, 0, input.length());
+        }
     }
 }

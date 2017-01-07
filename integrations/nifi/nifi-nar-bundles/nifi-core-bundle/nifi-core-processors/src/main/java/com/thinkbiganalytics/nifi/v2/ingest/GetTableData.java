@@ -21,10 +21,10 @@ import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.components.PropertyValue;
+import org.apache.nifi.components.Validator;
 import org.apache.nifi.dbcp.DBCPService;
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.logging.ComponentLog;
-import org.apache.nifi.processor.AbstractProcessor;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.Relationship;
@@ -62,7 +62,7 @@ import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.REL_SUCCESS;
 @InputRequirement(Requirement.INPUT_ALLOWED)
 @Tags({"thinkbig", "table", "jdbc", "query", "database"})
 @CapabilityDescription(
-    "Extracts data from a JDBC source table and can optional extract incremental data if provided criteria. Query result will be converted to CSV format. Streaming is used so arbitrarily large result sets are supported. This processor can be scheduled to run on a timer, or cron expression, using the standard scheduling methods, or it can be triggered by an incoming FlowFile. If it is triggered by an incoming FlowFile, then attributes of that FlowFile will be available when evaluating the select query. FlowFile attribute \'source.row.count\' indicates how many rows were selected.")
+    "Extracts data from a JDBC source table and can optional extract incremental data if provided criteria. Query result will be converted to a delimited format, or to Avro if specified. Streaming is used so arbitrarily large result sets are supported. This processor can be scheduled to run on a timer, or cron expression, using the standard scheduling methods, or it can be triggered by an incoming FlowFile. If it is triggered by an incoming FlowFile, then attributes of that FlowFile will be available when evaluating the select query. FlowFile attribute \'source.row.count\' indicates how many rows were selected.")
 
 // Implements strategies outlined by https://thebibackend.wordpress.com/2011/05/18/incremental-load-part-i-overview/
 public class GetTableData extends AbstractNiFiProcessor {
@@ -124,18 +124,20 @@ public class GetTableData extends AbstractNiFiProcessor {
     public static final PropertyDescriptor HIGH_WATER_MARK_PROP = new PropertyDescriptor.Builder()
         .name("High-Water Mark Property Name")
         .description("Name of the flow file attribute that should contain the current hig-water mark date, and which this processor will update with new values.  "
-                        + "Required if the load strategy is set to INCREMENTAL.")
+                     + "Required if the load strategy is set to INCREMENTAL.")
         .required(false)
         .defaultValue(ComponentAttributes.HIGH_WATER_DATE.key())
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
 
-    public static final PropertyDescriptor
-        LOAD_STRATEGY =
-        new PropertyDescriptor.Builder().name("Load Strategy").description("Whether to load the entire table or perform an incremental extract")
-            .required(true)
-            .allowableValues(LoadStrategy.values()).defaultValue(LoadStrategy.FULL_LOAD.toString()).build();
+    public static final PropertyDescriptor LOAD_STRATEGY = new PropertyDescriptor.Builder()
+        .name("Load Strategy")
+        .description("Whether to load the entire table or perform an incremental extract")
+        .required(true)
+        .allowableValues(LoadStrategy.values())
+        .defaultValue(LoadStrategy.FULL_LOAD.toString())
+        .build();
 
     public static final PropertyDescriptor DATE_FIELD = new PropertyDescriptor.Builder()
         .name("Date Field")
@@ -177,7 +179,30 @@ public class GetTableData extends AbstractNiFiProcessor {
         .name("Minimum Time Unit")
         .description("The minimum unit of data eligible to load. For the ILM case, this would be DAY, WEEK, MONTH, YEAR"
                      + " , zero means there is no limit. Max time less than 1 second will be equal to zero.")
-        .allowableValues(GetTableDataSupport.UnitSizes.values()).required(true).defaultValue(GetTableDataSupport.UnitSizes.NONE.toString()).build();
+        .allowableValues(GetTableDataSupport.UnitSizes.values())
+        .required(true)
+        .defaultValue(GetTableDataSupport.UnitSizes.NONE.toString())
+        .build();
+
+    public static final PropertyDescriptor OUTPUT_TYPE = new PropertyDescriptor.Builder()
+        .name("Output Type")
+        .description("How should the results be returned.  Either a Delimited output such as CSV, or AVRO.  If delimited you must specify the delimiter.")
+        .allowableValues(GetTableDataSupport.OutputType.values())
+        .required(true)
+        .defaultValue(GetTableDataSupport.OutputType.DELIMITED.toString())
+        .build();
+
+
+    public static final PropertyDescriptor OUTPUT_DELIMITER = new PropertyDescriptor.Builder()
+        .name("Output Delimiter")
+        .description(
+            "Used only if the Output Type is 'Delimited'.  If this is empty and the Output Type is delimited it will default to a ','.  This property is not used if the Output Type is AVRO.")
+        .required(false)
+        .addValidator(Validator.VALID)
+        .defaultValue(",")
+        .expressionLanguageSupported(true)
+        .build();
+
 
     private final List<PropertyDescriptor> propDescriptors;
 
@@ -205,6 +230,8 @@ public class GetTableData extends AbstractNiFiProcessor {
         pds.add(QUERY_TIMEOUT);
         pds.add(BACKOFF_PERIOD);
         pds.add(UNIT_SIZE);
+        pds.add(OUTPUT_TYPE);
+        pds.add(OUTPUT_DELIMITER);
         this.propDescriptors = Collections.unmodifiableList(pds);
     }
 
@@ -248,16 +275,20 @@ public class GetTableData extends AbstractNiFiProcessor {
 
         final DBCPService dbcpService = context.getProperty(JDBC_SERVICE).asControllerService(DBCPService.class);
         final MetadataProviderService metadataService = context.getProperty(METADATA_SERVICE).asControllerService(MetadataProviderService.class);
-        final String loadStrategy = context.getProperty(LOAD_STRATEGY).evaluateAttributeExpressions(incoming).getValue();
+        final String loadStrategy = context.getProperty(LOAD_STRATEGY).getValue();
         final String categoryName = context.getProperty(FEED_CATEGORY).evaluateAttributeExpressions(incoming).getValue();
         final String feedName = context.getProperty(FEED_NAME).evaluateAttributeExpressions(incoming).getValue();
         final String tableName = context.getProperty(TABLE_NAME).evaluateAttributeExpressions(incoming).getValue();
         final String fieldSpecs = context.getProperty(TABLE_SPECS).evaluateAttributeExpressions(incoming).getValue();
         final String dateField = context.getProperty(DATE_FIELD).evaluateAttributeExpressions(incoming).getValue();
         final Integer queryTimeout = context.getProperty(QUERY_TIMEOUT).asTimePeriod(TimeUnit.SECONDS).intValue();
-        final Integer overlapTime = context.getProperty(OVERLAP_TIME).asTimePeriod(TimeUnit.SECONDS).intValue();
+        final Integer overlapTime = context.getProperty(OVERLAP_TIME).evaluateAttributeExpressions(incoming).asTimePeriod(TimeUnit.SECONDS).intValue();
         final Integer backoffTime = context.getProperty(BACKOFF_PERIOD).asTimePeriod(TimeUnit.SECONDS).intValue();
-        final String unitSize = context.getProperty(UNIT_SIZE).evaluateAttributeExpressions(incoming).getValue();
+        final String unitSize = context.getProperty(UNIT_SIZE).getValue();
+        final String outputType = context.getProperty(OUTPUT_TYPE).getValue();
+        String outputDelimiter = context.getProperty(OUTPUT_DELIMITER).evaluateAttributeExpressions(incoming).getValue();
+        final String delimiter = StringUtils.isBlank(outputDelimiter) ? "," : outputDelimiter;
+
         final PropertyValue waterMarkPropName = context.getProperty(HIGH_WATER_MARK_PROP).evaluateAttributeExpressions(incoming);
 
         final String[] selectFields = parseFields(fieldSpecs);
@@ -290,7 +321,11 @@ public class GetTableData extends AbstractNiFiProcessor {
                             throw new RuntimeException("Unsupported loadStrategy [" + loadStrategy + "]");
                         }
 
-                        nrOfRows.set(JdbcCommon.convertToCSVStream(rs, out, (strategy == LoadStrategy.INCREMENTAL ? visitor : null)));
+                        if (GetTableDataSupport.OutputType.DELIMITED.equals(GetTableDataSupport.OutputType.valueOf(outputType))) {
+                            nrOfRows.set(JdbcCommon.convertToDelimitedStream(rs, out, (strategy == LoadStrategy.INCREMENTAL ? visitor : null), delimiter));
+                        } else {
+                            nrOfRows.set(JdbcCommon.convertToAvroStream(rs, out, (strategy == LoadStrategy.INCREMENTAL ? visitor : null)));
+                        }
                     } catch (final SQLException e) {
                         throw new IOException("SQL execution failure", e);
                     } finally {
@@ -342,17 +377,18 @@ public class GetTableData extends AbstractNiFiProcessor {
         }
     }
 
+
     private String getIncrementalWaterMarkValue(FlowFile ff, PropertyValue waterMarkPropName) {
-        if (! waterMarkPropName.isSet()) {
+        if (!waterMarkPropName.isSet()) {
             // TODO validate when scheduled?
             throw new IllegalArgumentException("The processor is configured for incremental load but the "
-                            + "property 'High-Water Mark Value Property Name' has not been set");
+                                               + "property 'High-Water Mark Value Property Name' has not been set");
         } else {
             String propName = waterMarkPropName.getValue();
 
             if (StringUtils.isEmpty(propName)) {
                 throw new IllegalArgumentException("The processor is configured for incremental load but the "
-                                + "property 'High-Water Mark Value Property Name' does not have a value");
+                                                   + "property 'High-Water Mark Value Property Name' does not have a value");
             } else {
                 String value = ff.getAttribute(propName);
 
@@ -372,7 +408,7 @@ public class GetTableData extends AbstractNiFiProcessor {
 
         if (StringUtils.isEmpty(propName)) {
             throw new IllegalArgumentException("The processor is configured for incremental load but the "
-                            + "property 'High-Water Mark Value Property Name' does not have a value");
+                                               + "property 'High-Water Mark Value Property Name' does not have a value");
         } else {
             return session.putAttribute(ff, propName, newValue);
         }

@@ -7,6 +7,7 @@ package com.thinkbiganalytics.ingest;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,6 +24,17 @@ public class GetTableDataSupport {
     private Connection conn;
 
     private int timeout;
+
+    /**
+     * Output format for table rows.
+     */
+    public enum OutputType {
+        /** Columns are separated by a delimiter */
+        DELIMITED,
+
+        /** Each row is written as an Avro record */
+        AVRO
+    }
 
     public enum UnitSizes {
         NONE,
@@ -92,7 +104,8 @@ public class GetTableDataSupport {
 
         logger.info("selectIncremental tableName {} dateField {} overlapTime {} lastLoadDate {} backoffTime {} unit {}", tableName, dateField, overlapTime, lastLoadDate, backoffTime, unit.toString());
 
-        DateRange range = new DateRange(lastLoadDate, new Date(), overlapTime, backoffTime, unit);
+        final Date now = new Date(DateTimeUtils.currentTimeMillis());
+        DateRange range = new DateRange(lastLoadDate, now, overlapTime, backoffTime, unit);
 
         logger.info("Load range with min {} max {}", range.getMinDate(), range.getMaxDate());
 
