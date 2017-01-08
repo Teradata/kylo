@@ -79,6 +79,7 @@
             _.each(self.model.table.tableSchema.fields, function (columnDef) {
                 if (columnDef.origName == undefined) {
                     columnDef.origName = columnDef.name;
+                    columnDef.origDataType = columnDef.derivedDataType;
                     columnDef.deleted = false;
                     columnDef.history = [];
                     self.addHistoryItem(columnDef);

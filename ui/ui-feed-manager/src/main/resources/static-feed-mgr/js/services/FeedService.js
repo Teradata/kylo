@@ -459,6 +459,7 @@ angular.module(MODULE_FEED_MGR).factory('FeedService',
                         // structured files must use the original names
                         if (model.table.structured == true) {
                             feedField.name = columnDef.origName;
+                            feedField.derivedDataType = columnDef.origDataType;
                         }
                         sourceField.name = columnDef.origName;
                         policy.feedFieldName = feedField.name;
