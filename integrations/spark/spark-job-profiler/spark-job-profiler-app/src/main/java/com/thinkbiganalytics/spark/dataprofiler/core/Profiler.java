@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.spark.dataprofiler.core;
 
 import com.thinkbiganalytics.hive.util.HiveUtils;
+import com.thinkbiganalytics.policy.FieldPolicy;
 import com.thinkbiganalytics.spark.DataSet;
 import com.thinkbiganalytics.spark.dataprofiler.columns.*;
 import com.thinkbiganalytics.spark.dataprofiler.model.SchemaInfo;
@@ -9,6 +10,7 @@ import com.thinkbiganalytics.spark.dataprofiler.output.OutputRow;
 import com.thinkbiganalytics.spark.dataprofiler.output.OutputWriter;
 import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataItem;
 import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataList;
+import com.thinkbiganalytics.spark.policy.FieldPolicyLoader;
 import org.apache.commons.lang.StringUtils;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
@@ -23,6 +25,7 @@ import org.springframework.context.annotation.Configuration;
 import scala.Tuple2;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -45,6 +48,12 @@ public class Profiler {
 	@SuppressWarnings("SpringJavaAutowiringInspection")
 	@Autowired
 	private ProfilerStrategy profilerStrategy;
+
+	@SuppressWarnings("SpringJavaAutowiringInspection")
+	@Autowired
+	private FieldPolicyLoader loader;
+
+	private Map<String, FieldPolicy> policyMap = new HashMap<>();
 
 	/**
 	 * Main entry point into program
@@ -118,7 +127,7 @@ public class Profiler {
 	 */
 	public String checkCommandLineArgs(String[] args) {
 	    System.out.println("Running Spark Profiler with the following command line " + args.length + " args (comma separated): " + StringUtils.join(args, ","));
-		if (args.length<4) {
+		if (args.length<5) {
 			System.out.println("Invalid number of command line arguments (" + args.length + ")");
 			showCommandLineArgs();
 			return null;
@@ -130,11 +139,13 @@ public class Profiler {
 		String profileObjectDesc = args[1];
 		Integer n = Integer.valueOf(args[2]);
 		String profileOutputTable = args[3];
+		String fieldPolicyJsonPath = args[4];
+		policyMap = loader.loadFieldPolicy(fieldPolicyJsonPath);
 
 		String inputAndOutputTablePartitionKey = "ALL";
 
-	    if (args.length >= 5) {
-			inputAndOutputTablePartitionKey = args[4];
+	    if (args.length >= 6) {
+			inputAndOutputTablePartitionKey = args[5];
 		}
 
 		switch (profileObjectType) {
@@ -144,7 +155,14 @@ public class Profiler {
 				final String safeTable = tableRef.length == 1 ? HiveUtils.quoteIdentifier(tableRef[0]) : HiveUtils.quoteIdentifier(tableRef[0], tableRef[1]);
 
 				// Create SQL
-				retVal = "select * from " + safeTable;
+				List<String> profiledColumns = new ArrayList<>();
+				for (FieldPolicy fieldPolicy : policyMap.values()) {
+					if (fieldPolicy.isProfile()) {
+						profiledColumns.add(fieldPolicy.getField());
+					}
+				}
+
+				retVal = "select " + StringUtils.join(profiledColumns, ',') + " from " + safeTable;
 				if (inputAndOutputTablePartitionKey != null && !"ALL".equalsIgnoreCase(inputAndOutputTablePartitionKey)) {
 					retVal += " where " + HiveUtils.quoteIdentifier(ProfilerConfiguration.INPUT_TABLE_PARTITION_COLUMN_NAME) + " = " + HiveUtils.quoteString(inputAndOutputTablePartitionKey);
 				}
@@ -303,9 +321,10 @@ public class Profiler {
 				+ "2. object description: valid values are {<database.table>, <query>}\n"
 				+ "3. n for top_n values: valid value is {<integer>}\n"
 				+ "4. output table: valid values are {<table>, <database.table>}"
+				+ "5. full path to policy file "
 				+ "\n"
 				+ "Info: Optional command line argument:\n"
-				+ "5. partition_key: valid value is {<string>}\n\n"
+				+ "6. partition_key: valid value is {<string>}\n\n"
 				+ "(Note: Only alphanumeric and underscore characters for table names and partition key)"
 				+ "\n***");
 	}

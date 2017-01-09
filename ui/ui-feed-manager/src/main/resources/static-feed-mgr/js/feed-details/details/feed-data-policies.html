@@ -37,7 +37,7 @@
 
       <md-list-item>
         <div layout="row" layout-fill>
-          <div flex="30" class="md-list-item-text hint">
+          <div flex="20" class="md-list-item-text hint">
             Field Name
           </div>
           <div flex="10" class="md-list-item-text hint">
@@ -72,14 +72,12 @@
               Define what should be sent to "Global Search"
             </md-tooltip>
           </div>
-          <!--
-          <div flex="5" class="md-list-item-text hint">
+          <div flex="10" class="md-list-item-text hint">
             Profile
             <md-tooltip md-direction="top">
               Should this field be profiled?
             </md-tooltip>
           </div>
-          -->
           <div flex="15" class="md-list-item-text hint">
             Standardize
           </div>
@@ -92,7 +90,7 @@
 
       <md-list-item ng-repeat="policy in vm.model.table.fieldPolicies">
         <div layout="row" layout-fill>
-          <div flex="30" class="md-list-item-text">
+          <div flex="20" class="md-list-item-text">
             <div>{{policy.name}}</div>
             <div class="hint">{{vm.fieldNameMap[policy.name].derivedDataType}}</div>
           </div>
@@ -117,11 +115,10 @@
             <ng-md-icon class="primary-color-1" icon="check_box" ng-if="policy.index"></ng-md-icon>
             <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="!policy.index"></ng-md-icon>
           </div>
-          <!--
-          <div flex="5" class="md-list-item-text ">
+          <div flex="10" class="md-list-item-text ">
             <ng-md-icon class="primary-color-1" icon="check_box" ng-if="policy.profile"></ng-md-icon>
+            <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="!policy.profile"></ng-md-icon>
           </div>
-          -->
           <div flex="15" class="md-list-item-text hint">
             <ul ng-if="policy.standardization != null && policy.standardization.length >0">
               <li ng-repeat="rule in policy.standardization">{{rule.name}}</li>
@@ -252,7 +249,7 @@
 
       <md-list-item>
         <div layout="row" layout-fill>
-          <div flex="30" class="md-list-item-text hint">
+          <div flex="20" class="md-list-item-text hint">
             Field Name
           </div>
           <div flex="10" class="md-list-item-text hint">
@@ -287,14 +284,12 @@
               Define what should be sent to "Global Search"
             </md-tooltip>
           </div>
-          <!--
-          <div flex="5" class="md-list-item-text hint">
+          <div flex="10" class="md-list-item-text hint">
             Profile
             <md-tooltip md-direction="top">
               Should this field be profiled?
             </md-tooltip>
           </div>
-          -->
           <div flex="15" class="md-list-item-text hint">
             Standardize
           </div>
@@ -307,10 +302,10 @@
 
       <md-list-item ng-repeat="policy in vm.editModel.fieldPolicies">
         <div layout="row" layout-fill>
-          <div flex="30" class="md-list-item-text">
+          <div flex="20" class="md-list-item-text">
             <md-input-container class="md-block" flex-gt-sm>
               <div>{{policy.name}}</div>
-              <div class="hint">{{vm.fieldDataTypeDisplay(policy.columnDef)}}</div>
+              <div class="hint">{{vm.fieldNameMap[policy.name].derivedDataType}}</div>
             </md-input-container>
           </div>
           <div flex="10" class="md-list-item-text ">
@@ -332,11 +327,9 @@
           <div flex="10" class="md-list-item-text ">
             <md-checkbox ng-model="policy.index" aria-label="Index"></md-checkbox>
           </div>
-          <!--
-          <div flex="5" class="md-list-item-text ">
+          <div flex="10" class="md-list-item-text ">
             <md-checkbox ng-model="policy.profile" aria-label="Profile" ></md-checkbox>
           </div>
-          -->
           <div flex="15" class="md-list-item-text hint" layout-align="start center">
             <div ng-click="vm.showFieldRuleDialog(policy,'standardization')" style="color:#2D78B1;">
               <md-button class="icon-btn" style="padding-left:2px;padding-right:2px;">

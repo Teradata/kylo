@@ -36,20 +36,18 @@
                       <div flex="40" class="md-list-item-text hint">
                         Field Name
                       </div>
-                      <div flex="20" class="md-list-item-text hint">
+                      <div flex="10" class="md-list-item-text hint">
                         Index
                         <md-tooltip md-direction="top">
                           Specifies fields available for global indexing for search and discovery
                         </md-tooltip>
                       </div>
-                      <!--
                        <div flex="10" class="md-list-item-text hint">
                           Profile
                          <md-tooltip md-direction="top">
                            Should this field be profiled?
                          </md-tooltip>
                        </div>
-                       -->
                       <div flex="20" class="md-list-item-text hint">
                         Standardize
                       </div>
@@ -70,18 +68,18 @@
                           <div class="hint">{{vm.model.table.tableSchema.fields[$index].dataTypeDisplay}}</div>
                         </md-input-container>
                       </div>
-                      <div flex="20" class="md-list-item-text " layout="column">
+                      <div flex="10" class="md-list-item-text " layout="column">
                         <md-input-container class="md-block" flex-gt-sm>
                           <md-checkbox flex-gt-sm ng-model="policy.index" aria-label="Index" ng-disabled="(vm.model.dataTransformationFeed || policy.field.complex)">
                           </md-checkbox>
                         </md-input-container>
                       </div>
-                      <!--
                        <div flex="10" class="md-list-item-text " layout="column">
-                         <md-checkbox flex-gt-sm ng-model="policy.profile" aria-label="Nullable">
-                         </md-checkbox>
+                         <md-input-container class="md-block" flex-gt-sm>
+                           <md-checkbox flex-gt-sm ng-model="policy.profile" aria-label="Profile" ng-disabled="(vm.model.dataTransformationFeed || policy.field.complex)">
+                           </md-checkbox>
+                         </md-input-container>
                        </div>
-                       -->
                       <!-- Standardization rule -->
                       <div flex="20" class="md-list-item-text hint" layout-align="start center">
                         <div style="color:rgba(0, 0, 0, 0.54)" ng-if="(vm.model.dataTransformationFeed ||  policy.field.dataTypeDescriptor.complex)">

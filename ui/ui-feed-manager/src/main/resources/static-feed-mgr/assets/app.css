@@ -1243,6 +1243,16 @@ md-toast .md-toast-content {
   white-space: nowrap;
 }
 
+.profile.column.button {
+  min-height: 48px;
+  margin-top: 0px;
+  margin-bottom: 0;
+}
+
+.profile.column.icon {
+  height: auto;
+  color: #f08c38;
+}
 .bold {
   font-weight: 500;
 }

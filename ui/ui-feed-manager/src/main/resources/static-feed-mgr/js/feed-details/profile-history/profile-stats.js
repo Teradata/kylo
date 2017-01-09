@@ -32,6 +32,7 @@
         self.numericApi = {};
         self.percApi = {};
         self.topvalues = [];
+        self.profiledFilter = false;
 
         self.selectRowAndUpdateCharts = function(event, row) {
             //called when user selects the column
@@ -97,13 +98,8 @@
 
 
         self.updateCharts = function() {
-
             self.summaryApi.update();
-            if (self.selectedRow.prevProfile != "Unknown") {
-                //chart with percents is not shown only for Unknown, i.e.
-                // in all other cases it needs to be updated
-                self.percApi.update();
-            }
+            self.percApi.update();
         }
 
         self.summaryOptions = {
@@ -139,6 +135,26 @@
             } else {
                 return "";
             }
+        }
+
+        self.isProfiled = function(item) {
+            if (_.isUndefined(item.isProfiled)) {
+                var filtered = _.filter(self.data.rows, function (row) {
+                    return row.columnname == item.columnname;
+                });
+
+                // anything profiled will have "COLUMN_DATATYPE"
+                var type = self.findStat(filtered, 'COLUMN_DATATYPE');
+                item.isProfiled = type != "";
+            }
+            return item.isProfiled;
+        }
+
+        self.filterProfiled = function(item) {
+            if (self.profiledFilter == true) {
+                return item.isProfiled;
+            }
+            return true;
         }
 
         self.summaryData = function() {

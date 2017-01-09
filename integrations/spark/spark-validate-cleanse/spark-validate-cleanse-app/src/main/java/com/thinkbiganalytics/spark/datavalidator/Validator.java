@@ -2,7 +2,6 @@ package com.thinkbiganalytics.spark.datavalidator;
 
 import com.thinkbiganalytics.hive.util.HiveUtils;
 import com.beust.jcommander.JCommander;
-import com.thinkbiganalytics.policy.FieldPoliciesJsonTransformer;
 import com.thinkbiganalytics.policy.FieldPolicy;
 import com.thinkbiganalytics.policy.FieldPolicyBuilder;
 import com.thinkbiganalytics.policy.standardization.AcceptsEmptyValues;
@@ -11,6 +10,7 @@ import com.thinkbiganalytics.policy.validation.ValidationPolicy;
 import com.thinkbiganalytics.policy.validation.ValidationResult;
 import com.thinkbiganalytics.spark.DataSet;
 import com.thinkbiganalytics.spark.SparkContextService;
+import com.thinkbiganalytics.spark.policy.FieldPolicyLoader;
 import com.thinkbiganalytics.spark.util.InvalidFormatException;
 import com.thinkbiganalytics.spark.validation.HCatDataType;
 
@@ -35,9 +35,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.stereotype.Component;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.util.*;
@@ -90,6 +87,9 @@ public class Validator implements Serializable {
     @Autowired
     private SparkContextService scs;
 
+    @Autowired
+    private FieldPolicyLoader loader;
+
     /**
      * Path to the file containing the JSON for the Field Policies. If called from NIFI it will pass it in as a command argument in the Validate processor The JSON should conform to the array of
      * FieldPolicy objects found in the thinkbig-field-policy-rest-model module
@@ -116,61 +116,6 @@ public class Validator implements Serializable {
         return hiveContext;
     }
 
-    /**
-     * read the JSON file path and return the JSON string
-     */
-    private String readFieldPolicyJsonFile() {
-        log.info("Loading Field Policy JSON file at {} ", fieldPolicyJsonPath);
-        String fieldPolicyJson = "[]";
-
-        /**
-         * If Validator is running in yarn-cluster mode, the fieldPolicyJson file will be passed via --files param to be
-         * added into driver classpath in Application Master. The "fieldPolicyJsonPath" won't be valid in that case,
-         * as it would be pointing to local file system. To enable this, we should be checking the fieldPolicyFile
-         * in the current location ie classpath for "yarn-cluster" mode as well as the fieldPolicyJsonPath for "yarn-client" mode
-
-         * You can also use sparkcontext object to get the value of sparkContext.getConf().get("spark.submit.deployMode")
-         * and use this to decide which readFieldPolicyJsonPath to choose.
-         */
-        File fieldPolicyJsonFile = new File(fieldPolicyJsonPath);
-        if (fieldPolicyJsonFile.exists() && fieldPolicyJsonFile.isFile()) {
-            log.info("Loading field policies at {} ", fieldPolicyJsonPath);
-        } else {
-            log.info("Couldn't find field policy file at {} will check classpath.", fieldPolicyJsonPath);
-            String fieldPolicyJsonFileName = fieldPolicyJsonFile.getName();
-            fieldPolicyJsonPath = "./" + fieldPolicyJsonFileName;
-        }
-
-        try (BufferedReader br = new BufferedReader(new FileReader(fieldPolicyJsonPath))) {
-            StringBuilder sb = new StringBuilder();
-            String line = br.readLine();
-            if (line == null) {
-                log.error("Field policies file at {} is empty ", fieldPolicyJsonPath);
-            }
-
-            while (line != null) {
-                sb.append(line);
-                line = br.readLine();
-            }
-            fieldPolicyJson = sb.toString();
-        } catch (Exception e) {
-            //LOG THE ERROR
-            log.error("Error parsing field policy file. Please verify valid JSON at path {}", e.getMessage(), e);
-        }
-        return fieldPolicyJson;
-    }
-
-    /**
-     * Load the Policies from JSON into the policy HashMap
-     */
-    private void loadPolicies() {
-
-        String fieldPolicyJson = readFieldPolicyJsonFile();
-        policyMap = new FieldPoliciesJsonTransformer(fieldPolicyJson).buildPolicies();
-        log.info("Finished building field policies for file: {} with entity that has {} fields ", fieldPolicyJsonPath,
-                 policyMap.size());
-    }
-
     public void doValidate() {
         try {
             SparkContext sparkContext = SparkContext.getOrCreate();
@@ -184,7 +129,7 @@ public class Validator implements Serializable {
             sqlContext = new SQLContext(sparkContext);
 
             log.info("Deployment Mode - " + sparkContext.getConf().get("spark.submit.deployMode"));
-            loadPolicies();
+            policyMap = loader.loadFieldPolicy(fieldPolicyJsonPath);
 
             // Extract fields from a source table
             StructField[] fields = resolveSchema();

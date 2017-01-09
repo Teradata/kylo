@@ -34,6 +34,8 @@ public class FieldPolicy implements Serializable {
      */
     private int piiScan;
 
+    private boolean profile;
+
     protected FieldPolicy() {
     }
 
@@ -107,6 +109,14 @@ public class FieldPolicy implements Serializable {
 
     protected void setNullable(boolean nullable) {
         this.nullable = nullable;
+    }
+
+    public boolean isProfile() {
+        return profile;
+    }
+
+    public void setProfile(boolean profile) {
+        this.profile = profile;
     }
 
     public boolean shouldTypeDiscovery() {

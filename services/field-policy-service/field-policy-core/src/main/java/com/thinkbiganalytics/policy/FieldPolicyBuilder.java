@@ -16,6 +16,7 @@ public class FieldPolicyBuilder {
     private FieldPolicy policy = new FieldPolicy();
     private List<ValidationPolicy> validators = new Vector<>();
     private List<StandardizationPolicy> standardizationPolicies = new Vector<>();
+    private boolean profile;
 
     private FieldPolicyBuilder() {
         super();
@@ -87,7 +88,13 @@ public class FieldPolicyBuilder {
         }
         newPolicy.setValidators(validators);
         newPolicy.setStandardizationPolicies(standardizationPolicies);
+        newPolicy.setProfile(profile);
         return newPolicy;
+    }
+
+    public FieldPolicyBuilder setProfile(boolean profile) {
+        this.profile = profile;
+        return this;
     }
 
     /*
