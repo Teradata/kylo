@@ -486,7 +486,15 @@ angular.module(MODULE_FEED_MGR).factory('FeedService',
                     });
                     model.table.fieldPolicies = newPolicies;
                     model.table.tableSchema.fields = newFields;
+
+                    if (model.table.sourceTableSchema == undefined) {
+                        model.table.sourceTableSchema = {name: null, tableSchema: null, fields: []};
+                    }
+
                     model.table.sourceTableSchema.fields = sourceFields;
+                    if (model.table.feedTableSchema == undefined) {
+                        model.table.feedTableSchema = {name: null, fields: []};
+                    }
                     model.table.feedTableSchema.fields = feedFields;
 
                     //remove any extra columns in the policies
