@@ -19,7 +19,7 @@ public class ValidatorTests {
   @Test
   public void timestampTests() {
 
-    TimestampValidator validator = TimestampValidator.instance();
+    TimestampValidator validator = new TimestampValidator(false);
     Assert.assertTrue(validator.validate("2004-12-01 12:00:00"));
     Assert.assertTrue(validator.validate("2004-12-01T12:00:00"));
     Assert.assertTrue(validator.validate("2004-12-01T12:00:00.124Z"));
@@ -32,6 +32,10 @@ public class ValidatorTests {
     Assert.assertFalse(validator.validate("2004-1-1 12:00:00"));
     Assert.assertFalse(validator.validate("2004-12-0112:00:00"));
     Assert.assertFalse(validator.validate("20041201120000"));
+
+    // Test NULL value
+    TimestampValidator nullValidator = new TimestampValidator(true);
+    Assert.assertTrue(nullValidator.validate(null));
   }
 
 

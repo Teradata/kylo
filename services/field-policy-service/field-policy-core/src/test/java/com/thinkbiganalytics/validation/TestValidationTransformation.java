@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.validation;
 
+import com.thinkbiganalytics.policy.PolicyTransformException;
+import com.thinkbiganalytics.policy.rest.model.FieldValidationRule;
 import com.thinkbiganalytics.policy.validation.CreditCardValidator;
 import com.thinkbiganalytics.policy.validation.EmailValidator;
 import com.thinkbiganalytics.policy.validation.IPAddressValidator;
@@ -11,8 +13,6 @@ import com.thinkbiganalytics.policy.validation.RegexValidator;
 import com.thinkbiganalytics.policy.validation.TimestampValidator;
 import com.thinkbiganalytics.policy.validation.USPhoneValidator;
 import com.thinkbiganalytics.policy.validation.USZipCodeValidator;
-import com.thinkbiganalytics.policy.PolicyTransformException;
-import com.thinkbiganalytics.policy.rest.model.FieldValidationRule;
 import com.thinkbiganalytics.policy.validation.ValidationPolicy;
 import com.thinkbiganalytics.validation.transform.ValidatorAnnotationTransformer;
 
@@ -98,7 +98,7 @@ public class TestValidationTransformation {
 
   @Test
   public void testTimestampValidator() {
-    TimestampValidator validator = TimestampValidator.instance();
+      TimestampValidator validator = new TimestampValidator(false);
     FieldValidationRule uiModel = ValidatorAnnotationTransformer.instance().toUIModel(validator);
     TimestampValidator convertedValidator = fromUI(uiModel, TimestampValidator.class);
     Assert.assertEquals(validator, convertedValidator);

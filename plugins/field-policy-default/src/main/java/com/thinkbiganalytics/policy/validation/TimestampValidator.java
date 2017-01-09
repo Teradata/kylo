@@ -5,6 +5,11 @@
 package com.thinkbiganalytics.policy.validation;
 
 
+import com.thinkbiganalytics.policy.PolicyProperty;
+import com.thinkbiganalytics.policy.PolicyPropertyRef;
+import com.thinkbiganalytics.policy.PolicyPropertyTypes;
+import com.thinkbiganalytics.policy.PropertyLabelValue;
+
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
@@ -21,8 +26,6 @@ public class TimestampValidator implements ValidationPolicy<String> {
 
     private static Logger log = LoggerFactory.getLogger(TimestampValidator.class);
 
-    private static final TimestampValidator instance = new TimestampValidator();
-
     private static final DateTimeFormatter DATETIME_NANOS = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSSSSSSSS");
     private static final DateTimeFormatter DATETIME_MILLIS = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSS");
     private static final DateTimeFormatter DATETIME_NOMILLIS = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
@@ -31,12 +34,21 @@ public class TimestampValidator implements ValidationPolicy<String> {
     private static final int MIN_LENGTH = 19;
     private static final int MAX_LENGTH = 29;
 
-    private TimestampValidator() {
+
+    @PolicyProperty(name = "allowNull", value = "false", displayName = "Allow Null Values",
+                    hint = "Null values are considered to be valid", type = PolicyPropertyTypes.PROPERTY_TYPE.select,
+                    labelValues = {@PropertyLabelValue(label = "Yes", value = "true"),
+                                   @PropertyLabelValue(label = "No", value = "false")})
+    private boolean allowNull = false;
+
+
+    public TimestampValidator(@PolicyPropertyRef(name = "allowNull") boolean allowNull) {
         super();
+        this.allowNull = allowNull;
     }
 
-    public static TimestampValidator instance() {
-        return instance;
+    public TimestampValidator() {
+        super();
     }
 
     @Override
@@ -50,14 +62,21 @@ public class TimestampValidator implements ValidationPolicy<String> {
                 log.debug("Invalid timestamp format [{}]", value);
                 return false;
             }
+        } else {
+            return allowNull;
         }
-        return false;
     }
 
     /**
      * Parses the string date and returns the
+     * Sqoop treats null values as \N.
      */
     public DateTime parseTimestamp(String value) {
+        // Check if the value is consider a null
+        if ((allowNull) && (value.toUpperCase().equals("NULL") || (value.toUpperCase().equals("N")))) {
+            return new DateTime();
+        }
+
         int cnt = value.length();
         if (cnt < MIN_LENGTH || cnt > MAX_LENGTH) {
             throw new IllegalArgumentException("Unexpected format");
@@ -73,4 +92,15 @@ public class TimestampValidator implements ValidationPolicy<String> {
         }
     }
 
+    public boolean getAllowNull() {
+        return allowNull;
+    }
+
+    public boolean isAllowNull() {
+        return allowNull;
+    }
+
+    public void setAllowNull(boolean allowNull) {
+        this.allowNull = allowNull;
+    }
 }

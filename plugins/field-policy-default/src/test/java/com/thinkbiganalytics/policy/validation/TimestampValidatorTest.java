@@ -18,7 +18,7 @@ public class TimestampValidatorTest {
 
     @Test
     public void testInstance() throws Exception {
-        TimestampValidator ts = TimestampValidator.instance();
+        TimestampValidator ts = new TimestampValidator(false);
         assertTrue(ts.validate("2015-01-15 11:10:20.333"));
         assertTrue(ts.validate("2015-01-15 11:10:20"));
         assertTrue(ts.validate("2015-01-15 11:10:20.333444555"));
@@ -31,7 +31,7 @@ public class TimestampValidatorTest {
 
     @Test
     public void testParse() throws Exception {
-        TimestampValidator ts = TimestampValidator.instance();
+        TimestampValidator ts = new TimestampValidator(false);
         assertNotNull(ts.parseTimestamp("2015-01-15 11:10:20.333"));
         assertNotNull(ts.parseTimestamp("2015-01-15 11:10:20"));
         try {
@@ -41,5 +41,15 @@ public class TimestampValidatorTest {
             // good
         }
 
+    }
+
+    @Test
+    public void testNull() throws Exception {
+        TimestampValidator ts = new TimestampValidator(true);
+
+        assertTrue(ts.validate(null));
+        assertTrue(ts.validate("NULL"));
+        assertTrue(ts.validate("null"));
+        assertTrue(ts.validate("N"));
     }
 }

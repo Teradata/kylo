@@ -6,6 +6,7 @@ package com.thinkbiganalytics.spark.validation;
 import com.thinkbiganalytics.policy.validation.DateValidator;
 import com.thinkbiganalytics.policy.validation.TimestampValidator;
 import com.thinkbiganalytics.spark.util.InvalidFormatException;
+
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
@@ -263,7 +264,7 @@ public class HCatDataType implements Cloneable, Serializable {
         try {
             if (val != null && !isnumeric) {
                 if (convertibleType == Timestamp.class) {
-                    return TimestampValidator.instance().validate(val);
+                    return new TimestampValidator(true).validate(val);
                 } else if (convertibleType == Date.class) {
                     return DateValidator.instance().validate(val);
                 }
