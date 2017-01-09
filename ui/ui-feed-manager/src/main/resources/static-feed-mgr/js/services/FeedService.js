@@ -456,16 +456,19 @@ angular.module(MODULE_FEED_MGR).factory('FeedService',
                         var sourceField = angular.copy(columnDef);
                         var feedField = angular.copy(columnDef);
 
-                        // structured files must use the original names
-                        if (model.table.structured == true) {
-                            feedField.name = columnDef.origName;
-                            feedField.derivedDataType = columnDef.origDataType;
-                        }
                         sourceField.name = columnDef.origName;
                         policy.feedFieldName = feedField.name;
                         policy.name = columnDef.name;
 
-                        if (columnDef.deleted == false) {
+                        // structured files must use the original names
+                        if (model.table.structured == true) {
+                            feedField.name = columnDef.origName;
+                            feedField.derivedDataType = columnDef.origDataType;
+                        } else if (model.table.method == 'EXISTING_TABLE') {
+                            sourceField.name = columnDef.origName;
+                        }
+
+                        if (!columnDef.deleted) {
                             newFields.push(columnDef);
                             newPolicies.push(policy);
                             sourceFields.push(sourceField);
@@ -474,7 +477,10 @@ angular.module(MODULE_FEED_MGR).factory('FeedService',
                         } else {
                             // For files the feed table must contain all the columns from the source even if unused in the target
                             if (model.table.method == 'SAMPLE_FILE') {
-                                feedFields.push(columnDef);
+                                feedFields.push(feedField);
+                            } else if (model.table.method == 'EXISTING_TABLE' && model.table.sourceTableIncrementalDateField == sourceField.name) {
+                                feedFields.push(feedField);
+                                sourceFields.push(sourceField);
                             }
                         }
                     });

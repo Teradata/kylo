@@ -99,7 +99,7 @@
                       <div flex="30" class="md-list-item-text hint">
                         Field Name
                       </div>
-                      <div flex="25" class="md-list-item-text hint" style="padding-left:5px;">
+                      <div flex="20" class="md-list-item-text hint" style="padding-left:5px;">
                         Data Type
                       </div>
                       <div flex="10" class="md-list-item-text hint" layout-align="start center" layout="column">
@@ -120,7 +120,7 @@
                           Is this field an indicator of when the row was updated?
                         </md-tooltip>
                       </div>
-                      <div flex="15" class="md-list-item-text hint" hide-sm>
+                      <div flex="20" class="md-list-item-text hint" hide-sm>
 
                       </div>
 
@@ -145,7 +145,7 @@
                             </div>
                           </md-input-container>
                         </div>
-                        <div flex="25" class="md-list-item-text " style="padding-left:5px;">
+                        <div flex="20" class="md-list-item-text " style="padding-left:5px;">
                           <div layout="column">
                             <md-input-container class="md-block md-dense condensed" flex-gt-sm>
                               <md-select ng-model="columnDef.derivedDataType" placeholder="Data Type" name="datatype_{{columnDef._id}}" required
@@ -188,7 +188,7 @@
                                        ng-disabled="(!(columnDef.derivedDataType == 'date' || columnDef.derivedDataType == 'timestamp') || columnDef.deleted)"
                                        class="table-schema-checkbox"  ng-change="vm.onFieldChange(columnDef)"></md-checkbox>
                         </div>
-                        <div flex="15" class="md-list-item-text" hide-sm>
+                        <div flex="20" class="md-list-item-text" hide-sm>
                           <md-button aria-label="Remove field" class="md-icon-button" ng-click="vm.removeColumn($index)"
                                      ng-disabled="(!vm.canRemoveFields || columnDef.deleted)">
                             <ng-md-icon md-icon icon="delete" style="fill:gray"></ng-md-icon>
