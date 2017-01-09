@@ -22,7 +22,7 @@ angular.module(MODULE_FEED_MGR).factory('FeedDetailsProcessorRenderingHelper', f
         isRenderProcessorGetTableDataProcessor: function (inputProcessor) {
             var render = false;
             //if the processor to check is GetTable Data it should be rendered only if it is the input, or if the input is watermark
-            if (data.isGetTableDataProcessor(inputProcessor) || data.isWatermarkProcessor(inputProcessor)) {
+            if (inputProcessor != undefined && (data.isGetTableDataProcessor(inputProcessor) || data.isWatermarkProcessor(inputProcessor))) {
                 render = true;
             }
 
@@ -31,7 +31,7 @@ angular.module(MODULE_FEED_MGR).factory('FeedDetailsProcessorRenderingHelper', f
         isRenderSqoopProcessor: function (inputProcessor) {
             var render = false;
             //if the processor to check is GetTable Data it should be rendered only if it is the input, or if the input is watermark
-            if (data.isSqoopProcessor(inputProcessor) || data.isWatermarkProcessor(inputProcessor)) {
+            if (inputProcessor != undefined && (data.isSqoopProcessor(inputProcessor) || data.isWatermarkProcessor(inputProcessor))) {
                 render = true;
             }
 
