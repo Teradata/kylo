@@ -268,6 +268,15 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         .addValidator(new StandardValidators.DirectoryExistsValidator(true, false))
         .build();
 
+    public static final PropertyDescriptor SOURCESPECIFIC_SQLSERVER_SCHEMA = new PropertyDescriptor.Builder()
+        .name("[SQL Server Only] Source Schema")
+        .description("This property is for SQL Server only. By default, the source schema is generally 'dbo'. "
+                     + "If the source table to be ingested is in another schema, provide that value here.")
+        .required(false)
+        .expressionLanguageSupported(true)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .build();
+
     public static final Relationship REL_SUCCESS = new Relationship.Builder()
         .name("success")
         .description("Sqoop import success")
@@ -322,6 +331,7 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         properties.add(TARGET_COMPRESSION_ALGORITHM);
         properties.add(TARGET_COLUMN_TYPE_MAPPING);
         properties.add(SQOOP_CODEGEN_DIR);
+        properties.add(SOURCESPECIFIC_SQLSERVER_SCHEMA);
         this.properties = Collections.unmodifiableList(properties);
 
         /* Create list of relationships */
@@ -377,6 +387,7 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         final CompressionAlgorithm targetCompressionAlgorithm = CompressionAlgorithm.valueOf(context.getProperty(TARGET_COMPRESSION_ALGORITHM).getValue());
         final String targetColumnTypeMapping = context.getProperty(TARGET_COLUMN_TYPE_MAPPING).evaluateAttributeExpressions(flowFile).getValue();
         final String sqoopCodeGenDirectory = context.getProperty(SQOOP_CODEGEN_DIR).evaluateAttributeExpressions(flowFile).getValue();
+        final String sourceSpecificSqlServerSchema = context.getProperty(SOURCESPECIFIC_SQLSERVER_SCHEMA).evaluateAttributeExpressions(flowFile).getValue();
 
         final String COMMAND_SHELL = "/bin/bash";
         final String COMMAND_SHELL_FLAGS = "-c";
@@ -418,6 +429,7 @@ public class ImportSqoop extends AbstractNiFiProcessor {
             .setTargetCompressionAlgorithm(targetCompressionAlgorithm)
             .setTargetColumnTypeMapping(targetColumnTypeMapping)
             .setSqoopCodeGenDirectory(sqoopCodeGenDirectory)
+            .setSourceSpecificSqlServerSchema(sourceSpecificSqlServerSchema)
             .build();
 
         List<String> sqoopExecutionCommand = new ArrayList<>();

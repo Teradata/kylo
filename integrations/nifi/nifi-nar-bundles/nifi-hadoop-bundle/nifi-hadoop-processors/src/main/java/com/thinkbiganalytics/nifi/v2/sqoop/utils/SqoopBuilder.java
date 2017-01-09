@@ -100,6 +100,10 @@ public class SqoopBuilder {
     private String targetColumnTypeMapping;
     private final static String sqoopCodeGenDirectoryLabel = "--outdir";
     private String sqoopCodeGenDirectory;
+    private Boolean sourceSpecificOptions = false;
+    private final static String sourceSpecificOptionsLabel = "--";
+    private final static String sourceSpecificSqlServerSchemaLabel = "--schema";
+    private String sourceSpecificSqlServerSchema;
 
     private final static String operationName = "sqoop";
     private final static String operationType = "import";
@@ -423,6 +427,23 @@ public class SqoopBuilder {
     public SqoopBuilder setSqoopCodeGenDirectory (String sqoopCodeGenDirectory) {
         this.sqoopCodeGenDirectory = sqoopCodeGenDirectory;
         logMessage("info", "Sqoop Code Generation Directory", this.sqoopCodeGenDirectory);
+        return this;
+    }
+
+    /**
+     * Set source specific (SQL Server) option - schema
+     * @param sourceSpecificSqlServerSchema schema in SQL Server (default is generally 'dbo')
+     * @return {@link SqoopBuilder}
+     */
+    public SqoopBuilder setSourceSpecificSqlServerSchema (String sourceSpecificSqlServerSchema) {
+        if ((sourceSpecificSqlServerSchema != null) && (!sourceSpecificSqlServerSchema.isEmpty())) {
+            this.sourceSpecificSqlServerSchema = sourceSpecificSqlServerSchema;
+            sourceSpecificOptions = true;
+            logMessage("info", "Source Specific - SQL Server Schema", this.sourceSpecificSqlServerSchema);
+        }
+        else {
+            sourceSpecificOptions = false;
+        }
         return this;
     }
 
@@ -787,6 +808,22 @@ public class SqoopBuilder {
                 .append(START_SPACE_QUOTE)
                 .append(clusterUIJobName)                                                       //"user-provided-value"
                 .append(QUOTE);
+        }
+
+        /* Handle source specific options */
+        if (sourceSpecificOptions) {
+            commandStringBuffer
+                .append(SPACE_STRING)
+                .append(sourceSpecificOptionsLabel)                                             //--
+                .append(SPACE_STRING);
+
+            if (sourceSpecificSqlServerSchema != null) {
+                commandStringBuffer
+                    .append(sourceSpecificSqlServerSchemaLabel)                                 //--schema
+                    .append(START_SPACE_QUOTE)
+                    .append(sourceSpecificSqlServerSchema)                                      //"user-provided-value"
+                    .append(END_QUOTE_SPACE);
+            }
         }
 
         return commandStringBuffer.toString();
