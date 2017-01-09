@@ -101,7 +101,7 @@ public class TestValidationTransformation {
       TimestampValidator validator = new TimestampValidator(false);
     FieldValidationRule uiModel = ValidatorAnnotationTransformer.instance().toUIModel(validator);
     TimestampValidator convertedValidator = fromUI(uiModel, TimestampValidator.class);
-    Assert.assertEquals(validator, convertedValidator);
+      Assert.assertEquals(validator.isAllowNull(), convertedValidator.isAllowNull());
   }
 
   @Test
