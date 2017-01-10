@@ -358,4 +358,14 @@ public class FeedManagerFeedDTO implements FeedManagerFeed {
     public void setTags(@Nullable Set tags) {
         // ignored
     }
+
+    @Override
+    public String getFlowProcessorTypes() {
+        return null;
+    }
+
+    @Override
+    public void setFlowProcessorTypes(String flowProcessorTypes) {
+
+    }
 }
