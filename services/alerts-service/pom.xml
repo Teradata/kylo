@@ -13,5 +13,6 @@
     
     <modules>
         <module>alerts-controller</module>
+        <module>alerts-model</module>
     </modules>
 </project>
