@@ -111,17 +111,20 @@ public class ProvenanceEventAggregator {
     public void process(ProvenanceEventRecordDTO event) {
         try {
             if (event != null) {
-                if (ProvenanceEventUtil.isDropFlowFilesEvent(event)) {
-                    log.info("DROPPING FLOW FILES Event: {}", event);
-                    return;
-                }
+
 
                 try {
                     cacheUtil.cacheAndBuildFlowFileGraph(event);
-                    log.info("Process Event {} ", event);
-                    //send the event off for stats processing to the threadpool.  order does not matter thus they can be in an number of threads
+                    log.trace("Process Event {} ", event);
+                    if (ProvenanceEventUtil.isDropFlowFilesEvent(event)) {
+                        // a Drop event component id will be the connection, not the processor id. we will set the name of the component
+                        event.setComponentName("FlowFile Queue emptied");
+                        event.setIsFailure(true);
+                        event.getFlowFile().addFailedEvent(event);
+                    }
+                    //send the event off for stats processing
                     ProvenanceEventStats stats = statsCalculator.calculateStats(event);
-                    //if failure detected group and send off to separate queue
+                    //check to see if the event is going through a processor deemed as a failure in kylo
                     collectFailureEvents(event);
                     if (!event.isStream()) {
 
