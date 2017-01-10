@@ -20,10 +20,13 @@ import com.thinkbiganalytics.metadata.api.MetadataRollbackAction;
 import com.thinkbiganalytics.metadata.api.MetadataRollbackCommand;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
+import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.core.dataset.InMemoryDatasourceProvider;
 import com.thinkbiganalytics.metadata.core.feed.InMemoryFeedProvider;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.MetadataJcrConfigurator;
+import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailability;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementScheduler;
@@ -37,6 +40,7 @@ import com.thinkbiganalytics.nifi.v1.rest.model.NiFiPropertyDescriptorTransformV
 import com.thinkbiganalytics.security.AccessController;
 
 import org.mockito.Mockito;
+import org.modeshape.jcr.ModeShapeEngine;
 import org.modeshape.jcr.api.txn.TransactionManagerLookup;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -75,6 +79,26 @@ public class TestSpringConfiguration {
     @Bean
     public NifiFlowCache nifiFlowCache() {
         return new NifiFlowCache();
+    }
+
+    @Bean
+    public ModeShapeAvailability modeShapeAvailability() {
+        return Mockito.mock(ModeShapeAvailability.class);
+    }
+
+    @Bean
+    public ModeShapeEngine modeShapeEngine() {
+        return Mockito.mock(ModeShapeEngine.class);
+    }
+
+    @Bean
+    public FeedManagerFeedProvider feedManagerFeedProvider() {
+        return Mockito.mock(FeedManagerFeedProvider.class);
+    }
+
+    @Bean
+    public MetadataJcrConfigurator metadataJcrConfigurator() {
+        return Mockito.mock(MetadataJcrConfigurator.class);
     }
 
     @Bean
