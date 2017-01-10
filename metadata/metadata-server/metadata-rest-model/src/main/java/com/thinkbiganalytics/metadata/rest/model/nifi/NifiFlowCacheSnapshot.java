@@ -32,6 +32,11 @@ public class NifiFlowCacheSnapshot {
 
     private Set<String> addStreamingFeeds = new HashSet<>();
 
+    /**
+     * Set of the category.feed names
+     */
+    private Set<String> allFeeds = new HashSet<>();
+
     private Set<String> removeProcessorIds = new HashSet<>();
 
     public static NifiFlowCacheSnapshot EMPTY = new Builder()
@@ -39,6 +44,7 @@ public class NifiFlowCacheSnapshot {
         .withProcessorIdToFeedProcessGroupId(ImmutableMap.of())
         .withProcessorIdToProcessorName(ImmutableMap.of())
         .withStreamingFeeds(ImmutableSet.<String>of())
+        .withFeeds(ImmutableSet.<String>of())
         .build();
 
     public NifiFlowCacheSnapshot() {
@@ -46,11 +52,12 @@ public class NifiFlowCacheSnapshot {
     }
 
     public NifiFlowCacheSnapshot(Map<String, String> processorIdToFeedNameMap,
-                                 Map<String, String> addProcessorIdToFeedProcessGroupId, Map<String, String> addProcessorIdToProcessorName, Set<String> addStreamingFeeds) {
+                                 Map<String, String> addProcessorIdToFeedProcessGroupId, Map<String, String> addProcessorIdToProcessorName, Set<String> addStreamingFeeds, Set<String> allFeeds) {
         this.addProcessorIdToFeedNameMap = processorIdToFeedNameMap;
         this.addProcessorIdToFeedProcessGroupId = addProcessorIdToFeedProcessGroupId;
         this.addProcessorIdToProcessorName = addProcessorIdToProcessorName;
         this.addStreamingFeeds = addStreamingFeeds;
+        this.allFeeds = allFeeds;
     }
 
     public static class Builder {
@@ -66,6 +73,11 @@ public class NifiFlowCacheSnapshot {
         private Map<String, String> addProcessorIdToProcessorName;
 
         private Set<String> addStreamingFeeds;
+
+        /**
+         * Set of the category.feed names
+         */
+        private Set<String> allFeeds = new HashSet<>();
 
         private DateTime snapshotDate;
 
@@ -111,6 +123,11 @@ public class NifiFlowCacheSnapshot {
             return this;
         }
 
+        public Builder withFeeds(Set<String> feeds) {
+            this.allFeeds = feeds;
+            return this;
+        }
+
         public Builder withSnapshotDate(DateTime snapshotDate) {
             this.snapshotDate = snapshotDate;
             return this;
@@ -120,7 +137,7 @@ public class NifiFlowCacheSnapshot {
         public NifiFlowCacheSnapshot build() {
             NifiFlowCacheSnapshot
                 snapshot =
-                new NifiFlowCacheSnapshot(addProcessorIdToFeedNameMap, addProcessorIdToFeedProcessGroupId, addProcessorIdToProcessorName, addStreamingFeeds);
+                new NifiFlowCacheSnapshot(addProcessorIdToFeedNameMap, addProcessorIdToFeedProcessGroupId, addProcessorIdToProcessorName, addStreamingFeeds, allFeeds);
             snapshot.setSnapshotDate(this.snapshotDate);
             snapshot.setFeedToProcessorIdToFlowTypeMap(getFeedToProcessorIdToFlowTypeMap());
             return snapshot;
@@ -208,12 +225,22 @@ public class NifiFlowCacheSnapshot {
         this.feedToProcessorIdToFlowTypeMap = feedToProcessorIdToFlowTypeMap;
     }
 
+    public Set<String> getAllFeeds() {
+        return allFeeds;
+    }
+
+    public void setAllFeeds(Set<String> allFeeds) {
+        this.allFeeds = allFeeds;
+    }
+
     public void update(NifiFlowCacheSnapshot syncSnapshot) {
         addProcessorIdToFeedNameMap.putAll(syncSnapshot.getAddProcessorIdToFeedNameMap());
         addProcessorIdToFeedProcessGroupId.putAll(syncSnapshot.getAddProcessorIdToFeedProcessGroupId());
         addProcessorIdToProcessorName.putAll(syncSnapshot.getAddProcessorIdToProcessorName());
         addStreamingFeeds.addAll(syncSnapshot.getAddStreamingFeeds());
+        allFeeds.addAll(syncSnapshot.getAllFeeds());
         snapshotDate = syncSnapshot.getSnapshotDate();
+        feedToProcessorIdToFlowTypeMap.putAll(syncSnapshot.getFeedToProcessorIdToFlowTypeMap());
     }
 
 }

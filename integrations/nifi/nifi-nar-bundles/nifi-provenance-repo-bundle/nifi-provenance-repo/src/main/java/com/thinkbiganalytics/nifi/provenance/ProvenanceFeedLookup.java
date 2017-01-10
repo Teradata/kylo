@@ -10,6 +10,8 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.springframework.stereotype.Component;
 
+import java.util.Map;
+
 /**
  * Created by sr186054 on 12/20/16.
  */
@@ -35,6 +37,10 @@ public class ProvenanceFeedLookup {
 
     public Integer getProcessorIdMapSize() {
         return getFlowCache().getAddProcessorIdToFeedNameMap().size();
+    }
+
+    public Map<String, KyloProcessorFlowType> getFeedProcessorFlowTypes(String feedName) {
+        return getFlowCache().getFeedToProcessorIdToFlowTypeMap().get(feedName);
     }
 
 

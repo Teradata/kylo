@@ -188,6 +188,7 @@
     - tba:usedByFeeds (REFERENCE) multiple
     - tba:slas (WEAKREFERENCE) multiple
     - tba:securityGroups (WEAKREFERENCE) multiple
+    - tba:flowProcessorTypes (STRING)
 
 
 [tba:feedPrecondition] > nt:hierarchyNode, mix:lastModified

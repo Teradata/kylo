@@ -129,6 +129,14 @@ public class FeedModelTransform {
         }
         domain.setNifiProcessGroupId(feedMetadata.getNifiProcessGroupId());
 
+        //assign the flow procesor types to the JCR store
+        if (feedMetadata.getRegisteredTemplate() != null) {
+            if (feedMetadata.getRegisteredTemplate().getProcessorFlowTypeMap() != null) {
+                String flowProcessorTypes = ObjectMapperSerializer.serialize(feedMetadata.getRegisteredTemplate().getProcessorFlowTypeMap());
+                domain.setFlowProcessorTypes(flowProcessorTypes);
+            }
+        }
+
         //clear out the state as that
         simplifyFeedMetadataForSerialization(feedMetadata);
 

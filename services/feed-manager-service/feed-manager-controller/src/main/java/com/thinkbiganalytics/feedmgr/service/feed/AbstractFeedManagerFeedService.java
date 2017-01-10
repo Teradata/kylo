@@ -148,6 +148,7 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
                 saveFeed(feedMetadata);
                 feed.setEnableAfterSave(enableLater);
                 feed.setSuccess(true);
+                feedBuilder.checkAndRemoveVersionedProcessGroup();
             } catch (Exception e) {
                 feed.setSuccess(false);
                 feed.addErrorMessage(e);

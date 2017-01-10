@@ -295,13 +295,6 @@ public class CreateFeedBuilder {
                                 }
                             }
                         }
-                        else {
-                            //now that the new one has been created attempt to remove the old one if we dont want to version it
-                            if(!versionProcessGroup){
-                                removeVersionedProcessGroup();
-
-                            }
-                        }
                     }
                     templateCreationHelper.cleanupControllerServices();
                     //align items
@@ -452,7 +445,7 @@ public class CreateFeedBuilder {
     /**
      * removes the {@code previousFeedProcessGroup} from nifi
      */
-    private void removeVersionedProcessGroup(){
+    public void checkAndRemoveVersionedProcessGroup() {
         if(!this.versionProcessGroup && previousFeedProcessGroup != null) {
           removeProcessGroup(previousFeedProcessGroup);
         }

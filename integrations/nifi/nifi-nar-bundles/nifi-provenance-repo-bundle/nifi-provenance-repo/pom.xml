@@ -65,6 +65,12 @@
         </dependency>
 
 
+        <!-- Needed just for the passthrough class so NiFi doesnt complain on startup if upgrading from previous version of Kylo that had this custom repository -->
+        <dependency>
+            <groupId>org.apache.nifi</groupId>
+            <artifactId>nifi-persistent-provenance-repository</artifactId>
+        </dependency>
+
 
         <dependency>
             <groupId>org.apache.nifi</groupId>

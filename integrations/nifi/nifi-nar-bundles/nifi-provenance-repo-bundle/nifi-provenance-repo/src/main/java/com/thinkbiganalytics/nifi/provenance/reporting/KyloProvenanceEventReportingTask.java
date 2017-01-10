@@ -12,6 +12,7 @@ import com.thinkbiganalytics.nifi.provenance.jms.ProvenanceEventActiveMqWriter;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.nifi.provenance.util.SpringApplicationContext;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.annotation.lifecycle.OnConfigurationRestored;
@@ -84,6 +85,16 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
         .expressionLanguageSupported(true)
         .build();
 
+    public static final PropertyDescriptor REBUILD_CACHE_ON_RESTART = new PropertyDescriptor.Builder()
+        .name("Rebuild Cache on restart")
+        .description(
+            "Should the cache of the flows be rebuilt every time the Reporting task is restarted?  By default the system will keep the cache up to date; however, setting this to true will force the cache to be rebuilt upon restarting the reporting task. ")
+        .required(true)
+        .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+        .defaultValue("false")
+        .expressionLanguageSupported(true)
+        .build();
+
     private SpringContextService springService;
     private MetadataProviderService metadataProviderService;
 
@@ -127,6 +138,8 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
 
     private Long previousMax = 0L;
 
+    private boolean rebuildOnRestart = false;
+
 
     public KyloProvenanceEventReportingTask() {
         super();
@@ -146,6 +159,7 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
         properties.add(SPRING_SERVICE);
         properties.add(MAX_BATCH_FEED_EVENTS_PER_SECOND);
         properties.add(JMS_EVENT_GROUP_SIZE);
+        properties.add(REBUILD_CACHE_ON_RESTART);
         return properties;
     }
 
@@ -160,6 +174,14 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
         this.jmsEventGroupSize = context.getProperty(JMS_EVENT_GROUP_SIZE).asInteger();
         getProvenanceEventAggregator().setMaxBatchFeedJobEventsPerSecond(this.maxBatchFeedJobEventsPerSecond);
         getProvenanceEventAggregator().setJmsEventGroupSize(this.jmsEventGroupSize);
+        Boolean rebuildOnRestart = context.getProperty(REBUILD_CACHE_ON_RESTART).asBoolean();
+
+        if (rebuildOnRestart != null) {
+            this.rebuildOnRestart = rebuildOnRestart;
+        }
+        if (this.rebuildOnRestart && StringUtils.isNotBlank(nifiFlowSyncId)) {
+            nifiFlowSyncId = null;
+        }
     }
 
     @OnStopped

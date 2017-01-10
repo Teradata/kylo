@@ -57,6 +57,10 @@ public class NiFiFlowCacheSync {
         this.syncId = syncId != null ? syncId : UUID.randomUUID().toString();
     }
 
+    public NifiFlowCacheSnapshot getCache() {
+        return snapshot;
+    }
+
 
     public boolean needsUpdate(DateTime lastUpdated) {
 
@@ -83,6 +87,11 @@ public class NiFiFlowCacheSync {
 
     public Set<String> getStreamingFeedsUpdatedSinceLastSync(Set<String> streamingFeeds) {
         com.google.common.collect.Sets.SetView<String> diff = Sets.difference(streamingFeeds, snapshot.getAddStreamingFeeds());
+        return diff.copyInto(new HashSet<>());
+    }
+
+    public Set<String> getFeedsUpdatedSinceLastSync(Set<String> feeds) {
+        com.google.common.collect.Sets.SetView<String> diff = Sets.difference(feeds, snapshot.getAllFeeds());
         return diff.copyInto(new HashSet<>());
     }
 
