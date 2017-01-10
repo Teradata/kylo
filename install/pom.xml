@@ -30,13 +30,26 @@
       <artifactId>thinkbig-sla-email</artifactId>
       <version>${project.version}</version>
     </dependency>
-
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>thinkbig-sla-jira</artifactId>
       <version>${project.version}</version>
     </dependency>
-
+    <dependency>
+      <groupId>org.apache.activemq</groupId>
+      <artifactId>activemq-client</artifactId>
+      <version>${activemq.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.geronimo.specs</groupId>
+      <artifactId>geronimo-j2ee-management_1.1_spec</artifactId>
+      <version>1.0.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.fusesource.hawtbuf</groupId>
+      <artifactId>hawtbuf</artifactId>
+      <version>1.11</version>
+    </dependency>
 
   </dependencies>
 
@@ -340,6 +353,19 @@
             </mapping>
 
             <!-- Conf/Setup -->
+            <mapping>
+              <directory>${rpm.install.dir}/setup/nifi/activemq</directory>
+              <filemode>${file.permissions}</filemode>
+              <username>${rpm.user}</username>
+              <groupname>${rpm.user}</groupname>
+              <dependency>
+                <includes>
+                  <include>org.apache.activemq:activemq-client:${activemq.version}</include>
+                  <include>org.apache.geronimo.specs:geronimo-j2ee-management_1.1_spec:1.0.1</include>
+                  <include>org.fusesource.hawtbuf:hawtbuf:1.11</include>
+                </includes>
+              </dependency>
+            </mapping>
             <mapping>
               <directory>${rpm.install.dir}/setup/nifi</directory>
               <filemode>${file.permissions}</filemode>

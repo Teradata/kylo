@@ -47,6 +47,10 @@ else
     cp $KYLO_INSTALL_HOME/thinkbig-services/lib/mysql-connector-java-*.jar $NIFI_INSTALL_HOME/mysql
 fi
 
+echo "Copy the activeMQ required jars for the JMS processors to /opt/nifi/activemq"
+mkdir $NIFI_INSTALL_HOME/activemq
+cp $NIFI_SETUP_DIR/activemq/*.jar $NIFI_INSTALL_HOME/activemq
+
 echo "setting up temporary database in case JMS goes down"
 mkdir $NIFI_INSTALL_HOME/h2
 mkdir $NIFI_INSTALL_HOME/ext-config
