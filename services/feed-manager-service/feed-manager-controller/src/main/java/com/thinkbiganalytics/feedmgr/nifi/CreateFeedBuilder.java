@@ -245,7 +245,9 @@ public class CreateFeedBuilder {
 
                         //Cache the processorIds to the respective flowIds for availability in the ProvenanceReportingTask
                         NifiVisitableProcessGroup group = restClient.getFlowOrder(newProcessGroup.getProcessGroupEntity(),null);
-                        NifiFlowProcessGroup flow = new NifiFlowBuilder().processorFlowIdToProcessorFlowTypeMap(feedMetadata.getRegisteredTemplate().getProcessorFlowTypeMap()).inspectForFailureRelationships(false).build(
+                        NifiFlowProcessGroup
+                            flow =
+                            new NifiFlowBuilder().processorFlowIdToProcessorFlowTypeMap(feedMetadata.getRegisteredTemplate().getProcessorFlowTypesMap()).inspectForFailureRelationships(false).build(
                             group);
                         nifiFlowCache.updateFlow(feedMetadata,flow);
 

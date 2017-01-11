@@ -29,6 +29,19 @@
                 {{vm.model.templateName}}
             </div>
         </div>
+        <div layout="row" class="layout-padding-top-bottom">
+            <span flex="25" class="property-name">Flow Processing</span>
+
+            <div ng-if="vm.model.isStream" layout="column" layout-align="start start">
+                <span><ng-md-icon icon="tune" style="fill:#3483BA"></ng-md-icon> Stream</span>
+                <span class="hint">Kylo will only track key metrics.  Individual jobs and steps will not be tracked.</span>
+            </div>
+
+            <div ng-if="!vm.model.isStream" layout="column" layout-align="start start">
+                <span><ng-md-icon icon="trending_flat" style="fill:#3483BA"></ng-md-icon> Batch</span>
+                <span class="hint">Kylo will track individual jobs and steps.</span>
+            </div>
+        </div>
     </readonly-section>
     <editable-section>
         <ng-form name="vm.editFeedDefinitionForm">

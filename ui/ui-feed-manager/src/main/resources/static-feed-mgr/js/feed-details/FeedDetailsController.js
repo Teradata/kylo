@@ -333,6 +333,7 @@
                             self.model.nonInputProcessors = RegisterTemplateService.removeNonUserEditableProperties(updatedFeedResponse.data.registeredTemplate.nonInputProcessors,false);
                             self.updateMenuOptions();
                             self.loadingFeedData = false;
+                            self.model.isStream = updatedFeedResponse.data.registeredTemplate.stream;
                             FeedService.updateEditModelStateIcon();
 
                         }

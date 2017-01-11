@@ -394,7 +394,9 @@ public class JpaBatchJobExecution implements BatchJobExecution {
 
     public void completeJob(){
         setStatus(JpaBatchJobExecution.JobStatus.COMPLETED);
-        setExitCode(ExecutionConstants.ExitCode.COMPLETED);
+        if (this.exitCode == null || this.exitCode.equals(ExecutionConstants.ExitCode.EXECUTING)) {
+            setExitCode(ExecutionConstants.ExitCode.COMPLETED);
+        }
         if(endTime == null){
             endTime = DateTimeUtil.getNowUTCTime();
         }

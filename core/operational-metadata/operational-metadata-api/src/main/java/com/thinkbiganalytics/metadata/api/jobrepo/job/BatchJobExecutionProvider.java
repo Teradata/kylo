@@ -16,9 +16,12 @@ import java.util.Set;
  */
 public interface BatchJobExecutionProvider extends BatchJobExecutionFilters{
 
+    @Deprecated
     String NIFI_JOB_TYPE_PROPERTY = "tb.jobType";
+    String NIFI_JOB_TYPE_PROPERTY2 = "kylo.jobType";
     String NIFI_FEED_PROPERTY = "feed";
     String NIFI_CATEGORY_PROPERTY = "category";
+    String NIFI_JOB_EXIT_DESCRIPTION_PROPERTY = "kylo.jobExitDescription";
 
 
 

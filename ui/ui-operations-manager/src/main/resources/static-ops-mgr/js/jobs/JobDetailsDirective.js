@@ -273,7 +273,13 @@
         }
 
         function cssClassForDisplayStatus(displayStatus) {
-            var cssStatus = {'success': ['COMPLETED', 'STARTING', 'STARTED', 'EXECUTING'], 'error': ['FAILED'], 'warn': ['STOPPING', 'STOPPED'], 'abandoned': ['ABANDONED'], 'unknown': ['UNKNOWN']};
+            var cssStatus = {
+                'success': ['COMPLETED', 'STARTING', 'STARTED', 'EXECUTING'],
+                'error': ['FAILED'],
+                'warn': ['STOPPING', 'STOPPED', 'WARNING'],
+                'abandoned': ['ABANDONED'],
+                'unknown': ['UNKNOWN']
+            };
             var statusCssMap = {};
             _.each(cssStatus, function (arr, key) {
                 _.each(arr, function (status, i) {
@@ -349,7 +355,7 @@
             var icon = IconService.iconForJobStatus(step.displayStatus);
             step.cssStatusClass = cssClassForDisplayStatus(step.displayStatus);
             step.statusIcon = icon;
-            if (step.displayStatus == 'FAILED' || step.displayStatus == 'EXECUTING') {
+            if (step.displayStatus == 'FAILED' || step.displayStatus == 'EXECUTING' || step.displayStatus == 'WARNING') {
                 step.tabIconStyle = style;
                 step.tabIcon = icon;
             }

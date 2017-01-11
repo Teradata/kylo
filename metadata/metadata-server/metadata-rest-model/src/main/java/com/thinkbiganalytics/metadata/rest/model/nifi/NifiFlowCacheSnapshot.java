@@ -3,6 +3,7 @@ package com.thinkbiganalytics.metadata.rest.model.nifi;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.thinkbiganalytics.common.constants.KyloProcessorFlowType;
+import com.thinkbiganalytics.common.constants.KyloProcessorFlowTypeRelationship;
 
 import org.joda.time.DateTime;
 
@@ -11,6 +12,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * Created by sr186054 on 12/20/16.
@@ -27,8 +29,7 @@ public class NifiFlowCacheSnapshot {
     private Map<String, String> addProcessorIdToProcessorName = new ConcurrentHashMap<>();
 
 
-    private Map<String, Map<String, KyloProcessorFlowType>> feedToProcessorIdToFlowTypeMap = new ConcurrentHashMap<>();
-
+    private Map<String, Map<String, Set<KyloProcessorFlowTypeRelationship>>> feedToProcessorIdToFlowTypeMap = new ConcurrentHashMap<>();
 
     private Set<String> addStreamingFeeds = new HashSet<>();
 
@@ -63,7 +64,7 @@ public class NifiFlowCacheSnapshot {
     public static class Builder {
 
 
-        private Map<String, Map<String, KyloProcessorFlowType>> feedToProcessorIdToFlowTypeMap;
+        private Map<String, Map<String, Set<KyloProcessorFlowTypeRelationship>>> feedToProcessorIdToFlowTypeMap;
 
         //items to add
         private Map<String, String> addProcessorIdToFeedNameMap;
@@ -73,6 +74,7 @@ public class NifiFlowCacheSnapshot {
         private Map<String, String> addProcessorIdToProcessorName;
 
         private Set<String> addStreamingFeeds;
+
 
         /**
          * Set of the category.feed names
@@ -84,7 +86,7 @@ public class NifiFlowCacheSnapshot {
         private Set<String> removeProcessorIds;
 
 
-        private Map<String, Map<String, KyloProcessorFlowType>> getFeedToProcessorIdToFlowTypeMap() {
+        private Map<String, Map<String, Set<KyloProcessorFlowTypeRelationship>>> getFeedToProcessorIdToFlowTypeMap() {
             if (feedToProcessorIdToFlowTypeMap == null) {
                 feedToProcessorIdToFlowTypeMap = new HashMap<>();
             }
@@ -92,7 +94,7 @@ public class NifiFlowCacheSnapshot {
         }
 
 
-        public Builder withFeedToProcessorIdToFlowTypeMap(Map<String, Map<String, KyloProcessorFlowType>> feedToProcessorIdToFlowTypeMap) {
+        public Builder withFeedToProcessorIdToFlowTypeMap(Map<String, Map<String, Set<KyloProcessorFlowTypeRelationship>>> feedToProcessorIdToFlowTypeMap) {
             if (feedToProcessorIdToFlowTypeMap != null) {
                 getFeedToProcessorIdToFlowTypeMap().putAll(feedToProcessorIdToFlowTypeMap);
             }
@@ -146,14 +148,20 @@ public class NifiFlowCacheSnapshot {
 
     }
 
-    public KyloProcessorFlowType getProcessorFlowType(String feedName, String processorId) {
-        Map<String, KyloProcessorFlowType> map = getFeedToProcessorIdToFlowTypeMap().get(feedName);
+    public Set<KyloProcessorFlowTypeRelationship> getProcessorFlowTypes(String feedName, String processorId) {
+        Map<String, Set<KyloProcessorFlowTypeRelationship>> map = getFeedToProcessorIdToFlowTypeMap().get(feedName);
         if (map != null) {
-            return map.getOrDefault(processorId, KyloProcessorFlowType.NORMAL_FLOW);
+            return map.getOrDefault(processorId, KyloProcessorFlowTypeRelationship.DEFAULT_SET);
         } else {
-            return KyloProcessorFlowType.NORMAL_FLOW;
+            return KyloProcessorFlowTypeRelationship.DEFAULT_SET;
         }
     }
+
+    public Map<String, KyloProcessorFlowType> getProcessorFlowTypesAsMap(String feedName, String processorId) {
+        return getProcessorFlowTypes(feedName, processorId).stream().collect(Collectors.toMap(kyloProcessorFlowTypeRelationship -> kyloProcessorFlowTypeRelationship.getRelationship(),
+                                                                                              kyloProcessorFlowTypeRelationship -> kyloProcessorFlowTypeRelationship.getFlowType()));
+    }
+
 
     public Map<String, String> getAddProcessorIdToFeedNameMap() {
         if (addProcessorIdToFeedNameMap == null) {
@@ -217,11 +225,11 @@ public class NifiFlowCacheSnapshot {
     }
 
 
-    public Map<String, Map<String, KyloProcessorFlowType>> getFeedToProcessorIdToFlowTypeMap() {
+    public Map<String, Map<String, Set<KyloProcessorFlowTypeRelationship>>> getFeedToProcessorIdToFlowTypeMap() {
         return feedToProcessorIdToFlowTypeMap;
     }
 
-    public void setFeedToProcessorIdToFlowTypeMap(Map<String, Map<String, KyloProcessorFlowType>> feedToProcessorIdToFlowTypeMap) {
+    public void setFeedToProcessorIdToFlowTypeMap(Map<String, Map<String, Set<KyloProcessorFlowTypeRelationship>>> feedToProcessorIdToFlowTypeMap) {
         this.feedToProcessorIdToFlowTypeMap = feedToProcessorIdToFlowTypeMap;
     }
 
@@ -232,6 +240,7 @@ public class NifiFlowCacheSnapshot {
     public void setAllFeeds(Set<String> allFeeds) {
         this.allFeeds = allFeeds;
     }
+
 
     public void update(NifiFlowCacheSnapshot syncSnapshot) {
         addProcessorIdToFeedNameMap.putAll(syncSnapshot.getAddProcessorIdToFeedNameMap());

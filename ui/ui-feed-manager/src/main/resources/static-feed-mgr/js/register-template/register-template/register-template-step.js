@@ -48,9 +48,11 @@
 
         /**
          * The processors that have been marked as special flow types for this template
-         * @type {Array}
+         * @type [{"flowId":"","relationship":"","flowType":""}...]
          */
         self.templateFlowTypeProcessors = []
+
+        self.processorRelationshipOptions = ["success", "failure", "all"];
 
         /**
          * Available FlowType options (i.e. Critical Failure, Non Critical Failure...)
@@ -209,12 +211,15 @@
                     self.flowIdFlowProcessorMap = _.indexBy(self.leafProcessors, 'flowId');
 
                     //merge in the saved flowprocessor types with the ones on the template
-                    _.each(self.model.processorFlowTypeMap, function (flowType, processorFlowId) {
+                    //{processorId: [{relationship:'',flowType:''}...]}
+                    _.each(self.model.processorFlowTypesMap, function (flowTypeRelationships, processorFlowId) {
 
                         var flowProcessor = self.flowIdFlowProcessorMap[processorFlowId];
                         if (flowProcessor != undefined) {
-                            self.templateFlowTypeProcessors.push(flowProcessor);
-                            flowProcessor.flowType = flowType;
+                            _.each(flowTypeRelationships, function (flowTypeRelationship) {
+                                self.templateFlowTypeProcessors.push(
+                                    {flowId: processorFlowId, relationship: flowTypeRelationship.relationship, flowType: flowTypeRelationship.flowType, _id: _.uniqueId()});
+                            });
                         }
                     });
 
@@ -227,7 +232,7 @@
 
                         if (inspectedFlowRelationshipProcessors.length > 0) {
                             _.each(inspectedFlowRelationshipProcessors, function (processor) {
-                                self.templateFlowTypeProcessors.push(processor);
+                                self.templateFlowTypeProcessors.push({flowId: processor.flowId, relationship: 'failure'.relationship, flowType: 'CRITICAL_FAILURE', _id: _.uniqueId()});
                             })
                         }
 
@@ -284,15 +289,13 @@
          */
         initTemplateFlowData();
 
-
-
-        this.removeProcessorFlowType = function (processor) {
-            var item = _.find(self.templateFlowTypeProcessors, function (flowProcessor) {
-                return flowProcessor.flowId == processor.flowId;
+        this.removeProcessorFlowType = function (flowTypeRelationship) {
+            var item = _.find(self.templateFlowTypeProcessors, function (flowTypeRelationship) {
+                return flowTypeRelationship._id == flowTypeRelationship._id;
             });
             if (item != undefined) {
                 //remove it
-                self.templateFlowTypeProcessors.splice(_.indexOf(self.templateFlowTypeProcessors, processor), 1);
+                self.templateFlowTypeProcessors.splice(_.indexOf(self.templateFlowTypeProcessors, flowTypeRelationship), 1);
             }
         }
 
@@ -300,11 +303,11 @@
          * Adds a placeholder processor type with a marker field of 'isEmpty' to indicate this processortype is new and needs to be set
          */
         this.addFlowProcessorType = function () {
-            var alreadyAdding = _.find(self.templateFlowTypeProcessors, function (flowProcessor) {
-                return flowProcessor.isEmpty != undefined && flowProcessor.isEmpty == true;
+            var alreadyAdding = _.find(self.templateFlowTypeProcessors, function (flowTypeRelationship) {
+                return flowTypeRelationship.isEmpty != undefined && flowTypeRelationship.isEmpty == true;
             });
             if (alreadyAdding == undefined) {
-                self.templateFlowTypeProcessors.push({isNew: true, isEmpty: true, name: '', flowId: '', flowType: 'NORMAL_FLOW'})
+                self.templateFlowTypeProcessors.push({isNew: true, isEmpty: true, name: '', flowId: '', flowType: 'NORMAL_FLOW', relationship: 'success', id: _.uniqueId()})
             }
         }
 
@@ -312,15 +315,15 @@
          * Called when the user changes the processor in the select for defining the flow types
          * @param processor
          */
-        this.changeProcessorFlowType = function (processor) {
+        this.changeProcessorFlowType = function (flowTypeRelationship) {
 
             //remove the isEmpty marker to allow for another Add
-            if (processor.isEmpty != undefined) {
-                processor.isEmpty = undefined
+            if (flowTypeRelationship.isEmpty != undefined) {
+                flowTypeRelationship.isEmpty = undefined
             }
-            //reassign the incoming processor to
-            var matchingProcessor = self.flowIdFlowProcessorMap[processor.flowId];
-            angular.extend(processor, matchingProcessor);
+            //   var matchingProcessor = self.flowIdFlowProcessorMap[flowTypeRelationship.flowId];
+            //  flowTypeRelationship.flowId = matchingProcessor.flowId
+            //  angular.extend(processor, matchingProcessor);
         }
 
         /**
@@ -422,9 +425,18 @@
             savedTemplate.templateOrder = order;
             //create the flowid,flowtype map that wil be persisted back to the template on save
 
-            savedTemplate.processorFlowTypeMap = _.object(_.map(self.templateFlowTypeProcessors, function (processor) {
-                return [processor.flowId, processor.flowType];
-            }));
+            var flowTypeRelationships = {};
+            _.each(self.templateFlowTypeProcessors, function (flowTypeRel) {
+                var relationships = flowTypeRelationships[flowTypeRel.flowId];
+                if (relationships == undefined) {
+                    flowTypeRelationships[flowTypeRel.flowId] = [];
+                }
+                flowTypeRelationships[flowTypeRel.flowId].push({"relationship": flowTypeRel.relationship, "flowType": flowTypeRel.flowType});
+            })
+
+            savedTemplate.processorFlowTypesMap = flowTypeRelationships;
+
+            console.log('SAVING savedTemplate.processorFlowTypesMap', savedTemplate.processorFlowTypesMap)
 
             var thisOrder = order.length - 1;
             if (self.model.id != undefined) {

@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.nifi.provenance;
 
 import com.thinkbiganalytics.common.constants.KyloProcessorFlowType;
+import com.thinkbiganalytics.common.constants.KyloProcessorFlowTypeRelationship;
 import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheSync;
 import com.thinkbiganalytics.metadata.rest.model.nifi.NifiFlowCacheSnapshot;
 import com.thinkbiganalytics.nifi.provenance.model.ActiveFlowFile;
@@ -8,9 +9,12 @@ import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by sr186054 on 12/20/16.
@@ -18,6 +22,7 @@ import java.util.Map;
 @Component
 public class ProvenanceFeedLookup {
 
+    private static final Logger log = LoggerFactory.getLogger(ProvenanceFeedLookup.class);
     NiFiFlowCacheSync flowCache;
     private String syncId;
 
@@ -39,7 +44,7 @@ public class ProvenanceFeedLookup {
         return getFlowCache().getAddProcessorIdToFeedNameMap().size();
     }
 
-    public Map<String, KyloProcessorFlowType> getFeedProcessorFlowTypes(String feedName) {
+    public Map<String, Set<KyloProcessorFlowTypeRelationship>> getFeedProcessorFlowTypes(String feedName) {
         return getFlowCache().getFeedToProcessorIdToFlowTypeMap().get(feedName);
     }
 
@@ -80,8 +85,31 @@ public class ProvenanceFeedLookup {
     }
 
     public KyloProcessorFlowType setProcessorFlowType(ProvenanceEventRecordDTO event) {
-        KyloProcessorFlowType type = getFlowCache().getProcessorFlowType(event.getFeedName(), event.getComponentId());
+
+        Map<String, KyloProcessorFlowType> flowTypes = getFlowCache().getProcessorFlowTypesAsMap(event.getFeedName(), event.getComponentId());
+
+        KyloProcessorFlowType allType = flowTypes.get(KyloProcessorFlowTypeRelationship.ALL_RELATIONSHIP);
+        KyloProcessorFlowType failureType = flowTypes.get(KyloProcessorFlowTypeRelationship.FAILURE_RELATIONSHIP);
+        KyloProcessorFlowType successType = flowTypes.get(KyloProcessorFlowTypeRelationship.SUCCESS_RELATIONSHIP);
+        KyloProcessorFlowType type = KyloProcessorFlowType.NORMAL_FLOW;
+
+        //if the event is a failure, check to see if this processor was registered as
+        if (event.isTerminatedByFailureRelationship()) {
+            if (failureType != null) {
+                type = failureType;
+            } else if (allType != null) {
+                type = allType;
+            }
+        } else {
+            if (successType != null) {
+                type = successType;
+            } else if (allType != null) {
+                type = allType;
+            }
+
+        }
         event.setProcessorType(type);
+        log.debug("Setting the Flow Type as {} for Processor {} ({}) on Feed {}.  Flow Types: {} ", type, event.getComponentName(), event.getComponentId(), event.getFeedName(), flowTypes);
         return type;
     }
 

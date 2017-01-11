@@ -1,6 +1,5 @@
 package com.thinkbiganalytics.nifi.provenance.jms;
 
-import com.thinkbiganalytics.activemq.ObjectMapperSerializer;
 import com.thinkbiganalytics.activemq.SendJmsMessage;
 import com.thinkbiganalytics.nifi.activemq.Queues;
 import com.thinkbiganalytics.nifi.provenance.AggregationEventProcessingStats;
@@ -32,8 +31,6 @@ public class ProvenanceEventActiveMqWriter {
     @Autowired
     private SendJmsMessage sendJmsMessage;
 
-    @Autowired
-    ObjectMapperSerializer objectMapperSerializer;
 
     private Map<String, Set<JmsSendListener>> listeners = new HashMap<>();
 

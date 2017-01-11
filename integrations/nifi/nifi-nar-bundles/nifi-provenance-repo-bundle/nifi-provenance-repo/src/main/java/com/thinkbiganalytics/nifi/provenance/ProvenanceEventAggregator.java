@@ -111,8 +111,6 @@ public class ProvenanceEventAggregator {
     public void process(ProvenanceEventRecordDTO event) {
         try {
             if (event != null) {
-
-
                 try {
                     cacheUtil.cacheAndBuildFlowFileGraph(event);
                     log.trace("Process Event {} ", event);
@@ -149,7 +147,6 @@ public class ProvenanceEventAggregator {
                         }
 
                     }
-
 
                 } catch (RootFlowFileNotFoundException e) {
                     //add to a holding bin
@@ -233,7 +230,7 @@ public class ProvenanceEventAggregator {
      */
     private void collectCompletionEvents(ProvenanceEventRecordDTO event) {
         if (event.isEndOfJob()) {
-            log.debug("collectCompletition {}  - {} - {} ", event.getJobFlowFileId(), event.getFlowFile().getRootFlowFile().getFirstEventType(), event.getFlowFile().getRootFlowFile().isBatch());
+            log.debug("collectCompletion {}  - {} - {} ", event.getJobFlowFileId(), event.getFlowFile().getRootFlowFile().getFirstEventType(), event.getFlowFile().getRootFlowFile().isBatch());
             if (event.getFlowFile() != null && event.getFlowFile().getRootFlowFile() != null) {
                 log.debug("Setting event {} as batch? {} ", event, event.getFlowFile().getRootFlowFile().isBatch());
                 event.setIsBatchJob(event.getFlowFile().getRootFlowFile().isBatch());

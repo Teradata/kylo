@@ -8,9 +8,9 @@ import java.io.Serializable;
 public enum KyloProcessorFlowType implements Serializable {
 
     CRITICAL_FAILURE("Critical Failure", "If this processor is triggered it will fail the job in Kylo"),
-    NON_CRITICAL_FAILURE("Non Critical Failure", "If this processor is triggered it will indicate the failure in Kylo, but the job will not fail."),
-    NORMAL_FLOW("Normal", "This is the default state for all processors unless specified otherwise"),
-    WARNING("Warning", "If this processor is triggered it will show as a Warning in Kylo, but job will not fail");
+    NON_CRITICAL_FAILURE("Non Critical Failure", "If this processor is triggered it will fail the step execution in in Kylo, but the job will not fail."),
+    NORMAL_FLOW("Normal", "This is the default state for all processors unless specified otherwise");
+    //  WARNING("Warning", "If this processor is triggered it will show as a Warning in Kylo, but job will not fail");
 
     private String displayName;
     private String description;

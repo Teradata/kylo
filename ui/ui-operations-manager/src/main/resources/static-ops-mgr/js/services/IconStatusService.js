@@ -115,6 +115,12 @@ angular.module(MODULE_OPERATIONS).service('IconService', function () {
                 data.style = "warn";
                 data.color = "#FF9901";
                 break;
+            case "WARNING":
+                data.icon = "warning";
+                data.style = "warn";
+                data.color = "#FF9901";
+                break;
+                ;
             case "UNKNOWN":
                 data.icon = "help";
                 data.style = "unknown";

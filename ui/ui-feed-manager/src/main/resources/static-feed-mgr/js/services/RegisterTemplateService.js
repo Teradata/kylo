@@ -49,7 +49,7 @@ angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($ht
       needsReusableTemplate: false,
       ports: [],
       reusableTemplateConnections:[],  //[{reusableTemplateFeedName:'', feedOutputPortName: '', reusableTemplateInputPortName: ''}]
-      processorFlowTypeMap:{},
+        processorFlowTypesMap: {},
       icon: {title: null, color: null},
       state:'NOT REGISTERED',
         updateDate:null,
@@ -85,7 +85,7 @@ angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($ht
         reusableTemplate: this.model.reusableTemplate,
         needsReusableTemplate: this.model.needsReusableTemplate,
         reusableTemplateConnections: this.model.reusableTemplateConnections,
-        processorFlowTypeMap : this.model.processorFlowTypeMap,
+          processorFlowTypesMap: this.model.processorFlowTypesMap,
           state: this.model.state,
           isStream: this.model.isStream
       }
@@ -689,7 +689,7 @@ angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($ht
             self.model.reusableTemplateConnections = templateData.reusableTemplateConnections;
             self.model.needsReusableTemplate = templateData.reusableTemplateConnections != undefined && templateData.reusableTemplateConnections.length>0;
             self.model.registeredDatasourceDefinitions = templateData.registeredDatasourceDefinitions;
-            self.model.processorFlowTypeMap = templateData.processorFlowTypeMap;
+              self.model.processorFlowTypesMap = templateData.processorFlowTypesMap;
               self.model.isStream = templateData.isStream;
             if (templateData.state == 'ENABLED') {
               self.model.stateIcon = 'check_circle'

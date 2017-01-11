@@ -233,8 +233,11 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
      */
     private boolean updateJobType(BatchJobExecution jobExecution, ProvenanceEventRecordDTO event) {
 
-        if (event.getUpdatedAttributes() != null && event.getUpdatedAttributes().containsKey(NIFI_JOB_TYPE_PROPERTY)) {
+        if (event.getUpdatedAttributes() != null && (event.getUpdatedAttributes().containsKey(NIFI_JOB_TYPE_PROPERTY) || event.getUpdatedAttributes().containsKey(NIFI_JOB_TYPE_PROPERTY2))) {
             String jobType = event.getUpdatedAttributes().get(NIFI_JOB_TYPE_PROPERTY);
+            if (StringUtils.isBlank(jobType)) {
+                jobType = event.getUpdatedAttributes().get(NIFI_JOB_TYPE_PROPERTY2);
+            }
             String nifiCategory = event.getAttributeMap().get(NIFI_CATEGORY_PROPERTY);
             String nifiFeedName = event.getAttributeMap().get(NIFI_FEED_PROPERTY);
             String feedName = FeedNameUtil.fullName(nifiCategory, nifiFeedName);
@@ -297,6 +300,11 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
                 executionContext.setStringVal(entry.getValue());
                 jobExecution.addJobExecutionContext(executionContext);
 
+                if (entry.getKey().equals(BatchJobExecutionProvider.NIFI_JOB_EXIT_DESCRIPTION_PROPERTY)) {
+                    String msg = jobExecution.getExitMessage() != null ? jobExecution.getExitMessage() + "\n" : "";
+                    msg += entry.getValue();
+                    jobExecution.setExitMessage(msg);
+                }
             }
             //also persist to spring batch tables
            // batchExecutionContextProvider.saveJobExecutionContext(jobExecution.getJobExecutionId(), allAttrs);

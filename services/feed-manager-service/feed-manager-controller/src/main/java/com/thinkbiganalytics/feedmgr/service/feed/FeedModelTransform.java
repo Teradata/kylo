@@ -131,8 +131,8 @@ public class FeedModelTransform {
 
         //assign the flow procesor types to the JCR store
         if (feedMetadata.getRegisteredTemplate() != null) {
-            if (feedMetadata.getRegisteredTemplate().getProcessorFlowTypeMap() != null) {
-                String flowProcessorTypes = ObjectMapperSerializer.serialize(feedMetadata.getRegisteredTemplate().getProcessorFlowTypeMap());
+            if (feedMetadata.getRegisteredTemplate().getProcessorFlowTypesMap() != null) {
+                String flowProcessorTypes = ObjectMapperSerializer.serialize(feedMetadata.getRegisteredTemplate().getProcessorFlowTypesMap());
                 domain.setFlowProcessorTypes(flowProcessorTypes);
             }
         }

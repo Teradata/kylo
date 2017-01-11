@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.nifi.provenance.model.stats;
 
+import com.thinkbiganalytics.common.constants.KyloProcessorFlowType;
 import com.thinkbiganalytics.nifi.provenance.model.ActiveFlowFile;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.nifi.provenance.model.RootFlowFile;
@@ -99,7 +100,8 @@ public class StatsModel {
         }
         stats.setFlowFilesStarted(event.isStartOfCurrentFlowFile() ? 1L : 0L);
         stats.setFlowFilesFinished(event.getFlowFile().isCurrentFlowFileComplete() ? 1L : 0L);
-        if (event.isTerminatedByFailureRelationship()) {
+        //only mark it failed if it is in the critical path
+        if (KyloProcessorFlowType.CRITICAL_FAILURE.equals(event.getProcessorType())) {
             //mark the flow file as having a failed event.
             event.getFlowFile().addFailedEvent(event);
         }

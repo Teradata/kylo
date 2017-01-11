@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
-import com.thinkbiganalytics.common.constants.KyloProcessorFlowType;
+import com.thinkbiganalytics.common.constants.KyloProcessorFlowTypeRelationship;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 
@@ -58,7 +58,7 @@ public class RegisteredTemplate {
 
     private List<String> templateOrder;
 
-    private Map<String,KyloProcessorFlowType> processorFlowTypeMap;
+    private Map<String, Set<KyloProcessorFlowTypeRelationship>> processorFlowTypesMap;
 
     @JsonProperty("isStream")
     private boolean isStream;
@@ -102,7 +102,7 @@ public class RegisteredTemplate {
         this.feedsCount= registeredTemplate.getFeedsCount();
         this.registeredDatasourceDefinitions = registeredTemplate.getRegisteredDatasourceDefinitions();
         this.order = registeredTemplate.getOrder();
-        this.processorFlowTypeMap = new HashMap<>(registeredTemplate.getProcessorFlowTypeMap());
+        this.processorFlowTypesMap = new HashMap<>(registeredTemplate.getProcessorFlowTypesMap());
         this.isStream = registeredTemplate.isStream();
         this.initializeProcessors();
     }
@@ -326,7 +326,7 @@ public class RegisteredTemplate {
 
         private String flowId;
         private boolean isLeaf;
-        private KyloProcessorFlowType flowType;
+        private Set<KyloProcessorFlowTypeRelationship> flowTypes;
 
         public FlowProcessor() {
             super();
@@ -352,12 +352,12 @@ public class RegisteredTemplate {
             this.isLeaf = isLeaf;
         }
 
-        public KyloProcessorFlowType getFlowType() {
-            return flowType;
+        public Set<KyloProcessorFlowTypeRelationship> getFlowTypes() {
+            return flowTypes;
         }
 
-        public void setFlowType(KyloProcessorFlowType flowType) {
-            this.flowType = flowType;
+        public void setFlowTypes(Set<KyloProcessorFlowTypeRelationship> flowTypes) {
+            this.flowTypes = flowTypes;
         }
     }
 
@@ -518,15 +518,15 @@ public class RegisteredTemplate {
         this.nifiTemplate = nifiTemplate;
     }
 
-    public Map<String, KyloProcessorFlowType> getProcessorFlowTypeMap() {
-        if(processorFlowTypeMap == null){
-            processorFlowTypeMap = new HashMap<>();
+    public Map<String, Set<KyloProcessorFlowTypeRelationship>> getProcessorFlowTypesMap() {
+        if (processorFlowTypesMap == null) {
+            processorFlowTypesMap = new HashMap<>();
         }
-        return processorFlowTypeMap;
+        return processorFlowTypesMap;
     }
 
-    public void setProcessorFlowTypeMap(Map<String, KyloProcessorFlowType> processorFlowTypeMap) {
-        this.processorFlowTypeMap = processorFlowTypeMap;
+    public void setProcessorFlowTypesMap(Map<String, Set<KyloProcessorFlowTypeRelationship>> processorFlowTypesMap) {
+        this.processorFlowTypesMap = processorFlowTypesMap;
     }
 
     @JsonIgnore

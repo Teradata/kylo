@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
-import com.thinkbiganalytics.common.constants.KyloProcessorFlowType;
+import com.thinkbiganalytics.common.constants.KyloProcessorFlowTypeRelationship;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -40,7 +40,7 @@ public class NifiFlowProcessor implements Serializable {
 
     private String flowId;
 
-    private KyloProcessorFlowType processorFlowType;
+    private Set<KyloProcessorFlowTypeRelationship> processorFlowTypes;
 
 
     private NifiFlowProcessGroup processGroup;
@@ -61,6 +61,8 @@ public class NifiFlowProcessor implements Serializable {
 
 
     private Set<NifiFlowProcessor> failureProcessors;
+
+    private boolean criticalPath = false;
 
     public NifiFlowProcessor() {
 
@@ -285,17 +287,19 @@ public class NifiFlowProcessor implements Serializable {
         return count;
     }
 
-    public KyloProcessorFlowType getProcessorFlowType() {
-        return processorFlowType != null ? processorFlowType : KyloProcessorFlowType.NORMAL_FLOW;
+    public Set<KyloProcessorFlowTypeRelationship> getProcessorFlowTypes() {
+        return processorFlowTypes != null ? processorFlowTypes : KyloProcessorFlowTypeRelationship.DEFAULT_SET;
     }
 
-    public void setProcessorFlowType(KyloProcessorFlowType processorFlowType) {
-        this.processorFlowType = processorFlowType;
+    public void setProcessorFlowTypes(Set<KyloProcessorFlowTypeRelationship> processorFlowTypes) {
+        this.processorFlowTypes = processorFlowTypes;
+        /*
         if (KyloProcessorFlowType.CRITICAL_FAILURE.equals(processorFlowType)) {
             setIsFailure(true);
         } else {
             setIsFailure(false);
         }
+        */
     }
 
     public boolean containsDestination(NifiFlowProcessor parent) {
@@ -373,5 +377,21 @@ public class NifiFlowProcessor implements Serializable {
         }
     }
 
+    public void populateCriticalPathOnSources(Set<NifiFlowProcessor> criticalPathProcessors) {
+        this.criticalPath = true;
+        if (criticalPathProcessors != null) {
+            criticalPathProcessors.add(this);
+        }
+        getSources().stream().filter(source -> criticalPathProcessors != null && !criticalPathProcessors.contains(source))
+            .forEach(source -> source.populateCriticalPathOnSources(criticalPathProcessors));
 
+    }
+
+    public void setCriticalPath(boolean criticalPath) {
+        this.criticalPath = criticalPath;
+    }
+
+    public boolean isCriticalPath() {
+        return criticalPath;
+    }
 }

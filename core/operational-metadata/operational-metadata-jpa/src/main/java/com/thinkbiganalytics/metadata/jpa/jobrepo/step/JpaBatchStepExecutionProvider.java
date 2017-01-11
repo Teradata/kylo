@@ -2,6 +2,7 @@ package com.thinkbiganalytics.metadata.jpa.jobrepo.step;
 
 import com.thinkbiganalytics.DateTimeUtil;
 import com.thinkbiganalytics.common.constants.KyloProcessorFlowType;
+import com.thinkbiganalytics.metadata.api.jobrepo.ExecutionConstants;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiEventStepExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecution;
@@ -178,6 +179,12 @@ public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider
             JpaBatchStepExecutionContextValue stepExecutionContext = new JpaBatchStepExecutionContextValue(stepExecution, "Kylo Flow Processor Type");
             stepExecutionContext.setStringVal(processorFlowType != null ? processorFlowType.getDisplayName() : "NULL");
             stepExecution.addStepExecutionContext(stepExecutionContext);
+            if (KyloProcessorFlowType.NON_CRITICAL_FAILURE.equals(event.getProcessorType())) {
+                stepExecution.setExitCode(ExecutionConstants.ExitCode.WARNING);
+                ((JpaBatchJobExecution) (stepExecution.getJobExecution())).setExitCode(ExecutionConstants.ExitCode.WARNING);
+            } else if (KyloProcessorFlowType.CRITICAL_FAILURE.equals(event.getProcessorType())) {
+                stepExecution.setExitCode(ExecutionConstants.ExitCode.FAILED);
+            }
 
         }
     }

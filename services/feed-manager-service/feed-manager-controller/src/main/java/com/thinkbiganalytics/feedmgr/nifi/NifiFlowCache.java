@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.thinkbiganalytics.DateTimeUtil;
 import com.thinkbiganalytics.common.constants.KyloProcessorFlowType;
+import com.thinkbiganalytics.common.constants.KyloProcessorFlowTypeRelationship;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
@@ -69,7 +70,7 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
 
     private Map<String, String> feedNameToTemplateNameMap = new ConcurrentHashMap<>();
 
-    private Map<String, Map<String, KyloProcessorFlowType>> templateNameToFlowIdMap = new ConcurrentHashMap<>();
+    private Map<String, Map<String, Set<KyloProcessorFlowTypeRelationship>>> templateNameToFlowIdMap = new ConcurrentHashMap<>();
 
     private Map<String, Map<String, List<NifiFlowProcessor>>> feedFlowIdProcessorMap = new ConcurrentHashMap<>();
 
@@ -77,8 +78,8 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
 
     private Map<String, NifiFlowProcessor> processorIdMap = new ConcurrentHashMap<>();
 
-
-    private Map<String, Map<String, KyloProcessorFlowType>> feedToProcessorIdToFlowTypeMap = new ConcurrentHashMap<>();
+    //feed , map<
+    private Map<String, Map<String, Set<KyloProcessorFlowTypeRelationship>>> feedToProcessorIdToFlowTypeMap = new ConcurrentHashMap<>();
 
     /**
      * Flag to mark if the cache is loaded or not This is used to determine if the cache is ready to be used
@@ -231,7 +232,7 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
             Map<String, String> processorIdToProcessorNameCopy = ImmutableMap.copyOf(processorIdToProcessorName);
             Set<String> streamingFeedsCopy = ImmutableSet.copyOf(streamingFeeds);
             Set<String> allFeedsCopy = ImmutableSet.copyOf(allFeeds);
-            Map<String, Map<String, KyloProcessorFlowType>> feedToProcessorIdToFlowTypeMapCopy = ImmutableMap.copyOf(feedToProcessorIdToFlowTypeMap);
+            Map<String, Map<String, Set<KyloProcessorFlowTypeRelationship>>> feedToProcessorIdToFlowTypeMapCopy = ImmutableMap.copyOf(feedToProcessorIdToFlowTypeMap);
 
 
             //get feeds updated since last sync
@@ -293,7 +294,7 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
                 feedTemplatesMap.put(feedName, template);
             }
             feedNameToTemplateNameMap.put(feedName, template.getTemplateName());
-            templateNameToFlowIdMap.computeIfAbsent(template.getTemplateName(), templateName -> new HashMap<>()).putAll(new HashMap<>(template.getProcessorFlowTypeMap()));
+            templateNameToFlowIdMap.computeIfAbsent(template.getTemplateName(), templateName -> new HashMap<>()).putAll(new HashMap<>(template.getProcessorFlowTypesMap()));
             if (template.isStream()) {
                 streamingFeeds.add(feedName);
             } else {
@@ -313,24 +314,29 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
         templates = metadataAccess.read(() -> metadataService.getRegisteredTemplates(), MetadataAccess.SERVICE);
         Map<String, RegisteredTemplate> feedTemplatesMap = new HashMap<>();
 
-        Map<String, Map<String, KyloProcessorFlowType>> feedToProcessorFlowTypMap = new HashMap<>();
+        Map<String, Map<String, Set<KyloProcessorFlowTypeRelationship>>> feedToProcessorFlowTypMap = new HashMap<>();
 
         metadataAccess.read(() -> {
             List<FeedManagerFeed> feeds = feedManagerFeedProvider.findAll();
             feeds.stream().forEach(feedManagerFeed -> {
                 String json = feedManagerFeed.getFlowProcessorTypes();
                 if (StringUtils.isNotBlank(json)) {
-                    Map<String, String> jsonMap = ObjectMapperSerializer.deserialize(json, Map.class);
-                    if (jsonMap != null) {
-                        Map<String, KyloProcessorFlowType>
-                            processorFlowTypeMap =
-                            jsonMap.entrySet().stream().collect(Collectors.toMap(entry -> entry.getKey(), entry -> KyloProcessorFlowType.valueOf(entry.getValue())));
-                        feedToProcessorFlowTypMap.put(feedManagerFeed.getQualifiedName(), processorFlowTypeMap);
+                    try {
+                        Map<String, List<Map<String, String>>> jsonMap = ObjectMapperSerializer.deserialize(json, Map.class);
+                        if (jsonMap != null) {
+                            Map<String, Set<KyloProcessorFlowTypeRelationship>>
+                                processorFlowTypeMap =
+                                jsonMap.entrySet().stream().collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue().stream().map(
+                                    m -> new KyloProcessorFlowTypeRelationship(m.getOrDefault("relationship", "all"),
+                                                                               KyloProcessorFlowType.valueOf(m.getOrDefault("flowType", KyloProcessorFlowType.NORMAL_FLOW.name()))))
+                                    .collect(Collectors.toSet())));
+                            feedToProcessorFlowTypMap.put(feedManagerFeed.getQualifiedName(), processorFlowTypeMap);
+                        }
+                    } catch (Exception e) {
+                        log.error("Error attempting to deserialize the stored flowProcessorTypes  on feed {} - {} ", feedManagerFeed.getQualifiedName(), e.getMessage());
                     }
-
                 }
             });
-
 
         }, MetadataAccess.SERVICE);
 
@@ -345,11 +351,11 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
         allFlows.stream().forEach(nifiFlowProcessGroup -> {
             RegisteredTemplate template = feedTemplatesMap.get(nifiFlowProcessGroup.getFeedName());
             if (template != null) {
-                Map<String, KyloProcessorFlowType> flowTypeMap = feedToProcessorFlowTypMap.get(nifiFlowProcessGroup.getFeedName());
+                Map<String, Set<KyloProcessorFlowTypeRelationship>> flowTypeMap = feedToProcessorFlowTypMap.get(nifiFlowProcessGroup.getFeedName());
                 if (flowTypeMap != null) {
                     nifiFlowProcessGroup.resetProcessorsFlowType(flowTypeMap);
                 } else if (isUseTemplateFlowTypeProcessorMap()) {
-                    nifiFlowProcessGroup.resetProcessorsFlowType(template.getProcessorFlowTypeMap());
+                    nifiFlowProcessGroup.resetProcessorsFlowType(template.getProcessorFlowTypesMap());
                 }
                 updateFlow(nifiFlowProcessGroup.getFeedName(), template.isStream(), nifiFlowProcessGroup);
             }
@@ -391,25 +397,33 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
     */
 
 
-
+    /**
+     * Used by CreateFeed builder
+     **/
     public void updateFlow(FeedMetadata feed, NifiFlowProcessGroup feedProcessGroup) {
+        // feedProcessGroup.calculateCriticalPathProcessors();
         this.updateFlow(feed, feedProcessGroup.getId(), feedProcessGroup.getProcessorMap().values());
     }
 
     public void updateFlow(String feedName, boolean isStream, NifiFlowProcessGroup feedProcessGroup) {
+        //  feedProcessGroup.calculateCriticalPathProcessors();
         this.updateFlow(feedName, isStream, feedProcessGroup.getId(), feedProcessGroup.getProcessorMap().values());
     }
 
-    public void updateFlow(String feedName, boolean isStream, String feedProcessGroupId, Collection<NifiFlowProcessor> processors) {
+    private void updateFlow(String feedName, boolean isStream, String feedProcessGroupId, Collection<NifiFlowProcessor> processors) {
         feedFlowIdProcessorMap.put(feedName, toFlowIdProcessorMap(processors));
         feedProcessorIdProcessorMap.put(feedName, toProcessorIdProcessorMap(processors));
 
-        Map<String, KyloProcessorFlowType>
+        Map<String, Set<KyloProcessorFlowTypeRelationship>>
             processorFlowTypeMap =
-            processors.stream().filter(processor -> !KyloProcessorFlowType.NORMAL_FLOW.equals(processor.getProcessorFlowType()))
-                .collect(Collectors.toMap(flowProcessor1 -> flowProcessor1.getId(), flowProcessor1 -> flowProcessor1.getProcessorFlowType()));
-        // processorIdToFlowTypeMap.putAll(processorFlowTypeMap);
+            processors.stream().filter(processor -> !KyloProcessorFlowTypeRelationship.isNormalFlowSet(processor.getProcessorFlowTypes()))
+                .collect(Collectors.toMap(flowProcessor1 -> flowProcessor1.getId(), flowProcessor1 -> flowProcessor1.getProcessorFlowTypes()));
 
+      /*
+        //Reset the critical path processors for job failure determination
+        Set<String> criticalPathProcessorIds = processors.stream().filter(processor -> processor.isCriticalPath()).map(processor -> processor.getId()).collect(Collectors.toSet());
+        feedToCriticalPathProcessors.put(feedName,criticalPathProcessorIds);
+*/
         feedToProcessorIdToFlowTypeMap.put(feedName, processorFlowTypeMap);
 
         Map<String, String> processorIdToProcessGroupId = new HashMap<>();
@@ -433,7 +447,7 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
 
     }
 
-    public void updateFlow(FeedMetadata feed, String feedProcessGroupId, Collection<NifiFlowProcessor> processors) {
+    private void updateFlow(FeedMetadata feed, String feedProcessGroupId, Collection<NifiFlowProcessor> processors) {
         String feedName = feed.getCategoryAndFeedName();
         this.updateFlow(feedName, feed.getRegisteredTemplate().isStream(), feedProcessGroupId, processors);
     }

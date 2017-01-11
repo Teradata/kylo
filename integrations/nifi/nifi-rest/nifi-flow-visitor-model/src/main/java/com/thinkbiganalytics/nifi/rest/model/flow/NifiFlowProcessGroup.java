@@ -3,7 +3,7 @@ package com.thinkbiganalytics.nifi.rest.model.flow;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.collect.Lists;
-import com.thinkbiganalytics.common.constants.KyloProcessorFlowType;
+import com.thinkbiganalytics.common.constants.KyloProcessorFlowTypeRelationship;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -200,13 +200,25 @@ public class NifiFlowProcessGroup {
     }
 
 
-    public void resetProcessorsFlowType(final Map<String, KyloProcessorFlowType> processorFlowTypeMap) {
+    public void resetProcessorsFlowType(final Map<String, Set<KyloProcessorFlowTypeRelationship>> processorFlowTypeMap) {
         if (processorFlowTypeMap != null) {
             getProcessorMap().values().stream()
-                .forEach(flowProcessor -> flowProcessor.setProcessorFlowType(processorFlowTypeMap.getOrDefault(flowProcessor.getFlowId(), KyloProcessorFlowType.NORMAL_FLOW)));
+                .forEach(flowProcessor -> flowProcessor.setProcessorFlowTypes(processorFlowTypeMap.getOrDefault(flowProcessor.getFlowId(), KyloProcessorFlowTypeRelationship.DEFAULT_SET)));
         }
     }
 
+/*
+    public Set<NifiFlowProcessor>  calculateCriticalPathProcessors() {
+        Set<NifiFlowProcessor> criticalPathProcessors = new HashSet<>();
+
+        getProcessorMap().values().stream().forEach(nifiFlowProcessor -> nifiFlowProcessor.setCriticalPath(false));
+        //walk back from the critical failure processors to determine all parents in the chain
+        Set<NifiFlowProcessor> criticalPathLeafNodes =  getProcessorMap().values().stream()
+            .filter(flowProcessor -> KyloProcessorFlowType.CRITICAL_FAILURE.equals(flowProcessor.getProcessorFlowType())).collect(Collectors.toSet());
+        criticalPathLeafNodes.stream().filter(nifiFlowProcessor -> !criticalPathProcessors.contains(nifiFlowProcessor)).forEach(nifiFlowProcessor -> nifiFlowProcessor.populateCriticalPathOnSources(criticalPathProcessors));
+        return criticalPathProcessors;
+    }
+    */
 
     @Override
     public boolean equals(Object o) {

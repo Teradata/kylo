@@ -18,6 +18,7 @@ public interface ExecutionConstants {
         ABANDONED,
         EXECUTING,
         NOOP,
+        WARNING,
         UNKNOWN;
     }
 }
