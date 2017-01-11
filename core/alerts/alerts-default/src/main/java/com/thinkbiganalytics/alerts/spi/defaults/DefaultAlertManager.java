@@ -21,6 +21,7 @@ import org.joda.time.DateTime;
 import org.springframework.data.jpa.repository.support.QueryDslRepositorySupport;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -462,11 +463,18 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
 //            }
 
             if (getStates().size() > 0) preds.add(alert.state.in(getStates()));
-            if (getTypes().size() > 0) preds.add(alert.type.in(getTypes()));
             if (getLevels().size() > 0) preds.add(alert.level.in(getLevels()));
             if (getAfterTime() != null) preds.add(alert.createdTime.gt(getAfterTime()));
             if (getBeforeTime() != null) preds.add(alert.createdTime.lt(getBeforeTime()));
             if (! isIncludeCleared()) preds.add(alert.cleared.isFalse());
+
+            if (getTypes().size() > 0) {
+                BooleanBuilder likes = new BooleanBuilder();
+                getTypes().stream()
+                    .map(uri -> alert.typeString.like(uri.toASCIIString().concat("%")))
+                    .forEach(pred -> likes.or(pred));
+                preds.add(likes);
+            }
             
             // When limiting and using "after" criteria only, we need to sort ascending to get the next n values after the given id/time.
             // In all other cases sort descending. The results will be ordered correctly when aggregated by the provider.

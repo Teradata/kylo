@@ -138,7 +138,7 @@ public class BaseAlertCriteria implements AlertCriteria, Predicate<Alert> {
 
     protected boolean testTypes(Alert alert) {
         return this.types.stream().anyMatch(uri -> { 
-            // A match mean the type URIs are equal (handles opaque URIs) or the matching URI is a parent as defined by relativize.
+            // A match means the type URIs are equal (handles opaque URIs) or the matching URI is a parent as defined by relativize.
             return uri.equals(alert.getType()) || uri.relativize(alert.getType()) != alert.getType();
         });
     }

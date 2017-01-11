@@ -28,12 +28,13 @@ import javax.persistence.Transient;
 import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 
+import com.querydsl.core.annotations.PropertyType;
+import com.querydsl.core.annotations.QueryType;
 import com.thinkbiganalytics.alerts.api.Alert;
 import com.thinkbiganalytics.alerts.api.AlertChangeEvent;
 import com.thinkbiganalytics.alerts.spi.AlertSource;
 import com.thinkbiganalytics.jpa.BaseJpaId;
 import com.thinkbiganalytics.jpa.JsonAttributeConverter;
-import com.thinkbiganalytics.jpa.UriConverter;
 
 /**
  * Implements the JPA-based alert type managed in the Kylo alert store.
@@ -47,9 +48,8 @@ public class JpaAlert implements Alert {
     @EmbeddedId
     private AlertId id;
     
-    @Convert(converter = AlertTypeConverter.class)
     @Column(name = "TYPE", length = 128, nullable = false)
-    private URI type;
+    private String typeString;
     
     @Type(type = "com.thinkbiganalytics.jpa.PersistentDateTimeAsMillisLong")
     @Column(name = "CREATE_TIME")
@@ -92,7 +92,7 @@ public class JpaAlert implements Alert {
 
     public JpaAlert(URI type, Level level, Principal user, String description, State state, Serializable content) {
         this.id = AlertId.create();
-        this.type = type;
+        this.typeString = type.toASCIIString();
         this.level = level;
         this.description = description;
         this.content = content;
@@ -116,7 +116,7 @@ public class JpaAlert implements Alert {
      */
     @Override
     public URI getType() {
-        return this.type;
+        return URI.create(this.typeString);
     }
 
     /* (non-Javadoc)
@@ -192,13 +192,21 @@ public class JpaAlert implements Alert {
     public <C extends Serializable> C getContent() {
         return (C) this.content;
     }
+    
+    public String getTypeString() {
+        return typeString;
+    }
+    
+    public void setTypeString(String typeString) {
+        this.typeString = typeString;
+    }
+    
+    public void setType(URI type) {
+        this.typeString = type.toASCIIString();
+    }
 
     public void setId(AlertId id) {
         this.id = id;
-    }
-
-    public void setType(URI type) {
-        this.type = type;
     }
 
     public void setDescription(String description) {
@@ -262,7 +270,5 @@ public class JpaAlert implements Alert {
     }
 
     public static class AlertContentConverter extends JsonAttributeConverter<Serializable> { }
-    
-    public static class AlertTypeConverter extends UriConverter { }
 
 }

@@ -70,19 +70,19 @@ public class DefaultAlertManagerTest extends AbstractTestNGSpringContextTests {
     @Test(groups="create")
     public void testCreateAlert() throws Exception {
         this.beforeTime = DateTime.now().minusMillis(50);
-        Alert alert1 = this.manager.create(URI.create("test:alert"), Level.MINOR, "1st description", "1st content");
+        Alert alert1 = this.manager.create(URI.create("http://example.com/test/alert/1"), Level.MINOR, "1st description", "1st content");
         Thread.sleep(100);
-        Alert alert2 = this.manager.create(URI.create("test:alert"), Level.CRITICAL, "2nd description", "2nd content");
+        Alert alert2 = this.manager.create(URI.create("http://example.com/test/alert/2"), Level.CRITICAL, "2nd description", "2nd content");
         Thread.sleep(100);
 
         assertThat(alert1)
             .isNotNull()
             .extracting("type", "level", "description", "content")
-            .contains(URI.create("test:alert"), Level.MINOR, "1st description", "1st content");
+            .contains(URI.create("http://example.com/test/alert/1"), Level.MINOR, "1st description", "1st content");
         assertThat(alert2)
             .isNotNull()
             .extracting("type", "level", "description", "content")
-            .contains(URI.create("test:alert"), Level.CRITICAL, "2nd description", "2nd content");
+            .contains(URI.create("http://example.com/test/alert/2"), Level.CRITICAL, "2nd description", "2nd content");
         assertThat(alert2.getEvents())
             .hasSize(1)
             .extracting("state", "content")
@@ -104,8 +104,8 @@ public class DefaultAlertManagerTest extends AbstractTestNGSpringContextTests {
             .isNotNull()
             .hasSize(2)
             .extracting("type", "level", "description", "content")
-            .contains(tuple(URI.create("test:alert"), Level.MINOR, "1st description", "1st content"),
-                      tuple(URI.create("test:alert"), Level.CRITICAL, "2nd description", "2nd content"));
+            .contains(tuple(URI.create("http://example.com/test/alert/1"), Level.MINOR, "1st description", "1st content"),
+                      tuple(URI.create("http://example.com/test/alert/2"), Level.CRITICAL, "2nd description", "2nd content"));
     }
     
     @Test(dependsOnGroups="create", groups="read1")
@@ -116,7 +116,7 @@ public class DefaultAlertManagerTest extends AbstractTestNGSpringContextTests {
         assertThat(optional.get())
             .isNotNull()
             .extracting("id", "type", "level", "description", "content")
-            .contains(this.id2, URI.create("test:alert"), Level.CRITICAL, "2nd description", "2nd content");
+            .contains(this.id2, URI.create("http://example.com/test/alert/2"), Level.CRITICAL, "2nd description", "2nd content");
         assertThat(optional.get().getEvents())
             .hasSize(1)
             .extracting("state", "content")
@@ -136,6 +136,20 @@ public class DefaultAlertManagerTest extends AbstractTestNGSpringContextTests {
         itr = this.manager.getAlerts(this.manager.criteria().after(this.afterTime));
         
         assertThat(itr).isNotNull().hasSize(0);
+    }
+    
+    @Test(dependsOnGroups="create", groups="read1")
+    public void testGetAlertsByType() {
+        Iterator<Alert> itr = this.manager.getAlerts(this.manager.criteria().type(URI.create("http://example.com/test/alert/1")));
+        
+        assertThat(itr).isNotNull().hasSize(1).extracting("id").contains(this.id1);
+    }
+    
+    @Test(dependsOnGroups="create", groups="read1")
+    public void testGetAlertsBySuperType() {
+        Iterator<Alert> itr = this.manager.getAlerts(this.manager.criteria().type(URI.create("http://example.com/test/alert")));
+        
+        assertThat(itr).isNotNull().hasSize(2).extracting("id").contains(this.id1, this.id2);
     }
     
     @Test(dependsOnGroups="create", groups="update1")
@@ -197,6 +211,6 @@ public class DefaultAlertManagerTest extends AbstractTestNGSpringContextTests {
             .isNotNull()
             .hasSize(1)
             .extracting("id", "type", "level", "description", "content")
-            .contains(tuple(this.id2, URI.create("test:alert"), Level.CRITICAL, "2nd description", "2nd content"));
+            .contains(tuple(this.id2, URI.create("http://example.com/test/alert/2"), Level.CRITICAL, "2nd description", "2nd content"));
     }
 }
