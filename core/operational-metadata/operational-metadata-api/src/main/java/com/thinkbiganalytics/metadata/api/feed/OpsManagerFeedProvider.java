@@ -43,7 +43,5 @@ public interface OpsManagerFeedProvider {
 
     List<? extends LatestFeedJobExecution> findLatestCheckDataJobs();
 
-
-
-
+    void abandonFeedJobs(String feedName);
 }

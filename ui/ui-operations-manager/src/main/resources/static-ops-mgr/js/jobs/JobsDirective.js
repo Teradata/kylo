@@ -25,7 +25,7 @@
     }
 
     function JobsCardController($scope, $http, $stateParams, $interval, $timeout, $q, JobData, TableOptionsService, PaginationDataService, AlertsService, StateService, IconService, TabService,
-                                AccessControlService) {
+                                AccessControlService, BroadcastService) {
         var self = this;
 
         /**
@@ -69,6 +69,12 @@
          * @type {string}
          */
         this.filter = '';
+
+        BroadcastService.subscribe($scope, 'ABANDONED_ALL_JOBS', updateJobs);
+
+        function updateJobs() {
+            loadJobs(true);
+        }
 
         //Load the data
         //   loadJobs();

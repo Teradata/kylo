@@ -1,11 +1,9 @@
 package com.thinkbiganalytics.jobrepo.rest.controller;
 
+import com.google.common.collect.Lists;
 import com.thinkbiganalytics.DateTimeUtil;
-import com.thinkbiganalytics.jobrepo.query.model.ExecutedJob;
-import com.thinkbiganalytics.jobrepo.query.model.ExecutedStep;
-import com.thinkbiganalytics.jobrepo.query.model.JobStatusCount;
-import com.thinkbiganalytics.jobrepo.query.model.RelatedJobExecution;
-import com.thinkbiganalytics.jobrepo.query.model.SearchResult;
+import com.thinkbiganalytics.jobrepo.query.model.*;
+import com.thinkbiganalytics.jobrepo.query.model.transform.FeedModelTransform;
 import com.thinkbiganalytics.jobrepo.query.model.transform.JobModelTransform;
 import com.thinkbiganalytics.jobrepo.query.model.transform.JobStatusTransform;
 import com.thinkbiganalytics.jobrepo.query.model.transform.ModelUtils;
@@ -14,6 +12,7 @@ import com.thinkbiganalytics.jobrepo.security.OperationsAccessControl;
 import com.thinkbiganalytics.jobrepo.service.JobExecutionException;
 import com.thinkbiganalytics.jobrepo.service.JobService;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecution;
@@ -56,6 +55,9 @@ public class JobsRestController {
 
     private static final Logger LOG = LoggerFactory.getLogger(JobsRestController.class);
 
+
+    @Inject
+    OpsManagerFeedProvider opsFeedManagerFeedProvider;
 
     @Inject
     BatchJobExecutionProvider jobExecutionProvider;
@@ -177,7 +179,7 @@ public class JobsRestController {
      * Abandon the job associated with the given instance id
      *
      * @param executionId The job instance id
-     * @return A status message and the apropriate http status code
+     * @return A status message and the appropriate http status code
      */
     @POST
     @Path("/{executionId}/abandon")
@@ -191,6 +193,26 @@ public class JobsRestController {
             return null;
         });
             return getJob(executionId.toString(), jobAction.isIncludeSteps());
+    }
+
+    /**
+     * Abandon the job associated with the given instance id
+     *
+     * @param feedName Full feed name (including category) for which all jobs are to be abandoned
+     * @return Feed Health status
+     */
+    @POST
+    @Path("/abandon-all/{feedName}")
+    @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
+    @Produces({MediaType.APPLICATION_JSON})
+    public FeedHealth abandonAllJobs(@Context HttpServletRequest request, @PathParam("feedName") String feedName) {
+
+        this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ADMIN_OPS);
+
+        return metadataAccess.commit(() -> {
+            opsFeedManagerFeedProvider.abandonFeedJobs(feedName);
+            return null;
+        });
     }
 
     /**

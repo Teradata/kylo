@@ -191,5 +191,13 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
         repository.deleteFeedJobs(category,feed);
     }
 
+    /**
+     * This will call the stored procedure abandon_feed_jobs
+     * @param feed
+     */
+    public void abandonFeedJobs(String feed){
+        repository.abandonFeedJobs(feed);
+    }
+
 
 }

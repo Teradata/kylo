@@ -4,33 +4,22 @@ import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobInstance;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.job.JpaBatchJobInstance;
 
+import javax.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
-
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.EmbeddedId;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.NamedStoredProcedureQuery;
-import javax.persistence.OneToMany;
-import javax.persistence.ParameterMode;
-import javax.persistence.StoredProcedureParameter;
-import javax.persistence.Table;
 
 /**
  * This entity is used to Map the Operational Feed Data with the Modeshape JCR feed data. The ID here maps directly to the JCR Modeshape Feed.ID Created by sr186054 on 9/15/16.
  */
 @Entity
 @Table(name = "FEED")
-@NamedStoredProcedureQuery(name = "OpsManagerFeed.deleteFeedJobs", procedureName = "delete_feed_jobs", parameters = {
-    @StoredProcedureParameter(mode = ParameterMode.IN, name = "category", type = String.class),
-    @StoredProcedureParameter(mode = ParameterMode.IN, name = "feed", type = String.class) })
+@NamedStoredProcedureQueries({
+        @NamedStoredProcedureQuery(name = "OpsManagerFeed.deleteFeedJobs", procedureName = "delete_feed_jobs", parameters = {
+                @StoredProcedureParameter(mode = ParameterMode.IN, name = "category", type = String.class),
+                @StoredProcedureParameter(mode = ParameterMode.IN, name = "feed", type = String.class)}),
+        @NamedStoredProcedureQuery(name = "OpsManagerFeed.abandonFeedJobs", procedureName = "abandon_feed_jobs", parameters = {
+                @StoredProcedureParameter(mode = ParameterMode.IN, name = "feed", type = String.class)})
+})
 public class JpaOpsManagerFeed implements OpsManagerFeed {
 
     @EmbeddedId

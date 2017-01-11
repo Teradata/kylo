@@ -5,7 +5,7 @@
 
 (function () {
 
-    var controller = function($scope, $timeout,$q, $interval,$stateParams, $http, FeedData, StateService ){
+    var controller = function($scope, $timeout,$q, $interval,$stateParams, $http, FeedData, StateService, JobData, BroadcastService ){
         var self = this;
         self.feedName = $stateParams.feedName;
         self.feedData = {}
@@ -133,13 +133,20 @@
             abortActiveRequests();
         });
 
-
-
+        self.abandonAllJobs = function(event, feed) {
+            event.stopPropagation();
+            event.preventDefault();
+            JobData.abandonAllJobs(feed.feed, function() {
+                getFeedHealth();
+                //broadcast so that other directives can update themselves
+                BroadcastService.notify('ABANDONED_ALL_JOBS', feed);
+            })
+        };
 
 
     };
 
-    angular.module(MODULE_OPERATIONS).controller('FeedDetailsController',['$scope', '$timeout','$q', '$interval','$stateParams','$http','FeedData','StateService',controller]);
+    angular.module(MODULE_OPERATIONS).controller('FeedDetailsController',['$scope', '$timeout','$q', '$interval','$stateParams','$http','FeedData','StateService', 'JobData', 'BroadcastService', controller]);
 
 
 

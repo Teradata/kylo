@@ -30,7 +30,7 @@
         };
     }
 
-    var controller = function ($scope,$http, $stateParams, $interval, $timeout, $q,Utils,FeedData, TableOptionsService, PaginationDataService, AlertsService, StateService, ChartJobStatusService, TabService, Nvd3ChartService) {
+    var controller = function ($scope,$http, $stateParams, $interval, $timeout, $q,Utils,FeedData, TableOptionsService, PaginationDataService, AlertsService, StateService, ChartJobStatusService, BroadcastService) {
         var self = this;
         this.pageName = 'feed-activity';
         this.dataLoaded = false;
@@ -81,11 +81,18 @@
          unzoomEventType: 'dblclick.zoom'
          }*/
 
+        BroadcastService.subscribe($scope, 'ABANDONED_ALL_JOBS', updateCharts);
+
+        function updateCharts() {
+            query();
+            self.updateChart();
+        }
+
         this.updateChart = function(){
             if(self.chartApi.update) {
                 self.chartApi.update();
             }
-        }
+        };
 
         function fixChartWidth() {
             var chartWidth = parseInt($($('.nvd3-svg')[0]).find('rect:first').attr('width'));

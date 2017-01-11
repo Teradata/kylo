@@ -19,6 +19,8 @@ var JobService = angular.module(MODULE_OPERATIONS).factory('JobData', ['$q', '$h
 
     JobData.ABANDON_JOB_URL = RestUrlService.ABANDON_JOB_URL;
 
+    JobData.ABANDON_ALL_JOBS_URL = RestUrlService.ABANDON_ALL_JOBS_URL;
+
     JobData.FAIL_JOB_URL = RestUrlService.FAIL_JOB_URL;
 
     JobData.LOAD_JOB_URL = RestUrlService.LOAD_JOB_URL;
@@ -59,6 +61,17 @@ var JobService = angular.module(MODULE_OPERATIONS).factory('JobData', ['$q', '$h
     }
     JobData.abandonJob = function ( executionId, params, callback) {
         $http.post(JobData.ABANDON_JOB_URL( executionId),params).
+            success(function (data) {
+                callback(data);
+            }).error(function (msg) {
+                var errorMessasge = msg.error != undefined ? msg.error +': ': '';
+                errorMessasge +=msg.message;
+            //    NotificationService.error( errorMessasge);
+            })
+    };
+
+    JobData.abandonAllJobs = function ( feed, callback) {
+        $http.post(JobData.ABANDON_ALL_JOBS_URL( feed)).
             success(function (data) {
                 callback(data);
             }).error(function (msg) {

@@ -55,6 +55,10 @@ angular.module(MODULE_OPERATIONS).service('RestUrlService', function () {
         return self.JOBS_BASE+"/"+executionId+"/abandon";
     }
 
+    this.ABANDON_ALL_JOBS_URL = function (feedId) {
+        return self.JOBS_BASE+"/abandon-all/" + feedId;
+    }
+
     this.FAIL_JOB_URL = function (executionId) {
         return self.JOBS_BASE+"/"+executionId+"/fail";
     }
