@@ -300,6 +300,20 @@
             md-component-id="left"
             md-is-locked-open="$mdMedia('gt-md') && mc.sideNavService.isLockOpen">
 
+  <md-toolbar class="md-hue-2 layout-column" style="padding-left:15px;padding-right:15px;padding-top:5px;color:#ffffff" layout="column">
+    <div layout="row" layout-wrap="" layout-align="space-between-center" style="padding-top:10px;" class="layout-wrap layout-align-space-between-center layout-row">
+      <img src="/ui-common/img/kylo-logo-rev.png" height="50px">
+    </div>
+    <div layout="row" layout-wrap="" layout-align="space-between-center" class="layout-wrap layout-align-space-between-center layout-row">
+      <span style="font-size:12px;"></span>
+      <button class="md-icon-button md-button md-ink-ripple" type="button" ng-transclude="" style="height:24px;min-height:24px;max-height:24px;margin:0;padding:0;">
+        <ng-md-icon md-icon="" icon="arrow_drop_down" class="ng-scope"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path d="M7 10l5 5 5-5z"></path></svg></ng-md-icon>
+      </button>
+    </div>
+  </md-toolbar>
+
+
+
   <md-toolbar class="md-hue-2" style="padding-left:15px;padding-right:15px;padding-top:5px;color:#ffffff" layout="column">
     <div layout="row" layout-wrap layout-align="center-start">
       <img src="/ui-common/img/kylo-logo-rev.png" class="kylo-logo">
