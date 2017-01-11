@@ -18,10 +18,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
-import java.sql.JDBCType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -33,6 +31,7 @@ import javax.annotation.Nullable;
 import javax.sql.DataSource;
 
 public class DBSchemaParser {
+
     private static final Logger log = LoggerFactory.getLogger(DBSchemaParser.class);
 
     private DataSource ds;
@@ -72,11 +71,11 @@ public class DBSchemaParser {
     }
 
     /**
-     * Lists the tables in the specified schema that match the specified table pattern.
+     * Lists the tables in the specified schema that match the specified table pattern.d
      *
-     * @param conn the JDBC connection
-     * @param catalog the catalog name pattern, or {@code null}
-     * @param schema the schema name pattern, or {@code null}
+     * @param conn      the JDBC connection
+     * @param catalog   the catalog name pattern, or {@code null}
+     * @param schema    the schema name pattern, or {@code null}
      * @param tableName the table name pattern   @return a result set containing the matching table metadata
      * @return the list of tables or {@code null} if there was a problem
      */
@@ -90,8 +89,18 @@ public class DBSchemaParser {
         }
     }
 
+    private void addTableToList(final ResultSet result, final List<String> tables) throws SQLException {
+        final String tableName = result.getString("TABLE_NAME");
+        final String tableSchem = result.getString("TABLE_SCHEM");
+        final String tableCat = result.getString("TABLE_CAT");
+        tables.add((tableSchem != null ? tableSchem : tableCat) + "." + tableName);
+    }
+
+
     /**
      * Lists the tables in the specified schema.
+     * Some databases use the catalog (i.e. MySQL), some dont (i.e. Teradata)
+     * This should work for all cases.
      *
      * @param schema the schema name, or {@code null}
      * @return the list of table names prepended with the schema name, like: {@code <schema>.<table>}
@@ -102,32 +111,70 @@ public class DBSchemaParser {
         final String schemaPattern = (schema != null) ? schema : "%";
         final List<String> tables = new ArrayList<>();
 
-        try (final Connection conn = ds.getConnection()) {
-            for (final String catalog : listCatalogs()) {
-                try (final ResultSet result = getTables(conn, catalog, "%", "%")) {
+        if (StringUtils.isNotBlank(schema)) {
+
+            try (final Connection conn = ds.getConnection()) {
+                try (final ResultSet result = getTables(conn, schema, "%", "%")) {
                     while (result != null && result.next()) {
-                        final String tableName = result.getString("TABLE_NAME");
-                        final String tableSchem = result.getString("TABLE_SCHEM");
-                        final String tableCat = result.getString("TABLE_CAT");
-                        tables.add((tableSchem != null ? tableSchem : tableCat) + "." + tableName);
+                        addTableToList(result, tables);
                     }
                 }
+            } catch (final SQLException e) {
+                throw new RuntimeException("Unable to obtain table list", e);
             }
-        } catch (final SQLException e) {
-            throw new RuntimeException("Unable to obtain table list", e);
+            if (tables.isEmpty()) {
+                try (final Connection conn = ds.getConnection()) {
+                    try (final ResultSet result = getTables(conn, null, schema, "%")) {
+                        while (result != null && result.next()) {
+                            addTableToList(result, tables);
+                        }
+                    }
+                } catch (final SQLException e) {
+                    throw new RuntimeException("Unable to obtain table list", e);
+                }
+            }
+
+        } else {
+
+            try (final Connection conn = ds.getConnection()) {
+                for (final String catalog : listCatalogs()) {
+                    try (final ResultSet result = getTables(conn, catalog, "%", "%")) {
+                        while (result != null && result.next()) {
+                            addTableToList(result, tables);
+                        }
+                    }
+                }
+            } catch (final SQLException e) {
+                throw new RuntimeException("Unable to obtain table list", e);
+            }
+
+            if (tables.isEmpty()) {
+                try (final Connection conn = ds.getConnection()) {
+                    for (final String dbSchema : listSchemas()) {
+                        try (final ResultSet result = getTables(conn, null, dbSchema, "%")) {
+                            while (result != null && result.next()) {
+                                addTableToList(result, tables);
+                            }
+                        }
+                    }
+                } catch (final SQLException e) {
+                    throw new RuntimeException("Unable to obtain table list", e);
+                }
+            }
         }
 
         return tables;
     }
 
+
     /**
      * Gets the schema for the specified table.
      *
      * @param schema the schema name
-     * @param table the table name
+     * @param table  the table name
      * @return the table schema
      * @throws IllegalArgumentException if the table name is empty
-     * @throws RuntimeException if a database access error occurs
+     * @throws RuntimeException         if a database access error occurs
      */
     @Nullable
     public TableSchema describeTable(@Nullable final String schema, @Nonnull final String table) {

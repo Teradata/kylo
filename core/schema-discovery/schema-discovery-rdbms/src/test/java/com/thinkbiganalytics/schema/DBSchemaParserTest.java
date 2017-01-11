@@ -38,9 +38,14 @@ public class DBSchemaParserTest {
                                      {
                                          List<String> tables = schemaParser.listTables(schema);
                                          if (tables != null) {
-                                             tables.forEach(table -> System.out.println(table));
+                                             //    tables.forEach(table -> System.out.println(table));
                                          }
                                      });
+        }
+
+        List<String> tables = schemaParser.listTables("thinkbig");
+        if (tables != null) {
+            tables.forEach(table -> System.out.println(table));
         }
 
     }
