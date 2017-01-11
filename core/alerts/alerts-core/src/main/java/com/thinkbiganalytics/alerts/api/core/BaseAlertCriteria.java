@@ -64,7 +64,7 @@ public class BaseAlertCriteria implements AlertCriteria, Predicate<Alert> {
         if (this.levels.size() > 0 && ! testLevels(alert)) return false;
         if (this.afterTime != null && ! testAfterTime(alert)) return false;
         if (this.beforeTime != null && ! testBeforeTime(alert)) return false;
-        if (this.testCleared(alert)) return false;
+        if (! this.testCleared(alert)) return false;
         
         return true;
     }

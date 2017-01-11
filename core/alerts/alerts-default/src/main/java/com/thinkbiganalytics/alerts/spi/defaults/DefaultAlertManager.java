@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.thinkbiganalytics.alerts.spi.kylo;
+package com.thinkbiganalytics.alerts.spi.defaults;
 
 import java.io.Serializable;
 import java.net.URI;
@@ -47,7 +47,7 @@ import com.thinkbiganalytics.metadata.jpa.alerts.QJpaAlert;
  *
  * @author Sean Felten
  */
-public class KyloAlertManager extends QueryDslRepositorySupport implements AlertManager {
+public class DefaultAlertManager extends QueryDslRepositorySupport implements AlertManager {
     
     @Inject
     private JPAQueryFactory queryFactory;
@@ -62,7 +62,7 @@ public class KyloAlertManager extends QueryDslRepositorySupport implements Alert
     /**
      * @param repo
      */
-    public KyloAlertManager(JpaAlertRepository repo) {
+    public DefaultAlertManager(JpaAlertRepository repo) {
         super(JpaAlert.class);
         this.repository = repo;
     }

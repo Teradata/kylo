@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.thinkbiganalytics.alerts.spi.kylo;
+package com.thinkbiganalytics.alerts.spi.defaults;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,11 +14,11 @@ import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlertRepository;
  * @author Sean Felten
  */
 @Configuration
-public class KyloAlertManagerConfig {
+public class DefaultAlertManagerConfig {
     
     @Bean(name="kyloAlertManager")
-    public KyloAlertManager kyloAlertManager(JpaAlertRepository repo, AlertSourceAggregator aggregator)  {
-        KyloAlertManager mgr = new KyloAlertManager(repo);
+    public DefaultAlertManager kyloAlertManager(JpaAlertRepository repo, AlertSourceAggregator aggregator)  {
+        DefaultAlertManager mgr = new DefaultAlertManager(repo);
         aggregator.addAlertManager(mgr);
         return mgr;
     }

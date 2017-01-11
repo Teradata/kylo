@@ -82,7 +82,7 @@
         </dependency>
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-alerts-kylo</artifactId>
+            <artifactId>thinkbig-alerts-default</artifactId>
             <version>${project.version}</version>
         </dependency>
         

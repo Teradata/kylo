@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.thinkbiganalytics.alerts.spi.kylo;
+package com.thinkbiganalytics.alerts.spi.defaults;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
@@ -31,6 +31,8 @@ import com.thinkbiganalytics.alerts.api.Alert.Level;
 import com.thinkbiganalytics.alerts.api.Alert.State;
 import com.thinkbiganalytics.alerts.api.AlertResponse;
 import com.thinkbiganalytics.alerts.spi.AlertNotifyReceiver;
+import com.thinkbiganalytics.alerts.spi.defaults.DefaultAlertManager;
+import com.thinkbiganalytics.alerts.spi.defaults.DefaultAlertManagerConfig;
 import com.thinkbiganalytics.metadata.persistence.MetadataPersistenceConfig;
 import com.thinkbiganalytics.testing.jpa.TestPersistenceConfiguration;
 
@@ -39,14 +41,14 @@ import com.thinkbiganalytics.testing.jpa.TestPersistenceConfiguration;
  * @author Sean Felten
  */
 @TestPropertySource(locations = "classpath:test-jpa-application.properties")
-@SpringApplicationConfiguration(classes = { MetadataPersistenceConfig.class, TestPersistenceConfiguration.class, KyloAlertManagerConfig.class })
-public class KyloAlertManagerTest extends AbstractTestNGSpringContextTests {
+@SpringApplicationConfiguration(classes = { MetadataPersistenceConfig.class, TestPersistenceConfiguration.class, DefaultAlertManagerConfig.class })
+public class DefaultAlertManagerTest extends AbstractTestNGSpringContextTests {
     
     @Mock
     private AlertNotifyReceiver alertReceiver;
     
     @Inject
-    private KyloAlertManager manager;
+    private DefaultAlertManager manager;
     
     private Alert.ID id1;
     private Alert.ID id2;
