@@ -947,7 +947,7 @@ thinkbig-stepper .md-tab.arrow-tab {
 }
 
 thinkbig-stepper .md-tab.arrow-tab.md-active {
-  background-image:url('../images/75_arrow_dropshadow.svg');
+  /* background-image:url('../images/75_arrow_dropshadow.svg');*/
   background-repeat:no-repeat;
   background-position: right center;
 }
