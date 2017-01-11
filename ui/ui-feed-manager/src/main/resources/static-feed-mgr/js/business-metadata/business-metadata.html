@@ -2,8 +2,8 @@
     <md-progress-linear md-mode="indeterminate" ng-if="vm.loading"></md-progress-linear>
     <card-layout body-css="md-padding" class="centered" ng-if="!vm.loading">
         <header-section>
-            <div class="card-title">Define Properties</div>
-            <div class="card-label">Customize standard properties available for feeds and categories</div>
+            <div class="card-title">Property Definition</div>
+            <div class="card-label">Define standard properties available to feeds and categories</div>
         </header-section>
         <body-section>
             <vertical-section-layout section-title="Category Fields" on-save-edit="vm.onCategorySave()" on-edit="vm.onCategoryEdit()" editable="vm.isCategoryEditable" is-valid="vm.isCategoryValid"

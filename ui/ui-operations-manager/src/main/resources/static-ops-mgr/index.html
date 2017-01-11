@@ -166,17 +166,17 @@
             md-component-id="left"
             md-is-locked-open="$mdMedia('gt-md')">
 
-    <md-toolbar class="md-hue-2" style="padding-left:15px;padding-right:15px;padding-top:5px;color:#ffffff" layout="column">
-        <div layout="row" layout-wrap layout-align="center-start">
-            <img src="/ui-common/img/kylo-logo-rev.png" class="kylo-logo">
-        </div>
-        <div layout="row" layout-wrap layout-align="space-between-center">
-            <span style="font-size:12px;"></span>
-            <md-button class="md-icon-button" style="height:24px;min-height:24px;max-height:24px;margin:0;padding:0;">
-                <ng-md-icon md-icon icon="arrow_drop_down" ></ng-md-icon>
-            </md-button>
-        </div>
-    </md-toolbar>
+  <md-toolbar class="md-hue-2 layout-column" style="height:64px;padding-left:2px;padding-right:15px;padding-top:5px;color:#ffffff" layout="column">
+    <div layout="row" layout-wrap="" layout-align="space-between-center" style="padding-top:10px;" class="layout-wrap layout-align-space-between-center layout-row">
+      <img src="/ui-common/img/kylo-logo-rev.png" height="50px">
+    </div>
+    <div layout="row" layout-wrap="" layout-align="space-between-center" class="layout-wrap layout-align-space-between-center layout-row">
+      <span style="font-size:12px;"></span>
+      <md-button class="md-icon-button" style="margin:0;padding:0;">
+        <ng-md-icon md-icon icon="arrow_drop_down"></ng-md-icon>
+      </md-button>
+    </div>
+  </md-toolbar>
 
     <md-list>
         <md-list-item ng-repeat="item in mc.menu">
@@ -187,6 +187,7 @@
             </md-button>
         </md-list-item>
     </md-list>
+  <md-divider></md-divider>
     <md-list>
         <md-list-item>
             <md-button flex ng-click="mc.gotoFeedManager()" class="nav-btn">
