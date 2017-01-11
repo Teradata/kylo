@@ -97,7 +97,7 @@ md-list md-datepicker .md-button.md-icon-button {
   padding-bottom: 25px;
 }
 
-#content.define-feed, #content.register-nifi-template { /*.feeds, #content.home */
+#content.define-feed, #content.register-nifi-template, #content.visual-query { /*.feeds, #content.home */
   padding:0 !important;
 }
 
@@ -267,7 +267,7 @@ card-layout .card-toolbar.filter-header {
 
 
 
-.define-feed card-layout section,  #content.visual-query card-layout section {
+.define-feed card-layout section, card-layout section {
   margin-left:16px;
   margin-right:16px;
 }

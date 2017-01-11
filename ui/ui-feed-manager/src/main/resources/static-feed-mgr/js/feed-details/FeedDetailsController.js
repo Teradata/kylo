@@ -16,7 +16,7 @@
      * @param RegisterTemplateService
      * @param StateService
      */
-    var controller = function ($scope, $q, $stateParams, $mdDialog, $mdToast, $http, $state, AccessControlService, RestUrlService, FeedService, RegisterTemplateService, StateService, SideNavService) {
+    var controller = function ($scope, $q, $stateParams, $mdDialog, $mdToast, $http, $state, AccessControlService, RestUrlService, FeedService, RegisterTemplateService, StateService, SideNavService, FileUpload) {
 
         var SLA_INDEX = 3;
         var self = this;
@@ -48,6 +48,9 @@
         this.model = FeedService.editFeedModel;
         this.model.loaded = false;
         this.loadMessage = ''
+        this.uploadFile = null;
+        this.uploading = false;
+        this.uploadAllowed = false;
 
         var requestedTabIndex = $stateParams.tabIndex;
 
@@ -161,6 +164,30 @@
             $http.delete(RestUrlService.GET_FEEDS_URL + "/" + self.feedId).then(successFn, errorFn);
         };
 
+        this.showFeedUploadDialog = function() {
+
+            $mdDialog.show({
+                controller: 'FeedUploadFileDialogController',
+                escapeToClose: false,
+                fullscreen: true,
+                parent: angular.element(document.body),
+                templateUrl: "js/feed-details/feed-details-upload-dialog.html",
+                locals: {feedId: self.feedId}
+            }).then(function(msg) {
+                $mdToast.show(
+                    $mdToast.simple()
+                        .textContent('File uploaded.')
+                        .hideDelay(3000)
+                );
+            });
+        }
+
+
+        this.openFeedMenu = function($mdOpenMenu, ev) {
+            $mdOpenMenu(ev);
+        };
+
+
         /**
          * Enables this feed.
          */
@@ -257,6 +284,19 @@
             self.newSla = true;
         }
 
+        this.updateMenuOptions = function() {
+            self.uploadAllowed=false;
+            var model = self.model;
+            if (model && model.inputProcessor && model.inputProcessor.allProperties.length > 0) {
+                angular.forEach(model.inputProcessor.allProperties, function (property) {
+                   if (property.processorType == 'org.apache.nifi.processors.standard.GetFile') {
+                       self.uploadAllowed = true;
+                       return;
+                   }
+                });
+            }
+        }
+
         function loadFeed(tabIndex) {
             self.loadingFeedData = true;
             self.model.loaded = false;
@@ -291,8 +331,10 @@
                                 return self.model.inputProcessorType == processor.type;
                             });
                             self.model.nonInputProcessors = RegisterTemplateService.removeNonUserEditableProperties(updatedFeedResponse.data.registeredTemplate.nonInputProcessors,false);
+                            self.updateMenuOptions();
                             self.loadingFeedData = false;
                             FeedService.updateEditModelStateIcon();
+
                         }
                     }, function(err) {
                         //handle err
@@ -327,3 +369,49 @@
 
 }());
 
+(function () {
+
+
+    var controller = function ($scope, $mdDialog, $http, RestUrlService, FileUpload, feedId){
+        var self = this;
+        $scope.uploading = false;
+        $scope.uploadFile = null;
+
+        /**
+         * Upload file
+         */
+        $scope.doUpload = function() {
+
+            $scope.uploading = true;
+            $scope.errorMessage = '';
+
+            var uploadUrl = RestUrlService.UPLOAD_FILE_FEED_URL(feedId);
+            var params = {};
+            var successFn = function (response) {
+                $scope.uploading = false;
+                $mdDialog.hide('Upload successfully submitted.');
+            }
+            var errorFn = function (data) {
+                $scope.uploading = false;
+                $scope.errorMessage = 'Failed to submit file.';
+            }
+            FileUpload.uploadFileToUrl($scope.uploadFile, uploadUrl, successFn, errorFn, params);
+        };
+
+
+        $scope.hide = function() {
+            $mdDialog.hide();
+        };
+
+        $scope.cancel = function() {
+            $mdDialog.cancel();
+        };
+
+
+    };
+
+    angular.module(MODULE_FEED_MGR).controller('FeedUploadFileDialogController',controller);
+
+
+
+}());

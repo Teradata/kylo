@@ -1,0 +1,17 @@
+<md-dialog aria-label="Delete Feed" ng-cloak>
+  <md-dialog-content class="md-dialog-content">
+    <h2 class="md-title">Upload File</h2>
+
+    <div layout="row" layout-align="start start">
+      <upload-file upload-file-model="uploadFile" input-size="20"></upload-file>
+    </div>
+  </md-dialog-content>
+  <md-dialog-actions>
+    <md-progress-circular md-diameter="36px" ng-if="uploading"></md-progress-circular>
+
+    <md-button class="md-primary" aria-label="Upload sample file" id="upload-sample-file-btn" class="md-raised md-block md-primary" ng-click="doUpload();" ng-disabled="!uploadFile">
+      Upload
+    </md-button>
+    <md-button class="" aria-label="Cancel" ng-click="cancel()">Cancel</md-button>
+  </md-dialog-actions>
+</md-dialog>

@@ -24,7 +24,7 @@
                  </md-menu-content>
              </md-menu>
              <div rows="1" class="formula-editor" ui-codemirror="{ onLoad : vm.codemirrorLoaded }"  ng-model="vm.currentFormula" ui-codemirror-opts="vm.codemirrorOptions"></div>
-             <md-button class="md-raised" ng-click="vm.onAddFunction()">Add</md-button>
+             <md-button class="md-raised md-accent" ng-click="vm.onAddFunction()" ng-disabled="!vm.currentFormula">Add</md-button>
              <span flex></span>
              <thinkbig-step-buttons style="padding:inherit" can-continue="vm.isValid" step-index="{{::vm.stepIndex}}"></thinkbig-step-buttons>
 

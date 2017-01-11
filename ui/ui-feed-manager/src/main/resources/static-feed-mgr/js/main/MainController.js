@@ -33,19 +33,19 @@
         function buildSideNavMenu(allowed) {
             var menu = [];
             if (AccessControlService.hasAction(AccessControlService.FEEDS_ACCESS, allowed)) {
-                menu.push({sref: "feeds", icon: "link", text: "Feeds", defaultActive: false, fullscreen: false});
+                menu.push({sref: "feeds", icon: "linear_scale", text: "Feeds", defaultActive: false, fullscreen: false});
             }
             if (AccessControlService.hasAction(AccessControlService.CATEGORIES_ACCESS, allowed)) {
-                menu.push({sref: "categories", icon: "star", text: "Categories", defaultActive: false, fullscreen: false});
+                menu.push({sref: "categories", icon: "folder_special", text: "Categories", defaultActive: false, fullscreen: false});
             }
             if (AccessControlService.hasAction(AccessControlService.FEED_MANAGER_ACCESS, allowed)) {
-                menu.push({sref: "tables", icon: "layers", text: "Tables", defaultActive: false, fullscreen: false});
+                menu.push({sref: "tables", icon: "grid_on", text: "Tables", defaultActive: false, fullscreen: false});
             }
             if (AccessControlService.hasAction(AccessControlService.FEEDS_ACCESS, allowed)) {
-                menu.push({sref: "service-level-agreements", icon: "label", text: "SLA", defaultActive: false, fullscreen: false});
+                menu.push({sref: "service-level-agreements", icon: "beenhere", text: "SLA", defaultActive: false, fullscreen: false});
             }
             if (AccessControlService.hasAction(AccessControlService.FEED_MANAGER_ACCESS, allowed)) {
-                menu.push({sref: "visual-query", icon: "border_color", text: "Visual Query", defaultActive: false, fullscreen: true});
+                menu.push({sref: "visual-query", icon: "transform", text: "Visual Query", defaultActive: false, fullscreen: true});
             }
             self.selectedMenuItem = menu[0];
             self.menu = menu;
@@ -69,17 +69,17 @@
 
         function buildAdminMenu(allowed) {
             var menu = [];
-            if (AccessControlService.hasAction(AccessControlService.CATEGORIES_ADMIN, allowed) || AccessControlService.hasAction(AccessControlService.FEEDS_ADMIN, allowed)) {
-                menu.push({sref: "business-metadata", icon: "business", text: "Business Metadata", defaultActive: false});
+            if (AccessControlService.hasAction(AccessControlService.USERS_ACCESS, allowed)) {
+                menu.push({sref: "users", icon: "account_box", text: "Users", defaultActive: false});
             }
             if (AccessControlService.hasAction(AccessControlService.GROUP_ACCESS, allowed)) {
                 menu.push({sref: "groups", icon: "group", text: "Groups", defaultActive: false});
             }
-            if (AccessControlService.hasAction(AccessControlService.TEMPLATES_ACCESS, allowed)) {
-                menu.push({sref: "registered-templates", icon: "folder_special", text: "Templates", defaultActive: false});
+            if (AccessControlService.hasAction(AccessControlService.CATEGORIES_ADMIN, allowed) || AccessControlService.hasAction(AccessControlService.FEEDS_ADMIN, allowed)) {
+                menu.push({sref: "business-metadata", icon: "business", text: "Properties", defaultActive: false});
             }
-            if (AccessControlService.hasAction(AccessControlService.USERS_ACCESS, allowed)) {
-                menu.push({sref: "users", icon: "account_box", text: "Users", defaultActive: false});
+            if (AccessControlService.hasAction(AccessControlService.TEMPLATES_ACCESS, allowed)) {
+                menu.push({sref: "registered-templates", icon: "layers", text: "Templates", defaultActive: false});
             }
             self.adminMenu = menu;
         }

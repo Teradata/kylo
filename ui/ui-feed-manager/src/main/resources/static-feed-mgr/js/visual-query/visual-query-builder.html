@@ -1,10 +1,8 @@
 <div layout-fill flex layout="column"
      ng-class="{'visual-query-auto-complete-centered':$vq.chartViewModel.data.nodes.length ==0,'visual-query-auto-complete-top':$vq.chartViewModel.data.nodes.length >0}">
     <div layout="row" flex layout-fill layout-align="center center" ng-hide="$vq.advancedMode">
-        <span flex="20"></span>
-        <div layout="column" flex>
-            <span ng-if="$vq.chartViewModel.data.nodes.length == 0" class="md-input-label" style="padding-bottom:5px;">Start typing a table to start building your query</span>
-            <md-autocomplete flex
+        <span flex="30"></span>
+        <md-autocomplete flex="30"
                              md-selected-item="$vq.tablesAutocomplete.selectedTable"
                              md-search-text-change="$vq.tablesAutocomplete.searchTextChange($vq.tablesAutocomplete.searchText)"
                              md-search-text="$vq.tablesAutocomplete.searchText"
@@ -13,7 +11,7 @@
                              md-item-text="item.fullName"
                              md-input-min-length="1"
                              md-min-length="1"
-                             placeholder="Select a Table"
+                             placeholder="Search tables"
                              md-menu-class="autocomplete-hive-table-template">
                 <md-item-template>
                     <span class="item-title">
@@ -31,16 +29,15 @@
                     No tables matching "{{$vq.tablesAutocomplete.searchText}}" were found.
                 </md-not-found>
             </md-autocomplete>
-        </div>
-        <md-button ng-click="$vq.onAddTable()" class="md-raised" style="margin:0px 8px;">Add</md-button>
-        <md-button ng-click="$vq.toggleAdvancedMode()" class="md-raised" style="margin:0px 8px;">{{$vq.advancedModeText}}</md-button>
-        <span flex="20"></span>
+          <md-button flex="5" ng-click="$vq.onAddTable()" class="md-raised md-accent" ng-disabled="!$vq.tablesAutocomplete.selectedTable">Add Table</md-button>
+          <md-button flex="5" ng-click="$vq.toggleAdvancedMode()" class="md-raised">Edit SQL</md-button>
+          <span flex-auto layout-align="end center">
+              <thinkbig-step-buttons  can-continue="$vq.isValid" step-index="{{::$vq.stepIndex}}" style="margin-top:-22px"></thinkbig-step-buttons>
+          </span>
     </div>
-    <div layout="row" flex layout-fill layout-align="center center">
-        <span flex></span>
-        <thinkbig-step-buttons can-continue="$vq.isValid" step-index="{{::$vq.stepIndex}}"></thinkbig-step-buttons>
-        <span flex="10"></span>
-    </div>
+  <div layout="row" layout-align="end center" ng-hide="!$vq.advancedMode">
+      <thinkbig-step-buttons can-continue="$vq.isValid" step-index="{{::$vq.stepIndex}}"></thinkbig-step-buttons>
+  </div>
 </div>
 
 <div class="visual-query-canvas" style="margin-top:8px;" layout="column" layout-fill flex mouse-capture ng-hide="$vq.chartViewModel.data.nodes.length == 0 || $vq.advancedMode == true">

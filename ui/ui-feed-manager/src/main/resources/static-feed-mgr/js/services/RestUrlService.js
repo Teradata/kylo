@@ -168,7 +168,9 @@ angular.module(MODULE_FEED_MGR).service('RestUrlService', function () {
     this.DISABLE_FEED_URL = function (feedId) {
         return self.FEEDS_BASE_URL + "/disable/" + feedId;
     }
-
+    this.UPLOAD_FILE_FEED_URL = function (feedId) {
+        return self.FEEDS_BASE_URL + "/" + feedId + "/upload-file";
+    }
     /**
      * Gets the URL for retrieving the user fields for a new feed.
      *

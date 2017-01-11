@@ -2,7 +2,9 @@
 
     <card-layout class="not-centered" style="" flex="initial" ng-class="{'card-width':vm.cardWidth, 'card-full-width':!vm.cardWidth }">
         <header-section>
+
             <div class="card-title" flex>Feed Details</div>
+
         </header-section>
 
         <body-section transclude-to="body" class="md-padding">
@@ -16,7 +18,6 @@
                         <md-progress-linear md-mode="indeterminate" ng-if="vm.loadingFeedData"></md-progress-linear>
                         <thinkbig-feed-info ng-if="!vm.loadingFeedData && vm.model.loaded" selected-tab-index="vm.selectedTabIndex"></thinkbig-feed-info>
                         <div ng-if="vm.loadingFeedData" class="layout-padding" style="min-height:200px;height:200px;">Loading Feed</div>
-
                         <div ng-if="!vm.loadingFeedData && vm.model.loaded == false && vm.loadMessage != '' " class="layout-padding">{{vm.loadMessage}}</div>
                     </md-tab-body>
                 </md-tab>
@@ -57,19 +58,59 @@
 
     </card-layout>
 
-    <card-layout style="max-width:250px;width:250px;min-width:250px;" flex="initial" body-css="md-padding">
+    <card-layout style="max-width:350px;width:350px;min-width:350px;" flex="initial" body-css="md-padding">
         <header-section>
+          <div layout="row" layout-align="space-between center">
             <div class="card-title" flex>Feed Summary</div>
-            <div layout="column" class="layout-padding-top-bottom">
-                <span class="item-title" ng-if="!vm.loadingFeedData">{{vm.model.feedName}}</span>
+            <div layout-align="center center" layout="column">
+            <md-menu md-position-mode="target-right target">
+              <md-button aria-label="Options" class="md-icon-button" style="margin-top:-10px;margin-right:-10px" ng-click="vm.openFeedMenu($mdOpenMenu, $event)" ng-disabled="vm.loadingFeedData">
+                <ng-md-icon icon="more_vert"></ng-md-icon>
+              </md-button>
+              <md-menu-content width="4">
+
+                <md-menu-item ng-if="vm.model.state == 'ENABLED'" ng-click="vm.disableFeed()">
+                  <md-button ng-disabled="(vm.disabling || !vm.allowAdmin)">
+                    <ng-md-icon icon="not_interested" class="orange"></ng-md-icon>
+                    Disable
+                  </md-button>
+                </md-menu-item>
+                <md-menu-item ng-if="vm.model.state != 'ENABLED'"  ng-click="vm.enableFeed()" >
+                  <md-button ng-disabled="(vm.enabling || !vm.allowAdmin)">
+                    <ng-md-icon icon="check_circle" class="orange" md-menu-align-target=""></ng-md-icon>
+                    Enable
+                  </md-button>
+                </md-menu-item>
+                <md-menu-item ng-if="vm.model.state != 'ENABLED'" ng-click="vm.confirmDeleteFeed()">
+                  <md-button ng-disabled="(vm.enabling || !vm.allowAdmin)">
+                    <ng-md-icon icon="delete_forever" class="orange" md-menu-align-target=""></ng-md-icon>
+                    Delete...
+                  </md-button>
+                </md-menu-item>
+                <md-menu-divider></md-menu-divider>
+                <md-menu-item ng-if="vm.uploadAllowed">
+                  <md-button ng-click="vm.showFeedUploadDialog()" ng-disabled="vm.model.state != 'ENABLED'">
+                    <ng-md-icon icon="file_upload"  class="primary-color-1"  md-menu-align-target=""></ng-md-icon>
+                    Upload...
+                  </md-button>
+                </md-menu-item>
+              </md-menu-content>
+
+            </md-menu>
             </div>
+          </div>
+          <div layout="column" class="layout-padding-top-bottom">
+            <span class="item-title" ng-if="!vm.loadingFeedData">{{vm.model.feedName}}</span>
+          </div>
         </header-section>
 
         <body-section>
             <div layout="column" class="layout-padding-top" ng-if="vm.loadingFeedData">
                 Loading Feed ...
             </div>
+
             <div layout="column" class="layout-padding-top" ng-if="!vm.loadingFeedData">
+<!--
                 <md-button ng-if="vm.model.state == 'ENABLED' && vm.allowAdmin" ng-disabled="vm.disabling" ng-click="vm.disableFeed()" class="border-btn">
                     DISABLE FEED
                 </md-button>
@@ -79,6 +120,7 @@
                 <md-button ng-if="vm.model.state != 'ENABLED' && vm.allowAdmin" ng-click="vm.confirmDeleteFeed()" class="border-btn-warn">
                     DELETE FEED
                 </md-button>
+-->
                 <md-progress-linear md-mode="indeterminate" ng-if="vm.enabling || vm.disabling"></md-progress-linear>
                 <div layout="column" class="layout-padding-top-bottom">
                     <span ng-class="{'enabled':vm.model.state == 'ENABLED','disabled':vm.model.state == 'DISABLED'}"> {{vm.model.state}}<ng-md-icon
@@ -86,7 +128,7 @@
                                                                                                                                                     size="20"></ng-md-icon></span>
                     <span class="hint">State</span>
                 </div>
-                <div layout="column" class="layout-padding-top-bottom">
+                <div layout="column" class="layout-padding-top-bottom" ng-if="vm.model.dataOwner">
                     <span>{{vm.model.dataOwner}}</span>
                     <span class="hint">Data Owner</span>
                 </div>
@@ -94,7 +136,7 @@
                     <div class="primary-color-1" style="cursor:pointer;" ng-click="vm.onTableClick()">{{vm.model.table.tableSchema.name}}</div>
                     <span class="hint">Table</span>
                 </div>
-                <div layout="column" class="layout-padding-top-bottom">
+                <div layout="column" class="layout-padding-top-bottom"  ng-if="vm.model.tags">
                     <span ng-repeat="tag in vm.model.tags">
                         {{tag.name}}
 

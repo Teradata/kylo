@@ -13,14 +13,12 @@
             <md-card-title>
                 <md-card-title-text>
                     <span style="font-size: 16px;font-weight:400;letter-spacing: .005em;">{{template.templateName}}</span>
+                    <span class="md-subhead" style="word-wrap:break-word;">{{template.description | characters:100}}</span>
                 </md-card-title-text>
                 <md-card-title-media>
                     <ng-md-icon icon="{{template.icon}}" size="40" style="fill:{{template.iconColor}};margin-right:-20px;" class="md-media-xs"></ng-md-icon>
                 </md-card-title-media>
             </md-card-title>
-            <md-card-content>
-                <div style="word-wrap:break-word;">{{template.description | characters:100}}</div>
-            </md-card-content>
         </md-card>
             <div>
           <a href="" ng-click="vm.more()" ng-if="vm.displayMoreLink">More</a>
@@ -32,14 +30,12 @@
                 <md-card-title>
                     <md-card-title-text>
                         <span style="font-size: 16px;font-weight:400;letter-spacing: .005em;">{{template.templateName}}</span>
+                      <span class="md-subhead" style="word-wrap:break-word;">{{template.description | characters:100}}</span>
                     </md-card-title-text>
                     <md-card-title-media>
                         <ng-md-icon icon="{{template.icon}}" size="40" style="fill:{{template.iconColor}};margin-right:-20px;" class="md-media-xs"></ng-md-icon>
                     </md-card-title-media>
                 </md-card-title>
-                <md-card-content>
-                    <div style="word-wrap:break-word;">{{template.description | characters:100}}</div>
-                </md-card-content>
             </md-card>
 
         </div>
