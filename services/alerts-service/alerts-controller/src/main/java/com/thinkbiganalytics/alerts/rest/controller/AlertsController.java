@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -24,7 +23,6 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
-import org.joda.time.DateTime;
 import org.springframework.stereotype.Component;
 
 import com.thinkbiganalytics.Formatters;
@@ -118,11 +116,9 @@ public class AlertsController {
             
             @Override
             public void alertChange(Alert alert, AlertResponse response) {
+                result = alert;
+                
                 switch (state) {
-                    case CLEARED:
-                        response.clear();
-                        result = alert;
-                        break;
                     case HANDLED:
                         result = response.handle(req.getDescription());
                         break;
@@ -133,8 +129,11 @@ public class AlertsController {
                         result = response.unHandle(req.getDescription());
                         break;
                     default:
-                        result = alert;
                         break;
+                }
+                
+                if (req.isClear()) {
+                    response.clear();
                 }
             }
         }

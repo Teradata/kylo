@@ -70,6 +70,10 @@ public class JpaAlert implements Alert {
     @Convert(converter = AlertContentConverter.class)
     private Serializable content;
     
+    @Column(name="CLEARED", length=1)
+    @org.hibernate.annotations.Type(type = "yes_no")
+    private boolean cleared = false;
+    
     @ElementCollection(targetClass=JpaAlertChangeEvent.class)
     @CollectionTable(name="KYLO_ALERT_CHANGE", joinColumns=@JoinColumn(name="ALERT_ID"))
     @OrderBy("changeTime DESC, state ASC")
@@ -155,6 +159,14 @@ public class JpaAlert implements Alert {
     public AlertSource getSource() {
         return this.source;
     }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.alerts.api.Alert#isCleared()
+     */
+    @Override
+    public boolean isCleared() {
+        return this.cleared;
+    }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.alerts.api.Alert#isActionable()
@@ -203,6 +215,10 @@ public class JpaAlert implements Alert {
 
     public void setContent(Serializable content) {
         this.content = content;
+    }
+    
+    public void setCleared(boolean cleared) {
+        this.cleared = cleared;
     }
 
     public void setSource(AlertSource source) {

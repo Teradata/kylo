@@ -26,7 +26,7 @@ public interface Alert {
      * The states that this alert may transition through, listed within the change events.  
      * For non-actionable alerts this state will never transition beyond created.
      */
-    enum State { CREATED, UNHANDLED, IN_PROGRESS, HANDLED, CLEARED }
+    enum State { CREATED, UNHANDLED, IN_PROGRESS, HANDLED }
     
     /** The severity level that alerts may have */
     enum Level { INFO, WARNING, MINOR, MAJOR, CRITICAL, FATAL }
@@ -79,6 +79,13 @@ public interface Alert {
      * @return the current state of this alert
      */
     State getState();
+    
+    /**
+     * Indicates whether this alert is considered cleared or not.  Normally cleared alerts do not 
+     * appear in regular search results.
+     * @return 
+     */
+    boolean isCleared();
     
     /**
      * Gets ordered list of state change events showing the state transitions this alert

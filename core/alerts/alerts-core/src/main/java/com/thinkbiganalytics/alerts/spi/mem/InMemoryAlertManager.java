@@ -202,10 +202,6 @@ public class InMemoryAlertManager implements AlertManager {
                                          (id, ref) -> { ref.set(alert); return ref; });
     }
     
-    private void cleared(GenericAlert alert) {
-        remove(alert.getId());
-    }
-    
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.alerts.spi.AlertManager#getUpdator(com.thinkbiganalytics.alerts.api.Alert)
      */
@@ -345,7 +341,7 @@ public class InMemoryAlertManager implements AlertManager {
         @Override
         public void clear() {
             checkCleared();
-            cleared(this.current);
+            this.current = new GenericAlert(this.current, true);
             this.current = null;
         }
         
@@ -415,6 +411,7 @@ public class InMemoryAlertManager implements AlertManager {
         private final URI type;
         private final Level level;
         private final String description;
+        private final boolean cleared;
         private final AlertSource source;
         private final Object content;
         private final List<AlertChangeEvent> events;
@@ -423,6 +420,7 @@ public class InMemoryAlertManager implements AlertManager {
             this.id = new AlertID();
             this.type = type;
             this.level = level;
+            this.cleared = false;
             this.description = description;
             this.content = content;
             this.source = InMemoryAlertManager.this;
@@ -445,10 +443,22 @@ public class InMemoryAlertManager implements AlertManager {
             this.description = alert.description;
             this.source = alert.source;
             this.content = alert.content;
+            this.cleared = false;
             
             ArrayList<AlertChangeEvent> evList = new ArrayList<>(alert.events);
             evList.add(0, new GenericChangeEvent(this.id, newState, null, null, eventContent));
             this.events = Collections.unmodifiableList(evList);
+        }
+        
+        public GenericAlert(GenericAlert alert, boolean cleared) {
+            this.id = alert.id;
+            this.type = alert.type;
+            this.level = alert.level;
+            this.description = alert.description;
+            this.source = alert.source;
+            this.content = alert.content;
+            this.events = Collections.unmodifiableList(alert.events);
+            this.cleared = cleared;
         }
 
         @Override
@@ -489,6 +499,11 @@ public class InMemoryAlertManager implements AlertManager {
         @Override
         public boolean isActionable() {
             return true;
+        }
+
+        @Override
+        public boolean isCleared() {
+            return this.cleared;
         }
 
         @Override

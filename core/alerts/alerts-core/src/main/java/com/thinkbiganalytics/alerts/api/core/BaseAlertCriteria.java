@@ -35,6 +35,7 @@ public class BaseAlertCriteria implements AlertCriteria, Predicate<Alert> {
     private Set<Alert.Level> levels = new HashSet<>();
     private DateTime afterTime;
     private DateTime beforeTime;
+    private boolean includeCleared = false;
     
     
     /**
@@ -62,6 +63,7 @@ public class BaseAlertCriteria implements AlertCriteria, Predicate<Alert> {
         if (this.levels.size() > 0 && ! testLevels(alert)) return false;
         if (this.afterTime != null && ! testAfterTime(alert)) return false;
         if (this.beforeTime != null && ! testBeforeTime(alert)) return false;
+        if (this.testCleared(alert)) return false;
         
         return true;
     }
@@ -122,6 +124,15 @@ public class BaseAlertCriteria implements AlertCriteria, Predicate<Alert> {
         this.beforeTime = time;
         return this;
     }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.alerts.api.AlertCriteria#includedCleared(boolean)
+     */
+    @Override
+    public AlertCriteria includedCleared(boolean flag) {
+        this.includeCleared  = flag;
+        return this;
+    }
 
 
     protected boolean testTypes(Alert alert) {
@@ -150,6 +161,10 @@ public class BaseAlertCriteria implements AlertCriteria, Predicate<Alert> {
     protected boolean testBeforeTime(Alert alert) {
         return alert.getCreatedTime().isBefore(this.beforeTime);
     }
+    
+    protected boolean testCleared(Alert alert) {
+        return ! alert.isCleared() || this.includeCleared;
+    }
 
 
     protected int getLimit() {
@@ -176,4 +191,7 @@ public class BaseAlertCriteria implements AlertCriteria, Predicate<Alert> {
         return beforeTime;
     }
 
+    protected boolean isIncludeCleared() {
+        return includeCleared;
+    }
 }

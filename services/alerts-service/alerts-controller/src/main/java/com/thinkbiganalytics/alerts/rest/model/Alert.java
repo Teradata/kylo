@@ -27,7 +27,7 @@ public class Alert {
     }
 
     public enum State {
-        CREATED, UNHANDLED, IN_PROGRESS, HANDLED, CLEARED
+        CREATED, UNHANDLED, IN_PROGRESS, HANDLED
     }
 
 

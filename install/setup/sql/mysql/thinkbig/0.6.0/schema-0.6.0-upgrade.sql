@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS `KYLO_ALERT` (
   `state` varchar(15) NOT NULL,
   `create_time` bigint,
   `description` varchar(255) DEFAULT NULL,
+  `cleared` varchar(1) DEFAULT NULL,
   `content` text DEFAULT NULL, 
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB;

@@ -204,7 +204,12 @@ public class KyloAlertManager extends QueryDslRepositorySupport implements Alert
     @Override
     public Alert remove(ID id) {
         JpaAlert.AlertId idImpl = (JpaAlert.AlertId) resolve(id);
-        return deleteAlert(idImpl);
+        
+        return this.metadataAccess.commit(() -> {
+            JpaAlert alert = repository.findOne(idImpl);
+            this.repository.delete(id);
+            return alert;
+        }, MetadataAccess.SERVICE);
     }
     
     protected Optional<JpaAlert> findAlert(Alert.ID id) {
@@ -215,11 +220,11 @@ public class KyloAlertManager extends QueryDslRepositorySupport implements Alert
     protected Alert asValue(Alert alert) {
         return new ImmutableAlert(alert, this);
     }
-
-    protected JpaAlert deleteAlert(JpaAlert.AlertId id) {
+    
+    protected JpaAlert clearAlert(JpaAlert.AlertId id) {
         return this.metadataAccess.commit(() -> {
             JpaAlert alert = repository.findOne(id);
-            this.repository.delete(id);
+            alert.setCleared(true);
             return alert;
         }, MetadataAccess.SERVICE);
     }
@@ -310,7 +315,7 @@ public class KyloAlertManager extends QueryDslRepositorySupport implements Alert
          */
         @Override
         public void clear() {
-            deleteAlert(this.id);
+            clearAlert(this.id);
         }
     }
     
@@ -323,6 +328,7 @@ public class KyloAlertManager extends QueryDslRepositorySupport implements Alert
         private final URI type;
         private final DateTime createdTime;
         private final Serializable content;
+        private final boolean cleared;
         private final List<AlertChangeEvent> events;
         
         public ImmutableAlert(Alert alert, AlertManager mgr) {
@@ -332,6 +338,7 @@ public class KyloAlertManager extends QueryDslRepositorySupport implements Alert
             this.description = alert.getDescription();
             this.level = alert.getLevel();
             this.type = alert.getType();
+            this.cleared = alert.isCleared();
             this.createdTime = alert.getCreatedTime();
             this.events = Collections.unmodifiableList(alert.getEvents().stream()
                                                        .map(a -> new ImmutableAlertChangeEvent(a))
@@ -382,6 +389,11 @@ public class KyloAlertManager extends QueryDslRepositorySupport implements Alert
         @Override
         public DateTime getCreatedTime() {
             return this.createdTime;
+        }
+        
+        @Override
+        public boolean isCleared() {
+            return this.cleared;
         }
 
         @Override
@@ -454,6 +466,7 @@ public class KyloAlertManager extends QueryDslRepositorySupport implements Alert
             if (getLevels().size() > 0) preds.add(alert.level.in(getLevels()));
             if (getAfterTime() != null) preds.add(alert.createdTime.gt(getAfterTime()));
             if (getBeforeTime() != null) preds.add(alert.createdTime.lt(getBeforeTime()));
+            if (! isIncludeCleared()) preds.add(alert.cleared.isFalse());
             
             // When limiting and using "after" criteria only, we need to sort ascending to get the next n values after the given id/time.
             // In all other cases sort descending. The results will be ordered correctly when aggregated by the provider.

@@ -14,6 +14,7 @@ public class AlertUpdateRequest {
 
     private Alert.State state;
     private String description;
+    private boolean clear = false;
     
     // TODO not supporting arbitrary content in REST model for now
 //    private Serializable content;
@@ -40,5 +41,12 @@ public class AlertUpdateRequest {
         this.description = description;
     }
 
-    
+    public boolean isClear() {
+        return clear;
+    }
+
+    public void setClear(boolean clear) {
+        this.clear = clear;
+    }
+
 }

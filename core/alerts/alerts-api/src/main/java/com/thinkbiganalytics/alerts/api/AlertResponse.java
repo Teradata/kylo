@@ -53,7 +53,7 @@ public interface AlertResponse {
     <C extends Serializable> Alert unhandle(String description, C content);
     
     /**
-     * clears (effectively removes) an alert.  No other responder will see this alert if cleared.
+     * clears (hides or removes) an alert.  No other responder will see this alert if cleared.
      */
     void clear();
 }

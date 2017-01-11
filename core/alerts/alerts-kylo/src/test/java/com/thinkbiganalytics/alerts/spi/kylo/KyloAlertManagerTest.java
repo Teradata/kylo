@@ -168,8 +168,33 @@ public class KyloAlertManagerTest extends AbstractTestNGSpringContextTests {
         
         assertThat(itr).isNotNull().hasSize(1);
 
-        itr = this.manager.getAlerts(this.manager.criteria().state(Alert.State.CLEARED));
+        itr = this.manager.getAlerts(this.manager.criteria().state(Alert.State.CREATED));
         
         assertThat(itr).isNotNull().hasSize(0);
+    }
+    
+    @Test(dependsOnGroups="read2", groups="update2")
+    public void testClear() {
+        Alert alert = this.manager.getAlert(id1).get();
+        AlertResponse resp = this.manager.getResponse(alert);
+        
+        resp.clear();
+        
+        alert = this.manager.getAlert(id1).get();
+        
+        assertThat(alert).isNotNull();
+        assertThat(alert.isCleared()).isTrue();
+        verify(this.alertReceiver, times(0)).alertsAvailable(anyInt());
+    }
+    
+    @Test(dependsOnGroups="update2", groups="read3")
+    public void testGetAlertsAfterClear() {
+        Iterator<Alert> itr = this.manager.getAlerts(null);
+        
+        assertThat(itr)
+            .isNotNull()
+            .hasSize(1)
+            .extracting("id", "type", "level", "description", "content")
+            .contains(tuple(this.id2, URI.create("test:alert"), Level.CRITICAL, "2nd description", "2nd content"));
     }
 }

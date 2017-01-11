@@ -58,4 +58,10 @@ public interface AlertCriteria {
      * @return the updated criteria
      */
     AlertCriteria before(DateTime time);
+    
+    /**
+     * @param flag set to true if cleared alerts should be retrieved (default false)
+     * @return the updated criteria
+     */
+    AlertCriteria includedCleared(boolean flag);
 }

@@ -320,6 +320,7 @@ public class AggregatingAlertProviderTest {
         private AlertSource source;
         private boolean actionable;
         private DateTime createdTime;
+        private boolean cleared = false;
         
         public TestAlert(AlertSource src) {
             this(src, src instanceof AlertManager);
@@ -378,6 +379,11 @@ public class AggregatingAlertProviderTest {
         @Override
         public State getState() {
             return this.getEvents().get(0).getState();
+        }
+        
+        @Override
+        public boolean isCleared() {
+            return this.cleared;
         }
 
         @Override
