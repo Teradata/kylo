@@ -7,6 +7,7 @@ import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementMetricTransformerH
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementModelTransform;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
@@ -52,6 +53,9 @@ public class ServiceLevelAgreementRestController {
 
     @Inject
     private ServiceLevelAgreementProvider provider;
+
+    @Inject
+    private FeedServiceLevelAgreementProvider feedSlaProvider;
 
     @Inject
     private JcrMetadataAccess metadata;
@@ -168,15 +172,16 @@ public class ServiceLevelAgreementRestController {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public List<ServiceLevelAgreement> getAgreements() {
+    public List<? extends ServiceLevelAgreement> getAgreements() {
         log.debug("GET all SLA's");
 
         return this.metadata.commit(() -> {
-            List<? extends com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement> list = this.provider.getAgreements();
+            List<com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreement> agreements = feedSlaProvider.findAllAgreements();
+            if (agreements != null) {
+                return ServiceLevelAgreementModelTransform.transformFeedServiceLevelAgreements(agreements);
+            }
 
-            List<ServiceLevelAgreement> transformedList = Lists.newArrayList(Lists.transform(list, ServiceLevelAgreementModelTransform.DOMAIN_TO_SLA));
-            return transformedList;
-
+            return new ArrayList<>(0);
         });
     }
 
