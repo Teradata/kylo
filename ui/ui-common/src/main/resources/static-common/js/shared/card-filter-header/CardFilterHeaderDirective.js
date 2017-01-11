@@ -5,7 +5,7 @@ angular.module(COMMON_APP_MODULE_NAME).directive("tbaCardFilterHeader", function
             cardTitle:'=',
             viewType:'=',
             filterModel:'=',
-            filterModelOptions:'=',
+            filterModelOptions: '=?',
             sortOptions:'=',
             pageName:'@',
             onSelectedOption:'&'
@@ -21,6 +21,7 @@ angular.module(COMMON_APP_MODULE_NAME).directive("tbaCardFilterHeader", function
         },
         controller: function($scope, $element, TableOptionsService, PaginationDataService){
             var self = this;
+            self.filterModelOptions = self.filterModelOptions || {};
 
             /**
              * Called when a user Clicks on a table Option
