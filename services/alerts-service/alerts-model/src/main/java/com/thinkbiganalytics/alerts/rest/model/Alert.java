@@ -38,6 +38,7 @@ public class Alert {
     private DateTime createdTime;
     private String description;
     private boolean actionable;
+    private boolean cleared;
     private List<AlertChangeEvent> events = new ArrayList<>();
     
     public Alert() {}
@@ -90,6 +91,14 @@ public class Alert {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+    
+    public boolean isCleared() {
+        return cleared;
+    }
+
+    public void setCleared(boolean cleared) {
+        this.cleared = cleared;
     }
 
     public boolean isActionable() {

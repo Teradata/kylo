@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -63,9 +64,10 @@ public class AlertsController {
                                 @QueryParam("state") String state,
                                 @QueryParam("level") String level,
                                 @QueryParam("before") String before,
-                                @QueryParam("after") String after) {
+                                @QueryParam("after") String after,
+                                @QueryParam("cleared") @DefaultValue("false") String cleared) {
         List<Alert> alerts = new ArrayList<>();
-        AlertCriteria criteria = createCriteria(limit, state, level, before, after);
+        AlertCriteria criteria = createCriteria(limit, state, level, before, after, cleared);
         
         provider.getAlerts(criteria).forEachRemaining(a -> alerts.add(a));
         return new AlertRange(alerts.stream().map(a -> toModel(a)).collect(Collectors.toList()));
@@ -154,6 +156,7 @@ public class AlertsController {
         result.setState(toModel(alert.getState()));
         result.setType(alert.getType());
         result.setDescription(alert.getDescription());
+        result.setCleared(alert.isCleared());
         alert.getEvents().forEach(e -> result.getEvents().add(toModel(e)));
         return result;
     }
@@ -185,7 +188,7 @@ public class AlertsController {
         return Alert.Level.valueOf(level.name());
     }
 
-    private AlertCriteria createCriteria(Integer limit, String stateStr, String levelStr, String before, String after) {
+    private AlertCriteria createCriteria(Integer limit, String stateStr, String levelStr, String before, String after, String cleared) {
         AlertCriteria criteria = provider.criteria();
         
         if (limit != null) criteria.limit(limit);
@@ -193,6 +196,7 @@ public class AlertsController {
         if (levelStr != null) criteria.level(Alert.Level.valueOf(levelStr.toUpperCase()));
         if (before != null) criteria.before(Formatters.parseDateTime(before));
         if (after != null) criteria.after(Formatters.parseDateTime(after));
+        if (cleared != null) criteria.includedCleared(Boolean.parseBoolean(cleared));
         
         return criteria;
     }

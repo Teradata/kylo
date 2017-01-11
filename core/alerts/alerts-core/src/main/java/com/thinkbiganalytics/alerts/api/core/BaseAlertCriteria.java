@@ -46,6 +46,7 @@ public class BaseAlertCriteria implements AlertCriteria, Predicate<Alert> {
         updated.set(updated.get().limit(this.limit));
         updated.set(updated.get().after(this.afterTime));
         updated.set(updated.get().before(this.beforeTime));
+        updated.set(updated.get().includedCleared(this.isIncludeCleared()));
         this.types.forEach((t) -> updated.set(updated.get().type(t)));
         this.states.forEach((s) -> updated.set(updated.get().state(s)));
         this.levels.forEach((l) -> updated.set(updated.get().level(l)));

@@ -5,6 +5,9 @@ package com.thinkbiganalytics.alerts.rest.model;
 
 import org.joda.time.DateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.thinkbiganalytics.alerts.rest.model.Alert.State;
 
 /**
@@ -12,6 +15,8 @@ import com.thinkbiganalytics.alerts.rest.model.Alert.State;
  * 
  * @author Sean Felten
  */
+@JsonInclude(Include.NON_EMPTY)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class AlertChangeEvent {
 
     private DateTime createdTime;
