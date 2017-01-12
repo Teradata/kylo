@@ -31,19 +31,27 @@ public class DBSchemaParserTest {
     @Test
     public void test() {
         DBSchemaParser schemaParser = new DBSchemaParser(dataSource, new KerberosTicketConfiguration());
+       /*
         List<String> schemas = schemaParser.listCatalogs();
 
         if (schemas != null) {
             schemas.stream().forEach(schema ->
                                      {
-                                         List<String> tables = schemaParser.listTables(schema);
+                                         List<String> tables = schemaParser.listTables(schema,"%");
                                          if (tables != null) {
                                              //    tables.forEach(table -> System.out.println(table));
                                          }
                                      });
         }
+        */
+        List<String> tables = null;
+       /*  tables = schemaParser.listTables(null,null);
+        if (tables != null) {
+            tables.forEach(table -> System.out.println(table));
+        }
+        */
 
-        List<String> tables = schemaParser.listTables("thinkbig");
+        tables = schemaParser.listTables(null, "batch%");
         if (tables != null) {
             tables.forEach(table -> System.out.println(table));
         }
