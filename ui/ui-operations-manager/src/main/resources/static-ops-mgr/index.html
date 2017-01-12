@@ -172,9 +172,6 @@
     </div>
     <div layout="row" layout-wrap="" layout-align="space-between-center" class="layout-wrap layout-align-space-between-center layout-row">
       <span style="font-size:12px;"></span>
-      <md-button class="md-icon-button" style="margin:0;padding:0;">
-        <ng-md-icon md-icon icon="arrow_drop_down"></ng-md-icon>
-      </md-button>
     </div>
   </md-toolbar>
 
@@ -208,7 +205,11 @@
         </md-button>
         <ui-router-breadcrumbs displayname-property="data.displayName" template-url="js/shared/ui-router-breadcrumbs/uiBreadcrumbs.tpl.html" style="padding-left:25px;"></ui-router-breadcrumbs>
         <span flex="20"></span>
-        <current-time style="margin-top:-40px;padding-right:10px;" class="md-caption"></current-time>
+        <div layout="column" flex="75" layout-align="start end">
+            <current-time  class="md-caption"></current-time>
+            <kylo-options></kylo-options>
+        </div>
+        <span flex="5"></span>
     </md-toolbar>
 
     <md-content flex id="content" md-scroll-y>

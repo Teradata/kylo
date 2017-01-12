@@ -1,0 +1,15 @@
+<!--
+    Popup menu
+-->
+<md-menu >
+  <md-button aria-label="Options" class="md-icon-button" style="margin-top:-10px" ng-click="openMenu($mdOpenMenu, $event)">
+    <ng-md-icon icon="{{menuIcon}}"></ng-md-icon>
+  </md-button>
+  <md-menu-content width="3" >
+    <md-menu-item layout="column">
+      <md-button ng-click="aboutKylo()" md-prevent-menu-close="md-prevent-menu-close">
+        <span style="float:left;">About Kylo</span>
+      </md-button>
+    </md-menu-item>
+  </md-menu-content>
+</md-menu>
