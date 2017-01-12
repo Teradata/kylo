@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.metadata.rest.model.nifi;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -57,6 +58,7 @@ public class NiFiFlowCacheSync {
         this.syncId = syncId != null ? syncId : UUID.randomUUID().toString();
     }
 
+    @JsonIgnore
     public NifiFlowCacheSnapshot getCache() {
         return snapshot;
     }
