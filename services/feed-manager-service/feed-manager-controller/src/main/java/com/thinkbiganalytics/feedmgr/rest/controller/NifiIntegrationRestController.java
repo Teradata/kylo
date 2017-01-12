@@ -233,9 +233,10 @@ public class NifiIntegrationRestController {
     @GET
     @Path("/controller-services/{serviceId}/tables")
     @Produces({MediaType.APPLICATION_JSON})
-    public Response getTableNames(@PathParam("serviceId") String serviceId, @QueryParam("serviceName") @DefaultValue("") String serviceName, @QueryParam("schema") String schema) {
+    public Response getTableNames(@PathParam("serviceId") String serviceId, @QueryParam("serviceName") @DefaultValue("") String serviceName, @QueryParam("schema") String schema,
+                                  @QueryParam("tableName") String tableName) {
         log.info("Query for Table Names against service: {}({})", serviceName, serviceId);
-        List<String> tables = dbcpConnectionPoolTableInfo.getTableNamesForControllerService(serviceId, serviceName, schema);
+        List<String> tables = dbcpConnectionPoolTableInfo.getTableNamesForControllerService(serviceId, serviceName, schema, tableName);
 
         return Response.ok(tables).build();
     }

@@ -66,7 +66,7 @@ public class HiveService {
     }
 
     public List<String> getTables(String schema) {
-        List<String> tables = getDBSchemaParser().listTables(schema);
+        List<String> tables = getDBSchemaParser().listTables(schema, null);
         return tables;
     }
 

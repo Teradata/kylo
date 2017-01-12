@@ -107,59 +107,63 @@ public class DBSchemaParser {
      * @throws RuntimeException if a database access error occurs
      */
     @Nonnull
-    public List<String> listTables(@Nullable final String schema) {
+    public List<String> listTables(@Nullable final String schema, @Nullable final String tableName) {
         final String schemaPattern = (schema != null) ? schema : "%";
+
+        final String tableNamePattern = (tableName != null) ? tableName : "%";
+
         final List<String> tables = new ArrayList<>();
 
-        if (StringUtils.isNotBlank(schema)) {
+        List<String> catalogs = listCatalogs();
+        boolean hasCatalogs = catalogs != null && !catalogs.isEmpty();
 
+        if (StringUtils.isNotBlank(schema) || StringUtils.isNotBlank(tableName)) {
+
+            //try using the catalog
             try (final Connection conn = ds.getConnection()) {
-                try (final ResultSet result = getTables(conn, schema, "%", "%")) {
-                    while (result != null && result.next()) {
-                        addTableToList(result, tables);
-                    }
-                }
-            } catch (final SQLException e) {
-                throw new RuntimeException("Unable to obtain table list", e);
-            }
-            if (tables.isEmpty()) {
-                try (final Connection conn = ds.getConnection()) {
-                    try (final ResultSet result = getTables(conn, null, schema, "%")) {
-                        while (result != null && result.next()) {
-                            addTableToList(result, tables);
-                        }
-                    }
-                } catch (final SQLException e) {
-                    throw new RuntimeException("Unable to obtain table list", e);
-                }
-            }
-
-        } else {
-
-            try (final Connection conn = ds.getConnection()) {
-                for (final String catalog : listCatalogs()) {
-                    try (final ResultSet result = getTables(conn, catalog, "%", "%")) {
-                        while (result != null && result.next()) {
-                            addTableToList(result, tables);
-                        }
-                    }
-                }
-            } catch (final SQLException e) {
-                throw new RuntimeException("Unable to obtain table list", e);
-            }
-
-            if (tables.isEmpty()) {
-                try (final Connection conn = ds.getConnection()) {
-                    for (final String dbSchema : listSchemas()) {
-                        try (final ResultSet result = getTables(conn, null, dbSchema, "%")) {
+                if (hasCatalogs) {
+                    for (final String catalog : catalogs) {
+                        try (final ResultSet result = getTables(conn, catalog, schemaPattern, tableNamePattern)) {
                             while (result != null && result.next()) {
                                 addTableToList(result, tables);
                             }
                         }
                     }
-                } catch (final SQLException e) {
-                    throw new RuntimeException("Unable to obtain table list", e);
+                } else {
+                    try (final ResultSet result = getTables(conn, null, schemaPattern, tableNamePattern)) {
+                        while (result != null && result.next()) {
+                            addTableToList(result, tables);
+                        }
+                    }
                 }
+
+
+            } catch (final SQLException e) {
+                throw new RuntimeException("Unable to obtain table list", e);
+            }
+
+        } else {
+
+            try (final Connection conn = ds.getConnection()) {
+                if (hasCatalogs) {
+                    for (final String catalog : catalogs) {
+                        try (final ResultSet result = getTables(conn, catalog, "%", tableNamePattern)) {
+                            while (result != null && result.next()) {
+                                addTableToList(result, tables);
+                            }
+                        }
+                    }
+                } else {
+                    for (final String dbSchema : listSchemas()) {
+                        try (final ResultSet result = getTables(conn, null, dbSchema, tableNamePattern)) {
+                            while (result != null && result.next()) {
+                                addTableToList(result, tables);
+                            }
+                        }
+                    }
+                }
+            } catch (final SQLException e) {
+                throw new RuntimeException("Unable to obtain table list", e);
             }
         }
 

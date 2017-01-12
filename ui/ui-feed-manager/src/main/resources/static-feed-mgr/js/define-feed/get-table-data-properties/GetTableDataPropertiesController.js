@@ -256,12 +256,20 @@
                });
                var serviceName = serviceNameValue != null && serviceNameValue != undefined ?serviceNameValue.displayName : '';
 
+               if (query == null) {
+                   query = '';
+               }
+               //add % if not ends with
+
                if (self.allTables[serviceId] == undefined) {
                    var deferred = $q.defer();
-                   var tables = $http.get(DBCPTableSchemaService.LIST_TABLES_URL(serviceId),{params:{serviceName:serviceName}}).then(function (response) {
+                   var tableNameQuery = "%" + query + "%";
+                   var tables = $http.get(DBCPTableSchemaService.LIST_TABLES_URL(serviceId), {params: {serviceName: serviceName, tableName: tableNameQuery}}).then(function (response) {
                        self.databaseConnectionError = false;
-                      self.allTables[serviceId] = parseTableResponse(response.data);
-                       var results = query ?  self.allTables[serviceId].filter(createFilterForTable(query)) : self.allTables;
+                       var tables = parseTableResponse(response.data);
+                       // Dont cache
+                       // self.allTables[serviceId] = parseTableResponse(response.data);
+                       var results = query ? tables.filter(createFilterForTable(query)) : tables;
                        deferred.resolve(results);
                    }, function (err) {
                        self.databaseConnectionError = true;
@@ -439,7 +447,7 @@
          * Validates the autocomplete has a selected table
          */
         function validate() {
-            if (self.theForm.tableAutocompleteInput) {
+            if (self.theForm != undefined && self.theForm.tableAutocompleteInput) {
 
                 if (self.selectedTable == undefined) {
                     self.theForm.tableAutocompleteInput.$setValidity("required", false);

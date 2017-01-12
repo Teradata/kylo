@@ -53,12 +53,12 @@ public class DBCPConnectionPoolTableInfo {
     @Qualifier("kerberosHiveConfiguration")
     private KerberosTicketConfiguration kerberosHiveConfiguration;
 
-    public List<String> getTableNamesForControllerService(String serviceId, String serviceName, String schema) {
+    public List<String> getTableNamesForControllerService(String serviceId, String serviceName, String schema, String tableName) {
         ControllerServiceDTO controllerService = getControllerService(serviceId, serviceName);
 
         if (controllerService != null) {
             DescribeTableWithControllerServiceBuilder builder = new DescribeTableWithControllerServiceBuilder(controllerService);
-            DescribeTableWithControllerService serviceProperties = builder.schemaName(schema).build();
+            DescribeTableWithControllerService serviceProperties = builder.schemaName(schema).tableName(tableName).build();
            return getTableNamesForControllerService(serviceProperties);
         } else {
             log.error("Cannot getTable Names for Controller Service. Unable to obtain Controller Service for serviceId or Name ({} , {})", serviceId, serviceName);
@@ -100,7 +100,7 @@ public class DBCPConnectionPoolTableInfo {
                      dataSourceProperties.getUrl());
             DataSource dataSource = PoolingDataSourceService.getDataSource(dataSourceProperties);
             DBSchemaParser schemaParser = new DBSchemaParser(dataSource, kerberosHiveConfiguration);
-            return schemaParser.listTables(serviceProperties.getSchemaName());
+            return schemaParser.listTables(serviceProperties.getSchemaName(), serviceProperties.getTableName());
         }
         return null;
     }
@@ -154,7 +154,7 @@ public class DBCPConnectionPoolTableInfo {
     }
 
 
-    private   PoolingDataSourceService.DataSourceProperties getDataSourceProperties(Map<String, String> properties, DescribeTableWithControllerService serviceProperties) {
+    public PoolingDataSourceService.DataSourceProperties getDataSourceProperties(Map<String, String> properties, DescribeTableWithControllerService serviceProperties) {
         String uri = properties.get(serviceProperties.getConnectionStringPropertyKey());
         String user = properties.get(serviceProperties.getUserNamePropertyKey());
         String password = properties.get(serviceProperties.getPasswordPropertyKey());
@@ -270,7 +270,7 @@ public class DBCPConnectionPoolTableInfo {
     }
 
 
-    private static class DescribeTableWithControllerService {
+    public static class DescribeTableWithControllerService {
 
         private String connectionStringPropertyKey;
         private String userNamePropertyKey;
@@ -354,8 +354,37 @@ public class DBCPConnectionPoolTableInfo {
             this.controllerServiceDTO = controllerServiceDTO;
         }
 
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
 
+            DescribeTableWithControllerService that = (DescribeTableWithControllerService) o;
 
+            if (connectionStringPropertyKey != null ? !connectionStringPropertyKey.equals(that.connectionStringPropertyKey) : that.connectionStringPropertyKey != null) {
+                return false;
+            }
+            if (controllerServiceName != null ? !controllerServiceName.equals(that.controllerServiceName) : that.controllerServiceName != null) {
+                return false;
+            }
+            if (controllerServiceId != null ? !controllerServiceId.equals(that.controllerServiceId) : that.controllerServiceId != null) {
+                return false;
+            }
+            return schemaName != null ? schemaName.equals(that.schemaName) : that.schemaName == null;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = connectionStringPropertyKey != null ? connectionStringPropertyKey.hashCode() : 0;
+            result = 31 * result + (controllerServiceName != null ? controllerServiceName.hashCode() : 0);
+            result = 31 * result + (controllerServiceId != null ? controllerServiceId.hashCode() : 0);
+            result = 31 * result + (schemaName != null ? schemaName.hashCode() : 0);
+            return result;
+        }
     }
 
 
