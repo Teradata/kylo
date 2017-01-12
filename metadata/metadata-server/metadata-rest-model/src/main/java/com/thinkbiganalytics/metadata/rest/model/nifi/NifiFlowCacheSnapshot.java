@@ -162,6 +162,11 @@ public class NifiFlowCacheSnapshot {
                                                                                               kyloProcessorFlowTypeRelationship -> kyloProcessorFlowTypeRelationship.getFlowType()));
     }
 
+    public boolean hasProcessorFlowTypesMapped(String feedName) {
+        Map<String, Set<KyloProcessorFlowTypeRelationship>> map = getFeedToProcessorIdToFlowTypeMap().get(feedName);
+        return map != null & !map.isEmpty();
+    }
+
 
     public Map<String, String> getAddProcessorIdToFeedNameMap() {
         if (addProcessorIdToFeedNameMap == null) {

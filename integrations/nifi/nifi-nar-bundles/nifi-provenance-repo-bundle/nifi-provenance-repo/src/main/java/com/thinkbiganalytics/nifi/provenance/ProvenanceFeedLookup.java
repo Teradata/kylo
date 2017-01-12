@@ -99,14 +99,17 @@ public class ProvenanceFeedLookup {
                 type = failureType;
             } else if (allType != null) {
                 type = allType;
+            } else if (!getFlowCache().hasProcessorFlowTypesMapped(event.getFeedName())) {
+                //If no processors are mapped for this feed and we got here via a failure event, then mark it as a failure
+                type = failureType;
             }
+
         } else {
             if (successType != null) {
                 type = successType;
             } else if (allType != null) {
                 type = allType;
             }
-
         }
         event.setProcessorType(type);
         log.debug("Setting the Flow Type as {} for Processor {} ({}) on Feed {}.  Flow Types: {} ", type, event.getComponentName(), event.getComponentId(), event.getFeedName(), flowTypes);
