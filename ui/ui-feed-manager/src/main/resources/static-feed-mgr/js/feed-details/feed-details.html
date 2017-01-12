@@ -152,7 +152,19 @@
                     <span class="hint">Category</span>
                 </div>
 
-                <div layout="row" layout-align="space-between center">
+              <md-divider></md-divider>
+              <div layout="column" class="layout-padding-top-bottom" layout-align="space-between start">
+                <div class="md-subheader layout-padding-bottom">Operations Manager</div>
+                <span class="layout-padding-bottom">
+                  <a href ng-click="vm.gotoFeedStats($event)">Operational Statistics</a>
+                </span>
+                <span class="layout-padding-bottom">
+                <a href ng-click="vm.gotoFeedDetails($event)" ng-if="!vm.model.isStream">Operational Job Details</a>
+                </span>
+              </div>
+
+
+              <div layout="row" layout-align="space-between center">
 <!--
                     <md-button ng-click="addAlert()" class="md-primary" ng-disabled="true" ng-if="vm.allowEdit">
                         ADD ALERT

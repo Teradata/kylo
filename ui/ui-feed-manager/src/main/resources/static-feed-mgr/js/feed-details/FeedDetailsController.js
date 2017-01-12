@@ -16,7 +16,8 @@
      * @param RegisterTemplateService
      * @param StateService
      */
-    var controller = function ($scope, $q, $stateParams, $mdDialog, $mdToast, $http, $state, AccessControlService, RestUrlService, FeedService, RegisterTemplateService, StateService, SideNavService, FileUpload) {
+    var controller = function ($scope, $q, $stateParams, $mdDialog, $mdToast, $http, $state, AccessControlService, RestUrlService, FeedService, RegisterTemplateService, StateService, SideNavService,
+                               FileUpload, ConfigurationService) {
 
         var SLA_INDEX = 3;
         var self = this;
@@ -362,6 +363,36 @@
             promise.then(successFn, errorFn);
             return promise;
         }
+
+        this.gotoFeedStats = function (ev) {
+            ev.preventDefault();
+            ev.stopPropagation();
+            var link = "#/feed-stats/" + self.model.systemCategoryName + "." + self.model.systemFeedName;
+            if (self.opsManagerUrl == undefined) {
+                $http.get(ConfigurationService.MODULE_URLS).then(function (response) {
+                    self.opsManagerUrl = response.data.opsMgr;
+                    window.location.href = window.location.origin + self.opsManagerUrl + link;
+                });
+            }
+            else {
+                window.location.href = window.location.origin + self.opsManagerUrl + link;
+            }
+        };
+
+        this.gotoFeedDetails = function (ev) {
+            ev.preventDefault();
+            ev.stopPropagation();
+            var link = "#/feed-details/" + self.model.systemCategoryName + "." + self.model.systemFeedName;
+            if (self.opsManagerUrl == undefined) {
+                $http.get(ConfigurationService.MODULE_URLS).then(function (response) {
+                    self.opsManagerUrl = response.data.opsMgr;
+                    window.location.href = window.location.origin + self.opsManagerUrl + link;
+                });
+            }
+            else {
+                window.location.href = window.location.origin + self.opsManagerUrl + link;
+            }
+        };
 
         init();
     };
