@@ -101,7 +101,7 @@ public class StatsModel {
         stats.setFlowFilesStarted(event.isStartOfCurrentFlowFile() ? 1L : 0L);
         stats.setFlowFilesFinished(event.getFlowFile().isCurrentFlowFileComplete() ? 1L : 0L);
         //only mark it failed if it is in the critical path
-        if (KyloProcessorFlowType.CRITICAL_FAILURE.equals(event.getProcessorType())) {
+        if (KyloProcessorFlowType.FAILURE.equals(event.getProcessorType())) {
             //mark the flow file as having a failed event.
             event.getFlowFile().addFailedEvent(event);
         }

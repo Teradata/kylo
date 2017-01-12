@@ -17,11 +17,11 @@ public class KyloProcessorFlowTypeRelationship {
 
     public static KyloProcessorFlowTypeRelationship DEFAULT = new KyloProcessorFlowTypeRelationship(ALL_RELATIONSHIP, KyloProcessorFlowType.NORMAL_FLOW);
 
-    public static KyloProcessorFlowTypeRelationship CRITICAL_FAILURE = new KyloProcessorFlowTypeRelationship(FAILURE_RELATIONSHIP, KyloProcessorFlowType.CRITICAL_FAILURE);
+    public static KyloProcessorFlowTypeRelationship FAILURE = new KyloProcessorFlowTypeRelationship(FAILURE_RELATIONSHIP, KyloProcessorFlowType.FAILURE);
 
     public static Set<KyloProcessorFlowTypeRelationship> DEFAULT_SET = newHashSet(KyloProcessorFlowTypeRelationship.DEFAULT);
 
-    public static Set<KyloProcessorFlowTypeRelationship> CRITICAL_FAILURE_SET = newHashSet(KyloProcessorFlowTypeRelationship.CRITICAL_FAILURE);
+    public static Set<KyloProcessorFlowTypeRelationship> FAILURE_SET = newHashSet(KyloProcessorFlowTypeRelationship.FAILURE);
 
     public KyloProcessorFlowTypeRelationship() {
 

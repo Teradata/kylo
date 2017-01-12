@@ -113,7 +113,7 @@ public class NifiFlowBuilder {
             Set<NifiFlowProcessor> sources = new HashSet<>(Collections2.transform(processor.getSources(), NIFI_PROCESSOR_DTO_TO_FLOW_PROCESSOR));
             Set<NifiFlowProcessor> failureProcessors = new HashSet<>(Collections2.transform(processor.getFailureProcessors(), PROCESSOR_DTO_TO_FLOW_PROCESSOR));
             if (inspectForFailureRelationships) {
-                flowProcessor.setProcessorFlowTypes(processor.isFailureProcessor() ? KyloProcessorFlowTypeRelationship.CRITICAL_FAILURE_SET : KyloProcessorFlowTypeRelationship.DEFAULT_SET);
+                flowProcessor.setProcessorFlowTypes(processor.isFailureProcessor() ? KyloProcessorFlowTypeRelationship.FAILURE_SET : KyloProcessorFlowTypeRelationship.DEFAULT_SET);
             }
             flowProcessor.setIsFailure(processor.isFailureProcessor());
             flowProcessor.setIsEnd(processor.isEnd());

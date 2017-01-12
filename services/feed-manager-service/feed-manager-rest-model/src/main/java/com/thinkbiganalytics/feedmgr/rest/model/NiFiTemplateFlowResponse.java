@@ -25,7 +25,7 @@ public class NiFiTemplateFlowResponse {
 
     public NiFiTemplateFlowResponse() {
         processorFlowTypes =
-            Lists.newArrayList(KyloProcessorFlowType.values()).stream().filter(flowType -> !flowType.equals(KyloProcessorFlowType.NORMAL_FLOW))
+            Lists.newArrayList(KyloProcessorFlowType.values()).stream().filter(flowType -> (!flowType.equals(KyloProcessorFlowType.NORMAL_FLOW) && !flowType.isDeprecated()))
                 .map(flowType -> new KyloProcessorFlowTypeOption(flowType)).collect(Collectors.toList());
     }
 

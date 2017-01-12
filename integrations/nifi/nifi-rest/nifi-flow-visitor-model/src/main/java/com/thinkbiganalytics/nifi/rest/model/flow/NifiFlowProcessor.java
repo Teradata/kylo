@@ -294,7 +294,7 @@ public class NifiFlowProcessor implements Serializable {
     public void setProcessorFlowTypes(Set<KyloProcessorFlowTypeRelationship> processorFlowTypes) {
         this.processorFlowTypes = processorFlowTypes;
         /*
-        if (KyloProcessorFlowType.CRITICAL_FAILURE.equals(processorFlowType)) {
+        if (KyloProcessorFlowType.FAILURE.equals(processorFlowType)) {
             setIsFailure(true);
         } else {
             setIsFailure(false);

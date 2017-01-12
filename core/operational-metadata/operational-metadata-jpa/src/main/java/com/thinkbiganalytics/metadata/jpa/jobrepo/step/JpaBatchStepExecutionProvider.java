@@ -179,10 +179,10 @@ public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider
             JpaBatchStepExecutionContextValue stepExecutionContext = new JpaBatchStepExecutionContextValue(stepExecution, "Kylo Flow Processor Type");
             stepExecutionContext.setStringVal(processorFlowType != null ? processorFlowType.getDisplayName() : "NULL");
             stepExecution.addStepExecutionContext(stepExecutionContext);
-            if (KyloProcessorFlowType.NON_CRITICAL_FAILURE.equals(event.getProcessorType())) {
+            if (KyloProcessorFlowType.WARNING.equals(event.getProcessorType())) {
                 stepExecution.setExitCode(ExecutionConstants.ExitCode.WARNING);
                 ((JpaBatchJobExecution) (stepExecution.getJobExecution())).setExitCode(ExecutionConstants.ExitCode.WARNING);
-            } else if (KyloProcessorFlowType.CRITICAL_FAILURE.equals(event.getProcessorType())) {
+            } else if (KyloProcessorFlowType.FAILURE.equals(event.getProcessorType())) {
                 stepExecution.setExitCode(ExecutionConstants.ExitCode.FAILED);
             }
 

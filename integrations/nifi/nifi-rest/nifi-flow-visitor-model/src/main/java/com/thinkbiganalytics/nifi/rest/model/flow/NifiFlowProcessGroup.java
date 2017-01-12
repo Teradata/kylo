@@ -214,7 +214,7 @@ public class NifiFlowProcessGroup {
         getProcessorMap().values().stream().forEach(nifiFlowProcessor -> nifiFlowProcessor.setCriticalPath(false));
         //walk back from the critical failure processors to determine all parents in the chain
         Set<NifiFlowProcessor> criticalPathLeafNodes =  getProcessorMap().values().stream()
-            .filter(flowProcessor -> KyloProcessorFlowType.CRITICAL_FAILURE.equals(flowProcessor.getProcessorFlowType())).collect(Collectors.toSet());
+            .filter(flowProcessor -> KyloProcessorFlowType.FAILURE.equals(flowProcessor.getProcessorFlowType())).collect(Collectors.toSet());
         criticalPathLeafNodes.stream().filter(nifiFlowProcessor -> !criticalPathProcessors.contains(nifiFlowProcessor)).forEach(nifiFlowProcessor -> nifiFlowProcessor.populateCriticalPathOnSources(criticalPathProcessors));
         return criticalPathProcessors;
     }

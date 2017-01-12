@@ -7,17 +7,31 @@ import java.io.Serializable;
  */
 public enum KyloProcessorFlowType implements Serializable {
 
-    CRITICAL_FAILURE("Critical Failure", "If this processor is triggered it will fail the job in Kylo"),
-    NON_CRITICAL_FAILURE("Non Critical Failure", "If this processor is triggered it will fail the step execution in in Kylo, but the job will not fail."),
+    @Deprecated
+    CRITICAL_FAILURE("Critical Failure", "If this processor is triggered it will fail the job in Kylo", true),
+    @Deprecated
+    NON_CRITICAL_FAILURE("Non Critical Failure", "If this processor is triggered it will fail the step execution in in Kylo, but the job will not fail.", true),
+    FAILURE("Failure", "If this processor is triggered it will fail the job in Kylo."),
+    WARNING("Warning", "If this processor is triggered it will mark the step execution as a warning, but the job will not fail in Kylo."),
     NORMAL_FLOW("Normal", "This is the default state for all processors unless specified otherwise");
-    //  WARNING("Warning", "If this processor is triggered it will show as a Warning in Kylo, but job will not fail");
 
     private String displayName;
     private String description;
+    private boolean deprecated;
 
     KyloProcessorFlowType(String displayName, String desc) {
         this.displayName = displayName;
         this.description = desc;
+    }
+
+    KyloProcessorFlowType(String displayName, String desc, boolean deprecated) {
+        this.displayName = displayName;
+        this.description = desc;
+        this.deprecated = true;
+    }
+
+    public boolean isDeprecated() {
+        return deprecated;
     }
 
     public String getDisplayName() {

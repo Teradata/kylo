@@ -120,7 +120,7 @@ public class ProvenanceFeedLookup {
         }
         ;
         if (processorFlowType != null) {
-            return KyloProcessorFlowType.CRITICAL_FAILURE.equals(processorFlowType);
+            return KyloProcessorFlowType.FAILURE.equals(processorFlowType);
         } else {
             return false;
         }
