@@ -390,6 +390,20 @@ angular.module(MODULE_FEED_MGR).factory('FeedService',
                 }
             },
 
+            updateEnabledMergeStrategy : function (feedModel, strategies) {
+                // If data transformation then only support sync
+                if (feedModel.dataTransformationFeed) {
+                    feedModel.table.targetMergeStrategy = 'SYNC';
+                    angular.forEach(strategies, function(strat) {
+                            strat.disabled = true;
+                    });
+                } else {
+                    this.enableDisablePkMergeStrategy(feedModel, strategies);
+                    this.enableDisableRollingSyncMergeStrategy(feedModel,strategies);
+                }
+
+            },
+
             hasPartitions: function (feedModel) {
                 return feedModel.table.partitions != null
                        && feedModel.table.partitions != undefined

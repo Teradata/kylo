@@ -43,8 +43,7 @@
         }
 
         this.mergeStrategies = angular.copy(FeedService.mergeStrategies);
-        FeedService.enableDisablePkMergeStrategy(self.model, self.mergeStrategies);
-        FeedService.enableDisableRollingSyncMergeStrategy(self.model, self.mergeStrategies);
+        FeedService.updateEnabledMergeStrategy(self.model, self.mergeStrategies);
         this.permissionGroups = ['Marketing','Human Resources','Administrators','IT'];
 
         BroadcastService.subscribe($scope, StepperService.ACTIVE_STEP_EVENT, onActiveStep)
