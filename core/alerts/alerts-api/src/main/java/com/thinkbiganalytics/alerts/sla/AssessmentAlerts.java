@@ -13,7 +13,9 @@ import com.thinkbiganalytics.alerts.spi.AlertDescriptor;
  */
 public interface AssessmentAlerts {
     
-    static final URI VIOLATION_ALERT_TYPE = URI.create("urn:alert:sla::violation");
+    static final URI SLA_ALERT_TYPE = URI.create("http://kylo.io/alert/sla");
+    static final URI VIOLATION_ALERT_TYPE = URI.create(SLA_ALERT_TYPE + "/violation");
+    
     
     static final AlertDescriptor VIOLATION_ALERT = new AlertDescriptor(VIOLATION_ALERT_TYPE,
                                                                        "application/x-java-serialized-object",

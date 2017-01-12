@@ -6,11 +6,9 @@ package com.thinkbiganalytics.metadata.jpa.alerts;
 import java.io.Serializable;
 import java.security.Principal;
 
-import javax.persistence.AttributeConverter;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Embeddable;
-import javax.persistence.Embedded;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Table;
@@ -22,7 +20,6 @@ import com.thinkbiganalytics.alerts.api.Alert;
 import com.thinkbiganalytics.alerts.api.Alert.State;
 import com.thinkbiganalytics.alerts.api.AlertChangeEvent;
 import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlert.AlertContentConverter;
-import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlert.AlertId;
 import com.thinkbiganalytics.security.UsernamePrincipal;
 
 /**
@@ -37,9 +34,8 @@ public class JpaAlertChangeEvent implements AlertChangeEvent, Comparable<AlertCh
     @Column(name = "CHANGE_TIME")
     private DateTime changeTime;
 
-    @Convert(converter = UsernamePrincipalConverter.class)
     @Column(name = "USER", columnDefinition = "varchar(128)")
-    private UsernamePrincipal user;
+    private String username;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "STATE", nullable = false)
@@ -67,9 +63,11 @@ public class JpaAlertChangeEvent implements AlertChangeEvent, Comparable<AlertCh
     
     public JpaAlertChangeEvent(State state, Principal user, String descr, Serializable content) {
         super();
+        this.changeTime = DateTime.now();
         this.state = state;
         this.description = descr;
         this.content = content;
+        this.username = user != null ? user.getName() : null;
     }
 
 
@@ -86,7 +84,7 @@ public class JpaAlertChangeEvent implements AlertChangeEvent, Comparable<AlertCh
      */
     @Override
     public Principal getUser() {
-        return this.user;
+        return new UsernamePrincipal(this.username);
     }
 
     /* (non-Javadoc)
@@ -118,8 +116,12 @@ public class JpaAlertChangeEvent implements AlertChangeEvent, Comparable<AlertCh
         this.changeTime = changeTime;
     }
     
-    public void setUser(UsernamePrincipal user) {
-        this.user = user;
+    public String getUsername() {
+        return username;
+    }
+    
+    public void setUsername(String user) {
+        this.username = user;
     }
 
     public void setState(Alert.State state) {
@@ -138,19 +140,6 @@ public class JpaAlertChangeEvent implements AlertChangeEvent, Comparable<AlertCh
     public int compareTo(AlertChangeEvent that) {
         int result = that.getChangeTime().compareTo(this.changeTime);
         return result == 0 ? this.state.compareTo(that.getState()) : result;
-    }
-
-    
-    public static class UsernamePrincipalConverter implements AttributeConverter<Principal, String> {
-        @Override
-        public String convertToDatabaseColumn(Principal principal) {
-            return principal.getName();
-        }
-
-        @Override
-        public Principal convertToEntityAttribute(String dbData) {
-            return new UsernamePrincipal(dbData);
-        }
     }
 
 }

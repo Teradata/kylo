@@ -72,16 +72,6 @@ public class AlertsController {
         provider.getAlerts(criteria).forEachRemaining(a -> alerts.add(a));
         return new AlertRange(alerts.stream().map(a -> toModel(a)).collect(Collectors.toList()));
     }
-//    
-//    @GET
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public AlertRange getAlerts(@Context UriInfo uriInfo) {
-//        List<Alert> alerts = new ArrayList<>();
-//        AlertCriteria criteria = createCriteria(uriInfo);
-//        
-//        provider.getAlerts(criteria).forEachRemaining(a -> alerts.add(a));
-//        return new AlertRange(alerts.stream().map(a -> toModel(a)).collect(Collectors.toList()));
-//    }
     
     @GET
     @Path("{id}")
@@ -166,6 +156,7 @@ public class AlertsController {
         result.setCreatedTime(event.getChangeTime());
         result.setDescription(event.getDescription());
         result.setState(toModel(event.getState()));
+        result.setUser(event.getUser() != null ? event.getUser().getName() : null);
         return result;
     }
 

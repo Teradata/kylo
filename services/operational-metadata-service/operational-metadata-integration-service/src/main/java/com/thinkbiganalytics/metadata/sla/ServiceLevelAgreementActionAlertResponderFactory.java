@@ -52,7 +52,7 @@ public class ServiceLevelAgreementActionAlertResponderFactory implements AlertRe
     @Override
     public void alertChange(Alert alert, AlertResponse response) {
         if (alert.getEvents().get(0).getState() == Alert.State.UNHANDLED) {
-            if (alert.getType().equals(AssessmentAlerts.VIOLATION_ALERT.getAlertType())) {
+            if (alert.getType().equals(AssessmentAlerts.VIOLATION_ALERT_TYPE)) {
                 try {
                     response.inProgress("Handling SLA Alert");
                     handleViolation(alert);

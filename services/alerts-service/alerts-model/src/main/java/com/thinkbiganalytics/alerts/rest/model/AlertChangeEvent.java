@@ -22,6 +22,7 @@ public class AlertChangeEvent {
     private DateTime createdTime;
     private State state;
     private String description;
+    private String user;
 
     public DateTime getCreatedTime() {
         return createdTime;
@@ -46,4 +47,13 @@ public class AlertChangeEvent {
     public void setDescription(String description) {
         this.description = description;
     }
+
+    public String getUser() {
+        return user;
+    }
+
+    public void setUser(String user) {
+        this.user = user;
+    }
+    
 }
