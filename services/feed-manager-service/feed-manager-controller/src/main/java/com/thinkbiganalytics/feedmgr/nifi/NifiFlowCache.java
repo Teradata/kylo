@@ -32,6 +32,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -107,7 +110,17 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
 
     private Map<String, Long> feedLastUpated = new ConcurrentHashMap<>();
 
+    /**
+     * Map of the sync id to cache
+     */
     private Map<String, NiFiFlowCacheSync> syncMap = new ConcurrentHashMap<>();
+
+
+    /**
+     * Map with the sync Id and the last time that item was sync'd with the system
+     * This is used to expire the stale non used caches
+     */
+    private Map<String, DateTime> lastSyncTimeMap = new ConcurrentHashMap<>();
 
     private DateTime lastUpdated = null;
 
@@ -144,6 +157,7 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
     private void init() {
         nifiConnectionService.subscribeConnectionListener(this);
         modeShapeAvailability.subscribe(this);
+        initExpireTimerThread();
     }
 
     private void checkAndInitializeCache() {
@@ -226,6 +240,9 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
 
 
     private NiFiFlowCacheSync syncAndReturnUpdates(NiFiFlowCacheSync sync, boolean preview) {
+        if (!preview) {
+            lastSyncTimeMap.put(sync.getSyncId(), DateTime.now());
+        }
         if (sync.needsUpdate(lastUpdated)) {
             Map<String, String> processorIdToFeedNameMapCopy = ImmutableMap.copyOf(processorIdToFeedNameMap);
             Map<String, String> processorIdToFeedProcessGroupIdCopy = ImmutableMap.copyOf(processorIdToFeedProcessGroupId);
@@ -518,6 +535,32 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
 
         public void setCachedSyncIds(Integer cachedSyncIds) {
             this.cachedSyncIds = cachedSyncIds;
+        }
+    }
+
+
+    private void initExpireTimerThread() {
+        long timer = 30; // run ever 30 sec to check and expire
+        ScheduledExecutorService service = Executors
+            .newSingleThreadScheduledExecutor();
+        service.scheduleAtFixedRate(() -> {
+            checkAndExpireUnusedCache();
+        }, timer, timer, TimeUnit.SECONDS);
+
+
+    }
+
+    public void checkAndExpireUnusedCache() {
+        try {
+            long expireAfter = 30 * 1000 * 60; //30 min
+            //find cache items that havent been synced in allotted time
+            lastSyncTimeMap.entrySet().stream().filter(entry -> ((DateTime.now().getMillis() - entry.getValue().getMillis()) > expireAfter)).forEach(entry -> {
+                syncMap.remove(entry.getKey());
+                log.info("Expiring Cache {}.", entry.getKey());
+            });
+
+        } catch (Exception e) {
+            log.error("Error attempting to invalidate flow cache for items not touched in 30 or more minutes", e);
         }
     }
 
