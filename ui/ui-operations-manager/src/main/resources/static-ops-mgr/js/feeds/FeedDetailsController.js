@@ -16,6 +16,8 @@
         //Track active requests and be able to cancel them if needed
         this.activeRequests = []
 
+        BroadcastService.subscribe($scope, 'ABANDONED_ALL_JOBS', abandonedAllJobs);
+
         getFeedHealth();
         getFeedNames();
         setRefreshInterval();
@@ -133,15 +135,10 @@
             abortActiveRequests();
         });
 
-        self.abandonAllJobs = function(event, feed) {
-            event.stopPropagation();
-            event.preventDefault();
-            JobData.abandonAllJobs(feed.feed, function() {
-                getFeedHealth();
-                //broadcast so that other directives can update themselves
-                BroadcastService.notify('ABANDONED_ALL_JOBS', feed);
-            })
-        };
+        function abandonedAllJobs() {
+            getFeedHealth();
+        }
+
 
 
     };

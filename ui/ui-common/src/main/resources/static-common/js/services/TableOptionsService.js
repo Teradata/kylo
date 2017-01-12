@@ -23,6 +23,17 @@ angular.module(COMMON_APP_MODULE_NAME).service('TableOptionsService', ['Paginati
       return sortOptions;
     }
 
+    this.newOption = function (label, type, isHeader, disabled, icon) {
+        if (isHeader == undefined) {
+            isHeader = false;
+        }
+        if (disabled == undefined) {
+            disabled = false;
+        }
+        return {label: label, type: type, header: isHeader, icon: icon, disabled: disabled};
+    }
+
+
     function clearOtherSorts(key,option){
         var sortOptions = self.sortOptions[key];
         if(sortOptions) {

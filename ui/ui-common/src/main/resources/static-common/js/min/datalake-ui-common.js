@@ -447,7 +447,10 @@ angular.module(COMMON_APP_MODULE_NAME).directive("cardLayout", function($compile
             filterModelOptions: '=?',
             sortOptions:'=',
             pageName:'@',
-            onSelectedOption:'&'
+            onSelectedOption: '&',
+            additionalOptions: '=?',
+            onSelectedAdditionalOption: "&?",
+            onMenuOpen: '&?'
         },
         controllerAs:'$cardFilterHeader',
         templateUrl:'js/shared/card-filter-header/card-filter-header-template.html',
@@ -472,6 +475,22 @@ angular.module(COMMON_APP_MODULE_NAME).directive("cardLayout", function($compile
                      if(self.onSelectedOption){
                         self.onSelectedOption()(option);
                     }
+                }
+            }
+
+            this.selectedAdditionalOption = function (option) {
+                if (self.onSelectedAdditionalOption) {
+                    self.onSelectedAdditionalOption()(option);
+                }
+            }
+
+            /**
+             *
+             * @param options {sortOptions:self.sortOptions,additionalOptions:self.additionalOptions}
+             */
+            this.menuOpen = function (options) {
+                if (self.onMenuOpen) {
+                    self.onMenuOpen()(options);
                 }
             }
         }
@@ -1746,7 +1765,9 @@ angular.module(COMMON_APP_MODULE_NAME).service('NotificationService', function (
                 tabs:'=',
                 rowsPerPageOptions:"=",
                 showViewType:'=',
-                showPagination:'='
+                showPagination: '=',
+                additionalOptions: '=?',
+                selectedAdditionalOption: "&?",
             },
             templateUrl: 'js/shared/options-menu/options-menu-template.html',
             link: function ($scope, element, attrs) {
@@ -1793,7 +1814,7 @@ angular.module(COMMON_APP_MODULE_NAME).service('NotificationService', function (
 
                     originatorEv = ev;
                     if($scope.openedMenu) {
-                        $scope.openedMenu();
+                        $scope.openedMenu()({sortOptions: $scope.sortOptions, additionalOptions: $scope.additionalOptions});
                     }
                     if($scope.showPagination) {
                         var tabData = PaginationDataService.getActiveTabData($scope.menuKey);
@@ -1803,6 +1824,23 @@ angular.module(COMMON_APP_MODULE_NAME).service('NotificationService', function (
                     $mdOpenMenu(ev);
                 };
 
+                /**
+                 * Selected an additional option
+                 * @param item
+                 */
+                $scope.selectAdditionalOption = function (item) {
+                    var itemCopy = {};
+                    angular.extend(itemCopy, item);
+
+                    if ($scope.selectedAdditionalOption) {
+                        $scope.selectedAdditionalOption()(itemCopy);
+                    }
+                }
+
+                /**
+                 * Selected a Sort Option
+                 * @param item
+                 */
                 $scope.selectOption = function(item) {
 
                     var itemCopy = {};
@@ -2241,6 +2279,17 @@ angular.module(COMMON_APP_MODULE_NAME).service('TableOptionsService', ['Paginati
       return sortOptions;
     }
 
+    this.newOption = function (label, type, isHeader, disabled, icon) {
+        if (isHeader == undefined) {
+            isHeader = false;
+        }
+        if (disabled == undefined) {
+            disabled = false;
+        }
+        return {label: label, type: type, header: isHeader, icon: icon, disabled: disabled};
+    }
+
+
     function clearOtherSorts(key,option){
         var sortOptions = self.sortOptions[key];
         if(sortOptions) {
@@ -2358,13 +2407,16 @@ angular.module(COMMON_APP_MODULE_NAME).service('TableOptionsService', ['Paginati
     return returnedSortOption;
 }
 
-
-
-}]);angular.module("datalakeui.common").run(["$templateCache", function($templateCache) {$templateCache.put("js/shared/about-kylo/about.html","<!--\n  About Kylo popup page\n-->\n<md-dialog aria-label=\"About Kylo\" flex=\"25\">\n  <md-dialog-content>\n    <p style=\"text-align:center;\"><img src=\"/ui-common/img/kylo-logo-orange.png\" style=\"width:300px;\"</p>\n    <p style=\"text-align:center;\"><b>Version:</b> {{version}}</p>\n    <table cellpadding=\"10\">\n      <tr>\n        <td>\n          <p style=\"text-align:justify\">The Kylo framework simplifies building, configuring, deploying and monitoring data pipelines.\n            It enables data profiling, data discovery and data science. Businesses can quickly start leveraging value from their enterprise data lakes.\n          </p>\n          <p style=\"text-align:justify\"><i>Click on the Think Big logo to learn more.</i></p>\n        </td>\n        <td>\n          <a href=\"https://www.thinkbiganalytics.com/kylo/\" target=\"_blank\">\n            <img src=\"/ui-common/img/think-big-logo.png\" style=\"width:100px;height:100px;\">\n          </a>\n        </td>\n      </tr>\n    </table>\n  </md-dialog-content>\n  <md-dialog-actions>\n    <md-button ng-click=\"cancel();\" class=\"md-primary\">Close</md-button>\n  </md-dialog-actions>\n</md-dialog>");
-$templateCache.put("js/shared/card-filter-header/card-filter-header-template.html"," <div style=\"white-space: nowrap;margin-top:10px;\" class=\"card-title\">{{::$cardFilterHeader.cardTitle}}</div>\n        <span flex=\"5\"></span>\n        <md-input-container flex style=\"margin-top:0px;margin-bottom:0px;\">\n            <label>Filter</label>\n            <input ng-model=\"$cardFilterHeader.filterModel\" ng-model-options=\"$cardFilterHeader.filterModelOptions\"/>\n        </md-input-container>\n <div layout=\"row\" layout-align=\"space-between center\">\n           <tba-view-type-selection view-type=\"$cardFilterHeader.viewType\" style=\"margin-left:10px;\"></tba-view-type-selection>\n           <tba-options-menu sort-options=\"$cardFilterHeader.sortOptions\" show-pagination=\"false\" menu-key=\"{{$cardFilterHeader.pageName}}\" selected-option=\"$cardFilterHeader.selectedOption\" show-view-type=\"false\" menu-icon=\"more_vert\"></tba-options-menu>\n</div>\n");
+}]);
+angular.module("datalakeui.common").run(["$templateCache", function ($templateCache) {
+    $templateCache.put("js/shared/card-filter-header/card-filter-header-template.html",
+        " <div style=\"white-space: nowrap;margin-top:10px;\" class=\"card-title\">{{::$cardFilterHeader.cardTitle}}</div>\n        <span flex=\"5\"></span>\n        <md-input-container flex style=\"margin-top:0px;margin-bottom:0px;\">\n            <label>Filter</label>\n            <input ng-model=\"$cardFilterHeader.filterModel\" ng-model-options=\"$cardFilterHeader.filterModelOptions\"/>\n        </md-input-container>\n <div layout=\"row\" layout-align=\"space-between center\">\n           <tba-view-type-selection view-type=\"$cardFilterHeader.viewType\" style=\"margin-left:10px;\"></tba-view-type-selection>\n           <tba-options-menu sort-options=\"$cardFilterHeader.sortOptions\" show-pagination=\"false\" menu-key=\"{{$cardFilterHeader.pageName}}\" selected-option=\"$cardFilterHeader.selectedOption\" opened-menu=\"$cardFilterHeader.menuOpen\" additional-options=\"$cardFilterHeader.additionalOptions\" selected-additional-option=\"$cardFilterHeader.selectedAdditionalOption\"  show-view-type=\"false\" menu-icon=\"more_vert\"></tba-options-menu>\n</div>\n");
 $templateCache.put("js/shared/card-layout/card-layout-template.html","<section class=\"md-whiteframe-z1 {{::cardCss}}\">\n     <div  ng-transclude=\"header1\" class=\"card-toolbar  {{::headerCss}}\" >\n\n    </div>\n    <md-content  ng-transclude=\"body1\" class=\"card-layout-body {{::bodyCss}}\" >\n\n    </md-content>\n\n</section>");
+    $templateCache.put("js/shared/about-kylo/about.html",
+        "<!--\n  About Kylo popup page\n-->\n<md-dialog aria-label=\"About Kylo\" flex=\"25\">\n  <md-dialog-content>\n    <p style=\"text-align:center;\"><img src=\"/ui-common/img/kylo-logo-orange.png\" style=\"width:300px;\"</p>\n    <p style=\"text-align:center;\"><b>Version:</b> {{version}}</p>\n    <table cellpadding=\"10\">\n      <tr>\n        <td>\n          <p style=\"text-align:justify\">The Kylo framework simplifies building, configuring, deploying and monitoring data pipelines.\n            It enables data profiling, data discovery and data science. Businesses can quickly start leveraging value from their enterprise data lakes.\n          </p>\n          <p style=\"text-align:justify\"><i>Click on the Think Big logo to learn more.</i></p>\n        </td>\n        <td>\n          <a href=\"https://www.thinkbiganalytics.com/kylo/\" target=\"_blank\">\n            <img src=\"/ui-common/img/think-big-logo.png\" style=\"width:100px;height:100px;\">\n          </a>\n        </td>\n      </tr>\n    </table>\n  </md-dialog-content>\n  <md-dialog-actions>\n    <md-button ng-click=\"cancel();\" class=\"md-primary\">Close</md-button>\n  </md-dialog-actions>\n</md-dialog>");
 $templateCache.put("js/shared/kylo-options/kylo-options.html","<!--\n    Popup menu\n-->\n<md-menu >\n  <md-button aria-label=\"Options\" class=\"md-icon-button\" style=\"margin-top:-10px\" ng-click=\"openMenu($mdOpenMenu, $event)\">\n    <ng-md-icon icon=\"{{menuIcon}}\"></ng-md-icon>\n  </md-button>\n  <md-menu-content width=\"3\" >\n    <md-menu-item layout=\"column\">\n      <md-button ng-click=\"aboutKylo()\" md-prevent-menu-close=\"md-prevent-menu-close\">\n        <span style=\"float:left;\">About Kylo</span>\n      </md-button>\n    </md-menu-item>\n  </md-menu-content>\n</md-menu>");
-$templateCache.put("js/shared/options-menu/options-menu-template.html","\n<md-menu >\n    <md-button aria-label=\"Options\" class=\"md-icon-button\" style=\"margin-top:-10px\" ng-click=\"openMenu($mdOpenMenu, $event)\">\n        <ng-md-icon icon=\"{{menuIcon}}\"></ng-md-icon>\n    </md-button>\n    <md-menu-content width=\"3\" >\n        <md-menu-item ng-if=\"showPagination\" >\n            <md-input-container>\n                <label>Rows per page</label>\n                <md-select class=\"\" ng-model=\"paginationData.rowsPerPage\" >\n                    <md-option ng-repeat=\"x in paginationData.rowsPerPageOptions\" value=\"{{x}}\">\n                        {{x}}\n                    </md-option>\n                </md-select>\n            </md-input-container >\n        </md-menu-item>\n        <md-menu-item  class=\"md-menu-item-header\" ng-if=\"showViewType == true\">\n            <span md-menu-align-target  class=\"md-subheader md-menu-item-header\">View Options</span>\n        </md-menu-item>\n        <md-menu-item layout=\"column\" ng-if=\"showViewType == true\">\n            <md-button ng-click=\"selectOption(viewType)\" md-prevent-menu-close=\"md-prevent-menu-close\">\n                <span style=\"float:left;\">{{viewType.label}}</span>\n                <span style=\"float:right;\"><ng-md-icon icon=\"{{viewType.icon}}\"></ng-md-icon></span>\n            </md-button>\n        </md-menu-item>\n        <md-menu-item class=\"md-menu-item-header\">\n            <span md-menu-align-target  class=\"md-subheader md-menu-item-header\">Sort Options</span>\n         </md-menu-item>\n        <md-menu-item ng-repeat=\"item in sortOptions\" layout=\"column\">\n            <md-button ng-click=\"selectOption(item)\" md-prevent-menu-close=\"md-prevent-menu-close\">\n                <span style=\"float:left;\">{{item.label}}</span>\n                <span  ng-if=\"item.icon && item.icon != \'\'\" style=\"float:right;\"><ng-md-icon icon=\"{{item.icon}}\"></ng-md-icon></span>\n            </md-button>\n        </md-menu-item>\n    </md-menu-content>\n</md-menu>");
+    $templateCache.put("js/shared/options-menu/options-menu-template.html",
+        "\n<md-menu >\n    <md-button aria-label=\"Options\" class=\"md-icon-button\" style=\"margin-top:-10px\" ng-click=\"openMenu($mdOpenMenu, $event)\">\n        <ng-md-icon icon=\"{{menuIcon}}\"></ng-md-icon>\n    </md-button>\n    <md-menu-content width=\"3\" >\n        <md-menu-item ng-if=\"showPagination\" >\n            <md-input-container>\n                <label>Rows per page</label>\n                <md-select class=\"\" ng-model=\"paginationData.rowsPerPage\" >\n                    <md-option ng-repeat=\"x in paginationData.rowsPerPageOptions\" value=\"{{x}}\">\n                        {{x}}\n                    </md-option>\n                </md-select>\n            </md-input-container >\n        </md-menu-item>\n        <md-menu-item  class=\"md-menu-item-header\" ng-if=\"showViewType == true\">\n            <span md-menu-align-target  class=\"md-subheader md-menu-item-header\">View Options</span>\n        </md-menu-item>\n        <md-menu-item layout=\"column\" ng-if=\"showViewType == true\">\n            <md-button ng-click=\"selectOption(viewType)\" md-prevent-menu-close=\"md-prevent-menu-close\">\n                <span style=\"float:left;\">{{viewType.label}}</span>\n                <span style=\"float:right;\"><ng-md-icon icon=\"{{viewType.icon}}\"></ng-md-icon></span>\n            </md-button>\n        </md-menu-item>\n        <md-menu-item class=\"md-menu-item-header\">\n            <span md-menu-align-target  class=\"md-subheader md-menu-item-header\">Sort Options</span>\n         </md-menu-item>\n        <md-menu-item ng-repeat=\"item in sortOptions\" layout=\"column\">\n            <md-button ng-click=\"selectOption(item)\" md-prevent-menu-close=\"md-prevent-menu-close\">\n                <span style=\"float:left;\">{{item.label}}</span>\n                <span  ng-if=\"item.icon && item.icon != \'\'\" style=\"float:right;\"><ng-md-icon icon=\"{{item.icon}}\"></ng-md-icon></span>\n            </md-button>\n        </md-menu-item>\n        <md-menu-divider ng-if=\"additionalOptions && additionalOptions.length >0\" ></md-menu-divider>\n        <md-menu-item ng-if=\"additionalOptions && additionalOptions.length >0\" ng-repeat=\"item in additionalOptions\" ng-class=\"{\'md-menu-item-header\': item.header}\">\n             <span md-menu-align-target  class=\"md-subheader md-menu-item-header\" ng-if=\"item.header\">{{item.label}}</span>\n            <md-button ng-click=\"selectAdditionalOption(item)\" md-prevent-menu-close=\"md-prevent-menu-close\" ng-if=\"!item.header\" ng-disabled=\"item.disabled\">\n                <span style=\"float:left;\">{{item.label}}</span>\n                <span  ng-if=\"item.icon && item.icon != \'\'\" style=\"float:right;\"><ng-md-icon icon=\"{{item.icon}}\"></ng-md-icon></span>\n            </md-button>\n        </md-menu-item>\n    </md-menu-content>\n</md-menu>");
 $templateCache.put("js/shared/ui-router-breadcrumbs/uiBreadcrumbs.tpl.html","<div ng-if=\"lastBreadcrumbs.length == 2\" layout-align=\"center\" style=\"white-space: nowrap\">\n<md-button class=\"icon-btn\" ng-click=\"navigate( lastBreadcrumbs[0])\">\n    <ng-md-icon md-icon icon=\"keyboard_arrow_left\"></ng-md-icon>\n</md-button>\n  <span>  {{ lastBreadcrumbs[0].displayName }}</span>\n</div>\n<div ng-if=\"lastBreadcrumbs.length == 1\" style=\"white-space: nowrap\">\n{{ lastBreadcrumbs[0].displayName }}\n</div>\n");
 $templateCache.put("js/shared/vertical-section-layout/vertical-section-layout-template.html","<div layout=\"column\" class=\"layout-padding-left\" style=\"padding-top:10px;\" >\n    <div >\n        <div layout=\"row\" layout-align=\"start stretch\">\n            <ng-md-icon icon=\"check\" style=\"fill:#009933;margin-left: -9px;\" ng-if=\"showVerticalCheck == true\"></ng-md-icon>\n            <span class=\"md-subhead layout-padding-left\"  >{{sectionTitle}}</span>\n            <span flex></span>\n            <md-button class=\"icon-btn md-icon-button md-primary\" ng-click=\"edit($event)\" ng-if=\"allowEdit ==true && !editable\">\n                <ng-md-icon icon=\"edit\"></ng-md-icon>\n            </md-button>\n            <md-button class=\"icon-btn md-icon-button\" ng-click=\"cancel($event)\" ng-if=\"allowEdit ==true && editable\">\n                <ng-md-icon icon=\"cancel\" style=\"fill:grey;\"></ng-md-icon>\n            </md-button>\n        </div>\n\n        <div class=\"vertical-step-border\">\n            <div ng-if=\"!editable\" class=\"md-padding\">\n            <div ng-transclude=\"readonly\" >\n                REadonly SEction\n\n            </div>\n            </div>\n            <div ng-if=\"editable == true\" class=\"md-padding\">\n            <form name=\"{{formName}}\">\n                <div ng-transclude=\"editable\" >\n                    Editable SEction\n\n                </div>\n                <div layout=\"row\" layout-align=\"end center\">\n                    <md-button ng-click=\"delete($event)\" ng-disabled=\"allowDelete == false\" ng-if=\"onDelete !== undefined && isDeleteVisible == true\">Delete</md-button>\n                    <span flex></span>\n                    <md-button ng-click=\"cancel($event)\">Cancel</md-button>\n                    <md-button class=\"md-primary md-raised\" ng-click=\"save($event)\"\n                               ng-disabled=\"isValid == false || (theForm != undefined && theForm.$invalid != undefined && theForm.$invalid == true)\">Save\n                    </md-button>\n                </div>\n                </form>\n            </div>\n\n        </div>\n    </div>\n\n</div>");
 $templateCache.put("js/shared/view-type-selection/view-type-selection-template.html","<span class=\"md-button-group\" layout-align=\"center center\">\n    <md-button class=\"icon-btn\"\n               ng-click=\"viewTypeChanged(\'table\')\"\n               ng-class=\"{\'selected\' : viewType == \'table\'}\">\n        <ng-md-icon md-icon icon=\"list\"></ng-md-icon>\n    </md-button>\n    <md-button class=\"icon-btn\" ng-click=\"viewTypeChanged(\'list\')\"\n                           ng-class=\"{\'selected\' : viewType == \'list\'}\">\n    <ng-md-icon md-icon icon=\"view_list\"></ng-md-icon>\n</md-button>\n</span>");

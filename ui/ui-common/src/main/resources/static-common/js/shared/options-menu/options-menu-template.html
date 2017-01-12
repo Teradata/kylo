@@ -32,5 +32,13 @@
                 <span  ng-if="item.icon && item.icon != ''" style="float:right;"><ng-md-icon icon="{{item.icon}}"></ng-md-icon></span>
             </md-button>
         </md-menu-item>
+        <md-menu-divider ng-if="additionalOptions && additionalOptions.length >0"></md-menu-divider>
+        <md-menu-item ng-if="additionalOptions && additionalOptions.length >0" ng-repeat="item in additionalOptions" ng-class="{'md-menu-item-header': item.header}">
+            <span md-menu-align-target class="md-subheader md-menu-item-header" ng-if="item.header">{{item.label}}</span>
+            <md-button ng-click="selectAdditionalOption(item)" md-prevent-menu-close="md-prevent-menu-close" ng-if="!item.header" ng-disabled="item.disabled">
+                <span style="float:left;">{{item.label}}</span>
+                <span ng-if="item.icon && item.icon != ''" style="float:right;"><ng-md-icon icon="{{item.icon}}"></ng-md-icon></span>
+            </md-button>
+        </md-menu-item>
     </md-menu-content>
 </md-menu>

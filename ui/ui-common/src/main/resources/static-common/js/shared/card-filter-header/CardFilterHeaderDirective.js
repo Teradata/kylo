@@ -8,7 +8,10 @@ angular.module(COMMON_APP_MODULE_NAME).directive("tbaCardFilterHeader", function
             filterModelOptions: '=?',
             sortOptions:'=',
             pageName:'@',
-            onSelectedOption:'&'
+            onSelectedOption: '&',
+            additionalOptions: '=?',
+            onSelectedAdditionalOption: "&?",
+            onMenuOpen: '&?'
         },
         controllerAs:'$cardFilterHeader',
         templateUrl:'js/shared/card-filter-header/card-filter-header-template.html',
@@ -33,6 +36,22 @@ angular.module(COMMON_APP_MODULE_NAME).directive("tbaCardFilterHeader", function
                      if(self.onSelectedOption){
                         self.onSelectedOption()(option);
                     }
+                }
+            }
+
+            this.selectedAdditionalOption = function (option) {
+                if (self.onSelectedAdditionalOption) {
+                    self.onSelectedAdditionalOption()(option);
+                }
+            }
+
+            /**
+             *
+             * @param options {sortOptions:self.sortOptions,additionalOptions:self.additionalOptions}
+             */
+            this.menuOpen = function (options) {
+                if (self.onMenuOpen) {
+                    self.onMenuOpen()(options);
                 }
             }
         }

@@ -12,7 +12,8 @@
                 pageName: '@',
                 feedFilter: '=',
                 onJobAction: '&',
-                hideFeedColumn: '=?'
+                hideFeedColumn: '=?',
+                feed: '=?'
             },
             controllerAs: 'vm',
             scope: true,
@@ -24,7 +25,8 @@
         };
     }
 
-    function JobsCardController($scope, $http, $stateParams, $interval, $timeout, $q, JobData, TableOptionsService, PaginationDataService, AlertsService, StateService, IconService, TabService,
+    function JobsCardController($scope, $http, $stateParams, $interval, $timeout, $q, $mdToast, JobData, TableOptionsService, PaginationDataService, AlertsService, StateService, IconService,
+                                TabService,
                                 AccessControlService, BroadcastService) {
         var self = this;
 
@@ -63,6 +65,12 @@
         this.tabMetadata = TabService.metadata(this.pageName);
 
         this.sortOptions = loadSortOptions();
+
+        this.abandonAllMenuOption = {};
+
+        this.additionalMenuOptions = loadAdditionalMenuOptions();
+
+        this.selectedAdditionalMenuOption = selectedAdditionalMenuOption;
 
         /**
          * The filter supplied in the page
@@ -130,7 +138,7 @@
          * @returns {*[]}
          */
         function loadSortOptions() {
-            var options = {'Job Name': 'jobName', 'Start Time': 'startTime', 'Run Time': 'runTime', 'Status': 'status'};
+            var options = {'Job Name': 'jobName', 'Start Time': 'startTime', 'Status': 'status'};
 
             var sortOptions = TableOptionsService.newSortOptions(self.pageName, options, 'startTime', 'desc');
             var currentOption = TableOptionsService.getCurrentSort(self.pageName);
@@ -139,6 +147,48 @@
             }
             return sortOptions;
 
+        }
+
+        /**
+         * Loads the additional menu options that appear in the more_vert options
+         * @returns {Array}
+         */
+        function loadAdditionalMenuOptions() {
+            var options = [];
+            if (self.feed) {
+                //only show the abandon all on the feeds page that are unhealthy
+                options.push(TableOptionsService.newOption("Actions", 'actions_header', true, false))
+                options.push(TableOptionsService.newOption("Abandon All", 'abandon_all', false, false));
+            }
+            return options;
+        }
+
+        function selectedAdditionalMenuOption(item) {
+            if (item.type == 'abandon_all') {
+                JobData.abandonAllJobs(self.feedFilter, function () {
+                    BroadcastService.notify('ABANDONED_ALL_JOBS', {feed: self.feedFilter});
+                    $mdToast.show(
+                        $mdToast.simple()
+                            .textContent('Abandoned all failed jobs for the feed')
+                            .hideDelay(3000)
+                    );
+                })
+            }
+        }
+
+        /**
+         *
+         * @param options
+         */
+        this.onOptionsMenuOpen = function (options) {
+            if (self.feed) {
+                var abandonOption = _.find(options.additionalOptions, function (option) {
+                    return option.type == 'abandon_all';
+                });
+                if (abandonOption != null && abandonOption != undefined) {
+                    abandonOption.disabled = self.feed.healthText != 'UNHEALTHY';
+                }
+            }
         }
 
         /**

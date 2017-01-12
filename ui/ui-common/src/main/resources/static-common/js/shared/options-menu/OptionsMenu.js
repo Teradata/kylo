@@ -16,7 +16,9 @@
                 tabs:'=',
                 rowsPerPageOptions:"=",
                 showViewType:'=',
-                showPagination:'='
+                showPagination: '=',
+                additionalOptions: '=?',
+                selectedAdditionalOption: "&?",
             },
             templateUrl: 'js/shared/options-menu/options-menu-template.html',
             link: function ($scope, element, attrs) {
@@ -63,7 +65,7 @@
 
                     originatorEv = ev;
                     if($scope.openedMenu) {
-                        $scope.openedMenu();
+                        $scope.openedMenu()({sortOptions: $scope.sortOptions, additionalOptions: $scope.additionalOptions});
                     }
                     if($scope.showPagination) {
                         var tabData = PaginationDataService.getActiveTabData($scope.menuKey);
@@ -73,6 +75,23 @@
                     $mdOpenMenu(ev);
                 };
 
+                /**
+                 * Selected an additional option
+                 * @param item
+                 */
+                $scope.selectAdditionalOption = function (item) {
+                    var itemCopy = {};
+                    angular.extend(itemCopy, item);
+
+                    if ($scope.selectedAdditionalOption) {
+                        $scope.selectedAdditionalOption()(itemCopy);
+                    }
+                }
+
+                /**
+                 * Selected a Sort Option
+                 * @param item
+                 */
                 $scope.selectOption = function(item) {
 
                     var itemCopy = {};
