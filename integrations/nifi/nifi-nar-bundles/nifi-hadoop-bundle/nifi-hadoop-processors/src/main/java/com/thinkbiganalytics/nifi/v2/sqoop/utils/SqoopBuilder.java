@@ -90,8 +90,10 @@ public class SqoopBuilder {
     private final HiveNullEncodingStrategy targetHiveNullEncodingStrategy = HiveNullEncodingStrategy.ENCODE_STRING_AND_NONSTRING;
     private final static String targetHiveNullEncodingStrategyNullStringLabel = "--null-string '\\\\N'";
     private final static String targetHiveNullEncodingStrategyNullNonStringLabel = "--null-non-string '\\\\N'";
-    private final static String targetHdfsFileDelimiterLabel = "--fields-terminated-by";
-    private String targetHdfsFileDelimiter;
+    private final static String targetHdfsFileFieldDelimiterLabel = "--fields-terminated-by";
+    private String targetHdfsFileFieldDelimiter;
+    private final static String targetHdfsFileRecordDelimiterLabel = "--lines-terminated-by";
+    private String targetHdfsFileRecordDelimiter;
     private final static String targetCompressLabel = "--compress";
     private final static String targetCompressionCodecLabel = "--compression-codec";
     private String targetCompressionCodec;
@@ -365,13 +367,24 @@ public class SqoopBuilder {
     }
 
     /**
-     * Set delimiter when landing data in HDFS
-     * @param targetHdfsFileDelimiter delimiter
+     * Set field delimiter when landing data in HDFS
+     * @param targetHdfsFileFieldDelimiter field delimiter
      * @return {@link SqoopBuilder}
      */
-    public SqoopBuilder setTargetHdfsFileDelimiter (String targetHdfsFileDelimiter) {
-        this.targetHdfsFileDelimiter = targetHdfsFileDelimiter;
-        logMessage("info", "Target HDFS File Delimiter", this.targetHdfsFileDelimiter);
+    public SqoopBuilder setTargetHdfsFileFieldDelimiter (String targetHdfsFileFieldDelimiter) {
+        this.targetHdfsFileFieldDelimiter = targetHdfsFileFieldDelimiter;
+        logMessage("info", "Target HDFS File Field Delimiter", this.targetHdfsFileFieldDelimiter);
+        return this;
+    }
+
+    /**
+     * Set record delimiter when landing data in HDFS
+     * @param targetHdfsFileRecordDelimiter record delimiter
+     * @return {@link SqoopBuilder}
+     */
+    public SqoopBuilder setTargetHdfsFileRecordDelimiter (String targetHdfsFileRecordDelimiter) {
+        this.targetHdfsFileRecordDelimiter = targetHdfsFileRecordDelimiter;
+        logMessage("info", "Target HDFS File Record Delimiter", this.targetHdfsFileRecordDelimiter);
         return this;
     }
 
@@ -688,9 +701,15 @@ public class SqoopBuilder {
         commandStringBuffer.append(SPACE_STRING);
 
         commandStringBuffer
-            .append(targetHdfsFileDelimiterLabel)                                               //--fields-terminated-by
+            .append(targetHdfsFileFieldDelimiterLabel)                                          //--fields-terminated-by
             .append(START_SPACE_QUOTE)
-            .append(targetHdfsFileDelimiter)                                                    //"user provided"
+            .append(targetHdfsFileFieldDelimiter)                                               //"user provided"
+            .append(END_QUOTE_SPACE);
+
+        commandStringBuffer
+            .append(targetHdfsFileRecordDelimiterLabel)                                         //--lines-terminated-by
+            .append(START_SPACE_QUOTE)
+            .append(targetHdfsFileRecordDelimiter)                                              //"user provided"
             .append(END_QUOTE_SPACE);
 
         /* Handle incremental load parameters */

@@ -206,12 +206,21 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         .defaultValue(ExtractDataFormat.TEXT.toString())
         .build();
 
-    public static final PropertyDescriptor TARGET_HDFS_FILE_DELIMITER = new PropertyDescriptor.Builder()
-        .name("Target HDFS File Delimiter")
-        .description("Delimiter for data landing in HDFS. This is relevant for TEXT and SEQUENCE_FILE target extract data formats.")
+    public static final PropertyDescriptor TARGET_HDFS_FILE_FIELD_DELIMITER = new PropertyDescriptor.Builder()
+        .name("Target HDFS File Field Delimiter")
+        .description("Delimiter for fields for data landing in HDFS. This is relevant for TEXT and SEQUENCE_FILE target extract data formats.")
         .required(true)
         .expressionLanguageSupported(true)
         .defaultValue(",")
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .build();
+
+    public static final PropertyDescriptor TARGET_HDFS_FILE_RECORD_DELIMITER = new PropertyDescriptor.Builder()
+        .name("Target HDFS File Record Delimiter")
+        .description("Delimiter for records for data landing in HDFS. This is relevant for TEXT and SEQUENCE_FILE target extract data formats.")
+        .required(true)
+        .expressionLanguageSupported(true)
+        .defaultValue("\\n")
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .build();
 
@@ -325,7 +334,8 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         properties.add(TARGET_HDFS_DIRECTORY);
         properties.add(TARGET_HDFS_DIRECTORY_EXISTS_STRATEGY);
         properties.add(TARGET_EXTRACT_DATA_FORMAT);
-        properties.add(TARGET_HDFS_FILE_DELIMITER);
+        properties.add(TARGET_HDFS_FILE_FIELD_DELIMITER);
+        properties.add(TARGET_HDFS_FILE_RECORD_DELIMITER);
         properties.add(TARGET_HIVE_DELIM_STRATEGY);
         properties.add(TARGET_HIVE_REPLACE_DELIM);
         properties.add(TARGET_COMPRESSION_ALGORITHM);
@@ -381,7 +391,8 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         final String targetHdfsDirectory = context.getProperty(TARGET_HDFS_DIRECTORY).evaluateAttributeExpressions(flowFile).getValue();
         final TargetHdfsDirExistsStrategy targetHdfsDirExistsStrategy = TargetHdfsDirExistsStrategy.valueOf(context.getProperty(TARGET_HDFS_DIRECTORY_EXISTS_STRATEGY).getValue());
         final ExtractDataFormat targetExtractDataFormat = ExtractDataFormat.valueOf(context.getProperty(TARGET_EXTRACT_DATA_FORMAT).getValue());
-        final String targetHdfsFileDelimiter = context.getProperty(TARGET_HDFS_FILE_DELIMITER).evaluateAttributeExpressions(flowFile).getValue();
+        final String targetHdfsFileFieldDelimiter = context.getProperty(TARGET_HDFS_FILE_FIELD_DELIMITER).evaluateAttributeExpressions(flowFile).getValue();
+        final String targetHdfsFileRecordDelimiter = context.getProperty(TARGET_HDFS_FILE_RECORD_DELIMITER).evaluateAttributeExpressions(flowFile).getValue();
         final HiveDelimStrategy targetHiveDelimStrategy = HiveDelimStrategy.valueOf(context.getProperty(TARGET_HIVE_DELIM_STRATEGY).getValue());
         final String targetHiveReplaceDelim = context.getProperty(TARGET_HIVE_REPLACE_DELIM).evaluateAttributeExpressions(flowFile).getValue();
         final CompressionAlgorithm targetCompressionAlgorithm = CompressionAlgorithm.valueOf(context.getProperty(TARGET_COMPRESSION_ALGORITHM).getValue());
@@ -423,7 +434,8 @@ public class ImportSqoop extends AbstractNiFiProcessor {
             .setTargetHdfsDirectory(targetHdfsDirectory)
             .setTargetHdfsDirExistsStrategy(targetHdfsDirExistsStrategy)
             .setTargetExtractDataFormat(targetExtractDataFormat)
-            .setTargetHdfsFileDelimiter(targetHdfsFileDelimiter)
+            .setTargetHdfsFileFieldDelimiter(targetHdfsFileFieldDelimiter)
+            .setTargetHdfsFileRecordDelimiter(targetHdfsFileRecordDelimiter)
             .setTargetHiveDelimStrategy(targetHiveDelimStrategy)
             .setTargetHiveReplaceDelim(targetHiveReplaceDelim)
             .setTargetCompressionAlgorithm(targetCompressionAlgorithm)
