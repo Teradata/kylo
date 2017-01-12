@@ -97,7 +97,10 @@
 
         //Tab Functions
 
-        this.onTabSelected = function (tab) {
+        this.onTabSelected = function(tab) {
+            self.newestTime = null;
+            self.oldestTime = null;
+            PaginationDataService.currentPage(self.pageName, tab.title, 1);
             TabService.selectedTab(self.pageName, tab);
             return loadAlerts().promise;
         };
@@ -197,15 +200,21 @@
                 var successFn = function (response) {
                     if (response.data) {
                         var alertRange = response.data;
-                        var total = (direction === PAGE_DIRECTION.forward)
-                                    ? (PaginationDataService.currentPage(self.pageName, activeTab.title) - 1) * PaginationDataService.rowsPerPage(self.pageName) + alertRange.size + 1
-                                    : PaginationDataService.rowsPerPage(self.pageName) + 1;
+                        var total = 0;
+
+                        if (angular.isDefined(alertRange.size)) {
+                            if (direction === PAGE_DIRECTION.forward || direction === PAGE_DIRECTION.none) {
+                                total = (PaginationDataService.currentPage(self.pageName, activeTab.title) - 1) * PaginationDataService.rowsPerPage(self.pageName) + alertRange.size + 1;
+                            } else {
+                                total = PaginationDataService.rowsPerPage(self.pageName) + 1;
+                            }
+                        }
 
                         self.newestTime = angular.isDefined(alertRange.newestTime) ? alertRange.newestTime : 0;
                         self.oldestTime = angular.isDefined(alertRange.oldestTime) ? alertRange.oldestTime : 0;
 
                         //transform the data for UI
-                        transformAlertData(tabTitle, alertRange.alerts);
+                        transformAlertData(tabTitle, angular.isDefined(alertRange.alerts) ? alertRange.alerts : []);
                         TabService.setTotal(self.pageName, tabTitle, total);
 
                         if (self.loading) {
@@ -240,7 +249,7 @@
                 		params.after = self.newestTime;
                 	}
                 } else {
-                    if (self.newestTime !== null) {
+                    if (self.newestTime !== null && self.newestTime !== 0) {
                         // Filter alerts to the current results
                         params.before = self.newestTime + 1;
                     }
