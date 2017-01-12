@@ -55,7 +55,7 @@
         self.processorRelationshipOptions = ["success", "failure", "all"];
 
         /**
-         * Available FlowType options (i.e. Critical Failure, Non Critical Failure...)
+         * Available FlowType options (i.e. Failure,Warning)
          * @type {Array}
          */
         self.processorFlowTypeOptions = [];
@@ -232,7 +232,7 @@
 
                         if (inspectedFlowRelationshipProcessors.length > 0) {
                             _.each(inspectedFlowRelationshipProcessors, function (processor) {
-                                self.templateFlowTypeProcessors.push({flowId: processor.flowId, relationship: 'failure'.relationship, flowType: 'CRITICAL_FAILURE', _id: _.uniqueId()});
+                                self.templateFlowTypeProcessors.push({flowId: processor.flowId, relationship: 'failure', flowType: 'FAILURE', _id: _.uniqueId()});
                             })
                         }
 
