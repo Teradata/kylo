@@ -3,7 +3,6 @@ package com.thinkbiganalytics.nifi.provenance.reporting;
 import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheSync;
 import com.thinkbiganalytics.nifi.core.api.metadata.KyloNiFiFlowProvider;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
-import com.thinkbiganalytics.nifi.core.api.spring.SpringContextService;
 import com.thinkbiganalytics.nifi.provenance.ProvenanceEventAggregator;
 import com.thinkbiganalytics.nifi.provenance.ProvenanceEventRecordConverter;
 import com.thinkbiganalytics.nifi.provenance.ProvenanceFeedLookup;
@@ -54,12 +53,7 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
     public static final String LAST_EVENT_ID_KEY = "kyloLastEventId";
 
     private static enum LAST_EVENT_ID_NOT_FOUND_OPTION {ZERO, MAX_EVENT_ID}
-
-    ;
-
     private static enum INITIAL_EVENT_ID_OPTION {LAST_EVENT_ID, MAX_EVENT_ID}
-
-    ;
 
 
     PropertyDescriptor METADATA_SERVICE = new PropertyDescriptor.Builder()
@@ -67,13 +61,6 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
         .description("Think Big metadata service")
         .required(true)
         .identifiesControllerService(MetadataProviderService.class)
-        .build();
-
-    public static final PropertyDescriptor SPRING_SERVICE = new PropertyDescriptor.Builder()
-        .name("Spring Context Service")
-        .description("Service for loading spring a spring context and providing bean lookup")
-        .required(true)
-        .identifiesControllerService(SpringContextService.class)
         .build();
 
     protected static final PropertyDescriptor MAX_BATCH_FEED_EVENTS_PER_SECOND = new PropertyDescriptor.Builder()
@@ -136,7 +123,6 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
 
 
 
-    private SpringContextService springService;
     private MetadataProviderService metadataProviderService;
 
     /**
@@ -240,7 +226,6 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
     protected List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         final List<PropertyDescriptor> properties = new ArrayList<>();
         properties.add(METADATA_SERVICE);
-        properties.add(SPRING_SERVICE);
         properties.add(MAX_BATCH_FEED_EVENTS_PER_SECOND);
         properties.add(JMS_EVENT_GROUP_SIZE);
         properties.add(REBUILD_CACHE_ON_RESTART);
@@ -256,7 +241,6 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
         getLogger().info("OnScheduled of KyloReportingTask");
         loadSpring(true);
         this.metadataProviderService = context.getProperty(METADATA_SERVICE).asControllerService(MetadataProviderService.class);
-        this.springService = context.getProperty(SPRING_SERVICE).asControllerService(SpringContextService.class);
         this.maxBatchFeedJobEventsPerSecond = context.getProperty(MAX_BATCH_FEED_EVENTS_PER_SECOND).asInteger();
         this.jmsEventGroupSize = context.getProperty(JMS_EVENT_GROUP_SIZE).asInteger();
         getProvenanceEventAggregator().setMaxBatchFeedJobEventsPerSecond(this.maxBatchFeedJobEventsPerSecond);
@@ -291,11 +275,13 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
     public final void onShutdown(ConfigurationContext configurationContext) {
         getLogger().info("onShutdown: Attempting to persist any active flow files to disk");
         abortProcessing();
-        getLogger().info("onShutdown: Ensure Spring beans are wired");
-        loadSpring(false);
-        //persist running flowfile metadata to disk
-        int persistedRootFlowFiles = getFlowFileMapDbCache().persistActiveRootFlowFiles();
-        getLogger().info("onShutdown: Finished persisting {} root flow files to disk ", new Object[]{persistedRootFlowFiles});
+        try {
+            //persist running flowfile metadata to disk
+            int persistedRootFlowFiles = getFlowFileMapDbCache().persistActiveRootFlowFiles();
+            getLogger().info("onShutdown: Finished persisting {} root flow files to disk ", new Object[]{persistedRootFlowFiles});
+        } catch (Exception e) {
+            //ok to swallow exception here.  this is called when NiFi is shutting down
+        }
     }
 
 
@@ -442,7 +428,7 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
 
         if (processing.compareAndSet(false, true) && !isInitializing()) {
 
-            getLogger().debug("Reporting Task Triggered!");
+
 
             final StateManager stateManager = context.getStateManager();
             final EventAccess access = context.getEventAccess();
@@ -451,6 +437,7 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
             if (this.stateManager == null) {
                 this.stateManager = stateManager;
             }
+            getLogger().debug("Reporting Task Triggered!  Last Event id is ", new Object[]{getLastEventId(stateManager)});
             ensureJmsListeners();
 
             //get the latest event Id in provenance
@@ -467,6 +454,7 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
 
                 //finish processing if there is nothing to process
                 if (lastEventId == maxEventId.longValue()) {
+                    getLogger().trace("Last event id == max id... will not process!");
                     finishProcessing(0);
                     return;
                 }

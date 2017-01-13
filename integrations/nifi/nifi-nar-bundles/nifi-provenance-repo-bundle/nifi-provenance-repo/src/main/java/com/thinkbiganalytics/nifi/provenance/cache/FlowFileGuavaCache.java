@@ -71,7 +71,6 @@ public class FlowFileGuavaCache {
 
 
     private ActiveFlowFile loadFromCache(String flowFileId) {
-        log.info("Creating new FlowFile {} ", flowFileId);
         return new ActiveFlowFile(flowFileId);
     }
 
