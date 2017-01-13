@@ -219,6 +219,11 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
      */
     private Long initialId;
 
+    /**
+     * track nifiQueryTime for provenance lookup
+     */
+    private Long nifiQueryTime = 0L;
+
 
     public KyloProvenanceEventReportingTask() {
         super();
@@ -435,7 +440,7 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
     @Override
     public void onTrigger(final ReportingContext context) {
 
-        if (processing.compareAndSet(false, true) && initializing.get() == false) {
+        if (processing.compareAndSet(false, true) && !isInitializing()) {
 
             getLogger().debug("Reporting Task Triggered!");
 
@@ -469,7 +474,7 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
                 //update NiFiFlowCache with list of changes for processing the events
                 updateNifiFlowCache();
 
-                DateTime lastLogTime = null;
+                DateTime lastLogTime = DateTime.now();
                 //how often to report the batch processing log when processing a lot of events
                 int logReportingTimeMs = 10000; //every 10 sec
                 long nextId = lastEventId + 1;
@@ -484,8 +489,11 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
                 if (recordCount > 0) {
                     getLogger().info("Attempting to process {} events starting with event id: {}.  Splitting into {} batches of {} each ", new Object[]{recordCount, nextId, batches, batchSize});
                 }
+
+                //reset the queryTime holder
+                nifiQueryTime = 0L;
                 while (recordCount > 0) {
-                    if (!processing.get()) {
+                    if (!isProcessing()) {
                         break;
                     }
                     long min = lastEventId + 1;
@@ -497,20 +505,24 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
                         lastEventId = processEventsInRange(provenance, min, max);
                         recordCount -= batchAmount;
                         recordCount = recordCount < 0 ? 0 : recordCount;
+
                         if (lastLogTime == null || (DateTime.now().getMillis() - lastLogTime.getMillis() > logReportingTimeMs)) {
                             lastLogTime = DateTime.now();
-                            getLogger().info("KyloReportingTask EventId Info: in while loop  Event id: {}.  {} events remaining to be processed. ", new Object[]{lastEventId, recordCount});
+                            getLogger().info("KyloReportingTask is in a long running process.  Currently processing Event id: {}.  {} events remaining to be processed. ",
+                                             new Object[]{lastEventId, recordCount});
                         }
                     }
-                    if (!processing.get()) {
+                    if (!isProcessing()) {
                         break;
                     }
 
 
                 }
-                if (totalRecords > 0) {
-                    getLogger().info("KyloReportingTask EventId Info: Finished Last Event id: {}.  {} events remaining to be processed. Total time to process {} events was {} ms ",
-                                     new Object[]{lastEventId, recordCount, totalRecords, (System.currentTimeMillis() - start)});
+                if (totalRecords > 0 && isProcessing()) {
+                    long processingTime = (System.currentTimeMillis() - start);
+                    getLogger().info(
+                        "KyloReportingTask finished. Last Event id: {}. Total time to process {} events was {} ms.  Total time spent querying for events in Nifi was {} ms.  Kylo ProcessingTime: {} ms ",
+                        new Object[]{lastEventId, totalRecords, processingTime, nifiQueryTime, processingTime - nifiQueryTime});
                 }
 
                 finishProcessing(totalRecords);
@@ -521,7 +533,7 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
                 abortProcessing();
             }
         } else {
-            if (initializing.get()) {
+            if (isInitializing()) {
                 getLogger().info("Still initializing any previously active flow file provenance data.  The task should run shortly");
             } else {
                 Long maxId = context.getEventAccess().getProvenanceRepository().getMaxEventId();
@@ -529,6 +541,14 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
                 getLogger().info("Still processing previous batch " + currentProcessingMessage + ".  The next run will process events up to " + maxId + ". " + count + " new events");
             }
         }
+    }
+
+    private boolean isProcessing() {
+        return processing.get();
+    }
+
+    private boolean isInitializing() {
+        return initializing.get();
     }
 
     private Long initializeAndGetLastEventIdForProcessing(Long maxEventId) throws IOException {
@@ -579,10 +599,13 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
 
         //add one to the record count to get the correct number in the range including the maxEventId
         recordCount += 1;
+        long start = System.currentTimeMillis();
         final List<ProvenanceEventRecord> events = provenance.getEvents(minEventId, recordCount);
+        long end = System.currentTimeMillis();
+        nifiQueryTime += (end - start);
         Collections.sort(events, new ProvenanceEventRecordComparator());
         for (ProvenanceEventRecord eventRecord : events) {
-            if (!processing.get()) {
+            if (!isProcessing()) {
                 break;
             }
             if (lastEventId == null || eventRecord.getEventId() != lastEventId) {
