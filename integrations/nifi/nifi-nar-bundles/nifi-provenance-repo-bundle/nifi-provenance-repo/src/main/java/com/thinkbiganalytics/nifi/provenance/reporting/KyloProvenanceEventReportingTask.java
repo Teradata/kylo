@@ -32,6 +32,7 @@ import org.apache.nifi.reporting.EventAccess;
 import org.apache.nifi.reporting.InitializationException;
 import org.apache.nifi.reporting.ReportingContext;
 import org.apache.nifi.reporting.ReportingInitializationContext;
+import org.joda.time.DateTime;
 import org.springframework.beans.BeansException;
 
 import java.io.IOException;
@@ -86,15 +87,25 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
 
     protected static final PropertyDescriptor JMS_EVENT_GROUP_SIZE = new PropertyDescriptor.Builder()
         .name("JMS event group size")
-        .description("The size of grouped events sent over to Kylo")
+        .description("The size of grouped events sent over to Kylo.  This should be less than the Processing Batch Size")
         .defaultValue("50")
         .required(false)
         .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
 
+    protected static final PropertyDescriptor PROCESSING_BATCH_SIZE = new PropertyDescriptor.Builder()
+        .name("Processing batch size")
+        .description(
+            "The maximum number of events to process in a given interval.  If there are more events than this number to process in a given run of this reporting task it will partition the list and process the events in batches of this size to increase throughput to Kylo.")
+        .defaultValue("500")
+        .required(false)
+        .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .build();
+
     public static final PropertyDescriptor REBUILD_CACHE_ON_RESTART = new PropertyDescriptor.Builder()
-        .name("Rebuild Cache on restart")
+        .name("Rebuild cache on restart")
         .description(
             "Should the cache of the flows be rebuilt every time the Reporting task is restarted?  By default the system will keep the cache up to date; however, setting this to true will force the cache to be rebuilt upon restarting the reporting task. ")
         .required(true)
@@ -104,7 +115,7 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
         .build();
 
     public static final PropertyDescriptor LAST_EVENT_ID_NOT_FOUND_VALUE = new PropertyDescriptor.Builder()
-        .name("Last Event Id Not Found Value")
+        .name("Last event id not found value")
         .description(("If there is no minimum value to start the range query from (i.e. if this reporting task has never run before in NiFi) what should be the initial value?\""
                       + "\nZERO: this will get all events starting at 0 to the latest event id."
                       + "\nMAX_EVENT_ID: this is set it to the max provenance event.  This is the default setting"))
@@ -114,7 +125,7 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
         .build();
 
     public static final PropertyDescriptor INITIAL_EVENT_ID_VALUE = new PropertyDescriptor.Builder()
-        .name("Initial Event Id Value")
+        .name("Initial event id value")
         .description("Upon starting the Reporting task what value should be used as the minimum value in the range of provenance events this task should query? "
                      + "\nLAST_EVENT_ID: will use the last event successfully processed from this task.  This is the default setting"
                      + "\nMAX_EVENT_ID will start processing every event > the Max event id in provenance.  This value is evaluated each time this reporting task is stopped and restarted.  You can use this to reset provenance events being sent to Kylo.  This is not the ideal behavior so you may loose provenance reporting.  Use this with caution.")
@@ -149,8 +160,16 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
     private StateManager stateManager;
 
 
+    /**
+     * Listener when JMS successfully posts its events to the queue.
+     * Used to update the StateManager storage value to ensure Kylo processes all events that have been successfully sent to the queue
+     */
     private KyloReportingTaskJmsListeners.KyloReportingTaskBatchJmsListener batchJmsListener;
 
+    /**
+     * Listener when JMS successfully posts its events to the queue.
+     * Used to update the StateManager storage value to ensure Kylo processes all events that have been successfully sent to the queue
+     */
     private KyloReportingTaskJmsListeners.KyloReportingTaskStatsJmsListener statsJmsListener;
 
     /**
@@ -164,14 +183,34 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
     private Integer jmsEventGroupSize;
 
 
+    /**
+     * global log message
+     */
     private String currentProcessingMessage = "";
 
+    /**
+     * reference the last processing maxEventId for logging purposes
+     */
     private Long previousMax = 0L;
 
-    private boolean rebuildOnRestart = false;
+    /**
+     * value from REBUILD_CACHE_ON_RESTART
+     */
+    private boolean rebuildNiFiFlowCacheOnRestart = false;
 
+    /**
+     * value from PROCESSING_BATCH_SIZE
+     */
+    private Integer processingBatchSize;
+
+    /**
+     * value from LAST_EVENT_ID_NOT_FOUND_VALUE
+     */
     private LAST_EVENT_ID_NOT_FOUND_OPTION lastEventIdNotFoundValue;
 
+    /**
+     * value from INITIAL_EVENT_ID_VALUE
+     */
     private INITIAL_EVENT_ID_OPTION initialEventIdValue;
 
     /**
@@ -202,6 +241,7 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
         properties.add(REBUILD_CACHE_ON_RESTART);
         properties.add(LAST_EVENT_ID_NOT_FOUND_VALUE);
         properties.add(INITIAL_EVENT_ID_VALUE);
+        properties.add(PROCESSING_BATCH_SIZE);
         return properties;
     }
 
@@ -218,6 +258,7 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
         getProvenanceEventAggregator().setJmsEventGroupSize(this.jmsEventGroupSize);
         Boolean rebuildOnRestart = context.getProperty(REBUILD_CACHE_ON_RESTART).asBoolean();
 
+        this.processingBatchSize = context.getProperty(PROCESSING_BATCH_SIZE).asInteger();
         this.lastEventIdNotFoundValue = LAST_EVENT_ID_NOT_FOUND_OPTION.valueOf(context.getProperty(LAST_EVENT_ID_NOT_FOUND_VALUE).getValue());
         this.initialEventIdValue = INITIAL_EVENT_ID_OPTION.valueOf(context.getProperty(INITIAL_EVENT_ID_VALUE).getValue());
 
@@ -225,9 +266,9 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
         initialId = null;
 
         if (rebuildOnRestart != null) {
-            this.rebuildOnRestart = rebuildOnRestart;
+            this.rebuildNiFiFlowCacheOnRestart = rebuildOnRestart;
         }
-        if (this.rebuildOnRestart && StringUtils.isNotBlank(nifiFlowSyncId)) {
+        if (this.rebuildNiFiFlowCacheOnRestart && StringUtils.isNotBlank(nifiFlowSyncId)) {
             nifiFlowSyncId = null;
         }
     }
@@ -275,6 +316,9 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
     }
 
 
+    /**
+     * ensure Spring is loaded and Beans are autowired correctly.
+     */
     private void loadSpring(boolean logError) {
         try {
             SpringApplicationContext.getInstance().initializeSpring();
@@ -286,6 +330,10 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
     }
 
 
+    /**
+     * The Service provider that will talk to the Kylo Metadata via REST used to get/ensure the NiFiFlowCache is up to date
+     * @return
+     */
     private KyloNiFiFlowProvider getKyloNiFiFlowProvider() {
         return metadataProviderService.getKyloNiFiFlowProvider();
     }
@@ -402,52 +450,70 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
 
             //get the latest event Id in provenance
             final Long maxEventId = provenance.getMaxEventId();
+            if(maxEventId == null || maxEventId < 0) {
+                getLogger().debug("No Provenance exists yet.  Max Id is not set.. Will not process events ");
+                finishProcessing(0);
+                return;
+            }
             previousMax = maxEventId;
             try {
                 //get the last event that was processed
-                long lastEventId = getLastEventId(stateManager);
-                if (lastEventId > maxEventId) {
-                    getLogger().info("KyloReportingTask EventId Info: The last saved eventId of {} is > then the reported maxEventId of {} in NiFi Provenance. Resetting the lastEventId to be 0.",
-                                     new Object[]{lastEventId, maxEventId});
-                    lastEventId = -1;
-                }
-                //check to see if we should reset the range query
-                if (initialId == null) {
-                    initialId = lastEventId;
-                    if (initialEventIdValue.equals(INITIAL_EVENT_ID_OPTION.MAX_EVENT_ID)) {
-                        // initialize the initial id
-                        getLogger().info("Setting the initial event id to be equal to the maxEventId of {}.  No events will be procssed until the next trigger. ", new Object[]{maxEventId});
-                        setLastEventId(maxEventId);
-                        lastEventId = maxEventId - 1;
-                        initialId = maxEventId - 1;
-                    }
+                long lastEventId = initializeAndGetLastEventIdForProcessing(maxEventId);
+
+                //finish processing if there is nothing to process
+                if (lastEventId == maxEventId.longValue()) {
+                    finishProcessing(0);
+                    return;
                 }
 
-                //check to see if we should default the not found event id to be the max id
-                if (lastEventId == -1 && lastEventIdNotFoundValue.equals(LAST_EVENT_ID_NOT_FOUND_OPTION.MAX_EVENT_ID)) {
-                    // initialize the initial id
-                    getLogger().info("Last Event Id Not found.  Setting the last event id to be equal to the maxEventId of {}.  No events will be processed until the next trigger. ",
-                                     new Object[]{maxEventId});
-                    setLastEventId(maxEventId);
-                    lastEventId = maxEventId - 1;
-                }
                 //update NiFiFlowCache with list of changes for processing the events
                 updateNifiFlowCache();
 
+                DateTime lastLogTime = null;
+                //how often to report the batch processing log when processing a lot of events
+                int logReportingTimeMs = 10000; //every 10 sec
                 long nextId = lastEventId + 1;
 
-                int recordCount = new Long(maxEventId - (nextId < 0 ? 0 : nextId)).intValue();
+                //record count is inclusive, so we need to add one to the difference to include the last eventid
+                int recordCount = new Long(maxEventId - (nextId < 0 ? 0 : nextId)).intValue() + 1;
+                int totalRecords = recordCount;
+                long start = System.currentTimeMillis();
                 //split this into batches of events
-                int batchSize = 500;
+                int batchSize = processingBatchSize == null || processingBatchSize < 1 ? 500 : processingBatchSize;
+                Integer batches = (int) Math.ceil(Double.valueOf(recordCount) / batchSize);
+                if (recordCount > 0) {
+                    getLogger().info("Attempting to process {} events starting with event id: {}.  Splitting into {} batches of {} each ", new Object[]{recordCount, nextId, batches, batchSize});
+                }
                 while (recordCount > 0) {
+                    if (!processing.get()) {
+                        break;
+                    }
                     long min = lastEventId + 1;
-                    long max = (min + batchSize) > maxEventId ? maxEventId : (min + batchSize);
-                    int batchAmount = new Long(max - (min < 0 ? 0 : min)).intValue();
-                    lastEventId = processEventsInRange(provenance, min, max);
-                    recordCount -= batchAmount;
+                    long max = (min + (batchSize - 1)) > maxEventId ? maxEventId : (min + (batchSize - 1));
+                    int batchAmount = new Long(max - (min < 0 ? 0 : min)).intValue() + 1;
+                    if (batchAmount <= 0) {
+                        break;
+                    } else {
+                        lastEventId = processEventsInRange(provenance, min, max);
+                        recordCount -= batchAmount;
+                        recordCount = recordCount < 0 ? 0 : recordCount;
+                        if (lastLogTime == null || (DateTime.now().getMillis() - lastLogTime.getMillis() > logReportingTimeMs)) {
+                            lastLogTime = DateTime.now();
+                            getLogger().info("KyloReportingTask EventId Info: in while loop  Event id: {}.  {} events remaining to be processed. ", new Object[]{lastEventId, recordCount});
+                        }
+                    }
+                    if (!processing.get()) {
+                        break;
+                    }
+
+
+                }
+                if (totalRecords > 0) {
+                    getLogger().info("KyloReportingTask EventId Info: Finished Last Event id: {}.  {} events remaining to be processed. Total time to process {} events was {} ms ",
+                                     new Object[]{lastEventId, recordCount, totalRecords, (System.currentTimeMillis() - start)});
                 }
 
-                finishProcessing(recordCount);
+                finishProcessing(totalRecords);
 
             } catch (IOException e) {
                 getLogger().error(e.getMessage(), e);
@@ -465,20 +531,54 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
         }
     }
 
+    private Long initializeAndGetLastEventIdForProcessing(Long maxEventId) throws IOException {
+        long lastEventId = getLastEventId(stateManager);
+        if (lastEventId > maxEventId) {
+            getLogger().info("KyloReportingTask EventId Info: The last saved eventId of {} is > then the reported maxEventId of {} in NiFi Provenance. Resetting the lastEventId to be 0.",
+                             new Object[]{lastEventId, maxEventId});
+            lastEventId = -1;
+        }
+        //check to see if we should reset the range query
+        if (initialId == null) {
+            initialId = lastEventId;
+            if (initialEventIdValue.equals(INITIAL_EVENT_ID_OPTION.MAX_EVENT_ID)) {
+                // initialize the initial id
+                getLogger().info("Setting the initial event id to be equal to the maxEventId of {}.  No events will be procssed until the next trigger. ", new Object[]{maxEventId});
+                setLastEventId(maxEventId);
+                lastEventId = maxEventId - 1;
+                initialId = maxEventId - 1;
+            }
+        }
+
+        //check to see if we should default the not found event id to be the max id
+        if (lastEventId == -1 && lastEventIdNotFoundValue.equals(LAST_EVENT_ID_NOT_FOUND_OPTION.MAX_EVENT_ID)) {
+            // initialize the initial id
+            getLogger().info("Last Event Id Not found.  Setting the last event id to be equal to the maxEventId of {}.  No events will be processed until the next trigger. ",
+                             new Object[]{maxEventId});
+            setLastEventId(maxEventId);
+            lastEventId = maxEventId - 1;
+        }
+        return lastEventId;
+    }
+
     /**
+     *
      * processes all events inclusive in the range
+     *
+     * @param provenance
+     * @param minEventId
+     * @param maxEventId
+     * @return
+     * @throws IOException
      */
     private Long processEventsInRange(ProvenanceEventRepository provenance, Long minEventId, Long maxEventId) throws IOException {
         Long lastEventId = null;
 
         int recordCount = new Long(maxEventId - (minEventId < 0 ? 0 : minEventId)).intValue();
-        //add one to the record count to get the correct number in the range including the maxEventId
-        recordCount += 1;
-        if (recordCount > 0) {
-            getLogger().info("KyloReportingTask EventId Info: Finding {} events between {} - {} ", new Object[]{recordCount, minEventId, maxEventId});
-        }
         currentProcessingMessage = "Finding all Events between " + minEventId + " - " + maxEventId;
 
+        //add one to the record count to get the correct number in the range including the maxEventId
+        recordCount += 1;
         final List<ProvenanceEventRecord> events = provenance.getEvents(minEventId, recordCount);
         Collections.sort(events, new ProvenanceEventRecordComparator());
         for (ProvenanceEventRecord eventRecord : events) {
@@ -492,9 +592,7 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
         }
         //Send JMS off
         getProvenanceEventAggregator().sendToJms();
-        if (recordCount > 0) {
-            getLogger().info("KyloReportingTask EventId Info: Finished  Event id: " + Long.toString(lastEventId));
-        }
+
         return lastEventId == null ? minEventId : lastEventId;
 
     }
@@ -540,6 +638,10 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
     }
 
 
+    /**
+     * Persistent cache that will only be used when NiFi shuts down or is started, persisting the RootFlowFile objects to help complete Statistics and event processing when NiFi shuts down with events in mid flow processing
+     * @return
+     */
     private FlowFileMapDbCache getFlowFileMapDbCache() {
         return SpringApplicationContext.getInstance().getBean(FlowFileMapDbCache.class);
     }
