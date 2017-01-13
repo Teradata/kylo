@@ -73,7 +73,7 @@ app.config(function($stateProvider,$urlRouterProvider) {
         },
         data: {
             breadcrumbRoot: true,
-            displayName: 'Jobs'
+            displayName: 'Alerts'
         }
     })
         .state('scheduler', {

@@ -4,6 +4,7 @@
         <form name="actionUpdateForm" layout="column" flex>
             <md-input-container layout="row">
                 <md-select ng-model="state" placeholder="State">
+                    <md-option ng-value="'UNHANDLED'">Unhandled</md-option>
                     <md-option ng-value="'IN_PROGRESS'">In Progress</md-option>
                     <md-option ng-value="'HANDLED'">Handled</md-option>
                 </md-select>
