@@ -92,4 +92,13 @@ this.SERVICES_URL = "/proxy/v1/service-monitor/";
 
     this.PROVENANCE_EVENT_TIME_FRAME_OPTIONS = this.STATS_BASE + "/time-frame-options";
 
+    /**
+     * Gets the alert details endpoint for the specified alert.
+     * @param {string} alertId the id of the alert
+     * @returns {string} the URL of the endpoint
+     */
+    this.ALERT_DETAILS_URL = function(alertId) {
+        return "/proxy/v1/alerts/" + alertId;
+    };
+
 });

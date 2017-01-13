@@ -176,6 +176,19 @@ app.config(function($stateProvider,$urlRouterProvider) {
             breadcrumbRoot:true,
             displayName:'Charts'
         }
+    }).state("alert-details",{
+        url:"/alert-details/:alertId",
+        params: {
+            alertId: null
+        },
+        views: {
+            'content': {
+                templateUrl: 'js/alerts/alert-details.html'
+            }
+        },
+        data:{
+            displayName:'Alert Details'
+        }
     })
 
 

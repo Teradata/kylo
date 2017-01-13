@@ -36,5 +36,12 @@ angular.module(MODULE_OPERATIONS).service('StateService', function ($state) {
         $state.go('feeds',{exitCode:exitCode,resetDataTables:true});
     }
 
+    /**
+     * Navigates to the details page for the specified alert.
+     * @param {string} alertId the id of the alert
+     */
+    this.navigateToAlertDetails = function(alertId) {
+        $state.go("alert-details", {alertId: alertId});
+    };
 
 });

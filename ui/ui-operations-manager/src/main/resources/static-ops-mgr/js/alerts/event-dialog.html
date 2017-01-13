@@ -1,0 +1,21 @@
+<md-dialog aria-label="Event dialog">
+    <md-dialog-content layout="column" layout-padding flex>
+        <h4 class="md-title" style="margin-bottom:0px;">Update Alert Details</h4>
+        <form name="actionUpdateForm" layout="column" flex>
+            <md-input-container layout="row">
+                <md-select ng-model="state" placeholder="State">
+                    <md-option ng-value="'IN_PROGRESS'">In Progress</md-option>
+                    <md-option ng-value="'HANDLED'">Handled</md-option>
+                </md-select>
+            </md-input-container>
+            <md-input-container layout="row">
+                <label>Comment</label>
+                <input ng-model="description" name="description" size="50">
+            </md-input-container>
+        </form>
+    </md-dialog-content>
+    <md-dialog-actions>
+        <md-button ng-click="closeDialog()">Cancel</md-button>
+        <md-button class="md-primary md-raised" ng-click="saveDialog()" ng-disabled="saving">Save</md-button>
+    </md-dialog-actions>
+</md-dialog>

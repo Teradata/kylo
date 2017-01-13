@@ -314,7 +314,7 @@
          * @param alert
          */
         this.alertDetails = function (event, alert) {
-            //   StateService.navigateToAlertDetails(alert.id);
+            StateService.navigateToAlertDetails(alert.id);
         };
 
         $scope.$on('$destroy', function () {
@@ -322,5 +322,5 @@
     }
 
     angular.module(MODULE_OPERATIONS).controller("AlertsTableController", AlertsTableController);
-    angular.module(MODULE_OPERATIONS).directive('tbaAlertsTable', directive);
+    angular.module(MODULE_OPERATIONS).directive("tbaAlertsTable", directive);
 })();
