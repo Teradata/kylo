@@ -75,7 +75,7 @@ public class ProvenanceEventAggregator {
      *if the events come in out of order, queue them in this map
      *@see #processEarlyChildren method
      **/
-    Cache<String, ConcurrentLinkedQueue<ProvenanceEventRecordDTO>> jobFlowFileIdEarlyChildrenMap = CacheBuilder.newBuilder().expireAfterWrite(20, TimeUnit.MINUTES).build();
+    Cache<String, ConcurrentLinkedQueue<ProvenanceEventRecordDTO>> jobFlowFileIdEarlyChildrenMap = CacheBuilder.newBuilder().expireAfterWrite(10, TimeUnit.MINUTES).build();
 
     @Autowired
     public ProvenanceEventAggregator(@Qualifier("provenanceEventActiveMqWriter") ProvenanceEventActiveMqWriter provenanceEventActiveMqWriter) {
@@ -99,7 +99,7 @@ public class ProvenanceEventAggregator {
         if (queue != null) {
             ProvenanceEventRecordDTO nextEvent = null;
             while ((nextEvent = queue.poll()) != null) {
-                log.info("Processing early child {} since the root flowfile {} has been processed.", nextEvent, jobFlowFileId);
+                log.debug("Processing early child {} since the root flowfile {} has been processed.", nextEvent, jobFlowFileId);
                 process(nextEvent);
             }
             jobFlowFileIdEarlyChildrenMap.invalidate(jobFlowFileId);
@@ -112,8 +112,9 @@ public class ProvenanceEventAggregator {
         try {
             if (event != null) {
                 try {
+
                     cacheUtil.cacheAndBuildFlowFileGraph(event);
-                    log.trace("Process Event {} ", event);
+                    // log.info("Process Event {} ", event);
                     if (ProvenanceEventUtil.isDropFlowFilesEvent(event)) {
                         // a Drop event component id will be the connection, not the processor id. we will set the name of the component
                         event.setComponentName("FlowFile Queue emptied");
@@ -124,7 +125,6 @@ public class ProvenanceEventAggregator {
                     ProvenanceEventStats stats = statsCalculator.calculateStats(event);
                     //check to see if the event is going through a processor deemed as a failure in kylo
                     collectFailureEvents(event);
-                    if (!event.isStream()) {
 
                         // check to see if the parents should be finished
                         if (event.isEndingFlowFileEvent()) {
@@ -138,19 +138,18 @@ public class ProvenanceEventAggregator {
                                 collectCompletionEvents(event);
                             }
                         }
-
+                    if (!event.isStream()) {
                         boolean added = aggregateEvent(event);
+                    }
 
                         //might not need this!!
                         if (event.isStartOfJob()) {
                             processEarlyChildren(event.getJobFlowFileId());
                         }
 
-                    }
-
                 } catch (RootFlowFileNotFoundException e) {
                     //add to a holding bin
-                    log.info("Holding on to {} since the root flow file {} has yet to be processed.", event, event.getFlowFileUuid());
+                    log.debug("Holding on to {} since the root flow file {} has yet to be processed.", event, event.getFlowFileUuid());
                     jobFlowFileIdEarlyChildrenMap.asMap().computeIfAbsent(event.getFlowFileUuid(), (flowFileId) -> new ConcurrentLinkedQueue<ProvenanceEventRecordDTO>()).add(event);
 
                 }
@@ -271,8 +270,8 @@ public class ProvenanceEventAggregator {
     }
 
     private void sendBatchFeedEvents(List<ProvenanceEventRecordDTO> elements) {
-        if (elements != null) {
-            log.info("processQueue for {} Nifi Events ", elements.size());
+        if (elements != null && !elements.isEmpty()) {
+            log.debug("processQueue for {} Nifi Events ", elements.size());
             Lists.partition(elements, getJmsEventGroupSize()).forEach(eventsSubList -> {
                 ProvenanceEventRecordDTOHolder eventRecordDTOHolder = new ProvenanceEventRecordDTOHolder();
                 eventRecordDTOHolder.setEvents(Lists.newArrayList(eventsSubList));

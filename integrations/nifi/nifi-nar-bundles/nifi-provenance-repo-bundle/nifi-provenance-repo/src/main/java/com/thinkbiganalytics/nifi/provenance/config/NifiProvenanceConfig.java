@@ -35,7 +35,6 @@ public class NifiProvenanceConfig {
     */
     @Bean
     public SpringApplicationContext springApplicationContext() {
-        log.info("**************************************************************************************CREATE springApplicationContext in Spring ");
         return new SpringApplicationContext();
     }
 }

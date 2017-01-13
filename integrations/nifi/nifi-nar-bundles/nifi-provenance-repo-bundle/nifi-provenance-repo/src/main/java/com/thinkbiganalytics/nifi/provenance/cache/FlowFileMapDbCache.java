@@ -80,7 +80,7 @@ public class FlowFileMapDbCache implements FlowFileCacheListener {
     @Override
     public void onInvalidate(ActiveFlowFile flowFile) {
         if (flowFile.isBuiltFromIdReferenceFlowFile()) {
-            log.info("Removing completed flowfile {} from mapDbCache ", flowFile.getId());
+            log.debug("Removing completed flowfile {} from mapDbCache ", flowFile.getId());
             idReferenceFlowFileHTreeMap.remove(flowFile.getId());
         }
     }
@@ -146,7 +146,7 @@ public class FlowFileMapDbCache implements FlowFileCacheListener {
      * Load the FlowFile from the saved "IdReference MapDB " or creates a new FlowFile object
      */
     private ActiveFlowFile loadGraph(IdReferenceFlowFile parentFlowFile) {
-        log.info("Loading IdReferenceFlowFile into guava cache with id: {}  isRoot: {} ", parentFlowFile.getId(), parentFlowFile.isRootFlowFile());
+        log.debug("Loading IdReferenceFlowFile into guava cache with id: {}  isRoot: {} ", parentFlowFile.getId(), parentFlowFile.isRootFlowFile());
 
         ActiveFlowFile parent = cache.getEntry(parentFlowFile.getId());
         parent.setIsBuiltFromIdReferenceFlowFile(true);

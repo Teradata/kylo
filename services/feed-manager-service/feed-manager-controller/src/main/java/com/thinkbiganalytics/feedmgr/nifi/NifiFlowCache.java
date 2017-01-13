@@ -553,11 +553,14 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
     public void checkAndExpireUnusedCache() {
         try {
             long expireAfter = 30 * 1000 * 60; //30 min
+            Set<String> itemsRemoved = new HashSet<>();
             //find cache items that havent been synced in allotted time
             lastSyncTimeMap.entrySet().stream().filter(entry -> ((DateTime.now().getMillis() - entry.getValue().getMillis()) > expireAfter)).forEach(entry -> {
                 syncMap.remove(entry.getKey());
+                itemsRemoved.add(entry.getKey());
                 log.info("Expiring Cache {}.", entry.getKey());
             });
+            itemsRemoved.stream().forEach(item -> lastSyncTimeMap.remove(item));
 
         } catch (Exception e) {
             log.error("Error attempting to invalidate flow cache for items not touched in 30 or more minutes", e);

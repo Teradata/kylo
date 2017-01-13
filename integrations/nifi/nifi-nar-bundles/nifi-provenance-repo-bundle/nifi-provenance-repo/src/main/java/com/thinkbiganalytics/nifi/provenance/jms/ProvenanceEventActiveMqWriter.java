@@ -79,10 +79,12 @@ public class ProvenanceEventActiveMqWriter {
      */
     public void writeStats(AggregatedFeedProcessorStatisticsHolder stats) {
         try {
-            logger.info("SENDING AGGREGATED STAT to JMS {} ", stats);
-            sendJmsMessage.sendSerializedObjectToQueue(Queues.PROVENANCE_EVENT_STATS_QUEUE, stats);
-            AggregationEventProcessingStats.addStreamingEvents(stats.getEventCount().intValue());
-            notifySuccess(Queues.PROVENANCE_EVENT_STATS_QUEUE, stats);
+            if (stats.getEventCount().get() > 0) {
+                logger.info("SENDING AGGREGATED STAT to JMS {} ", stats);
+                sendJmsMessage.sendSerializedObjectToQueue(Queues.PROVENANCE_EVENT_STATS_QUEUE, stats);
+                AggregationEventProcessingStats.addStreamingEvents(stats.getEventCount().intValue());
+                notifySuccess(Queues.PROVENANCE_EVENT_STATS_QUEUE, stats);
+            }
         } catch (Exception e) {
             logger.error("JMS Error has occurred sending stats. Temporary queue has been disabled in this current version.", e);
             notifyError(Queues.PROVENANCE_EVENT_STATS_QUEUE, stats, e.getMessage());
