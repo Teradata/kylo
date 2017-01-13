@@ -426,41 +426,29 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
                 //check to see if we should default the not found event id to be the max id
                 if (lastEventId == -1 && lastEventIdNotFoundValue.equals(LAST_EVENT_ID_NOT_FOUND_OPTION.MAX_EVENT_ID)) {
                     // initialize the initial id
-                    getLogger().info("Last Event Id Not found.  Setting the last event id to be equal to the maxEventId of {}.  No events will be procssed until the next trigger. ",
+                    getLogger().info("Last Event Id Not found.  Setting the last event id to be equal to the maxEventId of {}.  No events will be processed until the next trigger. ",
                                      new Object[]{maxEventId});
                     setLastEventId(maxEventId);
                     lastEventId = maxEventId - 1;
                 }
-
-
-                long nextId = lastEventId + 1;
-                int recordCount = new Long(maxEventId - (lastEventId < 0 ? 0 : lastEventId)).intValue();
-                if (recordCount > 0) {
-                    getLogger().info("KyloReportingTask EventId Info: Finding {} events between {} - {} ", new Object[]{recordCount, nextId, maxEventId});
-                }
-                currentProcessingMessage = "Finding all Events between " + nextId + " - " + maxEventId;
-
                 //update NiFiFlowCache with list of changes for processing the events
                 updateNifiFlowCache();
 
-                final List<ProvenanceEventRecord> events = provenance.getEvents(nextId, recordCount);
+                long nextId = lastEventId + 1;
 
-                Collections.sort(events, new ProvenanceEventRecordComparator());
-                for (ProvenanceEventRecord eventRecord : events) {
-                    if (!processing.get()) {
-                        break;
-                    }
-                    if (eventRecord.getEventId() != lastEventId) {
-                        processEvent(eventRecord);
-                    }
-                    lastEventId = eventRecord.getEventId();
+                int recordCount = new Long(maxEventId - (nextId < 0 ? 0 : nextId)).intValue();
+                //split this into batches of events
+                int batchSize = 500;
+                while (recordCount > 0) {
+                    long min = lastEventId + 1;
+                    long max = (min + batchSize) > maxEventId ? maxEventId : (min + batchSize);
+                    int batchAmount = new Long(max - (min < 0 ? 0 : min)).intValue();
+                    lastEventId = processEventsInRange(provenance, min, max);
+                    recordCount -= batchAmount;
                 }
-                //Send JMS off
-                getProvenanceEventAggregator().sendToJms();
-                if (recordCount > 0) {
-                    getLogger().info("KyloReportingTask EventId Info: Finished  Event id: " + Long.toString(lastEventId));
-                }
+
                 finishProcessing(recordCount);
+
             } catch (IOException e) {
                 getLogger().error(e.getMessage(), e);
             } finally {
@@ -478,16 +466,50 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
     }
 
     /**
+     * processes all events inclusive in the range
+     */
+    private Long processEventsInRange(ProvenanceEventRepository provenance, Long minEventId, Long maxEventId) throws IOException {
+        Long lastEventId = null;
+
+        int recordCount = new Long(maxEventId - (minEventId < 0 ? 0 : minEventId)).intValue();
+        //add one to the record count to get the correct number in the range including the maxEventId
+        recordCount += 1;
+        if (recordCount > 0) {
+            getLogger().info("KyloReportingTask EventId Info: Finding {} events between {} - {} ", new Object[]{recordCount, minEventId, maxEventId});
+        }
+        currentProcessingMessage = "Finding all Events between " + minEventId + " - " + maxEventId;
+
+        final List<ProvenanceEventRecord> events = provenance.getEvents(minEventId, recordCount);
+        Collections.sort(events, new ProvenanceEventRecordComparator());
+        for (ProvenanceEventRecord eventRecord : events) {
+            if (!processing.get()) {
+                break;
+            }
+            if (lastEventId == null || eventRecord.getEventId() != lastEventId) {
+                processEvent(eventRecord);
+            }
+            lastEventId = eventRecord.getEventId();
+        }
+        //Send JMS off
+        getProvenanceEventAggregator().sendToJms();
+        if (recordCount > 0) {
+            getLogger().info("KyloReportingTask EventId Info: Finished  Event id: " + Long.toString(lastEventId));
+        }
+        return lastEventId == null ? minEventId : lastEventId;
+
+    }
+
+
+    /**
      * Process the Event, calculate the Aggregrate statistics and send it on to JMS for Kylo Ops manager processing
      *
      * @param event the event to process
      */
     public ProvenanceEventRecordDTO processEvent(ProvenanceEventRecord event) {
         ProvenanceEventRecordDTO eventRecordDTO = ProvenanceEventRecordConverter.convert(event);
-        getLogger().debug("EVENT for {} - {} is {}.", new Object[]{event.getComponentType(), event.getEventId(), event.getEventType()});
+        getLogger().trace("EVENT for {} - {} is {}.", new Object[]{event.getComponentType(), event.getEventId(), event.getEventType()});
         getProvenanceEventAggregator().process(eventRecordDTO);
         return eventRecordDTO;
-
     }
 
     /**
