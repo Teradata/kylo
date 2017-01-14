@@ -29,7 +29,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.ws.rs.ClientErrorException;
@@ -144,8 +143,8 @@ public class NiFiProcessGroupsRestClientV0 extends AbstractNiFiProcessGroupsRest
             Map<String, Object> params = new HashMap<>();
             params.put("recursive", recursive);
             params.put("verbose", verbose);
-            return Optional.of(client.get(BASE_PATH + "/" + processGroupId, params, ProcessGroupEntity.class).getProcessGroup());
-        } catch (NotFoundException e) {
+            return Optional.ofNullable(client.get(BASE_PATH + "/" + processGroupId, params, ProcessGroupEntity.class)).map(ProcessGroupEntity::getProcessGroup);
+        } catch (final NotFoundException e) {
             return Optional.empty();
         }
     }
