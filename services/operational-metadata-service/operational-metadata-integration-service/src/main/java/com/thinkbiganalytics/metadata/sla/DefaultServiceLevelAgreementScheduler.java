@@ -1,35 +1,39 @@
 package com.thinkbiganalytics.metadata.sla;
 
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailability;
 import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailabilityListener;
+import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementChecker;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementScheduler;
 import com.thinkbiganalytics.scheduler.JobIdentifier;
 import com.thinkbiganalytics.scheduler.JobScheduler;
+import com.thinkbiganalytics.scheduler.JobSchedulerEvent;
 import com.thinkbiganalytics.scheduler.JobSchedulerException;
+import com.thinkbiganalytics.scheduler.JobSchedulerListener;
 import com.thinkbiganalytics.scheduler.model.DefaultJobIdentifier;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 
 /**
  * Created by sr186054 on 7/22/16.
  */
-public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreementScheduler, ModeShapeAvailabilityListener {
+public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreementScheduler, ModeShapeAvailabilityListener, JobSchedulerListener {
 
     private static final Logger log = LoggerFactory.getLogger(DefaultServiceLevelAgreementScheduler.class);
 
@@ -62,6 +66,7 @@ public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreem
     @PostConstruct
     public void scheduleServiceLevelAgreements() {
         modeShapeAvailability.subscribe(this);
+        jobScheduler.subscribeToJobSchedulerEvents(this);
     }
 
     @Override
@@ -152,6 +157,12 @@ public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreem
         return jobIdentifier;
     }
 
+    private ServiceLevelAgreement.ID slaIdForJobIdentifier(JobIdentifier jobIdentifier) {
+        String jobIdentifierName = jobIdentifier.getName();
+        return scheduledJobNames.entrySet().stream().filter(entry -> entry.getValue().equalsIgnoreCase(jobIdentifierName)).map(entry -> entry.getKey()).findFirst().orElse(null);
+
+    }
+
     public void disableServiceLevelAgreement(ServiceLevelAgreement sla){
 
     ServiceLevelAgreement.ID slaId = sla.getId();
@@ -207,7 +218,7 @@ public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreem
                     }, MetadataAccess.SERVICE);
                 }
             }, (StringUtils.isBlank(defaultCron) ? DEFAULT_CRON : defaultCron));
-            
+
             log.debug("Schedule sla job " + jobIdentifier.getName());
             scheduledJobNames.put(sla.getId(), jobIdentifier.getName());
         } catch (JobSchedulerException e) {
@@ -221,5 +232,70 @@ public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreem
 
     }
 
+    @Override
+    public void onJobSchedulerEvent(JobSchedulerEvent event) {
+        try {
+            switch (event.getEvent()) {
+                case PAUSE_JOB:
+                    pauseServiceLevelAgreement(event);
+                    break;
+                case RESUME_JOB:
+                    resumeServiceLevelAgreement(event);
+                    break;
+                case PAUSE_ALL_JOBS:
+                    pauseAllServiceLevelAgreements();
+                    break;
+                case RESUME_ALL_JOBS:
+                    resumeAllServiceLevelAgreements();
+                    break;
+                default:
+                    break;
+            }
 
+        } catch (Exception e) {
+            log.error("Error processing JobScheduler Event {}", event, e);
+        }
+    }
+
+    private void resumeServiceLevelAgreement(JobSchedulerEvent event) {
+        ServiceLevelAgreement.ID slaId = slaIdForJobIdentifier(event.getJobIdentifier());
+        if (slaId != null) {
+            metadataAccess.commit(() -> enable(slaId), MetadataAccess.SERVICE);
+        }
+    }
+
+    private void pauseServiceLevelAgreement(JobSchedulerEvent event) {
+        ServiceLevelAgreement.ID slaId = slaIdForJobIdentifier(event.getJobIdentifier());
+        if (slaId != null) {
+            metadataAccess.commit(() -> disable(slaId), MetadataAccess.SERVICE);
+        }
+    }
+
+    private void pauseAllServiceLevelAgreements() {
+        metadataAccess.commit(() -> {
+            scheduledJobNames.keySet().stream().forEach(slaId -> disable(slaId));
+        }, MetadataAccess.SERVICE);
+    }
+
+    private void resumeAllServiceLevelAgreements() {
+        metadataAccess.commit(() -> {
+            scheduledJobNames.keySet().stream().forEach(slaId -> enable(slaId));
+        }, MetadataAccess.SERVICE);
+    }
+
+    private void enable(ServiceLevelAgreement.ID slaId) {
+        findAgreement(slaId).ifPresent(sla -> ((JcrServiceLevelAgreement) sla).setEnabled(true));
+    }
+
+    private void disable(ServiceLevelAgreement.ID slaId) {
+        findAgreement(slaId).ifPresent(sla -> ((JcrServiceLevelAgreement) sla).setEnabled(false));
+    }
+
+    /**
+     * Must be called inside a metadatAccess wrapper
+     */
+    private Optional<ServiceLevelAgreement> findAgreement(ServiceLevelAgreement.ID slaId) {
+        ServiceLevelAgreement sla = slaProvider.getAgreement(slaId);
+        return Optional.ofNullable(sla);
+    }
 }
