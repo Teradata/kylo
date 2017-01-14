@@ -471,8 +471,10 @@ angular.module(MODULE_FEED_MGR).factory('FeedService',
                         var feedField = angular.copy(columnDef);
 
                         sourceField.name = columnDef.origName;
-                        policy.feedFieldName = feedField.name;
-                        policy.name = columnDef.name;
+                        if (angular.isDefined(policy)) {
+                            policy.feedFieldName = feedField.name;
+                            policy.name = columnDef.name;
+                        }
 
                         // structured files must use the original names
                         if (model.table.structured == true) {
@@ -484,7 +486,9 @@ angular.module(MODULE_FEED_MGR).factory('FeedService',
 
                         if (!columnDef.deleted) {
                             newFields.push(columnDef);
-                            newPolicies.push(policy);
+                            if (angular.isDefined(policy)) {
+                                newPolicies.push(policy);
+                            }
                             sourceFields.push(sourceField);
                             feedFields.push(feedField);
 
