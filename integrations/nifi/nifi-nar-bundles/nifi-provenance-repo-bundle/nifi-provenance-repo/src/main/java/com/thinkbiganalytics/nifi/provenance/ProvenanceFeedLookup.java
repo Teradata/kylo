@@ -85,35 +85,40 @@ public class ProvenanceFeedLookup {
     }
 
     public KyloProcessorFlowType setProcessorFlowType(ProvenanceEventRecordDTO event) {
+        if (event.getProcessorType() == null) {
 
-        Map<String, KyloProcessorFlowType> flowTypes = getFlowCache().getProcessorFlowTypesAsMap(event.getFeedName(), event.getComponentId());
+            Map<String, KyloProcessorFlowType> flowTypes = getFlowCache().getProcessorFlowTypesAsMap(event.getFeedName(), event.getComponentId());
 
-        KyloProcessorFlowType allType = flowTypes.get(KyloProcessorFlowTypeRelationship.ALL_RELATIONSHIP);
-        KyloProcessorFlowType failureType = flowTypes.get(KyloProcessorFlowTypeRelationship.FAILURE_RELATIONSHIP);
-        KyloProcessorFlowType successType = flowTypes.get(KyloProcessorFlowTypeRelationship.SUCCESS_RELATIONSHIP);
-        KyloProcessorFlowType type = KyloProcessorFlowType.NORMAL_FLOW;
+            KyloProcessorFlowType allType = flowTypes.get(KyloProcessorFlowTypeRelationship.ALL_RELATIONSHIP);
+            KyloProcessorFlowType failureType = flowTypes.get(KyloProcessorFlowTypeRelationship.FAILURE_RELATIONSHIP);
+            KyloProcessorFlowType successType = flowTypes.get(KyloProcessorFlowTypeRelationship.SUCCESS_RELATIONSHIP);
+            KyloProcessorFlowType type = KyloProcessorFlowType.NORMAL_FLOW;
 
-        //if the event is a failure, check to see if this processor was registered as
-        if (event.isTerminatedByFailureRelationship()) {
-            if (failureType != null) {
-                type = failureType;
-            } else if (allType != null) {
-                type = allType;
-            } else if (!getFlowCache().hasProcessorFlowTypesMapped(event.getFeedName())) {
-                //If no processors are mapped for this feed and we got here via a failure event, then mark it as a failure
-                type = failureType;
+            //if the event is a failure, check to see if this processor was registered as
+            if (event.isTerminatedByFailureRelationship()) {
+                if (failureType != null) {
+                    type = failureType;
+                } else if (allType != null) {
+                    type = allType;
+                } else if (successType != null) {
+                    type = successType;
+                }
+                // failure events need to be explicitly defined as Warnings in the template registration
+                if (type.equals(KyloProcessorFlowType.NORMAL_FLOW)) {
+                    type = KyloProcessorFlowType.FAILURE;
+                }
+
+            } else {
+                if (successType != null) {
+                    type = successType;
+                } else if (allType != null) {
+                    type = allType;
+                }
             }
-
-        } else {
-            if (successType != null) {
-                type = successType;
-            } else if (allType != null) {
-                type = allType;
-            }
+            event.setProcessorType(type);
+            log.debug("Setting the Flow Type as {} for Processor {} ({}) on Feed {}.  Flow Types: {} ", type, event.getComponentName(), event.getComponentId(), event.getFeedName(), flowTypes);
         }
-        event.setProcessorType(type);
-        log.debug("Setting the Flow Type as {} for Processor {} ({}) on Feed {}.  Flow Types: {} ", type, event.getComponentName(), event.getComponentId(), event.getFeedName(), flowTypes);
-        return type;
+        return event.getProcessorType();
     }
 
     public boolean isFailureEvent(ProvenanceEventRecordDTO eventRecordDTO) {
