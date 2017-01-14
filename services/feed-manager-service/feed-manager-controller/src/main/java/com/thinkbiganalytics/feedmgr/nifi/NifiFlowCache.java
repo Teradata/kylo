@@ -481,7 +481,7 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
 
     private Map<String, List<NifiFlowProcessor>> toFlowIdProcessorMap(Collection<NifiFlowProcessor> processors) {
         if (processors != null && !processors.isEmpty()) {
-            return processors.stream().collect(Collectors.groupingBy(NifiFlowProcessor::getFlowId));
+            return processors.stream().filter(nifiFlowProcessor -> nifiFlowProcessor.getFlowId() != null).collect(Collectors.groupingBy(NifiFlowProcessor::getFlowId));
         }
         return null;
     }
