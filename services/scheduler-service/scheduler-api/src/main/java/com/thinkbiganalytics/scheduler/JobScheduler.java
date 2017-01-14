@@ -141,5 +141,7 @@ public interface JobScheduler {
 
   Map<String, Object> getMetaData() throws JobSchedulerException;
 
+  void subscribeToJobSchedulerEvents(JobSchedulerListener listener);
+
 
 }

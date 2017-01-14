@@ -12,9 +12,14 @@ import com.thinkbiganalytics.scheduler.rest.model.ScheduleIdentifier;
 import com.thinkbiganalytics.scheduler.rest.model.ScheduledJob;
 import com.thinkbiganalytics.scheduler.rest.model.TriggerInfo;
 import com.thinkbiganalytics.scheduler.support.ScheduledJobState;
+import com.thinkbiganalytics.scheduler.util.CronExpressionUtil;
 
+import org.apache.commons.lang3.StringUtils;
+
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -90,6 +95,10 @@ public class Model {
           ScheduleIdentifier jobIdentifier = DOMAIN_TO_JOB_IDENTIFIER.apply(domain.getJobIdentifier());
           ScheduleIdentifier triggerIdentifier = DOMAIN_TO_TRIGGER_IDENTIFIER.apply(domain.getTriggerIdentifier());
           TriggerInfo triggerInfo = new TriggerInfo(jobIdentifier, triggerIdentifier);
+            triggerInfo.setCronExpression(domain.getCronExpression());
+            triggerInfo.setNextFireTime(domain.getNextFireTime());
+            triggerInfo.setCronExpressionSummary(domain.getCronExpressionSummary());
+            triggerInfo.setDescription(domain.getDescription());
           return triggerInfo;
         }
       };
@@ -113,6 +122,17 @@ public class Model {
       jobBean.setIsRunning(ScheduledJobState.isRunning(jobInfo.getTriggers()));
       jobBean.setCronExpressionData();
       jobBean.setState();
+        if (jobBean.getNextFireTime() == null) {
+            Date nextFireTime = null;
+            try {
+                if (StringUtils.isNotBlank(jobBean.getCronExpression())) {
+                    nextFireTime = CronExpressionUtil.getNextFireTime(jobBean.getCronExpression());
+                }
+            } catch (ParseException e) {
+
+            }
+            jobBean.setNextFireTime(nextFireTime);
+        }
       return jobBean;
     }
 

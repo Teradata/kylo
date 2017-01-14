@@ -164,6 +164,8 @@ function justFiredJob(job){
                 job.nextFireTimeString = ' - ';
             }
             else {
+                if (job.nexFireTime != null && job.nextFireTime != undefined) {
+
                 var timeFromNow = Utils.dateDifferenceMs(new Date().getTime(), job.nextFireTime);
                 if (timeFromNow < 45000) {
                     if (timeFromNow < 15000) {
@@ -178,6 +180,10 @@ function justFiredJob(job){
                 }
                 else {
                     job.nextFireTimeString = moment(job.nextFireTime).fromNow();
+                }
+            }
+                else {
+                    job.nextFireTimeString = ' Unable to identify'
                 }
             }
         }

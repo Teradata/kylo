@@ -3,6 +3,7 @@ package com.thinkbiganalytics.feedmgr.sla;
 import com.thinkbiganalytics.app.ServicesApplicationStartupListener;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedNotFoundExcepton;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
@@ -95,14 +96,14 @@ public class ServiceLevelAgreementService implements ServicesApplicationStartupL
     }
 
     public void enableServiceLevelAgreementSchedule(Feed.ID feedId) {
-        metadataAccess.read(() -> {
+        metadataAccess.commit(() -> {
             List<FeedServiceLevelAgreement> agreements = feedSlaProvider.findFeedServiceLevelAgreements(feedId);
             if (agreements != null) {
                 for (com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement sla : agreements) {
                     serviceLevelAgreementScheduler.enableServiceLevelAgreement(sla);
                 }
             }
-        });
+        }, MetadataAccess.SERVICE);
     }
 
     public void unscheduleServiceLevelAgreement(Feed.ID feedId) {
@@ -119,14 +120,14 @@ public class ServiceLevelAgreementService implements ServicesApplicationStartupL
 
 
     public void disableServiceLevelAgreementSchedule(Feed.ID feedId) {
-        metadataAccess.read(() -> {
+        metadataAccess.commit(() -> {
             List<FeedServiceLevelAgreement> agreements = feedSlaProvider.findFeedServiceLevelAgreements(feedId);
             if (agreements != null) {
                 for (com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement sla : agreements) {
                     serviceLevelAgreementScheduler.disableServiceLevelAgreement(sla);
                 }
             }
-        });
+        }, MetadataAccess.SERVICE);
     }
 
 

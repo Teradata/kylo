@@ -34,6 +34,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -52,6 +53,8 @@ public class QuartzScheduler implements JobScheduler {
   @Autowired
   @Qualifier("schedulerFactoryBean")
   SchedulerFactoryBean schedulerFactoryBean;
+
+    private Set<JobSchedulerListener> listeners = new HashSet<>();
 
   public Scheduler getScheduler() {
     return schedulerFactoryBean.getScheduler();
@@ -136,6 +139,7 @@ public class QuartzScheduler implements JobScheduler {
           newTrigger().withIdentity(new TriggerKey(jobIdentifier.getName(), jobIdentifier.getGroup())).forJob(jobDetail)
               .startAt(triggerStartTime).build();
       getScheduler().scheduleJob(jobDetail, trigger);
+        triggerListeners(JobSchedulerEvent.scheduledJobEvent(jobIdentifier));
     } catch (Exception e) {
       throw new JobSchedulerException();
     }
@@ -175,6 +179,7 @@ public class QuartzScheduler implements JobScheduler {
               .forJob(jobDetail).startAt(triggerStartTime)
               .withSchedule(SimpleScheduleBuilder.simpleSchedule().withIntervalInMilliseconds(period).repeatForever()).build();
       getScheduler().scheduleJob(jobDetail, trigger);
+        triggerListeners(JobSchedulerEvent.scheduledJobEvent(jobIdentifier));
     } catch (NoSuchMethodException | ClassNotFoundException | SchedulerException e) {
       throw new JobSchedulerException("Error calling scheduleAtFixedRateWithDelay", e);
     }
@@ -217,6 +222,7 @@ public class QuartzScheduler implements JobScheduler {
   public void startScheduler() throws JobSchedulerException {
     try {
       getScheduler().start();
+        triggerListeners(JobSchedulerEvent.schedulerStartedEvent());
     } catch (SchedulerException e) {
       throw new JobSchedulerException("Unable to Start the Scheduler", e);
     }
@@ -235,6 +241,7 @@ public class QuartzScheduler implements JobScheduler {
   public void triggerJob(JobIdentifier jobIdentifier) throws JobSchedulerException {
     try {
       getScheduler().triggerJob(jobKeyForJobIdentifier(jobIdentifier));
+        triggerListeners(JobSchedulerEvent.triggerJobEvent(jobIdentifier));
     } catch (SchedulerException e) {
       throw new JobSchedulerException("Unable to Trigger the Job " + jobIdentifier, e);
     }
@@ -253,6 +260,7 @@ public class QuartzScheduler implements JobScheduler {
 
           }
         }
+          triggerListeners(JobSchedulerEvent.pauseJobEvent(jobIdentifier));
       }
     } catch (SchedulerException e) {
       throw new JobSchedulerException("Unable to pause Active Triggers the Job " + jobIdentifier, e);
@@ -272,6 +280,7 @@ public class QuartzScheduler implements JobScheduler {
 
           }
         }
+          triggerListeners(JobSchedulerEvent.resumeJobEvent(jobIdentifier));
       }
     } catch (SchedulerException e) {
       throw new JobSchedulerException("Unable to resume paused Triggers the Job " + jobIdentifier, e);
@@ -313,6 +322,7 @@ public class QuartzScheduler implements JobScheduler {
   public void deleteJob(JobIdentifier jobIdentifier) throws JobSchedulerException {
     try {
       getScheduler().deleteJob(jobKeyForJobIdentifier(jobIdentifier));
+        triggerListeners(JobSchedulerEvent.deleteJobEvent(jobIdentifier));
     } catch (SchedulerException e) {
       throw new JobSchedulerException("Unable to Delete the Job " + jobIdentifier, e);
     }
@@ -418,6 +428,7 @@ public class QuartzScheduler implements JobScheduler {
   public void pauseAll() throws JobSchedulerException {
     try {
       getScheduler().pauseAll();
+        triggerListeners(JobSchedulerEvent.pauseAllJobsEvent());
     } catch (SchedulerException e) {
       throw new JobSchedulerException(e);
     }
@@ -427,6 +438,7 @@ public class QuartzScheduler implements JobScheduler {
   public void resumeAll() throws JobSchedulerException {
     try {
       getScheduler().resumeAll();
+        triggerListeners(JobSchedulerEvent.resumeAllJobsEvent());
     } catch (SchedulerException e) {
       throw new JobSchedulerException(e);
     }
@@ -577,4 +589,13 @@ public class QuartzScheduler implements JobScheduler {
   public void updateTrigger(TriggerIdentifier triggerIdentifier, Trigger trigger) throws SchedulerException {
     getScheduler().rescheduleJob(triggerKeyForTriggerIdentifier(triggerIdentifier), trigger);
   }
+
+    @Override
+    public void subscribeToJobSchedulerEvents(JobSchedulerListener listener) {
+        listeners.add(listener);
+    }
+
+    private void triggerListeners(JobSchedulerEvent event) {
+        listeners.stream().forEach(listener -> listener.onJobSchedulerEvent(event));
+    }
 }
