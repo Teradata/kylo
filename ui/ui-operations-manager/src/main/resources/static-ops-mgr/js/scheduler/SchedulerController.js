@@ -164,7 +164,7 @@ function justFiredJob(job){
                 job.nextFireTimeString = ' - ';
             }
             else {
-                if (job.nexFireTime != null && job.nextFireTime != undefined) {
+                if (job.nextFireTime != null && job.nextFireTime != undefined) {
 
                 var timeFromNow = Utils.dateDifferenceMs(new Date().getTime(), job.nextFireTime);
                 if (timeFromNow < 45000) {

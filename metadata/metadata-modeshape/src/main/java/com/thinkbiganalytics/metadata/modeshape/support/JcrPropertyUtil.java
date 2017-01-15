@@ -1,15 +1,38 @@
 package com.thinkbiganalytics.metadata.modeshape.support;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.datatype.joda.JodaModule;
+import com.thinkbiganalytics.classnameregistry.ClassNameChangeRegistry;
+import com.thinkbiganalytics.metadata.api.MissingUserPropertyException;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeBuilder;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
+import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor;
+import com.thinkbiganalytics.metadata.api.extension.FieldDescriptorBuilder;
+import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.UnknownPropertyException;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
+import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensiblePropertyCollection;
+import com.thinkbiganalytics.metadata.modeshape.extension.JcrUserFieldDescriptor;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.joda.time.DateTime;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -40,33 +63,6 @@ import javax.jcr.Value;
 import javax.jcr.ValueFactory;
 import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.PropertyDefinition;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.joda.time.DateTime;
-
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.datatype.joda.JodaModule;
-import com.thinkbiganalytics.classnameregistry.ClassNameChangeRegistry;
-import com.thinkbiganalytics.metadata.api.MissingUserPropertyException;
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeBuilder;
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
-import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor;
-import com.thinkbiganalytics.metadata.api.extension.FieldDescriptorBuilder;
-import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
-import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
-import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.UnknownPropertyException;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
-import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensiblePropertyCollection;
-import com.thinkbiganalytics.metadata.modeshape.extension.JcrUserFieldDescriptor;
 
 /**
  * Utility functions for JCR properties.
@@ -125,6 +121,10 @@ public class JcrPropertyUtil {
      * Returns the boolean value of the property. if the property is a String type it will try to determine the boolean value. If it cannot get a boolean value, it will return false.
      */
     public static boolean getBoolean(Node node, String name) {
+        return getBoolean(node, name, false);
+    }
+
+    private static boolean getBoolean(Node node, String name, boolean notFoundValue) {
         try {
             Property prop = node.getProperty(name);
             if (PropertyType.STRING == prop.getType()) {
@@ -132,12 +132,22 @@ public class JcrPropertyUtil {
             } else if (PropertyType.BOOLEAN == prop.getType()) {
                 return prop.getBoolean();
             }
-            return false;
+            return notFoundValue;
         } catch (PathNotFoundException e) {
-            return false;
+            return notFoundValue;
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to access property: " + name, e);
         }
+    }
+
+    public static boolean getBooleanOrDefault(Node node, String name, boolean notFoundValue) {
+        boolean val = notFoundValue;
+        try {
+            val = getBoolean(node, name);
+        } catch (Exception e) {
+            //swallow exception and return the default value
+        }
+        return val;
     }
 
     public static Long getLong(Node node, String name) {
@@ -969,7 +979,7 @@ public class JcrPropertyUtil {
     }
     
     /**
-     * @param wmNode
+     * @param node
      */
     public static Stream<Property> streamProperties(Node node) {
         return StreamSupport.stream(propertiesIterable(node).spliterator(), false);

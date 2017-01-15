@@ -82,8 +82,7 @@ var ServicesStatusService = angular.module(MODULE_OPERATIONS).factory('ServicesS
         var errorFn = function (err) {
             ServicesStatusData.fetchServiceStatusErrorCount++;
 
-            console.log('error', err);
-            if(errorCallback){
+            if (errorCallback) {
                 errorCallback(err);
             }
             if(ServicesStatusData.fetchServiceStatusErrorCount >=10) {

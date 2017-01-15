@@ -14,7 +14,6 @@ import com.thinkbiganalytics.scheduler.JobIdentifier;
 import com.thinkbiganalytics.scheduler.JobScheduler;
 import com.thinkbiganalytics.scheduler.JobSchedulerEvent;
 import com.thinkbiganalytics.scheduler.JobSchedulerException;
-import com.thinkbiganalytics.scheduler.JobSchedulerListener;
 import com.thinkbiganalytics.scheduler.model.DefaultJobIdentifier;
 
 import org.apache.commons.lang3.StringUtils;
@@ -33,7 +32,7 @@ import javax.inject.Inject;
 /**
  * Created by sr186054 on 7/22/16.
  */
-public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreementScheduler, ModeShapeAvailabilityListener, JobSchedulerListener {
+public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreementScheduler, ModeShapeAvailabilityListener {
 
     private static final Logger log = LoggerFactory.getLogger(DefaultServiceLevelAgreementScheduler.class);
 
@@ -66,7 +65,6 @@ public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreem
     @PostConstruct
     public void scheduleServiceLevelAgreements() {
         modeShapeAvailability.subscribe(this);
-        jobScheduler.subscribeToJobSchedulerEvents(this);
     }
 
     @Override
@@ -232,7 +230,6 @@ public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreem
 
     }
 
-    @Override
     public void onJobSchedulerEvent(JobSchedulerEvent event) {
         try {
             switch (event.getEvent()) {
