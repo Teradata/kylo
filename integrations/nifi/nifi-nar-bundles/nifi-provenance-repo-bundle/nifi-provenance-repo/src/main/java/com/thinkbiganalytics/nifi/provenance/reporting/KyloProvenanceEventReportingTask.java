@@ -460,6 +460,13 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
             }
             previousMax = maxEventId;
             try {
+
+                if (!isKyloAvailable()) {
+                    getLogger().info("Kylo is not available to process requests yet.  This task will exit and wait for its next schedule interval.");
+                    abortProcessing();
+                    return;
+                }
+
                 //get the last event that was processed
                 long lastEventId = initializeAndGetLastEventIdForProcessing(maxEventId, nodeId);
 
@@ -470,11 +477,7 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
                     return;
                 }
 
-                if (!isKyloAvailable()) {
-                    getLogger().info("Kylo is not available to process requests yet.  This task will exit and wait for its next schedule interval.");
-                    abortProcessing();
-                    return;
-                }
+
 
                 //update NiFiFlowCache with list of changes for processing the events
                 updateNifiFlowCache();
@@ -599,10 +602,14 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
                 try {
                     getLogger().info("KyloProvenanceEventReportingTask EventId Info: Attempting to set the initial event id to be equal to the maxEventId from Kylo ");
                     lastEventId = getKyloNiFiFlowProvider().findNiFiMaxEventId(clusterNodeId);
+                    if (lastEventId == 0) {
+                        lastEventId = -1;
+                    }
                     setLastEventId(lastEventId);
                     initialId = lastEventId;
                     getLogger().info("KyloProvenanceEventReportingTask EventId Info: Successfully obtained and set the initial event id to be equal to the maxEventId from Kylo as {}  ",
                                      new Object[]{lastEventId});
+
                 } catch (Exception e) {
                     getLogger().error("KyloProvenanceEventReportingTask EventId Error: Unable to set initial event id from Kylo. The last event id is {} ", new Object[]{lastEventId}, e);
                 }
@@ -622,6 +629,9 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
             try {
                 getLogger().info("KyloProvenanceEventReportingTask EventId Info: Attempting to set the last event event id to be equal to the maxEventId from Kylo ");
                 lastEventId = getKyloNiFiFlowProvider().findNiFiMaxEventId(clusterNodeId);
+                if (lastEventId == 0) {
+                    lastEventId = -1;
+                }
                 setLastEventId(lastEventId);
                 getLogger().info("KyloProvenanceEventReportingTask EventId Info: Set the last event id to be equal to the maxEventId from Kylo as {}  ", new Object[]{lastEventId});
             } catch (Exception e) {
