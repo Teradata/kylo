@@ -83,6 +83,16 @@ public class JpaNifiFeedProcessorStats implements NifiFeedProcessorStats {
     @Column(name = "FLOW_FILES_FINISHED")
     protected Long flowFilesFinished = 0L;
 
+    @Column(name = "MAX_EVENT_ID")
+    protected Long maxEventId = 0L;
+
+    @Column(name = "CLUSTER_NODE_ID")
+    protected String clusterNodeId;
+
+    @Column(name = "CLUSTER_NODE_ADDRESS")
+    protected String clusterNodeAddress;
+
+
 
     @Transient
     protected Long resultSetCount;
@@ -320,4 +330,33 @@ public class JpaNifiFeedProcessorStats implements NifiFeedProcessorStats {
     }
 
 
+    @Override
+    public Long getMaxEventId() {
+        return maxEventId;
+    }
+
+    @Override
+    public void setMaxEventId(Long maxEventId) {
+        this.maxEventId = maxEventId;
+    }
+
+    @Override
+    public String getClusterNodeId() {
+        return clusterNodeId;
+    }
+
+    @Override
+    public void setClusterNodeId(String clusterNodeId) {
+        this.clusterNodeId = clusterNodeId;
+    }
+
+    @Override
+    public String getClusterNodeAddress() {
+        return clusterNodeAddress;
+    }
+
+    @Override
+    public void setClusterNodeAddress(String clusterNodeAddress) {
+        this.clusterNodeAddress = clusterNodeAddress;
+    }
 }

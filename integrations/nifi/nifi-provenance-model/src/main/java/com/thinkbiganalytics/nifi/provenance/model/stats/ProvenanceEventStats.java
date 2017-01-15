@@ -101,6 +101,13 @@ public class ProvenanceEventStats extends BaseStatistics {
     }
 
     @Override
+    public long getMaxEventId() {
+        long maxId = super.getMaxEventId();
+        long eventId = getEventId();
+        return maxId > eventId ? maxId : eventId;
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;

@@ -59,6 +59,8 @@ public class NifiEventProvider {
         nifiEvent.setIsFailure(eventRecordDTO.isFailure());
         nifiEvent.setIsBatchJob(eventRecordDTO.isBatchJob());
         nifiEvent.setHasFailureEvents(eventRecordDTO.isHasFailedEvents());
+        nifiEvent.setClusterNodeAddress(eventRecordDTO.getClusterNodeAddress());
+        nifiEvent.setClusterNodeId(eventRecordDTO.getClusterNodeId());
         return nifiEvent;
     }
 

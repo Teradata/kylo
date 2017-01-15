@@ -35,6 +35,8 @@ public class StatsModel {
         stats.setFlowFileId(event.getFlowFileUuid());
         stats.setRootFlowFileId(rootFlowFile != null ? rootFlowFile.getId() : null);
         stats.setEventDetails(event.getDetails());
+        stats.setClusterNodeId(event.getClusterNodeId());
+        stats.setClusterNodeAddress(event.getClusterNodeAddress());
         stats.setRootProcessGroupId((rootFlowFile != null && rootFlowFile.hasFeedInformationAssigned()) ? rootFlowFile.getFeedProcessGroupId() : null);
         return stats;
     }
@@ -62,6 +64,8 @@ public class StatsModel {
                 stats.setRootFlowFileId(rootFlowFile != null ? rootFlowFile.getId() : null);
                 stats.setRootProcessGroupId((rootFlowFile != null && rootFlowFile.hasFeedInformationAssigned()) ? rootFlowFile.getFeedProcessGroupId() : null);
                 stats.setJobsFinished(1L);
+                stats.setClusterNodeId(event.getClusterNodeId());
+                stats.setClusterNodeAddress(event.getClusterNodeAddress());
                 setCompletionJobStats(rootFlowFile, event, stats);
                 log.debug("New Completion job stats finished? {} for root: {} eventType: {} ", stats.getJobsFinished(), rootFlowFile.getId(), event.getEventType());
             }
@@ -91,7 +95,8 @@ public class StatsModel {
         stats.setEventDetails(event.getDetails());
         stats.setRootProcessGroupId((rootFlowFile != null && rootFlowFile.hasFeedInformationAssigned()) ? rootFlowFile.getFeedProcessGroupId() : null);
         stats.setJobsStarted((event.getFlowFile().isRootFlowFile() && rootFlowFile.getFirstEvent() != null && event.equals(rootFlowFile.getFirstEvent())) ? 1L : 0L);
-
+        stats.setClusterNodeId(event.getClusterNodeId());
+        stats.setClusterNodeAddress(event.getClusterNodeAddress());
         stats.setJobsFinished(0L);
         if(event.isEndingFlowFileEvent() && rootFlowFile != null && rootFlowFile.isFlowComplete()){
             if(rootFlowFile.getFlowFileCompletionStatsCollected().compareAndSet(false,true)){

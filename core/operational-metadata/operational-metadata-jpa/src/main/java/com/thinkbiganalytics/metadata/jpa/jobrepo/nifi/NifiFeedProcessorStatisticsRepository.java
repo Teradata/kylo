@@ -16,5 +16,10 @@ public interface NifiFeedProcessorStatisticsRepository extends JpaRepository<Jpa
     @Query(value = "select stats from JpaNifiFeedProcessorStats as stats where stats.minEventTime between :startTime and :endTime")
     List<JpaNifiFeedProcessorStats> findWithinTimeWindow(@Param("startTime") DateTime start, @Param("endTime") DateTime end);
 
+    @Query(value = "select max(stats.maxEventId) from JpaNifiFeedProcessorStats as stats")
+    Long findMaxEventId();
+
+    @Query(value = "select max(stats.maxEventId) from JpaNifiFeedProcessorStats as stats where stats.clusterNodeId = :clusterNodeId")
+    Long findMaxEventId(@Param("clusterNodeId") String clusterNodeId);
 
 }

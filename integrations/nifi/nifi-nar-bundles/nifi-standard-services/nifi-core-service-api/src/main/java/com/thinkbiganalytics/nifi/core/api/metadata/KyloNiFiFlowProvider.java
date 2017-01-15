@@ -14,4 +14,6 @@ public interface KyloNiFiFlowProvider {
 
     boolean isNiFiFlowDataAvailable();
 
+    Long findNiFiMaxEventId(String clusterNodeId);
+
 }

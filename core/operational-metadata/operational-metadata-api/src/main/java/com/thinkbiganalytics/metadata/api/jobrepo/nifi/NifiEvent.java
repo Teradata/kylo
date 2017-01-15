@@ -50,4 +50,9 @@ public interface NifiEvent {
     boolean isFinalJobEvent();
 
     boolean isHasFailureEvents();
+
+    String getClusterNodeId();
+
+    String getClusterNodeAddress();
+
 }

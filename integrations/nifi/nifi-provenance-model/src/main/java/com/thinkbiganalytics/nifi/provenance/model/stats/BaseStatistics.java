@@ -22,6 +22,11 @@ public class BaseStatistics implements Serializable {
     protected long jobsFailed = 0L;
     protected long successfulJobDuration = 0L;
     protected long jobDuration = 0L;
+    protected long maxEventId = 0L;
+
+    protected String clusterNodeId;
+
+    protected String clusterNodeAddress;
 
 
     public DateTime getTime() {
@@ -126,5 +131,29 @@ public class BaseStatistics implements Serializable {
 
     public void setJobDuration(long jobDuration) {
         this.jobDuration = jobDuration;
+    }
+
+    public long getMaxEventId() {
+        return maxEventId;
+    }
+
+    public void setMaxEventId(long maxEventId) {
+        this.maxEventId = maxEventId;
+    }
+
+    public String getClusterNodeId() {
+        return clusterNodeId;
+    }
+
+    public void setClusterNodeId(String clusterNodeId) {
+        this.clusterNodeId = clusterNodeId;
+    }
+
+    public String getClusterNodeAddress() {
+        return clusterNodeAddress;
+    }
+
+    public void setClusterNodeAddress(String clusterNodeAddress) {
+        this.clusterNodeAddress = clusterNodeAddress;
     }
 }

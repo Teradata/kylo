@@ -97,7 +97,6 @@ public class ProvenanceEventActiveMqWriter {
     public void writeBatchEvents(ProvenanceEventRecordDTOHolder events) {
         try {
             logger.info("SENDING Events to JMS {} ", events);
-            logger.info("Processing the JMS message as normal");
             sendJmsMessage.sendSerializedObjectToQueue(Queues.FEED_MANAGER_QUEUE, events);
             AggregationEventProcessingStats.addBatchEvents(events.getEvents().size());
             notifySuccess(Queues.FEED_MANAGER_QUEUE, events);

@@ -1,10 +1,15 @@
 package com.thinkbiganalytics.feedmgr.rest.controller;
 
 import com.thinkbiganalytics.feedmgr.nifi.NifiFlowCache;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStatisticsProvider;
 import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheSync;
+import com.thinkbiganalytics.security.AccessController;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -17,22 +22,29 @@ import javax.ws.rs.core.Response;
 
 import io.swagger.annotations.Api;
 
-/**
- * TODO consider making them POST routines Created by sr186054 on 12/20/16.
- */
-@Api(value = "nifi-provenance", produces = "application/json")
-@Path("/metadata/nifi-flow-cache")
+@Api(value = "nifi-provenance", produces = "application/json",
+     description = "Used by the NiFi KyloProvenanceEventReportingTask.  Provides information about the flows and the max event id processed by kylo")
+@Path("/metadata/nifi-provenance")
 @Component
-public class NifiFlowCacheRestController {
+public class NifiProvenanceRestController {
+
+    @Inject
+    private MetadataAccess metadataAccess;
+
+    @Inject
+    private AccessController accessController;
+
+    @Autowired
+    private NifiFeedProcessorStatisticsProvider statsProvider;
 
 
-    private static final Logger log = LoggerFactory.getLogger(NifiFlowCacheRestController.class);
+    private static final Logger log = LoggerFactory.getLogger(NifiProvenanceRestController.class);
 
     @Inject
     NifiFlowCache nifiFlowCache;
 
     @GET
-    @Path("/get-flow-updates")
+    @Path("/nifi-flow-cache/get-flow-updates")
     @Produces({MediaType.APPLICATION_JSON})
     public Response getFlowUpdates(@QueryParam("syncId") String syncId) {
         NiFiFlowCacheSync updates = nifiFlowCache.syncAndReturnUpdates(syncId);
@@ -40,7 +52,7 @@ public class NifiFlowCacheRestController {
     }
 
     @GET
-    @Path("/get-cache")
+    @Path("/nifi-flow-cache/get-cache")
     @Produces({MediaType.APPLICATION_JSON})
     public Response getCache(@QueryParam("syncId") String syncId) {
         NiFiFlowCacheSync cache = nifiFlowCache.getCache(syncId);
@@ -48,7 +60,7 @@ public class NifiFlowCacheRestController {
     }
 
     @GET
-    @Path("/preview-flow-updates")
+    @Path("/nifi-flow-cache/preview-flow-updates")
     @Produces({MediaType.APPLICATION_JSON})
     public Response previewFlowUpdates(@QueryParam("syncId") String syncId) {
         NiFiFlowCacheSync updates = nifiFlowCache.previewUpdates(syncId);
@@ -56,7 +68,7 @@ public class NifiFlowCacheRestController {
     }
 
     @GET
-    @Path("/cache-summary")
+    @Path("/nifi-flow-cache/cache-summary")
     @Produces({MediaType.APPLICATION_JSON})
     public Response previewFlowUpdates() {
         NifiFlowCache.CacheSummary summary = nifiFlowCache.cacheSummary();
@@ -64,7 +76,7 @@ public class NifiFlowCacheRestController {
     }
 
     @GET
-    @Path("/reset-flow-updates")
+    @Path("/nifi-flow-cache/reset-flow-updates")
     @Produces({MediaType.APPLICATION_JSON})
     public Response getSyncUpdates(@QueryParam("syncId") String syncId) {
         NiFiFlowCacheSync updates = nifiFlowCache.refreshAll(syncId);
@@ -72,7 +84,7 @@ public class NifiFlowCacheRestController {
     }
 
     @GET
-    @Path("/reset-cache")
+    @Path("/nifi-flow-cache/reset-cache")
     @Produces({MediaType.APPLICATION_JSON})
     public Response resetCache() {
         nifiFlowCache.rebuildAll();
@@ -81,10 +93,26 @@ public class NifiFlowCacheRestController {
 
 
     @GET
-    @Path("/available")
-    @Produces({MediaType.TEXT_HTML})
+    @Path("/nifi-flow-cache/available")
+    @Produces({MediaType.APPLICATION_JSON})
     public Response isAvailable() {
         return Response.ok(nifiFlowCache.isAvailable()).build();
+    }
+
+
+    @GET
+    @Path("/max-event-id")
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response findMaxEventId(@QueryParam("clusterNodeId") String clusterNodeId) {
+        return metadataAccess.read(() -> {
+            Long maxId = 0L;
+            if (StringUtils.isNotBlank(clusterNodeId)) {
+                maxId = statsProvider.findMaxEventId(clusterNodeId);
+            } else {
+                maxId = statsProvider.findMaxEventId();
+            }
+            return Response.ok(maxId).build();
+        }, MetadataAccess.SERVICE);
     }
 
 

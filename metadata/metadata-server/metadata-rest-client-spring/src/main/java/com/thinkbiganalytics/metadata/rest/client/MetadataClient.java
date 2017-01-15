@@ -35,6 +35,8 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClients;
 import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -71,6 +73,8 @@ import javax.net.ssl.SSLContext;
  * @author Sean Felten
  */
 public class MetadataClient {
+
+    private static final Logger log = LoggerFactory.getLogger(MetadataClient.class);
     public static final List<MediaType> ACCEPT_TYPES = Collections.unmodifiableList(Arrays.asList(MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN));
     
     public static final ParameterizedTypeReference<List<ExtensibleTypeDescriptor>> TYPE_LIST = new ParameterizedTypeReference<List<ExtensibleTypeDescriptor>>() { };
@@ -355,12 +359,24 @@ public class MetadataClient {
 
 
     public NiFiFlowCacheSync getFlowUpdates(String syncId) {
-        return get(path("nifi-flow-cache", "get-flow-updates"), new NifiFlowSyncParameters(syncId), NiFiFlowCacheSync.class);
+        return get(path("nifi-provenance", "nifi-flow-cache", "get-flow-updates"), new NifiFlowSyncParameters(syncId), NiFiFlowCacheSync.class);
     }
 
     public NiFiFlowCacheSync resetFlowUpdates(String syncId) {
-        return get(path("nifi-flow-cache","reset-flow-updates"), new NifiFlowSyncParameters(syncId), NiFiFlowCacheSync.class);
+        return get(path("nifi-provenance", "nifi-flow-cache", "reset-flow-updates"), new NifiFlowSyncParameters(syncId), NiFiFlowCacheSync.class);
     }
+
+
+    public Long findNiFiMaxEventId(String clusterNodeId) {
+        log.info("findNifiMaxEventId ", clusterNodeId);
+        return get(path("nifi-provenance", "max-event-id"), new MaxNifiEventParameters(clusterNodeId), Long.class);
+    }
+
+
+    public Boolean isNiFiFlowDataAvailable() {
+        return get(path("nifi-provenance", "nifi-flow-cache", "available"), Boolean.class);
+    }
+
 
 
     private UriComponentsBuilder base(Path path) {
@@ -372,6 +388,7 @@ public class MetadataClient {
     }
     
     private <R> R get(Path path, Function<UriComponentsBuilder, UriComponentsBuilder> filterFunct, Class<R> resultType) {
+        log.info("get ", path);
         return this.template.getForObject(
                 (filterFunct != null ? filterFunct.apply(base(path)) : base(path)).build().toUri(),
                 resultType);
@@ -438,6 +455,25 @@ public class MetadataClient {
 
     
     private static class Form extends LinkedMultiValueMap<String, String> {
+    }
+
+    private static class MaxNifiEventParameters implements Function<UriComponentsBuilder, UriComponentsBuilder> {
+
+        private String clusterNodeId;
+
+        public MaxNifiEventParameters(String clusterNodeId) {
+            this.clusterNodeId = clusterNodeId;
+        }
+
+        public UriComponentsBuilder apply(UriComponentsBuilder target) {
+            UriComponentsBuilder result = target;
+
+            if (!Strings.isNullOrEmpty(this.clusterNodeId)) {
+                result = result.queryParam("clusterNodeId", this.clusterNodeId);
+            }
+            return result;
+        }
+
     }
 
 

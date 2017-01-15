@@ -94,4 +94,18 @@ public interface NifiFeedProcessorStats {
     Long getResultSetCount();
 
     void setResultSetCount(Long resultSetCount);
+
+    Long getMaxEventId();
+
+    void setMaxEventId(Long maxEventId);
+
+    String getClusterNodeId();
+
+    void setClusterNodeId(String clusterNodeId);
+
+    String getClusterNodeAddress();
+
+    void setClusterNodeAddress(String clusterNodeAddress);
+
+
 }

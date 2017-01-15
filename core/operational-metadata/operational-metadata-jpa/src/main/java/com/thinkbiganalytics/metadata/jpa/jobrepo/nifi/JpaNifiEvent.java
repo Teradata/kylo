@@ -103,6 +103,13 @@ public class JpaNifiEvent extends AbstractAuditedEntity implements NifiEvent {
     @Column(name = "FLOW_FILE_ID", insertable = false, updatable = false)
     private String flowFileId;
 
+    @Column(name = "CLUSTER_NODE_ID")
+    protected String clusterNodeId;
+
+    @Column(name = "CLUSTER_NODE_ADDRESS")
+    protected String clusterNodeAddress;
+
+
 
     public JpaNifiEvent() {
 
@@ -376,5 +383,21 @@ public class JpaNifiEvent extends AbstractAuditedEntity implements NifiEvent {
 
     public void setHasFailureEvents(boolean hasFailureEvents) {
         this.hasFailureEvents = hasFailureEvents;
+    }
+
+    public String getClusterNodeId() {
+        return clusterNodeId;
+    }
+
+    public void setClusterNodeId(String clusterNodeId) {
+        this.clusterNodeId = clusterNodeId;
+    }
+
+    public String getClusterNodeAddress() {
+        return clusterNodeAddress;
+    }
+
+    public void setClusterNodeAddress(String clusterNodeAddress) {
+        this.clusterNodeAddress = clusterNodeAddress;
     }
 }

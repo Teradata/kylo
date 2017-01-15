@@ -7,6 +7,7 @@ import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStats;
 
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,9 +25,12 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
 
     private NifiFeedProcessorStatisticsRepository statisticsRepository;
 
+    private NifiEventRepository nifiEventRepository;
+
     @Autowired
-    public NifiFeedProcessorStatisticsProvider(NifiFeedProcessorStatisticsRepository repository) {
+    public NifiFeedProcessorStatisticsProvider(NifiFeedProcessorStatisticsRepository repository, NifiEventRepository nifiEventRepository) {
         this.statisticsRepository = repository;
+        this.nifiEventRepository = nifiEventRepository;
     }
 
 
@@ -126,5 +130,28 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
             .orderBy(stats.maxEventTime.asc());
 
         return (List<JpaNifiFeedProcessorStats>) query.fetch();
+    }
+
+
+    @Override
+    public Long findMaxEventId(String clusterNodeId) {
+        Long eventId = -1L;
+        if (StringUtils.isNotBlank(clusterNodeId)) {
+            eventId = statisticsRepository.findMaxEventId(clusterNodeId);
+            if (eventId == null) {
+                eventId = nifiEventRepository.findMaxEventId(clusterNodeId);
+            }
+        } else {
+            eventId = findMaxEventId();
+        }
+        return eventId;
+    }
+
+    public Long findMaxEventId() {
+        Long eventId = statisticsRepository.findMaxEventId();
+        if (eventId == null) {
+            eventId = nifiEventRepository.findMaxEventId();
+        }
+        return eventId;
     }
 }

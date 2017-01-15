@@ -52,5 +52,9 @@ public interface NifiFeedProcessorStatisticsProvider {
 
     List<? extends NifiFeedProcessorStats> findForFeedStatisticsGroupedByTime(String feedName, TimeFrame timeFrame);
 
+    Long findMaxEventId();
+
+    Long findMaxEventId(String clusterNodeId);
+
 
 }

@@ -52,8 +52,9 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
 
     public static final String LAST_EVENT_ID_KEY = "kyloLastEventId";
 
-    private static enum LAST_EVENT_ID_NOT_FOUND_OPTION {ZERO, MAX_EVENT_ID}
-    private static enum INITIAL_EVENT_ID_OPTION {LAST_EVENT_ID, MAX_EVENT_ID}
+    private static enum LAST_EVENT_ID_NOT_FOUND_OPTION {ZERO, MAX_EVENT_ID, KYLO}
+
+    private static enum INITIAL_EVENT_ID_OPTION {LAST_EVENT_ID, MAX_EVENT_ID, KYLO}
 
 
     PropertyDescriptor METADATA_SERVICE = new PropertyDescriptor.Builder()
@@ -426,7 +427,16 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
     @Override
     public void onTrigger(final ReportingContext context) {
 
+        final boolean isClustered = context.isClustered();
+        final String nodeId = context.getClusterNodeIdentifier();
+        if (nodeId == null && isClustered) {
+            getLogger().debug("This instance of NiFi is configured for clustering, but the Cluster Node Identifier is not yet available. "
+                              + "Will wait for Node Identifier to be established.");
+            return;
+        }
+
         if (processing.compareAndSet(false, true) && !isInitializing()) {
+
 
 
 
@@ -434,10 +444,11 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
             final EventAccess access = context.getEventAccess();
             final ProvenanceEventRepository provenance = access.getProvenanceRepository();
 
+
             if (this.stateManager == null) {
                 this.stateManager = stateManager;
             }
-            getLogger().debug("Reporting Task Triggered!  Last Event id is ", new Object[]{getLastEventId(stateManager)});
+            getLogger().debug("KyloProvenanceEventReportingTask onTrigger Info: Reporting Task Triggered!  Last Event id is ", new Object[]{getLastEventId(stateManager)});
             ensureJmsListeners();
 
             //get the latest event Id in provenance
@@ -450,12 +461,18 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
             previousMax = maxEventId;
             try {
                 //get the last event that was processed
-                long lastEventId = initializeAndGetLastEventIdForProcessing(maxEventId);
+                long lastEventId = initializeAndGetLastEventIdForProcessing(maxEventId, nodeId);
 
                 //finish processing if there is nothing to process
                 if (lastEventId == maxEventId.longValue()) {
                     getLogger().trace("Last event id == max id... will not process!");
                     finishProcessing(0);
+                    return;
+                }
+
+                if (!isKyloAvailable()) {
+                    getLogger().info("Kylo is not available to process requests yet.  This task will exit and wait for its next schedule interval.");
+                    abortProcessing();
                     return;
                 }
 
@@ -475,7 +492,8 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
                 int batchSize = processingBatchSize == null || processingBatchSize < 1 ? 500 : processingBatchSize;
                 Integer batches = (int) Math.ceil(Double.valueOf(recordCount) / batchSize);
                 if (recordCount > 0) {
-                    getLogger().info("Attempting to process {} events starting with event id: {}.  Splitting into {} batches of {} each ", new Object[]{recordCount, nextId, batches, batchSize});
+                    getLogger().info("KyloProvenanceEventReportingTask onTrigger Info: Attempting to process {} events starting with event id: {}.  Splitting into {} batches of {} each ",
+                                     new Object[]{recordCount, nextId, batches, batchSize});
                 }
 
                 //reset the queryTime holder
@@ -496,8 +514,9 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
 
                         if (lastLogTime == null || (DateTime.now().getMillis() - lastLogTime.getMillis() > logReportingTimeMs)) {
                             lastLogTime = DateTime.now();
-                            getLogger().info("KyloReportingTask is in a long running process.  Currently processing Event id: {}.  {} events remaining to be processed. ",
-                                             new Object[]{lastEventId, recordCount});
+                            getLogger().info(
+                                "KyloProvenanceEventReportingTask onTrigger Info: ReportingTask is in a long running process.  Currently processing Event id: {}.  {} events remaining to be processed. ",
+                                new Object[]{lastEventId, recordCount});
                         }
                     }
                     if (!isProcessing()) {
@@ -509,7 +528,7 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
                 if (totalRecords > 0 && isProcessing()) {
                     long processingTime = (System.currentTimeMillis() - start);
                     getLogger().info(
-                        "KyloReportingTask finished. Last Event id: {}. Total time to process {} events was {} ms.  Total time spent querying for events in Nifi was {} ms.  Kylo ProcessingTime: {} ms ",
+                        "KyloProvenanceEventReportingTask onTrigger Info: ReportingTask finished. Last Event id: {}. Total time to process {} events was {} ms.  Total time spent querying for events in Nifi was {} ms.  Kylo ProcessingTime: {} ms ",
                         new Object[]{lastEventId, totalRecords, processingTime, nifiQueryTime, processingTime - nifiQueryTime});
                 }
 
@@ -526,9 +545,21 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
             } else {
                 Long maxId = context.getEventAccess().getProvenanceRepository().getMaxEventId();
                 Long count = (maxId - previousMax);
-                getLogger().info("Still processing previous batch " + currentProcessingMessage + ".  The next run will process events up to " + maxId + ". " + count + " new events");
+                getLogger().info(
+                    "KyloProvenanceEventReportingTask onTrigger Info: Still processing previous batch " + currentProcessingMessage + ".  The next run will process events up to " + maxId + ". " + count
+                    + " new events");
             }
         }
+    }
+
+    private boolean isKyloAvailable() {
+        boolean avalable = false;
+        try {
+            avalable = getKyloNiFiFlowProvider().isNiFiFlowDataAvailable();
+        } catch (Exception e) {
+            getLogger().error("Error checking to see if Kylo is available. Please ensure Kylo is up and running. ");
+        }
+        return avalable;
     }
 
     private boolean isProcessing() {
@@ -539,32 +570,68 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
         return initializing.get();
     }
 
-    private Long initializeAndGetLastEventIdForProcessing(Long maxEventId) throws IOException {
+    private Long initializeAndGetLastEventIdForProcessing(Long maxEventId, String clusterNodeId) throws IOException {
         long lastEventId = getLastEventId(stateManager);
-        if (lastEventId > maxEventId) {
-            getLogger().info("KyloReportingTask EventId Info: The last saved eventId of {} is > then the reported maxEventId of {} in NiFi Provenance. Resetting the lastEventId to be 0.",
-                             new Object[]{lastEventId, maxEventId});
+
+        //Reset to the beginning if provenance restarts its counts
+        if (lastEventId != -1 && lastEventId > maxEventId) {
+            getLogger().warn(
+                "KyloProvenanceEventReportingTask EventId Warning: Current provenance max id is {} which is less than what was stored in state as the last queried event, which was {}. This means the provenance restarted its "
+                +
+                "ids. Restarting querying from the beginning.", new Object[]{maxEventId, lastEventId});
             lastEventId = -1;
+            return lastEventId;
         }
+
         //check to see if we should reset the range query
         if (initialId == null) {
             initialId = lastEventId;
             if (initialEventIdValue.equals(INITIAL_EVENT_ID_OPTION.MAX_EVENT_ID)) {
                 // initialize the initial id
-                getLogger().info("Setting the initial event id to be equal to the maxEventId of {}.  No events will be procssed until the next trigger. ", new Object[]{maxEventId});
+                getLogger().info(
+                    "KyloProvenanceEventReportingTask EventId Info: Since the INITIAL_EVENT_ID parameter is set to 'MAX_EVENT_ID' setting the initial event id to be equal to the maxEventId of {}.  No events will be procssed until the next trigger. ",
+                    new Object[]{maxEventId});
                 setLastEventId(maxEventId);
                 lastEventId = maxEventId - 1;
                 initialId = maxEventId - 1;
+            } else if (initialEventIdValue.equals(INITIAL_EVENT_ID_OPTION.KYLO)) {
+
+                try {
+                    getLogger().info("KyloProvenanceEventReportingTask EventId Info: Attempting to set the initial event id to be equal to the maxEventId from Kylo ");
+                    lastEventId = getKyloNiFiFlowProvider().findNiFiMaxEventId(clusterNodeId);
+                    setLastEventId(lastEventId);
+                    initialId = lastEventId;
+                    getLogger().info("KyloProvenanceEventReportingTask EventId Info: Successfully obtained and set the initial event id to be equal to the maxEventId from Kylo as {}  ",
+                                     new Object[]{lastEventId});
+                } catch (Exception e) {
+                    getLogger().error("KyloProvenanceEventReportingTask EventId Error: Unable to set initial event id from Kylo. The last event id is {} ", new Object[]{lastEventId}, e);
+                }
+
             }
         }
 
         //check to see if we should default the not found event id to be the max id
         if (lastEventId == -1 && lastEventIdNotFoundValue.equals(LAST_EVENT_ID_NOT_FOUND_OPTION.MAX_EVENT_ID)) {
             // initialize the initial id
-            getLogger().info("Last Event Id Not found.  Setting the last event id to be equal to the maxEventId of {}.  No events will be processed until the next trigger. ",
-                             new Object[]{maxEventId});
+            getLogger().info(
+                "KyloProvenanceEventReportingTask EventId Info: Unable to find the last event id.  This is possible because this is the first time the Reporting Task was setup.  Since the  LAST_EVENT_ID parameter is set to 'MAX_EVENT_ID' setting the last event id to be equal to the maxEventId of {}.  No events will be processed until the next trigger. ",
+                new Object[]{maxEventId});
             setLastEventId(maxEventId);
             lastEventId = maxEventId - 1;
+        } else if (lastEventId == -1 && lastEventIdNotFoundValue.equals(LAST_EVENT_ID_NOT_FOUND_OPTION.KYLO)) {
+            try {
+                getLogger().info("KyloProvenanceEventReportingTask EventId Info: Attempting to set the last event event id to be equal to the maxEventId from Kylo ");
+                lastEventId = getKyloNiFiFlowProvider().findNiFiMaxEventId(clusterNodeId);
+                setLastEventId(lastEventId);
+                getLogger().info("KyloProvenanceEventReportingTask EventId Info: Set the last event id to be equal to the maxEventId from Kylo as {}  ", new Object[]{lastEventId});
+            } catch (Exception e) {
+                getLogger().error(
+                    "KyloProvenanceEventReportingTask EventId Error: Unable to set last event id from Kylo. It will be set to the Provenance maxEventId {}.  No events will be processed until the next trigger ",
+                    new Object[]{maxEventId}, e);
+                setLastEventId(maxEventId);
+                lastEventId = maxEventId - 1;
+            }
+
         }
         return lastEventId;
     }
@@ -616,7 +683,7 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
      */
     public ProvenanceEventRecordDTO processEvent(ProvenanceEventRecord event) {
         ProvenanceEventRecordDTO eventRecordDTO = ProvenanceEventRecordConverter.convert(event);
-        getLogger().trace("EVENT for {} - {} is {}.", new Object[]{event.getComponentType(), event.getEventId(), event.getEventType()});
+        getLogger().trace("KyloProvenanceEventReportingTask processEvent Info: EVENT for {} - {} is {}.", new Object[]{event.getComponentType(), event.getEventId(), event.getEventType()});
         getProvenanceEventAggregator().process(eventRecordDTO);
         return eventRecordDTO;
     }

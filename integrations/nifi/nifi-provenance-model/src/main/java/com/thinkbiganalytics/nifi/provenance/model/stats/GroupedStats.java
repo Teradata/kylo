@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.nifi.provenance.model.stats;
 
 
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +53,18 @@ public class GroupedStats extends BaseStatistics implements Serializable {
         this.maxTime = (stats.getTime()).isAfter(this.maxTime) ? stats.getTime() : this.maxTime;
         this.minTime = (stats.getTime()).isBefore(this.minTime) ? stats.getTime() : this.minTime;
         this.time = this.minTime;
+        if (this.maxEventId < stats.getEventId()) {
+            this.maxEventId = stats.getEventId();
+        }
+
+        if (StringUtils.isBlank(this.clusterNodeAddress)) {
+            this.clusterNodeAddress = stats.getClusterNodeAddress();
+        }
+
+        if (StringUtils.isBlank(this.clusterNodeId)) {
+            this.clusterNodeId = stats.getClusterNodeId();
+        }
+
         // this.eventStatsList.add(stats);
         this.totalCount++;
     }

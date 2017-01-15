@@ -28,8 +28,13 @@ public class KyloProvenanceClientProvider implements KyloNiFiFlowProvider {
         return client.resetFlowUpdates(syncId);
     }
 
+    @Override
+    public Long findNiFiMaxEventId(String clusterNodeId) {
+        return client.findNiFiMaxEventId(clusterNodeId);
+    }
+
     public boolean isNiFiFlowDataAvailable() {
-        return false;
+        return client.isNiFiFlowDataAvailable();
     }
 
 }
