@@ -387,7 +387,7 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
 
             if(confs != null){
                 for(String conf : confs){
-                    getLogger().info("Adding sparkconf '" + conf + "'");
+                    getLog().info("Adding sparkconf '" + conf + "'");
                     launcher.addSparkArg(SPARK_CONFIG_NAME,conf);
                 }
             }
