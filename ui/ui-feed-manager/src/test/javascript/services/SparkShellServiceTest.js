@@ -102,9 +102,9 @@ describe("SparkShellService", function() {
                 {dataType: "decimal(8,2)", hiveColumnLabel: "(pricepaid - commission) / qtysold"}
             ];
             expect(service.getFields()).toEqual([
-                {name: "username", description: "", dataType: "string", primaryKey: false, nullable: false, sampleValues: []},
-                {name: "(pricepaid - commission) / qtysold", description: "", dataType: "double", primaryKey: false,
-                    nullable: false, sampleValues: []}
+                {name: "username", description: "", dataType: "string", primaryKey: false, nullable: false, sampleValues: [], derivedDataType: "string"},
+                {name: "(pricepaid - commission) / qtysold", description: "", dataType: "decimal", primaryKey: false, nullable: false, sampleValues: [], precisionScale: "8,2",
+                    derivedDataType: "decimal"}
             ]);
         });
         it("from null columns", function() {
@@ -192,7 +192,7 @@ describe("SparkShellService", function() {
                 },
                 "groupBy": {"!spark": ".groupBy(%*c)", "!sparkType": "groupeddata"}
             });
-            
+
             // Test script
             var formula = "groupBy(username, eventname).sum(\"qtysold\", \"pricepaid\")";
             service.push(tern.parse(formula), {});
@@ -252,7 +252,7 @@ describe("SparkShellService", function() {
         expect(service.getScript()).toBe("import org.apache.spark.sql._\nsqlContext.sql(\"SELECT * FROM invalid\").limit(1000)" +
                                          ".sample(false, 0.01)");
     });
-    
+
     // splice
     it("should splice transformation array", function() {
         // Add formulas
