@@ -25,7 +25,6 @@ import org.apache.nifi.components.Validator;
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.logging.ComponentLog;
 import org.apache.nifi.logging.LogLevel;
-import org.apache.nifi.processor.AbstractProcessor;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.ProcessorInitializationContext;
@@ -423,15 +422,20 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
 
              /* Wait for job completion */
             int exitCode = spark.waitFor();
+            flowFile = session.putAttribute(flowFile, "Spark Exit Code:", exitCode + "");
             if (exitCode != 0) {
                 logger.info("*** Completed with failed status " + exitCode);
+                flowFile = session.putAttribute(flowFile, "Job Status", "Failed");
                 session.transfer(flowFile, REL_FAILURE);
             } else {
                 logger.info("*** Completed with status " + exitCode);
+                flowFile = session.putAttribute(flowFile, "Job Status", "Success");
                 session.transfer(flowFile, REL_SUCCESS);
             }
         } catch (final Exception e) {
             logger.error("Unable to execute Spark job", new Object[]{flowFile, e});
+            flowFile = session.putAttribute(flowFile, "Job Status", "Failed With Exception");
+            flowFile = session.putAttribute(flowFile, "Spark Exception:", e.getMessage());
             session.transfer(flowFile, REL_FAILURE);
         }
 
