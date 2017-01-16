@@ -151,6 +151,11 @@ public class FlowFileMapDbCache implements FlowFileCacheListener {
         ActiveFlowFile parent = cache.getEntry(parentFlowFile.getId());
         parent.setIsBuiltFromIdReferenceFlowFile(true);
         parent.assignFeedInformation(parentFlowFile.getFeedName(), parentFlowFile.getFeedProcessGroupId());
+
+        if (parentFlowFile.getPreviousEventId() != null) {
+            parent.setPreviousEventForEvent(constructPreviousEvent(parentFlowFile));
+        }
+
         if (parentFlowFile.isRootFlowFile()) {
             parent.markAsRootFlowFile();
             ProvenanceEventRecordDTO firstEvent = constructFirstEvent(parentFlowFile);
@@ -191,5 +196,17 @@ public class FlowFileMapDbCache implements FlowFileCacheListener {
         return firstEvent;
     }
 
+
+    /**
+     * Construct what is needed from the idRef file to create the First event of the root flow file
+     */
+    private ProvenanceEventRecordDTO constructPreviousEvent(IdReferenceFlowFile flowFile) {
+        ProvenanceEventRecordDTO event = new ProvenanceEventRecordDTO();
+        event.setEventId(flowFile.getPreviousEventId());
+        event.setEventTime(new DateTime(flowFile.getPreviousEventTime()));
+        event.setFeedName(flowFile.getFeedName());
+        event.setFeedProcessGroupId(flowFile.getFeedProcessGroupId());
+        return event;
+    }
 
 }

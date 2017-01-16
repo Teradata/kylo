@@ -106,17 +106,20 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
         .name("Last event id not found value")
         .description(("If there is no minimum value to start the range query from (i.e. if this reporting task has never run before in NiFi) what should be the initial value?\""
                       + "\nZERO: this will get all events starting at 0 to the latest event id."
-                      + "\nMAX_EVENT_ID: this is set it to the max provenance event.  This is the default setting"))
+                      + "\nMAX_EVENT_ID: this is set it to the max provenance event.  "
+                      + "\nKYLO: this will query Kylo's record of the Max Event Id. "
+                      + ""))
         .allowableValues(LAST_EVENT_ID_NOT_FOUND_OPTION.values())
         .required(true)
-        .defaultValue(LAST_EVENT_ID_NOT_FOUND_OPTION.MAX_EVENT_ID.toString())
+        .defaultValue(LAST_EVENT_ID_NOT_FOUND_OPTION.KYLO.toString())
         .build();
 
     public static final PropertyDescriptor INITIAL_EVENT_ID_VALUE = new PropertyDescriptor.Builder()
         .name("Initial event id value")
         .description("Upon starting the Reporting task what value should be used as the minimum value in the range of provenance events this task should query? "
                      + "\nLAST_EVENT_ID: will use the last event successfully processed from this task.  This is the default setting"
-                     + "\nMAX_EVENT_ID will start processing every event > the Max event id in provenance.  This value is evaluated each time this reporting task is stopped and restarted.  You can use this to reset provenance events being sent to Kylo.  This is not the ideal behavior so you may loose provenance reporting.  Use this with caution.")
+                     + "\nMAX_EVENT_ID: will start processing every event > the Max event id in provenance.  This value is evaluated each time this reporting task is stopped and restarted.  You can use this to reset provenance events being sent to Kylo.  This is not the ideal behavior so you may loose provenance reporting.  Use this with caution."
+                     + "\nKYLO:  will query Kylo's record of the Max Event Id. ")
         .allowableValues(INITIAL_EVENT_ID_OPTION.values())
         .required(true)
         .defaultValue(INITIAL_EVENT_ID_OPTION.LAST_EVENT_ID.toString())
@@ -135,6 +138,8 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
      * Flag to indicate the system has started and it is loading any data from the persisted cache
      */
     private AtomicBoolean initializing = new AtomicBoolean(false);
+
+    private boolean initializationError = false;
 
     /**
      * The Id used to sync with the Kylo Metadata to build the cache of NiFi processorIds in helping to determine the Flows Feed and Flows Failure Processors
@@ -297,11 +302,33 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
 
                 loadSpring(true);
                 //rebuild mem flowfile metadata from disk
-                int loadedRootFlowFiles = getFlowFileMapDbCache().loadGuavaCache();
-                getLogger().info("onConfigurationRestored: Finished loading {} persisted files from disk into the Guava Cache", new Object[]{loadedRootFlowFiles});
+                initializeFlowFilesFromMapDbCache();
             } catch (Exception e) {
-                getLogger().error("ERROR on onConfigurationRestored {} ", new Object[]{e.getMessage()}, e);
+                getLogger().warn(
+                    "Error attempting to restore FlowFile MapDB cache in onConfigurationRestored with message: {}.  The Reporting Task will attempt to initialize this again at the start of the first trigger.",
+                    new Object[]{e.getMessage()});
+                initializationError = true;
             } finally {
+                initializing.set(false);
+            }
+        }
+    }
+
+    private void initializeFlowFilesFromMapDbCache() {
+        int loadedRootFlowFiles = getFlowFileMapDbCache().loadGuavaCache();
+        getLogger().info("initializeFlowFilesFromMapDbCache: Finished loading {} persisted files from disk into the Guava Cache", new Object[]{loadedRootFlowFiles});
+    }
+
+    private void ensureInitializeFlowFileMapDbCache() {
+        if (initializationError) {
+            getLogger().info("Errors was found initializing the Flow files... attempting to resolve now");
+            initializing.set(true);
+            try {
+                initializeFlowFilesFromMapDbCache();
+            } catch (Exception e) {
+                getLogger().error("ERROR on reInitializeFlowFileMapDbCache {} ", new Object[]{e.getMessage()}, e);
+            } finally {
+                initializationError = false;
                 initializing.set(false);
             }
         }
@@ -313,7 +340,7 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
      */
     private void loadSpring(boolean logError) {
         try {
-            SpringApplicationContext.getInstance().initializeSpring();
+            SpringApplicationContext.getInstance().initializeSpring("classpath:provenance-application-context.xml");
         } catch (BeansException | IllegalStateException e) {
             if (logError) {
                 getLogger().error("Failed to load spring configurations", e);
@@ -435,7 +462,9 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
             return;
         }
 
-        if (processing.compareAndSet(false, true) && !isInitializing()) {
+        ensureInitializeFlowFileMapDbCache();
+
+        if (!isInitializing() && processing.compareAndSet(false, true)) {
 
 
 

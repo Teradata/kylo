@@ -88,7 +88,7 @@ public class NiFiFlowCacheSync {
 
 
     public Set<String> getStreamingFeedsUpdatedSinceLastSync(Set<String> streamingFeeds) {
-        com.google.common.collect.Sets.SetView<String> diff = Sets.difference(streamingFeeds, snapshot.getAddStreamingFeeds());
+        com.google.common.collect.Sets.SetView<String> diff = Sets.difference(streamingFeeds, snapshot.getAllStreamingFeeds());
         return diff.copyInto(new HashSet<>());
     }
 

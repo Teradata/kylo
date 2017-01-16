@@ -21,7 +21,7 @@ public class SpringApplicationListener implements ApplicationListener<ContextRef
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
-        log.info("SpringApplicationListener Spring Contet refreshed.");
+        log.info("SpringApplicationListener Spring Context refreshed.");
         //spring is now initialized
         for (Map.Entry<String, Object> entry : objectsToAutowire.entrySet()) {
             SpringApplicationContext.getInstance().autowire(entry.getKey(), entry.getValue());

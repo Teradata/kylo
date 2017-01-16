@@ -428,10 +428,13 @@ public class ProvenanceEventRecordDTO implements Serializable {
     }
 
     public void setPreviousEvent(ProvenanceEventRecordDTO previousEvent) {
-        this.previousEventId = previousEvent.getEventId();
-        this.previousEvent = previousEvent;
-        this.previousEventTime = previousEvent.getEventTime();
-        this.previousFlowfileId = previousEvent.getFlowFileUuid();
+        if (previousEvent != null) {
+            this.previousEventId = previousEvent.getEventId();
+            this.previousEvent = previousEvent;
+            this.previousEventTime = previousEvent.getEventTime();
+            this.previousFlowfileId = previousEvent.getFlowFileUuid();
+            this.setStartTime(previousEventTime);
+        }
     }
 
     public Long getPreviousEventId() {

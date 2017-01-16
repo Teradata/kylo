@@ -140,7 +140,7 @@ public class StatsModel {
         Long jobTime = null;
         ProvenanceEventRecordDTO firstEvent = rootFlowFile.getFirstEvent() != null ? rootFlowFile.getFirstEvent() : event.getFlowFile().getFirstEvent();
         if (firstEvent != null) {
-            jobTime = event.getEventTime().getMillis() - firstEvent.getEventTime().getMillis();
+            jobTime = event.getEventTime().getMillis() - (firstEvent.getStartTime() != null ? firstEvent.getStartTime().getMillis() : firstEvent.getEventTime().getMillis());
         }
         return jobTime;
     }

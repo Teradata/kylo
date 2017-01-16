@@ -31,7 +31,7 @@ public class NifiFlowCacheSnapshot {
 
     private Map<String, Map<String, Set<KyloProcessorFlowTypeRelationship>>> feedToProcessorIdToFlowTypeMap = new ConcurrentHashMap<>();
 
-    private Set<String> addStreamingFeeds = new HashSet<>();
+    private Set<String> allStreamingFeeds = new HashSet<>();
 
     /**
      * Set of the category.feed names
@@ -53,11 +53,11 @@ public class NifiFlowCacheSnapshot {
     }
 
     public NifiFlowCacheSnapshot(Map<String, String> processorIdToFeedNameMap,
-                                 Map<String, String> addProcessorIdToFeedProcessGroupId, Map<String, String> addProcessorIdToProcessorName, Set<String> addStreamingFeeds, Set<String> allFeeds) {
+                                 Map<String, String> addProcessorIdToFeedProcessGroupId, Map<String, String> addProcessorIdToProcessorName, Set<String> allStreamingFeeds, Set<String> allFeeds) {
         this.addProcessorIdToFeedNameMap = processorIdToFeedNameMap;
         this.addProcessorIdToFeedProcessGroupId = addProcessorIdToFeedProcessGroupId;
         this.addProcessorIdToProcessorName = addProcessorIdToProcessorName;
-        this.addStreamingFeeds = addStreamingFeeds;
+        this.allStreamingFeeds = allStreamingFeeds;
         this.allFeeds = allFeeds;
     }
 
@@ -210,15 +210,15 @@ public class NifiFlowCacheSnapshot {
         this.addProcessorIdToProcessorName = addProcessorIdToProcessorName;
     }
 
-    public Set<String> getAddStreamingFeeds() {
-        if (addStreamingFeeds == null) {
+    public Set<String> getAllStreamingFeeds() {
+        if (allStreamingFeeds == null) {
             return new HashSet<>();
         }
-        return addStreamingFeeds;
+        return allStreamingFeeds;
     }
 
-    public void setAddStreamingFeeds(Set<String> addStreamingFeeds) {
-        this.addStreamingFeeds = addStreamingFeeds;
+    public void setAllStreamingFeeds(Set<String> allStreamingFeeds) {
+        this.allStreamingFeeds = allStreamingFeeds;
     }
 
     public DateTime getSnapshotDate() {
@@ -247,11 +247,12 @@ public class NifiFlowCacheSnapshot {
     }
 
 
+    //DEAL WITH REMOVAL of items... removal /change of streaming feeds!
     public void update(NifiFlowCacheSnapshot syncSnapshot) {
         addProcessorIdToFeedNameMap.putAll(syncSnapshot.getAddProcessorIdToFeedNameMap());
         addProcessorIdToFeedProcessGroupId.putAll(syncSnapshot.getAddProcessorIdToFeedProcessGroupId());
         addProcessorIdToProcessorName.putAll(syncSnapshot.getAddProcessorIdToProcessorName());
-        addStreamingFeeds.addAll(syncSnapshot.getAddStreamingFeeds());
+        allStreamingFeeds.addAll(syncSnapshot.getAllStreamingFeeds());
         allFeeds.addAll(syncSnapshot.getAllFeeds());
         snapshotDate = syncSnapshot.getSnapshotDate();
         feedToProcessorIdToFlowTypeMap.putAll(syncSnapshot.getFeedToProcessorIdToFlowTypeMap());

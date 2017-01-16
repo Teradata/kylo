@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.feedmgr.service.template;
 
 import com.google.common.collect.Sets;
+import com.thinkbiganalytics.feedmgr.nifi.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
@@ -39,6 +40,9 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
 
     @Inject
     MetadataAccess metadataAccess;
+
+    @Inject
+    NifiFlowCache nifiFlowCache;
 
     @Inject
     private AccessController accessController;
@@ -181,7 +185,9 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
     @Override
     //@Transactional(transactionManager = "metadataTransactionManager")
     public RegisteredTemplate registerTemplate(RegisteredTemplate registeredTemplate) {
-        return saveRegisteredTemplate(registeredTemplate);
+        RegisteredTemplate template = saveRegisteredTemplate(registeredTemplate);
+        nifiFlowCache.updateRegisteredTemplate(template);
+        return template;
     }
 
 

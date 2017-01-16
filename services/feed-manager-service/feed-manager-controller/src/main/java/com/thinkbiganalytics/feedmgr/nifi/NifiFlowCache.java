@@ -275,7 +275,8 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
                 .withProcessorIdToFeedNameMap(sync.getProcessorIdToFeedNameMapUpdatedSinceLastSync(latest.getAddProcessorIdToFeedNameMap()))
                 .withProcessorIdToFeedProcessGroupId(sync.getProcessorIdToProcessGroupIdUpdatedSinceLastSync(latest.getAddProcessorIdToFeedProcessGroupId()))
                 .withProcessorIdToProcessorName(sync.getProcessorIdToProcessorNameUpdatedSinceLastSync(latest.getAddProcessorIdToProcessorName()))
-                .withStreamingFeeds(sync.getStreamingFeedsUpdatedSinceLastSync(latest.getAddStreamingFeeds()))
+                .withStreamingFeeds(latest.getAllStreamingFeeds())
+                //.withStreamingFeeds(sync.getStreamingFeedsUpdatedSinceLastSync(latest.getAllStreamingFeeds()))
                 .withFeeds(sync.getFeedsUpdatedSinceLastSync(latest.getAllFeeds()))
                 .withFeedToProcessorIdToFlowTypeMap(latest.getFeedToProcessorIdToFlowTypeMap())
                 .build();
@@ -381,37 +382,21 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
 
     }
 
-/*
+
     public synchronized void updateRegisteredTemplate(RegisteredTemplate template) {
 
         populateTemplateMappingCache(template, null);
 
         //update the processortype cache
         List<String> feedNames = feedNameToTemplateNameMap.entrySet().stream().filter(entry -> entry.getValue().equalsIgnoreCase(template.getTemplateName())).map(entry -> entry.getKey()).collect(Collectors.toList());
-        feedNames.stream().forEach(feedName -> {
-          Map<String,List<NifiFlowProcessor>>  flowIdProcessors = feedFlowIdProcessorMap.get(feedName);
-            if(flowIdProcessors != null) {
-                feedToProcessorIdToFlowTypeMap.get(feedName).clear();
-                flowIdProcessors.entrySet().stream().forEach(entry -> {
-                    String flowId = entry.getKey();
-                    List<NifiFlowProcessor> processors = entry.getValue();
-                    KyloProcessorFlowType kyloProcessorFlowType = template.getProcessorFlowTypeMap().get(flowId);
-                    if (kyloProcessorFlowType != null) {
-                        processors.stream().forEach(nifiFlowProcessor -> {
 
-                            feedToProcessorIdToFlowTypeMap.computeIfAbsent(feedName ,name -> new HashMap<String, KyloProcessorFlowType>()).put(nifiFlowProcessor.getId(), kyloProcessorFlowType);
-
-
-                        });
-                    }
-
-                });
-            }
-
-        });
+        if (template.isStream()) {
+            streamingFeeds.addAll(feedNames);
+        } else {
+            streamingFeeds.removeAll(feedNames);
+        }
 
     }
-    */
 
 
     /**

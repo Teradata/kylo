@@ -99,7 +99,7 @@ public class ProvenanceEventRecordConverter implements Serializable {
         dto.setSourceConnectionIdentifier(event.getSourceQueueIdentifier());
 
         dto.setStartTime(new DateTime(event.getLineageStartDate()));
-        dto.setEventDuration((event.getEventTime() - event.getLineageStartDate()));
+        //dto.setEventDuration((event.getEventTime() - event.getLineageStartDate()));
 
         // parent uuids
         final List<String> parentUuids = new ArrayList<>(event.getParentUuids());

@@ -293,37 +293,94 @@ public class ActiveFlowFile {
         return previousEvent;
     }
 
+    public void setPreviousEvent(ProvenanceEventRecordDTO previousEvent) {
+        this.previousEvent = previousEvent;
+    }
+
+    private ProvenanceEventRecordDTO getPreviousEventForEvent(ProvenanceEventRecordDTO event) {
+        if (event.getPreviousEvent() == null) {
+            setPreviousEventForEvent(event);
+        }
+        return event.getPreviousEvent();
+    }
+
+    /**
+     * looks up to the parent flow files and finds the last event to use as this previous event
+     */
+    public ProvenanceEventRecordDTO findPreviousEventInParentFlowFile(ProvenanceEventRecordDTO event) {
+        ProvenanceEventRecordDTO previousEvent = null;
+        if (hasParents()) {
+            List<ProvenanceEventRecordDTO> previousEvents = getParents().stream()
+                .filter(flowFile -> flowFile.getPreviousEvent() != null)
+                .map(flow -> flow.getPreviousEvent())
+                .collect(Collectors.toList());
+            if (previousEvents != null && !previousEvents.isEmpty()) {
+                Collections.sort(previousEvents, new ProvenanceEventRecordDTOComparator().reversed());
+                previousEvent = previousEvents.get(0);
+
+                if (event.getParentUuids() == null || event.getParentUuids().isEmpty()) {
+                    event.setParentUuids(getParents().stream().map(ff -> ff.getId()).collect(Collectors.toList()));
+                }
+                previousEvent.addChildUuid(this.getId());
+            }
+        }
+        return previousEvent;
+    }
+
     /**
      * set the Previous Event to the prev (Completion Event. @see ProvenanceEventUtil.isCompletionEvent Parent/children are added to non completion events. We need to add the relationships
      */
-    public void setPreviousEvent(ProvenanceEventRecordDTO event) {
-        if (event.getPreviousEvent() == null) {
-            Integer index = getEventIds().indexOf(event);
+    public void setPreviousEventForEvent(ProvenanceEventRecordDTO event) {
+        if (event.getPreviousEvent() == null && !event.isStartOfJob()) {
+            Integer index = getEventIds().indexOf(event.getEventId());
             //if this event is not first in the flow file then its prev is the pointer on this flow file
             if (index > 0) {
                 event.setPreviousEvent(previousEvent);
-            } else {
-                //go to the other flow files and get the last event
+            }
+
+            if (event.getPreviousEvent() == null) {
+                ProvenanceEventRecordDTO previousEvent = findPreviousEventInParentFlowFile(event);
+                if (previousEvent != null) {
+                    event.setPreviousEvent(previousEvent);
+                    //cehck to ensure the prev is set
+                    if (previousEvent.getPreviousEvent() == null && !previousEvent.isStartOfJob()) {
+                        //check against if previous event came in before this one
+                        ProvenanceEventRecordDTO previousEvent1 = findPreviousEventInParentFlowFile(previousEvent);
+                        previousEvent.setPreviousEvent(previousEvent1);
+                    }
+                } else {
+                    log.error("Unable to find the previous event for {}.  setting start time == event time  ", event);
+                    event.setStartTime(event.getEventTime());
+                }
 
             }
-            if (event.getPreviousEvent() == null && getParents() != null && !getParents().isEmpty()) {
-                List<ProvenanceEventRecordDTO> previousEvents = getParents().stream()
-                    .filter(flowFile -> event.getParentFlowFileIds().contains(flowFile.getId())).filter(flowFile -> flowFile.getPreviousEvent() != null)
-                    .map(flow -> flow.getPreviousEvent())
-                    .collect(Collectors.toList());
-                if (previousEvents != null && !previousEvents.isEmpty()) {
-                    Collections.sort(previousEvents, new ProvenanceEventRecordDTOComparator().reversed());
-                    ProvenanceEventRecordDTO previousEvent = previousEvents.get(0);
-                    event.setPreviousEvent(previousEvent);
-                    //TODO check to see if this is needed
-                    if (event.getParentUuids() == null && event.getParentUuids().isEmpty()) {
-                        event.setParentUuids(getParents().stream().map(ff -> ff.getId()).collect(Collectors.toList()));
-                        log.debug("Assigned Parent Flow File ids as {}, to event {} ", event.getParentUuids(), event);
-                    }
-                    previousEvent.addChildUuid(this.getId());
-                }
-            }
+
         }
+
+    }
+
+    private Long calculateEventDuration(ProvenanceEventRecordDTO event) {
+
+        Long dur = null;
+        if (event.getStartTime() != null) {
+            dur = event.getEventTime().getMillis() - event.getStartTime().getMillis();
+            if (dur < 0) {
+                log.warn("The Duration for event {} is <0.  dur: {} ", event, dur);
+                dur = 0L;
+            }
+
+        } else if (event.getEventDuration() == null || event.getEventDuration() < 0L) {
+            dur = 0L;
+        } else {
+            dur = event.getEventDuration() != null ? event.getEventDuration() : 0L;
+        }
+        if (dur == null) {
+            log.warn("Event duration could not be determined.  returning 0L for duration on event: {} ", event);
+            dur = 0L;
+        }
+        event.setEventDuration(dur);
+        return dur;
+
     }
 
 
@@ -373,10 +430,16 @@ public class ActiveFlowFile {
     public void addCompletionEvent(ProvenanceEventRecordDTO event) {
         getEventIds().add(event.getEventId());
         getCompletedProcessorIds().add(event.getComponentId());
-        log.debug("completing processor {} for ff: {} ", event.getComponentId(), this.getId());
-        //track the prev event to determine if needed for failure notification
+        //track the prev event for duration calcs
+        setPreviousEventForEvent(event);
+
+        //safeguard to set prev event
+        if (event.getPreviousEvent() == null && previousEvent != null) {
+            event.setPreviousEvent(previousEvent);
+        }
+        calculateEventDuration(event);
+        //reset the pointer on this flow file to this event as the previous event
         setPreviousEvent(event);
-        // calculateEventDuration(event);
         checkAndMarkIfFlowFileIsComplete(event);
     }
 
@@ -430,7 +493,6 @@ public class ActiveFlowFile {
             log.debug(" isComplete for root file {} = {}.  Related flows complete: {}, with activechildren of {} ", getId(), complete, this.getRootFlowFile().getRootFlowFileActiveChildren().size());
         }
         if (complete && timeCompleted == null) {
-            // log.info("****** COMPLETING FLOW FILE {} ",this);
             timeCompleted = new DateTime();
         }
         if (complete && isRootFlowFile()) {
@@ -459,6 +521,8 @@ public class ActiveFlowFile {
         idReferenceFlowFile.setRootFlowFile(isRootFlowFile());
         idReferenceFlowFile.setRootFlowFileId(getRootFlowFile() != null ? getRootFlowFile().getId() : null);
         idReferenceFlowFile.setIsComplete(isCurrentFlowFileComplete());
+        idReferenceFlowFile.setPreviousEventId(this.getPreviousEvent() != null ? this.getPreviousEvent().getEventId() : null);
+        idReferenceFlowFile.setPreviousEventTime(this.getPreviousEvent() != null && this.getPreviousEvent().getEventTime() != null ? this.getPreviousEvent().getEventTime().getMillis() : null);
         for (ActiveFlowFile parent : getParents()) {
             idReferenceFlowFile.addParentId(parent.getId());
         }

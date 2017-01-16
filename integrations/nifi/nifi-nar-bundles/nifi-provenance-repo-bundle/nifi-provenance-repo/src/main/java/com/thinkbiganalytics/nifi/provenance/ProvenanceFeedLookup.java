@@ -154,7 +154,7 @@ public class ProvenanceFeedLookup {
     }
 
     public boolean isStream(ProvenanceEventRecordDTO eventRecordDTO) {
-        return getFlowCache().getAddStreamingFeeds().contains(eventRecordDTO.getFeedName());
+        return getFlowCache().getAllStreamingFeeds().contains(eventRecordDTO.getFeedName());
     }
 
 }

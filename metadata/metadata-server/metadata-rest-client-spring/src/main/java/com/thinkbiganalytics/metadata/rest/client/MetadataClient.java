@@ -388,7 +388,6 @@ public class MetadataClient {
     }
     
     private <R> R get(Path path, Function<UriComponentsBuilder, UriComponentsBuilder> filterFunct, Class<R> resultType) {
-        log.info("get ", path);
         return this.template.getForObject(
                 (filterFunct != null ? filterFunct.apply(base(path)) : base(path)).build().toUri(),
                 resultType);

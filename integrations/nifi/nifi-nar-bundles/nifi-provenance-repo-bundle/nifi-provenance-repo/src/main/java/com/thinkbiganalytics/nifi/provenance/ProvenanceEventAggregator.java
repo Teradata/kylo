@@ -271,7 +271,6 @@ public class ProvenanceEventAggregator {
 
     private void sendBatchFeedEvents(List<ProvenanceEventRecordDTO> elements) {
         if (elements != null && !elements.isEmpty()) {
-            log.debug("processQueue for {} Nifi Events ", elements.size());
             Lists.partition(elements, getJmsEventGroupSize()).forEach(eventsSubList -> {
                 ProvenanceEventRecordDTOHolder eventRecordDTOHolder = new ProvenanceEventRecordDTOHolder();
                 eventRecordDTOHolder.setEvents(Lists.newArrayList(eventsSubList));

@@ -46,16 +46,21 @@ public class SpringApplicationContext implements ApplicationContextAware {
     }
 
     public void initializeSpring() {
+        initializeSpring("application-context.xml");
+    }
+
+    public void initializeSpring(String configFileName) {
         if (initialized.compareAndSet(false, true)) {
-            log.info("INIT Spring!!! {} ", this);
+            log.info("Initializing Spring with {}, {} ", configFileName, this);
             this.applicationContext = new ClassPathXmlApplicationContext();
             ((ClassPathXmlApplicationContext) this.applicationContext).setClassLoader(getClass().getClassLoader());
-            ((ClassPathXmlApplicationContext) this.applicationContext).setConfigLocation("application-context.xml");
+            ((ClassPathXmlApplicationContext) this.applicationContext).setConfigLocation(configFileName);
             ((ClassPathXmlApplicationContext) this.applicationContext).refresh();
             //   ApplicationContext applicationContext = new ClassPathXmlApplicationContext(new String[]{"application-context.xml"});
             //    this.applicationContext = applicationContext;
         }
     }
+
 
     public ApplicationContext getApplicationContext() {
         return applicationContext;

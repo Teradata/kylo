@@ -225,8 +225,8 @@ public class RootFlowFile extends ActiveFlowFile {
     }
 
     @Override
-    public void setPreviousEvent(ProvenanceEventRecordDTO event) {
-        flowFile.setPreviousEvent(event);
+    public void setPreviousEventForEvent(ProvenanceEventRecordDTO event) {
+        flowFile.setPreviousEventForEvent(event);
     }
 
     @Override
@@ -355,5 +355,35 @@ public class RootFlowFile extends ActiveFlowFile {
 
     public DateTime getMinimiumExpireTime() {
         return minimiumExpireTime;
+    }
+
+    @Override
+    public Set<Long> getFailedEvents() {
+        return flowFile.getFailedEvents();
+    }
+
+    @Override
+    public ProvenanceEventRecordDTO getPreviousEvent() {
+        return flowFile.getPreviousEvent();
+    }
+
+    @Override
+    public boolean isBuiltFromIdReferenceFlowFile() {
+        return flowFile.isBuiltFromIdReferenceFlowFile();
+    }
+
+    @Override
+    public void setIsBuiltFromIdReferenceFlowFile(boolean isBuiltFromIdReferenceFlowFile) {
+        flowFile.setIsBuiltFromIdReferenceFlowFile(isBuiltFromIdReferenceFlowFile);
+    }
+
+    @Override
+    public IdReferenceFlowFile toIdReferenceFlowFile() {
+        return flowFile.toIdReferenceFlowFile();
+    }
+
+    @Override
+    public void setPreviousEvent(ProvenanceEventRecordDTO previousEvent) {
+        flowFile.setPreviousEvent(previousEvent);
     }
 }

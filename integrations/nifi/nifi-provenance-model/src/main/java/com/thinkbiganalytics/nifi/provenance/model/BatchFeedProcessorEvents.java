@@ -122,11 +122,11 @@ public class BatchFeedProcessorEvents implements Serializable {
 
             if (ProvenanceEventUtil.isCompletionEvent(event)) {
                 checkAndMarkAsEndOfJob(event, event.getFlowFile().getRootFlowFile().isFlowComplete());
-                log.info("BATCH Adding Batch event {} ", event);
+                // log.info("BATCH Adding Batch event {} ", event);
                 event.setIsBatchJob(true);
                 event.getFlowFile().getRootFlowFile().markAsBatch();
                 if (event.getPreviousEvent() == null && !event.isStartOfJob()) {
-                    event.getFlowFile().setPreviousEvent(event);
+                    event.getFlowFile().setPreviousEventForEvent(event);
                 }
                 jmsEvents.add(event);
             }
