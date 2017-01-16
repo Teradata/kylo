@@ -147,10 +147,10 @@
          * Set the scheduling strategy to 'On primary node'.
          */
         function setPrimaryNodeOnly() {
-            self.model.schedule.schedulingStrategy = "PRIMARY_NODE_ONLY";
+            self.editModel.schedule.schedulingStrategy = "PRIMARY_NODE_ONLY";
             self.timerAmount = 5;
             self.timerUnits = "min";
-            self.model.schedule.schedulingPeriod = "5 min";
+            self.editModel.schedule.schedulingPeriod = "5 min";
         }
 
         /**
