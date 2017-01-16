@@ -460,15 +460,18 @@ public class JpaBatchJobExecution implements BatchJobExecution {
 
         JpaBatchJobExecutionParameter feedNameRefParam = null;
         JpaBatchJobExecutionParameter jobTypeParam = null;
-        for (BatchJobExecutionParameter p : getJobParameters()) {
-            if (FeedConstants.PARAM__FEED_NAME.equalsIgnoreCase(p.getKeyName())) {
-                feedNameRefParam = (JpaBatchJobExecutionParameter) p;
-            } else if (FeedConstants.PARAM__JOB_TYPE.equalsIgnoreCase(p.getKeyName())) {
-                jobTypeParam = (JpaBatchJobExecutionParameter) p;
-            }
+        Set<BatchJobExecutionParameter> jobParams = getJobParameters();
+        if (jobParams != null) {
+            for (BatchJobExecutionParameter p : jobParams) {
+                if (FeedConstants.PARAM__FEED_NAME.equalsIgnoreCase(p.getKeyName())) {
+                    feedNameRefParam = (JpaBatchJobExecutionParameter) p;
+                } else if (FeedConstants.PARAM__JOB_TYPE.equalsIgnoreCase(p.getKeyName())) {
+                    jobTypeParam = (JpaBatchJobExecutionParameter) p;
+                }
 
-            if (feedNameRefParam != null && jobTypeParam != null) {
-                break;
+                if (feedNameRefParam != null && jobTypeParam != null) {
+                    break;
+                }
             }
         }
 
