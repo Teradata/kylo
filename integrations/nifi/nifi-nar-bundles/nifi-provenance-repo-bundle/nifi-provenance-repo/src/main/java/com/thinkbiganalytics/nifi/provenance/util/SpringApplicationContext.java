@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -16,7 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Created by sr186054 on 3/3/16.
  */
-public class SpringApplicationContext implements ApplicationContextAware {
+public class SpringApplicationContext {
 
     private static final Logger log = LoggerFactory.getLogger(SpringApplicationContext.class);
 
@@ -34,16 +33,7 @@ public class SpringApplicationContext implements ApplicationContextAware {
     private AtomicBoolean initialized = new AtomicBoolean(false);
 
 
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        log.info("Application Context aware set {} ", applicationContext);
-        if (initialized.compareAndSet(false, true)) {
-            this.applicationContext = applicationContext;
-            log.info("First initializatoin done via Spring App context aware");
-        } else {
-            log.info("attempt to init, but app context already set incoming: {}, set one: {} ", applicationContext, this.applicationContext);
-        }
-    }
+
 
     public void initializeSpring() {
         initializeSpring("application-context.xml");
@@ -56,8 +46,7 @@ public class SpringApplicationContext implements ApplicationContextAware {
             ((ClassPathXmlApplicationContext) this.applicationContext).setClassLoader(getClass().getClassLoader());
             ((ClassPathXmlApplicationContext) this.applicationContext).setConfigLocation(configFileName);
             ((ClassPathXmlApplicationContext) this.applicationContext).refresh();
-            //   ApplicationContext applicationContext = new ClassPathXmlApplicationContext(new String[]{"application-context.xml"});
-            //    this.applicationContext = applicationContext;
+            printBeanNames();
         }
     }
 

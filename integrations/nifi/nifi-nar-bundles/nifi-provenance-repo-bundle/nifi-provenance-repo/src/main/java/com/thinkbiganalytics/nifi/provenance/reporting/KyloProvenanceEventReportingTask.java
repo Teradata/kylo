@@ -222,6 +222,12 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
     }
 
 
+    /**
+     * count the number of retry attempts when getting the flowfileMapDB Cache
+     */
+    private int initializeFlowFilesRetryAttempts = 0;
+
+
     @Override
     public void init(final ReportingInitializationContext context) {
         getLogger().info("init of KyloReportingTask");
@@ -302,7 +308,7 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
 
                 loadSpring(true);
                 //rebuild mem flowfile metadata from disk
-                initializeFlowFilesFromMapDbCache();
+                initializeFlowFilesFromMapDbCache(false);
             } catch (Exception e) {
                 getLogger().warn(
                     "Error attempting to restore FlowFile MapDB cache in onConfigurationRestored with message: {}.  The Reporting Task will attempt to initialize this again at the start of the first trigger.",
@@ -314,22 +320,44 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
         }
     }
 
-    private void initializeFlowFilesFromMapDbCache() {
+    private void initializeFlowFilesFromMapDbCache(boolean retry) {
         int loadedRootFlowFiles = getFlowFileMapDbCache().loadGuavaCache();
         getLogger().info("initializeFlowFilesFromMapDbCache: Finished loading {} persisted files from disk into the Guava Cache", new Object[]{loadedRootFlowFiles});
     }
 
+
+    /**
+     * Ensures the flow files stored in the cache from the last time NiFi was shut down are loaded
+     */
     private void ensureInitializeFlowFileMapDbCache() {
         if (initializationError) {
             getLogger().info("Errors was found initializing the Flow files... attempting to resolve now");
             initializing.set(true);
-            try {
-                initializeFlowFilesFromMapDbCache();
-            } catch (Exception e) {
-                getLogger().error("ERROR on reInitializeFlowFileMapDbCache {} ", new Object[]{e.getMessage()}, e);
-            } finally {
-                initializationError = false;
-                initializing.set(false);
+            //only attempt to retry 3 times
+            boolean retry = initializeFlowFilesRetryAttempts < 3;
+            if (retry) {
+                try {
+                    initializeFlowFilesFromMapDbCache(true);
+                } catch (Exception e) {
+                    initializeFlowFilesRetryAttempts++;
+                    if (initializeFlowFilesRetryAttempts < 3) {
+                        getLogger().error("Retry to get mapDbCache  with attempt # {}", new Object[]{initializeFlowFilesRetryAttempts});
+                        //wait
+                        try {
+                            Thread.sleep(300L);
+                        } catch (InterruptedException var10) {
+
+                        }
+                        //retry
+                        ensureInitializeFlowFileMapDbCache();
+                    } else {
+                        getLogger().error("ERROR attempting to initialize the FlowFile MapDB cache.  Any events running midstream before NiFi was restarted may not be finished in Kylo {} ",
+                                          new Object[]{e.getMessage()}, e);
+                    }
+                } finally {
+                    initializationError = false;
+                    initializing.set(false);
+                }
             }
         }
     }
@@ -464,6 +492,7 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
 
         ensureInitializeFlowFileMapDbCache();
 
+
         if (!isInitializing() && processing.compareAndSet(false, true)) {
 
 
@@ -524,8 +553,9 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
                 int batchSize = processingBatchSize == null || processingBatchSize < 1 ? 500 : processingBatchSize;
                 Integer batches = (int) Math.ceil(Double.valueOf(recordCount) / batchSize);
                 if (recordCount > 0) {
-                    getLogger().info("KyloProvenanceEventReportingTask onTrigger Info: Attempting to process {} events starting with event id: {}.  Splitting into {} batches of {} each ",
-                                     new Object[]{recordCount, nextId, batches, batchSize});
+                    getLogger().info(
+                        "KyloProvenanceEventReportingTask onTrigger Info: KyloFlowCache Sync Id: {} . Attempting to process {} events starting with event id: {}.  Splitting into {} batches of {} each ",
+                        new Object[]{nifiFlowSyncId, recordCount, nextId, batches, batchSize});
                 }
 
                 //reset the queryTime holder

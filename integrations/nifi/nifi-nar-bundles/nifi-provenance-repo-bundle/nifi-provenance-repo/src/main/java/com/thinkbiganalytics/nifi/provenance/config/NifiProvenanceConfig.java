@@ -15,26 +15,9 @@ public class NifiProvenanceConfig {
 
     private static final Logger log = LoggerFactory.getLogger(NifiProvenanceConfig.class);
 
-    /*    @Autowired
-        private Environment env;
-
-        @Bean(name = "thinkbigNifiDataSource")
-        public DataSource thinkbigNifiDataSource() {
-            DriverManagerDataSource dataSource = new DriverManagerDataSource();
-            dataSource.setDriverClassName(env.getProperty("thinkbig.provenance.datasource.driverClassName"));
-            dataSource.setUrl(env.getProperty("thinkbig.provenance.datasource.url"));
-            dataSource.setUsername(env.getProperty("thinkbig.provenance.datasource.username"));
-            dataSource.setPassword(env.getProperty("thinkbig.provenance.datasource.password"));
-            return dataSource;
-        }
-
-        @Bean(name = "jdbcThinkbigNifi")
-        public JdbcTemplate jdbcThinkbigNifiTemplate(@Qualifier("thinkbigNifiDataSource") DataSource thinkbigNifiDataSource) {
-            return new JdbcTemplate(thinkbigNifiDataSource);
-        }
-    */
     @Bean
     public SpringApplicationContext springApplicationContext() {
         return new SpringApplicationContext();
     }
+
 }
