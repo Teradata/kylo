@@ -25,6 +25,7 @@ import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTOHolde
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 
 import org.apache.commons.lang3.StringUtils;
+import org.hibernate.exception.LockAcquisitionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,6 +70,12 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener{
     @Inject
     NifiBulletinExceptionExtractor nifiBulletinExceptionExtractor;
 
+    /**
+     * The amount of retry attempts the system will do if it gets a LockAcquisitionException
+     * MySQL may fail to lock the table when performing inserts into the database resulting in a deadlock exception.
+     * When processing each event the LockAcquisitionException is caught and a retry attempt is done, retrying to process the event this amount of times before giving up.
+     */
+    private int lockAcquisitionRetryAmount = 4;
 
     /**
      * Temporary cache of completed events in to check against to ensure we trigger the same event twice
@@ -156,22 +163,43 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener{
     @JmsListener(destination = Queues.FEED_MANAGER_QUEUE, containerFactory = ActiveMqConstants.JMS_CONTAINER_FACTORY, concurrency = "10-50")
     public void receiveEvents(ProvenanceEventRecordDTOHolder events) {
         log.info("About to process {} events from the {} queue ", events.getEvents().size(), Queues.FEED_MANAGER_QUEUE);
-        events.getEvents().stream().filter(e -> isRegisteredWithFeedManager(e)).forEach(event -> {
+        events.getEvents().stream().filter(e -> isRegisteredWithFeedManager(e)).forEach(event -> processEvent(event, 0));
+    }
 
+    private void processEvent(ProvenanceEventRecordDTO event, int retryAttempt) {
+        try {
             if (event.isBatchJob()) {
                 //ensure the job is there
-                BatchJobExecution jobExecution = metadataAccess.commit(() -> batchJobExecutionProvider.getOrCreateJobExecution(event), 
+                BatchJobExecution jobExecution = metadataAccess.commit(() -> batchJobExecutionProvider.getOrCreateJobExecution(event),
                                                                        MetadataAccess.SERVICE);
-                NifiEvent nifiEvent = metadataAccess.commit(() -> receiveBatchEvent(jobExecution, event), 
+                NifiEvent nifiEvent = metadataAccess.commit(() -> receiveBatchEvent(jobExecution, event),
                                                             MetadataAccess.SERVICE);
+
             } else {
-                NifiEvent nifiEvent = metadataAccess.commit(() -> nifiEventProvider.create(event), 
+                NifiEvent nifiEvent = metadataAccess.commit(() -> nifiEventProvider.create(event),
                                                             MetadataAccess.SERVICE);
             }
             if (event.isFinalJobEvent()) {
                 notifyJobFinished(event);
             }
-        });
+        } catch (LockAcquisitionException lae) {
+            //safeguard against LockAcquisitionException if MySQL has a problem locking the table during its processing of the Event.
+
+            if (retryAttempt < lockAcquisitionRetryAmount) {
+                retryAttempt++;
+                log.error("LockAcquisitionException found trying to process Event: {} .  Retry attempt # {} ", event, retryAttempt, lae);
+                //wait and re attempt
+                try {
+                    Thread.sleep(300L);
+                } catch (InterruptedException var10) {
+
+                }
+                processEvent(event, retryAttempt);
+            } else {
+                log.error("LockAcquisitionException found.  Unsuccessful after retrying {} times.  This event {} will not be processed. ", retryAttempt, event, lae);
+            }
+        }
+
     }
 
 
