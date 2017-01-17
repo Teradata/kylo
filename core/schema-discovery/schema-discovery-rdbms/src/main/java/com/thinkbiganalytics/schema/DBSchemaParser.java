@@ -84,7 +84,7 @@ public class DBSchemaParser {
         try {
             final String TERADATA_PRODUCT_IDENTIFIER = "Teradata";
 
-            if (conn.getMetaData().getDatabaseProductName().equals(TERADATA_PRODUCT_IDENTIFIER)) {
+            if (TERADATA_PRODUCT_IDENTIFIER.equalsIgnoreCase(conn.getMetaData().getDatabaseProductName())) {
                 return conn.getMetaData().getTables(catalog, schema, tableName, null);  //Teradata-specific
             }
             else {
