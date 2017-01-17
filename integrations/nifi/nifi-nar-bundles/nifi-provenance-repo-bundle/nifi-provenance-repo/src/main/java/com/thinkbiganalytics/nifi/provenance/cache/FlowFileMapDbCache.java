@@ -146,15 +146,13 @@ public class FlowFileMapDbCache implements FlowFileCacheListener {
      * Load the FlowFile from the saved "IdReference MapDB " or creates a new FlowFile object
      */
     private ActiveFlowFile loadGraph(IdReferenceFlowFile parentFlowFile) {
-        log.debug("Loading IdReferenceFlowFile into guava cache with id: {}  isRoot: {} ", parentFlowFile.getId(), parentFlowFile.isRootFlowFile());
+        log.info("Loading IdReferenceFlowFile into guava cache with id: {}  isRoot: {} ", parentFlowFile.getId(), parentFlowFile.isRootFlowFile());
 
         ActiveFlowFile parent = cache.getEntry(parentFlowFile.getId());
         parent.setIsBuiltFromIdReferenceFlowFile(true);
         parent.assignFeedInformation(parentFlowFile.getFeedName(), parentFlowFile.getFeedProcessGroupId());
 
-        if (parentFlowFile.getPreviousEventId() != null) {
-            parent.setPreviousEventForEvent(constructPreviousEvent(parentFlowFile));
-        }
+
 
         if (parentFlowFile.isRootFlowFile()) {
             parent.markAsRootFlowFile();
@@ -163,6 +161,14 @@ public class FlowFileMapDbCache implements FlowFileCacheListener {
             firstEvent.setFlowFile(parent);
         }
         parent.setCurrentFlowFileComplete(parentFlowFile.isComplete());
+
+        if (parentFlowFile.getPreviousEventId() != null) {
+            ProvenanceEventRecordDTO prevEvent = constructPreviousEvent(parentFlowFile);
+            parent.setPreviousEventForEvent(prevEvent);
+            if (prevEvent.getFlowFileUuid().equalsIgnoreCase(parent.getId())) {
+                prevEvent.setFlowFile(parent);
+            }
+        }
 
         for (String childId : parentFlowFile.getChildIds()) {
             IdReferenceFlowFile idReferenceFlowFile = getCachedFlowFile(childId);
@@ -206,6 +212,8 @@ public class FlowFileMapDbCache implements FlowFileCacheListener {
         event.setEventTime(new DateTime(flowFile.getPreviousEventTime()));
         event.setFeedName(flowFile.getFeedName());
         event.setFeedProcessGroupId(flowFile.getFeedProcessGroupId());
+        event.setComponentName(flowFile.getPreviousEventComponentName());
+        event.setFlowFileUuid(flowFile.getId());
         return event;
     }
 
