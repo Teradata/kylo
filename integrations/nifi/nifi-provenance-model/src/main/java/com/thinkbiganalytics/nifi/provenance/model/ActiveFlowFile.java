@@ -523,6 +523,7 @@ public class ActiveFlowFile {
         idReferenceFlowFile.setIsComplete(isCurrentFlowFileComplete());
         idReferenceFlowFile.setPreviousEventId(this.getPreviousEvent() != null ? this.getPreviousEvent().getEventId() : null);
         idReferenceFlowFile.setPreviousEventTime(this.getPreviousEvent() != null && this.getPreviousEvent().getEventTime() != null ? this.getPreviousEvent().getEventTime().getMillis() : null);
+        idReferenceFlowFile.setPreviousEventComponentName(this.getPreviousEvent() != null ? this.getPreviousEvent().getComponentName() : "Unknown");
         for (ActiveFlowFile parent : getParents()) {
             idReferenceFlowFile.addParentId(parent.getId());
         }

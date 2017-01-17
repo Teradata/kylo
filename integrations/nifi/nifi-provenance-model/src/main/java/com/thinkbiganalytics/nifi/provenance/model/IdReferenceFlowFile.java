@@ -25,6 +25,8 @@ public class IdReferenceFlowFile implements Serializable {
 
     private Long previousEventId;
     private Long previousEventTime;
+    private String previousEventComponentName;
+
 
 
     private String rootFlowFileId;
@@ -182,5 +184,13 @@ public class IdReferenceFlowFile implements Serializable {
 
     public void setPreviousEventTime(Long previousEventTime) {
         this.previousEventTime = previousEventTime;
+    }
+
+    public String getPreviousEventComponentName() {
+        return previousEventComponentName;
+    }
+
+    public void setPreviousEventComponentName(String previousEventComponentName) {
+        this.previousEventComponentName = previousEventComponentName;
     }
 }
