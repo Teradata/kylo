@@ -198,6 +198,8 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener{
             } else {
                 log.error("LockAcquisitionException found.  Unsuccessful after retrying {} times.  This event {} will not be processed. ", retryAttempt, event, lae);
             }
+        } catch (Exception e) {
+            log.error("Error processing Event ", event, e);
         }
 
     }

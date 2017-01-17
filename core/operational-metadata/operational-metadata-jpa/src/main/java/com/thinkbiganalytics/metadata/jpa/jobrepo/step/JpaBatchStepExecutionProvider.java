@@ -123,6 +123,9 @@ public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider
                                                      : DateTimeUtil.convertToUTC((event.getEventTime().minus(event.getEventDuration()))));
             stepExecution.setEndTime(DateTimeUtil.convertToUTC(event.getEventTime()));
             stepExecution.setStepName(event.getComponentName());
+            if (StringUtils.isBlank(stepExecution.getStepName())) {
+                stepExecution.setStepName("Unknown Step ");
+            }
             log.info("New Step Execution {} on Job: {} using event {} ", stepExecution.getStepName(), jobExecution.getJobExecutionId(), event.getEventId());
 
             boolean failure = event.isFailure();
