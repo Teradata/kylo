@@ -73,7 +73,7 @@ public class TimestampValidator implements ValidationPolicy<String> {
      */
     public DateTime parseTimestamp(String value) {
         // Check if the value is consider a null
-        if ((allowNull) && (value.toUpperCase().equals("NULL") || (value.toUpperCase().equals("N")))) {
+        if ((allowNull) && (value.toUpperCase().equals("NULL"))) {
             return new DateTime();
         }
 
