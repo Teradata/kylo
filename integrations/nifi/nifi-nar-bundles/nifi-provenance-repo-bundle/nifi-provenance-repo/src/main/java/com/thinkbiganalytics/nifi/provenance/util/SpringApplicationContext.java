@@ -46,7 +46,6 @@ public class SpringApplicationContext {
             ((ClassPathXmlApplicationContext) this.applicationContext).setClassLoader(getClass().getClassLoader());
             ((ClassPathXmlApplicationContext) this.applicationContext).setConfigLocation(configFileName);
             ((ClassPathXmlApplicationContext) this.applicationContext).refresh();
-            printBeanNames();
         }
     }
 

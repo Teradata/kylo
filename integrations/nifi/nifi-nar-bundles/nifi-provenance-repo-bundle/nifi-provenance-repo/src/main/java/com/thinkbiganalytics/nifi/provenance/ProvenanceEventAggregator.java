@@ -138,7 +138,8 @@ public class ProvenanceEventAggregator {
                                 collectCompletionEvents(event);
                             }
                         }
-                    if (!event.isStream()) {
+                    //batch up the data to send to kylo if this feed is marked as a batch or if the parent flow file is marked as a batch
+                    if (!event.isStream() || (event.getFlowFile() != null && event.getFlowFile().getRootFlowFile() != null && event.getFlowFile().getRootFlowFile().isBatch())) {
                         boolean added = aggregateEvent(event);
                     }
 
