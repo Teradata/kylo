@@ -111,6 +111,9 @@ public class NifiProvenanceRestController {
             } else {
                 maxId = statsProvider.findMaxEventId();
             }
+            if (maxId == null) {
+                maxId = 1L;
+            }
             return Response.ok(maxId).build();
         }, MetadataAccess.SERVICE);
     }
