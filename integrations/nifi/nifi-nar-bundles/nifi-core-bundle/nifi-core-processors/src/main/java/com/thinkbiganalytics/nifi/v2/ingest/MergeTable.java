@@ -143,6 +143,8 @@ public class MergeTable extends AbstractNiFiProcessor {
             return;
         }
 
+        String PROVENANCE_EXECUTION_STATUS_KEY = context.getName() + " Execution Status";
+
         ThriftService thriftService = context.getProperty(THRIFT_SERVICE).asControllerService(ThriftService.class);
         String partitionSpecString = context.getProperty(PARTITION_SPECIFICATION).evaluateAttributeExpressions(flowFile).getValue();
         String sourceSchema = context.getProperty(SOURCE_SCHEMA).evaluateAttributeExpressions(flowFile).getValue();
@@ -159,6 +161,7 @@ public class MergeTable extends AbstractNiFiProcessor {
 
         if (STRATEGY_PK_MERGE.equals(mergeStrategyValue) && (columnSpecs == null || columnSpecs.length == 0)) {
             getLog().error("Missing required field specification for PK merge feature");
+            flowFile = session.putAttribute(flowFile, PROVENANCE_EXECUTION_STATUS_KEY, "Failed: Missing required field specification for PK merge feature");
             session.transfer(flowFile, IngestProperties.REL_FAILURE);
             return;
         }
@@ -200,10 +203,12 @@ public class MergeTable extends AbstractNiFiProcessor {
 
             stopWatch.stop();
             session.getProvenanceReporter().modifyContent(flowFile, "Execution completed", stopWatch.getElapsed(TimeUnit.MILLISECONDS));
+            flowFile = session.putAttribute(flowFile, PROVENANCE_EXECUTION_STATUS_KEY, "Successful");
             session.transfer(flowFile, REL_SUCCESS);
 
         } catch (final Exception e) {
             logger.error("Unable to execute merge doMerge for {} due to {}; routing to failure", new Object[]{flowFile, e}, e);
+            flowFile = session.putAttribute(flowFile, PROVENANCE_EXECUTION_STATUS_KEY, "Failed: " + e.getMessage());
             session.transfer(flowFile, REL_FAILURE);
         }
     }
