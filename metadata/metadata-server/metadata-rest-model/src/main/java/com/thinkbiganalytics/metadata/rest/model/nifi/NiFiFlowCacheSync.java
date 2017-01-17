@@ -22,6 +22,7 @@ public class NiFiFlowCacheSync {
     private NifiFlowCacheSnapshot snapshot;
     private DateTime lastSync;
     private String message;
+    private boolean updated = false;
 
 
     public static NiFiFlowCacheSync UNAVAILABLE = new NiFiFlowCacheSync("NiFi Flow Cache is unavailable. Try again in a few seconds");
@@ -126,8 +127,17 @@ public class NiFiFlowCacheSync {
         return syncId;
     }
 
-    public boolean isEmpty() {
-        return this.getSnapshot() == null || (this.getSnapshot() != null && this.getSnapshot().getAddProcessorIdToFeedNameMap().size() == 0);
+    public boolean needsUpdate() {
+        return this.getSnapshot() == null || this.updated;
+    }
+
+
+    public boolean isUpdated() {
+        return updated;
+    }
+
+    public void setUpdated(boolean updated) {
+        this.updated = updated;
     }
 
     public boolean isUnavailable() {

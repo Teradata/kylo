@@ -29,8 +29,13 @@ public class ProvenanceFeedLookup {
 
     private DateTime lastUpdated;
 
+    /**
+     * update this cache with the Kylo server
+     *
+     * @param updates the returned object from the KyloFlowProvider that has only those items that should be updated
+     */
     public void updateFlowCache(NiFiFlowCacheSync updates) {
-        if (!updates.isEmpty()) {
+        if (updates.needsUpdate()) {
             if (flowCache == null) {
                 flowCache = updates;
             } else {
@@ -55,13 +60,6 @@ public class ProvenanceFeedLookup {
         return new DateTime(utc);
     }
 
-    private String getSyncId() {
-        if (!flowCache.isEmpty()) {
-            return flowCache.getSyncId();
-        } else {
-            return null;
-        }
-    }
 
 
     private NifiFlowCacheSnapshot getFlowCache() {

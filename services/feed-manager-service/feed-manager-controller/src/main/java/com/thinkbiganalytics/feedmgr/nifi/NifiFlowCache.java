@@ -284,8 +284,15 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
             if (!preview) {
                 sync.setSnapshot(latest);
                 sync.setLastSync(latest.getSnapshotDate());
+
             }
-            return new NiFiFlowCacheSync(sync.getSyncId(), updated);
+            NiFiFlowCacheSync updatedSync = new NiFiFlowCacheSync(sync.getSyncId(), updated);
+            updatedSync.setUpdated(true);
+            if (!preview) {
+                updatedSync.setLastSync(latest.getSnapshotDate());
+            }
+            return updatedSync;
+
         }
 
         return NiFiFlowCacheSync.EMPTY(sync.getSyncId());
@@ -387,14 +394,16 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
 
         populateTemplateMappingCache(template, null);
 
-        //update the processortype cache
+        //update the processortype cachefeedNameToTemplateNameMap
         List<String> feedNames = feedNameToTemplateNameMap.entrySet().stream().filter(entry -> entry.getValue().equalsIgnoreCase(template.getTemplateName())).map(entry -> entry.getKey()).collect(Collectors.toList());
 
+        log.info("Updated Template: {}, found {} associated feeds ", template.getTemplateName(), feedNames.size());
         if (template.isStream()) {
             streamingFeeds.addAll(feedNames);
         } else {
             streamingFeeds.removeAll(feedNames);
         }
+        lastUpdated = DateTimeUtil.getNowUTCTime();
 
     }
 

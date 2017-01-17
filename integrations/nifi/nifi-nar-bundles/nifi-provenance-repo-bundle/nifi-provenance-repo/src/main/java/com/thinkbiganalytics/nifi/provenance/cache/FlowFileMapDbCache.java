@@ -34,12 +34,6 @@ import javax.annotation.PostConstruct;
 public class FlowFileMapDbCache implements FlowFileCacheListener {
 
     private static final Logger log = LoggerFactory.getLogger(FlowFileMapDbCache.class);
-    private static FlowFileMapDbCache instance = new FlowFileMapDbCache();
-
-    public static FlowFileMapDbCache instance() {
-        return instance;
-    }
-
     private DB db;
 
     private ConcurrentMap<String, IdReferenceFlowFile> idReferenceFlowFileHTreeMap;
@@ -53,20 +47,13 @@ public class FlowFileMapDbCache implements FlowFileCacheListener {
     private TimeUnit expireAfterUnit = TimeUnit.DAYS;
 
     public FlowFileMapDbCache() {
-    }
-
-    @PostConstruct
-    private void init() {
         log.info("Initialize FlowFileMapDbCache cache, keeping running flowfiles for {} days", expireAfterNumber);
         db = DBMaker.fileDB("flowfile-cache.db").fileMmapEnable()
             .fileMmapEnableIfSupported() // Only enable mmap on supported platforms
             .fileMmapPreclearDisable()   // Make mmap file faster
             .cleanerHackEnable()
             .checksumHeaderBypass()
-                // .fileDeleteAfterOpen()
-                //   .fileDeleteAfterClose()
             .closeOnJvmShutdown().make();
-        //idReferenceFlowFileHTreeMap = new ConcurrentHashMap<>();
         idReferenceFlowFileHTreeMap =
             (HTreeMap<String, IdReferenceFlowFile>) db.hashMap("idRefFlowFile").keySerializer(Serializer.STRING).valueSerializer(Serializer.JAVA).expireAfterCreate(expireAfterNumber,
                                                                                                                                                                     expireAfterUnit)
@@ -74,6 +61,10 @@ public class FlowFileMapDbCache implements FlowFileCacheListener {
 
         log.info("CREATED NEW FlowFileMapDbCache cache with starting size of: {} ", idReferenceFlowFileHTreeMap.size());
 
+    }
+
+    @PostConstruct
+    private void init() {
         cache.subscribe(this);
     }
 
@@ -119,6 +110,7 @@ public class FlowFileMapDbCache implements FlowFileCacheListener {
 
 
     public int loadGuavaCache() {
+
         Collection<IdReferenceFlowFile> flowFiles = idReferenceFlowFileHTreeMap.values();
         //just need to load the root files.  the children will be loaded in the graph
         Set<IdReferenceFlowFile> rootFlowFiles = flowFiles.stream().filter(idReferenceFlowFile1 -> idReferenceFlowFile1.isRootFlowFile()).collect(Collectors.toSet());
@@ -138,6 +130,11 @@ public class FlowFileMapDbCache implements FlowFileCacheListener {
         log.info("About to persist {}  flow files to disk via MapDB ", flowFiles.size());
         flowFiles.stream().map(flowFile -> flowFile.toIdReferenceFlowFile()).forEach(idReferenceFlowFile -> cacheFlowFile(idReferenceFlowFile));
         log.info("Successfully persisted {}  flow files to disk via MapDB.  Persisted Map Size is: {} entries ", flowFiles.size(), idReferenceFlowFileHTreeMap.size());
+        if (flowFiles != null && !flowFiles.isEmpty()) {
+            db.commit();
+            db.close();
+            log.info("Successfully closed the flow file MapDB cache file.");
+        }
         return flowFiles.size();
     }
 
@@ -146,7 +143,7 @@ public class FlowFileMapDbCache implements FlowFileCacheListener {
      * Load the FlowFile from the saved "IdReference MapDB " or creates a new FlowFile object
      */
     private ActiveFlowFile loadGraph(IdReferenceFlowFile parentFlowFile) {
-        log.info("Loading IdReferenceFlowFile into guava cache with id: {}  isRoot: {} ", parentFlowFile.getId(), parentFlowFile.isRootFlowFile());
+        // log.info("Loading IdReferenceFlowFile into guava cache with id: {}  isRoot: {} ", parentFlowFile.getId(), parentFlowFile.isRootFlowFile());
 
         ActiveFlowFile parent = cache.getEntry(parentFlowFile.getId());
         parent.setIsBuiltFromIdReferenceFlowFile(true);

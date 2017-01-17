@@ -252,7 +252,7 @@ public class NifiFlowCacheSnapshot {
         addProcessorIdToFeedNameMap.putAll(syncSnapshot.getAddProcessorIdToFeedNameMap());
         addProcessorIdToFeedProcessGroupId.putAll(syncSnapshot.getAddProcessorIdToFeedProcessGroupId());
         addProcessorIdToProcessorName.putAll(syncSnapshot.getAddProcessorIdToProcessorName());
-        allStreamingFeeds.addAll(syncSnapshot.getAllStreamingFeeds());
+        allStreamingFeeds = new HashSet<>(syncSnapshot.getAllStreamingFeeds());
         allFeeds.addAll(syncSnapshot.getAllFeeds());
         snapshotDate = syncSnapshot.getSnapshotDate();
         feedToProcessorIdToFlowTypeMap.putAll(syncSnapshot.getFeedToProcessorIdToFlowTypeMap());
