@@ -27,31 +27,13 @@ public class DBSchemaParserTest {
     @Inject
     private DataSource dataSource;
 
-
     @Test
     public void test() {
+        final String TABLE_SEARCH_PATTERN = "DBCInfo%";
+
         DBSchemaParser schemaParser = new DBSchemaParser(dataSource, new KerberosTicketConfiguration());
-       /*
-        List<String> schemas = schemaParser.listCatalogs();
-
-        if (schemas != null) {
-            schemas.stream().forEach(schema ->
-                                     {
-                                         List<String> tables = schemaParser.listTables(schema,"%");
-                                         if (tables != null) {
-                                             //    tables.forEach(table -> System.out.println(table));
-                                         }
-                                     });
-        }
-        */
         List<String> tables = null;
-       /*  tables = schemaParser.listTables(null,null);
-        if (tables != null) {
-            tables.forEach(table -> System.out.println(table));
-        }
-        */
-
-        tables = schemaParser.listTables(null, "batch%");
+        tables = schemaParser.listTables(null, TABLE_SEARCH_PATTERN);
         if (tables != null) {
             tables.forEach(table -> System.out.println(table));
         }

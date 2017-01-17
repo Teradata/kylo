@@ -82,7 +82,14 @@ public class DBSchemaParser {
     @Nullable
     private ResultSet getTables(@Nonnull final Connection conn, @Nullable String catalog, @Nullable final String schema, @Nonnull final String tableName) {
         try {
-            return conn.getMetaData().getTables(catalog, schema, tableName, new String[]{"TABLE", "VIEW"});
+            final String TERADATA_PRODUCT_IDENTIFIER = "Teradata";
+
+            if (conn.getMetaData().getDatabaseProductName().equals(TERADATA_PRODUCT_IDENTIFIER)) {
+                return conn.getMetaData().getTables(catalog, schema, tableName, null);  //Teradata-specific
+            }
+            else {
+                return conn.getMetaData().getTables(catalog, schema, tableName, new String[]{"TABLE", "VIEW"});
+            }
         } catch (final SQLException e) {
             log.debug("Failed to list tables for catalog:{} schema:{} tableName:{}", catalog, schema, tableName, e);
             return null;
