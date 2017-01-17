@@ -277,7 +277,14 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         if (flowFile == null) {
             return;
         }
+        String PROVENANCE_JOB_STATUS_KEY = "Job Status";
+        String PROVENANCE_SPARK_EXIT_CODE_KEY = "Spark Exit Code";
+
         try {
+
+            PROVENANCE_JOB_STATUS_KEY = context.getName() + " Job Status";
+            PROVENANCE_SPARK_EXIT_CODE_KEY = context.getName() + " Spark Exit Code";
+
               /* Configuration parameters for spark launcher */
             String appJar = context.getProperty(APPLICATION_JAR).evaluateAttributeExpressions(flowFile).getValue().trim();
             String extraJars = context.getProperty(EXTRA_JARS).evaluateAttributeExpressions(flowFile).getValue();
@@ -422,19 +429,20 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
 
              /* Wait for job completion */
             int exitCode = spark.waitFor();
-            flowFile = session.putAttribute(flowFile, "Spark Exit Code:", exitCode + "");
+
+            flowFile = session.putAttribute(flowFile, PROVENANCE_SPARK_EXIT_CODE_KEY, exitCode + "");
             if (exitCode != 0) {
                 logger.info("*** Completed with failed status " + exitCode);
-                flowFile = session.putAttribute(flowFile, "Job Status", "Failed");
+                flowFile = session.putAttribute(flowFile, PROVENANCE_JOB_STATUS_KEY, "Failed");
                 session.transfer(flowFile, REL_FAILURE);
             } else {
                 logger.info("*** Completed with status " + exitCode);
-                flowFile = session.putAttribute(flowFile, "Job Status", "Success");
+                flowFile = session.putAttribute(flowFile, PROVENANCE_JOB_STATUS_KEY, "Success");
                 session.transfer(flowFile, REL_SUCCESS);
             }
         } catch (final Exception e) {
             logger.error("Unable to execute Spark job", new Object[]{flowFile, e});
-            flowFile = session.putAttribute(flowFile, "Job Status", "Failed With Exception");
+            flowFile = session.putAttribute(flowFile, PROVENANCE_JOB_STATUS_KEY, "Failed With Exception");
             flowFile = session.putAttribute(flowFile, "Spark Exception:", e.getMessage());
             session.transfer(flowFile, REL_FAILURE);
         }
