@@ -13,6 +13,7 @@ import com.thinkbiganalytics.nifi.provenance.model.stats.ProvenanceEventStats;
 import com.thinkbiganalytics.nifi.provenance.model.stats.StatsModel;
 import com.thinkbiganalytics.nifi.provenance.model.util.ProvenanceEventUtil;
 
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,6 +107,16 @@ public class ProvenanceEventAggregator {
         }
     }
 
+    public boolean hasFeedName(ProvenanceEventRecordDTO event) {
+        String flowFileFeedName = event.getFlowFile() != null ? event.getFlowFile().getFeedName() : null;
+        String eventFeedName = event.getFeedName();
+        if (StringUtils.isBlank(eventFeedName) && StringUtils.isNotBlank(flowFileFeedName)) {
+            eventFeedName = flowFileFeedName;
+            event.setFeedName(eventFeedName);
+        }
+        return StringUtils.isNotBlank(eventFeedName);
+    }
+
 
 
     public void process(ProvenanceEventRecordDTO event) {
@@ -121,10 +132,13 @@ public class ProvenanceEventAggregator {
                         event.setIsFailure(true);
                         event.getFlowFile().addFailedEvent(event);
                     }
-                    //send the event off for stats processing
-                    ProvenanceEventStats stats = statsCalculator.calculateStats(event);
-                    //check to see if the event is going through a processor deemed as a failure in kylo
-                    collectFailureEvents(event);
+                    //only process if we can get the feed name, otherwise its no use
+                    if (hasFeedName(event)) {
+
+                        //send the event off for stats processing
+                        ProvenanceEventStats stats = statsCalculator.calculateStats(event);
+                        //check to see if the event is going through a processor deemed as a failure in kylo
+                        collectFailureEvents(event);
 
                         // check to see if the parents should be finished
                         if (event.isEndingFlowFileEvent()) {
@@ -138,15 +152,16 @@ public class ProvenanceEventAggregator {
                                 collectCompletionEvents(event);
                             }
                         }
-                    //batch up the data to send to kylo if this feed is marked as a batch or if the parent flow file is marked as a batch
-                    if (!event.isStream() || (event.getFlowFile() != null && event.getFlowFile().getRootFlowFile() != null && event.getFlowFile().getRootFlowFile().isBatch())) {
-                        boolean added = aggregateEvent(event);
-                    }
+                        //batch up the data to send to kylo if this feed is marked as a batch or if the parent flow file is marked as a batch
+                        if (!event.isStream() || (event.getFlowFile() != null && event.getFlowFile().getRootFlowFile() != null && event.getFlowFile().getRootFlowFile().isBatch())) {
+                            boolean added = aggregateEvent(event);
+                        }
 
                         //might not need this!!
                         if (event.isStartOfJob()) {
                             processEarlyChildren(event.getJobFlowFileId());
                         }
+                    }
 
                 } catch (RootFlowFileNotFoundException e) {
                     //add to a holding bin

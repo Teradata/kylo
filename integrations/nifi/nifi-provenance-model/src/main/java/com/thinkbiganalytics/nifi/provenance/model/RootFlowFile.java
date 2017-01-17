@@ -52,7 +52,7 @@ public class RootFlowFile extends ActiveFlowFile {
         boolean isBatch = false;
         if (getFirstEventType() != null) {
 
-            isBatch = getFirstEventType().equals(FIRST_EVENT_TYPE.BATCH);
+            isBatch = FIRST_EVENT_TYPE.BATCH.equals(getFirstEventType());
         }
         return isBatch;
     }

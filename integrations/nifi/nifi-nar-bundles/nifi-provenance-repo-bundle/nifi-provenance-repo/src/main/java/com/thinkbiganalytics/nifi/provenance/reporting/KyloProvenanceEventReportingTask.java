@@ -39,8 +39,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -639,6 +641,12 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
         return initializing.get();
     }
 
+    /**
+     * Store any events coming through that we cannot associate a Feed for.
+     * These events will be skipped
+     */
+    private Set<String> nonManagedKyloEvents = new HashSet<>();
+
     private Long initializeAndGetLastEventIdForProcessing(Long maxEventId, String clusterNodeId) throws IOException {
         long lastEventId = getLastEventId(stateManager);
 
@@ -759,6 +767,13 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
 
     }
 
+    private String nonManagedKyloEventKey(ProvenanceEventRecordDTO event) {
+        return event.getFlowFileUuid() + "_" + event.getEventId();
+    }
+
+    private boolean shouldProcessEvent(ProvenanceEventRecordDTO event) {
+        return !nonManagedKyloEvents.contains(nonManagedKyloEventKey(event));
+    }
 
     /**
      * Process the Event, calculate the Aggregrate statistics and send it on to JMS for Kylo Ops manager processing
@@ -767,8 +782,18 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
      */
     public ProvenanceEventRecordDTO processEvent(ProvenanceEventRecord event) {
         ProvenanceEventRecordDTO eventRecordDTO = ProvenanceEventRecordConverter.convert(event);
-        getLogger().trace("KyloProvenanceEventReportingTask processEvent Info: EVENT for {} - {} is {}.", new Object[]{event.getComponentType(), event.getEventId(), event.getEventType()});
-        getProvenanceEventAggregator().process(eventRecordDTO);
+        if (shouldProcessEvent(eventRecordDTO)) {
+            getLogger().trace("KyloProvenanceEventReportingTask processEvent Info: EVENT for {} - {} is {}.", new Object[]{event.getComponentType(), event.getEventId(), event.getEventType()});
+            getProvenanceEventAggregator().process(eventRecordDTO);
+            if (!getProvenanceEventAggregator().hasFeedName(eventRecordDTO)) {
+                getLogger().info(" Found provenance event that is not mapped in Kylo {}", new Object[]{event});
+                nonManagedKyloEvents.add(nonManagedKyloEventKey(eventRecordDTO));
+            } else {
+                //if we get an event that is kylo managed, clear the list of non managed, since we are good.
+                nonManagedKyloEvents.clear();
+            }
+        }
+
         return eventRecordDTO;
     }
 

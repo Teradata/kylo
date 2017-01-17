@@ -125,7 +125,8 @@ public class CacheUtil {
         //assign the feed info for quick lookup on the flow file?
         boolean assignedFeedInfo = provenanceFeedLookup.assignFeedInformationToFlowFile(flowFile);
         if (!assignedFeedInfo && !flowFile.hasFeedInformationAssigned()) {
-            log.error("Unable to assign Feed Info to flow file {}, root: {}, for event {} ", flowFile.getId(), flowFile.getRootFlowFile(), event);
+            log.error("Unable to assign Feed Info to flow file {}, root: {}, for event {} ({}) processorId: {} ", flowFile.getId(), flowFile.getRootFlowFile(), event.getComponentName(),
+                      event.getEventId(), event.getComponentId());
             //remove from Guava Cache and return??
             //return ??
 
@@ -147,16 +148,9 @@ public class CacheUtil {
         }
 
         if (ProvenanceEventUtil.isCompletionEvent(event)) {
-            //try to find the last provenance event that was completed in the flow that matches the source connection id for this incoming event.
-            //this will be the previous processor in the flow
-            // ProvenanceEventRecordDTO prevEvent = null;// provenanceFeedLookup.getPreviousProvenanceEventFromConnectionRelationship(event);
-            // if (prevEvent != null) {
-            //      log.debug("Found previous event {} for event {} ", prevEvent, event);
-            //       event.setPreviousEventForEvent(prevEvent);
-            //   }
-            log.info("Add Event {}, {}, previous event: {} ", event.getEventId(), event.getComponentName(), flowFile.getPreviousEvent());
+            log.debug("Add Event {}, {}, previous event: {} ", event.getEventId(), event.getComponentName(), flowFile.getPreviousEvent());
             flowFile.addCompletionEvent(event);
-            log.info("added event to flow file Event {}, {}, {} with Start {}, Prev: {} and End {} ", event.getComponentName(), event.getComponentId(), event.getEventType(), event.getStartTime(),
+            log.debug("added event to flow file Event {}, {}, {} with Start {}, Prev: {} and End {} ", event.getComponentName(), event.getComponentId(), event.getEventType(), event.getStartTime(),
                      event.getPreviousEvent() != null ? event.getPreviousEvent().getEventTime() : "NULL PREVIOUS ", event.getEventTime());
         }
 
