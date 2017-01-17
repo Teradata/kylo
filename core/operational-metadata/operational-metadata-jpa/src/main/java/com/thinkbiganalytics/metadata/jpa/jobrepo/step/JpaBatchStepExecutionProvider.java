@@ -172,6 +172,12 @@ public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider
                 stepExecution.addStepExecutionContext(stepExecutionContext);
             }
         }
+        //add the event id for debugging
+
+        JpaBatchStepExecutionContextValue eventIdContextValue = new JpaBatchStepExecutionContextValue(stepExecution, "NiFi Event Id");
+        eventIdContextValue.setStringVal(event.getEventId().toString());
+        stepExecution.addStepExecutionContext(eventIdContextValue);
+
         //add in the flow type if its there
         if (event.getProcessorType() != null && !KyloProcessorFlowType.NORMAL_FLOW.equals(event.getProcessorType())) {
             KyloProcessorFlowType processorFlowType = event.getProcessorType();
