@@ -43,7 +43,7 @@ public class JpaJcrServiceLevelAgreementChecker extends DefaultServiceLevelAgree
 
             if (previous != null) {
                 assessmentProvider.ensureServiceLevelAgreementOnAssessment(previous);
-                LOG.info("found previous assessment {} ", previous.getClass());
+                LOG.debug("found previous assessment {} ", previous.getClass());
 
                 return assessment.compareTo(previous) != 0;
             } else {
