@@ -32,7 +32,7 @@ import javax.jms.ConnectionFactory;
  */
 @Configuration
 @EnableJms
-@ComponentScan(basePackages = {"com.thinkbiganalytics"})
+@ComponentScan(basePackages = {"com.thinkbiganalytics.activemq"})
 @PropertySources({
                      @PropertySource(value = "file:${thinkbig.nifi.configPath}/config.properties", ignoreResourceNotFound = true),
                      @PropertySource(value = "classpath:application.properties", ignoreResourceNotFound = true)

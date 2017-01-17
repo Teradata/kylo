@@ -50,8 +50,8 @@ public class JmsFeedPreconditionEventService extends AbstractControllerService i
      */
     @Override
     public void addListener(String category, String feedName, PreconditionListener listener) {
-        getLogger().debug("Adding preconditon listener: {}.{} - {}", new Object[]{ category, feedName, listener});
         PreconditionEventConsumer consumer = this.springService.getBean(PreconditionEventConsumer.class);
+        getLogger().debug("Adding preconditon listener: {}.{} - {} to consumer {}", new Object[]{ category, feedName, listener, consumer});
 
         consumer.addListener(category, feedName, listener);
     }
@@ -62,6 +62,7 @@ public class JmsFeedPreconditionEventService extends AbstractControllerService i
     @Override
     public void removeListener(PreconditionListener listener) {
         PreconditionEventConsumer consumer = this.springService.getBean(PreconditionEventConsumer.class);
+        getLogger().debug("Removing preconditon listener: {} from consumer {}", new Object[]{listener, consumer});
 
         consumer.removeListener(listener);
     }

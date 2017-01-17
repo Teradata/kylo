@@ -206,6 +206,8 @@ public class TriggerFeed extends AbstractFeedProcessor {
                     getLog().warn("Failed to serialize feed dependency result deltas", e);
                     // TODO Swallow the exception and produce the flow file anyway?
                 }
+            } else {
+                getLog().debug("Found no dependent feeds");
             }
         }
         if (file == null) {
