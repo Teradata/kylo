@@ -75,7 +75,7 @@ public class JpaServiceLevelAssessmentProvider implements ServiceLevelAssessment
     public ServiceLevelAssessment findLatestAssessmentNotEqualTo(ServiceLevelAgreement.ID slaId, ServiceLevelAssessment.ID assessmentId) {
         if (assessmentId != null) {
             List<? extends ServiceLevelAssessment> latestAssessments = serviceLevelAssessmentRepository.findLatestAssessmentsNotEqualTo(slaId.toString(), assessmentId);
-            if (latestAssessments != null) {
+            if (latestAssessments != null && !latestAssessments.isEmpty()) {
                 return latestAssessments.get(0);
             } else {
                 return null;
