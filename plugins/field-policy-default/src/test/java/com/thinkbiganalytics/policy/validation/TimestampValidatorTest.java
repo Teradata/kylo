@@ -50,6 +50,5 @@ public class TimestampValidatorTest {
         assertTrue(ts.validate(null));
         assertTrue(ts.validate("NULL"));
         assertTrue(ts.validate("null"));
-        assertTrue(ts.validate("N"));
     }
 }
