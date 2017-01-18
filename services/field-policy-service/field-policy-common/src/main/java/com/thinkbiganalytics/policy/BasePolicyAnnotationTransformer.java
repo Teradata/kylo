@@ -341,19 +341,6 @@ public abstract class BasePolicyAnnotationTransformer<U extends BaseUiPolicyRule
 
         }
 
-        //detect if class has @Autowire annotation on any fields
-        //if so autowire
-//        Reflections r = new Reflections(ClasspathHelper.forClass(standardizationPolicy.getClass()),
-//                                        new SubTypesScanner(), new FieldAnnotationsScanner());
-        /*
-        Set<Field> autowiredFields = r.getFieldsAnnotatedWith(Autowired.class);
-
-        Set<Field> autowiredFields = null;
-        Set<Field> injectFields = r.getFieldsAnnotatedWith(Inject.class);
-        if ((autowiredFields != null && !autowiredFields.isEmpty()) || (injectFields != null && !injectFields.isEmpty())) {
-            SpringApplicationContext.autowire(standardizationPolicy);
-        }
-        */
         return standardizationPolicy;
 
     }
