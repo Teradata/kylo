@@ -8,6 +8,7 @@ import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -27,6 +28,8 @@ public interface NiFiFlowVisitorClient {
     NifiFlowProcessGroup getFeedFlowForCategoryAndFeed(String categoryAndFeedName);
 
     List<NifiFlowProcessGroup> getFeedFlows();
+
+    List<NifiFlowProcessGroup> getFeedFlows(Collection<String> feedNames);
 
     Set<ProcessorDTO> getProcessorsForFlow(String processGroupId);
 

@@ -132,7 +132,7 @@ public class NifiFlowProcessGroup {
                 maxCount = count;
             }
         }
-        log.info("Total Processors {} :  {}", getName(), maxCount);
+        log.debug("Total Processors {} :  {}", getName(), maxCount);
     }
 
     public Map<String, NifiFlowProcessor> getProcessorMap() {

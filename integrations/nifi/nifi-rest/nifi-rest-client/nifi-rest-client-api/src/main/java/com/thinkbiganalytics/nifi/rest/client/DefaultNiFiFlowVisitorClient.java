@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -121,10 +122,8 @@ public class DefaultNiFiFlowVisitorClient implements NiFiFlowVisitorClient {
         return flow;
     }
 
-
-    //walk entire graph
-    public List<NifiFlowProcessGroup> getFeedFlows() {
-        log.info("get Graph of Nifi Flows");
+    public List<NifiFlowProcessGroup> getFeedFlows(Collection<String> feedNames) {
+        log.info("get Graph of Nifi Flows looking for {} ", feedNames == null ? "ALL Feeds " : feedNames);
         long start = System.currentTimeMillis();
         NifiConnectionOrderVisitorCache cache = new NifiConnectionOrderVisitorCache();
         List<NifiFlowProcessGroup> feedFlows = new ArrayList<>();
@@ -144,18 +143,29 @@ public class DefaultNiFiFlowVisitorClient implements NiFiFlowVisitorClient {
             }
         }).forEach(category -> {
             for (ProcessGroupDTO feedProcessGroup : category.getContents().getProcessGroups()) {
+
                 //second level is the feed
                 String feedName = FeedNameUtil.fullName(category.getName(), feedProcessGroup.getName());
                 //if it is a versioned feed then strip the version to get the correct feed name
                 feedName = TemplateCreationHelper.parseVersionedProcessGroupName(feedName);
-                NifiFlowProcessGroup feedFlow = getFeedFlow(feedProcessGroup.getId(), cache);
-                feedFlow.setFeedName(feedName);
-                feedFlows.add(feedFlow);
+                //if feednames are sent in, only add those that match or those in the reusable group
+                if ((feedNames == null || feedNames.isEmpty()) || (feedNames != null && (feedNames.contains(feedName) || TemplateCreationHelper.REUSABLE_TEMPLATES_PROCESS_GROUP_NAME
+                    .equalsIgnoreCase(category.getName())))) {
+                    NifiFlowProcessGroup feedFlow = getFeedFlow(feedProcessGroup.getId(), cache);
+                    feedFlow.setFeedName(feedName);
+                    feedFlows.add(feedFlow);
+                }
             }
         });
         long end = System.currentTimeMillis();
         log.info("finished Graph of Nifi Flows.  Returning {} flows, {} ", feedFlows.size(), (end - start) + " ms");
         return feedFlows;
+    }
+
+
+    //walk entire graph
+    public List<NifiFlowProcessGroup> getFeedFlows() {
+        return getFeedFlows(null);
     }
 
 

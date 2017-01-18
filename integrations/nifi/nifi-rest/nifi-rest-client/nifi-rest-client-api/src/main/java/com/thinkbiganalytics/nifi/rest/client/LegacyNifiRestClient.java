@@ -1179,6 +1179,10 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
        return client.flows().getFeedFlows();
     }
 
+    public List<NifiFlowProcessGroup> getFeedFlows(Collection<String> feedNames) {
+        return client.flows().getFeedFlows(feedNames);
+    }
+
 
 
     /**

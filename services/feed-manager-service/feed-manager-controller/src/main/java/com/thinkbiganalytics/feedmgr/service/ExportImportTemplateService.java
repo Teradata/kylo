@@ -249,8 +249,16 @@ NifiControllerServiceProperties nifiControllerServiceProperties;
             //update the cache
             //1 get the template flowtype mappings
             Collection<ProcessorDTO> processors = NifiProcessUtil.getProcessors(processGroupDTO);
-            nifiFlowCache.updateReusableTemplate(processors);
+            nifiFlowCache.updateProcessorIdNames(templateName, processors);
         }
+    }
+
+    private void importedZipFlowWithReusableTemplate(ImportTemplate importTemplate) {
+        if (importTemplate.isSuccess()) {
+            //find all feeds using this template
+            nifiFlowCache.reusableTemplateUpdatedForTemplate(importTemplate.getTemplateName());
+        }
+
     }
 
     public ExportTemplate exportTemplate(String templateId) {
@@ -422,6 +430,7 @@ NifiControllerServiceProperties nifiControllerServiceProperties;
                 }
                 importTemplate.setTemplateId(template.getId());
 
+
             } catch (Exception e) {
                 importTemplate.setSuccess(false);
                 Throwable root = ExceptionUtils.getRootCause(e);
@@ -452,6 +461,12 @@ NifiControllerServiceProperties nifiControllerServiceProperties;
         for (ImportTemplate connectingTemplate : connectingTemplates) {
             //enable it
             nifiRestClient.markConnectionPortsAsRunning(connectingTemplate.getTemplateResults().getProcessGroupEntity());
+        }
+
+        if (importTemplate.isSuccess() && connectingTemplates != null && !connectingTemplates.isEmpty()) {
+            //success
+            importedZipFlowWithReusableTemplate(importTemplate);
+
         }
 
         return importTemplate;

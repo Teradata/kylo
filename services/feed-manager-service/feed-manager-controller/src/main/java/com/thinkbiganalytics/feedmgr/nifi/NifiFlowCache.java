@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -391,6 +392,10 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
     }
 
 
+    /**
+     * Called after someone updates/Registers a template in the UI using the template stepper
+     * Used to update the feed marker for streaming/batch feeds
+     */
     public synchronized void updateRegisteredTemplate(RegisteredTemplate template) {
 
         populateTemplateMappingCache(template, null);
@@ -406,11 +411,44 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
         }
         lastUpdated = DateTimeUtil.getNowUTCTime();
 
+        //update all feeds ref this template
+    }
+
+
+    /**
+     * Called after a template is uploaded with a reusable template connection
+     * technically this should only update the flow processors in the reusable template.
+     * @param templateName
+     */
+    public void reusableTemplateUpdatedForTemplate(String templateName) {
+
+        //1 find all feeds using this template
+
+        metadataAccess.read(() -> {
+            RegisteredTemplate registeredTemplate = metadataService.getRegisteredTemplateByName(templateName);
+            List<String>
+                feedNames =
+                feedNameToTemplateNameMap.entrySet().stream().filter(entry -> entry.getValue().equalsIgnoreCase(templateName)).map(entry -> entry.getKey()).collect(Collectors.toList());
+
+            List<NifiFlowProcessGroup> allFlows = nifiRestClient.getFeedFlows(feedNames);
+
+            //get template associated with flow to determine failure process flow ids
+            allFlows.stream().forEach(nifiFlowProcessGroup -> {
+                if (registeredTemplate != null && feedNames.contains(nifiFlowProcessGroup.getFeedName())) {
+                    nifiFlowProcessGroup.resetProcessorsFlowType(registeredTemplate.getProcessorFlowTypesMap());
+                    if (feedNameToTemplateNameMap.containsKey(nifiFlowProcessGroup.getFeedName())) {
+                        updateFlow(nifiFlowProcessGroup.getFeedName(), registeredTemplate.isStream(), nifiFlowProcessGroup);
+                    }
+                }
+            });
+        });
+
 
     }
 
-    public void updateReusableTemplate(Collection<ProcessorDTO> processors) {
-        ;
+
+    public void updateProcessorIdNames(String templateName, Collection<ProcessorDTO> processors) {
+
         Map<String, String> processorIdToProcessorName = new HashMap<>();
         processors.stream().forEach(flowProcessor -> {
             processorIdToProcessorName.put(flowProcessor.getId(), flowProcessor.getName());
@@ -490,7 +528,7 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
         if (processors != null && !processors.isEmpty()) {
             return processors.stream().filter(nifiFlowProcessor -> nifiFlowProcessor.getFlowId() != null).collect(Collectors.groupingBy(NifiFlowProcessor::getFlowId));
         }
-        return null;
+        return Collections.emptyMap();
     }
 
 
