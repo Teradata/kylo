@@ -168,7 +168,6 @@ public class InitializeFeed extends FeedProcessor {
 
     private void beginInitialization(ProcessContext context, ProcessSession session, FlowFile inputFF) {
         getMetadataRecorder().startFeedInitialization(getFeedId(context, inputFF));
-        getRetryCount(context, inputFF).set(0);
         FlowFile initFF = session.create(inputFF);
         session.transfer(initFF, REL_INITIALIZE);
     }
