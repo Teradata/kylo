@@ -8,8 +8,8 @@ echo "Uninstalling all components that were installed from the RPM and setup-wiz
 echo "Uninstalling thinkbig applications with RPM uninstall"
 /opt/thinkbig/remove-thinkbig-datalake-accelerator.sh
 rm -rf /opt/thinkbig
-mysql -e "drop database thinkbig;"
-mysql -e "show databases;"
+mysql -phadoop -e "drop database thinkbig;"
+mysql -phadoop -e "show databases;"
 
 echo "Uninstalling NiFi"
 service nifi stop
