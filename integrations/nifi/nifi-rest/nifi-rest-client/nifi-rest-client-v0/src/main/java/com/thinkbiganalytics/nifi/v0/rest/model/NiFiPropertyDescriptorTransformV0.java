@@ -5,6 +5,7 @@ import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptor;
 import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptorTransform;
 
 import org.apache.nifi.web.api.dto.PropertyDescriptorDTO;
+import org.apache.nifi.web.api.dto.status.ProcessGroupStatusDTO;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -56,5 +57,10 @@ public class NiFiPropertyDescriptorTransformV0 implements NiFiPropertyDescriptor
         }
 
         return nifi;
+    }
+
+    @Override
+    public String getQueuedCount(ProcessGroupStatusDTO processGroupStatusDTO) {
+        return processGroupStatusDTO.getQueuedCount();
     }
 }

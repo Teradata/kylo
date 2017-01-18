@@ -11,6 +11,7 @@ import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
 import com.thinkbiganalytics.nifi.feedmgr.FeedRollbackException;
 import com.thinkbiganalytics.nifi.feedmgr.InputOutputPort;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
+import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptorTransform;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
@@ -46,6 +47,10 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
 
     @Inject
     private AccessController accessController;
+
+    @Inject
+    private NiFiPropertyDescriptorTransform propertyDescriptorTransform;
+
 
     protected abstract RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId);
 
@@ -121,7 +126,7 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
         }
 
         CreateFeedBuilder
-            feedBuilder = CreateFeedBuilder.newFeed(nifiRestClient,nifiFlowCache, feedMetadata, registeredTemplate.getNifiTemplateId(), propertyExpressionResolver).enabled(enabled)
+            feedBuilder = CreateFeedBuilder.newFeed(nifiRestClient,nifiFlowCache, feedMetadata, registeredTemplate.getNifiTemplateId(), propertyExpressionResolver, propertyDescriptorTransform).enabled(enabled)
             .versionProcessGroup(false);
 
         if (registeredTemplate.isReusableTemplate()) {

@@ -12,6 +12,7 @@ import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.layout.AlignNiFiComponents;
 import com.thinkbiganalytics.nifi.rest.client.layout.AlignProcessGroupComponents;
 import com.thinkbiganalytics.nifi.rest.model.NiFiClusterSummary;
+import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptorTransform;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowDeserializer;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
@@ -80,6 +81,9 @@ public class NifiIntegrationRestController {
     @Inject
     FeedManagerTemplateService feedManagerTemplateService;
 
+    @Inject
+    NiFiPropertyDescriptorTransform propertyDescriptorTransform;
+
     @GET
     @Path("/auto-align/{processGroupId}")
     @Produces({MediaType.APPLICATION_JSON})
@@ -119,7 +123,7 @@ public class NifiIntegrationRestController {
     @Produces({MediaType.APPLICATION_JSON})
     public Response cleanupVersionedProcessGroups(@PathParam("processGroupId") String processGroupId) {
         RestResponseStatus status;
-        CleanupStaleFeedRevisions cleanupStaleFeedRevisions = new CleanupStaleFeedRevisions(legacyNifiRestClient,processGroupId);
+        CleanupStaleFeedRevisions cleanupStaleFeedRevisions = new CleanupStaleFeedRevisions(legacyNifiRestClient,processGroupId, propertyDescriptorTransform);
         cleanupStaleFeedRevisions.cleanup();
         String msg = "Cleaned up "+cleanupStaleFeedRevisions.getDeletedProcessGroups().size()+" Process Groups";
         status = new RestResponseStatus.ResponseStatusBuilder().message(msg).buildSuccess();

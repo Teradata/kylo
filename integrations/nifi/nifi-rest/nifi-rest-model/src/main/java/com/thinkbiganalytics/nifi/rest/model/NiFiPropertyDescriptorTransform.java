@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.nifi.rest.model;
 
 import org.apache.nifi.web.api.dto.PropertyDescriptorDTO;
+import org.apache.nifi.web.api.dto.status.ProcessGroupStatusDTO;
 
 import javax.annotation.Nonnull;
 
@@ -25,4 +26,6 @@ public interface NiFiPropertyDescriptorTransform {
      */
     @Nonnull
     NiFiPropertyDescriptor toNiFiPropertyDescriptor(@Nonnull PropertyDescriptorDTO propertyDescriptorDTO);
+
+    String getQueuedCount(ProcessGroupStatusDTO processGroupStatusDTO);
 }

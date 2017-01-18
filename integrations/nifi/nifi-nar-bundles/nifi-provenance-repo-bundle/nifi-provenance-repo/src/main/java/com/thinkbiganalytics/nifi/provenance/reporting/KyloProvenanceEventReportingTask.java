@@ -491,13 +491,15 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
     @Override
     public void onTrigger(final ReportingContext context) {
 
-        final boolean isClustered = context.isClustered();
-        final String nodeId = context.getClusterNodeIdentifier();
-        if (nodeId == null && isClustered) {
-            getLogger().info("This instance of NiFi is configured for clustering, but the Cluster Node Identifier is not yet available. "
-                             + "Will wait for Node Identifier to be established.");
-            return;
-        }
+        final String nodeId = "nodeId";
+
+//        final boolean isClustered = context.isClustered();
+//        final String nodeId = context.getClusterNodeIdentifier();
+//        if (nodeId == null && isClustered) {
+//            getLogger().debug("This instance of NiFi is configured for clustering, but the Cluster Node Identifier is not yet available. "
+//                              + "Will wait for Node Identifier to be established.");
+//            return;
+//        }
 
         ensureInitializeFlowFileMapDbCache();
 

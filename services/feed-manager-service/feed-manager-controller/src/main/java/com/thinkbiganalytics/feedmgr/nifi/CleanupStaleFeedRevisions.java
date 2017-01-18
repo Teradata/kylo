@@ -3,6 +3,7 @@ package com.thinkbiganalytics.feedmgr.nifi;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.layout.AlignProcessGroupComponents;
 import com.thinkbiganalytics.nifi.rest.client.layout.ProcessGroupAndConnections;
+import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptorTransform;
 import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 import com.thinkbiganalytics.nifi.rest.support.NifiTemplateNameUtil;
 
@@ -32,11 +33,14 @@ public class CleanupStaleFeedRevisions {
     private Set<PortDTO> stoppedPorts = new HashSet<>();
 
     private Set<ProcessGroupDTO> deletedProcessGroups = new HashSet<>();
+    private NiFiPropertyDescriptorTransform propertyDescriptorTransform;
 
 
-    public CleanupStaleFeedRevisions(LegacyNifiRestClient restClient, String processGroupId) {
+
+    public CleanupStaleFeedRevisions(LegacyNifiRestClient restClient, String processGroupId, NiFiPropertyDescriptorTransform propertyDescriptorTransform) {
         this.processGroupId = processGroupId;
         this.restClient = restClient;
+        this.propertyDescriptorTransform = propertyDescriptorTransform;
     }
 
 
@@ -146,7 +150,8 @@ public class CleanupStaleFeedRevisions {
     }
 
     private boolean hasItemsInQueue(ProcessGroupStatusDTO statusDTO) {
-        return StringUtils.isNotBlank(statusDTO.getAggregateSnapshot().getQueuedCount()) && !statusDTO.getAggregateSnapshot().getQueuedCount().equalsIgnoreCase("0") ;
+        String queuedCount = propertyDescriptorTransform.getQueuedCount(statusDTO);
+        return StringUtils.isNotBlank(queuedCount) && !queuedCount.equalsIgnoreCase("0") ;
     }
 
 

@@ -10,10 +10,7 @@ import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
 import com.thinkbiganalytics.nifi.rest.client.layout.AlignProcessGroupComponents;
-import com.thinkbiganalytics.nifi.rest.model.NifiError;
-import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
-import com.thinkbiganalytics.nifi.rest.model.NifiProcessorSchedule;
-import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
+import com.thinkbiganalytics.nifi.rest.model.*;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.visitor.NifiFlowBuilder;
 import com.thinkbiganalytics.nifi.rest.model.visitor.NifiVisitableProcessGroup;
@@ -40,6 +37,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
+
+import static org.hsqldb.HsqlDateTime.e;
 
 /**
  * Builds a NiFi feed based on a NiFi template and a Feed Manager Feed. Internally this uses the NiFi REST API.
@@ -80,6 +79,8 @@ public class CreateFeedBuilder {
 
     private List<NifiProperty> properties;
     private NifiProcessorSchedule feedSchedule;
+    private NiFiPropertyDescriptorTransform propertyDescriptorTransform;
+
 
     private List<NifiProperty> modifiedProperties;
 
@@ -88,7 +89,7 @@ public class CreateFeedBuilder {
     TemplateCreationHelper templateCreationHelper;
 
 
-    protected CreateFeedBuilder(LegacyNifiRestClient restClient, NifiFlowCache nifiFlowCache, FeedMetadata feedMetadata, String templateId, PropertyExpressionResolver propertyExpressionResolver) {
+    protected CreateFeedBuilder(LegacyNifiRestClient restClient, NifiFlowCache nifiFlowCache, FeedMetadata feedMetadata, String templateId, PropertyExpressionResolver propertyExpressionResolver, NiFiPropertyDescriptorTransform propertyDescriptorTransform) {
         this.restClient = restClient;
         this.nifiFlowCache = nifiFlowCache;
         this.feedMetadata = feedMetadata;
@@ -97,11 +98,12 @@ public class CreateFeedBuilder {
         this.templateId = templateId;
         this.templateCreationHelper = new TemplateCreationHelper(this.restClient);
         this.propertyExpressionResolver = propertyExpressionResolver;
+        this.propertyDescriptorTransform = propertyDescriptorTransform;
     }
 
 
-    public static CreateFeedBuilder newFeed(LegacyNifiRestClient restClient, NifiFlowCache nifiFlowCache, FeedMetadata feedMetadata, String templateId, PropertyExpressionResolver propertyExpressionResolver) {
-        return new CreateFeedBuilder(restClient, nifiFlowCache, feedMetadata, templateId, propertyExpressionResolver);
+    public static CreateFeedBuilder newFeed(LegacyNifiRestClient restClient, NifiFlowCache nifiFlowCache, FeedMetadata feedMetadata, String templateId, PropertyExpressionResolver propertyExpressionResolver, NiFiPropertyDescriptorTransform propertyDescriptorTransform) {
+        return new CreateFeedBuilder(restClient, nifiFlowCache, feedMetadata, templateId, propertyExpressionResolver, propertyDescriptorTransform);
     }
 
     public CreateFeedBuilder feedSchedule(NifiProcessorSchedule feedSchedule) {
@@ -463,7 +465,7 @@ public class CreateFeedBuilder {
             try {
                 //validate if nothing is in the queue then remove it
                 Optional<ProcessGroupStatusDTO> statusDTO = restClient.getNiFiRestClient().processGroups().getStatus(processGroupDTO.getId());
-                if (statusDTO.isPresent() && statusDTO.get().getAggregateSnapshot().getQueuedCount().equalsIgnoreCase("0")) {
+                if (statusDTO.isPresent() && propertyDescriptorTransform.getQueuedCount(statusDTO.get()).equalsIgnoreCase("0")) {
                     //get connections linking to this group, delete them
                     Set<ConnectionDTO> connectionDTOs = restClient.getProcessGroupConnections(processGroupDTO.getParentGroupId());
                     if(connectionDTOs == null){
