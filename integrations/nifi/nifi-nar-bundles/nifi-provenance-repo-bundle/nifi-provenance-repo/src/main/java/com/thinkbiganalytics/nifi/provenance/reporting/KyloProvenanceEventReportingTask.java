@@ -60,73 +60,72 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
 
 
     PropertyDescriptor METADATA_SERVICE = new PropertyDescriptor.Builder()
-        .name("Metadata Service")
-        .description("Think Big metadata service")
-        .required(true)
-        .identifiesControllerService(MetadataProviderService.class)
-        .build();
+            .name("Metadata Service")
+            .description("Think Big metadata service")
+            .required(true)
+            .identifiesControllerService(MetadataProviderService.class)
+            .build();
 
     protected static final PropertyDescriptor MAX_BATCH_FEED_EVENTS_PER_SECOND = new PropertyDescriptor.Builder()
-        .name("Max batch feed events per second")
-        .description("The maximum number of events/second for a given feed allowed to go through to Kylo.  This is used to safeguard Kylo against a feed that starts acting like a stream")
-        .required(false)
-        .defaultValue("10")
-        .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
-        .expressionLanguageSupported(true)
-        .build();
+            .name("Max batch feed events per second")
+            .description("The maximum number of events/second for a given feed allowed to go through to Kylo.  This is used to safeguard Kylo against a feed that starts acting like a stream")
+            .required(false)
+            .defaultValue("10")
+            .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
+            .expressionLanguageSupported(true)
+            .build();
 
     protected static final PropertyDescriptor JMS_EVENT_GROUP_SIZE = new PropertyDescriptor.Builder()
-        .name("JMS event group size")
-        .description("The size of grouped events sent over to Kylo.  This should be less than the Processing Batch Size")
-        .defaultValue("50")
-        .required(false)
-        .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
-        .expressionLanguageSupported(true)
-        .build();
+            .name("JMS event group size")
+            .description("The size of grouped events sent over to Kylo.  This should be less than the Processing Batch Size")
+            .defaultValue("50")
+            .required(false)
+            .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
+            .expressionLanguageSupported(true)
+            .build();
 
     protected static final PropertyDescriptor PROCESSING_BATCH_SIZE = new PropertyDescriptor.Builder()
-        .name("Processing batch size")
-        .description(
-            "The maximum number of events to process in a given interval.  If there are more events than this number to process in a given run of this reporting task it will partition the list and process the events in batches of this size to increase throughput to Kylo.")
-        .defaultValue("500")
-        .required(false)
-        .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
-        .expressionLanguageSupported(true)
-        .build();
+            .name("Processing batch size")
+            .description(
+                    "The maximum number of events to process in a given interval.  If there are more events than this number to process in a given run of this reporting task it will partition the list and process the events in batches of this size to increase throughput to Kylo.")
+            .defaultValue("500")
+            .required(false)
+            .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
+            .expressionLanguageSupported(true)
+            .build();
 
     public static final PropertyDescriptor REBUILD_CACHE_ON_RESTART = new PropertyDescriptor.Builder()
-        .name("Rebuild cache on restart")
-        .description(
-            "Should the cache of the flows be rebuilt every time the Reporting task is restarted?  By default the system will keep the cache up to date; however, setting this to true will force the cache to be rebuilt upon restarting the reporting task. ")
-        .required(true)
-        .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
-        .defaultValue("false")
-        .expressionLanguageSupported(true)
-        .build();
+            .name("Rebuild cache on restart")
+            .description(
+                    "Should the cache of the flows be rebuilt every time the Reporting task is restarted?  By default the system will keep the cache up to date; however, setting this to true will force the cache to be rebuilt upon restarting the reporting task. ")
+            .required(true)
+            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+            .defaultValue("false")
+            .expressionLanguageSupported(true)
+            .build();
 
     public static final PropertyDescriptor LAST_EVENT_ID_NOT_FOUND_VALUE = new PropertyDescriptor.Builder()
-        .name("Last event id not found value")
-        .description(("If there is no minimum value to start the range query from (i.e. if this reporting task has never run before in NiFi) what should be the initial value?\""
-                      + "\nZERO: this will get all events starting at 0 to the latest event id."
-                      + "\nMAX_EVENT_ID: this is set it to the max provenance event.  "
-                      + "\nKYLO: this will query Kylo's record of the Max Event Id. "
-                      + ""))
-        .allowableValues(LAST_EVENT_ID_NOT_FOUND_OPTION.values())
-        .required(true)
-        .defaultValue(LAST_EVENT_ID_NOT_FOUND_OPTION.KYLO.toString())
-        .build();
+            .name("Last event id not found value")
+            .description(("If there is no minimum value to start the range query from (i.e. if this reporting task has never run before in NiFi) what should be the initial value?\""
+                    + "\nZERO: this will get all events starting at 0 to the latest event id."
+                    + "\nMAX_EVENT_ID: this is set it to the max provenance event.  "
+                    + "\nKYLO: this will query Kylo's record of the Max Event Id. "
+                    + ""))
+            .allowableValues(LAST_EVENT_ID_NOT_FOUND_OPTION.values())
+            .required(true)
+            .defaultValue(LAST_EVENT_ID_NOT_FOUND_OPTION.KYLO.toString())
+            .build();
 
     public static final PropertyDescriptor INITIAL_EVENT_ID_VALUE = new PropertyDescriptor.Builder()
-        .name("Initial event id value")
-        .description("Upon starting the Reporting task what value should be used as the minimum value in the range of provenance events this task should query? "
-                     + "\nLAST_EVENT_ID: will use the last event successfully processed from this task.  This is the default setting"
-                     + "\nMAX_EVENT_ID: will start processing every event > the Max event id in provenance.  This value is evaluated each time this reporting task is stopped and restarted.  You can use this to reset provenance events being sent to Kylo.  This is not the ideal behavior so you may loose provenance reporting.  Use this with caution."
-                     + "\nKYLO:  will query Kylo's record of the Max Event Id. ")
-        .allowableValues(INITIAL_EVENT_ID_OPTION.values())
-        .required(true)
-        .defaultValue(INITIAL_EVENT_ID_OPTION.LAST_EVENT_ID.toString())
-        .build();
-
+            .name("Initial event id value")
+            .description("Upon starting the Reporting task what value should be used as the minimum value in the range of provenance events this task should query? "
+                    + "\nLAST_EVENT_ID: will use the last event successfully processed from this task.  This is the default setting"
+                    + "\nMAX_EVENT_ID: will start processing every event > the Max event id in provenance.  This value is evaluated each time this reporting task is stopped and restarted.  You can use this to reset provenance events being sent to Kylo.  This is not the ideal behavior so you may loose provenance reporting.  Use this with caution."
+                    + "\nKYLO:  will query Kylo's record of the Max Event Id. ")
+            .allowableValues(INITIAL_EVENT_ID_OPTION.values())
+            .required(true)
+            .defaultValue(INITIAL_EVENT_ID_OPTION.LAST_EVENT_ID.toString())
+            .build();
 
 
     private MetadataProviderService metadataProviderService;
@@ -317,8 +316,8 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
                 initializeFlowFilesFromMapDbCache(false);
             } catch (Exception e) {
                 getLogger().warn(
-                    "Error attempting to restore FlowFile MapDB cache in onConfigurationRestored with message: {}.  The Reporting Task will attempt to initialize this again at the start of the first trigger.",
-                    new Object[]{e.getMessage()});
+                        "Error attempting to restore FlowFile MapDB cache in onConfigurationRestored with message: {}.  The Reporting Task will attempt to initialize this again at the start of the first trigger.",
+                        new Object[]{e.getMessage()});
                 initializationError = true;
             } finally {
                 initializing.set(false);
@@ -358,7 +357,7 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
                         ensureInitializeFlowFileMapDbCache();
                     } else {
                         getLogger().error("ERROR attempting to initialize the FlowFile MapDB cache.  Any events running midstream before NiFi was restarted may not be finished in Kylo {} ",
-                                          new Object[]{e.getMessage()}, e);
+                                new Object[]{e.getMessage()}, e);
                     }
                 } finally {
                     initializationError = false;
@@ -385,6 +384,7 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
 
     /**
      * The Service provider that will talk to the Kylo Metadata via REST used to get/ensure the NiFiFlowCache is up to date
+     *
      * @return
      */
     private KyloNiFiFlowProvider getKyloNiFiFlowProvider() {
@@ -404,7 +404,7 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
         try {
             if (stateManager == null) {
                 getLogger().warn("Failed to retrieve the last event id from the "
-                                 + "state manager.  State Manager is null.   Returning 0");
+                        + "state manager.  State Manager is null.   Returning 0");
 
                 return -1L;
             }
@@ -414,7 +414,7 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
             return lastEventId;
         } catch (final IOException ioe) {
             getLogger().warn("Failed to retrieve the last event id from the "
-                             + "state manager.", ioe);
+                    + "state manager.", ioe);
             return -1L;
         }
         //get it from the last event that was sent to JMS
@@ -505,8 +505,6 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
         if (!isInitializing() && processing.compareAndSet(false, true)) {
 
 
-
-
             final StateManager stateManager = context.getStateManager();
             final EventAccess access = context.getEventAccess();
             final ProvenanceEventRepository provenance = access.getProvenanceRepository();
@@ -520,7 +518,7 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
 
             //get the latest event Id in provenance
             final Long maxEventId = provenance.getMaxEventId();
-            if(maxEventId == null || maxEventId < 0) {
+            if (maxEventId == null || maxEventId < 0) {
                 getLogger().debug("No Provenance exists yet.  Max Id is not set.. Will not process events ");
                 finishProcessing(0);
                 return;
@@ -545,7 +543,6 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
                 }
 
 
-
                 //update NiFiFlowCache with list of changes for processing the events
                 updateNifiFlowCache();
 
@@ -563,8 +560,8 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
                 Integer batches = (int) Math.ceil(Double.valueOf(recordCount) / batchSize);
                 if (recordCount > 0) {
                     getLogger().info(
-                        "KyloProvenanceEventReportingTask onTrigger Info: KyloFlowCache Sync Id: {} . Attempting to process {} events starting with event id: {}.  Splitting into {} batches of {} each ",
-                        new Object[]{nifiFlowSyncId, recordCount, nextId, batches, batchSize});
+                            "KyloProvenanceEventReportingTask onTrigger Info: KyloFlowCache Sync Id: {} . Attempting to process {} events starting with event id: {}.  Splitting into {} batches of {} each ",
+                            new Object[]{nifiFlowSyncId, recordCount, nextId, batches, batchSize});
                 }
 
                 //reset the queryTime holder
@@ -586,8 +583,8 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
                         if (lastLogTime == null || (DateTime.now().getMillis() - lastLogTime.getMillis() > logReportingTimeMs)) {
                             lastLogTime = DateTime.now();
                             getLogger().info(
-                                "KyloProvenanceEventReportingTask onTrigger Info: ReportingTask is in a long running process.  Currently processing Event id: {}.  {} events remaining to be processed. ",
-                                new Object[]{lastEventId, recordCount});
+                                    "KyloProvenanceEventReportingTask onTrigger Info: ReportingTask is in a long running process.  Currently processing Event id: {}.  {} events remaining to be processed. ",
+                                    new Object[]{lastEventId, recordCount});
                         }
                     }
                     if (!isProcessing()) {
@@ -599,8 +596,8 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
                 if (totalRecords > 0 && isProcessing()) {
                     long processingTime = (System.currentTimeMillis() - start);
                     getLogger().info(
-                        "KyloProvenanceEventReportingTask onTrigger Info: ReportingTask finished. Last Event id: {}. Total time to process {} events was {} ms.  Total time spent querying for events in Nifi was {} ms.  Kylo ProcessingTime: {} ms ",
-                        new Object[]{lastEventId, totalRecords, processingTime, nifiQueryTime, processingTime - nifiQueryTime});
+                            "KyloProvenanceEventReportingTask onTrigger Info: ReportingTask finished. Last Event id: {}. Total time to process {} events was {} ms.  Total time spent querying for events in Nifi was {} ms.  Kylo ProcessingTime: {} ms ",
+                            new Object[]{lastEventId, totalRecords, processingTime, nifiQueryTime, processingTime - nifiQueryTime});
                 }
 
                 finishProcessing(totalRecords);
@@ -617,8 +614,8 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
                 Long maxId = context.getEventAccess().getProvenanceRepository().getMaxEventId();
                 Long count = (maxId - previousMax);
                 getLogger().info(
-                    "KyloProvenanceEventReportingTask onTrigger Info: Still processing previous batch " + currentProcessingMessage + ".  The next run will process events up to " + maxId + ". " + count
-                    + " new events");
+                        "KyloProvenanceEventReportingTask onTrigger Info: Still processing previous batch " + currentProcessingMessage + ".  The next run will process events up to " + maxId + ". " + count
+                                + " new events");
             }
         }
     }
@@ -629,7 +626,6 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
         }
         return nodeIdStrategy;
     }
-
     private boolean isKyloAvailable() {
         boolean avalable = false;
         try {
