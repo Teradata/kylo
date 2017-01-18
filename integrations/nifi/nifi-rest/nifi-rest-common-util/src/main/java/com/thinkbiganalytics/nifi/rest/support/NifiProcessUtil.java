@@ -215,7 +215,7 @@ public class NifiProcessUtil {
     }
 
 
-    private static Collection<ProcessorDTO> getProcessors(ProcessGroupDTO group) {
+    public static Collection<ProcessorDTO> getProcessors(ProcessGroupDTO group) {
         return getProcessorsMap(group).values();
     }
 

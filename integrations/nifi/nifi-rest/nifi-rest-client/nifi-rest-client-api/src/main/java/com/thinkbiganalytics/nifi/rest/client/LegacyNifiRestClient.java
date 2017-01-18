@@ -5,6 +5,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.nifi.feedmgr.ConfigurationPropertyReplacer;
 import com.thinkbiganalytics.nifi.feedmgr.NifiEnvironmentProperties;
+import com.thinkbiganalytics.nifi.feedmgr.ReusableTemplateCreationCallback;
 import com.thinkbiganalytics.nifi.feedmgr.TemplateInstanceCreator;
 import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptor;
 import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptorTransform;
@@ -132,9 +133,10 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
         return client.processGroups().instantiateTemplate(processGroupId, templateId);
     }
 
+
     @Deprecated
-    public NifiProcessGroup createNewTemplateInstance(String templateId, Map<String, Object> staticConfigProperties, boolean createReusableFlow) {
-        TemplateInstanceCreator creator = new TemplateInstanceCreator(this, templateId, staticConfigProperties, createReusableFlow);
+    public NifiProcessGroup createNewTemplateInstance(String templateId, Map<String, Object> staticConfigProperties, boolean createReusableFlow, ReusableTemplateCreationCallback creationCallback) {
+        TemplateInstanceCreator creator = new TemplateInstanceCreator(this, templateId, staticConfigProperties, createReusableFlow, creationCallback);
         NifiProcessGroup group = creator.createTemplate();
         return group;
     }

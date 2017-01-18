@@ -1,8 +1,8 @@
 package com.thinkbiganalytics.feedmgr.service;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.collect.Lists;
 import com.thinkbiganalytics.feedmgr.nifi.NifiControllerServiceProperties;
+import com.thinkbiganalytics.feedmgr.nifi.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.nifi.NifiTemplateParser;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportOptions;
@@ -12,18 +12,21 @@ import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
 import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.nifi.feedmgr.ReusableTemplateCreationCallback;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
 import com.thinkbiganalytics.nifi.rest.model.NifiError;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessorDTO;
+import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 import com.thinkbiganalytics.security.AccessController;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
+import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +39,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -78,6 +82,9 @@ NifiControllerServiceProperties nifiControllerServiceProperties;
 
     @Inject
     private AccessController accessController;
+
+    @Inject
+    NifiFlowCache nifiFlowCache;
 
 
 
@@ -233,6 +240,19 @@ NifiControllerServiceProperties nifiControllerServiceProperties;
         }
     }
 
+
+    public class NifiFlowCacheReusableTemplateCreationCallback implements ReusableTemplateCreationCallback {
+
+
+        @Override
+        public void beforeMarkAsRunning(String templateName, ProcessGroupDTO processGroupDTO) {
+            //update the cache
+            //1 get the template flowtype mappings
+            Collection<ProcessorDTO> processors = NifiProcessUtil.getProcessors(processGroupDTO);
+            nifiFlowCache.updateReusableTemplate(processors);
+        }
+    }
+
     public ExportTemplate exportTemplate(String templateId) {
         this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EXPORT_TEMPLATES);
         
@@ -385,7 +405,7 @@ NifiControllerServiceProperties nifiControllerServiceProperties;
         template.setNifiTemplateId(dto.getId());
 
         Map<String,Object> configProperties = propertyExpressionResolver.getStaticConfigProperties();
-        NifiProcessGroup newTemplateInstance = nifiRestClient.createNewTemplateInstance(template.getNifiTemplateId(), configProperties,false);
+        NifiProcessGroup newTemplateInstance = nifiRestClient.createNewTemplateInstance(template.getNifiTemplateId(), configProperties, false, new NifiFlowCacheReusableTemplateCreationCallback());
         importTemplate.setTemplateResults(newTemplateInstance);
         if (newTemplateInstance.isSuccess()) {
             importTemplate.setSuccess(true);
@@ -477,7 +497,7 @@ NifiControllerServiceProperties nifiControllerServiceProperties;
         TemplateDTO dto = nifiRestClient.importTemplate(xmlTemplate);
         log.info("Import success... validate by creating a template instance in nifi Nifi Template: {} for file {}", templateName, fileName);
         Map<String, Object> configProperties = propertyExpressionResolver.getStaticConfigProperties();
-        NifiProcessGroup newTemplateInstance = nifiRestClient.createNewTemplateInstance(dto.getId(), configProperties, createReusableFlow);
+        NifiProcessGroup newTemplateInstance = nifiRestClient.createNewTemplateInstance(dto.getId(), configProperties, createReusableFlow, new NifiFlowCacheReusableTemplateCreationCallback());
         importTemplate.setTemplateResults(newTemplateInstance);
         log.info("Import finished for {}, {}... verify results", templateName, fileName);
         if (newTemplateInstance.isSuccess()) {

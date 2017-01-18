@@ -21,6 +21,7 @@ import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessor;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -405,7 +406,19 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
         }
         lastUpdated = DateTimeUtil.getNowUTCTime();
 
+
     }
+
+    public void updateReusableTemplate(Collection<ProcessorDTO> processors) {
+        ;
+        Map<String, String> processorIdToProcessorName = new HashMap<>();
+        processors.stream().forEach(flowProcessor -> {
+            processorIdToProcessorName.put(flowProcessor.getId(), flowProcessor.getName());
+        });
+
+        this.processorIdToProcessorName.putAll(processorIdToProcessorName);
+    }
+
 
 
     /**
@@ -434,7 +447,7 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
         //Reset the critical path processors for job failure determination
         Set<String> criticalPathProcessorIds = processors.stream().filter(processor -> processor.isCriticalPath()).map(processor -> processor.getId()).collect(Collectors.toSet());
         feedToCriticalPathProcessors.put(feedName,criticalPathProcessorIds);
-*/
+      */
         feedToProcessorIdToFlowTypeMap.put(feedName, processorFlowTypeMap);
 
         Map<String, String> processorIdToProcessGroupId = new HashMap<>();

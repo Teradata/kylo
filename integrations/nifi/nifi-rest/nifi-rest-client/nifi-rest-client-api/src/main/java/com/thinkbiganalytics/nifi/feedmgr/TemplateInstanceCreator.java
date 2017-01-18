@@ -40,7 +40,10 @@ public class TemplateInstanceCreator {
 
     private Map<String, String> staticConfigPropertyStringMap;
 
-    public TemplateInstanceCreator(LegacyNifiRestClient restClient, String templateId, Map<String, Object> staticConfigPropertyMap, boolean createReusableFlow) {
+    private ReusableTemplateCreationCallback creationCallback;
+
+    public TemplateInstanceCreator(LegacyNifiRestClient restClient, String templateId, Map<String, Object> staticConfigPropertyMap, boolean createReusableFlow,
+                                   ReusableTemplateCreationCallback creationCallback) {
         this.restClient = restClient;
         this.templateId = templateId;
         this.createReusableFlow = createReusableFlow;
@@ -52,6 +55,7 @@ public class TemplateInstanceCreator {
         if (staticConfigPropertyStringMap == null) {
             staticConfigPropertyStringMap = new HashMap<>();
         }
+        this.creationCallback = creationCallback;
     }
 
     public boolean isCreateReusableFlow() {
@@ -169,6 +173,14 @@ public class TemplateInstanceCreator {
                     newProcessGroup = new NifiProcessGroup(entity, input, nonInputProcessors);
 
                     if (isCreateReusableFlow()) {
+                        //call listeners notify of before mark as running  processing
+                        if (creationCallback != null) {
+                            try {
+                                creationCallback.beforeMarkAsRunning(template.getName(), entity);
+                            } catch (Exception e) {
+                                log.error("Error calling callback beforeMarkAsRunning ", e);
+                            }
+                        }
                         log.info("Reusable flow, attempt to mark the Processors as running.");
                         templateCreationHelper.markProcessorsAsRunning(newProcessGroup);
                         log.info("Reusable flow.  Successfully marked the Processors as running.");
@@ -188,6 +200,7 @@ public class TemplateInstanceCreator {
                     }
 
                     newProcessGroup.setSuccess(!newProcessGroup.hasFatalErrors());
+
                     log.info("Finished importing template Errors found.  Success: {}, {} {}", newProcessGroup.isSuccess(), (errors != null ? errors.size() : 0),
                              (errors != null ? " - " + StringUtils.join(errors) : ""));
 
