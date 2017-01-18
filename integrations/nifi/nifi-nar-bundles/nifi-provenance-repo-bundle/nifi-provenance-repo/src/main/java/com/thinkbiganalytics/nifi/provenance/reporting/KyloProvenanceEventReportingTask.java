@@ -220,6 +220,8 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
      */
     private Long nifiQueryTime = 0L;
 
+    private NodeIdStrategy nodeIdStrategy;
+
 
     public KyloProvenanceEventReportingTask() {
         super();
@@ -491,15 +493,11 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
     @Override
     public void onTrigger(final ReportingContext context) {
 
-        final String nodeId = "nodeId";
-
-//        final boolean isClustered = context.isClustered();
-//        final String nodeId = context.getClusterNodeIdentifier();
-//        if (nodeId == null && isClustered) {
-//            getLogger().debug("This instance of NiFi is configured for clustering, but the Cluster Node Identifier is not yet available. "
-//                              + "Will wait for Node Identifier to be established.");
-//            return;
-//        }
+        String nodeId = getNodeIdStrategy().getNodeId(context);
+        getLogger().debug("Nifi nodeId {}", new Object[]{nodeId});
+        if (nodeId == null) {
+            return;
+        }
 
         ensureInitializeFlowFileMapDbCache();
 
@@ -623,6 +621,13 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
                     + " new events");
             }
         }
+    }
+
+    private NodeIdStrategy getNodeIdStrategy() {
+        if (nodeIdStrategy == null) {
+            nodeIdStrategy = SpringApplicationContext.getInstance().getBean(NodeIdStrategy.class);
+        }
+        return nodeIdStrategy;
     }
 
     private boolean isKyloAvailable() {
