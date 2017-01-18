@@ -206,8 +206,10 @@
                             if (direction === PAGE_DIRECTION.forward || direction === PAGE_DIRECTION.none) {
                                 total = (PaginationDataService.currentPage(self.pageName, activeTab.title) - 1) * PaginationDataService.rowsPerPage(self.pageName) + alertRange.size + 1;
                             } else {
-                                total = PaginationDataService.rowsPerPage(self.pageName) + 1;
+                                total = PaginationDataService.currentPage(self.pageName, activeTab.title) * PaginationDataService.rowsPerPage(self.pageName) + 1;
                             }
+                        } else {
+                            total = (PaginationDataService.currentPage(self.pageName, activeTab.title) - 1) * PaginationDataService.rowsPerPage(self.pageName) + 1;
                         }
 
                         self.newestTime = angular.isDefined(alertRange.newestTime) ? alertRange.newestTime : 0;
