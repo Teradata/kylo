@@ -8,17 +8,14 @@ import com.thinkbiganalytics.nifi.rest.model.NiFiAllowableValue;
 import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptor;
 import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptorTransform;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
-
-import org.apache.nifi.web.api.dto.AllowableValueDTO;
-import org.apache.nifi.web.api.dto.ControllerServiceDTO;
-import org.apache.nifi.web.api.dto.ProcessorConfigDTO;
-import org.apache.nifi.web.api.dto.ProcessorDTO;
-import org.apache.nifi.web.api.dto.PropertyDescriptorDTO;
+import org.apache.nifi.web.api.dto.*;
+import org.apache.nifi.web.api.dto.status.ProcessGroupStatusDTO;
 import org.apache.nifi.web.api.entity.AllowableValueEntity;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -26,8 +23,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import javax.annotation.Nonnull;
 
 public class TemplateCreationHelperTest {
 
@@ -223,5 +218,11 @@ public class TemplateCreationHelperTest {
 
             return nifi;
         }
+
+        @Override
+        public String getQueuedCount(ProcessGroupStatusDTO processGroupStatusDTO) {
+            return null;
+        }
+
     }
 }
