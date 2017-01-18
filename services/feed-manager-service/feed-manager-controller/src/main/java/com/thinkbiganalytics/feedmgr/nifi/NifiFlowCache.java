@@ -241,6 +241,7 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
     }
 
 
+
     private NiFiFlowCacheSync syncAndReturnUpdates(NiFiFlowCacheSync sync, boolean preview) {
         if (!preview) {
             lastSyncTimeMap.put(sync.getSyncId(), DateTime.now());
@@ -416,19 +417,18 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
 
 
     /**
-     * Called after a template is uploaded with a reusable template connection
-     * technically this should only update the flow processors in the reusable template.
-     * @param templateName
+     * When a Templates 'reusable' flow is updated the cache needs to be updated to get the correct processor ids.
+     * This is called via the ExportImportService after a user has successfully imported a Zip or XML file that has a Reusable template
+     * @param registeredTemplate
      */
-    public void reusableTemplateUpdatedForTemplate(String templateName) {
+    public void reusableTemplateUpdatedForTemplate(RegisteredTemplate registeredTemplate) {
 
-        //1 find all feeds using this template
-
-        metadataAccess.read(() -> {
-            RegisteredTemplate registeredTemplate = metadataService.getRegisteredTemplateByName(templateName);
+        if (registeredTemplate != null) {
+            //1 find all feeds using this template
             List<String>
                 feedNames =
-                feedNameToTemplateNameMap.entrySet().stream().filter(entry -> entry.getValue().equalsIgnoreCase(templateName)).map(entry -> entry.getKey()).collect(Collectors.toList());
+                feedNameToTemplateNameMap.entrySet().stream().filter(entry -> entry.getValue().equalsIgnoreCase(registeredTemplate.getTemplateName())).map(entry -> entry.getKey())
+                    .collect(Collectors.toList());
 
             List<NifiFlowProcessGroup> allFlows = nifiRestClient.getFeedFlows(feedNames);
 
@@ -441,8 +441,7 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
                     }
                 }
             });
-        });
-
+        }
 
     }
 
