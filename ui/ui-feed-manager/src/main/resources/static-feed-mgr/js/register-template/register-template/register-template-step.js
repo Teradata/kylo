@@ -436,8 +436,6 @@
 
             savedTemplate.processorFlowTypesMap = flowTypeRelationships;
 
-            console.log('SAVING savedTemplate.processorFlowTypesMap', savedTemplate.processorFlowTypesMap)
-
             var thisOrder = order.length - 1;
             if (self.model.id != undefined) {
                 thisOrder = _.indexOf(order, self.model.id)

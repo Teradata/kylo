@@ -101,6 +101,8 @@
          */
         this.isClustered = true;
 
+        this.savingFeed = false;
+
         /**
          * All possible schedule strategies
          * @type {*[]}
@@ -353,17 +355,21 @@
          * Create the feed, save it to the server, populate the {@code createdFeed} object upon save
          */
         this.createFeed = function() {
+            self.savingFeed = true;
             showProgress();
 
             self.createdFeed = null;
 
             FeedService.saveFeedModel(self.model).then(function(response) {
+
                 self.createdFeed = response.data;
                 CategoriesService.reload();
+                self.savingFeed = false;
                 StateService.navigateToDefineFeedComplete(self.createdFeed, null);
 
                 //  self.showCompleteDialog();
             }, function(response) {
+                self.savingFeed = false;
                 self.createdFeed = response.data;
                 FeedCreationErrorService.buildErrorData(self.model.feedName, self.createdFeed);
                 hideProgress();
