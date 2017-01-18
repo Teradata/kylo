@@ -43,7 +43,7 @@ public interface AlertResponse {
      * Changes an alert status to unhandled.
      * @param description a description of the change (may be null)
      */
-    Alert unHandle(String description);
+    Alert unhandle(String description);
     
     /**
      * Changes an alert status to unhandled.

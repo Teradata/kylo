@@ -302,7 +302,7 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
          * @see com.thinkbiganalytics.alerts.api.AlertResponse#unHandle()
          */
         @Override
-        public Alert unHandle(String descr) {
+        public Alert unhandle(String descr) {
             return unhandle(descr, null);
         }
 

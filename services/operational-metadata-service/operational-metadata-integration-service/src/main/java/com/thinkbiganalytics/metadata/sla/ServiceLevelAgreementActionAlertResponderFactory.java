@@ -1,5 +1,12 @@
 package com.thinkbiganalytics.metadata.sla;
 
+import java.util.List;
+
+import javax.inject.Inject;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.thinkbiganalytics.alerts.api.Alert;
 import com.thinkbiganalytics.alerts.api.AlertProvider;
 import com.thinkbiganalytics.alerts.api.AlertResponder;
@@ -17,13 +24,6 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementCheck;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessmentProvider;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.List;
-
-import javax.inject.Inject;
 
 /**
  * Created by sr186054 on 7/20/16.
@@ -59,8 +59,7 @@ public class ServiceLevelAgreementActionAlertResponderFactory implements AlertRe
                     response.handle("Handled SLA Alert");
                 } catch (Exception e) {
                     log.error("ERROR Handling Alert Error {} ", e.getMessage());
-                    // TODO: Change usage to use description for the message below instead of content
-                    response.unhandle(null, "Failed to handle violation");
+                    response.unhandle("Failed to handle violation: " + e.getMessage());
                 }
             }
         }

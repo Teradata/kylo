@@ -562,7 +562,7 @@ public class AggregatingAlertProvider implements AlertProvider, AlertSourceAggre
         }
 
         @Override
-        public Alert unHandle(String description) {
+        public Alert unhandle(String description) {
             return unhandle(description, null);
         }
 

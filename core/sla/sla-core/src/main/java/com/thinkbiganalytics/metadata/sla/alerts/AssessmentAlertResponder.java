@@ -4,27 +4,15 @@
 package com.thinkbiganalytics.metadata.sla.alerts;
 
 import com.thinkbiganalytics.alerts.api.Alert;
-import com.thinkbiganalytics.alerts.api.AlertProvider;
 import com.thinkbiganalytics.alerts.api.AlertResponder;
 import com.thinkbiganalytics.alerts.api.AlertResponse;
 import com.thinkbiganalytics.alerts.sla.AssessmentAlerts;
-
-import javax.inject.Inject;
 
 /**
  *
  * @author Sean Felten
  */
 public class AssessmentAlertResponder implements AlertResponder {
-    
-    @Inject
-    private AlertProvider provider;
-    
-    /**
-     * 
-     */
-    public AssessmentAlertResponder() {
-    }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.alerts.api.AlertResponder#alertChange(com.thinkbiganalytics.alerts.api.Alert, com.thinkbiganalytics.alerts.api.AlertResponse)
@@ -37,8 +25,7 @@ public class AssessmentAlertResponder implements AlertResponder {
                 handleViolation(alert);
                 response.handle("Handled violation");
             } catch (Exception e) {
-                // TODO: Change usage to use description for the message below instead of content
-                response.unhandle(null, "Failed to handle violation");
+                response.unhandle("Failed to handle violation");
             }
         }
     }

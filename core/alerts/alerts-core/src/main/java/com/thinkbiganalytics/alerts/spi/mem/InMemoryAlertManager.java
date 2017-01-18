@@ -320,7 +320,7 @@ public class InMemoryAlertManager implements AlertManager {
          * @see com.thinkbiganalytics.alerts.api.#unHandle()
          */
         @Override
-        public Alert unHandle(String description) {
+        public Alert unhandle(String description) {
             return unhandle(description, null);
         }
 

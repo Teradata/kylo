@@ -118,7 +118,7 @@ public class AlertsController {
                         result = response.inProgress(req.getDescription());
                         break;
                     case UNHANDLED:
-                        result = response.unHandle(req.getDescription());
+                        result = response.unhandle(req.getDescription());
                         break;
                     default:
                         break;
