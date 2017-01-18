@@ -94,10 +94,10 @@ public class JpaAlert implements Alert {
         this.id = AlertId.create();
         this.typeString = type.toASCIIString();
         this.level = level;
-        this.description = description;
         this.content = content;
         this.createdTime = DateTime.now();
         this.state = state;
+        setDescription(description);
         
         JpaAlertChangeEvent event = new JpaAlertChangeEvent(state, user);
         this.events.add(event);
@@ -209,8 +209,8 @@ public class JpaAlert implements Alert {
         this.id = id;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setDescription(String descr) {
+        this.description = descr == null || descr.length() <= 255 ? descr : descr.substring(0, 252) + "...";
     }
 
     public void setLevel(Level level) {
@@ -220,7 +220,7 @@ public class JpaAlert implements Alert {
     public void setEvents(List<AlertChangeEvent> events) {
         this.events = events;
     }
-
+    
     public void setContent(Serializable content) {
         this.content = content;
     }

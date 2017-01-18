@@ -65,9 +65,9 @@ public class JpaAlertChangeEvent implements AlertChangeEvent, Comparable<AlertCh
         super();
         this.changeTime = DateTime.now();
         this.state = state;
-        this.description = descr;
         this.content = content;
         this.username = user != null ? user.getName() : null;
+        setDescription(descr);
     }
 
 
@@ -122,6 +122,10 @@ public class JpaAlertChangeEvent implements AlertChangeEvent, Comparable<AlertCh
     
     public void setUsername(String user) {
         this.username = user;
+    }
+    
+    public void setDescription(String descr) {
+        this.description = descr == null || descr.length() <= 255 ? descr : descr.substring(0, 252) + "...";
     }
 
     public void setState(Alert.State state) {

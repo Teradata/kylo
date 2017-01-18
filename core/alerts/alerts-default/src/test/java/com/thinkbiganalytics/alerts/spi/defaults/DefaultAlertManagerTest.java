@@ -10,6 +10,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.net.URI;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Optional;
 
@@ -44,6 +45,15 @@ import com.thinkbiganalytics.testing.jpa.TestPersistenceConfiguration;
 @SpringApplicationConfiguration(classes = { MetadataPersistenceConfig.class, TestPersistenceConfiguration.class, DefaultAlertManagerConfig.class })
 public class DefaultAlertManagerTest extends AbstractTestNGSpringContextTests {
     
+    private static final String LONG_DESCR;
+    private static final String TRUNK_DESCR;
+    static {
+        char[] descr = new char[257];
+        Arrays.fill(descr, 'x');
+        LONG_DESCR = new String(descr);
+        TRUNK_DESCR = LONG_DESCR.substring(0, 252) + "...";
+    }
+    
     @Mock
     private AlertNotifyReceiver alertReceiver;
     
@@ -70,7 +80,7 @@ public class DefaultAlertManagerTest extends AbstractTestNGSpringContextTests {
     @Test(groups="create")
     public void testCreateAlert() throws Exception {
         this.beforeTime = DateTime.now().minusMillis(50);
-        Alert alert1 = this.manager.create(URI.create("http://example.com/test/alert/1"), Level.MINOR, "1st description", "1st content");
+        Alert alert1 = this.manager.create(URI.create("http://example.com/test/alert/1"), Level.MINOR, LONG_DESCR, "1st content");
         Thread.sleep(100);
         Alert alert2 = this.manager.create(URI.create("http://example.com/test/alert/2"), Level.CRITICAL, "2nd description", "2nd content");
         Thread.sleep(100);
@@ -78,7 +88,7 @@ public class DefaultAlertManagerTest extends AbstractTestNGSpringContextTests {
         assertThat(alert1)
             .isNotNull()
             .extracting("type", "level", "description", "content")
-            .contains(URI.create("http://example.com/test/alert/1"), Level.MINOR, "1st description", "1st content");
+            .contains(URI.create("http://example.com/test/alert/1"), Level.MINOR, TRUNK_DESCR, "1st content");
         assertThat(alert2)
             .isNotNull()
             .extracting("type", "level", "description", "content")
@@ -104,7 +114,7 @@ public class DefaultAlertManagerTest extends AbstractTestNGSpringContextTests {
             .isNotNull()
             .hasSize(2)
             .extracting("type", "level", "description", "content")
-            .contains(tuple(URI.create("http://example.com/test/alert/1"), Level.MINOR, "1st description", "1st content"),
+            .contains(tuple(URI.create("http://example.com/test/alert/1"), Level.MINOR, TRUNK_DESCR, "1st content"),
                       tuple(URI.create("http://example.com/test/alert/2"), Level.CRITICAL, "2nd description", "2nd content"));
     }
     
@@ -157,19 +167,19 @@ public class DefaultAlertManagerTest extends AbstractTestNGSpringContextTests {
         Alert alert = this.manager.getAlert(id1).get();
         AlertResponse resp = this.manager.getResponse(alert);
         
-        alert = resp.inProgress("Change in progress");
+        alert = resp.inProgress(LONG_DESCR);
         
         assertThat(alert.getEvents())
             .hasSize(2)
             .extracting("state", "description", "content")
-            .contains(tuple(State.UNHANDLED, null, null), tuple(State.IN_PROGRESS, "Change in progress", null));
+            .contains(tuple(State.UNHANDLED, null, null), tuple(State.IN_PROGRESS, TRUNK_DESCR, null));
         
         alert = resp.handle("Change handled", new Integer(42));
         
         assertThat(alert.getEvents())
             .hasSize(3)
             .extracting("state", "description", "content")
-            .contains(tuple(State.UNHANDLED, null, null), tuple(State.IN_PROGRESS, "Change in progress", null), tuple(State.HANDLED, "Change handled", 42));
+            .contains(tuple(State.UNHANDLED, null, null), tuple(State.IN_PROGRESS, TRUNK_DESCR, null), tuple(State.HANDLED, "Change handled", 42));
         
         verify(this.alertReceiver, times(2)).alertsAvailable(anyInt());
     }
