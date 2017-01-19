@@ -272,8 +272,6 @@ NifiControllerServiceProperties nifiControllerServiceProperties;
             //update the cache in a separate thread
             ReusableTemplateUpdatedRunnable reusableTemplateUpdatedRunnable = new ReusableTemplateUpdatedRunnable(nifiFlowCache, importTemplate, templates);
             Executors.newSingleThreadExecutor().execute(reusableTemplateUpdatedRunnable);
-            Thread updateNifiFlowCacheThread = new Thread(reusableTemplateUpdatedRunnable);
-            updateNifiFlowCacheThread.start();
         }
     }
 
