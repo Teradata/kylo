@@ -17,7 +17,6 @@ import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.annotation.lifecycle.OnScheduled;
 import org.apache.nifi.components.AllowableValue;
 import org.apache.nifi.components.PropertyDescriptor;
-import org.apache.nifi.components.PropertyValue;
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
@@ -69,7 +68,8 @@ public class InitializeFeed extends FeedProcessor {
     protected static final PropertyDescriptor MAX_INIT_ATTEMPTS = new PropertyDescriptor.Builder()
                     .name("Max Initialization Attempts")
                     .description("The maximum number of times initialization will be retried where there are failures.  There is no limit if unset.")
-                    .required(false)
+                    .required(true)
+                    .defaultValue("5")
                     .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
                     .expressionLanguageSupported(true)
                     .build();
@@ -144,8 +144,7 @@ public class InitializeFeed extends FeedProcessor {
         
         if (strategy.equals("RETRY")) {
             int delay = context.getProperty(RETRY_DELAY).asInteger();
-            PropertyValue maxValue = context.getProperty(MAX_INIT_ATTEMPTS);
-            int max = maxValue.isSet() ? maxValue.asInteger() : Integer.MAX_VALUE;
+            int max = context.getProperty(MAX_INIT_ATTEMPTS).asInteger();
             AtomicInteger count = getRetryCount(context, inputFF);
             
             if (count.getAndIncrement() >= max) {
