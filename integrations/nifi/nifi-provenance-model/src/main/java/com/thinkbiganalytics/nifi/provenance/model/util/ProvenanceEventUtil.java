@@ -47,7 +47,7 @@ public class ProvenanceEventUtil {
      * @return
      */
     public static boolean isCompletionEvent(ProvenanceEventRecordDTO event) {
-        return !contains(NON_COMPLETION_EVENTS, event.getEventType());
+        return true; // !contains(NON_COMPLETION_EVENTS, event.getEventType());
     }
 
 
