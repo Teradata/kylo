@@ -125,7 +125,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener{
                                                                   public OpsManagerFeed load(String feedName) throws Exception {
                                                                       OpsManagerFeed feed =null;
                                                                       try {
-                                                                          feed = metadataAccess.commit(() -> opsManagerFeedProvider.findByName(feedName), 
+                                                                          feed = metadataAccess.commit(() -> opsManagerFeedProvider.findByName(feedName),
                                                                                                        MetadataAccess.SERVICE);
                                                                       } catch (Exception e){
 
@@ -163,7 +163,10 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener{
     @JmsListener(destination = Queues.FEED_MANAGER_QUEUE, containerFactory = ActiveMqConstants.JMS_CONTAINER_FACTORY, concurrency = "10-50")
     public void receiveEvents(ProvenanceEventRecordDTOHolder events) {
         log.info("About to process {} events from the {} queue ", events.getEvents().size(), Queues.FEED_MANAGER_QUEUE);
-        events.getEvents().stream().filter(e -> isRegisteredWithFeedManager(e)).forEach(event -> processEvent(event, 0));
+        events.getEvents().stream()
+                .filter(this::isRegisteredWithFeedManager)
+                .filter(this::ensureNewEvent)
+                .forEach(event -> processEvent(event, 0));
     }
 
     private void processEvent(ProvenanceEventRecordDTO event, int retryAttempt) {
@@ -297,5 +300,14 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener{
     @Override
     public void failedStep(BatchJobExecution jobExecution, BatchStepExecution stepExecution, String flowFileId, String componentId) {
        boolean added = nifiBulletinExceptionExtractor.addErrorMessagesToStep(stepExecution,flowFileId,componentId);
+    }
+
+    /**
+     * Indicates if the specified event hasn't already been processed.
+     * @param event the event to check
+     * @return {@code true} if the event is new, or {@code false otherwise}
+     */
+    private boolean ensureNewEvent(ProvenanceEventRecordDTO event) {
+        return metadataAccess.read(() -> !nifiEventProvider.exists(event), MetadataAccess.SERVICE);
     }
 }

@@ -34,6 +34,9 @@ public class NifiEventProvider {
         return this.create(toNifiEvent(t));
     }
 
+    public boolean exists(ProvenanceEventRecordDTO eventRecordDTO) {
+        return repository.exists(new JpaNifiEvent.NiFiEventPK(eventRecordDTO.getEventId(),eventRecordDTO.getFlowFileUuid()));
+    }
 
     public static NifiEvent toNifiEvent(ProvenanceEventRecordDTO eventRecordDTO) {
         JpaNifiEvent nifiEvent = new JpaNifiEvent(new JpaNifiEvent.NiFiEventPK(eventRecordDTO.getEventId(), eventRecordDTO.getFlowFileUuid()));
