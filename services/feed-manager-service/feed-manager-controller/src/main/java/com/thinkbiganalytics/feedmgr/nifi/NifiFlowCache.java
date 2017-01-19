@@ -29,7 +29,6 @@ import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -60,8 +59,8 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
 
     private static final Logger log = LoggerFactory.getLogger(NifiFlowCache.class);
 
-    @Value("${kylo.userDefinedFailureProcessors:false}")
-    private boolean userDefinedFailureProcessors;
+
+    private boolean userDefinedFailureProcessors = false;
 
     @Inject
     ModeShapeAvailability modeShapeAvailability;
