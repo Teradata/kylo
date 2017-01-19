@@ -419,8 +419,21 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
     /**
      * When a Templates 'reusable' flow is updated the cache needs to be updated to get the correct processor ids.
      * This is called via the ExportImportService after a user has successfully imported a Zip or XML file that has a Reusable template
-     * @param registeredTemplate
+     * @param templateName
      */
+    public void reusableTemplateUpdatedForTemplate(String templateName) {
+
+        //1 find all feeds using this template
+
+        RegisteredTemplate template = metadataAccess.read(() -> {
+            RegisteredTemplate registeredTemplate = metadataService.getRegisteredTemplateByName(templateName);
+            return registeredTemplate;
+        }, MetadataAccess.SERVICE);
+        reusableTemplateUpdatedForTemplate(template);
+
+
+    }
+
     public void reusableTemplateUpdatedForTemplate(RegisteredTemplate registeredTemplate) {
 
         if (registeredTemplate != null) {
@@ -435,9 +448,12 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
             //get template associated with flow to determine failure process flow ids
             allFlows.stream().forEach(nifiFlowProcessGroup -> {
                 if (registeredTemplate != null && feedNames.contains(nifiFlowProcessGroup.getFeedName())) {
-                    nifiFlowProcessGroup.resetProcessorsFlowType(registeredTemplate.getProcessorFlowTypesMap());
                     if (feedNameToTemplateNameMap.containsKey(nifiFlowProcessGroup.getFeedName())) {
-                        updateFlow(nifiFlowProcessGroup.getFeedName(), registeredTemplate.isStream(), nifiFlowProcessGroup);
+                        //if the keys all match up then update the flow.   if they dont match it means this base template has been updated and those feeds will need to be updated.
+                        if (nifiFlowProcessGroup.getProcessorFlowIds().containsAll(registeredTemplate.getProcessorFlowTypesMap().keySet())) {
+                            nifiFlowProcessGroup.resetProcessorsFlowType(registeredTemplate.getProcessorFlowTypesMap());
+                            updateFlow(nifiFlowProcessGroup.getFeedName(), registeredTemplate.isStream(), nifiFlowProcessGroup);
+                        }
                     }
                 }
             });

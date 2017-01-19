@@ -261,7 +261,7 @@ public class NifiFlowProcessor implements Serializable {
     public Integer assignFlowIds(Integer flowId) {
         flowId++;
         setFlowId(flowId + "__" + StringUtils.substringAfterLast(this.type, "."));
-        //   log.info(getFlowId() + " - " + getName() + " (" + getId() + ")");
+        //    log.info(getFlowId() + " - " + getName() + " (" + getId() + ")");
         Set<String> printed = new HashSet<>();
         printed.add(this.getId());
 

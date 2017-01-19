@@ -161,7 +161,7 @@ public class NifiConnectionOrderVisitor implements NifiFlowVisitor {
                 //cant find the parent
             }
         }
-        Optional<NifiVisitableProcessGroup> cachedGroup = cache.getCachedGroupForVisiting(processGroup.getDto().getId());
+        Optional<NifiVisitableProcessGroup> cachedGroup = Optional.empty();//cache.getCachedGroupForVisiting(processGroup.getDto().getId());
         if (cachedGroup.isPresent()) {
             group = cachedGroup.get();
         }

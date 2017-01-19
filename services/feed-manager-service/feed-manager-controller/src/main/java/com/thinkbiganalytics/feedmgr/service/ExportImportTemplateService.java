@@ -284,11 +284,8 @@ NifiControllerServiceProperties nifiControllerServiceProperties;
                     }
                 }
             }
-
         }
     }
-
-
 
 
     public ExportTemplate exportTemplate(String templateId) {
@@ -493,8 +490,6 @@ NifiControllerServiceProperties nifiControllerServiceProperties;
             //enable it
             nifiRestClient.markConnectionPortsAsRunning(connectingTemplate.getTemplateResults().getProcessGroupEntity());
         }
-
-
 
         return importTemplate;
     }

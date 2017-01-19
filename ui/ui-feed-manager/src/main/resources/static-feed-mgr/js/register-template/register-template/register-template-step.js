@@ -223,7 +223,7 @@
                         }
                     });
 
-                    if (self.templateFlowTypeProcessors.length == 0) {
+                    //if (self.templateFlowTypeProcessors.length == 0) {
                         //push items parsed from the flow into here
 
                         var inspectedFlowRelationshipProcessors = _.filter(self.leafProcessors, function (flowProcessor) {
@@ -231,12 +231,16 @@
                         });
 
                         if (inspectedFlowRelationshipProcessors.length > 0) {
-                            _.each(inspectedFlowRelationshipProcessors, function (processor) {
+                            var newList = _.reject(inspectedFlowRelationshipProcessors, function (processor) {
+                                return self.flowIdFlowProcessorMap[processor.flowId] != undefined;
+                            });
+
+                            _.each(newList, function (processor) {
                                 self.templateFlowTypeProcessors.push({flowId: processor.flowId, relationship: 'failure', flowType: 'FAILURE', _id: _.uniqueId()});
-                            })
+                            });
                         }
 
-                    }
+                    // }
 
                 }
                 self.loadingFlowData = false;

@@ -132,7 +132,7 @@ public class NifiFlowProcessGroup {
                 maxCount = count;
             }
         }
-        log.debug("Total Processors {} :  {}", getName(), maxCount);
+        //   log.info("Total Processors {} :  {}", getName(), maxCount);
     }
 
     public Map<String, NifiFlowProcessor> getProcessorMap() {
@@ -206,6 +206,31 @@ public class NifiFlowProcessGroup {
                 .forEach(flowProcessor -> flowProcessor.setProcessorFlowTypes(processorFlowTypeMap.getOrDefault(flowProcessor.getFlowId(), KyloProcessorFlowTypeRelationship.DEFAULT_SET)));
         }
     }
+
+    public Map<String, Set<KyloProcessorFlowTypeRelationship>> getFlowProcessorMap() {
+
+        Map<String, Set<KyloProcessorFlowTypeRelationship>>
+            processorFlowTypeMap =
+            getProcessorMap().values().stream().filter(processor -> !KyloProcessorFlowTypeRelationship.isNormalFlowSet(processor.getProcessorFlowTypes()))
+                .collect(Collectors.toMap(flowProcessor1 -> flowProcessor1.getId(), flowProcessor1 -> flowProcessor1.getProcessorFlowTypes()));
+
+        return processorFlowTypeMap;
+    }
+
+
+    public Set<String> getProcessorFlowIdsNotNormal() {
+
+        return getProcessorMap().values().stream().filter(processor -> !KyloProcessorFlowTypeRelationship.isNormalFlowSet(processor.getProcessorFlowTypes())).map(p -> p.getFlowId())
+            .collect(Collectors.toSet());
+
+    }
+
+    public Set<String> getProcessorFlowIds() {
+
+        return getProcessorMap().values().stream().map(p -> p.getFlowId()).collect(Collectors.toSet());
+
+    }
+
 
 /*
     public Set<NifiFlowProcessor>  calculateCriticalPathProcessors() {
