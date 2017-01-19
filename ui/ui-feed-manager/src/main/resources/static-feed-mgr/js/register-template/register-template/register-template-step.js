@@ -209,38 +209,29 @@
 
                     //get the map of processors by flowId
                     self.flowIdFlowProcessorMap = _.indexBy(self.leafProcessors, 'flowId');
-
+                    var mappedIds = {};
                     //merge in the saved flowprocessor types with the ones on the template
                     //{processorId: [{relationship:'',flowType:''}...]}
                     _.each(self.model.processorFlowTypesMap, function (flowTypeRelationships, processorFlowId) {
 
                         var flowProcessor = self.flowIdFlowProcessorMap[processorFlowId];
+
                         if (flowProcessor != undefined) {
                             _.each(flowTypeRelationships, function (flowTypeRelationship) {
                                 self.templateFlowTypeProcessors.push(
                                     {flowId: processorFlowId, relationship: flowTypeRelationship.relationship, flowType: flowTypeRelationship.flowType, _id: _.uniqueId()});
+                                mappedIds[processorFlowId] = processorFlowId;
                             });
                         }
                     });
 
-                    //if (self.templateFlowTypeProcessors.length == 0) {
-                        //push items parsed from the flow into here
-
-                        var inspectedFlowRelationshipProcessors = _.filter(self.leafProcessors, function (flowProcessor) {
-                            return flowProcessor.flowType != 'NORMAL_FLOW';
-                        });
-
-                        if (inspectedFlowRelationshipProcessors.length > 0) {
-                            var newList = _.reject(inspectedFlowRelationshipProcessors, function (processor) {
-                                return self.flowIdFlowProcessorMap[processor.flowId] != undefined;
-                            });
-
-                            _.each(newList, function (processor) {
-                                self.templateFlowTypeProcessors.push({flowId: processor.flowId, relationship: 'failure', flowType: 'FAILURE', _id: _.uniqueId()});
-                            });
+                    _.each(self.leafProcessors, function (flowProcessor) {
+                        //add in any unmapped leaf nodes as failures
+                        if (mappedIds[flowProcessor.flowId] == undefined) {
+                            self.templateFlowTypeProcessors.push({flowId: flowProcessor.flowId, relationship: 'failure', flowType: 'FAILURE', _id: _.uniqueId()});
                         }
 
-                    // }
+                    });
 
                 }
                 self.loadingFlowData = false;
