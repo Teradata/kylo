@@ -162,9 +162,13 @@ public class Profiler {
 					}
 				}
 
-				retVal = "select " + StringUtils.join(profiledColumns, ',') + " from " + safeTable;
-				if (inputAndOutputTablePartitionKey != null && !"ALL".equalsIgnoreCase(inputAndOutputTablePartitionKey)) {
-					retVal += " where " + HiveUtils.quoteIdentifier(ProfilerConfiguration.INPUT_TABLE_PARTITION_COLUMN_NAME) + " = " + HiveUtils.quoteString(inputAndOutputTablePartitionKey);
+				if (!profiledColumns.isEmpty()) {
+					retVal = "select " + StringUtils.join(profiledColumns, ',') + " from " + safeTable;
+					if (inputAndOutputTablePartitionKey != null && !"ALL".equalsIgnoreCase(inputAndOutputTablePartitionKey)) {
+						retVal += " where " + HiveUtils.quoteIdentifier(ProfilerConfiguration.INPUT_TABLE_PARTITION_COLUMN_NAME) + " = " + HiveUtils.quoteString(inputAndOutputTablePartitionKey);
+					}
+				} else {
+					retVal = null;
 				}
 				break;
 			case "query":
