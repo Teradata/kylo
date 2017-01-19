@@ -145,9 +145,8 @@ public class JcrFeedSlaTest {
 
             //query for SLA objects and assert the result is correct
             List<FeedServiceLevelAgreement> feedAgreements = jcrFeedSlaProvider.findAllAgreements();
-            //assert both agreements come back
 
-            Assert.assertEquals(2, feedAgreements.size());
+            Assert.assertEquals(feedAgreements.size(), 1);
             int nonFeedSlaCount = 0;
             for (FeedServiceLevelAgreement agreement : feedAgreements) {
                 Set<? extends Feed> slaFeeds = agreement.getFeeds();
@@ -164,7 +163,7 @@ public class JcrFeedSlaTest {
                 }
 
             }
-            Assert.assertEquals(nonFeedSlaCount, 1);
+            Assert.assertEquals(nonFeedSlaCount, 0);
 
             //find by Feed
             for (Feed.ID feedId : feedIds) {
