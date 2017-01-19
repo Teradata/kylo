@@ -135,7 +135,7 @@ public class CacheUtil {
             event.setFeedProcessGroupId(flowFile.getFeedProcessGroupId());
             event.setComponentName(provenanceFeedLookup.getProcessorName(event.getComponentId()));
         }
-        provenanceFeedLookup.setProcessorFlowType(event);
+
         event.setStream(provenanceFeedLookup.isStream(event));
 
         event.setJobFlowFileId(flowFile.getRootFlowFile().getId());
@@ -150,8 +150,13 @@ public class CacheUtil {
         if (ProvenanceEventUtil.isCompletionEvent(event)) {
             log.debug("Add Event {}, {}, previous event: {} ", event.getEventId(), event.getComponentName(), flowFile.getPreviousEvent());
             flowFile.addCompletionEvent(event);
+            provenanceFeedLookup.setProcessorFlowType(event);
+            flowFile.checkAndMarkIfFlowFileIsComplete(event);
+
             log.debug("added event to flow file Event {}, {}, {} with Start {}, Prev: {} and End {} ", event.getComponentName(), event.getComponentId(), event.getEventType(), event.getStartTime(),
-                     event.getPreviousEvent() != null ? event.getPreviousEvent().getEventTime() : "NULL PREVIOUS ", event.getEventTime());
+                      event.getPreviousEvent() != null ? event.getPreviousEvent().getEventTime() : "NULL PREVIOUS ", event.getEventTime());
+        } else {
+            provenanceFeedLookup.setProcessorFlowType(event);
         }
 
         eventCounter.incrementAndGet();

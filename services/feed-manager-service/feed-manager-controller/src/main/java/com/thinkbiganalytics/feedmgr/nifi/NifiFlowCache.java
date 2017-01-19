@@ -111,6 +111,8 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
 
     private Map<String, NiFiFlowCacheConnectionData> connectionIdToConnectionMap = new ConcurrentHashMap<>();
 
+    private Map<String, String> connectionIdCacheNameMap = new ConcurrentHashMap<>();
+
     /**
      * Set of the category.feed names for those that are just streaming feeds
      */
@@ -291,7 +293,7 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
                 .withProcessorIdToFeedProcessGroupId(sync.getProcessorIdToProcessGroupIdUpdatedSinceLastSync(latest.getAddProcessorIdToFeedProcessGroupId()))
                 .withProcessorIdToProcessorName(sync.getProcessorIdToProcessorNameUpdatedSinceLastSync(latest.getAddProcessorIdToProcessorName()))
                 .withStreamingFeeds(latest.getAllStreamingFeeds())
-                .withConnections(sync.getConnectionIdToConnectionUpdatedSinceLastSync(latest.getConnectionIdToConnection()))
+                .withConnections(sync.getConnectionIdToConnectionUpdatedSinceLastSync(latest.getConnectionIdToConnectionName(), latest.getConnectionIdToConnection()))
                 //.withStreamingFeeds(sync.getStreamingFeedsUpdatedSinceLastSync(latest.getAllStreamingFeeds()))
                 .withFeeds(sync.getFeedsUpdatedSinceLastSync(latest.getAllFeeds()))
                 .withFeedToProcessorIdToFlowTypeMap(latest.getFeedToProcessorIdToFlowTypeMap())
@@ -321,6 +323,7 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
         processorIdToFeedProcessGroupId.clear();
         processorIdToProcessorName.clear();
         connectionIdToConnectionMap.clear();
+        connectionIdCacheNameMap.clear();
         feedToProcessorIdToFlowTypeMap.clear();
         streamingFeeds.clear();
         allFeeds.clear();
@@ -550,6 +553,11 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
         this.processorIdToProcessorName.putAll(processorIdToProcessorName);
 
         connectionIdToConnectionMap.putAll(toConnectionIdMap(connections));
+
+        if (connections != null) {
+            Map<String, String> connectionIdToNameMap = connections.stream().collect(Collectors.toMap(conn -> conn.getConnectionIdentifier(), conn -> conn.getName()));
+            connectionIdCacheNameMap.putAll(connectionIdToNameMap);
+        }
 
         processorIdMap.putAll(toProcessorIdMap(processors));
         processorIdToFeedNameMap.putAll(toProcessorIdFeedNameMap(processors, feedName));

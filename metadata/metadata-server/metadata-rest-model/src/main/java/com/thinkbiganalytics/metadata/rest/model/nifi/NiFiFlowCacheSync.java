@@ -7,6 +7,7 @@ import com.google.common.collect.Sets;
 
 import org.joda.time.DateTime;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -76,6 +77,27 @@ public class NiFiFlowCacheSync {
         return diff.entriesOnlyOnRight();
     }
 
+
+    public Map<String, NiFiFlowCacheConnectionData> getConnectionIdToConnectionUpdatedSinceLastSync(Map<String, String> latestConnectionIdToNameMap,
+                                                                                                    Map<String, NiFiFlowCacheConnectionData> latestConnectionDataMap) {
+        MapDifference<String, String> diff = Maps.difference(snapshot.getConnectionIdToConnectionName(), latestConnectionIdToNameMap);
+        Map<String, NiFiFlowCacheConnectionData> differences = new HashMap<>();
+        Map<String, String> diffs = diff.entriesOnlyOnRight();
+        if (diffs != null && !diffs.isEmpty()) {
+            for (String connId : diffs.keySet()) {
+                differences.put(connId, latestConnectionDataMap.get(connId));
+            }
+        }
+
+        Set<String> updates = diff.entriesDiffering().keySet();
+        if (updates != null) {
+            for (String key : updates) {
+                differences.put(key, latestConnectionDataMap.get(key));
+            }
+        }
+
+        return differences;
+    }
 
 
     public Map<String, String> getProcessorIdToProcessorNameUpdatedSinceLastSync(Map<String, String> processorIdToProcessorName) {

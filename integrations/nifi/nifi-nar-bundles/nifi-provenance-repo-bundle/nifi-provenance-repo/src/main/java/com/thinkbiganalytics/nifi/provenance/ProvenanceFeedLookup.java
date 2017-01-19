@@ -85,11 +85,8 @@ public class ProvenanceFeedLookup {
 
 
     public KyloProcessorFlowType setProcessorFlowType(ProvenanceEventRecordDTO event) {
-        if (getFlowCache().isUserDefinedFailureProcessors()) {
-            return setUserDefinedProcessorFlowType(event);
-        } else {
             return setConnectionNameProcessorFlowType(event);
-        }
+
     }
 
     public KyloProcessorFlowType setConnectionNameProcessorFlowType(ProvenanceEventRecordDTO event) {
@@ -104,7 +101,7 @@ public class ProvenanceFeedLookup {
                 // log.info("Setting the Processor Flow Type for the event using the Connection Name strategy {}, prev: {}, connection src: {}",event, event.getPreviousEvent() != null ? event.getPreviousEvent().getComponentId(): null,connectionData.getSourceIdentifier());
                 //get previous event and fail it too since we came from a failure and the connections source == the prev event
                 if (event.getPreviousEvent() != null && event.getPreviousEvent().getComponentId().equalsIgnoreCase(connectionData.getSourceIdentifier())) {
-                    // log.info("Failing the previous event {} ",event.getPreviousEvent());
+                    //     log.info("Failing the previous event {} ",event.getPreviousEvent());
                     event.getPreviousEvent().setProcessorType(KyloProcessorFlowType.FAILURE);
                     event.setIsFailure(true);
                 }

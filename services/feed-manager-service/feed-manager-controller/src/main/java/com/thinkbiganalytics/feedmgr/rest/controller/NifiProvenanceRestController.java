@@ -88,7 +88,7 @@ public class NifiProvenanceRestController {
     @Produces({MediaType.APPLICATION_JSON})
     public Response resetCache() {
         nifiFlowCache.rebuildAll();
-        return Response.ok().build();
+        return Response.ok("Rest the Cache").build();
     }
 
 

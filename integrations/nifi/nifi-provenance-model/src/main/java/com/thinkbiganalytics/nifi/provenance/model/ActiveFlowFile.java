@@ -432,7 +432,6 @@ public class ActiveFlowFile {
         getCompletedProcessorIds().add(event.getComponentId());
         //track the prev event for duration calcs
         setPreviousEventForEvent(event);
-
         //safeguard to set prev event
         if (event.getPreviousEvent() == null && previousEvent != null) {
             event.setPreviousEvent(previousEvent);
@@ -440,7 +439,7 @@ public class ActiveFlowFile {
         calculateEventDuration(event);
         //reset the pointer on this flow file to this event as the previous event
         setPreviousEvent(event);
-        checkAndMarkIfFlowFileIsComplete(event);
+
     }
 
 
