@@ -67,9 +67,7 @@ public class JcrFeedServiceLevelAgreementProvider implements FeedServiceLevelAgr
     @Override
     public List<FeedServiceLevelAgreement> findAllAgreements() {
         String query = "SELECT * from [" + JcrServiceLevelAgreement.NODE_TYPE + "] AS sla "
-                       + "LEFT JOIN [" + JcrFeedServiceLevelAgreementRelationship.NODE_TYPE + "] AS feedSla ON feedSla.[" + JcrFeedServiceLevelAgreementRelationship.SLA + "] = sla.[jcr:uuid] "
-                       + "LEFT JOIN [" + JcrFeedPrecondition.NODE_TYPE + "] as precondition on precondition.[" + JcrFeedPrecondition.SLA + "] = sla.[jcr:uuid] "
-                       + "WHERE precondition.[jcr:uuid] is NULL ";
+                       + "JOIN [" + JcrFeedServiceLevelAgreementRelationship.NODE_TYPE + "] AS feedSla ON feedSla.[" + JcrFeedServiceLevelAgreementRelationship.SLA + "] = sla.[jcr:uuid] ";
         return queryToList(query, null);
 
     }
