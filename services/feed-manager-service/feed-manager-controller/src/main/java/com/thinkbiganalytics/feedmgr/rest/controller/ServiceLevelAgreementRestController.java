@@ -172,7 +172,7 @@ public class ServiceLevelAgreementRestController {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public List<? extends ServiceLevelAgreement> getAgreements() {
+    public List<FeedServiceLevelAgreement> getAgreements() {
         log.debug("GET all SLA's");
 
         return this.metadata.commit(() -> {
