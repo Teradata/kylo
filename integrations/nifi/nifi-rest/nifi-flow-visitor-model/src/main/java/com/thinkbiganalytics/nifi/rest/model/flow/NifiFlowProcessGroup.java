@@ -5,9 +5,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.common.constants.KyloProcessorFlowTypeRelationship;
 
+import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -45,6 +47,11 @@ public class NifiFlowProcessGroup {
     private Map<String, NifiFlowProcessor> failureProcessors;
 
     private Map<String, NifiFlowProcessor> endingProcessors;
+
+    /**
+     * Connection Identifier to Connection object
+     */
+    private Map<String, NifiFlowConnection> connectionIdMap;
 
 
     /**
@@ -244,6 +251,30 @@ public class NifiFlowProcessGroup {
         return criticalPathProcessors;
     }
     */
+
+    public Map<String, NifiFlowConnection> getConnectionIdMap() {
+        if (connectionIdMap == null) {
+            connectionIdMap = new HashMap<>();
+        }
+        return connectionIdMap;
+    }
+
+    public void setConnectionIdMap(Map<String, NifiFlowConnection> connectionIdMap) {
+        this.connectionIdMap = connectionIdMap;
+    }
+
+    public void addConnection(ConnectionDTO connectionDTO) {
+        NifiFlowConnection nifiFlowConnection = NiFiFlowConnectionConverter.toNiFiFlowConnection(connectionDTO);
+        if (nifiFlowConnection != null) {
+            getConnectionIdMap().put(connectionDTO.getId(), nifiFlowConnection);
+        }
+    }
+
+    public void addConnections(Collection<ConnectionDTO> connectionDTOs) {
+        if (connectionDTOs != null) {
+            connectionDTOs.stream().forEach(connectionDTO -> addConnection(connectionDTO));
+        }
+    }
 
     @Override
     public boolean equals(Object o) {

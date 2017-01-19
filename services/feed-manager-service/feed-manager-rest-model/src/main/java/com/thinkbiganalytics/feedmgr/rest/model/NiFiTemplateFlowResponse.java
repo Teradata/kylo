@@ -13,6 +13,8 @@ public class NiFiTemplateFlowResponse {
 
     private List<KyloProcessorFlowTypeOption> processorFlowTypes;
 
+    private boolean userDefinedFailureProcessors;
+
     private NiFiTemplateFlowRequest request;
 
     private List<TemplateProcessorDatasourceDefinition> templateProcessorDatasourceDefinitions;
@@ -62,6 +64,13 @@ public class NiFiTemplateFlowResponse {
         this.processorFlowTypes = processorFlowTypes;
     }
 
+    public boolean isUserDefinedFailureProcessors() {
+        return userDefinedFailureProcessors;
+    }
+
+    public void setUserDefinedFailureProcessors(boolean userDefinedFailureProcessors) {
+        this.userDefinedFailureProcessors = userDefinedFailureProcessors;
+    }
 
     public static class KyloProcessorFlowTypeOption {
 
@@ -87,4 +96,6 @@ public class NiFiTemplateFlowResponse {
             return description;
         }
     }
+
+
 }

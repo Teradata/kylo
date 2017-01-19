@@ -19,6 +19,7 @@ import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
 import com.thinkbiganalytics.nifi.rest.model.NifiError;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessorDTO;
+import com.thinkbiganalytics.nifi.rest.support.NifiConnectionUtil;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 import com.thinkbiganalytics.security.AccessController;
 
@@ -70,8 +71,8 @@ public class ExportImportTemplateService {
     PropertyExpressionResolver propertyExpressionResolver;
 
 
-@Inject
-NifiControllerServiceProperties nifiControllerServiceProperties;
+    @Inject
+    NifiControllerServiceProperties nifiControllerServiceProperties;
 
     @Autowired
     MetadataService metadataService;
@@ -257,6 +258,8 @@ NifiControllerServiceProperties nifiControllerServiceProperties;
             //1 get the template flowtype mappings
             Collection<ProcessorDTO> processors = NifiProcessUtil.getProcessors(processGroupDTO);
             nifiFlowCache.updateProcessorIdNames(templateName, processors);
+            nifiFlowCache.updateConnectionMap(templateName, NifiConnectionUtil.getAllConnections(processGroupDTO));
+
 
         }
 
@@ -267,11 +270,13 @@ NifiControllerServiceProperties nifiControllerServiceProperties;
      * This will update the NifiFlowCache and get the correct processors and update the cache settings for the KyloProvenanceReportingTask
      */
     private void importReusableTemplateSuccess(ImportTemplate importTemplate) {
-        if (importTemplate.isSuccess()) {
-            List<RegisteredTemplate> templates = metadataAccess.read(() -> metadataService.getRegisteredTemplates(), MetadataAccess.SERVICE);
-            //update the cache in a separate thread
-            ReusableTemplateUpdatedRunnable reusableTemplateUpdatedRunnable = new ReusableTemplateUpdatedRunnable(nifiFlowCache, importTemplate, templates);
-            Executors.newSingleThreadExecutor().execute(reusableTemplateUpdatedRunnable);
+        if (nifiFlowCache.isUserDefinedFailureProcessors()) {
+            if (importTemplate.isSuccess()) {
+                List<RegisteredTemplate> templates = metadataAccess.read(() -> metadataService.getRegisteredTemplates(), MetadataAccess.SERVICE);
+                //update the cache in a separate thread
+                ReusableTemplateUpdatedRunnable reusableTemplateUpdatedRunnable = new ReusableTemplateUpdatedRunnable(nifiFlowCache, importTemplate, templates);
+                Executors.newSingleThreadExecutor().execute(reusableTemplateUpdatedRunnable);
+            }
         }
     }
 

@@ -660,6 +660,8 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
                 +
                 "ids. Restarting querying from the beginning.", new Object[]{maxEventId, lastEventId});
             lastEventId = -1;
+            lastEventIdInitialized = true;
+            setLastEventId(lastEventId);
             return lastEventId;
         }
 

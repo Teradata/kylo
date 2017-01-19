@@ -21,12 +21,18 @@ public class NifiFlowCacheSnapshot {
 
     private DateTime snapshotDate;
 
+    private boolean userDefinedFailureProcessors;
+
     //items to add
     private Map<String, String> addProcessorIdToFeedNameMap = new ConcurrentHashMap<>();
 
     private Map<String, String> addProcessorIdToFeedProcessGroupId = new ConcurrentHashMap<>();
 
     private Map<String, String> addProcessorIdToProcessorName = new ConcurrentHashMap<>();
+
+    private Map<String, String> connectionIdToConnectionName = new ConcurrentHashMap<>();
+
+    private Map<String, NiFiFlowCacheConnectionData> connectionIdToConnection = new ConcurrentHashMap<>();
 
 
     private Map<String, Map<String, Set<KyloProcessorFlowTypeRelationship>>> feedToProcessorIdToFlowTypeMap = new ConcurrentHashMap<>();
@@ -75,6 +81,7 @@ public class NifiFlowCacheSnapshot {
 
         private Set<String> addStreamingFeeds;
 
+        private Map<String, NiFiFlowCacheConnectionData> connectionIdToConnection;
 
         /**
          * Set of the category.feed names
@@ -102,6 +109,10 @@ public class NifiFlowCacheSnapshot {
             return this;
         }
 
+        public Builder withConnections(Map<String, NiFiFlowCacheConnectionData> connections) {
+            this.connectionIdToConnection = connections;
+            return this;
+        }
 
         public Builder withProcessorIdToFeedNameMap(Map<String, String> addProcessorIdToFeedNameMap) {
             this.addProcessorIdToFeedNameMap = addProcessorIdToFeedNameMap;
@@ -142,6 +153,11 @@ public class NifiFlowCacheSnapshot {
                 new NifiFlowCacheSnapshot(addProcessorIdToFeedNameMap, addProcessorIdToFeedProcessGroupId, addProcessorIdToProcessorName, addStreamingFeeds, allFeeds);
             snapshot.setSnapshotDate(this.snapshotDate);
             snapshot.setFeedToProcessorIdToFlowTypeMap(getFeedToProcessorIdToFlowTypeMap());
+            snapshot.setConnectionIdToConnection(connectionIdToConnection);
+            if (connectionIdToConnection != null) {
+                Map<String, String> connectionIdNameMap = connectionIdToConnection.values().stream().collect(Collectors.toMap(conn -> conn.getConnectionIdentifier(), conn -> conn.getName()));
+                snapshot.setConnectionIdToConnectionName(connectionIdNameMap);
+            }
             return snapshot;
         }
 
@@ -246,6 +262,30 @@ public class NifiFlowCacheSnapshot {
         this.allFeeds = allFeeds;
     }
 
+    public Map<String, String> getConnectionIdToConnectionName() {
+        return connectionIdToConnectionName;
+    }
+
+    public void setConnectionIdToConnectionName(Map<String, String> connectionIdToConnectionName) {
+        this.connectionIdToConnectionName = connectionIdToConnectionName;
+    }
+
+    public Map<String, NiFiFlowCacheConnectionData> getConnectionIdToConnection() {
+        return connectionIdToConnection;
+    }
+
+    public void setConnectionIdToConnection(Map<String, NiFiFlowCacheConnectionData> connectionIdToConnection) {
+        this.connectionIdToConnection = connectionIdToConnection;
+    }
+
+
+    public boolean isUserDefinedFailureProcessors() {
+        return userDefinedFailureProcessors;
+    }
+
+    public void setUserDefinedFailureProcessors(boolean userDefinedFailureProcessors) {
+        this.userDefinedFailureProcessors = userDefinedFailureProcessors;
+    }
 
     //DEAL WITH REMOVAL of items... removal /change of streaming feeds!
     public void update(NifiFlowCacheSnapshot syncSnapshot) {
@@ -256,6 +296,10 @@ public class NifiFlowCacheSnapshot {
         allFeeds.addAll(syncSnapshot.getAllFeeds());
         snapshotDate = syncSnapshot.getSnapshotDate();
         feedToProcessorIdToFlowTypeMap.putAll(syncSnapshot.getFeedToProcessorIdToFlowTypeMap());
+        connectionIdToConnection = syncSnapshot.getConnectionIdToConnection();
+        connectionIdToConnectionName = syncSnapshot.getConnectionIdToConnectionName();
+        userDefinedFailureProcessors = syncSnapshot.isUserDefinedFailureProcessors();
     }
+
 
 }

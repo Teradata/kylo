@@ -47,6 +47,11 @@
         self.processorDatasourceDefinitions = [];
 
         /**
+         * Should we show the options to allow users to define processor types
+         */
+        self.allowUserDefinedFailureProcessors = false;
+
+        /**
          * The processors that have been marked as special flow types for this template
          * @type [{"flowId":"","relationship":"","flowType":""}...]
          */
@@ -171,6 +176,7 @@
                 if (response && response.data) {
 
                     var datasourceDefinitions = response.data.templateProcessorDatasourceDefinitions;
+                    self.allowUserDefinedFailureProcessors = response.data.userDefinedFailureProcessors;
 
                     self.leafProcessors = _.filter(response.data.processors, function (processor) {
                         return processor.leaf == true;

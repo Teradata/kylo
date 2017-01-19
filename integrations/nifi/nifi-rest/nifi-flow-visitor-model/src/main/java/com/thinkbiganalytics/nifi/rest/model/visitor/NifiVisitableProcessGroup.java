@@ -51,6 +51,7 @@ public class NifiVisitableProcessGroup implements NifiVisitable {
         outputPortProcessors = new HashMap<>();
         inputPortProcessors = new HashMap<>();
         processors = new HashSet<>();
+        connections = new HashSet<>();
         if (dto.getContents() != null) {
             this.connections = dto.getContents().getConnections();
         }
@@ -69,6 +70,8 @@ public class NifiVisitableProcessGroup implements NifiVisitable {
         this.inputPortProcessors = transform(group.getInputPortProcessors(), set -> set.stream().map(p -> processorMap.get(p.getId())).collect(Collectors.toSet()));
 
         this.outputPortProcessors = transform(group.getOutputPortProcessors(), set -> set.stream().map(p -> processorMap.get(p.getId())).collect(Collectors.toSet()));
+
+        this.connections = new HashSet<>(group.getConnections());
 
     }
 
@@ -279,5 +282,9 @@ public class NifiVisitableProcessGroup implements NifiVisitable {
 
     public Set<NifiVisitableProcessor> getProcessors() {
         return processors;
+    }
+
+    public Set<ConnectionDTO> getConnections() {
+        return connections;
     }
 }

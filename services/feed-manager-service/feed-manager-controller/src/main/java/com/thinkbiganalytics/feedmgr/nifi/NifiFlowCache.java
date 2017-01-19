@@ -14,17 +14,22 @@ import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
 import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailability;
 import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailabilityListener;
+import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheConnectionData;
 import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheSync;
 import com.thinkbiganalytics.metadata.rest.model.nifi.NifiFlowCacheSnapshot;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
+import com.thinkbiganalytics.nifi.rest.model.flow.NiFiFlowConnectionConverter;
+import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowConnection;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessor;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -54,6 +59,9 @@ import javax.inject.Inject;
 public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabilityListener {
 
     private static final Logger log = LoggerFactory.getLogger(NifiFlowCache.class);
+
+    @Value("${kylo.userDefinedFailureProcessors:false}")
+    private boolean userDefinedFailureProcessors;
 
     @Inject
     ModeShapeAvailability modeShapeAvailability;
@@ -99,6 +107,9 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
 
     private Map<String, String> processorIdToFeedNameMap = new ConcurrentHashMap<>();
     private Map<String, String> processorIdToProcessorName = new ConcurrentHashMap<>();
+
+
+    private Map<String, NiFiFlowCacheConnectionData> connectionIdToConnectionMap = new ConcurrentHashMap<>();
 
     /**
      * Set of the category.feed names for those that are just streaming feeds
@@ -253,7 +264,7 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
             Set<String> streamingFeedsCopy = ImmutableSet.copyOf(streamingFeeds);
             Set<String> allFeedsCopy = ImmutableSet.copyOf(allFeeds);
             Map<String, Map<String, Set<KyloProcessorFlowTypeRelationship>>> feedToProcessorIdToFlowTypeMapCopy = ImmutableMap.copyOf(feedToProcessorIdToFlowTypeMap);
-
+            Map<String, NiFiFlowCacheConnectionData> connectionDataMapCopy = ImmutableMap.copyOf(connectionIdToConnectionMap);
 
             //get feeds updated since last sync
             NifiFlowCacheSnapshot latest = new NifiFlowCacheSnapshot.Builder()
@@ -262,6 +273,7 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
                 .withProcessorIdToProcessorName(processorIdToProcessorNameCopy)
                 .withStreamingFeeds(streamingFeedsCopy)
                 .withFeeds(allFeedsCopy)
+                .withConnections(connectionDataMapCopy)
                 .withFeedToProcessorIdToFlowTypeMap(feedToProcessorIdToFlowTypeMapCopy)
                 .withSnapshotDate(lastUpdated).build();
             return syncAndReturnUpdates(sync, latest, preview);
@@ -279,6 +291,7 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
                 .withProcessorIdToFeedProcessGroupId(sync.getProcessorIdToProcessGroupIdUpdatedSinceLastSync(latest.getAddProcessorIdToFeedProcessGroupId()))
                 .withProcessorIdToProcessorName(sync.getProcessorIdToProcessorNameUpdatedSinceLastSync(latest.getAddProcessorIdToProcessorName()))
                 .withStreamingFeeds(latest.getAllStreamingFeeds())
+                .withConnections(sync.getConnectionIdToConnectionUpdatedSinceLastSync(latest.getConnectionIdToConnection()))
                 //.withStreamingFeeds(sync.getStreamingFeedsUpdatedSinceLastSync(latest.getAllStreamingFeeds()))
                 .withFeeds(sync.getFeedsUpdatedSinceLastSync(latest.getAllFeeds()))
                 .withFeedToProcessorIdToFlowTypeMap(latest.getFeedToProcessorIdToFlowTypeMap())
@@ -294,6 +307,7 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
             if (!preview) {
                 updatedSync.setLastSync(latest.getSnapshotDate());
             }
+            updated.setUserDefinedFailureProcessors(isUserDefinedFailureProcessors());
             return updatedSync;
 
         }
@@ -306,6 +320,7 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
         processorIdToFeedProcessGroupId.clear();
         processorIdToFeedProcessGroupId.clear();
         processorIdToProcessorName.clear();
+        connectionIdToConnectionMap.clear();
         feedToProcessorIdToFlowTypeMap.clear();
         streamingFeeds.clear();
         allFeeds.clear();
@@ -386,6 +401,11 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
                     nifiFlowProcessGroup.resetProcessorsFlowType(template.getProcessorFlowTypesMap());
                 }
                 updateFlow(nifiFlowProcessGroup.getFeedName(), template.isStream(), nifiFlowProcessGroup);
+            } else {
+                //this should be mapped in the cache
+                updateProcessorIdMaps(nifiFlowProcessGroup.getFeedName(), nifiFlowProcessGroup.getProcessorMap().values());
+                this.connectionIdToConnectionMap.putAll(toConnectionIdMap(nifiFlowProcessGroup.getConnectionIdMap().values()));
+
             }
         });
         loaded = true;
@@ -472,6 +492,20 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
         this.processorIdToProcessorName.putAll(processorIdToProcessorName);
     }
 
+    public void updateConnectionMap(String templateName, Collection<ConnectionDTO> connections) {
+        Map<String, NifiFlowConnection> connectionIdToConnectionMap = new HashMap<>();
+        if (connections != null) {
+            connections.stream().forEach(connectionDTO -> {
+                NifiFlowConnection nifiFlowConnection = NiFiFlowConnectionConverter.toNiFiFlowConnection(connectionDTO);
+                if (nifiFlowConnection != null) {
+                    connectionIdToConnectionMap.put(nifiFlowConnection.getConnectionIdentifier(), nifiFlowConnection);
+                }
+
+            });
+        }
+        this.connectionIdToConnectionMap.putAll(toConnectionIdMap(connectionIdToConnectionMap.values()));
+    }
+
 
 
     /**
@@ -479,15 +513,17 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
      **/
     public void updateFlow(FeedMetadata feed, NifiFlowProcessGroup feedProcessGroup) {
         // feedProcessGroup.calculateCriticalPathProcessors();
-        this.updateFlow(feed, feedProcessGroup.getId(), feedProcessGroup.getProcessorMap().values());
+        String feedName = feed.getCategoryAndFeedName();
+        this.updateFlow(feedName, feed.getRegisteredTemplate().isStream(), feedProcessGroup.getId(), feedProcessGroup.getProcessorMap().values(), feedProcessGroup.getConnectionIdMap().values());
     }
 
     public void updateFlow(String feedName, boolean isStream, NifiFlowProcessGroup feedProcessGroup) {
         //  feedProcessGroup.calculateCriticalPathProcessors();
-        this.updateFlow(feedName, isStream, feedProcessGroup.getId(), feedProcessGroup.getProcessorMap().values());
+        this.updateFlow(feedName, isStream, feedProcessGroup.getId(), feedProcessGroup.getProcessorMap().values(), feedProcessGroup.getConnectionIdMap().values());
     }
 
-    private void updateFlow(String feedName, boolean isStream, String feedProcessGroupId, Collection<NifiFlowProcessor> processors) {
+
+    private void updateFlow(String feedName, boolean isStream, String feedProcessGroupId, Collection<NifiFlowProcessor> processors, Collection<NifiFlowConnection> connections) {
         feedFlowIdProcessorMap.put(feedName, toFlowIdProcessorMap(processors));
         feedProcessorIdProcessorMap.put(feedName, toProcessorIdProcessorMap(processors));
 
@@ -503,6 +539,7 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
       */
         feedToProcessorIdToFlowTypeMap.put(feedName, processorFlowTypeMap);
 
+        updateProcessorIdMaps(feedProcessGroupId, processors);
         Map<String, String> processorIdToProcessGroupId = new HashMap<>();
         Map<String, String> processorIdToProcessorName = new HashMap<>();
         processors.stream().forEach(flowProcessor -> {
@@ -511,6 +548,8 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
         });
         this.processorIdToFeedProcessGroupId.putAll(processorIdToProcessGroupId);
         this.processorIdToProcessorName.putAll(processorIdToProcessorName);
+
+        connectionIdToConnectionMap.putAll(toConnectionIdMap(connections));
 
         processorIdMap.putAll(toProcessorIdMap(processors));
         processorIdToFeedNameMap.putAll(toProcessorIdFeedNameMap(processors, feedName));
@@ -524,10 +563,28 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
 
     }
 
-    private void updateFlow(FeedMetadata feed, String feedProcessGroupId, Collection<NifiFlowProcessor> processors) {
-        String feedName = feed.getCategoryAndFeedName();
-        this.updateFlow(feedName, feed.getRegisteredTemplate().isStream(), feedProcessGroupId, processors);
+    private void updateProcessorIdMaps(String processGroupId, Collection<NifiFlowProcessor> processors) {
+        Map<String, String> processorIdToProcessGroupId = new HashMap<>();
+        Map<String, String> processorIdToProcessorName = new HashMap<>();
+        processors.stream().forEach(flowProcessor -> {
+            processorIdToProcessGroupId.put(flowProcessor.getId(), processGroupId);
+            processorIdToProcessorName.put(flowProcessor.getId(), flowProcessor.getName());
+        });
+        this.processorIdToFeedProcessGroupId.putAll(processorIdToProcessGroupId);
+        this.processorIdToProcessorName.putAll(processorIdToProcessorName);
+
     }
+
+    private Map<String, NiFiFlowCacheConnectionData> toConnectionIdMap(Collection<NifiFlowConnection> connections) {
+        Map<String, NiFiFlowCacheConnectionData> connectionMap = new HashMap<>();
+        connections.stream().forEach(conn -> {
+            connectionMap
+                .put(conn.getConnectionIdentifier(), new NiFiFlowCacheConnectionData(conn.getConnectionIdentifier(), conn.getName(), conn.getSourceIdentifier(), conn.getDestinationIdentifier()));
+        });
+        return connectionMap;
+    }
+
+
 
 
     private Map<String, NifiFlowProcessor> toProcessorIdMap(Collection<NifiFlowProcessor> processors) {
@@ -629,5 +686,11 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
         }
     }
 
+    public boolean isUserDefinedFailureProcessors() {
+        return userDefinedFailureProcessors;
+    }
 
+    public void setUserDefinedFailureProcessors(boolean userDefinedFailureProcessors) {
+        this.userDefinedFailureProcessors = userDefinedFailureProcessors;
+    }
 }

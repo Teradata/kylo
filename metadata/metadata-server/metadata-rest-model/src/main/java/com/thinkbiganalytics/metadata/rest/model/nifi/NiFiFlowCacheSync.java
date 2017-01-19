@@ -71,6 +71,12 @@ public class NiFiFlowCacheSync {
             .getMillis()));
     }
 
+    public Map<String, NiFiFlowCacheConnectionData> getConnectionIdToConnectionUpdatedSinceLastSync(Map<String, NiFiFlowCacheConnectionData> connectionDataMap) {
+        MapDifference<String, NiFiFlowCacheConnectionData> diff = Maps.difference(snapshot.getConnectionIdToConnection(), connectionDataMap);
+        return diff.entriesOnlyOnRight();
+    }
+
+
 
     public Map<String, String> getProcessorIdToProcessorNameUpdatedSinceLastSync(Map<String, String> processorIdToProcessorName) {
         MapDifference<String, String> diff = Maps.difference(snapshot.getAddProcessorIdToProcessorName(), processorIdToProcessorName);

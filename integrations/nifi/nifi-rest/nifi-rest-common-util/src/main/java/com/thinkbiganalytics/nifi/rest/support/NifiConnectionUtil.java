@@ -6,10 +6,13 @@ import com.google.common.collect.Lists;
 
 import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.apache.nifi.web.api.dto.PortDTO;
+import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class NifiConnectionUtil {
 
@@ -142,4 +145,21 @@ public class NifiConnectionUtil {
             }
         }).orNull();
     }
+
+
+    public static Set<ConnectionDTO> getAllConnections(ProcessGroupDTO group) {
+        Set<ConnectionDTO> connections = new HashSet<>();
+        if (group != null) {
+            connections.addAll(group.getContents().getConnections());
+            if (group.getContents().getProcessGroups() != null) {
+                for (ProcessGroupDTO groupDTO : group.getContents().getProcessGroups()) {
+                    connections.addAll(getAllConnections(groupDTO));
+                }
+            }
+        }
+        return connections;
+    }
+
+
+
 }

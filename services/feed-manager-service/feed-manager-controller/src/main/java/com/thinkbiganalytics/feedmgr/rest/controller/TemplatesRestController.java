@@ -3,6 +3,7 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.thinkbiganalytics.feedmgr.nifi.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.NiFiTemplateFlowRequest;
@@ -42,6 +43,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -75,6 +77,9 @@ public class TemplatesRestController {
 
     @Autowired
     DatasourceService datasourceService;
+
+    @Inject
+    NifiFlowCache nifiFlowCache;
 
 
     public TemplatesRestController() {
@@ -239,7 +244,7 @@ public class TemplatesRestController {
 
             response.setProcessors(processors);
             response.setTemplateProcessorDatasourceDefinitions(templateProcessorDatasourceDefinitions);
-
+            response.setUserDefinedFailureProcessors(nifiFlowCache.isUserDefinedFailureProcessors());
         }
         return Response.ok(response).build();
 

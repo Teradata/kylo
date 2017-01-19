@@ -220,9 +220,6 @@ public class NifiProcessUtil {
     }
 
 
-
-
-
     public static List<ProcessorDTO> getInputProcessors(ProcessGroupDTO group) {
         List<ProcessorDTO> processors = new ArrayList<>();
         List<String> processorIds= NifiConnectionUtil.getInputProcessorIds(group.getContents().getConnections());

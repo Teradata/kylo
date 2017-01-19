@@ -53,6 +53,7 @@ public class NifiFlowBuilder {
     public NifiFlowProcessGroup build(NifiVisitableProcessGroup group) {
         NifiFlowProcessGroup flowProcessGroup = toFlowProcessGroup(group);
         flowProcessGroup.setProcessorMap(cache);
+        flowProcessGroup.addConnections(group.getConnections());
         //reassign the failure map
         if (group.getFailureConnectionIdToSourceProcessorIds() != null) {
             group.getFailureConnectionIdToSourceProcessorIds().entrySet().forEach(connectionIdProcessorIdEntry -> {
@@ -61,8 +62,6 @@ public class NifiFlowBuilder {
                     flowProcessGroup.getFailureConnectionIdToSourceProcessorMap().computeIfAbsent(connectionIdProcessorIdEntry.getKey(), (connectionId) -> new ArrayList<>()).addAll(
                         connectionIdProcessorIdEntry.getValue().stream().map(cache::get).collect(Collectors.toList()));
                 }
-
-
             });
         }
 

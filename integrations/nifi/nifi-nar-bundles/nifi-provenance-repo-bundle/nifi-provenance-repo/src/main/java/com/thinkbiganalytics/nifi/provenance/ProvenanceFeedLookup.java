@@ -2,6 +2,7 @@ package com.thinkbiganalytics.nifi.provenance;
 
 import com.thinkbiganalytics.common.constants.KyloProcessorFlowType;
 import com.thinkbiganalytics.common.constants.KyloProcessorFlowTypeRelationship;
+import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheConnectionData;
 import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheSync;
 import com.thinkbiganalytics.metadata.rest.model.nifi.NifiFlowCacheSnapshot;
 import com.thinkbiganalytics.nifi.provenance.model.ActiveFlowFile;
@@ -82,7 +83,43 @@ public class ProvenanceFeedLookup {
         return getFlowCache().getAddProcessorIdToProcessorName().get(processorId);
     }
 
+
     public KyloProcessorFlowType setProcessorFlowType(ProvenanceEventRecordDTO event) {
+        if (getFlowCache().isUserDefinedFailureProcessors()) {
+            return setUserDefinedProcessorFlowType(event);
+        } else {
+            return setConnectionNameProcessorFlowType(event);
+        }
+    }
+
+    public KyloProcessorFlowType setConnectionNameProcessorFlowType(ProvenanceEventRecordDTO event) {
+        if (event.getProcessorType() == null) {
+
+            if (event.isTerminatedByFailureRelationship()) {
+                event.setProcessorType(KyloProcessorFlowType.FAILURE);
+            }
+            NiFiFlowCacheConnectionData connectionData = getFlowCache().getConnectionIdToConnection().get(event.getSourceConnectionIdentifier());
+            if (connectionData != null && connectionData.getName() != null && connectionData.getName().toLowerCase().contains("failure")) {
+                event.setProcessorType(KyloProcessorFlowType.FAILURE);
+                // log.info("Setting the Processor Flow Type for the event using the Connection Name strategy {}, prev: {}, connection src: {}",event, event.getPreviousEvent() != null ? event.getPreviousEvent().getComponentId(): null,connectionData.getSourceIdentifier());
+                //get previous event and fail it too since we came from a failure and the connections source == the prev event
+                if (event.getPreviousEvent() != null && event.getPreviousEvent().getComponentId().equalsIgnoreCase(connectionData.getSourceIdentifier())) {
+                    // log.info("Failing the previous event {} ",event.getPreviousEvent());
+                    event.getPreviousEvent().setProcessorType(KyloProcessorFlowType.FAILURE);
+                    event.setIsFailure(true);
+                }
+            }
+            if (event.getProcessorType() == null) {
+                event.setProcessorType(KyloProcessorFlowType.NORMAL_FLOW);
+            }
+        }
+        return event.getProcessorType();
+
+    }
+
+
+    public KyloProcessorFlowType setUserDefinedProcessorFlowType(ProvenanceEventRecordDTO event) {
+        //  log.info("Setting the Processor Flow Type for the event using the User Defined strategy");
         if (event.getProcessorType() == null) {
 
             Map<String, KyloProcessorFlowType> flowTypes = getFlowCache().getProcessorFlowTypesAsMap(event.getFeedName(), event.getComponentId());
