@@ -226,6 +226,7 @@
                     });
 
                     _.each(self.leafProcessors, function (flowProcessor) {
+
                         //add in any unmapped leaf nodes as failures
                         if (mappedIds[flowProcessor.flowId] == undefined) {
                             self.templateFlowTypeProcessors.push({flowId: flowProcessor.flowId, relationship: 'failure', flowType: 'FAILURE', _id: _.uniqueId()});
@@ -508,16 +509,16 @@
         this.showFlowTypeOptionsHelpPanel = function (ev) {
             var position = $mdPanel.newPanelPosition()
                 .relativeTo('.flow-type-options-help-button')
-                .addPanelPosition($mdPanel.xPosition.ALIGN_START, $mdPanel.yPosition.BELOW);
+                .addPanelPosition($mdPanel.xPosition.ALIGN_END, $mdPanel.yPosition.BELOW);
 
             var config = {
                 attachTo: angular.element(document.body),
                 controller: FlowTypeOptionsHelpPanelMenuCtrl,
                 controllerAs: 'ctrl',
                 template: '<div class="register-template-flow-type-help" ' +
-                          '     aria-label="Processor flow types." ' +
+                          '     aria-label="Processor flow result." ' +
                           '     role="listbox" layout="column" layout-align="center center">' +
-                          '      <span class="md-subheader layout-padding-top-bottom ">Processor Flow Types</span> ' +
+                          '      <span class="md-subheader layout-padding-top-bottom ">Processor Flow Result Types</span> ' +
                           '  <div class="register-template-flow-type-help-item" ' +
                           '       tabindex="-1" ' +
                           '       role="option" ' +

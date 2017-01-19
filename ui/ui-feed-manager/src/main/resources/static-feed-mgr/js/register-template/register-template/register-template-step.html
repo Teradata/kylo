@@ -91,7 +91,7 @@
             <thinkbig-template-order model="vm.templateOrder" template-id="vm.model.id" template-name="vm.model.templateName" add-as-new="true" add-save-btn="false"></thinkbig-template-order>
 
             <div layout="row" layout-align="space-between start" layout-fill>
-                <div flex="50" layout="column">
+              <div flex="40" layout="column">
                 <md-subheader class="md-subhead left-aligned">Feed Lineage Datasources</md-subheader>
                 <span class="hint">Select datasources that should track feed lineage</span>
 
@@ -123,8 +123,8 @@
                 </div>
 
                 </div>
-
-                <div flex="50" layout="column">
+              <div flex="5"></div>
+              <div flex="55" layout="column">
                     <md-subheader class="md-subhead left-aligned">Define Processor Flow Types</md-subheader>
 
                   <span class="hint">Indicate how a processor will affect the operations manager job status.</span>
@@ -137,19 +137,20 @@
                     <div layout="row" layout-align="space-between top" ng-if="!vm.loadingFlowData" class="layout-padding-top-bottom">
                         <div layout="column" layout-fill>
                             <div layout="row" layout-align="space-between center">
-                              <div flex="30" class=" hint">
+                              <div flex="55" class=" hint">
                                     Processor
                                 </div>
-                              <div flex="30" class=" hint">
+                              <div flex="20" class=" hint">
                                 Relationship
                               </div>
-                              <div flex="30" class=" hint" layout="row" layout-align="start center">
-                                    <span>Flow Type</span>
-                                    <md-button aria-label="Flow Type Help" class="md-icon-button flow-type-options-help-button" ng-click="vm.showFlowTypeOptionsHelpPanel($event)">
+                              <div flex="20" class=" hint" layout="row" layout-align="start center">
+                                <span>Result</span>
+                                <md-button aria-label="Processor Flow Result Help" class="md-icon-button flow-type-options-help-button" ng-click="vm.showFlowTypeOptionsHelpPanel($event)">
                                         <ng-md-icon md-icon icon="help" size="15" style="fill:grey;"></ng-md-icon>
                                     </md-button>
                                 </div>
-                                <div flex="10" class=" hint">
+
+                              <div flex="5" class=" hint">
 
                                 </div>
                             </div>
@@ -157,7 +158,7 @@
                           <div ng-repeat="flowTypeProcessorRelationship in vm.templateFlowTypeProcessors" layout="column">
 
                                 <div layout="row" layout-align="space-between start">
-                                  <div flex="30">
+                                  <div flex="50">
                                         <md-input-container class="md-block condensed">
                                           <md-select name="processorFlowType_{{flowTypeProcessorRelationship._id}}" ng-model="flowTypeProcessorRelationship.flowId"
                                                      required ng-change="vm.changeProcessorFlowType(flowTypeProcessorRelationship)">
@@ -168,7 +169,7 @@
                                             </div>
                                         </md-input-container>
                                     </div>
-                                  <div flex="30">
+                                  <div flex="20">
                                         <md-input-container class="md-block condensed">
                                           <md-select name="flowType_{{flowTypeProcessorRelationship._id}}" ng-model="flowTypeProcessorRelationship.relationship"
                                                      required>
@@ -179,7 +180,7 @@
                                           </div>
                                         </md-input-container>
                                   </div>
-                                  <div flex="30">
+                                  <div flex="20">
                                     <md-input-container class="md-block condensed">
                                       <md-select name="flowType_{{flowTypeProcessorRelationship._id}}" ng-model="flowTypeProcessorRelationship.flowType"
                                                        required>
@@ -190,8 +191,9 @@
                                             </div>
                                         </md-input-container>
                                     </div>
-                                    <div flex="10">
-                                      <md-button aria-label="Remove" class="md-icon-button" ng-click="vm.removeProcessorFlowType(flowTypeProcessorRelationship)">
+
+                                  <div flex="5">
+                                    <md-button aria-label="Remove" class="md-icon-button" style="padding:0px;width:inherit;" ng-click="vm.removeProcessorFlowType(flowTypeProcessorRelationship)">
                                             <ng-md-icon md-icon icon="delete" size="20" style="fill:grey;"></ng-md-icon>
                                         </md-button>
                                     </div>
