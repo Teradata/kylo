@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.nifi.provenance.cache;
 
 import com.google.common.collect.Sets;
+import com.thinkbiganalytics.common.constants.KyloProcessorFlowType;
 import com.thinkbiganalytics.nifi.provenance.ProvenanceFeedLookup;
 import com.thinkbiganalytics.nifi.provenance.RootFlowFileNotFoundException;
 import com.thinkbiganalytics.nifi.provenance.model.ActiveFlowFile;
@@ -147,16 +148,25 @@ public class CacheUtil {
                 flowFile, event);
         }
 
+        KyloProcessorFlowType processorFlowType = KyloProcessorFlowType.NORMAL_FLOW;
         if (ProvenanceEventUtil.isCompletionEvent(event)) {
             log.debug("Add Event {}, {}, previous event: {} ", event.getEventId(), event.getComponentName(), flowFile.getPreviousEvent());
             flowFile.addCompletionEvent(event);
-            provenanceFeedLookup.setProcessorFlowType(event);
+            processorFlowType = provenanceFeedLookup.setProcessorFlowType(event);
             flowFile.checkAndMarkIfFlowFileIsComplete(event);
 
             log.debug("added event to flow file Event {}, {}, {} with Start {}, Prev: {} and End {} ", event.getComponentName(), event.getComponentId(), event.getEventType(), event.getStartTime(),
                       event.getPreviousEvent() != null ? event.getPreviousEvent().getEventTime() : "NULL PREVIOUS ", event.getEventTime());
         } else {
-            provenanceFeedLookup.setProcessorFlowType(event);
+            processorFlowType = provenanceFeedLookup.setProcessorFlowType(event);
+        }
+        if (KyloProcessorFlowType.FAILURE.equals(processorFlowType)) {
+            if (event.getFlowFile() != null) {
+                event.getFlowFile().addFailedEvent(event);
+                if (event.getFlowFile().getRootFlowFile() != null) {
+                    event.getFlowFile().getRootFlowFile().addFailedEvent(event);
+                }
+            }
         }
 
         eventCounter.incrementAndGet();
