@@ -607,6 +607,20 @@
                 </source>
               </sources>
             </mapping>
+            <mapping>
+              <directory>${rpm.install.dir}</directory>
+              <filemode>644</filemode>
+              <username>${rpm.user}</username>
+              <groupname>${rpm.user}</groupname>
+              <sources>
+                <source>
+                  <location>..</location>
+                  <includes>
+                    <include>LICENSE</include>
+                  </includes>
+                </source>
+              </sources>
+            </mapping>
           </mappings>
           <preinstallScriptlet>
             <scriptFile>${rpm.scripts.path}/pre-install.sh</scriptFile>
