@@ -16,17 +16,12 @@
         <module>example-auth-custom</module>
     </modules>
 
-    <properties>
-        <kylo.version>0.6.0-SNAPSHOT</kylo.version>
-        <spring.version>4.2.5.RELEASE</spring.version>
-    </properties>
-
     <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>com.thinkbiganalytics.datalake</groupId>
                 <artifactId>thinkbig-security-auth</artifactId>
-                <version>${kylo.version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
