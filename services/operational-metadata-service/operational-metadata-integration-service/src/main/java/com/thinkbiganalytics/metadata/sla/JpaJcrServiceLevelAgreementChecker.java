@@ -2,6 +2,7 @@ package com.thinkbiganalytics.metadata.sla;
 
 
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 import com.thinkbiganalytics.metadata.sla.spi.core.DefaultServiceLevelAgreementChecker;
@@ -33,19 +34,13 @@ public class JpaJcrServiceLevelAgreementChecker extends DefaultServiceLevelAgree
         try {
             shouldAlert = jcrMetadataAccess.read(() -> {
             // Get the last assessment that was created for this SLA (if any).
-            ServiceLevelAssessment previous = null;
-            ServiceLevelAssessment.ID previousId = this.alertedAssessments.get(agreement.getId());
-            if (previousId != null) {
-                previous = this.assessmentProvider.findServiceLevelAssessment(previousId);
-            } else {
-                previous = this.assessmentProvider.findLatestAssessmentNotEqualTo(agreement.getId(), assessment.getId());
-            }
+            ServiceLevelAssessment previous = this.assessmentProvider.findLatestAssessmentNotEqualTo(agreement.getId(), assessment.getId());
 
             if (previous != null) {
                 assessmentProvider.ensureServiceLevelAgreementOnAssessment(previous);
                 LOG.debug("found previous assessment {} ", previous.getClass());
 
-                return assessment.compareTo(previous) != 0;
+                return (!assessment.getResult().equals(AssessmentResult.SUCCESS) && assessment.compareTo(previous) != 0);
             } else {
                 return true;
             }
