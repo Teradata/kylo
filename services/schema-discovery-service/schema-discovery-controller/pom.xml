@@ -10,7 +10,7 @@
   <artifactId>thinkbig-schema-discovery-controller</artifactId>
   <parent>
     <groupId>com.thinkbiganalytics.datalake</groupId>
-    <artifactId>schema-discovery-service</artifactId>
+    <artifactId>thinkbig-schema-discovery-service</artifactId>
     <version>0.7.0-SNAPSHOT</version>
   </parent>
 
