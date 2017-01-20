@@ -120,7 +120,7 @@ public class FeedFailureService {
         }
 
         public boolean isAfter(DateTime time) {
-            return dateTime != null && dateTime.isBefore(time);
+            return dateTime != null && dateTime.isAfter(time);
         }
     }
 
