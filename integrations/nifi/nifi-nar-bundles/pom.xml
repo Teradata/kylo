@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.thinkbiganalytics.datalake</groupId>
         <artifactId>thinkbig-nifi</artifactId>
-        <version>0.6.0-SNAPSHOT</version>
+        <version>0.6.0</version>
     </parent>
     <packaging>pom</packaging>
 

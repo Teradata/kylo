@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.thinkbiganalytics.metadata</groupId>
         <artifactId>thinkbig-metadata</artifactId>
-        <version>0.6.0-SNAPSHOT</version>
+        <version>0.6.0</version>
     </parent>
     <dependencies>
         <dependency>
