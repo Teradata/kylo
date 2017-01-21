@@ -3,7 +3,7 @@ package com.thinkbiganalytics.nifi.rest.client;
 import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 
 /**
- * Created by sr186054 on 6/15/16.
+ * Thrown to indicate that the requested NiFi component does not exist.
  */
 public class NifiComponentNotFoundException extends NifiClientRuntimeException {
 
@@ -31,10 +31,11 @@ public class NifiComponentNotFoundException extends NifiClientRuntimeException {
 
     }
 
-
+    /**
+     * Gets the id of the component that was requested.
+     * @return the component id
+     */
     public String getComponentId() {
         return componentId;
     }
-
-
 }

@@ -1,7 +1,7 @@
 package com.thinkbiganalytics.nifi.rest.client;
 
 /**
- * Created by sr186054 on 6/20/16.
+ * Thrown to indicate an exception when communicating with the NiFi REST API.
  */
 public class NifiClientRuntimeException extends RuntimeException {
 
@@ -23,12 +23,5 @@ public class NifiClientRuntimeException extends RuntimeException {
 
     public NifiClientRuntimeException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
-    }
-
-    public boolean is409Error() {
-        if (this.getCause() != null && this.getCause().getMessage().contains("409")) {
-            return true;
-        }
-        return false;
     }
 }

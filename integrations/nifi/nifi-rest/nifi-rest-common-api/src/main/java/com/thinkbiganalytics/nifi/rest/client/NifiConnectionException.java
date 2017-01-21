@@ -1,7 +1,7 @@
 package com.thinkbiganalytics.nifi.rest.client;
 
 /**
- * Created by sr186054 on 6/18/16.
+ * Thrown to indicate that the connection to NiFi failed.
  */
 public class NifiConnectionException extends NifiClientRuntimeException {
 
