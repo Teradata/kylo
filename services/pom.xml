@@ -8,7 +8,7 @@
     </parent>
     <artifactId>thinkbig-services</artifactId>
     <packaging>pom</packaging>
-    
+
     <modules>
         <module>service-app-api</module>
         <module>field-policy-service</module>
@@ -25,5 +25,6 @@
         <module>audit-logging-service</module>
         <module>service-app</module>
         <module>alerts-service</module>
+        <module>metadata-service</module>
     </modules>
 </project>

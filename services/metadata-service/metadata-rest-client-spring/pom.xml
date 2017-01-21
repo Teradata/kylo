@@ -5,10 +5,10 @@
     <artifactId>thinkbig-metadata-rest-client-spring</artifactId>
     <parent>
         <groupId>com.thinkbiganalytics.metadata</groupId>
-        <artifactId>thinkbig-metadata-server</artifactId>
+        <artifactId>thinkbig-metadata-service</artifactId>
         <version>0.7.0-SNAPSHOT</version>
     </parent>
-    
+
     <dependencies>
         <dependency>
             <groupId>org.springframework</groupId>
@@ -18,12 +18,6 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
         </dependency>
-        <!-- 
-        <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jsr310</artifactId>
-        </dependency>
-         -->
         <dependency>
             <groupId>com.thinkbiganalytics.metadata</groupId>
             <artifactId>thinkbig-metadata-rest-model</artifactId>

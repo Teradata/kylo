@@ -2,21 +2,21 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>com.thinkbiganalytics.metadata</groupId>
-        <artifactId>thinkbig-metadata</artifactId>
+        <groupId>com.thinkbiganalytics.datalake</groupId>
+        <artifactId>thinkbig-services</artifactId>
         <version>0.7.0-SNAPSHOT</version>
     </parent>
-    <artifactId>thinkbig-metadata-server</artifactId>
+    <artifactId>thinkbig-metadata-service</artifactId>
+    <groupId>com.thinkbiganalytics.metadata</groupId>
     <packaging>pom</packaging>
     <properties>
         <projectprojectreactor.version>2.0.7.RELEASE</projectprojectreactor.version>
         <netty.version>4.0.31.Final</netty.version>
     </properties>
     <modules>
-        <module>metadata-rest-service</module>
+        <module>metadata-rest-controller</module>
         <module>metadata-rest-model</module>
         <module>metadata-jms</module>
         <module>metadata-rest-client-spring</module>
-        <module>metadata-server-app</module>
     </modules>
 </project>

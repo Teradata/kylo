@@ -68,7 +68,7 @@
          </dependency>
 
         <!-- end service monitoring -->
-        
+
         <!-- Alerts -->
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
@@ -85,7 +85,7 @@
             <artifactId>thinkbig-alerts-default</artifactId>
             <version>${project.version}</version>
         </dependency>
-        
+
 
       <dependency>
         <groupId>com.thinkbiganalytics.datalake</groupId>
@@ -229,7 +229,7 @@
         <!-- metadata server -->
         <dependency>
             <groupId>com.thinkbiganalytics.metadata</groupId>
-            <artifactId>thinkbig-metadata-rest-service</artifactId>
+            <artifactId>thinkbig-metadata-rest-controller</artifactId>
             <version>${project.version}</version>
             <exclusions>
                 <exclusion>

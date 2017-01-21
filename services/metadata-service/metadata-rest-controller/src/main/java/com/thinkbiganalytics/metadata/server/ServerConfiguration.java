@@ -1,15 +1,4 @@
-/**
- *
- */
 package com.thinkbiganalytics.metadata.server;
-
-import java.security.Principal;
-
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Profile;
 
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.MetadataAction;
@@ -37,15 +26,18 @@ import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessor;
 import com.thinkbiganalytics.metadata.sla.spi.core.InMemorySLAProvider;
 import com.thinkbiganalytics.metadata.sla.spi.core.SimpleServiceLevelAssessor;
 
-/**
- * @author Sean Felten
- */
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Profile;
+
+import java.security.Principal;
+
 @Configuration
 @EnableAutoConfiguration
-//@Import({ RestConfiguration.class, ReactorContiguration.class, MetadataJmsConfig.class, JpaConfiguration.class })
 @Import({ReactorContiguration.class, MetadataJmsConfig.class, ModeShapeEngineConfig.class})
 public class ServerConfiguration {
-
 
     @Bean
     @Profile("metadata.memory-only")
@@ -58,12 +50,6 @@ public class ServerConfiguration {
     public DatasourceProvider datasetProvider() {
         return new InMemoryDatasourceProvider();
     }
-
-//    @Bean
-//    @Profile("metadata.memory-only")
-//    public DataOperationsProvider dataOperationsProvider() {
-//        return new InMemoryDataOperationsProvider();
-//    }
 
     @Bean
     @Profile("metadata.memory-only")
@@ -141,12 +127,11 @@ public class ServerConfiguration {
         return assr;
     }
 
-
-        @Bean
-        public ServerConfigurationInitialization serverConfigurationInitialization()
-        {
-            return new ServerConfigurationInitialization();
-        }
+    @Bean
+    public ServerConfigurationInitialization serverConfigurationInitialization()
+    {
+        return new ServerConfigurationInitialization();
+    }
 
     @Bean
     public MetricAssessor<?, ?> feedExecutedSinceFeedMetricAssessor() {

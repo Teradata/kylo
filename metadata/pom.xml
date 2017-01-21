@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
+
     <groupId>com.thinkbiganalytics.metadata</groupId>
     <artifactId>thinkbig-metadata</artifactId>
     <parent>
@@ -11,18 +11,16 @@
         <version>0.7.0-SNAPSHOT</version>
     </parent>
     <packaging>pom</packaging>
-    
+
     <modules>
         <module>metadata-orientdb</module>
         <module>metadata-api</module>
         <module>metadata-core</module>
-        <module>metadata-server</module>
-        <!-- <module>metadata-jpa</module> -->
         <module>metadata-modeshape</module>
         <module>metadata-db-modeshape-migration</module>
         <module>metadata-persistence</module>
     </modules>
-    
+
     <dependencies>
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -32,7 +30,7 @@
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
         </dependency>
-        
+
         <!-- Testing -->
         <dependency>
             <groupId>org.assertj</groupId>
