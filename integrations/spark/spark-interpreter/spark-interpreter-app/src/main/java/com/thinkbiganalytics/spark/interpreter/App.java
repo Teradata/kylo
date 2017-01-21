@@ -22,6 +22,7 @@ public class App {
     public SparkConf sparkConf() {
         return new SparkConf();
     }
+
     /**
      * Evaluates a Scala file.
      *
@@ -42,5 +43,4 @@ public class App {
         SparkScriptEngine engine = ctx.getBean(SparkScriptEngine.class);
         engine.eval(script);
     }
-
 }
