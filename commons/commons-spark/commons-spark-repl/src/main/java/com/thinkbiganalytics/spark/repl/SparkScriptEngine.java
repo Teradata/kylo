@@ -40,43 +40,18 @@ public class SparkScriptEngine extends ScriptEngine {
     @Autowired
     private SparkInterpreterBuilder builder;
 
-    public SparkScriptEngine() {
-        //required for Spring
-    }
-    /**
-     * Constructs a {@code SparkScriptEngine} with the specified Spark configuration.
-     *
-     * @param sparkConf the Spark configuration
-     */
-    SparkScriptEngine(@Nonnull final SparkConf sparkConf) {
-        this.conf = sparkConf;
-    }
-
-    public void setSparkInterpreterBuilder(SparkInterpreterBuilder builder) {
-        this.builder = builder;
-    }
-
-    public void setSparkConf(SparkConf sparkConf) {
-        this.conf = sparkConf;
-    }
-
-    @Override
-    public void init() {
-        getInterpreter();
-    }
-
     @Nonnull
     @Override
     protected SparkContext createSparkContext() {
         // Let Spark know where to find class files
-        IMain interpreter = getInterpreter();
+        getInterpreter();
 
         // The SparkContext ClassLoader is needed during initialization (only for YARN master)
         Thread currentThread = Thread.currentThread();
         ClassLoader contextClassLoader = currentThread.getContextClassLoader();
         currentThread.setContextClassLoader(SparkContext.class.getClassLoader());
 
-        log.info("Creating spark context with spark conf " + conf);
+        log.info("Creating spark context with spark conf {}", conf);
 
         SparkContext sparkContext = new SparkContext(this.conf);
         currentThread.setContextClassLoader(contextClassLoader);

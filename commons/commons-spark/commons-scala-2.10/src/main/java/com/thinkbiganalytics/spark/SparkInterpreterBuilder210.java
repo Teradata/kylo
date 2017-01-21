@@ -7,7 +7,7 @@ import scala.tools.nsc.interpreter.IMain;
 import java.io.PrintWriter;
 
 /**
- * Created by ru186002 on 17/10/2016.
+ * Builds a Spark interpreter using Scala 2.10.
  */
 @Component
 public class SparkInterpreterBuilder210 implements SparkInterpreterBuilder {

@@ -7,14 +7,35 @@ import scala.tools.nsc.interpreter.IMain;
 import java.io.PrintWriter;
 
 /**
- * Created by ru186002 on 17/10/2016.
+ * Builds a Spark interpreter.
  */
 @Component
 public interface SparkInterpreterBuilder {
 
+    /**
+     * Sets the settings for the Spark interpreter.
+     * @param param the settings
+     * @return this builder
+     */
     SparkInterpreterBuilder withSettings(Settings param);
-    SparkInterpreterBuilder withPrintWriter(PrintWriter param);
-    SparkInterpreterBuilder withClassLoader(ClassLoader param);
-    IMain newInstance();
 
+    /**
+     * Sets the print writer for the Spark interpreter.
+     * @param param the print writer
+     * @return this builder
+     */
+    SparkInterpreterBuilder withPrintWriter(PrintWriter param);
+
+    /**
+     * Sets the class loader for the Spark interpreter.
+     * @param param the class loader
+     * @return this builder
+     */
+    SparkInterpreterBuilder withClassLoader(ClassLoader param);
+
+    /**
+     * Builds a new Spark interpreter.
+     * @return a Spark interpreter
+     */
+    IMain newInstance();
 }

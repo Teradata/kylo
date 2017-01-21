@@ -8,10 +8,11 @@ import org.apache.spark.sql.types.StructType;
 import org.springframework.stereotype.Service;
 
 /**
- * Created by ru186002 on 18/10/2016.
+ * Creates structured data sets for Spark 2.0.
  */
 @Service
 public class SparkContextService20 implements SparkContextService {
+
     @Override
     public DataSet toDataSet(Object adaptee) {
         return new DataSet20(adaptee);

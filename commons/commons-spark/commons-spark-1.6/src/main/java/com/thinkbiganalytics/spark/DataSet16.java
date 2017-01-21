@@ -1,6 +1,5 @@
 package com.thinkbiganalytics.spark;
 
-
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.sql.DataFrame;
 import org.apache.spark.sql.Row;
@@ -10,7 +9,7 @@ import org.apache.spark.sql.types.StructType;
 import java.util.List;
 
 /**
- * Created by ru186002 on 17/10/2016.
+ * Manages a collection of objects for Spark 1.6.
  */
 public class DataSet16 implements DataSet {
 
@@ -45,11 +44,6 @@ public class DataSet16 implements DataSet {
     }
 
     @Override
-    public void show(int count) {
-        dataframe.show(count);
-    }
-
-    @Override
     public long count() {
         return dataframe.count();
     }
@@ -73,6 +67,4 @@ public class DataSet16 implements DataSet {
     public List<Row> collectAsList() {
         return dataframe.collectAsList();
     }
-
-
 }

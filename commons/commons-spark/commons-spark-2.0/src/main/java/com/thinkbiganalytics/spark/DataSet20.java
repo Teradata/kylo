@@ -10,7 +10,7 @@ import org.apache.spark.sql.types.StructType;
 import java.util.List;
 
 /**
- * Created by ru186002 on 17/10/2016.
+ * Manages a collection of objects for Spark 2.0.
  */
 public class DataSet20 implements DataSet {
 
@@ -42,11 +42,6 @@ public class DataSet20 implements DataSet {
     @Override
     public DataSet toDF() {
         return new DataSet20(dataset.toDF());
-    }
-
-    @Override
-    public void show(int count) {
-        dataset.show(count);
     }
 
     @Override

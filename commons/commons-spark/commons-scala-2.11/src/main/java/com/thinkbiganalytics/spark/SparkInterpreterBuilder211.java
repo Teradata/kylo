@@ -1,15 +1,16 @@
 package com.thinkbiganalytics.spark;
 
-import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
+
+import java.io.PrintWriter;
+
+import javax.script.ScriptEngineFactory;
+
 import scala.tools.nsc.Settings;
 import scala.tools.nsc.interpreter.IMain;
 
-import javax.script.ScriptEngineFactory;
-import java.io.PrintWriter;
-
 /**
- * Created by ru186002 on 17/10/2016.
+ * Builds a Spark interpreter using Scala 2.11.
  */
 @Component
 public class SparkInterpreterBuilder211 implements SparkInterpreterBuilder {

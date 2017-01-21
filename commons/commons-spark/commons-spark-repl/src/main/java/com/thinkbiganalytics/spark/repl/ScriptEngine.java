@@ -156,13 +156,6 @@ public abstract class ScriptEngine {
     }
 
     /**
-     * Initializes this engine to provide quicker compiles.
-     */
-    public void init() {
-        getSQLContext();
-    }
-
-    /**
      * Creates the {@code SparkContext} that will be available to scripts as {@code sc}.
      *
      * @return the Spark context
