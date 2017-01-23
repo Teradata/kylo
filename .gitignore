@@ -6,8 +6,8 @@
 target
 bin
 .DS_Store
-.idea
 *.iml
+*.bak
 .Rproj.user
 .metadata/
 .vagrant
