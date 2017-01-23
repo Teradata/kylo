@@ -36,7 +36,7 @@ import javax.ws.rs.core.MediaType;
 
 import io.swagger.annotations.Api;
 
-@Api(value = "feeds", produces = "application/json")
+@Api(tags = "Operations Manager: Jobs", produces = "application/json")
 @Path("/v1/feeds")
 public class FeedsRestController {
 

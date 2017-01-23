@@ -26,10 +26,7 @@ import javax.ws.rs.core.Response;
 
 import io.swagger.annotations.Api;
 
-/**
- * Created by sr186054 on 8/23/16.
- */
-@Api(value = "provenance-stats", produces = "application/json")
+@Api(tags = "Feed Manager: Feeds", produces = "application/json")
 @Path("/v1/provenance-stats")
 public class NifiFeedProcessorStatisticsRestController {
 

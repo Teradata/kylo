@@ -1,7 +1,3 @@
-/*
- * Copyright (c) 2015.
- */
-
 package com.thinkbiganalytics.scheduler.rest.controller;
 
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
@@ -33,7 +29,7 @@ import io.swagger.annotations.Api;
 /**
  * Rest Controller for Quartz Scheduler
  */
-@Api(value = "scheduler",  produces = "application/json")
+@Api(tags = "Operations Manager: Scheduler",  produces = "application/json")
 @Path("/v1/scheduler")
 public class SchedulerRestController {
 

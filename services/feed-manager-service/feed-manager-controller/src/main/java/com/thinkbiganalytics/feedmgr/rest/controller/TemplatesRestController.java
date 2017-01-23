@@ -57,10 +57,7 @@ import javax.ws.rs.core.Response;
 
 import io.swagger.annotations.Api;
 
-/**
- * Created by sr186054 on 1/12/16.
- */
-@Api(value = "feed-manager-templates", produces = "application/json")
+@Api(tags = "Feed Manager: Templates", produces = "application/json")
 @Path("/v1/feedmgr/templates")
 public class TemplatesRestController {
 
@@ -449,7 +446,7 @@ public class TemplatesRestController {
     public Response registerTemplate(RegisteredTemplate registeredTemplate) {
 
         RegisteredTemplate saved = getMetadataService().registerTemplate(registeredTemplate);
-        
+
         if (saved.isReusableTemplate()) {
             //attempt to auto create the Feed using this template
             FeedMetadata metadata = metadataService.getFeedByName(Constants.REUSABLE_TEMPLATES_CATEGORY_NAME, saved.getTemplateName());

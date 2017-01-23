@@ -1,6 +1,5 @@
 package com.thinkbiganalytics.feedmgr.rest.controller;
 
-
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.annotations.AnnotatedFieldProperty;
 
@@ -21,7 +20,7 @@ import io.swagger.annotations.Api;
  * Returns a list of all properties that can be assigned durning Feed Registation process
  * this is the list of @MetadataField annotations on the FeedMetadata object
  */
-@Api(value = "feed-manager-feed-properties", produces = "application/json")
+@Api(tags = "Feed Manager: Feeds", produces = "application/json")
 @Path("/v1/feedmgr/metadata-properties")
 @Component
 public class FeedMetadataPropertiesRestController {

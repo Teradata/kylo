@@ -1,7 +1,3 @@
-/*
- * Copyright (c) 2015.
- */
-
 package com.thinkbiganalytics.servicemonitor.rest.controller;
 
 import com.thinkbiganalytics.servicemonitor.ServiceMonitorRepository;
@@ -18,7 +14,7 @@ import javax.ws.rs.core.Response;
 
 import io.swagger.annotations.Api;
 
-@Api(value = "service-monitoring", produces = "application/json")
+@Api(tags = "Operations Manager: Services", produces = "application/json")
 @Path("/v1/service-monitor")
 public class ServiceMonitorRestController {
 

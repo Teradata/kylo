@@ -1,9 +1,12 @@
 package com.thinkbiganalytics.jobrepo.rest.controller;
 
-import com.google.common.collect.Lists;
 import com.thinkbiganalytics.DateTimeUtil;
-import com.thinkbiganalytics.jobrepo.query.model.*;
-import com.thinkbiganalytics.jobrepo.query.model.transform.FeedModelTransform;
+import com.thinkbiganalytics.jobrepo.query.model.ExecutedJob;
+import com.thinkbiganalytics.jobrepo.query.model.ExecutedStep;
+import com.thinkbiganalytics.jobrepo.query.model.FeedHealth;
+import com.thinkbiganalytics.jobrepo.query.model.JobStatusCount;
+import com.thinkbiganalytics.jobrepo.query.model.RelatedJobExecution;
+import com.thinkbiganalytics.jobrepo.query.model.SearchResult;
 import com.thinkbiganalytics.jobrepo.query.model.transform.JobModelTransform;
 import com.thinkbiganalytics.jobrepo.query.model.transform.JobStatusTransform;
 import com.thinkbiganalytics.jobrepo.query.model.transform.ModelUtils;
@@ -49,7 +52,7 @@ import io.swagger.annotations.Api;
 /**
  * Provides rest endpoints for control and monitoring of the pipeline
  */
-@Api(value = "jobs", produces = "application/json")
+@Api(tags = "Operations Manager: Feeds", produces = "application/json")
 @Path("/v1/jobs")
 public class JobsRestController {
 

@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.thinkbiganalytics.audit.rest.controller;
 
 import java.util.List;
@@ -26,18 +23,14 @@ import com.thinkbiganalytics.metadata.api.audit.AuditLogProvider;
 
 import io.swagger.annotations.Api;
 
-/**
- *
- * @author Sean Felten
- */
 @Component
-@Api(value = "audit-log", produces = "application/json")
+@Api(tags = "Internal: Audit Log", produces = "application/json")
 @Path("/v1/auditlog")
 public class AuditLogController {
-    
+
     @Inject
     private MetadataAccess metadataAccess;
-    
+
     @Inject
     private AuditLogProvider auditProvider;
 
@@ -50,7 +43,7 @@ public class AuditLogController {
                             .collect(Collectors.toList());
         });
     }
-    
+
     @GET
     @Path("/{id}")
     @Produces({MediaType.APPLICATION_JSON})
@@ -62,9 +55,9 @@ public class AuditLogController {
                             .orElseThrow(() -> new WebApplicationException("No audit log entery exists with ID: " + idStr, Status.NOT_FOUND));
         });
     }
-    
-    
-    private static final Function<com.thinkbiganalytics.metadata.api.audit.AuditLogEntry, AuditLogEntry> transformer 
+
+
+    private static final Function<com.thinkbiganalytics.metadata.api.audit.AuditLogEntry, AuditLogEntry> transformer
         = (domain) -> {
             AuditLogEntry entry = new AuditLogEntry();
             entry.setCreatedTime(domain.getCreatedTime());

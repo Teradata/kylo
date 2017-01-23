@@ -1,6 +1,5 @@
 package com.thinkbiganalytics.policy.rest.controller;
 
-
 import com.thinkbiganalytics.policy.FieldPolicyCache;
 import com.thinkbiganalytics.policy.rest.model.FieldStandardizationRule;
 import com.thinkbiganalytics.policy.rest.model.FieldValidationRule;
@@ -19,7 +18,7 @@ import io.swagger.annotations.Api;
  * Returns a list of all properties that can be assigned durning Feed Registation process
  * this is the list of @MetadataField annotations on the FeedMetadata object
  */
-@Api(value = "field-policies", produces = "application/json")
+@Api(tags = "Feed Manager: Feeds", produces = "application/json")
 @Path("/v1/field-policies")
 public class FieldPolicyRestController {
 

@@ -34,7 +34,7 @@ import io.swagger.annotations.ApiResponses;
 /**
  * REST API for administrative functions.
  */
-@Api(value = "admin", produces = "application/json")
+@Api(tags = "Feed Manager: Administration", produces = "application/json")
 @Path("/v1/feedmgr/admin")
 public class AdminController {
 

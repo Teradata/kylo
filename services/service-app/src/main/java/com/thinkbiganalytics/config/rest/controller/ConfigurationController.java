@@ -23,7 +23,7 @@ import javax.ws.rs.core.Response;
 
 import io.swagger.annotations.Api;
 
-@Api(value = "configuration")
+@Api(tags = "Configuration")
 @Path("/v1/configuration")
 public class ConfigurationController {
 

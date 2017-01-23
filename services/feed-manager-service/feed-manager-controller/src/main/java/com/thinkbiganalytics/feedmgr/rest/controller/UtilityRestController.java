@@ -36,7 +36,7 @@ import javax.ws.rs.core.Response;
 
 import io.swagger.annotations.Api;
 
-@Api(value = "feed-manager-util", produces = "application/json")
+@Api(tags = "Feed Manager: Utilities", produces = "application/json")
 @Path("/v1/feedmgr/util")
 @Component
 public class UtilityRestController {

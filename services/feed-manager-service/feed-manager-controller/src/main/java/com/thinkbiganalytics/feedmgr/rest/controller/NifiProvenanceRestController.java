@@ -22,7 +22,7 @@ import javax.ws.rs.core.Response;
 
 import io.swagger.annotations.Api;
 
-@Api(value = "nifi-provenance", produces = "application/json",
+@Api(tags = "NiFi: Provenance", produces = "application/json",
      description = "Used by the NiFi KyloProvenanceEventReportingTask.  Provides information about the flows and the max event id processed by kylo")
 @Path("/metadata/nifi-provenance")
 @Component

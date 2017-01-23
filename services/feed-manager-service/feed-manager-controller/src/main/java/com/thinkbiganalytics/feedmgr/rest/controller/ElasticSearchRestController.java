@@ -16,10 +16,7 @@ import javax.ws.rs.core.Response;
 
 import io.swagger.annotations.Api;
 
-/**
- * Created by sr186054 on 1/13/16.
- */
-@Api(value = "feed-manager-search", produces = "application/json")
+@Api(tags = "Feed Manager: Search", produces = "application/json")
 @Path("/v1/feedmgr/search")
 @Component
 public class ElasticSearchRestController {

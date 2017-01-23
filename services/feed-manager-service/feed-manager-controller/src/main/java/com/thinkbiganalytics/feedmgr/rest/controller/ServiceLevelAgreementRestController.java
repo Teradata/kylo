@@ -1,6 +1,5 @@
 package com.thinkbiganalytics.feedmgr.rest.controller;
 
-import com.google.common.collect.Lists;
 import com.thinkbiganalytics.feedmgr.InvalidOperationException;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementGroup;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementMetricTransformerHelper;
@@ -25,7 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
-import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -40,7 +38,7 @@ import javax.ws.rs.core.Response;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 
-@Api(value = "Service Level Agreements", produces = "application/json")
+@Api(tags = "Feed Manager: Service Level Agreements", produces = "application/json")
 @Path("/v1/feedmgr/sla")
 @Component
 public class ServiceLevelAgreementRestController {

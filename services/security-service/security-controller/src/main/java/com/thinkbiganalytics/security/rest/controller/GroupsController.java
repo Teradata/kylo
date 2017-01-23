@@ -32,7 +32,7 @@ import io.swagger.annotations.ApiResponses;
 /**
  * Endpoint for accessing Kylo groups.
  */
-@Api(value = "security")
+@Api(tags = "Feed Manager: Groups")
 @Component
 @Path("/v1/security/groups")
 public class GroupsController {

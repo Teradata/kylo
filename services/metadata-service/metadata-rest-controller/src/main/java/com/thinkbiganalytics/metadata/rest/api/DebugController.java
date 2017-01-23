@@ -1,6 +1,3 @@
-/**
- *
- */
 package com.thinkbiganalytics.metadata.rest.api;
 
 import java.io.PrintWriter;
@@ -44,11 +41,7 @@ import com.thinkbiganalytics.metadata.sla.api.Metric;
 
 import io.swagger.annotations.Api;
 
-/**
- *
- * @author Sean Felten
- */
-@Api(value = "debug", produces = "application/json")
+@Api(tags = "Internal: Debugging", produces = "application/json")
 @Component
 @Path("/metadata/debug")
 public class DebugController {
@@ -112,14 +105,14 @@ public class DebugController {
                            new FeedExecutedSinceFeed("DependentCategory", "DependentFeed", "ExecutedSinceCategory", "ExecutedSinceFeed"));
         return procond;
     }
-    
+
     @DELETE
     @Path("jcr/{abspath: .*}")
     @Produces(MediaType.TEXT_PLAIN)
     public String deleteJcrTree(@PathParam("abspath") final String abspath) {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
-        
+
         try {
             metadata.commit(() -> {
                 Session session = JcrMetadataAccess.getActiveSession();
@@ -130,7 +123,7 @@ public class DebugController {
             e.printStackTrace(pw);
             throw new RuntimeException(e);
         }
-        
+
         pw.flush();
         return sw.toString();
     }

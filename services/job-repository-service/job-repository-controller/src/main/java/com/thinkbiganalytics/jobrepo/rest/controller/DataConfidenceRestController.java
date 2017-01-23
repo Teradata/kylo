@@ -1,7 +1,3 @@
-/*
- * Copyright (c) 2016.
- */
-
 package com.thinkbiganalytics.jobrepo.rest.controller;
 
 import com.thinkbiganalytics.jobrepo.query.model.CheckDataJob;
@@ -26,8 +22,7 @@ import javax.ws.rs.core.MediaType;
 
 import io.swagger.annotations.Api;
 
-
-@Api(value = "data-confidence", produces = "application/json")
+@Api(tags = "Operations Manager: Data Confidence", produces = "application/json")
 @Path("/v1/data-confidence")
 public class DataConfidenceRestController {
 

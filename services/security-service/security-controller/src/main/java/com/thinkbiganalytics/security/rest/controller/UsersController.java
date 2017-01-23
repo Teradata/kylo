@@ -31,7 +31,7 @@ import io.swagger.annotations.ApiResponses;
 /**
  * Endpoint for accessing Kylo users.
  */
-@Api(value = "security")
+@Api(tags = "Feed Manager: Users")
 @Component
 @Path("/v1/security/users")
 public class UsersController {

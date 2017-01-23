@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.thinkbiganalytics.alerts.rest.controller;
 
 import java.util.ArrayList;
@@ -42,18 +39,14 @@ import com.thinkbiganalytics.alerts.spi.AlertManager;
 
 import io.swagger.annotations.Api;
 
-/**
- *
- * @author Sean Felten
- */
 @Component
-@Api(value = "alerts", produces = "application/json")
+@Api(tags = "Operations Manager: Alerts", produces = "application/json")
 @Path("/v1/alerts")
 public class AlertsController {
-    
+
     @Inject
     private AlertProvider provider;
-    
+
     @Inject
     @Named("kyloAlertManager")
     private AlertManager alertManager;
@@ -68,22 +61,22 @@ public class AlertsController {
                                 @QueryParam("cleared") @DefaultValue("false") String cleared) {
         List<Alert> alerts = new ArrayList<>();
         AlertCriteria criteria = createCriteria(limit, state, level, before, after, cleared);
-        
+
         provider.getAlerts(criteria).forEachRemaining(a -> alerts.add(a));
         return new AlertRange(alerts.stream().map(a -> toModel(a)).collect(Collectors.toList()));
     }
-    
+
     @GET
     @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public com.thinkbiganalytics.alerts.rest.model.Alert getAlert(@PathParam("id") String idStr) {
         Alert.ID id = provider.resolve(idStr);
-        
+
         return provider.getAlert(id)
                         .map(a -> toModel(a))
                         .orElseThrow(() -> new WebApplicationException("An alert with the given ID does not exists: " + idStr, Status.NOT_FOUND));
     }
-    
+
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
@@ -92,8 +85,8 @@ public class AlertsController {
         Alert alert = alertManager.create(req.getType(), level, req.getDescription(), null);
         return toModel(alert);
     }
-    
-    
+
+
     @POST
     @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -102,14 +95,14 @@ public class AlertsController {
                                                                      AlertUpdateRequest req) {
         Alert.ID id = provider.resolve(idStr);
         final Alert.State state = toDomain(req.getState());
-        
+
         class UpdateResponder implements AlertResponder {
             Alert result = null;
-            
+
             @Override
             public void alertChange(Alert alert, AlertResponse response) {
                 result = alert;
-                
+
                 switch (state) {
                     case HANDLED:
                         result = response.handle(req.getDescription());
@@ -123,19 +116,19 @@ public class AlertsController {
                     default:
                         break;
                 }
-                
+
                 if (req.isClear()) {
                     response.clear();
                 }
             }
         }
-        
+
         UpdateResponder responder = new UpdateResponder();
-        
+
         provider.respondTo(id, responder);
         return toModel(responder.result);
     }
-    
+
 
     private com.thinkbiganalytics.alerts.rest.model.Alert toModel(Alert alert) {
         com.thinkbiganalytics.alerts.rest.model.Alert result = new com.thinkbiganalytics.alerts.rest.model.Alert();
@@ -181,14 +174,14 @@ public class AlertsController {
 
     private AlertCriteria createCriteria(Integer limit, String stateStr, String levelStr, String before, String after, String cleared) {
         AlertCriteria criteria = provider.criteria();
-        
+
         if (limit != null) criteria.limit(limit);
         if (stateStr != null) criteria.state(Alert.State.valueOf(stateStr.toUpperCase()));
         if (levelStr != null) criteria.level(Alert.Level.valueOf(levelStr.toUpperCase()));
         if (before != null) criteria.before(Formatters.parseDateTime(before));
         if (after != null) criteria.after(Formatters.parseDateTime(after));
         if (cleared != null) criteria.includedCleared(Boolean.parseBoolean(cleared));
-        
+
         return criteria;
     }
 
@@ -196,14 +189,14 @@ public class AlertsController {
         // Query params: limit, state, level, before-time, after-time, before-alert, after-alert
         MultivaluedMap<String, String> params = uriInfo.getQueryParameters();
         AlertCriteria criteria = provider.criteria();
-        
+
         try {
             Optional.ofNullable(params.get("limit")).ifPresent(list -> list.forEach(limitStr -> criteria.limit(Integer.parseInt(limitStr))));
             Optional.ofNullable(params.get("state")).ifPresent(list -> list.forEach(stateStr -> criteria.state(Alert.State.valueOf(stateStr.toUpperCase()))));
             Optional.ofNullable(params.get("level")).ifPresent(list -> list.forEach(levelStr -> criteria.level(Alert.Level.valueOf(levelStr.toUpperCase()))));
             Optional.ofNullable(params.get("before")).ifPresent(list -> list.forEach(timeStr -> criteria.before(Formatters.parseDateTime(timeStr))));
             Optional.ofNullable(params.get("after")).ifPresent(list -> list.forEach(timeStr -> criteria.after(Formatters.parseDateTime(timeStr))));
-            
+
             return criteria;
         } catch (IllegalArgumentException e) {
             throw new WebApplicationException("Invalid query parameter: " + e.getMessage(), Status.BAD_REQUEST);

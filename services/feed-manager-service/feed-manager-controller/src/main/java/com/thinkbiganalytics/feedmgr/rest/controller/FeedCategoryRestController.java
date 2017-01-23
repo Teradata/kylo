@@ -35,7 +35,7 @@ import io.swagger.annotations.ApiResponses;
 /**
  * REST API for managing categories within the Feed Manager.
  */
-@Api(value = "feed-manager-categories", produces = "application/json")
+@Api(tags = "Feed Manager: Categories", produces = "application/json")
 @Path("/v1/feedmgr/categories")
 @Component
 public class FeedCategoryRestController {

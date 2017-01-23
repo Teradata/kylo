@@ -1,7 +1,3 @@
-/*
- * Copyright (c) 2016. Teradata Inc.
- */
-
 package com.thinkbiganalytics.discovery.rest.controller;
 
 import com.thinkbiganalytics.discovery.FileParserFactory;
@@ -39,7 +35,7 @@ import io.swagger.annotations.Api;
 /**
  * Provides schema discovery services which is able to generate a schema for file or database sources
  */
-@Api(value = "schema-discovery", produces = "application/json")
+@Api(tags = "Feed Manager: Schema Discovery", produces = "application/json")
 @Path("/v1/schema-discovery")
 public class SchemaDiscoveryRestController {
 

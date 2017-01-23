@@ -19,10 +19,7 @@ import javax.ws.rs.core.Response;
 
 import io.swagger.annotations.Api;
 
-/**
- * Created by Jeremy Merrifield on 9/12/16.
- */
-@Api(value = "hadoop-authorization", produces = "application/json")
+@Api(tags = "Feed Manager: Security", produces = "application/json")
 @Path("/v1/feedmgr/hadoop-authorization")
 public class HadoopAuthorizationController {
     private static final Logger log = LoggerFactory.getLogger(HadoopAuthorizationController.class);

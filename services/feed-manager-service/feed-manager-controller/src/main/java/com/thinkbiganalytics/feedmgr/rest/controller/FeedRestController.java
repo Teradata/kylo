@@ -78,7 +78,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 
-@Api(value = "feed-manager-feeds", produces = "application/json")
+@Api(tags = "Feed Manager: Feeds", produces = "application/json")
 @Path("/v1/feedmgr/feeds")
 @Component
 public class FeedRestController {

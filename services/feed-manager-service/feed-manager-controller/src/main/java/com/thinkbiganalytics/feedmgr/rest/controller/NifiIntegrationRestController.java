@@ -51,10 +51,7 @@ import javax.ws.rs.core.Response;
 
 import io.swagger.annotations.Api;
 
-/**
- * Created by sr186054 on 1/13/16.
- */
-@Api(value = "feed-manager-nifi-configuration", produces = "application/json")
+@Api(tags = "Feed Manager: NiFi", produces = "application/json")
 @Path("/v1/feedmgr/nifi")
 @Component
 public class NifiIntegrationRestController {

@@ -1,6 +1,3 @@
-/**
- *
- */
 package com.thinkbiganalytics.metadata.rest.api;
 
 import com.google.common.collect.Collections2;
@@ -30,13 +27,9 @@ import javax.ws.rs.core.MediaType;
 
 import io.swagger.annotations.Api;
 
-/**
- *
- * @author Sean Felten
- */
 @Component
 @Path("/metadata/extension")
-@Api(value = "metadata-extensions", produces = "application/json", description = "Allow creation and storing of new Entities with dynamic types ")
+@Api(tags = "Internal: Debugging", produces = "application/json", description = "Allow creation and storing of new Entities with dynamic types ")
 public class ExtensionsController {
 
     @Inject

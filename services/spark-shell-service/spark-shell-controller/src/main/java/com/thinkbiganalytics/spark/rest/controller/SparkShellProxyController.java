@@ -36,7 +36,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
-@Api(value = "spark")
+@Api(tags = "Feed Manager: Data Wrangler")
 @Component
 @Path("/v1/spark/shell")
 public class SparkShellProxyController {
