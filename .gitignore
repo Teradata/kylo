@@ -8,6 +8,7 @@ bin
 .DS_Store
 *.iml
 *.bak
+*.swp
 .Rproj.user
 .metadata/
 .vagrant
