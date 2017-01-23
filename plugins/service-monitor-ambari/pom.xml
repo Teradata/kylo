@@ -12,9 +12,6 @@
   </parent>
 
   <properties>
-<!--
-	<plugin.license.configDir>${project.baseUri}/../../license-config</plugin.license.configDir>
--->
 	<plugin.license.parentRelative>../../</plugin.license.parentRelative>
   </properties>
 

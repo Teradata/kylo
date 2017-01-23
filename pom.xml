@@ -20,6 +20,8 @@
         <java.version>1.8</java.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+        <!-- child poms should provide a value to tell where the parent is, using plugin.license.parentRelative property.
+             to explicitly override the plugin config data use plugin.license.configDir. -->
 	<plugin.license.configDir>${project.baseUri}${plugin.license.parentRelative}license-config</plugin.license.configDir>
 
         <!-- dependencies -->
@@ -805,6 +807,7 @@
 		<licenseName>thinkbig_license</licenseName>
 		<licenseResolver>${plugin.license.configDir}</licenseResolver>
 		<failOnMissingHeader>true</failOnMissingHeader>
+		<failOnNotUptodateHeader>true</failOnNotUptodateHeader>
 	</configuration>
         <executions>
 		<execution>
