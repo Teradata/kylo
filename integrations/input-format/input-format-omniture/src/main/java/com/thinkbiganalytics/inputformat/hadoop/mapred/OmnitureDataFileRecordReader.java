@@ -40,7 +40,11 @@ import org.apache.hadoop.mapred.RecordReader;
 
 import java.io.IOException;
 
-
+/**
+ * EscapedLineReader gets around Omniture's pesky escaped tabs and newlines.
+ * For more information about format, please refer to Omniture Documentation at
+ * https://marketing.adobe.com/resources/help/en_US/sc/clickstream/analytics_clickstream.pdf.
+ */
 public class OmnitureDataFileRecordReader implements RecordReader<LongWritable, Text> {
 
     private static final Log LOG = LogFactory.getLog(OmnitureDataFileRecordReader.class);
@@ -53,7 +57,7 @@ public class OmnitureDataFileRecordReader implements RecordReader<LongWritable, 
     private EscapedLineReader lineReader;
 
     public OmnitureDataFileRecordReader(Configuration job, FileSplit split)
-            throws IOException {
+        throws IOException {
 
         this.maxLineLength = job.getInt("mapred.escapedlinereader.maxlength", Integer.MAX_VALUE);
         this.start = split.getStart();
@@ -94,7 +98,7 @@ public class OmnitureDataFileRecordReader implements RecordReader<LongWritable, 
                 return false;
             }
 
-            String line = value.toString().replaceAll("\\\\\\\\","").replaceAll("\\\\\t", " ").replaceAll("\\\\(\n|\r|\r\n)", " ");
+            String line = value.toString().replaceAll("\\\\\\\\", "").replaceAll("\\\\\t", " ").replaceAll("\\\\(\n|\r|\r\n)", " ");
             value.set(line);
 
             if (newSize < maxLineLength) {

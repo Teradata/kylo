@@ -27,17 +27,28 @@ package com.thinkbiganalytics.inputformat.hadoop.mapred;
 
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapred.*;
+import org.apache.hadoop.mapred.FileSplit;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.RecordReader;
+import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.mapred.TextInputFormat;
 
 import java.io.IOException;
 
+/**
+ * A tool for Hadoop eco system that makes it easier to parse Omniture Click Stream data.
+ * It consists of custom input format and line reader. Works identically to TextInputFormat except for
+ * the fact that it uses a EscapedLineReader which gets around Omniture's pesky escaped tabs and newlines.
+ * For more information about format, please refer to Omniture Documentation at
+ * https://marketing.adobe.com/resources/help/en_US/sc/clickstream/analytics_clickstream.pdf.
+ */
 public class OmnitureDataFileInputFormat extends TextInputFormat {
 
     @Override
     public RecordReader<LongWritable, Text> getRecordReader(
-            org.apache.hadoop.mapred.InputSplit genericSplit, JobConf job,
-            Reporter reporter)
-            throws IOException {
+        org.apache.hadoop.mapred.InputSplit genericSplit, JobConf job,
+        Reporter reporter)
+        throws IOException {
 
         reporter.setStatus(genericSplit.toString());
         return new OmnitureDataFileRecordReader(job, (FileSplit) genericSplit);
