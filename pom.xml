@@ -809,6 +809,13 @@
 		<licenseResolver>${plugin.license.configDir}</licenseResolver>
 		<failOnMissingHeader>true</failOnMissingHeader>
 		<failOnNotUptodateHeader>true</failOnNotUptodateHeader>
+		<extraExtensions>
+			<sql>mysql</sql>
+		</extraExtensions>
+		<excludes>
+			<exclude>*.png</exclude>
+			<exclude>*.txt</exclude>
+		</excludes>
 	</configuration>
         <executions>
 		<execution>
