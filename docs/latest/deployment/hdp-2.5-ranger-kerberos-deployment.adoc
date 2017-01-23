@@ -109,7 +109,7 @@ Before installing the Kylo stack the below needs to be done on the cluster.
 
 . Create a MySQL admin user or use root user to grant "create schema" access from the Kylo edge node
 
-    This is required to install the "thinkbig" schema during Kylo installation
+    This is required to install the "kylo" schema during Kylo installation
 
     Example:
 
@@ -356,7 +356,7 @@ Before installing the Kylo stack the below needs to be done on the cluster.
 
     [root /]# vi /opt/thinkbig/thinkbig-services/conf/application.properties
 
-    spring.datasource.url=jdbc:mysql://<MYSQL_HOSTNAME>:3306/thinkbig?noAccessToProcedureBodies=true
+    spring.datasource.url=jdbc:mysql://<MYSQL_HOSTNAME>:3306/kylo?noAccessToProcedureBodies=true
     spring.datasource.username=kylo
     spring.datasource.password=password
 
@@ -364,7 +364,7 @@ Before installing the Kylo stack the below needs to be done on the cluster.
     ambariRestClientConfig.username=kylo
     ambariRestClientConfig.password=password
 
-    metadata.datasource.url=jdbc:mysql://<MYSQL_HOSTNAME>:3306/thinkbig?noAccessToProcedureBodies=true
+    metadata.datasource.url=jdbc:mysql://<MYSQL_HOSTNAME>:3306/kylo?noAccessToProcedureBodies=true
     metadata.datasource.username=kylo
     metadata.datasource.password=password
 
@@ -374,7 +374,7 @@ Before installing the Kylo stack the below needs to be done on the cluster.
     hive.metastore.datasource.username=kylo
     hive.metastore.datasource.password=password
 
-    modeshape.datasource.url=jdbc:mysql://<MYSQL_HOSTNAME>:3306/thinkbig?noAccessToProcedureBodies=true
+    modeshape.datasource.url=jdbc:mysql://<MYSQL_HOSTNAME>:3306/kylo?noAccessToProcedureBodies=true
     modeshape.datasource.username=kylo
     modeshape.datasource.password=password
 

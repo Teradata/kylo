@@ -1,14 +1,14 @@
 #!/bin/bash
 
-read -p "Are you sure you want to uninstall all Kylo components AND delete the thinkbig database? Type YES to confirm: " CONFIRM_DELETE
+read -p "Are you sure you want to uninstall all Kylo components AND delete the kylo database? Type YES to confirm: " CONFIRM_DELETE
 
 if [ "$CONFIRM_DELETE" == "YES" ] ; then
 
 echo "Uninstalling all components that were installed from the RPM and setup-wizard"
-echo "Uninstalling thinkbig applications with RPM uninstall"
+echo "Uninstalling kylo applications with RPM uninstall"
 /opt/thinkbig/remove-thinkbig-datalake-accelerator.sh
 rm -rf /opt/thinkbig
-mysql -phadoop -e "drop database thinkbig;"
+mysql -phadoop -e "drop database kylo;"
 mysql -phadoop -e "show databases;"
 
 echo "Uninstalling NiFi"
