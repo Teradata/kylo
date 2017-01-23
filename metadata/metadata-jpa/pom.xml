@@ -8,6 +8,9 @@
         <artifactId>thinkbig-metadata</artifactId>
         <version>0.4.2-SNAPSHOT</version>
     </parent>
+	<properties>
+		<plugin.license.parentRelative>../../</plugin.license.parentRelative>
+	</properties>
 
     <dependencies>
         <dependency>

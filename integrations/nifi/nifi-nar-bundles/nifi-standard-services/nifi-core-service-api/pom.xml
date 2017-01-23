@@ -13,6 +13,9 @@
         <artifactId>thinkbig-nifi-standard-services</artifactId>
         <version>0.7.0-SNAPSHOT</version>
     </parent>
+	<properties>
+		<plugin.license.parentRelative>../../../../../</plugin.license.parentRelative>
+	</properties>
     <packaging>jar</packaging>
 
     <dependencies>

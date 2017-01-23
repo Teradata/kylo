@@ -87,7 +87,7 @@
 	<!-- Plugin Versions -->
         <plugin.surefire.version>2.19.1</plugin.surefire.version>
         <plugin.license.version>1.12</plugin.license.version>
-    </properties>
+	</properties>
     <modules>
         <module>commons</module>
         <module>core</module>

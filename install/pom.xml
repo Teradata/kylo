@@ -20,7 +20,8 @@
     <!-- override using property -Drpm.user -->
     <rpm.user>thinkbig</rpm.user>
     <file.permissions>744</file.permissions>
-  </properties>
+  <plugin.license.parentRelative>../</plugin.license.parentRelative>
+	</properties>
 
   <dependencies>
 

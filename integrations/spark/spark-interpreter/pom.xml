@@ -15,7 +15,8 @@
 
     <properties>
         <mainClass.name>com.thinkbiganalytics.spark.interpreter.App</mainClass.name>
-    </properties>
+    <plugin.license.parentRelative>../../../</plugin.license.parentRelative>
+	</properties>
 
     <modules>
         <module>spark-interpreter-app</module>

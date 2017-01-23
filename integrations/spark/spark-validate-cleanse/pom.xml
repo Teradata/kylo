@@ -15,7 +15,8 @@
 
     <properties>
         <mainClass.name>com.thinkbiganalytics.spark.datavalidator.Validator</mainClass.name>
-    </properties>
+    <plugin.license.parentRelative>../../../</plugin.license.parentRelative>
+	</properties>
 
     <modules>
         <module>spark-validate-cleanse-api</module>

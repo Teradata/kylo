@@ -14,7 +14,8 @@
 
     <properties>
         <nifi.version>0.6.1</nifi.version>
-    </properties>
+    <plugin.license.parentRelative>../../../../../</plugin.license.parentRelative>
+	</properties>
 
     <dependencies>
 

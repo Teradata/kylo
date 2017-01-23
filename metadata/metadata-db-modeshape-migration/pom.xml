@@ -10,7 +10,8 @@
 
   <properties>
     <jdbc.mysql.version>5.1.32</jdbc.mysql.version>
-  </properties>
+  <plugin.license.parentRelative>../../</plugin.license.parentRelative>
+	</properties>
 
 
   <dependencies>

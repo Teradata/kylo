@@ -14,7 +14,8 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-    </properties>
+    <plugin.license.parentRelative>../../../../../</plugin.license.parentRelative>
+	</properties>
 
     <dependencies>
         <dependency>

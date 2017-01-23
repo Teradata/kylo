@@ -11,6 +11,9 @@
     <version>0.7.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
+	<properties>
+		<plugin.license.parentRelative>../../</plugin.license.parentRelative>
+	</properties>
   <modules>
     <module>job-repository-rest-model</module>
     <module>job-repository-controller</module>

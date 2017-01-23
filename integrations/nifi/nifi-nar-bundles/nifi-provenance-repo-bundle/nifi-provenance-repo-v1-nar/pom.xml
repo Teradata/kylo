@@ -17,7 +17,8 @@
         <maven.javadoc.skip>true</maven.javadoc.skip>
         <source.skip>true</source.skip>
         <nifi.version>1.1.0</nifi.version>
-    </properties>
+    <plugin.license.parentRelative>../../../../../</plugin.license.parentRelative>
+	</properties>
 
     <dependencies>
 

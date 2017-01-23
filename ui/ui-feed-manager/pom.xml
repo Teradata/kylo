@@ -11,6 +11,9 @@
         <version>0.7.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
+	<properties>
+		<plugin.license.parentRelative>../../</plugin.license.parentRelative>
+	</properties>
 
     <dependencies>
         <dependency>

@@ -15,7 +15,8 @@
 
     <properties>
         <mainClass.name>com.thinkbiganalytics.spark.dataprofiler.core.Profiler</mainClass.name>
-    </properties>
+    <plugin.license.parentRelative>../../../</plugin.license.parentRelative>
+	</properties>
 
     <modules>
         <module>spark-job-profiler-app</module>
