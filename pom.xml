@@ -9,7 +9,7 @@
     <packaging>pom</packaging>
     <name>thinkbig-data-lake-accelerator</name>
     <description>Thinkbig Data lake Accelerator</description>
-    <inceptionYear>2017</inceptionYear>
+    <inceptionYear>2016</inceptionYear>
     <organization>
 	<name>ThinkBig Analytics</name>
 	<url>https://www.thinkbiganalytics.com</url>
@@ -20,6 +20,8 @@
         <java.version>1.8</java.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+	<plugin.license.configDir>${project.baseUri}${plugin.license.parentRelative}license-config</plugin.license.configDir>
+
         <!-- dependencies -->
         <activemq.version>5.13.1</activemq.version>
         <avro.version>1.7.7</avro.version>
@@ -82,7 +84,7 @@
 
 	<!-- Plugin Versions -->
         <plugin.surefire.version>2.19.1</plugin.surefire.version>
-        <plugin.license.version>3.0</plugin.license.version>
+        <plugin.license.version>1.12</plugin.license.version>
     </properties>
     <modules>
         <module>commons</module>
@@ -799,52 +801,21 @@
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>license-maven-plugin</artifactId>
         <version>1.12</version>
-    <configuration>
-        <licenseName>thinkbig_license</licenseName>
-        <licenseResolver>${project.baseUri}/src/license</licenseResolver>
-    </configuration>
+	<configuration>
+		<licenseName>thinkbig_license</licenseName>
+		<licenseResolver>${plugin.license.configDir}</licenseResolver>
+		<failOnMissingHeader>true</failOnMissingHeader>
+	</configuration>
         <executions>
-        <execution>
-            <id>first</id>
-            <goals>
-                <goal>update-file-header</goal>
-            </goals>
-            <phase>process-sources</phase>
-        </execution>
-          <execution>
-            <id>download-licenses</id>
-            <goals>
-              <goal>download-licenses</goal>
-            </goals>
-            <phase/>
-          </execution>
+		<execution>
+		    <id>first</id>
+		    <goals>
+			<goal>check-file-header</goal>
+		    </goals>
+		    <phase>prepare-package</phase>
+		</execution>
         </executions>
       </plugin>
-<!--
-		<plugin>
-		    <groupId>com.mycila</groupId>
-		    <artifactId>license-maven-plugin</artifactId>
-		    <configuration>
-			<header>com/mycila/maven/plugin/license/templates/APACHE-2.txt</header>
-			<properties>
-			    <owner>Mycila</owner>
-			    <email>mathieu.carbou@gmail.com</email>
-			</properties>
-			<excludes>
-			    <exclude>**/README</exclude>
-			    <exclude>src/test/resources/**</exclude>
-			    <exclude>src/main/resources/**</exclude>
-			</excludes>
-		    </configuration>
-		    <executions>
-			<execution>
-			    <goals>
-				<goal>check</goal>
-			    </goals>
-			</execution>
-		    </executions>
-		</plugin>
--->
         </plugins>
         <pluginManagement>
             <plugins>

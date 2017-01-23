@@ -11,6 +11,12 @@
     <version>0.7.0-SNAPSHOT</version>
   </parent>
 
+  <properties>
+<!--
+	<plugin.license.configDir>${project.baseUri}/../../license-config</plugin.license.configDir>
+-->
+	<plugin.license.parentRelative>../../</plugin.license.parentRelative>
+  </properties>
 
   <dependencies>
     <dependency>
