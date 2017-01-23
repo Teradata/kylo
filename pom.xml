@@ -9,6 +9,11 @@
     <packaging>pom</packaging>
     <name>thinkbig-data-lake-accelerator</name>
     <description>Thinkbig Data lake Accelerator</description>
+    <inceptionYear>2017</inceptionYear>
+    <organization>
+	<name>ThinkBig Analytics</name>
+	<url>https://www.thinkbiganalytics.com</url>
+    </organization>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -68,13 +73,16 @@
         <spring.ldap.version>2.1.0.RELEASE</spring.ldap.version>
         <projectreactor.version>2.0.8.RELEASE</projectreactor.version>
         <assertj.version>3.4.1</assertj.version>
-        <surefire.version>2.19.1</surefire.version>
         <org.reflections.version>0.9.9</org.reflections.version>
         <querydsl.version>4.1.4</querydsl.version>
         <findbugs.version>3.0.1</findbugs.version>
         <pig.version>0.15.0</pig.version>
         <gson.version>2.2.4</gson.version>
         <h2.version>1.4.187</h2.version>
+
+	<!-- Plugin Versions -->
+        <plugin.surefire.version>2.19.1</plugin.surefire.version>
+        <plugin.license.version>3.0</plugin.license.version>
     </properties>
     <modules>
         <module>commons</module>
@@ -787,6 +795,56 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
             </plugin>
+     <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>license-maven-plugin</artifactId>
+        <version>1.12</version>
+    <configuration>
+        <licenseName>thinkbig_license</licenseName>
+        <licenseResolver>${project.baseUri}/src/license</licenseResolver>
+    </configuration>
+        <executions>
+        <execution>
+            <id>first</id>
+            <goals>
+                <goal>update-file-header</goal>
+            </goals>
+            <phase>process-sources</phase>
+        </execution>
+          <execution>
+            <id>download-licenses</id>
+            <goals>
+              <goal>download-licenses</goal>
+            </goals>
+            <phase/>
+          </execution>
+        </executions>
+      </plugin>
+<!--
+		<plugin>
+		    <groupId>com.mycila</groupId>
+		    <artifactId>license-maven-plugin</artifactId>
+		    <configuration>
+			<header>com/mycila/maven/plugin/license/templates/APACHE-2.txt</header>
+			<properties>
+			    <owner>Mycila</owner>
+			    <email>mathieu.carbou@gmail.com</email>
+			</properties>
+			<excludes>
+			    <exclude>**/README</exclude>
+			    <exclude>src/test/resources/**</exclude>
+			    <exclude>src/main/resources/**</exclude>
+			</excludes>
+		    </configuration>
+		    <executions>
+			<execution>
+			    <goals>
+				<goal>check</goal>
+			    </goals>
+			</execution>
+		    </executions>
+		</plugin>
+-->
         </plugins>
         <pluginManagement>
             <plugins>
@@ -808,7 +866,12 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>${surefire.version}</version>
+                    <version>${plugin.surefire.version}</version>
+                </plugin>
+                <plugin>
+			<groupId>com.mycila</groupId>
+			<artifactId>license-maven-plugin</artifactId>
+			<version>${plugin.license.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
