@@ -22,6 +22,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <!-- child poms should provide a value to tell where the parent is, using plugin.license.parentRelative property.
              to explicitly override the plugin config data use plugin.license.configDir. -->
+	<plugin.license.parentRelative />
 	<plugin.license.configDir>${project.baseUri}${plugin.license.parentRelative}license-config</plugin.license.configDir>
 
         <!-- dependencies -->
