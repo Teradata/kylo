@@ -803,7 +803,6 @@
      <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>license-maven-plugin</artifactId>
-        <version>1.12</version>
 	<configuration>
 		<licenseName>thinkbig_license</licenseName>
 		<licenseResolver>${plugin.license.configDir}</licenseResolver>
@@ -812,10 +811,9 @@
 		<extraExtensions>
 			<sql>mysql</sql>
 		</extraExtensions>
-		<excludes>
-			<exclude>*.png</exclude>
-			<exclude>*.txt</exclude>
-		</excludes>
+                <excludes>
+                        <exclude>**/vendor/**/*</exclude>
+                </excludes>
 	</configuration>
         <executions>
 		<execution>
