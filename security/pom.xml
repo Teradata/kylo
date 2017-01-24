@@ -21,6 +21,7 @@
         <module>security-auth-file</module>
         <module>security-auth-kylo</module>
         <module>security-auth-rest</module>
+        <module>security-auth-kerberos</module>
     </modules>
 
     <dependencies>

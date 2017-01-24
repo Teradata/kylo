@@ -73,6 +73,7 @@ public class WebSecurityConfiguration {
                     .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                         .and()
                     .authorizeRequests()
+                        .antMatchers("/proxy/**").permitAll()
                         .antMatchers("/login", "/login/**", "/login**").permitAll()
                         .antMatchers("/**").authenticated()
                         .and()
@@ -96,34 +97,6 @@ public class WebSecurityConfiguration {
         @Override
         protected void configure(AuthenticationManagerBuilder auth) throws Exception {
             auth.authenticationProvider(uiAuthenticationProvider);
-        }
-    }
-
-    @Configuration
-    @Order(SecurityProperties.BASIC_AUTH_ORDER)
-    public static class ProxySecurityConfiguration extends WebSecurityConfigurerAdapter {
-
-        @Autowired
-        @Qualifier(JaasAuthConfig.SERVICES_AUTH_PROVIDER)
-        private AuthenticationProvider restAuthenticationProvider;
-
-        @Override
-        protected void configure(HttpSecurity http) throws Exception {
-            http
-                    .authenticationProvider(restAuthenticationProvider)
-                    .csrf().disable()
-                    .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                        .and()
-                    .authorizeRequests()
-                        // the ant matcher is what limits the scope of this configuration.
-                        .antMatchers("/proxy/**").authenticated()
-                        .and()
-                    .httpBasic();
-        }
-
-        @Override
-        protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-            auth.authenticationProvider(restAuthenticationProvider);
         }
     }
 }
