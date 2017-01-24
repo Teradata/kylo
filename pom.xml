@@ -813,6 +813,7 @@
 		</extraExtensions>
                 <excludes>
                         <exclude>**/vendor/**/*</exclude>
+                        <exclude>**/*.json</exclude>
                 </excludes>
 	</configuration>
         <executions>
