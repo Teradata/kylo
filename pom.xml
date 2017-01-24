@@ -9,7 +9,7 @@
     <packaging>pom</packaging>
     <name>thinkbig-data-lake-accelerator</name>
     <description>Thinkbig Data lake Accelerator</description>
-    <inceptionYear>2016</inceptionYear>
+    <inceptionYear>2017</inceptionYear>
     <organization>
 	<name>ThinkBig Analytics</name>
 	<url>https://www.thinkbiganalytics.com</url>
