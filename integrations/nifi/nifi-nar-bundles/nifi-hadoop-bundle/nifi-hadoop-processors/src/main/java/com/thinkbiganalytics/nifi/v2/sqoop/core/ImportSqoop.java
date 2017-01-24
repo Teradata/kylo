@@ -155,13 +155,13 @@ public class ImportSqoop extends AbstractNiFiProcessor {
 
     public static final PropertyDescriptor CLUSTER_MAP_TASKS = new PropertyDescriptor.Builder()
         .name("Cluster Map Tasks")
-        .description("Number of map tasks to extract data in parallel. Valid values are from 1 to 25. "
+        .description("Number of map tasks to extract data in parallel. "
                      + "Higher values put more load on the source system. "
                      + "Also, consider capacity of cluster when setting this property value.")
         .required(false)
         .expressionLanguageSupported(true)
         .defaultValue("4")
-        .addValidator(StandardValidators.createLongValidator(1L, 25L, true))
+        .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
         .build();
 
     public static final PropertyDescriptor CLUSTER_UI_JOB_NAME = new PropertyDescriptor.Builder()
