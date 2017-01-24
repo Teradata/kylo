@@ -1,6 +1,4 @@
-package com.thinkbiganalytics.nifi.rest;/*
- * Copyright (c) 2016.
- */
+package com.thinkbiganalytics.nifi.rest;
 
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
