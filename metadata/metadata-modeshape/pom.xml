@@ -209,4 +209,19 @@
         </dependencies>
     </dependencyManagement>
 
+        <build>
+                <plugins>
+                        <plugin>
+                                <groupId>org.codehaus.mojo</groupId>
+                                <artifactId>license-maven-plugin</artifactId>
+                                <configuration>
+                                <excludes>
+                                        <exclude>**/*.json</exclude>
+                                </excludes>
+                                </configuration>
+                        </plugin>
+                </plugins>
+        </build>
+
+
 </project>
