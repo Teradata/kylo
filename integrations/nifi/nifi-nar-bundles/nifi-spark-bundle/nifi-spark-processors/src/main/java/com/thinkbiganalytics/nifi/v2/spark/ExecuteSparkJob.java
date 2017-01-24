@@ -40,6 +40,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nonnull;
 
@@ -126,18 +127,6 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
-
-
-    public static final PropertyDescriptor QUERY_TIMEOUT = new PropertyDescriptor.Builder()
-        .name("Max Wait Time")
-        .description("The maximum amount of time allowed for a running SQL select query "
-                     + " , zero means there is no limit. Max time less than 1 second will be equal to zero.")
-        .defaultValue("0 seconds")
-        .required(true)
-        .addValidator(StandardValidators.TIME_PERIOD_VALIDATOR)
-        .sensitive(false)
-        .build();
-
     public static final PropertyDescriptor DRIVER_MEMORY = new PropertyDescriptor.Builder()
         .name("Driver Memory")
         .description("How much RAM to allocate to the driver")
@@ -208,6 +197,14 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
+    public static final PropertyDescriptor PROCESS_TIMEOUT = new PropertyDescriptor.Builder()
+        .name("Spark Process Timeout")
+        .description("Time to wait for successful completion of Spark process. Routes to failure if Spark process runs for longer than expected here")
+        .required(true)
+        .defaultValue("1 hr")
+        .addValidator(StandardValidators.TIME_PERIOD_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .build();
 
 
     /** Kerberos service keytab */
@@ -244,7 +241,7 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         pds.add(MAIN_ARGS);
         pds.add(SPARK_MASTER);
         pds.add(SPARK_HOME);
-        pds.add(QUERY_TIMEOUT);
+        pds.add(PROCESS_TIMEOUT);
         pds.add(DRIVER_MEMORY);
         pds.add(EXECUTOR_MEMORY);
         pds.add(NUMBER_EXECUTORS);
@@ -303,6 +300,7 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
             String hadoopConfigurationResources = context.getProperty(HADOOP_CONFIGURATION_RESOURCES).getValue();
             String sparkConfs = context.getProperty(SPARK_CONFS).evaluateAttributeExpressions(flowFile).getValue();
             String extraFiles = context.getProperty(EXTRA_SPARK_FILES).evaluateAttributeExpressions(flowFile).getValue();
+            Integer sparkProcessTimeout = context.getProperty(PROCESS_TIMEOUT).evaluateAttributeExpressions(flowFile).asTimePeriod(TimeUnit.SECONDS).intValue();
 
             String[] confs = null;
             if(!StringUtils.isEmpty(sparkConfs)){
@@ -428,7 +426,15 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
             logger.info("Waiting for Spark job to complete");
 
              /* Wait for job completion */
-            int exitCode = spark.waitFor();
+            boolean completed = spark.waitFor(sparkProcessTimeout, TimeUnit.SECONDS);
+            if(!completed){
+                spark.destroyForcibly();
+                getLog().error("Spark process timed out after " + sparkProcessTimeout + " seconds");
+                session.transfer(flowFile, REL_FAILURE);
+                return;
+            }
+
+            int exitCode = spark.exitValue();
 
             flowFile = session.putAttribute(flowFile, PROVENANCE_SPARK_EXIT_CODE_KEY, exitCode + "");
             if (exitCode != 0) {
