@@ -23,3 +23,6 @@ SPARK_PROFILE="spark-v"$(spark-submit --version 2>&1 | grep -o "version [0-9]" |
 ln -f -s /opt/nifi/data/lib/app/thinkbig-spark-validate-cleanse-${SPARK_PROFILE}-*-jar-with-dependencies.jar /opt/nifi/current/lib/app/thinkbig-spark-validate-cleanse-jar-with-dependencies.jar
 ln -f -s /opt/nifi/data/lib/app/thinkbig-spark-job-profiler-${SPARK_PROFILE}-*-jar-with-dependencies.jar /opt/nifi/current/lib/app/thinkbig-spark-job-profiler-jar-with-dependencies.jar
 ln -f -s /opt/nifi/data/lib/app/thinkbig-spark-interpreter-${SPARK_PROFILE}-*-jar-with-dependencies.jar /opt/nifi/current/lib/app/thinkbig-spark-interpreter-jar-with-dependencies.jar
+
+chown -h nifi:users /opt/nifi/current/lib/thinkbig*.nar
+chown -h nifi:users /opt/nifi/current/lib/app/thinkbig*.jar
