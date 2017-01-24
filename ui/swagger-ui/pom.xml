@@ -49,7 +49,22 @@
     <artifactId>swagger-jersey2-jaxrs</artifactId>
   </dependency>
 
-
 </dependencies>
+
+
+        <build>
+                <plugins>
+                        <plugin>
+                                <groupId>org.codehaus.mojo</groupId>
+                                <artifactId>license-maven-plugin</artifactId>
+                                <configuration>
+                                <excludes>
+                                        <exclude>**/swagger-ui/**/*</exclude>
+                                </excludes>
+                                </configuration>
+                        </plugin>
+                </plugins>
+        </build>
+
 
 </project>
