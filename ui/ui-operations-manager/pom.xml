@@ -90,19 +90,4 @@
 
     </dependencies>
 
-
-    <build>
-        <plugins>
-     <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>license-maven-plugin</artifactId>
-        <configuration>
-                <excludes>
-                        <exclude>**/vendor/**/*</exclude>
-                </excludes>
-        </configuration>
-      </plugin>
-	</plugins>
-	</build>
-
 </project>
