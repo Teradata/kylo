@@ -1,12 +1,4 @@
-/*
- * Copyright (c) 2016. Teradata Inc.
- */
-
 package com.thinkbiganalytics.ingest;
-
-/*
- * Copyright (c) 2016. Teradata Inc.
- */
 
 import com.klarna.hiverunner.HiveShell;
 import com.klarna.hiverunner.StandaloneHiveRunner;

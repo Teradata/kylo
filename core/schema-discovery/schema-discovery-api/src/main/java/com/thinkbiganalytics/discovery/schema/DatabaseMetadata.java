@@ -1,7 +1,3 @@
-/*
- * Copyright (c) 2016. Teradata Inc.
- */
-
 package com.thinkbiganalytics.discovery.schema;
 
 public interface DatabaseMetadata {

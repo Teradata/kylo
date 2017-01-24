@@ -1,7 +1,3 @@
-/*
- * Copyright (c) 2016.
- */
-
 package com.thinkbiganalytics.json;
 
 import com.fasterxml.jackson.core.JsonProcessingException;

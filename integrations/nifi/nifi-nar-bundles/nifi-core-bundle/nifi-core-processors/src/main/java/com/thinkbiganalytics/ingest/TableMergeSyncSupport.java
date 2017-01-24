@@ -1,6 +1,3 @@
-/*
- * Copyright (c) 2016. Teradata Inc.
- */
 package com.thinkbiganalytics.ingest;
 
 import com.thinkbiganalytics.hive.util.HiveUtils;

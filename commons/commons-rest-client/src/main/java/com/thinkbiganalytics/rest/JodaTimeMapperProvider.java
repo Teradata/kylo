@@ -1,7 +1,3 @@
-/*
- * Copyright (c) 2015.
- */
-
 package com.thinkbiganalytics.rest;
 
 import com.fasterxml.jackson.databind.AnnotationIntrospector;

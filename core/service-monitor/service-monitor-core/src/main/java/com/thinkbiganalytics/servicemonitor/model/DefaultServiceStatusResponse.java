@@ -1,7 +1,3 @@
-/*
- * Copyright (c) 2015.
- */
-
 package com.thinkbiganalytics.servicemonitor.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;

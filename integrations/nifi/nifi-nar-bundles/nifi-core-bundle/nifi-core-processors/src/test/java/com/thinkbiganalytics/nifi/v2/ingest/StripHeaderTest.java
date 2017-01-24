@@ -1,7 +1,3 @@
-/*
- * Copyright (c) 2016. Teradata Inc.
- */
-
 package com.thinkbiganalytics.nifi.v2.ingest;
 
 import org.apache.nifi.util.MockFlowFile;
