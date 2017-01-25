@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.nifi.provenance.model.stats;
 
+import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
+
 import org.joda.time.DateTime;
 
 import java.io.Serializable;
@@ -28,51 +30,30 @@ public class AggregatedFeedProcessorStatisticsHolder implements Serializable {
 
     Map<String, AggregatedFeedProcessorStatistics> feedStatistics = new ConcurrentHashMap<>();
 
-    public void addStat(ProvenanceEventStats stats) {
-        if (minTime == null || stats.getTime().isBefore(minTime)) {
-            minTime = stats.getTime();
+    /**
+     * Add an event to generate statistics
+     */
+    public void addStat(ProvenanceEventRecordDTO event) {
+        if (minTime == null || event.getEventTime().isBefore(minTime)) {
+            minTime = event.getEventTime();
         }
-        if (maxTime == null || stats.getTime().isAfter(maxTime)) {
-            maxTime = stats.getTime();
+        if (maxTime == null || event.getEventTime().isAfter(maxTime)) {
+            maxTime = event.getEventTime();
         }
-        feedStatistics.computeIfAbsent(stats.getFeedName(), (feedName) -> new AggregatedFeedProcessorStatistics(feedName, collectionId)).addEventStats(
-            stats);
+        feedStatistics.computeIfAbsent(event.getFeedName(), (feedName) -> new AggregatedFeedProcessorStatistics(feedName, collectionId)).addEventStats(
+            event);
 
-        if (stats.getEventId() < minEventId) {
-            minEventId = stats.getEventId();
+        if (event.getEventId() < minEventId) {
+            minEventId = event.getEventId();
         }
-        if (stats.getEventId() > maxEventId) {
-            maxEventId = stats.getEventId();
+        if (event.getEventId() > maxEventId) {
+            maxEventId = event.getEventId();
         }
 
         eventCount.incrementAndGet();
     }
 
 
-    public DateTime getMinTime() {
-        return minTime;
-    }
-
-    public void setMinTime(DateTime minTime) {
-        this.minTime = minTime;
-    }
-
-    public DateTime getMaxTime() {
-        return maxTime;
-    }
-
-    public void setMaxTime(DateTime maxTime) {
-        this.maxTime = maxTime;
-    }
-
-
-    public String getCollectionId() {
-        return collectionId;
-    }
-
-    public void setCollectionId(String collectionId) {
-        this.collectionId = collectionId;
-    }
 
     public AtomicLong getEventCount() {
         return eventCount;
@@ -88,6 +69,12 @@ public class AggregatedFeedProcessorStatisticsHolder implements Serializable {
 
     public Map<String, AggregatedFeedProcessorStatistics> getFeedStatistics() {
         return feedStatistics;
+    }
+
+    public void clear() {
+        this.collectionId = UUID.randomUUID().toString();
+
+        feedStatistics.entrySet().forEach(e -> e.getValue().clear(collectionId));
     }
 
     @Override

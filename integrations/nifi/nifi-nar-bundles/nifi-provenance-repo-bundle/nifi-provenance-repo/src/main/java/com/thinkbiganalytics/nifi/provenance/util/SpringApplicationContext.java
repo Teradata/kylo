@@ -13,7 +13,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Created by sr186054 on 3/3/16.
+ * Utility to get access to the Spring Application Context and the Spring Beans
  */
 public class SpringApplicationContext {
 
@@ -33,15 +33,13 @@ public class SpringApplicationContext {
     private AtomicBoolean initialized = new AtomicBoolean(false);
 
 
-
-
     public void initializeSpring() {
         initializeSpring("application-context.xml");
     }
 
     public void initializeSpring(String configFileName) {
         if (initialized.compareAndSet(false, true)) {
-            log.info("Initializing Spring with {}, {} ", configFileName, this);
+            log.info("Initializing Spring with {} ", configFileName);
             this.applicationContext = new ClassPathXmlApplicationContext();
             ((ClassPathXmlApplicationContext) this.applicationContext).setClassLoader(getClass().getClassLoader());
             ((ClassPathXmlApplicationContext) this.applicationContext).setConfigLocation(configFileName);
@@ -54,6 +52,9 @@ public class SpringApplicationContext {
         return applicationContext;
     }
 
+    /**
+     * get a Spring bean by name
+     */
     public Object getBean(String beanName) throws BeansException {
         if (applicationContext == null) {
             //  initializeSpring();
@@ -73,6 +74,13 @@ public class SpringApplicationContext {
     }
 
 
+    /**
+     * get a Spring bean by the Class type
+     * @param requiredType
+     * @param <T>
+     * @return
+     * @throws BeansException
+     */
     public <T> T getBean(Class<T> requiredType) throws BeansException {
         T bean = null;
         try {
@@ -87,27 +95,42 @@ public class SpringApplicationContext {
     }
 
 
+    /**
+     * get a bean by the name and its type
+     * @param name
+     * @param requiredType
+     * @param <T>
+     * @return
+     * @throws BeansException
+     */
     public <T> T getBean(String name, Class<T> requiredType) throws BeansException {
         return this.applicationContext.getBean(name, requiredType);
     }
 
 
+    /**
+     * print out the bean names in Spring
+     * @return
+     */
     public String printBeanNames() {
         if (applicationContext == null) {
             initializeSpring();
         }
         if (applicationContext != null) {
             String beanNames = StringUtils.join(applicationContext.getBeanDefinitionNames(), ",");
-            log.info("SPRING BEANS: " + beanNames);
+            log.info("SPRING BEANS: {}", beanNames);
             return beanNames;
         } else {
-            log.error("LOG: ERROR CONTEXT IS NULL");
+            log.error("Unable to print the spring bean names.  The application context is null");
             return null;
         }
     }
 
     /**
      * Autowire properties in the object
+     * @param key the name of the Spring Bean
+     * @param obj the Bean or Object you want to be included into Spring and autowired
+     * @return the autowired Spring object
      */
     public Object autowire(String key, Object obj) {
 
@@ -116,7 +139,11 @@ public class SpringApplicationContext {
 
 
     /**
-     * Autowire an object Force it to be autowired even if the bean is not registered with the appcontext
+     * Autowire an object
+     * @param key the name of the Spring Bean
+     * @param obj the Bean or Object you want to be included into Spring and autowired
+     * @param force Force it to be autowired even if the bean is not registered with the appcontext.  If the key is already registered in spring and this is false it will not autowire.
+     * @return the autowired Spring object
      */
     public Object autowire(String key, Object obj, boolean force) {
         Object bean = null;
@@ -138,10 +165,10 @@ public class SpringApplicationContext {
                     autowire.initializeBean(obj, key);
                     return obj;
                 } else {
-                    log.error("Unable to autowire {} with Object.  ApplicationContext is null.", key, obj);
+                    log.error("Unable to autowire {} with Object: {}.  ApplicationContext is null.", key, obj);
                 }
             } catch (Exception e) {
-                log.error("Unable to autowire {} with Object ", key, obj);
+                log.error("Unable to autowire {} with Object: {} ", key, obj);
             }
         } else if (bean != null) {
             return bean;

@@ -20,7 +20,6 @@
         <module>metadata-api</module>
         <module>metadata-core</module>
         <module>metadata-modeshape</module>
-        <module>metadata-db-modeshape-migration</module>
         <module>metadata-persistence</module>
     </modules>
 

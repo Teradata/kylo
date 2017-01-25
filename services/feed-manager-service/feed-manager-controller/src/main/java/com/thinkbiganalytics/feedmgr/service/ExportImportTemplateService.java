@@ -45,8 +45,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -270,55 +268,8 @@ public class ExportImportTemplateService {
      * This will update the NifiFlowCache and get the correct processors and update the cache settings for the KyloProvenanceReportingTask
      */
     private void importReusableTemplateSuccess(ImportTemplate importTemplate) {
-        if (nifiFlowCache.isUserDefinedFailureProcessors()) {
-            if (importTemplate.isSuccess()) {
-                List<RegisteredTemplate> templates = metadataAccess.read(() -> metadataService.getRegisteredTemplates(), MetadataAccess.SERVICE);
-                //update the cache in a separate thread
-                ReusableTemplateUpdatedRunnable reusableTemplateUpdatedRunnable = new ReusableTemplateUpdatedRunnable(nifiFlowCache, importTemplate, templates);
-                Executors.newSingleThreadExecutor().execute(reusableTemplateUpdatedRunnable);
-            }
-        }
+
     }
-
-    public class ReusableTemplateUpdatedRunnable implements Runnable {
-
-        private NifiFlowCache nifiFlowCache;
-        ImportTemplate importTemplate;
-        List<RegisteredTemplate> registeredTemplates;
-
-        public ReusableTemplateUpdatedRunnable(NifiFlowCache nifiFlowCache, ImportTemplate importTemplate, List<RegisteredTemplate> registeredTemplates) {
-            this.importTemplate = importTemplate;
-            this.nifiFlowCache = nifiFlowCache;
-            this.registeredTemplates = registeredTemplates;
-        }
-
-        public void run() {
-            try {
-                ProcessGroupDTO processGroupDTO = importTemplate.getTemplateResults().getProcessGroupEntity();
-                if (processGroupDTO != null) {
-                    if (registeredTemplates != null && !registeredTemplates.isEmpty()) {
-                        List<String> inputPortNames = processGroupDTO.getContents().getInputPorts().stream().map(port -> port.getName()).collect(Collectors.toList());
-
-                        if (inputPortNames != null && !inputPortNames.isEmpty()) {
-                            List<RegisteredTemplate>
-                                connectingFeedTemplates =
-                                registeredTemplates.stream()
-                                    .filter(template -> template.getReusableTemplateConnections().stream().anyMatch(conn -> inputPortNames.contains(conn.getInputPortDisplayName())))
-                                    .collect(Collectors.toList());
-                            if (connectingFeedTemplates != null && !connectingFeedTemplates.isEmpty()) {
-                                connectingFeedTemplates.stream().forEach(template -> nifiFlowCache.reusableTemplateUpdatedForTemplate(template));
-
-                            }
-                        }
-                    }
-                    log.info("Finished updating the NiFiFlowCache with updated reusable template {} ", importTemplate.getTemplateName());
-                }
-            } catch (Exception e) {
-                log.error("Error updating the NiFiFlowCache afer update of reusable template {} ", importTemplate.getTemplateName(), e);
-            }
-        }
-    }
-
 
     public ExportTemplate exportTemplate(String templateId) {
         this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EXPORT_TEMPLATES);

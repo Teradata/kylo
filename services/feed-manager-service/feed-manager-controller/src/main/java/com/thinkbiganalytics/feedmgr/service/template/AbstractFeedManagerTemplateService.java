@@ -331,7 +331,6 @@ public abstract class AbstractFeedManagerTemplateService implements FeedManagerT
             p.setName(flowProcessor.getName());
             p.setFlowId(flowProcessor.getFlowId());
             p.setIsLeaf(flowProcessor.isLeaf());
-            p.setFlowTypes(flowProcessor.getProcessorFlowTypes());
             return p;
         }).collect(Collectors.toList());
     }

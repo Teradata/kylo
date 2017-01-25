@@ -1,7 +1,7 @@
 package com.thinkbiganalytics.feedmgr.rest.model;
 
 import com.google.common.collect.Lists;
-import com.thinkbiganalytics.common.constants.KyloProcessorFlowType;
+import com.thinkbiganalytics.nifi.provenance.KyloProcessorFlowType;
 
 import java.util.List;
 import java.util.stream.Collectors;

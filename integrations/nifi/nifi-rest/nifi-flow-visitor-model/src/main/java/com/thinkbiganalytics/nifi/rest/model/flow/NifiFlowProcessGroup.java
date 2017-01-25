@@ -3,7 +3,6 @@ package com.thinkbiganalytics.nifi.rest.model.flow;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.collect.Lists;
-import com.thinkbiganalytics.common.constants.KyloProcessorFlowTypeRelationship;
 
 import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.slf4j.Logger;
@@ -206,51 +205,6 @@ public class NifiFlowProcessGroup {
         this.feedName = feedName;
     }
 
-
-    public void resetProcessorsFlowType(final Map<String, Set<KyloProcessorFlowTypeRelationship>> processorFlowTypeMap) {
-        if (processorFlowTypeMap != null) {
-            getProcessorMap().values().stream()
-                .forEach(flowProcessor -> flowProcessor.setProcessorFlowTypes(processorFlowTypeMap.getOrDefault(flowProcessor.getFlowId(), KyloProcessorFlowTypeRelationship.DEFAULT_SET)));
-        }
-    }
-
-    public Map<String, Set<KyloProcessorFlowTypeRelationship>> getFlowProcessorMap() {
-
-        Map<String, Set<KyloProcessorFlowTypeRelationship>>
-            processorFlowTypeMap =
-            getProcessorMap().values().stream().filter(processor -> !KyloProcessorFlowTypeRelationship.isNormalFlowSet(processor.getProcessorFlowTypes()))
-                .collect(Collectors.toMap(flowProcessor1 -> flowProcessor1.getId(), flowProcessor1 -> flowProcessor1.getProcessorFlowTypes()));
-
-        return processorFlowTypeMap;
-    }
-
-
-    public Set<String> getProcessorFlowIdsNotNormal() {
-
-        return getProcessorMap().values().stream().filter(processor -> !KyloProcessorFlowTypeRelationship.isNormalFlowSet(processor.getProcessorFlowTypes())).map(p -> p.getFlowId())
-            .collect(Collectors.toSet());
-
-    }
-
-    public Set<String> getProcessorFlowIds() {
-
-        return getProcessorMap().values().stream().map(p -> p.getFlowId()).collect(Collectors.toSet());
-
-    }
-
-
-/*
-    public Set<NifiFlowProcessor>  calculateCriticalPathProcessors() {
-        Set<NifiFlowProcessor> criticalPathProcessors = new HashSet<>();
-
-        getProcessorMap().values().stream().forEach(nifiFlowProcessor -> nifiFlowProcessor.setCriticalPath(false));
-        //walk back from the critical failure processors to determine all parents in the chain
-        Set<NifiFlowProcessor> criticalPathLeafNodes =  getProcessorMap().values().stream()
-            .filter(flowProcessor -> KyloProcessorFlowType.FAILURE.equals(flowProcessor.getProcessorFlowType())).collect(Collectors.toSet());
-        criticalPathLeafNodes.stream().filter(nifiFlowProcessor -> !criticalPathProcessors.contains(nifiFlowProcessor)).forEach(nifiFlowProcessor -> nifiFlowProcessor.populateCriticalPathOnSources(criticalPathProcessors));
-        return criticalPathProcessors;
-    }
-    */
 
     public Map<String, NifiFlowConnection> getConnectionIdMap() {
         if (connectionIdMap == null) {

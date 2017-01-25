@@ -1,20 +1,20 @@
 package com.thinkbiganalytics.nifi.provenance.model.stats;
 
-import org.joda.time.DateTime;
+import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
+
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Created by sr186054 on 8/16/16.
+ * Group Stats by Feed and Processor
  */
 public class AggregatedFeedProcessorStatistics implements Serializable {
 
     String feedName;
     String processGroup;
-    DateTime minTime;
-    DateTime maxTime;
     private String collectionId;
     private Long totalEvents = 0L;
     private Long minEventId = 0L;
@@ -30,15 +30,20 @@ public class AggregatedFeedProcessorStatistics implements Serializable {
         this.collectionId = collectionId;
     }
 
-
-    public void addEventStats(ProvenanceEventStats stats) {
-        processorStats.computeIfAbsent(stats.getProcessorId(), processorId -> new AggregatedProcessorStatistics(processorId, stats.getProcessorName(), collectionId)).add(stats);
+    /**
+     * Add the event to compute statistics
+     */
+    public void addEventStats(ProvenanceEventRecordDTO event) {
+        processorStats.computeIfAbsent(event.getComponentId(), processorId -> new AggregatedProcessorStatistics(processorId, event.getComponentName(), collectionId)).add(event);
         totalEvents++;
-        if (stats.getEventId() < minEventId) {
-            minEventId = stats.getEventId();
+        if (event.getEventId() < minEventId) {
+            minEventId = event.getEventId();
         }
-        if (stats.getEventId() > maxEventId) {
-            maxEventId = stats.getEventId();
+        if (event.getEventId() > maxEventId) {
+            maxEventId = event.getEventId();
+        }
+        if (StringUtils.isBlank(processGroup) && StringUtils.isNotBlank(event.getFeedProcessGroupId())) {
+            processGroup = event.getFeedProcessGroupId();
         }
     }
 
@@ -54,48 +59,17 @@ public class AggregatedFeedProcessorStatistics implements Serializable {
         return processGroup;
     }
 
-    public void setProcessGroup(String processGroup) {
-        this.processGroup = processGroup;
+    public Long getMaxEventId() {
+        return maxEventId;
     }
 
     public Map<String, AggregatedProcessorStatistics> getProcessorStats() {
         return processorStats;
     }
 
-    public void setProcessorStats(Map<String, AggregatedProcessorStatistics> processorStats) {
-        this.processorStats = processorStats;
-    }
 
-
-    public DateTime getMinTime() {
-        return minTime;
-    }
-
-    public void setMinTime(DateTime minTime) {
-        this.minTime = minTime;
-    }
-
-    public DateTime getMaxTime() {
-        return maxTime;
-    }
-
-    public void setMaxTime(DateTime maxTime) {
-        this.maxTime = maxTime;
-    }
-
-    public void calculateTotalEvents() {
-        Long total = 0L;
-        for (AggregatedProcessorStatistics statistics : getProcessorStats().values()) {
-            total += statistics.getStats().getTotalCount();
-        }
-        this.totalEvents = total;
-    }
-
-    public Long getMinEventId() {
-        return minEventId;
-    }
-
-    public Long getMaxEventId() {
-        return maxEventId;
+    public void clear(String newCollectionId) {
+        this.collectionId = newCollectionId;
+        processorStats.entrySet().forEach(e -> e.getValue().clear());
     }
 }

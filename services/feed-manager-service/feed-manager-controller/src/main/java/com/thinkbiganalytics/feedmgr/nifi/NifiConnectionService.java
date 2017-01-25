@@ -42,11 +42,11 @@ public class NifiConnectionService {
     }
 
     private void notifyOnConnected() {
-        connectionListeners.stream().forEach(nifiConnectionListener -> nifiConnectionListener.onConnected());
+        connectionListeners.stream().forEach(nifiConnectionListener -> nifiConnectionListener.onNiFiConnected());
     }
 
     private void notifyOnDisconnected() {
-        connectionListeners.stream().forEach(nifiConnectionListener -> nifiConnectionListener.onDisconnected());
+        connectionListeners.stream().forEach(nifiConnectionListener -> nifiConnectionListener.onNiFiDisconnected());
     }
 
     public void checkConnection() {

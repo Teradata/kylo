@@ -2,8 +2,6 @@ package com.thinkbiganalytics.metadata.rest.model.nifi;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.thinkbiganalytics.common.constants.KyloProcessorFlowType;
-import com.thinkbiganalytics.common.constants.KyloProcessorFlowTypeRelationship;
 
 import org.joda.time.DateTime;
 
@@ -21,21 +19,17 @@ public class NifiFlowCacheSnapshot {
 
     private DateTime snapshotDate;
 
-    private boolean userDefinedFailureProcessors;
-
     //items to add
-    private Map<String, String> addProcessorIdToFeedNameMap = new ConcurrentHashMap<>();
+    private Map<String, String> processorIdToFeedNameMap = new ConcurrentHashMap<>();
 
-    private Map<String, String> addProcessorIdToFeedProcessGroupId = new ConcurrentHashMap<>();
+    private Map<String, String> processorIdToFeedProcessGroupId = new ConcurrentHashMap<>();
 
-    private Map<String, String> addProcessorIdToProcessorName = new ConcurrentHashMap<>();
+    private Map<String, String> processorIdToProcessorName = new ConcurrentHashMap<>();
 
     private Map<String, String> connectionIdToConnectionName = new ConcurrentHashMap<>();
 
     private Map<String, NiFiFlowCacheConnectionData> connectionIdToConnection = new ConcurrentHashMap<>();
 
-
-    private Map<String, Map<String, Set<KyloProcessorFlowTypeRelationship>>> feedToProcessorIdToFlowTypeMap = new ConcurrentHashMap<>();
 
     private Set<String> allStreamingFeeds = new HashSet<>();
 
@@ -44,7 +38,6 @@ public class NifiFlowCacheSnapshot {
      */
     private Set<String> allFeeds = new HashSet<>();
 
-    private Set<String> removeProcessorIds = new HashSet<>();
 
     public static NifiFlowCacheSnapshot EMPTY = new Builder()
         .withProcessorIdToFeedNameMap(ImmutableMap.of())
@@ -59,27 +52,24 @@ public class NifiFlowCacheSnapshot {
     }
 
     public NifiFlowCacheSnapshot(Map<String, String> processorIdToFeedNameMap,
-                                 Map<String, String> addProcessorIdToFeedProcessGroupId, Map<String, String> addProcessorIdToProcessorName, Set<String> allStreamingFeeds, Set<String> allFeeds) {
-        this.addProcessorIdToFeedNameMap = processorIdToFeedNameMap;
-        this.addProcessorIdToFeedProcessGroupId = addProcessorIdToFeedProcessGroupId;
-        this.addProcessorIdToProcessorName = addProcessorIdToProcessorName;
+                                 Map<String, String> processorIdToFeedProcessGroupId, Map<String, String> processorIdToProcessorName, Set<String> allStreamingFeeds, Set<String> allFeeds) {
+        this.processorIdToFeedNameMap = processorIdToFeedNameMap;
+        this.processorIdToFeedProcessGroupId = processorIdToFeedProcessGroupId;
+        this.processorIdToProcessorName = processorIdToProcessorName;
         this.allStreamingFeeds = allStreamingFeeds;
         this.allFeeds = allFeeds;
     }
 
     public static class Builder {
 
-
-        private Map<String, Map<String, Set<KyloProcessorFlowTypeRelationship>>> feedToProcessorIdToFlowTypeMap;
-
         //items to add
-        private Map<String, String> addProcessorIdToFeedNameMap;
+        private Map<String, String> processorIdToFeedNameMap;
 
-        private Map<String, String> addProcessorIdToFeedProcessGroupId;
+        private Map<String, String> processorIdToFeedProcessGroupId;
 
-        private Map<String, String> addProcessorIdToProcessorName;
+        private Map<String, String> processorIdToProcessorName;
 
-        private Set<String> addStreamingFeeds;
+        private Set<String> streamingFeeds;
 
         private Map<String, NiFiFlowCacheConnectionData> connectionIdToConnection;
 
@@ -90,24 +80,6 @@ public class NifiFlowCacheSnapshot {
 
         private DateTime snapshotDate;
 
-        private Set<String> removeProcessorIds;
-
-
-        private Map<String, Map<String, Set<KyloProcessorFlowTypeRelationship>>> getFeedToProcessorIdToFlowTypeMap() {
-            if (feedToProcessorIdToFlowTypeMap == null) {
-                feedToProcessorIdToFlowTypeMap = new HashMap<>();
-            }
-            return feedToProcessorIdToFlowTypeMap;
-        }
-
-
-        public Builder withFeedToProcessorIdToFlowTypeMap(Map<String, Map<String, Set<KyloProcessorFlowTypeRelationship>>> feedToProcessorIdToFlowTypeMap) {
-            if (feedToProcessorIdToFlowTypeMap != null) {
-                getFeedToProcessorIdToFlowTypeMap().putAll(feedToProcessorIdToFlowTypeMap);
-            }
-
-            return this;
-        }
 
         public Builder withConnections(Map<String, NiFiFlowCacheConnectionData> connections) {
             this.connectionIdToConnection = connections;
@@ -115,24 +87,24 @@ public class NifiFlowCacheSnapshot {
         }
 
         public Builder withProcessorIdToFeedNameMap(Map<String, String> addProcessorIdToFeedNameMap) {
-            this.addProcessorIdToFeedNameMap = addProcessorIdToFeedNameMap;
+            this.processorIdToFeedNameMap = addProcessorIdToFeedNameMap;
             return this;
         }
 
 
         public Builder withProcessorIdToFeedProcessGroupId(Map<String, String> addProcessorIdToFeedProcessGroupId) {
-            this.addProcessorIdToFeedProcessGroupId = addProcessorIdToFeedProcessGroupId;
+            this.processorIdToFeedProcessGroupId = addProcessorIdToFeedProcessGroupId;
             return this;
         }
 
         public Builder withProcessorIdToProcessorName(Map<String, String> addProcessorIdToProcessorName) {
-            this.addProcessorIdToProcessorName = addProcessorIdToProcessorName;
+            this.processorIdToProcessorName = addProcessorIdToProcessorName;
             return this;
         }
 
 
         public Builder withStreamingFeeds(Set<String> addStreamingFeeds) {
-            this.addStreamingFeeds = addStreamingFeeds;
+            this.streamingFeeds = addStreamingFeeds;
             return this;
         }
 
@@ -150,9 +122,8 @@ public class NifiFlowCacheSnapshot {
         public NifiFlowCacheSnapshot build() {
             NifiFlowCacheSnapshot
                 snapshot =
-                new NifiFlowCacheSnapshot(addProcessorIdToFeedNameMap, addProcessorIdToFeedProcessGroupId, addProcessorIdToProcessorName, addStreamingFeeds, allFeeds);
+                new NifiFlowCacheSnapshot(processorIdToFeedNameMap, processorIdToFeedProcessGroupId, processorIdToProcessorName, streamingFeeds, allFeeds);
             snapshot.setSnapshotDate(this.snapshotDate);
-            snapshot.setFeedToProcessorIdToFlowTypeMap(getFeedToProcessorIdToFlowTypeMap());
             snapshot.setConnectionIdToConnection(connectionIdToConnection);
             if (connectionIdToConnection != null) {
                 Map<String, String> connectionIdNameMap = connectionIdToConnection.values().stream().collect(Collectors.toMap(conn -> conn.getConnectionIdentifier(), conn -> conn.getName()));
@@ -164,66 +135,39 @@ public class NifiFlowCacheSnapshot {
 
     }
 
-    public Set<KyloProcessorFlowTypeRelationship> getProcessorFlowTypes(String feedName, String processorId) {
-        Map<String, Set<KyloProcessorFlowTypeRelationship>> map = getFeedToProcessorIdToFlowTypeMap().get(feedName);
-        if (map != null) {
-            return map.getOrDefault(processorId, KyloProcessorFlowTypeRelationship.DEFAULT_SET);
-        } else {
-            return KyloProcessorFlowTypeRelationship.DEFAULT_SET;
+
+    public Map<String, String> getProcessorIdToFeedNameMap() {
+        if (processorIdToFeedNameMap == null) {
+            this.processorIdToFeedNameMap = new HashMap<>();
         }
+        return processorIdToFeedNameMap;
     }
 
-    public Map<String, KyloProcessorFlowType> getProcessorFlowTypesAsMap(String feedName, String processorId) {
-        return getProcessorFlowTypes(feedName, processorId).stream().collect(Collectors.toMap(kyloProcessorFlowTypeRelationship -> kyloProcessorFlowTypeRelationship.getRelationship(),
-                                                                                              kyloProcessorFlowTypeRelationship -> kyloProcessorFlowTypeRelationship.getFlowType()));
-    }
-
-    public boolean hasProcessorFlowTypesMapped(String feedName) {
-        Map<String, Set<KyloProcessorFlowTypeRelationship>> map = getFeedToProcessorIdToFlowTypeMap().get(feedName);
-        return map != null & !map.isEmpty();
+    public void setProcessorIdToFeedNameMap(Map<String, String> processorIdToFeedNameMap) {
+        this.processorIdToFeedNameMap = processorIdToFeedNameMap;
     }
 
 
-    public Map<String, String> getAddProcessorIdToFeedNameMap() {
-        if (addProcessorIdToFeedNameMap == null) {
-            this.addProcessorIdToFeedNameMap = new HashMap<>();
+    public Map<String, String> getProcessorIdToFeedProcessGroupId() {
+        if (processorIdToFeedProcessGroupId == null) {
+            this.processorIdToFeedProcessGroupId = new HashMap<>();
         }
-        return addProcessorIdToFeedNameMap;
+        return processorIdToFeedProcessGroupId;
     }
 
-    public void setAddProcessorIdToFeedNameMap(Map<String, String> addProcessorIdToFeedNameMap) {
-        this.addProcessorIdToFeedNameMap = addProcessorIdToFeedNameMap;
+    public void setProcessorIdToFeedProcessGroupId(Map<String, String> processorIdToFeedProcessGroupId) {
+        this.processorIdToFeedProcessGroupId = processorIdToFeedProcessGroupId;
     }
 
-    public Set<String> getRemoveProcessorIds() {
-        return removeProcessorIds;
-    }
-
-    public void setRemoveProcessorIds(Set<String> removeProcessorIds) {
-        this.removeProcessorIds = removeProcessorIds;
-    }
-
-
-    public Map<String, String> getAddProcessorIdToFeedProcessGroupId() {
-        if (addProcessorIdToFeedProcessGroupId == null) {
-            this.addProcessorIdToFeedProcessGroupId = new HashMap<>();
+    public Map<String, String> getProcessorIdToProcessorName() {
+        if (processorIdToProcessorName == null) {
+            this.processorIdToProcessorName = new HashMap<>();
         }
-        return addProcessorIdToFeedProcessGroupId;
+        return processorIdToProcessorName;
     }
 
-    public void setAddProcessorIdToFeedProcessGroupId(Map<String, String> addProcessorIdToFeedProcessGroupId) {
-        this.addProcessorIdToFeedProcessGroupId = addProcessorIdToFeedProcessGroupId;
-    }
-
-    public Map<String, String> getAddProcessorIdToProcessorName() {
-        if (addProcessorIdToProcessorName == null) {
-            this.addProcessorIdToProcessorName = new HashMap<>();
-        }
-        return addProcessorIdToProcessorName;
-    }
-
-    public void setAddProcessorIdToProcessorName(Map<String, String> addProcessorIdToProcessorName) {
-        this.addProcessorIdToProcessorName = addProcessorIdToProcessorName;
+    public void setProcessorIdToProcessorName(Map<String, String> processorIdToProcessorName) {
+        this.processorIdToProcessorName = processorIdToProcessorName;
     }
 
     public Set<String> getAllStreamingFeeds() {
@@ -245,14 +189,6 @@ public class NifiFlowCacheSnapshot {
         this.snapshotDate = snapshotDate;
     }
 
-
-    public Map<String, Map<String, Set<KyloProcessorFlowTypeRelationship>>> getFeedToProcessorIdToFlowTypeMap() {
-        return feedToProcessorIdToFlowTypeMap;
-    }
-
-    public void setFeedToProcessorIdToFlowTypeMap(Map<String, Map<String, Set<KyloProcessorFlowTypeRelationship>>> feedToProcessorIdToFlowTypeMap) {
-        this.feedToProcessorIdToFlowTypeMap = feedToProcessorIdToFlowTypeMap;
-    }
 
     public Set<String> getAllFeeds() {
         return allFeeds;
@@ -279,26 +215,18 @@ public class NifiFlowCacheSnapshot {
     }
 
 
-    public boolean isUserDefinedFailureProcessors() {
-        return userDefinedFailureProcessors;
-    }
 
-    public void setUserDefinedFailureProcessors(boolean userDefinedFailureProcessors) {
-        this.userDefinedFailureProcessors = userDefinedFailureProcessors;
-    }
 
     //DEAL WITH REMOVAL of items... removal /change of streaming feeds!
     public void update(NifiFlowCacheSnapshot syncSnapshot) {
-        addProcessorIdToFeedNameMap.putAll(syncSnapshot.getAddProcessorIdToFeedNameMap());
-        addProcessorIdToFeedProcessGroupId.putAll(syncSnapshot.getAddProcessorIdToFeedProcessGroupId());
-        addProcessorIdToProcessorName.putAll(syncSnapshot.getAddProcessorIdToProcessorName());
+        processorIdToFeedNameMap.putAll(syncSnapshot.getProcessorIdToFeedNameMap());
+        processorIdToFeedProcessGroupId.putAll(syncSnapshot.getProcessorIdToFeedProcessGroupId());
+        processorIdToProcessorName.putAll(syncSnapshot.getProcessorIdToProcessorName());
         allStreamingFeeds = new HashSet<>(syncSnapshot.getAllStreamingFeeds());
         allFeeds.addAll(syncSnapshot.getAllFeeds());
         snapshotDate = syncSnapshot.getSnapshotDate();
-        feedToProcessorIdToFlowTypeMap.putAll(syncSnapshot.getFeedToProcessorIdToFlowTypeMap());
         connectionIdToConnection = syncSnapshot.getConnectionIdToConnection();
         connectionIdToConnectionName = syncSnapshot.getConnectionIdToConnectionName();
-        userDefinedFailureProcessors = syncSnapshot.isUserDefinedFailureProcessors();
     }
 
 

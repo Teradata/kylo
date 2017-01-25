@@ -3,7 +3,7 @@ package com.thinkbiganalytics.nifi.provenance;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * Created by sr186054 on 10/14/16.
+ * Track event counts sent to the JMS queue
  */
 public class AggregationEventProcessingStats {
 

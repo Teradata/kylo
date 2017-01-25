@@ -1,7 +1,7 @@
 package com.thinkbiganalytics.nifi.provenance.jms;
 
 /**
- * Created by sr186054 on 12/22/16.
+ * Listener that is called when the {@link ProvenanceEventActiveMqWriter} sends a JMS message
  */
 public interface JmsSendListener<T extends Object> {
 

@@ -10,7 +10,11 @@ import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
 import com.thinkbiganalytics.nifi.rest.client.layout.AlignProcessGroupComponents;
-import com.thinkbiganalytics.nifi.rest.model.*;
+import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptorTransform;
+import com.thinkbiganalytics.nifi.rest.model.NifiError;
+import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
+import com.thinkbiganalytics.nifi.rest.model.NifiProcessorSchedule;
+import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.visitor.NifiFlowBuilder;
 import com.thinkbiganalytics.nifi.rest.model.visitor.NifiVisitableProcessGroup;
@@ -37,8 +41,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
-
-import static org.hsqldb.HsqlDateTime.e;
 
 /**
  * Builds a NiFi feed based on a NiFi template and a Feed Manager Feed. Internally this uses the NiFi REST API.
@@ -249,7 +251,7 @@ public class CreateFeedBuilder {
                         NifiVisitableProcessGroup group = restClient.getFlowOrder(newProcessGroup.getProcessGroupEntity(),null);
                         NifiFlowProcessGroup
                             flow =
-                            new NifiFlowBuilder().processorFlowIdToProcessorFlowTypeMap(feedMetadata.getRegisteredTemplate().getProcessorFlowTypesMap()).inspectForFailureRelationships(false).build(
+                            new NifiFlowBuilder().inspectForFailureRelationships(false).build(
                             group);
                         nifiFlowCache.updateFlow(feedMetadata,flow);
 

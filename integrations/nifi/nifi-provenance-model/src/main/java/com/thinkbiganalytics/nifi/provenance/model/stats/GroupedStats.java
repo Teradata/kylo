@@ -1,14 +1,15 @@
 package com.thinkbiganalytics.nifi.provenance.model.stats;
 
 
+import com.thinkbiganalytics.nifi.provenance.model.FeedFlowFile;
+import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
+
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by sr186054 on 8/16/16.
@@ -16,72 +17,74 @@ import java.util.List;
 public class GroupedStats extends BaseStatistics implements Serializable {
 
     private static final Logger log = LoggerFactory.getLogger(GroupedStats.class);
+
+    /**
+     * Unique Key for this grouping of events
+     */
     private String groupKey;
+    /**
+     * Min Time for the events in this group
+     */
     private DateTime minTime;
+    /**
+     * Max time for the events in this group
+     */
     private DateTime maxTime;
-
-    //  @JsonIgnore
-    /// private  transient List<ProvenanceEventStats> eventStatsList;
-
     public GroupedStats() {
-        //      this.eventStatsList = new ArrayList<>();
+
     }
 
-    public void add(ProvenanceEventStats stats) {
-        this.bytesIn += stats.getBytesIn();
-        this.bytesOut += stats.getBytesOut();
-        this.duration += stats.getDuration();
-        this.processorsFailed += stats.getProcessorsFailed();
-        this.flowFilesStarted += stats.getFlowFilesStarted();
-        this.flowFilesFinished += stats.getFlowFilesFinished();
-        this.jobsStarted += stats.getJobsStarted();
-        this.jobsFinished += stats.getJobsFinished();
-        this.jobsFailed += stats.getJobsFailed();
-        this.jobDuration += stats.getJobDuration();
-        this.successfulJobDuration += stats.getSuccessfulJobDuration();
+    public void add(ProvenanceEventRecordDTO event) {
 
-        if (this.time == null) {
-            this.time = stats.getTime();
+        FeedFlowFile feedFlowFile = event.getFeedFlowFile();
+        this.bytesIn = event.getInputContentClaimFileSizeBytes() != null ? event.getInputContentClaimFileSizeBytes() : 0L;
+        this.bytesOut += event.getOutputContentClaimFileSizeBytes() != null ? event.getOutputContentClaimFileSizeBytes() : 0L;
+        this.duration += event.getEventDuration() != null ? event.getEventDuration() : 0L;
+        this.processorsFailed += event.isFailure() ? 1L : 0L;
+        this.flowFilesStarted += event.isStartOfFlowFile() ? 1L : 0L;
+        this.flowFilesFinished += event.isEndingFlowFileEvent() ? 1L : 0L;
+        this.jobsStarted += feedFlowFile.getFirstEventId().equals(event.getEventId()) ? 1L : 0L;
+        if (event.isEndOfJob()) {
+            this.jobsFinished += 1L;
+            Long jobTime = feedFlowFile.calculateJobDuration(event);
+            this.jobDuration += jobTime;
+            if (feedFlowFile.hasFailedEvents()) {
+                this.jobsFailed += 1L;
+            } else {
+                this.successfulJobDuration += jobTime;
+            }
         }
+        if (this.time == null) {
+            this.time = event.getEventTime();
+        }
+
         if (this.minTime == null) {
-            this.minTime = stats.getTime();
+            this.minTime = event.getEventTime();
         }
 
         if (this.maxTime == null) {
-            this.maxTime = stats.getTime();
+            this.maxTime = event.getEventTime();
         }
-        this.maxTime = (stats.getTime()).isAfter(this.maxTime) ? stats.getTime() : this.maxTime;
-        this.minTime = (stats.getTime()).isBefore(this.minTime) ? stats.getTime() : this.minTime;
+        this.maxTime = (event.getEventTime()).isAfter(this.maxTime) ? event.getEventTime() : this.maxTime;
+        this.minTime = (event.getEventTime()).isBefore(this.minTime) ? event.getEventTime() : this.minTime;
         this.time = this.minTime;
-        if (this.maxEventId < stats.getEventId()) {
-            this.maxEventId = stats.getEventId();
+        if (this.maxEventId < event.getEventId()) {
+            this.maxEventId = event.getEventId();
         }
 
         if (StringUtils.isBlank(this.clusterNodeAddress)) {
-            this.clusterNodeAddress = stats.getClusterNodeAddress();
+            this.clusterNodeAddress = event.getClusterNodeAddress();
         }
 
         if (StringUtils.isBlank(this.clusterNodeId)) {
-            this.clusterNodeId = stats.getClusterNodeId();
+            this.clusterNodeId = event.getClusterNodeId();
         }
 
-        // this.eventStatsList.add(stats);
         this.totalCount++;
     }
 
 
-    public GroupedStats(String groupKey, List<ProvenanceEventStats> eventStats) {
-        this.groupKey = groupKey;
-        if (eventStats != null && !eventStats.isEmpty()) {
-            List<ProvenanceEventStats> eventStatsList = new ArrayList<>(eventStats);
 
-            eventStatsList.stream().forEach(stats -> {
-                add(stats);
-            });
-            //reassign as collection time
-        }
-        this.time = DateTime.now();
-    }
 
     public void setGroupKey(String groupKey) {
         this.groupKey = groupKey;
@@ -99,6 +102,14 @@ public class GroupedStats extends BaseStatistics implements Serializable {
         return groupKey;
     }
 
+
+    public void clear() {
+        super.clear();
+        this.groupKey = null;
+        this.maxTime = null;
+        this.minTime = null;
+    }
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("GroupedStats{");
@@ -106,8 +117,4 @@ public class GroupedStats extends BaseStatistics implements Serializable {
         sb.append('}');
         return sb.toString();
     }
-
-    // public List<ProvenanceEventStats> getEventStatsList() {
-    //      return eventStatsList;
-    //  }
 }

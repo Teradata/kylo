@@ -241,7 +241,6 @@ public class TemplatesRestController {
 
             response.setProcessors(processors);
             response.setTemplateProcessorDatasourceDefinitions(templateProcessorDatasourceDefinitions);
-            response.setUserDefinedFailureProcessors(nifiFlowCache.isUserDefinedFailureProcessors());
         }
         return Response.ok(response).build();
 

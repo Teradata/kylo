@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.common.constants;
+package com.thinkbiganalytics.nifi.provenance;
 
 import java.io.Serializable;
 

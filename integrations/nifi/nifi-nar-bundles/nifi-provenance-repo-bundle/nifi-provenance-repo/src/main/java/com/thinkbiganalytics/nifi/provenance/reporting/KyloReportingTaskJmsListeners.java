@@ -11,7 +11,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 
 /**
- * Created by sr186054 on 12/22/16.
+ * listeners as to when the JMS sucessfully processes the events. The {@link KyloProvenanceEventReportingTask} subscribes to the JMS events to update the lastEventId {@link
+ * KyloProvenanceEventReportingTask#setLastEventId(long)} so it knows what id it should start with next time it runs.
  */
 public class KyloReportingTaskJmsListeners {
 

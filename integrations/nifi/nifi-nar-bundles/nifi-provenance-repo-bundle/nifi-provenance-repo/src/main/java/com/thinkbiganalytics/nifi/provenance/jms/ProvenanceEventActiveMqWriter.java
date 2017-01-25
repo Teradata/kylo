@@ -9,8 +9,6 @@ import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessor
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jms.JmsException;
-import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,9 +18,12 @@ import java.util.Set;
 import javax.annotation.PostConstruct;
 
 /**
- * Created by sr186054 on 3/3/16.
+ * Send ProvenanceEvent data to JMS queues
+ * 2 Queues are used.  The Queue names are constants shared with Kylo Operations Manager found in the {@link Queues} class.
+ * Queues.PROVENANCE_EVENT_STATS_QUEUE  is the Statistics Queue name for creating the Summary statistics
+ * Queues.FEED_MANAGER_QUEUE is the Batch Provenance Events Queue for creating the Jobs/Steps in Kylo
+ *
  */
-@Component
 public class ProvenanceEventActiveMqWriter {
 
     private static final Logger logger = LoggerFactory.getLogger(ProvenanceEventActiveMqWriter.class);
@@ -48,34 +49,28 @@ public class ProvenanceEventActiveMqWriter {
 
     }
 
+    /**
+     * Notify any listeners of a successful JMS send
+     */
     private void notifySuccess(String destination, Object payload) {
         if (this.listeners.containsKey(destination)) {
             this.listeners.get(destination).stream().forEach(listener -> listener.successfulJmsMessage(destination, payload));
         }
     }
 
+    /**
+     * Notify any listeners of a JMS error in sending
+     */
     private void notifyError(String destination, Object payload, String errorMessge) {
         if (this.listeners.containsKey(destination)) {
             this.listeners.get(destination).stream().forEach(listener -> listener.errorJmsMessage(destination, payload, errorMessge));
         }
     }
 
-
     /**
-     * Write to the provenance-event queue This is used for important events such as Start, Fail, End
-     */
-    public void writeEvents(ProvenanceEventRecordDTOHolder events) {
-        logger.info("SENDING {} events to {} ", events, Queues.PROVENANCE_EVENT_QUEUE);
-        try {
-            sendJmsMessage.sendSerializedObjectToQueue(Queues.PROVENANCE_EVENT_QUEUE, events);
-            notifySuccess(Queues.PROVENANCE_EVENT_QUEUE, events);
-        } catch (JmsException e) {
-            notifyError(Queues.PROVENANCE_EVENT_QUEUE, events, e.getMessage());
-        }
-    }
-
-    /**
-     * Write out stats to JMS
+     * Send the Statistics to JMS using the JMS Queue {@link Queues.PROVENANCE_EVENT_STATS_QUEUE}
+     *
+     * @param stats that statistics to send to JMS
      */
     public void writeStats(AggregatedFeedProcessorStatisticsHolder stats) {
         try {
@@ -91,8 +86,10 @@ public class ProvenanceEventActiveMqWriter {
         }
     }
 
-    /***
-     * Write the batch events to JMS
+    /**
+     * Send the Batched Events to the JMS Queue {@link Queues.FEED_MANAGER_QUEUE}
+     *
+     * @param events the events to send to JMS
      */
     public void writeBatchEvents(ProvenanceEventRecordDTOHolder events) {
         try {

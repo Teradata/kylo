@@ -14,13 +14,11 @@ public class ProvenanceEventUtil {
 
     public static final String AUTO_TERMINATED_FAILURE_RELATIONSHIP = "auto-terminated by failure relationship";
 
-    public static final String DROP_FLOW_FILES = "flowfile queue emptied";
+    public static final String FLOWFILE_QUEUE_EMPTIED = "flowfile queue emptied";
 
     public static final String[] STARTING_EVENT_TYPES = {"RECEIVE","CREATE"};
 
     public static final String[] ENDING_EVENT_TYPES = {"DROP", "EXPIRE",};
-
-    public static final String[] NON_COMPLETION_EVENTS = {"SEND"};
 
     public static boolean contains(String[] allowedEvents, String event) {
         return Arrays.stream(allowedEvents).anyMatch(event::equals);
@@ -62,8 +60,8 @@ public class ProvenanceEventUtil {
 
     }
 
-    public static boolean isDropFlowFilesEvent(ProvenanceEventRecordDTO event){
-        return (isEndingFlowFileEvent(event) && StringUtils.isNotBlank(event.getDetails()) && event.getDetails().toLowerCase().startsWith(DROP_FLOW_FILES));
+    public static boolean isFlowFileQueueEmptied(ProvenanceEventRecordDTO event) {
+        return (isEndingFlowFileEvent(event) && StringUtils.isNotBlank(event.getDetails()) && event.getDetails().toLowerCase().startsWith(FLOWFILE_QUEUE_EMPTIED));
     }
 
 }

@@ -1,6 +1,5 @@
 package com.thinkbiganalytics.nifi.provenance.model;
 
-import com.thinkbiganalytics.nifi.provenance.model.util.ProvenanceEventUtil;
 
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -8,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -77,6 +77,8 @@ public class BatchFeedProcessorEvents implements Serializable {
 
     /**
      * Add the event to be processed
+     * @param event the event to add to the batch
+     * @return true if added, false if not
      */
     public boolean add(ProvenanceEventRecordDTO event) {
         if (event.getComponentName() != null && processorName == null) {
@@ -87,8 +89,14 @@ public class BatchFeedProcessorEvents implements Serializable {
 
     }
 
+    /**
+     * Check to see if we are getting events too fast to be considered a batch.  If so suppress the events so just a few go through and the rest generate statistics.
+     *
+     * @param event the event to check
+     * @return true if suppressing the event (not adding it to the batch of events), false if it will be added
+     */
     private boolean isSuppressEvent(ProvenanceEventRecordDTO event) {
-        if (event.isStream() || event.getFlowFile().getRootFlowFile().isStream()) {
+        if (event.isStream() || event.getFeedFlowFile().isStream()) {
             event.setStream(true);
             log.warn(" EVENT {} WAS SUPPRESSED because its parent starting event was detected as a stream for feed {} and processor: {} ", event, maxEventsPerSecond, feedName, processorName);
             return true;
@@ -96,7 +104,7 @@ public class BatchFeedProcessorEvents implements Serializable {
             DateTime time = event.getEventTime().withMillisOfSecond(0);
             startingJobEventsBySecond.computeIfAbsent(time, key -> new HashSet<ProvenanceEventRecordDTO>()).add(event);
             if (startingJobEventsBySecond.get(time).size() > maxEventsPerSecond) {
-                event.getFlowFile().getRootFlowFile().markAsStream();
+                event.getFeedFlowFile().setStream(true);
                 event.setStream(true);
                 log.warn(" EVENT  {} WAS SUPPRESSED FROM Kylo Ops Manager.  more than {} events per second were detected for feed {} and processor: {} ", event, maxEventsPerSecond, feedName,
                          processorName);
@@ -112,6 +120,10 @@ public class BatchFeedProcessorEvents implements Serializable {
 
     /**
      * Add an event from Nifi to be processed
+     * @param event the event to add for batch processing
+     * @return returns true if successfully added, false if not.  It may return false if the event is suppressed
+     *
+     * @see this#isSuppressEvent(ProvenanceEventRecordDTO)
      */
     public boolean addEvent(ProvenanceEventRecordDTO event) {
         if (!isSuppressEvent(event)) {
@@ -120,16 +132,15 @@ public class BatchFeedProcessorEvents implements Serializable {
                 lastEventTime = event.getEventTime();
             }
 
-            if (ProvenanceEventUtil.isCompletionEvent(event)) {
-                checkAndMarkAsEndOfJob(event, event.getFlowFile().getRootFlowFile().isFlowComplete());
-                // log.info("BATCH Adding Batch event {} ", event);
-                event.setIsBatchJob(true);
+            log.info("BATCH Adding Batch event {} ", event);
+            event.setIsBatchJob(true);
+                /*
                 event.getFlowFile().getRootFlowFile().markAsBatch();
                 if (event.getPreviousEvent() == null && !event.isStartOfJob()) {
                     event.getFlowFile().setPreviousEventForEvent(event);
                 }
+                */
                 jmsEvents.add(event);
-            }
 
             lastEventTime = event.getEventTime();
             return true;
@@ -139,15 +150,9 @@ public class BatchFeedProcessorEvents implements Serializable {
 
 
     /**
-     * Sets the flag on the event if this event is really the ending of the RootFlowFile
+     * for all the events that have been processed, send them off to the JMS queue
+     * @return the list of events that have been sent
      */
-    private void checkAndMarkAsEndOfJob(ProvenanceEventRecordDTO event, boolean jobFinished) {
-        if (jobFinished && !event.getFlowFile().isRootFlowFile()) {
-            event.setIsEndOfJob(true);
-        }
-    }
-
-
     public List<ProvenanceEventRecordDTO> collectEventsToBeSentToJmsQueue() {
         List<ProvenanceEventRecordDTO> events = null;
         try {
@@ -158,35 +163,63 @@ public class BatchFeedProcessorEvents implements Serializable {
         }
         lastCollectionTime = DateTime.now();
         startingJobEventsBySecond.clear();
-        return events == null ? new ArrayList<>() : events;
-
+        return events == null ? Collections.emptyList() : events;
     }
 
 
+    /**
+     * get the feed name for the batch of events
+     * @return
+     */
     public String getFeedName() {
         return feedName;
     }
 
+    /**
+     * Sets the feed name
+     * @param feedName
+     */
     public void setFeedName(String feedName) {
         this.feedName = feedName;
     }
 
+    /**
+     * Gets the processorId
+     * @return
+     */
     public String getProcessorId() {
         return processorId;
     }
 
+    /**
+     * Sets the processor id
+     * @param processorId
+     */
     public void setProcessorId(String processorId) {
         this.processorId = processorId;
     }
 
+    /**
+     *
+     * @return the display name for the processor
+     */
     public String getProcessorName() {
         return processorName;
     }
 
+    /**
+     *
+     * @param processorName
+     */
     public void setProcessorName(String processorName) {
         this.processorName = processorName;
     }
 
+    /**
+     *
+     * @param maxEventsPerSecond
+     * @return
+     */
     public BatchFeedProcessorEvents setMaxEventsPerSecond(Integer maxEventsPerSecond) {
         this.maxEventsPerSecond = maxEventsPerSecond;
         return this;

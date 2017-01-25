@@ -101,17 +101,17 @@ public class NiFiFlowCacheSync {
 
 
     public Map<String, String> getProcessorIdToProcessorNameUpdatedSinceLastSync(Map<String, String> processorIdToProcessorName) {
-        MapDifference<String, String> diff = Maps.difference(snapshot.getAddProcessorIdToProcessorName(), processorIdToProcessorName);
+        MapDifference<String, String> diff = Maps.difference(snapshot.getProcessorIdToProcessorName(), processorIdToProcessorName);
         return diff.entriesOnlyOnRight();
     }
 
     public Map<String, String> getProcessorIdToProcessGroupIdUpdatedSinceLastSync(Map<String, String> processorIdToFeedProcessGroupId) {
-        MapDifference<String, String> diff = Maps.difference(snapshot.getAddProcessorIdToFeedProcessGroupId(), processorIdToFeedProcessGroupId);
+        MapDifference<String, String> diff = Maps.difference(snapshot.getProcessorIdToFeedProcessGroupId(), processorIdToFeedProcessGroupId);
         return diff.entriesOnlyOnRight();
     }
 
     public Map<String, String> getProcessorIdToFeedNameMapUpdatedSinceLastSync(Map<String, String> processorIdToFeedNameMap) {
-        MapDifference<String, String> diff = Maps.difference(snapshot.getAddProcessorIdToFeedNameMap(), processorIdToFeedNameMap);
+        MapDifference<String, String> diff = Maps.difference(snapshot.getProcessorIdToFeedNameMap(), processorIdToFeedNameMap);
         return diff.entriesOnlyOnRight();
     }
 

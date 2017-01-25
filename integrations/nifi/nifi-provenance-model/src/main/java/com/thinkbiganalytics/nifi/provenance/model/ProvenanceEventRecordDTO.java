@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.thinkbiganalytics.common.constants.KyloProcessorFlowType;
+import com.thinkbiganalytics.nifi.provenance.KyloProcessorFlowType;
 import com.thinkbiganalytics.nifi.provenance.model.util.ProvenanceEventUtil;
 
 import org.joda.time.DateTime;
@@ -14,7 +14,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -24,7 +23,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 
 /**
- * Created by sr186054 on 2/24/16.
+ * This is used in both the NiFi KyloReportingTask and also in Kylo Operations Manager
+ *
+ *
+ * Note: Any modifications to this class will result in the need to update kylo-services and the KyloReportingTask nar
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ProvenanceEventRecordDTO implements Serializable {
@@ -61,10 +63,6 @@ public class ProvenanceEventRecordDTO implements Serializable {
      */
     private boolean hasFailedEvents;
 
-    /**
-     * The previous event that was captured before this one
-     */
-    private transient ProvenanceEventRecordDTO previousEvent;
 
     private Long previousEventId;
 
@@ -95,7 +93,6 @@ public class ProvenanceEventRecordDTO implements Serializable {
     private String componentId;
     private String componentType;
     private String componentName;
-    private transient Collection<ProvenanceEventAttributeDTO> attributes;
     private List<String> parentUuids;
     private List<String> childUuids;
     private String details;
@@ -108,6 +105,8 @@ public class ProvenanceEventRecordDTO implements Serializable {
     private String outputContentClaimFileSize;
 
     private Set<String> relatedRootFlowFiles;
+
+    private boolean isStartOfFlowFile;
 
     /**
      * Indicates if the processor attached to this event {@code componentId}  is a FAILURE, WARNING,
@@ -146,10 +145,7 @@ public class ProvenanceEventRecordDTO implements Serializable {
      */
     private String feedProcessGroupId;
 
-    /**
-     * the flow file and all of its relationships to other flow files/events
-     */
-    private transient ActiveFlowFile flowFile;
+
 
 
     private String batchId;
@@ -157,16 +153,35 @@ public class ProvenanceEventRecordDTO implements Serializable {
 
     private String relationship;
 
+
+    @JsonProperty("updatedAttributes")
+    private Map<String, String> updatedAttributes;
+
+    @JsonProperty("previousAttributes")
+    private Map<String, String> previousAttributes;
+
+
+    @JsonIgnore
+    private Map<String, Object> additionalProperties = new HashMap<String, Object>();
+
+    @JsonProperty("attributes")
+    private Map<String, String> attributeMap;
+
+
+
+
     public ProvenanceEventRecordDTO() {
 
     }
 
-    public ActiveFlowFile getFlowFile() {
-        return flowFile;
+    private FeedFlowFile feedFlowFile;
+
+    public FeedFlowFile getFeedFlowFile() {
+        return feedFlowFile;
     }
 
-    public void setFlowFile(ActiveFlowFile flowFile) {
-        this.flowFile = flowFile;
+    public void setFeedFlowFile(FeedFlowFile feedFlowFile) {
+        this.feedFlowFile = feedFlowFile;
     }
 
     public String getFeedName() {
@@ -193,19 +208,6 @@ public class ProvenanceEventRecordDTO implements Serializable {
     public void setRelationship(String relationship) {
         this.relationship = relationship;
     }
-
-    @JsonProperty("updatedAttributes")
-    private Map<String, String> updatedAttributes;
-
-    @JsonProperty("previousAttributes")
-    private Map<String, String> previousAttributes;
-
-
-    @JsonIgnore
-    private Map<String, Object> additionalProperties = new HashMap<String, Object>();
-
-    @JsonProperty("attributes")
-    private Map<String, String> attributeMap;
 
 
     @JsonAnyGetter
@@ -251,10 +253,6 @@ public class ProvenanceEventRecordDTO implements Serializable {
     @JsonProperty("previousAttributes")
     public void setPreviousAttributes(Map<String, String> previousAttributes) {
         this.previousAttributes = previousAttributes;
-    }
-
-    public boolean hasUpdatedAttributes() {
-        return this.updatedAttributes != null && !this.updatedAttributes.isEmpty();
     }
 
     public String getSourceConnectionIdentifier() {
@@ -370,18 +368,6 @@ public class ProvenanceEventRecordDTO implements Serializable {
         this.componentName = componentName;
     }
 
-    public Collection<ProvenanceEventAttributeDTO> getAttributes() {
-        if (attributes == null) {
-            attributes = new ArrayList<>();
-        }
-        return attributes;
-    }
-
-    public void setAttributes(Collection<ProvenanceEventAttributeDTO> attributes) {
-        this.attributes = attributes;
-    }
-
-
     public List<String> getParentUuids() {
         return parentUuids;
     }
@@ -415,22 +401,18 @@ public class ProvenanceEventRecordDTO implements Serializable {
         this.details = details;
     }
 
-    public boolean isStartOfCurrentFlowFile() {
-        if (flowFile != null) {
-            Integer index = flowFile.getEventIds().indexOf(this);
-            return index == 0;
-        }
-        return false;
+    public boolean isStartOfFlowFile() {
+        return isStartOfFlowFile;
     }
 
-    public ProvenanceEventRecordDTO getPreviousEvent() {
-        return previousEvent;
+    public void setStartOfFlowFile(boolean startOfFlowFile) {
+        isStartOfFlowFile = startOfFlowFile;
     }
+
 
     public void setPreviousEvent(ProvenanceEventRecordDTO previousEvent) {
         if (previousEvent != null) {
             this.previousEventId = previousEvent.getEventId();
-            this.previousEvent = previousEvent;
             this.previousEventTime = previousEvent.getEventTime();
             this.previousFlowfileId = previousEvent.getFlowFileUuid();
             this.setStartTime(previousEventTime);
@@ -438,16 +420,10 @@ public class ProvenanceEventRecordDTO implements Serializable {
     }
 
     public Long getPreviousEventId() {
-        if (previousEventId == null && previousEvent != null) {
-            this.previousEventId = previousEvent.getEventId();
-        }
         return previousEventId;
     }
 
     public DateTime getPreviousEventTime() {
-        if (previousEventTime == null && previousEvent != null) {
-            this.previousEventTime = previousEvent.getEventTime();
-        }
         return previousEventTime;
     }
 
@@ -465,14 +441,6 @@ public class ProvenanceEventRecordDTO implements Serializable {
             return new HashSet<>(this.getParentUuids());
         }
         return new HashSet<>();
-    }
-
-    public void setParentFlowFileIds(Set<String> parentFlowFileIds) {
-        if (parentFlowFileIds != null) {
-            this.setParentUuids(new ArrayList<>(parentFlowFileIds));
-        } else {
-            this.setParentUuids(null);
-        }
     }
 
 
@@ -601,7 +569,7 @@ public class ProvenanceEventRecordDTO implements Serializable {
     public void setIsFinalJobEvent(boolean isFinalJobEvent) {
         this.isFinalJobEvent = isFinalJobEvent;
         if (this.isFinalJobEvent) {
-            this.hasFailedEvents = getFlowFile().getRootFlowFile().hasFailedEvents();
+            this.hasFailedEvents = getFeedFlowFile().hasFailedEvents();
         }
     }
 
@@ -677,9 +645,63 @@ public class ProvenanceEventRecordDTO implements Serializable {
         sb.append(", isEndOfJob=").append(isEndOfJob());
         sb.append(", isBatch=").append(isBatchJob());
         sb.append(", isStream=").append(isStream());
+        sb.append(", feed=").append(getFeedName());
+
         sb.append('}');
         return sb.toString();
     }
 
 
+    /**
+     * reset this object so it can go back to pool
+     */
+    public void reset() {
+        this.isStartOfJob = false;
+        this.isEndOfJob = false;
+        this.isFinalJobEvent = false;
+        this.isBatchJob = true;
+        this.hasFailedEvents = false;
+        this.previousEventId = null;
+        this.previousFlowfileId = null;
+        this.previousEventTime = null;
+        this.startTime = null;
+        this.id = null;
+        this.eventId = null;
+        this.eventTime = null;
+        this.eventDuration = null;
+        this.eventType = null;
+        this.flowFileUuid = null;
+        this.fileSize = null;
+        this.fileSizeBytes = null;
+        this.clusterNodeId = null;
+        this.clusterNodeAddress = null;
+        this.groupId = null;
+        this.componentId = null;
+        this.componentType = null;
+        this.componentName = null;
+        this.parentUuids = null;
+        this.childUuids = null;
+        this.details = null;
+        this.sourceConnectionIdentifier = null;
+        this.inputContentClaimFileSizeBytes = null;
+        this.inputContentClaimFileSize = null;
+        this.outputContentClaimFileSizeBytes = null;
+        this.outputContentClaimFileSize = null;
+        this.relatedRootFlowFiles = null;
+        this.isStartOfFlowFile = false;
+        this.processorType = null;
+        this.isFailure = false;
+        this.stream = false;
+        this.jobFlowFileId = null;
+        this.jobEventId = null;
+        this.feedName = null;
+        this.feedProcessGroupId = null;
+        this.batchId = null;
+        this.relationship = null;
+        this.feedFlowFile = null;
+        this.updatedAttributes = null;
+        this.previousAttributes = null;
+        this.additionalProperties = null;
+        this.attributeMap = null;
+    }
 }

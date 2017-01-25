@@ -19,7 +19,7 @@
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-commons-constants</artifactId>
+      <artifactId>thinkbig-nifi-provenance-constants</artifactId>
       <version>${project.version}</version>
     </dependency>
 

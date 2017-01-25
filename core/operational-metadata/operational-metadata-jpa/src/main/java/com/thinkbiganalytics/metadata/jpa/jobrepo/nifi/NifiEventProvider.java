@@ -56,7 +56,7 @@ public class NifiEventProvider {
         nifiEvent.setIsStartOfJob(eventRecordDTO.isStartOfJob());
         nifiEvent.setIsEndOfJob(eventRecordDTO.isEndOfJob());
         nifiEvent.setSourceConnectionId(eventRecordDTO.getSourceConnectionIdentifier());
-        String attributesJSON = ObjectMapperSerializer.serialize(eventRecordDTO.getAttributes());
+        String attributesJSON = ObjectMapperSerializer.serialize(eventRecordDTO.getAttributeMap());
         nifiEvent.setAttributesJson(attributesJSON);
         nifiEvent.setIsFinalJobEvent(eventRecordDTO.isFinalJobEvent());
         nifiEvent.setIsFailure(eventRecordDTO.isFailure());

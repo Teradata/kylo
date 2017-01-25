@@ -5,12 +5,19 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Created by sr186054 on 8/30/16.
+ * Group all the Batch ProvenanceEvent objects together and send this parent object over to JMS
+ *
  */
 public class ProvenanceEventRecordDTOHolder implements Serializable {
 
+    /**
+     * Unique UUID for the group of events
+     */
     private String batchId;
 
+    /**
+     * The list of events to send
+     */
     private List<ProvenanceEventRecordDTO> events;
 
     public ProvenanceEventRecordDTOHolder() {
@@ -18,6 +25,11 @@ public class ProvenanceEventRecordDTOHolder implements Serializable {
 
     }
 
+    /**
+     * calculate the max event id
+     *
+     * @return The max event id in the collection
+     */
     public Long getMaxEventId() {
         if (events != null) {
             return events.stream().mapToLong(e -> e.getEventId()).max().getAsLong();
@@ -25,6 +37,10 @@ public class ProvenanceEventRecordDTOHolder implements Serializable {
         return -1L;
     }
 
+    /**
+     * Calculate the min event Id
+     * @return the min event id in the collection
+     */
     public Long getMinEventId() {
         if (events != null) {
             return events.stream().mapToLong(e -> e.getEventId()).min().getAsLong();
@@ -32,10 +48,18 @@ public class ProvenanceEventRecordDTOHolder implements Serializable {
         return -1L;
     }
 
+    /**
+     * get all the events in the collection
+     * @return
+     */
     public List<ProvenanceEventRecordDTO> getEvents() {
         return events;
     }
 
+    /**
+     * sets the events to be processed
+     * @param events the events to collect
+     */
     public void setEvents(List<ProvenanceEventRecordDTO> events) {
         this.events = events;
     }
@@ -48,11 +72,12 @@ public class ProvenanceEventRecordDTOHolder implements Serializable {
         return sb.toString();
     }
 
+    /**
+     *get the Unique Id for this collection of events
+     * @return
+     */
     public String getBatchId() {
         return batchId;
     }
 
-    public void setBatchId(String batchId) {
-        this.batchId = batchId;
-    }
 }

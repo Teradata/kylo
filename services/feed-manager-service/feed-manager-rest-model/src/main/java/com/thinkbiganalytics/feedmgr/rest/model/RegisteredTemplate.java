@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
-import com.thinkbiganalytics.common.constants.KyloProcessorFlowTypeRelationship;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 
@@ -58,8 +57,6 @@ public class RegisteredTemplate {
 
     private List<String> templateOrder;
 
-    private Map<String, Set<KyloProcessorFlowTypeRelationship>> processorFlowTypesMap;
-
     @JsonProperty("isStream")
     private boolean isStream;
 
@@ -102,7 +99,6 @@ public class RegisteredTemplate {
         this.feedsCount= registeredTemplate.getFeedsCount();
         this.registeredDatasourceDefinitions = registeredTemplate.getRegisteredDatasourceDefinitions();
         this.order = registeredTemplate.getOrder();
-        this.processorFlowTypesMap = new HashMap<>(registeredTemplate.getProcessorFlowTypesMap());
         this.isStream = registeredTemplate.isStream();
         this.initializeProcessors();
     }
@@ -326,7 +322,6 @@ public class RegisteredTemplate {
 
         private String flowId;
         private boolean isLeaf;
-        private Set<KyloProcessorFlowTypeRelationship> flowTypes;
 
         public FlowProcessor() {
             super();
@@ -352,13 +347,6 @@ public class RegisteredTemplate {
             this.isLeaf = isLeaf;
         }
 
-        public Set<KyloProcessorFlowTypeRelationship> getFlowTypes() {
-            return flowTypes;
-        }
-
-        public void setFlowTypes(Set<KyloProcessorFlowTypeRelationship> flowTypes) {
-            this.flowTypes = flowTypes;
-        }
     }
 
     public static class Processor {
@@ -516,17 +504,6 @@ public class RegisteredTemplate {
 
     public void setNifiTemplate(TemplateDTO nifiTemplate) {
         this.nifiTemplate = nifiTemplate;
-    }
-
-    public Map<String, Set<KyloProcessorFlowTypeRelationship>> getProcessorFlowTypesMap() {
-        if (processorFlowTypesMap == null) {
-            processorFlowTypesMap = new HashMap<>();
-        }
-        return processorFlowTypesMap;
-    }
-
-    public void setProcessorFlowTypesMap(Map<String, Set<KyloProcessorFlowTypeRelationship>> processorFlowTypesMap) {
-        this.processorFlowTypesMap = processorFlowTypesMap;
     }
 
     @JsonIgnore

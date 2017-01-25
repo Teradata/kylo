@@ -1,13 +1,15 @@
 package com.thinkbiganalytics.nifi.provenance.model.stats;
 
-import org.joda.time.DateTime;
+import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 
 /**
- * Created by sr186054 on 8/16/16. A Aggregrated stats
+ * Group Statistics by Processor
+ *
  */
 public class AggregatedProcessorStatistics implements Serializable {
 
@@ -16,17 +18,8 @@ public class AggregatedProcessorStatistics implements Serializable {
     String processorId;
     String processorName;
     GroupedStats stats;
-    private Long totalEvents;
 
-    public AggregatedProcessorStatistics(){
-        this.stats = new GroupedStats();
-    }
 
-    public AggregatedProcessorStatistics(String processorId, String processorName) {
-        this.processorId = processorId;
-        this.processorName = processorName;
-        this.stats = new GroupedStats();
-    }
 
     public AggregatedProcessorStatistics(String processorId, String processorName, String collectionId) {
         this.processorId = processorId;
@@ -36,19 +29,9 @@ public class AggregatedProcessorStatistics implements Serializable {
 
     }
 
-    public AggregatedProcessorStatistics(GroupedStats stats) {
-        this.stats = stats;
-    }
 
-    public AggregatedProcessorStatistics(String processorId, String processorName, GroupedStats stats) {
-        this.processorId = processorId;
-        this.processorName = processorName;
-        this.stats = stats;
-        this.totalEvents = stats.getTotalCount();
-    }
-
-    public void add(ProvenanceEventStats stats) {
-        this.stats.add(stats);
+    public void add(ProvenanceEventRecordDTO event) {
+        this.stats.add(event);
     }
 
     public String getCollectionId() {
@@ -72,16 +55,9 @@ public class AggregatedProcessorStatistics implements Serializable {
         return processorName;
     }
 
-    public DateTime getMinTime() {
-        return stats.getMinTime();
-    }
 
-    public DateTime getMaxTime() {
-        return stats.getMinTime();
-    }
-
-    public Long getTotalEvents() {
-        return totalEvents;
+    public void clear() {
+        this.stats.clear();
     }
 
     @Override

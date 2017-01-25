@@ -32,7 +32,4 @@ public interface FeedManagerFeed<C extends FeedManagerCategory> extends Feed<C>{
 
     void setVersionName(String version);
 
-    String getFlowProcessorTypes();
-
-    void setFlowProcessorTypes(String flowProcessorTypes);
 }

@@ -17,7 +17,6 @@ public class JcrFeedManagerFeed<C extends JcrFeedManagerCategory> extends JcrFee
     public static String PROCESS_GROUP_ID = "tba:processGroupId";
     public static String FEED_TEMPLATE = "tba:feedTemplate";
 
-    public static String FLOW_PROCESSOR_TYPES = "tba:flowProcessorTypes";
 
     public JcrFeedManagerFeed(Node node) {
         super(node);
@@ -67,13 +66,4 @@ public class JcrFeedManagerFeed<C extends JcrFeedManagerCategory> extends JcrFee
         return (C) getCategory(JcrFeedManagerCategory.class);
     }
 
-    @Override
-    public String getFlowProcessorTypes() {
-        return getProperty(FLOW_PROCESSOR_TYPES, String.class);
-    }
-
-    @Override
-    public void setFlowProcessorTypes(String flowProcessorTypes) {
-        setProperty(FLOW_PROCESSOR_TYPES, flowProcessorTypes);
-    }
 }

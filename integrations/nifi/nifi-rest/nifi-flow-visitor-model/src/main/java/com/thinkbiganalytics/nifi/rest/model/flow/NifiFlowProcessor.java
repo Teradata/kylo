@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
-import com.thinkbiganalytics.common.constants.KyloProcessorFlowTypeRelationship;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -39,9 +38,6 @@ public class NifiFlowProcessor implements Serializable {
     private boolean isEnd;
 
     private String flowId;
-
-    private Set<KyloProcessorFlowTypeRelationship> processorFlowTypes;
-
 
     private NifiFlowProcessGroup processGroup;
 
@@ -285,21 +281,6 @@ public class NifiFlowProcessor implements Serializable {
             }
         }
         return count;
-    }
-
-    public Set<KyloProcessorFlowTypeRelationship> getProcessorFlowTypes() {
-        return processorFlowTypes != null ? processorFlowTypes : KyloProcessorFlowTypeRelationship.DEFAULT_SET;
-    }
-
-    public void setProcessorFlowTypes(Set<KyloProcessorFlowTypeRelationship> processorFlowTypes) {
-        this.processorFlowTypes = processorFlowTypes;
-        /*
-        if (KyloProcessorFlowType.FAILURE.equals(processorFlowType)) {
-            setIsFailure(true);
-        } else {
-            setIsFailure(false);
-        }
-        */
     }
 
     public boolean containsDestination(NifiFlowProcessor parent) {

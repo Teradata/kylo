@@ -13,7 +13,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Created by sr186054 on 2/14/16.
+ *Visit a NiFi processor
+ *
+ * @see NifiFlowVisitor
  */
 public class NifiVisitableProcessor implements NifiVisitable {
 
@@ -44,9 +46,6 @@ public class NifiVisitableProcessor implements NifiVisitable {
 
         this.dto = processor.getDto();
         this.id = processor.getId();
-
-        //   this.setSources(this.getSources().stream().map(source -> new NifiVisitableProcessor(source)).collect(Collectors.toSet()));
-        // this.setDestinations(this.getDestinations().stream().map(dest -> new NifiVisitableProcessor(dest)).collect(Collectors.toSet()));
     }
 
     public NifiVisitableProcessor asCacheableProcessor() {

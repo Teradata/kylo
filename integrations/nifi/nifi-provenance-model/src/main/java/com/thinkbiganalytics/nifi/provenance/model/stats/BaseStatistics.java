@@ -156,4 +156,24 @@ public class BaseStatistics implements Serializable {
     public void setClusterNodeAddress(String clusterNodeAddress) {
         this.clusterNodeAddress = clusterNodeAddress;
     }
+
+
+    public void clear() {
+        this.time = null;
+        this.bytesIn = 0L;
+        this.bytesOut = 0L;
+        this.duration = 0L;
+        this.totalCount = 0L;
+        this.jobsStarted = 0L;
+        this.jobsFinished = 0L;
+        this.processorsFailed = 0L;
+        this.flowFilesStarted = 0L;
+        this.flowFilesFinished = 0L;
+        this.jobsFailed = 0L;
+        this.successfulJobDuration = 0L;
+        this.jobDuration = 0L;
+        this.maxEventId = 0L;
+        this.clusterNodeId = null;
+        this.clusterNodeAddress = null;
+    }
 }

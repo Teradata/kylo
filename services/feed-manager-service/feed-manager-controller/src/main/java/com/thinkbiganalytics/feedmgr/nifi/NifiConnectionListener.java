@@ -5,8 +5,8 @@ package com.thinkbiganalytics.feedmgr.nifi;
  */
 public interface NifiConnectionListener {
 
-    void onConnected();
+    void onNiFiConnected();
 
-    void onDisconnected();
+    void onNiFiDisconnected();
 
 }

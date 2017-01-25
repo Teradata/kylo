@@ -1,7 +1,6 @@
 package com.thinkbiganalytics.metadata.jpa.jobrepo.step;
 
 import com.thinkbiganalytics.DateTimeUtil;
-import com.thinkbiganalytics.common.constants.KyloProcessorFlowType;
 import com.thinkbiganalytics.metadata.api.jobrepo.ExecutionConstants;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiEventStepExecution;
@@ -12,6 +11,7 @@ import com.thinkbiganalytics.metadata.jpa.jobrepo.BatchExecutionContextProvider;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.job.JpaBatchJobExecution;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiEventStepExecution;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.NifiEventStepExecutionRepository;
+import com.thinkbiganalytics.nifi.provenance.KyloProcessorFlowType;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 
 import org.apache.commons.lang3.StringUtils;
