@@ -37,14 +37,11 @@ public class DefaultExecutedJob implements Serializable, ExecutedJob {
   private long instanceId;
   private long executionId;
   private String jobName;
-  private List<Throwable> exceptions;
   private DateTime createTime;
   private DateTime endTime;
   private Map<String, Object> executionContext;
   private String exitCode;
   private String exitStatus;
-  private String jobConfigurationName;
-  private Long jobId;
   private Map<String, Object> jobParameters;
   private DateTime lastUpdated;
   private DateTime startTime;
@@ -64,14 +61,11 @@ public class DefaultExecutedJob implements Serializable, ExecutedJob {
     this.instanceId = job.getInstanceId();
     this.executionId = job.getExecutionId();
     this.jobName = job.getJobName();
-    this.exceptions = job.getExceptions();
     this.createTime = job.getCreateTime();
     this.endTime = job.getEndTime();
     this.executionContext = job.getExecutionContext();
     this.exitCode = job.getExitCode();
     this.exitStatus = job.getExitStatus();
-    this.jobConfigurationName = job.getJobConfigurationName();
-    this.jobId = job.getJobId();
     this.jobParameters = job.getJobParameters();
     this.lastUpdated = job.getLastUpdated();
     this.startTime = job.getStartTime();
@@ -103,10 +97,6 @@ public class DefaultExecutedJob implements Serializable, ExecutedJob {
     this.executionId = executionId;
   }
 
-  @Override
-  public void setJobId(final Long jobId) {
-    this.jobId = jobId;
-  }
 
   @Override
   public String getJobName() {
@@ -116,16 +106,6 @@ public class DefaultExecutedJob implements Serializable, ExecutedJob {
   @Override
   public void setJobName(String jobName) {
     this.jobName = jobName;
-  }
-
-  @Override
-  public List<Throwable> getExceptions() {
-    return exceptions;
-  }
-
-  @Override
-  public void setExceptions(final List<Throwable> exceptions) {
-    this.exceptions = exceptions;
   }
 
   @Override
@@ -176,21 +156,6 @@ public class DefaultExecutedJob implements Serializable, ExecutedJob {
   @Override
   public void setExitStatus(String exitStatus) {
     this.exitStatus = exitStatus;
-  }
-
-  @Override
-  public String getJobConfigurationName() {
-    return jobConfigurationName;
-  }
-
-  @Override
-  public void setJobConfigurationName(final String jobConfigurationName) {
-    this.jobConfigurationName = jobConfigurationName;
-  }
-
-  @Override
-  public Long getJobId() {
-    return jobId;
   }
 
   @Override
@@ -272,16 +237,6 @@ public class DefaultExecutedJob implements Serializable, ExecutedJob {
   @Override
   public void setJobType(String jobType) {
     this.jobType = jobType;
-  }
-
-  @Override
-  public boolean isLatest() {
-    return isLatest;
-  }
-
-  @Override
-  public void setIsLatest(boolean isLatest) {
-    this.isLatest = isLatest;
   }
 
   @Override

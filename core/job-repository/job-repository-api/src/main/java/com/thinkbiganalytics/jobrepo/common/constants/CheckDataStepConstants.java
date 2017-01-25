@@ -21,10 +21,16 @@ package com.thinkbiganalytics.jobrepo.common.constants;
  */
 
 /**
- * Created by sr186054 on 8/28/15.
+ * Common constants to identify properties for data confidence/check data jobs
  */
 public interface CheckDataStepConstants {
 
-  String VALIDATION_KEY = "checkData.validationCheck";
-  String VALIDATION_MESSAGE_KEY = "checkData.validationMessage";
+    /**
+     * Property in the Step Execution context that identifies if the job is valid or not.
+     * The Value for this property should be a boolean string either "true" or "false"
+     */
+    String VALIDATION_KEY = "checkData.validationCheck";
+
+    /** The property in the StepExecutionContext that identifies a message describing the validation job results **/
+    String VALIDATION_MESSAGE_KEY = "checkData.validationMessage";
 }

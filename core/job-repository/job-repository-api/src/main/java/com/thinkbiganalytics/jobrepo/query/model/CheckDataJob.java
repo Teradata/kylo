@@ -21,7 +21,7 @@ package com.thinkbiganalytics.jobrepo.query.model;
  */
 
 /**
- * Created by sr186054 on 4/13/16.
+ * Object representing the result of a Data Confidence check job
  */
 public interface CheckDataJob extends ExecutedJob {
 

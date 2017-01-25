@@ -21,13 +21,24 @@ package com.thinkbiganalytics.jobrepo.common.constants;
  */
 
 /**
- * Created by sr186054 on 10/7/15.
+ * Common Feed Constants that are supplied as JobParameters
+ *
+ * @see com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionParameter for JobParameter key/value
  */
 public interface FeedConstants {
 
+  /**
+   * job parameter name the identifies the feed name associated with the job
+   * {@link com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionParameter}
+   **/
   String PARAM__FEED_NAME = "feed"; // value is user defined String
-  String PARAM__FEED_IS_PARENT = "feedIsParent"; // value is true false
+  /**  job parameter name that identifies the type of job.  2 supported values for this parameter either "FEED", indicates a Feed processing job, or "CHECK" indicates a data confidence check job for a feed
+   * {@link com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionParameter}
+   */
   String PARAM__JOB_TYPE = "jobType"; // values defined below
+  /** the value for the "jobType" parameter above that indicates the Feed processing job **/
   String PARAM_VALUE__JOB_TYPE_FEED = "FEED";
+
+  /** the value for the "jobType" parameter above that indicates the Data Confidence Check job **/
   String PARAM_VALUE__JOB_TYPE_CHECK = "CHECK";
 }

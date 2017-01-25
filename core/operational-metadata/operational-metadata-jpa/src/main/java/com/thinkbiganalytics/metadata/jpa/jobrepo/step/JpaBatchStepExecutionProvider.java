@@ -27,7 +27,6 @@ import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiEventStepExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecutionProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.step.FailedStepExecutionListener;
-import com.thinkbiganalytics.metadata.jpa.jobrepo.BatchExecutionContextProvider;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.job.JpaBatchJobExecution;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiEventStepExecution;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.NifiEventStepExecutionRepository;
@@ -58,13 +57,6 @@ public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider
 
     private NifiEventStepExecutionRepository nifiEventStepExecutionRepository;
 
-
-    /**
-     * Used to serialize the ExecutionContext for JOB and STEPs This is needed for usage with the existing Spring Batch Apis; however, will be removed once the UI doesnt reference those tables
-     * anymore
-     */
-    @Autowired
-    private BatchExecutionContextProvider batchExecutionContextProvider;
 
     private List<FailedStepExecutionListener> failedStepExecutionListeners = new ArrayList<>();
 

@@ -44,7 +44,6 @@ import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecutionProvide
 import com.thinkbiganalytics.metadata.jpa.feed.JpaOpsManagerFeed;
 import com.thinkbiganalytics.metadata.jpa.feed.OpsManagerFeedRepository;
 import com.thinkbiganalytics.metadata.jpa.feed.QJpaOpsManagerFeed;
-import com.thinkbiganalytics.metadata.jpa.jobrepo.BatchExecutionContextProvider;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiEventJobExecution;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiRelatedRootFlowFiles;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.NifiRelatedRootFlowFilesRepository;
@@ -93,12 +92,6 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
     private static String PARAM_TB_JOB_TYPE = "tb.jobType";
 
 
-    /**
-     * Used to serialize the ExecutionContext for JOB and STEPs This is needed for usage with the existing Spring Batch Apis; however, will be removed once the UI doesnt reference those tables
-     * anymore
-     */
-    @Autowired
-    private BatchExecutionContextProvider batchExecutionContextProvider;
 
     @Autowired
     private JPAQueryFactory factory;
@@ -198,7 +191,6 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         //bootstrap the feed parameters
         jobParameters.put(FeedConstants.PARAM__FEED_NAME, event.getFeedName());
         jobParameters.put(FeedConstants.PARAM__JOB_TYPE, FeedConstants.PARAM_VALUE__JOB_TYPE_FEED);
-        jobParameters.put(FeedConstants.PARAM__FEED_IS_PARENT, "true");
         Set<JpaBatchJobExecutionParameter> jpaJobParameters = addJobParameters(jobExecution, jobParameters);
         this.jobParametersRepository.save(jpaJobParameters);
         return jobExecution;

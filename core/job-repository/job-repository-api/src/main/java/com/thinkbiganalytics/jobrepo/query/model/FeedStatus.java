@@ -27,33 +27,92 @@ import java.util.List;
  */
 public interface FeedStatus {
 
-  void populate();
+    /**
+     * set fields on this object
+     */
+    void populate();
 
-  List<FeedHealth> getFeeds();
+    /**
+     * Return the list of FeedHealth objects
+     * @return
+     */
+    List<FeedHealth> getFeeds();
 
-  void setFeeds(List<FeedHealth> feeds);
+    /**
+     * set the list of feed health objects to summarize
+     * @param feeds
+     */
+    void setFeeds(List<FeedHealth> feeds);
 
-  Integer getHealthyCount();
+    /**
+     * Return a count of the healthy feeds
+     * @return a count of the healthy feeds
+     */
+    Integer getHealthyCount();
 
-  void setHealthyCount(Integer healthyCount);
+    /**
+     * set the healthy feed count
+     * @param healthyCount
+     */
+    void setHealthyCount(Integer healthyCount);
 
-  Integer getFailedCount();
+    /**
+     * Return a count of the failed feeds
+     * @return a count of the feeds that failed
+     */
+    Integer getFailedCount();
 
-  void setFailedCount(Integer failedCount);
+    /**
+     * set the failed count
+     * @param failedCount
+     */
+    void setFailedCount(Integer failedCount);
 
-  Float getPercent();
+    /**
+     * Return a percent of the feeds that are healthy
+     * @return a precent of the feeds that are healthy
+     */
+    Float getPercent();
 
-  void setPercent(Integer percent);
+    /**
+     * set the percent of healthy feeds
+     * @param percent
+     */
+    void setPercent(Integer percent);
 
-  List<FeedHealth> getHealthyFeeds();
+    /**
+     * Return a list of all the Healthy feeds
+     * @return a list of healthy feeds
+     */
+    List<FeedHealth> getHealthyFeeds();
 
-  void setHealthyFeeds(List<FeedHealth> healthyFeeds);
+    /**
+     * set the list of healthy feeds
+     * @param healthyFeeds
+     */
+    void setHealthyFeeds(List<FeedHealth> healthyFeeds);
 
-  List<FeedHealth> getFailedFeeds();
+    /**
+     * Return a list of unhealthy feeds
+     * @return a list of unhealthy feeds
+     */
+    List<FeedHealth> getFailedFeeds();
 
-  void setFailedFeeds(List<FeedHealth> failedFeeds);
+    /**
+     * set the unhealthy feeds
+     * @param failedFeeds
+     */
+    void setFailedFeeds(List<FeedHealth> failedFeeds);
 
-  List<FeedSummary> getFeedSummary();
+    /**
+     * Return a summary of the feeds
+     * @return
+     */
+    List<FeedSummary> getFeedSummary();
 
-  void setFeedSummary(List<FeedSummary> feedSummary);
+    /**
+     * set the summar of the feeds
+     * @param feedSummary
+     */
+    void setFeedSummary(List<FeedSummary> feedSummary);
 }

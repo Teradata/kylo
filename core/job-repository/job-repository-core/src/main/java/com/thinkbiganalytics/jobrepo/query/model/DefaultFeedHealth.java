@@ -33,11 +33,10 @@ import java.util.Map;
 public class DefaultFeedHealth implements FeedHealth {
 
   private String feed;
-  private ExecutedFeed lastOpFeed; // remove NOOP exit status
+    private ExecutedFeed lastOpFeed;
   private Long avgRuntime;
   private Long healthyCount;
   private Long unhealthyCount;
-  private boolean healthCountsSet = false;
   private Date lastUnhealthyTime;
 
   @Override
@@ -59,10 +58,6 @@ public class DefaultFeedHealth implements FeedHealth {
     return unhealthyCount;
   }
 
-  @Override
-  public void markHealthCountsSet() {
-    healthCountsSet = true;
-  }
 
   @Override
   public void setUnhealthyCount(Long unhealthyCount) {

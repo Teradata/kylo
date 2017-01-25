@@ -22,37 +22,97 @@ package com.thinkbiganalytics.jobrepo.query.model;
 
 
 /**
- * Created by sr186054 on 4/14/16.
+ * Summary data for a feed
  */
 public interface FeedSummary {
 
-  String getFeed();
+    /**
+     * Return the feed name
+     */
+    String getFeed();
 
+  /**
+   * Return the state of the feed (Waiting, Running)
+   * @return
+   */
   String getState();
 
+  /**
+   * Return the last Feed status
+   * @return
+   */
   String getLastStatus();
 
+  /**
+   * flag indicating if the job is idle/waiting
+   * @return true if waiting, false if not
+   */
   boolean isWaiting();
 
+  /**
+   * flag to indicate if the job is running
+   * @return true if the job is running , false if not
+   */
   boolean isRunning();
 
+  /**
+   * return the time since this feed finished
+   * @return the time in millis since the feed has last finished
+   */
   Long getTimeSinceEndTime();
 
+  /**
+   * format the millis to a readable time
+   * @param millis
+   * @return a formatted time of the {@link this#getTimeSinceEndTime()}
+   */
   String formatTimeMinSec(Long millis);
 
+  /**
+   * Return a formatted string of the {@link this#getTimeSinceEndTime()}
+   * @return a formatted string of the {@link this#getTimeSinceEndTime()}
+   */
   String getTimeSinceEndTimeString();
 
+  /**
+   * Return time, in millis, of the run time for the last job of this feed
+   * @return time, in millis, of the run time for the last job of this feed
+   */
   Long getRunTime();
 
+  /**
+   * Return a formatted string of the {@link this#getRunTime()}
+   * @return a formatted string of the {@link this#getRunTime()}
+   */
   String getRunTimeString();
 
+  /**
+   * Return the average completion time, in millis, for the jobs on this feed
+   * @return the average completion time, in millis, for the jobs on this feed
+   */
   Long getAvgCompleteTime();
 
+  /**
+   * Return a formatted string of the {@link this#getAvgCompleteTime()}
+   * @return
+   */
   String getAvgCompleteTimeString();
 
+  /**
+   * Return boolean if this feed is healthy
+   * @return true if healthy, false if not
+   */
   boolean isHealthy();
 
+  /**
+   * Return the last exit code on from the last job execution for this feed
+   * @return the last exit code on from the last job execution for this feed
+   */
   String getLastExitCode();
 
+  /**
+   * Return the FeedHealth object for this feed
+   * @return the FeedHealth object for this feed
+   */
   FeedHealth getFeedHealth();
 }

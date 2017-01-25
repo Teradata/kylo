@@ -21,7 +21,7 @@ package com.thinkbiganalytics.jobrepo.service;
  */
 
 /**
- * Created by sr186054 on 4/14/16.
+ * Exception if something happens when performing a Job action
  */
 public class JobExecutionException extends RuntimeException {
 

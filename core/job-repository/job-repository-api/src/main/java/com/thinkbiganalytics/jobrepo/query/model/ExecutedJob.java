@@ -26,93 +26,221 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by sr186054 on 4/13/16.
+ * Object representing the results of a JobExecution in Kylo
+ *
  */
 public interface ExecutedJob {
 
-  long getInstanceId();
+    /**
+     * Return the related job instance id for this job execution
+     *
+     * @return the job instance id for this job execution
+     */
+    long getInstanceId();
 
-  void setInstanceId(long instanceId);
+    /**
+     * Set the job instance id
+     * @param instanceId
+     */
+    void setInstanceId(long instanceId);
 
-  long getExecutionId();
+    /**
+     * Return the job execution id for this job.  This is the PrimaryKey for this given Job.
+     * @return the job execution id for this job
+     */
+    long getExecutionId();
 
-  void setExecutionId(long executionId);
+    /**
+     * set the job execution id
+     * @param executionId
+     */
+    void setExecutionId(long executionId);
 
-  void setJobId(Long jobId);
-
+    /**
+     * Return the display name for this job.
+     * @return the name of the job
+   */
   String getJobName();
 
-  void setJobName(String jobName);
+    /**
+     * set the name of the job
+     * @param jobName
+     */
+    void setJobName(String jobName);
 
-  List<Throwable> getExceptions();
-
-  void setExceptions(List<Throwable> exceptions);
-
+    /**
+     * Return the DateTime the job was created
+     * @return the time the job was created
+   */
   DateTime getCreateTime();
 
-  void setCreateTime(DateTime createTime);
+    /**
+     * set the create DateTime for the job
+     * @param createTime
+     */
+    void setCreateTime(DateTime createTime);
 
-  DateTime getEndTime();
+    /**
+     * Return the end time of the job
+     * @return return the end time of the job
+     */
+    DateTime getEndTime();
 
-  void setEndTime(DateTime endTime);
+    /**
+     * set the end time of the job
+     * @param endTime
+     */
+    void setEndTime(DateTime endTime);
 
-  Map<String, Object> getExecutionContext();
+    /**
+     * Return a map of key,value pairs with job context level data captured during this job execution
+     * @return a map of values captured during the job execution
+     */
+    Map<String, Object> getExecutionContext();
 
-  void setExecutionContext(Map<String, Object> executionContext);
+    /**
+     * set the map of execution data to this job
+     * @param executionContext
+     */
+    void setExecutionContext(Map<String, Object> executionContext);
 
-  String getExitCode();
+    /**
+     * Return a String representing the status of this job
+     * @see com.thinkbiganalytics.metadata.api.jobrepo.ExecutionConstants.ExitCode
+     * @return
+     */
+    String getExitCode();
 
-  void setExitCode(String exitCode);
+    /**
+     * set the exit code for the job
+     * @param exitCode
+     */
+    void setExitCode(String exitCode);
 
-  String getExitStatus();
+    /**
+     * Return a message indicating details of what happened during the job execution.  This may contain success/failure messages summarizing the job execution as a whole
+     * @return a message indicating the details of this job execution
+     */
+    String getExitStatus();
 
-  void setExitStatus(String exitStatus);
+    /**
+     * set the exit message indicating details of what happened during the job execution
+     * @param exitStatus
+     */
+    void setExitStatus(String exitStatus);
 
-  String getJobConfigurationName();
-
-  void setJobConfigurationName(String jobConfigurationName);
-
-  Long getJobId();
-
+    /**
+     * Return a map of the job parameters used to setup/start this job
+     * @return a map of the job parameters used to setup/start this job
+   */
   Map<String, Object> getJobParameters();
 
-  void setJobParameters(Map<String, Object> jobParameters);
+    /**
+     * set the map of parameters used to setup/start this job
+     * @param jobParameters
+     */
+    void setJobParameters(Map<String, Object> jobParameters);
 
-  DateTime getLastUpdated();
+    /**
+     * Return the DateTime this job was last updated
+     * @return the DateTime the job was last updated
+     */
+    DateTime getLastUpdated();
 
-  void setLastUpdated(DateTime lastUpdated);
+    /**
+     * set the last updated date
+     * @param lastUpdated
+     */
+    void setLastUpdated(DateTime lastUpdated);
 
-  DateTime getStartTime();
+    /**
+     * Return the DateTime the job was started
+     * @return the DateTime the job was started
+     */
+    DateTime getStartTime();
 
-  void setStartTime(DateTime startTime);
+    /**
+     * set the start time for the job
+     * @param startTime the start time for the job
+     */
+    void setStartTime(DateTime startTime);
 
-  ExecutionStatus getStatus();
+    /**
+     * Return the job status indicating overall success or failure of the job
+     * @return the status of the job
+     */
+    ExecutionStatus getStatus();
 
-  void setStatus(ExecutionStatus status);
+    /**
+     * set the status for this job
+     * @param status
+     */
+    void setStatus(ExecutionStatus status);
 
-  List<ExecutedStep> getExecutedSteps();
+    /**
+     * Return all steps that have been executed during this job execution
+     * @return the steps that have been executed during this job execution
+     */
+    List<ExecutedStep> getExecutedSteps();
 
-  void setExecutedSteps(List<ExecutedStep> executedSteps);
+    /**
+     * set the step executions
+     * @param executedSteps
+     */
+    void setExecutedSteps(List<ExecutedStep> executedSteps);
 
-  Long getRunTime();
+    /**
+     * Return the run time in millis for this job.  if the job is currently executing it will take the difference from the current time against the jobs start time
+     * @return return the run time in millis for this job.
+     */
+    Long getRunTime();
 
-  void setRunTime(Long runTime);
+    /**
+     * set the runtime for this job
+     * @param runTime
+     */
+    void setRunTime(Long runTime);
 
-  Long getTimeSinceEndTime();
+    /**
+     * Return the time in millis since the last time this job ran
+     * @return return the time, in millis, since the last time this job ran (i.e Now() - {@link this#getEndTime()})
+     */
+    Long getTimeSinceEndTime();
 
-  void setTimeSinceEndTime(Long timeSinceEndTime);
+    /**
+     * set the time in millis of the time since this job last ran.  (i.e Now() - {@link this#getEndTime()})
+     * @param timeSinceEndTime
+     */
+    void setTimeSinceEndTime(Long timeSinceEndTime);
 
-  String getJobType();
+    /**
+     * Return the job type. 2 supported types (CHECK, or FEED).
+     * @see com.thinkbiganalytics.jobrepo.common.constants.FeedConstants  for more information on the types of jobs
+     * @return the type of job
+     */
+    String getJobType();
 
-  void setJobType(String jobType);
+    /**
+     * set the job type
+     * @param jobType
+     */
+    void setJobType(String jobType);
 
-  boolean isLatest();
-
-  void setIsLatest(boolean isLatest);
-
+    /**
+     * Return the feed name associated with this job
+     * @return the feed associated with this job
+   */
   String getFeedName();
 
-  void setFeedName(String feedName);
+    /**
+     * set the feed name associated with this job
+     * @param feedName
+     */
+    void setFeedName(String feedName);
 
-  String getDisplayStatus();
+    /**
+     * Return a user friendly status of this job
+     * @return a user friendly status of this job
+     */
+    String getDisplayStatus();
 }

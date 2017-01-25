@@ -23,42 +23,105 @@ package com.thinkbiganalytics.jobrepo.query.model;
 import java.util.Date;
 
 /**
- * Created by sr186054 on 4/13/16.
+ * Summary object indicating the health of a feed
  */
 public interface FeedHealth {
 
+  /**
+   * Return a count of jobs for this feed that are healthy (either Successful, or had their Failures (if any) handled and "Abandoned")
+   *
+   * @return a count of the healthy jobs on this feed
+   */
   Long getHealthyCount();
 
+  /**
+   * set the count of healthy jobs for this feed
+   * @param healthyCount
+   */
   void setHealthyCount(Long healthyCount);
 
+  /**
+   * Return a count of the jobs that are unhealthy (Failed, for this feed)
+   * @return the count of unhealthy jobs for this feed
+   */
   Long getUnhealthyCount();
 
-  void markHealthCountsSet();
-
+  /**
+   * set the unhealthy job count for this feed
+   * @param unhealthyCount
+   */
   void setUnhealthyCount(Long unhealthyCount);
 
+  /**
+   * Return the feed name
+   * @return the feed name
+   */
   String getFeed();
 
+  /**
+   * set the feed name
+   * @param feed
+   */
   void setFeed(String feed);
 
+  /**
+   * Return the latest job execution for this feed
+   * @return the latest job execution for this fed
+   */
   ExecutedFeed getLastOpFeed();
 
+  /**
+   * set the latest job execution for this feed
+   * @param lastOpFeed
+   */
   void setLastOpFeed(ExecutedFeed lastOpFeed);
 
+  /**
+   * Return the average runtime for this feed
+   * @return the average runtime, in millis, for this feed
+   */
   Long getAvgRuntime();
 
+  /**
+   * Set the average runtime, in millis, for this feed
+   * @param avgRuntime
+   */
   void setAvgRuntime(Long avgRuntime);
 
+  /**
+   * Return a date indicating the last time this feed was unhealthy
+   * @return the date this feed was last unhealthy
+   */
   Date getLastUnhealthyTime();
 
+  /**
+   * set the date this feed was last unhealthy
+   * @param lastUnhealthyTime
+   */
   void setLastUnhealthyTime(Date lastUnhealthyTime);
 
+  /**
+   * Return true if healthy, false if not
+   * @return true if healthy, false if not
+   */
   boolean isHealthy();
 
+  /**
+   * For a given Feed, return the {@link STATE}
+   * @param feed
+   * @return the status of the feed
+   */
   String getFeedState(ExecutedFeed feed);
 
+  /**
+   * Return the  {@link STATE}  of the latest job for this feed
+   * @return the  {@link STATE}  of the latest job for this feed
+   */
   String getLastOpFeedState();
 
+  /**
+   * State indicating if the Feed has jobs Waiting (idle) or Running
+   */
   public static enum STATE {
     WAITING, RUNNING
   }

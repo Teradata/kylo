@@ -29,85 +29,171 @@ import java.util.Map;
  */
 public interface ExecutedStep {
 
-  String getStepName();
+    /**
+     * Return the display name for this step
+     *
+     * @return the name for this step
+     */
+    String getStepName();
 
-  void setStepName(String stepName);
+    /**
+     * set the name of this step
+     * @param stepName
+     */
+    void setStepName(String stepName);
 
-  ExecutionStatus getStatus();
+    /**
+     * Return the status of this step
+     * @return the step status
+     */
+    ExecutionStatus getStatus();
 
-  void setStatus(ExecutionStatus status);
+    /**
+     * set the status of this step
+     * @param status
+     */
+    void setStatus(ExecutionStatus status);
 
-  long getReadCount();
-
-  void setReadCount(long readCount);
-
-  long getWriteCount();
-
-  void setWriteCount(long writeCount);
-
-  long getCommitCount();
-
-  void setCommitCount(long commitCount);
-
-  long getRollbackCount();
-
-  void setRollbackCount(long rollbackCount);
-
-  long getReadSkipCount();
-
-  void setReadSkipCount(long readSkipCount);
-
-  long getProcessSkipCount();
-
-  void setProcessSkipCount(long processSkipCount);
-
-  long getWriteSkipCount();
-
-  void setWriteSkipCount(long writeSkipCount);
-
+    /**
+     * Return the time this step was started
+     * @return the time the step was started
+   */
   DateTime getStartTime();
 
-  void setStartTime(DateTime startTime);
+    /**
+     * set the starttime
+     * @param startTime
+     */
+    void setStartTime(DateTime startTime);
 
-  DateTime getEndTime();
+    /**
+     * Return the time this step was completed
+     * @return the end time of this step
+     */
+    DateTime getEndTime();
 
-  void setEndTime(DateTime endTime);
+    /**
+     * set the endtime for this step
+     * @param endTime
+     */
+    void setEndTime(DateTime endTime);
 
-  DateTime getLastUpdateTime();
+    /**
+     * Return the time this step was last updated
+     * @return the last update time for this step
+     */
+    DateTime getLastUpdateTime();
 
-  void setLastUpdateTime(DateTime lastUpdateTime);
+    /**
+     * set the time this step was last updated
+     * @param lastUpdateTime
+     */
+    void setLastUpdateTime(DateTime lastUpdateTime);
 
-  Map<String, Object> getExecutionContext();
+    /**
+     * Return a map holding any values saved during this step execution
+     * @return a map indicating values/what happened during this step execution
+     */
+    Map<String, Object> getExecutionContext();
 
-  void setExecutionContext(Map<String, Object> executionContext);
+    /**
+     * set the step execution context
+     * @param executionContext
+     */
+    void setExecutionContext(Map<String, Object> executionContext);
 
-  String getExitCode();
+    /**
+     * Return the ExitCode for this step
+     * @return
+     */
+    String getExitCode();
 
-  void setExitCode(String exitCode);
+    /**
+     * set the exit code for this step
+     * @param exitCode
+     */
+    void setExitCode(String exitCode);
 
-  String getExitDescription();
+    /**
+     * Return a message describing what happened during this step execution
+     * @return a message describing this step execution
+     */
+    String getExitDescription();
 
-  void setExitDescription(String exitDescription);
+    /**
+     * set the step exit description message
+     * @param exitDescription
+     */
+    void setExitDescription(String exitDescription);
 
-  long getId();
+    /**
+     * Return the id representing this step.  This is the Primary key for this step
+     * @return
+     */
+    long getId();
 
-  void setId(long id);
+    /**
+     * set the id for this step
+     * @param id
+     */
+    void setId(long id);
 
-  int getVersion();
+    /**
+     * Return the version number for this step indicating if any updates were done on the step and how many.
+     * @return
+     */
+    int getVersion();
 
-  void setVersion(int version);
+    /**
+     * set the current version of this step
+     * @param version
+     */
+    void setVersion(int version);
 
-  Long getRunTime();
-  void setRunTime(Long runtime);
-  Long getTimeSinceEndTime();
-  void setTimeSinceEndTime(Long timeSinceEndTime);
+    /**
+     * Return the runtime, in millis, for this step execution
+     * @return
+     */
+    Long getRunTime();
 
-  public boolean isRunning();
-  public void setRunning(boolean running);
+    /**
+     * set the runtime, in millis, for this step execution
+     * @param runtime
+     */
+    void setRunTime(Long runtime);
 
+    /**
+     * return the time, in millis, since the time step ended
+     * @return
+     */
+    Long getTimeSinceEndTime();
 
-  void setNifiEventId(Long nifiEventId);
+    /**
+     * set the time, in millis, since the time this step ended
+     * @param timeSinceEndTime
+     */
+    void setTimeSinceEndTime(Long timeSinceEndTime);
 
+    /**
+     * Return a flag indicating if this step is executing or not
+     * @return true if the step is still running, false if not
+     */
+    public boolean isRunning();
+
+    /**
+     * set the flag to indicate if this step is running
+     * @param running
+     */
+    public void setRunning(boolean running);
+
+    /**
+     * Return the reference to the respective NiFi event that produced this step
+     * @return the id of the NiFi event that produced this step
+   */
   Long getNifiEventId();
 
+    /**
+     * set the reference to the respective NiFi event that produced this step
+     */
+    void setNifiEventId(Long nifiEventId);
 }

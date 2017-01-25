@@ -38,8 +38,7 @@ public interface JobService {
    * @param executionId The job execution to start again
    * @return true/false
    */
-  boolean stopJobExecution(final Long executionId) throws
-                                                          JobExecutionException;
+  boolean stopJobExecution(final Long executionId) throws JobExecutionException;
 
   /**
    * Take the given job execution and abandon the job.

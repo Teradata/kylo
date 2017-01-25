@@ -36,17 +36,27 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Created by sr186054 on 11/28/16.
+ * Transform Feed domain model objects to REST friendly objects
  */
 public class FeedModelTransform {
 
-
+    /**
+     * Transform the BatchJobExectution into an ExecutedFeed object
+     *
+     * @param jobExecution the job to transform
+     * @param feed         the feed this job relates to
+     * @return the ExecutedFeed transformed from the BatchJobExecution
+     */
     public static ExecutedFeed executedFeed(BatchJobExecution jobExecution, OpsManagerFeed feed){
-
-      return executedFeed(jobExecution,feed.getName());
-
+        return executedFeed(jobExecution, feed.getName());
     }
 
+    /**
+     * Transform the BatchJobExectution into an ExecutedFeed object
+     * @param jobExecution the job to transform
+     * @param feedName the name of the feed the job relates to
+     * @return the ExecutedFeed transformed from the BatchJobExecution
+     */
     public static ExecutedFeed executedFeed(BatchJobExecution jobExecution, String feedName){
 
         DefaultExecutedFeed executedFeed = new DefaultExecutedFeed();
@@ -65,6 +75,11 @@ public class FeedModelTransform {
     }
 
 
+    /**
+     * Transform the LatestJobExecution into an ExecutedFeed object
+     * @param jobExecution
+     * @return the ExecutedFeed from the LatestFeedJobExecution
+     */
     public static ExecutedFeed executedFeed(LatestFeedJobExecution jobExecution){
 
         DefaultExecutedFeed executedFeed = new DefaultExecutedFeed();
@@ -82,6 +97,11 @@ public class FeedModelTransform {
 
     }
 
+    /**
+     * Transform the FeedHealth object into an Executed feed
+     * @param feedHealth
+     * @return the ExecutedFeed from the FeedHealth object
+     */
     public static ExecutedFeed executedFeed(com.thinkbiganalytics.metadata.api.feed.FeedHealth feedHealth){
 
         DefaultExecutedFeed executedFeed = new DefaultExecutedFeed();
@@ -106,11 +126,16 @@ public class FeedModelTransform {
      */
     public static List<FeedHealth> feedHealth(List<? extends com.thinkbiganalytics.metadata.api.feed.FeedHealth> domain){
         if(domain != null && !domain.isEmpty()){
-        return domain.stream().map(d -> feedHealth(d)).collect(Collectors.toList());
+            return domain.stream().map(d -> feedHealth(d)).collect(Collectors.toList());
         }
         return Collections.emptyList();
     }
 
+    /**
+     * Transform the FeedHealth domain object to the REST friendly FeedHealth object
+     * @param domain
+     * @return the transformed FeedHealth object
+     */
     public static FeedHealth feedHealth(com.thinkbiganalytics.metadata.api.feed.FeedHealth domain){
         FeedHealth feedHealth = new DefaultFeedHealth();
         feedHealth.setUnhealthyCount(domain.getFailedCount());
@@ -121,8 +146,11 @@ public class FeedModelTransform {
     }
 
 
-
-
+    /**
+     * Transform the list of FeedHealth objects to a FeedStatus object summarizing the feeds.
+     * @param feedHealth
+     * @return the FeedStatus summarizing the Feeds for the list of FeedHealth objects
+     */
     public static FeedStatus feedStatus(List<FeedHealth> feedHealth){
 
         DefaultFeedStatus status = new DefaultFeedStatus(feedHealth);
