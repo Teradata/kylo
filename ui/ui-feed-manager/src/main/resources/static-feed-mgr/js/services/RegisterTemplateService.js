@@ -1,10 +1,3 @@
-/*
- * Copyright (c) 2016.
- */
-
-/**
- *
- */
 angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($http, $q, $mdDialog, RestUrlService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper) {
 
   function escapeRegExp(str) {

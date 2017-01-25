@@ -1,7 +1,3 @@
-/*
- * Copyright (c) 2016. Teradata Inc.
- */
-
 (function () {
 
     var directive = function () {

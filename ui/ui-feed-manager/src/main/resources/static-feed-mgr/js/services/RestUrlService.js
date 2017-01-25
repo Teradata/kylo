@@ -1,10 +1,3 @@
-/*
- * Copyright (c) 2016.
- */
-
-/**
- *
- */
 angular.module(MODULE_FEED_MGR).service('RestUrlService', function () {
 
     var self = this;

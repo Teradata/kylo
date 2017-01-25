@@ -1,10 +1,3 @@
-/*
- * Copyright (c) 2016.
- */
-
-/**
- *
- */
 angular.module(COMMON_APP_MODULE_NAME).service('ConfigurationService', function () {
 
   var self = this;

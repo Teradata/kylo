@@ -1,10 +1,3 @@
-/*
- * Copyright (c) 2016.
- */
-
-/**
- *
- */
 angular.module(MODULE_FEED_MGR).service('StepperService', function ($rootScope, $http, BroadcastService) {
 
     var self = this;

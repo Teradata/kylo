@@ -1,9 +1,3 @@
-
-
-/*
- * Copyright (c) 2015.
- */
-
 var SortUtils = (function () {
     function SortUtils() {
     }
