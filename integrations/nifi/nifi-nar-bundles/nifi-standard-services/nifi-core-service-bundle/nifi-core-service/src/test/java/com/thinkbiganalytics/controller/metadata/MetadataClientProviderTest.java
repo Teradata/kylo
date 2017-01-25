@@ -1,7 +1,3 @@
-/*
- * Copyright (c) 2016. Teradata Inc.
- */
-
 package com.thinkbiganalytics.controller.metadata;
 
 import com.thinkbiganalytics.metadata.api.sla.DatasourceUpdatedSinceFeedExecuted;

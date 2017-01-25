@@ -1,10 +1,3 @@
-/*
- * Copyright (c) 2016. Teradata Inc.
- */
-
-/**
- *
- */
 package com.thinkbiganalytics.nifi.core.api.metadata;
 
 import org.apache.nifi.annotation.documentation.CapabilityDescription;

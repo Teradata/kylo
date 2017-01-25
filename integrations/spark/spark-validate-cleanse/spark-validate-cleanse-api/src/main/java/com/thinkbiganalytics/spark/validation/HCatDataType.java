@@ -1,6 +1,3 @@
-/*
- * Copyright (c) 2015. Teradata Inc.
- */
 package com.thinkbiganalytics.spark.validation;
 
 import com.thinkbiganalytics.policy.validation.DateValidator;

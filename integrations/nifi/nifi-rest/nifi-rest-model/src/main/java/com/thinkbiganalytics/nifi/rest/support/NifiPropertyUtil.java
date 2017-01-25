@@ -1,7 +1,3 @@
-/*
- * Copyright (c) 2016.
- */
-
 package com.thinkbiganalytics.nifi.rest.support;
 
 import com.google.common.base.Predicate;

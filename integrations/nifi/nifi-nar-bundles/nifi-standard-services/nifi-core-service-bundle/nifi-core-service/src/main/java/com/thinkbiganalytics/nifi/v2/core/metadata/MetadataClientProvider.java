@@ -1,6 +1,3 @@
-/*
- * Copyright (c) 2016. Teradata Inc.
- */
 package com.thinkbiganalytics.nifi.v2.core.metadata;
 
 import com.thinkbiganalytics.metadata.api.op.FeedDependencyDeltaResults;

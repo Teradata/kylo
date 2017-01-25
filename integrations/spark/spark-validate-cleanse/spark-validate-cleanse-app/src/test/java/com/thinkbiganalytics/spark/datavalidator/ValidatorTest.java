@@ -1,7 +1,3 @@
-/*
- * Copyright (c) 2016. Teradata Inc.
- */
-
 package com.thinkbiganalytics.spark.datavalidator;
 
 import com.thinkbiganalytics.policy.FieldPoliciesJsonTransformer;

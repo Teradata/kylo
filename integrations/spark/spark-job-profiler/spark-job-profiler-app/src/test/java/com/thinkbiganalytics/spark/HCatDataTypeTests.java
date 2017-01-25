@@ -1,7 +1,3 @@
-/*
- * Copyright (c) 2016. Teradata Inc.
- */
-
 package com.thinkbiganalytics.spark;
 
 import com.thinkbiganalytics.spark.validation.HCatDataType;

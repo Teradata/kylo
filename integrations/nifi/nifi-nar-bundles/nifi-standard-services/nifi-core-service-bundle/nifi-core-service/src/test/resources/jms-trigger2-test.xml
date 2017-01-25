@@ -1,7 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?><!--
-  ~ Copyright (c) 2016. Teradata Inc.
-  -->
-
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <template>
     <description></description>
     <name>jms-trigger2-test</name>

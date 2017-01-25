@@ -1,7 +1,3 @@
-/*
- * Copyright (c) 2015. Teradata Inc.
- */
-
 package com.thinkbiganalytics.nifi.v2.spark;
 
 import com.thinkbiganalytics.nifi.processor.AbstractNiFiProcessor;

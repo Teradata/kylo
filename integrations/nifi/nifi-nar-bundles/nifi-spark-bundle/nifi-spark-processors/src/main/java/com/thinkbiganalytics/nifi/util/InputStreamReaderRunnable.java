@@ -1,7 +1,3 @@
-/*
- * Copyright (c) 2016. Teradata Inc.
- */
-
 package com.thinkbiganalytics.nifi.util;
 
 import org.apache.commons.io.IOUtils;
