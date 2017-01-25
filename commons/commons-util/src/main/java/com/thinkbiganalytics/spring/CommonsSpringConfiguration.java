@@ -24,7 +24,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * Created by sr186054 on 7/22/16.
+ * Common spring bean configurations
  */
 @Configuration
 public class CommonsSpringConfiguration {

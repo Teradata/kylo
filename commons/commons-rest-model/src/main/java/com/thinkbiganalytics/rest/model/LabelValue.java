@@ -21,11 +21,23 @@ package com.thinkbiganalytics.rest.model;
  */
 
 /**
- * Created by sr186054 on 3/15/16.
+ * supply a label, value and optional hint describing the object.
+ * This is used in the Annotation framework to display data to the User interface and describe various options
  */
 public class LabelValue {
+
+    /**
+     * the display name
+     */
     private String label;
+    /**
+     * the actual value
+     */
     private String value;
+
+    /**
+     * a hint describing in more detail about this option
+     */
     private String hint;
 
     public LabelValue(){
@@ -44,26 +56,51 @@ public class LabelValue {
     }
 
 
+    /**
+     * get the display label
+     *
+     * @return the label
+     */
     public String getLabel() {
         return label;
     }
 
+    /**
+     * Set the label
+     * @param label
+     */
     public void setLabel(String label) {
         this.label = label;
     }
 
+    /**
+     * get the value
+     * @return the value
+     */
     public String getValue() {
         return value;
     }
 
+    /**
+     * set the value
+     * @param value
+     */
     public void setValue(String value) {
         this.value = value;
     }
 
+    /**
+     * get additional information describing this option
+     * @return
+     */
     public String getHint() {
         return hint;
     }
 
+    /**
+     * set additional information describing this option
+     * @param hint
+     */
     public void setHint(String hint) {
         this.hint = hint;
     }

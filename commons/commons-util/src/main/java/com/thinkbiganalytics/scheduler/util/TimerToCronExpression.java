@@ -31,12 +31,16 @@ import org.quartz.CronExpression;
 import java.text.ParseException;
 
 /**
- * Created by sr186054 on 7/19/16.
- *
- * Take a simple timer string i.e. 5 sec, 200 min, 50 days and convert it to a cron Expression
+ *Converts a simple timer string such as  5 sec, 200 min, 50 days and converts it to a valid cron Expression
  */
 public class TimerToCronExpression {
 
+    /**
+     * Parse a timer string to a Joda time period
+     *
+     * @param timer      a string indicating a time unit (i.e. 5 sec)
+     * @param periodType the Period unit to use.
+     */
     public static Period timerStringToPeriod(String timer, PeriodType periodType) {
         String cronString = null;
         Integer time = Integer.parseInt(StringUtils.substringBefore(timer, " "));
@@ -59,12 +63,15 @@ public class TimerToCronExpression {
         if (periodType != null) {
             p = p.normalizedStandard(periodType);
         } else {
-            //throw exception
-
         }
         return p;
     }
 
+    /**
+     * Parse a timer string to a Joda time period
+     * @param timer
+     * @return
+     */
     public static Period timerStringToPeriod(String timer) {
         return timerStringToPeriod(timer, PeriodType.dayTime());
     }

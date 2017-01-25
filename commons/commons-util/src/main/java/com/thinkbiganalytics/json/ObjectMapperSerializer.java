@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 
 /**
- * Created by sr186054 on 3/3/16.
+ * Jackson2 JSON parser
  */
 public class ObjectMapperSerializer {
     private static final Logger log = LoggerFactory.getLogger(ObjectMapperSerializer.class);
@@ -41,6 +41,12 @@ public class ObjectMapperSerializer {
     public ObjectMapperSerializer() {
 
     }
+
+    /**
+     * Return a refernce to the Jackson2 ObjectMapper
+     *
+     * @return the ObjectMapper used to serialize/deserialize
+     */
     private static ObjectMapper getMapper(){
         if(mapper == null){
             mapper = new ObjectMapper();
@@ -50,6 +56,11 @@ public class ObjectMapperSerializer {
     }
 
 
+    /**
+     * serialize an Object to a String using Jackson2
+     * @param obj the object to serialize
+     * @return the JSON string representing the object
+     */
     public static  String serialize(Object obj) {
         String json = null;
         try {
@@ -60,9 +71,16 @@ public class ObjectMapperSerializer {
         return json;
     }
 
+    /**
+     * deserialize an string as JSON converting it to an object of the supplied class type
+     * @param json the JSON sgtring representing the object
+     * @param clazz the class describing the type of object to return
+     * @param <T>  the type of object that should be returned
+     * @return the deserialized object converted from JSON
+     */
     public static <T> T deserialize(String json, Class<T> clazz){
         try {
-            return getMapper().readValue(json,clazz);
+            return getMapper().readValue(json, clazz);
         } catch (IOException e) {
             throw new RuntimeException("error de-serializing object", e);
         }

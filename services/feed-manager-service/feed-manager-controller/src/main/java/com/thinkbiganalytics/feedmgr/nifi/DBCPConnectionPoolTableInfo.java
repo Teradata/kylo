@@ -20,9 +20,9 @@ package com.thinkbiganalytics.feedmgr.nifi;
  * #L%
  */
 
-import com.google.common.collect.ImmutableMap;
 import com.thinkbiganalytics.db.PoolingDataSourceService;
 import com.thinkbiganalytics.discovery.schema.TableSchema;
+import com.thinkbiganalytics.jdbc.util.DatabaseType;
 import com.thinkbiganalytics.kerberos.KerberosTicketConfiguration;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.schema.DBSchemaParser;
@@ -51,20 +51,6 @@ public class DBCPConnectionPoolTableInfo {
     private NifiControllerServiceProperties nifiControllerServiceProperties;
 
     private static final Logger log = LoggerFactory.getLogger(DBCPConnectionPoolTableInfo.class);
-
-
-    private static final ImmutableMap<String, String> validationQuery = new ImmutableMap.Builder<String, String>()
-        .put("hsqldb", "select 1 from INFORMATION_SCHEMA.SYSTEM_USERS")
-        .put("oracle", "select 1 from dual")
-        .put("db2", "select 1 from sysibm.sysdummy1")
-        .put("mysql", "select 1")
-        .put("sqlserver", "select 1")
-        .put("postgresql", "select 1")
-        .put("ingres", "select 1")
-        .put("derby", "select 1")
-        .put("h2", "select 1")
-        .put("firebird", "select 1 from rdb$database").build();
-
 
     @Autowired
     LegacyNifiRestClient nifiRestClient;
@@ -130,19 +116,15 @@ public class DBCPConnectionPoolTableInfo {
      * get the validation query from the db name that is parsed from the
      */
     private String parseValidationQueryFromConnectionString(String connectionString) {
+        String validationQuery = null;
+        try {
+            DatabaseType databaseType = DatabaseType.fromJdbcConnectionString(connectionString);
+            validationQuery = databaseType.getValidationQuery();
 
-        final String dbtype = StringUtils.substringBetween(connectionString, "jdbc:", "://");
-        String lookupKey = dbtype;
-        if (StringUtils.isNotBlank(dbtype)) {
-            if (!validationQuery.containsKey(dbtype)) {
-                lookupKey = validationQuery.keySet().stream().filter(key -> dbtype.contains(key)).findFirst().orElse(null);
-            }
-            if (StringUtils.isNotBlank(lookupKey)) {
-                return validationQuery.get(lookupKey);
-            }
+        } catch (IllegalArgumentException e) {
+            //if we cant find it in the map its ok.
         }
-        return null;
-
+        return validationQuery;
     }
 
 

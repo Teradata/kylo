@@ -30,7 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * Created by sr186054 on 7/12/16.
+ * Spring bean that gets access to File resources
  */
 public class FileResourceService implements ApplicationContextAware {
 
@@ -46,10 +46,20 @@ public class FileResourceService implements ApplicationContextAware {
         this.context = context;
     }
 
+    /**
+     * Return a resource for a string location
+     *
+     * @return the resource found at the supplied location/name
+     */
     public Resource getResource(String resource) {
         return context.getResource(resource);
     }
 
+    /**
+     * Return a resourcs/file as a string
+     * @param resourceLocation a file location string
+     * @return the contents of the file/resource as a string
+     */
     public String getResourceAsString(String resourceLocation) {
         try {
             Resource resource = getResource(resourceLocation);

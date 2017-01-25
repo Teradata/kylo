@@ -25,6 +25,7 @@ import com.thinkbiganalytics.discovery.model.DefaultTableSchema;
 import com.thinkbiganalytics.discovery.schema.Field;
 import com.thinkbiganalytics.discovery.schema.TableSchema;
 import com.thinkbiganalytics.discovery.util.ParserHelper;
+import com.thinkbiganalytics.jdbc.util.DatabaseType;
 import com.thinkbiganalytics.kerberos.KerberosTicketConfiguration;
 import com.thinkbiganalytics.kerberos.KerberosUtil;
 
@@ -32,6 +33,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.support.MetaDataAccessException;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -98,9 +100,14 @@ public class DBSchemaParser {
     @Nullable
     private ResultSet getTables(@Nonnull final Connection conn, @Nullable String catalog, @Nullable final String schema, @Nonnull final String tableName) {
         try {
-            final String TERADATA_PRODUCT_IDENTIFIER = "Teradata";
+            DatabaseType databaseType = null;
+            try {
+                databaseType = DatabaseType.fromMetaData(conn);
+            } catch (MetaDataAccessException e) {
+                //if we cant get the db type treat it as normal looking for TABLE and VIEW
+            }
 
-            if (TERADATA_PRODUCT_IDENTIFIER.equalsIgnoreCase(conn.getMetaData().getDatabaseProductName())) {
+            if (DatabaseType.TERADATA.equals(databaseType)) {
                 return conn.getMetaData().getTables(catalog, schema, tableName, null);  //Teradata-specific
             }
             else {

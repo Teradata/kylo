@@ -85,6 +85,10 @@ public class SpringApplicationContext implements ApplicationContextAware {
 
     /**
      * Autowire an object Force it to be autowired even if the bean is not registered with the appcontext
+     * @param key
+     * @param obj
+     * @param force
+     * @return
      */
     public static Object autowire(String key, Object obj, boolean force) {
         Object bean = null;

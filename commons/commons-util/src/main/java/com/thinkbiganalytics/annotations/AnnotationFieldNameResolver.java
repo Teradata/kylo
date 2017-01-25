@@ -34,7 +34,7 @@ import java.util.Set;
 import java.util.Stack;
 
 /**
- * Created by sr186054 on 1/25/16.
+ * Walk a Class with Field annotations and create {@link AnnotatedFieldProperty} objects describing the annotation
  */
 public class AnnotationFieldNameResolver {
 
@@ -58,16 +58,28 @@ public class AnnotationFieldNameResolver {
 
     }
 
+    /**
+     * obtain a description for the field.
+     *
+     * @return the description of the field or null.
+     */
     public String getFieldPropertyDescription(Field field ){
         return null;
     }
 
+    /**
+     * create the object describing the Field annotation setting the name based upon the class hierarchy
+     * @see this#stackAsString() for the naming strategy on hierachy names
+     * @param clazz the class to inspect
+     * @param names the list of names already parsed.  this will be the list the newly parsed field is added to
+     * @param field  the field to parse for the annotation matching the {@link this#annotation} supplied
+     * @return the object describing the annotation
+     */
     public AnnotatedFieldProperty addFieldProperty( Class clazz,List<AnnotatedFieldProperty> names, Field field){
         AnnotatedFieldProperty annotatedFieldProperty = new AnnotatedFieldProperty();
         annotatedFieldProperty.setAnnotation(field.getAnnotation(annotation));
 
         annotatedFieldProperty.setName(stackAsString() + field.getName());
-        //annotatedFieldProperty.setFieldName(field.getName());
         annotatedFieldProperty.setField(field);
         annotatedFieldProperty.setDescription(getFieldPropertyDescription(field));
         names.add(annotatedFieldProperty);
@@ -76,7 +88,12 @@ public class AnnotationFieldNameResolver {
     }
 
 
-    public  List<AnnotatedFieldProperty> getProperties(Class clazz){
+    /**
+     * Walk a class and obtain {@link AnnotatedFieldProperty} objects matching any fields with the {@link this#annotation} supplied
+     * @param clazz the class to inspect and parse annotations
+     * @return a list of objects describing the annotated fields
+     */
+    public List<AnnotatedFieldProperty> getProperties(Class clazz){
         processedClasses.add(clazz);
         classPropertyFields.put(clazz, new HashSet<AnnotatedFieldProperty>());
         List<AnnotatedFieldProperty> names = new ArrayList<>();
@@ -86,18 +103,7 @@ public class AnnotationFieldNameResolver {
             AnnotatedFieldProperty p = addFieldProperty(clazz,names,field);
             classPropertyFields.get(clazz).add(p);
             Class fieldType = field.getType();
-            /*
-            if(fieldType.isAssignableFrom(List.class)) {
-                ParameterizedType t = (ParameterizedType) field.getGenericType();
-                if(t != null && t.getActualTypeArguments() != null && t.getActualTypeArguments().length >0) {
-                    try {
-                        fieldType =  Class.forName(t.getActualTypeArguments()[0].getTypeName());
-                    } catch (ClassNotFoundException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            }
-            */
+
             if(!processedClasses.contains(fieldType)){
                 names.addAll(getProperties(fieldType));
             }
@@ -120,6 +126,10 @@ public class AnnotationFieldNameResolver {
         return names;
     }
 
+    /**
+     * create a name separated by "." based on a fields class hierarchy
+     * @return
+     */
     private String stackAsString(){
         String str = "";
         if(StringUtils.isNotBlank(parentPrefix)){

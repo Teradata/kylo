@@ -26,19 +26,40 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by sr186054 on 9/22/15.
+ * A common class and builder to help return status information and/or validation and error information for various REST endpoints
  */
 public class RestResponseStatus {
 
     public static final String STATUS_SUCCESS = "success";
     public static final String STATUS_ERROR = "error";
 
+    /**
+     * the status of the response
+     */
     private String status;
+    /**
+     * a message describing this response
+     */
     private String message;
+    /**
+     * a more detailed message with developer information (i.e. stack trace) that can be included
+     */
     private String developerMessage;
+    /**
+     * the url for the response
+     */
     private String url;
+    /**
+     * a flag indicating this has some validation errors
+     */
     private boolean validationError;
+    /**
+     * any additional properties that can be surfaced back to the caller
+     */
     private Map<String, String> properties;
+    /**
+     * the list of validation errors
+     */
     private List<ValidationError> validationErrors;
 
     private RestResponseStatus(ResponseStatusBuilder builder) {
@@ -66,47 +87,91 @@ public class RestResponseStatus {
 
         }
 
+        /**
+         * add a message to the response
+         *
+         * @param message the message to add
+         */
         public ResponseStatusBuilder message(String message) {
             this.message = message;
             return this;
         }
 
+        /**
+         * add a map of properties to the response
+         *
+         * @param properties a map of properties
+         */
         public ResponseStatusBuilder properties(Map<String, String> properties) {
             this.properties.putAll(properties);
             return this;
         }
 
+        /**
+         * add a specific property to the map of properties
+         * @param key
+         * @param value
+         * @return
+         */
         public ResponseStatusBuilder property(String key, String value) {
             this.properties.put(key, value);
             return this;
         }
 
-        public ResponseStatusBuilder validationErrors(ValidationError error) {
+        /**
+         * Add a specific validation error to the response
+         * @param error
+         * @return
+         */
+        public ResponseStatusBuilder addValidationError(ValidationError error) {
             validationErrors.add(error);
             return this;
         }
 
+        /**
+         * set the Url to the response
+         * @param url
+         * @return
+         */
         public ResponseStatusBuilder url(String url) {
             this.url = url;
             return this;
         }
 
+        /**
+         * Flag to indicate in the response that it came from a validation error
+         * @param validationError
+         * @return
+         */
         public ResponseStatusBuilder validationError(boolean validationError) {
             this.validationError = validationError;
             return this;
         }
 
+        /**
+         * A more detailed message meant for developers adding the exception message to the developer message string
+         * @param e an exception to parse the message from
+         * @return
+         */
         public ResponseStatusBuilder setDeveloperMessage(Throwable e) {
             this.developerMessage = e.getMessage();
             return this;
         }
 
+        /**
+         * Return a response object that sets the status to "success"
+         * @return
+         */
         public RestResponseStatus buildSuccess() {
             this.status = RestResponseStatus.STATUS_SUCCESS;
             return new RestResponseStatus(this);
         }
 
 
+        /**
+         * Return a response object that sets the status to "error"
+         * @return
+         */
         public RestResponseStatus buildError() {
             this.status = RestResponseStatus.STATUS_ERROR;
             return new RestResponseStatus(this);
@@ -119,34 +184,68 @@ public class RestResponseStatus {
         this.status = status;
     }
 
+    /**
+     * static response indicating success
+     */
     public static RestResponseStatus SUCCESS = new RestResponseStatus.ResponseStatusBuilder().buildSuccess();
 
+    /**
+     * static response indicating an error
+     */
     public static RestResponseStatus ERROR = new RestResponseStatus.ResponseStatusBuilder().buildError();
 
+    /**
+     * get a status string for the response.
+     * @return
+     */
     public String getStatus() {
         return status;
     }
 
+    /**
+     * gets the message
+     * @return
+     */
     public String getMessage() {
         return message;
     }
 
+    /**
+     * get the Developer detailed message
+     * @return
+     */
     public String getDeveloperMessage() {
         return developerMessage;
     }
 
+    /**
+     * Check if the response came from a validation error
+     * @return true if the response came from validation errors, false if not
+     */
     public boolean isValidationError() {
         return validationError;
     }
 
+    /**
+     * get the URL string
+     * @return
+     */
     public String getUrl() {
         return url;
     }
 
+    /**
+     * get a map of arbitrary properties that were assigned to the respoinse
+     * @return
+     */
     public Map<String, String> getProperties() {
         return properties;
     }
 
+    /**
+     * get any specific validation errors on the response
+     * @return
+     */
     public List<ValidationError> getValidationErrors() {
         return validationErrors;
     }

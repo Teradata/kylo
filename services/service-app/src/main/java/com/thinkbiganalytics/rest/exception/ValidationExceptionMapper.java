@@ -49,14 +49,13 @@ public class ValidationExceptionMapper extends BaseExceptionMapper implements ja
         RestResponseStatus.ResponseStatusBuilder builder = new RestResponseStatus.ResponseStatusBuilder();
         builder.validationError(true);
         builder.url(req.getRequestURI());
-        builder.validationError(true);
         for (final ConstraintViolation violation : exception.getConstraintViolations()) {
             String invalidValue = null;
             if (violation.getInvalidValue() instanceof String) {
                 invalidValue = (String) violation.getInvalidValue();
             }
             ValidationError error = new ValidationError(invalidValue, violation.getMessage());
-            builder.validationErrors(error);
+            builder.addValidationError(error);
         }
 
         builder.message("A validation error has occurred");

@@ -33,7 +33,7 @@ import java.util.Date;
 import java.util.Locale;
 
 /**
- * Created by sr186054 on 2/29/16.
+ * Utility for common DateTime functions
  */
 public class DateTimeUtil {
 
@@ -49,19 +49,6 @@ public class DateTimeUtil {
         DateTime utc = date.withZone(dtZone);
         return new DateTime(utc);
     }
-    /*
-public static Date convertToUTCx(Date date) {
-    DateTimeZone tz = DateTimeZone.getDefault();
-    Date utc = new Date(tz.convertLocalToUTC(date.getTime(), false));
-    return utc;
-}
-
-    public static DateTime convertToUTCx(DateTime date) {
-        DateTimeZone tz = DateTimeZone.getDefault();
-        Date utc = new Date(tz.convertLocalToUTC(date.getMillis(), false));
-        return new DateTime(utc);
-    }
-    */
 
     public static Date getUTCTime() {
         return convertToUTC(new Date());

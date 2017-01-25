@@ -52,6 +52,12 @@ import java.util.Map;
 
 /**
  * Ambari Service bean autowired in via the ServiceStatusManager looking for this ServicesStatusCheck interface
+ *
+ *Users can define what services/components to track in the kylo properties file using the following format
+ *
+ * {SERVICE_NAME}/[{COMPONENT_NAME},{COMPONENT_NAME}],{SERVICE_NAME}... COMPONENT_NAMES are optional <p> Example
+ * application.properties ambari.services.status=HIVE/[HIVE_CLIENT],HDFS - this will track the HIVE Service and just the
+ * HIVE_CLIENT ambari.services.status=HDFS,HIVE,MAPREDUCE2,SQOOP - this will track all services and all components
  */
 public class AmbariServicesStatusCheck implements ServicesStatusCheck {
 
@@ -65,14 +71,11 @@ public class AmbariServicesStatusCheck implements ServicesStatusCheck {
 
 
     private void notifyServiceDown(ServiceStatusResponse serviceStatusResponse) {
-        //GENERATE ALERT FOR serviceStatusResponse.getServiceName()
-        //serviceStatusResponse.getServiceName()
-        //getLatestAlertForType(name);
+        //called every time a service is marked as down/unhealthy
     }
 
     private void notifyServiceUp(ServiceStatusResponse serviceStatusResponse) {
-        //CLEAR ALERT FOR serviceStatusResponse.getServiceName()
-        //getNonClearedAlertForService('service').clear()
+        //called every time a service is marked as healthy
     }
 
     /*
@@ -100,7 +103,6 @@ public class AmbariServicesStatusCheck implements ServicesStatusCheck {
 
         //Get the Map of Services and optional Components we are tracking
         Map<String, List<String>> definedServiceComponentMap = ServiceMonitorCheckUtil.getMapOfServiceAndComponents(services);
-        //LOG.info("Check Ambari "+definedServiceComponentMap);
 
         if (definedServiceComponentMap != null && !definedServiceComponentMap.isEmpty()) {
 
@@ -123,10 +125,7 @@ public class AmbariServicesStatusCheck implements ServicesStatusCheck {
                 } else {
                     cause = e;
                 }
-                ServiceComponent
-                    ambariServiceComponent =
-                    new DefaultServiceComponent.Builder("Unknown", "Ambari", "Ambari REST_CLIENT", ServiceComponent.STATE.DOWN)
-                        .exception(cause).build();
+                ServiceComponent ambariServiceComponent = new DefaultServiceComponent.Builder("Unknown", "Ambari", "Ambari REST_CLIENT", ServiceComponent.STATE.DOWN).exception(cause).build();
                 List<ServiceComponent> ambariComponents = new ArrayList<>();
                 ambariComponents.add(ambariServiceComponent);
                 ServiceStatusResponse
@@ -143,7 +142,11 @@ public class AmbariServicesStatusCheck implements ServicesStatusCheck {
 
 
     /**
-     * Convert Ambari ServiceComponentInfo into PipelineController ServiceComponent
+     * Convert Ambari ServiceComponentInfo into  ServiceComponent objects
+     * @param ambariServiceComponents
+     * @param serviceAlerts
+     * @param definedServiceComponentMap
+     * @return
      */
     private List<ServiceStatusResponse> transformAmbariServiceComponents(ServiceComponentInfoSummary ambariServiceComponents,
                                                                          List<ServiceAlert> serviceAlerts,
@@ -196,6 +199,7 @@ public class AmbariServicesStatusCheck implements ServicesStatusCheck {
     }
 
     /**
+     * add ambari Service errors to the supplied list
      * @param list
      * @param definedServiceComponentMap
      */
@@ -234,10 +238,9 @@ public class AmbariServicesStatusCheck implements ServicesStatusCheck {
     }
 
     /**
-     * State 	Description INIT 	Initial/Clean state. INSTALLING 	In the process of installing. INSTALL_FAILED 	Install failed. INSTALLED 	State when install completed successfully. STARTING 	In the
-     * process of starting. STARTED 	State when start completed successfully. STOPPING 	In the process of stopping. UNINSTALLING 	In the process of uninstalling. UNINSTALLED State when uninstall
-     * completed successfully. WIPING_OUT 	In the process of wiping out the install. UPGRADING 	In the process of upgrading the deployed bits. DISABLED 	Disabled master’s backup state. UNKNOWN 	State
-     * could not be determined.
+     *  for a given Ambari component and state return the respective Component state
+     * @param serviceComponentInfoItem
+     * @return the state of the component
      */
     private ServiceComponent.STATE getServiceComponentState(ServiceComponentInfoItem serviceComponentInfoItem) {
         ServiceComponent.STATE state = ServiceComponent.STATE.DOWN;
@@ -261,6 +264,9 @@ public class AmbariServicesStatusCheck implements ServicesStatusCheck {
 
     /**
      * return a matching List of ServiceAlerts based upon the incoming component name
+     * @param alerts
+     * @param component
+     * @return
      */
     private List<ServiceAlert> alertsForComponent(List<ServiceAlert> alerts, final String component) {
         Predicate<ServiceAlert> predicate = new Predicate<ServiceAlert>() {
@@ -276,6 +282,9 @@ public class AmbariServicesStatusCheck implements ServicesStatusCheck {
         return null;
     }
 
+    /**
+     * get the list of alerts for a give service name
+     */
     private List<ServiceAlert> alertsForService(List<ServiceAlert> alerts, final String service) {
         Predicate<ServiceAlert> predicate = new Predicate<ServiceAlert>() {
             @Override
@@ -291,6 +300,11 @@ public class AmbariServicesStatusCheck implements ServicesStatusCheck {
     }
 
 
+    /**
+     * Transform the ambari alerts to Kylo service alerts
+     * @param alertSummary
+     * @return
+     */
     public List<ServiceAlert> transformAmbariAlert(AlertSummary alertSummary) {
         List<ServiceAlert> serviceAlerts = new ArrayList<>();
         if (alertSummary != null) {

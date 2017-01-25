@@ -28,7 +28,10 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 
 /**
- * Created by sr186054 on 4/4/16.
+ * Class used to extract field annotations and return as an object describing the annotation and its purpose as well as the Field data
+ * A helper class is usually used in conjunction with this class to build up this object parsing Field annotations for a given object/class
+ *
+ * @see AnnotationFieldNameResolver
  */
 public class AnnotatedFieldProperty<T extends Annotation> {
     private String name;
@@ -44,42 +47,82 @@ public class AnnotatedFieldProperty<T extends Annotation> {
 
     }
 
+    /**
+     * Returns the name of the field or the dot notation of a field if its derived as a child element from a parent class
+     *
+     * @return the name of the field.  When used with the {@link AnnotationFieldNameResolver} it will resolve to the name of the field as it pertains to the parent object separated by a "."
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Set the field name used for this annotation.
+     */
     public void setName(String name) {
         this.name = name;
     }
 
+    /**
+     *  Return an optional description about the field
+     * @return the description for the field.  This is optional and can be null
+     */
     public String getDescription() {
         return description;
     }
 
+    /**
+     * set the description for the field
+     * @param description
+     */
     public void setDescription(String description) {
         this.description = description;
     }
 
+    /**
+     * Return the Java Field reference
+     * @return the Java Field reference to the annotated field
+     */
     public Field getField() {
         return field;
     }
 
+    /**
+     * set the field containing the annotation
+     * @param field
+     */
     public void setField(Field field) {
         this.field = field;
     }
 
+    /**
+     * Return the Java datatype of the field
+     * @return
+     */
     public String getDataType() {
         return dataType;
     }
 
+    /**
+     * set the Java datatype
+     * @param dataType
+     */
     public void setDataType(String dataType) {
         this.dataType = dataType;
     }
 
+    /**
+     * Return the Annotation used when parsing this field
+     * @return
+     */
     public T getAnnotation() {
         return annotation;
     }
 
+    /**
+     * set the annotation reference
+     * @param annotation
+     */
     public void setAnnotation(T annotation) {
         this.annotation = annotation;
     }
