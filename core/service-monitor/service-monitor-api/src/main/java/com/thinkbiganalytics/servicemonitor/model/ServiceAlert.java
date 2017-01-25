@@ -3,20 +3,38 @@ package com.thinkbiganalytics.servicemonitor.model;
 import java.util.Date;
 
 /**
- * Created by sr186054 on 4/13/16.
+ * Health information for a service
+ * A Service  can be configured to have a number of Components which it should check for health.
+ * Each component can provide a number of ServiceAlert indicating the overall healh of the given component
+ *
+ * Refer to the service-monitor-core for builder objects to create these alerts
  */
 public interface ServiceAlert {
 
-  String getServiceName();
+    /**
+     * The Service Name
+     */
+    String getServiceName();
 
   void setServiceName(String serviceName);
 
-  String getComponentName();
+    /**
+     * The name of the component for this alert
+     */
+    String getComponentName();
 
   void setComponentName(String componentName);
 
+  /**
+   * The label shown on the service component -> alert details page
+   * @return
+   */
   String getLabel();
 
+  /**
+   * Set the label for this alert
+   * @param label
+   */
   void setLabel(String label);
 
   String getMessage();

@@ -4,7 +4,10 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * Created by sr186054 on 4/13/16.
+ * When a Service Status check is made it expects this object to be returned.
+ * This includes the Service and respective {@link ServiceComponent} and {@link ServiceAlert} objects as well as information to quickly assess if the service is healthy or not
+ *
+ * Refer to the service-monitor-core for common builders in creating this object
  */
 public interface ServiceStatusResponse {
 

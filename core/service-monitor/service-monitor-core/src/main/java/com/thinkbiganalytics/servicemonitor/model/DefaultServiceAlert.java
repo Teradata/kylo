@@ -5,7 +5,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.Date;
 
 /**
- * Created by sr186054 on 10/2/15.
+ * A default {@link ServiceAlert}
+ * This can be build using the {@link DefaultServiceComponent.Builder}
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DefaultServiceAlert implements ServiceAlert {

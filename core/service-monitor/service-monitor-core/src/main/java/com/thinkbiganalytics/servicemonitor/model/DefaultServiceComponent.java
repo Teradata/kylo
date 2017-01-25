@@ -12,7 +12,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by sr186054 on 9/30/15.
+ * The Default ServiceComponent and Builder for Service health notifications.
+ *
+ * This is used by the Kylo UI to display health about components in within a service
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DefaultServiceComponent implements ServiceComponent {
@@ -64,86 +66,90 @@ public class DefaultServiceComponent implements ServiceComponent {
     return maxState;
   }
 
-  public static class Builder {
 
-    private String clusterName = ServiceComponent.DEFAULT_CLUSTER;
-    private String serviceName;
-    private String name;
-    private boolean healthy = true;
-    private String message;
-    private List<ServiceAlert> alerts;
-    private Map<String, Object> properties;
-    private STATE state;
+    /**
+     * The builder to help create {@link ServiceComponent} objects
+     */
+    public static class Builder {
 
-    public Builder(String clusterName, String serviceName, String componentName, STATE state) {
-      this.clusterName = clusterName;
-      this.serviceName = serviceName;
-      this.name = componentName;
-      this.state = state;
-    }
+        private String clusterName = ServiceComponent.DEFAULT_CLUSTER;
+        private String serviceName;
+        private String name;
+        private boolean healthy = true;
+        private String message;
+        private List<ServiceAlert> alerts;
+        private Map<String, Object> properties;
+        private STATE state;
 
-    public Builder(String componentName, STATE state) {
-      this.name = componentName;
-      this.state = state;
-    }
-
-    public Builder serviceName(String serviceName) {
-      this.serviceName = serviceName;
-      return this;
-    }
-
-    public Builder clusterName(String clusterName) {
-      this.clusterName = clusterName;
-      return this;
-    }
-
-    public Builder message(String message) {
-      this.message = message;
-      return this;
-    }
-
-    public Builder properties(Map<String, Object> properties) {
-      if (this.properties == null) {
-        this.properties = new HashMap<>();
-      }
-      this.properties.putAll(properties);
-      return this;
-    }
-
-    public Builder alerts(List<ServiceAlert> alerts) {
-      this.alerts = alerts;
-      if (this.alerts != null) {
-        for (ServiceAlert alert : alerts) {
-          if (alert.getState().isError()) {
-            this.healthy = false;
-          }
+        public Builder(String clusterName, String serviceName, String componentName, STATE state) {
+            this.clusterName = clusterName;
+            this.serviceName = serviceName;
+            this.name = componentName;
+            this.state = state;
         }
-      }
-      return this;
-    }
 
-    public Builder property(String key, Object value) {
-      if (this.properties == null) {
-        this.properties = new HashMap<>();
-      }
-      this.properties.put(key, value);
-      return this;
-    }
+        public Builder(String componentName, STATE state) {
+            this.name = componentName;
+            this.state = state;
+        }
 
-    public Builder exception(Throwable e) {
-      this.message = e.getMessage();
-      this.healthy = false;
-      return this;
-    }
+        public Builder serviceName(String serviceName) {
+            this.serviceName = serviceName;
+            return this;
+        }
 
-    public ServiceComponent build() {
-      if (this.healthy) {
-        this.healthy = state.isHealthy();
-      }
-      ServiceComponent health = new DefaultServiceComponent(this);
-      return health;
+        public Builder clusterName(String clusterName) {
+            this.clusterName = clusterName;
+            return this;
+        }
+
+        public Builder message(String message) {
+            this.message = message;
+            return this;
+        }
+
+        public Builder properties(Map<String, Object> properties) {
+            if (this.properties == null) {
+                this.properties = new HashMap<>();
+            }
+            this.properties.putAll(properties);
+            return this;
+        }
+
+        public Builder alerts(List<ServiceAlert> alerts) {
+            this.alerts = alerts;
+            if (this.alerts != null) {
+                for (ServiceAlert alert : alerts) {
+                    if (alert.getState().isError()) {
+                        this.healthy = false;
+                    }
+                }
+            }
+            return this;
+        }
+
+        public Builder property(String key, Object value) {
+            if (this.properties == null) {
+                this.properties = new HashMap<>();
+            }
+            this.properties.put(key, value);
+            return this;
+        }
+
+        public Builder exception(Throwable e) {
+            this.message = e.getMessage();
+            this.healthy = false;
+            return this;
+        }
+
+        public ServiceComponent build() {
+            if (this.healthy) {
+                this.healthy = state.isHealthy();
+            }
+            ServiceComponent health = new DefaultServiceComponent(this);
+            return health;
+        }
     }
-  }
 
   public Map<String, Object> getProperties() {
     return properties;

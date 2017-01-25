@@ -12,7 +12,10 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * Created by sr186054 on 9/30/15.
+ * The default response and builder for {@link ServiceStatusResponse} objects.
+ * This class includes a builder to help build the response object.
+ * This is used by the Kylo user interface
+ *
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DefaultServiceStatusResponse implements ServiceStatusResponse {
@@ -71,12 +74,10 @@ public class DefaultServiceStatusResponse implements ServiceStatusResponse {
         }
         Date latest = component.getLatestAlertTimestamp();
         Date earliest = component.getEarliestAlertTimestamp();
-        if (latestAlertTimestamp == null || (latestAlertTimestamp != null && latest != null && latest
-            .after(latestAlertTimestamp))) {
+          if (latestAlertTimestamp == null || (latestAlertTimestamp != null && latest != null && latest.after(latestAlertTimestamp))) {
           latestAlertTimestamp = component.getLatestAlertTimestamp();
         }
-        if (earliestAlertTimestamp == null || (earliestAlertTimestamp != null && earliest != null && earliest
-            .after(earliestAlertTimestamp))) {
+          if (earliestAlertTimestamp == null || (earliestAlertTimestamp != null && earliest != null && earliest.after(earliestAlertTimestamp))) {
           earliestAlertTimestamp = component.getEarliestAlertTimestamp();
         }
       }
@@ -91,8 +92,7 @@ public class DefaultServiceStatusResponse implements ServiceStatusResponse {
     this.earliestAlertTimestamp = earliestAlertTimestamp;
     if (states.contains(ServiceComponent.STATE.DOWN)) {
       this.state = STATE.DOWN;
-    } else if ((states.contains(ServiceComponent.STATE.UP) && hasErrorAlerts) || states
-        .contains(ServiceComponent.STATE.UNKNOWN)) {
+    } else if ((states.contains(ServiceComponent.STATE.UP) && hasErrorAlerts) || states.contains(ServiceComponent.STATE.UNKNOWN)) {
       this.state = STATE.WARNING;
     } else {
       this.state = STATE.UP;
@@ -112,6 +112,8 @@ public class DefaultServiceStatusResponse implements ServiceStatusResponse {
 
   /**
    * return a matching List of ServiceAlerts based upon the incoming component name
+   * @param alerts
+   * @return
    */
   private List<ServiceAlert> getAlertsWithoutComponent(List<ServiceAlert> alerts) {
     if (alerts != null) {
