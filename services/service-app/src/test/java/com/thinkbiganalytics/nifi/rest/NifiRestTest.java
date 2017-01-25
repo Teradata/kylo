@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.nifi.rest;
 
+import com.google.common.collect.Lists;
 import com.thinkbiganalytics.feedmgr.nifi.CreateFeedBuilder;
 import com.thinkbiganalytics.feedmgr.nifi.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
@@ -11,10 +12,12 @@ import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClientConfig;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessorSchedule;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
+import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
+import com.thinkbiganalytics.nifi.rest.model.visitor.NifiFlowBuilder;
+import com.thinkbiganalytics.nifi.rest.model.visitor.NifiVisitableProcessGroup;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 import com.thinkbiganalytics.nifi.v1.rest.client.NiFiRestClientV1;
 import com.thinkbiganalytics.nifi.v1.rest.model.NiFiPropertyDescriptorTransformV1;
-import com.thinkbiganalytics.rest.JerseyClientException;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
@@ -37,7 +40,7 @@ public class NifiRestTest {
     private NifiFlowCache nifiFlowCache;
     private NiFiPropertyDescriptorTransformV1 propertyDescriptorTransform;
 
-    //@Before
+    //  @Before
     public void setupRestClient() {
         restClient = new LegacyNifiRestClient();
         NifiRestClientConfig clientConfig = new NifiRestClientConfig();
@@ -52,7 +55,7 @@ public class NifiRestTest {
 
 
     //@Test
-    public void testCreateFeed1() throws JerseyClientException {
+    public void testCreateFeed1() {
         TemplateDTO templateDTO = restClient.getTemplateByName("New Data Ingest");
         String inputType = "org.apache.nifi.processors.standard.GetFile";
 
@@ -71,7 +74,6 @@ public class NifiRestTest {
         CreateFeedBuilder.newFeed(restClient, nifiFlowCache, feedMetadata, templateDTO.getId(), new PropertyExpressionResolver(), propertyDescriptorTransform).inputProcessorType(inputType)
             .feedSchedule(schedule).addInputOutputPort(new InputOutputPort(inputPortName, feedOutputPortName)).build();
     }
-
 
 
     //@Test
@@ -156,15 +158,22 @@ public class NifiRestTest {
     // @Test
     public void testOrder() throws Exception {
 
-        restClient.getFeedFlows();
+        NifiVisitableProcessGroup g = restClient.getFlowOrder("b2fb9f7c-0159-1000-8ae3-9c108a282008", null);
+        NifiFlowProcessGroup flow = new NifiFlowBuilder().build(g);
 
+        NifiFlowProcessGroup flow2 = restClient.getFeedFlow("b2fb9f7c-0159-1000-8ae3-9c108a282008");
+
+        List<String> feeds = Lists.newArrayList();
+        feeds.add("sample.new_feed_three");
+        List<NifiFlowProcessGroup> flows3 = restClient.getNiFiRestClient().flows().getFeedFlows(feeds);
+//int i = 0;
+        //restClient.getFeedFlows();
 
     }
 
 
-
     // @Test
-    public void testUpdateProcessor() throws JerseyClientException {
+    public void testUpdateProcessor() {
         NifiProperty p = new NifiProperty();
         p.setProcessGroupId("0b013850-d6bb-44e4-87c2-1784858e60ab");
         p.setProcessorId("795509d5-1433-4e64-b7bd-d05c6adfb95a");
@@ -175,7 +184,7 @@ public class NifiRestTest {
     }
 
     // @Test
-    public void testFile() throws IOException, JerseyClientException {
+    public void testFile() throws IOException {
         InputStream in = NifiRestTest.class
             .getResourceAsStream("/template.xml");
         StringWriter writer = new StringWriter();
@@ -186,7 +195,7 @@ public class NifiRestTest {
     }
 
     //@Test
-    public void testFailures() throws JerseyClientException {
+    public void testFailures() {
         String id = "7653afbc-7cdd-49c6-9ffc-c5a0c31137f4";
         Set<ProcessorDTO> failureProcessors = restClient.getFailureProcessors(id);
         int i = 0;

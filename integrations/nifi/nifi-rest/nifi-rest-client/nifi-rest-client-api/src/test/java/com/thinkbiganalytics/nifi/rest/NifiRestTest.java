@@ -10,7 +10,6 @@ import com.thinkbiganalytics.nifi.rest.model.visitor.NifiVisitableProcessor;
 import org.apache.commons.io.IOUtils;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.provenance.ProvenanceRequestDTO;
-import org.junit.Before;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,7 +29,7 @@ public class NifiRestTest {
 
     private LegacyNifiRestClient restClient;
 
-    @Before
+    // @Before
     public void setupRestClient() {
         restClient = new LegacyNifiRestClient();
     }
@@ -124,9 +123,9 @@ public class NifiRestTest {
         }
     }
 
-    // @Test
+    //  @Test
     public void testOrder() throws Exception {
-        NifiVisitableProcessGroup g = restClient.getFlowOrder("3d3a44ae-7365-1c62-a7da-eba606844af3", null);
+        NifiVisitableProcessGroup g = restClient.getFlowOrder("b2fb9f7c-0159-1000-8ae3-9c108a282008", null);
         NifiFlowProcessGroup flow = new NifiFlowBuilder().build(g);
 
         //   Set<ProcessorDTO> processors = restClient.getProcessorsForFlow("c4c7c4be-5421-45a0-87e9-fdef211297c5");
