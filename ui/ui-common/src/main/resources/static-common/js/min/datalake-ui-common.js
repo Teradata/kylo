@@ -538,9 +538,7 @@ angular.module(COMMON_APP_MODULE_NAME).directive('currentTime', function ($http,
             }
         }
     };
-});/*
- * Copyright (c) 2016.
- */
+});
 
 /**
  *
@@ -1466,9 +1464,7 @@ angular.module(COMMON_APP_MODULE_NAME).directive("mdDatepickerContainer", functi
     };
 })
 
-}());/*
- * Copyright (c) 2015.
- */
+}());
 
 (function() {
     'use strict';
