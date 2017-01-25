@@ -17,9 +17,12 @@ import org.springframework.core.io.FileSystemResource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.kerberos.authentication.KerberosAuthenticationProvider;
 import org.springframework.security.kerberos.authentication.KerberosServiceAuthenticationProvider;
+import org.springframework.security.kerberos.authentication.sun.SunJaasKerberosClient;
 import org.springframework.security.kerberos.authentication.sun.SunJaasKerberosTicketValidator;
 import org.springframework.security.kerberos.web.authentication.SpnegoAuthenticationProcessingFilter;
 import org.springframework.security.kerberos.web.authentication.SpnegoEntryPoint;
@@ -30,11 +33,11 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
  *
  * @author Sean Felten
  */
-//@Configuration
-//@EnableWebSecurity
-//@Profile("auth-krb")
-//@Order(SecurityProperties.ACCESS_OVERRIDE_ORDER + 2)
-public class KerberosServiceWebSecurityConfiguration extends WebSecurityConfigurerAdapter {
+@Configuration
+@EnableWebSecurity
+@Profile("auth-krb")
+@Order(SecurityProperties.ACCESS_OVERRIDE_ORDER + 1)
+public class KerberosWebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Value("${security.auth.krb.service-principal}")
     private String servicePrincipal;
@@ -43,28 +46,61 @@ public class KerberosServiceWebSecurityConfiguration extends WebSecurityConfigur
     private String keytabLocation;
 
     @Override
+    public void configure(WebSecurity web) throws Exception {
+        web.ignoring().antMatchers("/ui-common/**","/js/vendor/**", "/images/**", "/styles/**", "/js/login/**", "/js/utils/**");
+    }
+
+    @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
             .csrf().disable()
             .exceptionHandling()
                 .authenticationEntryPoint(spnegoEntryPoint())
-                .and()  
+                .and()
             .authorizeRequests()
+                .antMatchers("/login", "/login/**", "/login**", "/proxy/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
-            .addFilterBefore(spnegoAuthenticationProcessingFilter(authenticationManagerBean()),
-                             BasicAuthenticationFilter.class);
+            .formLogin()
+                .usernameParameter("username")
+                .passwordParameter("password")
+                .loginPage("/login.html")
+                .loginProcessingUrl("/login")
+                .failureUrl("/login.html?error=true").permitAll()
+                .and()
+            .logout()
+                .permitAll()
+                .and()
+            .addFilterBefore(
+                    spnegoAuthenticationProcessingFilter(authenticationManagerBean()),
+                    BasicAuthenticationFilter.class);
     }
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.authenticationProvider(kerberosServiceAuthenticationProvider());
+        auth
+            .authenticationProvider(kerberosAuthenticationProvider())
+            .authenticationProvider(kerberosServiceAuthenticationProvider());
+    }
+
+    @Bean
+    public KerberosAuthenticationProvider kerberosAuthenticationProvider() throws IOException {
+        KerberosAuthenticationProvider provider =
+                new KerberosAuthenticationProvider();
+        SunJaasKerberosClient client = new SunJaasKerberosClient();
+        client.setDebug(true);
+        provider.setKerberosClient(client);
+        
+        Properties users = new Properties();
+        users.load(new StringReader("dladmin@EXAMPLE.COM=thinkbig,admin"));
+        
+        provider.setUserDetailsService(new InMemoryUserDetailsManager(users));
+        return provider;
     }
 
     @Bean
     public SpnegoEntryPoint spnegoEntryPoint() {
-        return new SpnegoEntryPoint();
-//        return new SpnegoEntryPoint("/login");
+        return new SpnegoEntryPoint("/login");
     }
 
     @Bean
@@ -81,7 +117,7 @@ public class KerberosServiceWebSecurityConfiguration extends WebSecurityConfigur
         provider.setTicketValidator(sunJaasKerberosTicketValidator());
         
         Properties users = new Properties();
-        users.load(new StringReader("dladmin=thinkbig,admin"));
+        users.load(new StringReader("dladmin@EXAMPLE.COM=thinkbig,admin"));
         
         provider.setUserDetailsService(new InMemoryUserDetailsManager(users));
         return provider;

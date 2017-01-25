@@ -50,6 +50,9 @@ import org.springframework.security.web.authentication.rememberme.RememberMeAuth
 @EnableWebSecurity
 public class WebSecurityConfiguration {
 
+    protected static final Logger LOG = LoggerFactory.getLogger(WebSecurityConfiguration.class);
+
+
     @Configuration
     @Order(SecurityProperties.ACCESS_OVERRIDE_ORDER)
     public static class UiSecurityConfiguration extends WebSecurityConfigurerAdapter {
@@ -76,6 +79,7 @@ public class WebSecurityConfiguration {
                         .antMatchers("/proxy/**").permitAll()
                         .antMatchers("/login", "/login/**", "/login**").permitAll()
                         .antMatchers("/**").authenticated()
+//                        .anyRequest().authenticated()
                         .and()
                     .formLogin()
                         .usernameParameter("username")
