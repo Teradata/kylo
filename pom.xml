@@ -823,8 +823,8 @@
 		    <goals>
 			<goal>check-file-header</goal>
 		    </goals>
-			<!-- here to cause package phase or higher to fail build when headers are not up to date 
-		    <phase>prepare-package</phase> -->
+			<!-- here to cause package phase or higher to fail build when headers are not up to date  -->
+		    <phase>prepare-package</phase> 
 		</execution>
         </executions>
       </plugin>

@@ -154,6 +154,37 @@
                 </dependencies>
             </plugin>
 
+
+       <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <configuration>
+                </configuration>
+                <executions>
+                        <execution>
+                                <id>first</id>
+                                <goals>
+                                        <goal>update-file-header</goal>
+                                </goals>
+                                <configuration>
+                                <roots>
+                                        <root>target/generated-sources</root>
+                                        <root>target/processed-source</root>
+                                </roots>
+                                </configuration>
+                                <phase>process-sources</phase>
+                        </execution>
+                        <execution>
+                                <id>second</id>
+                                <goals>
+                                        <goal>check-file-header</goal>
+                                </goals>
+                                <phase>prepare-package</phase>
+                        </execution>
+                </executions>
+        </plugin>
+
+
         </plugins>
     </build>
 </project>
