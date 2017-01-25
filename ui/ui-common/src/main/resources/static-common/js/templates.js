@@ -1,3 +1,22 @@
+/*-
+ * #%L
+ * thinkbig-ui-common
+ * %%
+ * Copyright (C) 2017 ThinkBig Analytics
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
 angular.module("datalakeui.common").run(["$templateCache", function($templateCache) {$templateCache.put("js/shared/about-kylo/about.html","<!--\n  About Kylo popup page\n-->\n<md-dialog aria-label=\"About Kylo\" flex=\"25\">\n  <md-dialog-content>\n    <p style=\"text-align:center;\"><img src=\"/ui-common/img/kylo-logo-orange.png\" style=\"width:300px;\"</p>\n    <p style=\"text-align:center;\"><b>Version:</b> {{version}}</p>\n    <table cellpadding=\"10\">\n      <tr>\n        <td>\n            <p style=\"text-align:justify; padding:10px\">The Kylo framework simplifies building, configuring, deploying and monitoring data pipelines.\n              It enables data profiling, data discovery and data science. Businesses can quickly start leveraging value from their enterprise data lakes.\n              <br><br>\n              For enterprise support options, please visit <a href=\"https://www.thinkbiganalytics.com/kylo/\" target=\"_blank\">Think Big</a>.\n              <br><br>\n              <textarea class=\"scrollabletextbox\" name=\"apache-licence\" readonly=\"true\" rows=\"7\" cols=\"55\" style=\"text-align:justify; color: black; background-color: #F6DDCC; padding:10px;\">\nCopyright 2017 Teradata Corporation\n\nLicensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at\n\n  http://www.apache.org/licenses/LICENSE-2.0\n\nUnless required by applicable law or agreed to in writing, software distributed under the License is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.\n          </textarea>\n            </p>\n        </td>\n      </tr>\n    </table>\n  </md-dialog-content>\n  <md-dialog-actions>\n    <md-button ng-click=\"cancel();\" class=\"md-primary\">Close</md-button>\n  </md-dialog-actions>\n</md-dialog>");
 $templateCache.put("js/shared/card-filter-header/card-filter-header-template.html"," <div style=\"white-space: nowrap;margin-top:10px;\" class=\"card-title\">{{::$cardFilterHeader.cardTitle}}</div>\n        <span flex=\"5\"></span>\n        <md-input-container flex style=\"margin-top:0px;margin-bottom:0px;\">\n            <label>Filter</label>\n            <input ng-model=\"$cardFilterHeader.filterModel\" ng-model-options=\"$cardFilterHeader.filterModelOptions\"/>\n        </md-input-container>\n <div layout=\"row\" layout-align=\"space-between center\">\n           <tba-view-type-selection view-type=\"$cardFilterHeader.viewType\" style=\"margin-left:10px;\"></tba-view-type-selection>\n   <tba-options-menu sort-options=\"$cardFilterHeader.sortOptions\" show-pagination=\"false\" menu-key=\"{{$cardFilterHeader.pageName}}\" selected-option=\"$cardFilterHeader.selectedOption\"\n                     opened-menu=\"$cardFilterHeader.menuOpen\" additional-options=\"$cardFilterHeader.additionalOptions\" selected-additional-option=\"$cardFilterHeader.selectedAdditionalOption\"\n                     show-view-type=\"false\" menu-icon=\"more_vert\"></tba-options-menu>\n</div>\n");
 $templateCache.put("js/shared/kylo-options/kylo-options.html","<!--\n    Popup menu\n-->\n<md-menu >\n  <md-button aria-label=\"Options\" class=\"md-icon-button\" style=\"margin-top:-10px\" ng-click=\"openMenu($mdOpenMenu, $event)\">\n    <ng-md-icon icon=\"{{menuIcon}}\"></ng-md-icon>\n  </md-button>\n  <md-menu-content width=\"3\" >\n    <md-menu-item layout=\"column\">\n      <md-button ng-click=\"aboutKylo()\" md-prevent-menu-close=\"md-prevent-menu-close\">\n        <span style=\"float:left;\">About Kylo</span>\n      </md-button>\n    </md-menu-item>\n  </md-menu-content>\n</md-menu>");
