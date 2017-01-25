@@ -156,6 +156,10 @@ public class DateTimeUtil {
 
     static PeriodFormatter periodFormatter  = new PeriodFormatterBuilder().append(null,new StringPeriodParser()).toFormatter();
 
+    /**
+     * Parse a string period into a Joda time period
+     * i.e. 3Y, 20W
+     */
     public static Period period(String period){
 
         return periodFormatter.parsePeriod(period);

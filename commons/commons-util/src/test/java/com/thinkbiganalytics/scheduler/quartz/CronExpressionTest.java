@@ -22,6 +22,7 @@ package com.thinkbiganalytics.scheduler.quartz;
 
 import com.thinkbiganalytics.scheduler.util.CronExpressionUtil;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.quartz.CronExpression;
 import org.slf4j.Logger;
@@ -32,10 +33,11 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * Created by sr186054 on 9/23/15.
+ * Test CronExpression Utility
  */
 public class CronExpressionTest  {
-    private static Logger LOG = LoggerFactory.getLogger(CronExpressionTest.class);
+
+    private static Logger log = LoggerFactory.getLogger(CronExpressionTest.class);
 
     @Test
 public void testNextFireTimes(){
@@ -67,7 +69,7 @@ public void testNextFireTimes(){
         try {
             CronExpression expression = CronExpressionUtil.timerToCronExpression(timer);
             String cron = expression.getCronExpression();
-            int i = 0;
+            Assert.assertNotNull(cron);
         } catch (ParseException e) {
             e.printStackTrace();
         }
