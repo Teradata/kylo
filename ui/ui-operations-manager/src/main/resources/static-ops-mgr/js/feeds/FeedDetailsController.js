@@ -1,8 +1,3 @@
-
-/*
- * Copyright (c) 2015.
- */
-
 (function () {
 
     var controller = function($scope, $timeout,$q, $interval,$stateParams, $http, FeedData, StateService, JobData, BroadcastService ){

@@ -1,8 +1,3 @@
-
-/*
- * Copyright (c) 2015.
- */
-
 (function () {
 
     var controller = function($scope, $element,$http,HttpService, JobData, FeedData, Utils ){

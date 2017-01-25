@@ -1,8 +1,3 @@
-
-/*
- * Copyright (c) 2016.
- */
-
 (function () {
 
     var controller = function ($scope,$http, $filter, $stateParams, $interval, $timeout, $q,ServicesStatusData, TableOptionsService, PaginationDataService, AlertsService, StateService, IconService, TabService) {

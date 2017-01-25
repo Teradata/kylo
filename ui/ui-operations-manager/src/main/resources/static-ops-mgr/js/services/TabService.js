@@ -1,7 +1,3 @@
-/*
- * Copyright (c) 2015.
- */
-
 angular.module(MODULE_OPERATIONS).service('TabService',function(PaginationDataService) {
 
     var self = this;

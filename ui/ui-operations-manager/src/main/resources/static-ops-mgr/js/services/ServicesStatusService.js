@@ -1,7 +1,3 @@
-/*
- * Copyright (c) 2015.
- */
-
 /**
  * Service to call out to Feed REST.
  *

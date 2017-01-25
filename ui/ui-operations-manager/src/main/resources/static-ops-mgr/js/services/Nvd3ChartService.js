@@ -1,10 +1,3 @@
-/*
- * Copyright (c) 2015.
- */
-
-/**
- *
- */
 angular.module(MODULE_OPERATIONS).service('Nvd3ChartService', function ($timeout) {
 
     var self = this;
