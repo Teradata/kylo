@@ -1,7 +1,4 @@
 package com.thinkbiganalytics.discovery;
-/*
- * Copyright (c) 2016. Teradata Inc.
- */
 
 import com.thinkbiganalytics.discovery.parser.FileSchemaParser;
 import com.thinkbiganalytics.discovery.parser.SchemaParser;

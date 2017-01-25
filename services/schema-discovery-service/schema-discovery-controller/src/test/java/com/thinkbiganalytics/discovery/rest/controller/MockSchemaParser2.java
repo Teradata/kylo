@@ -1,7 +1,3 @@
-/*
- * Copyright (c) 2016. Teradata Inc.
- */
-
 package com.thinkbiganalytics.discovery.rest.controller;
 
 import com.thinkbiganalytics.discovery.model.DefaultHiveSchema;

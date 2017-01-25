@@ -1,7 +1,3 @@
-/*
- * Copyright (c) 2016. Teradata Inc.
- */
-
 package com.thinkbiganalytics.discovery.model;
 
 public class DefaultDatabaseMetadata implements com.thinkbiganalytics.discovery.schema.DatabaseMetadata {

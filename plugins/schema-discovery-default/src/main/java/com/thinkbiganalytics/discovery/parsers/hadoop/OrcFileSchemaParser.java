@@ -1,7 +1,3 @@
-/*
- * Copyright (c) 2016. Teradata Inc.
- */
-
 package com.thinkbiganalytics.discovery.parsers.hadoop;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;

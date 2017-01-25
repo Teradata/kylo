@@ -1,7 +1,3 @@
-/*
- * Copyright (c) 2016. Teradata Inc.
- */
-
 package com.thinkbiganalytics.discovery.parsers.csv;
 
 import com.thinkbiganalytics.discovery.schema.Field;

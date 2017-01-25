@@ -1,7 +1,3 @@
-/*
- * Copyright (c) 2016.
- */
-
 package com.thinkbiganalytics.activemq;
 
 import org.apache.activemq.broker.BrokerService;

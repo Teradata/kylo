@@ -1,7 +1,3 @@
-/*
- * Copyright (c) 2016. Teradata Inc.
- */
-
 package com.thinkbiganalytics.feedmgr.rest.model.schema;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
