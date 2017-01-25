@@ -47,37 +47,6 @@
         self.processorDatasourceDefinitions = [];
 
         /**
-         * Should we show the options to allow users to define processor types
-         */
-        self.allowUserDefinedFailureProcessors = false;
-
-        /**
-         * The processors that have been marked as special flow types for this template
-         * @type [{"flowId":"","relationship":"","flowType":""}...]
-         */
-        self.templateFlowTypeProcessors = []
-
-        self.processorRelationshipOptions = ["success", "failure", "all"];
-
-        /**
-         * Available FlowType options (i.e. Failure,Warning)
-         * @type {Array}
-         */
-        self.processorFlowTypeOptions = [];
-
-        /**
-         * The Leaf processors in this template (and joining reusable flows) along with their 'flowId' and 'flowtype'
-         * @type {Array}
-         */
-        self.leafProcessors = [];
-
-        /**
-         * A map with the processor FlowId and its corresponding FlowType.
-         * @type {{}}
-         */
-        self.flowIdFlowProcessorMap = {};
-
-        /**
          * flag to tell when the system is loading datasources
          * @type {boolean}
          */
@@ -210,35 +179,6 @@
                         }
                     });
 
-                    //reset the array
-                    self.templateFlowTypeProcessors = [];
-
-                    //get the map of processors by flowId
-                    self.flowIdFlowProcessorMap = _.indexBy(self.leafProcessors, 'flowId');
-                    var mappedIds = {};
-                    //merge in the saved flowprocessor types with the ones on the template
-                    //{processorId: [{relationship:'',flowType:''}...]}
-                    _.each(self.model.processorFlowTypesMap, function (flowTypeRelationships, processorFlowId) {
-
-                        var flowProcessor = self.flowIdFlowProcessorMap[processorFlowId];
-
-                        if (flowProcessor != undefined) {
-                            _.each(flowTypeRelationships, function (flowTypeRelationship) {
-                                self.templateFlowTypeProcessors.push(
-                                    {flowId: processorFlowId, relationship: flowTypeRelationship.relationship, flowType: flowTypeRelationship.flowType, _id: _.uniqueId()});
-                                mappedIds[processorFlowId] = processorFlowId;
-                            });
-                        }
-                    });
-
-                    _.each(self.leafProcessors, function (flowProcessor) {
-
-                        //add in any unmapped leaf nodes as failures
-                        if (mappedIds[flowProcessor.flowId] == undefined) {
-                            self.templateFlowTypeProcessors.push({flowId: flowProcessor.flowId, relationship: 'failure', flowType: 'FAILURE', _id: _.uniqueId()});
-                        }
-
-                    });
 
                 }
                 self.loadingFlowData = false;
@@ -425,18 +365,6 @@
                 order.push(template.id);
             });
             savedTemplate.templateOrder = order;
-            //create the flowid,flowtype map that wil be persisted back to the template on save
-
-            var flowTypeRelationships = {};
-            _.each(self.templateFlowTypeProcessors, function (flowTypeRel) {
-                var relationships = flowTypeRelationships[flowTypeRel.flowId];
-                if (relationships == undefined) {
-                    flowTypeRelationships[flowTypeRel.flowId] = [];
-                }
-                flowTypeRelationships[flowTypeRel.flowId].push({"relationship": flowTypeRel.relationship, "flowType": flowTypeRel.flowType});
-            })
-
-            savedTemplate.processorFlowTypesMap = flowTypeRelationships;
 
             var thisOrder = order.length - 1;
             if (self.model.id != undefined) {
@@ -512,41 +440,6 @@
             });
         };
 
-        this.showFlowTypeOptionsHelpPanel = function (ev) {
-            var position = $mdPanel.newPanelPosition()
-                .relativeTo('.flow-type-options-help-button')
-                .addPanelPosition($mdPanel.xPosition.ALIGN_END, $mdPanel.yPosition.BELOW);
-
-            var config = {
-                attachTo: angular.element(document.body),
-                controller: FlowTypeOptionsHelpPanelMenuCtrl,
-                controllerAs: 'ctrl',
-                template: '<div class="register-template-flow-type-help" ' +
-                          '     aria-label="Processor flow result." ' +
-                          '     role="listbox" layout="column" layout-align="center center">' +
-                          '      <span class="md-subheader layout-padding-top-bottom ">Processor Flow Result Types</span> ' +
-                          '  <div class="register-template-flow-type-help-item" ' +
-                          '       tabindex="-1" ' +
-                          '       role="option" ' +
-                          '       ng-repeat="option in ctrl.processorFlowTypeOptions" layout="column">' +
-                          '       <span>{{ option.displayName}}</span>' +
-                          '       <span class="hint">{{option.description}}</span>' +
-                          '  </div>' +
-                          '</div>',
-                panelClass: 'register-template-flow-type-help',
-                position: position,
-                locals: {
-                    'processorFlowTypeOptions': self.processorFlowTypeOptions
-                },
-                openFrom: ev,
-                clickOutsideToClose: true,
-                escapeToClose: true,
-                focusOnOpen: false,
-                zIndex: 2
-            };
-
-            $mdPanel.open(config);
-        };
 
     }
 

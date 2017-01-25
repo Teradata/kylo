@@ -91,7 +91,7 @@
             <thinkbig-template-order model="vm.templateOrder" template-id="vm.model.id" template-name="vm.model.templateName" add-as-new="true" add-save-btn="false"></thinkbig-template-order>
 
             <div layout="row" layout-align="space-between start" layout-fill>
-              <div flex="40" layout="column">
+              <div flex="100" layout="column">
                 <md-subheader class="md-subhead left-aligned">Feed Lineage Datasources</md-subheader>
                 <span class="hint">Select datasources that should track feed lineage</span>
 
@@ -123,97 +123,7 @@
                 </div>
 
                 </div>
-              <div flex="5"></div>
-              <div flex="55" layout="column" ng-if="vm.allowUserDefinedFailureProcessors">
-                    <md-subheader class="md-subhead left-aligned">Define Processor Flow Types</md-subheader>
 
-                  <span class="hint">Indicate how a processor will affect the operations manager job status.</span>
-
-                    <div ng-if="vm.loadingFlowData" layout="column" layout-align="start center" class="layout-padding-top-bottom">
-                        <md-progress-circular md-mode="indeterminate"></md-progress-circular>
-                        <span>Loading ...</span>
-                    </div>
-
-                    <div layout="row" layout-align="space-between top" ng-if="!vm.loadingFlowData" class="layout-padding-top-bottom">
-                        <div layout="column" layout-fill>
-                            <div layout="row" layout-align="space-between center">
-                              <div flex="55" class=" hint">
-                                    Processor
-                                </div>
-                              <div flex="20" class=" hint">
-                                Relationship
-                              </div>
-                              <div flex="20" class=" hint" layout="row" layout-align="start center">
-                                <span>Result</span>
-                                <md-button aria-label="Processor Flow Result Help" class="md-icon-button flow-type-options-help-button" ng-click="vm.showFlowTypeOptionsHelpPanel($event)">
-                                        <ng-md-icon md-icon icon="help" size="15" style="fill:grey;"></ng-md-icon>
-                                    </md-button>
-                                </div>
-
-                              <div flex="5" class=" hint">
-
-                                </div>
-                            </div>
-
-                          <div ng-repeat="flowTypeProcessorRelationship in vm.templateFlowTypeProcessors" layout="column">
-
-                                <div layout="row" layout-align="space-between start">
-                                  <div flex="50">
-                                        <md-input-container class="md-block condensed">
-                                          <md-select name="processorFlowType_{{flowTypeProcessorRelationship._id}}" ng-model="flowTypeProcessorRelationship.flowId"
-                                                     required ng-change="vm.changeProcessorFlowType(flowTypeProcessorRelationship)">
-                                                <md-option ng-repeat="flowProcessor in vm.leafProcessors track by $index" value="{{flowProcessor.flowId}}">{{flowProcessor.name}}</md-option>
-                                            </md-select>
-                                          <div ng-messages="vm.registerTemplateForm['processorFlowType_'+flowTypeProcessorRelationship._id].$error" md-auto-hide="false">
-                                                <div ng-message="required">A processor is required</div>
-                                            </div>
-                                        </md-input-container>
-                                    </div>
-                                  <div flex="20">
-                                        <md-input-container class="md-block condensed">
-                                          <md-select name="flowType_{{flowTypeProcessorRelationship._id}}" ng-model="flowTypeProcessorRelationship.relationship"
-                                                     required>
-                                            <md-option ng-repeat="relationship in vm.processorRelationshipOptions track by $index" value="{{relationship}}">{{relationship}}</md-option>
-                                          </md-select>
-                                          <div ng-messages="vm.registerTemplateForm['flowType_'+flowTypeProcessorRelationship._id].$error" md-auto-hide="false">
-                                            <div ng-message="required">A flow type relationship is required</div>
-                                          </div>
-                                        </md-input-container>
-                                  </div>
-                                  <div flex="20">
-                                    <md-input-container class="md-block condensed">
-                                      <md-select name="flowType_{{flowTypeProcessorRelationship._id}}" ng-model="flowTypeProcessorRelationship.flowType"
-                                                       required>
-                                                <md-option ng-repeat="flowType in vm.processorFlowTypeOptions track by $index" value="{{flowType.flowType}}">{{flowType.displayName}}</md-option>
-                                            </md-select>
-                                      <div ng-messages="vm.registerTemplateForm['flowType_'+flowTypeProcessorRelationship._id].$error" md-auto-hide="false">
-                                                <div ng-message="required">A flow type is required</div>
-                                            </div>
-                                        </md-input-container>
-                                    </div>
-
-                                  <div flex="5">
-                                    <md-button aria-label="Remove" class="md-icon-button" style="padding:0px;width:inherit;" ng-click="vm.removeProcessorFlowType(flowTypeProcessorRelationship)">
-                                            <ng-md-icon md-icon icon="delete" size="20" style="fill:grey;"></ng-md-icon>
-                                        </md-button>
-                                    </div>
-                                </div>
-
-                            </div>
-                            <div class="layout-padding-top-bottom" layout-align="center center" layout="column">
-                                <md-button aria-label="Add" class="md-icon-button" ng-click="vm.addFlowProcessorType()">
-                                    Add
-                                </md-button>
-                              <div>Note: These changes you make to these processor flow types will only be made to new or updated feeds. To apply these changes to existing feeds you will need to
-                                save/update each of the feeds.
-                              </div>
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
             </div>
 
             <thinkbig-step-buttons can-continue="vm.registerTemplateForm.$valid &&!vm.loadingFlowData && vm.model.reusableTemplate == false" step-index="{{::vm.stepIndex}}"
