@@ -2,10 +2,15 @@ package com.thinkbiganalytics.rest;
 
 
 /**
+ * Configuration class used by the {@link JerseyRestClient}
+ * Parameters here allow you to setup a client and optionally pass in information to connect using Https
+ *
  * Created by sr186054 on 10/15/15.
  */
 public class JerseyClientConfig {
+
     private String host;
+
     private Integer port;
     private String username;
     private String password;
@@ -25,6 +30,10 @@ public class JerseyClientConfig {
     private Integer readTimeout = null;
     private Integer connectTimeout = null;
 
+    /**
+     * flag to use the PoolingHttpClientConnectionManager from Apache instead of the Jersey Manager The PoolingHttpClientConnectionManager doesnt support some JSON header which is why this is set to
+     * false by default
+     **/
     private boolean useConnectionPooling = false;
 
 

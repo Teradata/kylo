@@ -58,6 +58,7 @@ public class JiraJerseyClient extends JerseyRestClient implements JiraClient{
                                 }
                             }
                         });
+        //regiser the JoadTime mapper
         if(client != null){
             client.register(JodaTimeMapperProvider.class);
         }
@@ -279,7 +280,7 @@ public class JiraJerseyClient extends JerseyRestClient implements JiraClient{
             GetIssue response = post("/issue/", createIssue, GetIssue.class);
             //transform the result back to a populated issue
             issue = getIssue(response.getKey());
-            LOG.info("Created JIRA Issue {}, - {}",issue.getKey(),issue.getSummary());
+            log.info("Created JIRA Issue {}, - {}", issue.getKey(), issue.getSummary());
 
         } catch (Exception e) {
             String message = "Error Creating Issue " + issue;

@@ -50,14 +50,37 @@ import javax.ws.rs.core.Response;
  */
 public class JerseyRestClient {
 
-    protected static final Logger LOG = LoggerFactory.getLogger(JerseyRestClient.class);
+    protected static final Logger log = LoggerFactory.getLogger(JerseyRestClient.class);
 
     public static final String HOST_NOT_SET_VALUE = "NOT_SET";
 
+    /**
+     * The Jersey Client
+     */
     protected Client client;
+
+    /**
+     * the base uri to connect to set by the configuration of the REST Client.
+     * This constructor will set this value using the  {@link JerseyClientConfig#getUrl()}
+     * Users of this client can then reference the uri from this client class.
+     *
+     * @see #JerseyRestClient(JerseyClientConfig)
+     */
     protected String uri;
+
+    /**
+     * The username to use to connect set by configuration of the REST Client
+     * The constructor will set this value using {@link JerseyClientConfig#username}
+     * Users of this client can then reference the username from this client class.
+     * @see #JerseyRestClient(JerseyClientConfig)
+     *
+     */
     private String username;
 
+    /**
+     * Flag to indicate if the client is configured correctly and available to be used.
+     *
+     */
     public boolean isHostConfigured;
 
     /**
@@ -67,9 +90,10 @@ public class JerseyRestClient {
 
     /**
      * flag to use the PoolingHttpClientConnectionManager from Apache instead of the Jersey Manager The PoolingHttpClientConnectionManager doesnt support some JSON header which is why this is turned
-     * off by default
+     * off by default.
      */
     private boolean useConnectionPooling = false;
+
 
     public JerseyRestClient(JerseyClientConfig config) {
         useConnectionPooling = config.isUseConnectionPooling();
@@ -81,10 +105,10 @@ public class JerseyRestClient {
 
             try {
                 if(StringUtils.isNotBlank(config.getKeystorePath())) {
-                InputStream keystore = JerseyRestClient.class.getResourceAsStream(config.getKeystorePath());
-                if (keystore != null) {
-                    keyStoreFile = ByteStreams.toByteArray(keystore);
-                }
+                    InputStream keystore = JerseyRestClient.class.getResourceAsStream(config.getKeystorePath());
+                    if (keystore != null) {
+                        keyStoreFile = ByteStreams.toByteArray(keystore);
+                    }
                 }
             } catch (IOException e) {
             }
@@ -99,9 +123,7 @@ public class JerseyRestClient {
             } catch (IOException e) {
             }
 
-
             if (keyStoreFile != null) {
-           //     LOG.info("Jersey Rest Client using SSL configuration using classpath truststore: {}, keystore: {} ",config.getTruststorePath(), config.getKeystorePath());
                 sslConfig = SslConfigurator.newInstance()
                     .trustStoreBytes(truststoreFile != null ? truststoreFile : keyStoreFile)
                     .trustStorePassword(config.getTruststorePassword() != null ? config.getTruststorePassword() : config.getKeystorePassword())
@@ -109,7 +131,6 @@ public class JerseyRestClient {
                     .keyStoreBytes(keyStoreFile != null ? keyStoreFile : truststoreFile)
                     .keyStorePassword(config.getKeystorePassword());
             } else {
-              //  LOG.info("Jersey Rest Client using SSL configuration using external truststore: {}, keystore: {} ",config.getTruststorePath(), config.getKeystorePath());
                 sslConfig = SslConfigurator.newInstance()
                     .keyStoreFile(config.getKeystorePath() == null ? config.getTruststorePath() : config.getKeystorePath())
                     .keyStorePassword(config.getKeystorePassword() == null ? config.getTruststorePassword() : config.getKeystorePassword())
@@ -121,8 +142,9 @@ public class JerseyRestClient {
             try {
                 sslContext = sslConfig.createSSLContext();
             } catch (Exception e) {
-                LOG.error("ERROR creating CLient SSL Context.  " + e.getMessage() + " Falling back to Jersey Client without SSL.  Rest Integration with '"+config.getUrl()+"'  will probably not work until this is fixed!");
-               }
+                log.error("ERROR creating CLient SSL Context.  " + e.getMessage() + " Falling back to Jersey Client without SSL.  Rest Integration with '" + config.getUrl()
+                          + "'  will probably not work until this is fixed!");
+            }
         }
 
         ClientConfig clientConfig = new ClientConfig();
@@ -156,8 +178,7 @@ public class JerseyRestClient {
                 connectionManager = new PoolingHttpClientConnectionManager();
             }
             connectionManager.setDefaultMaxPerRoute(100); // # of connections allowed per host/address
-            connectionManager.setMaxTotal(200); // number of connecttions allowed in total
-            // connectionManager.setMaxPerRoute(new HttpRoute(new HttpHost("localhost")), 40);
+            connectionManager.setMaxTotal(200); // number of connections allowed in total
 
             clientConfig.property(ApacheClientProperties.CONNECTION_MANAGER, connectionManager);
             HttpUrlConnectorProvider connectorProvider = new HttpUrlConnectorProvider();
@@ -167,10 +188,10 @@ public class JerseyRestClient {
 
         clientConfig.register(MultiPartFeature.class);
         if (sslContext != null) {
-            LOG.info("Created new Jersey Client with SSL connecting to {} ", config.getUrl());
+            log.info("Created new Jersey Client with SSL connecting to {} ", config.getUrl());
             client = new JerseyClientBuilder().withConfig(clientConfig).sslContext(sslContext).build();
         } else {
-            LOG.info("Created new Jersey Client without SSL connecting to {} ", config.getUrl());
+            log.info("Created new Jersey Client without SSL connecting to {} ", config.getUrl());
             client = JerseyClientBuilder.createClient(clientConfig);
         }
 
@@ -191,28 +212,47 @@ public class JerseyRestClient {
         if (StringUtils.isNotBlank(config.getHost()) && !HOST_NOT_SET_VALUE.equals(config.getHost())) {
             this.isHostConfigured = true;
         } else {
-            LOG.info("Jersey Rest Client not initialized.  Host name is Not set!!");
+            log.info("Jersey Rest Client not initialized.  Host name is Not set!!");
         }
     }
 
 
+    /**
+     * Flag to detect if this client is configured correctly.
+     *
+     * @return true if configured correctly, false if not.
+     */
     public boolean isHostConfigured() {
         return isHostConfigured;
     }
 
+
+    /**
+     *  Get the username connecting to this REST service
+     * @return the user connecting
+     */
     public String getUsername() {
         return username;
     }
 
 
     /**
-     * allow implementers to override to change the base target
+     * The base target that will be used upon each request.
+     * All rest calls will go through this method.
+     * Specific clients that extend this class can override this method to specify a given root path.
+     * @return the target to use to make th REST request
      */
     protected WebTarget getBaseTarget() {
         WebTarget target = client.target(uri);
         return target;
     }
 
+    /**
+     * prepends the supplied {@link this#uri} to the supplied path
+     *
+     * @param path the path to append to the {@link this#uri}
+     * @return the target to use to make the REST request
+     */
     protected WebTarget getTargetFromPath(String path) {
         String updatedPath = uri + path;
         WebTarget target = client.target(updatedPath);
@@ -220,6 +260,12 @@ public class JerseyRestClient {
     }
 
 
+    /**
+     * Build a target adding the supplied query parameters to the the request
+     * @param path the path to access
+     * @param params the key,value parameters to add to the request
+     * @return the target to use to make the REST request
+     */
     private WebTarget buildTarget(String path, Map<String, Object> params) {
         WebTarget target = getBaseTarget().path(path);
         if (params != null) {
@@ -230,17 +276,42 @@ public class JerseyRestClient {
         return target;
     }
 
+    /**
+     * Perform a asynchronous GET request
+     * @param path the path to access
+     * @param params the key,value parameters to add to the request
+     * @param clazz the returned class type
+     * @param <T>
+     * @return a Future of type T
+     */
     public <T> Future<T> getAsync(String path, Map<String, Object> params, Class<T> clazz) {
         WebTarget target = buildTarget(path, params);
         return target.request(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).async().get(clazz);
     }
 
+
+    /**
+     * Perform a asynchronous GET request
+     * @param path the path to access
+     * @param params the parameters to add to the request
+     * @param type the returned class type
+     * @param <T>
+     * @return a Future of type T
+     */
     public <T> Future<T> getAsync(String path, Map<String, Object> params, GenericType<T> type) {
         WebTarget target = buildTarget(path, params);
         return target.request(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).async().get(type);
 
     }
 
+    /**
+     * Perform a GET request
+     * @param path the path to access
+     * @param params  key, value parameters to add to the request
+     * @param clazz the class type to return as the response from the GET request
+     * @param <T> the returned class type
+     * @return the returned object of the specified Class
+     */
     public <T> T get(String path, Map<String, Object> params, Class<T> clazz) {
         WebTarget target = buildTarget(path, params);
         T obj = null;
@@ -249,38 +320,23 @@ public class JerseyRestClient {
             obj = target.request(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE, MediaType.APPLICATION_XML_TYPE).get(clazz);
         } catch (Exception e) {
             if (e instanceof NotAcceptableException) {
-                obj = handleNotAcceptableJsonException(target, clazz);
+                obj = handleNotAcceptableGetRequestJsonException(target, clazz);
             }
 
         }
         return obj;
     }
 
-    /**
-     * if a request doesnt like the accepted type (i.e. its coded for TEXT instead of JSON, try to resolve the JSON by getting the JSON string
-     */
-    private <T> T handleNotAcceptableJsonException(WebTarget target, Class<T> clazz) {
-        T obj = null;
-        try {
-            //the response didnt link getting data in JSON.. attempt to get it in TEXT and convert to JSON
-            String jsonString = target.request(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.TEXT_PLAIN_TYPE).get(String.class);
-            if (StringUtils.isNotBlank(jsonString)) {
-                try {
-                    obj = objectMapper.readValue(jsonString, clazz);
-                } catch (Exception ex) {
-                    //unable to deserialize string
-                    LOG.error("Unable to deserialize request to JSON for string {}, for target {} returning class {} ", jsonString, target, clazz);
-                }
-            }
-        } catch (Exception ex1) {
-            //swallow the exception.  cant do anything about it.
-            LOG.error("Unable to deserialize request for target {} returning class {} ", target, clazz);
-        }
-        return obj;
-    }
 
     /**
+     * Sometimes QueryParams dont fit the model of key,value pairs.
+     * This method can be used to call a GET request using the path passed in
      * Allow a client to create the target passing in a full url path with ? and & query params
+     * If you have known key,value pairs its recommend you use the {@link this#get(String, Map, Class)}
+     * @param path the path to access, including the root target and the ?key=value&key2=value&key3
+     * @param clazz the class type to return as the response from the GET request
+     * @param <T> the returned class type
+     * @return the returned object of the specified Class
      */
     public <T> T getFromPathString(String path, Class<T> clazz) {
 
@@ -292,7 +348,7 @@ public class JerseyRestClient {
             obj = target.request(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE, MediaType.APPLICATION_XML_TYPE).get(clazz);
         } catch (Exception e) {
             if (e instanceof NotAcceptableException) {
-                obj = handleNotAcceptableJsonException(target, clazz);
+                obj = handleNotAcceptableGetRequestJsonException(target, clazz);
             }
 
         }
@@ -300,17 +356,52 @@ public class JerseyRestClient {
     }
 
 
-
+    /**
+     * call a GET request
+     * @param path the path to call.
+     * @param params key, value parameters to add to the request
+     * @param type the GenericType of Class T
+     * @param <T> the class to return
+     * @return the response of class type T
+     */
     public <T> T get(String path, Map<String, Object> params, GenericType<T> type) {
         WebTarget target = buildTarget(path, params);
         return target.request(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE, MediaType.APPLICATION_XML_TYPE).get(type);
     }
 
+    /**
+     * POST an object to a given url
+     * @param path the path to access
+     * @param o the object to post
+     * @return the response
+     */
     public Response post(String path, Object o) {
         WebTarget target = buildTarget(path, null);
         return target.request().post(Entity.entity(o, MediaType.APPLICATION_JSON_TYPE));
     }
 
+
+    /**
+     * POST an object with multiplepart.  For example Uploading a file.
+     * Below is a sample on how to create a Multipart from a string and post it
+     * String xml = "some  string";
+     * final FormDataBodyPart templatePart = new FormDataBodyPart("template", xml, MediaType.APPLICATION_OCTET_STREAM_TYPE);
+     *
+     * FormDataContentDisposition.FormDataContentDispositionBuilder disposition = FormDataContentDisposition.name(templatePart.getName());
+     * disposition.fileName("fileName");
+     * templatePart.setFormDataContentDisposition(disposition.build());
+     * // Combine parts
+     * MultiPart multiPart = new MultiPart();
+     * multiPart.bodyPart(templatePart);
+     * multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
+     *
+     *
+     * @param path the path to access
+     * @param object the multiplart object to post
+     * @param returnType the type to return
+     * @param <T>
+     * @return returns the response of the type T
+     */
     public <T> T postMultiPart(String path, MultiPart object, Class<T> returnType) {
         WebTarget target = buildTarget(path, null);
         MediaType contentType = MediaType.MULTIPART_FORM_DATA_TYPE;
@@ -318,6 +409,16 @@ public class JerseyRestClient {
         return target.request().post(Entity.entity(object, contentType), returnType);
     }
 
+    /**
+     * POST a multipart object streaming
+     * @param path the path to access
+     * @param name the name of the param the endpoint is expecting
+     * @param fileName the name of the file
+     * @param stream the stream itself
+     * @param returnType the type to return from the post
+     * @param <T>
+     * @return the response of type T
+     */
     public <T> T postMultiPartStream(String path, String name, String fileName, InputStream stream, Class<T> returnType) {
         WebTarget target = buildTarget(path, null);
         MultiPart multiPart = new MultiPart(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -331,29 +432,99 @@ public class JerseyRestClient {
     }
 
 
+    /**
+     * POST an object
+     * @param path the path to access
+     * @param object the object to post
+     * @param returnType the class to return
+     * @param <T>
+     * @return the response of type T
+     */
     public <T> T post(String path, Object object, Class<T> returnType) {
         WebTarget target = buildTarget(path, null);
         return target.request().post(Entity.entity(object, MediaType.APPLICATION_JSON), returnType);
     }
 
+    /**
+     * PUT request
+     * @param path the path to access
+     * @param object the object to PUT
+     * @param returnType the class to return
+     * @param <T>
+     * @return the response of type T
+     */
     public <T> T put(String path, Object object, Class<T> returnType) {
         WebTarget target = buildTarget(path, null);
         return target.request().put(Entity.entity(object, MediaType.APPLICATION_JSON), returnType);
     }
 
+    /**
+     * DELETE request
+     * @param path the path to access
+     * @param params Any additional Query params to add to the DELETE call
+     * @param returnType the class to return
+     * @param <T>
+     * @return the response of type T
+     */
     public <T> T delete(String path, Map<String, Object> params, Class<T> returnType) {
         WebTarget target = buildTarget(path, params);
         return target.request().delete(returnType);
     }
 
+    /**
+     * POST a request from a {@link Form} object
+     * @param path the path to access
+     * @param form the Form to POST
+     * @param returnType the class to return
+     * @param <T>
+     * @return the response of type T
+     */
     public <T> T postForm(String path, Form form, Class<T> returnType) {
         WebTarget target = buildTarget(path, null);
         return target.request().post(Entity.entity(form, MediaType.APPLICATION_FORM_URLENCODED_TYPE), returnType);
     }
 
+    /**
+     * POST a request Async.
+     * @param path the path to access
+     * @param object the object to POST
+     * @param returnType the class to return
+     * @param <T>
+     * @return a Future of type T
+     */
     public <T> Future<T> postAsync(String path, Object object, Class<T> returnType) {
         WebTarget target = buildTarget(path, null);
         return target.request().async().post(Entity.entity(object, MediaType.APPLICATION_JSON), returnType);
+    }
+
+    /**
+     * if a request doesnt like the accepted type (i.e. its coded for TEXT instead of JSON, try to resolve the JSON by getting the JSON string
+     * This can be called in the Exception of a particular GET request which will attempt to resolve the correct object from the Response string.
+     *
+     * @param target the WebTarget
+     * @param clazz  the class to return
+     * @return the response of type T
+     * @see JerseyRestClient#get(String, Map, Class)
+     * @see JerseyRestClient#getFromPathString(String, Class)
+     */
+    private <T> T handleNotAcceptableGetRequestJsonException(WebTarget target, Class<T> clazz) {
+        T obj = null;
+        try {
+            //the response didnt link getting data in JSON.. attempt to get it in TEXT and convert to JSON
+            String jsonString = target.request(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.TEXT_PLAIN_TYPE).get(String.class);
+            if (StringUtils.isNotBlank(jsonString)) {
+                try {
+                    obj = objectMapper.readValue(jsonString, clazz);
+                } catch (Exception ex) {
+                    //unable to deserialize string
+                    log.error("Unable to deserialize request to JSON for string {}, for target {} returning class {} ", jsonString, target, clazz);
+                }
+            }
+        } catch (Exception ex1) {
+            //swallow the exception.  cant do anything about it.
+            log.error("Unable to deserialize request for target {} returning class {} ", target, clazz);
+        }
+        return obj;
     }
 
 
