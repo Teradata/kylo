@@ -1,7 +1,4 @@
 package com.thinkbiganalytics.nifi.v2.thrift;
-/*
- * Copyright (c) 2015. Teradata Inc.
- */
 
 import com.thinkbiganalytics.nifi.processor.AbstractNiFiProcessor;
 import com.thinkbiganalytics.util.JdbcCommon;

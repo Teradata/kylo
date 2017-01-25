@@ -1,7 +1,3 @@
-/*
- * Copyright (c) 2016. Teradata Inc.
- */
-
 package com.thinkbiganalytics.nifi.v2.hdfs;
 
 import org.apache.hadoop.conf.Configuration;
