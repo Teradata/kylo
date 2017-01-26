@@ -20,6 +20,25 @@
 var COMMON_APP_MODULE_NAME = "datalakeui.common";
 
 angular.module(COMMON_APP_MODULE_NAME, [] );
+/*-
+ * #%L
+ * thinkbig-ui-common
+ * %%
+ * Copyright (C) 2017 ThinkBig Analytics
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
 /*
  * Service to display 'about kylo' popup page, and get kylo version
  */
@@ -72,6 +91,26 @@ angular.module(COMMON_APP_MODULE_NAME).service('AboutKyloService', function ($md
     angular.module(COMMON_APP_MODULE_NAME).controller('AboutKyloDialogController',controller);
 
 }());
+/*-
+ * #%L
+ * thinkbig-ui-common
+ * %%
+ * Copyright (C) 2017 ThinkBig Analytics
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
 /**
  * Generic Interceptor to handle any Http Request errors and push them to the NotificationService
  */
@@ -184,6 +223,26 @@ angular.module(COMMON_APP_MODULE_NAME).service('AboutKyloService', function ($md
     };
     angular.module(COMMON_APP_MODULE_NAME).config(httpInterceptor);
 }());
+/*-
+ * #%L
+ * thinkbig-ui-common
+ * %%
+ * Copyright (C) 2017 ThinkBig Analytics
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
 
 
 var ArrayUtils = (function () {
@@ -241,6 +300,25 @@ var ArrayUtils = (function () {
 
     return ArrayUtils;
 })();
+/*-
+ * #%L
+ * thinkbig-ui-common
+ * %%
+ * Copyright (C) 2017 ThinkBig Analytics
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
 /**
  * Allow different controllers/services to subscribe and notify each other
  *
@@ -301,6 +379,25 @@ var BroadcastConstants = (function () {
     return BroadcastConstants;
 })();
 
+/*-
+ * #%L
+ * thinkbig-ui-common
+ * %%
+ * Copyright (C) 2017 ThinkBig Analytics
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
 /**
  * Directive to auto size the container to fill the rest of the screen based upon the height of the browser window
  *
@@ -443,6 +540,25 @@ var BroadcastConstants = (function () {
 
 
 
+/*-
+ * #%L
+ * thinkbig-ui-common
+ * %%
+ * Copyright (C) 2017 ThinkBig Analytics
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
 
 angular.module(COMMON_APP_MODULE_NAME).directive("cardLayout", function($compile)  {
     return {
@@ -456,7 +572,27 @@ angular.module(COMMON_APP_MODULE_NAME).directive("cardLayout", function($compile
 
     }
 };
-});angular.module(COMMON_APP_MODULE_NAME).directive("tbaCardFilterHeader", function()  {
+});
+/*-
+ * #%L
+ * thinkbig-ui-common
+ * %%
+ * Copyright (C) 2017 ThinkBig Analytics
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+angular.module(COMMON_APP_MODULE_NAME).directive("tbaCardFilterHeader", function()  {
     return {
         scope: {},
         bindToController: {
@@ -514,7 +650,27 @@ angular.module(COMMON_APP_MODULE_NAME).directive("cardLayout", function($compile
             }
         }
     };
-});angular.module(COMMON_APP_MODULE_NAME).directive('stringToNumber', function() {
+});
+/*-
+ * #%L
+ * thinkbig-ui-common
+ * %%
+ * Copyright (C) 2017 ThinkBig Analytics
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+angular.module(COMMON_APP_MODULE_NAME).directive('stringToNumber', function() {
     return {
         require: 'ngModel',
         link: function(scope, element, attrs, ngModel) {
@@ -558,15 +714,50 @@ angular.module(COMMON_APP_MODULE_NAME).directive('currentTime', function ($http,
         }
     };
 });
-
-/**
- *
+/*-
+ * #%L
+ * thinkbig-ui-common
+ * %%
+ * Copyright (C) 2017 ThinkBig Analytics
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
  */
 angular.module(COMMON_APP_MODULE_NAME).service('ConfigurationService', function () {
 
   var self = this;
   this.MODULE_URLS = "/api/v1/configuration/module-urls";
-});angular.module(COMMON_APP_MODULE_NAME).directive('fileModel', ['$parse', function ($parse) {
+});
+/*-
+ * #%L
+ * thinkbig-ui-common
+ * %%
+ * Copyright (C) 2017 ThinkBig Analytics
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+angular.module(COMMON_APP_MODULE_NAME).directive('fileModel', ['$parse', function ($parse) {
     return {
         restrict: 'A',
         link: function (scope, element, attrs) {
@@ -661,7 +852,27 @@ angular.module(COMMON_APP_MODULE_NAME).service('FileUpload', ['$http', function 
                 }
             });
     }
-}]);angular.module(COMMON_APP_MODULE_NAME).filter('words', function () {
+}]);
+/*-
+ * #%L
+ * thinkbig-ui-common
+ * %%
+ * Copyright (C) 2017 ThinkBig Analytics
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+angular.module(COMMON_APP_MODULE_NAME).filter('words', function () {
     return function (input, words) {
         if (isNaN(words)) {
             return input;
@@ -867,6 +1078,25 @@ angular.module(COMMON_APP_MODULE_NAME).filter('time', ['Utils',function(Utils) {
         return time;
     };
 }]);
+/*-
+ * #%L
+ * thinkbig-ui-common
+ * %%
+ * Copyright (C) 2017 ThinkBig Analytics
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
 var GoogleChartsUtil = (function () {
     function GoogleChartsUtil() {
     }
@@ -1071,6 +1301,25 @@ var GoogleChartsUtil = (function () {
 
 
 
+/*-
+ * #%L
+ * thinkbig-ui-common
+ * %%
+ * Copyright (C) 2017 ThinkBig Analytics
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
 /**
  * Service that allows you to create Abortable Requests either from a single Url or from multiple urls
  * and attach callbacks and/or abort if necessary
@@ -1370,6 +1619,26 @@ angular.module(COMMON_APP_MODULE_NAME).service('HttpService', ['$q', '$http', fu
         return defaults.concat(transform);
     }
 }]);
+/*-
+ * #%L
+ * thinkbig-ui-common
+ * %%
+ * Copyright (C) 2017 ThinkBig Analytics
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
 var IDGenerator = (function () {
     function IDGenerator() {
     }
@@ -1387,6 +1656,25 @@ var IDGenerator = (function () {
     return IDGenerator;
 })();
 
+/*-
+ * #%L
+ * thinkbig-ui-common
+ * %%
+ * Copyright (C) 2017 ThinkBig Analytics
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
 
 
 var JobUtils = (function () {
@@ -1405,6 +1693,25 @@ var JobUtils = (function () {
     }
     return JobUtils;
 })();
+/*-
+ * #%L
+ * thinkbig-ui-common
+ * %%
+ * Copyright (C) 2017 ThinkBig Analytics
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
 /**
  * get params from url address bar
  * example.com?param1=name&param2=&id=6
@@ -1426,7 +1733,27 @@ $.urlParam = function(name){
         return results[1] || 0;
     }
 }
-})(jQuery);/*
+})(jQuery);
+/*-
+ * #%L
+ * thinkbig-ui-common
+ * %%
+ * Copyright (C) 2017 ThinkBig Analytics
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+/*
  Module for popup menu
  */
 (function () {
@@ -1472,6 +1799,25 @@ $.urlParam = function(name){
     angular.module(COMMON_APP_MODULE_NAME)
         .directive('kyloOptions', ['$mdDialog','AboutKyloService',directive]);
 }());
+/*-
+ * #%L
+ * thinkbig-ui-common
+ * %%
+ * Copyright (C) 2017 ThinkBig Analytics
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
 (function() {
 angular.module(COMMON_APP_MODULE_NAME).directive("mdDatepickerContainer", function()  {
     return {
@@ -1484,7 +1830,25 @@ angular.module(COMMON_APP_MODULE_NAME).directive("mdDatepickerContainer", functi
 })
 
 }());
-
+/*-
+ * #%L
+ * thinkbig-ui-common
+ * %%
+ * Copyright (C) 2017 ThinkBig Analytics
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
 (function() {
     'use strict';
 
@@ -1631,6 +1995,25 @@ angular.module(COMMON_APP_MODULE_NAME).directive("mdDatepickerContainer", functi
         }]);
 
 }());
+/*-
+ * #%L
+ * thinkbig-ui-common
+ * %%
+ * Copyright (C) 2017 ThinkBig Analytics
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
 angular.module(COMMON_APP_MODULE_NAME).service('NotificationService', function ($timeout,$mdToast) {
 
     var self = this;
@@ -1762,10 +2145,26 @@ angular.module(COMMON_APP_MODULE_NAME).service('NotificationService', function (
 
 
 
-});/*
- * Copyright (c) 2015.
+});
+/*-
+ * #%L
+ * thinkbig-ui-common
+ * %%
+ * Copyright (C) 2017 ThinkBig Analytics
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
  */
-
 (function () {
 
     var directive = function ($mdDialog, PaginationDataService) {
@@ -1891,6 +2290,25 @@ angular.module(COMMON_APP_MODULE_NAME).service('NotificationService', function (
         .directive('tbaOptionsMenu', ['$mdDialog','PaginationDataService',directive]);
 
 }());
+/*-
+ * #%L
+ * thinkbig-ui-common
+ * %%
+ * Copyright (C) 2017 ThinkBig Analytics
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
 /*
  * Service used to get/set Pagination Data, Sorting Data, and view Type on the tables
  */
@@ -2076,7 +2494,27 @@ angular.module(COMMON_APP_MODULE_NAME).service('PaginationDataService',function(
 
 
 
-});var PivotTableUtil = (function () {
+});
+/*-
+ * #%L
+ * thinkbig-ui-common
+ * %%
+ * Copyright (C) 2017 ThinkBig Analytics
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+var PivotTableUtil = (function () {
     function PivotTableUtil() {
     }
 
@@ -2147,12 +2585,25 @@ angular.module(COMMON_APP_MODULE_NAME).service('PaginationDataService',function(
     return PivotTableUtil;
 })();
 
-
-
-/*
- * Copyright (c) 2015.
+/*-
+ * #%L
+ * thinkbig-ui-common
+ * %%
+ * Copyright (C) 2017 ThinkBig Analytics
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
  */
-
 var SortUtils = (function () {
     function SortUtils() {
     }
@@ -2184,6 +2635,25 @@ var SortUtils = (function () {
 })();
 
 
+/*-
+ * #%L
+ * thinkbig-ui-common
+ * %%
+ * Copyright (C) 2017 ThinkBig Analytics
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
 (function () {
 
     var directive = function ($window, $compile, BroadcastService) {
@@ -2269,6 +2739,25 @@ var SortUtils = (function () {
 
 
 
+/*-
+ * #%L
+ * thinkbig-ui-common
+ * %%
+ * Copyright (C) 2017 ThinkBig Analytics
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
 /**
  * Service to call out to Feed REST.
  *
@@ -2424,7 +2913,27 @@ angular.module(COMMON_APP_MODULE_NAME).service('TableOptionsService', ['Paginati
 
 
 
-}]);angular.module("datalakeui.common").run(["$templateCache", function($templateCache) {$templateCache.put("js/shared/about-kylo/about.html","<!--\n  About Kylo popup page\n-->\n<md-dialog aria-label=\"About Kylo\" flex=\"25\">\n  <md-dialog-content>\n    <p style=\"text-align:center;\"><img src=\"/ui-common/img/kylo-logo-orange.png\" style=\"width:300px;\"</p>\n    <p style=\"text-align:center;\"><b>Version:</b> {{version}}</p>\n    <table cellpadding=\"10\">\n      <tr>\n        <td>\n            <p style=\"text-align:justify; padding:10px\">The Kylo framework simplifies building, configuring, deploying and monitoring data pipelines.\n              It enables data profiling, data discovery and data science. Businesses can quickly start leveraging value from their enterprise data lakes.\n              <br><br>\n              For enterprise support options, please visit <a href=\"https://www.thinkbiganalytics.com/kylo/\" target=\"_blank\">Think Big</a>.\n              <br><br>\n              <textarea class=\"scrollabletextbox\" name=\"apache-licence\" readonly=\"true\" rows=\"7\" cols=\"55\" style=\"text-align:justify; color: black; background-color: #F6DDCC; padding:10px;\">\nCopyright 2017 Teradata Corporation\n\nLicensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at\n\n  http://www.apache.org/licenses/LICENSE-2.0\n\nUnless required by applicable law or agreed to in writing, software distributed under the License is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.\n          </textarea>\n            </p>\n        </td>\n      </tr>\n    </table>\n  </md-dialog-content>\n  <md-dialog-actions>\n    <md-button ng-click=\"cancel();\" class=\"md-primary\">Close</md-button>\n  </md-dialog-actions>\n</md-dialog>");
+}]);
+/*-
+ * #%L
+ * thinkbig-ui-common
+ * %%
+ * Copyright (C) 2017 ThinkBig Analytics
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+angular.module("datalakeui.common").run(["$templateCache", function($templateCache) {$templateCache.put("js/shared/about-kylo/about.html","<!--\n  About Kylo popup page\n-->\n<md-dialog aria-label=\"About Kylo\" flex=\"25\">\n  <md-dialog-content>\n    <p style=\"text-align:center;\"><img src=\"/ui-common/img/kylo-logo-orange.png\" style=\"width:300px;\"</p>\n    <p style=\"text-align:center;\"><b>Version:</b> {{version}}</p>\n    <table cellpadding=\"10\">\n      <tr>\n        <td>\n            <p style=\"text-align:justify; padding:10px\">The Kylo framework simplifies building, configuring, deploying and monitoring data pipelines.\n              It enables data profiling, data discovery and data science. Businesses can quickly start leveraging value from their enterprise data lakes.\n              <br><br>\n              For enterprise support options, please visit <a href=\"https://www.thinkbiganalytics.com/kylo/\" target=\"_blank\">Think Big</a>.\n              <br><br>\n              <textarea class=\"scrollabletextbox\" name=\"apache-licence\" readonly=\"true\" rows=\"7\" cols=\"55\" style=\"text-align:justify; color: black; background-color: #F6DDCC; padding:10px;\">\nCopyright 2017 Teradata Corporation\n\nLicensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at\n\n  http://www.apache.org/licenses/LICENSE-2.0\n\nUnless required by applicable law or agreed to in writing, software distributed under the License is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.\n          </textarea>\n            </p>\n        </td>\n      </tr>\n    </table>\n  </md-dialog-content>\n  <md-dialog-actions>\n    <md-button ng-click=\"cancel();\" class=\"md-primary\">Close</md-button>\n  </md-dialog-actions>\n</md-dialog>");
 $templateCache.put("js/shared/card-filter-header/card-filter-header-template.html"," <div style=\"white-space: nowrap;margin-top:10px;\" class=\"card-title\">{{::$cardFilterHeader.cardTitle}}</div>\n        <span flex=\"5\"></span>\n        <md-input-container flex style=\"margin-top:0px;margin-bottom:0px;\">\n            <label>Filter</label>\n            <input ng-model=\"$cardFilterHeader.filterModel\" ng-model-options=\"$cardFilterHeader.filterModelOptions\"/>\n        </md-input-container>\n <div layout=\"row\" layout-align=\"space-between center\">\n           <tba-view-type-selection view-type=\"$cardFilterHeader.viewType\" style=\"margin-left:10px;\"></tba-view-type-selection>\n   <tba-options-menu sort-options=\"$cardFilterHeader.sortOptions\" show-pagination=\"false\" menu-key=\"{{$cardFilterHeader.pageName}}\" selected-option=\"$cardFilterHeader.selectedOption\"\n                     opened-menu=\"$cardFilterHeader.menuOpen\" additional-options=\"$cardFilterHeader.additionalOptions\" selected-additional-option=\"$cardFilterHeader.selectedAdditionalOption\"\n                     show-view-type=\"false\" menu-icon=\"more_vert\"></tba-options-menu>\n</div>\n");
 $templateCache.put("js/shared/kylo-options/kylo-options.html","<!--\n    Popup menu\n-->\n<md-menu >\n  <md-button aria-label=\"Options\" class=\"md-icon-button\" style=\"margin-top:-10px\" ng-click=\"openMenu($mdOpenMenu, $event)\">\n    <ng-md-icon icon=\"{{menuIcon}}\"></ng-md-icon>\n  </md-button>\n  <md-menu-content width=\"3\" >\n    <md-menu-item layout=\"column\">\n      <md-button ng-click=\"aboutKylo()\" md-prevent-menu-close=\"md-prevent-menu-close\">\n        <span style=\"float:left;\">About Kylo</span>\n      </md-button>\n    </md-menu-item>\n  </md-menu-content>\n</md-menu>");
 $templateCache.put("js/shared/card-layout/card-layout-template.html","<section class=\"md-whiteframe-z1 {{::cardCss}}\">\n     <div  ng-transclude=\"header1\" class=\"card-toolbar  {{::headerCss}}\" >\n\n    </div>\n    <md-content  ng-transclude=\"body1\" class=\"card-layout-body {{::bodyCss}}\" >\n\n    </md-content>\n\n</section>");
@@ -2433,7 +2942,27 @@ $templateCache.put("js/shared/vertical-section-layout/vertical-section-layout-te
 $templateCache.put("js/shared/ui-router-breadcrumbs/uiBreadcrumbs.tpl.html","<div ng-if=\"lastBreadcrumbs.length == 2\" layout-align=\"center\" style=\"white-space: nowrap\">\n<md-button class=\"icon-btn\" ng-click=\"navigate( lastBreadcrumbs[0])\">\n    <ng-md-icon md-icon icon=\"keyboard_arrow_left\"></ng-md-icon>\n</md-button>\n  <span>  {{ lastBreadcrumbs[0].displayName }}</span>\n</div>\n<div ng-if=\"lastBreadcrumbs.length == 1\" style=\"white-space: nowrap\">\n{{ lastBreadcrumbs[0].displayName }}\n</div>\n");
 $templateCache.put("js/shared/view-type-selection/view-type-selection-template.html","<span class=\"md-button-group\" layout-align=\"center center\">\n    <md-button class=\"icon-btn\"\n               ng-click=\"viewTypeChanged(\'table\')\"\n               ng-class=\"{\'selected\' : viewType == \'table\'}\">\n        <ng-md-icon md-icon icon=\"list\"></ng-md-icon>\n    </md-button>\n    <md-button class=\"icon-btn\" ng-click=\"viewTypeChanged(\'list\')\"\n                           ng-class=\"{\'selected\' : viewType == \'list\'}\">\n    <ng-md-icon md-icon icon=\"view_list\"></ng-md-icon>\n</md-button>\n</span>");
 $templateCache.put("js/vendor/dirPagination/dirPagination.md-tpl.html","<!--\n  ~ Copyright (c) 2015.\n  -->\n<div layout=\"row\">\n\n    <span ng-if=\"boundaryLinks\" ng-class=\"{ disabled : pagination.current == 1 }\">\n        <a href=\"\" ng-click=\"setCurrent(1)\">&laquo;</a>\n    </span>\n    <span ng-if=\"directionLinks\" ng-class=\"{ disabled : pagination.current == 1 }\">\n        <a href=\"\" ng-click=\"setCurrent(pagination.current - 1)\">&lsaquo;</a>\n    </span>\n    <span ng-repeat=\"pageNumber in pages track by tracker(pageNumber, $index)\" ng-class=\"{ active : pagination.current == pageNumber, disabled : pageNumber == \'...\' }\">\n        <a href=\"\" ng-click=\"setCurrent(pageNumber)\">{{ pageNumber }}</a>\n    </span>\n\n    <span ng-if=\"directionLinks\" ng-class=\"{ disabled : pagination.current == pagination.last }\">\n        <a href=\"\" ng-click=\"setCurrent(pagination.current + 1)\">&rsaquo;</a>\n    </span>\n    <span ng-if=\"boundaryLinks\"  ng-class=\"{ disabled : pagination.current == pagination.last }\">\n        <a href=\"\" ng-click=\"setCurrent(pagination.last)\">&raquo;</a>\n    </span>\n</div>\n");
-$templateCache.put("js/vendor/dirPagination/dirPagination.tpl.html","<div>\n    <span class=\"label\">{{label}}</span>\n    <md-select ng-model=\"rowsPerPage\" md-container-class=\"md-pagination-select\" placeholder=\"{{rowsPerPage ? rowsPerPageOptions[0] : 5}}\">\n        <md-option ng-repeat=\"x in rowsPerPageOptions\" value=\"{{x}}\">\n            {{x}}\n        </md-option>\n    </md-select>\n    <span>{{range.lower}} - {{range.upper}} of {{range.total}}</span>\n</div>\n<div>\n        <md-button ng-if=\"boundaryLinks\" type=\"button\" ng-click=\"setCurrent(1)\" ng-disabled=\"pagination.current == 1\" aria-label=\"First\">\n            <md-icon md-svg-icon=\"templates.navigate-first.html\"></md-icon>\n        </md-button>\n        <md-button type=\"button\" ng-click=\"setCurrent(pagination.current - 1)\" ng-disabled=\"pagination.current == 1\" aria-label=\"Previous\">\n            <md-icon md-svg-icon=\"templates.navigate-before.html\"></md-icon>\n        </md-button>\n        <md-button type=\"button\"  ng-click=\"setCurrent(pagination.current + 1)\" ng-disabled=\"pagination.current == pagination.last\" aria-label=\"Next\">\n            <md-icon md-svg-icon=\"templates.navigate-next.html\"></md-icon>\n        </md-button>\n        <md-button ng-if=\"boundaryLinks\" type=\"button\"  ng-click=\"setCurrent(pagination.last)\" ng-disabled=\"pagination.current == pagination.last\"  aria-label=\"Last\">\n            <md-icon md-svg-icon=\"templates.navigate-last.html\"></md-icon>\n        </md-button>\n</div>");}]);(function () {
+$templateCache.put("js/vendor/dirPagination/dirPagination.tpl.html","<div>\n    <span class=\"label\">{{label}}</span>\n    <md-select ng-model=\"rowsPerPage\" md-container-class=\"md-pagination-select\" placeholder=\"{{rowsPerPage ? rowsPerPageOptions[0] : 5}}\">\n        <md-option ng-repeat=\"x in rowsPerPageOptions\" value=\"{{x}}\">\n            {{x}}\n        </md-option>\n    </md-select>\n    <span>{{range.lower}} - {{range.upper}} of {{range.total}}</span>\n</div>\n<div>\n        <md-button ng-if=\"boundaryLinks\" type=\"button\" ng-click=\"setCurrent(1)\" ng-disabled=\"pagination.current == 1\" aria-label=\"First\">\n            <md-icon md-svg-icon=\"templates.navigate-first.html\"></md-icon>\n        </md-button>\n        <md-button type=\"button\" ng-click=\"setCurrent(pagination.current - 1)\" ng-disabled=\"pagination.current == 1\" aria-label=\"Previous\">\n            <md-icon md-svg-icon=\"templates.navigate-before.html\"></md-icon>\n        </md-button>\n        <md-button type=\"button\"  ng-click=\"setCurrent(pagination.current + 1)\" ng-disabled=\"pagination.current == pagination.last\" aria-label=\"Next\">\n            <md-icon md-svg-icon=\"templates.navigate-next.html\"></md-icon>\n        </md-button>\n        <md-button ng-if=\"boundaryLinks\" type=\"button\"  ng-click=\"setCurrent(pagination.last)\" ng-disabled=\"pagination.current == pagination.last\"  aria-label=\"Last\">\n            <md-icon md-svg-icon=\"templates.navigate-last.html\"></md-icon>\n        </md-button>\n</div>");}]);
+/*-
+ * #%L
+ * thinkbig-ui-common
+ * %%
+ * Copyright (C) 2017 ThinkBig Analytics
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+(function () {
 
     var directive = function ($interval) {
         return {
@@ -2524,6 +3053,25 @@ $templateCache.put("js/vendor/dirPagination/dirPagination.tpl.html","<div>\n    
         .directive('tbaTimerOld',['$interval', directive]);
 
 }());
+/*-
+ * #%L
+ * thinkbig-ui-common
+ * %%
+ * Copyright (C) 2017 ThinkBig Analytics
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
 (function () {
 
     var directive = function ($interval) {
@@ -2629,6 +3177,25 @@ $templateCache.put("js/vendor/dirPagination/dirPagination.tpl.html","<div>\n    
         .directive('tbaTimer',['$interval', directive]);
 
 }());
+/*-
+ * #%L
+ * thinkbig-ui-common
+ * %%
+ * Copyright (C) 2017 ThinkBig Analytics
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
 (function() {
 
     /**
@@ -2794,6 +3361,25 @@ $templateCache.put("js/vendor/dirPagination/dirPagination.tpl.html","<div>\n    
         };
     }]);
 })();
+/*-
+ * #%L
+ * thinkbig-ui-common
+ * %%
+ * Copyright (C) 2017 ThinkBig Analytics
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
 var UIGridUtil = (function () {
     function UIGridUtil() {
     }
@@ -2848,6 +3434,25 @@ var UIGridUtil = (function () {
     return UIGridUtil;
 })();
 
+/*-
+ * #%L
+ * thinkbig-ui-common
+ * %%
+ * Copyright (C) 2017 ThinkBig Analytics
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
 
 angular.module(COMMON_APP_MODULE_NAME).factory('Utils', function ($timeout) {
 
@@ -3050,6 +3655,26 @@ angular.module(COMMON_APP_MODULE_NAME).factory('Utils', function ($timeout) {
     return data;
 
 });
+/*-
+ * #%L
+ * thinkbig-ui-common
+ * %%
+ * Copyright (C) 2017 ThinkBig Analytics
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
 angular.module(COMMON_APP_MODULE_NAME).directive("verticalSectionLayout", function()  {
     return {
         restrict: 'E',
@@ -3130,6 +3755,26 @@ angular.module(COMMON_APP_MODULE_NAME).directive("verticalSectionLayout", functi
         }
     };
 });
+/*-
+ * #%L
+ * thinkbig-ui-common
+ * %%
+ * Copyright (C) 2017 ThinkBig Analytics
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
 angular.module(COMMON_APP_MODULE_NAME).directive('tbaViewTypeSelection', function() {
     return {
         restrict: 'E',
