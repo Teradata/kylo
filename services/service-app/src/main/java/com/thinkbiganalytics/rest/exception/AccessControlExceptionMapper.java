@@ -23,6 +23,12 @@ package com.thinkbiganalytics.rest.exception;
  * #L%
  */
 
+import com.thinkbiganalytics.rest.model.RestResponseStatus;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+
 import java.security.AccessControlException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -30,12 +36,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
-
-import com.thinkbiganalytics.rest.model.RestResponseStatus;
 
 /**
  *

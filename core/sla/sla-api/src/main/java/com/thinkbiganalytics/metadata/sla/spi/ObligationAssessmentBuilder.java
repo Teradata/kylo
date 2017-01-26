@@ -23,14 +23,14 @@ package com.thinkbiganalytics.metadata.sla.spi;
  * #L%
  */
 
-import java.io.Serializable;
-import java.util.Comparator;
-
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.MetricAssessment;
 import com.thinkbiganalytics.metadata.sla.api.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationAssessment;
+
+import java.io.Serializable;
+import java.util.Comparator;
 
 /**
  * The builder that is used to generate assessment of obligations.

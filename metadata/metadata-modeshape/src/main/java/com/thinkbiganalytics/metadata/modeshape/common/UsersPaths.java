@@ -23,9 +23,9 @@ package com.thinkbiganalytics.metadata.modeshape.common;
  * #L%
  */
 
-import java.nio.file.Path;
-
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+
+import java.nio.file.Path;
 
 /**
  * Defines and resolves paths of users and user groups within the JCR repository.

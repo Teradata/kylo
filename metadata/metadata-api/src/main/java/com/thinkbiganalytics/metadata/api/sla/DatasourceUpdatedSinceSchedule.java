@@ -23,10 +23,10 @@ package com.thinkbiganalytics.metadata.api.sla;
  * #L%
  */
 
+import org.quartz.CronExpression;
+
 import java.beans.Transient;
 import java.text.ParseException;
-
-import org.quartz.CronExpression;
 
 /**
  *

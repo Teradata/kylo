@@ -22,9 +22,6 @@ package com.thinkbiganalytics.spark.shell;
 
 import com.thinkbiganalytics.spark.rest.model.RegistrationRequest;
 
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-
 import javax.annotation.Nonnull;
 
 /**

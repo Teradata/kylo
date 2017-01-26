@@ -21,10 +21,10 @@ package com.thinkbiganalytics.spark.repl;
  */
 
 import com.thinkbiganalytics.spark.SparkInterpreterBuilder;
+
 import org.apache.spark.SparkConf;
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -33,11 +33,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import scala.tools.nsc.Settings;
-import scala.tools.nsc.interpreter.IMain;
+
+import java.io.PrintWriter;
 
 import javax.script.ScriptException;
-import java.io.PrintWriter;
+
+import scala.tools.nsc.Settings;
+import scala.tools.nsc.interpreter.IMain;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {SparkScriptEngine.class, SparkScriptEngineTest.class})

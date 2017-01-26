@@ -23,9 +23,9 @@ package com.thinkbiganalytics.metadata.sla.spi;
  * #L%
  */
 
-import java.io.Serializable;
-
 import com.thinkbiganalytics.metadata.sla.api.Metric;
+
+import java.io.Serializable;
 
 /**
  * An assessor responsible for generating assessments of the types of metrics that it accepts.

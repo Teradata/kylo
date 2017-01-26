@@ -20,6 +20,12 @@ package com.thinkbiganalytics.audit.rest.controller;
  * #L%
  */
 
+import com.thinkbiganalytics.audit.rest.model.AuditLogEntry;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.audit.AuditLogProvider;
+
+import org.springframework.stereotype.Component;
+
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -34,12 +40,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
-
-import org.springframework.stereotype.Component;
-
-import com.thinkbiganalytics.audit.rest.model.AuditLogEntry;
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.audit.AuditLogProvider;
 
 import io.swagger.annotations.Api;
 

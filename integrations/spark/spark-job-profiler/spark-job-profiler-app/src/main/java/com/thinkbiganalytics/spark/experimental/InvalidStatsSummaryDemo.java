@@ -21,10 +21,10 @@ package com.thinkbiganalytics.spark.experimental;
  */
 
 import com.thinkbiganalytics.spark.DataSet;
-import com.thinkbiganalytics.spark.SparkContextService;
 import com.thinkbiganalytics.spark.dataprofiler.accum.MapAccumulator;
 import com.thinkbiganalytics.spark.dataprofiler.core.ProfilerSparkContextService;
 import com.thinkbiganalytics.spark.dataprofiler.functions.FrequencyCSVToRow;
+
 import org.apache.spark.Accumulator;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
@@ -42,8 +42,12 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.UUID;
 
 
 /**

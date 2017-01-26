@@ -6,7 +6,6 @@ import javax.annotation.Nonnull
 import com.google.common.util.concurrent.ThreadFactoryBuilder
 import com.thinkbiganalytics.spark.metadata.TransformJob
 import com.thinkbiganalytics.spark.repl.SparkScriptEngine
-import org.slf4j.LoggerFactory
 
 import scala.collection.mutable
 

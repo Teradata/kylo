@@ -23,11 +23,10 @@ package com.thinkbiganalytics.metadata.api.event.sla;
  * #L%
  */
 
-import java.util.Objects;
-
 import com.thinkbiganalytics.metadata.api.event.MetadataChange;
-import com.thinkbiganalytics.metadata.api.event.template.TemplateChange;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+
+import java.util.Objects;
 
 /**
  *

@@ -23,12 +23,6 @@ package com.thinkbiganalytics.metadata.core.sla.feed;
  * #L%
  */
 
-import java.io.Serializable;
-import java.util.Date;
-import java.util.List;
-
-import org.joda.time.DateTime;
-
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedCriteria;
 import com.thinkbiganalytics.metadata.api.op.FeedOperation;
@@ -37,6 +31,12 @@ import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.spi.MetricAssessmentBuilder;
 import com.thinkbiganalytics.scheduler.util.CronExpressionUtil;
+
+import org.joda.time.DateTime;
+
+import java.io.Serializable;
+import java.util.Date;
+import java.util.List;
 
 /**
  *

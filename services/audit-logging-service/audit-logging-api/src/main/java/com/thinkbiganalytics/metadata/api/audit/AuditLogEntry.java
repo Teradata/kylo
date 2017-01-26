@@ -23,11 +23,10 @@ package com.thinkbiganalytics.metadata.api.audit;
  * #L%
  */
 
+import org.joda.time.DateTime;
+
 import java.io.Serializable;
 import java.security.Principal;
-import java.util.UUID;
-
-import org.joda.time.DateTime;
 
 /**
  * An audit log entry describing a metadata change or operation attempt.

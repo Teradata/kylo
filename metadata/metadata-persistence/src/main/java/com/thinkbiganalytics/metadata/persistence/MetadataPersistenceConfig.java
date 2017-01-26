@@ -23,11 +23,11 @@ package com.thinkbiganalytics.metadata.persistence;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
 
 /**
  *

@@ -23,23 +23,22 @@ package com.thinkbiganalytics.metadata.jpa.audit;
  * #L%
  */
 
-import java.io.Serializable;
-import java.security.Principal;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
-import javax.inject.Inject;
+import com.thinkbiganalytics.metadata.api.audit.AuditLogEntry;
+import com.thinkbiganalytics.metadata.api.audit.AuditLogEntry.ID;
+import com.thinkbiganalytics.metadata.api.audit.AuditLogProvider;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 
-import com.thinkbiganalytics.metadata.api.audit.AuditLogEntry;
-import com.thinkbiganalytics.metadata.api.audit.AuditLogEntry.ID;
-import com.thinkbiganalytics.metadata.api.audit.AuditLogProvider;
+import java.io.Serializable;
+import java.security.Principal;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
+import javax.inject.Inject;
 
 /**
  * Retrieves and creates audit log entries.

@@ -23,8 +23,6 @@ package com.thinkbiganalytics.spark.rest.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.thinkbiganalytics.discovery.model.DefaultDataTypeDescriptor;
 import com.thinkbiganalytics.discovery.model.DefaultQueryResult;
 import com.thinkbiganalytics.discovery.schema.QueryResult;
 

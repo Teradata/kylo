@@ -23,6 +23,9 @@ package com.thinkbiganalytics.auth.jaas.config;
  * #L%
  */
 
+import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
+import com.thinkbiganalytics.auth.jaas.LoginConfigurationBuilder;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,9 +35,6 @@ import java.util.stream.Collectors;
 import javax.security.auth.login.AppConfigurationEntry;
 import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
 import javax.security.auth.spi.LoginModule;
-
-import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
-import com.thinkbiganalytics.auth.jaas.LoginConfigurationBuilder;
 
 /**
  * Default implementation of LoginConfigurationBuilder.

@@ -23,7 +23,8 @@ package com.thinkbiganalytics.scheduler;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Created by matthutton on 3/14/16.

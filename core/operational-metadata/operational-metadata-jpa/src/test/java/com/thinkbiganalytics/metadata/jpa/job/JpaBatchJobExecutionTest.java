@@ -33,7 +33,6 @@ import com.thinkbiganalytics.metadata.jpa.support.GenericQueryDslFilter;
 import com.thinkbiganalytics.spring.CommonsSpringConfiguration;
 
 import org.joda.time.Period;
-import org.joda.time.ReadablePeriod;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.SpringApplicationConfiguration;

@@ -20,9 +20,6 @@ package com.thinkbiganalytics.scheduler;
  * #L%
  */
 
-import com.thinkbiganalytics.scheduler.JobIdentifier;
-import com.thinkbiganalytics.scheduler.TriggerIdentifier;
-import com.thinkbiganalytics.scheduler.TriggerInfo;
 import com.thinkbiganalytics.scheduler.model.DefaultTriggerInfo;
 import com.thinkbiganalytics.scheduler.support.JavaBeanTester;
 

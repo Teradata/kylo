@@ -20,6 +20,10 @@ package com.thinkbiganalytics.ui.config;
  * #L%
  */
 
+import com.thinkbiganalytics.auth.AuthServiceAuthenticationProvider;
+import com.thinkbiganalytics.auth.AuthenticationService;
+import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,10 +37,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-
-import com.thinkbiganalytics.auth.AuthServiceAuthenticationProvider;
-import com.thinkbiganalytics.auth.AuthenticationService;
-import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
 
 /**
  *Form Based Auth with Spring Security.

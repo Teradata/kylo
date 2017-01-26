@@ -21,11 +21,8 @@ package com.thinkbiganalytics.hive.service;
  */
 
 import com.thinkbiganalytics.kerberos.KerberosTicketConfiguration;
-import com.thinkbiganalytics.kerberos.KerberosTicketGenerator;
 import com.thinkbiganalytics.kerberos.KerberosUtil;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.hadoop.security.UserGroupInformation;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -36,17 +33,14 @@ import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.PrintWriter;
-import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Statement;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.sql.DataSource;
 

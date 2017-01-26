@@ -23,14 +23,14 @@ package com.example.kylo.plugin;
  * #L%
  */
 
-import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
+import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
+import com.thinkbiganalytics.auth.jaas.LoginConfigurationBuilder;
+import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
-import com.thinkbiganalytics.auth.jaas.LoginConfigurationBuilder;
-import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
+import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
 
 /**
  * This is an example configuration that sets up a custom JAAS LoginModule as part of 

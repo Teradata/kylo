@@ -23,13 +23,7 @@ package com.thinkbiganalytics.metadata.modeshape;
  * #L%
  */
 
-import java.io.IOException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-
-import javax.annotation.PreDestroy;
-import javax.inject.Inject;
-import javax.jcr.Repository;
+import com.thinkbiganalytics.metadata.modeshape.security.ModeShapeAuthConfig;
 
 import org.modeshape.common.collection.Problems;
 import org.modeshape.jcr.JcrRepository;
@@ -44,7 +38,13 @@ import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 
-import com.thinkbiganalytics.metadata.modeshape.security.ModeShapeAuthConfig;
+import java.io.IOException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+
+import javax.annotation.PreDestroy;
+import javax.inject.Inject;
+import javax.jcr.Repository;
 
 /**
  *

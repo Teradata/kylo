@@ -22,6 +22,7 @@ package com.thinkbiganalytics.spark.dataprofiler.core;
 
 import com.thinkbiganalytics.spark.DataSet;
 import com.thinkbiganalytics.spark.dataprofiler.model.StatisticsModel;
+
 import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.sql.types.StructField;
 

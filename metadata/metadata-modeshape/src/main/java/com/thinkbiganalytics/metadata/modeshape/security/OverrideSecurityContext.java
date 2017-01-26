@@ -20,11 +20,11 @@ package com.thinkbiganalytics.metadata.modeshape.security;
  * #L%
  */
 
+import org.modeshape.jcr.security.SecurityContext;
+
 import java.security.Principal;
 import java.security.acl.Group;
 import java.util.Collections;
-
-import org.modeshape.jcr.security.SecurityContext;
 
 /**
  * A security context that is in effect when an administrative operation is being executed under 

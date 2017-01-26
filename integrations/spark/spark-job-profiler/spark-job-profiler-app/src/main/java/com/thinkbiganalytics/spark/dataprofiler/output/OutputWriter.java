@@ -21,12 +21,11 @@ package com.thinkbiganalytics.spark.dataprofiler.output;
  */
 
 import com.thinkbiganalytics.hive.util.HiveUtils;
-import com.thinkbiganalytics.spark.dataprofiler.core.ProfilerConfiguration;
-
 import com.thinkbiganalytics.spark.DataSet;
 import com.thinkbiganalytics.spark.SparkContextService;
 import com.thinkbiganalytics.spark.dataprofiler.core.ProfilerConfiguration;
 import com.thinkbiganalytics.spark.dataprofiler.core.ProfilerSparkContextService;
+
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.hive.HiveContext;

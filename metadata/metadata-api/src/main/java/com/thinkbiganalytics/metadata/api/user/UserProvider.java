@@ -20,12 +20,12 @@ package com.thinkbiganalytics.metadata.api.user;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.api.user.UserGroup.ID;
+
 import java.io.Serializable;
 import java.util.Optional;
 
 import javax.annotation.Nonnull;
-
-import com.thinkbiganalytics.metadata.api.user.UserGroup.ID;
 
 /**
  * Provides access to stored users and user groups.

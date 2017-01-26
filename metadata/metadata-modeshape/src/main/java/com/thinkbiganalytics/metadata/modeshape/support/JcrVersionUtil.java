@@ -20,6 +20,11 @@ package com.thinkbiganalytics.metadata.modeshape.support;
  * #L%
  */
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,11 +38,6 @@ import javax.jcr.version.Version;
 import javax.jcr.version.VersionHistory;
 import javax.jcr.version.VersionIterator;
 import javax.jcr.version.VersionManager;
-
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
-import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 
 /**
  * Created by sr186054 on 6/13/16.

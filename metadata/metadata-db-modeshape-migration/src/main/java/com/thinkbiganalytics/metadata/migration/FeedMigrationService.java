@@ -1,9 +1,5 @@
 package com.thinkbiganalytics.metadata.migration;
 
-import java.util.Map;
-
-import javax.inject.Inject;
-
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
@@ -20,6 +16,10 @@ import com.thinkbiganalytics.metadata.migration.template.TemplateDatabaseProvide
 import com.thinkbiganalytics.metadata.modeshape.category.JcrFeedManagerCategory;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedManagerFeed;
 import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplate;
+
+import java.util.Map;
+
+import javax.inject.Inject;
 
 /**
  * Created by sr186054 on 6/15/16.

@@ -3,6 +3,12 @@
  */
 package com.thinkbiganalytics.metadata.jpa.sla;
 
+import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
+import com.thinkbiganalytics.metadata.sla.api.Obligation;
+import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
+import com.thinkbiganalytics.metadata.sla.api.ObligationGroup.Condition;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,12 +24,6 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-
-import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
-import com.thinkbiganalytics.metadata.sla.api.Obligation;
-import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
-import com.thinkbiganalytics.metadata.sla.api.ObligationGroup.Condition;
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 
 /**
  *

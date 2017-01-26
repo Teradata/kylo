@@ -23,9 +23,9 @@ package com.thinkbiganalytics.audit.rest.model;
  * #L%
  */
 
-import java.io.Serializable;
-
 import org.joda.time.DateTime;
+
+import java.io.Serializable;
 
 /**
  *

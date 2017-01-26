@@ -20,18 +20,6 @@ package com.thinkbiganalytics.metadata.modeshape.template;
  * #L%
  */
 
-import java.io.Serializable;
-import java.security.Principal;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Consumer;
-
-import javax.inject.Inject;
-
-import org.apache.commons.lang3.StringUtils;
-import org.joda.time.DateTime;
-import org.springframework.security.core.context.SecurityContextHolder;
-
 import com.thinkbiganalytics.metadata.api.event.MetadataChange.ChangeType;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.event.template.TemplateChange;
@@ -47,7 +35,18 @@ import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
-import com.thinkbiganalytics.security.UsernamePrincipal;
+
+import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
+import org.springframework.security.core.context.SecurityContextHolder;
+
+import java.io.Serializable;
+import java.security.Principal;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Consumer;
+
+import javax.inject.Inject;
 
 /**
  * Created by sr186054 on 6/8/16.

@@ -23,13 +23,13 @@ package com.thinkbiganalytics.alerts.spi;
  * #L%
  */
 
+import com.thinkbiganalytics.alerts.api.Alert;
+
 import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-
-import com.thinkbiganalytics.alerts.api.Alert;
 
 /**
  *

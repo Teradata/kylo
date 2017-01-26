@@ -19,6 +19,10 @@ package com.thinkbiganalytics.metadata.modeshape.security;
  * limitations under the License.
  * #L%
  */
+
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.security.UsernamePrincipal;
+
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.Collections;
@@ -26,9 +30,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.jcr.Credentials;
-
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.security.UsernamePrincipal;
 
 /**
  * Credentials used to override those derived from the current security context.

@@ -22,16 +22,16 @@ package com.thinkbiganalytics.scheduler;
 
 import com.thinkbiganalytics.scheduler.model.DefaultJobInfo;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
+import static org.junit.Assert.assertEquals;
 
 public class JobInfoImplTest {
 

@@ -23,16 +23,16 @@ package com.thinkbiganalytics.metadata.modeshape.op;
  * #L%
  */
 
+import com.thinkbiganalytics.jobrepo.query.model.ExecutedJob;
+import com.thinkbiganalytics.metadata.api.op.FeedOperation;
+
+import org.joda.time.DateTime;
+
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import org.joda.time.DateTime;
-
-import com.thinkbiganalytics.jobrepo.query.model.ExecutedJob;
-import com.thinkbiganalytics.metadata.api.op.FeedOperation;
 
 /**
  *

@@ -20,9 +20,22 @@ package com.thinkbiganalytics.spark.dataprofiler.model;
  * #L%
  */
 
-import com.thinkbiganalytics.spark.dataprofiler.columns.*;
+import com.thinkbiganalytics.spark.dataprofiler.columns.BigDecimalColumnStatistics;
+import com.thinkbiganalytics.spark.dataprofiler.columns.BooleanColumnStatistics;
+import com.thinkbiganalytics.spark.dataprofiler.columns.ByteColumnStatistics;
+import com.thinkbiganalytics.spark.dataprofiler.columns.ColumnStatistics;
+import com.thinkbiganalytics.spark.dataprofiler.columns.DateColumnStatistics;
+import com.thinkbiganalytics.spark.dataprofiler.columns.DoubleColumnStatistics;
+import com.thinkbiganalytics.spark.dataprofiler.columns.FloatColumnStatistics;
+import com.thinkbiganalytics.spark.dataprofiler.columns.IntegerColumnStatistics;
+import com.thinkbiganalytics.spark.dataprofiler.columns.LongColumnStatistics;
+import com.thinkbiganalytics.spark.dataprofiler.columns.ShortColumnStatistics;
+import com.thinkbiganalytics.spark.dataprofiler.columns.StringColumnStatistics;
+import com.thinkbiganalytics.spark.dataprofiler.columns.TimestampColumnStatistics;
+import com.thinkbiganalytics.spark.dataprofiler.columns.UnsupportedColumnStatistics;
 import com.thinkbiganalytics.spark.dataprofiler.core.ProfilerSparkContextService;
 import com.thinkbiganalytics.spark.dataprofiler.output.OutputWriter;
+
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.hive.HiveContext;
 import org.apache.spark.sql.types.DataType;

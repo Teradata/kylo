@@ -6,9 +6,9 @@ import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.core.BaseId;
 import com.thinkbiganalytics.metadata.jpa.feedmgr.FeedManagerNamedQueries;
 import com.thinkbiganalytics.metadata.jpa.feedmgr.feed.JpaFeedManagerFeed;
+
 import org.hibernate.annotations.Type;
 
-import javax.persistence.*;
 import java.io.Serializable;
 import java.util.List;
 import java.util.UUID;

@@ -23,19 +23,19 @@ package com.thinkbiganalytics.metadata.rest.model.op;
  * #L%
  */
 
-import java.io.Serializable;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-
-import org.joda.time.DateTime;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.thinkbiganalytics.Formatters;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
+
+import org.joda.time.DateTime;
+
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
 /**
  *

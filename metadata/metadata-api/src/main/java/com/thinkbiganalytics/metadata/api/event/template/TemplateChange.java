@@ -23,12 +23,12 @@ package com.thinkbiganalytics.metadata.api.event.template;
  * #L%
  */
 
-import java.util.Objects;
-
 import com.thinkbiganalytics.metadata.api.event.MetadataChange;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate.ID;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate.State;
+
+import java.util.Objects;
 
 /**
  *

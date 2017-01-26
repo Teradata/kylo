@@ -20,8 +20,9 @@ package com.thinkbiganalytics.spark.dataprofiler.topn;
  * #L%
  */
 
-import javax.annotation.Nonnull;
 import java.io.Serializable;
+
+import javax.annotation.Nonnull;
 
 /**
  * Class for an item in Top-N list<br>

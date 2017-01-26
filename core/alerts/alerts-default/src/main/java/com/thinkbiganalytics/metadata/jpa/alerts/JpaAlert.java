@@ -23,6 +23,15 @@ package com.thinkbiganalytics.metadata.jpa.alerts;
  * #L%
  */
 
+import com.thinkbiganalytics.alerts.api.Alert;
+import com.thinkbiganalytics.alerts.api.AlertChangeEvent;
+import com.thinkbiganalytics.alerts.spi.AlertSource;
+import com.thinkbiganalytics.jpa.BaseJpaId;
+import com.thinkbiganalytics.jpa.JsonAttributeConverter;
+
+import org.hibernate.annotations.Type;
+import org.joda.time.DateTime;
+
 import java.io.Serializable;
 import java.net.URI;
 import java.security.Principal;
@@ -44,17 +53,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-
-import org.hibernate.annotations.Type;
-import org.joda.time.DateTime;
-
-import com.querydsl.core.annotations.PropertyType;
-import com.querydsl.core.annotations.QueryType;
-import com.thinkbiganalytics.alerts.api.Alert;
-import com.thinkbiganalytics.alerts.api.AlertChangeEvent;
-import com.thinkbiganalytics.alerts.spi.AlertSource;
-import com.thinkbiganalytics.jpa.BaseJpaId;
-import com.thinkbiganalytics.jpa.JsonAttributeConverter;
 
 /**
  * Implements the JPA-based alert type managed in the Kylo alert store.

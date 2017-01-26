@@ -27,8 +27,6 @@ import org.junit.Test;
 import java.util.HashSet;
 import java.util.Vector;
 
-import static org.junit.Assert.assertTrue;
-
 /**
  * Created by matthutton on 3/11/16.
  */

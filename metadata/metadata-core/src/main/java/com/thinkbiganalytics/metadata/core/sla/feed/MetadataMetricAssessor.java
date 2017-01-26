@@ -23,14 +23,14 @@ package com.thinkbiganalytics.metadata.core.sla.feed;
  * #L%
  */
 
-import java.io.Serializable;
-
-import javax.inject.Inject;
-
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.op.FeedOperationsProvider;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.spi.MetricAssessor;
+
+import java.io.Serializable;
+
+import javax.inject.Inject;
 
 /**
  *

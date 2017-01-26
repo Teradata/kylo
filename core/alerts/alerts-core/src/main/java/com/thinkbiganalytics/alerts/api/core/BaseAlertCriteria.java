@@ -23,19 +23,19 @@ package com.thinkbiganalytics.alerts.api.core;
  * #L%
  */
 
+import com.thinkbiganalytics.alerts.api.Alert;
+import com.thinkbiganalytics.alerts.api.Alert.Level;
+import com.thinkbiganalytics.alerts.api.Alert.State;
+import com.thinkbiganalytics.alerts.api.AlertCriteria;
+
+import org.joda.time.DateTime;
+
 import java.net.URI;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
-
-import org.joda.time.DateTime;
-
-import com.thinkbiganalytics.alerts.api.Alert;
-import com.thinkbiganalytics.alerts.api.Alert.Level;
-import com.thinkbiganalytics.alerts.api.Alert.State;
-import com.thinkbiganalytics.alerts.api.AlertCriteria;
 
 /**
  * A generic AlertCriteria implementation that simply records the criteria settings.

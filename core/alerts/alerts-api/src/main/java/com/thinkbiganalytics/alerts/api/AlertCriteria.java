@@ -23,12 +23,12 @@ package com.thinkbiganalytics.alerts.api;
  * #L%
  */
 
-import java.net.URI;
+import com.thinkbiganalytics.alerts.api.Alert.Level;
+import com.thinkbiganalytics.alerts.api.Alert.State;
 
 import org.joda.time.DateTime;
 
-import com.thinkbiganalytics.alerts.api.Alert.Level;
-import com.thinkbiganalytics.alerts.api.Alert.State;
+import java.net.URI;
 
 /**
  *

@@ -20,14 +20,14 @@ package com.thinkbiganalytics.metadata.modeshape.security;
  * #L%
  */
 
+import org.springframework.security.core.Authentication;
+
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.jcr.Credentials;
-
-import org.springframework.security.core.Authentication;
 
 public class SpringAuthenticationCredentials implements Credentials {
 

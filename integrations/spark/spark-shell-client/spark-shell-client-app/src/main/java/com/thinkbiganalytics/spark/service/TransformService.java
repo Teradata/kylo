@@ -20,18 +20,22 @@ package com.thinkbiganalytics.spark.service;
  * #L%
  */
 
-import com.google.common.cache.*;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.RemovalListener;
+import com.google.common.cache.RemovalNotification;
+import com.google.common.cache.Weigher;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Queues;
 import com.google.common.util.concurrent.AbstractScheduledService;
+import com.thinkbiganalytics.hive.util.HiveUtils;
 import com.thinkbiganalytics.kerberos.KerberosTicketConfiguration;
 import com.thinkbiganalytics.kerberos.KerberosTicketGenerator;
 import com.thinkbiganalytics.spark.SparkContextService;
 import com.thinkbiganalytics.spark.metadata.TransformJob;
 import com.thinkbiganalytics.spark.repl.SparkScriptEngine;
-import com.thinkbiganalytics.hive.util.HiveUtils;
 import com.thinkbiganalytics.spark.rest.model.TransformRequest;
 import com.thinkbiganalytics.spark.rest.model.TransformResponse;
 
@@ -43,12 +47,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import scala.Option;
-import scala.tools.nsc.interpreter.NamedParam;
-import scala.tools.nsc.interpreter.NamedParamClass;
 
-import javax.annotation.Nonnull;
-import javax.script.ScriptException;
 import java.security.PrivilegedExceptionAction;
 import java.util.Iterator;
 import java.util.List;
@@ -57,6 +56,13 @@ import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+
+import javax.annotation.Nonnull;
+import javax.script.ScriptException;
+
+import scala.Option;
+import scala.tools.nsc.interpreter.NamedParam;
+import scala.tools.nsc.interpreter.NamedParamClass;
 
 /**
  * A scheduled service that manages a database containing cached results of Spark jobs.

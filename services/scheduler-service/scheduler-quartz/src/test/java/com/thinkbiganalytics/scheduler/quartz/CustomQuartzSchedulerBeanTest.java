@@ -23,8 +23,6 @@ package com.thinkbiganalytics.scheduler.quartz;
 import com.thinkbiganalytics.scheduler.CustomQuartzSchedulerBean;
 import com.thinkbiganalytics.scheduler.QuartzScheduler;
 
-import static org.mockito.Mockito.verify;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -33,6 +31,8 @@ import org.quartz.JobDetail;
 import org.quartz.Trigger;
 import org.springframework.scheduling.quartz.CronTriggerFactoryBean;
 import org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean;
+
+import static org.mockito.Mockito.verify;
 
 public class CustomQuartzSchedulerBeanTest {
 

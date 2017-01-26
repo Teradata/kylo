@@ -23,9 +23,9 @@ package com.thinkbiganalytics.security;
  * #L%
  */
 
-import java.util.Set;
-
 import com.thinkbiganalytics.security.action.Action;
+
+import java.util.Set;
 
 /**
  *

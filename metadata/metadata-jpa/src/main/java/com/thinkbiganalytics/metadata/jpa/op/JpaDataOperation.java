@@ -3,6 +3,19 @@
  */
 package com.thinkbiganalytics.metadata.jpa.op;
 
+import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource;
+import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
+import com.thinkbiganalytics.metadata.api.op.ChangeSet;
+import com.thinkbiganalytics.metadata.api.op.DataOperation;
+import com.thinkbiganalytics.metadata.api.op.Dataset;
+import com.thinkbiganalytics.metadata.core.BaseId;
+import com.thinkbiganalytics.metadata.jpa.feed.JpaFeedDestination;
+
+import org.hibernate.annotations.Type;
+import org.joda.time.DateTime;
+import org.springframework.util.StringUtils;
+
 import java.io.Serializable;
 import java.util.UUID;
 
@@ -14,19 +27,6 @@ import javax.persistence.Enumerated;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
-
-import org.hibernate.annotations.Type;
-import org.joda.time.DateTime;
-import org.springframework.util.StringUtils;
-
-import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
-import com.thinkbiganalytics.metadata.api.datasource.Datasource;
-import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
-import com.thinkbiganalytics.metadata.api.op.ChangeSet;
-import com.thinkbiganalytics.metadata.api.op.DataOperation;
-import com.thinkbiganalytics.metadata.api.op.Dataset;
-import com.thinkbiganalytics.metadata.core.BaseId;
-import com.thinkbiganalytics.metadata.jpa.feed.JpaFeedDestination;
 
 /**
  *

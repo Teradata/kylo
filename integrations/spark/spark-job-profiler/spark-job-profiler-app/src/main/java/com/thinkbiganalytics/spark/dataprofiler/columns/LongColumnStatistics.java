@@ -22,6 +22,7 @@ package com.thinkbiganalytics.spark.dataprofiler.columns;
 
 import com.thinkbiganalytics.spark.dataprofiler.model.MetricType;
 import com.thinkbiganalytics.spark.dataprofiler.output.OutputRow;
+
 import org.apache.spark.sql.types.StructField;
 
 import java.util.ArrayList;

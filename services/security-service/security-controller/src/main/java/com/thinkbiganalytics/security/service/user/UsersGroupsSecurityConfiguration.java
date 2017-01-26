@@ -20,14 +20,14 @@ package com.thinkbiganalytics.security.service.user;
  * #L%
  */
 
-import javax.inject.Inject;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
+import com.thinkbiganalytics.security.action.config.ActionsGroupBuilder;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
-import com.thinkbiganalytics.security.action.config.ActionsGroupBuilder;
+import javax.inject.Inject;
 
 /**
  * Configures the actions for users and groups.

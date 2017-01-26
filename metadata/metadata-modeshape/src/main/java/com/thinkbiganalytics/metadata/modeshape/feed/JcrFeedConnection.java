@@ -20,9 +20,6 @@ package com.thinkbiganalytics.metadata.modeshape.feed;
  * #L%
  */
 
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedConnection;
@@ -31,6 +28,9 @@ import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasourceProvider;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
 
 /**
  *

@@ -20,6 +20,21 @@ package com.thinkbiganalytics.metadata.modeshape;
  * #L%
  */
 
+import com.google.common.collect.Lists;
+import com.thinkbiganalytics.metadata.api.BaseProvider;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrTool;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+
+import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.reflect.ConstructorUtils;
+import org.modeshape.jcr.api.JcrTools;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -34,21 +49,6 @@ import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.query.QueryResult;
-
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang3.reflect.ConstructorUtils;
-import org.modeshape.jcr.api.JcrTools;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Lists;
-import com.thinkbiganalytics.metadata.api.BaseProvider;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrTool;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
 /**
  * Created by sr186054 on 6/5/16.

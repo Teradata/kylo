@@ -20,16 +20,16 @@ package com.thinkbiganalytics.metadata.modeshape.security;
  * #L%
  */
 
+import org.modeshape.jcr.security.SecurityContext;
+import org.springframework.security.authentication.jaas.JaasGrantedAuthority;
+import org.springframework.security.core.Authentication;
+
 import java.security.Principal;
 import java.security.acl.Group;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-
-import org.modeshape.jcr.security.SecurityContext;
-import org.springframework.security.authentication.jaas.JaasGrantedAuthority;
-import org.springframework.security.core.Authentication;
 
 /**
  * A security context that is in effect when an operation is being executed with 

@@ -23,21 +23,21 @@ package com.thinkbiganalytics.metadata.event.reactor;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.api.event.EventMatcher;
+import com.thinkbiganalytics.metadata.api.event.MetadataEvent;
+import com.thinkbiganalytics.metadata.api.event.MetadataEventListener;
+import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.ResolvableType;
+
 import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.core.ResolvableType;
-
-import com.thinkbiganalytics.metadata.api.event.EventMatcher;
-import com.thinkbiganalytics.metadata.api.event.MetadataEvent;
-import com.thinkbiganalytics.metadata.api.event.MetadataEventListener;
-import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 
 import reactor.bus.Event;
 import reactor.bus.EventBus;

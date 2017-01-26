@@ -23,13 +23,13 @@ package org.springframework.security.ldap.authentication.ad;
  * #L%
  */
 
-import java.util.Collection;
-import java.util.Collections;
-
 import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.ldap.authentication.AbstractLdapAuthenticationProvider;
+
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * A decorator provider around a ActiveDirectoryLdapAuthenticationProvider because the latter hads been declared

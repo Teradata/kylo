@@ -20,9 +20,9 @@ package com.thinkbiganalytics.datalake.authorization.config;
  * #L%
  */
 
-import javax.sql.DataSource;
-
 import com.thinkbiganalytics.kerberos.KerberosTicketConfiguration;
+
+import javax.sql.DataSource;
 
 /**
  * Created by Shashi Vishwakarma on 20/9/16.

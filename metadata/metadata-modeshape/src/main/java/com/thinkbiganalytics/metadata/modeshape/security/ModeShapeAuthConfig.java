@@ -23,21 +23,21 @@ package com.thinkbiganalytics.metadata.modeshape.security;
  * #L%
  */
 
-import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
+import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
+import com.thinkbiganalytics.auth.jaas.LoginConfigurationBuilder;
+import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
+import com.thinkbiganalytics.metadata.modeshape.common.SecurityPaths;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrActionsGroupBuilder;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActionsGroupProvider;
+import com.thinkbiganalytics.security.AccessController;
+import com.thinkbiganalytics.security.action.config.ActionsGroupBuilder;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.security.authentication.jaas.AuthorityGranter;
 
-import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
-import com.thinkbiganalytics.auth.jaas.LoginConfigurationBuilder;
-import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
-import com.thinkbiganalytics.metadata.modeshape.common.SecurityPaths;
-import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActionsGroupProvider;
-import com.thinkbiganalytics.metadata.modeshape.security.action.JcrActionsGroupBuilder;
-import com.thinkbiganalytics.security.AccessController;
-import com.thinkbiganalytics.security.action.config.ActionsGroupBuilder;
+import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
 
 /**
  *

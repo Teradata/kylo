@@ -23,7 +23,8 @@ package com.thinkbiganalytics.metadata.jpa;
  * #L%
  */
 
-import javax.sql.DataSource;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
+import com.thinkbiganalytics.metadata.sla.spi.core.InMemorySLAProvider;
 
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -34,10 +35,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
-import com.thinkbiganalytics.alerts.api.core.AggregatingAlertProvider;
-import com.thinkbiganalytics.alerts.spi.AlertManager;
-import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
-import com.thinkbiganalytics.metadata.sla.spi.core.InMemorySLAProvider;
+import javax.sql.DataSource;
 
 import reactor.bus.EventBus;
 

@@ -23,10 +23,10 @@ package com.thinkbiganalytics.metadata.api.event.feed;
  * #L%
  */
 
-import java.io.Serializable;
-
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.op.FeedOperation;
+
+import java.io.Serializable;
 
 /**
  *

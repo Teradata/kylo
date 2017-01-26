@@ -20,8 +20,8 @@ package com.thinkbiganalytics.spark.datavalidator;
  * #L%
  */
 
-import com.thinkbiganalytics.hive.util.HiveUtils;
 import com.beust.jcommander.JCommander;
+import com.thinkbiganalytics.hive.util.HiveUtils;
 import com.thinkbiganalytics.policy.FieldPolicy;
 import com.thinkbiganalytics.policy.FieldPolicyBuilder;
 import com.thinkbiganalytics.policy.standardization.AcceptsEmptyValues;
@@ -57,7 +57,12 @@ import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Vector;
 
 /**
  * Cleanses and validates a table of strings according to defined field-level policies. Records are split into good and bad. <p> blog.cloudera.com/blog/2015/07/how-to-do-data-quality-checks-using-apache-spark-dataframes/

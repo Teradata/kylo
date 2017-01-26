@@ -20,6 +20,16 @@ package com.thinkbiganalytics.security.rest.controller;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.security.action.Action;
+import com.thinkbiganalytics.security.action.AllowedModuleActionsProvider;
+import com.thinkbiganalytics.security.rest.model.ActionGroup;
+import com.thinkbiganalytics.security.rest.model.PermissionsChange;
+import com.thinkbiganalytics.security.rest.model.PermissionsChange.ChangeType;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Component;
+
 import java.security.Principal;
 import java.util.HashSet;
 import java.util.Set;
@@ -38,16 +48,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
-
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.stereotype.Component;
-
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.security.action.Action;
-import com.thinkbiganalytics.security.action.AllowedModuleActionsProvider;
-import com.thinkbiganalytics.security.rest.model.ActionGroup;
-import com.thinkbiganalytics.security.rest.model.PermissionsChange;
-import com.thinkbiganalytics.security.rest.model.PermissionsChange.ChangeType;
 
 import io.swagger.annotations.Api;
 

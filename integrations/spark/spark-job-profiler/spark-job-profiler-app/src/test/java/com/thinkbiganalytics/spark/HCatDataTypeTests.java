@@ -21,6 +21,7 @@ package com.thinkbiganalytics.spark;
  */
 
 import com.thinkbiganalytics.spark.validation.HCatDataType;
+
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;

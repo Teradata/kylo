@@ -23,15 +23,11 @@ package com.thinkbiganalytics.servicemonitor.rest.client.cdh;
 import com.cloudera.api.ApiRootResource;
 import com.cloudera.api.DataView;
 import com.cloudera.api.v1.RootResourceV1;
-import com.google.common.reflect.Reflection;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cglib.core.ReflectUtils;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 /**
  * Created by sr186054 on 10/8/15.

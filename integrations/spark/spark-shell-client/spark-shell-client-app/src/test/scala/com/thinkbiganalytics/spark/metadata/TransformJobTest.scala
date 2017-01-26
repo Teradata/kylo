@@ -1,13 +1,12 @@
 package com.thinkbiganalytics.spark.metadata
 
-import com.thinkbiganalytics.spark.rest.model.TransformResponse
+import java.util.concurrent.Callable
 
+import com.thinkbiganalytics.spark.rest.model.TransformResponse
 import org.apache.spark.SparkContext
 import org.apache.spark.scheduler.StageInfo
 import org.junit.{Assert, Test}
 import org.mockito.Mockito
-
-import java.util.concurrent.Callable
 
 class TransformJobTest {
 

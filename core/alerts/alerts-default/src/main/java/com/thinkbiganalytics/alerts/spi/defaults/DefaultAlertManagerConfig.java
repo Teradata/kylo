@@ -23,11 +23,11 @@ package com.thinkbiganalytics.alerts.spi.defaults;
  * #L%
  */
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
 import com.thinkbiganalytics.alerts.spi.AlertSourceAggregator;
 import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlertRepository;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 /**
  *

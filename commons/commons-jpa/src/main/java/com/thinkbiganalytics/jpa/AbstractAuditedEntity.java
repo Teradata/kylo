@@ -23,12 +23,12 @@ package com.thinkbiganalytics.jpa;
  * #L%
  */
 
+import org.hibernate.annotations.Type;
+import org.joda.time.DateTime;
+
 import javax.persistence.Column;
 import javax.persistence.EntityListeners;
 import javax.persistence.MappedSuperclass;
-
-import org.hibernate.annotations.Type;
-import org.joda.time.DateTime;
 
 /**
  * Base type for entities that have standard timestamp auditing columns in their tables.

@@ -28,8 +28,6 @@ import java.util.Map;
 import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
 import javax.security.auth.spi.LoginModule;
 
-import com.thinkbiganalytics.auth.jaas.LoginConfigurationBuilder.ModuleBuilder;
-
 /**
  *
  * @author Sean Felten

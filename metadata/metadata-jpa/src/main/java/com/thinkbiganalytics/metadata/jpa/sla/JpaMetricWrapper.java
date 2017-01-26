@@ -3,6 +3,10 @@
  */
 package com.thinkbiganalytics.metadata.jpa.sla;
 
+import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
+import com.thinkbiganalytics.jpa.JsonAttributeConverter;
+import com.thinkbiganalytics.metadata.sla.api.Metric;
+
 import java.io.Serializable;
 import java.util.UUID;
 
@@ -11,10 +15,6 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
-
-import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
-import com.thinkbiganalytics.jpa.JsonAttributeConverter;
-import com.thinkbiganalytics.metadata.sla.api.Metric;
 
 /**
  *

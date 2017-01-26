@@ -23,13 +23,6 @@ package com.thinkbiganalytics.security.rest.controller;
  * #L%
  */
 
-import java.security.Principal;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import com.thinkbiganalytics.security.GroupPrincipal;
 import com.thinkbiganalytics.security.UsernamePrincipal;
 import com.thinkbiganalytics.security.action.AllowableAction;
@@ -38,6 +31,13 @@ import com.thinkbiganalytics.security.rest.model.Action;
 import com.thinkbiganalytics.security.rest.model.ActionGroup;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange.ChangeType;
+
+import java.security.Principal;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Contains transformation functions and methods for converting objects between 

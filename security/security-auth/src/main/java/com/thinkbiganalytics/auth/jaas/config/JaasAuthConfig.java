@@ -23,12 +23,11 @@ package com.thinkbiganalytics.auth.jaas.config;
  * #L%
  */
 
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import javax.inject.Named;
-import javax.security.auth.login.AppConfigurationEntry;
+import com.thinkbiganalytics.auth.DefaultPrincipalAuthorityGranter;
+import com.thinkbiganalytics.auth.RolePrincipalAuthorityGranter;
+import com.thinkbiganalytics.auth.UserRoleAuthorityGranter;
+import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
+import com.thinkbiganalytics.auth.jaas.LoginConfigurationBuilder;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.context.annotation.Bean;
@@ -40,11 +39,12 @@ import org.springframework.security.authentication.jaas.AuthorityGranter;
 import org.springframework.security.authentication.jaas.DefaultJaasAuthenticationProvider;
 import org.springframework.security.authentication.jaas.memory.InMemoryConfiguration;
 
-import com.thinkbiganalytics.auth.DefaultPrincipalAuthorityGranter;
-import com.thinkbiganalytics.auth.RolePrincipalAuthorityGranter;
-import com.thinkbiganalytics.auth.UserRoleAuthorityGranter;
-import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
-import com.thinkbiganalytics.auth.jaas.LoginConfigurationBuilder;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import javax.inject.Named;
+import javax.security.auth.login.AppConfigurationEntry;
 
 /**
  *

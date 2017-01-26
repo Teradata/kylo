@@ -20,7 +20,9 @@ package com.thinkbiganalytics.datalake.authorization.config;
  * #L%
  */
 
-import javax.sql.DataSource;
+import com.thinkbiganalytics.datalake.authorization.SentryAuthorizationService;
+import com.thinkbiganalytics.datalake.authorization.service.HadoopAuthorizationService;
+import com.thinkbiganalytics.kerberos.KerberosTicketConfiguration;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,9 +32,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
-import com.thinkbiganalytics.datalake.authorization.SentryAuthorizationService;
-import com.thinkbiganalytics.datalake.authorization.service.HadoopAuthorizationService;
-import com.thinkbiganalytics.kerberos.KerberosTicketConfiguration;
+import javax.sql.DataSource;
 
 /**
  * Created by Shashi Vishwakarma on 20/9/16.

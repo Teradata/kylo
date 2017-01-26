@@ -2,6 +2,7 @@ package com.thinkbiganalytics.jobrepo.batch.config;
 
 import com.thinkbiganalytics.jobrepo.batch.scheduling.SchedulerService;
 import com.thinkbiganalytics.jobrepo.batch.scheduling.concurrent.PausableThreadPoolTaskExecutor;
+
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.support.SimpleJobLauncher;
 import org.springframework.batch.core.repository.JobRepository;

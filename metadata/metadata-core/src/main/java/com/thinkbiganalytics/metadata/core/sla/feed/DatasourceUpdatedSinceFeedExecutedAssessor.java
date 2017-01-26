@@ -23,12 +23,12 @@ package com.thinkbiganalytics.metadata.core.sla.feed;
  * #L%
  */
 
-import java.io.Serializable;
-
 import com.thinkbiganalytics.metadata.api.sla.DatasourceUpdatedSinceFeedExecuted;
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.spi.MetricAssessmentBuilder;
+
+import java.io.Serializable;
 
 /**
  *

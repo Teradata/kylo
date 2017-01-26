@@ -23,14 +23,16 @@ package com.thinkbiganalytics.spark.interpreter;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import com.thinkbiganalytics.spark.repl.SparkScriptEngine;
+
 import org.apache.spark.SparkConf;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Nonnull;
 import java.io.File;
+
+import javax.annotation.Nonnull;
 
 /**
  * Reads in a Scala file with Spark code and executes it.

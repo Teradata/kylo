@@ -23,6 +23,15 @@ package com.thinkbiganalytics.metadata.jpa.alerts;
  * #L%
  */
 
+import com.thinkbiganalytics.alerts.api.Alert;
+import com.thinkbiganalytics.alerts.api.Alert.State;
+import com.thinkbiganalytics.alerts.api.AlertChangeEvent;
+import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlert.AlertContentConverter;
+import com.thinkbiganalytics.security.UsernamePrincipal;
+
+import org.hibernate.annotations.Type;
+import org.joda.time.DateTime;
+
 import java.io.Serializable;
 import java.security.Principal;
 
@@ -32,15 +41,6 @@ import javax.persistence.Embeddable;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Table;
-
-import org.hibernate.annotations.Type;
-import org.joda.time.DateTime;
-
-import com.thinkbiganalytics.alerts.api.Alert;
-import com.thinkbiganalytics.alerts.api.Alert.State;
-import com.thinkbiganalytics.alerts.api.AlertChangeEvent;
-import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlert.AlertContentConverter;
-import com.thinkbiganalytics.security.UsernamePrincipal;
 
 /**
  *

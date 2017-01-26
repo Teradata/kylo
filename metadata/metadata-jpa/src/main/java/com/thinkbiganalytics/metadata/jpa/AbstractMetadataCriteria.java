@@ -3,14 +3,14 @@
  */
 package com.thinkbiganalytics.metadata.jpa;
 
+import com.thinkbiganalytics.metadata.api.MetadataCriteria;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
-
-import com.thinkbiganalytics.metadata.api.MetadataCriteria;
 
 /**
  *

@@ -20,16 +20,16 @@ package com.thinkbiganalytics.metadata.sla.spi.core;
  * #L%
  */
 
-import static org.assertj.core.api.Assertions.*;
-
-import org.junit.Before;
-import org.junit.Test;
-
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup.Condition;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 import com.thinkbiganalytics.metadata.sla.spi.AssessorNotFoundException;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class SimpleServiceLevelAssessorTest {
     

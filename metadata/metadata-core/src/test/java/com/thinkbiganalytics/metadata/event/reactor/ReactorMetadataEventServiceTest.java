@@ -23,7 +23,14 @@ package com.thinkbiganalytics.metadata.event.reactor;
  * #L%
  */
 
-import static org.assertj.core.api.Assertions.assertThat;
+import com.thinkbiganalytics.metadata.api.event.AbstractMetadataEvent;
+import com.thinkbiganalytics.metadata.api.event.MetadataEventListener;
+import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -31,14 +38,7 @@ import java.util.concurrent.TimeoutException;
 
 import javax.inject.Inject;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import com.thinkbiganalytics.metadata.api.event.AbstractMetadataEvent;
-import com.thinkbiganalytics.metadata.api.event.MetadataEventListener;
-import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  *

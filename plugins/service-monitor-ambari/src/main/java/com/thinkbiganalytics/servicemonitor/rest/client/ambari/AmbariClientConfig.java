@@ -20,11 +20,11 @@ package com.thinkbiganalytics.servicemonitor.rest.client.ambari;
  * #L%
  */
 
+import com.thinkbiganalytics.servicemonitor.rest.client.RestClientConfig;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import com.thinkbiganalytics.servicemonitor.rest.client.RestClientConfig;
 
 /**
  * Created by sr186054 on 10/1/15.

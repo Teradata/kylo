@@ -23,7 +23,9 @@ package com.thinkbiganalytics.security.auth.ad;
  * #L%
  */
 
-import java.net.URI;
+import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
+import com.thinkbiganalytics.auth.jaas.LoginConfigurationBuilder;
+import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,9 +39,7 @@ import org.springframework.security.ldap.authentication.ad.DelegatingActiveDirec
 import org.springframework.security.ldap.userdetails.LdapUserDetailsMapper;
 import org.springframework.security.ldap.userdetails.UserDetailsContextMapper;
 
-import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
-import com.thinkbiganalytics.auth.jaas.LoginConfigurationBuilder;
-import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
+import java.net.URI;
 
 /**
  * Active Directory login configuration.

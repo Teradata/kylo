@@ -23,13 +23,13 @@ package com.thinkbiganalytics.alerts.spi;
  * #L%
  */
 
+import com.thinkbiganalytics.alerts.api.Alert;
+import com.thinkbiganalytics.alerts.api.AlertCriteria;
+
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
-
-import com.thinkbiganalytics.alerts.api.Alert;
-import com.thinkbiganalytics.alerts.api.AlertCriteria;
 
 /**
  *

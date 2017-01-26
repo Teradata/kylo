@@ -23,10 +23,6 @@ package com.thinkbiganalytics.metadata.persistence;
  * #L%
  */
 
-import java.security.Principal;
-
-import javax.inject.Inject;
-
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.MetadataAction;
 import com.thinkbiganalytics.metadata.api.MetadataCommand;
@@ -34,6 +30,10 @@ import com.thinkbiganalytics.metadata.api.MetadataRollbackAction;
 import com.thinkbiganalytics.metadata.api.MetadataRollbackCommand;
 import com.thinkbiganalytics.metadata.config.OperationalMetadataTransactionTemplateMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+
+import java.security.Principal;
+
+import javax.inject.Inject;
 
 /**
  *

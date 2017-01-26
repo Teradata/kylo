@@ -23,19 +23,19 @@ package com.thinkbiganalytics.auth;
  * #L%
  */
 
+import com.thinkbiganalytics.auth.jaas.AbstractLoginModule;
+import com.thinkbiganalytics.security.GroupPrincipal;
+import com.thinkbiganalytics.security.UsernamePrincipal;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Map;
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.thinkbiganalytics.auth.jaas.AbstractLoginModule;
-import com.thinkbiganalytics.security.GroupPrincipal;
-import com.thinkbiganalytics.security.UsernamePrincipal;
 
 /**
  * A LoginModule that delegates to an AuthenticationService to authenticate a user name and password.

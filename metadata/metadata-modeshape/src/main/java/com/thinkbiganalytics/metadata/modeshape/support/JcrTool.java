@@ -23,14 +23,14 @@ package com.thinkbiganalytics.metadata.modeshape.support;
  * #L%
  */
 
+import org.modeshape.jcr.api.JcrTools;
+
 import java.io.PrintStream;
 import java.io.PrintWriter;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
-
-import org.modeshape.jcr.api.JcrTools;
 
 /**
  * Extension of the ModeShape JcrTools that allows printing to any PrintStream, and not just

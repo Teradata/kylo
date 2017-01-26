@@ -23,10 +23,9 @@ package com.thinkbiganalytics.metadata.sla.spi;
  * #L%
  */
 
-import java.util.Collection;
-
 import com.thinkbiganalytics.metadata.sla.api.Metric;
-import com.thinkbiganalytics.metadata.sla.api.Obligation;
+
+import java.util.Collection;
 
 /**
  * A builder for producing obligations for an SLA.

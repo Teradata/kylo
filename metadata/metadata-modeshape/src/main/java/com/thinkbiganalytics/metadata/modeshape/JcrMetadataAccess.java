@@ -23,9 +23,27 @@ package com.thinkbiganalytics.metadata.modeshape;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.MetadataAccessException;
+import com.thinkbiganalytics.metadata.api.MetadataAction;
+import com.thinkbiganalytics.metadata.api.MetadataCommand;
+import com.thinkbiganalytics.metadata.api.MetadataExecutionException;
+import com.thinkbiganalytics.metadata.api.MetadataRollbackAction;
+import com.thinkbiganalytics.metadata.api.MetadataRollbackCommand;
+import com.thinkbiganalytics.metadata.modeshape.security.ModeShapeReadOnlyPrincipal;
+import com.thinkbiganalytics.metadata.modeshape.security.OverrideCredentials;
+import com.thinkbiganalytics.metadata.modeshape.security.SpringAuthenticationCredentials;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrVersionUtil;
+
+import org.modeshape.jcr.api.txn.TransactionManagerLookup;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
 import java.security.Principal;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -43,25 +61,6 @@ import javax.jcr.Session;
 import javax.transaction.NotSupportedException;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
-
-import org.modeshape.jcr.api.txn.TransactionManagerLookup;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.MetadataAccessException;
-import com.thinkbiganalytics.metadata.api.MetadataAction;
-import com.thinkbiganalytics.metadata.api.MetadataCommand;
-import com.thinkbiganalytics.metadata.api.MetadataExecutionException;
-import com.thinkbiganalytics.metadata.api.MetadataRollbackAction;
-import com.thinkbiganalytics.metadata.api.MetadataRollbackCommand;
-import com.thinkbiganalytics.metadata.modeshape.security.ModeShapeReadOnlyPrincipal;
-import com.thinkbiganalytics.metadata.modeshape.security.OverrideCredentials;
-import com.thinkbiganalytics.metadata.modeshape.security.SpringAuthenticationCredentials;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrVersionUtil;
 
 
 /**

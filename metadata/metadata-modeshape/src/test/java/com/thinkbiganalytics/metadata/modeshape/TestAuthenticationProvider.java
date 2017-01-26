@@ -23,12 +23,12 @@ package com.thinkbiganalytics.metadata.modeshape;
  * #L%
  */
 
+import org.modeshape.jcr.ExecutionContext;
+import org.modeshape.jcr.security.AuthenticationProvider;
+
 import java.util.Map;
 
 import javax.jcr.Credentials;
-
-import org.modeshape.jcr.ExecutionContext;
-import org.modeshape.jcr.security.AuthenticationProvider;
 
 /**
  *

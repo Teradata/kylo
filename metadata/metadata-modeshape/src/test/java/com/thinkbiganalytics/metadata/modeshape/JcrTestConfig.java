@@ -23,7 +23,12 @@ package com.thinkbiganalytics.metadata.modeshape;
  * #L%
  */
 
-import java.io.IOException;
+import com.thinkbiganalytics.alerts.api.AlertProvider;
+import com.thinkbiganalytics.alerts.spi.AlertManager;
+import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
+import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
+import com.thinkbiganalytics.metadata.api.op.FeedOperationsProvider;
+import com.thinkbiganalytics.scheduler.JobScheduler;
 
 import org.mockito.Mockito;
 import org.modeshape.jcr.RepositoryConfiguration;
@@ -32,12 +37,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.io.ClassPathResource;
 
-import com.thinkbiganalytics.alerts.api.AlertProvider;
-import com.thinkbiganalytics.alerts.spi.AlertManager;
-import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
-import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
-import com.thinkbiganalytics.metadata.api.op.FeedOperationsProvider;
-import com.thinkbiganalytics.scheduler.JobScheduler;
+import java.io.IOException;
 
 /**
  *

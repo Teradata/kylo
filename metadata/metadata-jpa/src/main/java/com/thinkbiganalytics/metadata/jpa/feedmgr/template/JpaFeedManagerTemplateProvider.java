@@ -5,8 +5,9 @@ import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplatePr
 import com.thinkbiganalytics.metadata.jpa.BaseJpaProvider;
 import com.thinkbiganalytics.metadata.jpa.feedmgr.FeedManagerNamedQueries;
 
-import javax.persistence.NoResultException;
 import java.io.Serializable;
+
+import javax.persistence.NoResultException;
 
 /**
  * Created by sr186054 on 5/3/16.

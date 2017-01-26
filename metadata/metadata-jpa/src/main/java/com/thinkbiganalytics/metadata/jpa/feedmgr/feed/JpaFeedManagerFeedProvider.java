@@ -9,17 +9,15 @@ import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.jpa.BaseJpaProvider;
-import com.thinkbiganalytics.metadata.jpa.category.JpaCategory;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaFeed;
 import com.thinkbiganalytics.metadata.jpa.feedmgr.FeedManagerNamedQueries;
 import com.thinkbiganalytics.metadata.jpa.feedmgr.category.JpaFeedManagerCategory;
 
+import java.io.Serializable;
+import java.util.List;
+
 import javax.inject.Inject;
 import javax.persistence.NoResultException;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by sr186054 on 5/3/16.

@@ -23,14 +23,14 @@ package com.thinkbiganalytics.metadata.jpa.audit;
  * #L%
  */
 
-import java.security.Principal;
-import java.util.List;
+import com.thinkbiganalytics.metadata.api.audit.AuditLogEntry;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.thinkbiganalytics.metadata.api.audit.AuditLogEntry;
+import java.security.Principal;
+import java.util.List;
 
 /**
  *

@@ -20,13 +20,13 @@ package com.thinkbiganalytics.metadata.modeshape.security;
  * #L%
  */
 
-import java.util.Map;
-
-import javax.jcr.Credentials;
-
 import org.modeshape.jcr.ExecutionContext;
 import org.modeshape.jcr.security.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
+
+import java.util.Map;
+
+import javax.jcr.Credentials;
 
 
 public class SpringAuthenticationProvider implements AuthenticationProvider {

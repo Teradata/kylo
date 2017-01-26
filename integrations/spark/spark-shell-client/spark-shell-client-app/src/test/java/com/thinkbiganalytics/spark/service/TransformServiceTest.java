@@ -33,11 +33,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
-import scala.tools.nsc.interpreter.NamedParam;
 
-import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.concurrent.Callable;
+
+import javax.annotation.Nonnull;
+
+import scala.tools.nsc.interpreter.NamedParam;
 
 public class TransformServiceTest {
 

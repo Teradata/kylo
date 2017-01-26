@@ -3,8 +3,6 @@ package com.thinkbiganalytics.jobrepo.batch.scheduling.concurrent;
 
 import com.thinkbiganalytics.jobrepo.batch.scheduling.SchedulerService;
 
-import java.util.concurrent.*;
-
 /**
  * A thread pool executor that looks to see if the scheduling service is paused before scheduling another thread.  If the
  * execution is pause, just sleep and wait until it becomes available then continue

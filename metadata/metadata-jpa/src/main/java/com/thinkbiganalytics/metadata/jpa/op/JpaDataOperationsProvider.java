@@ -3,24 +3,6 @@
  */
 package com.thinkbiganalytics.metadata.jpa.op;
 
-import java.io.PrintWriter;
-import java.io.Serializable;
-import java.io.StringWriter;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.persistence.EntityManager;
-
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormatter;
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import com.google.common.base.Predicate;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDatasource;
@@ -48,6 +30,24 @@ import com.thinkbiganalytics.metadata.jpa.datasource.hive.JpaHiveTableDatasource
 import com.thinkbiganalytics.metadata.jpa.datasource.hive.JpaHiveTableUpdate;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaFeed;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaFeedDestination;
+
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormatter;
+import org.springframework.beans.factory.annotation.Qualifier;
+
+import java.io.PrintWriter;
+import java.io.Serializable;
+import java.io.StringWriter;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.persistence.EntityManager;
 
 /**
  *

@@ -23,13 +23,11 @@ package com.thinkbiganalytics.metadata.api.event;
  * #L%
  */
 
+import org.joda.time.DateTime;
+
 import java.io.Serializable;
 import java.security.Principal;
 import java.util.Objects;
-
-import org.joda.time.DateTime;
-
-import com.thinkbiganalytics.metadata.api.event.feed.FeedChange;
 
 /**
  *

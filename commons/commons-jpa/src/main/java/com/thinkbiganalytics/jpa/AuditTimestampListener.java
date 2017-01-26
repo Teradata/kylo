@@ -23,10 +23,10 @@ package com.thinkbiganalytics.jpa;
  * #L%
  */
 
+import org.joda.time.DateTime;
+
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
-
-import org.joda.time.DateTime;
 
 /**
  *

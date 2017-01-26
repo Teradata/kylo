@@ -3,6 +3,13 @@
  */
 package com.thinkbiganalytics.metadata.jpa.op;
 
+import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
+import com.thinkbiganalytics.metadata.api.op.ChangeSet;
+
+import org.hibernate.annotations.Type;
+import org.joda.time.DateTime;
+import org.joda.time.Period;
+
 import java.util.UUID;
 
 import javax.persistence.Column;
@@ -12,13 +19,6 @@ import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.Table;
-
-import org.hibernate.annotations.Type;
-import org.joda.time.DateTime;
-import org.joda.time.Period;
-
-import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
-import com.thinkbiganalytics.metadata.api.op.ChangeSet;
 
 /**
  *

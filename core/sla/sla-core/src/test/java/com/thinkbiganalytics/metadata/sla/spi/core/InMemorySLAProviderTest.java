@@ -20,16 +20,16 @@ package com.thinkbiganalytics.metadata.sla.spi.core;
  * #L%
  */
 
-import static org.assertj.core.api.Assertions.*;
-
-import java.util.UUID;
+import com.thinkbiganalytics.metadata.sla.api.DuplicateAgreementNameException;
+import com.thinkbiganalytics.metadata.sla.api.Metric;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import com.thinkbiganalytics.metadata.sla.api.DuplicateAgreementNameException;
-import com.thinkbiganalytics.metadata.sla.api.Metric;
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class InMemorySLAProviderTest {
     

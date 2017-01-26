@@ -21,8 +21,8 @@ package com.thinkbiganalytics.validation.transform;
  */
 
 import com.thinkbiganalytics.policy.PolicyTransformException;
-import com.thinkbiganalytics.policy.validation.ValidationPolicy;
 import com.thinkbiganalytics.policy.rest.model.FieldValidationRule;
+import com.thinkbiganalytics.policy.validation.ValidationPolicy;
 
 /**
  * Created by sr186054 on 4/21/16.

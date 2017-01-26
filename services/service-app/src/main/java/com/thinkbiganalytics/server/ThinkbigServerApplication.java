@@ -20,8 +20,8 @@ package com.thinkbiganalytics.server;
  * #L%
  */
 
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+import com.thinkbiganalytics.metadata.config.OperationalMetadataConfig;
+import com.thinkbiganalytics.rest.SpringJerseyConfiguration;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -36,8 +36,8 @@ import org.springframework.context.annotation.Import;
 import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 
-import com.thinkbiganalytics.metadata.config.OperationalMetadataConfig;
-import com.thinkbiganalytics.rest.SpringJerseyConfiguration;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 @Configuration
 @SpringBootApplication

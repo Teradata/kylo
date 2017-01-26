@@ -23,13 +23,13 @@ package com.thinkbiganalytics.metadata.rest.model.op;
  * #L%
  */
 
-import java.util.Map;
-
-import org.joda.time.DateTime;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
+import org.joda.time.DateTime;
+
+import java.util.Map;
 
 /**
  *

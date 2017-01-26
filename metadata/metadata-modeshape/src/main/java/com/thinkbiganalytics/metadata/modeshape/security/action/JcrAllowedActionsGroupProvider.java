@@ -23,6 +23,13 @@ package com.thinkbiganalytics.metadata.modeshape.security.action;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.common.SecurityPaths;
+import com.thinkbiganalytics.security.action.Action;
+import com.thinkbiganalytics.security.action.AllowedActions;
+import com.thinkbiganalytics.security.action.AllowedModuleActionsProvider;
+
 import java.nio.file.Path;
 import java.security.AccessControlException;
 import java.util.Optional;
@@ -31,13 +38,6 @@ import javax.jcr.AccessDeniedException;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
-
-import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
-import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.common.SecurityPaths;
-import com.thinkbiganalytics.security.action.Action;
-import com.thinkbiganalytics.security.action.AllowedActions;
-import com.thinkbiganalytics.security.action.AllowedModuleActionsProvider;
 
 /**
  *

@@ -20,16 +20,16 @@ package com.thinkbiganalytics.auth;
  * #L%
  */
 
-import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
+import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
+import com.thinkbiganalytics.auth.jaas.LoginConfigurationBuilder;
+import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
-import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
-import com.thinkbiganalytics.auth.jaas.LoginConfigurationBuilder;
-import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
+import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
 
 /**
  * Generic Auth Service Configuration for installing a login module to authenticate using an AuthenticationService.

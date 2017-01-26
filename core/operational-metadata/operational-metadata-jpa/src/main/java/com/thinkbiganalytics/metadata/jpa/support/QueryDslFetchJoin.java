@@ -20,7 +20,6 @@ package com.thinkbiganalytics.metadata.jpa.support;
  * #L%
  */
 
-import com.querydsl.core.JoinType;
 import com.querydsl.core.types.EntityPath;
 
 /**

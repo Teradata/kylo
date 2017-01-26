@@ -23,17 +23,17 @@ package com.thinkbiganalytics.metadata.modeshape.security.action;
  * #L%
  */
 
-import javax.jcr.Node;
-import javax.jcr.security.Privilege;
-
-import org.modeshape.jcr.security.SimplePrincipal;
-
 import com.thinkbiganalytics.metadata.modeshape.common.JcrPropertyConstants;
 import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.security.action.config.ActionBuilder;
+
+import org.modeshape.jcr.security.SimplePrincipal;
+
+import javax.jcr.Node;
+import javax.jcr.security.Privilege;
 
 /**
  *

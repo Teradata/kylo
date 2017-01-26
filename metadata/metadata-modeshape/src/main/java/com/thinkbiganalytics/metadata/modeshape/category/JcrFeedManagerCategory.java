@@ -20,14 +20,14 @@ package com.thinkbiganalytics.metadata.modeshape.category;
  * #L%
  */
 
-import java.util.List;
-
-import javax.jcr.Node;
-
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedManagerFeed;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+
+import java.util.List;
+
+import javax.jcr.Node;
 
 /**
  * Created by sr186054 on 6/8/16.

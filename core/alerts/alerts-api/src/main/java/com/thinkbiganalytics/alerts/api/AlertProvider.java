@@ -23,11 +23,11 @@ package com.thinkbiganalytics.alerts.api;
  * #L%
  */
 
+import org.joda.time.DateTime;
+
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.Optional;
-
-import org.joda.time.DateTime;
 
 /**
  * This provider is the primary facade over one or more alert sources.  It allows

@@ -22,6 +22,7 @@ package com.thinkbiganalytics.spark.repl;
 
 import com.google.common.base.Joiner;
 import com.thinkbiganalytics.spark.SparkInterpreterBuilder;
+
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.slf4j.Logger;
@@ -29,16 +30,18 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.stereotype.Component;
+
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import scala.collection.JavaConversions;
 import scala.collection.immutable.List;
 import scala.tools.nsc.Settings;
 import scala.tools.nsc.interpreter.IMain;
 import scala.tools.nsc.interpreter.Results;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.net.URLClassLoader;
-import java.util.ArrayList;
 
 /**
  * Evaluates Scala scripts using the Spark REPL interface.

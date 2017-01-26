@@ -20,6 +20,22 @@ package com.thinkbiganalytics.alerts.rest.controller;
  * #L%
  */
 
+import com.thinkbiganalytics.Formatters;
+import com.thinkbiganalytics.alerts.api.Alert;
+import com.thinkbiganalytics.alerts.api.AlertChangeEvent;
+import com.thinkbiganalytics.alerts.api.AlertCriteria;
+import com.thinkbiganalytics.alerts.api.AlertProvider;
+import com.thinkbiganalytics.alerts.api.AlertResponder;
+import com.thinkbiganalytics.alerts.api.AlertResponse;
+import com.thinkbiganalytics.alerts.rest.model.Alert.Level;
+import com.thinkbiganalytics.alerts.rest.model.Alert.State;
+import com.thinkbiganalytics.alerts.rest.model.AlertCreateRequest;
+import com.thinkbiganalytics.alerts.rest.model.AlertRange;
+import com.thinkbiganalytics.alerts.rest.model.AlertUpdateRequest;
+import com.thinkbiganalytics.alerts.spi.AlertManager;
+
+import org.springframework.stereotype.Component;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -40,22 +56,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
-
-import org.springframework.stereotype.Component;
-
-import com.thinkbiganalytics.Formatters;
-import com.thinkbiganalytics.alerts.api.Alert;
-import com.thinkbiganalytics.alerts.api.AlertChangeEvent;
-import com.thinkbiganalytics.alerts.api.AlertCriteria;
-import com.thinkbiganalytics.alerts.api.AlertProvider;
-import com.thinkbiganalytics.alerts.api.AlertResponder;
-import com.thinkbiganalytics.alerts.api.AlertResponse;
-import com.thinkbiganalytics.alerts.rest.model.Alert.Level;
-import com.thinkbiganalytics.alerts.rest.model.Alert.State;
-import com.thinkbiganalytics.alerts.rest.model.AlertCreateRequest;
-import com.thinkbiganalytics.alerts.rest.model.AlertRange;
-import com.thinkbiganalytics.alerts.rest.model.AlertUpdateRequest;
-import com.thinkbiganalytics.alerts.spi.AlertManager;
 
 import io.swagger.annotations.Api;
 

@@ -23,6 +23,13 @@ package com.thinkbiganalytics.metadata.modeshape.common;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.api.Propertied;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+
+import org.apache.commons.lang3.exception.ExceptionUtils;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,13 +37,6 @@ import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.ConstraintViolationException;
-
-import org.apache.commons.lang3.exception.ExceptionUtils;
-
-import com.thinkbiganalytics.metadata.api.Propertied;
-import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
 /**
  *

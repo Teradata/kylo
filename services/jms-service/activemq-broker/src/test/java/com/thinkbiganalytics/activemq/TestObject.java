@@ -1,7 +1,6 @@
 package com.thinkbiganalytics.activemq;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import java.io.Serializable;
 

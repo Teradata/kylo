@@ -22,6 +22,7 @@ package com.thinkbiganalytics.nifi;
 
 import com.thinkbiganalytics.nifi.v2.elasticsearch.IndexElasticSearch;
 import com.thinkbiganalytics.nifi.v2.elasticsearch.MergeHiveTableMetadata;
+
 import org.apache.nifi.util.MockFlowFile;
 import org.apache.nifi.util.TestRunner;
 import org.apache.nifi.util.TestRunners;

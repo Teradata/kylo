@@ -20,10 +20,10 @@ package com.thinkbiganalytics.spark.dataprofiler.accum;
  * #L%
  */
 
+import org.apache.spark.AccumulatorParam;
+
 import java.util.HashMap;
 import java.util.Map;
-
-import org.apache.spark.AccumulatorParam;
 
 /**
  * Custom accumulator to store a map: (value, count)<br>

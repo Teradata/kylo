@@ -23,15 +23,15 @@ package com.thinkbiganalytics.metadata.modeshape.security.action;
  * #L%
  */
 
-import javax.inject.Inject;
-
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
 import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.security.action.config.ActionsGroupBuilder;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import javax.inject.Inject;
 
 /**
  *

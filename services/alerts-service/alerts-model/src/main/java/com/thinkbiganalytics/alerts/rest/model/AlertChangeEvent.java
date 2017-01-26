@@ -23,12 +23,12 @@ package com.thinkbiganalytics.alerts.rest.model;
  * #L%
  */
 
-import org.joda.time.DateTime;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.thinkbiganalytics.alerts.rest.model.Alert.State;
+
+import org.joda.time.DateTime;
 
 /**
  * Represents a change event of an alert.

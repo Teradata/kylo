@@ -1,12 +1,11 @@
 package com.thinkbiganalytics.spark.metadata
 
-import com.thinkbiganalytics.spark.rest.model.TransformResponse
-
-import org.apache.spark.SparkContext
-import org.apache.spark.scheduler.StageInfo
-
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.{Callable, FutureTask}
+
+import com.thinkbiganalytics.spark.rest.model.TransformResponse
+import org.apache.spark.SparkContext
+import org.apache.spark.scheduler.StageInfo
 
 /** A Spark transformation job.
   *

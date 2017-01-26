@@ -23,11 +23,11 @@ package com.thinkbiganalytics.auth.concurrent;
  * #L%
  */
 
+import com.thinkbiganalytics.auth.ServiceAuthenticatoinToken;
+
 import org.springframework.security.concurrent.DelegatingSecurityContextRunnable;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-
-import com.thinkbiganalytics.auth.ServiceAuthenticatoinToken;
 
 /**
  *

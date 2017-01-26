@@ -23,12 +23,12 @@ package com.thinkbiganalytics.metadata.core.sla;
  * #L%
  */
 
-import java.io.Serializable;
-
 import com.thinkbiganalytics.metadata.api.sla.TestMetric;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.spi.MetricAssessmentBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.MetricAssessor;
+
+import java.io.Serializable;
 
 /**
  *

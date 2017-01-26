@@ -23,6 +23,11 @@ package com.thinkbiganalytics.metadata.modeshape.security;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.security.AccessController;
+import com.thinkbiganalytics.security.action.Action;
+import com.thinkbiganalytics.security.action.AllowedModuleActionsProvider;
+
 import java.security.AccessControlException;
 import java.util.Arrays;
 import java.util.Set;
@@ -30,11 +35,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
-
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.security.AccessController;
-import com.thinkbiganalytics.security.action.Action;
-import com.thinkbiganalytics.security.action.AllowedModuleActionsProvider;
 
 /**
  *

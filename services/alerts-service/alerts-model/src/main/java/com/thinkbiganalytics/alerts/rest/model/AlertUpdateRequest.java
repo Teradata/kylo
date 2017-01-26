@@ -23,8 +23,6 @@ package com.thinkbiganalytics.alerts.rest.model;
  * #L%
  */
 
-import com.thinkbiganalytics.alerts.rest.model.Alert.State;
-
 /**
  * Contains the details necessary to update the state of an alert.
  * 

@@ -23,10 +23,10 @@ package com.thinkbiganalytics.metadata.audit.core;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 
 /**
  *

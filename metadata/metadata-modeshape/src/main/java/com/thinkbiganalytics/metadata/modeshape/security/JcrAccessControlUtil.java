@@ -23,6 +23,9 @@ package com.thinkbiganalytics.metadata.modeshape.security;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+
 import java.security.Principal;
 import java.util.ArrayDeque;
 import java.util.Arrays;
@@ -40,9 +43,6 @@ import javax.jcr.security.AccessControlManager;
 import javax.jcr.security.AccessControlPolicy;
 import javax.jcr.security.AccessControlPolicyIterator;
 import javax.jcr.security.Privilege;
-
-import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
 /**
  *

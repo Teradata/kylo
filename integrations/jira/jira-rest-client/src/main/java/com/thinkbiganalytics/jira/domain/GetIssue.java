@@ -20,11 +20,18 @@ package com.thinkbiganalytics.jira.domain;
  * #L%
  */
 
-import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
-import javax.annotation.Generated;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.annotation.Generated;
 
 /**
  * Created by sr186054 on 10/16/15.

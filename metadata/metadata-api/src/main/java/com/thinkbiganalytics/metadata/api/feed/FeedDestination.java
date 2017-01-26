@@ -23,8 +23,6 @@ package com.thinkbiganalytics.metadata.api.feed;
  * #L%
  */
 
-import java.io.Serializable;
-
 /**
  *
  * @author Sean Felten

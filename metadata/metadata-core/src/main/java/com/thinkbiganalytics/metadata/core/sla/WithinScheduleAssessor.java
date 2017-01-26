@@ -23,16 +23,16 @@ package com.thinkbiganalytics.metadata.core.sla;
  * #L%
  */
 
-import java.io.Serializable;
-
-import org.joda.time.DateTime;
-
 import com.thinkbiganalytics.metadata.api.sla.WithinSchedule;
 import com.thinkbiganalytics.metadata.core.sla.feed.MetadataMetricAssessor;
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.spi.MetricAssessmentBuilder;
 import com.thinkbiganalytics.scheduler.util.CronExpressionUtil;
+
+import org.joda.time.DateTime;
+
+import java.io.Serializable;
 
 /**
  *

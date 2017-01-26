@@ -3,6 +3,11 @@
  */
 package com.thinkbiganalytics.metadata.jpa.datasource.files;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
+import com.thinkbiganalytics.metadata.api.datasource.filesys.FileList;
+import com.thinkbiganalytics.metadata.jpa.op.JpaChangeSet;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -14,11 +19,6 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.Table;
-
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
-import com.thinkbiganalytics.metadata.api.datasource.filesys.FileList;
-import com.thinkbiganalytics.metadata.jpa.op.JpaChangeSet;
 
 /**
  *

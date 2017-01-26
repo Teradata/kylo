@@ -23,9 +23,9 @@ package com.thinkbiganalytics.metadata.api.feed;
  * #L%
  */
 
-import java.io.Serializable;
-
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
+
+import java.io.Serializable;
 
 /**
  *

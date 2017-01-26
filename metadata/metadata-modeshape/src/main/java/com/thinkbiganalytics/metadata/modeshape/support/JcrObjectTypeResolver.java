@@ -23,9 +23,9 @@ package com.thinkbiganalytics.metadata.modeshape.support;
  * #L%
  */
 
-import javax.jcr.Node;
-
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
+
+import javax.jcr.Node;
 
 /**
  * Resolves which type of JcrObject should be used for the given node.  Used for 

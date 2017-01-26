@@ -23,30 +23,26 @@ package com.thinkbiganalytics.metadata.modeshape.security.action;
  * #L%
  */
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.security.AccessControlException;
-import java.util.Optional;
-
-import javax.inject.Inject;
-
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
-import org.testng.Assert;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.JcrTestConfig;
 import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
 import com.thinkbiganalytics.metadata.modeshape.TestCredentials;
 import com.thinkbiganalytics.metadata.modeshape.TestUserPrincipal;
 import com.thinkbiganalytics.metadata.modeshape.security.AdminCredentials;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrTool;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.AllowedModuleActionsProvider;
+
+import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
+import org.testng.Assert;
+import org.testng.annotations.Test;
+
+import java.security.AccessControlException;
+import java.util.Optional;
+
+import javax.inject.Inject;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  *

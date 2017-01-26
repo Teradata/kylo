@@ -3,12 +3,8 @@ package com.thinkbiganalytics.spark.metadata
 import java.util
 import java.util.concurrent.Callable
 
-import org.apache.spark.ml.linalg.Vectors
-import org.apache.spark.mllib.linalg.VectorUDT
-import org.apache.spark.sql.{DataFrame, _}
 import org.apache.spark.sql.types._
-import org.junit.{Assert, Test}
-import org.mockito.Mockito
+import org.apache.spark.sql.{DataFrame, _}
 
 class TransformScriptTest {
 

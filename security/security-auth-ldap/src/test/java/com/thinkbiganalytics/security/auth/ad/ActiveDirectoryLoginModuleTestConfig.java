@@ -23,13 +23,13 @@ package com.thinkbiganalytics.security.auth.ad;
  * #L%
  */
 
+import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
+
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-
-import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
 
 /**
  *

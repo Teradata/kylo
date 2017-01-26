@@ -23,11 +23,13 @@ package com.thinkbiganalytics.scheduler.quartz;
 import com.thinkbiganalytics.scheduler.JobSchedulerException;
 import com.thinkbiganalytics.scheduler.QuartzScheduler;
 import com.thinkbiganalytics.scheduler.SimpleSchedulerQuartzJobBeanSetup;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+
 import java.util.HashMap;
 
 public class SimpleSchedulerQuartzJobBeanSetupTest {

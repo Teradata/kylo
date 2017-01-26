@@ -23,10 +23,10 @@ package com.thinkbiganalytics.metadata.api.event;
  * #L%
  */
 
+import org.joda.time.DateTime;
+
 import java.io.Serializable;
 import java.security.Principal;
-
-import org.joda.time.DateTime;
 
 /**
  *

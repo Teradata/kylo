@@ -21,6 +21,7 @@ package com.thinkbiganalytics.jira;
  */
 
 import com.thinkbiganalytics.jira.domain.Issue;
+
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;

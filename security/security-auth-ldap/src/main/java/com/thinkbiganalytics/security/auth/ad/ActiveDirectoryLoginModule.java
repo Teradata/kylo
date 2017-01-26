@@ -23,14 +23,8 @@ package com.thinkbiganalytics.security.auth.ad;
  * #L%
  */
 
-import java.security.Principal;
-import java.util.Map;
-
-import javax.security.auth.Subject;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.NameCallback;
-import javax.security.auth.callback.PasswordCallback;
-import javax.security.auth.login.AccountException;
+import com.thinkbiganalytics.auth.jaas.AbstractLoginModule;
+import com.thinkbiganalytics.security.UsernamePrincipal;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,8 +33,14 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.ldap.authentication.AbstractLdapAuthenticationProvider;
 
-import com.thinkbiganalytics.auth.jaas.AbstractLoginModule;
-import com.thinkbiganalytics.security.UsernamePrincipal;
+import java.security.Principal;
+import java.util.Map;
+
+import javax.security.auth.Subject;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.NameCallback;
+import javax.security.auth.callback.PasswordCallback;
+import javax.security.auth.login.AccountException;
 
 /**
  *

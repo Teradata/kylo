@@ -21,9 +21,7 @@ package com.thinkbiganalytics;
  */
 
 
-
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+import com.thinkbiganalytics.ui.config.SpringJerseyConfiguration;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -40,7 +38,8 @@ import org.springframework.context.annotation.Import;
 import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 
-import com.thinkbiganalytics.ui.config.SpringJerseyConfiguration;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 @Configuration
 @SpringBootApplication(exclude = {VelocityAutoConfiguration.class, DataSourceAutoConfiguration.class,HibernateJpaAutoConfiguration.class,

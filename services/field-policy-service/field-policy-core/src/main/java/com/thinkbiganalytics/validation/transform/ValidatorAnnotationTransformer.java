@@ -21,11 +21,11 @@ package com.thinkbiganalytics.validation.transform;
  */
 
 import com.thinkbiganalytics.policy.BasePolicyAnnotationTransformer;
-import com.thinkbiganalytics.policy.validation.Validator;
-import com.thinkbiganalytics.policy.validation.ValidationPolicy;
 import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 import com.thinkbiganalytics.policy.rest.model.FieldValidationRule;
 import com.thinkbiganalytics.policy.rest.model.FieldValidationRuleBuilder;
+import com.thinkbiganalytics.policy.validation.ValidationPolicy;
+import com.thinkbiganalytics.policy.validation.Validator;
 
 import java.util.List;
 

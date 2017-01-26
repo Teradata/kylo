@@ -23,13 +23,13 @@ package com.thinkbiganalytics.auth;
  * #L%
  */
 
-import java.security.Principal;
-import java.util.Set;
+import com.google.common.collect.Sets;
+import com.thinkbiganalytics.security.GroupPrincipal;
 
 import org.springframework.security.authentication.jaas.AuthorityGranter;
 
-import com.google.common.collect.Sets;
-import com.thinkbiganalytics.security.GroupPrincipal;
+import java.security.Principal;
+import java.util.Set;
 
 /**
  * A granter that, when presented with a GroupPrincipal, returns a set containing the name of that principal (the role's name)

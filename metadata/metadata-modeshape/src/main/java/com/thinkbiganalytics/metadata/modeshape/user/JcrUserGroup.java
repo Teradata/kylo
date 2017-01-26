@@ -20,6 +20,17 @@ package com.thinkbiganalytics.metadata.modeshape.user;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.api.user.User;
+import com.thinkbiganalytics.metadata.api.user.UserGroup;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.security.GroupPrincipal;
+
+import org.apache.commons.lang3.reflect.ConstructorUtils;
+
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -34,17 +45,6 @@ import javax.annotation.Nonnull;
 import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
-
-import org.apache.commons.lang3.reflect.ConstructorUtils;
-
-import com.thinkbiganalytics.metadata.api.user.User;
-import com.thinkbiganalytics.metadata.api.user.UserGroup;
-import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
-import com.thinkbiganalytics.security.GroupPrincipal;
 
 /**
  *

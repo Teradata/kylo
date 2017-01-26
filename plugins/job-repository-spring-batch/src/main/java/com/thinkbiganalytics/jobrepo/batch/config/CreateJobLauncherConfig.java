@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.jobrepo.batch.config;
 
 import com.thinkbiganalytics.jobrepo.batch.scheduling.SchedulerService;
+
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.context.annotation.Bean;

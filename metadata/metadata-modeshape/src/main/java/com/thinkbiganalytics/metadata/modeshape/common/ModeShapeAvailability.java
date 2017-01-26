@@ -20,6 +20,13 @@ package com.thinkbiganalytics.metadata.modeshape.common;
  * #L%
  */
 
+import com.thinkbiganalytics.auth.concurrent.ServiceSecurityContextRunnable;
+import com.thinkbiganalytics.metadata.modeshape.MetadataJcrConfigurator;
+
+import org.modeshape.jcr.ModeShapeEngine;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -29,13 +36,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
-
-import org.modeshape.jcr.ModeShapeEngine;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
-
-import com.thinkbiganalytics.auth.concurrent.ServiceSecurityContextRunnable;
-import com.thinkbiganalytics.metadata.modeshape.MetadataJcrConfigurator;
 
 /**
  * Service that classes can subscribe and listen to when ModeShape is up and running.

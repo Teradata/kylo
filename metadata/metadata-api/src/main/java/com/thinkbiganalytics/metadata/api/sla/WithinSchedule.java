@@ -23,13 +23,13 @@ package com.thinkbiganalytics.metadata.api.sla;
  * #L%
  */
 
-import java.beans.Transient;
-import java.text.ParseException;
+import com.thinkbiganalytics.metadata.sla.api.Metric;
 
 import org.joda.time.Period;
 import org.quartz.CronExpression;
 
-import com.thinkbiganalytics.metadata.sla.api.Metric;
+import java.beans.Transient;
+import java.text.ParseException;
 
 /**
  *

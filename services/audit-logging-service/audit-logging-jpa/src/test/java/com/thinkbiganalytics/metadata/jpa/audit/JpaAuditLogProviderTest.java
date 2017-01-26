@@ -23,7 +23,16 @@ package com.thinkbiganalytics.metadata.jpa.audit;
  * #L%
  */
 
-import static org.assertj.core.api.Assertions.assertThat;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.audit.AuditLogEntry;
+import com.thinkbiganalytics.metadata.persistence.MetadataPersistenceConfig;
+import com.thinkbiganalytics.security.UsernamePrincipal;
+import com.thinkbiganalytics.testing.jpa.TestPersistenceConfiguration;
+
+import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
+import org.testng.annotations.Test;
 
 import java.security.Principal;
 import java.util.Arrays;
@@ -33,17 +42,7 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
-import org.testng.Assert;
-import org.testng.annotations.Test;
-
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.audit.AuditLogEntry;
-import com.thinkbiganalytics.metadata.persistence.MetadataPersistenceConfig;
-import com.thinkbiganalytics.security.UsernamePrincipal;
-import com.thinkbiganalytics.testing.jpa.TestPersistenceConfiguration;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  *

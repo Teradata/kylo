@@ -23,6 +23,10 @@ package com.example.kylo.plugin;
  * #L%
  */
 
+import com.thinkbiganalytics.auth.jaas.AbstractLoginModule;
+import com.thinkbiganalytics.security.GroupPrincipal;
+import com.thinkbiganalytics.security.UsernamePrincipal;
+
 import java.util.Arrays;
 import java.util.Map;
 
@@ -31,10 +35,6 @@ import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.login.CredentialException;
-
-import com.thinkbiganalytics.auth.jaas.AbstractLoginModule;
-import com.thinkbiganalytics.security.GroupPrincipal;
-import com.thinkbiganalytics.security.UsernamePrincipal;
 
 /**
  * This is a simplistic example of a {@link LoginModule} that only tests whether the authenticating 

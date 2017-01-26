@@ -20,6 +20,13 @@ package com.thinkbiganalytics.auth.kylo;
  * #L%
  */
 
+import com.thinkbiganalytics.auth.jaas.AbstractLoginModule;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.user.User;
+import com.thinkbiganalytics.metadata.api.user.UserProvider;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 import java.util.Map;
 import java.util.Optional;
 
@@ -33,13 +40,6 @@ import javax.security.auth.login.AccountNotFoundException;
 import javax.security.auth.login.CredentialException;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.spi.LoginModule;
-
-import org.springframework.security.crypto.password.PasswordEncoder;
-
-import com.thinkbiganalytics.auth.jaas.AbstractLoginModule;
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.user.User;
-import com.thinkbiganalytics.metadata.api.user.UserProvider;
 
 /**
  * A login module that authenticates users using the Kylo user store.  By default

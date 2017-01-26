@@ -23,11 +23,11 @@ package com.thinkbiganalytics.metadata.api.event.feed;
  * #L%
  */
 
-import java.security.Principal;
+import com.thinkbiganalytics.metadata.api.event.AbstractMetadataEvent;
 
 import org.joda.time.DateTime;
 
-import com.thinkbiganalytics.metadata.api.event.AbstractMetadataEvent;
+import java.security.Principal;
 
 /**
  *

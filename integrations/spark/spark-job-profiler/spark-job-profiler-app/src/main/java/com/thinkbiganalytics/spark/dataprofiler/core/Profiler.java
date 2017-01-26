@@ -23,7 +23,19 @@ package com.thinkbiganalytics.spark.dataprofiler.core;
 import com.thinkbiganalytics.hive.util.HiveUtils;
 import com.thinkbiganalytics.policy.FieldPolicy;
 import com.thinkbiganalytics.spark.DataSet;
-import com.thinkbiganalytics.spark.dataprofiler.columns.*;
+import com.thinkbiganalytics.spark.dataprofiler.columns.BigDecimalColumnStatistics;
+import com.thinkbiganalytics.spark.dataprofiler.columns.BooleanColumnStatistics;
+import com.thinkbiganalytics.spark.dataprofiler.columns.ByteColumnStatistics;
+import com.thinkbiganalytics.spark.dataprofiler.columns.ColumnStatistics;
+import com.thinkbiganalytics.spark.dataprofiler.columns.DateColumnStatistics;
+import com.thinkbiganalytics.spark.dataprofiler.columns.DoubleColumnStatistics;
+import com.thinkbiganalytics.spark.dataprofiler.columns.FloatColumnStatistics;
+import com.thinkbiganalytics.spark.dataprofiler.columns.IntegerColumnStatistics;
+import com.thinkbiganalytics.spark.dataprofiler.columns.LongColumnStatistics;
+import com.thinkbiganalytics.spark.dataprofiler.columns.ShortColumnStatistics;
+import com.thinkbiganalytics.spark.dataprofiler.columns.StringColumnStatistics;
+import com.thinkbiganalytics.spark.dataprofiler.columns.TimestampColumnStatistics;
+import com.thinkbiganalytics.spark.dataprofiler.columns.UnsupportedColumnStatistics;
 import com.thinkbiganalytics.spark.dataprofiler.model.SchemaInfo;
 import com.thinkbiganalytics.spark.dataprofiler.model.StatisticsModel;
 import com.thinkbiganalytics.spark.dataprofiler.output.OutputRow;
@@ -31,6 +43,7 @@ import com.thinkbiganalytics.spark.dataprofiler.output.OutputWriter;
 import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataItem;
 import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataList;
 import com.thinkbiganalytics.spark.policy.FieldPolicyLoader;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
@@ -42,12 +55,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Configuration;
-import scala.Tuple2;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import scala.Tuple2;
 
 /**
  * Generate data profile statistics for a table/query, and write result to a table

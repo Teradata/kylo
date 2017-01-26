@@ -23,9 +23,9 @@ package com.thinkbiganalytics.metadata.api.datasource;
  * #L%
  */
 
-import org.joda.time.DateTime;
-
 import com.thinkbiganalytics.metadata.api.MetadataCriteria;
+
+import org.joda.time.DateTime;
 
 /**
  *

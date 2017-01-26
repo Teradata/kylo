@@ -23,6 +23,13 @@ package com.thinkbiganalytics.metadata.jpa.audit;
  * #L%
  */
 
+import com.thinkbiganalytics.jpa.BaseJpaId;
+import com.thinkbiganalytics.metadata.api.audit.AuditLogEntry;
+import com.thinkbiganalytics.security.UsernamePrincipal;
+
+import org.hibernate.annotations.Type;
+import org.joda.time.DateTime;
+
 import java.io.Serializable;
 import java.security.Principal;
 import java.util.UUID;
@@ -34,13 +41,6 @@ import javax.persistence.Embeddable;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.Table;
-
-import org.hibernate.annotations.Type;
-import org.joda.time.DateTime;
-
-import com.thinkbiganalytics.jpa.BaseJpaId;
-import com.thinkbiganalytics.metadata.api.audit.AuditLogEntry;
-import com.thinkbiganalytics.security.UsernamePrincipal;
 
 /**
  * An audit log entry describing a metadata change of operation attempt.

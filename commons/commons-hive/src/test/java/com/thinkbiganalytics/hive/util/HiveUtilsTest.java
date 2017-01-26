@@ -20,8 +20,6 @@ package com.thinkbiganalytics.hive.util;
  * #L%
  */
 
-import com.thinkbiganalytics.hive.util.HiveUtils;
-
 import org.junit.Assert;
 import org.junit.Test;
 

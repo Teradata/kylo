@@ -20,8 +20,8 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
  * #L%
  */
 
-import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.annotations.AnnotatedFieldProperty;
+import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

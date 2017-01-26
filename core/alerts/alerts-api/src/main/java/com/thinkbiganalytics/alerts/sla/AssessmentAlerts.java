@@ -23,9 +23,9 @@ package com.thinkbiganalytics.alerts.sla;
  * #L%
  */
 
-import java.net.URI;
-
 import com.thinkbiganalytics.alerts.spi.AlertDescriptor;
+
+import java.net.URI;
 
 /**
  *

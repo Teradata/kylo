@@ -23,25 +23,6 @@ package com.thinkbiganalytics.alerts.spi.defaults;
  * #L%
  */
 
-import java.io.Serializable;
-import java.net.URI;
-import java.security.Principal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.inject.Inject;
-
-import org.joda.time.DateTime;
-import org.springframework.data.jpa.repository.support.QueryDslRepositorySupport;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.impl.JPAQuery;
@@ -65,6 +46,25 @@ import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlertChangeEvent;
 import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlertRepository;
 import com.thinkbiganalytics.metadata.jpa.alerts.QJpaAlert;
 import com.thinkbiganalytics.security.UsernamePrincipal;
+
+import org.joda.time.DateTime;
+import org.springframework.data.jpa.repository.support.QueryDslRepositorySupport;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
+import java.io.Serializable;
+import java.net.URI;
+import java.security.Principal;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.inject.Inject;
 
 /**
  *

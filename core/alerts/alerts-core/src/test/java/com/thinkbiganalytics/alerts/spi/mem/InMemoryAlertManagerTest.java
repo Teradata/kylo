@@ -20,10 +20,17 @@ package com.thinkbiganalytics.alerts.spi.mem;
  * #L%
  */
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import com.google.common.util.concurrent.MoreExecutors;
+import com.thinkbiganalytics.alerts.api.Alert;
+import com.thinkbiganalytics.alerts.api.Alert.Level;
+import com.thinkbiganalytics.alerts.spi.AlertDescriptor;
+import com.thinkbiganalytics.alerts.spi.AlertNotifyReceiver;
+
+import org.joda.time.DateTime;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import java.net.URI;
 import java.util.HashMap;
@@ -32,17 +39,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import org.joda.time.DateTime;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
-import com.google.common.util.concurrent.MoreExecutors;
-import com.thinkbiganalytics.alerts.api.Alert;
-import com.thinkbiganalytics.alerts.api.Alert.Level;
-import com.thinkbiganalytics.alerts.spi.AlertDescriptor;
-import com.thinkbiganalytics.alerts.spi.AlertNotifyReceiver;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 public class InMemoryAlertManagerTest {
     

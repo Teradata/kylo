@@ -30,8 +30,6 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 
-import static org.junit.Assert.*;
-
 /**
  * Created by matthutton on 3/12/16.
  */

@@ -23,18 +23,13 @@ package com.thinkbiganalytics.alerts.spi.defaults;
  * #L%
  */
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-
-import java.net.URI;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Optional;
-
-import javax.inject.Inject;
+import com.thinkbiganalytics.alerts.api.Alert;
+import com.thinkbiganalytics.alerts.api.Alert.Level;
+import com.thinkbiganalytics.alerts.api.Alert.State;
+import com.thinkbiganalytics.alerts.api.AlertResponse;
+import com.thinkbiganalytics.alerts.spi.AlertNotifyReceiver;
+import com.thinkbiganalytics.metadata.persistence.MetadataPersistenceConfig;
+import com.thinkbiganalytics.testing.jpa.TestPersistenceConfiguration;
 
 import org.joda.time.DateTime;
 import org.mockito.Mock;
@@ -47,15 +42,18 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import com.thinkbiganalytics.alerts.api.Alert;
-import com.thinkbiganalytics.alerts.api.Alert.Level;
-import com.thinkbiganalytics.alerts.api.Alert.State;
-import com.thinkbiganalytics.alerts.api.AlertResponse;
-import com.thinkbiganalytics.alerts.spi.AlertNotifyReceiver;
-import com.thinkbiganalytics.alerts.spi.defaults.DefaultAlertManager;
-import com.thinkbiganalytics.alerts.spi.defaults.DefaultAlertManagerConfig;
-import com.thinkbiganalytics.metadata.persistence.MetadataPersistenceConfig;
-import com.thinkbiganalytics.testing.jpa.TestPersistenceConfiguration;
+import java.net.URI;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Optional;
+
+import javax.inject.Inject;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 /**
  *

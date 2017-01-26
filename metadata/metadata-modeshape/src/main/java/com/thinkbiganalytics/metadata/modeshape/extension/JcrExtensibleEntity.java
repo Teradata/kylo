@@ -23,10 +23,10 @@ package com.thinkbiganalytics.metadata.modeshape.extension;
  * #L%
  */
 
-import javax.jcr.Node;
-
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
+
+import javax.jcr.Node;
 
 /**
  *

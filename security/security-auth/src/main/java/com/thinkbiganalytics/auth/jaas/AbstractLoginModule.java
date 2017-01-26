@@ -23,6 +23,12 @@ package com.thinkbiganalytics.auth.jaas;
  * #L%
  */
 
+import com.thinkbiganalytics.security.GroupPrincipal;
+import com.thinkbiganalytics.security.UsernamePrincipal;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.security.Principal;
 import java.util.Collection;
@@ -39,12 +45,6 @@ import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.spi.LoginModule;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.thinkbiganalytics.security.GroupPrincipal;
-import com.thinkbiganalytics.security.UsernamePrincipal;
 
 /**
  *

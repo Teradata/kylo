@@ -23,9 +23,9 @@ package com.thinkbiganalytics.metadata.modeshape.security.action;
  * #L%
  */
 
-import java.security.Principal;
-
 import com.thinkbiganalytics.metadata.modeshape.security.ModeShapeAdminPrincipal;
+
+import java.security.Principal;
 
 /**
  *

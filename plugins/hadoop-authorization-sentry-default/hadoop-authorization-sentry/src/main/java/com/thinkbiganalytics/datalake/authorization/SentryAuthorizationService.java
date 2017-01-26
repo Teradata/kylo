@@ -20,19 +20,6 @@ package com.thinkbiganalytics.datalake.authorization;
  * #L%
  */
 
-import java.io.IOException;
-import java.security.PrivilegedExceptionAction;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.hadoop.security.UserGroupInformation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.thinkbiganalytics.datalake.authorization.client.SentryClient;
 import com.thinkbiganalytics.datalake.authorization.client.SentryClientConfig;
 import com.thinkbiganalytics.datalake.authorization.client.SentryClientException;
@@ -41,6 +28,19 @@ import com.thinkbiganalytics.datalake.authorization.config.SentryConnection;
 import com.thinkbiganalytics.datalake.authorization.model.HadoopAuthorizationGroup;
 import com.thinkbiganalytics.datalake.authorization.service.BaseHadoopAuthorizationService;
 import com.thinkbiganalytics.kerberos.KerberosTicketGenerator;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.security.UserGroupInformation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.security.PrivilegedExceptionAction;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Sentry Authorization Service

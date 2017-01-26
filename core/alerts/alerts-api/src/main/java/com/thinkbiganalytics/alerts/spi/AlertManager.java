@@ -23,11 +23,11 @@ package com.thinkbiganalytics.alerts.spi;
  * #L%
  */
 
-import java.io.Serializable;
-import java.net.URI;
-
 import com.thinkbiganalytics.alerts.api.Alert;
 import com.thinkbiganalytics.alerts.api.AlertResponse;
+
+import java.io.Serializable;
+import java.net.URI;
 
 /**
  * A kind of AlertSource that provides alert creation and change management functions.

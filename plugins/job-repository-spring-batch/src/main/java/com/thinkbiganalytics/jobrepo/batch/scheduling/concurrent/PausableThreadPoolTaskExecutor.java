@@ -1,9 +1,8 @@
 package com.thinkbiganalytics.jobrepo.batch.scheduling.concurrent;
 
 import com.thinkbiganalytics.jobrepo.batch.scheduling.SchedulerService;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
-import java.util.concurrent.*;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 /**
  * A Pausable thread pool executor that will look and see if the current state of the system is such that no new threads should be

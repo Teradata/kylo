@@ -3,11 +3,11 @@
  */
 package com.thinkbiganalytics.metadata.jpa.datasource.hive;
 
+import com.thinkbiganalytics.metadata.api.datasource.hive.HivePartitionUpdate;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-
-import com.thinkbiganalytics.metadata.api.datasource.hive.HivePartitionUpdate;
 
 /**
  *

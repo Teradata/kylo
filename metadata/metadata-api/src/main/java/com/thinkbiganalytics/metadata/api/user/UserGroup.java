@@ -23,13 +23,13 @@ package com.thinkbiganalytics.metadata.api.user;
  * #L%
  */
 
+import com.thinkbiganalytics.security.GroupPrincipal;
+
 import java.io.Serializable;
 import java.util.Set;
 import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
-
-import com.thinkbiganalytics.security.GroupPrincipal;
 
 /**
  * Represents a group of users and/or other groups of users.

@@ -23,13 +23,13 @@ package com.thinkbiganalytics.auth;
  * #L%
  */
 
-import java.util.Arrays;
+import com.thinkbiganalytics.security.ServiceGroupPrincipal;
+import com.thinkbiganalytics.security.UsernamePrincipal;
 
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.jaas.JaasGrantedAuthority;
 
-import com.thinkbiganalytics.security.ServiceGroupPrincipal;
-import com.thinkbiganalytics.security.UsernamePrincipal;
+import java.util.Arrays;
 
 /**
  * An authentication representing a general service account token.  Used internally by service threads.

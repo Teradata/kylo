@@ -23,12 +23,12 @@ package com.thinkbiganalytics.alerts.api;
  * #L%
  */
 
-import java.io.Serializable;
-import java.security.Principal;
+import com.thinkbiganalytics.alerts.api.Alert.State;
 
 import org.joda.time.DateTime;
 
-import com.thinkbiganalytics.alerts.api.Alert.State;
+import java.io.Serializable;
+import java.security.Principal;
 
 /**
  * Each instance of this type represents a state transition of an alert.  Initially, all alerts

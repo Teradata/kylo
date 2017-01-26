@@ -23,12 +23,12 @@ package com.thinkbiganalytics.metadata.event.reactor;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 
 import reactor.Environment;
 import reactor.bus.EventBus;

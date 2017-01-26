@@ -20,9 +20,9 @@ package com.thinkbiganalytics.metadata.modeshape.common;
  * #L%
  */
 
-import javax.jcr.Node;
-
 import org.joda.time.DateTime;
+
+import javax.jcr.Node;
 
 /**
  * Created by sr186054 on 6/6/16.

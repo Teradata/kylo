@@ -21,8 +21,8 @@ package com.thinkbiganalytics.metadata.modeshape.feed;
  */
 
 import com.thinkbiganalytics.metadata.api.category.Category;
-import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.event.MetadataChange.ChangeType;
+import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.event.feed.FeedChange;
 import com.thinkbiganalytics.metadata.api.event.feed.FeedChangeEvent;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
@@ -37,7 +37,9 @@ import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
-import com.thinkbiganalytics.security.UsernamePrincipal;
+
+import org.joda.time.DateTime;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.Serializable;
 import java.security.Principal;
@@ -50,9 +52,6 @@ import javax.inject.Inject;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.query.QueryResult;
-
-import org.joda.time.DateTime;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
  * Created by sr186054 on 6/8/16.

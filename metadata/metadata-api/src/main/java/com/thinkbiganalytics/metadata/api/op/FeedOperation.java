@@ -23,10 +23,10 @@ package com.thinkbiganalytics.metadata.api.op;
  * #L%
  */
 
+import org.joda.time.DateTime;
+
 import java.io.Serializable;
 import java.util.Map;
-
-import org.joda.time.DateTime;
 
 /**
  * Defines the state of an operation performed by a feed.

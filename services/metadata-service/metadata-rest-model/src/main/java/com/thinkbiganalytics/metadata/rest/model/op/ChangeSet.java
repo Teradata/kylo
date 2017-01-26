@@ -23,10 +23,6 @@ package com.thinkbiganalytics.metadata.rest.model.op;
  * #L%
  */
 
-import java.io.Serializable;
-
-import org.joda.time.DateTime;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -36,6 +32,10 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.joda.ser.DateTimeSerializer;
+
+import org.joda.time.DateTime;
+
+import java.io.Serializable;
 
 /**
  *

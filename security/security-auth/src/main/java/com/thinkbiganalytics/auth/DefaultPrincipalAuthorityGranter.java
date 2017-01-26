@@ -23,12 +23,12 @@ package com.thinkbiganalytics.auth;
  * #L%
  */
 
-import java.security.Principal;
-import java.util.Set;
+import com.google.common.collect.Sets;
 
 import org.springframework.security.authentication.jaas.AuthorityGranter;
 
-import com.google.common.collect.Sets;
+import java.security.Principal;
+import java.util.Set;
 
 /**
  * The default granter that will simply return a set containing the name of the principal.

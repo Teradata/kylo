@@ -1,12 +1,12 @@
 package com.thinkbiganalytics.spark.util
 
+import java.util
+
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.{JavaHiveDecimalObjectInspector, PrimitiveObjectInspectorFactory}
 import org.apache.spark.mllib.linalg.{VectorUDT, Vectors}
 import org.apache.spark.sql.types._
 import org.junit.{Assert, Test}
-
-import java.util
 
 class DataTypeUtilsTest {
 

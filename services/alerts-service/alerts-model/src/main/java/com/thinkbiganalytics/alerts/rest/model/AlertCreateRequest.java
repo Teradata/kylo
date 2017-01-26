@@ -23,10 +23,10 @@ package com.thinkbiganalytics.alerts.rest.model;
  * #L%
  */
 
+import com.thinkbiganalytics.alerts.rest.model.Alert.Level;
+
 import java.io.Serializable;
 import java.net.URI;
-
-import com.thinkbiganalytics.alerts.rest.model.Alert.Level;
 
 /**
  * Contains the details necessary to create a new alert.

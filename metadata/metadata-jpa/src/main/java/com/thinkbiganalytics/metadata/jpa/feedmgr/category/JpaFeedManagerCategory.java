@@ -4,8 +4,6 @@ import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
 import com.thinkbiganalytics.metadata.jpa.category.JpaCategory;
 import com.thinkbiganalytics.metadata.jpa.feedmgr.FeedManagerNamedQueries;
 
-import javax.persistence.*;
-
 /**
  * Created by sr186054 on 5/3/16.
  */

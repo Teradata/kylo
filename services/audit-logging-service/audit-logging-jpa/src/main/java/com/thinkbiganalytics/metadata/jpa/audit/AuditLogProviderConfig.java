@@ -23,10 +23,10 @@ package com.thinkbiganalytics.metadata.jpa.audit;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.api.audit.AuditLogProvider;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import com.thinkbiganalytics.metadata.api.audit.AuditLogProvider;
 
 /**
  * Configures the AuditLogProvider implementation.

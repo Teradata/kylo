@@ -23,6 +23,8 @@ package com.thinkbiganalytics.metadata.modeshape.support;
  * #L%
  */
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -38,8 +40,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * Really just a generic path implementation but currently being used in the JCR utilities.

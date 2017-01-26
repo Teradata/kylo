@@ -22,6 +22,7 @@ package com.thinkbiganalytics.jira.domain;
 
 import com.google.common.base.MoreObjects;
 import com.thinkbiganalytics.jira.domain.util.UriUtil;
+
 import org.joda.time.DateTime;
 
 import java.net.URI;

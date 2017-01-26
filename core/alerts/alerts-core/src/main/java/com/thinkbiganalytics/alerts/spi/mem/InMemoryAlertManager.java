@@ -23,6 +23,22 @@ package com.thinkbiganalytics.alerts.spi.mem;
  * #L%
  */
 
+import com.thinkbiganalytics.alerts.api.Alert;
+import com.thinkbiganalytics.alerts.api.Alert.ID;
+import com.thinkbiganalytics.alerts.api.Alert.State;
+import com.thinkbiganalytics.alerts.api.AlertChangeEvent;
+import com.thinkbiganalytics.alerts.api.AlertCriteria;
+import com.thinkbiganalytics.alerts.api.AlertResponse;
+import com.thinkbiganalytics.alerts.api.core.BaseAlertCriteria;
+import com.thinkbiganalytics.alerts.spi.AlertDescriptor;
+import com.thinkbiganalytics.alerts.spi.AlertManager;
+import com.thinkbiganalytics.alerts.spi.AlertNotifyReceiver;
+import com.thinkbiganalytics.alerts.spi.AlertSource;
+
+import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.Serializable;
 import java.net.URI;
 import java.security.Principal;
@@ -38,7 +54,6 @@ import java.util.NavigableMap;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -48,22 +63,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import org.joda.time.DateTime;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.thinkbiganalytics.alerts.api.Alert;
-import com.thinkbiganalytics.alerts.api.Alert.ID;
-import com.thinkbiganalytics.alerts.api.Alert.State;
-import com.thinkbiganalytics.alerts.api.AlertChangeEvent;
-import com.thinkbiganalytics.alerts.api.AlertCriteria;
-import com.thinkbiganalytics.alerts.api.AlertResponse;
-import com.thinkbiganalytics.alerts.api.core.BaseAlertCriteria;
-import com.thinkbiganalytics.alerts.spi.AlertDescriptor;
-import com.thinkbiganalytics.alerts.spi.AlertManager;
-import com.thinkbiganalytics.alerts.spi.AlertNotifyReceiver;
-import com.thinkbiganalytics.alerts.spi.AlertSource;
 
 /**
  *

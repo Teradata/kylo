@@ -23,6 +23,23 @@ package com.thinkbiganalytics.alerts.api.core;
  * #L%
  */
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.thinkbiganalytics.alerts.api.Alert;
+import com.thinkbiganalytics.alerts.api.Alert.ID;
+import com.thinkbiganalytics.alerts.api.AlertCriteria;
+import com.thinkbiganalytics.alerts.api.AlertListener;
+import com.thinkbiganalytics.alerts.api.AlertProvider;
+import com.thinkbiganalytics.alerts.api.AlertResponder;
+import com.thinkbiganalytics.alerts.api.AlertResponse;
+import com.thinkbiganalytics.alerts.spi.AlertManager;
+import com.thinkbiganalytics.alerts.spi.AlertNotifyReceiver;
+import com.thinkbiganalytics.alerts.spi.AlertSource;
+import com.thinkbiganalytics.alerts.spi.AlertSourceAggregator;
+
+import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.Serializable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -46,23 +63,6 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import javax.inject.Named;
-
-import org.joda.time.DateTime;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.thinkbiganalytics.alerts.api.Alert;
-import com.thinkbiganalytics.alerts.api.Alert.ID;
-import com.thinkbiganalytics.alerts.api.AlertCriteria;
-import com.thinkbiganalytics.alerts.api.AlertListener;
-import com.thinkbiganalytics.alerts.api.AlertProvider;
-import com.thinkbiganalytics.alerts.api.AlertResponder;
-import com.thinkbiganalytics.alerts.api.AlertResponse;
-import com.thinkbiganalytics.alerts.spi.AlertManager;
-import com.thinkbiganalytics.alerts.spi.AlertNotifyReceiver;
-import com.thinkbiganalytics.alerts.spi.AlertSource;
-import com.thinkbiganalytics.alerts.spi.AlertSourceAggregator;
 
 import reactor.bus.Event;
 import reactor.bus.EventBus;

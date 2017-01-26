@@ -23,7 +23,18 @@ package com.thinkbiganalytics.security.auth.ldap;
  * #L%
  */
 
-import static org.assertj.core.api.Assertions.assertThat;
+import com.thinkbiganalytics.auth.config.SecurityConfig;
+import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
+import com.thinkbiganalytics.security.GroupPrincipal;
+import com.thinkbiganalytics.security.UsernamePrincipal;
+
+import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.security.ldap.authentication.LdapAuthenticator;
+import org.springframework.security.ldap.userdetails.LdapAuthoritiesPopulator;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
+import org.testng.annotations.Test;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -38,19 +49,7 @@ import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.LoginException;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.security.ldap.authentication.LdapAuthenticator;
-import org.springframework.security.ldap.userdetails.LdapAuthoritiesPopulator;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
-import org.testng.annotations.Test;
-
-import com.thinkbiganalytics.auth.config.SecurityConfig;
-import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
-import com.thinkbiganalytics.security.GroupPrincipal;
-import com.thinkbiganalytics.security.UsernamePrincipal;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  *

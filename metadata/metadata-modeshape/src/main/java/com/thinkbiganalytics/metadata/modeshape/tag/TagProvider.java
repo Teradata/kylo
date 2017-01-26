@@ -20,6 +20,13 @@ package com.thinkbiganalytics.metadata.modeshape.tag;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
+
+import org.modeshape.jcr.api.JcrTools;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,13 +34,6 @@ import java.util.Map;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.query.QueryResult;
-
-import org.modeshape.jcr.api.JcrTools;
-
-import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
-import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
 
 /**
  * Created by sr186054 on 6/8/16.

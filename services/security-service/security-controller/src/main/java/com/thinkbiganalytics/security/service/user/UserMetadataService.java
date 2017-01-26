@@ -20,6 +20,14 @@ package com.thinkbiganalytics.security.service.user;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.user.User;
+import com.thinkbiganalytics.metadata.api.user.UserGroup;
+import com.thinkbiganalytics.metadata.api.user.UserProvider;
+import com.thinkbiganalytics.security.AccessController;
+import com.thinkbiganalytics.security.rest.model.GroupPrincipal;
+import com.thinkbiganalytics.security.rest.model.UserPrincipal;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -28,14 +36,6 @@ import java.util.stream.StreamSupport;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
-
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.user.User;
-import com.thinkbiganalytics.metadata.api.user.UserGroup;
-import com.thinkbiganalytics.metadata.api.user.UserProvider;
-import com.thinkbiganalytics.security.AccessController;
-import com.thinkbiganalytics.security.rest.model.GroupPrincipal;
-import com.thinkbiganalytics.security.rest.model.UserPrincipal;
 
 /**
  * Provides access to Kylo users and groups stored in the metadata store.

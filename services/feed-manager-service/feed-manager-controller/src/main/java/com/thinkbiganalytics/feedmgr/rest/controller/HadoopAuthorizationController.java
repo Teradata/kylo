@@ -20,8 +20,8 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
  * #L%
  */
 
-import com.thinkbiganalytics.datalake.authorization.service.HadoopAuthorizationService;
 import com.thinkbiganalytics.datalake.authorization.model.HadoopAuthorizationGroup;
+import com.thinkbiganalytics.datalake.authorization.service.HadoopAuthorizationService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

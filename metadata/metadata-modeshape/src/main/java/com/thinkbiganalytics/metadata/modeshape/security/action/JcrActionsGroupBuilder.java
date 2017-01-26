@@ -23,13 +23,6 @@ package com.thinkbiganalytics.metadata.modeshape.security.action;
  * #L%
  */
 
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.jcr.security.Privilege;
-
-import org.modeshape.jcr.security.SimplePrincipal;
-
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.SecurityPaths;
@@ -37,8 +30,15 @@ import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.UsernamePrincipal;
 import com.thinkbiganalytics.security.action.AllowedActions;
-import com.thinkbiganalytics.security.action.config.ActionsTreeBuilder;
 import com.thinkbiganalytics.security.action.config.ActionsGroupBuilder;
+import com.thinkbiganalytics.security.action.config.ActionsTreeBuilder;
+
+import org.modeshape.jcr.security.SimplePrincipal;
+
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.security.Privilege;
 
 /**
  *

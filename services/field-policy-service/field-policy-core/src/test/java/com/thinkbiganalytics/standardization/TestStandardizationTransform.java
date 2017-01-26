@@ -22,17 +22,17 @@ package com.thinkbiganalytics.standardization;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
+import com.thinkbiganalytics.policy.AvailablePolicies;
+import com.thinkbiganalytics.policy.PolicyTransformException;
+import com.thinkbiganalytics.policy.rest.model.FieldStandardizationRule;
 import com.thinkbiganalytics.policy.standardization.DateTimeStandardizer;
 import com.thinkbiganalytics.policy.standardization.DefaultValueStandardizer;
 import com.thinkbiganalytics.policy.standardization.MaskLeavingLastFourDigitStandardizer;
 import com.thinkbiganalytics.policy.standardization.RemoveControlCharsStandardizer;
 import com.thinkbiganalytics.policy.standardization.SimpleRegexReplacer;
+import com.thinkbiganalytics.policy.standardization.StandardizationPolicy;
 import com.thinkbiganalytics.policy.standardization.StripNonNumeric;
 import com.thinkbiganalytics.policy.standardization.UppercaseStandardizer;
-import com.thinkbiganalytics.policy.AvailablePolicies;
-import com.thinkbiganalytics.policy.PolicyTransformException;
-import com.thinkbiganalytics.policy.rest.model.FieldStandardizationRule;
-import com.thinkbiganalytics.policy.standardization.StandardizationPolicy;
 import com.thinkbiganalytics.standardization.transform.StandardizationAnnotationTransformer;
 
 import org.junit.Assert;

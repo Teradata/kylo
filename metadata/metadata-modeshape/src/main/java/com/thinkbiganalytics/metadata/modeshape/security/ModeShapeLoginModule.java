@@ -23,12 +23,12 @@ package com.thinkbiganalytics.metadata.modeshape.security;
  * #L%
  */
 
+import com.thinkbiganalytics.auth.jaas.AbstractLoginModule;
+
 import java.util.Map;
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
-
-import com.thinkbiganalytics.auth.jaas.AbstractLoginModule;
 
 /**
  * A module that (for now) simply adds ModeShape's course-grained "readwrite" role principal to the logged in user's subject.

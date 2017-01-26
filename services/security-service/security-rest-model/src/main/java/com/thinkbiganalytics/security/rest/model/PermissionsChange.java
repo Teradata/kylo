@@ -23,12 +23,12 @@ package com.thinkbiganalytics.security.rest.model;
  * #L%
  */
 
-import java.util.HashSet;
-import java.util.Set;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Represents a request to change permissions for set of user/roles.

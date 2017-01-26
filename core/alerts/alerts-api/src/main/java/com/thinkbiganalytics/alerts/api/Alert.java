@@ -23,14 +23,13 @@ package com.thinkbiganalytics.alerts.api;
  * #L%
  */
 
-import java.io.Serializable;
-import java.net.URI;
-import java.security.Principal;
-import java.util.List;
+import com.thinkbiganalytics.alerts.spi.AlertSource;
 
 import org.joda.time.DateTime;
 
-import com.thinkbiganalytics.alerts.spi.AlertSource;
+import java.io.Serializable;
+import java.net.URI;
+import java.util.List;
 
 /**
  * This type defines the basic alert abstraction. Only the basic properties of an alert are defined

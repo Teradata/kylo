@@ -20,7 +20,16 @@ package com.thinkbiganalytics.metadata.modeshape.generic;
  * #L%
  */
 
-import static org.assertj.core.api.Assertions.assertThat;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.generic.GenericEntity;
+import com.thinkbiganalytics.metadata.api.generic.GenericEntityProvider;
+import com.thinkbiganalytics.metadata.api.generic.GenericType;
+import com.thinkbiganalytics.metadata.api.generic.GenericType.PropertyType;
+import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
+
+import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
+import org.testng.annotations.Test;
 
 import java.util.HashMap;
 import java.util.List;
@@ -28,16 +37,7 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
-import org.testng.annotations.Test;
-
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.generic.GenericEntity;
-import com.thinkbiganalytics.metadata.api.generic.GenericEntityProvider;
-import com.thinkbiganalytics.metadata.api.generic.GenericType;
-import com.thinkbiganalytics.metadata.api.generic.GenericType.PropertyType;
-import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringApplicationConfiguration(classes = { ModeShapeEngineConfig.class })
 public class JcrGenericEntityProviderTest extends AbstractTestNGSpringContextTests {

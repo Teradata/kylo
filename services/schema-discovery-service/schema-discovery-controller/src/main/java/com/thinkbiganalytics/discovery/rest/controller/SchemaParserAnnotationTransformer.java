@@ -20,9 +20,9 @@ package com.thinkbiganalytics.discovery.rest.controller;
  * #L%
  */
 
+import com.thinkbiganalytics.discovery.model.SchemaParserDescriptor;
 import com.thinkbiganalytics.discovery.parser.FileSchemaParser;
 import com.thinkbiganalytics.discovery.parser.SchemaParser;
-import com.thinkbiganalytics.discovery.model.SchemaParserDescriptor;
 import com.thinkbiganalytics.policy.BasePolicyAnnotationTransformer;
 import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 

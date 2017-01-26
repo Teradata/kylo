@@ -28,7 +28,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Created by matthutton on 12/27/16.

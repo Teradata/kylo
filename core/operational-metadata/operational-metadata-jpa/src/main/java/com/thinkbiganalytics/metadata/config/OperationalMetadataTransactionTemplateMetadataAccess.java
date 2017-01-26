@@ -24,9 +24,12 @@ package com.thinkbiganalytics.metadata.config;
  */
 
 
-import java.security.Principal;
-
-import javax.inject.Inject;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.MetadataAction;
+import com.thinkbiganalytics.metadata.api.MetadataCommand;
+import com.thinkbiganalytics.metadata.api.MetadataExecutionException;
+import com.thinkbiganalytics.metadata.api.MetadataRollbackAction;
+import com.thinkbiganalytics.metadata.api.MetadataRollbackCommand;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -34,12 +37,9 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.MetadataAction;
-import com.thinkbiganalytics.metadata.api.MetadataCommand;
-import com.thinkbiganalytics.metadata.api.MetadataExecutionException;
-import com.thinkbiganalytics.metadata.api.MetadataRollbackAction;
-import com.thinkbiganalytics.metadata.api.MetadataRollbackCommand;
+import java.security.Principal;
+
+import javax.inject.Inject;
 
 
 //public class OperationalMetadataTransactionTemplateMetadataAccess implements OperationalMetadataAccess {

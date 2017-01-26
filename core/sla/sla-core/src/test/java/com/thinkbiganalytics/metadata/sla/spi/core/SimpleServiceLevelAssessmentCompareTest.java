@@ -20,13 +20,13 @@ package com.thinkbiganalytics.metadata.sla.spi.core;
  * #L%
  */
 
-import static org.assertj.core.api.Assertions.*;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class SimpleServiceLevelAssessmentCompareTest {
     

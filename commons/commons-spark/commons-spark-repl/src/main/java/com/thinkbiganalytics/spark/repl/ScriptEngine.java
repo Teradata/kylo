@@ -20,6 +20,17 @@ package com.thinkbiganalytics.spark.repl;
  * #L%
  */
 
+import com.google.common.base.Charsets;
+import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Maps;
+import com.thinkbiganalytics.spark.util.ArrayUtils;
+
+import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.apache.spark.SparkContext;
+import org.apache.spark.sql.SQLContext;
+import org.apache.spark.sql.hive.HiveContext;
+
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
@@ -29,17 +40,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.script.ScriptException;
-
-import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.apache.spark.SparkContext;
-import org.apache.spark.sql.SQLContext;
-import org.apache.spark.sql.hive.HiveContext;
-
-import com.google.common.base.Charsets;
-import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Maps;
-import com.thinkbiganalytics.spark.util.ArrayUtils;
 
 import scala.tools.nsc.interpreter.NamedParam;
 

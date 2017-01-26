@@ -23,11 +23,11 @@ package com.thinkbiganalytics.metadata.modeshape.feed;
  * #L%
  */
 
-import javax.jcr.Node;
-
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+
+import javax.jcr.Node;
 
 /**
  *

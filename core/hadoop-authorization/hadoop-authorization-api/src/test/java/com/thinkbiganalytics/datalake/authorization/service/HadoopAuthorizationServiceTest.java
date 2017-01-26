@@ -20,12 +20,11 @@ package com.thinkbiganalytics.datalake.authorization.service;
  * #L%
  */
 
-import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Created by Jeremy Merrifield on 11/3/16.
