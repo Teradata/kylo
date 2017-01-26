@@ -25,7 +25,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Created by sr186054 on 9/3/15.
+ * Feed summary data built via the model transform class.
+ *
+ * @see com.thinkbiganalytics.jobrepo.query.model.transform.FeedModelTransform
  */
 public class DefaultFeedSummary implements FeedSummary {
 

@@ -32,10 +32,12 @@ public interface FeedConstants {
    * {@link com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionParameter}
    **/
   String PARAM__FEED_NAME = "feed"; // value is user defined String
+
   /**  job parameter name that identifies the type of job.  2 supported values for this parameter either "FEED", indicates a Feed processing job, or "CHECK" indicates a data confidence check job for a feed
    * {@link com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionParameter}
    */
   String PARAM__JOB_TYPE = "jobType"; // values defined below
+
   /** the value for the "jobType" parameter above that indicates the Feed processing job **/
   String PARAM_VALUE__JOB_TYPE_FEED = "FEED";
 

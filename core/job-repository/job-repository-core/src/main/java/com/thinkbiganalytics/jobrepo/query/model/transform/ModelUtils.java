@@ -28,24 +28,37 @@ import org.joda.time.DateTime;
 import org.springframework.data.domain.Page;
 
 /**
- * Created by sr186054 on 12/1/16.
+ * Utility to get model data to user friendly UI
  */
 public class ModelUtils {
 
-    public static Long runTime(DateTime start, DateTime stop){
-        if(start == null){
+    /**
+     * Calculate the runtime for a given start/stop
+     *
+     * @return the runtime in millis
+     */
+    public static Long runTime(DateTime start, DateTime stop) {
+        if (start == null) {
             return 0L;
         }
         return (stop != null ? (stop.getMillis() - start.getMillis()) : DateTimeUtil.getNowUTCTime().getMillis() - start.getMillis());
     }
 
+    /**
+     * Calculate the time since a given stop time
+     *
+     * @return the time in millis
+     */
     public static Long timeSince(DateTime start, DateTime stop) {
         DateTime now = DateTimeUtil.getNowUTCTime();
         DateTime startTime = start != null ? start : now;
         return (stop != null ? (now.getMillis() - stop.getMillis()) : now.getMillis() - startTime.getMillis());
     }
 
-    public static SearchResult toSearchResult(Page page){
+    /**
+     * Convert a spring-data Page to a SearchResult UI object
+     */
+    public static SearchResult toSearchResult(Page page) {
         SearchResult searchResult = new SearchResultImpl();
         searchResult.setData(page.getContent());
         searchResult.setRecordsTotal(page.getTotalElements());

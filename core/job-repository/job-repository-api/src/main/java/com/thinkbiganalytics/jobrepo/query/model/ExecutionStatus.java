@@ -21,7 +21,7 @@ package com.thinkbiganalytics.jobrepo.query.model;
  */
 
 /**
- * Created by sr186054 on 4/13/16.
+ * Statuses for Jobs and Steps
  */
 public enum ExecutionStatus {
   STARTING,

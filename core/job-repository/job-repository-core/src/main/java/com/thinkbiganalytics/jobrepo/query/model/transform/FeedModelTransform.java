@@ -47,17 +47,18 @@ public class FeedModelTransform {
      * @param feed         the feed this job relates to
      * @return the ExecutedFeed transformed from the BatchJobExecution
      */
-    public static ExecutedFeed executedFeed(BatchJobExecution jobExecution, OpsManagerFeed feed){
+    public static ExecutedFeed executedFeed(BatchJobExecution jobExecution, OpsManagerFeed feed) {
         return executedFeed(jobExecution, feed.getName());
     }
 
     /**
      * Transform the BatchJobExectution into an ExecutedFeed object
+     *
      * @param jobExecution the job to transform
-     * @param feedName the name of the feed the job relates to
+     * @param feedName     the name of the feed the job relates to
      * @return the ExecutedFeed transformed from the BatchJobExecution
      */
-    public static ExecutedFeed executedFeed(BatchJobExecution jobExecution, String feedName){
+    public static ExecutedFeed executedFeed(BatchJobExecution jobExecution, String feedName) {
 
         DefaultExecutedFeed executedFeed = new DefaultExecutedFeed();
         executedFeed.setFeedExecutionId(jobExecution.getJobExecutionId());
@@ -77,10 +78,10 @@ public class FeedModelTransform {
 
     /**
      * Transform the LatestJobExecution into an ExecutedFeed object
-     * @param jobExecution
+     *
      * @return the ExecutedFeed from the LatestFeedJobExecution
      */
-    public static ExecutedFeed executedFeed(LatestFeedJobExecution jobExecution){
+    public static ExecutedFeed executedFeed(LatestFeedJobExecution jobExecution) {
 
         DefaultExecutedFeed executedFeed = new DefaultExecutedFeed();
         executedFeed.setFeedExecutionId(jobExecution.getJobExecutionId());
@@ -99,10 +100,10 @@ public class FeedModelTransform {
 
     /**
      * Transform the FeedHealth object into an Executed feed
-     * @param feedHealth
+     *
      * @return the ExecutedFeed from the FeedHealth object
      */
-    public static ExecutedFeed executedFeed(com.thinkbiganalytics.metadata.api.feed.FeedHealth feedHealth){
+    public static ExecutedFeed executedFeed(com.thinkbiganalytics.metadata.api.feed.FeedHealth feedHealth) {
 
         DefaultExecutedFeed executedFeed = new DefaultExecutedFeed();
         executedFeed.setFeedExecutionId(feedHealth.getJobExecutionId());
@@ -121,11 +122,9 @@ public class FeedModelTransform {
 
     /**
      * Transforms the FeedHealth domain object to the Rest model object
-     * @param domain
-     * @return
      */
-    public static List<FeedHealth> feedHealth(List<? extends com.thinkbiganalytics.metadata.api.feed.FeedHealth> domain){
-        if(domain != null && !domain.isEmpty()){
+    public static List<FeedHealth> feedHealth(List<? extends com.thinkbiganalytics.metadata.api.feed.FeedHealth> domain) {
+        if (domain != null && !domain.isEmpty()) {
             return domain.stream().map(d -> feedHealth(d)).collect(Collectors.toList());
         }
         return Collections.emptyList();
@@ -133,10 +132,10 @@ public class FeedModelTransform {
 
     /**
      * Transform the FeedHealth domain object to the REST friendly FeedHealth object
-     * @param domain
+     *
      * @return the transformed FeedHealth object
      */
-    public static FeedHealth feedHealth(com.thinkbiganalytics.metadata.api.feed.FeedHealth domain){
+    public static FeedHealth feedHealth(com.thinkbiganalytics.metadata.api.feed.FeedHealth domain) {
         FeedHealth feedHealth = new DefaultFeedHealth();
         feedHealth.setUnhealthyCount(domain.getFailedCount());
         feedHealth.setHealthyCount(domain.getCompletedCount());
@@ -148,10 +147,10 @@ public class FeedModelTransform {
 
     /**
      * Transform the list of FeedHealth objects to a FeedStatus object summarizing the feeds.
-     * @param feedHealth
+     *
      * @return the FeedStatus summarizing the Feeds for the list of FeedHealth objects
      */
-    public static FeedStatus feedStatus(List<FeedHealth> feedHealth){
+    public static FeedStatus feedStatus(List<FeedHealth> feedHealth) {
 
         DefaultFeedStatus status = new DefaultFeedStatus(feedHealth);
         return status;

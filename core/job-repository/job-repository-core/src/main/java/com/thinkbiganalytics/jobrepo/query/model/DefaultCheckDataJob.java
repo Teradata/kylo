@@ -21,37 +21,40 @@ package com.thinkbiganalytics.jobrepo.query.model;
  */
 
 /**
- * Created by sr186054 on 8/28/15.
+ * Data Confidence job object
+ * Built from the transform class
+ *
+ * @see com.thinkbiganalytics.jobrepo.query.model.transform.JobModelTransform
  */
 public class DefaultCheckDataJob extends DefaultExecutedJob implements CheckDataJob {
 
-  public DefaultCheckDataJob(ExecutedJob job) {
-    super(job);
-  }
+    public DefaultCheckDataJob(ExecutedJob job) {
+        super(job);
+    }
 
 
-  private boolean isValid;
-  private String validationMessage;
+    private boolean isValid;
+    private String validationMessage;
 
-  @Override
-  public boolean isValid() {
-    return isValid;
-  }
+    @Override
+    public boolean isValid() {
+        return isValid;
+    }
 
-  @Override
-  public void setIsValid(boolean isValid) {
-    this.isValid = isValid;
-  }
+    @Override
+    public void setIsValid(boolean isValid) {
+        this.isValid = isValid;
+    }
 
-  @Override
-  public String getValidationMessage() {
-    return validationMessage;
-  }
+    @Override
+    public String getValidationMessage() {
+        return validationMessage;
+    }
 
-  @Override
-  public void setValidationMessage(String validationMessage) {
-    this.validationMessage = validationMessage;
-  }
+    @Override
+    public void setValidationMessage(String validationMessage) {
+        this.validationMessage = validationMessage;
+    }
 
 
 }

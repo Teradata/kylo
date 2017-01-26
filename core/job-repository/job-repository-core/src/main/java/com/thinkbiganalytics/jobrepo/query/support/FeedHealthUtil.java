@@ -30,32 +30,32 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by sr186054 on 4/14/16.
+ * Utility to convert ExecutedFeeds to FeedHealth objects
  */
 public class FeedHealthUtil {
 
 
-  public static List<FeedHealth> parseToList(List<ExecutedFeed> latestOpFeeds, Map<String, Long> avgRunTimes) {
-    List<FeedHealth> list = new ArrayList<FeedHealth>();
-    Map<String, FeedHealth> map = new HashMap<String, FeedHealth>();
+    public static List<FeedHealth> parseToList(List<ExecutedFeed> latestOpFeeds, Map<String, Long> avgRunTimes) {
+        List<FeedHealth> list = new ArrayList<FeedHealth>();
+        Map<String, FeedHealth> map = new HashMap<String, FeedHealth>();
 
-    if (latestOpFeeds != null) {
-      for (ExecutedFeed feed : latestOpFeeds) {
-        String feedName = feed.getName();
-        FeedHealth feedHealth = map.get(feedName);
-        if (feedHealth == null) {
-          feedHealth = new DefaultFeedHealth();
-          feedHealth.setFeed(feedName);
-          if (avgRunTimes != null) {
-            feedHealth.setAvgRuntime(avgRunTimes.get(feedName));
-          }
-          list.add(feedHealth);
-          map.put(feedName, feedHealth);
+        if (latestOpFeeds != null) {
+            for (ExecutedFeed feed : latestOpFeeds) {
+                String feedName = feed.getName();
+                FeedHealth feedHealth = map.get(feedName);
+                if (feedHealth == null) {
+                    feedHealth = new DefaultFeedHealth();
+                    feedHealth.setFeed(feedName);
+                    if (avgRunTimes != null) {
+                        feedHealth.setAvgRuntime(avgRunTimes.get(feedName));
+                    }
+                    list.add(feedHealth);
+                    map.put(feedName, feedHealth);
+                }
+                feedHealth.setLastOpFeed(feed);
+            }
         }
-        feedHealth.setLastOpFeed(feed);
-      }
-    }
-    return list;
+        return list;
 
-  }
+    }
 }

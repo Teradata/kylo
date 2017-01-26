@@ -25,13 +25,30 @@ package com.thinkbiganalytics.jobrepo.query.model;
  */
 public interface CheckDataJob extends ExecutedJob {
 
-  boolean isValid();
+    /**
+     * Return a flag if the Job is valid and passes the verification job
+     *
+     * @return true if job passes, false if not
+     */
+    boolean isValid();
 
-  void setIsValid(boolean isValid);
+    /**
+     * set the valid flag
+     * @param isValid
+     */
+    void setIsValid(boolean isValid);
 
-  String getValidationMessage();
+    /**
+     * Return the validation message
+     * @return the validation message
+     */
+    String getValidationMessage();
 
-  void setValidationMessage(String validationMessage);
+    /**
+     * set the validation message
+     * @param validationMessage
+     */
+    void setValidationMessage(String validationMessage);
 
 
 }

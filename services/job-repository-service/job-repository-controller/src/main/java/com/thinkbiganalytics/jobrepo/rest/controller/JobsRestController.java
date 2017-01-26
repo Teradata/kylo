@@ -25,7 +25,6 @@ import com.thinkbiganalytics.jobrepo.query.model.ExecutedJob;
 import com.thinkbiganalytics.jobrepo.query.model.ExecutedStep;
 import com.thinkbiganalytics.jobrepo.query.model.FeedHealth;
 import com.thinkbiganalytics.jobrepo.query.model.JobStatusCount;
-import com.thinkbiganalytics.jobrepo.query.model.RelatedJobExecution;
 import com.thinkbiganalytics.jobrepo.query.model.SearchResult;
 import com.thinkbiganalytics.jobrepo.query.model.transform.JobModelTransform;
 import com.thinkbiganalytics.jobrepo.query.model.transform.JobStatusTransform;
@@ -119,18 +118,6 @@ public class JobsRestController {
         });
 
     }
-
-    @GET
-    @Path("/{executionId}/related")
-    @Produces({MediaType.APPLICATION_JSON})
-    public List<RelatedJobExecution> getRelatedJobExecutions(@PathParam("executionId") String executionId) {
-        this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
-
-        //TODO IMPLEMENT
-
-        return null;
-    }
-
 
     /**
      * Get the progress of each of the steps of the job execution for the given job instance id
