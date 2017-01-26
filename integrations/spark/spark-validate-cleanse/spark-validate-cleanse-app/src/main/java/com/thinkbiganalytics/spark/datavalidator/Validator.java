@@ -185,6 +185,14 @@ public class Validator implements Serializable {
                 }
             });
 
+            newResults.cache();
+            newResults.count();
+
+            Integer[] fieldInvalidCounts = new Integer[this.schema.length];
+            for (int i = 0; i < this.schema.length; i++) {
+                fieldInvalidCounts[i] = this.accumList.get(i).value();
+            }
+
             final DataSet validatedDF = scs.toDataSet(getHiveContext(), newResults, sourceSchema);
 
             // Pull out just the valid or invalid records
@@ -208,10 +216,13 @@ public class Validator implements Serializable {
 
             long invalidCount = invalidDF.count();
             long validCount = validDF.count();
+
+            newResults.unpersist();
+
             log.info("Valid count {} invalid count {}", validCount, invalidCount);
 
             // Record the validation stats
-            writeStatsToProfileTable(validCount, invalidCount);
+            writeStatsToProfileTable(validCount, invalidCount, fieldInvalidCounts);
             javaSparkContext.close();
 
 
@@ -239,7 +250,7 @@ public class Validator implements Serializable {
         return toSelectFields(this.policies);
     }
 
-    private void writeStatsToProfileTable(long validCount, long invalidCount) {
+    private void writeStatsToProfileTable(long validCount, long invalidCount, Integer[] fieldInvalidCounts) {
 
         try {
             // Create a temporary table we can use to copy data from. Writing directly to our partition from a spark dataframe doesn't work.
@@ -259,9 +270,11 @@ public class Validator implements Serializable {
             csvRows.add("(ALL),INVALID_COUNT," + Long.toString(invalidCount));
 
             // Write csv row for each columns
-            for (int i = 0; i < accumList.size(); i++) {
-                String csvRow = schema[i].getName() + ",INVALID_COUNT," + Long.toString(accumList.get(i).value());
-                csvRows.add(csvRow);
+            for (int i = 0; i < fieldInvalidCounts.length; i++) {
+                if (i < schema.length) {
+                    String csvRow = schema[i].getName() + ",INVALID_COUNT," + Integer.toString(fieldInvalidCounts[i]);
+                    csvRows.add(csvRow);
+                }
             }
 
             JavaSparkContext jsc = new JavaSparkContext(SparkContext.getOrCreate());
