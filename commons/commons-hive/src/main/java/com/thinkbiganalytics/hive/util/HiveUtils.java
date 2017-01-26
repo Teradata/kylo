@@ -34,6 +34,15 @@ import javax.annotation.Nullable;
 public class HiveUtils {
 
     /**
+     * Instances of {@code HiveUtils} should not be constructed.
+     *
+     * @throws UnsupportedOperationException always
+     */
+    private HiveUtils() {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
      * Quotes the specified Hive identifier.
      *
      * @param identifier the Hive identifier to be quoted
@@ -80,14 +89,5 @@ public class HiveUtils {
         } catch (final IOException e) {
             throw new IllegalArgumentException("String contains invalid characters: " + string, e);
         }
-    }
-
-    /**
-     * Instances of {@code HiveUtils} should not be constructed.
-     *
-     * @throws UnsupportedOperationException always
-     */
-    private HiveUtils() {
-        throw new UnsupportedOperationException();
     }
 }

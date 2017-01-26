@@ -25,7 +25,9 @@ import org.junit.Test;
 
 public class HiveUtilsTest {
 
-    /** Verify quoting an identifier. */
+    /**
+     * Verify quoting an identifier.
+     */
     @Test
     public void quoteIdentifier() {
         Assert.assertEquals("`test`", HiveUtils.quoteIdentifier("test"));
