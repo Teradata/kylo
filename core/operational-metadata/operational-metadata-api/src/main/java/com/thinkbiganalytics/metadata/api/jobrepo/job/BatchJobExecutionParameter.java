@@ -25,19 +25,41 @@ import com.thinkbiganalytics.metadata.api.jobrepo.ExecutionConstants;
 import org.joda.time.DateTime;
 
 /**
- * Created by sr186054 on 9/18/16.
+ * Represents a job parameter that refers back to a {@link BatchJobExecution}
  */
 public interface BatchJobExecutionParameter {
 
+    /**
+     * Return the job execution this parameter is part of
+     *
+     * @return the job execution for this parameter
+     */
     BatchJobExecution getJobExecution();
 
+    /**
+     * The data type for this parameter.
+     * @return data type for this parameter.
+     */
     ExecutionConstants.ParamType getTypeCode();
 
+    /**
+     * Return the parameter name
+     * @return the parameter name
+     */
     String getKeyName();
 
+    /**
+     * Return the value of the parameter as a string
+     * @return the value of the parameter as a string
+     */
     String getStringVal();
 
+    /**
+     * set the parameter value
+     * @param val
+     */
     void setStringVal(String val);
+
 
     DateTime getDateVal();
 

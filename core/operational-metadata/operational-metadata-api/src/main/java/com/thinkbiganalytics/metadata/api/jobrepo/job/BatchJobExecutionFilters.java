@@ -21,16 +21,34 @@ package com.thinkbiganalytics.metadata.api.jobrepo.job;
  */
 
 /**
- * Created by sr186054 on 12/1/16.
+ * Commonilters used to query the {@link BatchJobExecution} data
  */
 public interface BatchJobExecutionFilters {
 
+    /**
+     * Filter to find all the running jobs
+     */
     String RUNNING_FILTER = "endTime==NULL";
-    String ABANDONED_FILTER = "status=="+BatchJobExecution.JobStatus.ABANDONED.name();
-    String COMPLETED_FILTER = "status=="+BatchJobExecution.JobStatus.COMPLETED.name();
-    String STARTED_FILTER = "status=="+BatchJobExecution.JobStatus.STARTED.name();
+
+    /**
+     * Filter to find all the Abandoned jobs
+     */
+    String ABANDONED_FILTER = "status==" + BatchJobExecution.JobStatus.ABANDONED.name();
+    /**
+     * Filter to find all the Completed jbos
+     */
+    String COMPLETED_FILTER = "status==" + BatchJobExecution.JobStatus.COMPLETED.name();
+
     String STOPPED_FILTER = "status=="+BatchJobExecution.JobStatus.STOPPED.name();
-    String FAILED_FILTER = "status=="+BatchJobExecution.JobStatus.FAILED.name();
-    String RUNNING_OR_FAILED_FILTER = "status==\""+BatchJobExecution.JobStatus.STARTED.name()+","+BatchJobExecution.JobStatus.STARTING.name()+","+BatchJobExecution.JobStatus.FAILED.name()+"\"";
+
+    /**
+     * Filter to find all Failed jobs
+     */
+    String FAILED_FILTER = "status==" + BatchJobExecution.JobStatus.FAILED.name();
+
+    /**
+     * Filter to find all running or failed jobs
+     */
+    String RUNNING_OR_FAILED_FILTER = "status==\"" + BatchJobExecution.JobStatus.STARTED.name() + "," + BatchJobExecution.JobStatus.STARTING.name() + "," + BatchJobExecution.JobStatus.FAILED.name() + "\"";
 
 }
