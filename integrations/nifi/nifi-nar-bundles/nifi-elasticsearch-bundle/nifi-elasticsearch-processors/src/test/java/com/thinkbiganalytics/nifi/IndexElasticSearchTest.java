@@ -49,6 +49,7 @@ import static org.junit.Assert.assertTrue;
  * Integration test so we can validate the processor sends data to elasticsearch without having to deploy it
  */
 public class IndexElasticSearchTest {
+
     private static final String TEST_HOST = "ec2-54-152-98-43.compute-1.amazonaws.com";
     private static final String TEST_INDEX = "integration-test";
     private static final String TEST_TYPE = "userdatatest";
@@ -69,9 +70,9 @@ public class IndexElasticSearchTest {
         metadataDocument = classloader.getResourceAsStream("elasticsearch/metadata.json");
 
         Settings settings = Settings.settingsBuilder()
-                .put("cluster.name", TEST_CLUSTER).build();
+            .put("cluster.name", TEST_CLUSTER).build();
         esClient = TransportClient.builder().settings(settings).build()
-                .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(TEST_HOST), 9300));
+            .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(TEST_HOST), 9300));
     }
 
     @After
@@ -125,8 +126,8 @@ public class IndexElasticSearchTest {
     private Map queryElasticSearch(String id) {
         Map result = null;
         GetResponse response = esClient.prepareGet(TEST_INDEX, TEST_TYPE, id)
-                .execute()
-                .actionGet();
+            .execute()
+            .actionGet();
         result = response.getSource();
         return result;
     }

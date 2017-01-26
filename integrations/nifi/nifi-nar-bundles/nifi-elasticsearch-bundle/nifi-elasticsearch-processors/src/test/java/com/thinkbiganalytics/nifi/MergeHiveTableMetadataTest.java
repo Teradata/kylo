@@ -39,6 +39,7 @@ import static org.junit.Assert.assertTrue;
  * Created by Jeremy Merrifield on 2/22/16.
  */
 public class MergeHiveTableMetadataTest {
+
     private InputStream testDocument;
     private TestRunner nifiTestRunner;
 

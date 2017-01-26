@@ -33,7 +33,6 @@ import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.logging.ComponentLog;
-import org.apache.nifi.processor.AbstractProcessor;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.Relationship;
@@ -75,8 +74,6 @@ public class MergeHiveTableMetadata extends AbstractNiFiProcessor {
         .description(
             "Json objects that are un-successfully merged are transferred to this relationship")
         .build();
-    private final Set<Relationship> relationships;
-
     // properties
     public static final PropertyDescriptor DATABASE_NAME = new PropertyDescriptor.Builder()
         .name("Database Name Field")
@@ -127,7 +124,7 @@ public class MergeHiveTableMetadata extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
-
+    private final Set<Relationship> relationships;
     private final List<PropertyDescriptor> propDescriptors;
 
     public MergeHiveTableMetadata() {
