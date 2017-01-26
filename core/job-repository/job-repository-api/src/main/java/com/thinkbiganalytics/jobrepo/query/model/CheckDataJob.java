@@ -34,19 +34,18 @@ public interface CheckDataJob extends ExecutedJob {
 
     /**
      * set the valid flag
-     * @param isValid
      */
     void setIsValid(boolean isValid);
 
     /**
      * Return the validation message
+     *
      * @return the validation message
      */
     String getValidationMessage();
 
     /**
      * set the validation message
-     * @param validationMessage
      */
     void setValidationMessage(String validationMessage);
 

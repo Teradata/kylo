@@ -27,20 +27,25 @@ package com.thinkbiganalytics.jobrepo.common.constants;
  */
 public interface FeedConstants {
 
-  /**
-   * job parameter name the identifies the feed name associated with the job
-   * {@link com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionParameter}
-   **/
-  String PARAM__FEED_NAME = "feed"; // value is user defined String
+    /**
+     * job parameter name the identifies the feed name associated with the job
+     * {@link com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionParameter}
+     **/
+    String PARAM__FEED_NAME = "feed"; // value is user defined String
 
-  /**  job parameter name that identifies the type of job.  2 supported values for this parameter either "FEED", indicates a Feed processing job, or "CHECK" indicates a data confidence check job for a feed
-   * {@link com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionParameter}
-   */
-  String PARAM__JOB_TYPE = "jobType"; // values defined below
+    /**
+     * job parameter name that identifies the type of job.  2 supported values for this parameter either "FEED", indicates a Feed processing job, or "CHECK" indicates a data confidence check job for a
+     * feed {@link com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionParameter}
+     */
+    String PARAM__JOB_TYPE = "jobType"; // values defined below
 
-  /** the value for the "jobType" parameter above that indicates the Feed processing job **/
-  String PARAM_VALUE__JOB_TYPE_FEED = "FEED";
+    /**
+     * the value for the "jobType" parameter above that indicates the Feed processing job
+     **/
+    String PARAM_VALUE__JOB_TYPE_FEED = "FEED";
 
-  /** the value for the "jobType" parameter above that indicates the Data Confidence Check job **/
-  String PARAM_VALUE__JOB_TYPE_CHECK = "CHECK";
+    /**
+     * the value for the "jobType" parameter above that indicates the Data Confidence Check job
+     **/
+    String PARAM_VALUE__JOB_TYPE_CHECK = "CHECK";
 }

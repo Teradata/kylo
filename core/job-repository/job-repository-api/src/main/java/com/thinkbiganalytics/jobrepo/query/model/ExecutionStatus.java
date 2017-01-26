@@ -24,15 +24,12 @@ package com.thinkbiganalytics.jobrepo.query.model;
  * Statuses for Jobs and Steps
  */
 public enum ExecutionStatus {
-  STARTING,
-  STARTED,
-  STOPPING,
-  STOPPED,
-  FAILED,
-  COMPLETED,
-  ABANDONED,
-  UNKNOWN;
-
-  private ExecutionStatus() {
-  }
+    STARTING,
+    STARTED,
+    STOPPING,
+    STOPPED,
+    FAILED,
+    COMPLETED,
+    ABANDONED,
+    UNKNOWN
 }

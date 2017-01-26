@@ -36,117 +36,117 @@ public interface ExecutedFeed {
 
     /**
      * set the feed name
-     * @param name
      */
     void setName(String name);
 
     /**
      * Return the feed job instance id
+     *
      * @return the job instance id for this feed/job execution
      */
     long getFeedInstanceId();
 
     /**
      * set the feed job instance id
-     * @param feedInstanceId
      */
     void setFeedInstanceId(long feedInstanceId);
 
     /**
      * Return the feed job execution id
+     *
      * @return the job execution id
      */
     long getFeedExecutionId();
 
     /**
      * set the feed job execution id
-     * @param feedExecutionId
      */
     void setFeedExecutionId(long feedExecutionId);
 
 
     /**
      * Return the end time of the job
+     *
      * @return return the end time of the job
-   */
-  DateTime getEndTime();
+     */
+    DateTime getEndTime();
 
     /**
      * set the end time of the job
-     * @param endTime
      */
     void setEndTime(DateTime endTime);
 
     /**
      * Return a String representing the status of this job
+     *
      * @see com.thinkbiganalytics.metadata.api.jobrepo.ExecutionConstants.ExitCode
-     * @return
      */
     String getExitCode();
 
     /**
      * set the exit code for the job
-     * @param exitCode
      */
     void setExitCode(String exitCode);
 
     /**
      * Return a message indicating details of what happened during the job execution.  This may contain success/failure messages summarizing the job execution as a whole
+     *
      * @return a message indicating the details of this job execution
      */
     String getExitStatus();
 
     /**
      * set the exit message indicating details of what happened during the job execution
-     * @param exitStatus
      */
     void setExitStatus(String exitStatus);
 
     /**
      * Return the DateTime the job was started
+     *
      * @return the DateTime the job was started
      */
     DateTime getStartTime();
 
     /**
      * set the start time for the job
+     *
      * @param startTime the start time for the job
      */
     void setStartTime(DateTime startTime);
 
     /**
      * Return the job status indicating overall success or failure of the job
+     *
      * @return the status of the job
      */
     ExecutionStatus getStatus();
 
     /**
      * set the status for this job
-     * @param status
      */
     void setStatus(ExecutionStatus status);
 
     /**
      * Return the run time in millis for this job.  if the job is currently executing it will take the difference from the current time against the jobs start time
+     *
      * @return return the run time in millis for this job.
      */
     Long getRunTime();
 
     /**
      * set the runtime for this job
-     * @param runTime
      */
     void setRunTime(Long runTime);
 
     /**
      * Return the time in millis since the last time this job ran
+     *
      * @return return the time, in millis, since the last time this job ran (i.e Now() - {@link this#getEndTime()})
      */
     Long getTimeSinceEndTime();
 
     /**
      * set the time in millis of the time since this job last ran.  (i.e Now() - {@link this#getEndTime()})
-     * @param timeSinceEndTime
      */
     void setTimeSinceEndTime(Long timeSinceEndTime);
 

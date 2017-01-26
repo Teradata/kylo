@@ -31,6 +31,8 @@ public interface CheckDataStepConstants {
      */
     String VALIDATION_KEY = "checkData.validationCheck";
 
-    /** The property in the StepExecutionContext that identifies a message describing the validation job results **/
+    /**
+     * The property in the StepExecutionContext that identifies a message describing the validation job results
+     **/
     String VALIDATION_MESSAGE_KEY = "checkData.validationMessage";
 }

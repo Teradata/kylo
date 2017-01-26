@@ -27,52 +27,51 @@ import java.util.List;
  */
 public interface SearchResult {
 
-  /**
-   * Return the data from the search
-   *
-   * @return the data from the search
-   */
-  List<? extends Object> getData();
+    /**
+     * Return the data from the search
+     *
+     * @return the data from the search
+     */
+    List<? extends Object> getData();
 
-  /**
-   * set the data
-   * @param data
-   */
-  void setData(List<? extends Object> data);
+    /**
+     * set the data
+     */
+    void setData(List<? extends Object> data);
 
-  /**
-   * Return the total record count (not filtered)
-   * @return the total count (not filtered)
-   */
-  Long getRecordsTotal();
+    /**
+     * Return the total record count (not filtered)
+     *
+     * @return the total count (not filtered)
+     */
+    Long getRecordsTotal();
 
-  /**
-   * set the total count
-   * @param recordsTotal
-   */
-  void setRecordsTotal(Long recordsTotal);
+    /**
+     * set the total count
+     */
+    void setRecordsTotal(Long recordsTotal);
 
-  /**
-   * Return the number of records from the {@link this#getRecordsTotal()} that exist in the {@link this#getData()} as a result of the search/filter
-   * @return the number of records from the {@link this#getRecordsTotal()} that exist in the {@link this#getData()} as a result of the search/filter
-   */
-  Long getRecordsFiltered();
+    /**
+     * Return the number of records from the {@link this#getRecordsTotal()} that exist in the {@link this#getData()} as a result of the search/filter
+     *
+     * @return the number of records from the {@link this#getRecordsTotal()} that exist in the {@link this#getData()} as a result of the search/filter
+     */
+    Long getRecordsFiltered();
 
-  /**
-   * set the number of records from the {@link this#getRecordsTotal()} that exist in the {@link this#getData()} as a result of the search/filter
-   * @param recordsFiltered
-   */
-  void setRecordsFiltered(Long recordsFiltered);
+    /**
+     * set the number of records from the {@link this#getRecordsTotal()} that exist in the {@link this#getData()} as a result of the search/filter
+     */
+    void setRecordsFiltered(Long recordsFiltered);
 
-  /**
-   * Return any error string message if an error was found
-   * @return a message of the error, if an error was found
-   */
-  String getError();
+    /**
+     * Return any error string message if an error was found
+     *
+     * @return a message of the error, if an error was found
+     */
+    String getError();
 
-  /**
-   * set an error message to the result
-   * @param error
-   */
-  void setError(String error);
+    /**
+     * set an error message to the result
+     */
+    void setError(String error);
 }

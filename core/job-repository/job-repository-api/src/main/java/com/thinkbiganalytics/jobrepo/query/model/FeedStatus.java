@@ -34,85 +34,81 @@ public interface FeedStatus {
 
     /**
      * Return the list of FeedHealth objects
-     * @return
      */
     List<FeedHealth> getFeeds();
 
     /**
      * set the list of feed health objects to summarize
-     * @param feeds
      */
     void setFeeds(List<FeedHealth> feeds);
 
     /**
      * Return a count of the healthy feeds
+     *
      * @return a count of the healthy feeds
      */
     Integer getHealthyCount();
 
     /**
      * set the healthy feed count
-     * @param healthyCount
      */
     void setHealthyCount(Integer healthyCount);
 
     /**
      * Return a count of the failed feeds
+     *
      * @return a count of the feeds that failed
      */
     Integer getFailedCount();
 
     /**
      * set the failed count
-     * @param failedCount
      */
     void setFailedCount(Integer failedCount);
 
     /**
      * Return a percent of the feeds that are healthy
+     *
      * @return a precent of the feeds that are healthy
      */
     Float getPercent();
 
     /**
      * set the percent of healthy feeds
-     * @param percent
      */
     void setPercent(Integer percent);
 
     /**
      * Return a list of all the Healthy feeds
+     *
      * @return a list of healthy feeds
      */
     List<FeedHealth> getHealthyFeeds();
 
     /**
      * set the list of healthy feeds
-     * @param healthyFeeds
      */
     void setHealthyFeeds(List<FeedHealth> healthyFeeds);
 
     /**
      * Return a list of unhealthy feeds
+     *
      * @return a list of unhealthy feeds
      */
     List<FeedHealth> getFailedFeeds();
 
     /**
      * set the unhealthy feeds
-     * @param failedFeeds
      */
     void setFailedFeeds(List<FeedHealth> failedFeeds);
 
     /**
      * Return a summary of the feeds
-     * @return
      */
     List<FeedSummary> getFeedSummary();
 
     /**
      * set the summar of the feeds
-     * @param feedSummary
      */
     void setFeedSummary(List<FeedSummary> feedSummary);
 }

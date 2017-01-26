@@ -41,6 +41,12 @@ public class DefaultFeedHealth implements FeedHealth {
     private Long unhealthyCount;
     private Date lastUnhealthyTime;
 
+    @JsonIgnore
+    public static List<FeedHealth> parseToList(List<ExecutedFeed> latestOpFeeds, Map<String, Long> avgRunTimes) {
+        return FeedHealthUtil.parseToList(latestOpFeeds, avgRunTimes);
+
+    }
+
     @Override
     public Long getHealthyCount() {
         return healthyCount;
@@ -59,7 +65,6 @@ public class DefaultFeedHealth implements FeedHealth {
         }
         return unhealthyCount;
     }
-
 
     @Override
     public void setUnhealthyCount(Long unhealthyCount) {
@@ -132,7 +137,6 @@ public class DefaultFeedHealth implements FeedHealth {
         return healthy;
     }
 
-
     @Override
     public String getFeedState(ExecutedFeed feed) {
         STATE state = STATE.WAITING;
@@ -149,12 +153,6 @@ public class DefaultFeedHealth implements FeedHealth {
     public String getLastOpFeedState() {
         String state = getFeedState(lastOpFeed);
         return state;
-    }
-
-    @JsonIgnore
-    public static List<FeedHealth> parseToList(List<ExecutedFeed> latestOpFeeds, Map<String, Long> avgRunTimes) {
-        return FeedHealthUtil.parseToList(latestOpFeeds, avgRunTimes);
-
     }
 
 

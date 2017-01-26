@@ -28,13 +28,11 @@ package com.thinkbiganalytics.jobrepo.query.model;
  */
 public class DefaultCheckDataJob extends DefaultExecutedJob implements CheckDataJob {
 
+    private boolean isValid;
+    private String validationMessage;
     public DefaultCheckDataJob(ExecutedJob job) {
         super(job);
     }
-
-
-    private boolean isValid;
-    private String validationMessage;
 
     @Override
     public boolean isValid() {
