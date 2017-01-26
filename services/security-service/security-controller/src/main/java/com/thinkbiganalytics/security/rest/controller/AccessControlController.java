@@ -21,6 +21,7 @@ package com.thinkbiganalytics.security.rest.controller;
  */
 
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.security.action.AllowedModuleActionsProvider;
 import com.thinkbiganalytics.security.rest.model.ActionGroup;
@@ -50,10 +51,19 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.SwaggerDefinition;
+import io.swagger.annotations.Tag;
 
+/**
+ * Obtain and manage access control information for users and groups.
+ */
 @Component
-@Api(tags = "Feed Manager: Security", produces = "application/json", description = "Obtain and manage access control information for users and groups")
+@Api(tags = "Security - Access Control", produces = "application/json")
 @Path("/v1/security/actions")
+@SwaggerDefinition(tags = @Tag(name = "Security - Access Control", description = "manage access controls"))
 public class AccessControlController {
 
     @Inject
@@ -69,6 +79,11 @@ public class AccessControlController {
     @GET
     @Path("{name}/available")
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the list of available actions.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the actions.", response = ActionGroup.class),
+            @ApiResponse(code = 404, message = "The given name was not found.", response = RestResponseStatus.class)
+    })
     public ActionGroup getAvailableActions(@PathParam("name") String moduleName) {
         return metadata.read(() -> {
             return actionsProvider.getAvailableActions(moduleName)
@@ -81,12 +96,17 @@ public class AccessControlController {
     @GET
     @Path("{name}/allowed")
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the list of allowed actions for a principal.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the actions.", response = ActionGroup.class),
+            @ApiResponse(code = 404, message = "The given name was not found.", response = RestResponseStatus.class)
+    })
     public ActionGroup getAllowedActions(@PathParam("name") String moduleName,
                                        @QueryParam("user") Set<String> userNames,
                                        @QueryParam("group") Set<String> groupNames) {
         Set<Principal> users = this.actionsTransform.toUserPrincipals(userNames);
         Set<Principal> groups = this.actionsTransform.toGroupPrincipals(groupNames);
-        Principal[] principals = Stream.concat(users.stream(), groups.stream()).toArray((size) -> new Principal[size]);
+        Principal[] principals = Stream.concat(users.stream(), groups.stream()).toArray(Principal[]::new);
 
         return metadata.read(() -> {
             return actionsProvider.getAllowedActions(moduleName)
@@ -100,6 +120,11 @@ public class AccessControlController {
     @Path("{name}/allowed")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Modifies the permissions of a principal.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the updated permissions.", response = ActionGroup.class),
+            @ApiResponse(code = 500, message = "The permissions could not be changed.", response = RestResponseStatus.class)
+    })
     public ActionGroup postPermissionsChange(@PathParam("name") String moduleName,
                                            PermissionsChange changes) {
         Set<Action> actionSet = collectActions(changes);
@@ -135,6 +160,12 @@ public class AccessControlController {
     @GET
     @Path("{name}/change/allowed")
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the permissions that may be changed.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the permissions.", response = PermissionsChange.class),
+            @ApiResponse(code = 400, message = "The type is not valid.", response = RestResponseStatus.class),
+            @ApiResponse(code = 404, message = "The given name was not found.", response = RestResponseStatus.class)
+    })
     public PermissionsChange getAllowedPermissionsChange(@PathParam("name") String moduleName,
                                                          @QueryParam("type") String changeType,
                                                          @QueryParam("user") Set<String> users,

@@ -35,12 +35,15 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
  * Returns a list of all properties that can be assigned durning Feed Registation process
  * this is the list of @MetadataField annotations on the FeedMetadata object
  */
-@Api(tags = "Feed Manager: Feeds", produces = "application/json")
+@Api(tags = "Feed Manager - Templates", produces = "application/json")
 @Path("/v1/feedmgr/metadata-properties")
 @Component
 public class FeedMetadataPropertiesRestController {
@@ -48,16 +51,16 @@ public class FeedMetadataPropertiesRestController {
     @Autowired
     PropertyExpressionResolver propertyExpressionResolver;
 
-    public FeedMetadataPropertiesRestController() {
-    }
-
     @GET
     @Path("/")
-    @Produces({MediaType.APPLICATION_JSON })
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Gets the available metadata properties.",
+                  notes = "Returns a list of all properties that can be assigned during the feed registration process.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the metadata properties.", response = AnnotatedFieldProperty.class, responseContainer = "List")
+    )
     public Response getProperties(){
         List<AnnotatedFieldProperty> properties = propertyExpressionResolver.getMetadataProperties();
-       return Response.ok(properties).build();
+        return Response.ok(properties).build();
     }
-
-
 }

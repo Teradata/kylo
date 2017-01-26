@@ -29,15 +29,12 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class SpringJerseyConfiguration {
 
-
-  @Bean(name = "mainJerseyServlet")
-  public ServletRegistrationBean jerseyServlet() {
-    ServletRegistrationBean registration = new ServletRegistrationBean(new ServletContainer(new JerseyConfig()));
-    registration.addUrlMappings("/api/*");
-    // our rest resources will be available in the path /api/*
-    registration.addInitParameter(ServletProperties.JAXRS_APPLICATION_CLASS, JerseyConfig.class.getName());
-    return registration;
-  }
-
-
+    @Bean(name = "mainJerseyServlet")
+    public ServletRegistrationBean jerseyServlet() {
+        ServletRegistrationBean registration = new ServletRegistrationBean(new ServletContainer(new JerseyConfig()));
+        registration.addUrlMappings("/api/*");
+        // our rest resources will be available in the path /api/*
+        registration.addInitParameter(ServletProperties.JAXRS_APPLICATION_CLASS, JerseyConfig.class.getName());
+        return registration;
+    }
 }

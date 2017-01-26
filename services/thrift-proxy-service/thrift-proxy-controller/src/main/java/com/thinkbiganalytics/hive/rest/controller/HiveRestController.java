@@ -27,6 +27,7 @@ import com.thinkbiganalytics.discovery.schema.QueryResult;
 import com.thinkbiganalytics.discovery.schema.TableSchema;
 import com.thinkbiganalytics.hive.service.HiveMetastoreService;
 import com.thinkbiganalytics.hive.service.HiveService;
+import com.thinkbiganalytics.rest.model.RestResponseStatus;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,9 +50,15 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.SwaggerDefinition;
+import io.swagger.annotations.Tag;
 
-@Api(tags = "Feed Manager: Tables", produces = "application/json")
+@Api(tags = "Feed Manager - Tables", produces = "application/json")
 @Path("/v1/hive")
+@SwaggerDefinition(tags = @Tag(name = "Feed Manager - Tables", description = "access to Hive tables"))
 public class HiveRestController {
 
     private static final Logger log = LoggerFactory.getLogger(HiveRestController.class);
@@ -73,19 +80,13 @@ public class HiveRestController {
         return hiveMetadataService;
     }
 
-    public HiveRestController() {
-
-    }
-
-    @PostConstruct
-    private void init() {
-
-    }
-
-
     @GET
     @Path("/test-connection")
-    @Produces({MediaType.TEXT_PLAIN})
+    @Produces(MediaType.TEXT_PLAIN)
+    @ApiOperation("Verifies the connection to Hive.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the connection status.", response = Boolean.class)
+    )
     public Response testConnection() {
         boolean valid = false;
         try {
@@ -96,10 +97,14 @@ public class HiveRestController {
         return Response.ok(valid).build();
     }
 
-
     @GET
     @Path("/table-columns")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Lists all columns from all tables.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the list of columns.", response = DatabaseMetadata.class, responseContainer = "List"),
+            @ApiResponse(code = 500, message = "Hive is unavailable.", response = RestResponseStatus.class)
+    })
     public Response getTableColumns() {
         List<DatabaseMetadata> list = null;
         try {
@@ -120,7 +125,12 @@ public class HiveRestController {
 
     @GET
     @Path("/browse/{schema}/{table}")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Queries the specified table.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the result.", response = QueryResult.class),
+            @ApiResponse(code = 500, message = "Hive is unavailable.", response = RestResponseStatus.class)
+    })
     public Response browseTable(@PathParam("schema") String schema, @PathParam("table") String table, @QueryParam("where") String where, @QueryParam("limit") @DefaultValue("20") Integer limit) {
         QueryResult list = null;
         try {
@@ -135,7 +145,12 @@ public class HiveRestController {
 
     @GET
     @Path("/query")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Executes a Hive query.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the result.", response = QueryResult.class),
+            @ApiResponse(code = 500, message = "Hive is unavailable.", response = RestResponseStatus.class)
+    })
     public Response browseTable(@QueryParam("query") String query) {
         QueryResult list = null;
         try {
@@ -150,7 +165,12 @@ public class HiveRestController {
 
     @GET
     @Path("/query-result")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Executes a Hive query.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the result.", response = QueryResult.class),
+            @ApiResponse(code = 500, message = "Hive is unavailable.", response = RestResponseStatus.class)
+    })
     public Response queryResult(@QueryParam("query") String query) {
         QueryResult list = null;
         try {
@@ -170,7 +190,12 @@ public class HiveRestController {
 
     @GET
     @Path("/schemas/{schema}/tables/{table}")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the schema of the specified table.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the table schema.", response = TableSchema.class),
+            @ApiResponse(code = 500, message = "Hive is unavailable.", response = RestResponseStatus.class)
+    })
     public Response getTableSchema(@PathParam("schema") String schema, @PathParam("table") String table) {
 
         TableSchema tableSchema = getHiveService().getTableSchema(schema, table);
@@ -179,7 +204,12 @@ public class HiveRestController {
 
     @GET
     @Path("/schemas")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Lists the databases in Hive.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the databases.", response = String.class, responseContainer = "List"),
+            @ApiResponse(code = 500, message = "Hive is unavailable.", response = RestResponseStatus.class)
+    })
     public Response getSchemaNames() {
         List<String> schemas = getHiveService().getSchemaNames();
         return Response.ok(asJson(schemas)).build();
@@ -187,7 +217,12 @@ public class HiveRestController {
 
     @GET
     @Path("/table-schemas")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the schema of every table.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the table schemas.", response = TableSchema.class, responseContainer = "List"),
+            @ApiResponse(code = 500, message = "Hive is unavailable.", response = RestResponseStatus.class)
+    })
     public Response getAllTableSchemas() {
         //  List<TableSchema> schemas = getHiveService().getAllTableSchemas();
         List<TableSchema> schemas = null;
@@ -203,7 +238,12 @@ public class HiveRestController {
 
     @GET
     @Path("/tables")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Lists every table in Hive.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the table names.", response = String.class, responseContainer = "List"),
+            @ApiResponse(code = 500, message = "Hive is unavailable.", response = RestResponseStatus.class)
+    })
     public Response getTables() {
         List<String> tables = null;
         boolean userImpersonationEnabled = Boolean.valueOf(env.getProperty("hive.userImpersonation.enabled"));
@@ -222,7 +262,12 @@ public class HiveRestController {
 
     @GET
     @Path("/schemas/{schema}/tables")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Lists the tables in the specified database.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the table names.", response = String.class, responseContainer = "List"),
+            @ApiResponse(code = 500, message = "Hive is unavailable.", response = RestResponseStatus.class)
+    })
     public Response getTableNames(@PathParam("schema") String schema) {
         boolean userImpersonationEnabled = Boolean.valueOf(env.getProperty("hive.userImpersonation.enabled"));
         List<String> tables = null;
@@ -244,5 +289,4 @@ public class HiveRestController {
         }
         return json;
     }
-
 }

@@ -41,13 +41,13 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
-@Api(tags = "Operations Manager: Data Confidence", produces = "application/json")
+@Api(tags = "Operations Manager - Data Confidence", produces = "application/json")
 @Path("/v1/data-confidence")
 public class DataConfidenceRestController {
-
-    private static final Logger LOG = LoggerFactory.getLogger(DataConfidenceRestController.class);
-
 
     @Inject
     OpsFeedManagerFeedProvider feedManagerFeedProvider;
@@ -57,7 +57,11 @@ public class DataConfidenceRestController {
 
     @GET
     @Path("/summary")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the data confidence metrics.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the data confidence metrics.", response = DataConfidenceSummary.class)
+    )
     public DataConfidenceSummary getDataConfidenceSummary() {
         DataConfidenceSummary summary = null;
         return metadataAccess.read(() -> {
@@ -72,5 +76,4 @@ public class DataConfidenceRestController {
             }
         });
     }
-
 }

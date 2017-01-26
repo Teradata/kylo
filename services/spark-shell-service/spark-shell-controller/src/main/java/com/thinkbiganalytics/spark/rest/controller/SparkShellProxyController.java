@@ -20,6 +20,7 @@ package com.thinkbiganalytics.spark.rest.controller;
  * #L%
  */
 
+import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.spark.rest.model.RegistrationRequest;
 import com.thinkbiganalytics.spark.rest.model.TransformRequest;
 import com.thinkbiganalytics.spark.rest.model.TransformResponse;
@@ -55,10 +56,13 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.SwaggerDefinition;
+import io.swagger.annotations.Tag;
 
-@Api(tags = "Feed Manager: Data Wrangler")
+@Api(tags = "Feed Manager - Data Wrangler")
 @Component
 @Path("/v1/spark/shell")
+@SwaggerDefinition(tags = @Tag(name = "Feed Manager - Data Wrangler", description = "data transformations"))
 public class SparkShellProxyController {
 
     private static final Logger log = LoggerFactory.getLogger(SparkShellProxyController.class);
@@ -87,8 +91,8 @@ public class SparkShellProxyController {
     @ApiOperation(value = "Fetches the status of a transformation.")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Returns the status of the transformation.", response = TransformResponse.class),
-            @ApiResponse(code = 404, message = "The transformation does not exist.", response = TransformResponse.class),
-            @ApiResponse(code = 500, message = "There was a problem accessing the data.", response = TransformResponse.class)
+            @ApiResponse(code = 404, message = "The transformation does not exist.", response = RestResponseStatus.class),
+            @ApiResponse(code = 500, message = "There was a problem accessing the data.", response = RestResponseStatus.class)
     })
     @Nonnull
     public Response getTable(@Nonnull @PathParam("table") final String id) {
@@ -120,7 +124,7 @@ public class SparkShellProxyController {
     @ApiOperation("Starts a new Spark Shell process for the current user if one is not already running.")
     @ApiResponses({
             @ApiResponse(code = 202, message = "The Spark Shell process will be started."),
-            @ApiResponse(code = 500, message = "The Spark Shell process could not be started.")
+            @ApiResponse(code = 500, message = "The Spark Shell process could not be started.", response = RestResponseStatus.class)
     })
     @Nonnull
     public Response start() {
@@ -145,9 +149,9 @@ public class SparkShellProxyController {
     @ApiOperation("Registers a new Spark Shell process with Kylo.")
     @ApiResponses({
             @ApiResponse(code = 204, message = "The Spark Shell process has been successfully registered with this server."),
-            @ApiResponse(code = 401, message = "The provided credentials are invalid."),
-            @ApiResponse(code = 403, message = "The Spark Shell process does not have permission to register with this server."),
-            @ApiResponse(code = 500, message = "The Spark Shell process could not be registered with this server.")
+            @ApiResponse(code = 401, message = "The provided credentials are invalid.", response = RestResponseStatus.class),
+            @ApiResponse(code = 403, message = "The Spark Shell process does not have permission to register with this server.", response = RestResponseStatus.class),
+            @ApiResponse(code = 500, message = "The Spark Shell process could not be registered with this server.", response = RestResponseStatus.class)
     })
     @Nonnull
     public Response register(@Nonnull final RegistrationRequest registration) {
@@ -173,8 +177,8 @@ public class SparkShellProxyController {
     @ApiOperation(value = "Queries a Hive table and applies a series of transformations on the rows.")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Returns the status of the transformation.", response = TransformResponse.class),
-            @ApiResponse(code = 400, message = "The request could not be parsed.", response = TransformResponse.class),
-            @ApiResponse(code = 500, message = "There was a problem processing the data.", response = TransformResponse.class)
+            @ApiResponse(code = 400, message = "The request could not be parsed.", response = RestResponseStatus.class),
+            @ApiResponse(code = 500, message = "There was a problem processing the data.", response = RestResponseStatus.class)
     })
     @Nonnull
     public Response transform(@ApiParam(value = "The request indicates the transformations to apply to the source table and how the user wishes the results to be displayed. Exactly one parent or"

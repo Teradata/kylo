@@ -49,7 +49,6 @@ import com.thinkbiganalytics.policy.rest.model.PreconditionRule;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.nifi.web.api.dto.PortDTO;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.hibernate.JDBCException;
@@ -97,10 +96,14 @@ import javax.ws.rs.core.Response;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.SwaggerDefinition;
+import io.swagger.annotations.Tag;
 
-@Api(tags = "Feed Manager: Feeds", produces = "application/json")
+@Api(tags = "Feed Manager - Feeds", produces = "application/json")
 @Path("/v1/feedmgr/feeds")
 @Component
+@SwaggerDefinition(tags = @Tag(name = "Feed Manager - Feeds", description = "manages feeds"))
 public class FeedRestController {
 
     private static final Logger log = LoggerFactory.getLogger(FeedRestController.class);
@@ -141,9 +144,11 @@ public class FeedRestController {
      */
     @POST
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
-    @Produces({MediaType.APPLICATION_JSON})
-    @ApiOperation("Creates a new Feed from a metadata object.")
-    @ApiResponse(code = 200, message = "Returns the new feed.", response = NifiFeed.class)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Creates or updates a feed.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the feed including any error messages.", response = NifiFeed.class)
+    )
     @Nonnull
     public Response createFeed(@Nonnull final FeedMetadata feedMetadata) {
         NifiFeed feed;
@@ -179,7 +184,12 @@ public class FeedRestController {
     @POST
     @Path("/enable/{feedId}")
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Enables a feed.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "The feed was enabled.", response = FeedSummary.class),
+            @ApiResponse(code = 500, message = "The feed could not be enabled.", response = RestResponseStatus.class)
+    })
     public Response enableFeed(@PathParam("feedId") String feedId) {
         FeedSummary feed = getMetadataService().enableFeed(feedId);
         return Response.ok(feed).build();
@@ -188,49 +198,35 @@ public class FeedRestController {
     @POST
     @Path("/disable/{feedId}")
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Disables a feed.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "The feed was disabled.", response = FeedSummary.class),
+            @ApiResponse(code = 500, message = "The feed could not be disabled.", response = RestResponseStatus.class)
+    })
     public Response disableFeed(@PathParam("feedId") String feedId) {
         FeedSummary feed = getMetadataService().disableFeed(feedId);
         return Response.ok(feed).build();
     }
 
     @GET
-    @Path("/reusable-feeds")
-    @Produces({MediaType.APPLICATION_JSON})
-    public Response getReusableFeeds() {
-        List<FeedMetadata> reusableFeeds = getMetadataService().getReusableFeeds();
-        return Response.ok(reusableFeeds).build();
-    }
-
-
-    @GET
-    @Path("/reusable-feed-input-ports")
-    @Produces({MediaType.APPLICATION_JSON})
-    //NOT USED... Not implemented
-    public Response getReusableFeedInputPorts() {
-        List<FeedMetadata> reusableFeeds = getMetadataService().getReusableFeeds();
-        Map<String, Set<PortDTO>> portMap = new HashMap<>();
-        for (FeedMetadata metadata : reusableFeeds) {
-            //fetch the ports
-            Set<PortDTO> inputPortsEntity = nifiRestClient.getInputPorts(metadata.getNifiProcessGroupId());
-            if (inputPortsEntity != null) {
-                portMap.put(metadata.getFeedName(), inputPortsEntity);
-            }
-        }
-        return Response.ok(portMap).build();
-    }
-
-    @GET
     @Path("/names")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the list of feed summaries.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns a list of feeds.", response = FeedSummary.class, responseContainer = "List")
+    )
     public Response getFeedNames() {
         Collection<FeedSummary> feeds = getMetadataService().getFeedSummaryData();
         return Response.ok(feeds).build();
     }
 
-
     @GET
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the list of feeds.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns a list of feeds.", response = FeedMetadata.class, responseContainer = "List")
+    )
     public Response getFeeds(@QueryParam("verbose") @DefaultValue("false") boolean verbose) {
         Collection<? extends UIFeed> feeds = getMetadataService().getFeeds(verbose);
         return Response.ok(feeds).build();
@@ -238,7 +234,12 @@ public class FeedRestController {
 
     @GET
     @Path("/{feedId}")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the specified feed.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the feed.", response = FeedMetadata.class),
+            @ApiResponse(code = 500, message = "The feed is unavailable.", response = RestResponseStatus.class)
+    })
     public Response getFeed(@PathParam("feedId") String feedId) {
         FeedMetadata feed = getMetadataService().getFeedById(feedId, true);
 
@@ -254,6 +255,13 @@ public class FeedRestController {
     @DELETE
     @Path("/{feedId}")
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Deletes the specified feed.")
+    @ApiResponses({
+            @ApiResponse(code = 204, message = "The feed was deleted."),
+            @ApiResponse(code = 404, message = "The feed does not exist.", response = RestResponseStatus.class),
+            @ApiResponse(code = 409, message = "There are dependent feeds.", response = RestResponseStatus.class),
+            @ApiResponse(code = 500, message = "The feed could not be deleted.", response = RestResponseStatus.class)
+    })
     @Nonnull
     public Response deleteFeed(@Nonnull @PathParam("feedId") final String feedId) {
         try {
@@ -283,7 +291,12 @@ public class FeedRestController {
     @POST
     @Path("/{feedId}/merge-template")
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Updates a feed with the latest template metadata.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "The feed was updated.", response = FeedMetadata.class),
+            @ApiResponse(code = 500, message = "The feed could not be updated.", response = RestResponseStatus.class)
+    })
     public Response mergeTemplate(@PathParam("feedId") String feedId, FeedMetadata feed) {
         //gets the feed data and then gets the latest template associated with that feed and merges the properties into the feed
         RegisteredTemplate registeredTemplate = null;
@@ -359,7 +372,12 @@ public class FeedRestController {
 
     @GET
     @Path("/{feedId}/profile-summary")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets a summary of the feed profiles.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the profile summaries.", response = Map.class, responseContainer = "List"),
+            @ApiResponse(code = 500, message = "The profiles are unavailable.", response = RestResponseStatus.class)
+    })
     //TODO rework and move logic to proper Service/provider class
     public Response profileSummary(@PathParam("feedId") String feedId) {
         FeedMetadata feedMetadata = getMetadataService().getFeedById(feedId);
@@ -405,7 +423,12 @@ public class FeedRestController {
 
     @GET
     @Path("/{feedId}/profile-stats")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the profile statistics for the specified job.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the profile statistics.", response = Map.class, responseContainer = "List"),
+            @ApiResponse(code = 500, message = "The profile is unavailable.", response = RestResponseStatus.class)
+                  })
     public Response profileStats(@PathParam("feedId") String feedId, @QueryParam("processingdttm") String processingdttm) {
         FeedMetadata feedMetadata = getMetadataService().getFeedById(feedId);
         String profileTable = feedMetadata.getProfileTableName();
@@ -416,7 +439,12 @@ public class FeedRestController {
 
     @GET
     @Path("/{feedId}/profile-invalid-results")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets statistics on the invalid rows for the specified job.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the invalid row statistics.", response = Map.class, responseContainer = "List"),
+            @ApiResponse(code = 500, message = "The profile is unavailable.", response = RestResponseStatus.class)
+    })
     public Response queryProfileInvalidResults(
             @PathParam("feedId") String feedId,
             @QueryParam("processingdttm") String processingdttm,
@@ -432,7 +460,12 @@ public class FeedRestController {
 
     @GET
     @Path("/{feedId}/profile-valid-results")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets statistics on the valid rows for the specified job.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the valid row statistics.", response = Map.class, responseContainer = "List"),
+            @ApiResponse(code = 500, message = "The profile is unavailable.", response = RestResponseStatus.class)
+    })
     public Response queryProfileValidResults(
             @PathParam("feedId") String feedId,
             @QueryParam("processingdttm") String processingdttm,
@@ -461,7 +494,11 @@ public class FeedRestController {
 
     @GET
     @Path("/possible-preconditions")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the available preconditions for triggering a feed.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the available precondition rules.", response = PreconditionRule.class, responseContainer = "List")
+    )
     public Response getPossiblePreconditions() {
         List<PreconditionRule> conditions = feedManagerPreconditionService.getPossiblePreconditions();
         return Response.ok(conditions).build();
@@ -469,7 +506,12 @@ public class FeedRestController {
 
     @GET
     @Path("/{feedId}/sla")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the service level agreements referenced by a feed.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the service level agreements.", response = FeedServiceLevelAgreement.class, responseContainer = "List"),
+            @ApiResponse(code = 500, message = "The feed is unavailable.", response = RestResponseStatus.class)
+    })
     public Response getSla(@PathParam("feedId") String feedId) {
         List<FeedServiceLevelAgreement> sla = serviceLevelAgreementService.getFeedServiceLevelAgreements(feedId);
         return Response.ok(sla).build();
@@ -478,7 +520,11 @@ public class FeedRestController {
     @POST
     @Path("/update-feed-lineage-styles")
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Updates the feed lineage styles.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "The styles were updated.", response = RestResponseStatus.class)
+    )
     public Response updateFeedLineageStyles(Map<String, FeedLineageStyle> styles) {
         datasourceService.refreshFeedLineageStyles(styles);
         return Response.ok(new RestResponseStatus.ResponseStatusBuilder().buildSuccess()).build();
@@ -487,6 +533,10 @@ public class FeedRestController {
     @POST
     @Path("/update-datasource-definitions")
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Updates the datasource definitions.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the updated definitions..", response = DatasourceDefinitions.class)
+    )
     public DatasourceDefinitions updateDatasourceDefinitions(DatasourceDefinitions definitions) {
         if (definitions != null) {
             Set<DatasourceDefinition> updatedDefinitions = datasourceService.updateDatasourceDefinitions(definitions.getDefinitions());
@@ -499,8 +549,13 @@ public class FeedRestController {
 
     @POST
     @Path("/{feedId}/upload-file")
-    @Consumes({MediaType.MULTIPART_FORM_DATA})
-    @Produces({MediaType.APPLICATION_JSON})
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Uploads a file to be ingested by a feed.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "The file is ready to be ingested."),
+            @ApiResponse(code = 500, message = "The file could not be saved.", response = RestResponseStatus.class)
+    })
     public Response uploadFile(@PathParam("feedId") String feedId,
                                @FormDataParam("file") InputStream fileInputStream,
                                @FormDataParam("file") FormDataContentDisposition fileMetaData) throws Exception {
@@ -559,7 +614,5 @@ public class FeedRestController {
         }
         return Response.ok("").build();
     }
-
-
 }
 

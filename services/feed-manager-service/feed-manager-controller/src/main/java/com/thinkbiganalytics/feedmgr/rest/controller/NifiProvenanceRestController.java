@@ -41,11 +41,19 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.SwaggerDefinition;
+import io.swagger.annotations.Tag;
 
-@Api(tags = "NiFi: Provenance", produces = "application/json",
-     description = "Used by the NiFi KyloProvenanceEventReportingTask.  Provides information about the flows and the max event id processed by kylo")
+/**
+ * Used by the NiFi KyloProvenanceEventReportingTask. Provides information about the flows and the max event id processed by Kylo.
+ */
+@Api(tags = "NiFi - Provenance", produces = "application/json")
 @Path("/metadata/nifi-provenance")
 @Component
+@SwaggerDefinition(tags = @Tag(name = "NiFi - Provenance", description = "event reporting"))
 public class NifiProvenanceRestController {
 
     @Inject
@@ -65,7 +73,11 @@ public class NifiProvenanceRestController {
 
     @GET
     @Path("/nifi-flow-cache/get-flow-updates")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets flow updates since the last sync.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the flow updates.", response = NiFiFlowCacheSync.class)
+    )
     public Response getFlowUpdates(@QueryParam("syncId") String syncId) {
         NiFiFlowCacheSync updates = nifiFlowCache.syncAndReturnUpdates(syncId);
         return Response.ok(updates).build();
@@ -73,7 +85,11 @@ public class NifiProvenanceRestController {
 
     @GET
     @Path("/nifi-flow-cache/get-cache")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the flows.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the flows.", response = NiFiFlowCacheSync.class)
+    )
     public Response getCache(@QueryParam("syncId") String syncId) {
         NiFiFlowCacheSync cache = nifiFlowCache.getCache(syncId);
         return Response.ok(cache).build();
@@ -81,7 +97,11 @@ public class NifiProvenanceRestController {
 
     @GET
     @Path("/nifi-flow-cache/preview-flow-updates")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets flow updates without syncing.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the flow updates.", response = NiFiFlowCacheSync.class)
+    )
     public Response previewFlowUpdates(@QueryParam("syncId") String syncId) {
         NiFiFlowCacheSync updates = nifiFlowCache.previewUpdates(syncId);
         return Response.ok(updates).build();
@@ -89,7 +109,11 @@ public class NifiProvenanceRestController {
 
     @GET
     @Path("/nifi-flow-cache/cache-summary")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the flow cache status.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the cache status.", response = NifiFlowCache.CacheSummary.class)
+    )
     public Response previewFlowUpdates() {
         NifiFlowCache.CacheSummary summary = nifiFlowCache.cacheSummary();
         return Response.ok(summary).build();
@@ -97,7 +121,11 @@ public class NifiProvenanceRestController {
 
     @GET
     @Path("/nifi-flow-cache/reset-flow-updates")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Resets the updates to the flow cache since the last sync.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the updated flow cache.", response = NiFiFlowCacheSync.class)
+    )
     public Response getSyncUpdates(@QueryParam("syncId") String syncId) {
         NiFiFlowCacheSync updates = nifiFlowCache.refreshAll(syncId);
         return Response.ok(updates).build();
@@ -105,7 +133,11 @@ public class NifiProvenanceRestController {
 
     @GET
     @Path("/nifi-flow-cache/reset-cache")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Resets the flow cache.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "The cache was reset.", response = String.class)
+    )
     public Response resetCache() {
         nifiFlowCache.rebuildAll();
         return Response.ok("Reset the Cache").build();
@@ -114,7 +146,11 @@ public class NifiProvenanceRestController {
 
     @GET
     @Path("/nifi-flow-cache/available")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Indicates if the cache is available.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the cache status.", response = Boolean.class)
+    )
     public Response isAvailable() {
         return Response.ok(nifiFlowCache.isAvailable()).build();
     }
@@ -122,7 +158,11 @@ public class NifiProvenanceRestController {
 
     @GET
     @Path("/max-event-id")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the maximum event id received from the specified node.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the maximum event id.", response = Long.class)
+    )
     public Response findMaxEventId(@QueryParam("clusterNodeId") String clusterNodeId) {
         return metadataAccess.read(() -> {
             Long maxId = 0L;
@@ -137,6 +177,4 @@ public class NifiProvenanceRestController {
             return Response.ok(maxId).build();
         }, MetadataAccess.SERVICE);
     }
-
-
 }

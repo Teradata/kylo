@@ -34,10 +34,27 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.ws.rs.ApplicationPath;
+import javax.ws.rs.core.MediaType;
 
+import io.swagger.annotations.Contact;
+import io.swagger.annotations.Info;
+import io.swagger.annotations.License;
+import io.swagger.annotations.SwaggerDefinition;
 import io.swagger.jaxrs.config.BeanConfig;
 
 @ApplicationPath("/api")
+@SwaggerDefinition(
+        info = @Info(
+                title = "Kylo",
+                description = "Kylo is a comprehensive Data Lake platform built-on Apache Hadoop, Spark, and NiFi.",
+                version = "v1",
+                contact = @Contact(name = "Think Big", url = "https://www.thinkbiganalytics.com/kylo/"),
+                license = @License(name = "Apache License, Version 2.0", url = "https://www.apache.org/licenses/LICENSE-2.0")
+        ),
+        consumes = MediaType.APPLICATION_JSON,
+        produces = MediaType.APPLICATION_JSON,
+        schemes = SwaggerDefinition.Scheme.HTTP
+)
 public class JerseyConfig extends ResourceConfig {
 
 
@@ -88,25 +105,13 @@ public class JerseyConfig extends ResourceConfig {
         register(provider);
 
         configureSwagger();
-
     }
 
-
     private void configureSwagger() {
-
-        BeanConfig config = new BeanConfig();
-        config.setConfigId("thinkbig-pipeline-controller");
-        config.setTitle("Kylo");
-        config.setVersion("v1");
-        config.setContact("Teradata Inc.");
-        config.setSchemes(new String[]{"http"});
+        final BeanConfig config = new BeanConfig();
         config.setBasePath("/proxy");
         config.setResourcePackage("com.thinkbiganalytics");
         config.setPrettyPrint(true);
         config.setScan(true);
-
-
     }
-
-
 }

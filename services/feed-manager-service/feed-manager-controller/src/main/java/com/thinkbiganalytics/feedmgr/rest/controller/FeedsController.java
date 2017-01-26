@@ -42,6 +42,7 @@ import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedSource;
 import com.thinkbiganalytics.metadata.rest.model.feed.InitializationStatus;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment;
+import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.security.AccessController;
 
 import org.apache.commons.lang3.StringUtils;
@@ -75,9 +76,15 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
+/**
+ * Manages Feed Metadata and allows feeds to be updated with various Metadata Properties.
+ */
 @Component
-@Api(tags = "Feed Manager: Feeds", produces = "application/json", description = "Manage Feed Metadata and allow feeds to be updated with various Metadata Properties")
+@Api(tags = "Feed Manager - Feeds", produces = "application/json")
 @Path("/metadata/feed")
 public class FeedsController {
 
@@ -107,8 +114,13 @@ public class FeedsController {
     @GET
     @Path("{id}/initstatus")
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the registration status for the specified feed.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the registration status.", response = InitializationStatus.class),
+            @ApiResponse(code = 404, message = "The feed could not be found.", response = RestResponseStatus.class)
+    })
     public InitializationStatus getInitializationStatus(@PathParam("id") String feedIdStr) {
-        LOG.debug("Get feed watermarks {}", feedIdStr);
+        LOG.debug("Get feed initialization status {}", feedIdStr);
 
         return this.metadata.read(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
@@ -127,8 +139,13 @@ public class FeedsController {
     @GET
     @Path("{id}/initstatus/history")
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the registration history for the specified feed.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the registration history.", response = InitializationStatus.class, responseContainer = "List"),
+            @ApiResponse(code = 404, message = "The feed could not be found.", response = RestResponseStatus.class)
+    })
     public List<InitializationStatus> getInitializationStatusHistory(@PathParam("id") String feedIdStr) {
-        LOG.debug("Get feed initializtion history {}", feedIdStr);
+        LOG.debug("Get feed initialization history {}", feedIdStr);
 
         return this.metadata.read(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
@@ -148,6 +165,12 @@ public class FeedsController {
     @Path("{id}/initstatus")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
+    @ApiOperation("Sets the registration status for the specified feed.")
+    @ApiResponses({
+            @ApiResponse(code = 204, message = "The registration status was updated."),
+            @ApiResponse(code = 404, message = "The feed could not be found.", response = RestResponseStatus.class),
+            @ApiResponse(code = 500, message = "The registration status could not be updated.", response = RestResponseStatus.class)
+    })
     public void putInitializationStatus(@PathParam("id") String feedIdStr,
                                         InitializationStatus status) {
         LOG.debug("Get feed initialization status {}", feedIdStr);
@@ -171,6 +194,11 @@ public class FeedsController {
     @GET
     @Path("{id}/watermark")
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the HighWaterMarks used by the specified feed.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the HighWaterMark names.", response = String.class, responseContainer = "List"),
+            @ApiResponse(code = 404, message = "The feed could not be found.", response = RestResponseStatus.class)
+    })
     public List<String> getHighWaterMarks(@PathParam("id") String feedIdStr) {
         LOG.debug("Get feed watermarks {}", feedIdStr);
 
@@ -192,7 +220,12 @@ public class FeedsController {
 
     @GET
     @Path("{id}/watermark/{name}")
-    @Produces({ MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON } )
+    @Produces({ MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON })
+    @ApiOperation("Gets the value for a specific HighWaterMark.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the HighWaterMark value.", response = String.class),
+            @ApiResponse(code = 404, message = "The HighWaterMark could not be found.", response = RestResponseStatus.class)
+    })
     public String getHighWaterMark(@PathParam("id") String feedIdStr,
                                    @PathParam("name") String waterMarkName) {
         LOG.debug("Get feed watermark {}: {}", feedIdStr, waterMarkName);
@@ -215,6 +248,12 @@ public class FeedsController {
     @PUT
     @Path("{id}/watermark/{name}")
     @Consumes(MediaType.TEXT_PLAIN)
+    @ApiOperation("Sets the value for a specific HighWaterMark.")
+    @ApiResponses({
+            @ApiResponse(code = 204, message = "The HighWaterMark value has been changed."),
+            @ApiResponse(code = 404, message = "The feed could not be found.", response = RestResponseStatus.class),
+            @ApiResponse(code = 500, message = "The HighWaterMark value could not be changed.", response = RestResponseStatus.class)
+    })
     public void putHighWaterMark(@PathParam("id") String feedIdStr,
                                    @PathParam("name") String waterMarkName,
                                    String value) {
@@ -237,6 +276,12 @@ public class FeedsController {
     @DELETE
     @Path("{id}/watermark/{name}")
     @Consumes(MediaType.TEXT_PLAIN)
+    @ApiOperation("Deletes the specified HighWaterMark.")
+    @ApiResponses({
+            @ApiResponse(code = 204, message = "The HighWaterMark has been deleted."),
+            @ApiResponse(code = 404, message = "The feed could not be found.", response = RestResponseStatus.class),
+            @ApiResponse(code = 500, message = "The HighWaterMark could not be deleted.", response = RestResponseStatus.class)
+    })
     public void deleteHighWaterMark(@PathParam("id") String feedIdStr,
                                     @PathParam("name") String waterMarkName) {
         LOG.debug("Get feed watermark {}: {}", feedIdStr, waterMarkName);
@@ -255,10 +300,12 @@ public class FeedsController {
         });
     }
 
-
-
     @GET
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets a list of feeds.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the matching feeds.", response = Feed.class, responseContainer = "List")
+    )
     public List<Feed> getFeeds(@QueryParam(FeedCriteria.CATEGORY) final String category,
                                @QueryParam(FeedCriteria.NAME) final String name,
                                @QueryParam(FeedCriteria.SRC_ID) final String srcId,
@@ -277,6 +324,12 @@ public class FeedsController {
     @GET
     @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the specified feed.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the feed.", response = Feed.class),
+            @ApiResponse(code = 400, message = "The id is not a valid UUID.", response = RestResponseStatus.class),
+            @ApiResponse(code = 500, message = "The feed could not be found.", response = RestResponseStatus.class)
+    })
     public Feed getFeed(@PathParam("id") final String feedId) {
         LOG.debug("Get feed {}", feedId);
 
@@ -343,6 +396,11 @@ public class FeedsController {
     @GET
     @Path("{id}/depfeeds")
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the dependencies of the specified feed.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the dependency graph.", response = FeedDependencyGraph.class),
+            @ApiResponse(code = 404, message = "The feed could not be found.", response = RestResponseStatus.class)
+    })
     public FeedDependencyGraph getDependencyGraph(@PathParam("id") final String feedId,
                                                   @QueryParam("preconds") @DefaultValue("false") final boolean assessPrecond) {
         LOG.debug("Get feed dependencies {}", feedId);
@@ -364,6 +422,11 @@ public class FeedsController {
     @POST
     @Path("{feedId}/depfeeds")
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Adds a dependency to the specified feed.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the new dependency graph.", response = FeedDependencyGraph.class),
+            @ApiResponse(code = 500, message = "The dependency could not be added.", response = RestResponseStatus.class)
+    })
     public FeedDependencyGraph addDependent(@PathParam("feedId") final String feedIdStr,
                                             @QueryParam("dependentId") final String depIdStr) {
         com.thinkbiganalytics.metadata.api.feed.Feed.ID feedId = this.feedProvider.resolveFeed(feedIdStr);
@@ -382,6 +445,11 @@ public class FeedsController {
     @DELETE
     @Path("{feedId}/depfeeds")
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Removes a dependency from the specified feed.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the new dependency graph.", response = FeedDependencyGraph.class),
+            @ApiResponse(code = 500, message = "The dependency could not be removed.", response = RestResponseStatus.class)
+    })
     public FeedDependencyGraph removeDependent(@PathParam("feedId") final String feedIdStr,
                                                @QueryParam("dependentId") final String depIdStr) {
         com.thinkbiganalytics.metadata.api.feed.Feed.ID feedId = this.feedProvider.resolveFeed(feedIdStr);
@@ -400,6 +468,11 @@ public class FeedsController {
     @GET
     @Path("{feedId}/depfeeds/delta")
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the dependencies delta for the specified feed.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the dependencies deltas.", response = FeedDependencyDeltaResults.class),
+            @ApiResponse(code = 500, message = "The feed could not be found.", response = RestResponseStatus.class)
+    })
     public FeedDependencyDeltaResults getDependentResultDeltas(@PathParam("feedId") final String feedIdStr) {
         LOG.info("Get feed dependencies  delta for {}", feedIdStr);
         com.thinkbiganalytics.metadata.api.feed.Feed.ID feedId = this.feedProvider.resolveFeed(feedIdStr);
@@ -414,6 +487,12 @@ public class FeedsController {
     @GET
     @Path("{id}/source")
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the sources of the specified feed.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the feed sources.", response = FeedSource.class, responseContainer = "List"),
+            @ApiResponse(code = 400, message = "The id is not a valid UUID.", response = RestResponseStatus.class),
+            @ApiResponse(code = 404, message = "The feed could not be found.", response = RestResponseStatus.class)
+    })
     public List<FeedSource> getFeedSources(@PathParam("id") final String feedId) {
         LOG.debug("Get feed {} sources", feedId);
 
@@ -459,6 +538,12 @@ public class FeedsController {
     @GET
     @Path("{id}/destination")
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the destinations of the specified feed.")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "Returns the feed destinations.", response = FeedDestination.class, responseContainer = "List"),
+        @ApiResponse(code = 400, message = "The id is not a valid UUID.", response = RestResponseStatus.class),
+        @ApiResponse(code = 404, message = "The feed could not be found.", response = RestResponseStatus.class)
+    })
     public List<FeedDestination> getFeedDestinations(@PathParam("id") final String feedId) {
         LOG.debug("Get feed {} destinations", feedId);
 
@@ -504,6 +589,12 @@ public class FeedsController {
     @GET
     @Path("{id}/precondition")
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the precondition for the specified feed.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the feed precondition.", response = FeedPrecondition.class),
+            @ApiResponse(code = 400, message = "The id is not a valid UUID.", response = RestResponseStatus.class),
+            @ApiResponse(code = 404, message = "The feed could not be found.", response = RestResponseStatus.class)
+    })
     public FeedPrecondition getFeedPrecondition(@PathParam("id") final String feedId) {
         LOG.debug("Get feed {} precondition", feedId);
 
@@ -524,6 +615,12 @@ public class FeedsController {
     @GET
     @Path("{id}/precondition/assessment")
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Assess the precondition of the specified feed.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the assessment.", response = ServiceLevelAssessment.class),
+            @ApiResponse(code = 400, message = "The id is not a valid UUID or the feed does not have a precondition.", response = RestResponseStatus.class),
+            @ApiResponse(code = 404, message = "The feed could not be found.", response = RestResponseStatus.class)
+    })
     public ServiceLevelAssessment assessPrecondition(@PathParam("id") final String feedId) {
         LOG.debug("Assess feed {} precondition", feedId);
 
@@ -550,6 +647,12 @@ public class FeedsController {
     @GET
     @Path("{id}/precondition/assessment/result")
     @Produces(MediaType.TEXT_PLAIN)
+    @ApiOperation("Assess the precondition of the specified feed.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the assessment result.", response = ServiceLevelAssessment.class),
+            @ApiResponse(code = 400, message = "The id is not a valid UUID or the feed does not have a precondition.", response = RestResponseStatus.class),
+            @ApiResponse(code = 404, message = "The feed could not be found.", response = RestResponseStatus.class)
+    })
     public String assessPreconditionResult(@PathParam("id") final String feedId) {
         return assessPrecondition(feedId).getResult().toString();
     }
@@ -557,6 +660,12 @@ public class FeedsController {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Creates a new feed.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "The feed was created.", response = Feed.class),
+            @ApiResponse(code = 400, message = "The name is already in use.", response = RestResponseStatus.class),
+            @ApiResponse(code = 500, message = "The feed could not be created.", response = RestResponseStatus.class)
+    })
     public Feed createFeed(final Feed feed, @QueryParam("ensure") @DefaultValue("true") final boolean ensure) {
         LOG.debug("Create feed (ensure={}) {}", ensure, feed);
 
@@ -590,8 +699,13 @@ public class FeedsController {
     @POST
     @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Feed updateFeed(@PathParam("id") final String feedId,
-                           final Feed feed) {
+    @ApiOperation("Updates the specified feed.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "The feed was updated.", response = Feed.class),
+            @ApiResponse(code = 404, message = "The feed was not found.", response = RestResponseStatus.class),
+            @ApiResponse(code = 500, message = "The feed could not be updated.", response = RestResponseStatus.class)
+    })
+    public Feed updateFeed(@PathParam("id") final String feedId, final Feed feed) {
         LOG.debug("Update feed: {}", feed);
 
         Model.validateCreate(feed);
@@ -620,6 +734,12 @@ public class FeedsController {
     @GET
     @Path("{id}/props")
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the properties of the specified feed.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the feed properties.", response = Map.class),
+            @ApiResponse(code = 400, message = "The id is not a valid UUID.", response = RestResponseStatus.class),
+            @ApiResponse(code = 404, message = "The feed was not found.", response = RestResponseStatus.class)
+    })
     public Map<String, Object> getFeedProperties(@PathParam("id") final String feedId) {
         LOG.debug("Get feed properties ID: {}", feedId);
 
@@ -647,6 +767,13 @@ public class FeedsController {
     @POST
     @Path("{id}/props")
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Merges the properties for the specified feed.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the updated properties.", response = Map.class),
+            @ApiResponse(code = 400, message = "The id is not a valid UUID.", response = RestResponseStatus.class),
+            @ApiResponse(code = 404, message = "The feed could not be found.", response = RestResponseStatus.class),
+            @ApiResponse(code = 500, message = "The properties could not be updated.", response = RestResponseStatus.class)
+    })
     public Map<String, Object> mergeFeedProperties(@PathParam("id") final String feedId, final Properties props) {
         LOG.debug("Merge feed properties ID: {}, properties: {}", feedId, props);
 
@@ -667,6 +794,13 @@ public class FeedsController {
     @PUT
     @Path("{id}/props")
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Sets the properties for the specified feed.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the updated properties.", response = Properties.class),
+            @ApiResponse(code = 400, message = "The id is not a valid UUID.", response = RestResponseStatus.class),
+            @ApiResponse(code = 404, message = "The feed could not be found.", response = RestResponseStatus.class),
+            @ApiResponse(code = 500, message = "The properties could not be updated.", response = RestResponseStatus.class)
+    })
     public Properties replaceFeedProperties(@PathParam("id") final String feedId,
                                             final Properties props) {
         LOG.debug("Replace feed properties ID: {}, properties: {}", feedId, props);
@@ -694,6 +828,11 @@ public class FeedsController {
     @GET
     @Path("{feedId}/lineage")
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the lineage of the specified feed.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the feed lineage.", response = FeedLineage.class),
+            @ApiResponse(code = 400, message = "The id is not a valid UUID.", response = RestResponseStatus.class)
+    })
     public FeedLineage getFeedLineage(@PathParam("feedId") final String feedId) {
 
         return this.metadata.read(() -> {
@@ -752,6 +891,12 @@ public class FeedsController {
     @Path("{feedId}/source")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Adds a source to the specified feed.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the updated feed.", response = Feed.class),
+            @ApiResponse(code = 400, message = "The feed could not be found.", response = RestResponseStatus.class),
+            @ApiResponse(code = 500, message = "The feed could not be updated.", response = RestResponseStatus.class)
+    })
     public Feed addFeedSource(@PathParam("feedId") final String feedId,
                               @FormParam("datasourceId") final String datasourceId) {
         LOG.debug("Add feed source, feed ID: {}, datasource ID: {}", feedId, datasourceId);
@@ -771,6 +916,12 @@ public class FeedsController {
     @Path("{feedId}/destination")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Adds a destination to the specified feed.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the updated feed.", response = Feed.class),
+            @ApiResponse(code = 400, message = "The feed could not be found.", response = RestResponseStatus.class),
+            @ApiResponse(code = 500, message = "The feed could not be updated.", response = RestResponseStatus.class)
+    })
     public Feed addFeedDestination(@PathParam("feedId") final String feedId,
                                    @FormParam("datasourceId") final String datasourceId) {
         LOG.debug("Add feed destination, feed ID: {}, datasource ID: {}", feedId, datasourceId);
@@ -790,6 +941,12 @@ public class FeedsController {
     @Path("{feedId}/precondition")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Adds a precondition to the specified feed.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the updated feed.", response = Feed.class),
+            @ApiResponse(code = 400, message = "The feed could not be found.", response = RestResponseStatus.class),
+            @ApiResponse(code = 500, message = "The feed could not be updated.", response = RestResponseStatus.class)
+    })
     public Feed setPrecondition(@PathParam("feedId") final String feedId, final FeedPrecondition precond) {
         LOG.debug("Add feed precondition, feed ID: {}, precondition: {}", feedId, precond);
 

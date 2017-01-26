@@ -39,12 +39,11 @@ import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecutionProvider;
+import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.security.AccessController;
 
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.Period;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -67,16 +66,16 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
  * Provides rest endpoints for control and monitoring of the pipeline
  */
-@Api(tags = "Operations Manager: Feeds", produces = "application/json")
+@Api(tags = "Operations Manager - Jobs", produces = "application/json")
 @Path("/v1/jobs")
 public class JobsRestController {
-
-    private static final Logger LOG = LoggerFactory.getLogger(JobsRestController.class);
-
 
     @Inject
     OpsManagerFeedProvider opsFeedManagerFeedProvider;
@@ -96,10 +95,14 @@ public class JobsRestController {
     @Inject
     private AccessController accessController;
 
-
     @GET
     @Path("/{executionId}")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the specified job.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the job.", response = ExecutedJob.class),
+            @ApiResponse(code = 400, message = "The executionId is not a valid integer.", response = RestResponseStatus.class)
+    })
     public ExecutedJob getJob(@PathParam("executionId") String executionId,
                               @QueryParam(value = "includeSteps") @DefaultValue("false") boolean includeSteps) {
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
@@ -126,7 +129,12 @@ public class JobsRestController {
      */
     @GET
     @Path("/{executionId}/steps")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the steps of the specified job.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the steps.", response = ExecutedStep.class, responseContainer = "List"),
+            @ApiResponse(code = 400, message = "The executionId is not a valid integer.", response = RestResponseStatus.class)
+    })
     public List<ExecutedStep> getJobSteps(@PathParam("executionId") String executionId) {
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
         return metadataAccess.read(() -> {
@@ -138,11 +146,16 @@ public class JobsRestController {
     /**
      * Restart the job associated with the given instance id
      *
-     * @return A status message and the apropriate http status code
+     * @return A status message and the appropriate http status code
      */
     @POST
     @Path("/{executionId}/restart")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Restarts the specified job.", hidden = true)
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the job.", response = ExecutedJob.class),
+            @ApiResponse(code = 404, message = "The executionId is not a valid integer.", response = RestResponseStatus.class)
+    })
     public ExecutedJob restartJob(@PathParam("executionId") Long executionId) throws JobExecutionException {
 
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ADMIN_OPS);
@@ -169,12 +182,17 @@ public class JobsRestController {
      * Stop the job associated with the given instance id
      *
      * @param executionId The job instance id
-     * @return A status message and the apropriate http status code
+     * @return A status message and the appropriate http status code
      */
     @POST
     @Path("/{executionId}/stop")
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Stops the specified job.", hidden = true)
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the job.", response = ExecutedJob.class),
+            @ApiResponse(code = 404, message = "The executionId is not a valid integer.", response = RestResponseStatus.class)
+    })
     public ExecutedJob stopJob(@PathParam("executionId") Long executionId, JobAction jobAction) {
 
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ADMIN_OPS);
@@ -194,7 +212,13 @@ public class JobsRestController {
     @POST
     @Path("/{executionId}/abandon")
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Abandons the specified job.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the abandoned job.", response = ExecutedJob.class),
+            @ApiResponse(code = 204, message = "The job could not be found."),
+            @ApiResponse(code = 404, message = "The executionId is not a valid integer.", response = RestResponseStatus.class)
+    })
     public ExecutedJob abandonJob(@PathParam("executionId") Long executionId, JobAction jobAction) {
 
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ADMIN_OPS);
@@ -214,7 +238,11 @@ public class JobsRestController {
     @POST
     @Path("/abandon-all/{feedName}")
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Abandons all jobs for the specified feed.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the feed health.", response = FeedHealth.class)
+    )
     public FeedHealth abandonAllJobs(@Context HttpServletRequest request, @PathParam("feedName") String feedName) {
 
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ADMIN_OPS);
@@ -234,7 +262,12 @@ public class JobsRestController {
     @POST
     @Path("/{executionId}/fail")
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Fails the specified job.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the job.", response = ExecutedJob.class),
+            @ApiResponse(code = 404, message = "The executionId is not a valid integer.", response = RestResponseStatus.class)
+    })
     public ExecutedJob failJob(@PathParam("executionId") Long executionId, JobAction jobAction) {
 
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ADMIN_OPS);
@@ -248,7 +281,14 @@ public class JobsRestController {
 
     @GET
     @Path("/")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Lists all jobs.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the jobs.", response = SearchResult.class),
+            @ApiResponse(code = 400, message = "The sort cannot be empty.", response = RestResponseStatus.class),
+            @ApiResponse(code = 404, message = "The start or limit is not a valid integer.", response = RestResponseStatus.class),
+            @ApiResponse(code = 500, message = "The sort contains an invalid value.", response = RestResponseStatus.class)
+    })
     public SearchResult findJobs(@QueryParam("sort") @DefaultValue("") String sort,
                                  @QueryParam("limit") @DefaultValue("10") Integer limit,
                                  @QueryParam("start") @DefaultValue("1") Integer start,
@@ -264,6 +304,13 @@ public class JobsRestController {
 
     @GET
     @Path("/list")
+    @ApiOperation("Lists all jobs.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the jobs.", response = SearchResult.class),
+            @ApiResponse(code = 400, message = "The sort cannot be empty.", response = RestResponseStatus.class),
+            @ApiResponse(code = 404, message = "The start or limit is not a valid integer.", response = RestResponseStatus.class),
+            @ApiResponse(code = 500, message = "The sort contains an invalid value.", response = RestResponseStatus.class)
+    })
     public List<ExecutedJob> findJobsList(@QueryParam("sort") @DefaultValue("") String sort,
                                           @QueryParam("limit") @DefaultValue("10") Integer limit,
                                           @QueryParam("start") @DefaultValue("1") Integer start,
@@ -280,7 +327,14 @@ public class JobsRestController {
 
     @GET
     @Path("/running")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the list of running jobs.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the jobs.", response = SearchResult.class),
+            @ApiResponse(code = 400, message = "The sort cannot be empty.", response = RestResponseStatus.class),
+            @ApiResponse(code = 404, message = "The start or limit is not a valid integer.", response = RestResponseStatus.class),
+            @ApiResponse(code = 500, message = "The sort contains an invalid value.", response = RestResponseStatus.class)
+    })
     public SearchResult findRunningJobs(@QueryParam("sort") @DefaultValue("") String sort,
                                         @QueryParam("limit") @DefaultValue("10") Integer limit,
                                         @QueryParam("start") @DefaultValue("1") Integer start,
@@ -300,7 +354,14 @@ public class JobsRestController {
 
     @GET
     @Path("/failed")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the list of failed jobs.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the jobs.", response = SearchResult.class),
+            @ApiResponse(code = 400, message = "The sort cannot be empty.", response = RestResponseStatus.class),
+            @ApiResponse(code = 404, message = "The start or limit is not a valid integer.", response = RestResponseStatus.class),
+            @ApiResponse(code = 500, message = "The sort contains an invalid value.", response = RestResponseStatus.class)
+    })
     public SearchResult findFailedJobs(@QueryParam("sort") @DefaultValue("") String sort,
                                        @QueryParam("limit") @DefaultValue("10") Integer limit,
                                        @QueryParam("start") @DefaultValue("1") Integer start,
@@ -317,7 +378,14 @@ public class JobsRestController {
 
     @GET
     @Path("/stopped")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the list of failed jobs.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the jobs.", response = SearchResult.class),
+            @ApiResponse(code = 400, message = "The sort cannot be empty.", response = RestResponseStatus.class),
+            @ApiResponse(code = 404, message = "The start or limit is not a valid integer.", response = RestResponseStatus.class),
+            @ApiResponse(code = 500, message = "The sort contains an invalid value.", response = RestResponseStatus.class)
+    })
     public SearchResult findStoppedJobs(@QueryParam("sort") @DefaultValue("") String sort,
                                         @QueryParam("limit") @DefaultValue("10") Integer limit,
                                         @QueryParam("start") @DefaultValue("1") Integer start,
@@ -336,7 +404,14 @@ public class JobsRestController {
 
     @GET
     @Path("/completed")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the list of completed jobs.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the jobs.", response = SearchResult.class),
+            @ApiResponse(code = 400, message = "The sort cannot be empty.", response = RestResponseStatus.class),
+            @ApiResponse(code = 404, message = "The start or limit is not a valid integer.", response = RestResponseStatus.class),
+            @ApiResponse(code = 500, message = "The sort contains an invalid value.", response = RestResponseStatus.class)
+    })
     public SearchResult findCompletedJobs(@QueryParam("sort") @DefaultValue("") String sort,
                                           @QueryParam("limit") @DefaultValue("10") Integer limit,
                                           @QueryParam("start") @DefaultValue("1") Integer start,
@@ -356,7 +431,14 @@ public class JobsRestController {
 
     @GET
     @Path("/abandoned")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the list of abandoned jobs.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the jobs.", response = SearchResult.class),
+            @ApiResponse(code = 400, message = "The sort cannot be empty.", response = RestResponseStatus.class),
+            @ApiResponse(code = 404, message = "The start or limit is not a valid integer.", response = RestResponseStatus.class),
+            @ApiResponse(code = 500, message = "The sort contains an invalid value.", response = RestResponseStatus.class)
+    })
     public SearchResult findAbandonedJobs(@QueryParam("sort") @DefaultValue("") String sort,
                                           @QueryParam("limit") @DefaultValue("10") Integer limit,
                                           @QueryParam("start") @DefaultValue("1") Integer start,
@@ -375,7 +457,11 @@ public class JobsRestController {
 
     @GET
     @Path("/daily-status-count")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the daily statistics.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the daily stats.", response = JobStatusCount.class, responseContainer = "List")
+    )
     public List<JobStatusCount> findDailyStatusCount(@QueryParam("period") String periodString) {
 
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
@@ -395,7 +481,11 @@ public class JobsRestController {
 
     @GET
     @Path("/running-failed-counts")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the daily statistics.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the daily stats.", response = JobStatusCount.class, responseContainer = "List")
+    )
     public List<JobStatusCount> getRunningOrFailedJobCounts() {
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
 

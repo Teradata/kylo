@@ -37,8 +37,6 @@ import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;
 import com.thinkbiganalytics.security.AccessController;
 
 import org.joda.time.Period;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.List;
@@ -55,15 +53,13 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
-@Api(tags = "Operations Manager: Jobs", produces = "application/json")
+@Api(tags = "Operations Manager - Feeds", produces = "application/json")
 @Path("/v1/feeds")
 public class FeedsRestController {
-
-    private static final Logger LOG = LoggerFactory.getLogger(FeedsRestController.class);
-
-    // @Inject
-    // private FeedRepository feedRepository;
 
     @Inject
     OpsManagerFeedProvider opsFeedManagerFeedProvider;
@@ -77,10 +73,13 @@ public class FeedsRestController {
     @Inject
     private MetadataAccess metadataAccess;
 
-
     @GET
     @Path("/{feedName}/latest")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the latest execution of the specified feed.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the latest execution.", response = ExecutedFeed.class)
+    )
     public ExecutedFeed findLatestFeedsByName(@PathParam("feedName") String feedName, @Context HttpServletRequest request) {
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
         return metadataAccess.read(() -> {
@@ -91,10 +90,13 @@ public class FeedsRestController {
         });
     }
 
-
     @GET
     @Path("/health")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Provides a detailed health status of every feed.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the health.", response = FeedStatus.class)
+    )
     public FeedStatus getFeedHealth(@Context HttpServletRequest request) {
 
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
@@ -107,7 +109,11 @@ public class FeedsRestController {
 
     @GET
     @Path("/health-count")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Provides a summarized health status of every feed.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the health.", response = FeedHealth.class, responseContainer = "List")
+    )
     public List<FeedHealth> getFeedHealthCounts(@Context HttpServletRequest request) {
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
         return metadataAccess.read(() -> {
@@ -117,10 +123,13 @@ public class FeedsRestController {
         });
     }
 
-
     @GET
     @Path("/health-count/{feedName}")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets a health summary for the specified feed.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the health.", response = FeedHealth.class)
+    )
     public FeedHealth getFeedHealthCounts(@Context HttpServletRequest request, @PathParam("feedName") String feedName) {
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
         return metadataAccess.read(() -> {
@@ -133,10 +142,13 @@ public class FeedsRestController {
         });
     }
 
-
     @GET
     @Path("/health/{feedName}")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the detailed health status of the specified feed.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the health.", response = FeedStatus.class)
+    )
     public FeedStatus getFeedHealthForFeed(@Context HttpServletRequest request, @PathParam("feedName") String feedName) {
 
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
@@ -150,10 +162,13 @@ public class FeedsRestController {
         });
     }
 
-
     @GET
     @Path("/{feedName}/daily-status-count")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets a daily health summary for the specified feed.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the health.", response = JobStatusCount.class, responseContainer = "List")
+    )
     public List<JobStatusCount> findFeedDailyStatusCount(@PathParam("feedName") String feedName,
                                                          @QueryParam("period") String periodString) {
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
@@ -170,15 +185,15 @@ public class FeedsRestController {
         });
     }
 
-
     @GET
     @Path("/names")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the name of every feed.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the feed names.", response = String.class, responseContainer = "List")
+    )
     public List<String> getFeedNames() {
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
-        return metadataAccess.read(() -> {
-            return opsFeedManagerFeedProvider.getFeedNames();
-        });
+        return metadataAccess.read(() -> opsFeedManagerFeedProvider.getFeedNames());
     }
-
 }

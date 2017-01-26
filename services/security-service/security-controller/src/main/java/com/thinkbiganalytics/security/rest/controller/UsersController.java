@@ -20,6 +20,7 @@ package com.thinkbiganalytics.security.rest.controller;
  * #L%
  */
 
+import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.security.rest.model.UserPrincipal;
 import com.thinkbiganalytics.security.service.user.UserService;
 
@@ -47,13 +48,16 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.SwaggerDefinition;
+import io.swagger.annotations.Tag;
 
 /**
  * Endpoint for accessing Kylo users.
  */
-@Api(tags = "Feed Manager: Users")
+@Api(tags = "Security - Users")
 @Component
 @Path("/v1/security/users")
+@SwaggerDefinition(tags = @Tag(name = "Security - Users", description = "manages users"))
 public class UsersController {
 
     /** Service for accessing Kylo users */
@@ -72,7 +76,7 @@ public class UsersController {
     @ApiOperation("Adds or updates a Kylo user.")
     @ApiResponses({
         @ApiResponse(code = 204, message = "The user was added or updated."),
-        @ApiResponse(code = 500, message = "There was a problem adding or updating the user.")
+        @ApiResponse(code = 500, message = "There was a problem adding or updating the user.", response = RestResponseStatus.class)
     })
     @Nonnull
     public Response addUser(@Nonnull final UserPrincipal user) {
@@ -92,8 +96,8 @@ public class UsersController {
     @ApiOperation("Deletes the specified user.")
     @ApiResponses({
         @ApiResponse(code = 204, message = "The user was deleted."),
-        @ApiResponse(code = 404, message = "The user was not found."),
-        @ApiResponse(code = 500, message = "There was a problem deleting the user.")
+        @ApiResponse(code = 404, message = "The user was not found.", response = RestResponseStatus.class),
+        @ApiResponse(code = 500, message = "There was a problem deleting the user.", response = RestResponseStatus.class)
     })
     @Nonnull
     public Response deleteUser(@Nonnull @PathParam("userId") final String userId) {
@@ -117,8 +121,8 @@ public class UsersController {
     @ApiOperation("Returns the specified user.")
     @ApiResponses({
         @ApiResponse(code = 200, message = "The requested user.", response = UserPrincipal.class),
-        @ApiResponse(code = 404, message = "The user was not found."),
-        @ApiResponse(code = 500, message = "There was a problem accessing the user.")
+        @ApiResponse(code = 404, message = "The user was not found.", response = RestResponseStatus.class),
+        @ApiResponse(code = 500, message = "There was a problem accessing the user.", response = RestResponseStatus.class)
     })
     @Nonnull
     public Response getUser(@Nonnull @PathParam("userId") final String userId) {
@@ -136,7 +140,7 @@ public class UsersController {
     @ApiOperation("Returns a list of all users.")
     @ApiResponses({
         @ApiResponse(code = 200, message = "The list of users.", response = UserPrincipal.class, responseContainer = "List"),
-        @ApiResponse(code = 500, message = "There was a problem accessing the users.")
+        @ApiResponse(code = 500, message = "There was a problem accessing the users.", response = RestResponseStatus.class)
     })
     @Nonnull
     public Response getUsers() {

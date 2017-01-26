@@ -22,6 +22,7 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
 
 import com.thinkbiganalytics.es.ElasticSearch;
 import com.thinkbiganalytics.es.SearchResult;
+import com.thinkbiganalytics.rest.model.RestResponseStatus;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -35,10 +36,16 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.SwaggerDefinition;
+import io.swagger.annotations.Tag;
 
-@Api(tags = "Feed Manager: Search", produces = "application/json")
+@Api(tags = "Feed Manager - Search", produces = "application/json")
 @Path("/v1/feedmgr/search")
 @Component
+@SwaggerDefinition(tags = @Tag(name = "Feed Manager - Search", description = "global search"))
 public class ElasticSearchRestController {
 
     @Autowired
@@ -46,12 +53,13 @@ public class ElasticSearchRestController {
 
     @GET
     @Produces({MediaType.APPLICATION_JSON})
+    @ApiOperation("Queries a search engine.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "The search results.", response = SearchResult.class),
+            @ApiResponse(code = 500, message = "The search engine is unavailable.", response = RestResponseStatus.class)
+    })
     public Response search(@QueryParam("q") String query, @QueryParam("rows") @DefaultValue("20") Integer rows, @QueryParam("start") @DefaultValue("0") Integer start) {
-
         SearchResult result = elasticSearch.search(query, rows, start);
-
         return Response.ok(result).build();
     }
-
-
 }

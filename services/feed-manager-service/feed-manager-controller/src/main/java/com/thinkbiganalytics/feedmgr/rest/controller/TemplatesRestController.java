@@ -76,9 +76,15 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.SwaggerDefinition;
+import io.swagger.annotations.Tag;
 
-@Api(tags = "Feed Manager: Templates", produces = "application/json")
+@Api(tags = "Feed Manager - Templates", produces = "application/json")
 @Path("/v1/feedmgr/templates")
+@SwaggerDefinition(tags = @Tag(name = "Feed Manager - Templates", description = "manages templates"))
 public class TemplatesRestController {
 
     private static final Logger log = LoggerFactory.getLogger(TemplatesRestController.class);
@@ -98,18 +104,18 @@ public class TemplatesRestController {
     @Inject
     NifiFlowCache nifiFlowCache;
 
-
-    public TemplatesRestController() {
-
-    }
-
     private MetadataService getMetadataService() {
         return metadataService;
     }
 
 
     @GET
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the list of all templates.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the templates.", response = TemplateDtoWrapper.class, responseContainer = "Set"),
+            @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
+    })
     public Response getTemplates(@QueryParam("includeDetails") boolean includeDetails) {
         Set<TemplateDTO> nifiTemplates = nifiRestClient.getTemplates(includeDetails);
         Set<TemplateDtoWrapper> dtos = new HashSet<>();
@@ -126,7 +132,12 @@ public class TemplatesRestController {
 
     @GET
     @Path("/unregistered")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the list of unregistered templates.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the templates.", response = TemplateDtoWrapper.class, responseContainer = "Set"),
+            @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
+    })
     public Response getUnregisteredTemplates(@QueryParam("includeDetails") boolean includeDetails) {
         Set<TemplateDTO> nifiTemplates = nifiRestClient.getTemplates(includeDetails);
         List<RegisteredTemplate> registeredTemplates = metadataService.getRegisteredTemplates();
@@ -144,7 +155,12 @@ public class TemplatesRestController {
 
     @GET
     @Path("/nifi/{templateId}/ports")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the ports in the specified template.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the ports.", response = PortDTO.class, responseContainer = "Set"),
+            @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
+    })
     public Response getPortsForNifiTemplate(@PathParam("templateId") String nifiTemplateId) {
         Set<PortDTO> ports = nifiRestClient.getPortsForTemplate(nifiTemplateId);
         return Response.ok(ports).build();
@@ -152,7 +168,12 @@ public class TemplatesRestController {
 
     @GET
     @Path("/nifi/{templateId}/input-ports")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the input ports in the specified template.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the input ports.", response = PortDTO.class, responseContainer = "Set"),
+            @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
+    })
     public Response getInputPortsForNifiTemplate(@PathParam("templateId") String nifiTemplateId) {
         Set<PortDTO> ports = nifiRestClient.getPortsForTemplate(nifiTemplateId);
         List<PortDTO> list = Lists.newArrayList(Iterables.filter(ports, new Predicate<PortDTO>() {
@@ -167,7 +188,12 @@ public class TemplatesRestController {
 
     @GET
     @Path("/nifi/reusable-input-ports-processors")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the processors connected to the specified input ports.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the processors.", response = RegisteredTemplate.Processor.class, responseContainer = "List"),
+            @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
+    })
     public List<RegisteredTemplate.Processor> getReusableTemplateProcessorsForInputPorts(@QueryParam("inputPorts") String inputPortIds) {
         List<RegisteredTemplate.Processor> processorProperties = new ArrayList<>();
         if (StringUtils.isNotBlank(inputPortIds)) {
@@ -180,7 +206,12 @@ public class TemplatesRestController {
 
     @GET
     @Path("/nifi/{templateId}/processors")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the processors in the specified template.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the processors.", response = RegisteredTemplate.Processor.class, responseContainer = "List"),
+            @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
+    })
     public Response getNiFiTemplateProcessors(@PathParam("templateId") String templateId) {
         List<RegisteredTemplate.Processor> processorProperties = feedManagerTemplateService.getNiFiTemplateProcessorsWithProperties(templateId);
         return Response.ok(processorProperties).build();
@@ -193,7 +224,12 @@ public class TemplatesRestController {
     @Deprecated
     @GET
     @Path("/nifi/{templateId}/datasource-definitions")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the datasource definitions for the specified template.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the datasource definitions.", response = TemplateProcessorDatasourceDefinition.class, responseContainer = "List"),
+            @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
+    })
     public Response getDatasourceDefinitionsForProcessors(@PathParam("templateId") String templateId, @QueryParam("inputPorts") String inputPortIds) {
         List<TemplateProcessorDatasourceDefinition> templateProcessorDatasourceDefinitions = new ArrayList<>();
 
@@ -235,7 +271,12 @@ public class TemplatesRestController {
     @POST
     @Path("/nifi/{templateId}/flow-info")
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the flow for the specified template.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the flow.", response = NiFiTemplateFlowResponse.class),
+            @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
+    })
     public Response getNiFiTemplateFlowInfo(@PathParam("templateId") String templateId, NiFiTemplateFlowRequest flowRequest) {
         List<TemplateProcessorDatasourceDefinition> templateProcessorDatasourceDefinitions = new ArrayList<>();
         NiFiTemplateFlowResponse response = new NiFiTemplateFlowResponse();
@@ -270,7 +311,11 @@ public class TemplatesRestController {
 
     @GET
     @Path("/reload-data-source-definitions")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Reloads the datasource definitions file.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "The datasource definitions were reloaded.", response = RestResponseStatus.class)
+    )
     public Response reloadDatasources() {
         datasourceService.loadDefinitionsFromFile();
         return Response.ok(RestResponseStatus.SUCCESS).build();
@@ -279,7 +324,12 @@ public class TemplatesRestController {
 
     @GET
     @Path("/nifi/{templateId}/out-ports")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the output ports for the specified template.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the output ports.", response = PortDTO.class, responseContainer = "List"),
+            @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
+    })
     public Response getOutputPortsForNifiTemplate(@PathParam("templateId") String nifiTemplateId) {
         Set<PortDTO> ports = nifiRestClient.getPortsForTemplate(nifiTemplateId);
         List<PortDTO> list = Lists.newArrayList(Iterables.filter(ports, new Predicate<PortDTO>() {
@@ -299,7 +349,11 @@ public class TemplatesRestController {
      */
     @GET
     @Path("/registered")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the list of registered templates.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the templates.", response = RegisteredTemplate.class, responseContainer = "List")
+    )
     public Response getRegisteredTemplates() {
         List<RegisteredTemplate> templates = getMetadataService().getRegisteredTemplates();
         return Response.ok(templates).build();
@@ -312,7 +366,11 @@ public class TemplatesRestController {
      */
     @GET
     @Path("/registered/{templateId}/processor-properties")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the processors of a registered template for input ports.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the processors.", response = RegisteredTemplate.Processor.class, responseContainer = "List")
+    )
     public List<RegisteredTemplate.Processor> getReusableTemplateProcessorsForInputPorts(@PathParam("templateId") String templateId,
                                                                                          @QueryParam("includeReusableTemplates") boolean includeReusableTemplates) {
         List<RegisteredTemplate.Processor> processorProperties = new ArrayList<>();
@@ -330,7 +388,11 @@ public class TemplatesRestController {
      */
     @GET
     @Path("/registered/{templateId}/properties")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the properties of a registered template.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the properties.", response = NifiProperty.class, responseContainer = "List")
+    )
     public Response getRegisteredTemplateProperties(@PathParam("templateId") String templateId) {
         return Response.ok(getMetadataService().getTemplateProperties(templateId)).build();
     }
@@ -342,7 +404,12 @@ public class TemplatesRestController {
      */
     @GET
     @Path("/registered/{templateId}")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the specified registered template.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the template.", response = RegisteredTemplate.class),
+            @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
+    })
     public Response getRegisteredTemplate(@PathParam("templateId") String templateId, @QueryParam("allProperties") boolean allProperties, @QueryParam("feedName") String feedName,
                                           @QueryParam("templateName") String templateName) {
         RegisteredTemplate registeredTemplate = null;
@@ -421,7 +488,11 @@ public class TemplatesRestController {
     @POST
     @Path("/registered/{templateId}/enable")
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Enables the specified registered template.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the template.", response = RegisteredTemplate.class)
+    )
     public Response enableTemplate(@PathParam("templateId") String templateId) {
         RegisteredTemplate enabledTemplate = feedManagerTemplateService.enableTemplate(templateId);
         return Response.ok(enabledTemplate).build();
@@ -430,7 +501,11 @@ public class TemplatesRestController {
     @POST
     @Path("/registered/{templateId}/disable")
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Disables the specified registered template.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the template.", response = RegisteredTemplate.class)
+    )
     public Response disableTemplate(@PathParam("templateId") String templateId) {
         RegisteredTemplate disabledTemplate = feedManagerTemplateService.disableTemplate(templateId);
         return Response.ok(disabledTemplate).build();
@@ -438,7 +513,11 @@ public class TemplatesRestController {
 
     @DELETE
     @Path("/registered/{templateId}/delete")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Deletes the specified registered template.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the result.", response = RestResponseStatus.class)
+    )
     public Response deleteTemplate(@PathParam("templateId") String templateId) {
        boolean deleted = feedManagerTemplateService.deleteRegisteredTemplate(templateId);
         return Response.ok( deleted ? new RestResponseStatus.ResponseStatusBuilder().buildSuccess() : new RestResponseStatus.ResponseStatusBuilder().buildError()).build();
@@ -447,7 +526,11 @@ public class TemplatesRestController {
     @POST
     @Path("/order")
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Modifies the order of the registered templates.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the result.", response = RestResponseStatus.class)
+    )
     public Response orderTemplates(TemplateOrder templateOrder) {
         feedManagerTemplateService.orderTemplates(templateOrder.getTemplateIds(), null);
         return Response.ok(new RestResponseStatus.ResponseStatusBuilder().buildSuccess()).build();
@@ -461,7 +544,11 @@ public class TemplatesRestController {
     @POST
     @Path("/register")
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Registers the specified template.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "The template was registered.", response = RegisteredTemplate.class)
+    )
     public Response registerTemplate(RegisteredTemplate registeredTemplate) {
 
         RegisteredTemplate saved = getMetadataService().registerTemplate(registeredTemplate);
@@ -487,6 +574,4 @@ public class TemplatesRestController {
         }
         return Response.ok(saved).build();
     }
-
-
 }

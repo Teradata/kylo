@@ -22,6 +22,7 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
 
 import com.thinkbiganalytics.datalake.authorization.model.HadoopAuthorizationGroup;
 import com.thinkbiganalytics.datalake.authorization.service.HadoopAuthorizationService;
+import com.thinkbiganalytics.rest.model.RestResponseStatus;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +31,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -38,8 +40,11 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
-@Api(tags = "Feed Manager: Security", produces = "application/json")
+@Api(tags = "Security - Groups", produces = "application/json")
 @Path("/v1/feedmgr/hadoop-authorization")
 public class HadoopAuthorizationController {
     private static final Logger log = LoggerFactory.getLogger(HadoopAuthorizationController.class);
@@ -51,7 +56,12 @@ public class HadoopAuthorizationController {
 
     @GET
     @Path("/groups")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets a list of Hadoop security groups.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the security groups.", response = HadoopAuthorizationGroup.class, responseContainer = "List"),
+            @ApiResponse(code = 500, message = "The security groups are unavailable.", response = RestResponseStatus.class)
+    })
     public Response getGroups() {
         try {
 
@@ -72,7 +82,11 @@ public class HadoopAuthorizationController {
 
     @GET
     @Path("/enabled")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Indicates if security groups are enabled.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the enabled status.", response = Map.class, responseContainer = "List")
+    )
     public Response groupEnabled() {
         try {
             boolean isEnabled = false;

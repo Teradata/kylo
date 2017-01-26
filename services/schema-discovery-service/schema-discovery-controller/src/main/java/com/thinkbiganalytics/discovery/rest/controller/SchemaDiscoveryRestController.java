@@ -27,6 +27,7 @@ import com.thinkbiganalytics.discovery.schema.Schema;
 import com.thinkbiganalytics.discovery.util.TableSchemaType;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.policy.PolicyTransformException;
+import com.thinkbiganalytics.rest.model.RestResponseStatus;
 
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -51,24 +52,32 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.SwaggerDefinition;
+import io.swagger.annotations.Tag;
 
 /**
  * Provides schema discovery services which is able to generate a schema for file or database sources
  */
-@Api(tags = "Feed Manager: Schema Discovery", produces = "application/json")
+@Api(tags = "Feed Manager - Schema Discovery", produces = "application/json")
 @Path("/v1/schema-discovery")
+@SwaggerDefinition(tags = @Tag(name = "Feed Manager - Schema Discovery", description = "determine file schemas"))
 public class SchemaDiscoveryRestController {
 
     private static final Logger log = LoggerFactory.getLogger(SchemaDiscoveryRestController.class);
     private static final ResourceBundle STRINGS = ResourceBundle.getBundle("com.thinkbiganalytics.discovery.rest.controller.DiscoveryMessages");
 
-    public SchemaDiscoveryRestController() {
-    }
-
     @POST
     @Path("/hive/sample-file")
-    @Consumes({MediaType.MULTIPART_FORM_DATA})
-    @Produces({MediaType.APPLICATION_JSON})
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Determines the schema of the provided file.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the schema.", response = Schema.class),
+            @ApiResponse(code = 500, message = "The schema could not be determined.", response = RestResponseStatus.class)
+    })
     public Response uploadFile(@FormDataParam("parser") String parserDescriptor,
                                @FormDataParam("file") InputStream fileInputStream,
                                @FormDataParam("file") FormDataContentDisposition fileMetaData) throws Exception {
@@ -91,7 +100,11 @@ public class SchemaDiscoveryRestController {
 
     @GET
     @Path("/file-parsers")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the available file parsers.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the file parsers.", response = SchemaParserDescriptor.class, responseContainer = "List")
+    )
     public Response getFileParsers() {
         List<FileSchemaParser> parsers = FileParserFactory.instance().listSchemaParsers();
         List<SchemaParserDescriptor> descriptors = new ArrayList<>();
@@ -102,6 +115,4 @@ public class SchemaDiscoveryRestController {
         }
         return Response.ok(descriptors).build();
     }
-
-
 }

@@ -55,8 +55,11 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
-@Api(tags = "Feed Manager: Utilities", produces = "application/json")
+@Api(tags = "Feed Manager - Utilities", produces = "application/json")
 @Path("/v1/feedmgr/util")
 @Component
 public class UtilityRestController {
@@ -71,7 +74,11 @@ public class UtilityRestController {
 
     @GET
     @Path("/cron-expression/validate")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Validates the specified cron expression.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the result.", response = Map.class)
+    )
     public Response validateCronExpression(@QueryParam("cronExpression") String cronExpression) {
         boolean valid = CronExpression.isValidExpression(cronExpression);
         return Response.ok("{\"valid\":" + valid + "}").build();
@@ -79,7 +86,11 @@ public class UtilityRestController {
 
     @GET
     @Path("/cron-expression/preview")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the next matching times of the cron expression.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the times.", response = String.class, responseContainer = "List")
+    )
     public Response previewCronExpression(@QueryParam("cronExpression") String cronExpression, @QueryParam("number") @DefaultValue("3") Integer number) {
         List<Date> dates = new ArrayList<>();
         List<String> dateStrings = new ArrayList<>();
@@ -100,6 +111,10 @@ public class UtilityRestController {
     @GET
     @Path("/system-name")
     @Produces(MediaType.TEXT_PLAIN)
+    @ApiOperation("Generates a system name from the specified name.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the system name.", response = String.class)
+    )
     public Response generateSystemName(@QueryParam("name") String name) {
         String systemName = SystemNamingService.generateSystemName(name);
         return Response.ok(systemName).build();
@@ -107,24 +122,23 @@ public class UtilityRestController {
 
     @GET
     @Path("/codemirror-types")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the languages supported by CodeMirror.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns a mime-type to language mapping.", response = Map.class)
+    )
     public Response codeMirrorTypes() {
         Map<String, String> types = UIService.getInstance().getCodeMirrorTypes();
         return Response.ok(types).build();
     }
 
-
-    @GET
-    @Path("/pipeline-controller/url")
-    @Produces(MediaType.TEXT_PLAIN)
-    public Response pipelineControllerUrl() {
-        String url = env.getProperty("thinkbig.pipelinecontroller.url");
-        return Response.ok(url).build();
-    }
-
     @GET
     @Path("/icon-colors")
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the list of available icon colors.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the icon colors.", response = Map.class, responseContainer = "List")
+    )
     public Response iconColors() {
 
         String colorsJson = fileResourceService.getResourceAsString("classpath:/icon-colors.json");
@@ -150,6 +164,10 @@ public class UtilityRestController {
     @GET
     @Path("/icons")
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the list of available icons.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the icons.", response = String.class, responseContainer = "List")
+    )
     public Response icons() {
         String iconJson = fileResourceService.getResourceAsString("classpath:/icons.json");
         List<String> icons = null;
@@ -180,6 +198,10 @@ public class UtilityRestController {
     @GET
     @Path("/partition-functions")
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Gets the list of partition functions.", notes = "These functions can be used to produce partition values.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the partition functions.", response = String.class, responseContainer = "Set")
+    )
     @Nonnull
     public Response partitionFunctions() {
         final Stream<String> kyloFunctions = Stream.of("val", "year", "month", "day", "hour", "minute");

@@ -52,7 +52,7 @@ import io.swagger.annotations.ApiResponses;
 /**
  * Endpoint for executing Spark scripts on the server.
  */
-@Api(value = "spark")
+@Api(tags = "spark")
 @Component
 @Path("/api/v1/spark/shell/transform")
 public class SparkShellTransformController {

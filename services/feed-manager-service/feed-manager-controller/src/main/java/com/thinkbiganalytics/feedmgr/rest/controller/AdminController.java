@@ -25,10 +25,12 @@ import com.thinkbiganalytics.feedmgr.rest.model.UserFieldCollection;
 import com.thinkbiganalytics.feedmgr.service.ExportImportTemplateService;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.feed.ExportImportFeedService;
+import com.thinkbiganalytics.rest.model.RestResponseStatus;
 
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -50,12 +52,15 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.SwaggerDefinition;
+import io.swagger.annotations.Tag;
 
 /**
  * REST API for administrative functions.
  */
-@Api(tags = "Feed Manager: Administration", produces = "application/json")
+@Api(tags = "Feed Manager - Administration", produces = "application/json")
 @Path("/v1/feedmgr/admin")
+@SwaggerDefinition(tags = @Tag(name = "Feed Manager - Administration", description = "administrator operations"))
 public class AdminController {
 
     @Inject
@@ -70,7 +75,13 @@ public class AdminController {
 
     @GET
     @Path("/export-template/{templateId}")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Exports the template with the specified ID.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the template as an attachment."),
+            @ApiResponse(code = 400, message = "the templateId is invalid.", response = RestResponseStatus.class),
+            @ApiResponse(code = 500, message = "The template is not available.", response = RestResponseStatus.class)
+    })
     public Response exportTemplate(@NotNull @Size(min = 36, max = 36, message = "Invalid templateId size")
                                    @PathParam("templateId") String templateId) {
         ExportImportTemplateService.ExportTemplate zipFile = exportImportTemplateService.exportTemplate(templateId);
@@ -81,7 +92,13 @@ public class AdminController {
 
     @GET
     @Path("/export-feed/{feedId}")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Exports the feed with the specified ID.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the feed as an attachment."),
+            @ApiResponse(code = 400, message = "The feedId is invalid.", response = RestResponseStatus.class),
+            @ApiResponse(code = 500, message = "The feed is not available.", response = RestResponseStatus.class)
+    })
     public Response exportFeed(@NotNull @Size(min = 36, max = 36, message = "Invalid feedId size")
                                    @PathParam("feedId") String feedId) {
         try {
@@ -96,8 +113,13 @@ public class AdminController {
 
     @POST
     @Path("/import-feed")
-    @Consumes({MediaType.MULTIPART_FORM_DATA})
-    @Produces({MediaType.APPLICATION_JSON})
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Imports a feed zip file.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the feed metadata.", response = ExportImportFeedService.ImportFeed.class),
+            @ApiResponse(code = 500, message = "There was a problem importing the feed.", response = RestResponseStatus.class)
+    })
     public Response uploadFeed(@NotNull @FormDataParam("file") InputStream fileInputStream,
                                    @NotNull @FormDataParam("file") FormDataContentDisposition fileMetaData,
                                    @FormDataParam("overwrite") @DefaultValue("false") boolean overwrite,
@@ -115,8 +137,13 @@ public class AdminController {
 
     @POST
     @Path("/import-template")
-    @Consumes({MediaType.MULTIPART_FORM_DATA})
-    @Produces({MediaType.APPLICATION_JSON})
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Imports a template xml or zip file.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the template metadata.", response = ExportImportTemplateService.ImportTemplate.class),
+            @ApiResponse(code = 500, message = "There was a problem importing the template.", response = RestResponseStatus.class)
+    })
     public Response uploadTemplate(@NotNull @FormDataParam("file") InputStream fileInputStream,
                                   @NotNull @FormDataParam("file") FormDataContentDisposition fileMetaData,
                                   @FormDataParam("overwrite") @DefaultValue("false") boolean overwrite,
@@ -141,11 +168,10 @@ public class AdminController {
     @GET
     @Path("user-fields")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Gets the user-defined fields for categories and feeds.")
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Returns the user-defined fields.", response = UserFieldCollection.class),
-            @ApiResponse(code = 500, message = "There was a problem accessing the user-defined fields.")
-    })
+    @ApiOperation("Gets the user-defined fields for categories and feeds.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the user-defined fields.", response = UserFieldCollection.class)
+    )
     @Nonnull
     public Object getUserFields() {
         return metadataService.getUserFields();
@@ -160,11 +186,10 @@ public class AdminController {
     @POST
     @Path("user-fields")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Sets the user-defined fields for categories and feeds.")
-    @ApiResponses(value = {
-            @ApiResponse(code = 204, message = "The user-defined fields have been updated."),
-            @ApiResponse(code = 500, message = "There was a problem updating the user-defined fields.")
-    })
+    @ApiOperation("Sets the user-defined fields for categories and feeds.")
+    @ApiResponses(
+            @ApiResponse(code = 204, message = "The user-defined fields have been updated.")
+    )
     public void setUserFields(@Nonnull final UserFieldCollection userFields) {
         metadataService.setUserFields(userFields);
     }

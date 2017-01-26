@@ -21,9 +21,7 @@ package com.thinkbiganalytics.servicemonitor.rest.controller;
  */
 
 import com.thinkbiganalytics.servicemonitor.ServiceMonitorRepository;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.thinkbiganalytics.servicemonitor.model.ServiceStatusResponse;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -33,25 +31,29 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
-@Api(tags = "Operations Manager: Services", produces = "application/json")
+@Api(tags = "Operations Manager - Services", produces = "application/json")
 @Path("/v1/service-monitor")
 public class ServiceMonitorRestController {
 
-  private static final Logger LOG = LoggerFactory.getLogger(ServiceMonitorRestController.class);
+    @Inject
+    private ServiceMonitorRepository serviceRepository;
 
-  @Inject
-  private ServiceMonitorRepository serviceRepository;
-
-  /**
-   * Return a list of all services
-   *
-   * @return A list of json objects representing the executions.  Http error code thrown on any error in execution
-   */
-  @GET
-  @Produces({MediaType.APPLICATION_JSON})
-  public Response listServices() {
-    return Response.ok(serviceRepository.listServices()).build();
-  }
-
+    /**
+     * Return a list of all services
+     *
+     * @return A list of json objects representing the executions.  Http error code thrown on any error in execution
+     */
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the list of all services.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the services.", response = ServiceStatusResponse.class, responseContainer = "List")
+    )
+    public Response listServices() {
+        return Response.ok(serviceRepository.listServices()).build();
+    }
 }

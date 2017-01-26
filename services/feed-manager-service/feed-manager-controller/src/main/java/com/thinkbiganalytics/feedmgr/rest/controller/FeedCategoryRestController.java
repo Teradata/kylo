@@ -26,6 +26,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
+import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.rest.model.beanvalidation.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,13 +52,16 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.SwaggerDefinition;
+import io.swagger.annotations.Tag;
 
 /**
  * REST API for managing categories within the Feed Manager.
  */
-@Api(tags = "Feed Manager: Categories", produces = "application/json")
+@Api(tags = "Feed Manager - Categories", produces = "application/json")
 @Path("/v1/feedmgr/categories")
 @Component
+@SwaggerDefinition(tags = @Tag(name = "Feed Manager - Categories", description = "manages categories"))
 public class FeedCategoryRestController {
 
     @Autowired
@@ -68,7 +72,11 @@ public class FeedCategoryRestController {
     }
 
     @GET
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the list of categories.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the list of categories.", response = FeedCategory.class, responseContainer = "List")
+    )
     public Response getCategories() {
         Collection<FeedCategory> categories = getMetadataService().getCategories();
         return Response.ok(categories).build();
@@ -76,7 +84,13 @@ public class FeedCategoryRestController {
 
     @POST
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Creates or updates a category.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "The category was saved successfully.", response = FeedCategory.class),
+            @ApiResponse(code = 400, message = "The category name is invalid.", response = RestResponseStatus.class),
+            @ApiResponse(code = 500, message = "The category could not be saved.", response = RestResponseStatus.class)
+    })
     public Response saveCategory(@NewFeedCategory FeedCategory feedCategory) {
         getMetadataService().saveCategory(feedCategory);
         return Response.ok(feedCategory).build();
@@ -84,7 +98,13 @@ public class FeedCategoryRestController {
 
     @DELETE
     @Path("/{categoryId}")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Deletes the specified category.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "The category was deleted."),
+            @ApiResponse(code = 400, message = "The categoryId is invalid.", response = RestResponseStatus.class),
+            @ApiResponse(code = 500, message = "The category could not be deleted.", response = RestResponseStatus.class)
+    })
     public Response deleteCategory(@UUID @PathParam("categoryId") String categoryId) throws InvalidOperationException {
         getMetadataService().deleteCategory(categoryId);
         return Response.ok().build();
@@ -92,7 +112,12 @@ public class FeedCategoryRestController {
 
     @GET
     @Path("/{categoryId}/feeds")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the feeds for the specified category.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "The list of related feeds."),
+            @ApiResponse(code = 400, message = "The categoryId is invalid.", response = RestResponseStatus.class)
+    })
     public Response getCategory(@UUID @PathParam("categoryId") String categoryId) {
         List<FeedSummary> summaryList = getMetadataService().getFeedSummaryForCategory(categoryId);
         return Response.ok(summaryList).build();
@@ -107,10 +132,9 @@ public class FeedCategoryRestController {
     @Path("user-fields")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Returns the user fields for categories.")
-    @ApiResponses({
-        @ApiResponse(code = 200, message = "Returns the user fields.", response = UserProperty.class, responseContainer = "List"),
-        @ApiResponse(code = 500, message = "There was a problem accessing the user fields.")
-    })
+    @ApiResponses(
+        @ApiResponse(code = 200, message = "Returns the user fields.", response = UserProperty.class, responseContainer = "List")
+    )
     @Nonnull
     public Response getCategoryUserFields() {
         final Set<UserProperty> userFields = getMetadataService().getCategoryUserFields();
@@ -130,7 +154,7 @@ public class FeedCategoryRestController {
     @ApiOperation("Returns the user fields for feeds within the specified category.")
     @ApiResponses({
         @ApiResponse(code = 200, message = "Returns the user fields.", response = UserProperty.class, responseContainer = "List"),
-        @ApiResponse(code = 500, message = "There was a problem accessing the user fields.")
+        @ApiResponse(code = 400, message = "The categoryId is invalid.", response = RestResponseStatus.class)
     })
     @Nonnull
     public Response getFeedUserFields(@Nonnull @PathParam("categoryId") @UUID final String categoryId) {

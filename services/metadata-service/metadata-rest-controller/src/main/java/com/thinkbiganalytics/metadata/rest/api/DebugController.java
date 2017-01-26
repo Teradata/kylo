@@ -60,10 +60,13 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.SwaggerDefinition;
+import io.swagger.annotations.Tag;
 
-@Api(tags = "Internal: Debugging", produces = "application/json")
+@Api(tags = "Internal", produces = "application/json")
 @Component
 @Path("/metadata/debug")
+@SwaggerDefinition(tags = @Tag(name = "Internal", description = "debugging tools"))
 public class DebugController {
 
     @Context

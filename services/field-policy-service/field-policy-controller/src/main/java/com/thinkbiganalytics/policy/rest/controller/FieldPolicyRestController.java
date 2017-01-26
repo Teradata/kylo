@@ -33,22 +33,25 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
- * Returns a list of all properties that can be assigned durning Feed Registation process
+ * Returns a list of all properties that can be assigned during Feed Registration process
  * this is the list of @MetadataField annotations on the FeedMetadata object
  */
-@Api(tags = "Feed Manager: Feeds", produces = "application/json")
+@Api(tags = "Feed Manager - Feeds", produces = "application/json")
 @Path("/v1/field-policies")
 public class FieldPolicyRestController {
 
-
-    public FieldPolicyRestController() {
-    }
-
     @GET
     @Path("/standardization")
-    @Produces({MediaType.APPLICATION_JSON })
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the available standardization policies.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the standardization policies.", response = FieldStandardizationRule.class, responseContainer = "List")
+    )
     public Response getStandardizationPolicies(){
         List<FieldStandardizationRule> standardizationRules = FieldPolicyCache.getStandardizationPolicies();
        return Response.ok(standardizationRules).build();
@@ -56,10 +59,13 @@ public class FieldPolicyRestController {
 
     @GET
     @Path("/validation")
-    @Produces({MediaType.APPLICATION_JSON })
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the available validation policies.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the validation policies.", response = FieldValidationRule.class, responseContainer = "List")
+    )
     public Response getValidationPolicies(){
         List<FieldValidationRule> standardizationRules = FieldPolicyCache.getValidationPolicies();
         return Response.ok(standardizationRules).build();
     }
-
 }

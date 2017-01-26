@@ -33,6 +33,7 @@ import com.thinkbiganalytics.alerts.rest.model.AlertCreateRequest;
 import com.thinkbiganalytics.alerts.rest.model.AlertRange;
 import com.thinkbiganalytics.alerts.rest.model.AlertUpdateRequest;
 import com.thinkbiganalytics.alerts.spi.AlertManager;
+import com.thinkbiganalytics.rest.model.RestResponseStatus;
 
 import org.springframework.stereotype.Component;
 
@@ -58,9 +59,12 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 @Component
-@Api(tags = "Operations Manager: Alerts", produces = "application/json")
+@Api(tags = "Operations Manager - Alerts", produces = "application/json")
 @Path("/v1/alerts")
 public class AlertsController {
 
@@ -73,6 +77,10 @@ public class AlertsController {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Lists the current alerts.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the alerts.", response = AlertRange.class)
+    )
     public AlertRange getAlerts(@QueryParam("limit") Integer limit,
                                 @QueryParam("state") String state,
                                 @QueryParam("level") String level,
@@ -89,6 +97,11 @@ public class AlertsController {
     @GET
     @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the specified alert.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the alert.", response = com.thinkbiganalytics.alerts.rest.model.Alert.class),
+            @ApiResponse(code = 404, message = "The alert could not be found.", response = RestResponseStatus.class)
+    })
     public com.thinkbiganalytics.alerts.rest.model.Alert getAlert(@PathParam("id") String idStr) {
         Alert.ID id = provider.resolve(idStr);
 
@@ -100,6 +113,10 @@ public class AlertsController {
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
+    @ApiOperation("Creates a new alert.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the alert.", response = com.thinkbiganalytics.alerts.rest.model.Alert.class)
+    )
     public com.thinkbiganalytics.alerts.rest.model.Alert createAlert(AlertCreateRequest req) {
         Alert.Level level = toDomain(req.getLevel());
         Alert alert = alertManager.create(req.getType(), level, req.getDescription(), null);
@@ -111,6 +128,11 @@ public class AlertsController {
     @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
+    @ApiOperation("Modifies the specified alert.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the alert.", response = com.thinkbiganalytics.alerts.rest.model.Alert.class),
+            @ApiResponse(code = 400, message = "The alert could not be found.", response = RestResponseStatus.class)
+    })
     public com.thinkbiganalytics.alerts.rest.model.Alert updateAlert(@PathParam("id") String idStr,
                                                                      AlertUpdateRequest req) {
         Alert.ID id = provider.resolve(idStr);

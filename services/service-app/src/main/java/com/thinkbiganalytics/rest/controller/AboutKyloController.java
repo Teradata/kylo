@@ -22,10 +22,7 @@ package com.thinkbiganalytics.rest.controller;
 
 import com.thinkbiganalytics.metadata.api.app.KyloVersion;
 import com.thinkbiganalytics.metadata.api.app.KyloVersionProvider;
-import com.wordnik.swagger.annotations.Api;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -35,25 +32,32 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+
 /**
  * Controller used by 'About Kylo' popup
- * @author Jagrut Sharma
  */
-@Api(value = "about-kylo", produces = "application/text")
+@Api(tags = "Configuration", produces = "application/text")
 @Path("/v1/about")
 @Component
 public class AboutKyloController {
-    private static final Logger log = LoggerFactory.getLogger(AboutKyloController.class);
 
     @Inject
     KyloVersionProvider kyloVersionProvider;
 
-    /*
-        Get Kylo Version for showing in UI About Dialog Box
+    /**
+     * Get Kylo Version for showing in UI About Dialog Box.
      */
     @GET
     @Path("/version")
-    @Produces({MediaType.TEXT_PLAIN})
+    @Produces(MediaType.TEXT_PLAIN)
+    @ApiOperation("Gets the version number of Kylo.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the version number.", response = String.class)
+    )
     public Response getKyloVersion() {
 
         final String VERSION_NOT_AVAILABLE = "Not Available";
@@ -67,4 +71,3 @@ public class AboutKyloController {
         }
     }
 }
-

@@ -20,6 +20,7 @@ package com.thinkbiganalytics.security.rest.controller;
  * #L%
  */
 
+import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.security.rest.model.GroupPrincipal;
 import com.thinkbiganalytics.security.rest.model.UserPrincipal;
 import com.thinkbiganalytics.security.service.user.UserService;
@@ -48,13 +49,16 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.SwaggerDefinition;
+import io.swagger.annotations.Tag;
 
 /**
  * Endpoint for accessing Kylo groups.
  */
-@Api(tags = "Feed Manager: Groups")
+@Api(tags = "Security - Groups")
 @Component
 @Path("/v1/security/groups")
+@SwaggerDefinition(tags = @Tag(name = "Security - Groups", description = "manages groups"))
 public class GroupsController {
 
     /** Service for accessing Kylo groups */
@@ -73,7 +77,7 @@ public class GroupsController {
     @ApiOperation("Adds or updates a Kylo group.")
     @ApiResponses({
         @ApiResponse(code = 204, message = "The group was added or updated."),
-        @ApiResponse(code = 500, message = "There was a problem adding or updating the group.")
+        @ApiResponse(code = 500, message = "There was a problem adding or updating the group.", response = RestResponseStatus.class)
     })
     @Nonnull
     public Response addGroup(@Nonnull final GroupPrincipal group) {
@@ -93,8 +97,8 @@ public class GroupsController {
     @ApiOperation("Deletes the specified group.")
     @ApiResponses({
         @ApiResponse(code = 204, message = "The group was deleted."),
-        @ApiResponse(code = 404, message = "The group was not found."),
-        @ApiResponse(code = 500, message = "There was a problem deleting the group.")
+        @ApiResponse(code = 404, message = "The group was not found.", response = RestResponseStatus.class),
+        @ApiResponse(code = 500, message = "There was a problem deleting the group.", response = RestResponseStatus.class)
     })
     @Nonnull
     public Response deleteGroup(@Nonnull @PathParam("groupId") final String groupId) {
@@ -118,8 +122,8 @@ public class GroupsController {
     @ApiOperation("Returns the specified group.")
     @ApiResponses({
         @ApiResponse(code = 200, message = "The requested group.", response = GroupPrincipal.class),
-        @ApiResponse(code = 404, message = "The group was not found."),
-        @ApiResponse(code = 500, message = "There was a problem accessing the group.")
+        @ApiResponse(code = 404, message = "The group was not found.", response = RestResponseStatus.class),
+        @ApiResponse(code = 500, message = "There was a problem accessing the group.", response = RestResponseStatus.class)
     })
     @Nonnull
     public Response getGroup(@Nonnull @PathParam("groupId") final String groupId) {
@@ -137,7 +141,7 @@ public class GroupsController {
     @ApiOperation("Returns a list of all groups.")
     @ApiResponses({
         @ApiResponse(code = 200, message = "The list of groups.", response = GroupPrincipal.class, responseContainer = "List"),
-        @ApiResponse(code = 500, message = "There was a problem accessing the groups.")
+        @ApiResponse(code = 500, message = "There was a problem accessing the groups.", response = RestResponseStatus.class)
     })
     @Nonnull
     public Response getGroups() {
@@ -158,8 +162,8 @@ public class GroupsController {
     @ApiOperation("Returns a list of all users in the specified group.")
     @ApiResponses({
         @ApiResponse(code = 200, message = "The list of users.", response = UserPrincipal.class, responseContainer = "List"),
-        @ApiResponse(code = 404, message = "The group was not found."),
-        @ApiResponse(code = 500, message = "There was a problem accessing the group.")
+        @ApiResponse(code = 404, message = "The group was not found.", response = RestResponseStatus.class),
+        @ApiResponse(code = 500, message = "There was a problem accessing the group.", response = RestResponseStatus.class)
     })
     @Nonnull
     public Response getUsers(@Nonnull @PathParam("groupId") final String groupId) {

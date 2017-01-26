@@ -42,9 +42,15 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.SwaggerDefinition;
+import io.swagger.annotations.Tag;
 
 @Api(tags = "Configuration")
 @Path("/v1/configuration")
+@SwaggerDefinition(tags = @Tag(name = "Configuration", description = "information on Kylo"))
 public class ConfigurationController {
 
     @Inject
@@ -60,7 +66,11 @@ public class ConfigurationController {
      */
     @GET
     @Path("/properties")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the current Kylo configuration.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the configuration parameters.", response = Map.class)
+    })
     public Response getConfiguration() {
         final Map<String, Object> properties;
 
@@ -78,7 +88,11 @@ public class ConfigurationController {
 
     @GET
     @Path("/module-urls")
-    @Produces({MediaType.APPLICATION_JSON})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the paths to the UI modules.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns a mapping between the module name and the URL path.", response = Map.class)
+    })
     public Response pipelineControllerUrl() {
         final String contextPath = env.getProperty("server.contextPath");
         final String url = StringUtils.isNoneBlank(contextPath) ? contextPath : "";
@@ -92,8 +106,11 @@ public class ConfigurationController {
     @GET
     @Path("/system-time")
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the current system time.")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "Returns the current time in milliseconds.", response = Long.class)
+    })
     public Response generateSystemName() {
         return Response.ok(DateTimeUtil.getNowUTCTime()).build();
     }
-
 }

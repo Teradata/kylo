@@ -47,9 +47,12 @@ import javax.ws.rs.core.MediaType;
 
 import io.swagger.annotations.Api;
 
+/**
+ * Allow creation and storing of new Entities with dynamic types.
+ */
+@Api(tags = "Internal", produces = "application/json")
 @Component
 @Path("/metadata/extension")
-@Api(tags = "Internal: Debugging", produces = "application/json", description = "Allow creation and storing of new Entities with dynamic types ")
 public class ExtensionsController {
 
     @Inject

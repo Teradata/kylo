@@ -48,6 +48,9 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 
+import io.swagger.annotations.Api;
+
+@Api(tags = "Internal")
 @Component
 @Path("/metadata/datasource")
 public class DatasourceController {
