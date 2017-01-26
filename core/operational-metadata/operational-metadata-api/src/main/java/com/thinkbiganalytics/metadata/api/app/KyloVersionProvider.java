@@ -21,11 +21,21 @@ package com.thinkbiganalytics.metadata.api.app;
  */
 
 /**
- * Created by sr186054 on 9/19/16.
+ * Provider to return/update metadata representing the current Kylo version deployed
  */
 public interface KyloVersionProvider {
 
+    /**
+     * Return the current Kylo version,
+     *
+     * @return the current kylo version deployed
+     */
     KyloVersion getKyloVersion();
 
+    /**
+     * Routine to update the metadata storing the latest version of Kylo depoloyed.
+     *
+     * @return the updated version
+     */
     KyloVersion updateToCurrentVersion();
 }

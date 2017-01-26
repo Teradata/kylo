@@ -25,7 +25,7 @@ import org.joda.time.DateTime;
 import java.util.Map;
 
 /**
- * Created by sr186054 on 4/13/16.
+ * Represents a Step Execution that is part of a {@link ExecutedJob}, usually transformed from the domain {@link com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecution}
  */
 public interface ExecutedStep {
 
@@ -189,8 +189,8 @@ public interface ExecutedStep {
     /**
      * Return the reference to the respective NiFi event that produced this step
      * @return the id of the NiFi event that produced this step
-   */
-  Long getNifiEventId();
+     */
+    Long getNifiEventId();
 
     /**
      * set the reference to the respective NiFi event that produced this step

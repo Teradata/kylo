@@ -22,7 +22,7 @@ package com.thinkbiganalytics.jobrepo.query.model;
 
 
 /**
- * Summary data for a feed
+ * Represents summary data for a feed and Batch Job Execution status
  */
 public interface FeedSummary {
 

@@ -21,7 +21,7 @@ package com.thinkbiganalytics.metadata.api.app;
  */
 
 /**
- * Created by sr186054 on 9/19/16.
+ * Represents the current Kylo Version deployed in the system
  */
 public interface KyloVersion {
 

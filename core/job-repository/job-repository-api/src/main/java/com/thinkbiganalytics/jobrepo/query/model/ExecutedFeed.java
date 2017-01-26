@@ -23,7 +23,7 @@ package com.thinkbiganalytics.jobrepo.query.model;
 import org.joda.time.DateTime;
 
 /**
- * Object represents a Job execution along with Feed information
+ * Represents a Batch Job Execution in the context of a Feed
  */
 public interface ExecutedFeed {
 
@@ -129,8 +129,8 @@ public interface ExecutedFeed {
     /**
      * Return the run time in millis for this job.  if the job is currently executing it will take the difference from the current time against the jobs start time
      * @return return the run time in millis for this job.
-   */
-  Long getRunTime();
+     */
+    Long getRunTime();
 
     /**
      * set the runtime for this job

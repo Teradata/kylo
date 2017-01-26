@@ -23,7 +23,7 @@ package com.thinkbiganalytics.jobrepo.query.model;
 import java.util.List;
 
 /**
- * Created by sr186054 on 4/14/16.
+ * Represents summary data about feeds and their health in the system
  */
 public interface FeedStatus {
 

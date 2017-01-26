@@ -21,16 +21,19 @@ package com.thinkbiganalytics.metadata.api.feed;
  */
 
 
-import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobInstance;
-
 import java.io.Serializable;
-import java.util.Set;
 
 /**
- * Created by sr186054 on 9/14/16.
+ * Represents a feed in the operational store.
+ *
  */
 public interface OpsManagerFeed {
 
+    /**
+     * The type of feed
+     * FEED is the default type and represents the majority of feeds in the system
+     * CHECK represents a Data Confidence check feed.  CHECK feeds are new feed flows that have a pointer back to a specific feed for which to do a Data Confidence check on.
+     */
     enum FeedType {
         FEED, CHECK
     }
@@ -51,8 +54,10 @@ public interface OpsManagerFeed {
 
 
     /**
-     * CHECK or FEED
-     * @return
+     * {@link FeedType#FEED} is the default type and represents the majority of feeds in the system
+     * {@link FeedType#CHECK} represents a Data Confidence check feed.  {@link FeedType#CHECK} feeds are new feed flows that have a pointer back to a specific feed for which to do a Data Confidence check on.
+     *
+     * @return the type of feed
      */
     FeedType getFeedType();
 

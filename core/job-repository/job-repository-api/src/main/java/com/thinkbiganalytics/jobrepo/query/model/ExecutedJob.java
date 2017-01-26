@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Object representing the results of a JobExecution in Kylo
+ * Represents a Batch Job Execution along with some additional information that is transformed from the domain model {@link com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution}
  *
  */
 public interface ExecutedJob {

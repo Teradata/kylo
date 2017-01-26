@@ -21,15 +21,33 @@ package com.thinkbiganalytics.metadata.api.jobrepo.job;
  */
 
 /**
- * Created by sr186054 on 9/18/16.
+ * Represents a key/value store for data captured during the Job execution
  */
 public interface BatchJobExecutionContextValue {
 
+    /**
+     * Return a unique id for this record
+     *
+     * @return the unique id of this context value
+     */
     String getId();
 
+    /**
+     * Return the property key name to capture
+     * @return The property key name to capture
+     */
     String getKeyName();
 
+    /**
+     * Return the reference back to the job execution id
+     * @see BatchJobExecution
+     * @return the reference back to the job execution id
+     */
     Long getJobExecutionId();
 
+    /**
+     * Return the value of this context item
+     * @return the value of this  context item
+     */
     String getStringVal();
 }
