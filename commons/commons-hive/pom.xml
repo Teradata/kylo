@@ -1,35 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+  <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <artifactId>thinkbig-commons</artifactId>
-        <groupId>com.thinkbiganalytics.datalake</groupId>
-        <version>0.7.0-SNAPSHOT</version>
-    </parent>
+  <parent>
+    <artifactId>thinkbig-commons</artifactId>
+    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <version>0.7.0-SNAPSHOT</version>
+  </parent>
 
-    <artifactId>thinkbig-commons-hive</artifactId>
-    <description>Common Utilities for Hive</description>
+  <artifactId>thinkbig-commons-hive</artifactId>
+  <description>Common Utilities for Hive</description>
 
-    <properties>
-        <maven.compiler.source>1.7</maven.compiler.source>
-        <maven.compiler.target>1.7</maven.compiler.target>
+  <properties>
+    <maven.compiler.source>1.7</maven.compiler.source>
+    <maven.compiler.target>1.7</maven.compiler.target>
     <plugin.license.parentRelative>../../</plugin.license.parentRelative>
-	</properties>
+  </properties>
 
-    <dependencies>
-        <!-- Core dependencies -->
-        <dependency>
-            <groupId>com.google.code.findbugs</groupId>
-            <artifactId>jsr305</artifactId>
-        </dependency>
+  <dependencies>
+    <!-- Core dependencies -->
+    <dependency>
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>jsr305</artifactId>
+    </dependency>
 
-        <!-- Apache Commons dependencies -->
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-        </dependency>
-    </dependencies>
+    <!-- Apache Commons dependencies -->
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+    </dependency>
+  </dependencies>
 </project>
