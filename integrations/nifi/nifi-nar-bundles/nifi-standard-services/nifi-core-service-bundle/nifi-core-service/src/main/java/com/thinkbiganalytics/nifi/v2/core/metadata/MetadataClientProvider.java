@@ -57,7 +57,7 @@ public class MetadataClientProvider implements MetadataProvider {
     private MetadataClient client;
 
     public MetadataClientProvider() {
-        this(URI.create("http://localhost:8077/api/metadata"));
+        this(URI.create("http://localhost:8077/api/v1/metadata"));
     }
 
     public MetadataClientProvider(URI baseUri) {

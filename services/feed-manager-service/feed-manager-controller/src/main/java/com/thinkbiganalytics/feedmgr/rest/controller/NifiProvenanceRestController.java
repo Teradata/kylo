@@ -51,7 +51,7 @@ import io.swagger.annotations.Tag;
  * Used by the NiFi KyloProvenanceEventReportingTask. Provides information about the flows and the max event id processed by Kylo.
  */
 @Api(tags = "NiFi - Provenance", produces = "application/json")
-@Path("/metadata/nifi-provenance")
+@Path("/v1/metadata/nifi-provenance")
 @Component
 @SwaggerDefinition(tags = @Tag(name = "NiFi - Provenance", description = "event reporting"))
 public class NifiProvenanceRestController {

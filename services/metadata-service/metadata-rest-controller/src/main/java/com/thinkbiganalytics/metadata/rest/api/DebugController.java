@@ -65,7 +65,7 @@ import io.swagger.annotations.Tag;
 
 @Api(tags = "Internal", produces = "application/json")
 @Component
-@Path("/metadata/debug")
+@Path("/v1/metadata/debug")
 @SwaggerDefinition(tags = @Tag(name = "Internal", description = "debugging tools"))
 public class DebugController {
 

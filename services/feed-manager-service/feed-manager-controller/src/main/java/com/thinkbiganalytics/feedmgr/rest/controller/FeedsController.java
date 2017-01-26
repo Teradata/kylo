@@ -85,7 +85,7 @@ import io.swagger.annotations.ApiResponses;
  */
 @Component
 @Api(tags = "Feed Manager - Feeds", produces = "application/json")
-@Path("/metadata/feed")
+@Path("/v1/metadata/feed")
 public class FeedsController {
 
     private static final Logger LOG = LoggerFactory.getLogger(FeedsController.class);

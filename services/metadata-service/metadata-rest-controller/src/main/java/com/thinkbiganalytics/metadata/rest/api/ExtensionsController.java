@@ -52,7 +52,7 @@ import io.swagger.annotations.Api;
  */
 @Api(tags = "Internal", produces = "application/json")
 @Component
-@Path("/metadata/extension")
+@Path("/v1/metadata/extension")
 public class ExtensionsController {
 
     @Inject

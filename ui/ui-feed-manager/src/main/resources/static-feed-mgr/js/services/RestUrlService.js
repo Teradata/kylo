@@ -113,7 +113,7 @@ angular.module(MODULE_FEED_MGR).service('RestUrlService', function () {
     this.CONFIGURATION_PROPERTIES_URL = this.ROOT + "/proxy/v1/feedmgr/nifi/configuration/properties";
     this.METADATA_PROPERTY_NAMES_URL = this.ROOT + "/proxy/v1/feedmgr/metadata-properties";
 
-    this.GET_DATASOURCE_TYPES = this.ROOT + "/proxy/metadata/datasource/types";
+    this.GET_DATASOURCE_TYPES = this.ROOT + "/proxy/v1/metadata/datasource/types";
 
     //FEED URLS
 
@@ -225,7 +225,7 @@ angular.module(MODULE_FEED_MGR).service('RestUrlService', function () {
     this.SECURITY_USERS_URL = self.SECURITY_BASE_URL + "/users";
 
     this.FEED_LINEAGE_URL = function (feedId) {
-        return self.ROOT + "/proxy/metadata/feed/" + feedId + "/lineage";
+        return self.ROOT + "/proxy/v1/metadata/feed/" + feedId + "/lineage";
     };
 
     /**

@@ -70,7 +70,7 @@ public class MetadataProviderSelectorServiceTest {
         if (useSsl) {
             runner.setProperty(metadataProviderSelectorService, MetadataProviderSelectorService.SSL_CONTEXT_SERVICE.getName(), createSslContextService(runner).getIdentifier());
         }
-        runner.setProperty(metadataProviderSelectorService, MetadataProviderSelectorService.CLIENT_URL.getName(), "https://localhost:8420/api/metadata");
+        runner.setProperty(metadataProviderSelectorService, MetadataProviderSelectorService.CLIENT_URL.getName(), "https://localhost:8420/api/v1/metadata");
         runner.setProperty(metadataProviderSelectorService, MetadataProviderSelectorService.CLIENT_USERNAME.getName(), "dladmin");
         runner.setProperty(metadataProviderSelectorService, MetadataProviderSelectorService.CLIENT_PASSWORD.getName(), "thinkbig");
         runner.enableControllerService(metadataProviderSelectorService);

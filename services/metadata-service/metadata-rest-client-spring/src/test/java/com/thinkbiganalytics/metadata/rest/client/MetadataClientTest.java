@@ -54,7 +54,7 @@ public class MetadataClientTest {
 
     @BeforeClass
     public void connect() {
-        client = new MetadataClient(URI.create("http://localhost:8420/api/metadata/"));
+        client = new MetadataClient(URI.create("http://localhost:8420/api/v1/metadata/"));
     }
 
 

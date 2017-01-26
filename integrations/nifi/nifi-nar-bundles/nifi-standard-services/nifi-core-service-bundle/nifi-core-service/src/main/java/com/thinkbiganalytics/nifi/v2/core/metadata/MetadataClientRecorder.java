@@ -67,7 +67,7 @@ public class MetadataClientRecorder implements MetadataRecorder {
 
     
     public MetadataClientRecorder() {
-        this(URI.create("http://localhost:8420/api/metadata"));
+        this(URI.create("http://localhost:8420/api/v1/metadata"));
     }
     
     public MetadataClientRecorder(URI baseUri) {

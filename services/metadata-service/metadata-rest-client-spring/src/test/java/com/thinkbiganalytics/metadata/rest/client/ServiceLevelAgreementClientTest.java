@@ -42,7 +42,7 @@ public class ServiceLevelAgreementClientTest {
 
     @BeforeClass
     public static void connect() {
-        client = new MetadataClient(URI.create("http://localhost:8077/api/metadata/"));
+        client = new MetadataClient(URI.create("http://localhost:8077/api/v1/metadata/"));
     }
 
 //    @Test

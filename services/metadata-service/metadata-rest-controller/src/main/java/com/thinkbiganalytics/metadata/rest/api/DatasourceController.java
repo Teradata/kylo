@@ -52,7 +52,7 @@ import io.swagger.annotations.Api;
 
 @Api(tags = "Internal")
 @Component
-@Path("/metadata/datasource")
+@Path("/v1/metadata/datasource")
 public class DatasourceController {
 
     @Inject
