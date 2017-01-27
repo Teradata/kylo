@@ -36,7 +36,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 /**
- * Created by sr186054 on 9/19/16.
+ * Entity mapped to the Database table representing the current Kylo version deployed
  */
 @Entity
 @Table(name = "KYLO_VERSION")
@@ -64,21 +64,33 @@ public class JpaKyloVersion extends AbstractAuditedEntity implements KyloVersion
 
     }
 
-
+    /**
+     * create a new version with a supplied major and minor version
+     */
     public JpaKyloVersion(String majorVersion, String minorVersion) {
         this.majorVersion = majorVersion;
         this.minorVersion = minorVersion;
     }
 
+    /**
+     * return the unique id for this version entry
+     * @return
+     */
     public UUID getId() {
         return id;
     }
 
+    /**
+     * update this version to the new passed in version
+     * @param v
+     * @return the newly upated version
+     */
     public KyloVersion update(KyloVersion v) {
         setMajorVersion(v.getMajorVersion());
         setMinorVersion(v.getMinorVersion());
         return this;
     }
+
 
 
     @Override

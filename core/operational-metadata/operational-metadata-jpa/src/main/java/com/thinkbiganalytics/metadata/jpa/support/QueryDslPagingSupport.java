@@ -36,7 +36,7 @@ import java.util.List;
 
 /**
  * Spring data provides out of the box capability to get paging results via a direct JPA object, but doesn't expose it for JPA queries. This class allows a provider to get page results from a QueryDSL
- * JPAQuery Created by sr186054 on 11/30/16.
+ * JPAQuery
  */
 public class QueryDslPagingSupport<E> extends QueryDslRepositorySupport {
 

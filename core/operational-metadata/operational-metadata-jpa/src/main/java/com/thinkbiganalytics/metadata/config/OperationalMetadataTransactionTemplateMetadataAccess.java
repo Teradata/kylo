@@ -41,35 +41,65 @@ import java.security.Principal;
 
 import javax.inject.Inject;
 
-
-//public class OperationalMetadataTransactionTemplateMetadataAccess implements OperationalMetadataAccess {
+/**
+ * Transaction template for querying and committing to the database
+ */
 public class OperationalMetadataTransactionTemplateMetadataAccess implements MetadataAccess {
 
     private TransactionTemplate template;
 
+    /**
+     * Set the Transaction manager, wiring in the one configured with Hibernate
+     */
     @Inject
     public void setTransactionManager(@Qualifier("operationalMetadataTransactionManager") PlatformTransactionManager transactionMgr) {
         this.template = new TransactionTemplate(transactionMgr);
     }
-    
-    
 
+
+    /**
+     * Perform a command and commit the transaction
+     * @param cmd the command to execute
+     * @param principals one or more principals, or none to use the current security context
+     * @param <R>
+     * @return an object resulting from the commit
+     */
     @Override
     public <R> R commit(MetadataCommand<R> cmd, Principal... principals) {
         return commit(cmd);
     }
 
+    /**
+     *Perform a command and commit the transaction
+     * Rollback is not supported here
+     * @param cmd         the command to execute
+     * @param rollbackCmd the command to execute if an exception occurs and the transaction is rolled back
+     * @param principals  one or more principals, or none to use the current security context
+     * @param <R>
+     * @return
+     */
     @Override
     public <R> R commit(MetadataCommand<R> cmd, MetadataRollbackCommand rollbackCmd, Principal... principals) {
         // TODO Rollback command currently not supported
         return commit(cmd);
     }
 
+    /**
+     * Perform a command and commit the transaction
+     * @param action the command to execute
+     * @param principals one or more principals, or none to use the current security context
+     */
     @Override
     public void commit(MetadataAction action, Principal... principals) {
         commit(action);
     }
 
+    /**
+     *  Perform a command and commit the transaction
+     * @param action     the command to execute
+     * @param rollbackAction
+     * @param principals one or more principals, or none to use the current security context
+     */
     @Override
     public void commit(MetadataAction action, MetadataRollbackAction rollbackAction, Principal... principals) {
         // TODO Rollback command currently not supported
@@ -77,35 +107,71 @@ public class OperationalMetadataTransactionTemplateMetadataAccess implements Met
     }
 
 
-
+    /**
+     * Perform a read only action
+     * @param cmd the command to execute
+     * @param principals one or more principals, or none to use the current security context
+     * @param <R>
+     * @return
+     */
     @Override
     public <R> R read(MetadataCommand<R> cmd, Principal... principals) {
         return read(cmd);
     }
 
 
-
+    /**
+     * Perform a read only action
+     * @param cmd the command to execute
+     * @param principals one or more principals, or none to use the current security context
+     */
     @Override
     public void read(MetadataAction cmd, Principal... principals) {
         read(cmd);
     }
 
+    /**
+     * Perform a command and commit the transaction
+     * @param cmd
+     * @param <R>
+     * @return
+     */
     protected <R> R commit(MetadataCommand<R> cmd) {
         return template.execute(createCallback(cmd, false));
     }
 
+    /**
+     * Perform a read only command
+     * @param cmd
+     * @param <R>
+     * @return
+     */
     protected <R> R read(MetadataCommand<R> cmd) {
         return template.execute(createCallback(cmd, true));
     }
-    
+
+    /**
+     * Perform a command and commit the transaction
+     * @param action
+     */
     protected void commit(MetadataAction action) {
         template.execute(createCallback(action, false));
     }
-    
+
+    /**
+     * Perform a read only command
+     * @param action
+     */
     protected void read(MetadataAction action) {
         template.execute(createCallback(action, true));
     }
-    
+
+    /**
+     * Return the callback after executing the passed in action.
+     * @param action
+     * @param readOnly
+     * @return
+     */
     private TransactionCallback<Object> createCallback(final MetadataAction action, final boolean readOnly) {
         return createCallback(new MetadataCommand<Object>() {
                                   @Override
@@ -117,6 +183,13 @@ public class OperationalMetadataTransactionTemplateMetadataAccess implements Met
                               readOnly);
     }
 
+    /**
+     * Return the callback after executing the passed in command.
+     * @param cmd
+     * @param readOnly
+     * @param <R>
+     * @return
+     */
     private <R> TransactionCallback<R> createCallback(final MetadataCommand<R> cmd, final boolean readOnly) {
         return new TransactionCallback<R>() {
             @Override

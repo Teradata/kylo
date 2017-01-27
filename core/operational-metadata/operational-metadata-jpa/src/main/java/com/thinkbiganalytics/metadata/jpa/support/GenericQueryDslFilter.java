@@ -181,6 +181,12 @@ public class GenericQueryDslFilter {
         return buildFilter(basePath, searchCriterias);
     }
 
+    /**
+     * convert a passed in filter string to a list of criteria objects
+     *
+     * @param filterString a filter, <column><operator><value> Example: jobinstance.name==jobName,jobExcutionId>=200.  that will search for all jobs named 'jobName' and jobExecutionId >= 200
+     * @return a list of criteria objects
+     */
     public static List<SearchCriteria> parseFilterString(String filterString){
         List<SearchCriteria> searchCriterias = new ArrayList<>();
         if (StringUtils.isNotBlank(filterString)) {
@@ -210,6 +216,11 @@ public class GenericQueryDslFilter {
 
     /**
      * Validate the Operator is ok for the passed in Path. If not it will exclude it from the query and log a warning as to why
+     * @param operator the operator
+     * @param path the path to the field/column
+     * @param column the column to filter
+     * @param value the value to look for/match
+     * @return true if the operator is valid for the given column data type, false if not
      */
     private static boolean validateOperatorPath(Operator operator, Path path, String column, Object value) {
         if (operatorPaths.containsKey(operator)) {
@@ -228,6 +239,10 @@ public class GenericQueryDslFilter {
 
     /**
      * converts the String filter value to the proper QueryDSL Type based upon the Path provided
+     * @param path the path to the field to query
+     * @param op the operator to use
+     * @param value the value to match
+     * @return the object value applying a comma separated string to a list of objects for IN clause functions
      */
     private static Object getValueForQuery(Path path, Operator op, Object value) {
         Class type = path.getType();
@@ -265,6 +280,10 @@ public class GenericQueryDslFilter {
     /**
      * Gets the correct path walking the objects if supplied via dot notation. Example a column value of jobInstance.jobName will return the Path for the jobName If an error occurs it will be logged
      * and not included in the query
+     *
+     * @param basePath
+     * @param column
+     * @return
      */
     private static Path<?> buildPathFromFilterColumn(EntityPathBase basePath, String column) {
         try {

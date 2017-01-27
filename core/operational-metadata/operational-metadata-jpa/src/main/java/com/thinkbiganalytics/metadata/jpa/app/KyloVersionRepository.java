@@ -25,7 +25,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.UUID;
 
 /**
- * Created by sr186054 on 8/23/16.
+ * Spring data repository to query the KyloVersion object
  */
 public interface KyloVersionRepository extends JpaRepository<JpaKyloVersion, UUID> {
 

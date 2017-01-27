@@ -43,10 +43,10 @@ import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
 /**
- * Created by sr186054 on 9/15/16.
+ * Spring configuration for JPA beans
+ * Spring Data JPA Repositories are enabled here
  */
 @Configuration
-//@EnableAutoConfiguration
 @EnableTransactionManagement
 @EnableJpaRepositories(basePackages = {"com.thinkbiganalytics.metadata.jpa"}, transactionManagerRef = "operationalMetadataTransactionManager",
                        entityManagerFactoryRef = "operationalMetadataEntityManagerFactory")
@@ -58,25 +58,25 @@ public class OperationalMetadataConfig {
     }
 
 
-    /*
-    @Bean(name="metadataSessionFactory")
-    @ConfigurationProperties(prefix = "metadata.sessionfactory")
-    public FactoryBean<SessionFactory> sessionFactory() {
-        LocalSessionFactoryBean factory = new LocalSessionFactoryBean();
-        factory.setDataSource(metadataDataSource());
-        factory.setPackagesToScan("com.thinkbiganalytics.metadata.jpa");
-        return factory;
-    }
-    */
+    /**
+     * Return the entity manager
+     * the datasource bean is configured in the base services application
+     *
+     * @param dataSource the datasource to use as the connection for the entity manager
+     * @return the entity manager
+     */
     @Bean(name = "operationalMetadataJpaEntityManager")
     public EntityManager entityManager(@Qualifier("dataSource") DataSource dataSource) {
         return entityManagerFactory(dataSource).createEntityManager();
     }
 
+    /**
+     * Return the JPA transaction manager
+     * @param dataSource
+     * @return the JPA transaction manager
+     */
     @Bean(name = "operationalMetadataTransactionManager")
     public PlatformTransactionManager transactionManager(@Qualifier("dataSource") DataSource dataSource) {
-//        HibernateTransactionManager xtnMgr = new HibernateTransactionManager();
-//        xtnMgr.setSessionFactory(sessionFactory());
         JpaTransactionManager xtnMgr = new JpaTransactionManager(entityManagerFactory(dataSource));
         xtnMgr.setDataSource(dataSource);
         xtnMgr.setTransactionSynchronization(AbstractPlatformTransactionManager.SYNCHRONIZATION_ALWAYS);
@@ -84,12 +84,21 @@ public class OperationalMetadataConfig {
         return xtnMgr;
     }
 
+    /**
+     * Return the HibernateJpaVender
+     * @return the Hibernate JPA Vendor
+     */
     @Bean
     public JpaVendorAdapter jpaVendorAdapter() {
         return new HibernateJpaVendorAdapter();
     }
 
 
+    /**
+     * Return the entity manager factory for Hibernate
+     * @param dataSource
+     * @return the Hibernate entity manager factory
+     */
     @Bean(name = "operationalMetadataEntityManagerFactory")
     public EntityManagerFactory entityManagerFactory(@Qualifier("dataSource") DataSource dataSource) {
         LocalContainerEntityManagerFactoryBean emfBean = new LocalContainerEntityManagerFactoryBean();
@@ -100,18 +109,31 @@ public class OperationalMetadataConfig {
         return emfBean.getObject();
     }
 
+    /**
+     * Return the QueryDSL JPA factory
+     * @param em
+     * @return the Query DSL JPA factory
+     */
     @Bean
     public JPAQueryFactory jpaQueryFactory(@Qualifier("operationalMetadataEntityManagerFactory") EntityManager em) {
         return new JPAQueryFactory(em);
     }
 
 
+    /**
+     * Return the Transaction Manager wrapper
+     * @return the access manager
+     */
     @Bean(name = "operationalMetadataAccess")
     public OperationalMetadataTransactionTemplateMetadataAccess metadataAccess() {
         return new OperationalMetadataTransactionTemplateMetadataAccess();
     }
 
 
+    /**
+     * Return the JPA Service Level Assessor uses to assess ServiceLevelAgreements
+     * @return the service level agreement assessor
+     */
     @Bean(name = "slaAssessor")
     public ServiceLevelAssessor serviceLevelAssessor() {
         return new JpaServiceLevelAssessor();

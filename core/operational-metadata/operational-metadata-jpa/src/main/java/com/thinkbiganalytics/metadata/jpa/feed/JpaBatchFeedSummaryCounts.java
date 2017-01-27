@@ -25,6 +25,7 @@ package com.thinkbiganalytics.metadata.jpa.feed;
  */
 
 import com.thinkbiganalytics.jpa.BaseJpaId;
+import com.thinkbiganalytics.metadata.api.feed.BatchFeedSummaryCounts;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 
 import java.io.Serializable;
