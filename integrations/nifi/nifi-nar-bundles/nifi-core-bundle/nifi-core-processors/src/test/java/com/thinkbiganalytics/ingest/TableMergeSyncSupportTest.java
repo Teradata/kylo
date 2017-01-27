@@ -74,14 +74,14 @@ public class TableMergeSyncSupportTest {
         "hive-test-support/create_table.sql"
     }, encoding = "UTF-8")
     private HiveShell hiveShell;
-    private String sourceSchema = "emp_sr";
-    private String sourceTable = "employee_valid";
-    private String targetSchema = "emp_sr";
-    private String targetTable = "employee";
-    private String targetTableNP = "employee_np";
-    private String processingPartition = "20160119074340";
-    private PartitionSpec spec = new PartitionSpec("country|string|country\nyear|int|year(hired)");
-    private PartitionSpec specNP = new PartitionSpec("");
+    private final String sourceSchema = "emp_sr";
+    private final String sourceTable = "employee_valid";
+    private final String targetSchema = "emp_sr";
+    private final String targetTable = "employee";
+    private final String targetTableNP = "employee_np";
+    private final String processingPartition = "20160119074340";
+    private final PartitionSpec spec = new PartitionSpec("country|string|country\nyear|int|year(hired)");
+    private final PartitionSpec specNP = new PartitionSpec("");
 
     @Before
     public void setupSupport() {
@@ -435,7 +435,7 @@ public class TableMergeSyncSupportTest {
     }
 
 
-    private void doTestMergeNoProcessingDttm(String targetTable, PartitionSpec spec) throws SQLException {
+    private void doTestMergeNoProcessingDttm(String targetTable, PartitionSpec spec) {
 
         List<String> results = fetchEmployees(targetSchema, targetTable);
         assertEquals(1, results.size());
@@ -470,7 +470,7 @@ public class TableMergeSyncSupportTest {
     }
 
 
-    private void doTestMergePK(String targetSchema, String targetTable, PartitionSpec spec) throws SQLException {
+    private void doTestMergePK(String targetSchema, String targetTable, PartitionSpec spec) {
 
         List<String> results = fetchEmployees(targetSchema, targetTable);
         assertEquals(1, results.size());
@@ -531,7 +531,7 @@ public class TableMergeSyncSupportTest {
     /*
     Test ability to strip records that match the ID but are in a different partition than the newer record
      */
-    private void doTestMergePKWithDifferentPartitions(String targetSchema, String targetTable, PartitionSpec spec) throws SQLException {
+    private void doTestMergePKWithDifferentPartitions(String targetSchema, String targetTable, PartitionSpec spec) {
 
         // Insert one record to start
         hiveShell.execute(

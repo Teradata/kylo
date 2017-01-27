@@ -159,7 +159,7 @@
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>license-maven-plugin</artifactId>
         <configuration>
-          <excludes>
+          <excludes combine.children="append">
             <exclude>**/JdbcCommon.java</exclude>
           </excludes>
         </configuration>

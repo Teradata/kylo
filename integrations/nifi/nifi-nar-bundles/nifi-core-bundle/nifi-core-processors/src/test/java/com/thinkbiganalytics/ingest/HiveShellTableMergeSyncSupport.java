@@ -55,7 +55,7 @@ public class HiveShellTableMergeSyncSupport extends TableMergeSyncSupport {
 
     private HiveShell shell;
 
-    public HiveShellTableMergeSyncSupport(HiveShell shell) {
+    public HiveShellTableMergeSyncSupport(HiveShell shell) throws SQLException {
         super(Mockito.mock(Connection.class));
         Connection conn = super.conn;
 
