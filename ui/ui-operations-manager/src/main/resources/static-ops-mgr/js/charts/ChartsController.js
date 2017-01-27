@@ -107,7 +107,7 @@
             var successFn = function (response) {
                 if (response.data) {
 
-                    self.feedNames = response.data;
+                    self.feedNames = _.unique(response.data);
                     self.feedNames.unshift('All');
                 }
             }
