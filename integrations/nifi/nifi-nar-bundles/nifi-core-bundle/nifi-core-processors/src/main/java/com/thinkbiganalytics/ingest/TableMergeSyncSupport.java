@@ -373,10 +373,9 @@ public class TableMergeSyncSupport implements Serializable {
     /**
      * Produces a where clause that limits to the impacted partitions of the target table
      *
-     * @param batches           a list of partition batches
-     * @param useSourceColumns  a boolean value to decide whether to use the source columns or target columns
-     *
-     * @return  a where clause sql string
+     * @param batches          a list of partition batches
+     * @param useSourceColumns a boolean value to decide whether to use the source columns or target columns
+     * @return a where clause sql string
      */
     private String targetPartitionsWhereClause(List<PartitionBatch> batches, boolean useSourceColumns) {
         List<String> targetPartitionsItems = new Vector<>();

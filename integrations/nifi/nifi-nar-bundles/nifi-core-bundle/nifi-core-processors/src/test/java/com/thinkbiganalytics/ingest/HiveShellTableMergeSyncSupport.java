@@ -58,6 +58,7 @@ public class HiveShellTableMergeSyncSupport extends TableMergeSyncSupport {
     public HiveShellTableMergeSyncSupport(HiveShell shell) {
         super(Mockito.mock(Connection.class));
         Connection conn = super.conn;
+
         Statement st = Mockito.mock(Statement.class);
         try {
             Mockito.when(conn.createStatement()).thenReturn(st);
