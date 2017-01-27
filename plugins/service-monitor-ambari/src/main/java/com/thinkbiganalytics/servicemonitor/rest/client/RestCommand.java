@@ -25,12 +25,9 @@ import org.springframework.core.GenericTypeResolver;
 import java.util.Map;
 
 /**
- * Created by sr186054 on 10/1/15.
+ * Superclass for REST commands
  */
 public abstract class RestCommand<T> {
-
-  private String url;
-  private Map<String, Object> parameters;
 
   public String getPathString() {
     return null;
@@ -42,8 +39,6 @@ public abstract class RestCommand<T> {
   public void beforeRestRequest() {
 
   }
-
-  ;
 
   public abstract String payload();
 
@@ -59,10 +54,10 @@ public abstract class RestCommand<T> {
 
 
   public String getUrl() {
-    return url;
+    return null;
   }
 
   public Map<String, Object> getParameters() {
-    return parameters;
+    return null;
   }
 }

@@ -23,6 +23,8 @@ package com.thinkbiganalytics.servicemonitor.rest.client.ambari;
 import com.thinkbiganalytics.rest.JerseyClientConfig;
 
 /**
+ * Configuration for Ambari REST client
+ *
  * Created by sr186054 on 10/16/15.
  */
 public class AmbariJerseyRestClientConfig extends JerseyClientConfig {
@@ -42,7 +44,8 @@ public class AmbariJerseyRestClientConfig extends JerseyClientConfig {
         this.apiPath = apiPath;
     }
 
-    public AmbariJerseyRestClientConfig(String host, String username, String password, boolean https, boolean keystoreOnClasspath, String keystorePath, String keystorePassword, String apiPath) {
+    public AmbariJerseyRestClientConfig(String host, String username, String password, boolean https,
+                                        boolean keystoreOnClasspath, String keystorePath, String keystorePassword, String apiPath) {
         super(host, username, password, https, keystoreOnClasspath, keystorePath, keystorePassword);
         this.apiPath = apiPath;
     }

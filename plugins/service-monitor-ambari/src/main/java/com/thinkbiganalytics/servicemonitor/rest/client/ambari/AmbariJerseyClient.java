@@ -37,6 +37,8 @@ import java.util.Map;
 import javax.ws.rs.client.WebTarget;
 
 /**
+ * Ambari REST client.
+ *
  * Created by sr186054 on 11/3/16.
  */
 public class AmbariJerseyClient extends JerseyRestClient implements AmbariClient {
@@ -49,8 +51,7 @@ public class AmbariJerseyClient extends JerseyRestClient implements AmbariClient
     }
 
     protected WebTarget getTargetFromPath(String path) {
-        WebTarget target = client.target(uri + apiPath + path);
-        return target;
+        return client.target(uri + apiPath + path);
 
     }
 
@@ -60,7 +61,7 @@ public class AmbariJerseyClient extends JerseyRestClient implements AmbariClient
     }
 
 
-    protected <T> T get(RestCommand<T> restCommand) {
+    private <T> T get(RestCommand<T> restCommand) {
         restCommand.beforeRestRequest();
         Map<String, Object> parameters = restCommand.getParameters();
         String url = restCommand.getUrl();
@@ -75,7 +76,9 @@ public class AmbariJerseyClient extends JerseyRestClient implements AmbariClient
 
     }
 
-
+    /**
+     * @see AmbariClient#getAmbariClusterNames()
+     */
     public List<String> getAmbariClusterNames() {
         List<String> clusterNames = new ArrayList<>();
         ClusterList clusterList = get(new AmbariGetClustersCommand());
@@ -96,6 +99,9 @@ public class AmbariJerseyClient extends JerseyRestClient implements AmbariClient
     }
 
 
+    /**
+     * @see AmbariClient#getServiceComponentInfo(List, String)
+     */
     public ServiceComponentInfoSummary getServiceComponentInfo(List<String> clusterNames, String services) {
         ServiceComponentInfoSummary summary = null;
         for (String clusterName : clusterNames) {
@@ -115,6 +121,9 @@ public class AmbariJerseyClient extends JerseyRestClient implements AmbariClient
 
     }
 
+    /**
+     * @see AmbariClient#getAlerts(List, String)
+     */
     public AlertSummary getAlerts(List<String> clusterNames, String services) throws RestClientException {
         AlertSummary alerts = null;
         for (String clusterName : clusterNames) {

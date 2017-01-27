@@ -31,21 +31,23 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * A command to get alert summary. Creates a request similar to the following:
+ * http://localhost:8080/api/v1/clusters/Sandbox/alerts?fields=*&Alert/service_name.in%28HDFS%29
+ *
+ * @see AlertSummary
+ *
  * Created by sr186054 on 10/2/15.
  */
-
 public class AmbariAlertsCommand extends AmbariServiceCheckRestCommand<AlertSummary> {
-//http://localhost:8080/api/v1/clusters/Sandbox/alerts?fields=*&Alert/service_name.in%28HDFS%29
 
-  List<String> serviceList;
-  Map<String, Object> parameters;
-  StringBuffer sb = new StringBuffer();
+  private Map<String, Object> parameters;
+  private StringBuffer sb = new StringBuffer();
 
   public String getPathString() {
     return "?" + sb.toString();
   }
 
-  public AmbariAlertsCommand(String clusterName, String services) {
+  AmbariAlertsCommand(String clusterName, String services) {
     super(clusterName, services);
   }
 
@@ -58,11 +60,11 @@ public class AmbariAlertsCommand extends AmbariServiceCheckRestCommand<AlertSumm
   public void beforeRestRequest() {
     sb = new StringBuffer();
     super.beforeRestRequest();
-    serviceList = ServiceMonitorCheckUtil.getServiceNames(this.getServices());
+    List<String> serviceList = ServiceMonitorCheckUtil.getServiceNames(this.getServices());
     String serviceString = StringUtils.join(serviceList, ",");
     parameters = new HashMap<>();
     sb.append("fields=*");
-    sb.append("&Alert/service_name.in(" + serviceString + ")");
+    sb.append("&Alert/service_name.in(").append(serviceString).append(")");
   }
 
   @Override

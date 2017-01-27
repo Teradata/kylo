@@ -26,6 +26,8 @@ import com.thinkbiganalytics.servicemonitor.rest.client.RestCommand;
 import org.apache.commons.lang3.StringUtils;
 
 /**
+ * Superclass for checking status of Ambari services.
+ *
  * Created by sr186054 on 10/12/15.
  */
 public class AmbariServiceCheckRestCommand<T> extends RestCommand<T> {
@@ -33,7 +35,7 @@ public class AmbariServiceCheckRestCommand<T> extends RestCommand<T> {
   private String clusterName;
   private String services;
 
-  public AmbariServiceCheckRestCommand(String clusterName, String services) {
+  AmbariServiceCheckRestCommand(String clusterName, String services) {
     super();
     this.clusterName = clusterName;
     this.services = services;
@@ -54,15 +56,8 @@ public class AmbariServiceCheckRestCommand<T> extends RestCommand<T> {
   }
 
 
-  public String getClusterName() {
+  String getClusterName() {
     return clusterName;
   }
 
-  public void setClusterName(String clusterName) {
-    this.clusterName = clusterName;
-  }
-
-  public boolean isActive() {
-    return StringUtils.isNotBlank(getServices());
-  }
 }

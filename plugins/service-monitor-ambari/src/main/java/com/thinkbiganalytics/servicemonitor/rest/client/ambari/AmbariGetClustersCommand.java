@@ -26,7 +26,7 @@ import com.thinkbiganalytics.servicemonitor.rest.model.ambari.ClusterList;
 import java.util.Map;
 
 /**
- * Created by sr186054 on 10/2/15.
+ * A command to get list of clusters
  */
 
 public class AmbariGetClustersCommand extends RestCommand<ClusterList> {
@@ -41,7 +41,6 @@ public class AmbariGetClustersCommand extends RestCommand<ClusterList> {
     return "/clusters";
   }
 
-  @Override
   public Map<String, Object> getParameters() {
     return null;
   }

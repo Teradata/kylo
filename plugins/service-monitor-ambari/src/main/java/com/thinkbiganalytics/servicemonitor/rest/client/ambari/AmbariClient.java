@@ -28,14 +28,29 @@ import org.springframework.web.client.RestClientException;
 import java.util.List;
 
 /**
- * Created by sr186054 on 11/3/16.
+ * Defines an interface for Ambari clients
  */
 public interface AmbariClient {
 
+    /**
+     * @return a list of cluster names defined in Ambari
+     */
     List<String> getAmbariClusterNames();
 
+    /**
+     * @param clusterNames
+     * @param services
+     * @return Summary for all services
+     * @throws RestClientException
+     */
     ServiceComponentInfoSummary getServiceComponentInfo(List<String> clusterNames, String services)
         throws RestClientException;
 
+    /**
+     * @param clusterNames
+     * @param services
+     * @return Summary for all alerts
+     * @throws RestClientException
+     */
     AlertSummary getAlerts(List<String> clusterNames, String services) throws RestClientException;
 }

@@ -20,7 +20,6 @@ package com.thinkbiganalytics.servicemonitor.check;
  * #L%
  */
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.thinkbiganalytics.servicemonitor.model.DefaultServiceAlert;
 import com.thinkbiganalytics.servicemonitor.model.DefaultServiceComponent;
@@ -39,7 +38,6 @@ import com.thinkbiganalytics.servicemonitor.support.ServiceMonitorCheckUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.client.RestClientException;
 
@@ -49,6 +47,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
+
+import javax.inject.Inject;
 
 /**
  * Ambari Service bean autowired in via the ServiceStatusManager looking for this ServicesStatusCheck interface
@@ -66,36 +67,38 @@ public class AmbariServicesStatusCheck implements ServicesStatusCheck {
     private String services;
 
 
-    @Autowired
+    @Inject
     private AmbariClient ambariClient;
 
 
     private void notifyServiceDown(ServiceStatusResponse serviceStatusResponse) {
         //called every time a service is marked as down/unhealthy
+        LOG.debug("Ambari service is {}", serviceStatusResponse.getState());
     }
 
     private void notifyServiceUp(ServiceStatusResponse serviceStatusResponse) {
         //called every time a service is marked as healthy
+        LOG.debug("Ambari service is {}", serviceStatusResponse.getState());
     }
 
-    /*
-    https://github.com/apache/ambari/blob/trunk/ambari-server/docs/api/v1/host-component-resources.md
-
-    State 	Description
-    INIT 	The initial clean state after the component is first created.
-    INSTALLING 	In the process of installing the component.
-    INSTALL_FAILED 	The component install failed.
-    INSTALLED 	The component has been installed successfully but is not currently running.
-    STARTING 	In the process of starting the component.
-    STARTED 	The component has been installed and started.
-    STOPPING 	In the process of stopping the component.
-    UNINSTALLING 	In the process of uninstalling the component.
-    UNINSTALLED 	The component has been successfully uninstalled.
-    WIPING_OUT 	In the process of wiping out the installed component.
-    UPGRADING 	In the process of upgrading the component.
-    MAINTENANCE 	The component has been marked for maintenance.
-    UNKNOWN 	The component state can not be determined.
-    */
+    /**
+     * https://github.com/apache/ambari/blob/trunk/ambari-server/docs/api/v1/host-component-resources.md
+     *
+     * State 	Description                                                                          <br>
+     * INIT 	The initial clean state after the component is first created.                        <br>
+     * INSTALLING 	In the process of installing the component.                                  <br>
+     * INSTALL_FAILED 	The component install failed.                                                <br>
+     * INSTALLED 	The component has been installed successfully but is not currently running.  <br>
+     * STARTING 	In the process of starting the component.                                    <br>
+     * STARTED 	The component has been installed and started.                                        <br>
+     * STOPPING 	In the process of stopping the component.                                    <br>
+     * UNINSTALLING 	In the process of uninstalling the component.                                <br>
+     * UNINSTALLED 	The component has been successfully uninstalled.                             <br>
+     * WIPING_OUT 	In the process of wiping out the installed component.                        <br>
+     * UPGRADING 	In the process of upgrading the component.                                   <br>
+     * MAINTENANCE 	The component has been marked for maintenance.                               <br>
+     * UNKNOWN 	The component state can not be determined.                                           <br>
+     */
     @Override
     public List<ServiceStatusResponse> healthCheck() {
 
@@ -146,20 +149,17 @@ public class AmbariServicesStatusCheck implements ServicesStatusCheck {
      * @param ambariServiceComponents
      * @param serviceAlerts
      * @param definedServiceComponentMap
-     * @return
      */
     private List<ServiceStatusResponse> transformAmbariServiceComponents(ServiceComponentInfoSummary ambariServiceComponents,
                                                                          List<ServiceAlert> serviceAlerts,
                                                                          Map<String, List<String>> definedServiceComponentMap) {
         List<ServiceStatusResponse> list = new ArrayList<>();
         if (ambariServiceComponents != null) {
-            Map<String, List<ServiceComponent>> serviceComponentMap = new HashMap<String, List<ServiceComponent>>();
+            Map<String, List<ServiceComponent>> serviceComponentMap = new HashMap<>();
 
             for (ServiceComponentInfoItem item : ambariServiceComponents.getItems()) {
                 ServiceComponent.STATE state = getServiceComponentState(item);
-                StringBuilder stringBuilder = new StringBuilder();
-                stringBuilder.append(item.getServiceComponentInfo().getState());
-                String message = stringBuilder.toString();
+                String message = item.getServiceComponentInfo().getState();
 
                 String name = item.getServiceComponentInfo().getComponentName();
                 String serviceName = item.getServiceComponentInfo().getServiceName();
@@ -171,7 +171,7 @@ public class AmbariServicesStatusCheck implements ServicesStatusCheck {
                         .build();
 
                 if (!serviceComponentMap.containsKey(component.getServiceName())) {
-                    serviceComponentMap.put(component.getServiceName(), new ArrayList<ServiceComponent>());
+                    serviceComponentMap.put(component.getServiceName(), new ArrayList<>());
                 }
 
                 if (definedServiceComponentMap.get(component.getServiceName()).contains(ServiceMonitorCheckUtil.ALL_COMPONENTS)
@@ -266,18 +266,12 @@ public class AmbariServicesStatusCheck implements ServicesStatusCheck {
      * return a matching List of ServiceAlerts based upon the incoming component name
      * @param alerts
      * @param component
-     * @return
      */
     private List<ServiceAlert> alertsForComponent(List<ServiceAlert> alerts, final String component) {
-        Predicate<ServiceAlert> predicate = new Predicate<ServiceAlert>() {
-            @Override
-            public boolean apply(ServiceAlert alert) {
-                return alert.getComponentName() != null && alert.getComponentName().equals(component);
-            }
-        };
-        Collection<ServiceAlert> matchingAlerts = Collections2.filter(alerts, predicate);
+        Predicate<ServiceAlert> predicate = alert -> alert.getComponentName() != null && alert.getComponentName().equals(component);
+        Collection<ServiceAlert> matchingAlerts = Collections2.filter(alerts, predicate::test);
         if (matchingAlerts != null && !matchingAlerts.isEmpty()) {
-            return new ArrayList<ServiceAlert>(matchingAlerts);
+            return new ArrayList<>(matchingAlerts);
         }
         return null;
     }
@@ -286,15 +280,10 @@ public class AmbariServicesStatusCheck implements ServicesStatusCheck {
      * get the list of alerts for a give service name
      */
     private List<ServiceAlert> alertsForService(List<ServiceAlert> alerts, final String service) {
-        Predicate<ServiceAlert> predicate = new Predicate<ServiceAlert>() {
-            @Override
-            public boolean apply(ServiceAlert alert) {
-                return alert.getServiceName() != null && alert.getServiceName().equals(service);
-            }
-        };
-        Collection<ServiceAlert> matchingAlerts = Collections2.filter(alerts, predicate);
+        Predicate<ServiceAlert> predicate = alert -> alert.getServiceName() != null && alert.getServiceName().equals(service);
+        Collection<ServiceAlert> matchingAlerts = Collections2.filter(alerts, predicate::test);
         if (matchingAlerts != null && !matchingAlerts.isEmpty()) {
-            return new ArrayList<ServiceAlert>(matchingAlerts);
+            return new ArrayList<>(matchingAlerts);
         }
         return null;
     }
@@ -303,9 +292,8 @@ public class AmbariServicesStatusCheck implements ServicesStatusCheck {
     /**
      * Transform the ambari alerts to Kylo service alerts
      * @param alertSummary
-     * @return
      */
-    public List<ServiceAlert> transformAmbariAlert(AlertSummary alertSummary) {
+    private List<ServiceAlert> transformAmbariAlert(AlertSummary alertSummary) {
         List<ServiceAlert> serviceAlerts = new ArrayList<>();
         if (alertSummary != null) {
             List<AlertItem> alertItems = alertSummary.getItems();
@@ -334,10 +322,6 @@ public class AmbariServicesStatusCheck implements ServicesStatusCheck {
             }
         }
         return serviceAlerts;
-    }
-
-    protected void setAmbariClient(AmbariClient ambariClient) {
-        this.ambariClient = ambariClient;
     }
 
     protected void setServices(String services) {
