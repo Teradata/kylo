@@ -70,7 +70,7 @@
               <goal>shade</goal>
             </goals>
             <configuration>
-              <dependencyReducedPomLocation>${project.build.directory}/dependency-reduced-pom.xml</dependencyReducedPomLocation>
+              <createDependencyReducedPom>false</createDependencyReducedPom>
               <artifactSet>
                 <includes>
                   <include>com.thinkbiganalytics.datalake:thinkbig-ranger-rest-client</include>
