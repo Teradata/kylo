@@ -21,15 +21,34 @@ package com.thinkbiganalytics.metadata.api.jobrepo.nifi;
  */
 
 /**
- * Created by sr186054 on 9/18/16.
+ * Links a given {@link NifiEvent} to a {@link com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecution}
+ *
  */
 public interface NifiEventStepExecution {
 
+    /**
+     * Return the NiFi event Id
+     *
+     * @return the event id
+     */
     Long getEventId();
 
+    /**
+     * Return the NiFi FlowFileId
+     * @return the flowfile id
+     */
     String getFlowFileId();
 
+    /**
+     * Return the NiFi Processor/Component id
+     * @return the NiFi processor/component id
+     */
     String getComponentId();
 
+    /**
+     * Return the flow file for the start of this job.
+     * This event could may be associated with a child flow file that points back to a parent flow file that started the job.  This is the reference back to the parent job.
+     * @return the job flow file id
+     */
     String getJobFlowFileId();
 }

@@ -38,6 +38,9 @@ public interface OpsManagerFeed {
         FEED, CHECK
     }
 
+    /**
+     * The ID for the Feed
+     */
     interface ID extends Serializable {
 
     }

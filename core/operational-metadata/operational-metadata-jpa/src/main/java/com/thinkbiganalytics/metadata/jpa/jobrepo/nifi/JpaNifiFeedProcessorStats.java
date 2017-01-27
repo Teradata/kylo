@@ -31,7 +31,6 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 
 /**
  * Created by sr186054 on 8/17/16.
@@ -111,11 +110,6 @@ public class JpaNifiFeedProcessorStats implements NifiFeedProcessorStats {
 
     @Column(name = "CLUSTER_NODE_ADDRESS")
     protected String clusterNodeAddress;
-
-
-
-    @Transient
-    protected Long resultSetCount;
 
 
     public JpaNifiFeedProcessorStats(String feedName, String processorId) {
@@ -338,17 +332,6 @@ public class JpaNifiFeedProcessorStats implements NifiFeedProcessorStats {
     public void setMaxEventTime(DateTime maxEventTime) {
         this.maxEventTime = maxEventTime;
     }
-
-    @Override
-    public Long getResultSetCount() {
-        return resultSetCount;
-    }
-
-    @Override
-    public void setResultSetCount(Long resultSetCount) {
-        this.resultSetCount = resultSetCount;
-    }
-
 
     @Override
     public Long getMaxEventId() {

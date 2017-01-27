@@ -245,10 +245,10 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
      */
     private boolean updateJobType(BatchJobExecution jobExecution, ProvenanceEventRecordDTO event) {
 
-        if (event.getUpdatedAttributes() != null && (event.getUpdatedAttributes().containsKey(NIFI_JOB_TYPE_PROPERTY) || event.getUpdatedAttributes().containsKey(NIFI_JOB_TYPE_PROPERTY2))) {
+        if (event.getUpdatedAttributes() != null && (event.getUpdatedAttributes().containsKey(NIFI_JOB_TYPE_PROPERTY) || event.getUpdatedAttributes().containsKey(NIFI_KYLO_JOB_TYPE_PROPERTY))) {
             String jobType = event.getUpdatedAttributes().get(NIFI_JOB_TYPE_PROPERTY);
             if (StringUtils.isBlank(jobType)) {
-                jobType = event.getUpdatedAttributes().get(NIFI_JOB_TYPE_PROPERTY2);
+                jobType = event.getUpdatedAttributes().get(NIFI_KYLO_JOB_TYPE_PROPERTY);
             }
             String nifiCategory = event.getAttributeMap().get(NIFI_CATEGORY_PROPERTY);
             String nifiFeedName = event.getAttributeMap().get(NIFI_FEED_PROPERTY);

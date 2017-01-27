@@ -21,11 +21,20 @@ package com.thinkbiganalytics.metadata.api.jobrepo.nifi;
  */
 
 /**
- * Created by sr186054 on 9/18/16.
+ * Relates parent feed/job flow files together.
+ * As a feed gets processed NiFi may take a few parent feed flows and eventually merge them together into a single feed flow.
+ * This relates all the flow files together
  */
 public interface NifiRelatedRootFlowFiles {
 
+    /**
+     * The NiFi event and job execution relationship
+     */
     NifiEventJobExecution getEventJobExecution();
 
+    /**
+     * the NiFi event
+     * @return
+     */
     NifiEvent getEvent();
 }

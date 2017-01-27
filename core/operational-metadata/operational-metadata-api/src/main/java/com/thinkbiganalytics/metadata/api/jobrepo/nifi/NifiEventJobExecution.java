@@ -23,15 +23,30 @@ package com.thinkbiganalytics.metadata.api.jobrepo.nifi;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 
 /**
- * Created by sr186054 on 9/18/16.
+ * Links a given {@link NifiEvent} to a {@link BatchJobExecution}
  */
 public interface NifiEventJobExecution {
 
+    /**
+     * Return the batch job execution associated with this event
+     */
     BatchJobExecution getJobExecution();
 
+    /**
+     * set the nifi event id
+     * @param eventId
+     */
     void setEventId(Long eventId);
 
+    /**
+     * Return the nifi event id
+     * @return the event id
+     */
     Long getEventId();
 
+    /**
+     * Return the nifi flowfile id
+     * @return the nifi flowfile id
+     */
     String getFlowFileId();
 }

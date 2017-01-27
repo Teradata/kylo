@@ -21,7 +21,7 @@ package com.thinkbiganalytics.metadata.api.jobrepo.job;
  */
 
 /**
- * Commonilters used to query the {@link BatchJobExecution} data
+ * Common Filters used to query the {@link BatchJobExecution} data
  */
 public interface BatchJobExecutionFilters {
 

@@ -20,18 +20,41 @@ package com.thinkbiganalytics.metadata.api.jobrepo.step;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
+
 /**
- * Created by sr186054 on 9/18/16.
+ * The value of some context attribute captured during the execution of a job and step
  */
 public interface BatchStepExecutionContextValue {
 
+    /**
+     * Return the step this context value belongs to
+     *
+     * @return the step this context value belongs to
+     */
     BatchStepExecution getStepExecution();
 
+    /**
+     * Return the name of this attribute
+     * @return the name of this attribute
+     */
     String getKeyName();
 
+    /**
+     * Return a unique id representing this value
+     * @return a unique id representing this value
+     */
     String getId();
 
+    /**
+     * Return the job execution id {@link BatchJobExecution#getJobExecutionId()}
+     * @return the job execution id
+     */
     Long getJobExecutionId();
 
+    /**
+     * return the actual value of this key
+     * @return
+     */
     String getStringVal();
 }

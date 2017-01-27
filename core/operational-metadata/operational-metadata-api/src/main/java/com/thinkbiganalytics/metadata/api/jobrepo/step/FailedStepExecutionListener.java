@@ -27,6 +27,9 @@ import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
  */
 public interface FailedStepExecutionListener {
 
+    /**
+     * called when a Step is marked as a Failure.   This is called before the step is persisted. Listeners have the ability to modify/add data to the StepExecutionContext before it is persisted.
+     */
     void failedStep(BatchJobExecution jobExecution, BatchStepExecution stepExecution, String flowFileId, String componentId);
 
 }

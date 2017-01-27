@@ -26,32 +26,45 @@ import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import java.util.List;
 
 /**
- * Created by sr186054 on 10/24/16.
+ * Provider for accessing {@link BatchStepExecution} data
  */
 public interface BatchStepExecutionProvider {
 
 
     /**
-     * Update a StepExecution record
+     *  Update a StepExecution record
+     * @param stepExecution
+     * @return
      */
     BatchStepExecution update(BatchStepExecution stepExecution);
 
     /**
      * For a given JobExecution ensure the steps matching the nifi failed events are failed, if the Job is indicated as having failures
+     * @param jobExecution
+     * @return
      */
     boolean ensureFailureSteps(BatchJobExecution jobExecution);
 
     /**
      * Create a new StepExecution record  from a Provenance Event Record
+     * @param jobExecution
+     * @param event
+     * @return
      */
     BatchStepExecution createStepExecution(BatchJobExecution jobExecution, ProvenanceEventRecordDTO event);
 
     /**
      * When a step fails, get notified of the failure
+     * @param listener
      */
     void subscribeToFailedSteps(FailedStepExecutionListener listener);
 
 
+    /**
+     * Return all the step executions for a given job execution id
+     *
+     * @return the steps pertaining to a given job
+     */
     List<? extends BatchStepExecution> getSteps(Long jobExecutionId);
 
 }

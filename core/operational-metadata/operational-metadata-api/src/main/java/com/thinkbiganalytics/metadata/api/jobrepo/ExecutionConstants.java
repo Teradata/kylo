@@ -26,11 +26,17 @@ package com.thinkbiganalytics.metadata.api.jobrepo;
 public interface ExecutionConstants {
 
 
+    /**
+     * Common data types for the {@link com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecutionContextValue}, {@link com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionContextValue},
+     * and {@link com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionParameter}
+     */
     enum ParamType {
         STRING, DOUBLE, DATE, LONG
     }
 
-
+    /**
+     * Exit codes indicating how a {@link com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution} and {@link com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecution} finish
+     */
     enum ExitCode {
         COMPLETED,
         STOPPED,

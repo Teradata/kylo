@@ -94,8 +94,10 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
     }
 
 
-    @Override
-    public List<? extends JpaNifiFeedProcessorStats> findForFeed(String feedName, DateTime start, DateTime end) {
+    /**
+     * Find stats for a given feed between the two dates not grouped
+     */
+    private List<? extends JpaNifiFeedProcessorStats> findForFeed(String feedName, DateTime start, DateTime end) {
         QJpaNifiFeedProcessorStats stats = QJpaNifiFeedProcessorStats.jpaNifiFeedProcessorStats;
         Iterable<JpaNifiFeedProcessorStats> result = statisticsRepository.findAll(stats.feedName.eq(feedName).and(withinDateTime(start, end)));
         if (result != null) {

@@ -23,18 +23,46 @@ package com.thinkbiganalytics.metadata.api.jobrepo.nifi;
 import org.joda.time.DateTime;
 
 /**
- * Created by sr186054 on 9/18/16.
+ * Represents information about the NiFi Provenance event taken from the {@link com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO}
  */
 public interface NifiEvent {
 
+    /**
+     * Return the NiFi event ID
+     * the {@link this#getFlowFileId()}  + this eventId determine uniqueness of this record
+     */
     Long getEventId();
 
+    /**
+     * Return the flowfile id for this event
+     * the {@link this#getEventId()} + this flowFileId determine uniqueness of this record
+     * @return
+     */
+    String getFlowFileId();
+
+    /**
+     * Return the name of the feed
+     *
+     * @return the name of the feed
+     */
     String getFeedName();
 
+    /**
+     * Return the NiFi processor/component id
+     * @return the nifi processor/component id
+     */
     String getProcessorId();
 
+    /**
+     * Return the display name of the processor
+     * @return the display name of the processor
+     */
     String getProcessorName();
 
+    /**
+     * Return the process group id for the feed that this event partakes in
+     * @return
+     */
     String getFeedProcessGroupId();
 
     String getEventDetails();

@@ -25,19 +25,45 @@ import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import java.util.List;
 
 /**
- * Created by sr186054 on 9/18/16.
+ * Represents the Batch job instance.
+ * A job instance can hold multiple references to job executions if a job is replayed/rerun.
  */
 public interface BatchJobInstance {
 
+    /**
+     * Return the job instance id
+     *
+     * @return the job instance id
+     */
     Long getJobInstanceId();
 
+    /**
+     * Return the version of the job instance
+     * @return the version for this job instance
+     */
     Long getVersion();
 
+    /**
+     * Return the name of the job.
+     * @return the name of the job
+     */
     String getJobName();
 
+    /**
+     * Return a unique key identifying this job instance
+     * @return a unique key identifying this job instance
+     */
     String getJobKey();
 
+    /**
+     * Return a list of all job executions attached to this job instance
+     * @return a list of all job executions attached to this job instance
+     */
     List<BatchJobExecution> getJobExecutions();
 
+    /**
+     * Return the feed for which this job instance belongs to
+     * @return the feed attached to this job instance
+     */
     OpsManagerFeed getFeed();
 }

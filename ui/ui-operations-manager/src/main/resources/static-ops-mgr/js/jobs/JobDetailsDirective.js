@@ -102,7 +102,7 @@
             self.jobExecutionId = executionId;
             this.relatedJob = self.jobExecutionId;
             loadJobData();
-            loadRelatedJobs();
+            //   loadRelatedJobs();
         }
 
         this.init();
@@ -218,7 +218,8 @@
             var errorFn = function(err) {
             }
 
-            $http.get(JobData.RELATED_JOBS_URL(self.jobExecutionId)).then(successFn, errorFn);
+            //todo uncomment once related job are linked and working
+            // $http.get(JobData.RELATED_JOBS_URL(self.jobExecutionId)).then(successFn, errorFn);
         }
 
         function updateRelatedJobIndex() {
@@ -434,8 +435,7 @@
             });
 
             loadJobData(true);
-            loadRelatedJobs(executionId);
-            //selectFirstTab();
+            //  loadRelatedJobs(executionId);
         }
 
         function addJobErrorMessage(executionId, errMsg) {
