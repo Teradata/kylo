@@ -84,7 +84,7 @@ public class TableMergeSyncSupportTest {
     private final PartitionSpec specNP = new PartitionSpec("");
 
     @Before
-    public void setupSupport() {
+    public void setupSupport() throws SQLException {
         this.mergeSyncSupport = new HiveShellTableMergeSyncSupport(hiveShell);
         mergeSyncSupport.enableDynamicPartitions();
     }
