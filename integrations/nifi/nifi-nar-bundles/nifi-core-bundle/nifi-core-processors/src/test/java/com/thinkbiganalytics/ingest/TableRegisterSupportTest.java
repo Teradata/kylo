@@ -50,7 +50,6 @@ import static org.junit.Assert.assertNotNull;
 @RunWith(StandaloneHiveRunner.class)
 public class TableRegisterSupportTest {
 
-    final Connection connection = Mockito.mock(Connection.class);
     /**
      * Explicit test class configuration of the HiveRunner runtime. See {@link HiveRunnerConfig} for further details.
      */
@@ -58,7 +57,7 @@ public class TableRegisterSupportTest {
     public final HiveRunnerConfig CONFIG = new HiveRunnerConfig() {{
         setHiveExecutionEngine("mr");
     }};
-
+    final Connection connection = Mockito.mock(Connection.class);
     /**
      * Cater for all the parameters in the script that we want to test. Note that the "hadoop.tmp.dir" is one of the dirs defined by the test harness
      */
@@ -66,7 +65,7 @@ public class TableRegisterSupportTest {
     public Map<String, String> hiveProperties = MapUtils.putAll(new HashMap<String, String>(), new String[]{
         "MY.HDFS.DIR", "${hadoop.tmp.dir}",
         "my.schema", "bar",
-    });
+        });
 
     /**
      * Define the script files under test. The files will be loaded in the given order. <p/> The HiveRunner instantiate and inject the HiveShell
@@ -121,13 +120,15 @@ public class TableRegisterSupportTest {
         }
     }
 
-    /** Verify dropping a table. */
+    /**
+     * Verify dropping a table.
+     */
     @Test
     public void testDropTable() throws Exception {
         // Mock SQL objects
         final Statement statement = Mockito.mock(Statement.class);
         Mockito.when(statement.execute(Mockito.anyString())).then(invocation -> {
-            final String sql = (String)invocation.getArguments()[0];
+            final String sql = (String) invocation.getArguments()[0];
             if (sql.equals("DROP TABLE IF EXISTS `invalid`")) {
                 throw new SQLException();
             }
@@ -145,19 +146,23 @@ public class TableRegisterSupportTest {
         Assert.assertFalse(support.dropTable("`invalid`"));
     }
 
-    /** Verify exception if the connection is null. */
+    /**
+     * Verify exception if the connection is null.
+     */
     @Test(expected = NullPointerException.class)
     public void testDropTableWithNullConnection() {
         new TableRegisterSupport(null).dropTable("invalid");
     }
 
-    /** Verify dropping multiple tables. */
+    /**
+     * Verify dropping multiple tables.
+     */
     @Test
     public void testDropTables() throws Exception {
         // Mock SQL objects
         final Statement statement = Mockito.mock(Statement.class);
         Mockito.when(statement.execute(Mockito.anyString())).then(invocation -> {
-            final String sql = (String)invocation.getArguments()[0];
+            final String sql = (String) invocation.getArguments()[0];
             if (sql.startsWith("DROP TABLE IF EXISTS `invalid`")) {
                 throw new SQLException();
             }

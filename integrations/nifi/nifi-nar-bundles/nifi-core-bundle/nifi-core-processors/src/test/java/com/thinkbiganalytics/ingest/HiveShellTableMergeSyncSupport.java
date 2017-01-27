@@ -391,23 +391,23 @@ public class HiveShellTableMergeSyncSupport extends TableMergeSyncSupport {
         }
 
         @Override
-        public void setFetchDirection(int direction) throws SQLException {
-            rs.setFetchDirection(direction);
-        }
-
-        @Override
         public int getFetchDirection() throws SQLException {
             return rs.getFetchDirection();
         }
 
         @Override
-        public void setFetchSize(int rows) throws SQLException {
-            rs.setFetchSize(rows);
+        public void setFetchDirection(int direction) throws SQLException {
+            rs.setFetchDirection(direction);
         }
 
         @Override
         public int getFetchSize() throws SQLException {
             return rs.getFetchSize();
+        }
+
+        @Override
+        public void setFetchSize(int rows) throws SQLException {
+            rs.setFetchSize(rows);
         }
 
         @Override

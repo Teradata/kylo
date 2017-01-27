@@ -32,7 +32,9 @@ import static org.junit.Assert.assertTrue;
 
 public class ColumnSpecTest {
 
-    /** Verify the DDL for creating the column. */
+    /**
+     * Verify the DDL for creating the column.
+     */
     @Test
     public void toCreateSQL() {
         final ColumnSpec[] specs = ColumnSpec.createFromString("col1|string");
@@ -40,7 +42,9 @@ public class ColumnSpecTest {
         Assert.assertEquals("`col1` string", specs[0].toCreateSQL());
     }
 
-    /** Verify the DDL for creating the partition. */
+    /**
+     * Verify the DDL for creating the partition.
+     */
     @Test
     public void toPartitionSQL() {
         final ColumnSpec[] specs = ColumnSpec.createFromString("col1|string");
@@ -48,7 +52,9 @@ public class ColumnSpecTest {
         Assert.assertEquals("`col1` string", specs[0].toPartitionSQL());
     }
 
-    /** Verify the join query. */
+    /**
+     * Verify the join query.
+     */
     @Test
     public void toPrimaryKeyJoinSQL() {
         final ColumnSpec[] specs = ColumnSpec.createFromString("col1|string|pk1|1|0|0\ncol2|int\ncol3|int|pk2|1|0|0");
@@ -56,22 +62,24 @@ public class ColumnSpecTest {
         Assert.assertEquals("`a`.`col1` = `b`.`col1` AND `a`.`col3` = `b`.`col3`", ColumnSpec.toPrimaryKeyJoinSQL(specs, "a", "b"));
     }
 
-    /** Verify the primary key identifiers. */
+    /**
+     * Verify the primary key identifiers.
+     */
     @Test
     public void toPrimaryKeys() {
         final ColumnSpec[] specs = ColumnSpec.createFromString("col1|string|pk1|1|0|0\ncol2|int\ncol3|int|pk2|1|0|0");
         Assert.assertNotNull(specs);
-        Assert.assertArrayEquals(new String[] {"`col1`", "`col3`"}, ColumnSpec.toPrimaryKeys(specs));
+        Assert.assertArrayEquals(new String[]{"`col1`", "`col3`"}, ColumnSpec.toPrimaryKeys(specs));
     }
 
     @Test
     public void testFromString() throws IOException {
         ColumnSpec[] specs = ColumnSpec.createFromString("col1|string|my comment\ncol2|int\ncol3|string|foo description\ncol4|string");
-        assertTrue("Expecting 4 parts", specs.length==4);
+        assertTrue("Expecting 4 parts", specs.length == 4);
         assertTrue(specs[0].getComment().equals("my comment"));
 
         ColumnSpec[] specs2 = ColumnSpec.createFromString("col1|string|my comment|1|0|0\ncol2|int\ncol3|string|foo description\ncol4|string||BAD|1|1");
-        assertTrue("Expecting 4 parts", specs.length==4);
+        assertTrue("Expecting 4 parts", specs.length == 4);
         assertTrue(specs2[0].isPk());
         assertFalse(specs2[0].isCreateDt());
         assertFalse(specs2[0].isModifiedDt());

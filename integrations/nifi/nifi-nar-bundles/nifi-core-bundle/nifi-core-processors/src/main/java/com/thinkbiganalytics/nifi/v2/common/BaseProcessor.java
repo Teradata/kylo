@@ -23,17 +23,17 @@ package com.thinkbiganalytics.nifi.v2.common;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import com.thinkbiganalytics.nifi.processor.AbstractNiFiProcessor;
 
 import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.processor.ProcessorInitializationContext;
 import org.apache.nifi.processor.Relationship;
 
-import com.thinkbiganalytics.nifi.processor.AbstractNiFiProcessor;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author Sean Felten

@@ -51,8 +51,8 @@ public class BatchLoadStatusImpl implements BatchLoadStatus {
     @Override
     public String toString() {
         return "BatchLoadStatusImpl{" +
-                "batchId=" + batchId +
-                ", lastLoadDate=" + lastLoadDate +
-                '}';
+               "batchId=" + batchId +
+               ", lastLoadDate=" + lastLoadDate +
+               '}';
     }
 }

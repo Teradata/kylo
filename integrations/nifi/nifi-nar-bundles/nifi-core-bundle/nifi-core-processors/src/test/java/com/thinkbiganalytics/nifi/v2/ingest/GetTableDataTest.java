@@ -75,16 +75,24 @@ import javax.annotation.Nonnull;
 
 public class GetTableDataTest {
 
-    /** Identifier for JDBC service */
+    /**
+     * Identifier for JDBC service
+     */
     private static final String JDBC_SERVICE_IDENTIFIER = "MockDBCPService";
 
-    /** Identifier for Metadata service */
+    /**
+     * Identifier for Metadata service
+     */
     private static final String METADATA_SERVICE_IDENTIFIER = "MockMetadataProviderService";
 
-    /** Test runner */
+    /**
+     * Test runner
+     */
     private final TestRunner runner = TestRunners.newTestRunner(GetTableData.class);
 
-    /** Initialize instance variables */
+    /**
+     * Initialize instance variables
+     */
     @Before
     public void setUp() throws Exception {
         // Setup services
@@ -102,13 +110,17 @@ public class GetTableDataTest {
         runner.setProperty(GetTableData.TABLE_SPECS, "id\nfirst_name\nlast_name\nemail  \n last_updated  \n\n");
     }
 
-    /** Reset current time */
+    /**
+     * Reset current time
+     */
     @After
     public void tearDown() {
         DateTimeUtils.setCurrentMillisSystem();
     }
 
-    /** Verify property validators */
+    /**
+     * Verify property validators
+     */
     @Test
     public void testValidators() {
         // Test with no properties
@@ -128,7 +140,9 @@ public class GetTableDataTest {
         Assert.assertEquals(0, results.size());
     }
 
-    /** Verify Avro output. */
+    /**
+     * Verify Avro output.
+     */
     @Test
     public void testAvro() throws IOException {
         // Trigger processor
@@ -138,7 +152,7 @@ public class GetTableDataTest {
 
         List<MockFlowFile> flowFiles = runner.getFlowFilesForRelationship(CommonProperties.REL_SUCCESS);
         Assert.assertEquals(0, runner.getFlowFilesForRelationship(CommonProperties.REL_FAILURE).size());
-        Assert.assertEquals(0, runner.getFlowFilesForRelationship(GetTableData.REL_NODATA).size());
+        Assert.assertEquals(0, runner.getFlowFilesForRelationship(GetTableData.REL_NO_DATA).size());
         Assert.assertEquals(1, flowFiles.size());
         Assert.assertEquals("2", flowFiles.get(0).getAttribute(GetTableData.RESULT_ROW_COUNT));
         Assert.assertEquals("2", flowFiles.get(0).getAttribute(ComponentAttributes.NUM_SOURCE_RECORDS.key()));
@@ -146,14 +160,14 @@ public class GetTableDataTest {
         // Build Avro record reader
         final SeekableInput avroInput = new SeekableByteArrayInput(flowFiles.get(0).toByteArray());
         final Schema schema = SchemaBuilder
-                .record("NiFi_ExecuteSQL_Record").namespace("any.data")
-                .fields()
-                    .name("id").type().nullable().intType().noDefault()
-                    .name("first_name").type().nullable().stringType().noDefault()
-                    .name("last_name").type().nullable().stringType().noDefault()
-                    .name("email").type().nullable().stringType().noDefault()
-                    .name("last_updated").type().nullable().stringType().noDefault()
-                .endRecord();
+            .record("NiFi_ExecuteSQL_Record").namespace("any.data")
+            .fields()
+            .name("id").type().nullable().intType().noDefault()
+            .name("first_name").type().nullable().stringType().noDefault()
+            .name("last_name").type().nullable().stringType().noDefault()
+            .name("email").type().nullable().stringType().noDefault()
+            .name("last_updated").type().nullable().stringType().noDefault()
+            .endRecord();
         final DatumReader<GenericRecord> datumReader = new GenericDatumReader<>(schema);
         final DataFileReader<GenericRecord> dataReader = new DataFileReader<>(avroInput, datumReader);
 
@@ -174,7 +188,9 @@ public class GetTableDataTest {
         Assert.assertEquals(new Utf8("2006-02-15T03:57:16.000Z"), records.get(1).get(4));
     }
 
-    /** Verify an incremental load from the database. */
+    /**
+     * Verify an incremental load from the database.
+     */
     @Test
     public void testIncremental() {
         // Test first load
@@ -187,15 +203,15 @@ public class GetTableDataTest {
 
         List<MockFlowFile> flowFiles = runner.getFlowFilesForRelationship(CommonProperties.REL_SUCCESS);
         Assert.assertEquals(0, runner.getFlowFilesForRelationship(CommonProperties.REL_FAILURE).size());
-        Assert.assertEquals(0, runner.getFlowFilesForRelationship(GetTableData.REL_NODATA).size());
+        Assert.assertEquals(0, runner.getFlowFilesForRelationship(GetTableData.REL_NO_DATA).size());
         Assert.assertEquals(1, flowFiles.size());
         Assert.assertEquals("3", flowFiles.get(0).getAttribute(GetTableData.RESULT_ROW_COUNT));
         Assert.assertEquals("3", flowFiles.get(0).getAttribute(ComponentAttributes.NUM_SOURCE_RECORDS.key()));
         Assert.assertEquals("2006-02-15T04:47:30", flowFiles.get(0).getAttribute(ComponentAttributes.HIGH_WATER_DATE.key()));
         flowFiles.get(0).assertContentEquals("id,first_name,last_name,email,last_updated\n"
-                + "1,MARY,SMITH,MARY.SMITH@sakilacustomer.org,2006-02-15T04:32:21.000Z\n"
-                + "2,PATRICIA,JOHNSON,PATRICIA.JOHNSON@sakilacustomer.org,2006-02-15T04:25:50.000Z\n"
-                + "3,LINDA,WILLIAMS,LINDA.WILLIAMS@sakilacustomer.org,2006-02-15T04:47:30.000Z\n");
+                                             + "1,MARY,SMITH,MARY.SMITH@sakilacustomer.org,2006-02-15T04:32:21.000Z\n"
+                                             + "2,PATRICIA,JOHNSON,PATRICIA.JOHNSON@sakilacustomer.org,2006-02-15T04:25:50.000Z\n"
+                                             + "3,LINDA,WILLIAMS,LINDA.WILLIAMS@sakilacustomer.org,2006-02-15T04:47:30.000Z\n");
 
         // Test second load
         DateTimeUtils.setCurrentMillisFixed(1139983200000L);
@@ -205,18 +221,20 @@ public class GetTableDataTest {
 
         flowFiles = runner.getFlowFilesForRelationship(CommonProperties.REL_SUCCESS);
         Assert.assertEquals(0, runner.getFlowFilesForRelationship(CommonProperties.REL_FAILURE).size());
-        Assert.assertEquals(0, runner.getFlowFilesForRelationship(GetTableData.REL_NODATA).size());
+        Assert.assertEquals(0, runner.getFlowFilesForRelationship(GetTableData.REL_NO_DATA).size());
         Assert.assertEquals(1, flowFiles.size());
         Assert.assertEquals("3", flowFiles.get(0).getAttribute(GetTableData.RESULT_ROW_COUNT));
         Assert.assertEquals("3", flowFiles.get(0).getAttribute(ComponentAttributes.NUM_SOURCE_RECORDS.key()));
         Assert.assertEquals("2006-02-15T05:15:33", flowFiles.get(0).getAttribute(ComponentAttributes.HIGH_WATER_DATE.key()));
         flowFiles.get(0).assertContentEquals("id,first_name,last_name,email,last_updated\n"
-                + "3,LINDA,WILLIAMS,LINDA.WILLIAMS@sakilacustomer.org,2006-02-15T04:47:30.000Z\n"
-                + "4,BARBARA,JONES,BARBARA.JONES@sakilacustomer.org,2006-02-15T04:57:14.000Z\n"
-                + "5,ELIZABETH,BROWN,ELIZABETH.BROWN@sakilacustomer.org,2006-02-15T05:15:33.000Z\n");
+                                             + "3,LINDA,WILLIAMS,LINDA.WILLIAMS@sakilacustomer.org,2006-02-15T04:47:30.000Z\n"
+                                             + "4,BARBARA,JONES,BARBARA.JONES@sakilacustomer.org,2006-02-15T04:57:14.000Z\n"
+                                             + "5,ELIZABETH,BROWN,ELIZABETH.BROWN@sakilacustomer.org,2006-02-15T05:15:33.000Z\n");
     }
 
-    /** Verify a full load from the database. */
+    /**
+     * Verify a full load from the database.
+     */
     @Test
     public void testFullLoad() {
         runner.enqueue(new byte[0]);
@@ -224,16 +242,18 @@ public class GetTableDataTest {
 
         List<MockFlowFile> flowFiles = runner.getFlowFilesForRelationship(CommonProperties.REL_SUCCESS);
         Assert.assertEquals(0, runner.getFlowFilesForRelationship(CommonProperties.REL_FAILURE).size());
-        Assert.assertEquals(0, runner.getFlowFilesForRelationship(GetTableData.REL_NODATA).size());
+        Assert.assertEquals(0, runner.getFlowFilesForRelationship(GetTableData.REL_NO_DATA).size());
         Assert.assertEquals(1, flowFiles.size());
         Assert.assertEquals("2", flowFiles.get(0).getAttribute(GetTableData.RESULT_ROW_COUNT));
         Assert.assertEquals("2", flowFiles.get(0).getAttribute(ComponentAttributes.NUM_SOURCE_RECORDS.key()));
         flowFiles.get(0).assertContentEquals("id,first_name,last_name,email,last_updated\n"
-                + "1,Mike,Hillyer,Mike.Hillyer@sakilastaff.com,2006-02-15T03:57:16.000Z\n"
-                + "2,Jon,Stephens,Jon.Stephens@sakilastaff.com,2006-02-15T03:57:16.000Z\n");
+                                             + "1,Mike,Hillyer,Mike.Hillyer@sakilastaff.com,2006-02-15T03:57:16.000Z\n"
+                                             + "2,Jon,Stephens,Jon.Stephens@sakilastaff.com,2006-02-15T03:57:16.000Z\n");
     }
 
-    /** Verify output for no data. */
+    /**
+     * Verify output for no data.
+     */
     @Test
     public void testNoData() {
         runner.setProperty(GetTableData.TABLE_NAME, "empty");
@@ -241,7 +261,7 @@ public class GetTableDataTest {
         runner.enqueue(new byte[0]);
         runner.run();
 
-        List<MockFlowFile> flowFiles = runner.getFlowFilesForRelationship(GetTableData.REL_NODATA);
+        List<MockFlowFile> flowFiles = runner.getFlowFilesForRelationship(GetTableData.REL_NO_DATA);
         Assert.assertEquals(0, runner.getFlowFilesForRelationship(CommonProperties.REL_FAILURE).size());
         Assert.assertEquals(0, runner.getFlowFilesForRelationship(CommonProperties.REL_SUCCESS).size());
         Assert.assertEquals(1, flowFiles.size());
@@ -250,7 +270,9 @@ public class GetTableDataTest {
         flowFiles.get(0).assertContentEquals("id,email\n");
     }
 
-    /** Verify using a custom output delimiter. */
+    /**
+     * Verify using a custom output delimiter.
+     */
     @Test
     public void testOutputDelimiter() {
         runner.setProperty(GetTableData.OUTPUT_DELIMITER, "|");
@@ -259,13 +281,13 @@ public class GetTableDataTest {
 
         List<MockFlowFile> flowFiles = runner.getFlowFilesForRelationship(CommonProperties.REL_SUCCESS);
         Assert.assertEquals(0, runner.getFlowFilesForRelationship(CommonProperties.REL_FAILURE).size());
-        Assert.assertEquals(0, runner.getFlowFilesForRelationship(GetTableData.REL_NODATA).size());
+        Assert.assertEquals(0, runner.getFlowFilesForRelationship(GetTableData.REL_NO_DATA).size());
         Assert.assertEquals(1, flowFiles.size());
         Assert.assertEquals("2", flowFiles.get(0).getAttribute(GetTableData.RESULT_ROW_COUNT));
         Assert.assertEquals("2", flowFiles.get(0).getAttribute(ComponentAttributes.NUM_SOURCE_RECORDS.key()));
         flowFiles.get(0).assertContentEquals("id|first_name|last_name|email|last_updated\n"
-                + "1|Mike|Hillyer|Mike.Hillyer@sakilastaff.com|2006-02-15T03:57:16.000Z\n"
-                + "2|Jon|Stephens|Jon.Stephens@sakilastaff.com|2006-02-15T03:57:16.000Z\n");
+                                             + "1|Mike|Hillyer|Mike.Hillyer@sakilastaff.com|2006-02-15T03:57:16.000Z\n"
+                                             + "2|Jon|Stephens|Jon.Stephens@sakilastaff.com|2006-02-15T03:57:16.000Z\n");
     }
 
     /**
@@ -273,10 +295,14 @@ public class GetTableDataTest {
      */
     private class MockDBCPService extends AbstractControllerService implements DBCPService {
 
-        /** A SQL connection */
+        /**
+         * A SQL connection
+         */
         final Connection connection = Mockito.mock(Connection.class);
 
-        /** A SQL statement */
+        /**
+         * A SQL statement
+         */
         final Statement statement = Mockito.mock(Statement.class);
 
         /**
@@ -284,7 +310,8 @@ public class GetTableDataTest {
          */
         MockDBCPService() throws Exception {
             Mockito.when(connection.createStatement()).thenReturn(statement);
-            Mockito.when(connection.prepareStatement("select id,first_name,last_name,email,last_updated from mytable WHERE last_updated > ? and last_updated < ?")).then(invocation -> getIncrementalResults());
+            Mockito.when(connection.prepareStatement("select id,first_name,last_name,email,last_updated from mytable WHERE last_updated > ? and last_updated < ?"))
+                .then(invocation -> getIncrementalResults());
 
             Mockito.when(statement.executeQuery("SELECT id,email FROM empty")).then(invocation -> getEmptyResults());
             Mockito.when(statement.executeQuery("SELECT id,first_name,last_name,email,last_updated FROM mytable")).then(invocation -> getSimpleResults());
@@ -299,7 +326,7 @@ public class GetTableDataTest {
          * Creates a {@link ResultSet} for the specified metadata and rows.
          *
          * @param metadata the result set metadata
-         * @param rows the rows in the result set
+         * @param rows     the rows in the result set
          * @return a new result set
          * @throws SQLException never
          */
@@ -390,12 +417,12 @@ public class GetTableDataTest {
             Mockito.when(metadata.getColumnType(5)).thenReturn(Types.TIMESTAMP);
 
             final Object[][] rows = new Object[][]{
-                    new Object[]{1, "MARY", "SMITH", "MARY.SMITH@sakilacustomer.org", new Timestamp(1139977941000L)},
-                    new Object[]{2, "PATRICIA", "JOHNSON", "PATRICIA.JOHNSON@sakilacustomer.org", new Timestamp(1139977550000L)},
-                    new Object[]{3, "LINDA", "WILLIAMS", "LINDA.WILLIAMS@sakilacustomer.org", new Timestamp(1139978850000L)},
-                    new Object[]{4, "BARBARA", "JONES", "BARBARA.JONES@sakilacustomer.org", new Timestamp(1139979434000L)},
-                    new Object[]{5, "ELIZABETH", "BROWN", "ELIZABETH.BROWN@sakilacustomer.org", new Timestamp(1139980533000L)},
-            };
+                new Object[]{1, "MARY", "SMITH", "MARY.SMITH@sakilacustomer.org", new Timestamp(1139977941000L)},
+                new Object[]{2, "PATRICIA", "JOHNSON", "PATRICIA.JOHNSON@sakilacustomer.org", new Timestamp(1139977550000L)},
+                new Object[]{3, "LINDA", "WILLIAMS", "LINDA.WILLIAMS@sakilacustomer.org", new Timestamp(1139978850000L)},
+                new Object[]{4, "BARBARA", "JONES", "BARBARA.JONES@sakilacustomer.org", new Timestamp(1139979434000L)},
+                new Object[]{5, "ELIZABETH", "BROWN", "ELIZABETH.BROWN@sakilacustomer.org", new Timestamp(1139980533000L)},
+                };
 
             final AtomicReference<Timestamp> before = new AtomicReference<>();
             final AtomicReference<Timestamp> after = new AtomicReference<>();
@@ -438,8 +465,8 @@ public class GetTableDataTest {
             Mockito.when(metadata.getTableName(Mockito.anyInt())).thenReturn("mytable");
 
             final Object[][] rows = new Object[][]{
-                    new Object[]{1, "Mike", "Hillyer", "Mike.Hillyer@sakilastaff.com", new Timestamp(1139975836000L)},
-                    new Object[]{2, "Jon", "Stephens", "Jon.Stephens@sakilastaff.com", new Timestamp(1139975836000L)}
+                new Object[]{1, "Mike", "Hillyer", "Mike.Hillyer@sakilastaff.com", new Timestamp(1139975836000L)},
+                new Object[]{2, "Jon", "Stephens", "Jon.Stephens@sakilastaff.com", new Timestamp(1139975836000L)}
             };
 
             return getResultSet(metadata, rows);

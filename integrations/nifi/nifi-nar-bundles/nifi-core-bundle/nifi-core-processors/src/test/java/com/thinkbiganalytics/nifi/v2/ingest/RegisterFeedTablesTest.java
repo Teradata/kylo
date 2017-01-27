@@ -20,10 +20,8 @@ package com.thinkbiganalytics.nifi.v2.ingest;
  * #L%
  */
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.Statement;
-import java.util.Collection;
+import com.google.common.collect.ImmutableMap;
+import com.thinkbiganalytics.nifi.v2.thrift.ThriftService;
 
 import org.apache.nifi.components.ValidationResult;
 import org.apache.nifi.controller.AbstractControllerService;
@@ -37,21 +35,31 @@ import org.junit.Test;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 
-import com.google.common.collect.ImmutableMap;
-import com.thinkbiganalytics.nifi.v2.thrift.ThriftService;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.Collection;
 
 public class RegisterFeedTablesTest {
 
-    /** Identifier for thrift service */
+    /**
+     * Identifier for thrift service
+     */
     private static final String THRIFT_SERVICE_IDENTIFIER = "MockThriftService";
 
-    /** Test runner */
+    /**
+     * Test runner
+     */
     private final TestRunner runner = TestRunners.newTestRunner(RegisterFeedTables.class);
 
-    /** Mock thrift service */
+    /**
+     * Mock thrift service
+     */
     private MockThriftService thriftService;
 
-    /** Initialize instance variables */
+    /**
+     * Initialize instance variables
+     */
     @Before
     public void setUp() throws Exception {
         // Setup thrift service
@@ -63,15 +71,19 @@ public class RegisterFeedTablesTest {
         runner.setProperty(IngestProperties.THRIFT_SERVICE, THRIFT_SERVICE_IDENTIFIER);
     }
 
-    /** Verify no properties are required. */
+    /**
+     * Verify no properties are required.
+     */
     @Test
     public void testValidators() {
         runner.enqueue(new byte[0]);
-        Collection<ValidationResult> results = ((MockProcessContext)runner.getProcessContext()).validate();
+        Collection<ValidationResult> results = ((MockProcessContext) runner.getProcessContext()).validate();
         Assert.assertEquals(0, results.size());
     }
 
-    /** Verify registering tables. */
+    /**
+     * Verify registering tables.
+     */
     @Test
     public void testRegisterTables() throws Exception {
         // Test with only required properties
@@ -134,8 +146,9 @@ public class RegisterFeedTablesTest {
                                                         + "PARTITIONED BY (`processing_dttm` string)  STORED AS PARQUET LOCATION '/model.db/movies/artists/valid' "
                                                         + "TBLPROPERTIES (\"comment\"=\"Movie Actors\")");
         inOrder.verify(thriftService.statement).close();
-        inOrder.verify(thriftService.statement).execute("CREATE TABLE IF NOT EXISTS `movies`.`artists` (`id` int, `first_name` string, `last_name` string, processing_dttm string)   PARTITIONED BY (`year` int)  "
-                                                        + "STORED AS PARQUET LOCATION '/app/warehouse/movies/artists' TBLPROPERTIES (\"comment\"=\"Movie Actors\")");
+        inOrder.verify(thriftService.statement)
+            .execute("CREATE TABLE IF NOT EXISTS `movies`.`artists` (`id` int, `first_name` string, `last_name` string, processing_dttm string)   PARTITIONED BY (`year` int)  "
+                     + "STORED AS PARQUET LOCATION '/app/warehouse/movies/artists' TBLPROPERTIES (\"comment\"=\"Movie Actors\")");
         inOrder.verify(thriftService.statement).close();
         inOrder.verify(thriftService.statement).execute("CREATE TABLE IF NOT EXISTS `movies`.`artists_profile` ( `columnname` string,`metrictype` string,`metricvalue` string)   "
                                                         + "PARTITIONED BY (`processing_dttm` string)  STORED AS PARQUET LOCATION '/model.db/movies/artists/profile'");
@@ -143,7 +156,9 @@ public class RegisterFeedTablesTest {
         inOrder.verifyNoMoreInteractions();
     }
 
-    /** Verify registering tables with some pre-existing. */
+    /**
+     * Verify registering tables with some pre-existing.
+     */
     @Test
     public void testRegisterTablesWithExisting() throws Exception {
         // Mock 'show table' results
@@ -180,7 +195,9 @@ public class RegisterFeedTablesTest {
         inOrder.verifyNoMoreInteractions();
     }
 
-    /** Verify error for missing category name. */
+    /**
+     * Verify error for missing category name.
+     */
     @Test
     public void testRegisterTablesWithMissingCategory() {
         runner.setProperty(IngestProperties.FIELD_SPECIFICATION, "data|string");
@@ -191,7 +208,9 @@ public class RegisterFeedTablesTest {
         Assert.assertEquals(0, runner.getFlowFilesForRelationship(IngestProperties.REL_SUCCESS).size());
     }
 
-    /** Verify error for missing feed name. */
+    /**
+     * Verify error for missing feed name.
+     */
     @Test
     public void testRegisterTablesWithMissingFeed() {
         runner.setProperty(IngestProperties.FIELD_SPECIFICATION, "data|string");
@@ -203,7 +222,9 @@ public class RegisterFeedTablesTest {
         Assert.assertEquals(0, runner.getFlowFilesForRelationship(IngestProperties.REL_SUCCESS).size());
     }
 
-    /** Verify error for missing field specification. */
+    /**
+     * Verify error for missing field specification.
+     */
     @Test
     public void testRegisterTablesWithMissingFieldSpecification() {
         runner.enqueue(new byte[0], ImmutableMap.of("metadata.category.systemName", "movies", "metadata.systemFeedName", "artists"));
@@ -213,7 +234,9 @@ public class RegisterFeedTablesTest {
         Assert.assertEquals(0, runner.getFlowFilesForRelationship(IngestProperties.REL_SUCCESS).size());
     }
 
-    /** Verify registering a single table. */
+    /**
+     * Verify registering a single table.
+     */
     @Test
     public void testRegisterTablesWithTableType() throws Exception {
         runner.setProperty(IngestProperties.FIELD_SPECIFICATION, "id|int\nfirst_name|string\nlast_name|string");
@@ -233,7 +256,9 @@ public class RegisterFeedTablesTest {
         inOrder.verifyNoMoreInteractions();
     }
 
-    /** Verify registering a single table. */
+    /**
+     * Verify registering a single table.
+     */
     @Test
     public void testRegisterTablesWithConfig() throws Exception {
         runner.setProperty(IngestProperties.FIELD_SPECIFICATION, "id|int\nfirst_name|string\nlast_name|string");
@@ -275,13 +300,20 @@ public class RegisterFeedTablesTest {
      * A mock implementation of {@link ThriftService} for unit testing.
      */
     private class MockThriftService extends AbstractControllerService implements ThriftService {
-        /** Query results for {@code SHOW TABLES} */
+
+        /**
+         * Query results for {@code SHOW TABLES}
+         */
         public final ResultSet artistsTablesResults = Mockito.mock(ResultSet.class);
 
-        /** Mock connection for unit testing */
+        /**
+         * Mock connection for unit testing
+         */
         public final Connection connection = Mockito.mock(Connection.class);
 
-        /** Mock statement for unit testing */
+        /**
+         * Mock statement for unit testing
+         */
         public final Statement statement = Mockito.mock(Statement.class);
 
         /**

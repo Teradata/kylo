@@ -23,16 +23,14 @@ package com.thinkbiganalytics.nifi.v2.metadata;
  * #L%
  */
 
-import static com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants.DEST_DATASET_ID_PROP;
-import static com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants.FEED_ID_PROP;
-import static com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants.OPERATON_START_PROP;
-import static com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants.OPERATON_STOP_PROP;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
+import com.thinkbiganalytics.Formatters;
+import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
+import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
+import com.thinkbiganalytics.metadata.rest.model.feed.FeedDestination;
+import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
+import com.thinkbiganalytics.metadata.rest.model.op.DataOperation.State;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProvider;
 
 import org.apache.nifi.annotation.lifecycle.OnScheduled;
 import org.apache.nifi.components.PropertyDescriptor;
@@ -44,14 +42,16 @@ import org.apache.nifi.processor.exception.ProcessException;
 import org.apache.nifi.processor.util.StandardValidators;
 import org.joda.time.DateTime;
 
-import com.thinkbiganalytics.Formatters;
-import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
-import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
-import com.thinkbiganalytics.metadata.rest.model.feed.FeedDestination;
-import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
-import com.thinkbiganalytics.metadata.rest.model.op.DataOperation.State;
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants;
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProvider;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
+
+import static com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants.DEST_DATASET_ID_PROP;
+import static com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants.FEED_ID_PROP;
+import static com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants.OPERATON_START_PROP;
+import static com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants.OPERATON_STOP_PROP;
 
 /**
  * @author Sean Felten
@@ -59,20 +59,20 @@ import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProvider;
 public abstract class AbstractTerminateFeed extends AbstractFeedProcessor {
 
     public static final PropertyDescriptor DEST_DATASET_NAME = new PropertyDescriptor.Builder()
-            .name(DEST_DATASET_ID_PROP)
-            .displayName("Destination destinationDatasource name")
-            .description("The unique name of the destinationDatasource that the feed will update")
-            .required(true)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .build();
+        .name(DEST_DATASET_ID_PROP)
+        .displayName("Destination destinationDatasource name")
+        .description("The unique name of the destinationDatasource that the feed will update")
+        .required(true)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .build();
 
     public static final PropertyDescriptor COMPLETION_RESULT = new PropertyDescriptor.Builder()
-            .name("completion_result")
-            .displayName("Completion result of this feed terminating processor")
-            .description("The completion result of the feed")
-            .allowableValues("SUCCESS", "FAILURE")
-            .required(true)
-            .build();
+        .name("completion_result")
+        .displayName("Completion result of this feed terminating processor")
+        .description("The completion result of the feed")
+        .allowableValues("SUCCESS", "FAILURE")
+        .required(true)
+        .build();
 
 //    public static final Relationship SUCCESS = new Relationship.Builder()
 //            .name("Success")

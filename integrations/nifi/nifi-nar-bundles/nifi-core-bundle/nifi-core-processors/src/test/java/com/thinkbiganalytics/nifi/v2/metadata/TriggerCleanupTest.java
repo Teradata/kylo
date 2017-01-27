@@ -48,16 +48,24 @@ import javax.annotation.Nonnull;
 
 public class TriggerCleanupTest {
 
-    /** Identifier for the cleanup event service */
+    /**
+     * Identifier for the cleanup event service
+     */
     private static final String CLEANUP_SERVICE_IDENTIFIER = "MockCleanupEventService";
 
-    /** Identifier for the metadata provider service */
+    /**
+     * Identifier for the metadata provider service
+     */
     private static final String METADATA_SERVICE_IDENTIFIER = "MockMetadataProviderService";
 
-    /** Test runner */
+    /**
+     * Test runner
+     */
     private final TestRunner runner = TestRunners.newTestRunner(TriggerCleanup.class);
 
-    /** Initialize instance variables. */
+    /**
+     * Initialize instance variables.
+     */
     @Before
     public void setUp() throws Exception {
         // Setup services
@@ -73,14 +81,16 @@ public class TriggerCleanupTest {
         runner.setProperty(TriggerCleanup.METADATA_SERVICE, METADATA_SERVICE_IDENTIFIER);
     }
 
-    /** Verify property validators. */
+    /**
+     * Verify property validators.
+     */
     @Test
     public void testValidators() {
         // Test with no properties
         runner.removeProperty(TriggerCleanup.CLEANUP_SERVICE);
         runner.removeProperty(TriggerCleanup.METADATA_SERVICE);
         runner.enqueue(new byte[0]);
-        Set<String> results = ((MockProcessContext)runner.getProcessContext()).validate().stream().map(Object::toString).collect(Collectors.toSet());
+        Set<String> results = ((MockProcessContext) runner.getProcessContext()).validate().stream().map(Object::toString).collect(Collectors.toSet());
         Assert.assertEquals(2, results.size());
         Assert.assertTrue(results.contains("'Feed Cleanup Event Service' is invalid because Feed Cleanup Event Service is required"));
         Assert.assertTrue(results.contains("'Metadata Provider Service' is invalid because Metadata Provider Service is required"));
@@ -89,20 +99,24 @@ public class TriggerCleanupTest {
         runner.setProperty(TriggerCleanup.CLEANUP_SERVICE, CLEANUP_SERVICE_IDENTIFIER);
         runner.setProperty(TriggerCleanup.METADATA_SERVICE, METADATA_SERVICE_IDENTIFIER);
         runner.enqueue(new byte[0]);
-        Assert.assertEquals(0, ((MockProcessContext)runner.getProcessContext()).validate().size());
+        Assert.assertEquals(0, ((MockProcessContext) runner.getProcessContext()).validate().size());
     }
 
-    /** Verify scheduling the processor. */
+    /**
+     * Verify scheduling the processor.
+     */
     @Test
     public void testScheduled() {
         runner.setProperty(TriggerCleanup.CATEGORY_NAME, "cat");
         runner.setProperty(TriggerCleanup.FEED_NAME, "feed");
         runner.enqueue(new byte[0]);
         runner.run();
-        Assert.assertEquals("feed", ((TriggerCleanup)runner.getProcessor()).getFeedId());
+        Assert.assertEquals("feed", ((TriggerCleanup) runner.getProcessor()).getFeedId());
     }
 
-    /** Verify exception when scheduling the processor. */
+    /**
+     * Verify exception when scheduling the processor.
+     */
     @Test(expected = AssertionError.class)
     public void testScheduledWithException() {
         runner.setProperty(TriggerCleanup.CATEGORY_NAME, "invalid");
@@ -111,12 +125,14 @@ public class TriggerCleanupTest {
         runner.run();
     }
 
-    /** Verify triggering the processor. */
+    /**
+     * Verify triggering the processor.
+     */
     @Test
     public void testTriggered() {
         runner.setProperty(TriggerCleanup.CATEGORY_NAME, "cat");
         runner.setProperty(TriggerCleanup.FEED_NAME, "feed");
-        ((TriggerCleanup)runner.getProcessor()).triggered(new FeedCleanupTriggerEvent("FEEDID"));
+        ((TriggerCleanup) runner.getProcessor()).triggered(new FeedCleanupTriggerEvent("FEEDID"));
         runner.run();
 
         List<MockFlowFile> flowFiles = runner.getFlowFilesForRelationship(TriggerCleanup.REL_SUCCESS);
@@ -125,40 +141,28 @@ public class TriggerCleanupTest {
         flowFiles.get(0).assertAttributeEquals("feed", "feed");
     }
 
-    /** Verify triggering the processor when the cleanup property is disabled. */
+    /**
+     * Verify triggering the processor when the cleanup property is disabled.
+     */
     @Test
     public void testTriggeredWhenDisabled() {
         runner.setProperty(TriggerCleanup.CATEGORY_NAME, "cat");
         runner.setProperty(TriggerCleanup.FEED_NAME, "disabled");
-        ((TriggerCleanup)runner.getProcessor()).triggered(new FeedCleanupTriggerEvent("FEEDID"));
-        runner.run();
-        Assert.assertEquals(0, runner.getFlowFilesForRelationship(TriggerCleanup.REL_SUCCESS).size());
-    }
-
-    /** Verify exception when the metadata service is unavailable. */
-    @Test(expected = AssertionError.class)
-    public void testTriggeredWhenUnavailable() {
-        runner.setProperty(TriggerCleanup.CATEGORY_NAME, "cat");
-        runner.setProperty(TriggerCleanup.FEED_NAME, "unavailable");
-        ((TriggerCleanup)runner.getProcessor()).triggered(new FeedCleanupTriggerEvent("FEEDID"));
+        ((TriggerCleanup) runner.getProcessor()).triggered(new FeedCleanupTriggerEvent("FEEDID"));
         runner.run();
         Assert.assertEquals(0, runner.getFlowFilesForRelationship(TriggerCleanup.REL_SUCCESS).size());
     }
 
     /**
-     * A mock implementation of {@link CleanupEventService} for testing.
+     * Verify exception when the metadata service is unavailable.
      */
-    private class MockCleanupEventService extends AbstractControllerService implements CleanupEventService {
-
-        @Override
-        public void addListener(@Nonnull final String category, @Nonnull final String feedName, @Nonnull final CleanupListener listener) {
-            Assert.assertEquals(runner.getProcessor(), listener);
-        }
-
-        @Override
-        public void removeListener(@Nonnull final CleanupListener listener) {
-            Assert.assertEquals(runner.getProcessor(), listener);
-        }
+    @Test(expected = AssertionError.class)
+    public void testTriggeredWhenUnavailable() {
+        runner.setProperty(TriggerCleanup.CATEGORY_NAME, "cat");
+        runner.setProperty(TriggerCleanup.FEED_NAME, "unavailable");
+        ((TriggerCleanup) runner.getProcessor()).triggered(new FeedCleanupTriggerEvent("FEEDID"));
+        runner.run();
+        Assert.assertEquals(0, runner.getFlowFilesForRelationship(TriggerCleanup.REL_SUCCESS).size());
     }
 
     /**
@@ -199,6 +203,22 @@ public class TriggerCleanupTest {
         @Override
         public MetadataRecorder getRecorder() {
             return null;
+        }
+    }
+
+    /**
+     * A mock implementation of {@link CleanupEventService} for testing.
+     */
+    private class MockCleanupEventService extends AbstractControllerService implements CleanupEventService {
+
+        @Override
+        public void addListener(@Nonnull final String category, @Nonnull final String feedName, @Nonnull final CleanupListener listener) {
+            Assert.assertEquals(runner.getProcessor(), listener);
+        }
+
+        @Override
+        public void removeListener(@Nonnull final CleanupListener listener) {
+            Assert.assertEquals(runner.getProcessor(), listener);
         }
     }
 }

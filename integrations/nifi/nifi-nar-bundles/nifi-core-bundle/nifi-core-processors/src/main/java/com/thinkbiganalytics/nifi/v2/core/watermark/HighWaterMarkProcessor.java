@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.nifi.v2.core.watermark;
 
@@ -23,49 +23,49 @@ package com.thinkbiganalytics.nifi.v2.core.watermark;
  * #L%
  */
 
-import java.util.List;
-import java.util.Set;
+import com.thinkbiganalytics.nifi.v2.common.CommonProperties;
+import com.thinkbiganalytics.nifi.v2.common.FeedProcessor;
 
 import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.util.StandardValidators;
 
-import com.thinkbiganalytics.nifi.v2.common.CommonProperties;
-import com.thinkbiganalytics.nifi.v2.common.FeedProcessor;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Base abstract processor for high-water mark processors.
- * 
+ *
  * @author Sean Felten
  */
 public abstract class HighWaterMarkProcessor extends FeedProcessor {
 
     protected static final PropertyDescriptor HIGH_WATER_MARK = new PropertyDescriptor.Builder()
-                    .name("High-Water Mark")
-                    .description("The name to be given to this high-water mark, stored in the feed's metadata, which records the latest committed water mark value")
-                    .defaultValue("highWaterMark")
-                    .required(true)
-                    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-                    .expressionLanguageSupported(true)
-                    .build();
-    
+        .name("High-Water Mark")
+        .description("The name to be given to this high-water mark, stored in the feed's metadata, which records the latest committed water mark value")
+        .defaultValue("highWaterMark")
+        .required(true)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .build();
+
     protected static final PropertyDescriptor PROPERTY_NAME = new PropertyDescriptor.Builder()
-                    .name("High-Water Mark Value Property Name")
-                    .description("Name of the flow file property which is set to the current high-water mark value for use in "
-                                    + "subsequent processing and commit")
-                    .defaultValue("water.mark")
-                    .required(true)
-                    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-                    .expressionLanguageSupported(true)
-                    .build();
-    
+        .name("High-Water Mark Value Property Name")
+        .description("Name of the flow file property which is set to the current high-water mark value for use in "
+                     + "subsequent processing and commit")
+        .defaultValue("water.mark")
+        .required(true)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .build();
+
     @Override
     protected void addProperties(List<PropertyDescriptor> list) {
         super.addProperties(list);
         list.add(HIGH_WATER_MARK);
         list.add(PROPERTY_NAME);
     }
-    
+
     @Override
     protected void addRelationships(Set<Relationship> set) {
         super.addRelationships(set);

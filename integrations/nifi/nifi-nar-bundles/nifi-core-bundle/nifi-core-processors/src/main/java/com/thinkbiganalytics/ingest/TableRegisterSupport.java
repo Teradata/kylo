@@ -195,8 +195,8 @@ public class TableRegisterSupport {
         StringBuilder sb = new StringBuilder();
         String externalString = (external ? " EXTERNAL " : " ");
         sb.append("CREATE").append(externalString).append("TABLE IF NOT EXISTS ")
-                .append(tableName)
-                .append(" (").append(columnsSQL).append(") ");
+            .append(tableName)
+            .append(" (").append(columnsSQL).append(") ");
 
         if (!StringUtils.isEmpty(partitionSQL)) {
             sb.append(" ").append(partitionSQL);

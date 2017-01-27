@@ -20,12 +20,12 @@ package com.thinkbiganalytics.nifi.v2.ingest;
  * #L%
  */
 
+import com.thinkbiganalytics.nifi.v2.common.CommonProperties;
+import com.thinkbiganalytics.nifi.v2.thrift.ThriftService;
+
 import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.util.StandardValidators;
-
-import com.thinkbiganalytics.nifi.v2.common.CommonProperties;
-import com.thinkbiganalytics.nifi.v2.thrift.ThriftService;
 
 /**
  * Properties shared by ingest components
@@ -47,37 +47,45 @@ public interface IngestProperties extends CommonProperties {
     // Common component properties
     // ---------------------------
 
-    /** Source table schema name */
+    /**
+     * Source table schema name
+     */
     PropertyDescriptor SOURCE_SCHEMA = new PropertyDescriptor.Builder()
-            .name("Source schema")
-            .description("Name of the schema or database for the source table")
-            .required(true)
-            .defaultValue("${metadata.category.systemName}")
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .expressionLanguageSupported(true)
-            .build();
+        .name("Source schema")
+        .description("Name of the schema or database for the source table")
+        .required(true)
+        .defaultValue("${metadata.category.systemName}")
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .build();
 
-    /** Source table name */
+    /**
+     * Source table name
+     */
     PropertyDescriptor SOURCE_TABLE = new PropertyDescriptor.Builder()
-            .name("Source table")
-            .description("Name of the source table")
-            .required(true)
-            .defaultValue("${metadata.systemFeedName}_valid")
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .expressionLanguageSupported(true)
-            .build();
+        .name("Source table")
+        .description("Name of the source table")
+        .required(true)
+        .defaultValue("${metadata.systemFeedName}_valid")
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .build();
 
-    /** Target table schema name */
+    /**
+     * Target table schema name
+     */
     PropertyDescriptor TARGET_SCHEMA = new PropertyDescriptor.Builder()
-            .name("Target schema")
-            .description("Name of the schema or database for the target table")
-            .required(true)
-            .defaultValue("${metadata.category.systemName}")
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .expressionLanguageSupported(true)
-            .build();
+        .name("Target schema")
+        .description("Name of the schema or database for the target table")
+        .required(true)
+        .defaultValue("${metadata.category.systemName}")
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .build();
 
-    /** Target table name */
+    /**
+     * Target table name
+     */
     PropertyDescriptor TARGET_TABLE = new PropertyDescriptor.Builder()
         .name("Target table")
         .description("Name of the target table")

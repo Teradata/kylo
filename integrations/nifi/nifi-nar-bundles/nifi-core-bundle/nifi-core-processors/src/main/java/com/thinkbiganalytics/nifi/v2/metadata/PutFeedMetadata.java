@@ -42,7 +42,6 @@ import org.apache.nifi.components.Validator;
 import org.apache.nifi.expression.AttributeExpression;
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.logging.ComponentLog;
-import org.apache.nifi.processor.AbstractProcessor;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.Relationship;
@@ -65,22 +64,16 @@ import javax.annotation.Nonnull;
                  description = "Updates a feed attribute specified by the Dynamic Property's key with the value specified by the Dynamic Property's value")
 public class PutFeedMetadata extends AbstractNiFiProcessor {
 
-    private static final String METADATA_FIELD_PREFIX = "nifi";
-    private static final Pattern DYNAMIC_ATTRIBUTE_NAME_REGEX = Pattern.compile("^[a-zA-Z0-9][a-zA-Z0-9:_]+");
-
     public static final Relationship REL_SUCCESS = new Relationship.Builder()
         .description("All FlowFiles are routed to this relationship on success").name("success").build();
-
     public static final Relationship REL_FAILURE = new Relationship.Builder()
         .description("All FlowFiles are routed to this relationship on failure").name("failure").build();
-
     public static final PropertyDescriptor METADATA_SERVICE = new PropertyDescriptor.Builder()
         .name("Metadata Provider Service")
         .description("Service supplying the implementations of the various metadata providers.")
         .identifiesControllerService(MetadataProviderService.class)
         .required(true)
         .build();
-
     public static final PropertyDescriptor CATEGORY_NAME = new PropertyDescriptor.Builder()
         .name("Feed Category")
         .description("They category your feed is created under")
@@ -88,7 +81,6 @@ public class PutFeedMetadata extends AbstractNiFiProcessor {
         .expressionLanguageSupported(true)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .build();
-
     public static final PropertyDescriptor FEED_NAME = new PropertyDescriptor.Builder()
         .name("Feed Name")
         .description("They name of the feed")
@@ -96,7 +88,6 @@ public class PutFeedMetadata extends AbstractNiFiProcessor {
         .expressionLanguageSupported(true)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .build();
-
     public static final PropertyDescriptor NAMESPACE = new PropertyDescriptor.Builder()
         .name("Namespace")
         .description("Namespace for the attributes you create. This value will be prepended to the attribute name for storage in the metadata store  ")
@@ -104,13 +95,8 @@ public class PutFeedMetadata extends AbstractNiFiProcessor {
         .expressionLanguageSupported(true)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .build();
-
-    private static final List<String> PROPERTY_LIST_TO_IGNORE = ImmutableList.of(METADATA_SERVICE.getName(), CATEGORY_NAME.getName(), FEED_NAME.getName(), NAMESPACE.getName());
-
-    private static final List<PropertyDescriptor> properties = ImmutableList.of(METADATA_SERVICE, CATEGORY_NAME, FEED_NAME, NAMESPACE);
-
-    private static final Set<Relationship> relationships = ImmutableSet.of(REL_SUCCESS, REL_FAILURE);
-
+    private static final String METADATA_FIELD_PREFIX = "nifi";
+    private static final Pattern DYNAMIC_ATTRIBUTE_NAME_REGEX = Pattern.compile("^[a-zA-Z0-9][a-zA-Z0-9:_]+");
     public static final Validator ATTRIBUTE_KEY_DYANMIC_PROPERTY_NAME_VALIDATOR = new Validator() {
         @Override
         public ValidationResult validate(final String subject, final String input, final ValidationContext context) {
@@ -132,6 +118,9 @@ public class PutFeedMetadata extends AbstractNiFiProcessor {
             return builder.build();
         }
     };
+    private static final List<String> PROPERTY_LIST_TO_IGNORE = ImmutableList.of(METADATA_SERVICE.getName(), CATEGORY_NAME.getName(), FEED_NAME.getName(), NAMESPACE.getName());
+    private static final List<PropertyDescriptor> properties = ImmutableList.of(METADATA_SERVICE, CATEGORY_NAME, FEED_NAME, NAMESPACE);
+    private static final Set<Relationship> relationships = ImmutableSet.of(REL_SUCCESS, REL_FAILURE);
 
     @Override
     public Set<Relationship> getRelationships() {

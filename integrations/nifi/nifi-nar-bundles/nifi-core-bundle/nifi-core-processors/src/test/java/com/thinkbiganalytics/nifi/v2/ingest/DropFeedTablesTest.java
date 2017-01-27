@@ -32,8 +32,6 @@ import org.apache.nifi.util.TestRunners;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.InOrder;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import java.sql.Connection;
@@ -41,16 +39,25 @@ import java.sql.Statement;
 import java.util.Collection;
 
 public class DropFeedTablesTest {
-    /** Identifier for thrift service */
+
+    /**
+     * Identifier for thrift service
+     */
     private static final String THRIFT_SERVICE_IDENTIFIER = "MockThriftService";
 
-    /** Test runner */
+    /**
+     * Test runner
+     */
     private final TestRunner runner = TestRunners.newTestRunner(DropFeedTables.class);
 
-    /** Mock thrift service */
+    /**
+     * Mock thrift service
+     */
     private MockThriftService thriftService;
 
-    /** Initialize instance variables. */
+    /**
+     * Initialize instance variables.
+     */
     @Before
     public void setUp() throws Exception {
         // Setup thrift service
@@ -62,23 +69,27 @@ public class DropFeedTablesTest {
         runner.setProperty(IngestProperties.THRIFT_SERVICE, THRIFT_SERVICE_IDENTIFIER);
     }
 
-    /** Verify property validators. */
+    /**
+     * Verify property validators.
+     */
     @Test
     public void testValidators() {
         // Test with no properties
         runner.enqueue(new byte[0]);
-        Collection<ValidationResult> results = ((MockProcessContext)runner.getProcessContext()).validate();
+        Collection<ValidationResult> results = ((MockProcessContext) runner.getProcessContext()).validate();
         Assert.assertEquals(1, results.size());
         results.forEach((ValidationResult result) -> Assert.assertEquals("'Table Type' is invalid because Table Type is required", result.toString()));
 
         // Test with valid properties
         runner.setProperty(DropFeedTables.TABLE_TYPE, "ALL");
         runner.enqueue(new byte[0]);
-        results = ((MockProcessContext)runner.getProcessContext()).validate();
+        results = ((MockProcessContext) runner.getProcessContext()).validate();
         Assert.assertEquals(0, results.size());
     }
 
-    /** Verify dropping tables. */
+    /**
+     * Verify dropping tables.
+     */
     @Test
     public void testDropTables() throws Exception {
         // Test dropping tables
@@ -98,7 +109,9 @@ public class DropFeedTablesTest {
         Mockito.verifyNoMoreInteractions(thriftService.statement);
     }
 
-    /** Verify dropping tables with additional tables. */
+    /**
+     * Verify dropping tables with additional tables.
+     */
     @Test
     public void testDropTablesWithAdditionalTables() throws Exception {
         // Test dropping tables
@@ -117,7 +130,9 @@ public class DropFeedTablesTest {
         Mockito.verifyNoMoreInteractions(thriftService.statement);
     }
 
-    /** Verify exception for missing category name. */
+    /**
+     * Verify exception for missing category name.
+     */
     @Test
     public void testDropTablesWithMissingCategory() {
         runner.setProperty(DropFeedTables.TABLE_TYPE, "ALL");
@@ -128,7 +143,9 @@ public class DropFeedTablesTest {
         Assert.assertEquals(0, runner.getFlowFilesForRelationship(IngestProperties.REL_SUCCESS).size());
     }
 
-    /** Verify exception for missing feed name. */
+    /**
+     * Verify exception for missing feed name.
+     */
     @Test
     public void testDropTablesWithMissingFeed() {
         runner.setProperty(DropFeedTables.TABLE_TYPE, "ALL");
@@ -139,7 +156,9 @@ public class DropFeedTablesTest {
         Assert.assertEquals(0, runner.getFlowFilesForRelationship(IngestProperties.REL_SUCCESS).size());
     }
 
-    /** Verify dropping tables with a single table type. */
+    /**
+     * Verify dropping tables with a single table type.
+     */
     @Test
     public void testDropTablesWithTableType() throws Exception {
         // Test dropping tables
@@ -156,6 +175,7 @@ public class DropFeedTablesTest {
     }
 
     public class MockThriftService extends AbstractControllerService implements ThriftService {
+
         public final Connection connection = Mockito.mock(Connection.class);
 
         public final Statement statement = Mockito.mock(Statement.class);

@@ -33,7 +33,6 @@ import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.logging.ComponentLog;
-import org.apache.nifi.processor.AbstractProcessor;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.Relationship;
@@ -57,15 +56,13 @@ import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.REL_SUCCESS;
 
 public class RouteOnRegistration extends AbstractNiFiProcessor {
 
-    private final Set<Relationship> relationships;
-
-    // Relationships
-
     public static final Relationship REL_REGISTRATION_REQ = new Relationship.Builder()
         .name("registration_required")
         .description("Registration is required.")
         .build();
 
+    // Relationships
+    private final Set<Relationship> relationships;
     private final List<PropertyDescriptor> propDescriptors;
 
     public RouteOnRegistration() {

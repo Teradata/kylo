@@ -85,32 +85,10 @@ public class GetTableData extends AbstractNiFiProcessor {
 
     public static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter.ISO_DATE_TIME;
     public static final String RESULT_ROW_COUNT = "source.row.count";
-
-    public enum LoadStrategy {
-        FULL_LOAD,
-        INCREMENTAL;
-
-        @Override
-        public String toString() {
-            switch (this) {
-                case FULL_LOAD:
-                    return "FULL_LOAD";
-                case INCREMENTAL:
-                    return "INCREMENTAL";
-            }
-            return null;
-        }
-    }
-
-    private final Set<Relationship> relationships;
-
-    // Relationships
-
-    public static final Relationship REL_NODATA = new Relationship.Builder()
+    public static final Relationship REL_NO_DATA = new Relationship.Builder()
         .name("nodata")
         .description("Successful but no new data to process.")
         .build();
-
     public static final PropertyDescriptor JDBC_SERVICE = new PropertyDescriptor.Builder()
         .name("Source Database Connection")
         .description("The database where the source table resides")
@@ -118,6 +96,7 @@ public class GetTableData extends AbstractNiFiProcessor {
         .identifiesControllerService(DBCPService.class)
         .build();
 
+    // Relationships
     public static final PropertyDescriptor TABLE_NAME = new PropertyDescriptor.Builder()
         .name("Source Table")
         .description("Name of table including schema (if applicable)")
@@ -126,7 +105,6 @@ public class GetTableData extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
-
     public static final PropertyDescriptor TABLE_SPECS = new PropertyDescriptor.Builder()
         .name("Source Fields")
         .description(
@@ -136,7 +114,6 @@ public class GetTableData extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
-
     public static final PropertyDescriptor HIGH_WATER_MARK_PROP = new PropertyDescriptor.Builder()
         .name("High-Water Mark Property Name")
         .description("Name of the flow file attribute that should contain the current hig-water mark date, and which this processor will update with new values.  "
@@ -146,7 +123,6 @@ public class GetTableData extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
-
     public static final PropertyDescriptor LOAD_STRATEGY = new PropertyDescriptor.Builder()
         .name("Load Strategy")
         .description("Whether to load the entire table or perform an incremental extract")
@@ -154,7 +130,6 @@ public class GetTableData extends AbstractNiFiProcessor {
         .allowableValues(LoadStrategy.values())
         .defaultValue(LoadStrategy.FULL_LOAD.toString())
         .build();
-
     public static final PropertyDescriptor DATE_FIELD = new PropertyDescriptor.Builder()
         .name("Date Field")
         .description("Source field containing a modified date for tracking incremental load")
@@ -162,7 +137,6 @@ public class GetTableData extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
-
     public static final PropertyDescriptor OVERLAP_TIME = new PropertyDescriptor.Builder()
         .name("Overlap Period")
         .description("Amount of time to overlap into the last load date to ensure long running transactions missed by previous load weren't missed. Recommended: >0s")
@@ -171,7 +145,6 @@ public class GetTableData extends AbstractNiFiProcessor {
         .defaultValue("0 seconds")
         .expressionLanguageSupported(true)
         .build();
-
     public static final PropertyDescriptor QUERY_TIMEOUT = new PropertyDescriptor.Builder()
         .name("Max Wait Time")
         .description("The maximum amount of time allowed for a running SQL select query "
@@ -181,7 +154,6 @@ public class GetTableData extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.TIME_PERIOD_VALIDATOR)
         .sensitive(false)
         .build();
-
     public static final PropertyDescriptor BACKOFF_PERIOD = new PropertyDescriptor.Builder()
         .name("Backoff Period")
         .description("Only records older than the backoff period will be eligible for pickup. This can be used in the ILM use case to define a retention period. Recommended: >5m")
@@ -190,7 +162,6 @@ public class GetTableData extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.TIME_PERIOD_VALIDATOR)
         .sensitive(false)
         .build();
-
     public static final PropertyDescriptor UNIT_SIZE = new PropertyDescriptor.Builder()
         .name("Minimum Time Unit")
         .description("The minimum unit of data eligible to load. For the ILM case, this would be DAY, WEEK, MONTH, YEAR"
@@ -199,7 +170,6 @@ public class GetTableData extends AbstractNiFiProcessor {
         .required(true)
         .defaultValue(GetTableDataSupport.UnitSizes.NONE.toString())
         .build();
-
     public static final PropertyDescriptor OUTPUT_TYPE = new PropertyDescriptor.Builder()
         .name("Output Type")
         .description("How should the results be returned.  Either a Delimited output such as CSV, or AVRO.  If delimited you must specify the delimiter.")
@@ -207,8 +177,6 @@ public class GetTableData extends AbstractNiFiProcessor {
         .required(true)
         .defaultValue(GetTableDataSupport.OutputType.DELIMITED.toString())
         .build();
-
-
     public static final PropertyDescriptor OUTPUT_DELIMITER = new PropertyDescriptor.Builder()
         .name("Output Delimiter")
         .description(
@@ -218,19 +186,16 @@ public class GetTableData extends AbstractNiFiProcessor {
         .defaultValue(",")
         .expressionLanguageSupported(true)
         .build();
-
-
+    private final Set<Relationship> relationships;
     private final List<PropertyDescriptor> propDescriptors;
-
     private transient String waterMarkPropertyName;
-
 
     public GetTableData() {
         HashSet r = new HashSet();
 
         r.add(REL_SUCCESS);
         r.add(REL_FAILURE);
-        r.add(REL_NODATA);
+        r.add(REL_NO_DATA);
         this.relationships = Collections.unmodifiableSet(r);
         ArrayList pds = new ArrayList();
         pds.add(JDBC_SERVICE);
@@ -249,6 +214,18 @@ public class GetTableData extends AbstractNiFiProcessor {
         pds.add(OUTPUT_TYPE);
         pds.add(OUTPUT_DELIMITER);
         this.propDescriptors = Collections.unmodifiableList(pds);
+    }
+
+    private static LocalDateTime toDateTime(Date date) {
+        return date == null ? LocalDateTime.MIN : LocalDateTime.ofInstant(date.toInstant(), ZoneOffset.UTC.normalized());
+    }
+
+    private static Date toDate(LocalDateTime dateTime) {
+        return dateTime == null ? new Date(0L) : Date.from(dateTime.toInstant(ZoneOffset.UTC));
+    }
+
+    private static String format(Date date) {
+        return (date == null ? "" : DATE_TIME_FORMAT.format(toDateTime(date)));
     }
 
     private String[] parseFields(String selectFields) {
@@ -370,7 +347,7 @@ public class GetTableData extends AbstractNiFiProcessor {
 
             if (nrOfRows.get() == 0L) {
                 logger.info("{} contains no data; transferring to 'nodata'", new Object[]{outgoing});
-                session.transfer(outgoing, REL_NODATA);
+                session.transfer(outgoing, REL_NO_DATA);
             } else {
 
                 logger.info("{} contains {} records; transferring to 'success'", new Object[]{outgoing, nrOfRows.get()});
@@ -392,7 +369,6 @@ public class GetTableData extends AbstractNiFiProcessor {
             }
         }
     }
-
 
     private String getIncrementalWaterMarkValue(FlowFile ff, PropertyValue waterMarkPropName) {
         if (!waterMarkPropName.isSet()) {
@@ -430,16 +406,20 @@ public class GetTableData extends AbstractNiFiProcessor {
         }
     }
 
-    private static LocalDateTime toDateTime(Date date) {
-        return date == null ? LocalDateTime.MIN : LocalDateTime.ofInstant(date.toInstant(), ZoneOffset.UTC.normalized());
-    }
+    public enum LoadStrategy {
+        FULL_LOAD,
+        INCREMENTAL;
 
-    private static Date toDate(LocalDateTime dateTime) {
-        return dateTime == null ? new Date(0L) : Date.from(dateTime.toInstant(ZoneOffset.UTC));
-    }
-
-    private static String format(Date date) {
-        return (date == null ? "" : DATE_TIME_FORMAT.format(toDateTime(date)));
+        @Override
+        public String toString() {
+            switch (this) {
+                case FULL_LOAD:
+                    return "FULL_LOAD";
+                case INCREMENTAL:
+                    return "INCREMENTAL";
+            }
+            return null;
+        }
     }
 
     /**

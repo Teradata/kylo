@@ -88,7 +88,7 @@ public class PutFeedMetadataTest {
                 }
                 return invocation.getArgumentAt(1, String.class);
             });
-            Mockito.when(provider.updateFeedProperties(Mockito.anyString(), Mockito.any(Properties.class))).then( invocation -> {
+            Mockito.when(provider.updateFeedProperties(Mockito.anyString(), Mockito.any(Properties.class))).then(invocation -> {
                 Properties properties = new Properties();
                 properties.setProperty("TestUpdate", "worked");
                 return properties;

@@ -49,7 +49,9 @@ import java.sql.Types;
 
 public class JdbcCommonTest {
 
-    /** Verify converting results to avro. */
+    /**
+     * Verify converting results to avro.
+     */
     @Test
     public void convertToAvroStream() throws Exception {
         // Mock result set metadata
@@ -135,24 +137,24 @@ public class JdbcCommonTest {
         inOrder.verifyNoMoreInteractions();
 
         final Schema schema = SchemaBuilder
-                .record("mockito")
-                .namespace("any.data")
-                .fields()
-                    .name("event").type().nullable().stringType().noDefault()
-                    .name("empty").type().nullable().stringType().noDefault()
-                    .name("binary").type().nullable().bytesType().noDefault()
-                    .name("byte").type().nullable().intType().noDefault()
-                    .name("decimal").type().nullable().stringType().noDefault()
-                    .name("maxlong").type().nullable().longType().noDefault()
-                    .name("date").type().nullable().stringType().noDefault()
-                    .name("time").type().nullable().stringType().noDefault()
-                    .name("timestamp").type().nullable().stringType().noDefault()
-                    .name("bool").type().nullable().booleanType().noDefault()
-                    .name("int").type().nullable().intType().noDefault()
-                    .name("id").type().nullable().stringType().noDefault()
-                    .name("float").type().nullable().floatType().noDefault()
-                    .name("double").type().nullable().doubleType().noDefault()
-                .endRecord();
+            .record("mockito")
+            .namespace("any.data")
+            .fields()
+            .name("event").type().nullable().stringType().noDefault()
+            .name("empty").type().nullable().stringType().noDefault()
+            .name("binary").type().nullable().bytesType().noDefault()
+            .name("byte").type().nullable().intType().noDefault()
+            .name("decimal").type().nullable().stringType().noDefault()
+            .name("maxlong").type().nullable().longType().noDefault()
+            .name("date").type().nullable().stringType().noDefault()
+            .name("time").type().nullable().stringType().noDefault()
+            .name("timestamp").type().nullable().stringType().noDefault()
+            .name("bool").type().nullable().booleanType().noDefault()
+            .name("int").type().nullable().intType().noDefault()
+            .name("id").type().nullable().stringType().noDefault()
+            .name("float").type().nullable().floatType().noDefault()
+            .name("double").type().nullable().doubleType().noDefault()
+            .endRecord();
 
         final SeekableInput input = new SeekableByteArrayInput(out.toByteArray());
         final GenericDatumReader<GenericRecord> datumReader = new GenericDatumReader<>(schema);
@@ -175,7 +177,9 @@ public class JdbcCommonTest {
         Assert.assertFalse(dataReader.hasNext());
     }
 
-    /** Verify converting results to delimited text. */
+    /**
+     * Verify converting results to delimited text.
+     */
     @Test
     public void convertToDelimitedStream() throws Exception {
         // Mock result set metadata
@@ -224,7 +228,9 @@ public class JdbcCommonTest {
         Assert.assertEquals("event empty date time timestamp custom\n\"Fun Friday\"  2017-01-06T00:00:00.000Z 11:50:00.000Z 2017-01-06T11:50:00.000Z \n", new String(out.toByteArray(), "UTF-8"));
     }
 
-    /** Verify row count for a {@code null} result set. */
+    /**
+     * Verify row count for a {@code null} result set.
+     */
     @Test
     public void convertToDelimitedStreamWithNull() throws Exception {
         final long count = JdbcCommon.convertToDelimitedStream(null, null, null, ",");

@@ -93,13 +93,13 @@ public class JdbcCommon {
     /**
      * Converts the specified SQL result set to a delimited text file written to the specified output stream.
      *
-     * @param rs the SQL result set
+     * @param rs        the SQL result set
      * @param outStream the output stream for the delimited text file
-     * @param visitor records position of the result set
+     * @param visitor   records position of the result set
      * @param delimiter the column delimiter for the delimited text file
      * @return the number of rows written
      * @throws SQLException if a SQL error occurs while reading the result set
-     * @throws IOException if an I/O error occurs while writing to the output stream
+     * @throws IOException  if an I/O error occurs while writing to the output stream
      */
     public static long convertToDelimitedStream(final ResultSet rs, final OutputStream outStream, final RowVisitor visitor, String delimiter) throws SQLException, IOException {
         // avoid overflowing log with redundant messages
@@ -400,13 +400,19 @@ public class JdbcCommon {
      */
     static class DelimiterEscaper extends CharSequenceTranslator {
 
-        /** Character for quoting values */
+        /**
+         * Character for quoting values
+         */
         private static final char QUOTE = '"';
 
-        /** String for quoting values */
+        /**
+         * String for quoting values
+         */
         private static final String QUOTE_STR = String.valueOf(QUOTE);
 
-        /** Strings that, if found, require a value to be escaped */
+        /**
+         * Strings that, if found, require a value to be escaped
+         */
         private final String[] searchStrings;
 
         /**
@@ -414,7 +420,7 @@ public class JdbcCommon {
          *
          * @param delimiter the delimiter
          */
-        DelimiterEscaper(@Nonnull  final String delimiter) {
+        DelimiterEscaper(@Nonnull final String delimiter) {
             searchStrings = new String[]{delimiter, QUOTE_STR, Character.toString(CharUtils.CR), Character.toString(CharUtils.LF)};
         }
 

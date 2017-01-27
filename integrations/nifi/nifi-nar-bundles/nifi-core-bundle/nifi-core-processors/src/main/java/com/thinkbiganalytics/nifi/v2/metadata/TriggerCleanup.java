@@ -38,7 +38,6 @@ import org.apache.nifi.annotation.lifecycle.OnScheduled;
 import org.apache.nifi.annotation.lifecycle.OnUnscheduled;
 import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.flowfile.FlowFile;
-import org.apache.nifi.processor.AbstractProcessor;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.Relationship;
@@ -64,61 +63,77 @@ import javax.annotation.Nullable;
 @Tags({"cleanup", "trigger", "thinkbig"})
 public class TriggerCleanup extends AbstractNiFiProcessor implements CleanupListener {
 
-    /** Property for the category system name */
+    /**
+     * Property for the category system name
+     */
     public static final PropertyDescriptor CATEGORY_NAME = new PropertyDescriptor.Builder()
-            .name("System feed category")
-            .description("The category name of this feed. The default is to have this name automatically set when the feed is created. Normally you do not need to change the default value.")
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .defaultValue("${metadata.category.systemName}")
-            .expressionLanguageSupported(false)
-            .required(true)
-            .build();
+        .name("System feed category")
+        .description("The category name of this feed. The default is to have this name automatically set when the feed is created. Normally you do not need to change the default value.")
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .defaultValue("${metadata.category.systemName}")
+        .expressionLanguageSupported(false)
+        .required(true)
+        .build();
 
-    /** Property for the cleanup event service */
+    /**
+     * Property for the cleanup event service
+     */
     public static final PropertyDescriptor CLEANUP_SERVICE = new PropertyDescriptor.Builder()
-            .name("Feed Cleanup Event Service")
-            .description("Service that manages the cleanup of feeds.")
-            .identifiesControllerService(CleanupEventService.class)
-            .required(true)
-            .build();
+        .name("Feed Cleanup Event Service")
+        .description("Service that manages the cleanup of feeds.")
+        .identifiesControllerService(CleanupEventService.class)
+        .required(true)
+        .build();
 
-    /** Property for the metadata provider service */
+    /**
+     * Property for the metadata provider service
+     */
     public static final PropertyDescriptor METADATA_SERVICE = new PropertyDescriptor.Builder()
-            .name("Metadata Provider Service")
-            .description("Service supplying the implementations of the various metadata providers.")
-            .identifiesControllerService(MetadataProviderService.class)
-            .required(true)
-            .build();
+        .name("Metadata Provider Service")
+        .description("Service supplying the implementations of the various metadata providers.")
+        .identifiesControllerService(MetadataProviderService.class)
+        .required(true)
+        .build();
 
-    /** Property for the feed system name */
+    /**
+     * Property for the feed system name
+     */
     public static final PropertyDescriptor FEED_NAME = new PropertyDescriptor.Builder()
-            .name("System feed name")
-            .description("The system name of this feed. The default is to have this name automatically set when the feed is created. Normally you do not need to change the default value.")
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .defaultValue("${metadata.systemFeedName}")
-            .expressionLanguageSupported(false)
-            .required(true)
-            .build();
+        .name("System feed name")
+        .description("The system name of this feed. The default is to have this name automatically set when the feed is created. Normally you do not need to change the default value.")
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .defaultValue("${metadata.systemFeedName}")
+        .expressionLanguageSupported(false)
+        .required(true)
+        .build();
 
-    /** Relationship for transferring {@code FlowFile}s generated from events */
+    /**
+     * Relationship for transferring {@code FlowFile}s generated from events
+     */
     public static final Relationship REL_SUCCESS = new Relationship.Builder()
-            .name("Success")
-            .description("Relationship followed on successful precondition event.")
-            .build();
+        .name("Success")
+        .description("Relationship followed on successful precondition event.")
+        .build();
 
-    /** List of property descriptors */
+    /**
+     * List of property descriptors
+     */
     private static final List<PropertyDescriptor> properties = ImmutableList.of(CLEANUP_SERVICE, METADATA_SERVICE, CATEGORY_NAME, FEED_NAME);
 
-    /** List of relationships */
+    /**
+     * List of relationships
+     */
     private static final Set<Relationship> relationships = ImmutableSet.of(REL_SUCCESS);
-
-    /** Identifier for this feed */
-    @Nullable
-    private String feedId;
-
-    /** List of events to process */
+    /**
+     * List of events to process
+     */
     @Nonnull
     private final Queue<FeedCleanupTriggerEvent> queue = new LinkedBlockingQueue<>();
+    /**
+     * Identifier for this feed
+     */
+    @Nullable
+    private String feedId;
 
     @Override
     public Set<Relationship> getRelationships() {
@@ -144,7 +159,7 @@ public class TriggerCleanup extends AbstractNiFiProcessor implements CleanupList
         try {
             feedId = getMetadataService(context).getProvider().getFeedId(category, feed);
         } catch (Exception e) {
-            getLog().warn("Failure retrieving metadata for feed: {}.{}", new Object[]{ category, feed }, e);
+            getLog().warn("Failure retrieving metadata for feed: {}.{}", new Object[]{category, feed}, e);
             throw new IllegalStateException("Failed to retrieve feed metadata", e);
         }
 
@@ -168,7 +183,7 @@ public class TriggerCleanup extends AbstractNiFiProcessor implements CleanupList
             throw new IllegalStateException("Failed to fetch properties for feed: " + feedId);
         }
         if (!properties.containsKey(FeedProperties.CLEANUP_ENABLED) || !"true".equals(properties.getProperty(FeedProperties.CLEANUP_ENABLED))) {
-            getLog().info("Ignoring cleanup event because deleteEnabled is false for feed: {}", new Object[]{ feedId });
+            getLog().info("Ignoring cleanup event because deleteEnabled is false for feed: {}", new Object[]{feedId});
             context.yield();
             return;  // ignore events if deleteEnabled is not true
         }
@@ -177,7 +192,7 @@ public class TriggerCleanup extends AbstractNiFiProcessor implements CleanupList
         Map<String, String> attributes = Maps.newHashMap();
 
         for (Map.Entry<Object, Object> property : properties.entrySet()) {
-            attributes.put((String)property.getKey(), (String)property.getValue());
+            attributes.put((String) property.getKey(), (String) property.getValue());
         }
 
         attributes.put("category", context.getProperty(CATEGORY_NAME).getValue());
@@ -202,7 +217,7 @@ public class TriggerCleanup extends AbstractNiFiProcessor implements CleanupList
 
     @Override
     public void triggered(@Nonnull final FeedCleanupTriggerEvent event) {
-        getLog().debug("Cleanup event triggered: {}", new Object[]{ event });
+        getLog().debug("Cleanup event triggered: {}", new Object[]{event});
         queue.add(event);
     }
 

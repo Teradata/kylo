@@ -28,9 +28,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.Assert.assertTrue;
 
@@ -60,7 +58,6 @@ public class StripHeaderTest {
         List<MockFlowFile> contentFlows = runner.getFlowFilesForRelationship(StripHeader.REL_CONTENT);
         String content = new String(contentFlows.get(0).toByteArray());
         assertTrue(content.startsWith("Joe") && content.endsWith("94550\n"));
-
 
         List<MockFlowFile> originalFlows = runner.getFlowFilesForRelationship(StripHeader.REL_ORIGINAL);
         String originalContent = new String(originalFlows.get(0).toByteArray());

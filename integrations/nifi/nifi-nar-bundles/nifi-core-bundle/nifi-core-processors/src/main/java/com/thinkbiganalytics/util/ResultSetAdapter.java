@@ -61,12 +61,12 @@ public class ResultSetAdapter implements ResultSet {
         return rs.next();
     }
 
-    public void setFetchSize(int rows) throws SQLException {
-        rs.setFetchSize(rows);
-    }
-
     public int getFetchSize() throws SQLException {
         return rs.getFetchSize();
+    }
+
+    public void setFetchSize(int rows) throws SQLException {
+        rs.setFetchSize(rows);
     }
 
     public <T> T getObject(String columnLabel, Class<T> type) throws SQLException {
@@ -227,6 +227,10 @@ public class ResultSetAdapter implements ResultSet {
 
     public int getFetchDirection() throws SQLException {
         return rs.getFetchDirection();
+    }
+
+    public void setFetchDirection(int direction) throws SQLException {
+        rs.setFetchDirection(direction);
     }
 
     public float getFloat(int columnIndex) throws SQLException {
@@ -459,10 +463,6 @@ public class ResultSetAdapter implements ResultSet {
 
     public boolean rowUpdated() throws SQLException {
         return rs.rowUpdated();
-    }
-
-    public void setFetchDirection(int direction) throws SQLException {
-        rs.setFetchDirection(direction);
     }
 
     public void updateArray(int columnIndex, Array x) throws SQLException {

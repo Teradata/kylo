@@ -53,6 +53,7 @@
         <hadoop.version>2.6.2</hadoop.version>
         <hamcrest.version>1.3</hamcrest.version>
         <hive.version>0.14.0</hive.version>
+	<hiverunner.version>3.0.0</hiverunner.version>
         <httpclient.version>4.5.1</httpclient.version>
         <javax.mail>1.5.5</javax.mail>
         <javax.servlet.version>3.1.0</javax.servlet.version>

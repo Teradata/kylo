@@ -64,6 +64,74 @@ public class ColumnSpec {
         validate();
     }
 
+    public static String toPrimaryKeyJoinSQL(ColumnSpec[] specs, String leftTableAlias, String rightTableAlias) {
+        final String safeLeftTable = HiveUtils.quoteIdentifier(leftTableAlias);
+        final String safeRightTable = HiveUtils.quoteIdentifier(rightTableAlias);
+        final List<String> keys = Stream.of(specs)
+            .filter(ColumnSpec::isPk)
+            .map(ColumnSpec::getName)
+            .map(HiveUtils::quoteIdentifier)
+            .map(column -> safeLeftTable + "." + column + " = " + safeRightTable + "." + column)
+            .collect(Collectors.toList());
+        return StringUtils.join(keys, " AND ");
+    }
+
+    public static String[] toPrimaryKeys(ColumnSpec[] specs) {
+        return Stream.of(specs)
+            .filter(ColumnSpec::isPk)
+            .map(ColumnSpec::getName)
+            .map(HiveUtils::quoteIdentifier)
+            .toArray(String[]::new);
+    }
+
+    /**
+     * Method  for defining a column specification as a pipe-delimited format:  column|data type|comment (optional)|pk|created|modified. Each row separated by a newline
+     */
+    public static ColumnSpec[] createFromString(String specString) {
+        if (StringUtils.isEmpty(specString)) {
+            return null;
+        }
+        List<ColumnSpec> specs = new Vector<>();
+        try {
+            LineReader lineReader = new LineReader(
+                new StringReader(specString));
+
+            String line;
+            while ((line = lineReader.readLine()) != null) {
+                String[] parts = line.split("\\|");
+                int len = parts.length;
+                if (len > 0) {
+                    String columnName = "";
+                    String comment = "";
+                    String dataType = "string";
+                    boolean pk = false;
+                    boolean modifiedDt = false;
+                    boolean createDt = false;
+                    switch (len) {
+                        default:
+                        case 6:
+                            modifiedDt = "1".equals(parts[5].trim());
+                        case 5:
+                            createDt = "1".equals(parts[4].trim());
+                        case 4:
+                            pk = "1".equals(parts[3].trim());
+                        case 3:
+                            comment = parts[2];
+                        case 2:
+                            dataType = parts[1];
+                        case 1:
+                            columnName = parts[0];
+                    }
+                    specs.add(new ColumnSpec(columnName, dataType, comment, pk, createDt, modifiedDt));
+                }
+            }
+            return specs.toArray(new ColumnSpec[0]);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to parse column specs[" + specString + "]", e);
+        }
+
+    }
+
     public void validate() {
         Validate.notEmpty(name);
         Validate.notEmpty(dataType);
@@ -133,73 +201,5 @@ public class ColumnSpec {
 
     public String toPartitionSQL() {
         return HiveUtils.quoteIdentifier(name) + " " + dataType;
-    }
-
-    public static String toPrimaryKeyJoinSQL(ColumnSpec[] specs, String leftTableAlias, String rightTableAlias) {
-        final String safeLeftTable = HiveUtils.quoteIdentifier(leftTableAlias);
-        final String safeRightTable = HiveUtils.quoteIdentifier(rightTableAlias);
-        final List<String> keys = Stream.of(specs)
-                .filter(ColumnSpec::isPk)
-                .map(ColumnSpec::getName)
-                .map(HiveUtils::quoteIdentifier)
-                .map(column -> safeLeftTable + "." + column + " = " + safeRightTable + "." + column)
-                .collect(Collectors.toList());
-        return StringUtils.join(keys, " AND ");
-    }
-
-    public static String[] toPrimaryKeys(ColumnSpec[] specs) {
-        return Stream.of(specs)
-                .filter(ColumnSpec::isPk)
-                .map(ColumnSpec::getName)
-                .map(HiveUtils::quoteIdentifier)
-                .toArray(String[]::new);
-    }
-
-    /**
-     * Method  for defining a column specification as a pipe-delimited format:  column|data type|comment (optional)|pk|created|modified. Each row separated by a newline
-     */
-    public static ColumnSpec[] createFromString(String specString) {
-        if (StringUtils.isEmpty(specString)) {
-            return null;
-        }
-        List<ColumnSpec> specs = new Vector<>();
-        try {
-            LineReader lineReader = new LineReader(
-                new StringReader(specString));
-
-            String line;
-            while ((line = lineReader.readLine()) != null) {
-                String[] parts = line.split("\\|");
-                int len = parts.length;
-                if (len > 0) {
-                    String columnName = "";
-                    String comment = "";
-                    String dataType = "string";
-                    boolean pk = false;
-                    boolean modifiedDt = false;
-                    boolean createDt = false;
-                    switch (len) {
-                        default:
-                        case 6:
-                            modifiedDt = "1".equals(parts[5].trim());
-                        case 5:
-                            createDt = "1".equals(parts[4].trim());
-                        case 4:
-                            pk = "1".equals(parts[3].trim());
-                        case 3:
-                            comment = parts[2];
-                        case 2:
-                            dataType = parts[1];
-                        case 1:
-                            columnName = parts[0];
-                    }
-                    specs.add(new ColumnSpec(columnName, dataType, comment, pk, createDt, modifiedDt));
-                }
-            }
-            return specs.toArray(new ColumnSpec[0]);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to parse column specs[" + specString + "]", e);
-        }
-
     }
 }

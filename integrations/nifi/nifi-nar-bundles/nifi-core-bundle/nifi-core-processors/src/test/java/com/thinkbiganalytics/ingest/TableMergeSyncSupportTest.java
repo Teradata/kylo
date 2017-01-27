@@ -51,8 +51,6 @@ import static org.junit.Assert.assertTrue;
 @RunWith(StandaloneHiveRunner.class)
 public class TableMergeSyncSupportTest {
 
-    private TableMergeSyncSupport mergeSyncSupport;
-
     /**
      * Explicit test class configuration of the HiveRunner runtime. See {@link HiveRunnerConfig} for further details.
      */
@@ -60,15 +58,6 @@ public class TableMergeSyncSupportTest {
     public final HiveRunnerConfig CONFIG = new HiveRunnerConfig() {{
         setHiveExecutionEngine("mr");
     }};
-
-    /**
-     * Define the script files under test. The files will be loaded in the given order. <p/> The HiveRunner instantiate and inject the HiveShell
-     */
-    @HiveSQL(files = {
-        "hive-test-support/create_table.sql"
-    }, encoding = "UTF-8")
-    private HiveShell hiveShell;
-
     /**
      * Cater for all the parameters in the script that we want to test. Note that the "hadoop.tmp.dir" is one of the dirs defined by the test harness
      */
@@ -76,8 +65,15 @@ public class TableMergeSyncSupportTest {
     public Map<String, String> hiveProperties = MapUtils.putAll(new HashMap<String, String>(), new Object[]{
         "MY.HDFS.DIR", "${hadoop.tmp.dir}",
         "my.schema", "bar",
-    });
-
+        });
+    private TableMergeSyncSupport mergeSyncSupport;
+    /**
+     * Define the script files under test. The files will be loaded in the given order. <p/> The HiveRunner instantiate and inject the HiveShell
+     */
+    @HiveSQL(files = {
+        "hive-test-support/create_table.sql"
+    }, encoding = "UTF-8")
+    private HiveShell hiveShell;
     private String sourceSchema = "emp_sr";
     private String sourceTable = "employee_valid";
     private String targetSchema = "emp_sr";
@@ -407,8 +403,8 @@ public class TableMergeSyncSupportTest {
         //update existing partition
         String job1 = "20110119074340";
         hiveShell.execute("insert into emp_sr.employee_valid partition(processing_dttm='" + job1 + "') (  `id`,  `name`,`company`,`zip`,`phone`,`email`,  `hired`,`country`) values (101,'Harry',"
-                + "'ABC',"
-                + "'94550','555-1212','harry@acme.org','2016-01-01','Canada');");
+                          + "'ABC',"
+                          + "'94550','555-1212','harry@acme.org','2016-01-01','Canada');");
 
         doTestRollingSyncMerge(job1);
 
@@ -420,12 +416,11 @@ public class TableMergeSyncSupportTest {
         assertFalse(results.stream().anyMatch(x -> x.contains("Jen")));
         assertTrue(results.stream().anyMatch(x -> x.contains("Harry")));
 
-
         //add new existing partition
         String job2 = "20120119074340";
         hiveShell.execute("insert into emp_sr.employee_valid partition(processing_dttm='" + job2 + "') (  `id`,  `name`,`company`,`zip`,`phone`,`email`,  `hired`,`country`) values (101,'Flora',"
-                + "'ABC',"
-                + "'94550','555-1212','harry@acme.org','2017-01-01','France');");
+                          + "'ABC',"
+                          + "'94550','555-1212','harry@acme.org','2017-01-01','France');");
 
         doTestRollingSyncMerge(job2);
 
@@ -435,10 +430,9 @@ public class TableMergeSyncSupportTest {
 
     }
 
-    private void doTestRollingSyncMerge(String processingPartition)  throws SQLException {
+    private void doTestRollingSyncMerge(String processingPartition) throws SQLException {
         mergeSyncSupport.doRollingSync(sourceSchema, sourceTable, targetSchema, targetTable, spec, processingPartition);
     }
-
 
 
     private void doTestMergeNoProcessingDttm(String targetTable, PartitionSpec spec) throws SQLException {
@@ -476,8 +470,6 @@ public class TableMergeSyncSupportTest {
     }
 
 
-
-
     private void doTestMergePK(String targetSchema, String targetTable, PartitionSpec spec) throws SQLException {
 
         List<String> results = fetchEmployees(targetSchema, targetTable);
@@ -493,7 +485,6 @@ public class TableMergeSyncSupportTest {
         results = fetchEmployees(targetSchema, targetTable);
         assertEquals(4, results.size());
         assertFalse("Should not have old valur", results.stream().anyMatch(s -> s.contains("OLD")));
-
 
         // Run merge with dedupe and should get the following two additional results. The result should not include any duplicates in the target table.
         hiveShell.execute("insert into emp_sr.employee_valid partition(processing_dttm='20160119074340') (  `id`,  `name`,`company`,`zip`,`phone`,`email`,  `hired`,`country`) values (100,'Bruce',"
@@ -583,7 +574,6 @@ public class TableMergeSyncSupportTest {
         assertEquals(6, results.size());
         assertFalse("Should not have old value", results.stream().anyMatch(s -> s.contains("OLD")));
 
-
         // Run merge with dedupe and should get the following two additional results. The result should not include any duplicates in the target table.
         hiveShell.execute("insert into emp_sr.employee_valid partition(processing_dttm='20160119074340') (  `id`,  `name`,`company`,`zip`,`phone`,`email`,  `hired`,`country`) values (100,'Bruce',"
                           + "'OLD',"
@@ -625,7 +615,6 @@ public class TableMergeSyncSupportTest {
         assertFalse("Should not have old value", results.stream().anyMatch(s -> s.contains("OLD")));
 
     }
-
 
 
 }

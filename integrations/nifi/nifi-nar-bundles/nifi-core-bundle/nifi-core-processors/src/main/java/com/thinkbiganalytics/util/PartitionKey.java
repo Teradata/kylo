@@ -48,8 +48,30 @@ public class PartitionKey implements Cloneable {
         this.formula = formula.trim().toLowerCase();
     }
 
-    private void setAlias(String alias) {
-        this.alias = alias;
+    public static PartitionKey createFromString(String value) {
+        if (StringUtils.isEmpty(value)) {
+            return null;
+        }
+        String[] values = value.split("\\|");
+        if (values.length != 3) {
+            throw new RuntimeException("Expecting format field|type|formula got " + value);
+        }
+        return new PartitionKey(values[0], values[1], values[2]);
+    }
+
+    public static PartitionKey[] partitionKeysForTableAlias(PartitionKey[] keys, String alias) {
+        List<PartitionKey> partitionKeys = new ArrayList<>();
+
+        Arrays.stream(keys).forEach(key -> {
+            try {
+                PartitionKey clonedKey = (PartitionKey) key.clone();
+                clonedKey.setAlias(alias);
+                partitionKeys.add(clonedKey);
+            } catch (CloneNotSupportedException e) {
+                e.printStackTrace();
+            }
+        });
+        return partitionKeys.toArray(new PartitionKey[0]);
     }
 
     public String getKey() {
@@ -97,8 +119,6 @@ public class PartitionKey implements Cloneable {
 
     }
 
-
-
     /**
      * Generates the where statement against the source table using the provided value
      */
@@ -136,30 +156,8 @@ public class PartitionKey implements Cloneable {
         return alias;
     }
 
-    public static PartitionKey createFromString(String value) {
-        if (StringUtils.isEmpty(value)) {
-            return null;
-        }
-        String[] values = value.split("\\|");
-        if (values.length != 3) {
-            throw new RuntimeException("Expecting format field|type|formula got " + value);
-        }
-        return new PartitionKey(values[0], values[1], values[2]);
-    }
-
-    public static PartitionKey[] partitionKeysForTableAlias(PartitionKey[] keys, String alias) {
-        List<PartitionKey> partitionKeys = new ArrayList<>();
-
-        Arrays.stream(keys).forEach(key -> {
-            try {
-                PartitionKey clonedKey = (PartitionKey) key.clone();
-                clonedKey.setAlias(alias);
-                partitionKeys.add(clonedKey);
-            } catch (CloneNotSupportedException e) {
-                e.printStackTrace();
-            }
-        });
-        return partitionKeys.toArray(new PartitionKey[0]);
+    private void setAlias(String alias) {
+        this.alias = alias;
     }
 
 }

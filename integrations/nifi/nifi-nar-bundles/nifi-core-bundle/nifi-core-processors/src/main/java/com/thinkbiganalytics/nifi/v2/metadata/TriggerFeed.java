@@ -72,24 +72,21 @@ import static com.thinkbiganalytics.nifi.v2.common.CommonProperties.FEED_NAME;
 @EventDriven
 @InputRequirement(InputRequirement.Requirement.INPUT_ALLOWED)
 @Tags({"feed", "trigger", "thinkbig"})
-@CapabilityDescription("Triggers the execution of a feed whenever the conditions defined by its precondition have been met.  This process should be the first processor in a flow depends upon preconditions.")
+@CapabilityDescription(
+    "Triggers the execution of a feed whenever the conditions defined by its precondition have been met.  This process should be the first processor in a flow depends upon preconditions.")
 public class TriggerFeed extends AbstractFeedProcessor {
 
-    private static ObjectMapper MAPPER = new ObjectMapper();
-    private static final String DEFAULT_EXECUTION_CONTEXT_KEY = "export.kylo";
-
-    private Queue<FeedPreconditionTriggerEvent> triggerEventQueue = new LinkedBlockingQueue<>();
-    private transient PreconditionListener preconditionListener;
-    private transient String feedId;
-
     public static final PropertyDescriptor PRECONDITION_SERVICE = new PropertyDescriptor.Builder()
-            .name("Feed Precondition Event Service")
-            .description("Service that manages preconditions which trigger feed execution")
-            .required(true)
-            .identifiesControllerService(FeedPreconditionEventService.class)
-            .build();
-
-
+        .name("Feed Precondition Event Service")
+        .description("Service that manages preconditions which trigger feed execution")
+        .required(true)
+        .identifiesControllerService(FeedPreconditionEventService.class)
+        .build();
+    public static final Relationship SUCCESS = new Relationship.Builder()
+        .name("Success")
+        .description("Relationship followed on successful precondition event.")
+        .build();
+    private static final String DEFAULT_EXECUTION_CONTEXT_KEY = "export.kylo";
     public static final PropertyDescriptor MATCHING_EXECUTION_CONTEXT_KEYS = new PropertyDescriptor.Builder()
         .name("Matching Execution Context Keys")
         .description(
@@ -99,13 +96,10 @@ public class TriggerFeed extends AbstractFeedProcessor {
         .expressionLanguageSupported(false)
         .required(true)
         .build();
-
-
-    public static final Relationship SUCCESS = new Relationship.Builder()
-            .name("Success")
-            .description("Relationship followed on successful precondition event.")
-            .build();
-
+    private static ObjectMapper MAPPER = new ObjectMapper();
+    private Queue<FeedPreconditionTriggerEvent> triggerEventQueue = new LinkedBlockingQueue<>();
+    private transient PreconditionListener preconditionListener;
+    private transient String feedId;
 
     @Override
     protected void init(ProcessorInitializationContext context) {
@@ -114,7 +108,6 @@ public class TriggerFeed extends AbstractFeedProcessor {
         MAPPER.registerModule(new JodaModule());
         MAPPER.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, true);
         MAPPER.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
-
 
         this.preconditionListener = createPreconditionListener();
     }

@@ -45,24 +45,10 @@ public class GetTableDataSupport {
 
     private int timeout;
 
-    /**
-     * Output format for table rows.
-     */
-    public enum OutputType {
-        /** Columns are separated by a delimiter */
-        DELIMITED,
-
-        /** Each row is written as an Avro record */
-        AVRO
-    }
-
-    public enum UnitSizes {
-        NONE,
-        HOUR,
-        DAY,
-        WEEK,
-        MONTH,
-        YEAR;
+    public GetTableDataSupport(Connection conn, int timeout) {
+        Validate.notNull(conn);
+        this.conn = conn;
+        this.timeout = timeout;
     }
 
     protected static Date maxAllowableDateFromUnit(Date fromDate, UnitSizes unit) {
@@ -80,12 +66,6 @@ public class GetTableDataSupport {
                 return jodaDate.withMonthOfYear(1).withDayOfMonth(1).withHourOfDay(0).hourOfDay().roundFloorCopy().toDate();
         }
         return fromDate;
-    }
-
-
-    public GetTableDataSupport(Connection conn, int timeout) {
-        Validate.notNull(conn);
-        this.conn = conn;
     }
 
     private String selectStatement(String[] selectFields) {
@@ -145,7 +125,32 @@ public class GetTableDataSupport {
         return rs;
     }
 
+    /**
+     * Output format for table rows.
+     */
+    public enum OutputType {
+        /**
+         * Columns are separated by a delimiter
+         */
+        DELIMITED,
+
+        /**
+         * Each row is written as an Avro record
+         */
+        AVRO
+    }
+
+    public enum UnitSizes {
+        NONE,
+        HOUR,
+        DAY,
+        WEEK,
+        MONTH,
+        YEAR;
+    }
+
     protected static class DateRange {
+
         private Date minDate;
         private Date maxDate;
 

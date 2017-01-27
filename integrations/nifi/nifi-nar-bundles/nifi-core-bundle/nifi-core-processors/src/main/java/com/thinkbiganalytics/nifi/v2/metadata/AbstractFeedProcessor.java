@@ -23,18 +23,18 @@ package com.thinkbiganalytics.nifi.v2.metadata;
  * #L%
  */
 
-import java.util.List;
-import java.util.Set;
-
-import org.apache.nifi.components.PropertyDescriptor;
-import org.apache.nifi.processor.ProcessContext;
-import org.apache.nifi.processor.Relationship;
-
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProvider;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
 import com.thinkbiganalytics.nifi.v2.common.BaseProcessor;
 import com.thinkbiganalytics.nifi.v2.common.CommonProperties;
+
+import org.apache.nifi.components.PropertyDescriptor;
+import org.apache.nifi.processor.ProcessContext;
+import org.apache.nifi.processor.Relationship;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author Sean Felten

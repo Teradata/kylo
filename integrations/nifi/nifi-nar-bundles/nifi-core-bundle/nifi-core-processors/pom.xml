@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
@@ -9,9 +9,9 @@
     <artifactId>thinkbig-nifi-core-bundle</artifactId>
     <version>0.7.0-SNAPSHOT</version>
   </parent>
-	<properties>
-		<plugin.license.parentRelative>../../../../../</plugin.license.parentRelative>
-	</properties>
+  <properties>
+    <plugin.license.parentRelative>../../../../../</plugin.license.parentRelative>
+  </properties>
   <packaging>jar</packaging>
 
   <dependencies>
@@ -111,7 +111,7 @@
     <dependency>
       <groupId>com.klarna</groupId>
       <artifactId>hiverunner</artifactId>
-      <version>3.0.0</version>
+      <version>${hiverunner.version}</version>
       <scope>test</scope>
     </dependency>
 
@@ -139,7 +139,6 @@
     <dependency>
       <groupId>org.reflections</groupId>
       <artifactId>reflections</artifactId>
-      <version>0.9.8</version>
       <scope>test</scope>
     </dependency>
     <!-- End required for Hive tests -->
@@ -153,19 +152,19 @@
   </dependencies>
 
 
-        <build>
-                <plugins>
-                        <plugin>
-                                <groupId>org.codehaus.mojo</groupId>
-                                <artifactId>license-maven-plugin</artifactId>
-                                <configuration>
-                                <excludes>
-                                        <exclude>**/JdbcCommon.java</exclude>
-                                </excludes>
-                                </configuration>
-                        </plugin>
-                </plugins>
-        </build>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>license-maven-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <exclude>**/JdbcCommon.java</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 
 
 </project>

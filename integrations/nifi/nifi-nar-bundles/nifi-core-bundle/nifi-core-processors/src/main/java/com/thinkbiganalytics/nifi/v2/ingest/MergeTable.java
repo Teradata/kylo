@@ -92,23 +92,20 @@ public class MergeTable extends AbstractNiFiProcessor {
      * Rolling SYNC same as SYNC but at a partition level overwriting only partitions present in source.
      **/
     public static final String STRATEGY_ROLLING_SYNC = "ROLLING_SYNC";
-
-    private final Set<Relationship> relationships;
-
     public static final PropertyDescriptor MERGE_STRATEGY = new PropertyDescriptor.Builder()
         .name("Merge Strategy")
-        .description("Specifies the algorithm used to merge. Valid values are SYNC,MERGE, PK_MERGE, DEDUPE_AND_MERGE, and ROLLING_SYNC.  Sync will completely overwrite the target table with the source data. "
-                     + "Rolling Sync will overwrite target partitions only when present in source. "
-                     + "Merge will append "
-                     + "the data into the target partitions. Dedupe will insert into the target partition but ensure no duplicate rows are remaining. PK Merge will insert or update existing rows "
-                     + "matching the"
-                     + " same primary key.")
+        .description(
+            "Specifies the algorithm used to merge. Valid values are SYNC,MERGE, PK_MERGE, DEDUPE_AND_MERGE, and ROLLING_SYNC.  Sync will completely overwrite the target table with the source data. "
+            + "Rolling Sync will overwrite target partitions only when present in source. "
+            + "Merge will append "
+            + "the data into the target partitions. Dedupe will insert into the target partition but ensure no duplicate rows are remaining. PK Merge will insert or update existing rows "
+            + "matching the"
+            + " same primary key.")
         .required(true)
         .expressionLanguageSupported(true)
         .allowableValues(STRATEGY_MERGE, STRATEGY_DEDUPE_MERGE, STRATEGY_PK_MERGE, STRATEGY_SYNC, STRATEGY_ROLLING_SYNC, "${metadata.table.targetMergeStrategy}")
         .defaultValue("${metadata.table.targetMergeStrategy}")
         .build();
-
     public static final PropertyDescriptor HIVE_CONFIGURATIONS = new PropertyDescriptor.Builder()
         .name("Hive Configurations")
         .description("Pipe separated list of Hive Configurations that you would like to set for Hive queries ")
@@ -116,8 +113,7 @@ public class MergeTable extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
-
-
+    private final Set<Relationship> relationships;
     private final List<PropertyDescriptor> propDescriptors;
 
     public MergeTable() {

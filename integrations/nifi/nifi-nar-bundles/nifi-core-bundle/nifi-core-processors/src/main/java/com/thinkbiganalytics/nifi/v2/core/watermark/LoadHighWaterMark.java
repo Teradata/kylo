@@ -23,9 +23,11 @@ package com.thinkbiganalytics.nifi.v2.core.watermark;
  * #L%
  */
 
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder;
+import com.thinkbiganalytics.nifi.core.api.metadata.WaterMarkActiveException;
+import com.thinkbiganalytics.nifi.v2.common.CommonProperties;
+import com.thinkbiganalytics.nifi.v2.common.FeedIdNotFoundException;
 
 import org.apache.nifi.annotation.behavior.EventDriven;
 import org.apache.nifi.annotation.behavior.InputRequirement;
@@ -41,11 +43,9 @@ import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.exception.ProcessException;
 import org.apache.nifi.processor.util.StandardValidators;
 
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder;
-import com.thinkbiganalytics.nifi.core.api.metadata.WaterMarkActiveException;
-import com.thinkbiganalytics.nifi.v2.common.CommonProperties;
-import com.thinkbiganalytics.nifi.v2.common.FeedIdNotFoundException;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Loads a high-water mark and yields any processing if the water mark has not been released yet.
@@ -58,45 +58,40 @@ import com.thinkbiganalytics.nifi.v2.common.FeedIdNotFoundException;
 @CapabilityDescription("Loads and makes active a watermark associated with a feed.")
 public class LoadHighWaterMark extends HighWaterMarkProcessor {
 
-    protected static final AllowableValue[] ACTIVE_STRATEGY_VALUES = new AllowableValue[] {
-                             new AllowableValue("YIELD", "Yield", "Yield processing so that another attempt to obtain the high-water mark can be made later."),
-                             new AllowableValue("PENALIZE", "Penalize", "Penalize the flow file and return it ot the queue that it came from so that another "
-                                             + "attempt to obtain the high-water mark can be made later.  Performs a yield instead if this processor is the first in the flow."),
-                             new AllowableValue("ROUTE", "Route", "Route immediately to the \"activeFailure\" relationship.")
-                          };
-
-    protected static final PropertyDescriptor ACTIVE_WATER_MARK_STRATEGY = new PropertyDescriptor.Builder()
-                    .name("Active Water Mark Strategy")
-                    .description("Specifies what strategy should be followed when an attempt to obtain the latest high-water mark fails because another "
-                                    + "is flow already actively using it")
-                    .allowableValues(ACTIVE_STRATEGY_VALUES)
-                    .defaultValue("YIELD")
-                    .required(true)
-                    .build();
-
-    protected static final PropertyDescriptor MAX_YIELD_COUNT = new PropertyDescriptor.Builder()
-                    .name("Max Yield Count")
-                    .description("The maximum number of yields, if the yield strategy is selected, "
-                                    + "that should be attempted before failures to obtain a high-water mark are routed to the \"active\" relationship "
-                                    + "(routing never occurs if unset or less than zero)")
-                    .required(false)
-                    .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
-                    .expressionLanguageSupported(true)
-                    .build();
-
-    protected static final PropertyDescriptor INITIAL_VALUE = new PropertyDescriptor.Builder()
-                    .name("Initial Value")
-                    .description("The initial value for the water mark if none currently exists for the feed.")
-                    .required(false)
-                    .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-                    .expressionLanguageSupported(true)
-                    .build();
-
     public static final Relationship ACTIVE_FAILURE = new Relationship.Builder()
-                    .name("activeFailure")
-                    .description("The water mark is actively being processed and has not yet been committed or rejected")
-                    .build();
-
+        .name("activeFailure")
+        .description("The water mark is actively being processed and has not yet been committed or rejected")
+        .build();
+    protected static final AllowableValue[] ACTIVE_STRATEGY_VALUES = new AllowableValue[]{
+        new AllowableValue("YIELD", "Yield", "Yield processing so that another attempt to obtain the high-water mark can be made later."),
+        new AllowableValue("PENALIZE", "Penalize", "Penalize the flow file and return it to the queue that it came from so that another "
+                                                   + "attempt to obtain the high-water mark can be made later.  Performs a yield instead if this processor is the first in the flow."),
+        new AllowableValue("ROUTE", "Route", "Route immediately to the \"activeFailure\" relationship.")
+    };
+    protected static final PropertyDescriptor ACTIVE_WATER_MARK_STRATEGY = new PropertyDescriptor.Builder()
+        .name("Active Water Mark Strategy")
+        .description("Specifies what strategy should be followed when an attempt to obtain the latest high-water mark fails because another "
+                     + "is flow already actively using it")
+        .allowableValues(ACTIVE_STRATEGY_VALUES)
+        .defaultValue("YIELD")
+        .required(true)
+        .build();
+    protected static final PropertyDescriptor MAX_YIELD_COUNT = new PropertyDescriptor.Builder()
+        .name("Max Yield Count")
+        .description("The maximum number of yields, if the yield strategy is selected, "
+                     + "that should be attempted before failures to obtain a high-water mark are routed to the \"active\" relationship "
+                     + "(routing never occurs if unset or less than zero)")
+        .required(false)
+        .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .build();
+    protected static final PropertyDescriptor INITIAL_VALUE = new PropertyDescriptor.Builder()
+        .name("Initial Value")
+        .description("The initial value for the water mark if none currently exists for the feed.")
+        .required(false)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .build();
     private AtomicInteger yieldCount = new AtomicInteger(0);
 
     /* (non-Javadoc)
@@ -109,7 +104,7 @@ public class LoadHighWaterMark extends HighWaterMarkProcessor {
         boolean createdFlowfile = false;
 
         // Create the flow file if we are the start of the flow.
-        if (outputFF == null && ! context.hasNonLoopConnection()) {
+        if (outputFF == null && !context.hasNonLoopConnection()) {
             outputFF = session.create();
             createdFlowfile = true;
         }
@@ -144,7 +139,7 @@ public class LoadHighWaterMark extends HighWaterMarkProcessor {
                 } catch (WaterMarkActiveException e) {
                     throw e;
                 } catch (Exception e) {
-                    getLog().error("Failed to load the current high-water mark: {} for feed {}", new Object[] {waterMark, feedId}, e);
+                    getLog().error("Failed to load the current high-water mark: {} for feed {}", new Object[]{waterMark, feedId}, e);
                     session.transfer(outputFF, CommonProperties.REL_FAILURE);
                 }
 
@@ -152,31 +147,31 @@ public class LoadHighWaterMark extends HighWaterMarkProcessor {
                 session.transfer(outputFF, CommonProperties.REL_SUCCESS);
             } catch (WaterMarkActiveException e) {
                 String strategy = context.getProperty(ACTIVE_WATER_MARK_STRATEGY).getValue();
-                
+
                 if ("ROUTE".equals(strategy)) {
-                    getLog().debug("Water mark {} is active - routing to \"activeFailure\"", new Object[] { waterMark });
+                    getLog().debug("Water mark {} is active - routing to \"activeFailure\"", new Object[]{waterMark});
                     session.transfer(outputFF, ACTIVE_FAILURE);
                 } else {
                     PropertyValue value = context.getProperty(MAX_YIELD_COUNT);
                     int maxCount = value.isSet() ? value.asInteger() : Integer.MAX_VALUE - 1;
                     int count = this.yieldCount.incrementAndGet();
-    
+
                     if (maxCount > 0 && count > maxCount) {
-                        getLog().debug("Water mark {} is active - routing to \"activeFailure\"", new Object[] { waterMark });
+                        getLog().debug("Water mark {} is active - routing to \"activeFailure\"", new Object[]{waterMark});
                         session.transfer(outputFF, ACTIVE_FAILURE);
                     } else {
                         // If this processor created this flow file (1st processor in flow) then we will yield no matter what the strategy.
                         if (createdFlowfile) {
-                            getLog().debug("Removing creatd flow file and yielding because water mark {} is active - attempt {} of {}", new Object[] { waterMark, count, maxCount });
+                            getLog().debug("Removing creatd flow file and yielding because water mark {} is active - attempt {} of {}", new Object[]{waterMark, count, maxCount});
                             session.remove(outputFF);
                             context.yield();
                         } else {
                             if ("YIELD".equals(strategy)) {
-                                getLog().debug("Yielding because water mark {} is active - attempt {} of {}", new Object[] { waterMark, count, maxCount });
+                                getLog().debug("Yielding because water mark {} is active - attempt {} of {}", new Object[]{waterMark, count, maxCount});
                                 session.transfer(outputFF);
                                 context.yield();
                             } else {
-                                getLog().debug("Penalizing flow file because water mark {} is active - attempt {} of {}", new Object[] { waterMark, count, maxCount });
+                                getLog().debug("Penalizing flow file because water mark {} is active - attempt {} of {}", new Object[]{waterMark, count, maxCount});
                                 outputFF = session.penalize(outputFF);
                                 session.transfer(outputFF);
                             }

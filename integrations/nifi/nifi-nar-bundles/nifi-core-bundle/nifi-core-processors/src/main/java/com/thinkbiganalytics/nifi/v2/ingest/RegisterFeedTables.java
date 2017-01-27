@@ -35,7 +35,6 @@ import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.flowfile.FlowFile;
-import org.apache.nifi.processor.AbstractProcessor;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.Relationship;
@@ -70,18 +69,34 @@ import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.THRIFT_SERVI
 @CapabilityDescription("Creates a set of standard feed tables managed by the Think Big platform. ")
 public class RegisterFeedTables extends AbstractNiFiProcessor {
 
-    private static String DEFAULT_STORAGE_FORMAT = "STORED AS ORC";
-
-    private static String DEFAULT_FEED_FORMAT_OPTIONS = "ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n' STORED AS TEXTFILE";
-
+    public static final PropertyDescriptor FEED_ROOT = new PropertyDescriptor.Builder()
+        .name("Feed Root Path")
+        .description("Specify the full HDFS root path for the feed,valid,invalid tables.")
+        .required(true)
+        .defaultValue("${hive.ingest.root}")
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .build();
+    public static final PropertyDescriptor MASTER_ROOT = new PropertyDescriptor.Builder()
+        .name("Master Root Path")
+        .description("Specify the HDFS folder root path for creating the master table")
+        .required(true)
+        .defaultValue("${hive.master.root}")
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .build();
+    public static final PropertyDescriptor PROFILE_ROOT = new PropertyDescriptor.Builder()
+        .name("Profile Root Path")
+        .description("Specify the HDFS folder root path for creating the profile table")
+        .required(true)
+        .defaultValue("${hive.profile.root}")
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .build();
     /**
      * Specify creation of all tables
      */
     public static String ALL_TABLES = "ALL";
-
-    // Relationships
-    private final Set<Relationship> relationships;
-
     /**
      * Property indicating which tables to register
      */
@@ -92,34 +107,10 @@ public class RegisterFeedTables extends AbstractNiFiProcessor {
         .allowableValues(TableType.FEED.toString(), TableType.VALID.toString(), TableType.INVALID.toString(), TableType.PROFILE.toString(), TableType.MASTER.toString(), ALL_TABLES)
         .defaultValue(ALL_TABLES)
         .build();
-
-    public static final PropertyDescriptor FEED_ROOT = new PropertyDescriptor.Builder()
-        .name("Feed Root Path")
-        .description("Specify the full HDFS root path for the feed,valid,invalid tables.")
-        .required(true)
-        .defaultValue("${hive.ingest.root}")
-        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .expressionLanguageSupported(true)
-        .build();
-
-    public static final PropertyDescriptor MASTER_ROOT = new PropertyDescriptor.Builder()
-        .name("Master Root Path")
-        .description("Specify the HDFS folder root path for creating the master table")
-        .required(true)
-        .defaultValue("${hive.master.root}")
-        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .expressionLanguageSupported(true)
-        .build();
-
-    public static final PropertyDescriptor PROFILE_ROOT = new PropertyDescriptor.Builder()
-        .name("Profile Root Path")
-        .description("Specify the HDFS folder root path for creating the profile table")
-        .required(true)
-        .defaultValue("${hive.profile.root}")
-        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .expressionLanguageSupported(true)
-        .build();
-
+    private static String DEFAULT_STORAGE_FORMAT = "STORED AS ORC";
+    private static String DEFAULT_FEED_FORMAT_OPTIONS = "ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n' STORED AS TEXTFILE";
+    // Relationships
+    private final Set<Relationship> relationships;
     private final List<PropertyDescriptor> propDescriptors;
 
     public RegisterFeedTables() {

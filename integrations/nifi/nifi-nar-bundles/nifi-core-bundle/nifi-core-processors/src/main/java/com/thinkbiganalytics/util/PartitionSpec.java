@@ -42,6 +42,7 @@ import javax.annotation.Nonnull;
  * Represents a partition specification for a target table
  */
 public class PartitionSpec implements Cloneable {
+
     private static final Logger log = LoggerFactory.getLogger(PartitionSpec.class);
 
     private List<PartitionKey> keys;
@@ -49,14 +50,6 @@ public class PartitionSpec implements Cloneable {
     public PartitionSpec(PartitionKey... partitionKeys) {
         super();
         keys = Arrays.asList(partitionKeys);
-    }
-
-    public Set<String> getKeyNames() {
-        HashSet<String> keySet = new HashSet<>();
-        for (PartitionKey partitionKey : keys) {
-            keySet.add(partitionKey.getKey());
-        }
-        return keySet;
     }
 
     /**
@@ -84,6 +77,58 @@ public class PartitionSpec implements Cloneable {
                 throw new RuntimeException("Failed to process specification [" + spec + "]");
             }
         }
+    }
+
+    public static void main(String[] args) {
+        PartitionKey key1 = new PartitionKey("country", "string", "country");
+        PartitionKey key2 = new PartitionKey("year", "int", "year(hired)");
+        PartitionKey key3 = new PartitionKey("month", "int", "month(hired)");
+
+        PartitionSpec spec = new PartitionSpec(key1, key2, key3);
+        String[] selectFields = new String[]{"id", "name", "company", "zip", "phone", "email", "hired"};
+        String selectSQL = StringUtils.join(selectFields, ",");
+
+        String[] values = new String[]{"USA", "2015", "4"};
+
+        String targetSqlWhereClause = spec.toTargetSQLWhere(values);
+        String sourceSqlWhereClause = spec.toSourceSQLWhere(values);
+        String partitionClause = spec.toPartitionSpec(values);
+
+        /*
+             insert overwrite table employee partition (year=2015,month=10,country='USA')
+             select id, name, company, zip, phone, email, hired from employee_feed
+             where year(hired)=2015 and month(hired)=10 and country='USA'
+             union distinct
+             select id, name, company, zip, phone, email, hired from employee
+             where year=2015 and month=10 and country='USA'
+         */
+
+        String targetTable = "employee";
+        String sourceTable = "employee_feed";
+        String sqlWhere = "employee_feed";
+
+        StringBuffer sb = new StringBuffer();
+        sb.append("insert overwrite table ").append(targetTable).append(" ")
+            .append(partitionClause)
+            .append(" select ").append(selectSQL)
+            .append(" from ").append(sourceTable).append(" ")
+            .append(" where ")
+            .append(sourceSqlWhereClause)
+            .append(" union distinct ")
+            .append(" select ").append(selectSQL)
+            .append(" from ").append(targetTable).append(" ")
+            .append(" where ")
+            .append(targetSqlWhereClause);
+
+        log.info(sb.toString());
+    }
+
+    public Set<String> getKeyNames() {
+        HashSet<String> keySet = new HashSet<>();
+        for (PartitionKey partitionKey : keys) {
+            keySet.add(partitionKey.getKey());
+        }
+        return keySet;
     }
 
     public boolean isNonPartitioned() {
@@ -150,8 +195,8 @@ public class PartitionSpec implements Cloneable {
      */
     public String toDistinctSelectSQL(@Nonnull final String sourceSchema, @Nonnull final String sourceTable, @Nonnull final String feedPartitionValue) {
         final String keysWithAliases = keys.stream()
-                .map(PartitionKey::getFormulaWithAlias)
-                .collect(Collectors.joining(", "));
+            .map(PartitionKey::getFormulaWithAlias)
+            .collect(Collectors.joining(", "));
         return "select " + keysWithAliases + ", count(0) as `tb_cnt` from " + HiveUtils.quoteIdentifier(sourceSchema, sourceTable) +
                " where `processing_dttm` = " + HiveUtils.quoteString(feedPartitionValue) +
                " group by " + keysWithAliases;
@@ -160,51 +205,6 @@ public class PartitionSpec implements Cloneable {
     public PartitionSpec newForAlias(String alias) {
         PartitionSpec spec = new PartitionSpec(PartitionKey.partitionKeysForTableAlias(this.keys.toArray(new PartitionKey[0]), alias));
         return spec;
-    }
-
-
-    public static void main(String[] args) {
-        PartitionKey key1 = new PartitionKey("country", "string", "country");
-        PartitionKey key2 = new PartitionKey("year", "int", "year(hired)");
-        PartitionKey key3 = new PartitionKey("month", "int", "month(hired)");
-
-        PartitionSpec spec = new PartitionSpec(key1, key2, key3);
-        String[] selectFields = new String[]{"id", "name", "company", "zip", "phone", "email", "hired"};
-        String selectSQL = StringUtils.join(selectFields, ",");
-
-        String[] values = new String[]{"USA", "2015", "4"};
-
-        String targetSqlWhereClause = spec.toTargetSQLWhere(values);
-        String sourceSqlWhereClause = spec.toSourceSQLWhere(values);
-        String partitionClause = spec.toPartitionSpec(values);
-
-        /*
-             insert overwrite table employee partition (year=2015,month=10,country='USA')
-             select id, name, company, zip, phone, email, hired from employee_feed
-             where year(hired)=2015 and month(hired)=10 and country='USA'
-             union distinct
-             select id, name, company, zip, phone, email, hired from employee
-             where year=2015 and month=10 and country='USA'
-         */
-
-        String targetTable = "employee";
-        String sourceTable = "employee_feed";
-        String sqlWhere = "employee_feed";
-
-        StringBuffer sb = new StringBuffer();
-        sb.append("insert overwrite table ").append(targetTable).append(" ")
-                .append(partitionClause)
-                .append(" select ").append(selectSQL)
-                .append(" from ").append(sourceTable).append(" ")
-                .append(" where ")
-                .append(sourceSqlWhereClause)
-                .append(" union distinct ")
-                .append(" select ").append(selectSQL)
-                .append(" from ").append(targetTable).append(" ")
-                .append(" where ")
-                .append(targetSqlWhereClause);
-
-        log.info(sb.toString());
     }
 
 }

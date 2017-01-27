@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.nifi.v2.init;
 
@@ -23,8 +23,8 @@ package com.thinkbiganalytics.nifi.v2.init;
  * #L%
  */
 
-import java.util.List;
-import java.util.Set;
+import com.thinkbiganalytics.nifi.v2.common.CommonProperties;
+import com.thinkbiganalytics.nifi.v2.common.FeedProcessor;
 
 import org.apache.nifi.annotation.behavior.EventDriven;
 import org.apache.nifi.annotation.behavior.InputRequirement;
@@ -38,30 +38,29 @@ import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.exception.ProcessException;
 
-import com.thinkbiganalytics.nifi.v2.common.CommonProperties;
-import com.thinkbiganalytics.nifi.v2.common.FeedProcessor;
+import java.util.List;
+import java.util.Set;
 
 /**
- *
  * @author Sean Felten
  */
 @EventDriven
 @InputRequirement(InputRequirement.Requirement.INPUT_ALLOWED)
-@Tags({ "feed", "initialize", "initialization", "thinkbig"})
+@Tags({"feed", "initialize", "initialization", "thinkbig"})
 @CapabilityDescription("Indicates that a feed initialization flow has completed; either successfully or a failed")
 public class CompleteInitializeFeed extends FeedProcessor {
 
-    protected static final AllowableValue[] MODE_VALUES = new AllowableValue[] { 
-                             new AllowableValue("SUCCESSFUL", "Successful", "The mode indicating feed initialization was successful."),
-                             new AllowableValue("FAILURE", "Failure", "The mode indicating feed initialization failed.")
-                          };
+    protected static final AllowableValue[] MODE_VALUES = new AllowableValue[]{
+        new AllowableValue("SUCCESSFUL", "Successful", "The mode indicating feed initialization was successful."),
+        new AllowableValue("FAILURE", "Failure", "The mode indicating feed initialization failed.")
+    };
 
     protected static final PropertyDescriptor FAILURE_STRATEGY = new PropertyDescriptor.Builder()
-                    .name("Initialization Result")
-                    .description("Indicates how this processor should behave when a flow file arrives after feed initialization has failed.")
-                    .allowableValues(MODE_VALUES)
-                    .required(true)
-                    .build();
+        .name("Initialization Result")
+        .description("Indicates how this processor should behave when a flow file arrives after feed initialization has failed.")
+        .allowableValues(MODE_VALUES)
+        .required(true)
+        .build();
 
     /* (non-Javadoc)
      * @see org.apache.nifi.processor.AbstractProcessor#onTrigger(org.apache.nifi.processor.ProcessContext, org.apache.nifi.processor.ProcessSession)
@@ -77,18 +76,18 @@ public class CompleteInitializeFeed extends FeedProcessor {
                 getMetadataRecorder().completeFeedInitialization(getFeedId(context, inputFF));
             } else {
                 getMetadataRecorder().failFeedInitialization(getFeedId(context, inputFF));
-            } 
-            
+            }
+
             session.transfer(inputFF, CommonProperties.REL_SUCCESS);
         }
     }
-    
+
     @Override
     protected void addProperties(List<PropertyDescriptor> list) {
         super.addProperties(list);
         list.add(FAILURE_STRATEGY);
     }
-    
+
     @Override
     protected void addRelationships(Set<Relationship> set) {
         super.addRelationships(set);

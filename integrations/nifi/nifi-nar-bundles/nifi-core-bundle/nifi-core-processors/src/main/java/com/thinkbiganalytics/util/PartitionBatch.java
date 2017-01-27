@@ -40,6 +40,13 @@ public class PartitionBatch implements Cloneable {
         this.partitionSpec = partitionSpec;
     }
 
+    public static List<PartitionBatch> toPartitionBatchesForAlias(List<PartitionBatch> batches, String alias) {
+        ArrayList<PartitionBatch> newBatches = new ArrayList<>();
+        batches.stream().forEach(batch -> newBatches.add(batch.newForAlias(alias)));
+        return newBatches;
+
+    }
+
     public Long getRecordCount() {
         return records;
     }
@@ -69,13 +76,6 @@ public class PartitionBatch implements Cloneable {
         } catch (CloneNotSupportedException e) {
             throw new RuntimeException("Unable to create for alias ", e);
         }
-
-    }
-
-    public static List<PartitionBatch> toPartitionBatchesForAlias(List<PartitionBatch> batches, String alias) {
-        ArrayList<PartitionBatch> newBatches = new ArrayList<>();
-        batches.stream().forEach(batch -> newBatches.add(batch.newForAlias(alias)));
-        return newBatches;
 
     }
 

@@ -25,7 +25,6 @@ import com.google.common.collect.ImmutableSet;
 import com.thinkbiganalytics.ingest.TableRegisterSupport;
 import com.thinkbiganalytics.nifi.processor.AbstractNiFiProcessor;
 import com.thinkbiganalytics.nifi.v2.thrift.ThriftService;
-import com.thinkbiganalytics.util.TableRegisterConfiguration;
 import com.thinkbiganalytics.util.TableType;
 
 import org.apache.nifi.annotation.behavior.EventDriven;
@@ -35,7 +34,6 @@ import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.components.Validator;
 import org.apache.nifi.flowfile.FlowFile;
-import org.apache.nifi.processor.AbstractProcessor;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.Relationship;
@@ -58,31 +56,42 @@ import javax.annotation.Nonnull;
 @InputRequirement(InputRequirement.Requirement.INPUT_REQUIRED)
 @Tags({"hive", "ddl", "drop", "thinkbig"})
 public class DropFeedTables extends AbstractNiFiProcessor {
-    /** Property specifying additional tables to drop */
-    public static final PropertyDescriptor ADDITIONAL_TABLES = new PropertyDescriptor.Builder()
-            .name("Additional Tables")
-            .description("Additional tables to drop separated by comma.")
-            .expressionLanguageSupported(true)
-            .required(false)
-            .addValidator(Validator.VALID)  // required for unit tests, see NIFI-1977
-            .build();
 
-    /** Value indicating all tables should be dropped */
+    /**
+     * Property specifying additional tables to drop
+     */
+    public static final PropertyDescriptor ADDITIONAL_TABLES = new PropertyDescriptor.Builder()
+        .name("Additional Tables")
+        .description("Additional tables to drop separated by comma.")
+        .expressionLanguageSupported(true)
+        .required(false)
+        .addValidator(Validator.VALID)  // required for unit tests, see NIFI-1977
+        .build();
+
+    /**
+     * Value indicating all tables should be dropped
+     */
     public static final String ALL_TABLES = "ALL";
 
-    /** Property indicating which tables to drop */
+    /**
+     * Property indicating which tables to drop
+     */
     public static final PropertyDescriptor TABLE_TYPE = new PropertyDescriptor.Builder()
-            .name("Table Type")
-            .description("Specifies the standard table type to drop or ALL for standard set.")
-            .allowableValues(Stream.concat(Arrays.stream(TableType.values()).map(Enum::toString), Stream.of(ALL_TABLES)).collect(Collectors.toSet()))
-            .required(true)
-            .build();
+        .name("Table Type")
+        .description("Specifies the standard table type to drop or ALL for standard set.")
+        .allowableValues(Stream.concat(Arrays.stream(TableType.values()).map(Enum::toString), Stream.of(ALL_TABLES)).collect(Collectors.toSet()))
+        .required(true)
+        .build();
 
-    /** Configuration fields */
+    /**
+     * Configuration fields
+     */
     private static final List<PropertyDescriptor> properties = ImmutableList.of(IngestProperties.THRIFT_SERVICE, IngestProperties.FEED_CATEGORY, IngestProperties.FEED_NAME, TABLE_TYPE,
                                                                                 ADDITIONAL_TABLES);
 
-    /** Output paths to other NiFi processors */
+    /**
+     * Output paths to other NiFi processors
+     */
     private static final Set<Relationship> relationships = ImmutableSet.of(IngestProperties.REL_SUCCESS, IngestProperties.REL_FAILURE);
 
     @Nonnull

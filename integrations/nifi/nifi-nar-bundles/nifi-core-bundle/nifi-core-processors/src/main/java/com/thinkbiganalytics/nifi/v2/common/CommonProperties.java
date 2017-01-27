@@ -20,21 +20,21 @@ package com.thinkbiganalytics.nifi.v2.common;
  * #L%
  */
 
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
+
 import org.apache.nifi.components.AllowableValue;
 import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.util.StandardValidators;
 
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
-
 /**
  * Common properties shared by many processors.
  */
 public interface CommonProperties {
-    
-    AllowableValue[] BOOLEANS = new AllowableValue[] { new AllowableValue("true", "True"), new AllowableValue("false", "False") };
-    AllowableValue[] ENABLING = new AllowableValue[] { new AllowableValue("true", "Enabled"), new AllowableValue("false", "Disabled") };
-    
+
+    AllowableValue[] BOOLEANS = new AllowableValue[]{new AllowableValue("true", "True"), new AllowableValue("false", "False")};
+    AllowableValue[] ENABLING = new AllowableValue[]{new AllowableValue("true", "Enabled"), new AllowableValue("false", "Disabled")};
+
     /**
      * Common Controller services
      **/

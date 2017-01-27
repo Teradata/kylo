@@ -58,6 +58,9 @@ public class TableMergeSyncSupport implements Serializable {
         this.conn = conn;
     }
 
+    /**
+     * Sets several hive parameters to enable dynamic partitions
+     */
     public void enableDynamicPartitions() {
         doExecuteSQL("set hive.exec.dynamic.partition=true");
         doExecuteSQL("set hive.exec.dynamic.partition.mode=nonstrict");
@@ -65,8 +68,11 @@ public class TableMergeSyncSupport implements Serializable {
         doExecuteSQL("set hive.optimize.index.filter=false");
     }
 
-    public void setHiveConf(String[] configurations){
-        for(String conf : configurations){
+    /**
+     * Sets the list of configurations given in name=value string pairs
+     */
+    public void setHiveConf(String[] configurations) {
+        for (String conf : configurations) {
             doExecuteSQL("set " + conf);
         }
     }
@@ -84,7 +90,7 @@ public class TableMergeSyncSupport implements Serializable {
      */
     public void doSync(@Nonnull final String sourceSchema, @Nonnull final String sourceTable, @Nonnull final String targetSchema, @Nonnull final String targetTable,
                        @Nonnull final PartitionSpec partitionSpec, @Nonnull final String feedPartitionValue) throws SQLException {
-
+        // Validate input parameters
         Validate.notEmpty(sourceSchema);
         Validate.notEmpty(sourceTable);
         Validate.notEmpty(targetSchema);
@@ -113,9 +119,17 @@ public class TableMergeSyncSupport implements Serializable {
         renameTable(targetSchema, syncTable, targetTable);
     }
 
+    /**
+     * @param sourceSchema       the schema or database name of the source table
+     * @param sourceTable        the source table name
+     * @param targetSchema       the schema or database name of the target table
+     * @param targetTable        the target table name
+     * @param partitionSpec      the partition specification
+     * @param feedPartitionValue the source processing partition value
+     */
     public void doRollingSync(@Nonnull final String sourceSchema, @Nonnull final String sourceTable, @Nonnull final String targetSchema, @Nonnull final String targetTable,
-                       @Nonnull final PartitionSpec partitionSpec, @Nonnull final String feedPartitionValue) throws SQLException {
-
+                              @Nonnull final PartitionSpec partitionSpec, @Nonnull final String feedPartitionValue) throws SQLException {
+        // Validate input parameters
         Validate.notEmpty(sourceSchema);
         Validate.notEmpty(sourceTable);
         Validate.notEmpty(targetSchema);
@@ -144,11 +158,11 @@ public class TableMergeSyncSupport implements Serializable {
         Validate.notEmpty(partitionWhere);
 
         return "insert overwrite table " + HiveUtils.quoteIdentifier(targetSchema, targetTable) + " " +
-                partitionSpec.toDynamicPartitionSpec() +
-                " select " + selectSQL + "," + partitionSpec.toDynamicSelectSQLSpec() +
-                " from " + HiveUtils.quoteIdentifier(sourceSchema, sourceTable) +
-                " where processing_dttm = " + HiveUtils.quoteString(feedPartitionValue)
-                + " and (" + partitionWhere + ")";
+               partitionSpec.toDynamicPartitionSpec() +
+               " select " + selectSQL + "," + partitionSpec.toDynamicSelectSQLSpec() +
+               " from " + HiveUtils.quoteIdentifier(sourceSchema, sourceTable) +
+               " where processing_dttm = " + HiveUtils.quoteString(feedPartitionValue)
+               + " and (" + partitionWhere + ")";
     }
 
     /**
@@ -164,14 +178,15 @@ public class TableMergeSyncSupport implements Serializable {
      */
     public List<PartitionBatch> doMerge(@Nonnull final String sourceSchema, @Nonnull final String sourceTable, @Nonnull final String targetSchema, @Nonnull final String targetTable,
                                         @Nonnull final PartitionSpec partitionSpec, @Nonnull final String feedPartitionValue, final boolean shouldDedupe) {
-        List<PartitionBatch> batches = null;
-
+        // Validate input parameters
         Validate.notEmpty(sourceSchema);
         Validate.notEmpty(sourceTable);
         Validate.notEmpty(targetSchema);
         Validate.notEmpty(targetTable);
         Validate.notNull(partitionSpec);
         Validate.notNull(feedPartitionValue);
+
+        List<PartitionBatch> batches = null;
 
         final String[] selectFields = getSelectFields(sourceSchema, sourceTable, targetSchema, targetTable, partitionSpec);
         final String sql;
@@ -204,7 +219,7 @@ public class TableMergeSyncSupport implements Serializable {
     }
 
     private boolean hasProcessingDttm(String[] selectFields) {
-        return Arrays.asList(selectFields).stream().anyMatch( v-> ("`processing_dttm`".equals(v)));
+        return Arrays.asList(selectFields).stream().anyMatch(v -> ("`processing_dttm`".equals(v)));
     }
 
     /**
@@ -220,6 +235,7 @@ public class TableMergeSyncSupport implements Serializable {
      */
     public void doPKMerge(@Nonnull final String sourceSchema, @Nonnull final String sourceTable, @Nonnull final String targetSchema, @Nonnull final String targetTable,
                           @Nonnull final PartitionSpec partitionSpec, @Nonnull final String feedPartitionValue, @Nonnull final ColumnSpec[] columnSpecs) {
+        // Validate input parameters
         Validate.notEmpty(sourceSchema);
         Validate.notEmpty(sourceTable);
         Validate.notEmpty(targetSchema);
@@ -238,12 +254,11 @@ public class TableMergeSyncSupport implements Serializable {
     /**
      * Create a new table like the old table with the new location.
      *
-     * @param schema the schema or database name for the reference table
-     * @param table the name of the reference table
+     * @param schema            the schema or database name for the reference table
+     * @param table             the name of the reference table
      * @param syncTableLocation the HDFS location for the reference table
      * @return the new table name
      */
-
     private String createSyncTable(@Nonnull final String schema, @Nonnull final String table, @Nonnull final String syncTableLocation) throws SQLException {
         final String syncTable = table + "_" + System.currentTimeMillis();
         final String createSQL = "create table " + HiveUtils.quoteIdentifier(schema, syncTable) +
@@ -257,7 +272,7 @@ public class TableMergeSyncSupport implements Serializable {
      * Drop table removing the data.
      *
      * @param schema the schema or database name containing the table
-     * @param table the name of the table
+     * @param table  the name of the table
      */
     public void dropTable(@Nonnull final String schema, @Nonnull final String table) {
         // Make managed to remove the old data
@@ -270,7 +285,7 @@ public class TableMergeSyncSupport implements Serializable {
     /**
      * Renames the specified table.
      *
-     * @param schema the schema or database name containing the tables
+     * @param schema  the schema or database name containing the tables
      * @param oldName the name of the table to be renamed
      * @param newName the new name for the table
      */
@@ -296,7 +311,7 @@ public class TableMergeSyncSupport implements Serializable {
      * Extract the HDFS location of the table data.
      *
      * @param schema the schema or database name
-     * @param table the table name
+     * @param table  the table name
      * @return the HDFS location of the table data
      */
     private String extractTableLocation(@Nonnull final String schema, @Nonnull final String table) throws SQLException {
@@ -317,7 +332,7 @@ public class TableMergeSyncSupport implements Serializable {
     /**
      * Generates a sync query for inserting from a source table into the target table with no partitions.
      *
-     * @param selectFields the list of fields in the select clause of the source table
+     * @param selectFields       the list of fields in the select clause of the source table
      * @param sourceSchema       the schema or database name of the source table
      * @param sourceTable        the source table name
      * @param targetSchema       the schema or database name of the target table
@@ -355,14 +370,19 @@ public class TableMergeSyncSupport implements Serializable {
                " where processing_dttm = " + HiveUtils.quoteString(feedPartitionValue);
     }
 
-    /*
-    Produces a where clause that limits to the impacted partitions of the target table
+    /**
+     * Produces a where clause that limits to the impacted partitions of the target table
+     *
+     * @param batches           a list of partition batches
+     * @param useSourceColumns  a boolean value to decide whether to use the source columns or target columns
+     *
+     * @return  a where clause sql string
      */
     private String targetPartitionsWhereClause(List<PartitionBatch> batches, boolean useSourceColumns) {
         List<String> targetPartitionsItems = new Vector<>();
         for (PartitionBatch batch : batches) {
             String column = useSourceColumns ? batch.getPartitionSpec().toSourceSQLWhere(batch.getPartitionValues())
-                    : batch.getPartitionSpec().toTargetSQLWhere(batch.getPartitionValues());
+                                             : batch.getPartitionSpec().toTargetSQLWhere(batch.getPartitionValues());
             targetPartitionsItems.add("(" + column + ")");
         }
         return (targetPartitionsItems.size() == 0 ? null : StringUtils.join(targetPartitionsItems.toArray(new String[0]), " or "));
@@ -388,9 +408,9 @@ public class TableMergeSyncSupport implements Serializable {
                                                            @Nonnull final String targetTable, @Nonnull final String feedPartitionValue) {
 
         // Strip processing_dttm for the distinct since it will always be different
-        String[] distinctSelectFields = Arrays.asList(selectFields).stream().filter( v-> !("`processing_dttm`".equals(v))).collect(Collectors.toList()).toArray(new String[0]);
-        final String selectAggregateSQL = StringUtils.join(distinctSelectFields, ",")+", min(processing_dttm) processing_dttm, "+spec.toPartitionSelectSQL();
-        final String groupBySQL = StringUtils.join(distinctSelectFields, ",")+","+spec.toPartitionSelectSQL();
+        String[] distinctSelectFields = Arrays.asList(selectFields).stream().filter(v -> !("`processing_dttm`".equals(v))).collect(Collectors.toList()).toArray(new String[0]);
+        final String selectAggregateSQL = StringUtils.join(distinctSelectFields, ",") + ", min(processing_dttm) processing_dttm, " + spec.toPartitionSelectSQL();
+        final String groupBySQL = StringUtils.join(distinctSelectFields, ",") + "," + spec.toPartitionSelectSQL();
         final String selectSQL = StringUtils.join(selectFields, ",");
         final String targetPartitionWhereClause = targetPartitionsWhereClause(batches, false);
 
@@ -408,7 +428,7 @@ public class TableMergeSyncSupport implements Serializable {
         if (targetPartitionWhereClause != null) {
             sb.append(" where (").append(targetPartitionWhereClause).append(")");
         }
-            sb.append(") t group by "+groupBySQL).append(" having min(processing_dttm) = ").append(HiveUtils.quoteString(feedPartitionValue));
+        sb.append(") t group by " + groupBySQL).append(" having min(processing_dttm) = ").append(HiveUtils.quoteString(feedPartitionValue));
 
         return sb.toString();
     }
@@ -427,8 +447,8 @@ public class TableMergeSyncSupport implements Serializable {
      * @return the sql string
      */
     protected String generateMergeWithDedupePartitionQueryNoProcessingDttm(@Nonnull final String[] selectFields, @Nonnull final PartitionSpec spec, @Nonnull final List<PartitionBatch> batches,
-                                                           @Nonnull final String sourceSchema, @Nonnull final String sourceTable, @Nonnull final String targetSchema,
-                                                           @Nonnull final String targetTable, @Nonnull final String feedPartitionValue) {
+                                                                           @Nonnull final String sourceSchema, @Nonnull final String sourceTable, @Nonnull final String targetSchema,
+                                                                           @Nonnull final String targetTable, @Nonnull final String feedPartitionValue) {
         final String selectSQL = StringUtils.join(selectFields, ",");
         final String targetPartitionWhereClause = targetPartitionsWhereClause(batches, false);
 
@@ -454,8 +474,8 @@ public class TableMergeSyncSupport implements Serializable {
     /**
      * Generates a dynamic partition sync query for inserting overwriting from a source table into the target table adhering to partitions.
      *
-     * @param selectFields the list of fields in the select clause of the source table
-     * @param spec         the partition specification or null if none
+     * @param selectFields       the list of fields in the select clause of the source table
+     * @param spec               the partition specification or null if none
      * @param sourceSchema       the schema or database name of the source table
      * @param sourceTable        the source table name
      * @param targetSchema       the schema or database name of the target table
@@ -487,8 +507,8 @@ public class TableMergeSyncSupport implements Serializable {
     protected String generateMergeNonPartitionQueryWithDedupe(@Nonnull final String[] selectFields, @Nonnull final String sourceSchema, @Nonnull final String sourceTable,
                                                               @Nonnull final String targetSchema, @Nonnull final String targetTable, @Nonnull final String feedPartitionValue) {
 
-        String[] distinctSelectFields = Arrays.asList(selectFields).stream().filter( v-> !("`processing_dttm`".equals(v))).collect(Collectors.toList()).toArray(new String[0]);
-        final String selectAggregateSQL = StringUtils.join(distinctSelectFields, ",")+", min(processing_dttm) processing_dttm";
+        String[] distinctSelectFields = Arrays.asList(selectFields).stream().filter(v -> !("`processing_dttm`".equals(v))).collect(Collectors.toList()).toArray(new String[0]);
+        final String selectAggregateSQL = StringUtils.join(distinctSelectFields, ",") + ", min(processing_dttm) processing_dttm";
         final String selectSQL = StringUtils.join(selectFields, ",");
         final String groupBySQL = StringUtils.join(distinctSelectFields, ",");
 
@@ -499,7 +519,7 @@ public class TableMergeSyncSupport implements Serializable {
                " union all " +
                " select " + selectSQL +
                " from " + HiveUtils.quoteIdentifier(targetSchema, targetTable) +
-               ") x group by " + groupBySQL + " having min(processing_dttm) = "  + HiveUtils.quoteString(feedPartitionValue);
+               ") x group by " + groupBySQL + " having min(processing_dttm) = " + HiveUtils.quoteString(feedPartitionValue);
     }
 
     /**
@@ -514,7 +534,7 @@ public class TableMergeSyncSupport implements Serializable {
      * @return the sql string
      */
     protected String generateMergeNonPartitionQueryWithDedupeNoProcessingDttm(@Nonnull final String[] selectFields, @Nonnull final String sourceSchema, @Nonnull final String sourceTable,
-                                                              @Nonnull final String targetSchema, @Nonnull final String targetTable, @Nonnull final String feedPartitionValue) {
+                                                                              @Nonnull final String targetSchema, @Nonnull final String targetTable, @Nonnull final String feedPartitionValue) {
         final String selectSQL = StringUtils.join(selectFields, ",");
         return "insert overwrite table " + HiveUtils.quoteIdentifier(targetSchema, targetTable) + " " +
                "select " + selectSQL + " from (" +
@@ -750,10 +770,10 @@ public class TableMergeSyncSupport implements Serializable {
      *
      * <p>The column names are quoted and escaped for use in a SQL query.</p>
      *
-     * @param sourceSchema the name of the source table schema or database
-     * @param sourceTable the name of the source table
-     * @param targetSchema the name of the target table schema or database
-     * @param targetTable the name of the target table
+     * @param sourceSchema  the name of the source table schema or database
+     * @param sourceTable   the name of the source table
+     * @param targetSchema  the name of the target table schema or database
+     * @param targetTable   the name of the target table
      * @param partitionSpec the partition specifications, or {@code null} if none
      * @return the columns for a SELECT statement
      */
@@ -784,7 +804,7 @@ public class TableMergeSyncSupport implements Serializable {
      * Retrieves the schema of the specified table.
      *
      * @param schema the database name
-     * @param table the table name
+     * @param table  the table name
      * @return the list of columns
      */
     protected List<String> resolveTableSchema(@Nonnull final String schema, @Nonnull final String table) {

@@ -65,31 +65,27 @@ import static com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants.SRC
 @EventDriven
 @InputRequirement(InputRequirement.Requirement.INPUT_ALLOWED)
 @Tags({"feed", "begin", "thinkbig"})
-@CapabilityDescription("Records the start of a feed to be tracked and listens to events which may trigger a flow. This processor should be either the first processor or immediately follow the first processor in a flow.")
+@CapabilityDescription(
+    "Records the start of a feed to be tracked and listens to events which may trigger a flow. This processor should be either the first processor or immediately follow the first processor in a flow.")
 public class BeginFeed extends AbstractFeedProcessor {
 
-    private Queue<FeedPreconditionTriggerEvent> pendingChanges = new LinkedBlockingQueue<>();
-    private PreconditionListener preconditionListener;
+    public static final PropertyDescriptor PRECONDITION_SERVICE = new PropertyDescriptor.Builder()
+        .name("Feed Precondition Event Service")
+        .description("Service that manages preconditions that trigger feed execution")
+        .required(false)
+        .identifiesControllerService(FeedPreconditionEventService.class)
+        .build();
+    public static final PropertyDescriptor FEED_NAME = new PropertyDescriptor.Builder()
+        .name(FEED_ID_PROP)
+        .displayName("Feed name")
+        .description("The unique name of the feed that is beginning")
+        .required(true)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .build();
     // TODO re-enable caching when we do more intelligent handling when the feed and datasource info has been
     // removed from the metadata store.
 //    private AtomicReference<String> feedId = new AtomicReference<>();
 //    private Set<Datasource> sourceDatasources = Collections.synchronizedSet(new HashSet<Datasource>());
-
-    public static final PropertyDescriptor PRECONDITION_SERVICE = new PropertyDescriptor.Builder()
-            .name("Feed Precondition Event Service")
-            .description("Service that manages preconditions that trigger feed execution")
-            .required(false)
-            .identifiesControllerService(FeedPreconditionEventService.class)
-            .build();
-
-    public static final PropertyDescriptor FEED_NAME = new PropertyDescriptor.Builder()
-            .name(FEED_ID_PROP)
-            .displayName("Feed name")
-            .description("The unique name of the feed that is beginning")
-            .required(true)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .build();
-
     public static final PropertyDescriptor CATEGORY_NAME = new PropertyDescriptor.Builder()
         .name(FEED_ID_PROP)
         .displayName("Category name")
@@ -97,24 +93,23 @@ public class BeginFeed extends AbstractFeedProcessor {
         .required(true)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .build();
-
     public static final PropertyDescriptor SRC_DATASOURCES_NAME = new PropertyDescriptor.Builder()
-            .name(SRC_DATASET_ID_PROP)
-            .displayName("Source datasource name")
-            .description("The name of the datasource that this feed will read from (optional)")
-            .required(false)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .build();
-
+        .name(SRC_DATASET_ID_PROP)
+        .displayName("Source datasource name")
+        .description("The name of the datasource that this feed will read from (optional)")
+        .required(false)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .build();
     public static final Relationship SUCCESS = new Relationship.Builder()
-            .name("Success")
-            .description("Relationship followed on successful metadata capture.")
-            .build();
+        .name("Success")
+        .description("Relationship followed on successful metadata capture.")
+        .build();
     public static final Relationship FAILURE = new Relationship.Builder()
-            .name("Failure")
-            .description("Relationship followed on failed metadata capture.")
-            .build();
-
+        .name("Failure")
+        .description("Relationship followed on failed metadata capture.")
+        .build();
+    private Queue<FeedPreconditionTriggerEvent> pendingChanges = new LinkedBlockingQueue<>();
+    private PreconditionListener preconditionListener;
 
     @Override
     protected void init(ProcessorInitializationContext context) {
@@ -243,7 +238,7 @@ public class BeginFeed extends AbstractFeedProcessor {
             PreconditionListener listener = new PreconditionListener() {
                 @Override
                 public void triggered(FeedPreconditionTriggerEvent event) {
-                    getLog().debug("Precondition event triggered: ", new Object[]{ event });
+                    getLog().debug("Precondition event triggered: ", new Object[]{event});
 
                     BeginFeed.this.pendingChanges.add(event);
                 }
