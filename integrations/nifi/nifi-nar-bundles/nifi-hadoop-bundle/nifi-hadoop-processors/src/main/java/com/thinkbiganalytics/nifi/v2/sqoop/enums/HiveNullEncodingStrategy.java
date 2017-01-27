@@ -22,6 +22,7 @@ package com.thinkbiganalytics.nifi.v2.sqoop.enums;
 
 /**
  * List of supported strategies for encoding null values for use with Hive
+ *
  * @author jagrut sharma
  */
 public enum HiveNullEncodingStrategy {

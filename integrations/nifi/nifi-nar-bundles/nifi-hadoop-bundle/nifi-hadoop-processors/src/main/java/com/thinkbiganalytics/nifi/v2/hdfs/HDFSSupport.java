@@ -32,6 +32,7 @@ import java.io.IOException;
  * Provides support for HDFS folder creation
  */
 public class HDFSSupport {
+
     public static Logger logger = LoggerFactory.getLogger(HDFSSupport.class);
 
     public FileSystem hdfs;
@@ -42,9 +43,6 @@ public class HDFSSupport {
 
     /**
      * Creates an HDFS folder
-     *
-     * @param path
-     * @return
      */
     public boolean createFolder(Path path, String owner, String group) {
         try {

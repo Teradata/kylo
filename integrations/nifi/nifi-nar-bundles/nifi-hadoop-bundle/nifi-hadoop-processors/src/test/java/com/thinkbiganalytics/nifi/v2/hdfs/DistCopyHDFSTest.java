@@ -36,29 +36,37 @@ import org.junit.Test;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 public class DistCopyHDFSTest {
-    /** Mock file system and configuration */
+
+    /**
+     * Mock file system and configuration
+     */
     private final FileSystem fileSystem = Mockito.mock(FileSystem.class);
     private final Configuration configuration = Mockito.mock(Configuration.class);
     private final DistCp distCp = Mockito.mock(DistCp.class);
     private final Job job = Mockito.mock(Job.class);
 
-    /** Test runner */
+    /**
+     * Test runner
+     */
     private final TestRunner runner = TestRunners.newTestRunner(new TestableDistCopyHDFS());
 
     private final String fileEntry = "{\n" +
-            "\"name\": \"%s\"\n" +
-            "}";
+                                     "\"name\": \"%s\"\n" +
+                                     "}";
 
-    /** Initialize instance variables */
+    /**
+     * Initialize instance variables
+     */
     @Before
     public void setUp() throws Exception {
         // Setup test runner
@@ -67,7 +75,9 @@ public class DistCopyHDFSTest {
         Mockito.when(distCp.execute()).thenReturn(job);
     }
 
-    /** Verify required properties. */
+    /**
+     * Verify required properties.
+     */
     @Test
     public void testValidators() {
         String destination = DistCopyHDFS.DESTINATION.getName();
@@ -76,7 +86,7 @@ public class DistCopyHDFSTest {
         Collection<ValidationResult> results = validate(runner);
         Assert.assertEquals(1, results.size());
         results.forEach((ValidationResult result) -> Assert.assertEquals(
-                String.format("'%s' is invalid because %s is required", destination, destination), result.toString()));
+            String.format("'%s' is invalid because %s is required", destination, destination), result.toString()));
 
         // Test with required properties present
         runner.setProperty(DistCopyHDFS.DESTINATION, "/dropzone");
@@ -157,7 +167,7 @@ public class DistCopyHDFSTest {
         TestableDistCopyHDFS proc = (TestableDistCopyHDFS) runner.getProcessor();
         Assert.assertEquals(proc.TEST_destination, destination);
         Assert.assertEquals(proc.TEST_pathsList, new ArrayList<>(Arrays.asList(
-                new Path(source, file1), new Path(source, file2))));
+            new Path(source, file1), new Path(source, file2))));
     }
 
     @Test
@@ -185,7 +195,7 @@ public class DistCopyHDFSTest {
         TestableDistCopyHDFS proc = (TestableDistCopyHDFS) runner.getProcessor();
         Assert.assertEquals(proc.TEST_destination, destination);
         Assert.assertEquals(proc.TEST_pathsList, new ArrayList<>(Arrays.asList(
-                new Path(file1), new Path(file2))));
+            new Path(file1), new Path(file2))));
     }
 
     @Test
@@ -214,13 +224,14 @@ public class DistCopyHDFSTest {
     @Nonnull
     private Collection<ValidationResult> validate(@Nonnull final TestRunner runner) {
         runner.enqueue(new byte[0]);
-        return ((MockProcessContext)runner.getProcessContext()).validate();
+        return ((MockProcessContext) runner.getProcessContext()).validate();
     }
 
     /**
      * A mock {@code DistCopyHDFS} for testing.
      */
     private class TestableDistCopyHDFS extends DistCopyHDFS {
+
         private List<Path> TEST_pathsList;
         private Path TEST_destination;
 

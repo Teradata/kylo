@@ -20,8 +20,8 @@ package com.thinkbiganalytics.nifi.v2.sqoop.process;
  * #L%
  */
 
-import com.thinkbiganalytics.nifi.v2.sqoop.security.KerberosConfig;
 import com.thinkbiganalytics.nifi.v2.sqoop.enums.SqoopLoadStrategy;
+import com.thinkbiganalytics.nifi.v2.sqoop.security.KerberosConfig;
 
 import org.apache.nifi.logging.ComponentLog;
 
@@ -34,6 +34,7 @@ import static com.google.gson.internal.$Gson$Preconditions.checkNotNull;
 
 /**
  * Run a sqoop job via a system process
+ *
  * @author jagrut sharma
  */
 public class SqoopProcessRunner {
@@ -50,9 +51,10 @@ public class SqoopProcessRunner {
 
     /**
      * Constructor
-     * @param kerberosConfig kerberos configuration
-     * @param commands command list to run
-     * @param logger logger
+     *
+     * @param kerberosConfig     kerberos configuration
+     * @param commands           command list to run
+     * @param logger             logger
      * @param sourceLoadStrategy load strategy (full/incremental)
      */
     public SqoopProcessRunner(KerberosConfig kerberosConfig,
@@ -76,13 +78,11 @@ public class SqoopProcessRunner {
         if (sourceLoadStrategy == SqoopLoadStrategy.FULL_LOAD) {
             latch = new CountDownLatch(1);
             logLines = new String[1];
-        }
-        else if (sourceLoadStrategy == SqoopLoadStrategy.INCREMENTAL_APPEND
-                 || sourceLoadStrategy == SqoopLoadStrategy.INCREMENTAL_LASTMODIFIED) {
+        } else if (sourceLoadStrategy == SqoopLoadStrategy.INCREMENTAL_APPEND
+                   || sourceLoadStrategy == SqoopLoadStrategy.INCREMENTAL_LASTMODIFIED) {
             latch = new CountDownLatch(2);
             logLines = new String[2];
-        }
-        else {
+        } else {
             //this should not occur
             latch = new CountDownLatch(1);
             logLines = new String[1];
@@ -93,6 +93,7 @@ public class SqoopProcessRunner {
 
     /**
      * Execute the process
+     *
      * @return result of execution as {@link SqoopProcessResult}
      */
     public SqoopProcessResult execute() {
@@ -108,10 +109,9 @@ public class SqoopProcessRunner {
                 Process processKerberosInit = processBuilderKerberosInit.start();
                 int kerberosInitExitValue = processKerberosInit.waitFor();
                 if (kerberosInitExitValue != 0) {
-                    logger.error("Kerberos kinit failed ({})", new Object[] { kerberosConfig.getKinitCommandAsString() });
+                    logger.error("Kerberos kinit failed ({})", new Object[]{kerberosConfig.getKinitCommandAsString()});
                     throw new Exception("Kerberos kinit failed");
-                }
-                else {
+                } else {
                     logger.info("Kerberos kinit succeeded");
                 }
             }
@@ -140,9 +140,8 @@ public class SqoopProcessRunner {
             logger.info("Sqoop job completed");
 
             return new SqoopProcessResult(exitValue, logLines);
-        }
-        catch (Exception e) {
-            logger.error("Error running sqoop command [{}].", new Object[] { e.getMessage() });
+        } catch (Exception e) {
+            logger.error("Error running sqoop command [{}].", new Object[]{e.getMessage()});
 
             for (long i = 0; i < latch.getCount(); i++) {
                 latch.countDown();
@@ -158,7 +157,7 @@ public class SqoopProcessRunner {
     private String getFullCommand() {
 
         StringBuffer retVal = new StringBuffer();
-        for (String c: commands) {
+        for (String c : commands) {
             retVal.append(c);
             retVal.append(" ");
         }

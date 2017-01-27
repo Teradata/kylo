@@ -111,7 +111,9 @@ public class JdbcCommon {
         writer.append(sb.toString());
         long nrOfRows = 0;
         while (rs.next()) {
-            if (visitor != null) visitor.visitRow(rs);
+            if (visitor != null) {
+                visitor.visitRow(rs);
+            }
             sb = new StringBuffer();
             nrOfRows++;
             for (int i = 1; i <= nrOfColumns; i++) {
@@ -133,24 +135,31 @@ public class JdbcCommon {
                             }
                         } catch (Exception e2) {
                             // Still failed, maybe exotic date type
-                            if (dateConversionWarning++ < 10)
+                            if (dateConversionWarning++ < 10) {
                                 logger.warn(rs.getMetaData().getColumnName(i) + " is not convertible to timestamp or date");
+                            }
                         }
                     }
 
-                    if (visitor != null) visitor.visitColumn(rs.getMetaData().getColumnName(i), colType, sqlDate);
+                    if (visitor != null) {
+                        visitor.visitColumn(rs.getMetaData().getColumnName(i), colType, sqlDate);
+                    }
                     if (sqlDate != null) {
                         DateTimeFormatter formatter = ISODateTimeFormat.dateTime().withZoneUTC();
                         val = formatter.print(new DateTime(sqlDate.getTime()));
                     }
                 } else if (colType == Types.TIME) {
                     Time time = rs.getTime(i);
-                    if (visitor != null) visitor.visitColumn(rs.getMetaData().getColumnName(i), colType, time);
+                    if (visitor != null) {
+                        visitor.visitColumn(rs.getMetaData().getColumnName(i), colType, time);
+                    }
                     DateTimeFormatter formatter = ISODateTimeFormat.time().withZoneUTC();
                     val = formatter.print(new DateTime(time.getTime()));
                 } else {
                     val = rs.getString(i);
-                    if (visitor != null) visitor.visitColumn(rs.getMetaData().getColumnName(i), colType, val);
+                    if (visitor != null) {
+                        visitor.visitColumn(rs.getMetaData().getColumnName(i), colType, val);
+                    }
                 }
                 sb.append((val == null ? "" : StringEscapeUtils.escapeCsv(val)));
                 if (i != nrOfColumns) {
@@ -308,7 +317,6 @@ public class JdbcCommon {
                 case CLOB:
                     builder.name(meta.getColumnName(i)).type().unionOf().nullBuilder().endNull().and().bytesType().endUnion().noDefault();
                     break;
-
 
                 default:
                     throw new IllegalArgumentException("createSchema: Unknown SQL type " + meta.getColumnType(i) + " cannot be converted to Avro type");

@@ -66,6 +66,7 @@ import javax.annotation.Nonnull;
 
 /**
  * NiFi Processor to import data from a relational source into HDFS via Sqoop
+ *
  * @author jagrut sharma
  */
 @Tags({"thinkbig", "ingest", "sqoop", "rdbms", "database", "table"})
@@ -73,7 +74,7 @@ import javax.annotation.Nonnull;
 @WritesAttributes({
                       @WritesAttribute(attribute = "sqoop.command.text", description = "The full Sqoop command executed"),
                       @WritesAttribute(attribute = "sqoop.result.code", description = "The exit code from Sqoop command execution"),
-                      @WritesAttribute(attribute = "sqoop.run.seconds", description =  "Total seconds taken to run the Sqoop command"),
+                      @WritesAttribute(attribute = "sqoop.run.seconds", description = "Total seconds taken to run the Sqoop command"),
                       @WritesAttribute(attribute = "sqoop.record.count", description = "Count of records imported"),
                       @WritesAttribute(attribute = "sqoop.output.hdfs", description = "HDFS location where data is written"),
                   })
@@ -316,10 +317,14 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         .description("Sqoop import failure")
         .build();
 
-    /** Property for Kerberos service principal */
+    /**
+     * Property for Kerberos service principal
+     */
     private PropertyDescriptor KERBEROS_PRINCIPAL;
 
-    /** Property for Kerberos service keytab */
+    /**
+     * Property for Kerberos service keytab
+     */
     private PropertyDescriptor KERBEROS_KEYTAB;
 
     private List<PropertyDescriptor> properties;
@@ -388,10 +393,9 @@ public class ImportSqoop extends AbstractNiFiProcessor {
 
         if (flowFile == null) {
             flowFile = session.create();
-            logger.info("Created a flow file having uuid: {}", new Object[] { flowFile.getAttribute(CoreAttributes.UUID.key()) } );
-        }
-        else {
-            logger.info("Using an existing flow file having uuid: {}", new Object[] { flowFile.getAttribute(CoreAttributes.UUID.key()) } );
+            logger.info("Created a flow file having uuid: {}", new Object[]{flowFile.getAttribute(CoreAttributes.UUID.key())});
+        } else {
+            logger.info("Using an existing flow file having uuid: {}", new Object[]{flowFile.getAttribute(CoreAttributes.UUID.key())});
         }
 
         final String kerberosPrincipal = context.getProperty(KERBEROS_PRINCIPAL).getValue();
@@ -495,29 +499,26 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         logger.info("Wrote result attributes to flow file");
 
         if (resultStatus == 0) {
-            logger.info("Sqoop Import OK [Code {}]", new Object[] { resultStatus });
+            logger.info("Sqoop Import OK [Code {}]", new Object[]{resultStatus});
             if (sourceLoadStrategy == SqoopLoadStrategy.INCREMENTAL_APPEND
                 || sourceLoadStrategy == SqoopLoadStrategy.INCREMENTAL_LASTMODIFIED) {
 
-                if ((sourceLoadStrategy == SqoopLoadStrategy.INCREMENTAL_APPEND) &&  (recordsCount == 0)) {
+                if ((sourceLoadStrategy == SqoopLoadStrategy.INCREMENTAL_APPEND) && (recordsCount == 0)) {
                     flowFile = session.putAttribute(flowFile, sourcePropertyWatermark, sourceCheckColumnLastValue);
-                }
-                else {
+                } else {
 
                     String newHighWaterMark = sqoopUtils.getNewHighWatermark(sqoopProcessResult);
 
                     if ((newHighWaterMark == null) || (newHighWaterMark.equals("NO_UPDATE")) || (newHighWaterMark.equals(""))) {
                         flowFile = session.putAttribute(flowFile, sourcePropertyWatermark, sourceCheckColumnLastValue);
-                    }
-                    else {
+                    } else {
                         flowFile = session.putAttribute(flowFile, sourcePropertyWatermark, newHighWaterMark);
                     }
                 }
             }
             session.transfer(flowFile, REL_SUCCESS);
-        }
-        else {
-            logger.error("Sqoop Import FAIL [Code {}]", new Object[] { resultStatus });
+        } else {
+            logger.error("Sqoop Import FAIL [Code {}]", new Object[]{resultStatus});
             session.transfer(flowFile, REL_FAILURE);
         }
     }
@@ -553,10 +554,10 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         if (targetHiveDelimStrategy == HiveDelimStrategy.REPLACE) {
             if (targetHiveReplaceDelim == null) {
                 results.add(new ValidationResult.Builder()
-                            .subject(this.getClass().getSimpleName())
-                            .valid(false)
-                            .explanation("Replacement delimiter must be specified for Hive Delimiter REPLACE Strategy.")
-                            .build());
+                                .subject(this.getClass().getSimpleName())
+                                .valid(false)
+                                .explanation("Replacement delimiter must be specified for Hive Delimiter REPLACE Strategy.")
+                                .build());
             }
         }
 
@@ -568,8 +569,7 @@ public class ImportSqoop extends AbstractNiFiProcessor {
                                 .explanation("For encrypted password on HDFS, both encrypted HDFS file location and passphrase are required.")
                                 .build());
             }
-        }
-        else if (passwordMode == PasswordMode.ENCRYPTED_TEXT_ENTRY) {
+        } else if (passwordMode == PasswordMode.ENCRYPTED_TEXT_ENTRY) {
             if (sqoopConnectionService.getEnteredPassword() == null || sqoopConnectionService.getPasswordPassphrase() == null) {
                 results.add(new ValidationResult.Builder()
                                 .subject(this.getClass().getSimpleName())
@@ -577,8 +577,7 @@ public class ImportSqoop extends AbstractNiFiProcessor {
                                 .explanation("For encrypted password entry mode, both the encrypted password and passphrase are required.")
                                 .build());
             }
-        }
-        else if (passwordMode == PasswordMode.CLEAR_TEXT_ENTRY) {
+        } else if (passwordMode == PasswordMode.CLEAR_TEXT_ENTRY) {
             if (sqoopConnectionService.getEnteredPassword() == null) {
                 results.add(new ValidationResult.Builder()
                                 .subject(this.getClass().getSimpleName())

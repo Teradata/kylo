@@ -25,6 +25,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -42,62 +43,71 @@ import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.exception.ProcessException;
 import org.apache.nifi.processor.util.StandardValidators;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 import javax.annotation.Nonnull;
-import java.util.*;
 
 @CapabilityDescription("Copies files from one HDFS location into another using DistCp MR job")
 @EventDriven
 @Tags({"hadoop", "HDFS", "filesystem", "thinkbig", "copy", "distributed copy", "distcp"})
 public class DistCopyHDFS extends AbstractHadoopProcessor {
 
-    /** Relationship for failure */
+    /**
+     * Relationship for failure
+     */
     public static final Relationship REL_FAILURE = new Relationship.Builder()
-            .name("failure")
-            .description("At least one of the provided files not found")
-            .build();
+        .name("failure")
+        .description("At least one of the provided files not found")
+        .build();
 
-    /** Relationship for success */
+    /**
+     * Relationship for success
+     */
     public static final Relationship REL_SUCCESS = new Relationship.Builder()
-            .name("success")
-            .description("Files copied to new location")
-            .build();
+        .name("success")
+        .description("Files copied to new location")
+        .build();
 
     public static final PropertyDescriptor SOURCE = new PropertyDescriptor.Builder()
-            .name("source.path")
-            .description("Absolute source path, if provided along with 'files' parameter will be treated as absolute " +
-                    "path for relative paths provided in that parameter")
-            .required(false)
-            .addValidator(StandardValidators.ATTRIBUTE_EXPRESSION_LANGUAGE_VALIDATOR)
-            .expressionLanguageSupported(true)
-            .build();
+        .name("source.path")
+        .description("Absolute source path, if provided along with 'files' parameter will be treated as absolute " +
+                     "path for relative paths provided in that parameter")
+        .required(false)
+        .addValidator(StandardValidators.ATTRIBUTE_EXPRESSION_LANGUAGE_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .build();
 
     public static final PropertyDescriptor DESTINATION = new PropertyDescriptor.Builder()
-            .name("destination.path")
-            .description("Absolute destination path")
-            .required(true)
-            .addValidator(StandardValidators.ATTRIBUTE_EXPRESSION_LANGUAGE_VALIDATOR)
-            .expressionLanguageSupported(true)
-            .build();
+        .name("destination.path")
+        .description("Absolute destination path")
+        .required(true)
+        .addValidator(StandardValidators.ATTRIBUTE_EXPRESSION_LANGUAGE_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .build();
 
     public static final PropertyDescriptor FILES = new PropertyDescriptor.Builder()
-            .name("files")
-            .description("JSON-encoded list of files, given like: " +
-                    "[{\n" +
-                    "   \"name\": \"example\",\n" +
-                    " }\n" +
-                    "]")
-            .required(false)
-            .addValidator(StandardValidators.ATTRIBUTE_EXPRESSION_LANGUAGE_VALIDATOR)
-            .expressionLanguageSupported(true)
-            .build();
+        .name("files")
+        .description("JSON-encoded list of files, given like: " +
+                     "[{\n" +
+                     "   \"name\": \"example\",\n" +
+                     " }\n" +
+                     "]")
+        .required(false)
+        .addValidator(StandardValidators.ATTRIBUTE_EXPRESSION_LANGUAGE_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .build();
 
-    /** Output paths to other NiFi processors */
+    /**
+     * Output paths to other NiFi processors
+     */
     private static final Set<Relationship> relationships = ImmutableSet.of(REL_FAILURE, REL_SUCCESS);
 
     @Override
     protected List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         return ImmutableList.<PropertyDescriptor>builder().addAll(super.getSupportedPropertyDescriptors()).
-                add(DESTINATION).add(SOURCE).add(FILES).build();
+            add(DESTINATION).add(SOURCE).add(FILES).build();
     }
 
     @Override
@@ -108,7 +118,7 @@ public class DistCopyHDFS extends AbstractHadoopProcessor {
     @Override
     public void onTrigger(@Nonnull final ProcessContext context, @Nonnull final ProcessSession session) throws ProcessException {
         FlowFile flowFile = session.get();
-        if ( flowFile == null ) {
+        if (flowFile == null) {
             return;
         }
         final FileSystem fs = getFileSystem(context);
@@ -138,11 +148,10 @@ public class DistCopyHDFS extends AbstractHadoopProcessor {
                         pathsList.add(new Path(f.getName()));
                     }
                 }
-            }
-            else {
+            } else {
                 if (source == null || source.isEmpty()) {
                     getLog().error(String.format("At least one of attributes: %s or %s needs to be set",
-                            SOURCE.getName(), FILES.getName()));
+                                                 SOURCE.getName(), FILES.getName()));
 
                     session.transfer(flowFile, REL_FAILURE);
                     return;
@@ -171,6 +180,7 @@ public class DistCopyHDFS extends AbstractHadoopProcessor {
     }
 
     class File {
+
         private String name;
 
         public File(String name) {

@@ -11,7 +11,6 @@ import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.logging.ComponentLog;
-import org.apache.nifi.processor.AbstractProcessor;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.Relationship;
@@ -75,15 +74,12 @@ public class ExecuteHQL extends AbstractNiFiProcessor {
         .name("failure")
         .description("SQL query execution failed. Incoming FlowFile will be penalized and routed to this relationship")
         .build();
-    private final Set<Relationship> relationships;
-
     public static final PropertyDescriptor THRIFT_SERVICE = new PropertyDescriptor.Builder()
         .name("Database Connection Pooling Service")
         .description("The Controller Service that is used to obtain connection to database")
         .required(true)
         .identifiesControllerService(ThriftService.class)
         .build();
-
     public static final PropertyDescriptor SQL_SELECT_QUERY = new PropertyDescriptor.Builder()
         .name("SQL select query")
         .description("SQL select query")
@@ -91,7 +87,6 @@ public class ExecuteHQL extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
-
     public static final PropertyDescriptor QUERY_TIMEOUT = new PropertyDescriptor.Builder()
         .name("Max Wait Time")
         .description("The maximum amount of time allowed for a running SQL select query "
@@ -101,7 +96,7 @@ public class ExecuteHQL extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.TIME_PERIOD_VALIDATOR)
         .sensitive(false)
         .build();
-
+    private final Set<Relationship> relationships;
     private final List<PropertyDescriptor> propDescriptors;
 
     public ExecuteHQL() {

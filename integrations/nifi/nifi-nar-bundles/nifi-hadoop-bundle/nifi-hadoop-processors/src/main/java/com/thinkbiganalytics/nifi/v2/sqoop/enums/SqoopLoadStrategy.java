@@ -22,6 +22,7 @@ package com.thinkbiganalytics.nifi.v2.sqoop.enums;
 
 /**
  * List of supported modes of loading data from relational source
+ *
  * @author jagrut sharma
  */
 public enum SqoopLoadStrategy {

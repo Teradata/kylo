@@ -32,6 +32,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 /**
  * A utility to decrypt passwords, provided in Base64 encoding.
+ *
  * @author jagrut sharma
  */
 /* Uses Sqoop's decryption algorithm */
@@ -40,12 +41,13 @@ public class DecryptPassword {
 
     /**
      * Decrypt a password encrypted using Sqoop encryption utility
+     *
      * @param base64EncodedEncryptedPassword base64 string representing encrypted password
-     * @param passPhrase passphrase used to encrypt password
+     * @param passPhrase                     passphrase used to encrypt password
      * @return decrypted password
      * @throws IOException if encounters issues with decryption
      */
-    public static String decryptPassword (String base64EncodedEncryptedPassword, String passPhrase) throws IOException {
+    public static String decryptPassword(String base64EncodedEncryptedPassword, String passPhrase) throws IOException {
 
         if (base64EncodedEncryptedPassword == null || base64EncodedEncryptedPassword.isEmpty() || passPhrase == null || passPhrase.isEmpty()) {
             throw new IllegalArgumentException("Either encoded password or passphrase is provided as null/empty.");
@@ -54,7 +56,7 @@ public class DecryptPassword {
         byte[] encryptedPassword = Base64.getDecoder().decode(base64EncodedEncryptedPassword);
         String algorithmFull = EncryptPasswordConfiguration.FILE_ENCRYPTION_ALGORITHM_FULL;
         String algorithmOnly = EncryptPasswordConfiguration.FILE_ENCRYPTION_ALGORITHM_ONLY;
-        String keySalt =  EncryptPasswordConfiguration.KEY_SALT;
+        String keySalt = EncryptPasswordConfiguration.KEY_SALT;
         int numPbkdf2Iterations = EncryptPasswordConfiguration.NUM_PBKDF2_ITERATIONS;
         int keyLength = EncryptPasswordConfiguration.KEY_LENGTH;
 

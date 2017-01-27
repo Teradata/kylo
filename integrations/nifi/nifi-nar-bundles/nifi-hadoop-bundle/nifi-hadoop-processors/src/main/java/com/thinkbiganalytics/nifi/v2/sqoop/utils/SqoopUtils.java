@@ -31,8 +31,8 @@ import javax.annotation.Nonnull;
 
 /**
  * Helpful methods to use with Sqoop processors
- * @author jagrut sharma
  *
+ * @author jagrut sharma
  */
 public class SqoopUtils {
 
@@ -40,13 +40,14 @@ public class SqoopUtils {
 
     /**
      * Get credentials/parameters for which values must be masked
+     *
      * @return credentials/parameters map.<br>Key = credential, Value = delimiter between credential and value
      */
     public Map<String, String> getCredentialsToMask() {
         final String EQUAL_STRING = "=";
         final String SPACE_STRING = " ";
-        final String PASSPHRASE_IDENTIFIER="-Dorg.apache.sqoop.credentials.loader.crypto.passphrase";
-        final String PASSWORD_FILE_IDENTIFIER="--password-file";
+        final String PASSPHRASE_IDENTIFIER = "-Dorg.apache.sqoop.credentials.loader.crypto.passphrase";
+        final String PASSWORD_FILE_IDENTIFIER = "--password-file";
         final String PASSWORD_IDENTIFIER = "--password";
 
         Map<String, String> credentialsToMask = new HashMap<>();
@@ -59,13 +60,14 @@ public class SqoopUtils {
 
     /**
      * Mask credentials in sqoop command
-     * @param sqoopCommand sqoop command executed
+     *
+     * @param sqoopCommand          sqoop command executed
      * @param credentialIdentifiers map of credentials for which values must be masked. <br>Key = credential, Value = delimiter between credential and value
      * @return sqoop command with credentials masked
      */
     public String maskCredentials(String sqoopCommand, Map<String, String> credentialIdentifiers) {
         final String MASK = "*****";
-        for (Map.Entry<String, String> credentialIdentifier: credentialIdentifiers.entrySet()) {
+        for (Map.Entry<String, String> credentialIdentifier : credentialIdentifiers.entrySet()) {
             if (!sqoopCommand.contains(credentialIdentifier.getKey())) {
                 continue;
             }
@@ -79,8 +81,9 @@ public class SqoopUtils {
 
     /**
      * Get count of records extracted
+     *
      * @param sqoopProcessResult {@link SqoopProcessResult}
-     * @param logger Logger
+     * @param logger             Logger
      * @return extraction record count
      */
     public int getSqoopRecordCount(SqoopProcessResult sqoopProcessResult, ComponentLog logger) {
@@ -106,8 +109,7 @@ public class SqoopUtils {
         String numberString = recordCountLogLine.substring(start + START_RECORD_COUNT_IDENTIFIER.length(), end).trim();
         try {
             return Integer.parseInt(numberString);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             logger.warn("Unable to parse number of records extracted. " + e.getMessage());
             return -1;
         }
@@ -115,8 +117,9 @@ public class SqoopUtils {
 
     /**
      * Get count of records exported (for sqoop export job)
+     *
      * @param sqoopExportProcessResult {@link SqoopProcessResult}
-     * @param logger Logger
+     * @param logger                   Logger
      * @return export record count
      */
     public int getSqoopExportRecordCount(SqoopProcessResult sqoopExportProcessResult, ComponentLog logger) {
@@ -139,8 +142,7 @@ public class SqoopUtils {
         String numberString = recordExportCountLogLine.substring(start + START_EXPORT_RECORD_COUNT_IDENTIFIER.length(), end).trim();
         try {
             return Integer.parseInt(numberString);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             logger.warn("Unable to parse number of records exported. " + e.getMessage());
             return -1;
         }
@@ -148,6 +150,7 @@ public class SqoopUtils {
 
     /**
      * Get next high watermark value for incremental load
+     *
      * @param sqoopProcessResult {@link SqoopProcessResult}
      * @return new high watermark value
      */
@@ -159,12 +162,12 @@ public class SqoopUtils {
 
         if ((sqoopProcessResult.getExitValue() != 0) || (logLines.length <= 1)) {
             return NO_UPDATE;
-        }
-        else if ((logLines[0] != null) && (logLines[0].contains(NO_NEW_ROWS_IDENTIFIER))) {
+        } else if ((logLines[0] != null) && (logLines[0].contains(NO_NEW_ROWS_IDENTIFIER))) {
             return NO_UPDATE;
-        }
-        else {
-            if (logLines[1] == null) return NO_UPDATE;
+        } else {
+            if (logLines[1] == null) {
+                return NO_UPDATE;
+            }
             //16/10/18 23:37:11 INFO tool.ImportTool:   --last-value 1006
             String newHighWaterMarkLogLine = logLines[1];
             int end = newHighWaterMarkLogLine.length();
@@ -175,6 +178,7 @@ public class SqoopUtils {
 
     /**
      * Check if source relational system is Teradata
+     *
      * @param sourceConnectionString Connection string for source relational system
      * @return true/false indicating if source system is Teradata
      */
@@ -185,10 +189,11 @@ public class SqoopUtils {
 
     /**
      * Check target column type mappings input format. Expected format is key=value pairs separated by comma. No spaces.
+     *
      * @param valueToCheck A value to check
      * @return true/false indicating if value is correctly formatted
      */
-    public Boolean checkMappingInput (@Nonnull String valueToCheck) {
+    public Boolean checkMappingInput(@Nonnull String valueToCheck) {
         final String SPACE_STRING = " ";
         final char COMMA_CHAR = ',';
         final char EQUAL_CHAR = '=';
@@ -199,11 +204,10 @@ public class SqoopUtils {
 
         int commaCount = 0;
         int equalCount = 0;
-        for (char c: valueToCheck.toCharArray()) {
+        for (char c : valueToCheck.toCharArray()) {
             if (c == COMMA_CHAR) {
                 commaCount++;
-            }
-            else if (c == EQUAL_CHAR) {
+            } else if (c == EQUAL_CHAR) {
                 equalCount++;
             }
         }

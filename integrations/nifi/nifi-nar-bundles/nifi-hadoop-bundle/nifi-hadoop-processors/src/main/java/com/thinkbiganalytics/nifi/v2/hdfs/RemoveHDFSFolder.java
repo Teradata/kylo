@@ -51,28 +51,37 @@ import javax.annotation.Nonnull;
 @InputRequirement(InputRequirement.Requirement.INPUT_REQUIRED)
 @Tags({"hadoop", "HDFS", "folder", "filesystem", "thinkbig"})
 public class RemoveHDFSFolder extends AbstractHadoopProcessor {
-    /** Property for the directory to be removed */
+
+    /**
+     * Property for the directory to be removed
+     */
     public static final PropertyDescriptor DIRECTORY = new PropertyDescriptor.Builder()
-            .name(DIRECTORY_PROP_NAME)
-            .description("The absolute path to the HDFS directory to be permanently deleted. One directory per line.")
-            .required(true)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .expressionLanguageSupported(true)
-            .build();
+        .name(DIRECTORY_PROP_NAME)
+        .description("The absolute path to the HDFS directory to be permanently deleted. One directory per line.")
+        .required(true)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .build();
 
-    /** Relationship for failure */
+    /**
+     * Relationship for failure
+     */
     public static final Relationship REL_FAILURE = new Relationship.Builder()
-            .name("failure")
-            .description("FlowFiles that failed to be processed")
-            .build();
+        .name("failure")
+        .description("FlowFiles that failed to be processed")
+        .build();
 
-    /** Relationship for success */
+    /**
+     * Relationship for success
+     */
     public static final Relationship REL_SUCCESS = new Relationship.Builder()
-            .name("success")
-            .description("FlowFiles that removed a directory")
-            .build();
+        .name("success")
+        .description("FlowFiles that removed a directory")
+        .build();
 
-    /** Output paths to other NiFi processors */
+    /**
+     * Output paths to other NiFi processors
+     */
     private static final Set<Relationship> relationships = ImmutableSet.of(REL_FAILURE, REL_SUCCESS);
 
     @Override

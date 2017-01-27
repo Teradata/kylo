@@ -22,6 +22,7 @@ package com.thinkbiganalytics.nifi.v2.sqoop.enums;
 
 /**
  * List of supported strategies for interpreting null values in HDFS data for sqoop export
+ *
  * @author jagrut sharma
  */
 public enum ExportNullInterpretationStrategy {

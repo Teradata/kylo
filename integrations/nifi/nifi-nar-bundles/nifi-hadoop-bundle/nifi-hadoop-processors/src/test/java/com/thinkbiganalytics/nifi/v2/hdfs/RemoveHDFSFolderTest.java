@@ -42,13 +42,20 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class RemoveHDFSFolderTest {
-    /** Mock file system */
+
+    /**
+     * Mock file system
+     */
     private final FileSystem fileSystem = Mockito.mock(FileSystem.class);
 
-    /** Test runner */
+    /**
+     * Test runner
+     */
     private final TestRunner runner = TestRunners.newTestRunner(new TestableRemoveHDFSFolder());
 
-    /** Initialize instance variables */
+    /**
+     * Initialize instance variables
+     */
     @Before
     public void setUp() throws Exception {
         // Setup mock file system
@@ -58,7 +65,9 @@ public class RemoveHDFSFolderTest {
         runner.setValidateExpressionUsage(false);
     }
 
-    /** Verify property validators. */
+    /**
+     * Verify property validators.
+     */
     @Test
     public void testValidators() {
         // Test with no properties
@@ -78,7 +87,9 @@ public class RemoveHDFSFolderTest {
         Assert.assertEquals(0, results.size());
     }
 
-    /** Verify removing folders. */
+    /**
+     * Verify removing folders.
+     */
     @Test
     public void testRemoveFolder() throws Exception {
         // Test removing folders
@@ -97,7 +108,9 @@ public class RemoveHDFSFolderTest {
         inOrder.verifyNoMoreInteractions();
     }
 
-    /** Verify failure for double slashes. */
+    /**
+     * Verify failure for double slashes.
+     */
     @Test
     public void testRemoveFolderWithDoubleSlash() throws Exception {
         runner.setProperty(RemoveHDFSFolder.DIRECTORY, "/target//path/");
@@ -109,7 +122,9 @@ public class RemoveHDFSFolderTest {
         Mockito.verifyZeroInteractions(fileSystem);
     }
 
-    /** Verify failure for folders with a relative path. */
+    /**
+     * Verify failure for folders with a relative path.
+     */
     @Test
     public void testRemoveFolderWithRelativePath() throws Exception {
         runner.setProperty(RemoveHDFSFolder.DIRECTORY, "target/");
@@ -121,7 +136,9 @@ public class RemoveHDFSFolderTest {
         Mockito.verifyZeroInteractions(fileSystem);
     }
 
-    /** Verify failure for missing trailing slash. */
+    /**
+     * Verify failure for missing trailing slash.
+     */
     @Test
     public void testRemoveFolderWithTrailingSlash() throws Exception {
         runner.setProperty(RemoveHDFSFolder.DIRECTORY, "/target");
@@ -142,13 +159,14 @@ public class RemoveHDFSFolderTest {
     @Nonnull
     private Collection<ValidationResult> validate(@Nonnull final TestRunner runner) {
         runner.enqueue(new byte[0]);
-        return ((MockProcessContext)runner.getProcessContext()).validate();
+        return ((MockProcessContext) runner.getProcessContext()).validate();
     }
 
     /**
      * A mock {@code RemoveHDFSFolder} for testing.
      */
     private class TestableRemoveHDFSFolder extends RemoveHDFSFolder {
+
         @Nullable
         @Override
         protected FileSystem getFileSystem(@Nonnull ProcessContext context) {

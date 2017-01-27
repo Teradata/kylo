@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
+
 import org.apache.hadoop.fs.FileChecksum;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -40,70 +41,80 @@ import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.exception.ProcessException;
 import org.apache.nifi.processor.util.StandardValidators;
 
-import javax.annotation.Nonnull;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.*;
+import java.util.Base64;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+
+import javax.annotation.Nonnull;
 
 @CapabilityDescription("Computes HDFS checksums of list of files")
 @EventDriven
 @Tags({"hadoop", "HDFS", "filesystem", "thinkbig", "checksum", "hash", "md5"})
 public class ComputeHDFSChecksums extends AbstractHadoopProcessor {
 
-    /** Relationship for failure */
+    /**
+     * Relationship for failure
+     */
     public static final Relationship REL_FAILURE = new Relationship.Builder()
-            .name("failure")
-            .description("At least one of the provided checksums don't match computed one")
-            .build();
+        .name("failure")
+        .description("At least one of the provided checksums don't match computed one")
+        .build();
 
-    /** Relationship for success */
+    /**
+     * Relationship for success
+     */
     public static final Relationship REL_SUCCESS = new Relationship.Builder()
-            .name("success")
-            .description("Flow files goes to success relationship")
-            .build();
+        .name("success")
+        .description("Flow files goes to success relationship")
+        .build();
 
     public static final PropertyDescriptor DIRECTORY = new PropertyDescriptor.Builder()
-            .name("absolute.path")
-            .description("The absolute path to HDFS directory containing files to check. If not provided filenames " +
-                    "will be treated as absolute paths")
-            .required(false)
-            .addValidator(StandardValidators.ATTRIBUTE_EXPRESSION_LANGUAGE_VALIDATOR)
-            .expressionLanguageSupported(true)
-            .build();
+        .name("absolute.path")
+        .description("The absolute path to HDFS directory containing files to check. If not provided filenames " +
+                     "will be treated as absolute paths")
+        .required(false)
+        .addValidator(StandardValidators.ATTRIBUTE_EXPRESSION_LANGUAGE_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .build();
 
     public static final PropertyDescriptor FAIL_IF_INCORRECT_CHECKSUM = new PropertyDescriptor.Builder()
-            .name("failIfWrongChecksum")
-            .description("Decides whether flow should be failed if provided checksum don't match computed one")
-            .required(true)
-            .defaultValue("True")
-            .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
-            .allowableValues(Sets.newHashSet("True", "False"))
-            .build();
+        .name("failIfWrongChecksum")
+        .description("Decides whether flow should be failed if provided checksum don't match computed one")
+        .required(true)
+        .defaultValue("True")
+        .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+        .allowableValues(Sets.newHashSet("True", "False"))
+        .build();
 
     public static final PropertyDescriptor FILES = new PropertyDescriptor.Builder()
-            .name("files")
-            .description("JSON-encoded list of files with their checksums, given like: " +
-                    "[{\n" +
-                    "   \"name\": \"example\",\n" +
-                    "   \"size\": 123456,\n" +
-                    "   \"checksum\": {\n" +
-                    "      \"length\": 28,\n" +
-                    "      \"value\": \"AAAAAAAAAAAAAAAAcLyPS3KoaSFGi/joRB3OUQAAAAA=\",\n" +
-                    "      \"algorithm\": \"MD5-of-0MD5-of-0CRC32\"\n" +
-                    "   }\n" +
-                    "}]")
-            .required(true)
-            .addValidator(StandardValidators.ATTRIBUTE_EXPRESSION_LANGUAGE_VALIDATOR)
-            .expressionLanguageSupported(true)
-            .build();
+        .name("files")
+        .description("JSON-encoded list of files with their checksums, given like: " +
+                     "[{\n" +
+                     "   \"name\": \"example\",\n" +
+                     "   \"size\": 123456,\n" +
+                     "   \"checksum\": {\n" +
+                     "      \"length\": 28,\n" +
+                     "      \"value\": \"AAAAAAAAAAAAAAAAcLyPS3KoaSFGi/joRB3OUQAAAAA=\",\n" +
+                     "      \"algorithm\": \"MD5-of-0MD5-of-0CRC32\"\n" +
+                     "   }\n" +
+                     "}]")
+        .required(true)
+        .addValidator(StandardValidators.ATTRIBUTE_EXPRESSION_LANGUAGE_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .build();
 
-    /** Output paths to other NiFi processors */
+    /**
+     * Output paths to other NiFi processors
+     */
     private static final Set<Relationship> relationships = ImmutableSet.of(REL_FAILURE, REL_SUCCESS);
 
     @Override
     protected List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         return ImmutableList.<PropertyDescriptor>builder().addAll(super.getSupportedPropertyDescriptors()).
-                add(DIRECTORY).add(FAIL_IF_INCORRECT_CHECKSUM).add(FILES).build();
+            add(DIRECTORY).add(FAIL_IF_INCORRECT_CHECKSUM).add(FILES).build();
     }
 
     @Override
@@ -114,7 +125,7 @@ public class ComputeHDFSChecksums extends AbstractHadoopProcessor {
     @Override
     public void onTrigger(@Nonnull final ProcessContext context, @Nonnull final ProcessSession session) throws ProcessException {
         FlowFile flowFile = session.get();
-        if ( flowFile == null ) {
+        if (flowFile == null) {
             return;
         }
         final FileSystem fs = getFileSystem(context);
@@ -126,7 +137,7 @@ public class ComputeHDFSChecksums extends AbstractHadoopProcessor {
         String filesJSON = context.getProperty(FILES).evaluateAttributeExpressions(flowFile).getValue();
         String absolutePath = context.getProperty(DIRECTORY).evaluateAttributeExpressions(flowFile).getValue();
         Boolean failIfWrongChecksum = context.getProperty(FAIL_IF_INCORRECT_CHECKSUM).
-                evaluateAttributeExpressions(flowFile).asBoolean();
+            evaluateAttributeExpressions(flowFile).asBoolean();
         Gson jsonParser = new Gson();
         File[] filesList;
         try {
@@ -146,10 +157,10 @@ public class ComputeHDFSChecksums extends AbstractHadoopProcessor {
                 FileChecksum computed_checksum = fs.getFileChecksum(filePath);
                 String b64_checksum = Base64.getEncoder().encodeToString(computed_checksum.getBytes());
                 f.setComputedChecksum(new Checksum(b64_checksum.length(), b64_checksum,
-                        computed_checksum.getAlgorithmName()));
+                                                   computed_checksum.getAlgorithmName()));
                 if (failIfWrongChecksum && !Objects.equals(b64_checksum, f.getChecksum().getValue())) {
                     getLog().error("Checksums don't match! File: " + filePath.toString() + " checksum provided: " +
-                            f.getChecksum().getValue() + " checksum computed: " + b64_checksum);
+                                   f.getChecksum().getValue() + " checksum computed: " + b64_checksum);
                     session.transfer(flowFile, REL_FAILURE);
                     return;
                 }
@@ -158,7 +169,7 @@ public class ComputeHDFSChecksums extends AbstractHadoopProcessor {
             getLog().error("Files list attribute does not contain a proper JSON array");
             session.transfer(flowFile, REL_FAILURE);
             return;
-        } catch (FileNotFoundException e){
+        } catch (FileNotFoundException e) {
             getLog().error("One of the provided files not found.\n" + e.getMessage());
             session.transfer(flowFile, REL_FAILURE);
             return;
@@ -170,6 +181,7 @@ public class ComputeHDFSChecksums extends AbstractHadoopProcessor {
     }
 
     class File {
+
         private String name;
         private Integer size;
         private Checksum checksum;
@@ -207,7 +219,9 @@ public class ComputeHDFSChecksums extends AbstractHadoopProcessor {
             this.checksum = checksum;
         }
     }
+
     class Checksum {
+
         private Integer length;
         private String value;
         private String algorithm;

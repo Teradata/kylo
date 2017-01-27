@@ -33,6 +33,7 @@ import static com.google.gson.internal.$Gson$Preconditions.checkNotNull;
 
 /**
  * Class to handle a sqoop export stream, and clear it to avoid filling up buffer
+ *
  * @author jagrut sharma
  */
 class SqoopExportThreadedStreamHandler extends Thread {
@@ -87,23 +88,19 @@ class SqoopExportThreadedStreamHandler extends Thread {
 
                 logger.info(line);
             }
-        }
-        catch (IOException ioe) {
-            logger.warn("I/O error occurred while handling stream. [{}]", new Object[] { ioe.getMessage() });
+        } catch (IOException ioe) {
+            logger.warn("I/O error occurred while handling stream. [{}]", new Object[]{ioe.getMessage()});
             ioe.printStackTrace();
-        }
-        catch(Throwable t) {
-            logger.warn("An error occurred handling stream. [{}]", new Object[] { t.getMessage()});
+        } catch (Throwable t) {
+            logger.warn("An error occurred handling stream. [{}]", new Object[]{t.getMessage()});
             t.printStackTrace();
-        }
-        finally {
+        } finally {
             for (long i = 0; i < latch.getCount(); i++) {
                 latch.countDown();
             }
             try {
                 bufferedReader.close();
-            }
-            catch(IOException ioe) {
+            } catch (IOException ioe) {
                 logger.warn("I/O error closing buffered reader for stream");
                 ioe.printStackTrace();
             }

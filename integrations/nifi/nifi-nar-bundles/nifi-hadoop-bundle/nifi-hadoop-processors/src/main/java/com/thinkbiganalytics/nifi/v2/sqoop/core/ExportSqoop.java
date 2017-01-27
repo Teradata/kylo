@@ -61,6 +61,7 @@ import javax.annotation.Nonnull;
 
 /**
  * NiFi Processor to export data from HDFS to a relational system via Sqoop
+ *
  * @author jagrut sharma
  */
 @Tags({"thinkbig", "export", "sqoop", "rdbms", "database", "table"})
@@ -68,7 +69,7 @@ import javax.annotation.Nonnull;
 @WritesAttributes({
                       @WritesAttribute(attribute = "sqoop.export.command.text", description = "The full Sqoop export command executed"),
                       @WritesAttribute(attribute = "sqoop.export.result.code", description = "The exit code from Sqoop export command execution"),
-                      @WritesAttribute(attribute = "sqoop.export.run.seconds", description =  "Total seconds taken to run the Sqoop export command"),
+                      @WritesAttribute(attribute = "sqoop.export.run.seconds", description = "Total seconds taken to run the Sqoop export command"),
                       @WritesAttribute(attribute = "sqoop.export.record.count", description = "Count of records exported"),
                       @WritesAttribute(attribute = "sqoop.export.output.table", description = "Table name where data is written"),
                   })
@@ -157,10 +158,14 @@ public class ExportSqoop extends AbstractNiFiProcessor {
         .description("Sqoop export failure")
         .build();
 
-    /** Property for Kerberos service principal */
+    /**
+     * Property for Kerberos service principal
+     */
     private PropertyDescriptor KERBEROS_PRINCIPAL;
 
-    /** Property for Kerberos service keytab */
+    /**
+     * Property for Kerberos service keytab
+     */
     private PropertyDescriptor KERBEROS_KEYTAB;
 
     private List<PropertyDescriptor> properties;
@@ -215,10 +220,9 @@ public class ExportSqoop extends AbstractNiFiProcessor {
 
         if (flowFile == null) {
             flowFile = session.create();
-            logger.info("Created a flow file having uuid: {}", new Object[] { flowFile.getAttribute(CoreAttributes.UUID.key()) } );
-        }
-        else {
-            logger.info("Using an existing flow file having uuid: {}", new Object[] { flowFile.getAttribute(CoreAttributes.UUID.key()) } );
+            logger.info("Created a flow file having uuid: {}", new Object[]{flowFile.getAttribute(CoreAttributes.UUID.key())});
+        } else {
+            logger.info("Using an existing flow file having uuid: {}", new Object[]{flowFile.getAttribute(CoreAttributes.UUID.key())});
         }
 
         final String kerberosPrincipal = context.getProperty(KERBEROS_PRINCIPAL).getValue();
@@ -293,11 +297,10 @@ public class ExportSqoop extends AbstractNiFiProcessor {
         logger.info("Wrote result attributes to flow file");
 
         if (resultExportStatus == 0) {
-            logger.info("Sqoop Export OK [Code {}]", new Object[] { resultExportStatus });
+            logger.info("Sqoop Export OK [Code {}]", new Object[]{resultExportStatus});
             session.transfer(flowFile, REL_SUCCESS);
-        }
-        else {
-            logger.info("Sqoop Export FAIL [Code {}]", new Object[] { resultExportStatus });
+        } else {
+            logger.info("Sqoop Export FAIL [Code {}]", new Object[]{resultExportStatus});
             session.transfer(flowFile, REL_FAILURE);
         }
     }
@@ -305,17 +308,19 @@ public class ExportSqoop extends AbstractNiFiProcessor {
     @Override
     protected Collection<ValidationResult> customValidate(ValidationContext validationContext) {
         final List<ValidationResult> results = new ArrayList<>();
-        final ExportNullInterpretationStrategy sourceNullInterpretationStrategy = ExportNullInterpretationStrategy.valueOf(validationContext.getProperty(SOURCE_NULL_INTERPRETATION_STRATEGY).getValue());
+        final ExportNullInterpretationStrategy
+            sourceNullInterpretationStrategy =
+            ExportNullInterpretationStrategy.valueOf(validationContext.getProperty(SOURCE_NULL_INTERPRETATION_STRATEGY).getValue());
         final String sourceNullCustomStringIdentifier = validationContext.getProperty(SOURCE_NULL_CUSTOM_STRING_IDENTIFIER).evaluateAttributeExpressions().getValue();
         final String sourceNullCustomNonStringIdentifier = validationContext.getProperty(SOURCE_NULL_CUSTOM_NON_STRING_IDENTIFIER).evaluateAttributeExpressions().getValue();
 
         if (sourceNullInterpretationStrategy == ExportNullInterpretationStrategy.CUSTOM_VALUES) {
             if ((sourceNullCustomStringIdentifier == null) || (sourceNullCustomNonStringIdentifier == null)) {
                 results.add(new ValidationResult.Builder()
-                .subject(this.getClass().getSimpleName())
-                .valid(false)
-                .explanation("For Custom Source Null Interpret Strategy, custom strings for identifying null strings and null non-strings in HDFS data must be provided.")
-                .build());
+                                .subject(this.getClass().getSimpleName())
+                                .valid(false)
+                                .explanation("For Custom Source Null Interpret Strategy, custom strings for identifying null strings and null non-strings in HDFS data must be provided.")
+                                .build());
             }
         }
 

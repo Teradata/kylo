@@ -34,13 +34,15 @@ import javax.crypto.spec.SecretKeySpec;
 
 /**
  * A utility to generate an encrypted password for use with Sqoop. Uses sqoop recommended procedure.
+ *
  * @author jagrut sharma
  */
 
 //Reference: http://ingest.tips/2015/03/12/managing-passwords-sqoop/
 
 public class EncryptPassword {
-    public static void main (String[] args) throws Exception {
+
+    public static void main(String[] args) throws Exception {
 
         /* Basic check of command line arguments */
         if (args.length != 3) {

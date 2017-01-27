@@ -22,6 +22,7 @@ package com.thinkbiganalytics.nifi.v2.sqoop.enums;
 
 /**
  * List of supported formats for landing extracted data on HDFS
+ *
  * @author jagrut sharma
  */
 public enum ExtractDataFormat {

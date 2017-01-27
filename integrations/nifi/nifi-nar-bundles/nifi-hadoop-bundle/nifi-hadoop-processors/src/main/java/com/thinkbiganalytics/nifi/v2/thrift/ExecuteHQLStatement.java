@@ -30,7 +30,6 @@ import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.logging.ComponentLog;
-import org.apache.nifi.processor.AbstractProcessor;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.Relationship;
@@ -64,15 +63,12 @@ public class ExecuteHQLStatement extends AbstractNiFiProcessor {
         .name("failure")
         .description("SQL query execution failed. Incoming FlowFile will be penalized and routed to this relationship")
         .build();
-    private final Set<Relationship> relationships;
-
     public static final PropertyDescriptor THRIFT_SERVICE = new PropertyDescriptor.Builder()
         .name("Database Connection Pooling Service")
         .description("The Controller Service that is used to obtain connection to database")
         .required(true)
         .identifiesControllerService(ThriftService.class)
         .build();
-
     public static final PropertyDescriptor SQL_DDL_STATEMENT = new PropertyDescriptor.Builder()
         .name("Statement")
         .description("Provide the DDL or DML statement. Return values will be ignored.")
@@ -80,7 +76,7 @@ public class ExecuteHQLStatement extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
-
+    private final Set<Relationship> relationships;
     private final List<PropertyDescriptor> propDescriptors;
 
     public ExecuteHQLStatement() {

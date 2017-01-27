@@ -62,29 +62,86 @@ public abstract class AbstractHadoopProcessor extends AbstractNiFiProcessor {
 
     // properties
     public static final PropertyDescriptor HADOOP_CONFIGURATION_RESOURCES = new PropertyDescriptor.Builder().name("Hadoop Configuration Resources")
-            .description("A file or comma separated list of files which contains the Hadoop file system configuration. Without this, Hadoop "
-                    + "will search the classpath for a 'core-site.xml' and 'hdfs-site.xml' file or will revert to a default configuration.")
-            .required(false).addValidator(createMultipleFilesExistValidator()).build();
+        .description("A file or comma separated list of files which contains the Hadoop file system configuration. Without this, Hadoop "
+                     + "will search the classpath for a 'core-site.xml' and 'hdfs-site.xml' file or will revert to a default configuration.")
+        .required(false).addValidator(createMultipleFilesExistValidator()).build();
 
     public static final String DIRECTORY_PROP_NAME = "Directory";
 
     private static final Object RESOURCES_LOCK = new Object();
-
-    /** Property for Kerberos service keytab file */
-    protected PropertyDescriptor kerberosKeytab;
-
-    /** Property for Kerberos service principal */
-    protected PropertyDescriptor kerberosPrincipal;
-
-    private long kerberosReloginThreshold;
-    private long lastKerberosReloginTime;
-
-    /** List of properties */
-    private List<PropertyDescriptor> properties;
-
     // variables shared by all threads of this processor
     // Hadoop Configuration, Filesystem, and UserGroupInformation (optional)
     private final AtomicReference<HdfsResources> hdfsResources = new AtomicReference<>();
+    /**
+     * Property for Kerberos service keytab file
+     */
+    protected PropertyDescriptor kerberosKeytab;
+    /**
+     * Property for Kerberos service principal
+     */
+    protected PropertyDescriptor kerberosPrincipal;
+    private long kerberosReloginThreshold;
+    private long lastKerberosReloginTime;
+    /**
+     * List of properties
+     */
+    private List<PropertyDescriptor> properties;
+
+    private static Configuration getConfigurationFromResources(String configResources) throws IOException {
+        boolean foundResources = false;
+        final Configuration config = new Configuration();
+        if (null != configResources) {
+            String[] resources = configResources.split(",");
+            for (String resource : resources) {
+                config.addResource(new Path(resource.trim()));
+                foundResources = true;
+            }
+        }
+
+        if (!foundResources) {
+            // check that at least 1 non-default resource is available on the classpath
+            String configStr = config.toString();
+            for (String resource : configStr.substring(configStr.indexOf(":") + 1).split(",")) {
+                if (!resource.contains("default") && config.getResource(resource.trim()) != null) {
+                    foundResources = true;
+                    break;
+                }
+            }
+        }
+
+        if (!foundResources) {
+            throw new IOException("Could not find any of the " + HADOOP_CONFIGURATION_RESOURCES.getName() + " on the classpath");
+        }
+        return config;
+    }
+
+    /*
+     * Validates that one or more files exist, as specified in a single property.
+     */
+    public static final Validator createMultipleFilesExistValidator() {
+        return new Validator() {
+
+            @Override
+            public ValidationResult validate(String subject, String input, ValidationContext context) {
+                final String[] files = input.split(",");
+                for (String filename : files) {
+                    try {
+                        final File file = new File(filename.trim());
+                        final boolean valid = file.exists() && file.isFile();
+                        if (!valid) {
+                            final String message = "File " + file + " does not exist or is not a file";
+                            return new ValidationResult.Builder().subject(subject).input(input).valid(false).explanation(message).build();
+                        }
+                    } catch (SecurityException e) {
+                        final String message = "Unable to access " + filename + " due to " + e.getMessage();
+                        return new ValidationResult.Builder().subject(subject).input(input).valid(false).explanation(message).build();
+                    }
+                }
+                return new ValidationResult.Builder().subject(subject).input(input).valid(true).build();
+            }
+
+        };
+    }
 
     @Override
     protected void init(@Nonnull final ProcessorInitializationContext context) {
@@ -142,34 +199,6 @@ public abstract class AbstractHadoopProcessor extends AbstractNiFiProcessor {
         hdfsResources.set(new HdfsResources(null, null, null));
     }
 
-    private static Configuration getConfigurationFromResources(String configResources) throws IOException {
-        boolean foundResources = false;
-        final Configuration config = new Configuration();
-        if (null != configResources) {
-            String[] resources = configResources.split(",");
-            for (String resource : resources) {
-                config.addResource(new Path(resource.trim()));
-                foundResources = true;
-            }
-        }
-
-        if (!foundResources) {
-            // check that at least 1 non-default resource is available on the classpath
-            String configStr = config.toString();
-            for (String resource : configStr.substring(configStr.indexOf(":") + 1).split(",")) {
-                if (!resource.contains("default") && config.getResource(resource.trim()) != null) {
-                    foundResources = true;
-                    break;
-                }
-            }
-        }
-
-        if (!foundResources) {
-            throw new IOException("Could not find any of the " + HADOOP_CONFIGURATION_RESOURCES.getName() + " on the classpath");
-        }
-        return config;
-    }
-
     /*
      * Reset Hadoop Configuration and FileSystem based on the supplied configuration resources.
      */
@@ -210,7 +239,7 @@ public abstract class AbstractHadoopProcessor extends AbstractNiFiProcessor {
             }
             config.set(disableCacheName, "true");
             getLog().info("Initialized a new HDFS File System with working dir: {} default block size: {} default replication: {} config: {}",
-                    new Object[]{fs.getWorkingDirectory(), fs.getDefaultBlockSize(new Path(dir)), fs.getDefaultReplication(new Path(dir)), config.toString()});
+                          new Object[]{fs.getWorkingDirectory(), fs.getDefaultBlockSize(new Path(dir)), fs.getDefaultReplication(new Path(dir)), config.toString()});
             return new HdfsResources(config, fs, ugi);
 
         } finally {
@@ -261,34 +290,6 @@ public abstract class AbstractHadoopProcessor extends AbstractNiFiProcessor {
         } finally {
             IOUtils.closeQuietly(socket);
         }
-    }
-
-    /*
-     * Validates that one or more files exist, as specified in a single property.
-     */
-    public static final Validator createMultipleFilesExistValidator() {
-        return new Validator() {
-
-            @Override
-            public ValidationResult validate(String subject, String input, ValidationContext context) {
-                final String[] files = input.split(",");
-                for (String filename : files) {
-                    try {
-                        final File file = new File(filename.trim());
-                        final boolean valid = file.exists() && file.isFile();
-                        if (!valid) {
-                            final String message = "File " + file + " does not exist or is not a file";
-                            return new ValidationResult.Builder().subject(subject).input(input).valid(false).explanation(message).build();
-                        }
-                    } catch (SecurityException e) {
-                        final String message = "Unable to access " + filename + " due to " + e.getMessage();
-                        return new ValidationResult.Builder().subject(subject).input(input).valid(false).explanation(message).build();
-                    }
-                }
-                return new ValidationResult.Builder().subject(subject).input(input).valid(true).build();
-            }
-
-        };
     }
 
     protected Configuration getConfiguration() {
@@ -358,8 +359,8 @@ public abstract class AbstractHadoopProcessor extends AbstractNiFiProcessor {
     protected void tryKerberosRelogin(UserGroupInformation ugi) {
         try {
             getLog().info("Kerberos ticket age exceeds threshold [{} seconds] " +
-                    "attempting to renew ticket for user {}", new Object[]{
-                    kerberosReloginThreshold, ugi.getUserName()});
+                          "attempting to renew ticket for user {}", new Object[]{
+                kerberosReloginThreshold, ugi.getUserName()});
             ugi.checkTGTAndReloginFromKeytab();
             lastKerberosReloginTime = System.currentTimeMillis() / 1000;
             getLog().info("Kerberos relogin successful or ticket still valid");
@@ -377,6 +378,7 @@ public abstract class AbstractHadoopProcessor extends AbstractNiFiProcessor {
 
 
     static protected class HdfsResources {
+
         private final Configuration configuration;
         private final FileSystem fileSystem;
         private final UserGroupInformation userGroupInformation;

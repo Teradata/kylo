@@ -111,6 +111,42 @@ public class CreateHDFSFolder extends AbstractHadoopProcessor {
         relationships = Collections.unmodifiableSet(rels);
     }
 
+    /*
+* Validates that a property is a valid umask, i.e. a short octal number that is not negative.
+*/
+    static Validator createUmaskValidator() {
+        return new Validator() {
+            @Override
+            public ValidationResult validate(final String subject, final String value, final ValidationContext context) {
+                String reason = null;
+                try {
+                    final short shortVal = Short.parseShort(value, 8);
+                    if (shortVal < 0) {
+                        reason = "octal umask [" + value + "] cannot be negative";
+                    } else if (shortVal > 511) {
+                        // HDFS umask has 9 bits: rwxrwxrwx ; the sticky bit cannot be umasked
+                        reason = "octal umask [" + value + "] is not a valid umask";
+                    }
+                } catch (final NumberFormatException e) {
+                    reason = "[" + value + "] is not a valid short octal number";
+                }
+                return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null)
+                    .build();
+            }
+        };
+
+    }
+
+    static short resolveUMask(final PropertyValue umaskProp) {
+        final short dfsUmask;
+        if (umaskProp.isSet()) {
+            dfsUmask = Short.parseShort(umaskProp.getValue(), 8);
+        } else {
+            dfsUmask = FsPermission.DEFAULT_UMASK;
+        }
+        return dfsUmask;
+    }
+
     @Override
     public Set<Relationship> getRelationships() {
         return relationships;
@@ -173,51 +209,15 @@ public class CreateHDFSFolder extends AbstractHadoopProcessor {
             final long millis = stopWatch.getDuration(TimeUnit.MILLISECONDS);
 
             getLog().info("created folders {} in {} milliseconds",
-                             new Object[]{pathString, millis});
+                          new Object[]{pathString, millis});
 
             session.transfer(flowFile, REL_SUCCESS);
 
         } catch (Exception e) {
             getLog().error("failed folder creation {}",
-                              new Object[]{e});
+                           new Object[]{e});
             session.transfer(flowFile, REL_FAILURE);
         }
-    }
-
-    /*
-* Validates that a property is a valid umask, i.e. a short octal number that is not negative.
-*/
-    static Validator createUmaskValidator() {
-        return new Validator() {
-            @Override
-            public ValidationResult validate(final String subject, final String value, final ValidationContext context) {
-                String reason = null;
-                try {
-                    final short shortVal = Short.parseShort(value, 8);
-                    if (shortVal < 0) {
-                        reason = "octal umask [" + value + "] cannot be negative";
-                    } else if (shortVal > 511) {
-                        // HDFS umask has 9 bits: rwxrwxrwx ; the sticky bit cannot be umasked
-                        reason = "octal umask [" + value + "] is not a valid umask";
-                    }
-                } catch (final NumberFormatException e) {
-                    reason = "[" + value + "] is not a valid short octal number";
-                }
-                return new ValidationResult.Builder().subject(subject).input(value).explanation(reason).valid(reason == null)
-                    .build();
-            }
-        };
-
-    }
-
-    static short resolveUMask(final PropertyValue umaskProp) {
-        final short dfsUmask;
-        if (umaskProp.isSet()) {
-            dfsUmask = Short.parseShort(umaskProp.getValue(), 8);
-        } else {
-            dfsUmask = FsPermission.DEFAULT_UMASK;
-        }
-        return dfsUmask;
     }
 
 

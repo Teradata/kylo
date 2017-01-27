@@ -38,10 +38,12 @@ import javax.annotation.Nonnull;
 
 /**
  * A class to build a sqoop command that can be run on the command line
+ *
  * @author jagrut sharma
  */
 
 public class SqoopBuilder {
+
     private final static String SPACE_STRING = " ";
     private final static String START_SPACE_QUOTE = " \"";
     private final static String END_QUOTE_SPACE = "\" ";
@@ -50,94 +52,90 @@ public class SqoopBuilder {
     private final static String STAR_STRING = "*";
     private final static String MASK_STRING = "*****";
     private final static String UNABLE_TO_DECRYPT_STRING = "UNABLE_TO_DECRYPT_ENCRYPTED_PASSWORD";
-    private final Integer DEFAULT_CLUSTER_MAP_TASKS = 4;
-
     private final static String sourcePasswordLoaderClassLabel = "-Dorg.apache.sqoop.credentials.loader.class";
     private final static String sourcePasswordLoaderClassValue = "org.apache.sqoop.util.password.CryptoFileLoader";
     private final static String sourcePasswordPassphraseLabel = "-Dorg.apache.sqoop.credentials.loader.crypto.passphrase";
-    private String sourcePasswordPassphrase;
     private final static String sourceConnectionStringLabel = "--connect";
-    private String sourceConnectionString;
     private final static String sourceUserNameLabel = "--username";
-    private String sourceUserName;
-    private PasswordMode passwordMode;
     private final static String sourcePasswordHdfsFileLabel = "--password-file";
-    private String sourcePasswordHdfsFile;
     private final static String sourcePasswordClearTextLabel = "--password";
-    private String sourceEnteredPassword;
     private final static String sourceConnectionManagerLabel = "--connection-manager";
-    private String sourceConnectionManager;
     private final static String sourceDriverLabel = "--driver";
-    private String sourceDriver;
     private final static String sourceTableNameLabel = "--table";
-    private String sourceTableName;
     private final static String sourceTableFieldsLabel = "--columns";
-    private String sourceTableFields;
     private final static String sourceTableWhereClauseLabel = "--where";
-    private String sourceTableWhereClause;
     private final static String sourceTableSplitFieldLabel = "--split-by";
-    private String sourceTableSplitField;
     private final static String targetHdfsDirectoryLabel = "--target-dir";
-    private String targetHdfsDirectory;
     private final static String targetHdfsDirDeleteLabel = "--delete-target-dir";
-    private TargetHdfsDirExistsStrategy targetHdfsDirExistsStrategy;
-
     private final static String extractDataFormatTextLabel = "--as-textfile";
     private final static String extractDataFormatAvroLabel = "--as-avrodatafile";
     private final static String extractDataFormatSequenceFileLabel = "--as-sequencefile";
     private final static String extractDataFormatParquetLabel = "--as-parquetfile";
-    private ExtractDataFormat extractDataFormat;
-
     private final static String sourceAutoSetToOneMapperLabel = "--autoreset-to-one-mapper";
     private final static String clusterMapTasksLabel = "--num-mappers";
-    private Integer clusterMapTasks = DEFAULT_CLUSTER_MAP_TASKS;
-    private SqoopLoadStrategy sourceLoadStrategy;
     private final static String incrementalStrategyLabel = "--incremental";
     private final static String incrementalAppendStrategyLabel = "append";
     private final static String incrementalLastModifiedStrategyLabel = "lastmodified";
     private final static String sourceCheckColumnNameLabel = "--check-column";
-    private String sourceCheckColumnName;
     private final static String sourceCheckColumnLastValueLabel = "--last-value";
-    private String sourceCheckColumnLastValue;
     private final static String sourceBoundaryQueryLabel = "--boundary-query";
-    private String sourceBoundaryQuery;
     private final static String clusterUIJobNameLabel = "--mapreduce-job-name";
-    private String clusterUIJobName;
-    private HiveDelimStrategy targetHiveDelimStrategy;
     private final static String targetHiveDropDelimLabel = "--hive-drop-import-delims";
     private final static String targetHiveReplaceDelimLabel = "--hive-delims-replacement";
-    private String targetHiveReplaceDelim;
-    private final HiveNullEncodingStrategy targetHiveNullEncodingStrategy = HiveNullEncodingStrategy.ENCODE_STRING_AND_NONSTRING;
     private final static String targetHiveNullEncodingStrategyNullStringLabel = "--null-string '\\\\N'";
     private final static String targetHiveNullEncodingStrategyNullNonStringLabel = "--null-non-string '\\\\N'";
     private final static String targetHdfsFileFieldDelimiterLabel = "--fields-terminated-by";
-    private String targetHdfsFileFieldDelimiter;
     private final static String targetHdfsFileRecordDelimiterLabel = "--lines-terminated-by";
-    private String targetHdfsFileRecordDelimiter;
     private final static String targetCompressLabel = "--compress";
     private final static String targetCompressionCodecLabel = "--compression-codec";
-    private String targetCompressionCodec;
-    private Boolean targetCompressFlag = false;
     private final static String targetColumnTypeMappingLabel = "--map-column-java";
-    private String targetColumnTypeMapping;
     private final static String sqoopCodeGenDirectoryLabel = "--outdir";
-    private String sqoopCodeGenDirectory;
-    private Boolean sourceSpecificOptions = false;
     private final static String sourceSpecificOptionsLabel = "--";
     private final static String sourceSpecificSqlServerSchemaLabel = "--schema";
-    private String sourceSpecificSqlServerSchema;
-
     private final static String operationName = "sqoop";
     private final static String operationType = "import";
-
+    private final Integer DEFAULT_CLUSTER_MAP_TASKS = 4;
+    private final HiveNullEncodingStrategy targetHiveNullEncodingStrategy = HiveNullEncodingStrategy.ENCODE_STRING_AND_NONSTRING;
+    private String sourcePasswordPassphrase;
+    private String sourceConnectionString;
+    private String sourceUserName;
+    private PasswordMode passwordMode;
+    private String sourcePasswordHdfsFile;
+    private String sourceEnteredPassword;
+    private String sourceConnectionManager;
+    private String sourceDriver;
+    private String sourceTableName;
+    private String sourceTableFields;
+    private String sourceTableWhereClause;
+    private String sourceTableSplitField;
+    private String targetHdfsDirectory;
+    private TargetHdfsDirExistsStrategy targetHdfsDirExistsStrategy;
+    private ExtractDataFormat extractDataFormat;
+    private Integer clusterMapTasks = DEFAULT_CLUSTER_MAP_TASKS;
+    private SqoopLoadStrategy sourceLoadStrategy;
+    private String sourceCheckColumnName;
+    private String sourceCheckColumnLastValue;
+    private String sourceBoundaryQuery;
+    private String clusterUIJobName;
+    private HiveDelimStrategy targetHiveDelimStrategy;
+    private String targetHiveReplaceDelim;
+    private String targetHdfsFileFieldDelimiter;
+    private String targetHdfsFileRecordDelimiter;
+    private String targetCompressionCodec;
+    private Boolean targetCompressFlag = false;
+    private String targetColumnTypeMapping;
+    private String sqoopCodeGenDirectory;
+    private Boolean sourceSpecificOptions = false;
+    private String sourceSpecificSqlServerSchema;
     private ComponentLog logger = null;
 
     /**
      * Set logger
+     *
      * @param logger Logger
      * @return {@link SqoopBuilder}
      */
-    public SqoopBuilder setLogger (ComponentLog logger) {
+    public SqoopBuilder setLogger(ComponentLog logger) {
         this.logger = logger;
         logger.info("Logger set to {}", new Object[]{this.logger});
         return this;
@@ -145,10 +143,11 @@ public class SqoopBuilder {
 
     /**
      * Set connection string for source system
+     *
      * @param sourceConnectionString source connection string
      * @return {@link SqoopBuilder}
      */
-    public SqoopBuilder setSourceConnectionString (String sourceConnectionString) {
+    public SqoopBuilder setSourceConnectionString(String sourceConnectionString) {
         this.sourceConnectionString = sourceConnectionString;
         logMessage("info", "Source Connection String", this.sourceConnectionString);
         return this;
@@ -156,10 +155,11 @@ public class SqoopBuilder {
 
     /**
      * Set user name for connecting to source system
+     *
      * @param sourceUserName user name
      * @return {@link SqoopBuilder}
      */
-    public SqoopBuilder setSourceUserName (String sourceUserName) {
+    public SqoopBuilder setSourceUserName(String sourceUserName) {
         this.sourceUserName = sourceUserName;
         logMessage("info", "Source User Name", this.sourceUserName);
         return this;
@@ -167,10 +167,11 @@ public class SqoopBuilder {
 
     /**
      * Set password mode for providing password to connect to source system
+     *
      * @param passwordMode {@link PasswordMode}
      * @return {@link SqoopBuilder}
      */
-    public SqoopBuilder setPasswordMode (PasswordMode passwordMode) {
+    public SqoopBuilder setPasswordMode(PasswordMode passwordMode) {
         this.passwordMode = passwordMode;
         logMessage("info", "Source Password Mode", this.passwordMode);
         return this;
@@ -178,10 +179,11 @@ public class SqoopBuilder {
 
     /**
      * Set location of password file on HDFS
+     *
      * @param sourcePasswordHdfsFile location on HDFS
      * @return {@link SqoopBuilder}
      */
-    public SqoopBuilder setSourcePasswordHdfsFile (String sourcePasswordHdfsFile) {
+    public SqoopBuilder setSourcePasswordHdfsFile(String sourcePasswordHdfsFile) {
         this.sourcePasswordHdfsFile = sourcePasswordHdfsFile;
         logMessage("info", "Source Password File (HDFS)", MASK_STRING);
         return this;
@@ -189,10 +191,11 @@ public class SqoopBuilder {
 
     /**
      * Set passphrase used to generate encrypted password
+     *
      * @param sourcePasswordPassphrase passphrase
      * @return {@link SqoopBuilder}
      */
-    public SqoopBuilder setSourcePasswordPassphrase (String sourcePasswordPassphrase) {
+    public SqoopBuilder setSourcePasswordPassphrase(String sourcePasswordPassphrase) {
         this.sourcePasswordPassphrase = sourcePasswordPassphrase;
         logMessage("info", "Source Password Passphrase", MASK_STRING);
         return this;
@@ -200,6 +203,7 @@ public class SqoopBuilder {
 
     /**
      * Set password entered (clear text / encrypted)
+     *
      * @param sourceEnteredPassword password string
      * @return {@link SqoopBuilder}
      */
@@ -211,10 +215,11 @@ public class SqoopBuilder {
 
     /**
      * Set Connection Manager class for source system
+     *
      * @param sourceConnectionManager connection manager class
      * @return {@link SqoopBuilder}
      */
-    public SqoopBuilder setSourceConnectionManager (String sourceConnectionManager) {
+    public SqoopBuilder setSourceConnectionManager(String sourceConnectionManager) {
         this.sourceConnectionManager = sourceConnectionManager;
         logMessage("info", "Source Connection Manager", this.sourceConnectionManager);
         return this;
@@ -222,10 +227,11 @@ public class SqoopBuilder {
 
     /**
      * Set JDBC driver for source system
+     *
      * @param sourceDriver source driver
      * @return {@link SqoopBuilder}
      */
-    public SqoopBuilder setSourceDriver (String sourceDriver) {
+    public SqoopBuilder setSourceDriver(String sourceDriver) {
         this.sourceDriver = sourceDriver;
         logMessage("info", "Source Driver", this.sourceDriver);
         return this;
@@ -233,10 +239,11 @@ public class SqoopBuilder {
 
     /**
      * Set source table name to extract from
+     *
      * @param sourceTableName table name
      * @return {@link SqoopBuilder}
      */
-    public SqoopBuilder setSourceTableName (String sourceTableName) {
+    public SqoopBuilder setSourceTableName(String sourceTableName) {
         this.sourceTableName = sourceTableName;
         logMessage("info", "Source Table Name", this.sourceTableName);
         return this;
@@ -244,15 +251,15 @@ public class SqoopBuilder {
 
     /**
      * Set fields to get from source table (comma-separated). Use * to indicate all fields.
+     *
      * @param sourceTableFields source fields separated by comma / *
      * @return {@link SqoopBuilder}
      */
-    public SqoopBuilder setSourceTableFields (String sourceTableFields) {
+    public SqoopBuilder setSourceTableFields(String sourceTableFields) {
         if (sourceTableFields.trim().equals(STAR_STRING)) {
             // all fields
             this.sourceTableFields = sourceTableFields.trim();
-        }
-        else {
+        } else {
             // selected fields
             List<String> fieldList = Arrays.asList(sourceTableFields.split(","));
             this.sourceTableFields = getQueryFieldsForStatement(fieldList);
@@ -263,10 +270,11 @@ public class SqoopBuilder {
 
     /**
      * Set WHERE clause to filter extract from source table
+     *
      * @param sourceTableWhereClause WHERE clause
      * @return {@link SqoopBuilder}
      */
-    public SqoopBuilder setSourceTableWhereClause (String sourceTableWhereClause) {
+    public SqoopBuilder setSourceTableWhereClause(String sourceTableWhereClause) {
         this.sourceTableWhereClause = sourceTableWhereClause;
         logMessage("info", "Source Table Where Clause", sourceTableWhereClause);
         return this;
@@ -274,10 +282,11 @@ public class SqoopBuilder {
 
     /**
      * Set load strategy for source system (full/incremental)
+     *
      * @param sourceLoadStrategy {@link SqoopLoadStrategy}
      * @return {@link SqoopBuilder}
      */
-    public SqoopBuilder setSourceLoadStrategy (SqoopLoadStrategy sourceLoadStrategy) {
+    public SqoopBuilder setSourceLoadStrategy(SqoopLoadStrategy sourceLoadStrategy) {
         this.sourceLoadStrategy = sourceLoadStrategy;
         logMessage("info", "Source Load Strategy", this.sourceLoadStrategy);
         return this;
@@ -285,11 +294,12 @@ public class SqoopBuilder {
 
     /**
      * Set column to check for last modified time / id for incremental load.<br>
-     *     Not needed for full load.
+     * Not needed for full load.
+     *
      * @param sourceCheckColumnName column name to check
      * @return {@link SqoopBuilder}
      */
-    public SqoopBuilder setSourceCheckColumnName (String sourceCheckColumnName) {
+    public SqoopBuilder setSourceCheckColumnName(String sourceCheckColumnName) {
         this.sourceCheckColumnName = sourceCheckColumnName;
         logMessage("info", "Source Check Column Name", this.sourceCheckColumnName);
         return this;
@@ -297,11 +307,12 @@ public class SqoopBuilder {
 
     /**
      * Last value extracted for incremental load mode. <br>
-     *     Not needed for full load.
+     * Not needed for full load.
+     *
      * @param sourceCheckColumnLastValue last value extracted
      * @return {@link SqoopBuilder}
      */
-    public SqoopBuilder setSourceCheckColumnLastValue (String sourceCheckColumnLastValue) {
+    public SqoopBuilder setSourceCheckColumnLastValue(String sourceCheckColumnLastValue) {
         this.sourceCheckColumnLastValue = sourceCheckColumnLastValue;
         logMessage("info", "Source Check Column Last Value", this.sourceCheckColumnLastValue);
         return this;
@@ -309,10 +320,11 @@ public class SqoopBuilder {
 
     /**
      * Set a field can be used for splitting units of work in parallel. By default, single-field primary key is used if available.
+     *
      * @param sourceSplitByField field name
      * @return {@link SqoopBuilder}
      */
-    public SqoopBuilder setSourceSplitByField (String sourceSplitByField) {
+    public SqoopBuilder setSourceSplitByField(String sourceSplitByField) {
         this.sourceTableSplitField = sourceSplitByField;
         logMessage("info", "Source Split By Field", this.sourceTableSplitField);
         return this;
@@ -320,10 +332,11 @@ public class SqoopBuilder {
 
     /**
      * Set boundary query to get max and min values for split-by-field column
+     *
      * @param sourceBoundaryQuery boundary query
      * @return {@link SqoopBuilder}
      */
-    public SqoopBuilder setSourceBoundaryQuery (String sourceBoundaryQuery) {
+    public SqoopBuilder setSourceBoundaryQuery(String sourceBoundaryQuery) {
         this.sourceBoundaryQuery = sourceBoundaryQuery;
         logMessage("info", "Source Boundary Query", this.sourceBoundaryQuery);
         return this;
@@ -331,10 +344,11 @@ public class SqoopBuilder {
 
     /**
      * Set number of mappers to use for extract
+     *
      * @param clusterMapTasks number of mappers
      * @return {@link SqoopBuilder}
      */
-    public SqoopBuilder setClusterMapTasks (Integer clusterMapTasks) {
+    public SqoopBuilder setClusterMapTasks(Integer clusterMapTasks) {
         if (clusterMapTasks > 0) {
             this.clusterMapTasks = clusterMapTasks;
             logMessage("info", "Number of Cluster Map Tasks", this.clusterMapTasks);
@@ -344,10 +358,11 @@ public class SqoopBuilder {
 
     /**
      * Set job name to show in cluster UI
+     *
      * @param clusterUIJobName job name
      * @return {@link SqoopBuilder}
      */
-    public SqoopBuilder setClusterUIJobName (String clusterUIJobName) {
+    public SqoopBuilder setClusterUIJobName(String clusterUIJobName) {
         this.clusterUIJobName = clusterUIJobName;
         logMessage("info", "Cluster UI Job Name", this.clusterUIJobName);
         return this;
@@ -355,10 +370,11 @@ public class SqoopBuilder {
 
     /**
      * Set target directory to land the extracted data in
+     *
      * @param targetHdfsDirectory HDFS directory
      * @return {@link SqoopBuilder}
      */
-    public SqoopBuilder setTargetHdfsDirectory (String targetHdfsDirectory) {
+    public SqoopBuilder setTargetHdfsDirectory(String targetHdfsDirectory) {
         this.targetHdfsDirectory = targetHdfsDirectory;
         logMessage("info", "Target HDFS Directory", this.targetHdfsDirectory);
         return this;
@@ -366,10 +382,11 @@ public class SqoopBuilder {
 
     /**
      * Set strategy for handling the case where target HDFS directory exists
+     *
      * @param targetHdfsDirExistsStrategy strategy {@link TargetHdfsDirExistsStrategy}
      * @return {@link SqoopBuilder}
      */
-    public SqoopBuilder setTargetHdfsDirExistsStrategy (TargetHdfsDirExistsStrategy targetHdfsDirExistsStrategy) {
+    public SqoopBuilder setTargetHdfsDirExistsStrategy(TargetHdfsDirExistsStrategy targetHdfsDirExistsStrategy) {
         this.targetHdfsDirExistsStrategy = targetHdfsDirExistsStrategy;
         logMessage("info", "Target HDFS Directory - If Exists?", this.targetHdfsDirExistsStrategy);
         return this;
@@ -377,6 +394,7 @@ public class SqoopBuilder {
 
     /**
      * Set format to land the extracted data in on HDFS
+     *
      * @param extractDataFormat {@link ExtractDataFormat}
      * @return {@link SqoopBuilder}
      */
@@ -388,10 +406,11 @@ public class SqoopBuilder {
 
     /**
      * Set field delimiter when landing data in HDFS
+     *
      * @param targetHdfsFileFieldDelimiter field delimiter
      * @return {@link SqoopBuilder}
      */
-    public SqoopBuilder setTargetHdfsFileFieldDelimiter (String targetHdfsFileFieldDelimiter) {
+    public SqoopBuilder setTargetHdfsFileFieldDelimiter(String targetHdfsFileFieldDelimiter) {
         this.targetHdfsFileFieldDelimiter = targetHdfsFileFieldDelimiter;
         logMessage("info", "Target HDFS File Field Delimiter", this.targetHdfsFileFieldDelimiter);
         return this;
@@ -399,10 +418,11 @@ public class SqoopBuilder {
 
     /**
      * Set record delimiter when landing data in HDFS
+     *
      * @param targetHdfsFileRecordDelimiter record delimiter
      * @return {@link SqoopBuilder}
      */
-    public SqoopBuilder setTargetHdfsFileRecordDelimiter (String targetHdfsFileRecordDelimiter) {
+    public SqoopBuilder setTargetHdfsFileRecordDelimiter(String targetHdfsFileRecordDelimiter) {
         this.targetHdfsFileRecordDelimiter = targetHdfsFileRecordDelimiter;
         logMessage("info", "Target HDFS File Record Delimiter", this.targetHdfsFileRecordDelimiter);
         return this;
@@ -410,10 +430,11 @@ public class SqoopBuilder {
 
     /**
      * Set strategy to handle Hive-specific delimiters (\n, \r, \01)
+     *
      * @param targetHiveDelimStrategy delimiter strategy {@link HiveDelimStrategy}
      * @return {@link SqoopBuilder}
      */
-    public SqoopBuilder setTargetHiveDelimStrategy (HiveDelimStrategy targetHiveDelimStrategy) {
+    public SqoopBuilder setTargetHiveDelimStrategy(HiveDelimStrategy targetHiveDelimStrategy) {
         this.targetHiveDelimStrategy = targetHiveDelimStrategy;
         logMessage("info", "Target Hive Delimiter Strategy", this.targetHiveDelimStrategy);
         return this;
@@ -421,10 +442,11 @@ public class SqoopBuilder {
 
     /**
      * Set replacement delimiter for Hive
+     *
      * @param targetHiveReplaceDelim replacement delimiter
      * @return {@link SqoopBuilder}
      */
-    public SqoopBuilder setTargetHiveReplaceDelim (String targetHiveReplaceDelim) {
+    public SqoopBuilder setTargetHiveReplaceDelim(String targetHiveReplaceDelim) {
         this.targetHiveReplaceDelim = targetHiveReplaceDelim;
         logMessage("info", "Target Hive Replace Delim", this.targetHiveReplaceDelim);
         return this;
@@ -432,21 +454,23 @@ public class SqoopBuilder {
 
     /**
      * Set compression algorithm for data landing in HDFS
+     *
      * @param targetCompressionAlgorithm compression algorithm
      * @return {@link SqoopBuilder}
      */
-    public SqoopBuilder setTargetCompressionAlgorithm (CompressionAlgorithm targetCompressionAlgorithm) {
-        this.targetCompressionCodec = getCompressionCodecClass (targetCompressionAlgorithm);
+    public SqoopBuilder setTargetCompressionAlgorithm(CompressionAlgorithm targetCompressionAlgorithm) {
+        this.targetCompressionCodec = getCompressionCodecClass(targetCompressionAlgorithm);
         logMessage("info", "Target Compression Algorithm", targetCompressionAlgorithm);
         return this;
     }
 
     /**
      * Set mapping to use for source columns (SQL type) to target (Java type).
+     *
      * @param targetColumnTypeMapping mapping as COLUMN=Type pairs separated by comma. Example: PO_ID=Integer,PO_DETAILS=String
      * @return {@link SqoopBuilder}
      */
-    public SqoopBuilder setTargetColumnTypeMapping (String targetColumnTypeMapping) {
+    public SqoopBuilder setTargetColumnTypeMapping(String targetColumnTypeMapping) {
         this.targetColumnTypeMapping = targetColumnTypeMapping;
         logMessage("info", "Target Column Type Mapping", this.targetColumnTypeMapping);
         return this;
@@ -454,10 +478,11 @@ public class SqoopBuilder {
 
     /**
      * Set output directory where Sqoop should create the generated code artifacts
+     *
      * @param sqoopCodeGenDirectory full directory path
      * @return {@link SqoopBuilder}
      */
-    public SqoopBuilder setSqoopCodeGenDirectory (String sqoopCodeGenDirectory) {
+    public SqoopBuilder setSqoopCodeGenDirectory(String sqoopCodeGenDirectory) {
         this.sqoopCodeGenDirectory = sqoopCodeGenDirectory;
         logMessage("info", "Sqoop Code Generation Directory", this.sqoopCodeGenDirectory);
         return this;
@@ -465,16 +490,16 @@ public class SqoopBuilder {
 
     /**
      * Set source specific (SQL Server) option - schema
+     *
      * @param sourceSpecificSqlServerSchema schema in SQL Server (default is generally 'dbo')
      * @return {@link SqoopBuilder}
      */
-    public SqoopBuilder setSourceSpecificSqlServerSchema (String sourceSpecificSqlServerSchema) {
+    public SqoopBuilder setSourceSpecificSqlServerSchema(String sourceSpecificSqlServerSchema) {
         if ((sourceSpecificSqlServerSchema != null) && (!sourceSpecificSqlServerSchema.isEmpty())) {
             this.sourceSpecificSqlServerSchema = sourceSpecificSqlServerSchema;
             sourceSpecificOptions = true;
             logMessage("info", "Source Specific - SQL Server Schema", this.sourceSpecificSqlServerSchema);
-        }
-        else {
+        } else {
             sourceSpecificOptions = false;
         }
         return this;
@@ -483,7 +508,7 @@ public class SqoopBuilder {
     /*
      * Get the compression codec class
      */
-    private String getCompressionCodecClass (CompressionAlgorithm compressionAlgorithm) {
+    private String getCompressionCodecClass(CompressionAlgorithm compressionAlgorithm) {
         String compressionCodecClass = null;
 
         if (compressionAlgorithm != null) {
@@ -527,43 +552,44 @@ public class SqoopBuilder {
         switch (level) {
             case "debug":
                 if (logger != null) {
-                    logger.debug("{} set to: {}", new Object[] { property, value});
+                    logger.debug("{} set to: {}", new Object[]{property, value});
                 }
                 break;
 
             case "info":
                 if (logger != null) {
-                    logger.info("{} set to: {}", new Object[] { property, value});
+                    logger.info("{} set to: {}", new Object[]{property, value});
                 }
                 break;
 
             case "trace":
                 if (logger != null) {
-                    logger.trace("{} set to: {}", new Object[] { property, value});
+                    logger.trace("{} set to: {}", new Object[]{property, value});
                 }
                 break;
 
             case "warn":
                 if (logger != null) {
-                    logger.warn("{} set to: {}", new Object[] { property, value});
+                    logger.warn("{} set to: {}", new Object[]{property, value});
                 }
                 break;
 
             case "error":
                 if (logger != null) {
-                    logger.error("{} set to: {}", new Object[] { property, value});
+                    logger.error("{} set to: {}", new Object[]{property, value});
                 }
                 break;
 
             default:
                 if (logger != null) {
-                    logger.info("{} set to: {}", new Object[] { property, value});
+                    logger.info("{} set to: {}", new Object[]{property, value});
                 }
         }
     }
 
     /**
      * Build a sqoop command
+     *
      * @return sqoop command
      */
     public String build() {
@@ -614,17 +640,15 @@ public class SqoopBuilder {
                 .append(START_SPACE_QUOTE)
                 .append(sourcePasswordHdfsFile)                                                 //"user provided"
                 .append(END_QUOTE_SPACE);
-        }
-        else if (passwordMode == PasswordMode.CLEAR_TEXT_ENTRY || passwordMode == PasswordMode.ENCRYPTED_TEXT_ENTRY) {
+        } else if (passwordMode == PasswordMode.CLEAR_TEXT_ENTRY || passwordMode == PasswordMode.ENCRYPTED_TEXT_ENTRY) {
 
             if (passwordMode == PasswordMode.ENCRYPTED_TEXT_ENTRY) {
                 try {
                     sourceEnteredPassword = DecryptPassword.decryptPassword(sourceEnteredPassword, sourcePasswordPassphrase);
                     logger.info("Entered encrypted password was decrypted successfully.");
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     sourceEnteredPassword = UNABLE_TO_DECRYPT_STRING;
-                    logger.error("Unable to decrypt entered password (encrypted, Base 64). [{}]", new Object[] { e.getMessage() });
+                    logger.error("Unable to decrypt entered password (encrypted, Base 64). [{}]", new Object[]{e.getMessage()});
                 }
             }
 
@@ -677,8 +701,7 @@ public class SqoopBuilder {
                 .append(START_SPACE_QUOTE)
                 .append(sourceTableSplitField)                                                  //"user provided"
                 .append(END_QUOTE_SPACE);
-        }
-        else {
+        } else {
             commandStringBuffer
                 .append(sourceAutoSetToOneMapperLabel)                                          //--autoreset-to-one-mapper
                 .append(SPACE_STRING);
@@ -740,8 +763,7 @@ public class SqoopBuilder {
 
             if (sourceLoadStrategy == SqoopLoadStrategy.INCREMENTAL_APPEND) {
                 commandStringBuffer.append(incrementalAppendStrategyLabel);                     //append
-            }
-            else if (sourceLoadStrategy == SqoopLoadStrategy.INCREMENTAL_LASTMODIFIED) {
+            } else if (sourceLoadStrategy == SqoopLoadStrategy.INCREMENTAL_LASTMODIFIED) {
                 commandStringBuffer.append(incrementalLastModifiedStrategyLabel);               //lastmodified
             }
 
@@ -793,9 +815,8 @@ public class SqoopBuilder {
             commandStringBuffer
                 .append(targetHiveNullEncodingStrategyNullStringLabel)                          //--null-string '\\\\N'
                 .append(SPACE_STRING);
-        }
-        else if (targetHiveNullEncodingStrategy
-                 == HiveNullEncodingStrategy.ENCODE_ONLY_NONSTRING) {
+        } else if (targetHiveNullEncodingStrategy
+                   == HiveNullEncodingStrategy.ENCODE_ONLY_NONSTRING) {
             commandStringBuffer
                 .append(targetHiveNullEncodingStrategyNullNonStringLabel)                       //--null-non-string '\\\\N'
                 .append(SPACE_STRING);

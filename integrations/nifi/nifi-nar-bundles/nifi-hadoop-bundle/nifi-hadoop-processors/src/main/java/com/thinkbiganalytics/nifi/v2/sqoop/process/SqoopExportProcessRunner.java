@@ -33,6 +33,7 @@ import static com.google.gson.internal.$Gson$Preconditions.checkNotNull;
 
 /**
  * Run a sqoop export job via a system process
+ *
  * @author jagrut sharma
  */
 public class SqoopExportProcessRunner {
@@ -47,9 +48,10 @@ public class SqoopExportProcessRunner {
 
     /**
      * Constructor
+     *
      * @param kerberosConfig kerberos configuration
-     * @param commands command list to run
-     * @param logger logger
+     * @param commands       command list to run
+     * @param logger         logger
      */
     public SqoopExportProcessRunner(KerberosConfig kerberosConfig,
                                     final List<String> commands,
@@ -74,6 +76,7 @@ public class SqoopExportProcessRunner {
 
     /**
      * Execute the process
+     *
      * @return result of execution as {@link SqoopProcessResult}
      */
     public SqoopProcessResult execute() {
@@ -120,9 +123,8 @@ public class SqoopExportProcessRunner {
             logger.info("Sqoop export job completed");
 
             return new SqoopProcessResult(exitValue, logLines);
-        }
-        catch (Exception e) {
-            logger.error("Error running sqoop export command [{}].", new Object[] { e.getMessage() });
+        } catch (Exception e) {
+            logger.error("Error running sqoop export command [{}].", new Object[]{e.getMessage()});
 
             for (long i = 0; i < latch.getCount(); i++) {
                 latch.countDown();
@@ -138,7 +140,7 @@ public class SqoopExportProcessRunner {
     private String getFullCommand() {
 
         StringBuffer retVal = new StringBuffer();
-        for (String c: commands) {
+        for (String c : commands) {
             retVal.append(c);
             retVal.append(" ");
         }
