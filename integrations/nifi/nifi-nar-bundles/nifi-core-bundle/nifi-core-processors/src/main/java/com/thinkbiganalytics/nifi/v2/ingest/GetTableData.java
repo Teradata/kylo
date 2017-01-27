@@ -188,16 +188,15 @@ public class GetTableData extends AbstractNiFiProcessor {
         .build();
     private final Set<Relationship> relationships;
     private final List<PropertyDescriptor> propDescriptors;
-    private transient String waterMarkPropertyName;
 
     public GetTableData() {
-        HashSet r = new HashSet();
-
+        HashSet<Relationship> r = new HashSet<>();
         r.add(REL_SUCCESS);
         r.add(REL_FAILURE);
         r.add(REL_NO_DATA);
         this.relationships = Collections.unmodifiableSet(r);
-        ArrayList pds = new ArrayList();
+
+        ArrayList<PropertyDescriptor> pds = new ArrayList<>();
         pds.add(JDBC_SERVICE);
         pds.add(METADATA_SERVICE);
         pds.add(FEED_CATEGORY);

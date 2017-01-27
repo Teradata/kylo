@@ -51,14 +51,13 @@ import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.REL_SUCCESS;
 @InputRequirement(InputRequirement.Requirement.INPUT_REQUIRED)
 @Tags({"thinkbig", "registration", "put"})
 @CapabilityDescription("Saves the outcome of registration.")
-
 public class UpdateRegistration extends AbstractNiFiProcessor {
 
-    public static final String SUCCESS = "success";
-    public static final String FAIL = "fail";
+    private static final String SUCCESS = "success";
+    private static final String FAIL = "fail";
 
     // Relationships
-    public static final PropertyDescriptor RESULT = new PropertyDescriptor.Builder()
+    private static final PropertyDescriptor RESULT = new PropertyDescriptor.Builder()
         .name("Result")
         .description("Indicates what should happen when a file with the same name already exists in the output directory")
         .required(true)
@@ -69,11 +68,11 @@ public class UpdateRegistration extends AbstractNiFiProcessor {
     private final List<PropertyDescriptor> propDescriptors;
 
     public UpdateRegistration() {
-        HashSet r = new HashSet();
+        Set<Relationship> r = new HashSet<>();
         r.add(REL_SUCCESS);
 
         this.relationships = Collections.unmodifiableSet(r);
-        ArrayList pds = new ArrayList();
+        List<PropertyDescriptor> pds = new ArrayList<>();
         pds.add(METADATA_SERVICE);
         pds.add(FEED_CATEGORY);
         pds.add(FEED_NAME);
@@ -102,7 +101,6 @@ public class UpdateRegistration extends AbstractNiFiProcessor {
             final MetadataProviderService metadataService = context.getProperty(METADATA_SERVICE).asControllerService(MetadataProviderService.class);
             final String categoryName = context.getProperty(FEED_CATEGORY).evaluateAttributeExpressions(flowFile).getValue();
             final String feedName = context.getProperty(FEED_NAME).evaluateAttributeExpressions(flowFile).getValue();
-            //final String result = context.getProperty(RESULT).getValue();
 
             final MetadataRecorder client = metadataService.getRecorder();
 

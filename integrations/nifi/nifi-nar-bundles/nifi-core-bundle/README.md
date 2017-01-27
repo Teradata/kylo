@@ -24,7 +24,7 @@ The NiFi core bundle is a Think Big NiFi extension providing standard ingest com
 | ------------- |-------------|
 | BeginFeed | Denotes the start of a feed with capability to receive JMS messages to trigger the flow. 
 | TerminateDirectoryFeed | Denotes the termination of a feed that resulted in data written to a directory. Evicts a JMS event based on the data change.
-| TerminateHiveTableFeed | Denotes the termination of a feed that resulted in data written to a Hive tabke. Evicts a JMS event based on the data change.
+| TerminateHiveTableFeed | Denotes the termination of a feed that resulted in data written to a Hive take. Evicts a JMS event based on the data change.
 
 ### Dependencies
 

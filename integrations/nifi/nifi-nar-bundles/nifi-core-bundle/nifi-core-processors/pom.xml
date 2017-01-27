@@ -139,6 +139,7 @@
     <dependency>
       <groupId>org.reflections</groupId>
       <artifactId>reflections</artifactId>
+      <version>0.9.8</version>
       <scope>test</scope>
     </dependency>
     <!-- End required for Hive tests -->

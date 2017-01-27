@@ -185,8 +185,7 @@ public class TriggerFeed extends AbstractFeedProcessor {
             executionContextKeys = DEFAULT_EXECUTION_CONTEXT_KEY;
         }
         //split and trim
-        List<String> list = new ArrayList<String>(Arrays.asList(executionContextKeys.trim().split("\\s*,\\s*")));
-        return list;
+        return new ArrayList<String>(Arrays.asList(executionContextKeys.trim().split("\\s*,\\s*")));
     }
 
 

@@ -171,6 +171,5 @@ public class StripHeader extends AbstractNiFiProcessor {
 
             session.transfer(flowFile, REL_ORIGINAL);
         }
-        return;
     }
 }

@@ -93,10 +93,12 @@ public class RegisterFeedTables extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
+
     /**
      * Specify creation of all tables
      */
     public static String ALL_TABLES = "ALL";
+
     /**
      * Property indicating which tables to register
      */
@@ -107,8 +109,9 @@ public class RegisterFeedTables extends AbstractNiFiProcessor {
         .allowableValues(TableType.FEED.toString(), TableType.VALID.toString(), TableType.INVALID.toString(), TableType.PROFILE.toString(), TableType.MASTER.toString(), ALL_TABLES)
         .defaultValue(ALL_TABLES)
         .build();
-    private static String DEFAULT_STORAGE_FORMAT = "STORED AS ORC";
-    private static String DEFAULT_FEED_FORMAT_OPTIONS = "ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n' STORED AS TEXTFILE";
+    private final static String DEFAULT_STORAGE_FORMAT = "STORED AS ORC";
+    private final static String DEFAULT_FEED_FORMAT_OPTIONS = "ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n' STORED AS TEXTFILE";
+    
     // Relationships
     private final Set<Relationship> relationships;
     private final List<PropertyDescriptor> propDescriptors;

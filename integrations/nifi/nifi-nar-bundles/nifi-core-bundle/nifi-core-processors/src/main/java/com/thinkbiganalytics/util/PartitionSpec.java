@@ -203,8 +203,7 @@ public class PartitionSpec implements Cloneable {
     }
 
     public PartitionSpec newForAlias(String alias) {
-        PartitionSpec spec = new PartitionSpec(PartitionKey.partitionKeysForTableAlias(this.keys.toArray(new PartitionKey[0]), alias));
-        return spec;
+        return new PartitionSpec(PartitionKey.partitionKeysForTableAlias(this.keys.toArray(new PartitionKey[0]), alias));
     }
 
 }

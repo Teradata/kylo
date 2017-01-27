@@ -52,13 +52,12 @@ public class GetTableDataSupportTest {
 
     @Test
     public void testMaxAllowableDateFromUnit() throws Exception {
-
-        assertEquals(1458872629591L, tableDataSupport.maxAllowableDateFromUnit(testDate, GetTableDataSupport.UnitSizes.NONE).getTime());
-        assertEquals(1458871200000L, tableDataSupport.maxAllowableDateFromUnit(testDate, GetTableDataSupport.UnitSizes.HOUR).getTime());
-        assertEquals(1458802800000L, tableDataSupport.maxAllowableDateFromUnit(testDate, GetTableDataSupport.UnitSizes.DAY).getTime());
-        assertEquals(1458543600000L, tableDataSupport.maxAllowableDateFromUnit(testDate, GetTableDataSupport.UnitSizes.WEEK).getTime());
-        assertEquals(1456819200000L, tableDataSupport.maxAllowableDateFromUnit(testDate, GetTableDataSupport.UnitSizes.MONTH).getTime());
-        assertEquals(1451635200000L, tableDataSupport.maxAllowableDateFromUnit(testDate, GetTableDataSupport.UnitSizes.YEAR).getTime());
+        assertEquals(1458872629591L, GetTableDataSupport.maxAllowableDateFromUnit(testDate, GetTableDataSupport.UnitSizes.NONE).getTime());
+        assertEquals(1458871200000L, GetTableDataSupport.maxAllowableDateFromUnit(testDate, GetTableDataSupport.UnitSizes.HOUR).getTime());
+        assertEquals(1458802800000L, GetTableDataSupport.maxAllowableDateFromUnit(testDate, GetTableDataSupport.UnitSizes.DAY).getTime());
+        assertEquals(1458543600000L, GetTableDataSupport.maxAllowableDateFromUnit(testDate, GetTableDataSupport.UnitSizes.WEEK).getTime());
+        assertEquals(1456819200000L, GetTableDataSupport.maxAllowableDateFromUnit(testDate, GetTableDataSupport.UnitSizes.MONTH).getTime());
+        assertEquals(1451635200000L, GetTableDataSupport.maxAllowableDateFromUnit(testDate, GetTableDataSupport.UnitSizes.YEAR).getTime());
     }
 
     @Test

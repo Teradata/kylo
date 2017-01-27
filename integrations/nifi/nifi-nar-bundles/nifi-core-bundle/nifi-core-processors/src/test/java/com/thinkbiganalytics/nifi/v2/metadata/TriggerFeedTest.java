@@ -45,7 +45,7 @@ public class TriggerFeedTest {
     public void testFeedDependencyResultsExecutionContext() {
 
         FeedDependencyDeltaResults deltaResults = new FeedDependencyDeltaResults();
-        List<String> feedNames = new ArrayList();
+        List<String> feedNames = new ArrayList<>();
         feedNames.add("category.feed_a");
         feedNames.add("category.feed_b");
 

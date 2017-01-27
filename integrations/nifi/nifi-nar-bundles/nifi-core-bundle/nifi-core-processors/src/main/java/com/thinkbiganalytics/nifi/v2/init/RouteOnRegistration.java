@@ -65,11 +65,12 @@ public class RouteOnRegistration extends AbstractNiFiProcessor {
     private final List<PropertyDescriptor> propDescriptors;
 
     public RouteOnRegistration() {
-        HashSet r = new HashSet();
+        Set<Relationship> r = new HashSet<>();
         r.add(REL_SUCCESS);
         r.add(REL_REGISTRATION_REQ);
         this.relationships = Collections.unmodifiableSet(r);
-        ArrayList pds = new ArrayList();
+
+        List<PropertyDescriptor> pds = new ArrayList<>();
         pds.add(METADATA_SERVICE);
         pds.add(FEED_CATEGORY);
         pds.add(FEED_NAME);

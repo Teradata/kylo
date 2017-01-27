@@ -84,9 +84,8 @@ public class GetTableDataSupport {
 
         logger.info("Executing full GetTableData query {}", sb.toString());
         st.setQueryTimeout(timeout);
-        final ResultSet resultSet = st.executeQuery(sb.toString());
 
-        return resultSet;
+        return st.executeQuery(sb.toString());
     }
 
     /**
@@ -146,7 +145,7 @@ public class GetTableDataSupport {
         DAY,
         WEEK,
         MONTH,
-        YEAR;
+        YEAR
     }
 
     protected static class DateRange {
