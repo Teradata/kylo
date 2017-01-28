@@ -20,7 +20,6 @@ package com.thinkbiganalytics.nifi.rest;
  * #L%
  */
 
-import com.google.common.collect.Lists;
 import com.thinkbiganalytics.feedmgr.nifi.CreateFeedBuilder;
 import com.thinkbiganalytics.feedmgr.nifi.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
@@ -33,22 +32,25 @@ import com.thinkbiganalytics.nifi.rest.client.NifiRestClientConfig;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessorSchedule;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
-import com.thinkbiganalytics.nifi.rest.model.visitor.NifiFlowBuilder;
-import com.thinkbiganalytics.nifi.rest.model.visitor.NifiVisitableProcessGroup;
+import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 import com.thinkbiganalytics.nifi.v1.rest.client.NiFiRestClientV1;
 import com.thinkbiganalytics.nifi.v1.rest.model.NiFiPropertyDescriptorTransformV1;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.nifi.web.api.dto.ProcessorDTO;
+import org.apache.nifi.web.api.dto.ControllerServiceDTO;
+import org.apache.nifi.web.api.dto.ReportingTaskDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
+import org.junit.Before;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * Created by sr186054 on 4/28/16.
@@ -60,7 +62,7 @@ public class NifiRestTest {
     private NifiFlowCache nifiFlowCache;
     private NiFiPropertyDescriptorTransformV1 propertyDescriptorTransform;
 
-    //  @Before
+    @Before
     public void setupRestClient() {
         restClient = new LegacyNifiRestClient();
         NifiRestClientConfig clientConfig = new NifiRestClientConfig();
@@ -175,22 +177,75 @@ public class NifiRestTest {
     }
 
 
-    // @Test
+    //   @Test
     public void testOrder() throws Exception {
 
-        NifiVisitableProcessGroup g = restClient.getFlowOrder("b2fb9f7c-0159-1000-8ae3-9c108a282008", null);
+      /*  NifiVisitableProcessGroup g = restClient.getFlowOrder("27ab143a-0159-1000-4f6a-30f3746a341e", null);
         NifiFlowProcessGroup flow = new NifiFlowBuilder().build(g);
 
-        NifiFlowProcessGroup flow2 = restClient.getFeedFlow("b2fb9f7c-0159-1000-8ae3-9c108a282008");
+        NifiFlowProcessGroup flow2 = restClient.getFeedFlow("27ab143a-0159-1000-4f6a-30f3746a341e");
 
         List<String> feeds = Lists.newArrayList();
         feeds.add("sample.new_feed_three");
         List<NifiFlowProcessGroup> flows3 = restClient.getNiFiRestClient().flows().getFeedFlows(feeds);
-//int i = 0;
-        //restClient.getFeedFlows();
+*/
+        List<NifiFlowProcessGroup> feedFlows = restClient.getFeedFlows();
+        int i = 0;
 
     }
 
+
+    // @Test
+    public void testReportingTask() {
+        LegacyNifiRestClient nifiRestClient = restClient;
+        if (!nifiRestClient.getNiFiRestClient().reportingTasks().findFirstByType(NifiFlowCache.NiFiKyloProvenanceEventReportingTaskType).isPresent()) {
+            //create it
+            //1 ensure the controller service exists and is wired correctly
+            Optional<ControllerServiceDTO> controllerService = nifiRestClient.getNiFiRestClient().reportingTasks().findFirstControllerServiceByType(NifiFlowCache.NiFiMetadataControllerServiceType);
+            ControllerServiceDTO metadataService = null;
+            if (controllerService.isPresent()) {
+                metadataService = controllerService.get();
+            } else {
+                //create it and enable it
+                //first create it
+                ControllerServiceDTO controllerServiceDTO = new ControllerServiceDTO();
+                controllerServiceDTO.setType(NifiFlowCache.NiFiMetadataControllerServiceType);
+                controllerServiceDTO.setName("Think Big Metadata Service");
+                metadataService = nifiRestClient.getNiFiRestClient().reportingTasks().createReportingTaskControllerService(controllerServiceDTO);
+                //find the properties to inject
+                Map<String, String> stringConfigProperties = new HashMap<>();
+                metadataService = nifiRestClient.enableControllerServiceAndSetProperties(metadataService.getId(), stringConfigProperties);
+            }
+
+            if (metadataService != null) {
+                if (NifiProcessUtil.SERVICE_STATE.DISABLED.name().equalsIgnoreCase(metadataService.getState())) {
+                    //enable it....
+                    metadataService = nifiRestClient.enableControllerServiceAndSetProperties(metadataService.getId(), null);
+                }
+
+                //assign the service to the reporting task
+
+                ReportingTaskDTO reportingTaskDTO = new ReportingTaskDTO();
+                reportingTaskDTO.setType(NifiFlowCache.NiFiKyloProvenanceEventReportingTaskType);
+                reportingTaskDTO = nifiRestClient.getNiFiRestClient().reportingTasks().createReportingTask(reportingTaskDTO);
+                //now set the properties
+                ReportingTaskDTO updatedReportingTask = new ReportingTaskDTO();
+                updatedReportingTask.setType(NifiFlowCache.NiFiKyloProvenanceEventReportingTaskType);
+                updatedReportingTask.setId(reportingTaskDTO.getId());
+                updatedReportingTask.setName("KyloProvenanceEventReportingTask");
+                updatedReportingTask.setProperties(new HashMap<>(1));
+                updatedReportingTask.getProperties().put("Metadata Service", metadataService.getId());
+                updatedReportingTask.setSchedulingStrategy("TIMER_DRIVEN");
+                updatedReportingTask.setSchedulingPeriod("5 secs");
+                updatedReportingTask.setComments("Reporting task that will query the provenance repository and send the events and summary statistics over to Kylo via a JMS queue");
+                updatedReportingTask.setState(NifiProcessUtil.PROCESS_STATE.RUNNING.name());
+
+                reportingTaskDTO = nifiRestClient.getNiFiRestClient().reportingTasks().update(updatedReportingTask);
+            }
+
+        }
+        ;
+    }
 
     // @Test
     public void testUpdateProcessor() {
@@ -214,10 +269,4 @@ public class NifiRestTest {
         restClient.importTemplate("test", theString);
     }
 
-    //@Test
-    public void testFailures() {
-        String id = "7653afbc-7cdd-49c6-9ffc-c5a0c31137f4";
-        Set<ProcessorDTO> failureProcessors = restClient.getFailureProcessors(id);
-        int i = 0;
-    }
 }
