@@ -25,7 +25,6 @@ import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.visitor.NifiFlowBuilder;
 import com.thinkbiganalytics.nifi.rest.model.visitor.NifiVisitableProcessGroup;
-import com.thinkbiganalytics.nifi.rest.model.visitor.NifiVisitableProcessor;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
@@ -37,7 +36,6 @@ import java.io.StringWriter;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -148,28 +146,9 @@ public class NifiRestTest {
         NifiVisitableProcessGroup g = restClient.getFlowOrder("b2fb9f7c-0159-1000-8ae3-9c108a282008", null);
         NifiFlowProcessGroup flow = new NifiFlowBuilder().build(g);
 
-        //   Set<ProcessorDTO> processors = restClient.getProcessorsForFlow("c4c7c4be-5421-45a0-87e9-fdef211297c5");
-
-        Set<ProcessorDTO> failureProcessors = new HashSet<>();
-        for (NifiVisitableProcessor p : g.getStartingProcessors()) {
-            failureProcessors.addAll(p.getFailureProcessors());
-        }
-
-        for (ProcessorDTO p : failureProcessors) {
-            System.out.println("FAILURE " + p.getName() + ", " + p.getId());
-        }
-
 
     }
 
-    //@Test
-    public void testFailureProcessors() throws Exception {
-
-        Set<ProcessorDTO> failureProcessors = restClient.getFailureProcessors("9a9035fd-2341-46f6-b7c3-e61724a722d4");
-        for (ProcessorDTO p : failureProcessors) {
-            System.out.println("FAILURE " + p.getName() + ", " + p.getId());
-        }
-    }
 
     //@Test
     public void testFlowOrderProcessors() throws Exception {
