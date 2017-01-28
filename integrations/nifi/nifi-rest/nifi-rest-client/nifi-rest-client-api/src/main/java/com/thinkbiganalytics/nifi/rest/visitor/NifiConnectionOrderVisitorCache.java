@@ -20,7 +20,6 @@ package com.thinkbiganalytics.nifi.rest.visitor;
  * #L%
  */
 
-import com.thinkbiganalytics.nifi.rest.model.visitor.NifiVisitableProcessGroup;
 
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 
@@ -29,7 +28,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Created by sr186054 on 12/24/16.
+ * A cache of the visted process groups to help save time from calling out to NiFi REST client for process group/processor information
  */
 public class NifiConnectionOrderVisitorCache {
 
@@ -46,6 +45,9 @@ public class NifiConnectionOrderVisitorCache {
     }
 
 
+    /**
+     * After walking a feed flow processgroup add the Nifi process group to the cache so any subsequent calls to find this group wont have to hit the NiFi REST client
+     */
     public void add(NifiConnectionOrderVisitorCachedItem visitedGroup) {
         cache.computeIfAbsent(visitedGroup.getProcessGroupId(), groupId -> visitedGroup);
         if (visitedGroup.getProcessGroup().getDto() != null) {
@@ -53,18 +55,6 @@ public class NifiConnectionOrderVisitorCache {
         }
     }
 
-    public Optional<NifiConnectionOrderVisitorCachedItem> getCachedGroup(String processGroupId) {
-        return Optional.ofNullable(cache.get(processGroupId));
-    }
-
-    public Optional<NifiVisitableProcessGroup> getCachedGroupForVisiting(String processGroupId) {
-        if (cache.containsKey(processGroupId)) {
-            NifiConnectionOrderVisitorCachedItem cachedItem = cache.get(processGroupId);
-            NifiVisitableProcessGroup group = cachedItem.getProcessGroup();
-            return Optional.of(group.asCacheableProcessGroup());
-        }
-        return Optional.empty();
-    }
 
 
 }

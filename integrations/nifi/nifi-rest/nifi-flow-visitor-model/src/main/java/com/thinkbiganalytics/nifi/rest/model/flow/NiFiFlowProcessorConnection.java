@@ -24,7 +24,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Holds the ConnectionDTO id and the related Name Created by sr186054 on 8/30/16.
+ * Holds the ConnectionDTO id and the related Name
  */
 public class NiFiFlowProcessorConnection {
 

@@ -33,7 +33,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- *Visit a NiFi processor
+ *Visit a NiFi processor and connect it to other processors
  *
  * @see NifiFlowVisitor
  */
@@ -45,9 +45,10 @@ public class NifiVisitableProcessor implements NifiVisitable {
     private Set<NifiVisitableProcessor> sources; //parents
     private Set<NifiVisitableProcessor> destinations; //children
 
+    /**
+     * The NiFi processor id
+     **/
     private String id;
-
-    private boolean isFailureProcessor;
 
     private Set<NiFiFlowProcessorConnection> sourceConnectionIdentifiers;
 
@@ -61,35 +62,36 @@ public class NifiVisitableProcessor implements NifiVisitable {
         this.id = dto.getId();
     }
 
-
-    private NifiVisitableProcessor(NifiVisitableProcessor processor) {
-
-        this.dto = processor.getDto();
-        this.id = processor.getId();
-    }
-
-    public NifiVisitableProcessor asCacheableProcessor() {
-        return new NifiVisitableProcessor(this);
-    }
-
-    public void clearConnectedProcessors() {
-        getSources().clear();
-        getDestinations().clear();
-    }
-
+    /**
+     * visit the processor with the supplied visitor
+     *
+     * @param nifiVisitor the visitor
+     */
     @Override
     public void accept(NifiFlowVisitor nifiVisitor) {
         nifiVisitor.visitProcessor(this);
     }
 
+    /**
+     * connect this processor to a incoming source processor
+     * @param dto the sorce processor
+     */
     public void addSource(NifiVisitableProcessor dto) {
         getSources().add(dto);
     }
 
+    /**
+     * connect this processor to a outgoing destination
+     * @param dto the destination processor
+     */
     public void addDestination(NifiVisitableProcessor dto) {
         getDestinations().add(dto);
     }
 
+    /**
+     * Return all processors that come directly before this processor
+     * @return the source processors connecting to this processor
+     */
     public Set<NifiVisitableProcessor> getSources() {
         if (sources == null) {
             sources = new HashSet<>();
@@ -97,10 +99,10 @@ public class NifiVisitableProcessor implements NifiVisitable {
         return sources;
     }
 
-    public void setSources(Set<NifiVisitableProcessor> sources) {
-        this.sources = sources;
-    }
-
+    /**
+     * Return all the processors that connect after this processor
+     * @return the destination processors
+     */
     public Set<NifiVisitableProcessor> getDestinations() {
         if (destinations == null) {
             destinations = new HashSet<>();
@@ -108,27 +110,44 @@ public class NifiVisitableProcessor implements NifiVisitable {
         return destinations;
     }
 
-    public void setDestinations(Set<NifiVisitableProcessor> destinations) {
-        this.destinations = destinations;
-    }
-
+    /**
+     * Return the NiFi object representing this processor
+     * @return the nifi processor
+     */
     public ProcessorDTO getDto() {
         return dto;
     }
 
+    /**
+     * set the NiFi processor
+     * @param dto the NiFi processor
+     */
     public void setDto(ProcessorDTO dto) {
         this.dto = dto;
     }
 
 
+    /**
+     * Check to see if that this processor does not have any input/sources connected into it
+     * @return {@code true} if no processors are connected as sources to this processor, {@code false} if otherwise
+     */
     public boolean isStart() {
         return !getDestinations().isEmpty() && getSources().isEmpty();
     }
 
+    /**
+     * Check to see this processor is a leaft node meaning that this processor does not have any output/destinations connected from it
+     * @return {@code true} if no processors are connected as outputs from this processor, {@code false} if otherwise
+     */
     public boolean isEnd() {
         return !getSources().isEmpty() && getDestinations().isEmpty();
     }
 
+    /**
+     * Check to see if this processor Id matches another incoming processor
+     * @param o
+     * @return
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -150,11 +169,18 @@ public class NifiVisitableProcessor implements NifiVisitable {
     }
 
 
+    /***
+     * Print out the processor to log
+     */
     public void print() {
 
         print(0);
     }
 
+    /**
+     * Print out the processor to the log
+     * @param level
+     */
     public void print(Integer level) {
 
         log.info(level + ". " + getDto().getName());
@@ -170,8 +196,11 @@ public class NifiVisitableProcessor implements NifiVisitable {
         }
     }
 
-    //used for connections with input/output ports
-
+    /**
+     * Check to see if this processor contains an incoming processor
+     * @param parent the processor to check for in this processors {@link this#getDestinations()}
+     * @return {@code true} if this processor already contains the incoming processor as its destination, {@code false} if not
+     */
     public boolean containsDestination(NifiVisitableProcessor parent) {
         final String thisId = getDto().getId();
         final String parentId = parent.getDto().getId();
@@ -185,35 +214,20 @@ public class NifiVisitableProcessor implements NifiVisitable {
         return p != null;
     }
 
-
-    public Set<ProcessorDTO> getFailureProcessors() {
-        Set<ProcessorDTO> failureProcessors = new HashSet<>();
-        Set<NifiVisitableProcessor> set = new HashSet<>();
-        populateChildProcessors(set);
-        for (NifiVisitableProcessor p : set) {
-            if (p.isFailureProcessor()) {
-                failureProcessors.add(p.getDto());
-            }
-        }
-        return failureProcessors;
-    }
-
+    /**
+     * Return all the processors including the destinations walking thr graph of the {@link NifiVisitableProcessor#getDestinations()}
+     * @return all the processors including the destinations walking thr graph of the {@link NifiVisitableProcessor#getDestinations()}
+     */
     public Set<ProcessorDTO> getProcessors() {
         return getProcessors(null);
     }
 
-    public void populateChildProcessors(Set<NifiVisitableProcessor> set) {
-        if (set == null) {
-            set = new HashSet<>();
-        }
-        set.add(this);
-        for (NifiVisitableProcessor child : getDestinations()) {
-            if (!set.contains(child)) {
-                child.getProcessors(set);
-            }
-        }
-    }
 
+    /**
+     * Return all the processors including the destinations walking thr graph of the {@link NifiVisitableProcessor#getDestinations()}
+     * @param set of processors to inspect and retreive the NiFi processor dto from
+     * @return all the processors including the destinations walking thr graph of the {@link NifiVisitableProcessor#getDestinations()}
+     */
     public Set<ProcessorDTO> getProcessors(Set<NifiVisitableProcessor> set) {
         if (set == null) {
             set = new HashSet<>();
@@ -233,23 +247,26 @@ public class NifiVisitableProcessor implements NifiVisitable {
 
     }
 
-
-    public boolean isFailureProcessor() {
-        return isFailureProcessor;
-    }
-
-    public void setIsFailureProcessor(boolean isFailureProcessor) {
-        this.isFailureProcessor = isFailureProcessor;
-    }
-
+    /**
+     * Return the id for this processor
+     * @return the id for the processor
+     */
     public String getId() {
         return id;
     }
 
+    /**
+     * add a connection as a source connection
+     * @param conn the source connection to this processor
+     */
     public void addSourceConnectionIdentifier(ConnectionDTO conn) {
         getSourceConnectionIdentifiers().add(new NiFiFlowProcessorConnection(conn.getId(), conn.getName(), conn.getSelectedRelationships()));
     }
 
+    /**
+     * add a connectionas a destination connection
+     * @param conn the destination connection from this processor
+     */
     public void addDestinationConnectionIdentifier(ConnectionDTO conn) {
         NiFiFlowProcessorConnection destinationConnection = new NiFiFlowProcessorConnection(conn.getId(), conn.getName(), conn.getSelectedRelationships());
         getDestinationConnectionIdentifiers().add(destinationConnection);
@@ -257,6 +274,10 @@ public class NifiVisitableProcessor implements NifiVisitable {
     }
 
 
+    /**
+     * Return all connection ids marked as sources coming to this processor
+     * @return all connection ids marked as sources coming to this processor
+     */
     public Set<NiFiFlowProcessorConnection> getSourceConnectionIdentifiers() {
         if (sourceConnectionIdentifiers == null) {
             sourceConnectionIdentifiers = new HashSet<>();
@@ -264,10 +285,10 @@ public class NifiVisitableProcessor implements NifiVisitable {
         return sourceConnectionIdentifiers;
     }
 
-    public void setSourceConnectionIdentifiers(Set<NiFiFlowProcessorConnection> sourceConnectionIdentifiers) {
-        this.sourceConnectionIdentifiers = sourceConnectionIdentifiers;
-    }
-
+    /**
+     * Return all connection ids marked as destinations from this processor
+     * @return all connection ids marked as destinations from this processor
+     */
     public Set<NiFiFlowProcessorConnection> getDestinationConnectionIdentifiers() {
         if (destinationConnectionIdentifiers == null) {
             destinationConnectionIdentifiers = new HashSet<>();
@@ -275,7 +296,4 @@ public class NifiVisitableProcessor implements NifiVisitable {
         return destinationConnectionIdentifiers;
     }
 
-    public void setDestinationConnectionIdentifiers(Set<NiFiFlowProcessorConnection> destinationConnectionIdentifiers) {
-        this.destinationConnectionIdentifiers = destinationConnectionIdentifiers;
-    }
 }

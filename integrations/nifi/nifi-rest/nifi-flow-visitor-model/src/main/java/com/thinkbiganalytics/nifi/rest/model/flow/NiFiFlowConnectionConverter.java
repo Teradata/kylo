@@ -27,11 +27,17 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Created by sr186054 on 1/19/17.
+ * Convert a Nifi Connection {@link ConnectionDTO} to a simplified {@link NifiFlowConnection}
  */
 public class NiFiFlowConnectionConverter {
 
 
+    /**
+     * Convert a Nifi Connection {@link ConnectionDTO} to a simplified {@link NifiFlowConnection}
+     *
+     * @param connectionDTO the Nifi connection
+     * @return the converted simplified connection
+     */
     public static NifiFlowConnection toNiFiFlowConnection(ConnectionDTO connectionDTO) {
         if (connectionDTO != null) {
             String name = connectionDTO.getName();

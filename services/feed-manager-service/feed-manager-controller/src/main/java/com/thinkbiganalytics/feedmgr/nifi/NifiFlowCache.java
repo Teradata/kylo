@@ -33,15 +33,20 @@ import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailabilityList
 import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheConnectionData;
 import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheSync;
 import com.thinkbiganalytics.metadata.rest.model.nifi.NifiFlowCacheSnapshot;
+import com.thinkbiganalytics.nifi.provenance.NiFiProvenanceConstants;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
+import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.model.flow.NiFiFlowConnectionConverter;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowConnection;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessor;
+import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.ConnectionDTO;
+import org.apache.nifi.web.api.dto.ControllerServiceDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
+import org.apache.nifi.web.api.dto.ReportingTaskDTO;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +57,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -71,9 +77,10 @@ import javax.inject.Inject;
  *
  * @see com.thinkbiganalytics.nifi.rest.visitor.NifiConnectionOrderVisitor
  */
-public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabilityListener {
+public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabilityListener, NiFiProvenanceConstants {
 
     private static final Logger log = LoggerFactory.getLogger(NifiFlowCache.class);
+
 
     @Inject
     ModeShapeAvailability modeShapeAvailability;
@@ -92,6 +99,9 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
 
     @Inject
     MetadataAccess metadataAccess;
+
+    @Inject
+    PropertyExpressionResolver propertyExpressionResolver;
 
     private Map<String, String> feedNameToTemplateNameMap = new ConcurrentHashMap<>();
 
@@ -137,6 +147,7 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
 
     /**
      * Map of the sync id to cache
+     * This is the cache of the items out there that others have built and will check/update themseleves based upon the base maps in the object
      */
     private Map<String, NiFiFlowCacheSync> syncMap = new ConcurrentHashMap<>();
 
@@ -151,6 +162,14 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
 
 
     @Override
+    public void modeShapeAvailable() {
+        this.modeShapeAvailable = true;
+        checkAndInitializeCache();
+    }
+
+
+
+    @Override
     public void onNiFiConnected() {
         this.nifiConnected = true;
         checkAndInitializeCache();
@@ -161,12 +180,6 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
         this.nifiConnected = false;
     }
 
-
-    @Override
-    public void modeShapeAvailable() {
-        this.modeShapeAvailable = true;
-        checkAndInitializeCache();
-    }
 
     @PostConstruct
     private void init() {
@@ -339,8 +352,12 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
         });
     }
 
+    /**
+     * Rebuild the base cache that others will update from.
+     */
     public synchronized void rebuildAll() {
         loaded = false;
+        ensureNiFiKyloReportingTask();
 
         List<NifiFlowProcessGroup> allFlows = nifiRestClient.getFeedFlows();
 
@@ -350,11 +367,9 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
         templates = metadataAccess.read(() -> metadataService.getRegisteredTemplates(), MetadataAccess.SERVICE);
         Map<String, RegisteredTemplate> feedTemplatesMap = new HashMap<>();
 
-        //populate the template mappings
+        //populate the template mappings and feeds to determine if the feed uses a streaming or batch template
         templates.stream().forEach(template -> populateTemplateMappingCache(template, feedTemplatesMap));
 
-
-        //get template associated with flow to determine failure process flow ids
         allFlows.stream().forEach(nifiFlowProcessGroup -> {
             RegisteredTemplate template = feedTemplatesMap.get(nifiFlowProcessGroup.getFeedName());
             if (template != null) {
@@ -370,10 +385,83 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
 
     }
 
+    /**
+     * Ensure that there is a configured reporting task
+     */
+    private void ensureNiFiKyloReportingTask() {
+        String reportingTaskName = StringUtils.substringAfterLast(NiFiKyloProvenanceEventReportingTaskType, ".");
+        if (!nifiRestClient.getNiFiRestClient().reportingTasks().findFirstByType(NiFiKyloProvenanceEventReportingTaskType).isPresent()) {
+            log.info("Attempting to create the {} in NiFi ", reportingTaskName);
+            //create it
+            //1 ensure the controller service exists and is wired correctly
+            Optional<ControllerServiceDTO> controllerService = nifiRestClient.getNiFiRestClient().reportingTasks().findFirstControllerServiceByType(NiFiMetadataControllerServiceType);
+            ControllerServiceDTO metadataService = null;
+            if (controllerService.isPresent()) {
+                metadataService = controllerService.get();
+            } else {
+                log.info("Attempting to create the Controller Service: {}  with the name {} in NiFi ", NiFiMetadataControllerServiceType, NiFiMetadataServiceName);
+                //create it and enable it
+                //first create it
+                ControllerServiceDTO controllerServiceDTO = new ControllerServiceDTO();
+                controllerServiceDTO.setType(NiFiMetadataControllerServiceType);
+                controllerServiceDTO.setName(NiFiMetadataServiceName);
+                metadataService = nifiRestClient.getNiFiRestClient().reportingTasks().createReportingTaskControllerService(controllerServiceDTO);
+                //find the properties to inject
+                Map<String, Object> configProperties = propertyExpressionResolver.getStaticConfigProperties();
+                Map<String, String> stringConfigProperties = new HashMap<>();
+                if (configProperties != null) {
+                    //transform the object map to the String map
+                    stringConfigProperties = configProperties.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue() != null ? e.getValue().toString() : null));
+                }
+                metadataService = nifiRestClient.enableControllerServiceAndSetProperties(metadataService.getId(), stringConfigProperties);
+            }
+
+            if (metadataService != null) {
+
+                try {
+                    if (NifiProcessUtil.SERVICE_STATE.DISABLED.name().equalsIgnoreCase(metadataService.getState())) {
+                        log.info("Reporting Task Controller Service {} exists, ensuring it is enabled.", NiFiMetadataServiceName);
+                        //enable it....
+                        metadataService = nifiRestClient.enableControllerServiceAndSetProperties(metadataService.getId(), null);
+                    }
+                } catch (NifiClientRuntimeException e) {
+                    //swallow the exception and attempt to move on to create the task
+                }
+
+                log.info("Creating the Reporting Task {} ", reportingTaskName);
+                ReportingTaskDTO reportingTaskDTO = new ReportingTaskDTO();
+                reportingTaskDTO.setType(NiFiKyloProvenanceEventReportingTaskType);
+                reportingTaskDTO = nifiRestClient.getNiFiRestClient().reportingTasks().createReportingTask(reportingTaskDTO);
+                //now set the properties
+                ReportingTaskDTO updatedReportingTask = new ReportingTaskDTO();
+                updatedReportingTask.setType(NiFiKyloProvenanceEventReportingTaskType);
+                updatedReportingTask.setId(reportingTaskDTO.getId());
+                updatedReportingTask.setName(reportingTaskName);
+                updatedReportingTask.setProperties(new HashMap<>(1));
+                updatedReportingTask.getProperties().put("Metadata Service", metadataService.getId());
+                updatedReportingTask.setSchedulingStrategy("TIMER_DRIVEN");
+                updatedReportingTask.setSchedulingPeriod("5 secs");
+                updatedReportingTask.setComments("Reporting task that will query the provenance repository and send the events and summary statistics over to Kylo via a JMS queue");
+                updatedReportingTask.setState(NifiProcessUtil.PROCESS_STATE.RUNNING.name());
+                //update it
+                reportingTaskDTO = nifiRestClient.getNiFiRestClient().reportingTasks().update(updatedReportingTask);
+                if (reportingTaskDTO != null) {
+                    log.info("Successfully created the Reporting Task {} ", reportingTaskName);
+                } else {
+                    log.info("Error creating the Reporting Task {}.  You will need to go into NiFi to resolve. ", reportingTaskName);
+                }
+            }
+
+        }
+        ;
+
+    }
+
 
     /**
      * Called after someone updates/Registers a template in the UI using the template stepper
-     * Used to update the feed marker for streaming/batch feeds
+     * This is used to update the feed marker for streaming/batch feeds
+     * @param template
      */
     public synchronized void updateRegisteredTemplate(RegisteredTemplate template) {
 
@@ -390,7 +478,6 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
         }
         lastUpdated = DateTimeUtil.getNowUTCTime();
 
-        //update all feeds ref this template
     }
 
 

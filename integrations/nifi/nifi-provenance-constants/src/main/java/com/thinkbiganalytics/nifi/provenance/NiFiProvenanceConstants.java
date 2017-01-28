@@ -1,8 +1,8 @@
-package com.thinkbiganalytics.nifi.rest.model.visitor;
+package com.thinkbiganalytics.nifi.provenance;
 
 /*-
  * #%L
- * thinkbig-nifi-flow-visitor-model
+ * thinkbig-nifi-provenance-constants
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
@@ -21,10 +21,15 @@ package com.thinkbiganalytics.nifi.rest.model.visitor;
  */
 
 /**
- * Represents a NiFi object that can be visited
+ * Provenance constants needed for Kylo to check create controller services, reporting task, and check its status in NiFi
  */
+public interface NiFiProvenanceConstants {
 
-public interface NifiVisitable {
 
-    void accept(NifiFlowVisitor nifiVisitor);
+    String NiFiMetadataServiceName = "Think Big Metadata Service";
+
+    String NiFiMetadataControllerServiceType = "com.thinkbiganalytics.nifi.v2.core.metadata.MetadataProviderSelectorService";
+
+    String NiFiKyloProvenanceEventReportingTaskType = "com.thinkbiganalytics.nifi.provenance.reporting.KyloProvenanceEventReportingTask";
+
 }

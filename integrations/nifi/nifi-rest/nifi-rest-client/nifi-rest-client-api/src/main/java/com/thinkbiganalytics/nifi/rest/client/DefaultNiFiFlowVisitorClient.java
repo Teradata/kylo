@@ -189,20 +189,6 @@ public class DefaultNiFiFlowVisitorClient implements NiFiFlowVisitorClient {
     }
 
 
-    /**
-     * Walk the flow for a given Root Process Group and return all those Processors who are marked with a Failure Relationship
-     */
-    public Set<ProcessorDTO> getFailureProcessors(String processGroupId) throws NifiComponentNotFoundException {
-        NifiVisitableProcessGroup g = getFlowOrder(processGroupId, null);
-        Set<ProcessorDTO> failureProcessors = new HashSet<>();
-        for (NifiVisitableProcessor p : g.getStartingProcessors()) {
-
-            failureProcessors.addAll(p.getFailureProcessors());
-        }
-
-        return failureProcessors;
-    }
-
     public NifiFlowProcessGroup getTemplateFeedFlow(TemplateDTO template) {
         ProcessGroupDTO parentProcessGroup = new ProcessGroupDTO();
         parentProcessGroup.setId(UUID.randomUUID().toString());

@@ -23,9 +23,6 @@ package com.thinkbiganalytics.nifi.rest.model.flow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -46,6 +43,7 @@ public class NifiFlowDeserializer {
 
     /**
      * Construct the graph by reattaching the source/dest by looking at the ids
+     * @param group the graph of the flow to deserialize and connect and convert the id references to objects
      */
     public static void constructGraph(NifiFlowProcessGroup group) {
         if (group != null) {
@@ -56,11 +54,9 @@ public class NifiFlowDeserializer {
             processorMap.values().forEach(processor -> {
                 Set<NifiFlowProcessor> sources = processor.getSourceIds().stream().map(sourceId -> processorMap.get(sourceId)).collect(Collectors.toSet());
                 Set<NifiFlowProcessor> destinations = processor.getDestinationIds().stream().map(destId -> processorMap.get(destId)).collect(Collectors.toSet());
-                Set<NifiFlowProcessor> failures = processor.getFailureProcessors().stream().map(processorId -> processorMap.get(processorId)).collect(Collectors.toSet());
 
                 processor.setSources(sources);
                 processor.setDestinations(destinations);
-                processor.setFailureProcessors(failures);
                 processor.setProcessGroup(group);
             });
 
@@ -70,37 +66,16 @@ public class NifiFlowDeserializer {
             group.setEndingProcessors(
                 group.getEndingProcessors().values().stream().map(processor -> processorMap.get(processor.getId())).collect(Collectors.toMap(processor -> processor.getId(), processor -> processor)));
 
-            group.setFailureProcessors(
-                group.getFailureProcessors().values().stream().map(processor -> processorMap.get(processor.getId())).collect(Collectors.toMap(processor -> processor.getId(), processor -> processor)));
-
-            Map<String, List<NifiFlowProcessor>> failureConnectionProcessors = new HashMap<>();
-
-            if (group.getFailureConnectionIdToSourceProcessorMap() != null && !group.getFailureConnectionIdToSourceProcessorMap().isEmpty()) {
-                log.debug("flow has failure connections.. populate failure connections for for {} ({})", group.getName(), group.getId());
-                for (Map.Entry<String, List<NifiFlowProcessor>> entry : group.getFailureConnectionIdToSourceProcessorMap().entrySet()) {
-                    if (entry.getValue() != null && !entry.getValue().isEmpty()) {
-                        List<NifiFlowProcessor>
-                            populatedProcessors = new ArrayList<>();
-
-                        List<NifiFlowProcessor> connectionProcessors = entry.getValue();
-                        if (connectionProcessors != null && !connectionProcessors.isEmpty()) {
-                            for (NifiFlowProcessor flowProcessor : connectionProcessors) {
-                                if (flowProcessor != null) {
-                                    NifiFlowProcessor populatedProcessor = processorMap.get(flowProcessor.getId());
-                                    populatedProcessors.add(populatedProcessor);
-                                }
-                            }
-                        }
-                        failureConnectionProcessors.put(entry.getKey(), populatedProcessors);
-                    }
-                }
-
-            }
-            group.setFailureConnectionIdToSourceProcessorMap(failureConnectionProcessors);
 
         }
     }
 
+    /**
+     * Remove any circular graph dependencies and replace it with id references
+     * These can be reconstructed later via the {@link this#constructGraph(NifiFlowProcessGroup)}
+     *
+     * @param group the graph of the flow to serialize
+     */
     public static void prepareForSerialization(NifiFlowProcessGroup group) {
         //ensure the objects are cleared of references
         Map<String, NifiFlowProcessor> processorMap = group.getProcessorMap();
@@ -108,7 +83,6 @@ public class NifiFlowDeserializer {
         processorMap.values().forEach(processor -> {
             processor.setSources(null);
             processor.setDestinations(null);
-            processor.setFailureProcessors(null);
             processor.setProcessGroup(null);
         });
 

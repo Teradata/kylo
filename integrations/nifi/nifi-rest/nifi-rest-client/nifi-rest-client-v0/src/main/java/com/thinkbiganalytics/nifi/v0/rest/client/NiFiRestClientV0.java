@@ -28,6 +28,7 @@ import com.thinkbiganalytics.nifi.rest.client.NiFiFlowVisitorClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiPortsRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiProcessGroupsRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiProcessorsRestClient;
+import com.thinkbiganalytics.nifi.rest.client.NiFiReportingTaskRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiTemplatesRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClientConfig;
@@ -96,6 +97,12 @@ public class NiFiRestClientV0 extends JerseyRestClient implements NiFiRestClient
     /** NiFi Flows REST client */
     @Nullable
     private NiFiFlowVisitorClient flows;
+
+    /**
+     * NiFi reporting task client
+     */
+    @Nullable
+    private NiFiReportingTaskRestClient reportingTasks;
 
     /**
      * Constructs a {@code NiFiRestClientV0} with the specified NiFi REST client configuration.
@@ -245,6 +252,20 @@ public class NiFiRestClientV0 extends JerseyRestClient implements NiFiRestClient
         return flows;
     }
 
+
+    /**
+     * Reporting task interaction is not supported for 0.x
+     *
+     * @return a null client (not supported)
+     */
+    @Nonnull
+    @Override
+    public NiFiReportingTaskRestClient reportingTasks() {
+        if (reportingTasks == null) {
+            return new NiFiReportingTaskClientV0();
+        }
+        return reportingTasks;
+    }
 
     @Override
     protected WebTarget getBaseTarget() {

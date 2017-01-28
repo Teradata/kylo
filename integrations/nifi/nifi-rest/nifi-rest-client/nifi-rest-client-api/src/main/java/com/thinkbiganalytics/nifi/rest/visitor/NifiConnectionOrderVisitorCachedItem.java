@@ -32,7 +32,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Created by sr186054 on 12/25/16.
+ * A item that holds references to the NiFi processors and processgroups after it has been visited from the {@link com.thinkbiganalytics.nifi.rest.model.visitor.NifiFlowVisitor}
  */
 public class NifiConnectionOrderVisitorCachedItem {
 

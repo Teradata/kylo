@@ -271,7 +271,7 @@ public class CreateFeedBuilder {
                         NifiVisitableProcessGroup group = restClient.getFlowOrder(newProcessGroup.getProcessGroupEntity(),null);
                         NifiFlowProcessGroup
                             flow =
-                            new NifiFlowBuilder().inspectForFailureRelationships(false).build(
+                            new NifiFlowBuilder().build(
                             group);
                         nifiFlowCache.updateFlow(feedMetadata,flow);
 

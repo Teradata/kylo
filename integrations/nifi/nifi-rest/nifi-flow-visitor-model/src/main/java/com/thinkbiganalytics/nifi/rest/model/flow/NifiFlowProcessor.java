@@ -38,7 +38,7 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * Created by sr186054 on 8/11/16. Object in a NifiFlow that has pointers to all its sources (parents)  and children (destinations)
+ *  Object in a NifiFlow that has pointers to all its sources (parents)  and children (destinations)
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class NifiFlowProcessor implements Serializable {
@@ -75,10 +75,6 @@ public class NifiFlowProcessor implements Serializable {
 
     private Set<NiFiFlowProcessorConnection> destinationConnectionIds;
 
-
-    private Set<NifiFlowProcessor> failureProcessors;
-
-    private boolean criticalPath = false;
 
     public NifiFlowProcessor() {
 
@@ -131,17 +127,6 @@ public class NifiFlowProcessor implements Serializable {
 
     public void setSources(Set<NifiFlowProcessor> sources) {
         this.sources = sources;
-    }
-
-    public Set<NifiFlowProcessor> getFailureProcessors() {
-        if (failureProcessors == null) {
-            failureProcessors = new HashSet<>();
-        }
-        return failureProcessors;
-    }
-
-    public void setFailureProcessors(Set<NifiFlowProcessor> failureProcessors) {
-        this.failureProcessors = failureProcessors;
     }
 
     public NifiFlowProcessGroup getProcessGroup() {
@@ -376,23 +361,5 @@ public class NifiFlowProcessor implements Serializable {
             }
             return compare;
         }
-    }
-
-    public void populateCriticalPathOnSources(Set<NifiFlowProcessor> criticalPathProcessors) {
-        this.criticalPath = true;
-        if (criticalPathProcessors != null) {
-            criticalPathProcessors.add(this);
-        }
-        getSources().stream().filter(source -> criticalPathProcessors != null && !criticalPathProcessors.contains(source))
-            .forEach(source -> source.populateCriticalPathOnSources(criticalPathProcessors));
-
-    }
-
-    public void setCriticalPath(boolean criticalPath) {
-        this.criticalPath = criticalPath;
-    }
-
-    public boolean isCriticalPath() {
-        return criticalPath;
     }
 }

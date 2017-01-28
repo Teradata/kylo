@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Created by sr186054 on 8/18/16.
+ * REST client to get a NiFi flow as a graph of connected processors
  */
 public interface NiFiFlowVisitorClient {
 
@@ -52,8 +52,6 @@ public interface NiFiFlowVisitorClient {
     List<NifiFlowProcessGroup> getFeedFlows(Collection<String> feedNames);
 
     Set<ProcessorDTO> getProcessorsForFlow(String processGroupId);
-
-    Set<ProcessorDTO> getFailureProcessors(String processGroupId);
 
     /**
      * Walks a Template and returns the graph of connected processors

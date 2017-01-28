@@ -20,14 +20,28 @@ package com.thinkbiganalytics.nifi.rest.model.flow;
  * #L%
  */
 
+import org.apache.nifi.web.api.dto.ConnectionDTO;
+
 /**
- * Created by sr186054 on 1/19/17.
+ * Representings a simplified version of the NiFi {@link org.apache.nifi.web.api.dto.ConnectionDTO}
  */
 public class NifiFlowConnection {
 
+    /**
+     * The connection Id {@link ConnectionDTO#getId()}
+     */
     private String connectionIdentifier;
+    /**
+     * the connection name, either the display name {@link ConnectionDTO#getName()}, if available or the relationship name {@link ConnectionDTO#getSelectedRelationships()}
+     */
     private String name;
+    /**
+     * the id for the source item {@link ConnectionDTO#getSource()#getSourceIdentifier()}
+     */
     private String sourceIdentifier;
+    /**
+     * the id for the destination item {@link ConnectionDTO#getDestination()#getDestinationIdentifier()}
+     */
     private String destinationIdentifier;
 
     public NifiFlowConnection() {
@@ -41,36 +55,52 @@ public class NifiFlowConnection {
         this.destinationIdentifier = destinationIdentifier;
     }
 
+    /**
+     * Return the id for this connection
+     *
+     * @return the id for this connection
+     */
     public String getConnectionIdentifier() {
         return connectionIdentifier;
     }
 
+    /**
+     * set the connection id
+     */
     public void setConnectionIdentifier(String connectionIdentifier) {
         this.connectionIdentifier = connectionIdentifier;
     }
 
+    /**
+     * Return the connection name, either the display name {@link ConnectionDTO#getName()}, if available or the relationship name {@link ConnectionDTO#getSelectedRelationships()}
+     * @return the connection name
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * set the name of the connection
+     * @param name the name of the connection
+     */
     public void setName(String name) {
         this.name = name;
     }
 
+    /**
+     * Return the id for the source item {@link ConnectionDTO#getSource()#getSourceIdentifier()}
+     * @return the id for the source item {@link ConnectionDTO#getSource()#getSourceIdentifier()}
+     */
     public String getSourceIdentifier() {
         return sourceIdentifier;
     }
 
-    public void setSourceIdentifier(String sourceIdentifier) {
-        this.sourceIdentifier = sourceIdentifier;
-    }
-
+    /**
+     * Return the id for the destination item {@link ConnectionDTO#getDestination()#getDestinationIdentifier()}
+     * @return the id for the destination item {@link ConnectionDTO#getDestination()#getDestinationIdentifier()}
+     */
     public String getDestinationIdentifier() {
         return destinationIdentifier;
-    }
-
-    public void setDestinationIdentifier(String destinationIdentifier) {
-        this.destinationIdentifier = destinationIdentifier;
     }
 
 

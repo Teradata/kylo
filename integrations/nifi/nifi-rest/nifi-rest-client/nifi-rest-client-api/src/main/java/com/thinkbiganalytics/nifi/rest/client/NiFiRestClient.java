@@ -124,4 +124,12 @@ public interface NiFiRestClient {
      */
     @Nonnull
     NiFiFlowVisitorClient flows();
+
+    /**
+     * Gets the client that will manage NiFi reporting tasks
+     *
+     * @return the reporting task client
+     */
+    @Nonnull
+    NiFiReportingTaskRestClient reportingTasks();
 }

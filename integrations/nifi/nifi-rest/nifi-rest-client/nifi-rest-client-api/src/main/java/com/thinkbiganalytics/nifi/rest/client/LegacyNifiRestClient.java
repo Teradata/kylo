@@ -1205,12 +1205,6 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
 
 
 
-    /**
-     * Wallk the flow for a given Root Process Group and return all those Processors who are marked with a Failure Relationship
-     */
-    public Set<ProcessorDTO> getFailureProcessors(String processGroupId) throws NifiComponentNotFoundException {
-        return client.flows().getFailureProcessors(processGroupId);
-    }
 
     /**
      * Gets a transform for converting {@link NiFiPropertyDescriptor} objects to {@link PropertyDescriptorDTO}.

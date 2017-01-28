@@ -23,7 +23,7 @@ package com.thinkbiganalytics.nifi.rest.model.visitor;
 import org.apache.nifi.web.api.dto.ConnectionDTO;
 
 /**
- * Created by sr186054 on 2/14/16.
+ * Represents a NiFi connection for visiting
  */
 public class NifiVisitableConnection implements NifiVisitable {
 
@@ -35,8 +35,9 @@ public class NifiVisitableConnection implements NifiVisitable {
         this.dto = dto;
     }
 
-    //"INPUT_PORT","OUTPUT_PORT
-
+    /**
+     * visit this connection
+     */
     @Override
     public void accept(NifiFlowVisitor nifiVisitor) {
 
@@ -44,10 +45,19 @@ public class NifiVisitableConnection implements NifiVisitable {
 
     }
 
+    /**
+     * Return the NiFi connection for this visitable connection
+     *
+     * @return the base NiFi connection
+     */
     public ConnectionDTO getDto() {
         return dto;
     }
 
+    /**
+     * Return the Process group that was visited to obtain this connection
+     * @return the Process group that was visited to obtain this connection
+     */
     public NifiVisitableProcessGroup getGroup() {
         return group;
     }

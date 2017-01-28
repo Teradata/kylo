@@ -30,7 +30,6 @@ import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -40,7 +39,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 /**
- * Created by sr186054 on 8/11/16.
+ * Build the light weight {@link NifiFlowProcessor} and {@link NifiFlowProcessGroup} from the {@link NifiVisitableProcessor} and {@link NifiVisitableProcessGroup}
  */
 public class NifiFlowBuilder {
 
@@ -48,31 +47,17 @@ public class NifiFlowBuilder {
 
     Map<String, NifiFlowProcessor> cache = new ConcurrentHashMap<>();
 
+
     /**
-     * When walking the flow should it look at the relationship names and identify those processors with a "failure" relationship and mark the processors as potential failure processors
-     **/
-    private boolean inspectForFailureRelationships = true;
-
-    public NifiFlowBuilder inspectForFailureRelationships(boolean inspectForFailureRelationships) {
-        this.inspectForFailureRelationships = inspectForFailureRelationships;
-        return this;
-    }
-
-
+     * Build the {@link NifiFlowProcessGroup} from the visited {@link NifiVisitableProcessGroup} returning the simplified graph of objects that make up the flow
+     *
+     * @param group the visited process group and its flow connecting processors together
+     * @return the simplified graph representing the flow starting with the supplied visited process group
+     */
     public NifiFlowProcessGroup build(NifiVisitableProcessGroup group) {
         NifiFlowProcessGroup flowProcessGroup = toFlowProcessGroup(group);
         flowProcessGroup.setProcessorMap(cache);
         flowProcessGroup.addConnections(group.getConnections());
-        //reassign the failure map
-        if (group.getFailureConnectionIdToSourceProcessorIds() != null) {
-            group.getFailureConnectionIdToSourceProcessorIds().entrySet().forEach(connectionIdProcessorIdEntry -> {
-                if (cache != null && !cache.isEmpty()) {
-
-                    flowProcessGroup.getFailureConnectionIdToSourceProcessorMap().computeIfAbsent(connectionIdProcessorIdEntry.getKey(), (connectionId) -> new ArrayList<>()).addAll(
-                        connectionIdProcessorIdEntry.getValue().stream().map(cache::get).collect(Collectors.toList()));
-                }
-            });
-        }
 
         ProcessGroupDTO groupDTO = group.getParentProcessGroup();
         if (groupDTO != null) {
@@ -86,6 +71,9 @@ public class NifiFlowBuilder {
     }
 
 
+    /**
+     * Convert a NiFi {@link ProcessorDTO} to a {@link NifiFlowProcessor}
+     */
     private static final Function<ProcessorDTO, NifiFlowProcessor> PROCESSOR_DTO_TO_FLOW_PROCESSOR = new Function<ProcessorDTO, NifiFlowProcessor>() {
         @Override
         public NifiFlowProcessor apply(ProcessorDTO processor) {
@@ -93,6 +81,9 @@ public class NifiFlowBuilder {
         }
     };
 
+    /**
+     * Convert a NiFi {@link ProcessGroupDTO} to a {@link NifiFlowProcessGroup}
+     */
     private static final Function<ProcessGroupDTO, NifiFlowProcessGroup> PROCESS_GROUP_DTO_TO_FLOW_GROUP = new Function<ProcessGroupDTO, NifiFlowProcessGroup>() {
         @Override
         public NifiFlowProcessGroup apply(ProcessGroupDTO group) {
@@ -101,7 +92,7 @@ public class NifiFlowBuilder {
     };
 
     /**
-     * Convert a NifiVisitableProcessor to a Simple one
+     * Convert a {@link NifiVisitableProcessor} to a  simplified {@link NifiFlowProcessor}
      */
     private final Function<NifiVisitableProcessor, NifiFlowProcessor> NIFI_PROCESSOR_DTO_TO_FLOW_PROCESSOR = new Function<NifiVisitableProcessor, NifiFlowProcessor>() {
         @Nullable
@@ -115,17 +106,12 @@ public class NifiFlowBuilder {
             cache.put(processor.getId(), flowProcessor);
             Set<NifiFlowProcessor> destinations = new HashSet<>(Collections2.transform(processor.getDestinations(), NIFI_PROCESSOR_DTO_TO_FLOW_PROCESSOR));
             Set<NifiFlowProcessor> sources = new HashSet<>(Collections2.transform(processor.getSources(), NIFI_PROCESSOR_DTO_TO_FLOW_PROCESSOR));
-            Set<NifiFlowProcessor> failureProcessors = new HashSet<>(Collections2.transform(processor.getFailureProcessors(), PROCESSOR_DTO_TO_FLOW_PROCESSOR));
-            flowProcessor.setIsFailure(processor.isFailureProcessor());
             flowProcessor.setIsEnd(processor.isEnd());
             flowProcessor.setSourceIds(sources.stream().map(source -> source.getId()).collect(Collectors.toSet()));
             flowProcessor.setDestinationIds(destinations.stream().map(dest -> dest.getId()).collect(Collectors.toSet()));
             flowProcessor.setSources(sources);
             flowProcessor.setDestinations(destinations);
             flowProcessor.setParentGroupId(processor.getDto().getParentGroupId());
-            if (inspectForFailureRelationships) {
-                flowProcessor.setFailureProcessors(failureProcessors);
-            }
             flowProcessor.setSourceConnectionIds(processor.getSourceConnectionIdentifiers());
             flowProcessor.setDestinationConnectionIds(processor.getDestinationConnectionIdentifiers());
 
@@ -136,7 +122,7 @@ public class NifiFlowBuilder {
 
 
     /**
-     * Convert a NifiVisitableProcessGroup to a simple one
+     * Convert a {@link NifiVisitableProcessGroup} to a  simplified {@link NifiFlowProcessGroup}
      */
     private final Function<NifiVisitableProcessGroup, NifiFlowProcessGroup> NIFI_DTO_GROUP_TO_FLOW_GROUP = group -> {
 
@@ -147,6 +133,11 @@ public class NifiFlowBuilder {
     };
 
 
+    /**
+     * Transform  a {@link NifiVisitableProcessGroup} to a  simplified {@link NifiFlowProcessGroup}
+     *
+     * @return a simplified object representing the flow graph
+     */
     private NifiFlowProcessGroup toFlowProcessGroup(NifiVisitableProcessGroup group) {
         return NIFI_DTO_GROUP_TO_FLOW_GROUP.apply(group);
     }

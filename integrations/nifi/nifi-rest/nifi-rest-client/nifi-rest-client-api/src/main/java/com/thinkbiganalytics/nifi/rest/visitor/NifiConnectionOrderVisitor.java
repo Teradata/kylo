@@ -30,7 +30,6 @@ import com.thinkbiganalytics.nifi.rest.model.visitor.NifiVisitableProcessor;
 import com.thinkbiganalytics.nifi.rest.support.NifiConnectionUtil;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.ConnectableDTO;
 import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
@@ -43,7 +42,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -60,14 +58,6 @@ public class NifiConnectionOrderVisitor implements NifiFlowVisitor {
     private Map<String, ProcessorDTO> processorsMap = new HashMap<>();
 
     private Map<String, NifiVisitableProcessor> visitedProcessors = new HashMap<>();
-
-    /**
-     * Cached map of the ConnectionId to a list of all processors that this connection is coming from of which the connection is indicated as being a "failure"
-     *
-     * used for lookups to determine if an event has failed or not
-     */
-    private Map<String, Set<String>> failureConnectionIdToSourceProcessorIds = new HashMap<>();
-
 
     private Map<String, NifiVisitableProcessGroup> visitedProcessGroups = new HashMap<>();
 
@@ -118,29 +108,13 @@ public class NifiConnectionOrderVisitor implements NifiFlowVisitor {
 
         List<NifiVisitableProcessor> sourceProcessors = getSourceProcessors(connection.getDto());
 
-        //check to see if the destination connections are named "failure".  If so flag it as a potential failure processor
         if (destinationProcessors != null) {
             destinationProcessors.forEach(destinationProcessor -> destinationProcessor.addSourceConnectionIdentifier(connection.getDto()));
-            if (relationships != null && relationships.contains("failure") && !relationships.contains("success") && (StringUtils.isBlank(connection.getDto().getName()) || (destType.equals("FUNNEL")
-                                                                                                                                                                            && connection.getDto()
-                                                                                                                                                                                .getName()
-                                                                                                                                                                                .equalsIgnoreCase(
-                                                                                                                                                                                    "failure")))) {
-                for (NifiVisitableProcessor destination : destinationProcessors) {
-                    destination.setIsFailureProcessor(true);
-
-
-                }
-            }
         }
         if (destinationProcessors != null && sourceProcessors != null) {
             for (NifiVisitableProcessor destination : destinationProcessors) {
                 for (NifiVisitableProcessor source : sourceProcessors) {
                     destination.addSource(source);
-                    if (destination.isFailureProcessor()) {
-                        //save the source processor in the incoming failed connection id map
-                        failureConnectionIdToSourceProcessorIds.computeIfAbsent(connection.getDto().getId(), (id) -> new HashSet<>()).add(source.getId());
-                    }
                     source.addDestination(destination);
                 }
             }
@@ -152,11 +126,6 @@ public class NifiConnectionOrderVisitor implements NifiFlowVisitor {
 
         allConnections.add(connection);
 
-    }
-
-    @Override
-    public Map<String, Set<String>> getFailureConnectionIdToSourceProcessorIds() {
-        return failureConnectionIdToSourceProcessorIds;
     }
 
     @Override
@@ -180,10 +149,6 @@ public class NifiConnectionOrderVisitor implements NifiFlowVisitor {
             } catch (NifiComponentNotFoundException e) {
                 //cant find the parent
             }
-        }
-        Optional<NifiVisitableProcessGroup> cachedGroup = Optional.empty();//cache.getCachedGroupForVisiting(processGroup.getDto().getId());
-        if (cachedGroup.isPresent()) {
-            group = cachedGroup.get();
         }
         group.accept(this);
         this.visitedProcessGroups.put(group.getDto().getId(), group);
@@ -299,7 +264,6 @@ public class NifiConnectionOrderVisitor implements NifiFlowVisitor {
                 List<NifiVisitableProcessor> inputProcessors = getDestinationProcessors(connection, false);
                 if (inputProcessors != null) {
                     for (NifiVisitableProcessor inputProcessor : inputProcessors) {
-                        //   inputProcessor.addInputPortId(source.getId(), );
                         currentProcessGroup.addInputPortProcessor(source.getId(), inputProcessor);
                     }
                 }
