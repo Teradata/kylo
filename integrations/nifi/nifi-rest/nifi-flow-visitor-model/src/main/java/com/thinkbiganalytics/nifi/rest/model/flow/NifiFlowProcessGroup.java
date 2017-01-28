@@ -138,7 +138,6 @@ public class NifiFlowProcessGroup {
     }
 
 
-
     public void assignFlowIds() {
         Integer flowId = 0;
         Integer maxCount = 0;
@@ -238,7 +237,7 @@ public class NifiFlowProcessGroup {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("SimpleNifiFlowProcessGroup{");
+        final StringBuilder sb = new StringBuilder("NifiFlowProcessGroup{");
         sb.append("id='").append(id).append('\'');
         sb.append(", name='").append(name).append('\'');
         sb.append(", parentGroupId='").append(parentGroupId).append('\'');

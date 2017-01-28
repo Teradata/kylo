@@ -91,22 +91,43 @@ public class NifiFlowProcessor implements Serializable {
         this.type = type;
     }
 
+    /**
+     * Return the processor id
+     *
+     * @return the processor id
+     */
     public String getId() {
         return id;
     }
 
+    /**
+     * set the processor id
+     * @param id the processor id
+     */
     public void setId(String id) {
         this.id = id;
     }
 
+    /**
+     * Return the processor name
+     * @return the processor name
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * set the processor name
+     * @param name the processor name
+     */
     public void setName(String name) {
         this.name = name;
     }
 
+    /**
+     * Return the set of destinations coming from this processor
+     * @return the set of destination processors
+     */
     public Set<NifiFlowProcessor> getDestinations() {
         if (destinations == null) {
             destinations = new HashSet<>();
@@ -114,10 +135,18 @@ public class NifiFlowProcessor implements Serializable {
         return destinations;
     }
 
+    /**
+     * set the destination processors
+     * @param destinations the destination processors
+     */
     public void setDestinations(Set<NifiFlowProcessor> destinations) {
         this.destinations = destinations;
     }
 
+    /**
+     * Return the source processors
+     * @return the source processors
+     */
     public Set<NifiFlowProcessor> getSources() {
         if (sources == null) {
             sources = new HashSet<>();
@@ -125,56 +154,35 @@ public class NifiFlowProcessor implements Serializable {
         return sources;
     }
 
+    /**
+     * set the source processors
+     * @param sources the source processors
+     */
     public void setSources(Set<NifiFlowProcessor> sources) {
         this.sources = sources;
     }
 
+    /**
+     * Return the group associated with this processor
+     * @return the group
+     */
     public NifiFlowProcessGroup getProcessGroup() {
         return processGroup;
     }
 
+    /**
+     * Set the group associated with this processor
+     * @param processGroup the group
+     */
     public void setProcessGroup(NifiFlowProcessGroup processGroup) {
         this.processGroup = processGroup;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        NifiFlowProcessor that = (NifiFlowProcessor) o;
-        return Objects.equals(id, that.id);
-    }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
-
-    public boolean isFailure() {
-        return isFailure;
-    }
-
-    public void setIsFailure(boolean isFailure) {
-        this.isFailure = isFailure;
-    }
-
-    public boolean isEnd() {
-        return isEnd;
-    }
-
-    public void setIsEnd(boolean isEnd) {
-        this.isEnd = isEnd;
-    }
-
-    public boolean isStart() {
-        return this.getSources().isEmpty();
-    }
-
-
+    /**
+     * Return the set of ids that are incoming source processors
+     * @return the set of ids that are incoming source processors
+     */
     public Set<String> getSourceIds() {
         if (sourceIds == null) {
             sourceIds = new HashSet<>();
@@ -182,10 +190,18 @@ public class NifiFlowProcessor implements Serializable {
         return sourceIds;
     }
 
+    /**
+     * set the set of ids that are incoming source processors
+     * @param sourceIds the set of ids that are incoming source processors
+     */
     public void setSourceIds(Set<String> sourceIds) {
         this.sourceIds = sourceIds;
     }
 
+    /**
+     * Return the set of ids that are destination processors
+     * @return the set of ids that are destination processors
+     */
     public Set<String> getDestinationIds() {
         if (destinationIds == null) {
             destinationIds = new HashSet<>();
@@ -193,10 +209,18 @@ public class NifiFlowProcessor implements Serializable {
         return destinationIds;
     }
 
+    /**
+     * set  the set of ids that are destination processors
+     * @param destinationIds  the set of ids that are destination processors
+     */
     public void setDestinationIds(Set<String> destinationIds) {
         this.destinationIds = destinationIds;
     }
 
+    /**
+     * Return the set of this processors destination ids, and all of its children destination ids
+     * @return the set of this processors destination ids, and all of its children destination ids
+     */
     public Set<String> getAllDestinationIds() {
         Set<String> destinationIds = new HashSet<>();
         destinationIds.addAll(getDestinationIds());
@@ -207,6 +231,10 @@ public class NifiFlowProcessor implements Serializable {
 
     }
 
+    /**
+     * Return the set of connection identifiers for the incoming  connections
+     * @return the set of connection identifiers for the incoming  connections
+     */
     public Set<NiFiFlowProcessorConnection> getSourceConnectionIds() {
         if (sourceConnectionIds == null) {
             sourceConnectionIds = new HashSet<>();
@@ -214,10 +242,18 @@ public class NifiFlowProcessor implements Serializable {
         return sourceConnectionIds;
     }
 
+    /**
+     * set the set of connection identifiers for the incoming  connections
+     * @param sourceConnectionIds the set of connection identifiers for the incoming  connections
+     */
     public void setSourceConnectionIds(Set<NiFiFlowProcessorConnection> sourceConnectionIds) {
         this.sourceConnectionIds = sourceConnectionIds;
     }
 
+    /**
+     * Return the set of outgoing destination connection ids
+     * @return the set of outgoing destination connection ids
+     */
     public Set<NiFiFlowProcessorConnection> getDestinationConnectionIds() {
         if (destinationConnectionIds == null) {
             destinationConnectionIds = new HashSet<>();
@@ -225,15 +261,26 @@ public class NifiFlowProcessor implements Serializable {
         return destinationConnectionIds;
     }
 
+    /**
+     * set the set of outgoing destination connection ids
+     * @param destinationConnectionIds the set of outgoing destination connection ids
+     */
     public void setDestinationConnectionIds(Set<NiFiFlowProcessorConnection> destinationConnectionIds) {
         this.destinationConnectionIds = destinationConnectionIds;
     }
 
+    /**
+     * prints the flow id for the processor and its destinations
+     */
     public void print() {
 
         print(0);
     }
 
+    /**
+     * prints the flow id for the processor and its destinations
+     * @param level
+     */
     public void print(Integer level) {
 
         log.info(flowId + ", " + level + ". " + getName());
@@ -250,6 +297,10 @@ public class NifiFlowProcessor implements Serializable {
         }
     }
 
+    /**
+     * Sort the destination processors so the flow id generation will be the same each time a similar flow of the same template is walked
+     * @return the sorted destinations
+     */
     public List<NifiFlowProcessor> getSortedDestinations() {
         if (destinations == null) {
             destinations = new HashSet<>();
@@ -259,10 +310,15 @@ public class NifiFlowProcessor implements Serializable {
         return list;
     }
 
+    /**
+     * Assign a flow identifier to the processor.
+     * Flow ids are an attempt to assign a id relative the the location of the processor in the graph as it is walked so different instances of the same flow/template can relate given processors to each other
+     * @param flowId the id representing its placement in the graph
+     * @return the assigned numeric id
+     */
     public Integer assignFlowIds(Integer flowId) {
         flowId++;
         setFlowId(flowId + "__" + StringUtils.substringAfterLast(this.type, "."));
-        //    log.info(getFlowId() + " - " + getName() + " (" + getId() + ")");
         Set<String> printed = new HashSet<>();
         printed.add(this.getId());
 
@@ -275,6 +331,10 @@ public class NifiFlowProcessor implements Serializable {
         return flowId;
     }
 
+    /**
+     * Count the number of distinct destination processor nodes
+     * @return the number of distinct destination processor nodes
+     */
     public Integer countNodes() {
         Integer count = getDestinations().size();
         Set<String> printed = new HashSet<>();
@@ -288,6 +348,11 @@ public class NifiFlowProcessor implements Serializable {
         return count;
     }
 
+    /**
+     * Check to see if the supplied processor is part of this processors graph
+     * @param parent a processor
+     * @return {@code true} if the processor is already part of this destination set, {@code false} if the processor is not part of the destination set
+     */
     public boolean containsDestination(NifiFlowProcessor parent) {
         final String thisId = getId();
         final String parentId = parent.getId();
@@ -296,39 +361,107 @@ public class NifiFlowProcessor implements Serializable {
             .equalsIgnoreCase(parentId));
     }
 
+    /**
+     * Return the unique flow id for this processor
+     * @return the flow if
+     */
     public String getFlowId() {
         return flowId;
     }
 
+    /**
+     * set the flow id for the processor
+     * @param flowId the flow id
+     */
     public void setFlowId(String flowId) {
         this.flowId = flowId;
     }
 
 
+    /**
+     * Return the type of processor
+     * @return the type of processor
+     */
     public String getType() {
         return type;
     }
 
+    /**
+     * set the type of processor
+     * @param type the type of processor
+     */
     public void setType(String type) {
         this.type = type;
     }
 
 
+    /**
+     * check if there are any destinations
+     * @return {@code true} if this is a ending processor with no more connections, {@code false} if there are other processors connected to this
+     */
     public boolean isLeaf(){
         return getDestinationIds().isEmpty();
     }
 
-    public boolean isRoot(){
+    /**
+     * check if there are any sources
+     *
+     * @return {@code true} if this is a starting processor with no incoming connections, {@code false} if it is connected to other incoming processors
+     */
+    public boolean isStart(){
         return getSourceIds().isEmpty();
     }
 
+    /**
+     * check to see if its a leaf processor.  same check as the {@link this#isLeaf()}, but supplied when building the object in the {@link
+     * com.thinkbiganalytics.nifi.rest.model.visitor.NifiFlowBuilder}
+     */
+    public boolean isEnd() {
+        return isEnd;
+    }
+
+    /**
+     * set the processor as being a leaf/ending processor,  supplied when building the object in the {@link com.thinkbiganalytics.nifi.rest.model.visitor.NifiFlowBuilder}
+     */
+    public void setIsEnd(boolean isEnd) {
+        this.isEnd = isEnd;
+    }
+
+
+    /**
+     * return the process group id for this processor
+     * @return the process group id
+     */
     public String getParentGroupId() {
         return parentGroupId;
     }
 
+    /**
+     * set the process group id
+     * @param parentGroupId the process group id
+     */
     public void setParentGroupId(String parentGroupId) {
         this.parentGroupId = parentGroupId;
     }
+
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        NifiFlowProcessor that = (NifiFlowProcessor) o;
+        return Objects.equals(id, that.id);
+    }
+
 
     @Override
     public String toString() {
@@ -338,6 +471,8 @@ public class NifiFlowProcessor implements Serializable {
         sb.append('}');
         return sb.toString();
     }
+
+
 
 
     public static class FlowIdComparator implements Comparator<NifiFlowProcessor> {
@@ -362,4 +497,8 @@ public class NifiFlowProcessor implements Serializable {
             return compare;
         }
     }
+
+
+
+
 }
