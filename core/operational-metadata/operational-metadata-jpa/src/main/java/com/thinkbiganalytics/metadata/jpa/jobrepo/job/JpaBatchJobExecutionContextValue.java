@@ -35,7 +35,8 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 /**
- * Created by sr186054 on 9/1/16.
+ * Entity to store execution context data for a job.
+ * As a job executes it will capture data along the way.  This data is saved in this entity
  */
 @Entity
 @Table(name = "BATCH_JOB_EXECUTION_CTX_VALS")
@@ -56,11 +57,6 @@ public class JpaBatchJobExecutionContextValue extends AbstractBatchExecutionCont
 
     @Column(name = "JOB_EXECUTION_ID")
     private Long jobExecutionId;
-
-    //  @ManyToOne
-    //  @JoinColumn(name = "JOB_EXECUTION_ID", referencedColumnName = "JOB_EXECUTION_ID")
-    // private NifiJobExecution jobExecution;
-
 
     public JpaBatchJobExecutionContextValue() {
 

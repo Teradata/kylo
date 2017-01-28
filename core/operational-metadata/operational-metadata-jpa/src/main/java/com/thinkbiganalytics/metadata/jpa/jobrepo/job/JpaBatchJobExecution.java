@@ -62,7 +62,7 @@ import javax.persistence.TableGenerator;
 import javax.persistence.Version;
 
 /**
- * Created by sr186054 on 8/31/16.
+ * Entity to store batch job executions
  */
 @Entity
 @NamedNativeQuery(name="BatchJobExecution.findLatestByFeed", query="SELECT e.* "
@@ -386,6 +386,9 @@ public class JpaBatchJobExecution implements BatchJobExecution {
         return endDay;
     }
 
+    /**
+     * Complete a job and mark it as failed setting its status to {@link com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution.JobStatus#FAILED}
+     */
     public void failJob(){
         StringBuffer stringBuffer = null;
         setExitMessage(stringBuffer != null ? stringBuffer.toString() : "");
@@ -412,6 +415,9 @@ public class JpaBatchJobExecution implements BatchJobExecution {
         }
     }
 
+    /**
+     * Complete a job and mark it as successful setting its status to {@link com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution.JobStatus#COMPLETED}
+     **/
     public void completeJob(){
         setStatus(JpaBatchJobExecution.JobStatus.COMPLETED);
         if (this.exitCode == null || this.exitCode.equals(ExecutionConstants.ExitCode.EXECUTING)) {
@@ -422,6 +428,9 @@ public class JpaBatchJobExecution implements BatchJobExecution {
         }
     }
 
+    /**
+     * Finish the job and update teh status and end time as being completed, or failed, based upon the status of the {@link BatchStepExecution}'s
+     */
     public void completeOrFailJob() {
         StringBuffer stringBuffer = null;
         boolean failedJob = false;
@@ -451,16 +460,30 @@ public class JpaBatchJobExecution implements BatchJobExecution {
 
     }
 
+    /**
+     * Check to see if the {@link this#status} indicates a failed job completion
+     * @return {@code true} if this is a failed job, {@code false} if it has not failed
+     */
     @Override
     public boolean isFailed() {
         return JobStatus.FAILED.equals(getStatus());
     }
 
+    /**
+     * Check to see if the {@link this#status} indicates a successful job completion
+     * @return {@code true} if this is a successful job, {@code false} if it's not successful
+     */
     @Override
     public boolean isSuccess() {
         return JobStatus.COMPLETED.equals(getStatus());
     }
 
+    /**
+     * Add a job parameter to this job execution
+     * @param keyName the parameter key
+     * @param value the parameter value
+     * @return the resulting job parameter object with the passed in {@code keyName} and {@code value}
+     */
     public JpaBatchJobExecutionParameter addParameter(String keyName, Object value) {
         JpaBatchJobExecutionParameter jobExecutionParameters = new JpaBatchJobExecutionParameter();
         jobExecutionParameters.setJobExecutionParametersPK(new JpaBatchJobExecutionParameter.BatchJobExecutionParametersPK(getJobExecutionId(), keyName));
@@ -469,12 +492,21 @@ public class JpaBatchJobExecution implements BatchJobExecution {
         return jobExecutionParameters;
     }
 
+    /**
+     * Check to see if this job is finished
+     * @return {@code true} if this job has finished, {@code false} if its still running
+     */
     @Override
     public boolean isFinished() {
         return getEndTime() != null;
     }
 
 
+    /**
+     * Mark this job execution as a data confidence check that references/checks the supplied feedNameReference
+     * @param feedNameReference the feed this job is checking
+     * @return the job parameter with the key of {@link FeedConstants#PARAM__JOB_TYPE} and the value of {@link FeedConstants#PARAM_VALUE__JOB_TYPE_CHECK}
+     */
     public Set<JpaBatchJobExecutionParameter> setAsCheckDataJob(String feedNameReference) {
         Set<JpaBatchJobExecutionParameter> updatedParams = new HashSet<>();
 
@@ -514,6 +546,11 @@ public class JpaBatchJobExecution implements BatchJobExecution {
 
     }
 
+    /**
+     * A job execution equals another job execution based upon its primary key of the {@link this#jobExecutionId}
+     * @param o a job execution to check equality
+     * @return {@code true} if this job equals the incoming object, {@code false} if its not equal
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) {

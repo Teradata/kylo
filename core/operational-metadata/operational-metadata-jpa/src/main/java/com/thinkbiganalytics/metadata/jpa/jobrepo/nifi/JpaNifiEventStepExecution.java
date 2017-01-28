@@ -39,7 +39,7 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 /**
- * Created by sr186054 on 9/1/16.
+ *Maps a Provenance Event {@link com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiEvent} to a Step Execution {@link BatchStepExecution}
  */
 @Entity
 @Table(name = "BATCH_NIFI_STEP")

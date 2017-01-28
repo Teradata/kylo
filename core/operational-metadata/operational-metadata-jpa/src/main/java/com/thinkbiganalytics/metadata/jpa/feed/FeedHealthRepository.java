@@ -27,7 +27,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 /**
- * Created by sr186054 on 8/23/16.
+ * Spring data repository to access the {@link JpaOpsManagerFeedHealth}
  */
 public interface FeedHealthRepository extends JpaRepository<JpaOpsManagerFeedHealth, JpaOpsManagerFeedHealth.OpsManagerFeedHealthFeedId> {
 

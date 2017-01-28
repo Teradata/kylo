@@ -23,7 +23,7 @@ package com.thinkbiganalytics.metadata.jpa.feed;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
- * Created by sr186054 on 8/23/16.
+ * Spring data repository to access the {@link JpaBatchFeedSummaryCounts}
  */
 public interface BatchFeedSummaryCountsRepository extends JpaRepository<JpaBatchFeedSummaryCounts, JpaOpsManagerFeed.ID> {
 

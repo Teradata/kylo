@@ -31,7 +31,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 /**
- * Created by sr186054 on 8/23/16.
+ * Spring data repository for accessing {@link JpaOpsManagerFeed}
  */
 public interface OpsManagerFeedRepository extends JpaRepository<JpaOpsManagerFeed, JpaOpsManagerFeed.ID>, QueryDslPredicateExecutor<JpaOpsManagerFeed> {
 

@@ -26,7 +26,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 /**
- * Created by sr186054 on 8/23/16.
+ * Spring data repository for accessing the {@link JpaNifiEvent}
  */
 public interface NifiEventRepository extends JpaRepository<JpaNifiEvent, JpaNifiEvent.NiFiEventPK> {
 

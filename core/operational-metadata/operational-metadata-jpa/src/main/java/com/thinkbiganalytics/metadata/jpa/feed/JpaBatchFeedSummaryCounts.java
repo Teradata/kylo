@@ -20,9 +20,6 @@ package com.thinkbiganalytics.metadata.jpa.feed;
  * #L%
  */
 
-/**
- * Created by sr186054 on 11/28/16.
- */
 
 import com.thinkbiganalytics.jpa.BaseJpaId;
 import com.thinkbiganalytics.metadata.api.feed.BatchFeedSummaryCounts;
@@ -40,6 +37,9 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+/**
+ * View entity summarizing a feed and its {@link com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution} execution counts
+ */
 @Entity
 @Table(name="BATCH_FEED_SUMMARY_COUNTS_VW")
 public class JpaBatchFeedSummaryCounts implements BatchFeedSummaryCounts {
@@ -51,7 +51,7 @@ public class JpaBatchFeedSummaryCounts implements BatchFeedSummaryCounts {
     @EmbeddedId
     BatchFeedSummaryCountsFeedId feedId;
 
-    @Column(name="FEED_NAME", insertable = false,updatable = false)
+    @Column(name="FEED_NAME", insertable = false, updatable = false)
     String feedName;
 
     @Column(name="ALL_COUNT")

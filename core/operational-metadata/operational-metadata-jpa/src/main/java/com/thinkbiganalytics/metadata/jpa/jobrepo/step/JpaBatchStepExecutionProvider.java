@@ -46,7 +46,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Created by sr186054 on 10/24/16.
+ * Provider for accessing {@link JpaBatchStepExecution}
  */
 @Service
 public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider {
@@ -81,6 +81,8 @@ public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider
     /**
      * We get Nifi Events after a step has executed. If a flow takes some time we might not initially get the event that the given step has failed when we write the StepExecution record. This should
      * be called when a Job Completes as it will verify all failures and then update the correct step status to reflect the failure if there is one.
+     * @param jobExecution the job execution
+     * @return {@code true} if the steps were evaluated, {@code false} if no work was needed to be done
      */
     public boolean ensureFailureSteps(BatchJobExecution jobExecution) {
 
@@ -116,9 +118,6 @@ public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider
                 listener.failedStep(jobExecution, stepExecution, flowFileId, componentId);
             }
         }
-
-        //   update(stepExecution);
-
     }
 
 
@@ -169,7 +168,6 @@ public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider
         } else {
             //update it
             assignStepExecutionContextMap(event, stepExecution);
-            //log.info("Update Step Execution {} ({}) on Job: {} using event {} ", stepExecution.getStepName(), stepExecution.getStepExecutionId(), jobExecution, event);
             stepExecution = batchStepExecutionRepository.save(stepExecution);
         }
 

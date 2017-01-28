@@ -57,7 +57,9 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
-
+/**
+ * A service level agreement assessor that will assess service level agreements checking the obligations and metrics and validating if the agreement is violated or not
+ */
 public class JpaServiceLevelAssessor implements ServiceLevelAssessor {
 
     private static final Logger log = LoggerFactory.getLogger(JpaServiceLevelAssessor.class);

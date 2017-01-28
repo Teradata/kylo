@@ -29,7 +29,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 /**
- * Created by sr186054 on 9/1/16.
+ * Spring data repository for {@link JpaNifiFeedProcessorStats}
  */
 public interface NifiFeedProcessorStatisticsRepository extends JpaRepository<JpaNifiFeedProcessorStats, String>, QueryDslPredicateExecutor<JpaNifiFeedProcessorStats> {
 

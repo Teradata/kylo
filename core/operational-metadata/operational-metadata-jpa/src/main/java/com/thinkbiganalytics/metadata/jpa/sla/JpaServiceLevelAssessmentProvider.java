@@ -39,6 +39,9 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+/**
+ * Provider accessing the {@link JpaServiceLevelAssessment}
+ */
 @Service
 public class JpaServiceLevelAssessmentProvider implements ServiceLevelAssessmentProvider {
 
@@ -69,17 +72,31 @@ public class JpaServiceLevelAssessmentProvider implements ServiceLevelAssessment
         }
     }
 
+    /**
+     * save an sla assessment to the database
+     *
+     * @param assessment the assessment to save
+     * @return the saved assessment
+     */
     public ServiceLevelAssessment save(ServiceLevelAssessment assessment) {
         return this.serviceLevelAssessmentRepository.save((JpaServiceLevelAssessment) assessment);
     }
 
+    /**
+     * Find all SLA assessments
+     * @return find all the SLA assessments
+     */
     @Override
     public List<? extends ServiceLevelAssessment> getAssessments() {
         return serviceLevelAssessmentRepository.findAll();
     }
 
 
-    //find last assessment
+    /**
+     * find the latest assessment
+     * @param slaId the service level agreement id
+     * @return the latest assessment for the sla
+     */
     public ServiceLevelAssessment findLatestAssessment(ServiceLevelAgreement.ID slaId) {
         List<? extends ServiceLevelAssessment> latestAssessments = serviceLevelAssessmentRepository.findLatestAssessments(slaId.toString());
         if (latestAssessments != null) {
@@ -91,6 +108,12 @@ public class JpaServiceLevelAssessmentProvider implements ServiceLevelAssessment
     }
 
 
+    /**
+     * Find the latest SLA that doesn't match the incoming {@code assessmentId}
+     * @param slaId the id to reference
+     * @param assessmentId the assessment id to cehck
+     * @return the latest SLA that doesn't match the incoming {@code assessmentId}
+     */
     @Override
     public ServiceLevelAssessment findLatestAssessmentNotEqualTo(ServiceLevelAgreement.ID slaId, ServiceLevelAssessment.ID assessmentId) {
         if (assessmentId != null) {
@@ -105,6 +128,11 @@ public class JpaServiceLevelAssessmentProvider implements ServiceLevelAssessment
         }
     }
 
+    /**
+     * Find a ServiceLevelAssessment by its id
+     * @param id the id of the sla assessment
+     * @return the matching ServiceLevelAssement
+     */
     @Override
     public ServiceLevelAssessment findServiceLevelAssessment(ServiceLevelAssessment.ID id) {
         ServiceLevelAssessment assessment = serviceLevelAssessmentRepository.findOne(id);
@@ -112,6 +140,11 @@ public class JpaServiceLevelAssessmentProvider implements ServiceLevelAssessment
     }
 
 
+    /**
+     * Makes sure the Service Level Assessment object has its respective SLA attached to it for reference lookups
+     * @param assessment the assessment to check and ensure it has its SLA attached
+     * @return {@code true} if it was able to attach the SLA to the assessment, {@code false} if it was not about to attach and find the SLA
+     */
     public boolean ensureServiceLevelAgreementOnAssessment(ServiceLevelAssessment assessment) {
         if (assessment != null && assessment.getAgreement() != null) {
             return true;

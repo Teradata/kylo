@@ -24,9 +24,12 @@ package com.thinkbiganalytics.metadata.jpa.jobrepo.job;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.JobStatusCount;
 
 import org.joda.time.DateTime;
+import org.joda.time.ReadablePeriod;
 
 /**
- * Created by sr186054 on 12/1/16.
+ * Projected DTO object used to gather stats about a feed and job executions
+ * @see com.thinkbiganalytics.metadata.jpa.feed.OpsFeedManagerFeedProvider#getJobStatusCountByDateFromNow(String, ReadablePeriod)
+ * @see JpaBatchJobExecutionProvider#getJobStatusCount(String)
  */
 public class JpaBatchJobExecutionStatusCounts  implements JobStatusCount {
 

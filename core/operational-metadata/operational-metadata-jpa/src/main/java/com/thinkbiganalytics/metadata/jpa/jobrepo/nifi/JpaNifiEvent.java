@@ -36,7 +36,7 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 
 /**
- * Created by sr186054 on 8/31/16.
+ * Entity to store the NiFi Provenance Events
  */
 @Entity
 @Table(name = "NIFI_EVENT")

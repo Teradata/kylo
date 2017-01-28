@@ -33,9 +33,8 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 /**
- * Created by sr186054 on 8/17/16.
+ * Aggregated statistics gathered from NiFi for a feed and processor over a given time interval
  */
-
 @Entity
 @Table(name = "NIFI_FEED_PROCESSOR_STATS")
 public class JpaNifiFeedProcessorStats implements NifiFeedProcessorStats {

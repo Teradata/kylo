@@ -39,7 +39,6 @@ import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobInstance;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.JobStatusCount;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiEvent;
-import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecutionProvider;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaOpsManagerFeed;
 import com.thinkbiganalytics.metadata.jpa.feed.OpsManagerFeedRepository;
@@ -82,7 +81,7 @@ import javax.persistence.OptimisticLockException;
 
 
 /**
- * Created by sr186054 on 8/31/16.
+ * Provider for the {@link JpaBatchJobExecution}
  */
 @Service
 public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatchJobExecution> implements BatchJobExecutionProvider {
@@ -164,7 +163,26 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
     }
 
+    /**
+     * Crate a new job exection from a provenance event
+     *
+     * @param event the provenance event indicating it is the start of a job
+     * @return the job execution
+     */
+    private JpaBatchJobExecution createNewJobExecution(ProvenanceEventRecordDTO event) {
+        BatchJobInstance jobInstance = createJobInstance(event);
+        JpaBatchJobExecution jobExecution = createJobExecution(jobInstance, event);
 
+        return jobExecution;
+    }
+
+
+    /**
+     * Create a new Job Execution record from a given Provenance Event
+     * @param jobInstance the job instance to relate this job execution to
+     * @param event the event that started this job execution
+     * @return the job execution
+     */
     private JpaBatchJobExecution createJobExecution(BatchJobInstance jobInstance, ProvenanceEventRecordDTO event) {
 
         JpaBatchJobExecution jobExecution = new JpaBatchJobExecution();
@@ -196,6 +214,12 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         return jobExecution;
     }
 
+    /**
+     * add parameters to a job execution
+     * @param jobExecution the job execution
+     * @param jobParameters the parameters to add to the {@code jobExecution}
+     * @return the newly created job parameters
+     */
     private Set<JpaBatchJobExecutionParameter> addJobParameters(JpaBatchJobExecution jobExecution, Map<String, Object> jobParameters) {
         Set<JpaBatchJobExecutionParameter> jobExecutionParametersList = new HashSet<>();
         for (Map.Entry<String, Object> entry : jobParameters.entrySet()) {
@@ -205,16 +229,12 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         return jobExecutionParametersList;
     }
 
-    private JpaBatchJobExecution createNewJobExecution(ProvenanceEventRecordDTO event) {
-        BatchJobInstance jobInstance = createJobInstance(event);
-        JpaBatchJobExecution jobExecution = createJobExecution(jobInstance, event);
-
-        return jobExecution;
-    }
 
     /**
      * if a event is a Merge (JOIN event) that merges other Root flow files (other JobExecutions) it will contain this relationship. These files need to be related together to determine when the final
      * job is complete.
+     * @param event the event that indicates it is related to other job executions
+     * @param nifiEvent the persisted event
      */
     private void checkAndRelateJobs(ProvenanceEventRecordDTO event, NifiEvent nifiEvent) {
         if (event.getRelatedRootFlowFiles() != null && !event.getRelatedRootFlowFiles().isEmpty()) {
@@ -284,10 +304,6 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
             jobExecution.completeJob();
         }
 
-        ///END OF THE JOB... fail or complete the job?
-        //  ensureFailureSteps(jobExecution);
-        //jobExecution.completeOrFailJob();
-
         //ensure check data jobs are property failed if they dont pass
         if (isCheckDataJob(event)) {
             String valid = event.getAttributeMap().get(CheckDataStepConstants.VALIDATION_KEY);
@@ -318,13 +334,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
                     jobExecution.setExitMessage(msg);
                 }
             }
-            //also persist to spring batch tables
-           // batchExecutionContextProvider.saveJobExecutionContext(jobExecution.getJobExecutionId(), allAttrs);
         }
-
-        //If you want to know when a feed is truely finished along with any of its related feeds you can use this method below.
-        //commented out since the ProvenanceEventReceiver already handles it
-        //ensureRelatedJobsAreFinished(event,jobExecution);
 
     }
 
@@ -377,27 +387,25 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
     public BatchJobExecution save(BatchJobExecution jobExecution, ProvenanceEventRecordDTO event, NifiEvent nifiEvent) {
         if (jobExecution == null) {
-            //log
             return null;
         }
         JpaBatchJobExecution jpaBatchJobExecution = (JpaBatchJobExecution) jobExecution;
         checkAndRelateJobs(event, nifiEvent);
-        BatchStepExecution stepExecution = batchStepExecutionProvider.createStepExecution(jobExecution, event);
-
-          /*  if (event.isEndOfJob()) {
-                finishJob(event, jpaBatchJobExecution);
-                jobExecution =    this.jobExecutionRepository.save(jpaBatchJobExecution);
-            }
-       */
+        batchStepExecutionProvider.createStepExecution(jobExecution, event);
 
         if (jobExecution.isFinished()) {
             //ensure failures
-            boolean addedFailures = batchStepExecutionProvider.ensureFailureSteps(jpaBatchJobExecution);
-
+            batchStepExecutionProvider.ensureFailureSteps(jpaBatchJobExecution);
         }
         return jobExecution;
     }
 
+    /**
+     * Save the job execution in the database
+     * @param event
+     * @param nifiEvent
+     * @return the saved job execution
+     */
     @Override
     public BatchJobExecution save(ProvenanceEventRecordDTO event, NifiEvent nifiEvent) {
         JpaBatchJobExecution jobExecution = getOrCreateJobExecution(event);
@@ -405,6 +413,11 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
     }
 
+    /**
+     * Save a job execution to the database
+     * @param jobExecution
+     * @return the saved job execution
+     */
     @Override
     public BatchJobExecution save(BatchJobExecution jobExecution) {
         return jobExecutionRepository.save((JpaBatchJobExecution) jobExecution);
@@ -425,9 +438,10 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
     }
 
     /**
-     * When a Job Finishes this will check if it has any relatedJobExecutions and allow you to get notified when the set of Jobs are complete Currently this is not needed as the
+     *    When a Job Finishes this will check if it has any relatedJobExecutions and allow you to get notified when the set of Jobs are complete Currently this is not needed as the
      * ProvenanceEventReceiver already handles this event for both Batch and Streaming Jobs com.thinkbiganalytics.jobrepo.nifi.provenance.ProvenanceEventReceiver#failedJob(ProvenanceEventRecordDTO)
      * com.thinkbiganalytics.jobrepo.nifi.provenance.ProvenanceEventReceiver#successfulJob(ProvenanceEventRecordDTO)
+     * @param jobExecution
      */
     private void checkIfJobAndRelatedJobsAreFinished(BatchJobExecution jobExecution) {
         //Check related jobs
@@ -467,25 +481,12 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
     }
 
 
-
-
-/*
-    public BatchJobExecution failStepsInJobThatNeedToBeFailed(BatchJobExecution jobExecution) {
-        List<JpaBatchStepExecution> steps = nifiStepExecutionRepository.findStepsInJobThatNeedToBeFailed(jobExecution.getJobExecutionId());
-        if (steps != null && !steps.isEmpty()) {
-            log.info(" Second Fail Attempt for {}. {} steps ", jobExecution.getJobExecutionId(), steps.size());
-            for (JpaBatchStepExecution step : steps) {
-                step.failStep();
-            }
-            ((JpaBatchJobExecution) jobExecution).completeOrFailJob();
-            jobExecutionRepository.save((JpaBatchJobExecution) jobExecution);
-        }
-
-        return jobExecution;
-    }
-    */
-
-
+    /**
+     * Find all the job executions for a feed that have been completed since a given date
+     * @param feedName the feed to check
+     * @param sinceDate the min end date for the jobs on the {@code feedName}
+     * @return the job executions for a feed that have been completed since a given date
+     */
     public Set<? extends BatchJobExecution> findJobsForFeedCompletedSince(String feedName, DateTime sinceDate) {
         return jobExecutionRepository.findJobsForFeedCompletedSince(feedName, sinceDate);
     }
@@ -505,7 +506,10 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
 
     /**
-     * Find all BatchJobExecution objects with the provided filter. the filter needs to match
+     *  Find all BatchJobExecution objects with the provided filter. the filter needs to match
+     * @param filter
+     * @param pageable
+     * @return a paged result set of all the job executions matching the incoming filter
      */
     public Page<? extends BatchJobExecution> findAll(String filter, Pageable pageable) {
         QJpaBatchJobExecution jobExecution = QJpaBatchJobExecution.jpaBatchJobExecution;

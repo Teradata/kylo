@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Created by sr186054 on 8/23/16.
+ * Spring data repository storing the {@link JpaNifiEventJobExecution}
  */
 public interface NifiEventJobExecutionRepository extends JpaRepository<JpaNifiEventJobExecution, JpaNifiEventJobExecution.NifiEventJobExecutionPK> {
 

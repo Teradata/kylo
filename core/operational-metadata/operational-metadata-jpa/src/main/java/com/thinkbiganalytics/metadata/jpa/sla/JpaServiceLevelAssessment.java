@@ -50,8 +50,13 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+
 /**
- * Created by sr186054 on 9/14/16.
+ * Entity representing service level assessment results for Service Level Agreement (SLA).
+ * SLA's are defined in Modeshape, but their assessments are stored here
+ * Service level assessments contain 1 ore more attached {@link JpaObligationAssessment}.
+ * Each Obligation assessment contains 1 or more {@link JpaMetricAssessment}
+ * the result of this service level assessment come from the results of the {@link JpaObligationAssessment}'s
  */
 @Entity
 @Table(name = "SLA_ASSESSMENT")

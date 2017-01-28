@@ -50,7 +50,9 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 /**
- * Created by sr186054 on 9/14/16.
+ * Entity representing metric assessment results for Service Level Agreement (SLA).
+ * SLA's are defined in Modeshape, but their assessments are stored here
+ * Metric assessments are attached to {@link JpaObligationAssessment} which are attached to the overall {@link JpaServiceLevelAssessment}
  */
 @Entity
 @Table(name = "SLA_METRIC_ASSESSMENT")

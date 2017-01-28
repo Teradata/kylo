@@ -30,7 +30,7 @@ import javax.persistence.Column;
 import javax.persistence.Embeddable;
 
 /**
- * Created by sr186054 on 11/28/16.
+ * The primary key for a {@link OpsManagerFeed}
  */
 @Embeddable
 public class OpsManagerFeedId extends BaseJpaId implements Serializable, OpsManagerFeed.ID {

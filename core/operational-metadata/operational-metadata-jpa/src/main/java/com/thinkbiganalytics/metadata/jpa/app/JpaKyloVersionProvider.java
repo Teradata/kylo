@@ -38,7 +38,7 @@ import java.util.Properties;
 import javax.annotation.PostConstruct;
 
 /**
- * Created by sr186054 on 9/19/16.
+ * Provider for accessing and updating the Kylo version
  */
 @Service
 public class JpaKyloVersionProvider implements KyloVersionProvider {
@@ -57,6 +57,7 @@ public class JpaKyloVersionProvider implements KyloVersionProvider {
     public JpaKyloVersionProvider(KyloVersionRepository kyloVersionRepository) {
         this.kyloVersionRepository = kyloVersionRepository;
     }
+
 
     @Override
     public KyloVersion getKyloVersion() {
@@ -112,6 +113,9 @@ public class JpaKyloVersionProvider implements KyloVersionProvider {
     }
 
 
+    /**
+     * Parse the version.txt file located in the classpath to obtain the current version installed
+     */
     private String getCurrentVersion() {
         if (currentVersion == null) {
             Properties prop = new Properties();

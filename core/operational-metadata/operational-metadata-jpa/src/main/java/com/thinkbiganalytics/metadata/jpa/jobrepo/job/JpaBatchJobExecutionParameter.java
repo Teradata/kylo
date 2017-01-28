@@ -43,7 +43,7 @@ import javax.persistence.Table;
 
 
 /**
- * Created by sr186054 on 8/31/16.
+ * An entity storing the parameters that are initially captured when running a {@link BatchJobExecution}
  */
 @Entity
 @Table(name = "BATCH_JOB_EXECUTION_PARAMS")

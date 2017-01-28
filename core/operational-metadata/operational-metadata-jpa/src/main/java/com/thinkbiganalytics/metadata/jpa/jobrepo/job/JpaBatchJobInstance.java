@@ -46,7 +46,7 @@ import javax.persistence.TableGenerator;
 import javax.persistence.Version;
 
 /**
- * Created by sr186054 on 8/31/16.
+ *Entity to store the Batch Job Instances
  */
 @Entity
 @Table(name = "BATCH_JOB_INSTANCE")

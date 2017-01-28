@@ -50,7 +50,7 @@ import java.util.List;
 import javax.inject.Inject;
 
 /**
- * Created by sr186054 on 9/15/16.
+ * Provider allowing access to feeds {@link OpsManagerFeed}
  */
 @Service
 public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {

@@ -45,7 +45,8 @@ import javax.persistence.StoredProcedureParameter;
 import javax.persistence.Table;
 
 /**
- * This entity is used to Map the Operational Feed Data with the Modeshape JCR feed data. The ID here maps directly to the JCR Modeshape Feed.ID Created by sr186054 on 9/15/16.
+ * This entity is used to Map the Operational Feed Data with the Modeshape JCR feed data. The ID here maps directly to the JCR Modeshape Feed.ID
+ * Two stored procedures are mapped here to delete jobs for a given feed, and abandon all failed jobs for a feed.
  */
 @Entity
 @Table(name = "FEED")
@@ -72,6 +73,9 @@ public class JpaOpsManagerFeed implements OpsManagerFeed {
     private Set<BatchJobInstance> jobInstances = new HashSet<>();
 
 
+    /**
+     * The FEED_CHECK_DATA_FEEDS is a many to many table linking a Feed to any other feeds which are registered to check the data of the related feed.
+     */
     @ManyToMany(targetEntity = JpaOpsManagerFeed.class, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(name="FEED_CHECK_DATA_FEEDS",
                joinColumns={@JoinColumn(name="FEED_ID")},

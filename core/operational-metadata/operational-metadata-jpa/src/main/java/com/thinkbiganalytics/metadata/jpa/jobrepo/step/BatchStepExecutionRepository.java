@@ -28,7 +28,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 /**
- * Created by sr186054 on 8/23/16.
+ * Spring data repository for {@link JpaBatchStepExecution}
  */
 public interface BatchStepExecutionRepository extends JpaRepository<JpaBatchStepExecution, Long> {
 

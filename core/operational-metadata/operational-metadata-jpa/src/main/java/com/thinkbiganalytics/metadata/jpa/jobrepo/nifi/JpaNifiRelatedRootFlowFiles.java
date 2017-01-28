@@ -22,6 +22,7 @@ package com.thinkbiganalytics.metadata.jpa.jobrepo.nifi;
 
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiEvent;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiRelatedRootFlowFiles;
+import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 
 import java.io.Serializable;
 
@@ -35,7 +36,9 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 /**
- * Created by sr186054 on 9/10/16.
+ * Entity to store any Feed Flow files that are related to each other.
+ * Job executions can become related if the started off as individual jobs but later get merged together to a single flow file
+ * @see com.thinkbiganalytics.metadata.jpa.jobrepo.job.JpaBatchJobExecutionProvider#checkAndRelateJobs(ProvenanceEventRecordDTO, NifiEvent)
  */
 @Entity
 @Table(name = "NIFI_RELATED_ROOT_FLOW_FILES")

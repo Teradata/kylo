@@ -26,7 +26,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 /**
- * Created by sr186054 on 12/6/16.
+ * Spring data repository for {@link JpaLatestFeedJobExecution}
  */
 public interface LatestFeedJobExectionRepository extends JpaRepository<JpaLatestFeedJobExecution, Long> {
 

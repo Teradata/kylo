@@ -35,7 +35,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 /**
- * Created by sr186054 on 8/17/16.
+ *Provider for accessing the statstics for a feed and processor
  */
 @Service
 public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStatisticsProvider {

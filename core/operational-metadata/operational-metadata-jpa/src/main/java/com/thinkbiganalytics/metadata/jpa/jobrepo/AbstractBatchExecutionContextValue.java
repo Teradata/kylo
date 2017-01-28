@@ -33,9 +33,9 @@ import javax.persistence.Enumerated;
 import javax.persistence.MappedSuperclass;
 
 /**
- * Created by sr186054 on 9/1/16.
+ * Base class allowing for execution context values
+ * Currently only the  {@code stringVal} is populated
  */
-
 @MappedSuperclass
 public abstract class AbstractBatchExecutionContextValue {
 

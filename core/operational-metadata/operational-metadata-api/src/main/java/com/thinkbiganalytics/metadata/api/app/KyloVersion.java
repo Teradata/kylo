@@ -53,14 +53,14 @@ public interface KyloVersion {
 
     /**
      * Return a description of the Kylo version deployed
-     * @return
+     * @return a description of the Kylo version deployed
      */
     String getDescription();
 
     /**
      * Update the current Kylo version to the passed in version
-     * @param v
-     * @return
+     * @param v the version to update to
+     * @return the updated version
      */
     KyloVersion update(KyloVersion v);
 }

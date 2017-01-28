@@ -30,7 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
- * Created by sr186054 on 8/31/16.
+ * Provider creating and accessing the {@link JpaNifiEvent}
  */
 @Service
 public class NifiEventProvider {

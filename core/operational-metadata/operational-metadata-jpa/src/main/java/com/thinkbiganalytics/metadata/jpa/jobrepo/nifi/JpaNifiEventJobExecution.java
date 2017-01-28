@@ -36,17 +36,11 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 /**
- * Maps the NiFi Provenance Event to the BATCH_JOB_EXECUTION (BatchJobExecution)
- *
- *
- * Created by sr186054 on 9/1/16.
+ * Maps the NiFi Provenance Event to the BATCH_JOB_EXECUTION ({@link BatchJobExecution})
  */
 @Entity
 @Table(name = "BATCH_NIFI_JOB")
 public class JpaNifiEventJobExecution implements Serializable, NifiEventJobExecution {
-
-    //@EmbeddedId
-    //private NifiEventJobExecutionPK eventJobExecutionPK;
 
     @OneToOne(targetEntity = JpaBatchJobExecution.class, cascade = CascadeType.ALL, fetch = FetchType.LAZY,optional = false)
     @JoinColumn(name = "JOB_EXECUTION_ID", nullable = false, insertable = true, updatable = true)
@@ -67,22 +61,17 @@ public class JpaNifiEventJobExecution implements Serializable, NifiEventJobExecu
 
     public JpaNifiEventJobExecution(Long eventId, String flowFileId) {
         this.flowFileId = flowFileId;
-       // this.eventJobExecutionPK = new NifiEventJobExecutionPK( flowFileId);
         this.eventId = eventId;
     }
 
     public JpaNifiEventJobExecution(BatchJobExecution jobExecution,Long eventId, String flowFileId) {
         this.flowFileId = flowFileId;
-        //this.eventJobExecutionPK = new NifiEventJobExecutionPK(flowFileId);
         this.eventId = eventId;
         this.jobExecution = jobExecution;
     }
 
-    //@Embeddable
     public static class NifiEventJobExecutionPK implements Serializable {
 
-
-    //    @Column(name = "FLOW_FILE_ID")
         private String flowFileId;
 
         public NifiEventJobExecutionPK() {
@@ -131,14 +120,6 @@ public class JpaNifiEventJobExecution implements Serializable, NifiEventJobExecu
         this.eventId = eventId;
     }
 
-/*    public NifiEventJobExecutionPK getEventJobExecutionPK() {
-        return eventJobExecutionPK;
-    }
-
-    public void setEventJobExecutionPK(NifiEventJobExecutionPK eventJobExecutionPK) {
-        this.eventJobExecutionPK = eventJobExecutionPK;
-    }
-*/
     @Override
     public BatchJobExecution getJobExecution() {
         return jobExecution;

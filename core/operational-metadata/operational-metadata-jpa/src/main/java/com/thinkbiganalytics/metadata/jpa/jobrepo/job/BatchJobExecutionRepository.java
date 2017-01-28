@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Created by sr186054 on 8/23/16.
+ * Spring data repository for accessing {@link JpaBatchJobExecution}
  */
 public interface BatchJobExecutionRepository extends JpaRepository<JpaBatchJobExecution, Long>, QueryDslPredicateExecutor<JpaBatchJobExecution> {
 

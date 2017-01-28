@@ -23,7 +23,7 @@ package com.thinkbiganalytics.metadata.jpa.support;
 import com.querydsl.core.types.EntityPath;
 
 /**
- * Created by sr186054 on 12/6/16.
+ * Helper class to add joins to a QueryDsl query
  */
 public class QueryDslFetchJoin {
         public final EntityPath joinPath;

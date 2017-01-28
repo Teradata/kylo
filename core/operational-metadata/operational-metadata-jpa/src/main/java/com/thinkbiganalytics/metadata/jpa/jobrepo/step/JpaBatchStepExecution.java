@@ -29,6 +29,7 @@ import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecutionContext
 import com.thinkbiganalytics.metadata.jpa.jobrepo.job.JpaBatchJobExecution;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiEventStepExecution;
 
+import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 
@@ -56,7 +57,7 @@ import javax.persistence.TableGenerator;
 import javax.persistence.Version;
 
 /**
- * Created by sr186054 on 8/31/16.
+ * Entity to store the step executions for a job
  */
 @Entity
 @Table(name = "BATCH_STEP_EXECUTION")
@@ -79,7 +80,10 @@ public class JpaBatchStepExecution implements Serializable, BatchStepExecution {
     @Column(name = "VERSION")
     private Long version = 0L;
 
-    //TODO ensure length
+    /**
+     * ensure its length is valid before insert/update
+     **/
+    @Type(type = "com.thinkbiganalytics.jpa.TruncateStringUserType", parameters = {@Parameter(name = "length", value = "100")})
     @Column(name = "STEP_NAME")
     private String stepName;
 
