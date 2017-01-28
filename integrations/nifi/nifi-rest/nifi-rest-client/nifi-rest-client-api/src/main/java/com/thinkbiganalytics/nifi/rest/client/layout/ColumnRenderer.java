@@ -23,7 +23,7 @@ package com.thinkbiganalytics.nifi.rest.client.layout;
 import org.apache.nifi.web.api.dto.PositionDTO;
 
 /**
- * Created by sr186054 on 11/9/16.
+ * Render a group of items in a column vertically
  */
 public class ColumnRenderer extends AbstractRenderer {
 

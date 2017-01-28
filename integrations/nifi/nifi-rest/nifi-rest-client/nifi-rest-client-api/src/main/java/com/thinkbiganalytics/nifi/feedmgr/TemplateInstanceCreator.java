@@ -45,7 +45,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
 /**
- * Created by sr186054 on 5/6/16.
+ * Class used to create templates in NiFi
  */
 public class TemplateInstanceCreator {
 

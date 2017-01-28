@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by sr186054 on 11/9/16.
+ * Used to rearrange NiFi processors and components on the canvas
  */
 public abstract class AbstractRenderer {
 

@@ -21,7 +21,7 @@ package com.thinkbiganalytics.nifi.rest.client.layout;
  */
 
 /**
- * Created by sr186054 on 11/8/16.
+ * store metadata about how a component or group  should be rendered
  */
 public class AlignComponentsConfig {
 

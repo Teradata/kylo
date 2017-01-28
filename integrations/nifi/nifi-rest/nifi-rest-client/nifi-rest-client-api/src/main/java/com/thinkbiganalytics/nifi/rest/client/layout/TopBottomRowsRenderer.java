@@ -23,7 +23,11 @@ package com.thinkbiganalytics.nifi.rest.client.layout;
 import org.apache.nifi.web.api.dto.PositionDTO;
 
 /**
- * Created by sr186054 on 11/9/16.
+ * Render items both above and below a centered component(i.e. a process group) like:
+ *
+ *  -  -  -  -  -
+ *       -
+ *  -  -  -  -  -
  */
 public class TopBottomRowsRenderer extends AbstractRenderer {
 

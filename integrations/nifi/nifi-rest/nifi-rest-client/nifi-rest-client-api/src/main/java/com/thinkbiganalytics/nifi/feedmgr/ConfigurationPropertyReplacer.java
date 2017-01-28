@@ -43,17 +43,34 @@ import java.util.regex.Pattern;
  */
 public class ConfigurationPropertyReplacer {
 
+    /**
+     * return the application.properties property key for the specific property using the proocessor type as the key reference
+     *
+     * @param property the nifi property
+     * @return the property key prepended with the "nifi.<processor type>."
+     */
     public static String getProcessorPropertyConfigName(NifiProperty property ) {
-        String processorTypeName = "nifi."+(StringUtils.substringAfterLast(property.getProcessorType(), ".") + "." + property.getKey()).toLowerCase().trim().replaceAll(" +", "_");
+        String processorTypeName = "nifi." + (StringUtils.substringAfterLast(property.getProcessorType(), ".") + "." + property.getKey()).toLowerCase().trim().replaceAll(" +", "_");
         return processorTypeName;
     }
 
+    /**
+     * Return the application.properties property key for 'all_processors' matching the supplied NiFi property.
+     *
+     * @param property the nifi property to inspect
+     * @return the property key prepended with the "nifi.all_processors."
+     */
     public static String getGlobalAllProcessorsPropertyConfigName(NifiProperty property) {
         String processorTypeName = "nifi.all_processors." + property.getKey().toLowerCase().trim().replaceAll(" +", "_");
         return processorTypeName;
     }
+
     /**
-     * This will replace the Map of Properties in the DTO but not persist back to Nifi.  You need to call the rest client to persist the change
+     *  This will replace the Map of Properties in the DTO but not persist back to Nifi.  You need to call the rest client to persist the change
+     * @param controllerServiceDTO the controller service
+     * @param properties the properties to set
+     * @param propertyDescriptorTransform transformer
+     * @return {@code true} if the properties were updated, {@code false} if not
      */
     public static boolean replaceControllerServiceProperties(ControllerServiceDTO controllerServiceDTO, Map<String, String> properties, NiFiPropertyDescriptorTransform propertyDescriptorTransform) {
         Set<String> changedProperties = new HashSet<>();

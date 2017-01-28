@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
 /**
  * Align Nifi Components under a supplied ProcessGroupId
  *
- * Created by sr186054 on 11/8/16.
+ *
  */
 public class AlignProcessGroupComponents {
 

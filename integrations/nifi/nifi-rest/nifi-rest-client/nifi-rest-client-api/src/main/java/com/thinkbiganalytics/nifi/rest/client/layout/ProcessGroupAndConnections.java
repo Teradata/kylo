@@ -28,7 +28,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Created by sr186054 on 12/16/16.
+ * Hold nifi components together for layout render processing
  */
 public class ProcessGroupAndConnections {
 

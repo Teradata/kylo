@@ -23,11 +23,17 @@ package com.thinkbiganalytics.nifi.feedmgr;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 
 /**
- * Created by sr186054 on 1/17/17.
+ *  A callback that can be wired in to perform an action prior to a Reusable template being marked as Running
  */
 public interface ReusableTemplateCreationCallback {
 
 
+    /**
+     * do some work prior to marking the processors in the reusable template as running
+     *
+     * @param templateName    the name of the template
+     * @param processGroupDTO the group where this template resides (under the reusable_templates) group
+     */
     void beforeMarkAsRunning(String templateName, ProcessGroupDTO processGroupDTO);
 
 

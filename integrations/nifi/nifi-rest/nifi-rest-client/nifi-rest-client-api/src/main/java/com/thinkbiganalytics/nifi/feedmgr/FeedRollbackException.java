@@ -21,7 +21,7 @@ package com.thinkbiganalytics.nifi.feedmgr;
  */
 
 /**
- * Created by sr186054 on 6/20/16.
+ * Exception thrown if an error occurs rolling back a feed creation/update
  */
 public class FeedRollbackException extends RuntimeException {
 

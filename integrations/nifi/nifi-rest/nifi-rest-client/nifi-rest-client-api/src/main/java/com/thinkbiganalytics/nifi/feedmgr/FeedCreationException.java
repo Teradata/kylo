@@ -21,7 +21,7 @@ package com.thinkbiganalytics.nifi.feedmgr;
  */
 
 /**
- * Created by sr186054 on 6/15/16.
+ * Exception thrown if an error occurs during feed creation
  */
 public class FeedCreationException extends RuntimeException {
 

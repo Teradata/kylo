@@ -29,7 +29,8 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.Map;
 
 /**
- * Created by sr186054 on 8/11/16.
+ * Utility to allow for application.properties to work with Nifi.
+ *
  */
 public class NifiEnvironmentProperties {
 
@@ -45,8 +46,11 @@ public class NifiEnvironmentProperties {
         return ENVIRONMENT_PROPERTY_SERVICE_PREFIX;
     }
 
+
     /**
      * return the property prefix along with the service name
+     * @param serviceName the name of the service
+     * @return the returned key for inspection with the application.properties
      */
     public static String getEnvironmentControllerServicePropertyPrefix(String serviceName) {
         return ENVIRONMENT_PROPERTY_SERVICE_PREFIX + nifiPropertyToEnvironmentProperty(serviceName);
@@ -54,6 +58,8 @@ public class NifiEnvironmentProperties {
 
     /**
      * for a given property return the serviceName
+     * @param envProperty
+     * @return
      */
     public static String serviceNameForEnvironmentProperty(String envProperty) {
         String prop = envProperty;
@@ -64,6 +70,8 @@ public class NifiEnvironmentProperties {
 
     /**
      * resolve the Nifi Property from the  env controllerServiceProperty
+     * @param envProperty
+     * @return
      */
     public static String environmentPropertyToControllerServiceProperty(String envProperty) {
         String prop = envProperty;
@@ -75,12 +83,23 @@ public class NifiEnvironmentProperties {
     }
 
 
+    /**
+     * return the environment property in the format that can be used with NiFi
+     *
+     * @param envProperty the property from the application.properties
+     * @return the formatted property to work with NiFi
+     */
     private static String environmentPropertyToNifi(String envProperty) {
         String name = envProperty.replaceAll("_", " ");
         name = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, name);
         return name;
     }
 
+    /**
+     * Return the property key from NiFi that can work with the application.properties
+     * @param nifiPropertyKey the Nifi property
+     * @return the formatted property to work with the application.properties
+     */
     private static String nifiPropertyToEnvironmentProperty(String nifiPropertyKey) {
         String name = nifiPropertyKey.toLowerCase().trim().replaceAll(" +", "_");
         name = name.toLowerCase();
@@ -90,6 +109,8 @@ public class NifiEnvironmentProperties {
 
     /**
      * Returns a collection of the Service Name along with the Map of nifi Properties stripping the ENVIRONMENT_PROPERTY_SERVICE_PREFIX from the properties
+     * @param envProperties the map of environment (.properties) properties
+     * @return the table of nifi ready properties
      */
     public static Table<String, String, String> getEnvironmentControllerServiceProperties(Map<String, String> envProperties) {
         Table<String, String, String> allProps = HashBasedTable.create();
@@ -105,6 +126,12 @@ public class NifiEnvironmentProperties {
         return allProps;
     }
 
+    /**
+     * Returns a map of properties for a given Nifi service
+     * @param envProperties the .properties
+     * @param serviceName the service name to use/look for as the key
+     * @return the map of properties ready for NiFi use, inspected from the environment properties
+     */
     public static Map<String, String> getEnvironmentControllerServiceProperties(Map<String, String> envProperties, String serviceName) {
         return getEnvironmentControllerServiceProperties(envProperties).row(nifiPropertyToEnvironmentProperty(serviceName));
     }

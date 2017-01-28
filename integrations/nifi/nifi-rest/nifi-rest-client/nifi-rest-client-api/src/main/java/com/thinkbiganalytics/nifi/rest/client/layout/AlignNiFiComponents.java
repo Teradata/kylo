@@ -28,7 +28,7 @@ import org.springframework.stereotype.Component;
 import javax.inject.Inject;
 
 /**
- * Align components in the Nifi Root Flow and then any components in its immediate child ProcessGroups (aka Categories) Created by sr186054 on 11/9/16.
+ * Align components in the Nifi Root Flow and then any components in its immediate child ProcessGroups (aka Categories)
  */
 @Component
 public class AlignNiFiComponents {
@@ -43,6 +43,9 @@ public class AlignNiFiComponents {
     private Integer alignedProcessGroups = 0;
 
 
+    /**
+     * layout the NiFi components
+     */
     public void autoLayout() {
 
         AlignProcessGroupComponents alignProcessGroupComponents = new AlignProcessGroupComponents(niFiRestClient, "root", new AlignComponentsConfig());

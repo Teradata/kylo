@@ -26,7 +26,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Base class to hold ProcessGroups that need to be Rendered Created by sr186054 on 11/9/16.
+ * Base class to hold ProcessGroups that need to be Rendered
  */
 public abstract class LayoutGroup {
 

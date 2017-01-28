@@ -21,7 +21,7 @@ package com.thinkbiganalytics.nifi.feedmgr;
  */
 
 /**
- * Created by sr186054 on 6/15/16.
+ * Exception thrown when a template is unable to be created
  */
 public class TemplateCreationException extends RuntimeException {
 

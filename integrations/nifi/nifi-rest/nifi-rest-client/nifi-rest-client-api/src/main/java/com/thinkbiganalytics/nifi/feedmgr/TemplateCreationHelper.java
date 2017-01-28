@@ -61,6 +61,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.ws.rs.WebApplicationException;
 
+/**
+ * Helper class used to create templates in NiFi
+ * This class is used with the {@link TemplateInstanceCreator}
+ */
 public class TemplateCreationHelper {
 
     private static final Logger log = LoggerFactory.getLogger(TemplateCreationHelper.class);
@@ -109,41 +113,41 @@ public class TemplateCreationHelper {
         final Map<String, String> idMap = new HashMap<>(groupControllerServices.size());
 
         groupControllerServices.stream()
-                .filter(controllerService -> controllerService.getParentGroupId().equals(processGroupId))
-                .forEach(groupControllerService -> {
-                    // Delete scoped service
-                    final String oldId = groupControllerService.getId();
-                    nifiClient.controllerServices().delete(groupControllerService.getId());
+            .filter(controllerService -> controllerService.getParentGroupId().equals(processGroupId))
+            .forEach(groupControllerService -> {
+                // Delete scoped service
+                final String oldId = groupControllerService.getId();
+                nifiClient.controllerServices().delete(groupControllerService.getId());
 
-                    // Create root service
-                    final ControllerServiceDTO rootControllerService = new ControllerServiceDTO();
-                    rootControllerService.setComments(groupControllerService.getComments());
-                    rootControllerService.setName(groupControllerService.getName());
-                    rootControllerService.setType(groupControllerService.getType());
-                    final String rootId = nifiClient.processGroups().createControllerService("root", rootControllerService).getId();
+                // Create root service
+                final ControllerServiceDTO rootControllerService = new ControllerServiceDTO();
+                rootControllerService.setComments(groupControllerService.getComments());
+                rootControllerService.setName(groupControllerService.getName());
+                rootControllerService.setType(groupControllerService.getType());
+                final String rootId = nifiClient.processGroups().createControllerService("root", rootControllerService).getId();
 
-                    // Map old ID to new ID
-                    idMap.put(oldId, rootId);
-                });
+                // Map old ID to new ID
+                idMap.put(oldId, rootId);
+            });
 
         // Set properties on root controller services
         groupControllerServices.stream()
-                .filter(controllerService -> controllerService.getParentGroupId().equals(processGroupId))
-                .forEach(groupControllerService -> {
-                    final Map<String, String> properties = groupControllerService.getProperties();
-                    groupControllerService.getDescriptors().values().stream()
-                            .filter(descriptor -> StringUtils.isNotBlank(descriptor.getIdentifiesControllerService()))
-                            .forEach(descriptor -> {
-                                final String name = descriptor.getName();
-                                final String oldId = properties.get(name);
-                                properties.put(name, idMap.get(oldId));
-                            });
+            .filter(controllerService -> controllerService.getParentGroupId().equals(processGroupId))
+            .forEach(groupControllerService -> {
+                final Map<String, String> properties = groupControllerService.getProperties();
+                groupControllerService.getDescriptors().values().stream()
+                    .filter(descriptor -> StringUtils.isNotBlank(descriptor.getIdentifiesControllerService()))
+                    .forEach(descriptor -> {
+                        final String name = descriptor.getName();
+                        final String oldId = properties.get(name);
+                        properties.put(name, idMap.get(oldId));
+                    });
 
-                    final ControllerServiceDTO rootControllerService = new ControllerServiceDTO();
-                    rootControllerService.setId(idMap.get(groupControllerService.getId()));
-                    rootControllerService.setProperties(properties);
-                    nifiClient.controllerServices().update(rootControllerService);
-                });
+                final ControllerServiceDTO rootControllerService = new ControllerServiceDTO();
+                rootControllerService.setId(idMap.get(groupControllerService.getId()));
+                rootControllerService.setProperties(properties);
+                nifiClient.controllerServices().update(rootControllerService);
+            });
 
         // Return flow
         return templateFlow;
@@ -298,7 +302,7 @@ public class TemplateCreationHelper {
             }
 
             fixControllerServiceReferences(controllerServiceProperties, enabledServices, allServices, properties)
-                    .forEach(property -> restClient.updateProcessorProperty(property.getProcessGroupId(), property.getProcessorId(), property));
+                .forEach(property -> restClient.updateProcessorProperty(property.getProcessGroupId(), property.getProcessorId(), property));
 
         } catch (NifiClientRuntimeException e) {
             errors.add(new NifiError(NifiError.SEVERITY.FATAL, "Error trying to identify Controller Services. " + e.getMessage(),
@@ -317,30 +321,30 @@ public class TemplateCreationHelper {
      */
     @Nonnull
     private List<NifiProperty> fixControllerServiceReferences(@Nullable final Map<String, String> controllerServiceProperties, @Nonnull final Map<String, ControllerServiceDTO> enabledServices,
-                                                @Nonnull final Map<String, ControllerServiceDTO> allServices, @Nonnull final List<NifiProperty> properties) {
+                                                              @Nonnull final Map<String, ControllerServiceDTO> allServices, @Nonnull final List<NifiProperty> properties) {
         return properties.stream()
 
-                // Pick properties that reference a controller service
-                .filter(property -> StringUtils.isNotBlank(property.getPropertyDescriptor().getIdentifiesControllerService()))
+            // Pick properties that reference a controller service
+            .filter(property -> StringUtils.isNotBlank(property.getPropertyDescriptor().getIdentifiesControllerService()))
 
-                // Pick properties that reference a disabled or unknown controller service
-                .filter(property -> !enabledServices.containsKey(property.getValue()))
+            // Pick properties that reference a disabled or unknown controller service
+            .filter(property -> !enabledServices.containsKey(property.getValue()))
 
-                // Find a controller service
-                .filter(property -> {
-                    final Optional<ControllerServiceDTO> controllerService = findControllerServiceForProperty(controllerServiceProperties, enabledServices, allServices, property);
-                    if (controllerService.isPresent()) {
-                        if (!controllerService.get().getId().equals(property.getValue())) {
-                            property.setValue(controllerService.get().getId());
-                            return true;
-                        }
-                    } else if (property.getPropertyDescriptor().isRequired()) {
-                        final String message = "Unable to find a valid controller service for the '" + property.getKey() + "' property of the '" + property.getProcessorName() + "' " + "processor.";
-                        errors.add(new NifiError(NifiError.SEVERITY.FATAL, message, NifiProcessGroup.CONTROLLER_SERVICE_CATEGORY));
+            // Find a controller service
+            .filter(property -> {
+                final Optional<ControllerServiceDTO> controllerService = findControllerServiceForProperty(controllerServiceProperties, enabledServices, allServices, property);
+                if (controllerService.isPresent()) {
+                    if (!controllerService.get().getId().equals(property.getValue())) {
+                        property.setValue(controllerService.get().getId());
+                        return true;
                     }
-                    return false;
-                })
-                .collect(Collectors.toList());
+                } else if (property.getPropertyDescriptor().isRequired()) {
+                    final String message = "Unable to find a valid controller service for the '" + property.getKey() + "' property of the '" + property.getProcessorName() + "' " + "processor.";
+                    errors.add(new NifiError(NifiError.SEVERITY.FATAL, message, NifiProcessGroup.CONTROLLER_SERVICE_CATEGORY));
+                }
+                return false;
+            })
+            .collect(Collectors.toList());
     }
 
     /**
@@ -357,41 +361,41 @@ public class TemplateCreationHelper {
                                                                             @Nonnull final Map<String, ControllerServiceDTO> allServices, @Nonnull final NifiProperty property) {
         return property.getPropertyDescriptor().getAllowableValues().stream()
 
-                // Pick values that exist
-                .filter(allowableValue -> allServices.containsKey(allowableValue.getValue()))
+            // Pick values that exist
+            .filter(allowableValue -> allServices.containsKey(allowableValue.getValue()))
 
-                // Sort allowed values by priority
-                .sorted((a, b) -> {
-                    final String propertyValue = property.getValue();
-                    final String value1 = a.getValue();
-                    final String value2 = b.getValue();
-                    return ComparisonChain.start()
-                        // 1. Matches property value
-                        .compareTrueFirst(value1.equals(propertyValue), value2.equals(propertyValue))
-                            // 2. Service is enabled
-                        .compareTrueFirst(enabledServices.containsKey(value1), enabledServices.containsKey(value2))
-                            // 3. Similar service is enabled
-                        .compareTrueFirst(enabledServices.containsKey(a.getDisplayName()), enabledServices.containsKey(b.getDisplayName()))
-                        .result();
-                })
+            // Sort allowed values by priority
+            .sorted((a, b) -> {
+                final String propertyValue = property.getValue();
+                final String value1 = a.getValue();
+                final String value2 = b.getValue();
+                return ComparisonChain.start()
+                    // 1. Matches property value
+                    .compareTrueFirst(value1.equals(propertyValue), value2.equals(propertyValue))
+                    // 2. Service is enabled
+                    .compareTrueFirst(enabledServices.containsKey(value1), enabledServices.containsKey(value2))
+                    // 3. Similar service is enabled
+                    .compareTrueFirst(enabledServices.containsKey(a.getDisplayName()), enabledServices.containsKey(b.getDisplayName()))
+                    .result();
+            })
 
-                // Map to controller service DTO
-                .map(NiFiAllowableValue::getValue)
-                .map(allServices::get)
+            // Map to controller service DTO
+            .map(NiFiAllowableValue::getValue)
+            .map(allServices::get)
 
-                // Try to enable controller service
-                .filter(controllerService -> {
-                    try {
-                        tryToEnableControllerService(controllerService, controllerServiceProperties, enabledServices, allServices);
-                        return true;
-                    } catch (final Exception e) {
-                        log.error("Failed to enable controller service [id:{},name:{}]: {}", controllerService.getId(), controllerService.getName(), e.toString(), e);
-                        return false;
-                    }
-                })
+            // Try to enable controller service
+            .filter(controllerService -> {
+                try {
+                    tryToEnableControllerService(controllerService, controllerServiceProperties, enabledServices, allServices);
+                    return true;
+                } catch (final Exception e) {
+                    log.error("Failed to enable controller service [id:{},name:{}]: {}", controllerService.getId(), controllerService.getName(), e.toString(), e);
+                    return false;
+                }
+            })
 
-                // Return first enabled controller service
-                .findFirst();
+            // Return first enabled controller service
+            .findFirst();
     }
 
     public void cleanupControllerServices() {
@@ -515,11 +519,10 @@ public class TemplateCreationHelper {
 
         String versionedProcessGroupName = getVersionedProcessGroupName(processGroup.getName());
 
-            //rename the feedGroup to be name+timestamp
-            processGroup.setName(versionedProcessGroupName);
-            restClient.updateProcessGroup(processGroup);
-            log.info("Renamed ProcessGroup to  {}, ", processGroup.getName());
-
+        //rename the feedGroup to be name+timestamp
+        processGroup.setName(versionedProcessGroupName);
+        restClient.updateProcessGroup(processGroup);
+        log.info("Renamed ProcessGroup to  {}, ", processGroup.getName());
 
         return processGroup;
     }
