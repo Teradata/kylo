@@ -24,6 +24,12 @@
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>thinkbig-nifi-provenance-constants</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>thinkbig-nifi-rest-client-api</artifactId>
       <version>${project.version}</version>
     </dependency>

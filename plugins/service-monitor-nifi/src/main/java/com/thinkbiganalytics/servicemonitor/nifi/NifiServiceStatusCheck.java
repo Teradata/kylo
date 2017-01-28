@@ -21,6 +21,7 @@ package com.thinkbiganalytics.servicemonitor.nifi;
  */
 
 
+import com.thinkbiganalytics.nifi.provenance.NiFiProvenanceConstants;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.servicemonitor.check.ServiceStatusCheck;
 import com.thinkbiganalytics.servicemonitor.model.DefaultServiceComponent;
@@ -29,51 +30,100 @@ import com.thinkbiganalytics.servicemonitor.model.ServiceComponent;
 import com.thinkbiganalytics.servicemonitor.model.ServiceStatusResponse;
 
 import org.apache.nifi.web.api.dto.AboutDTO;
+import org.apache.nifi.web.api.dto.ReportingTaskDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Date;
+import java.util.Optional;
 
 /**
- * Created by sr186054 on 9/30/15.
+ * Check the status of NiFi and the required Kylo Reporting Task
  */
-
 public class NifiServiceStatusCheck implements ServiceStatusCheck {
 
-  @Autowired
-  @Qualifier("nifiRestClient")
- private LegacyNifiRestClient nifiRestClient;
+    @Autowired
+    @Qualifier("nifiRestClient")
+    private LegacyNifiRestClient nifiRestClient;
 
-  public NifiServiceStatusCheck(){
-  }
-
-
-  @Override
-  public ServiceStatusResponse healthCheck() {
-
-    String serviceName = "Nifi";
-    String componentName = "Nifi";
-    ServiceComponent component = null;
-
-    Map<String, Object> properties = new HashMap<>();
-
-    try {
-      AboutDTO aboutEntity = nifiRestClient.getNifiVersion();
-
-      String nifiVersion = aboutEntity.getVersion();
-      component =
-          new DefaultServiceComponent.Builder(componentName + " - " + nifiVersion, ServiceComponent.STATE.UP)
-              .message("Nifi is up.").properties(properties).build();
-    } catch (Exception e) {
-      component = new DefaultServiceComponent.Builder(componentName, ServiceComponent.STATE.DOWN).exception(e).build();
+    public NifiServiceStatusCheck() {
     }
 
-    return new DefaultServiceStatusResponse(serviceName, Arrays.asList(component));
-  }
 
-  public void setNifiRestClient(LegacyNifiRestClient nifiRestClient) {
-    this.nifiRestClient = nifiRestClient;
-  }
+    @Override
+    public ServiceStatusResponse healthCheck() {
+
+        String serviceName = "NiFi";
+
+        return new DefaultServiceStatusResponse(serviceName, Arrays.asList(nifiStatus(), nifiReportingTaskStatus()));
+    }
+
+
+    /**
+     * Check to see if NiFi is running
+     *
+     * @return the status of NiFi
+     */
+    private ServiceComponent nifiStatus() {
+
+        String componentName = "NiFi";
+        ServiceComponent component = null;
+
+        try {
+            AboutDTO aboutEntity = nifiRestClient.getNifiVersion();
+
+            String nifiVersion = aboutEntity.getVersion();
+            component =
+                new DefaultServiceComponent.Builder(componentName + " - " + nifiVersion, ServiceComponent.STATE.UP)
+                    .message("NiFi is up.").build();
+        } catch (Exception e) {
+            component = new DefaultServiceComponent.Builder(componentName, ServiceComponent.STATE.DOWN).exception(e).build();
+        }
+        return component;
+    }
+
+    /**
+     * Check to see if the Reporting task is configured and running
+     *
+     * @return the status of the reporting task
+     */
+    private ServiceComponent nifiReportingTaskStatus() {
+
+        String componentName = "Kylo Reporting Task";
+        ServiceComponent component = null;
+
+        try {
+            Optional<ReportingTaskDTO> task = nifiRestClient.getNiFiRestClient().reportingTasks().findFirstByType(NiFiProvenanceConstants.NiFiKyloProvenanceEventReportingTaskType);
+            if (task.isPresent()) {
+                if ("RUNNING".equalsIgnoreCase(task.get().getState())) {
+                    component =
+                        new DefaultServiceComponent.Builder(componentName, ServiceComponent.STATE.UP)
+                            .message("The reporting task is up and running").build();
+                } else {
+                    component =
+                        new DefaultServiceComponent.Builder(componentName, ServiceComponent.STATE.DOWN)
+                            .addErrorAlert("Reporting Task Status", "The Reporting task is currently " + task.get().getState() + ".  It needs to be RUNNING to process jobs in Kylo", new Date())
+                            .message("The reporting task is not running.  No jobs will be processed in Kylo until it is running").build();
+                }
+            } else {
+                component =
+                    new DefaultServiceComponent.Builder(componentName, ServiceComponent.STATE.DOWN)
+                        .addErrorAlert("Reporting Task Status",
+                                       "The Reporting task does not exist. A " + NiFiProvenanceConstants.NiFiKyloProvenanceEventReportingTaskType + " needs to be RUNNING to process jobs in Kylo",
+                                       new Date())
+                        .message("The reporting task does not exist.  No jobs will be processed in Kylo until the Reporting task is configured and running").build();
+            }
+
+
+        } catch (Exception e) {
+            component = new DefaultServiceComponent.Builder(componentName, ServiceComponent.STATE.DOWN).exception(e).build();
+        }
+        return component;
+    }
+
+
+    public void setNifiRestClient(LegacyNifiRestClient nifiRestClient) {
+        this.nifiRestClient = nifiRestClient;
+    }
 }

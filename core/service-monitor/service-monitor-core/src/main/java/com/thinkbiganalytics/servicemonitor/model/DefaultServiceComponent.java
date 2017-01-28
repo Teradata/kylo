@@ -148,6 +148,63 @@ public class DefaultServiceComponent implements ServiceComponent {
             return this;
         }
 
+        private DefaultServiceAlert generateAlert(String label, String message, Date time){
+            DefaultServiceAlert alert = new DefaultServiceAlert();
+            alert.setComponentName(this.name);
+            alert.setServiceName(this.serviceName);
+            alert.setLatestTimestamp(time);
+            alert.setLabel(label);
+            alert.setMessage(message);
+            return alert;
+        }
+
+        /**
+         * Add a warning alert
+         * @param label
+         * @param message
+         * @param time
+         * @return
+         */
+        public Builder addWarningAlert(String label, String message, Date time){
+            DefaultServiceAlert alert = generateAlert(label,message,time);
+            alert.setState(ServiceAlert.STATE.WARNING);
+            return addAlert(alert);
+        }
+
+        /**
+         * add a message alert
+         * @param label
+         * @param message
+         * @param time
+         * @return
+         */
+        public Builder addMessageAlert(String label, String message, Date time){
+            DefaultServiceAlert alert = generateAlert(label,message,time);
+            alert.setState(ServiceAlert.STATE.OK);
+            return addAlert(alert);
+        }
+
+        /**
+         * add a critical alert
+         * @param label
+         * @param message
+         * @param time
+         * @return
+         */
+        public Builder addErrorAlert(String label, String message, Date time){
+            DefaultServiceAlert alert = generateAlert(label,message,time);
+            alert.setState(ServiceAlert.STATE.CRITICAL);
+            return addAlert(alert);
+        }
+
+        public Builder addAlert(ServiceAlert alert){
+            if(this.alerts == null){
+                this.alerts = new ArrayList<>();
+            }
+            this.alerts.add(alert);
+            return this;
+        }
+
         public Builder property(String key, Object value) {
             if (this.properties == null) {
                 this.properties = new HashMap<>();
