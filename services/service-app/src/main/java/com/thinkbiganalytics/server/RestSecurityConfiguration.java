@@ -36,7 +36,7 @@ import org.springframework.security.web.authentication.rememberme.RememberMeAuth
 /**
  * HTTP authentication with Spring Security.
  */
-@EnableWebSecurity
+//@EnableWebSecurity
 public class RestSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Autowired

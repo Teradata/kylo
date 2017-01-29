@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.thinkbiganalytics.security.auth.kerberos;
+package com.thinkbiganalytics.server;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -19,7 +19,9 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.kerberos.authentication.KerberosAuthenticationProvider;
 import org.springframework.security.kerberos.authentication.KerberosServiceAuthenticationProvider;
+import org.springframework.security.kerberos.authentication.sun.SunJaasKerberosClient;
 import org.springframework.security.kerberos.authentication.sun.SunJaasKerberosTicketValidator;
 import org.springframework.security.kerberos.web.authentication.SpnegoAuthenticationProcessingFilter;
 import org.springframework.security.kerberos.web.authentication.SpnegoEntryPoint;
@@ -30,11 +32,11 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
  *
  * @author Sean Felten
  */
-//@Configuration
-//@EnableWebSecurity
-//@Profile("auth-krb")
-//@Order(SecurityProperties.ACCESS_OVERRIDE_ORDER + 2)
-public class KerberosServiceWebSecurityConfiguration extends WebSecurityConfigurerAdapter {
+@Configuration
+@EnableWebSecurity
+@Profile("auth-krb")
+@Order(SecurityProperties.ACCESS_OVERRIDE_ORDER + 1)
+public class KerberosWebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Value("${security.auth.krb.service-principal}")
     private String servicePrincipal;
@@ -48,7 +50,7 @@ public class KerberosServiceWebSecurityConfiguration extends WebSecurityConfigur
             .csrf().disable()
             .exceptionHandling()
                 .authenticationEntryPoint(spnegoEntryPoint())
-                .and()  
+                .and()
             .authorizeRequests()
                 .anyRequest().authenticated()
                 .and()
@@ -58,18 +60,39 @@ public class KerberosServiceWebSecurityConfiguration extends WebSecurityConfigur
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.authenticationProvider(kerberosServiceAuthenticationProvider());
+        auth
+            .authenticationProvider(kerberosAuthenticationProvider())
+            .authenticationProvider(kerberosServiceAuthenticationProvider());
+    }
+    
+    @Bean(name="krbAuthenticationManager")
+    @Override
+    public AuthenticationManager authenticationManagerBean() throws Exception {
+        AuthenticationManager mgr = super.authenticationManagerBean();
+        return mgr;
+    }
+
+    @Bean
+    public KerberosAuthenticationProvider kerberosAuthenticationProvider() throws IOException {
+        KerberosAuthenticationProvider provider = new KerberosAuthenticationProvider();
+        SunJaasKerberosClient client = new SunJaasKerberosClient();
+        client.setDebug(true);
+        provider.setKerberosClient(client);
+        
+        Properties users = new Properties();
+        users.load(new StringReader("dladmin@EXAMPLE.ORG=thinkbig,admin"));
+        
+        provider.setUserDetailsService(new InMemoryUserDetailsManager(users));
+        return provider;
     }
 
     @Bean
     public SpnegoEntryPoint spnegoEntryPoint() {
         return new SpnegoEntryPoint();
-//        return new SpnegoEntryPoint("/login");
     }
 
     @Bean
-    public SpnegoAuthenticationProcessingFilter spnegoAuthenticationProcessingFilter(
-            AuthenticationManager authenticationManager) {
+    public SpnegoAuthenticationProcessingFilter spnegoAuthenticationProcessingFilter(AuthenticationManager authenticationManager) {
         SpnegoAuthenticationProcessingFilter filter = new SpnegoAuthenticationProcessingFilter();
         filter.setAuthenticationManager(authenticationManager);
         return filter;
@@ -81,7 +104,7 @@ public class KerberosServiceWebSecurityConfiguration extends WebSecurityConfigur
         provider.setTicketValidator(sunJaasKerberosTicketValidator());
         
         Properties users = new Properties();
-        users.load(new StringReader("dladmin=thinkbig,admin"));
+        users.load(new StringReader("dladmin@EXAMPLE.ORG=thinkbig,admin"));
         
         provider.setUserDetailsService(new InMemoryUserDetailsManager(users));
         return provider;

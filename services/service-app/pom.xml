@@ -133,6 +133,12 @@
             <artifactId>kylo-security-auth-ldap</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.thinkbiganalytics.datalake</groupId>
+            <artifactId>thinkbig-security-auth-kerberos</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
       <dependency>
         <groupId>com.thinkbiganalytics.datalake</groupId>
         <artifactId>kylo-hadoop-authorization-core</artifactId>
@@ -458,8 +464,8 @@
 
 
         <dependency>
-        <groupId>junit</groupId>
-        <artifactId>junit</artifactId>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
         </dependency>
     </dependencies>
 

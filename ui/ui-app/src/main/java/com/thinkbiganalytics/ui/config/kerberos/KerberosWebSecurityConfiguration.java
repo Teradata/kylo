@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.thinkbiganalytics.security.auth.kerberos;
+package com.thinkbiganalytics.ui.config.kerberos;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -47,7 +47,7 @@ public class KerberosWebSecurityConfiguration extends WebSecurityConfigurerAdapt
 
     @Override
     public void configure(WebSecurity web) throws Exception {
-        web.ignoring().antMatchers("/ui-common/**","/js/vendor/**", "/images/**", "/styles/**", "/js/login/**", "/js/utils/**");
+        web.ignoring().antMatchers("/proxy/**", "/ui-common/**","/js/vendor/**", "/images/**", "/styles/**", "/js/login/**", "/js/utils/**");
     }
 
     @Override
@@ -58,7 +58,7 @@ public class KerberosWebSecurityConfiguration extends WebSecurityConfigurerAdapt
                 .authenticationEntryPoint(spnegoEntryPoint())
                 .and()
             .authorizeRequests()
-                .antMatchers("/login", "/login/**", "/login**", "/proxy/**").permitAll()
+                .antMatchers("/login", "/login/**", "/login**").permitAll()
                 .anyRequest().authenticated()
                 .and()
             .formLogin()
@@ -71,9 +71,8 @@ public class KerberosWebSecurityConfiguration extends WebSecurityConfigurerAdapt
             .logout()
                 .permitAll()
                 .and()
-            .addFilterBefore(
-                    spnegoAuthenticationProcessingFilter(authenticationManagerBean()),
-                    BasicAuthenticationFilter.class);
+            .addFilterBefore(spnegoAuthenticationProcessingFilter(authenticationManagerBean()),
+                             BasicAuthenticationFilter.class);
     }
 
     @Override
@@ -81,6 +80,13 @@ public class KerberosWebSecurityConfiguration extends WebSecurityConfigurerAdapt
         auth
             .authenticationProvider(kerberosAuthenticationProvider())
             .authenticationProvider(kerberosServiceAuthenticationProvider());
+    }
+    
+    @Bean(name="krbAuthenticationManager")
+    @Override
+    public AuthenticationManager authenticationManagerBean() throws Exception {
+        AuthenticationManager mgr = super.authenticationManagerBean();
+        return mgr;
     }
 
     @Bean
@@ -92,7 +98,7 @@ public class KerberosWebSecurityConfiguration extends WebSecurityConfigurerAdapt
         provider.setKerberosClient(client);
         
         Properties users = new Properties();
-        users.load(new StringReader("dladmin@EXAMPLE.COM=thinkbig,admin"));
+        users.load(new StringReader("dladmin@EXAMPLE.ORG=thinkbig,admin"));
         
         provider.setUserDetailsService(new InMemoryUserDetailsManager(users));
         return provider;
@@ -100,12 +106,12 @@ public class KerberosWebSecurityConfiguration extends WebSecurityConfigurerAdapt
 
     @Bean
     public SpnegoEntryPoint spnegoEntryPoint() {
-        return new SpnegoEntryPoint("/login");
+        return new SpnegoEntryPoint();
+//        return new SpnegoEntryPoint("/login");
     }
 
     @Bean
-    public SpnegoAuthenticationProcessingFilter spnegoAuthenticationProcessingFilter(
-            AuthenticationManager authenticationManager) {
+    public SpnegoAuthenticationProcessingFilter spnegoAuthenticationProcessingFilter(AuthenticationManager authenticationManager) {
         SpnegoAuthenticationProcessingFilter filter = new SpnegoAuthenticationProcessingFilter();
         filter.setAuthenticationManager(authenticationManager);
         return filter;
@@ -117,7 +123,7 @@ public class KerberosWebSecurityConfiguration extends WebSecurityConfigurerAdapt
         provider.setTicketValidator(sunJaasKerberosTicketValidator());
         
         Properties users = new Properties();
-        users.load(new StringReader("dladmin@EXAMPLE.COM=thinkbig,admin"));
+        users.load(new StringReader("dladmin@EXAMPLE.ORG=thinkbig,admin"));
         
         provider.setUserDetailsService(new InMemoryUserDetailsManager(users));
         return provider;
