@@ -26,7 +26,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- *
+ * Annotation used to mark a given  {@link ValidationPolicy} that should be rendered in the User Interface.
+ * This class should annotation its fields with {@link com.thinkbiganalytics.policy.PolicyProperty} annotation to expose any properties to the end user
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
