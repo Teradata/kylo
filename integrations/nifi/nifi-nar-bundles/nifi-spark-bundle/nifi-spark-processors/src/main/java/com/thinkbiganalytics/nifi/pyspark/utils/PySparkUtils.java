@@ -24,7 +24,6 @@ import javax.annotation.Nonnull;
 
 /**
  * Helper utilities for ExecutePySpark processor
- * @author jagrut sharma
  */
 public class PySparkUtils {
 

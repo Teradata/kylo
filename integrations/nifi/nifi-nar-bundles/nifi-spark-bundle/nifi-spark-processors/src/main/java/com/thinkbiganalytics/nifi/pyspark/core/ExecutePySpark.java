@@ -62,7 +62,6 @@ import javax.annotation.Nonnull;
 
 /**
  * A NiFi processor to execute a PySpark job
- * @author jagrut sharma
  */
 @EventDriven
 @Tags({"spark", "thinkbig", "pyspark"})

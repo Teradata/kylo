@@ -25,7 +25,6 @@ import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.controller.ControllerService;
 
 /**
- * @author Sean Felten
  */
 @Tags({"thinkbig", "feed", "precondition", "event", "trigger"})
 @CapabilityDescription("")

@@ -45,7 +45,6 @@ import java.util.List;
 
 
 /**
- * @author Sean Felten
  */
 @EventDriven
 @InputRequirement(InputRequirement.Requirement.INPUT_REQUIRED)

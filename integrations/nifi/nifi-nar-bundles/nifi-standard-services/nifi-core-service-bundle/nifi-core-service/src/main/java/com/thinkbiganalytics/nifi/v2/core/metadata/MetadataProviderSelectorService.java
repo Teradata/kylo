@@ -57,7 +57,6 @@ import java.util.List;
 import javax.net.ssl.SSLContext;
 
 /**
- * @author Sean Felten
  */
 public class MetadataProviderSelectorService extends AbstractControllerService implements MetadataProviderService {
 

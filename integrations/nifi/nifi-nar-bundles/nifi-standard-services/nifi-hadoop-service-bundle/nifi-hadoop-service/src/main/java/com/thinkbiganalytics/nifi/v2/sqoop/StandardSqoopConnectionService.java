@@ -33,7 +33,6 @@ import java.util.List;
 
 /**
  * An implementation for {@link SqoopConnectionService} to provide connection details to a relational system for running a sqoop job
- * @author jagrut sharma
  */
 public class StandardSqoopConnectionService
     extends AbstractControllerService

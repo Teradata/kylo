@@ -50,7 +50,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Loads a high-water mark and yields any processing if the water mark has not been released yet.
  *
- * @author Sean Felten
  */
 @EventDriven
 @InputRequirement(InputRequirement.Requirement.INPUT_ALLOWED)

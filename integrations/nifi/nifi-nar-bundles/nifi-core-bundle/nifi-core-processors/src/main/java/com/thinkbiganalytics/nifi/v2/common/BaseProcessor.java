@@ -36,7 +36,6 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * @author Sean Felten
  */
 public abstract class BaseProcessor extends AbstractNiFiProcessor {
 

@@ -67,7 +67,6 @@ import static com.thinkbiganalytics.nifi.v2.common.CommonProperties.FEED_CATEGOR
 import static com.thinkbiganalytics.nifi.v2.common.CommonProperties.FEED_NAME;
 
 /**
- * @author Sean Felten
  */
 @EventDriven
 @InputRequirement(InputRequirement.Requirement.INPUT_ALLOWED)

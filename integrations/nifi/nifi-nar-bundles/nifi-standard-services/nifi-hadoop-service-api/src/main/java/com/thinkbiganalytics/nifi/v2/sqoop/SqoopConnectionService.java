@@ -27,7 +27,6 @@ import org.apache.nifi.controller.ControllerService;
 /**
  * Interface for a connection provider service for Sqoop<br>
  *     Provides information for connecting to a relational system
- * @author jagrut sharma
  */
 @Tags({"thinkbig", "ingest", "sqoop", "rdbms", "database", "table"})
 @CapabilityDescription("Provides information for connecting to a relational system for running a sqoop job")

@@ -42,7 +42,6 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * @author Sean Felten
  */
 @EventDriven
 @InputRequirement(InputRequirement.Requirement.INPUT_ALLOWED)

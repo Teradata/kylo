@@ -54,7 +54,6 @@ import static com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants.OPE
 import static com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants.OPERATON_STOP_PROP;
 
 /**
- * @author Sean Felten
  */
 public abstract class AbstractTerminateFeed extends AbstractFeedProcessor {
 

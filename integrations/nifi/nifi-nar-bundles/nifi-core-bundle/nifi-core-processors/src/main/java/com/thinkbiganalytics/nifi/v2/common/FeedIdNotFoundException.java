@@ -28,7 +28,6 @@ import org.apache.nifi.processor.exception.ProcessException;
 /**
  * Thrown when the lookup of the feed ID fails.
  *
- * @author Sean Felten
  */
 public class FeedIdNotFoundException extends ProcessException {
 

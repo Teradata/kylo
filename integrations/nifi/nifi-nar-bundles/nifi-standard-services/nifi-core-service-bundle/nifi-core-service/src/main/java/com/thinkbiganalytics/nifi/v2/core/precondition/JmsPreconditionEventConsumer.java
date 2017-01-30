@@ -33,7 +33,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * @author Sean Felten
  */
 public class JmsPreconditionEventConsumer implements PreconditionEventConsumer {
 

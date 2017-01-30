@@ -31,7 +31,6 @@ import org.apache.nifi.processor.exception.ProcessException;
 import org.apache.nifi.processor.util.StandardValidators;
 
 /**
- * @author Sean Felten
  */
 public class DataChangeEventFlowTrigger extends AbstractFeedProcessor {
 

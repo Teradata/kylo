@@ -41,7 +41,6 @@ import java.util.Properties;
 import javax.annotation.Nonnull;
 
 /**
- * @author Sean Felten
  */
 public interface MetadataProvider {
     

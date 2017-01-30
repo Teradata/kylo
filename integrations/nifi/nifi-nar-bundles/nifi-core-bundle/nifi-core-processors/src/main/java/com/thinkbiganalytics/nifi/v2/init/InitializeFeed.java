@@ -52,7 +52,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * @author Sean Felten
  */
 @EventDriven
 @InputRequirement(InputRequirement.Requirement.INPUT_ALLOWED)

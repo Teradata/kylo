@@ -30,7 +30,6 @@ import org.apache.nifi.processor.ProcessSession;
 
 /**
  *
- * @author Sean Felten
  */
 public interface HighWaterMarkState {
 

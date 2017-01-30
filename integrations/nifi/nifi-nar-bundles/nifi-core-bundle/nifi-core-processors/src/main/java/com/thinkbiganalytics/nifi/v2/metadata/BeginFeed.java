@@ -60,7 +60,6 @@ import static com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants.OPE
 import static com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants.SRC_DATASET_ID_PROP;
 
 /**
- * @author Sean Felten
  */
 @EventDriven
 @InputRequirement(InputRequirement.Requirement.INPUT_ALLOWED)

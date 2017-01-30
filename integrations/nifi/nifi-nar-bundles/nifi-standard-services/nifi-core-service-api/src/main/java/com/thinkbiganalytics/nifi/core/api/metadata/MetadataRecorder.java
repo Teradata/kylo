@@ -34,7 +34,6 @@ import com.thinkbiganalytics.metadata.rest.model.feed.InitializationStatus;
  * Records metadata that will eventually be committed to the metadata store; sometimes only 
  * upon a flow's successful completion.
  * 
- * @author Sean Felten
  */
 public interface MetadataRecorder {
     

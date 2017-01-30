@@ -47,7 +47,6 @@ import java.util.Set;
 
 /**
  *
- * @author Sean Felten
  */
 public class MetadataClientRecorder implements MetadataRecorder {
     

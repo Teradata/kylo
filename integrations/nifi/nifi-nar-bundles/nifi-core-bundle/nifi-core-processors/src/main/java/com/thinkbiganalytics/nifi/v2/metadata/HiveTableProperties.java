@@ -27,7 +27,6 @@ import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.processor.util.StandardValidators;
 
 /**
- * @author Sean Felten
  */
 public interface HiveTableProperties {
 

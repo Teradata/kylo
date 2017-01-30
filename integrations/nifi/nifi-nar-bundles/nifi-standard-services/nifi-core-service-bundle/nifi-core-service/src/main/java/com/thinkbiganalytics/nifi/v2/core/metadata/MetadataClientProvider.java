@@ -50,7 +50,6 @@ import java.util.Properties;
 import javax.annotation.Nonnull;
 
 /**
- * @author Sean Felten
  */
 public class MetadataClientProvider implements MetadataProvider {
 

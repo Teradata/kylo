@@ -36,7 +36,6 @@ import java.util.Set;
 /**
  * Base abstract processor for high-water mark processors.
  *
- * @author Sean Felten
  */
 public abstract class HighWaterMarkProcessor extends FeedProcessor {
 

@@ -26,7 +26,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ConfigurationClassPostProcessor;
 
 /**
- * @author Sean Felten
  */
 @Configuration
 public class PreconditionJmsConfiguration {

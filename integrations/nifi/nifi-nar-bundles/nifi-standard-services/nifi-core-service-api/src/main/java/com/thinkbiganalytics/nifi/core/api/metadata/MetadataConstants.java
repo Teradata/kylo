@@ -25,7 +25,6 @@ package com.thinkbiganalytics.nifi.core.api.metadata;
 
 /**
  *
- * @author Sean Felten
  */
 public interface MetadataConstants {
 

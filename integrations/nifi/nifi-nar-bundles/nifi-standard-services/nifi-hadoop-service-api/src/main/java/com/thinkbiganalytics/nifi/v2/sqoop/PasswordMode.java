@@ -22,7 +22,6 @@ package com.thinkbiganalytics.nifi.v2.sqoop;
 
 /**
  * Password modes to provide authentication information for connection to source system
- * @author jagrut sharma
  */
 public enum PasswordMode {
     CLEAR_TEXT_ENTRY,

@@ -35,7 +35,6 @@ import com.thinkbiganalytics.nifi.core.api.precondition.PreconditionListener;
 import com.thinkbiganalytics.nifi.core.api.spring.SpringContextService;
 
 /**
- * @author Sean Felten
  */
 public class JmsFeedPreconditionEventService extends AbstractControllerService implements FeedPreconditionEventService {
 

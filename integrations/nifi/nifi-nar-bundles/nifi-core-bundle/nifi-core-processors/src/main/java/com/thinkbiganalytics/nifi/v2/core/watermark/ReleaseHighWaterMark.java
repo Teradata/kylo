@@ -43,7 +43,6 @@ import java.util.List;
 /**
  * Releases the high-water mark (commits or rolls back).
  *
- * @author Sean Felten
  */
 @EventDriven
 @InputRequirement(InputRequirement.Requirement.INPUT_ALLOWED)
