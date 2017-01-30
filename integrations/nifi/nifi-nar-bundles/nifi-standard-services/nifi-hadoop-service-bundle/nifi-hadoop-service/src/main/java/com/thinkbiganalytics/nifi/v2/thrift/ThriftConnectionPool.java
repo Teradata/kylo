@@ -224,8 +224,11 @@ public class ThriftConnectionPool extends AbstractControllerService implements T
     }
 
     /**
-     * using Thread.currentThread().getContextClassLoader(); will ensure that you are using the ClassLoader for you NAR.
+     * using Thread.currentThread().getContextClassLoader() will ensure that you are using the ClassLoader for your NAR.
      *
+     * @param urlString     URL of the class
+     * @param drvName       the driver string
+     * @return  the class loader
      * @throws InitializationException if there is a problem obtaining the ClassLoader
      */
     protected ClassLoader getDriverClassLoader(String urlString, String drvName) throws InitializationException {
