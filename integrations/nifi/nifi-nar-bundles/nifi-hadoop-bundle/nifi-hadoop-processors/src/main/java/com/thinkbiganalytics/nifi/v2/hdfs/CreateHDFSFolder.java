@@ -42,6 +42,7 @@ import org.apache.nifi.processor.exception.ProcessException;
 import org.apache.nifi.processor.util.StandardValidators;
 import org.apache.nifi.util.StopWatch;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -162,8 +163,14 @@ public class CreateHDFSFolder extends AbstractHadoopProcessor {
         return Collections.unmodifiableList(props);
     }
 
+    /**
+     * @see OnScheduled
+     *
+     * @param context  The context provides configuration properties from the processor
+     * @throws IOException in the event
+     */
     @OnScheduled
-    public void onScheduled(ProcessContext context) throws Exception {
+    public void onScheduled(ProcessContext context) throws IOException {
         super.abstractOnScheduled(context);
 
         // Set umask once, to avoid thread safety issues doing it in onTrigger

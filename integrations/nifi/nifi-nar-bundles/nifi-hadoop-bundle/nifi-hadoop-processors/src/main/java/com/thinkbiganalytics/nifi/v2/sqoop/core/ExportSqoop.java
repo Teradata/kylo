@@ -76,6 +76,9 @@ import javax.annotation.Nonnull;
 
 public class ExportSqoop extends AbstractNiFiProcessor {
 
+    /**
+     *
+     */
     public static final PropertyDescriptor SQOOP_CONNECTION_SERVICE = new PropertyDescriptor.Builder()
         .name("Sqoop Connection Service")
         .description("Connection service for executing sqoop jobs.")
@@ -158,12 +161,12 @@ public class ExportSqoop extends AbstractNiFiProcessor {
         .description("Sqoop export failure")
         .build();
 
-    /**
+    /*
      * Property for Kerberos service principal
      */
     private PropertyDescriptor KERBEROS_PRINCIPAL;
 
-    /**
+    /*
      * Property for Kerberos service keytab
      */
     private PropertyDescriptor KERBEROS_KEYTAB;

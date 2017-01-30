@@ -24,7 +24,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
 /**
- * Created by matthutton on 2/8/16.
+ * An adaptor class for ResultSetMetaData that implements certain default behavior for some methods
  */
 public class ResultSetMetaAdapter implements ResultSetMetaData {
 

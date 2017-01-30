@@ -168,8 +168,12 @@ public abstract class AbstractHadoopProcessor extends AbstractNiFiProcessor {
         return properties;
     }
 
-    /*
-     * If your subclass also has an @OnScheduled annotated method and you need hdfsResources in that method, then be sure to call super.abstractOnScheduled(context)
+    /**
+     * If your subclass also has an @OnScheduled annotated method and you need hdfsResources in that method,
+     * then be sure to call super.abstractOnScheduled(context)
+     *
+     * @param context  the context of the processor
+     * @throws IOException if configuration cannot be set for the HDFS resource
      */
     @OnScheduled
     public final void abstractOnScheduled(ProcessContext context) throws IOException {
