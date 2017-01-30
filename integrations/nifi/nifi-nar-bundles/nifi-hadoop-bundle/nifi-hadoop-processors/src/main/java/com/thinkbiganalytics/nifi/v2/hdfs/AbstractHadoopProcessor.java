@@ -117,10 +117,11 @@ public abstract class AbstractHadoopProcessor extends AbstractNiFiProcessor {
 
     /**
      * Validates that one or more files exist, as specified in a single property.
+     *
+     * @return a validator instance that validates the files given
      */
     public static Validator createMultipleFilesExistValidator() {
         return new Validator() {
-
             @Override
             public ValidationResult validate(String subject, String input, ValidationContext context) {
                 final String[] files = input.split(",");

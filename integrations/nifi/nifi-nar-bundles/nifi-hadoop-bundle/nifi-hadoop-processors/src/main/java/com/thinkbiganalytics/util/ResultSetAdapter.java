@@ -43,7 +43,7 @@ import java.util.Calendar;
 import java.util.Map;
 
 /**
- * An adaptor cl
+ * An adapter class that provides certain default actions for objects of type ResultSet
  */
 public class ResultSetAdapter implements ResultSet {
 
