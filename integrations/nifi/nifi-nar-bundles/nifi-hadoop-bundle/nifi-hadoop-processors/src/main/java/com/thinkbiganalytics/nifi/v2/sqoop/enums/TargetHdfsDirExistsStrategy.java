@@ -22,7 +22,6 @@ package com.thinkbiganalytics.nifi.v2.sqoop.enums;
 
 /**
  * List of supported strategies for handling case where target HDFS directory exists
- *
  */
 public enum TargetHdfsDirExistsStrategy {
     DELETE_DIR_AND_IMPORT,

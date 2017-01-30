@@ -164,10 +164,9 @@ public class CreateHDFSFolder extends AbstractHadoopProcessor {
     }
 
     /**
-     * @see OnScheduled
-     *
-     * @param context  The context provides configuration properties from the processor
+     * @param context The context provides configuration properties from the processor
      * @throws IOException in the event
+     * @see OnScheduled
      */
     @OnScheduled
     public void onScheduled(ProcessContext context) throws IOException {

@@ -33,7 +33,6 @@ import static com.google.gson.internal.$Gson$Preconditions.checkNotNull;
 
 /**
  * Run a sqoop export job via a system process
- *
  */
 public class SqoopExportProcessRunner {
 

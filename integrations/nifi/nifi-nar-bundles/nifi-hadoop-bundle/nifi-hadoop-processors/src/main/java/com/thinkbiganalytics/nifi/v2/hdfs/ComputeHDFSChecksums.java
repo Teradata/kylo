@@ -123,7 +123,7 @@ public class ComputeHDFSChecksums extends AbstractHadoopProcessor {
     /**
      * methods to get the properties list
      *
-     * @return  the list of properties supported by this processor
+     * @return the list of properties supported by this processor
      */
     @Override
     protected List<PropertyDescriptor> getSupportedPropertyDescriptors() {

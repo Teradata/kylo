@@ -115,7 +115,7 @@ public abstract class AbstractHadoopProcessor extends AbstractNiFiProcessor {
         return config;
     }
 
-    /*
+    /**
      * Validates that one or more files exist, as specified in a single property.
      */
     public static Validator createMultipleFilesExistValidator() {
@@ -172,7 +172,7 @@ public abstract class AbstractHadoopProcessor extends AbstractNiFiProcessor {
      * If your subclass also has an @OnScheduled annotated method and you need hdfsResources in that method,
      * then be sure to call super.abstractOnScheduled(context)
      *
-     * @param context  the context of the processor
+     * @param context the context of the processor
      * @throws IOException if configuration cannot be set for the HDFS resource
      */
     @OnScheduled
@@ -203,8 +203,14 @@ public abstract class AbstractHadoopProcessor extends AbstractNiFiProcessor {
         hdfsResources.set(new HdfsResources(null, null, null));
     }
 
-    /*
+    /**
      * Reset Hadoop Configuration and FileSystem based on the supplied configuration resources.
+     *
+     * @param configResources for configuration
+     * @param dir             the target directory
+     * @param context         for context, which gives access to the principal
+     * @return An HdfsResources object
+     * @throws IOException if unable to access HDFS
      */
     HdfsResources resetHDFSResources(String configResources, String dir, ProcessContext context) throws IOException {
         // org.apache.hadoop.conf.Configuration saves its current thread context class loader to use for threads that it creates

@@ -85,12 +85,11 @@ public class JdbcCommon {
     /**
      * converts a JDBC result set to an Avro stream
      *
-     * @param rs            The result set of the JDBC query
-     * @param outStream     The output stream to for the Avro formatted records
-     *
+     * @param rs        The result set of the JDBC query
+     * @param outStream The output stream to for the Avro formatted records
      * @return the number of rows converted to Avro format
      * @throws SQLException if errors occur while reading data from the database
-     * @throws IOException if unable to convert to Avro format
+     * @throws IOException  if unable to convert to Avro format
      */
     public static long convertToAvroStream(final ResultSet rs, final OutputStream outStream) throws SQLException, IOException {
         final Schema schema = createSchema(rs);
@@ -151,7 +150,7 @@ public class JdbcCommon {
     /**
      * Examines the result set of a JDBC query and creates an Avro schema with appropriately mapped types to accept rows from the JDBC result.
      *
-     * @param rs    A result set used to obtain data type information
+     * @param rs A result set used to obtain data type information
      * @return an instance of Avro Schema
      * @throws SQLException if errors occur while reading data from the database
      */

@@ -22,7 +22,6 @@ package com.thinkbiganalytics.nifi.v2.sqoop.security;
 
 /**
  * Configuration for encrypting/decrypting password for use with sqoop
- *
  */
 class EncryptPasswordConfiguration {
 

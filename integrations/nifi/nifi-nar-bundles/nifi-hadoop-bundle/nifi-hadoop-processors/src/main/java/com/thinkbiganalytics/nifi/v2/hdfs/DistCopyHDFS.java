@@ -52,7 +52,7 @@ import javax.annotation.Nonnull;
 /**
  * Processor for performing a distributed copy between two HDFS clusters
  *
- * @see  <a href="http://hadoop.apache.org/docs/stable/hadoop-distcp/DistCp.html">http://hadoop.apache.org/docs/stable/hadoop-distcp/DistCp.html</a>
+ * @see <a href="http://hadoop.apache.org/docs/stable/hadoop-distcp/DistCp.html">http://hadoop.apache.org/docs/stable/hadoop-distcp/DistCp.html</a>
  */
 @CapabilityDescription("Copies files from one HDFS location into another using DistCp MR job")
 @EventDriven
@@ -100,7 +100,7 @@ public class DistCopyHDFS extends AbstractHadoopProcessor {
 
     /**
      * property which is a JSON encoded list of files of the form:
-     *  [{ "name" : "example" }]
+     * [{ "name" : "example" }]
      */
     public static final PropertyDescriptor FILES = new PropertyDescriptor.Builder()
         .name("files")
@@ -138,8 +138,8 @@ public class DistCopyHDFS extends AbstractHadoopProcessor {
     /**
      * onTrigger is called when the flow file proceeds through the processor
      *
-     * @param context  passed in by the framework and provides access to the data configured in the processor
-     * @param session  passed in by the framework and provides access to the flow file
+     * @param context passed in by the framework and provides access to the data configured in the processor
+     * @param session passed in by the framework and provides access to the flow file
      * @throws ProcessException if any framework actions fail
      */
     @Override
@@ -203,10 +203,9 @@ public class DistCopyHDFS extends AbstractHadoopProcessor {
     /**
      * method to construct a new DistCp object to perform the distcp
      *
-     * @param pathsList     A list of paths to be recursively copied from one cluster to another
-     * @param destination   The root location on the target cluster
-     *
-     * @return  a DistCp object
+     * @param pathsList   A list of paths to be recursively copied from one cluster to another
+     * @param destination The root location on the target cluster
+     * @return a DistCp object
      * @throws Exception if the construction of the {@link DistCp} object fails for any reason
      */
     protected DistCp getDistCp(List<Path> pathsList, Path destination) throws Exception {

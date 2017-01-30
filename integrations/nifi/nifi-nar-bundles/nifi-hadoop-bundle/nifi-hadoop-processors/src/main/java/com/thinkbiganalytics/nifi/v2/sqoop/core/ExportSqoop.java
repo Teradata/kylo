@@ -61,7 +61,6 @@ import javax.annotation.Nonnull;
 
 /**
  * NiFi Processor to export data from HDFS to a relational system via Sqoop
- *
  */
 @Tags({"thinkbig", "export", "sqoop", "rdbms", "database", "table"})
 @CapabilityDescription("Export data from HDFS to a relational system via Sqoop")
@@ -76,7 +75,7 @@ import javax.annotation.Nonnull;
 public class ExportSqoop extends AbstractNiFiProcessor {
 
     /**
-     *
+     * Property to provide the connection service
      */
     public static final PropertyDescriptor SQOOP_CONNECTION_SERVICE = new PropertyDescriptor.Builder()
         .name("Sqoop Connection Service")
@@ -85,6 +84,9 @@ public class ExportSqoop extends AbstractNiFiProcessor {
         .identifiesControllerService(SqoopConnectionService.class)
         .build();
 
+    /**
+     * Porperty to provide source HDFS directory
+     */
     public static final PropertyDescriptor SOURCE_HDFS_DIRECTORY = new PropertyDescriptor.Builder()
         .name("Source HDFS Directory")
         .description("Source HDFS directory to get the data from for export.")
@@ -93,6 +95,9 @@ public class ExportSqoop extends AbstractNiFiProcessor {
         .expressionLanguageSupported(true)
         .build();
 
+    /**
+     * Property to specify the HDFS file delimiter
+     */
     public static final PropertyDescriptor SOURCE_HDFS_FILE_DELIMITER = new PropertyDescriptor.Builder()
         .name("Source HDFS File Delimiter")
         .description("Delimiter for source data on HDFS.")
@@ -102,6 +107,9 @@ public class ExportSqoop extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .build();
 
+    /**
+     * Property to direct how to interpret nulls
+     */
     public static final PropertyDescriptor SOURCE_NULL_INTERPRETATION_STRATEGY = new PropertyDescriptor.Builder()
         .name("Source Null Interpret Strategy")
         .description("Method for identifying nulls in source HDFS data. "
@@ -115,6 +123,9 @@ public class ExportSqoop extends AbstractNiFiProcessor {
         .expressionLanguageSupported(false)
         .build();
 
+    /**
+     * Property to help map string values to null
+     */
     public static final PropertyDescriptor SOURCE_NULL_CUSTOM_STRING_IDENTIFIER = new PropertyDescriptor.Builder()
         .name("Source Null String Identifier")
         .description("Custom string for identifying null strings in HDFS data")
@@ -123,6 +134,9 @@ public class ExportSqoop extends AbstractNiFiProcessor {
         .expressionLanguageSupported(true)
         .build();
 
+    /**
+     * Property to help map custom strings, for non-string datatypes, to null
+     */
     public static final PropertyDescriptor SOURCE_NULL_CUSTOM_NON_STRING_IDENTIFIER = new PropertyDescriptor.Builder()
         .name("Source Null Non-String Identifier")
         .description("Custom string for identifying null non-strings in HDFS data")
@@ -131,6 +145,9 @@ public class ExportSqoop extends AbstractNiFiProcessor {
         .expressionLanguageSupported(true)
         .build();
 
+    /**
+     * Property to specify the target table name
+     */
     public static final PropertyDescriptor TARGET_TABLE_NAME = new PropertyDescriptor.Builder()
         .name("Target Table")
         .description("The table to populate in the target relational system. NOTE: This table must already exist.")
@@ -139,6 +156,9 @@ public class ExportSqoop extends AbstractNiFiProcessor {
         .expressionLanguageSupported(true)
         .build();
 
+    /**
+     * Property to limit number of map tasks exporting data
+     */
     public static final PropertyDescriptor CLUSTER_MAP_TASKS = new PropertyDescriptor.Builder()
         .name("Cluster Map Tasks")
         .description("Number of map tasks to export data in parallel. Valid values are from 1 to 25. "
@@ -150,11 +170,17 @@ public class ExportSqoop extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.createLongValidator(1L, 25L, true))
         .build();
 
+    /**
+     * Success relationship
+     */
     public static final Relationship REL_SUCCESS = new Relationship.Builder()
         .name("success")
         .description("Sqoop export success")
         .build();
 
+    /**
+     * Failure relationship
+     */
     public static final Relationship REL_FAILURE = new Relationship.Builder()
         .name("failure")
         .description("Sqoop export failure")
