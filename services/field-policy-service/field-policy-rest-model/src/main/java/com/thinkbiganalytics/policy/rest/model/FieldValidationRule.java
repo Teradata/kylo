@@ -23,28 +23,10 @@ package com.thinkbiganalytics.policy.rest.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
- * Created by sr186054 on 2/9/16.
+ * Represents a given validation policy/rule that should be applied to a given field upon ingest.
+ * Refer to the {@link FieldValidationRuleBuilder} for building this object
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FieldValidationRule  extends BaseUiPolicyRule {
-    private String regex;
-    private String type;
-
-
-    public String getRegex() {
-        return regex;
-    }
-
-    public void setRegex(String regex) {
-        this.regex = regex;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
 
 }

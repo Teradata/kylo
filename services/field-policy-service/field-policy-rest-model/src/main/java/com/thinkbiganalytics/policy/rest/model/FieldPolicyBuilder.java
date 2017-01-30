@@ -24,7 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by sr186054 on 4/22/16.
+ * A Builder for creating {@link FieldPolicy} objects.
+ * @see FieldPolicy
  */
 public class FieldPolicyBuilder {
 
@@ -33,8 +34,14 @@ public class FieldPolicyBuilder {
     private String fieldName;
     private String feedFieldName;
 
+    /**
+     * list of field level standardization rules captured in the user interface
+     */
     private List<FieldStandardizationRule> standardization;
 
+    /**
+     * list of field level validation rules captured in the user interface
+     **/
     private List<FieldValidationRule> validation;
 
     public FieldPolicyBuilder(String fieldName) {
@@ -69,6 +76,10 @@ public class FieldPolicyBuilder {
         return this;
     }
 
+    /**
+     * Build a new {@link FieldPolicy}
+     * @return a new {@link FieldPolicy} object
+     */
     public FieldPolicy build() {
         FieldPolicy policy = new FieldPolicy();
         policy.setFieldName(this.fieldName);

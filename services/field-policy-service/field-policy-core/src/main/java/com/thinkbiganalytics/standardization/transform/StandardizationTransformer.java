@@ -25,12 +25,24 @@ import com.thinkbiganalytics.policy.rest.model.FieldStandardizationRule;
 import com.thinkbiganalytics.policy.standardization.StandardizationPolicy;
 
 /**
- * Created by sr186054 on 4/21/16.
+ *  Transformation class to convert domain {@link StandardizationPolicy} to/from ui objects {@link FieldStandardizationRule}
  */
 public interface StandardizationTransformer {
 
+  /**
+   * Convert from the domain object to the user interface object
+   *
+   * @param standardizationRule the domain level standardizer
+   * @return the user interface object
+   */
   FieldStandardizationRule toUIModel(StandardizationPolicy standardizationRule);
 
+  /**
+   * convert from the User interface to the domain object
+   * @param rule the ui rule
+   * @return the domain standardizer
+   * @throws PolicyTransformException
+   */
   StandardizationPolicy fromUiModel(FieldStandardizationRule rule)
       throws PolicyTransformException;
 

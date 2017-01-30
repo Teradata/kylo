@@ -28,7 +28,9 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.List;
 import java.util.Vector;
 
-
+/**
+ * Build domain level {@link StandardizationPolicy} and {@link ValidationPolicy} objects for a given field.
+ */
 public class FieldPolicyBuilder {
 
     public static final FieldPolicy SKIP_VALIDATION = FieldPolicyBuilder.newBuilder().skipSchemaValidation().build();

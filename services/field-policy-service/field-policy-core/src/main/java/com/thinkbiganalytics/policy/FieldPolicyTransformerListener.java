@@ -24,12 +24,12 @@ import com.thinkbiganalytics.policy.standardization.StandardizationPolicy;
 import com.thinkbiganalytics.policy.validation.ValidationPolicy;
 
 /**
- * Created by sr186054 on 4/25/16.
+ * Listener to perfom some work for a given field when a {@link StandardizationPolicy} or {@link ValidationPolicy} is added.
  */
 public interface FieldPolicyTransformerListener {
 
-  public void onAddValidationPolicy(ValidationPolicy policy);
+   void onAddValidationPolicy(ValidationPolicy policy);
 
-  public void onAddStandardizationPolicy(StandardizationPolicy policy);
+   void onAddStandardizationPolicy(StandardizationPolicy policy);
 
 }

@@ -30,13 +30,21 @@ import com.thinkbiganalytics.policy.standardization.Standardizer;
 import java.util.List;
 
 /**
- * Created by sr186054 on 4/21/16.
+ * Transformation class to convert domain {@link StandardizationPolicy} to/from ui objects {@link FieldStandardizationRule}
  */
 public class StandardizationAnnotationTransformer
     extends BasePolicyAnnotationTransformer<FieldStandardizationRule, StandardizationPolicy, Standardizer> implements StandardizationTransformer {
 
   private static final StandardizationAnnotationTransformer instance = new StandardizationAnnotationTransformer();
 
+  /**
+   * Create the User interface object
+   *
+   * @param annotation the class annotation to look for
+   * @param policy     the domain object needed to convert
+   * @param properties the fields that should be used/injected when creating the ui object t
+   * @return the converted user interface object
+   */
   @Override
   public FieldStandardizationRule buildUiModel(Standardizer annotation, StandardizationPolicy policy,
                                                List<FieldRuleProperty> properties) {
@@ -47,6 +55,10 @@ public class StandardizationAnnotationTransformer
     return rule;
   }
 
+  /**
+   * Return the Standardizer annotation to look for
+   * @return the Standardizer annotation class
+   */
   @Override
   public Class<Standardizer> getAnnotationClass() {
     return Standardizer.class;

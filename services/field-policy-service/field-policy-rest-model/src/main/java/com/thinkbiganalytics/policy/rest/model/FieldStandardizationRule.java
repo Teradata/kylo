@@ -23,7 +23,8 @@ package com.thinkbiganalytics.policy.rest.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
- * Created by sr186054 on 2/10/16.
+ * Represents a given standardization policy/rule that should be applied to a given field upon ingest.
+ * Refer to the {@link FieldStandardizationRuleBuilder} for building this object
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FieldStandardizationRule extends BaseUiPolicyRule {

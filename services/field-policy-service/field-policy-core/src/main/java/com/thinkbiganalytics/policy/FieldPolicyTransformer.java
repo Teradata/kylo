@@ -31,7 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by sr186054 on 4/22/16.
+ * Transform a User Interface policy to the domain object
  */
 public class FieldPolicyTransformer {
 
@@ -46,6 +46,9 @@ public class FieldPolicyTransformer {
     this.listener = listener;
   }
 
+  /**
+   * Get the Standardization policy from the User Interface {@link com.thinkbiganalytics.policy.rest.model.FieldPolicy} policy
+   */
   public List<StandardizationPolicy> getStandardizationPolicies() {
     List<StandardizationPolicy> policies = new ArrayList<>();
     List<FieldStandardizationRule> rules = uiFieldPolicy.getStandardization();
@@ -64,7 +67,10 @@ public class FieldPolicyTransformer {
     }
     return policies;
   }
-
+  /**
+   * Get the Validation policy from the User Interface {@link com.thinkbiganalytics.policy.rest.model.FieldPolicy} policy
+   * @return
+   */
   public List<ValidationPolicy> getValidationPolicies() {
     List<ValidationPolicy> policies = new ArrayList<>();
     List<FieldValidationRule> rules = uiFieldPolicy.getValidation();
@@ -84,6 +90,10 @@ public class FieldPolicyTransformer {
     return policies;
   }
 
+  /**
+   * Build the domain level policies attached to the field holding both the Standardization and Validation domain objects transformed from the user interface object
+   * @return
+   */
   public FieldPolicy buildPolicy() {
     List<StandardizationPolicy> standardizationPolicies = getStandardizationPolicies();
     List<ValidationPolicy> validators = getValidationPolicies();

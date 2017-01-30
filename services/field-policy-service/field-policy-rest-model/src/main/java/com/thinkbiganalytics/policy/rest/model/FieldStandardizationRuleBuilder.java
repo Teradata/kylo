@@ -21,7 +21,7 @@ package com.thinkbiganalytics.policy.rest.model;
  */
 
 /**
- * Created by sr186054 on 4/21/16.
+ * Builder for creating new {@link FieldStandardizationRule} objects
  */
 public class FieldStandardizationRuleBuilder extends BasePolicyRuleBuilder<FieldStandardizationRule,FieldStandardizationRuleBuilder> {
 

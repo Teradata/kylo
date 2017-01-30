@@ -27,6 +27,9 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Hold reference to the {@link StandardizationPolicy} and {@link ValidationPolicy} associated to a given field
+ */
 public class FieldPolicy implements Serializable {
 
     private String table;

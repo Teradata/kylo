@@ -30,13 +30,21 @@ import com.thinkbiganalytics.policy.validation.Validator;
 import java.util.List;
 
 /**
- * Created by sr186054 on 4/21/16.
+ * Transformation class to convert domain {@link ValidationPolicy} to/from ui objects {@link FieldValidationRule}
  */
 public class ValidatorAnnotationTransformer
     extends BasePolicyAnnotationTransformer<FieldValidationRule, ValidationPolicy, Validator> implements ValidationTransformer {
 
   private static final ValidatorAnnotationTransformer instance = new ValidatorAnnotationTransformer();
 
+  /**
+   * Create the User interface object
+   *
+   * @param annotation the Validator class annotation to look for
+   * @param policy     the domain object needed to convert
+   * @param properties the fields that should be used/injected when creating the ui object t
+   * @return the converted user interface object
+   */
   @Override
   public FieldValidationRule buildUiModel(Validator annotation, ValidationPolicy policy,
                                           List<FieldRuleProperty> properties) {
@@ -46,6 +54,10 @@ public class ValidatorAnnotationTransformer
     return rule;
   }
 
+  /**
+   * Return the Validator annotation class
+   * @return the Validator annotation class
+   */
   @Override
   public Class<Validator> getAnnotationClass() {
     return Validator.class;

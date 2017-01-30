@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by sr186054 on 4/22/16.
+ * Transform a string of JSON into field policy ({@link FieldPolicy}  objects
  */
 public class FieldPoliciesJsonTransformer {
 
@@ -63,6 +63,12 @@ public class FieldPoliciesJsonTransformer {
 
   }
 
+  /**
+   * build a map of field to field policies
+   *
+   * @return a map with the field name as the key and a field policy object as the valure listing the possible {@link StandardizationPolicy} and {@link ValidationPolicy} associated with the given
+   * field
+   */
   public Map<String, FieldPolicy> buildPolicies() {
 
     Map<String, FieldPolicy> fieldPolicyMap = new HashMap<>();
@@ -72,7 +78,7 @@ public class FieldPoliciesJsonTransformer {
         FieldPolicyTransformer transformer = new FieldPolicyTransformer(uiFieldPolicy);
         transformer.setListener(listener);
         if (uiFieldPolicy.getFieldName() != null) {
-            fieldPolicyMap.put(uiFieldPolicy.getFieldName().toLowerCase().trim(), transformer.buildPolicy());
+          fieldPolicyMap.put(uiFieldPolicy.getFieldName().toLowerCase().trim(), transformer.buildPolicy());
         }
       }
     }
@@ -81,6 +87,9 @@ public class FieldPoliciesJsonTransformer {
 
   }
 
+  /**
+   * Listener to count the total standardizers/validators on a given field
+   */
   private class PolicyTransformationListener implements FieldPolicyTransformerListener {
 
     private int validationCount = 0;

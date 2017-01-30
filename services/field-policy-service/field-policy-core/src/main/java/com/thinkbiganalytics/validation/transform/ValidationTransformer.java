@@ -25,12 +25,24 @@ import com.thinkbiganalytics.policy.rest.model.FieldValidationRule;
 import com.thinkbiganalytics.policy.validation.ValidationPolicy;
 
 /**
- * Created by sr186054 on 4/21/16.
+ *  Transformation class to convert domain {@link ValidationPolicy} to/from ui objects {@link FieldValidationRule}
  */
 public interface ValidationTransformer {
 
+  /**
+   * Convert from the domain object to the user interface object
+   *
+   * @param standardizationRule the domain level validation rule
+   * @return the user interface object representing the validation rule
+   */
   FieldValidationRule toUIModel(ValidationPolicy standardizationRule);
 
+  /**
+   *  convert from the User interface to the domain object
+   * @param rule the user interface validation rule
+   * @return the domain validation object
+   * @throws PolicyTransformException
+   */
   ValidationPolicy fromUiModel(FieldValidationRule rule)
       throws PolicyTransformException;
 
