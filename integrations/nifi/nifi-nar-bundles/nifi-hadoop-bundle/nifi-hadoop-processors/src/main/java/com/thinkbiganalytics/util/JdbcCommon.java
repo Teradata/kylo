@@ -18,8 +18,6 @@ package com.thinkbiganalytics.util;
  */
 
 
-import com.thinkbiganalytics.nifi.thrift.api.RowVisitor;
-
 import org.apache.avro.Schema;
 import org.apache.avro.SchemaBuilder;
 import org.apache.avro.SchemaBuilder.FieldAssembler;
@@ -28,27 +26,18 @@ import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.DatumWriter;
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
-import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Time;
-import java.sql.Timestamp;
-import java.sql.Types;
 
 import static java.sql.Types.ARRAY;
 import static java.sql.Types.BIGINT;
@@ -85,102 +74,30 @@ public class JdbcCommon {
 
     public static Logger logger = LoggerFactory.getLogger(JdbcCommon.class);
 
-    public static long convertToCSVStream(final ResultSet rs, final OutputStream outStream, final RowVisitor visitor) throws SQLException, IOException {
-        // avoid overflowing log with redundant messages
-        int dateConversionWarning = 0;
+    /*
+      private constructor prevents instantiating this utility class
+     */
+    private JdbcCommon() {
 
-        if (rs == null || rs.getMetaData() == null) {
-            logger.warn("Received empty resultset or no metadata.");
-            return 0;
-        }
-        OutputStreamWriter writer = new OutputStreamWriter(outStream);
-        final ResultSetMetaData meta = rs.getMetaData();
-
-        // Write header
-        final int nrOfColumns = meta.getColumnCount();
-        StringBuffer sb = new StringBuffer();
-        for (int i = 1; i <= nrOfColumns; i++) {
-            String columnName = meta.getColumnName(i);
-            sb.append(columnName);
-            if (i != nrOfColumns) {
-                sb.append(",");
-            } else {
-                sb.append("\n");
-            }
-        }
-        writer.append(sb.toString());
-        long nrOfRows = 0;
-        while (rs.next()) {
-            if (visitor != null) {
-                visitor.visitRow(rs);
-            }
-            sb = new StringBuffer();
-            nrOfRows++;
-            for (int i = 1; i <= nrOfColumns; i++) {
-                String val = null;
-
-                int colType = meta.getColumnType(i);
-                if (colType == Types.DATE || colType == Types.TIMESTAMP) {
-                    Timestamp sqlDate = null;
-                    try {
-                        // Extract timestamp
-                        sqlDate = rs.getTimestamp(i);
-                    } catch (SQLException e) {
-                        try {
-                            // Attempt to extract date
-                            Date sqlDateDate = (rs.getDate(i));
-                            if (sqlDateDate != null) {
-                                Long timeInMillis = sqlDateDate.getTime();
-                                sqlDate = new Timestamp(timeInMillis);
-                            }
-                        } catch (Exception e2) {
-                            // Still failed, maybe exotic date type
-                            if (dateConversionWarning++ < 10) {
-                                logger.warn(rs.getMetaData().getColumnName(i) + " is not convertible to timestamp or date");
-                            }
-                        }
-                    }
-
-                    if (visitor != null) {
-                        visitor.visitColumn(rs.getMetaData().getColumnName(i), colType, sqlDate);
-                    }
-                    if (sqlDate != null) {
-                        DateTimeFormatter formatter = ISODateTimeFormat.dateTime().withZoneUTC();
-                        val = formatter.print(new DateTime(sqlDate.getTime()));
-                    }
-                } else if (colType == Types.TIME) {
-                    Time time = rs.getTime(i);
-                    if (visitor != null) {
-                        visitor.visitColumn(rs.getMetaData().getColumnName(i), colType, time);
-                    }
-                    DateTimeFormatter formatter = ISODateTimeFormat.time().withZoneUTC();
-                    val = formatter.print(new DateTime(time.getTime()));
-                } else {
-                    val = rs.getString(i);
-                    if (visitor != null) {
-                        visitor.visitColumn(rs.getMetaData().getColumnName(i), colType, val);
-                    }
-                }
-                sb.append((val == null ? "" : StringEscapeUtils.escapeCsv(val)));
-                if (i != nrOfColumns) {
-                    sb.append(",");
-                } else {
-                    sb.append("\n");
-                }
-            }
-            writer.append(sb.toString());
-        }
-        writer.flush();
-        return nrOfRows;
     }
 
 
+    /**
+     * converts a JDBC result set to an Avro stream
+     *
+     * @param rs            The result set of the JDBC query
+     * @param outStream     The output stream to for the Avro formatted records
+     *
+     * @return the number of rows converted to Avro format
+     * @throws SQLException if errors occur while reading data from the database
+     * @throws IOException if unable to convert to Avro format
+     */
     public static long convertToAvroStream(final ResultSet rs, final OutputStream outStream) throws SQLException, IOException {
         final Schema schema = createSchema(rs);
         final GenericRecord rec = new GenericData.Record(schema);
 
-        final DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<GenericRecord>(schema);
-        try (final DataFileWriter<GenericRecord> dataFileWriter = new DataFileWriter<GenericRecord>(datumWriter)) {
+        final DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<>(schema);
+        try (final DataFileWriter<GenericRecord> dataFileWriter = new DataFileWriter<>(datumWriter)) {
             dataFileWriter.create(schema, outStream);
 
             final ResultSetMetaData meta = rs.getMetaData();
@@ -231,6 +148,13 @@ public class JdbcCommon {
         }
     }
 
+    /**
+     * Examines the result set of a JDBC query and creates an Avro schema with appropriately mapped types to accept rows from the JDBC result.
+     *
+     * @param rs    A result set used to obtain data type information
+     * @return an instance of Avro Schema
+     * @throws SQLException if errors occur while reading data from the database
+     */
     public static Schema createSchema(final ResultSet rs) throws SQLException {
         final ResultSetMetaData meta = rs.getMetaData();
         final int nrOfColumns = meta.getColumnCount();
@@ -326,26 +250,4 @@ public class JdbcCommon {
         return builder.endRecord();
     }
 
-    public static void main(String[] args) throws SQLException, IOException {
-
-        //CREATE USER 'thinkbig'@'localhost' IDENTIFIED BY 'thinkbig';
-        //GRANT ALL PRIVILEGES ON *.* TO 'thinkbig'@'localhost' IDENTIFIED BY 'thinkbig' WITH GRANT OPTION;
-        //FLUSH PRIVILEGES;
-/*
-        com.mysql.jdbc.jdbc2.optional.MysqlDataSource ds
-                = new com.mysql.jdbc.jdbc2.optional.MysqlDataSource();
-        ds.setServerName("localhost");
-        ds.setPortNumber(3306);
-        ds.setDatabaseName("pipeline_db");
-        ds.setUser("thinkbig");
-        ds.setPassword("thinkbig");
-
-        Connection conn = ds.getConnection();
-        Statement st = conn.createStatement();
-        ResultSet rs = st.executeQuery("SELECT * FROM BATCH_STEP_EXECUTION");
-        OutputStream os = new ByteArrayOutputStream();
-        JdbcCommon.convertToCSVStream(rs, os, null);
-        System.out.println(os.toString());
-*/
-    }
 }

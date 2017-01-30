@@ -41,10 +41,18 @@ public class HDFSSupport {
         this.hdfs = hdfs;
     }
 
+
     /**
      * Creates an HDFS folder
+     *
+     * @param path      The location in the HDFS file system
+     *
+     * @param owner     The owener of the new HDFS folder
+     * @param group     The group of the new HDFS folder
+     *
+     * @throws  IOException if creating the folder fails
      */
-    public boolean createFolder(Path path, String owner, String group) {
+    public void createFolder(Path path, String owner, String group) throws IOException {
         try {
             // Create destination directory if it does not exist
             logger.info("Creating path {} ", path);
@@ -58,16 +66,20 @@ public class HDFSSupport {
                 }
                 changeOwner(path, owner, group);
                 logger.info("Successfully created path {}", path);
-                return true;
             }
-
         } catch (Exception e) {
             logger.error("Failed to create path {} due to {}", path, e);
             throw new RuntimeException("Failed to create path [" + path + "]", e);
         }
-        return false;
     }
 
+    /**
+     * Changes the owner of an existing file or directory found at path
+     * @param path      The path of the file or directory
+     *
+     * @param owner     The owner to set
+     * @param group     The group to set
+     */
     public void changeOwner(final Path path, String owner, String group) {
         try {
             if (owner != null || group != null) {

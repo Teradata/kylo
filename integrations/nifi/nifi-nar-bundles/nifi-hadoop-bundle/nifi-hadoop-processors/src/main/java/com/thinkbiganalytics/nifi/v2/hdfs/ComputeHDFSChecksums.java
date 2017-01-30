@@ -71,24 +71,33 @@ public class ComputeHDFSChecksums extends AbstractHadoopProcessor {
         .description("Flow files goes to success relationship")
         .build();
 
+    /**
+     * the absolute base directory for the files given by {@link FILES}
+     */
     public static final PropertyDescriptor DIRECTORY = new PropertyDescriptor.Builder()
         .name("absolute.path")
-        .description("The absolute path to HDFS directory containing files to check. If not provided filenames " +
+        .description("The absolute path to HDFS directory containing files to check. If not provided file names " +
                      "will be treated as absolute paths")
         .required(false)
         .addValidator(StandardValidators.ATTRIBUTE_EXPRESSION_LANGUAGE_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
 
+    /**
+     * directs the processor to fail if any of the files given have a provided checksum not matching the one computed by this processor
+     */
     public static final PropertyDescriptor FAIL_IF_INCORRECT_CHECKSUM = new PropertyDescriptor.Builder()
         .name("failIfWrongChecksum")
-        .description("Decides whether flow should be failed if provided checksum don't match computed one")
+        .description("Decides whether flow should be failed if provided checksum doesn't match computed one")
         .required(true)
         .defaultValue("True")
         .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
         .allowableValues(Sets.newHashSet("True", "False"))
         .build();
 
+    /**
+     * A JSON encoded list of files and checksums.  file names will be relative to {@link DIRECTORY} or absolute paths.
+     */
     public static final PropertyDescriptor FILES = new PropertyDescriptor.Builder()
         .name("files")
         .description("JSON-encoded list of files with their checksums, given like: " +
@@ -111,12 +120,22 @@ public class ComputeHDFSChecksums extends AbstractHadoopProcessor {
      */
     private static final Set<Relationship> relationships = ImmutableSet.of(REL_FAILURE, REL_SUCCESS);
 
+    /**
+     * methods to get the properties list
+     *
+     * @return  the list of properties supported by this processor
+     */
     @Override
     protected List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         return ImmutableList.<PropertyDescriptor>builder().addAll(super.getSupportedPropertyDescriptors()).
             add(DIRECTORY).add(FAIL_IF_INCORRECT_CHECKSUM).add(FILES).build();
     }
 
+    /**
+     * get the relationships for this processor
+     *
+     * @return the set of relationships
+     */
     @Override
     public Set<Relationship> getRelationships() {
         return relationships;

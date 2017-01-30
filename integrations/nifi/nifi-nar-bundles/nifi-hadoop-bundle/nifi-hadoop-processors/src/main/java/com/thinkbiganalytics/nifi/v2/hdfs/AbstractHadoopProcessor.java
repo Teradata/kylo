@@ -118,7 +118,7 @@ public abstract class AbstractHadoopProcessor extends AbstractNiFiProcessor {
     /*
      * Validates that one or more files exist, as specified in a single property.
      */
-    public static final Validator createMultipleFilesExistValidator() {
+    public static Validator createMultipleFilesExistValidator() {
         return new Validator() {
 
             @Override

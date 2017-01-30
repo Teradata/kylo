@@ -43,7 +43,7 @@ import java.util.Calendar;
 import java.util.Map;
 
 /**
- * Created by matthutton on 2/8/16.
+ * An adaptor cl
  */
 public class ResultSetAdapter implements ResultSet {
 

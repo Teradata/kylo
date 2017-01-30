@@ -49,6 +49,11 @@ import java.util.Set;
 
 import javax.annotation.Nonnull;
 
+/**
+ * Processor for performing a distributed copy between two HDFS clusters
+ *
+ * @see  <a href="http://hadoop.apache.org/docs/stable/hadoop-distcp/DistCp.html">http://hadoop.apache.org/docs/stable/hadoop-distcp/DistCp.html</a>
+ */
 @CapabilityDescription("Copies files from one HDFS location into another using DistCp MR job")
 @EventDriven
 @Tags({"hadoop", "HDFS", "filesystem", "thinkbig", "copy", "distributed copy", "distcp"})
@@ -70,6 +75,9 @@ public class DistCopyHDFS extends AbstractHadoopProcessor {
         .description("Files copied to new location")
         .build();
 
+    /**
+     * Property to define the source path, which is used as a base for all {@link FILES}
+     */
     public static final PropertyDescriptor SOURCE = new PropertyDescriptor.Builder()
         .name("source.path")
         .description("Absolute source path, if provided along with 'files' parameter will be treated as absolute " +
@@ -79,6 +87,9 @@ public class DistCopyHDFS extends AbstractHadoopProcessor {
         .expressionLanguageSupported(true)
         .build();
 
+    /**
+     * Property that defines the destination path as an absolute path
+     */
     public static final PropertyDescriptor DESTINATION = new PropertyDescriptor.Builder()
         .name("destination.path")
         .description("Absolute destination path")
@@ -87,6 +98,10 @@ public class DistCopyHDFS extends AbstractHadoopProcessor {
         .expressionLanguageSupported(true)
         .build();
 
+    /**
+     * property which is a JSON encoded list of files of the form:
+     *  [{ "name" : "example" }]
+     */
     public static final PropertyDescriptor FILES = new PropertyDescriptor.Builder()
         .name("files")
         .description("JSON-encoded list of files, given like: " +
@@ -110,11 +125,23 @@ public class DistCopyHDFS extends AbstractHadoopProcessor {
             add(DESTINATION).add(SOURCE).add(FILES).build();
     }
 
+    /**
+     * get the relationships required for the Processor
+     *
+     * @return a set of relationships
+     */
     @Override
     public Set<Relationship> getRelationships() {
         return relationships;
     }
 
+    /**
+     * onTrigger is called when the flow file proceeds through the processor
+     *
+     * @param context  passed in by the framework and provides access to the data configured in the processor
+     * @param session  passed in by the framework and provides access to the flow file
+     * @throws ProcessException if any framework actions fail
+     */
     @Override
     public void onTrigger(@Nonnull final ProcessContext context, @Nonnull final ProcessSession session) throws ProcessException {
         FlowFile flowFile = session.get();
@@ -173,6 +200,15 @@ public class DistCopyHDFS extends AbstractHadoopProcessor {
         session.transfer(flowFile, REL_SUCCESS);
     }
 
+    /**
+     * method to construct a new DistCp object to perform the distcp
+     *
+     * @param pathsList     A list of paths to be recursively copied from one cluster to another
+     * @param destination   The root location on the target cluster
+     *
+     * @return  a DistCp object
+     * @throws Exception if the construction of the {@link DistCp} object fails for any reason
+     */
     protected DistCp getDistCp(List<Path> pathsList, Path destination) throws Exception {
         final Configuration conf = getConfiguration();
         DistCpOptions opts = new DistCpOptions(pathsList, destination);

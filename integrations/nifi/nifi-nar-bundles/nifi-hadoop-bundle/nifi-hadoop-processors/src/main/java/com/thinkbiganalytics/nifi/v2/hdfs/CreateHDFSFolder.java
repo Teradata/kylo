@@ -112,8 +112,8 @@ public class CreateHDFSFolder extends AbstractHadoopProcessor {
     }
 
     /*
-* Validates that a property is a valid umask, i.e. a short octal number that is not negative.
-*/
+    * Validates that a property is a valid umask, i.e. a short octal number that is not negative.
+    */
     static Validator createUmaskValidator() {
         return new Validator() {
             @Override
