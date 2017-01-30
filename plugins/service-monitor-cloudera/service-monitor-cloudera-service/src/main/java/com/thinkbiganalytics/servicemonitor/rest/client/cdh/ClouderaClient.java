@@ -27,86 +27,83 @@ import com.thinkbiganalytics.servicemonitor.rest.client.RestClientConfig;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 
 /**
+ * Cloudera REST API client.
+ *
  * Created by sr186054 on 10/1/15.
  */
 @Component
 public class ClouderaClient {
 
-  private static final Logger LOG = LoggerFactory.getLogger(ClouderaClient.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ClouderaClient.class);
 
-  @Autowired
-  @Qualifier("clouderaRestClientConfig")
-  private RestClientConfig clientConfig;
+    @Inject
+    @Qualifier("clouderaRestClientConfig")
+    private RestClientConfig clientConfig;
 
-  private ClouderaManagerClientBuilder clouderaManagerClientBuilder;
+    private ClouderaManagerClientBuilder clouderaManagerClientBuilder;
 
-  private ClouderaRootResource clouderaRootResource;
+    private ClouderaRootResource clouderaRootResource;
 
-  private AtomicBoolean creatingResource = new AtomicBoolean(false);
+    private AtomicBoolean creatingResource = new AtomicBoolean(false);
 
- private Integer clientAttempts = 0;
+    private Integer clientAttempts = 0;
 
 
-  public ClouderaClient() {
+    public ClouderaClient() {
 
-  }
-
-  public ClouderaClient(RestClientConfig clientConfig) {
-
-    this.clientConfig = clientConfig;
-  }
-
-  @PostConstruct
-  public void setClouderaManagerClientBuilder() {
-    String host = clientConfig.getServerUrl();
-    String portString = clientConfig.getPort();
-    if (StringUtils.isBlank(portString)) {
-      portString = "7180";
     }
-    Integer port = new Integer(portString);
-    String username = clientConfig.getUsername();
-    String password = clientConfig.getPassword();
-    LOG.info("Created New Cloudera Client for Host [" + host + "], user: [" + username + "]");
-    this.clouderaManagerClientBuilder =
-        new ClouderaManagerClientBuilder().withHost(host).withPort(port).withUsernamePassword(username, password);
 
-  }
+    public ClouderaClient(RestClientConfig clientConfig) {
 
-
-  public ClouderaRootResource getClouderaResource() {
-    if(clouderaRootResource == null){
-      this.clientAttempts++;
+        this.clientConfig = clientConfig;
     }
-    if(clouderaRootResource == null && !creatingResource.get()) {
-      creatingResource.set(true);
-      try {
-        ApiRootResource rootResource = this.clouderaManagerClientBuilder.build();
-        clouderaRootResource = ClouderaRootResourceManager.getRootResource(rootResource);
-        LOG.info("Successfully Created Cloudera Client");
-      }catch (Exception e){
-        creatingResource.set(false);
-      }
+
+    @PostConstruct
+    public void setClouderaManagerClientBuilder() {
+        String host = clientConfig.getServerUrl();
+        String portString = clientConfig.getPort();
+        if (StringUtils.isBlank(portString)) {
+            portString = "7180";
+        }
+        Integer port = new Integer(portString);
+        String username = clientConfig.getUsername();
+        String password = clientConfig.getPassword();
+        LOG.info("Created New Cloudera Client for Host [" + host + "], user: [" + username + "]");
+        this.clouderaManagerClientBuilder =
+            new ClouderaManagerClientBuilder().withHost(host).withPort(port).withUsernamePassword(username, password);
+
     }
-    if(clientAttempts >=3){
-      //rest
-      clientAttempts = 0;
-      creatingResource.set(false);
+
+
+    public ClouderaRootResource getClouderaResource() {
+        if (clouderaRootResource == null) {
+            this.clientAttempts++;
+        }
+        if (clouderaRootResource == null && !creatingResource.get()) {
+            creatingResource.set(true);
+            try {
+                ApiRootResource rootResource = this.clouderaManagerClientBuilder.build();
+                clouderaRootResource = ClouderaRootResourceManager.getRootResource(rootResource);
+                LOG.info("Successfully Created Cloudera Client");
+            } catch (Throwable e) {
+                LOG.error("Failed to create Cloudera Client", e);
+                creatingResource.set(false);
+            }
+        }
+        if (clientAttempts >= 3) {
+            //rest
+            clientAttempts = 0;
+            creatingResource.set(false);
+        }
+        return clouderaRootResource;
     }
-    return  clouderaRootResource;
-  }
-
-  public void setClientConfig(RestClientConfig clientConfig) {
-    this.clientConfig = clientConfig;
-  }
-
-
 }

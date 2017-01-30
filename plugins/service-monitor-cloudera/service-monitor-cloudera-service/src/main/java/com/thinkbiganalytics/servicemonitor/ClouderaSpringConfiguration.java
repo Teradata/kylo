@@ -21,19 +21,27 @@ package com.thinkbiganalytics.servicemonitor;
  */
 
 import com.thinkbiganalytics.servicemonitor.check.ClouderaServicesStatusCheck;
+import com.thinkbiganalytics.servicemonitor.rest.client.cdh.ClouderaClient;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
+ * Spring configuration for Cloudera service monitor.
+ *
  * Created by sr186054 on 4/13/16.
  */
 @Configuration
 public class ClouderaSpringConfiguration {
 
-  @Bean(name = "clouderaServicesStatusCheck")
-  public ClouderaServicesStatusCheck clouderaServicesStatusCheck() {
-    return new ClouderaServicesStatusCheck();
-  }
+    @Bean(name = "clouderaServicesStatusCheck")
+    public ClouderaServicesStatusCheck clouderaServicesStatusCheck() {
+        return new ClouderaServicesStatusCheck();
+    }
+
+    @Bean
+    public ClouderaClient clouderaClient() {
+        return new ClouderaClient();
+    }
 
 }

@@ -21,7 +21,6 @@ package com.thinkbiganalytics.servicemonitor.rest.client.cdh;
  */
 
 import com.cloudera.api.ApiRootResource;
-import com.cloudera.api.DataView;
 import com.cloudera.api.v1.RootResourceV1;
 
 import org.apache.commons.lang3.StringUtils;
@@ -30,42 +29,43 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * Cloudera resource manager which first attempts to get configured Cloudera API version and if that fails it
+ * falls back to first API version.
+ *
  * Created by sr186054 on 10/8/15.
  */
-public class ClouderaRootResourceManager {
+class ClouderaRootResourceManager {
 
-  private static final Logger LOG = LoggerFactory.getLogger(ClouderaRootResourceManager.class);
-
-  private static DataView dataView = DataView.FULL;
+    private static final Logger LOG = LoggerFactory.getLogger(ClouderaRootResourceManager.class);
 
 
-  public static ClouderaRootResource getRootResource(ApiRootResource apiRootResource) {
+    /**
+     * Will attempt to get configured api version. If that fails it will fall back to API v1.
+     */
+    static ClouderaRootResource getRootResource(ApiRootResource apiRootResource) {
 
-    String version = apiRootResource.getCurrentVersion();
-    Integer numericVersion = new Integer(StringUtils.substringAfter(version,"v"));
-    RootResourceV1 rootResource = null;
-    Integer maxVersion = 10;
-    if(numericVersion > maxVersion){
-      numericVersion = maxVersion;
+        String version = apiRootResource.getCurrentVersion();
+        Integer numericVersion = new Integer(StringUtils.substringAfter(version, "v"));
+        RootResourceV1 rootResource = null;
+        Integer maxVersion = 10;
+        if (numericVersion > maxVersion) {
+            numericVersion = maxVersion;
+        }
+
+        try {
+            rootResource = (RootResourceV1) MethodUtils.invokeMethod(apiRootResource, "getRootV" + numericVersion);
+        } catch (Exception ignored) {
+
+        }
+        if (rootResource == null) {
+            LOG.info("Unable to get RootResource for version {}, returning version 1", numericVersion);
+            rootResource = apiRootResource.getRootV1();
+        }
+
+        return new DefaultClouderaRootResource(rootResource);
+
+
     }
-
-    try {
-      rootResource = (RootResourceV1)MethodUtils.invokeMethod(apiRootResource,"getRootV"+numericVersion);
-      } catch (Exception  e) {
-
-    }
-    if(rootResource == null){
-      LOG.info("Unable to get RootResource for version {}, returning version 1",numericVersion);
-      rootResource = apiRootResource.getRootV1();
-    }
-
-
-
-
-    return new DefaultClouderaRootResource(rootResource);
-
-
-  }
 
 
 }

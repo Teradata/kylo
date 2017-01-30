@@ -89,15 +89,15 @@ Create a shell script to startup the Docker container. This makes it easier to c
  <dependency> 
     <groupId>com.thinkbiganalytics.datalake</groupId> 
     <artifactId>thinkbig-service-monitor-ambari</artifactId> 
-    <version>0.3.0-SNAPSHOT</version> 
+    <version>${project.version}</version> 
   </dependency/>
 
   To
 
    <dependency> 
       <groupId>com.thinkbiganalytics.datalake</groupId> 
-      <artifactId>thinkbig-service-monitor-cloudera</artifactId> 
-      <version>0.3.0-SNAPSHOT</version> 
+      <artifactId>thinkbig-service-monitor-cloudera-service</artifactId> 
+      <version>${project.version}</version> 
     </dependency/>
 
   . From the data-lake-accelerator root folder run

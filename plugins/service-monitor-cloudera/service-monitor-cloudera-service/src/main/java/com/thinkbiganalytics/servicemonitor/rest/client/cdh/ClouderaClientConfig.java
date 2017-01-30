@@ -27,15 +27,17 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
+ * Spring configuration for Cloudera client.
+ *
  * Created by sr186054 on 10/1/15.
  */
 @Configuration
 public class ClouderaClientConfig {
 
-  @Bean(name = "clouderaRestClientConfig")
-  @ConfigurationProperties("clouderaRestClientConfig")
-  public RestClientConfig getConfig() {
-    return new RestClientConfig();
-  }
+    @Bean(name = "clouderaRestClientConfig")
+    @ConfigurationProperties("clouderaRestClientConfig")
+    public RestClientConfig getConfig() {
+        return new RestClientConfig();
+    }
 
 }
