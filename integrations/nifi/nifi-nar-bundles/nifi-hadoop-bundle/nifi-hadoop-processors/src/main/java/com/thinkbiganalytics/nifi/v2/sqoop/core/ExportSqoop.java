@@ -199,6 +199,11 @@ public class ExportSqoop extends AbstractNiFiProcessor {
     private List<PropertyDescriptor> properties;
     private Set<Relationship> relationships;
 
+    /**
+     * Readies properties and relationships when the processor is initialized
+     *
+     * @param context passed to parent class to initialize processor
+     */
     @Override
     protected void init(@Nonnull final ProcessorInitializationContext context) {
         super.init(context);
@@ -333,6 +338,12 @@ public class ExportSqoop extends AbstractNiFiProcessor {
         }
     }
 
+    /**
+     * Called by the framework this method does additional validation on properties
+     *
+     * @param validationContext used to retrieves the properties to check
+     * @return A collection of ValidationResult's which will be checked by the framework
+     */
     @Override
     protected Collection<ValidationResult> customValidate(ValidationContext validationContext) {
         final List<ValidationResult> results = new ArrayList<>();

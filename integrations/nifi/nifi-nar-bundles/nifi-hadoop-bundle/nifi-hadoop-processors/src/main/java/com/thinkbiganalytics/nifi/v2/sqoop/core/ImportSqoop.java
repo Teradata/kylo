@@ -79,6 +79,9 @@ import javax.annotation.Nonnull;
 
 public class ImportSqoop extends AbstractNiFiProcessor {
 
+    /**
+     * Property to provide the connection service
+     */
     public static final PropertyDescriptor SQOOP_CONNECTION_SERVICE = new PropertyDescriptor.Builder()
         .name("Sqoop Connection Service")
         .description("Connection service for executing sqoop jobs.")
@@ -86,6 +89,9 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         .identifiesControllerService(SqoopConnectionService.class)
         .build();
 
+    /**
+     * Property to specify the table in the relational database that we wish to export
+     */
     public static final PropertyDescriptor SOURCE_TABLE_NAME = new PropertyDescriptor.Builder()
         .name("Source Table")
         .description("The table to extract from the source relational system.")
@@ -95,6 +101,11 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         .expressionLanguageSupported(true)
         .build();
 
+    /**
+     * A property to specify the fields in the source table
+     * Field names (in order) to read from the source table. ie. the SELECT fields. Separate them using commas e.g. field1,field2,field3.
+     * + Inconsistent order will cause corruption of the downstream data. Indicate * to get all columns from table.
+     */
     public static final PropertyDescriptor SOURCE_TABLE_FIELDS = new PropertyDescriptor.Builder()
         .name("Source Fields")
         .description(
@@ -106,6 +117,9 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         .expressionLanguageSupported(true)
         .build();
 
+    /**
+     * A property to specify a WHERE clause for the target table query, which acts as a filter for the exported data
+     */
     public static final PropertyDescriptor SOURCE_TABLE_WHERE_CLAUSE = new PropertyDescriptor.Builder()
         .name("Source Table WHERE Clause")
         .description("The WHERE clause to use for the source table. This will act as a filter on source table.")
@@ -114,6 +128,9 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         .expressionLanguageSupported(true)
         .build();
 
+    /**
+     * A property to indicate the load type (full table, incremental based on last modified time field, incremental based on id field).
+     */
     public static final PropertyDescriptor SOURCE_LOAD_STRATEGY = new PropertyDescriptor.Builder()
         .name("Source Load Strategy")
         .description("The load type (full table, incremental based on last modified time field, incremental based on id field).")
@@ -123,7 +140,9 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(false)
         .build();
-
+    /**
+     * A property for source column name that contains the last modified time / id for incremental-type load. Only applicable for incremental-type load.
+     */
     public static final PropertyDescriptor SOURCE_CHECK_COLUMN_NAME = new PropertyDescriptor.Builder()
         .name("Source Check Column Name (INCR)")
         .description("Source column name that contains the last modified time / id for incremental-type load. Only applicable for incremental-type load.")
@@ -132,6 +151,9 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         .expressionLanguageSupported(true)
         .build();
 
+    /**
+     * The property containing value of current watermark. Only applicable for incremental-type load.
+     */
     public static final PropertyDescriptor SOURCE_PROPERTY_WATERMARK = new PropertyDescriptor.Builder()
         .name("Watermark Property (INCR)")
         .description("Property containing value of current watermark. Only applicable for incremental-type load.")
@@ -140,7 +162,10 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
-
+    /**
+     * Source column value for the last modified time / id for tracking incremental-type load. Only applicable for
+     * incremental-type load This should generally be ${value for Watermark Property (INCR)}.
+     */
     public static final PropertyDescriptor SOURCE_CHECK_COLUMN_LAST_VALUE = new PropertyDescriptor.Builder()
         .name("Source Check Column Last Value (INCR)")
         .description("Source column value for the last modified time / id for tracking incremental-type load. Only applicable for incremental-type load. "
@@ -151,6 +176,11 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         .expressionLanguageSupported(true)
         .build();
 
+    /**
+     * A column of the table that should be used to split work units for parallel imports.  By default,
+     * the table's primary key will be used.  If this column is not provided, and the table does not have a
+     * primary key, one mapper will be used for the import.
+     */
     public static final PropertyDescriptor SOURCE_SPLIT_BY_FIELD = new PropertyDescriptor.Builder()
         .name("Source Split By Field")
         .description("A column of the table that should be used to split work units for parallel imports. "
@@ -161,6 +191,12 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         .expressionLanguageSupported(true)
         .build();
 
+    /**
+     * A query to get the min and max values for split by field column. This can improve the efficiency of
+     * import. The min and max values can also be explicitly provided (e.g. SELECT 1, 10). Query will be
+     * literally run without modification, so please ensure that it is correct. Query should return one row
+     * with exactly two columns.
+     */
     public static final PropertyDescriptor SOURCE_BOUNDARY_QUERY = new PropertyDescriptor.Builder()
         .name("Source Boundary Query")
         .description("A query to get the min and max values for split by field column. This can improve the efficiency of import. "
@@ -172,6 +208,10 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         .expressionLanguageSupported(true)
         .build();
 
+    /**
+     * A property to specify the number of map tasks to extract data in parallel.  Higher values put more load on the source
+     * system.  Also, consider capacity of cluster when setting this property value.
+     */
     public static final PropertyDescriptor CLUSTER_MAP_TASKS = new PropertyDescriptor.Builder()
         .name("Cluster Map Tasks")
         .description("Number of map tasks to extract data in parallel. "
@@ -183,6 +223,9 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
         .build();
 
+    /**
+     * A property to specify the job name to the cluster. This is to allow ease of identification.
+     */
     public static final PropertyDescriptor CLUSTER_UI_JOB_NAME = new PropertyDescriptor.Builder()
         .name("Cluster UI Job Name")
         .description("The job will be shown in the UI via the provided name. This is to allow ease of identification.")
@@ -191,6 +234,11 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .build();
 
+    /**
+     * A property to speficify the target HDFS directory to land data in. The directory should
+     * not pre-exist. Otherwise, job will fail. This behavior is designed to prevent accidental overwrites.
+     * Also, verify that permissions on HDFS are appropriate.
+     */
     public static final PropertyDescriptor TARGET_HDFS_DIRECTORY = new PropertyDescriptor.Builder()
         .name("Target HDFS Directory")
         .description("Target HDFS directory to land data in. The directory should not pre-exist. "
@@ -202,6 +250,12 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .build();
 
+    /**
+     * A property to specify the strategy for handling the case where target HDFS directory exists. By default, the import job
+     * will fail (to prevent accidental data corruption).  This behavior can be modified to delete existing
+     * HDFS directory, and create it again during data import.  If delete option is chosen, and the target
+     * HDFS directory does not exist, the data import will proceed and create it.
+     */
     public static final PropertyDescriptor TARGET_HDFS_DIRECTORY_EXISTS_STRATEGY = new PropertyDescriptor.Builder()
         .name("Target HDFS Directory - If Exists?")
         .description("Strategy for handling the case where target HDFS directory exists. "
@@ -215,6 +269,9 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         .defaultValue(TargetHdfsDirExistsStrategy.FAIL_IMPORT.toString())
         .build();
 
+    /**
+     * A property to specify the format for the target data
+     */
     public static final PropertyDescriptor TARGET_EXTRACT_DATA_FORMAT = new PropertyDescriptor.Builder()
         .name("Target Extract Data Format")
         .description("Format to land the extracted data in on HDFS.")
@@ -225,6 +282,10 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         .defaultValue(ExtractDataFormat.TEXT.toString())
         .build();
 
+    /**
+     * A property to specify the delimiter for fields for data landing in HDFS. This is relevant
+     * for TEXT and SEQUENCE_FILE target extract data formats.
+     */
     public static final PropertyDescriptor TARGET_HDFS_FILE_FIELD_DELIMITER = new PropertyDescriptor.Builder()
         .name("Target HDFS File Field Delimiter")
         .description("Delimiter for fields for data landing in HDFS. This is relevant for TEXT and SEQUENCE_FILE target extract data formats.")
@@ -234,6 +295,10 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .build();
 
+    /**
+     * A property to specify the delimiter for records for data landing in HDFS. This is relevant
+     * for TEXT and SEQUENCE_FILE target extract data formats.
+     */
     public static final PropertyDescriptor TARGET_HDFS_FILE_RECORD_DELIMITER = new PropertyDescriptor.Builder()
         .name("Target HDFS File Record Delimiter")
         .description("Delimiter for records for data landing in HDFS. This is relevant for TEXT and SEQUENCE_FILE target extract data formats.")
@@ -243,6 +308,10 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .build();
 
+    /**
+     * A property to specify the strategy to handle Hive-specific delimiters (\n, \r, \01).
+     * Facilitates downstream Hive ingestion.
+     */
     public static final PropertyDescriptor TARGET_HIVE_DELIM_STRATEGY = new PropertyDescriptor.Builder()
         .name("Target Hive Delimiter Strategy")
         .description("Strategy to handle Hive-specific delimiters (\\n, \\r, \\01). Facilitates downstream Hive ingestion.")
@@ -253,6 +322,10 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         .defaultValue(HiveDelimStrategy.DROP.toString())
         .build();
 
+    /**
+     * A property to specify the replacement delimiter for 'REPLACE' strategy.
+     * Facilitates downstream Hive ingestion.
+     */
     public static final PropertyDescriptor TARGET_HIVE_REPLACE_DELIM = new PropertyDescriptor.Builder()
         .name("Target Hive Replacement Delimiter")
         .description("Replacement delimiter for 'REPLACE' strategy. Facilitates downstream Hive ingestion.")
@@ -261,6 +334,10 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .build();
 
+    /**
+     * A property to specify the compression algorithm to use for data landing in HDFS.
+     * For PARQUET data format, compression is not supported.
+     */
     public static final PropertyDescriptor TARGET_COMPRESSION_ALGORITHM = new PropertyDescriptor.Builder()
         .name("Target Compression Algorithm")
         .description("Compression algorithm to use for data landing in HDFS. For PARQUET data format, compression is not supported.")
@@ -271,6 +348,13 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         .defaultValue(CompressionAlgorithm.NONE.toString())
         .build();
 
+    /**
+     * A property to specify the mapping to use for source columns (SQL type) to target (Java type). This
+     * will override Sqoop's default  mapping.  Only provide mappings that you wish to override. The
+     * source must contain the specified column/s. Also, this is REQUIRED for source columns that Sqoop
+     * is unable to map (An example is Oracle NCLOB data type). Mappings can be entered as COLUMN=Type
+     * pairs separated by comma. Ensure that there are no spaces in entry. Example: PO_ID=Integer,PO_DETAILS=String
+     */
     public static final PropertyDescriptor TARGET_COLUMN_TYPE_MAPPING = new PropertyDescriptor.Builder()
         .name("Target Column Type Mapping")
         .description("Mapping to use for source columns (SQL type) to target (Java type). "
@@ -284,6 +368,13 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .build();
 
+    /**
+     * A by-product of importing data is a Sqoop-generated Java class that can encapsulate one row of the
+     * imported table. This can help with subsequent MapReduce processing of the data.  This property value
+     * specifies the output directory that Sqoop should use to create these artifacts.  Please ensure that
+     * the specified directory has appropriate write permissions. DEFAULT VALUE = Working directory from
+     * where sqoop is launched (i.e. NiFi installation home directory)
+     */
     public static final PropertyDescriptor SQOOP_CODEGEN_DIR = new PropertyDescriptor.Builder()
         .name("Sqoop Code Generation Directory")
         .description("A by-product of importing data is a Sqoop-generated Java class that can encapsulate one row of the imported table. "
@@ -296,6 +387,10 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         .addValidator(new StandardValidators.DirectoryExistsValidator(true, false))
         .build();
 
+    /**
+     * This property is for SQL Server only. By default, the source schema is generally
+     * 'dbo'.  If the source table to be ingested is in another schema, provide that value here.
+     */
     public static final PropertyDescriptor SOURCESPECIFIC_SQLSERVER_SCHEMA = new PropertyDescriptor.Builder()
         .name("[SQL Server Only] Source Schema")
         .description("This property is for SQL Server only. By default, the source schema is generally 'dbo'. "
@@ -305,11 +400,17 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .build();
 
+    /**
+     * The success relationship
+     */
     public static final Relationship REL_SUCCESS = new Relationship.Builder()
         .name("success")
         .description("Sqoop import success")
         .build();
 
+    /**
+     * The failure relationship
+     */
     public static final Relationship REL_FAILURE = new Relationship.Builder()
         .name("failure")
         .description("Sqoop import failure")
@@ -328,6 +429,11 @@ public class ImportSqoop extends AbstractNiFiProcessor {
     private List<PropertyDescriptor> properties;
     private Set<Relationship> relationships;
 
+    /**
+     * Readies properties and relationships when the processor is initialized
+     *
+     * @param context passed to parent class to initialize processor
+     */
     @Override
     protected void init(@Nonnull final ProcessorInitializationContext context) {
         super.init(context);
@@ -521,6 +627,12 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         }
     }
 
+    /**
+     * Called by the framework this method does additional validation on properties
+     *
+     * @param validationContext used to retrieves the properties to check
+     * @return A collection of ValidationResult's which will be checked by the framework
+     */
     @Override
     protected Collection<ValidationResult> customValidate(ValidationContext validationContext) {
 
