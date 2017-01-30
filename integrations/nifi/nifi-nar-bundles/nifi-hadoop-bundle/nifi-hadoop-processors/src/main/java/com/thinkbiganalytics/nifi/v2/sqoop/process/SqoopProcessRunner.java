@@ -35,7 +35,6 @@ import static com.google.gson.internal.$Gson$Preconditions.checkNotNull;
 /**
  * Run a sqoop job via a system process
  *
- * @author jagrut sharma
  */
 public class SqoopProcessRunner {
 

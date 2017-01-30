@@ -67,7 +67,6 @@ import javax.annotation.Nonnull;
 /**
  * NiFi Processor to import data from a relational source into HDFS via Sqoop
  *
- * @author jagrut sharma
  */
 @Tags({"thinkbig", "ingest", "sqoop", "rdbms", "database", "table"})
 @CapabilityDescription("Import data from a relational source into HDFS via Sqoop")

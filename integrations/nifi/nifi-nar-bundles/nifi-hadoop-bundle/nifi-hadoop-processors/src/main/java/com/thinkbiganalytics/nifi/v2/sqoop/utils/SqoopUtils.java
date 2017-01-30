@@ -32,7 +32,6 @@ import javax.annotation.Nonnull;
 /**
  * Helpful methods to use with Sqoop processors
  *
- * @author jagrut sharma
  */
 public class SqoopUtils {
 

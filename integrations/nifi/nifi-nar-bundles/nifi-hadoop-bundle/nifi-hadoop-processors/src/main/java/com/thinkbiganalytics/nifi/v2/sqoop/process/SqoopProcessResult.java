@@ -23,7 +23,6 @@ package com.thinkbiganalytics.nifi.v2.sqoop.process;
 /**
  * Class to store the result of sqoop command execution
  *
- * @author jagrut sharma
  */
 public class SqoopProcessResult {
 

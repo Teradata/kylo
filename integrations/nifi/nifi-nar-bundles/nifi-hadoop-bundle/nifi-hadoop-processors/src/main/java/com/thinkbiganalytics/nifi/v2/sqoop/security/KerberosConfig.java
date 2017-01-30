@@ -29,7 +29,6 @@ import java.util.List;
 /**
  * Class to store Kerberos Configuration. Used for doing a kinit in Kerberized environment.
  *
- * @author jagrut sharma
  */
 public class KerberosConfig {
 

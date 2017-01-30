@@ -35,7 +35,6 @@ import javax.crypto.spec.SecretKeySpec;
 /**
  * A utility to generate an encrypted password for use with Sqoop. Uses sqoop recommended procedure.
  *
- * @author jagrut sharma
  */
 
 //Reference: http://ingest.tips/2015/03/12/managing-passwords-sqoop/

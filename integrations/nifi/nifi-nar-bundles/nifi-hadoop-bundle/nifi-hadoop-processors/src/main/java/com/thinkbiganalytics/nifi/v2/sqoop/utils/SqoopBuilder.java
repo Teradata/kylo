@@ -39,7 +39,6 @@ import javax.annotation.Nonnull;
 /**
  * A class to build a sqoop command that can be run on the command line
  *
- * @author jagrut sharma
  */
 
 public class SqoopBuilder {

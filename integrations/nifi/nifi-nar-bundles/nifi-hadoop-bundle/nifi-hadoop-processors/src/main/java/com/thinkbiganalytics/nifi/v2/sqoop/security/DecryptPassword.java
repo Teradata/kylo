@@ -33,7 +33,6 @@ import javax.crypto.spec.SecretKeySpec;
 /**
  * A utility to decrypt passwords, provided in Base64 encoding.
  *
- * @author jagrut sharma
  */
 /* Uses Sqoop's decryption algorithm */
 

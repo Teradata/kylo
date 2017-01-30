@@ -62,7 +62,6 @@ import javax.annotation.Nonnull;
 /**
  * NiFi Processor to export data from HDFS to a relational system via Sqoop
  *
- * @author jagrut sharma
  */
 @Tags({"thinkbig", "export", "sqoop", "rdbms", "database", "table"})
 @CapabilityDescription("Export data from HDFS to a relational system via Sqoop")

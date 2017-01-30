@@ -34,7 +34,6 @@ import static com.google.gson.internal.$Gson$Preconditions.checkNotNull;
 /**
  * Class to handle a sqoop export stream, and clear it to avoid filling up buffer
  *
- * @author jagrut sharma
  */
 class SqoopExportThreadedStreamHandler extends Thread {
 

@@ -29,7 +29,6 @@ import org.apache.nifi.logging.ComponentLog;
 /**
  * A class to build a sqoop export command that can be run on the command line
  *
- * @author jagrut sharma
  */
 public class SqoopExportBuilder {
 
