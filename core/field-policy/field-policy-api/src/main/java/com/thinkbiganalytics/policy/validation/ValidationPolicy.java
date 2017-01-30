@@ -24,10 +24,19 @@ package com.thinkbiganalytics.policy.validation;
 import java.io.Serializable;
 
 /**
- * Created by matthutton on 1/20/16.
+ * Perform custom validation logic while moving data into the datalake, validating each value.
+ * The class should be annotated with a {@link Validator} and any fields needed to be captured by the end user should be annotated with the {@link com.thinkbiganalytics.policy.PolicyProperty}
+ *
+ * @see Validator class annotation
  */
 public interface ValidationPolicy<T> extends Serializable {
 
+  /**
+   * Perform custom validation logic return a {@code true} if the passed in {@code value} is valid, {@code false} if it is invalid.
+   *
+   * @param value the value to validate
+   * @return {@code true} if the passed in {@code value} is valid, {@code false} if it is invalid
+   */
   boolean validate(T value);
 
 

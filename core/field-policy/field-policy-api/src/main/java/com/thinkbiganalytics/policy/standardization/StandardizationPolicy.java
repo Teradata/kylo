@@ -25,9 +25,19 @@ import java.io.Serializable;
 
 /**
  * Provides cleansing or data standardization returning a new value from the provided value
+ * Perform custom standardization logic to transform/cleanse the data before saving to the datalake.
+ * The class should be annotated with a {@link Standardizer} and any fields needed to be captured by the end user should be annotated with the {@link com.thinkbiganalytics.policy.PolicyProperty}
+ *
+ * @see Standardizer class annotation
  */
 public interface StandardizationPolicy extends Serializable {
 
-  String convertValue(String value);
+    /**
+     * Convert a incoming {@code value} to new value.
+     *
+     * @param value the value to transform/cleanse
+     * @return the new value
+     */
+    String convertValue(String value);
 
 }
