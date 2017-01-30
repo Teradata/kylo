@@ -20,8 +20,16 @@ package com.thinkbiganalytics.app;
  * #L%
  */
 
-
+/**
+ * Allow classes to subscribe to the startup event of Kylo.
+ * The startup event is fired when Spring has refreshed its context and started.
+ */
 public interface ServicesApplicationStartup {
 
+    /**
+     * Subscribe to the start of the application
+     *
+     * @param o a listener that will be called when the application starts and Spring is loaded
+     */
     void subscribe(ServicesApplicationStartupListener o);
 }

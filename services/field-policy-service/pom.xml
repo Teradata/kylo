@@ -15,7 +15,6 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>field-policy-common</module>
         <module>field-policy-core</module>
         <module>field-policy-rest-model</module>
         <module>field-policy-controller</module>

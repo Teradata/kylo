@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Created by sr186054 on 4/22/16.
+ * Utility class to get the list of Standardization and Validation rules for the User interface
  */
 public class AvailablePolicies {
 

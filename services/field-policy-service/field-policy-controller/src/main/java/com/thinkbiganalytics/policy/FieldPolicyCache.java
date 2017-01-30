@@ -38,7 +38,9 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 /**
- * Created by sr186054 on 9/21/16.
+ * Hold a cache of the Standardization and Validation rules
+ * This cache is built on startup on the application via a startup listener
+ * {@link ServicesApplicationStartup}
  */
 @Service
 public class FieldPolicyCache {

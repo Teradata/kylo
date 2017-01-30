@@ -39,7 +39,7 @@ public class FieldPoliciesJsonTransformer {
 
   private static final Logger log = LoggerFactory.getLogger(FieldPoliciesJsonTransformer.class);
   /**
-   * JSON ARRY OF com.thinkbiganalytics.policy.rest.model.FieldPolicy objects
+   * JSON array of com.thinkbiganalytics.policy.rest.model.FieldPolicy objects
    */
   private String jsonFieldPolicies;
 

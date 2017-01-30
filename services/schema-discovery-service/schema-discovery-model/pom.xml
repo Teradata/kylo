@@ -30,16 +30,27 @@
       <artifactId>jackson-databind</artifactId>
     </dependency>
 
+
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-field-policy-core</artifactId>
+      <artifactId>thinkbig-ui-annotation-rest-model</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-field-policy-api</artifactId>
-      <version>${project.version}</version>
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>annotations</artifactId>
+    </dependency>
+
+
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
     </dependency>
 
   </dependencies>

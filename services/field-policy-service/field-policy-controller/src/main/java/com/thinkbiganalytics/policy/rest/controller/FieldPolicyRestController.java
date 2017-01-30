@@ -39,7 +39,7 @@ import io.swagger.annotations.ApiResponses;
 
 /**
  * Returns a list of all properties that can be assigned during Feed Registration process
- * this is the list of @MetadataField annotations on the FeedMetadata object
+ * this is the list of classes annotated with the {@link com.thinkbiganalytics.policy.standardization.Standardizer} and {@link com.thinkbiganalytics.policy.validation.Validator}
  */
 @Api(tags = "Feed Manager - Feeds", produces = "application/json")
 @Path("/v1/field-policies")

@@ -32,13 +32,23 @@
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-field-policy-common</artifactId>
+      <artifactId>thinkbig-ui-annotation-api</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
       <groupId>io.swagger</groupId>
       <artifactId>swagger-annotations</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
     </dependency>
 
     <!-- Testing -->

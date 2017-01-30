@@ -20,14 +20,13 @@ package com.thinkbiganalytics.policy.standardization;
  * #L%
  */
 
-import com.thinkbiganalytics.policy.FieldPolicyItem;
 
 import java.io.Serializable;
 
 /**
  * Provides cleansing or data standardization returning a new value from the provided value
  */
-public interface StandardizationPolicy extends Serializable, FieldPolicyItem {
+public interface StandardizationPolicy extends Serializable {
 
   String convertValue(String value);
 

@@ -51,8 +51,9 @@ public class SpringApplicationContext implements ApplicationContextAware {
     }
 
     /**
-     * This is about the same as context.getBean("beanName"), except it has its own static handle to the Spring context, so calling this method statically will give access to the beans by name in the
-     * Spring application context. As in the context.getBean("beanName") call, the caller must cast to the appropriate target class. If the bean does not exist, then a Runtime error will be thrown.
+     * Return a Spring bean by its name.
+     * This will return a generic object, so you must cast it to the correct class.
+     * If the bean does not exist, then a Runtime error will be thrown.
      *
      * @param beanName the name of the bean to get.
      * @return an Object reference to the named bean.

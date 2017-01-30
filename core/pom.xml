@@ -13,6 +13,7 @@
     <packaging>pom</packaging>
 
     <modules>
+      <module>ui-annotation</module>
         <module>calendar</module>
         <module>alerts</module>
         <module>schema-discovery</module>

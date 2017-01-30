@@ -22,7 +22,7 @@
 
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-field-policy-common</artifactId>
+          <artifactId>thinkbig-ui-annotation-core</artifactId>
             <version>${project.version}</version>
         </dependency>
 
