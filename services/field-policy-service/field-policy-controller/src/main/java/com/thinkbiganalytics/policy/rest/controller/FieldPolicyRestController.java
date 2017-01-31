@@ -45,24 +45,33 @@ import io.swagger.annotations.ApiResponses;
 @Path("/v1/field-policies")
 public class FieldPolicyRestController {
 
+    /**
+     * Return a list of the possible Standardization rules available for an end user to configure in the feed user interface
+     *
+     * @return a list of the possible Standardization rules available for an end user to configure in the feed user interface
+     */
     @GET
     @Path("/standardization")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the available standardization policies.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "Returns the standardization policies.", response = FieldStandardizationRule.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Returns the standardization policies.", response = FieldStandardizationRule.class, responseContainer = "List")
     )
     public Response getStandardizationPolicies(){
         List<FieldStandardizationRule> standardizationRules = FieldPolicyCache.getStandardizationPolicies();
-       return Response.ok(standardizationRules).build();
+        return Response.ok(standardizationRules).build();
     }
 
+    /**
+     * Return a list of possible Validation rules available for an end user to configure in the feed user interface
+     * @return a list of possible Validation rules available for an end user to configure in the feed user interface
+     */
     @GET
     @Path("/validation")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the available validation policies.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "Returns the validation policies.", response = FieldValidationRule.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Returns the validation policies.", response = FieldValidationRule.class, responseContainer = "List")
     )
     public Response getValidationPolicies(){
         List<FieldValidationRule> standardizationRules = FieldPolicyCache.getValidationPolicies();
