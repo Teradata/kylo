@@ -165,7 +165,7 @@ export JAVA_HOME=/opt/java/current
 export PATH=\$JAVA_HOME/bin:\$PATH
 export THINKBIG_SERVICES_OPTS=
 [ -f $rpmInstallDir/encrypt.key ] && export ENCRYPT_KEY="\$(cat $rpmInstallDir/encrypt.key)"
-THINKBIG_NIFI_PROFILE=\$(grep ^spring.profiles.active $rpmInstallDir/thinkbig-services/conf/application.properties | grep -o nifi-v.)
+THINKBIG_NIFI_PROFILE=\$(grep ^spring.profiles. $rpmInstallDir/thinkbig-services/conf/application.properties | grep -o nifi-v.)
 java \$THINKBIG_SERVICES_OPTS -cp $rpmInstallDir/thinkbig-services/conf:$rpmInstallDir/thinkbig-services/lib/*:$rpmInstallDir/thinkbig-services/lib/\${THINKBIG_NIFI_PROFILE}/*:$rpmInstallDir/thinkbig-services/plugin/* com.thinkbiganalytics.server.ThinkbigServerApplication --pgrep-marker=$pgrepMarkerThinkbigServices > /var/log/thinkbig-services/thinkbig-services.log 2>&1 &
 EOF
 cat << EOF > $rpmInstallDir/thinkbig-services/bin/run-thinkbig-services-with-debug.sh
@@ -175,7 +175,7 @@ export PATH=\$JAVA_HOME/bin:\$PATH
 export THINKBIG_SERVICES_OPTS=
 [ -f $rpmInstallDir/encrypt.key ] && export ENCRYPT_KEY="\$(cat $rpmInstallDir/encrypt.key)"
 JAVA_DEBUG_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=9998
-THINKBIG_NIFI_PROFILE=\$(grep ^spring.profiles.active $rpmInstallDir/thinkbig-services/conf/application.properties | grep -o nifi-v.)
+THINKBIG_NIFI_PROFILE=\$(grep ^spring.profiles. $rpmInstallDir/thinkbig-services/conf/application.properties | grep -o nifi-v.)
 java \$THINKBIG_SERVICES_OPTS \$JAVA_DEBUG_OPTS -cp $rpmInstallDir/thinkbig-services/conf:$rpmInstallDir/thinkbig-services/lib/*:$rpmInstallDir/thinkbig-services/lib/\${THINKBIG_NIFI_PROFILE}/*:$rpmInstallDir/thinkbig-services/plugin/* com.thinkbiganalytics.server.ThinkbigServerApplication --pgrep-marker=$pgrepMarkerThinkbigServices > /var/log/thinkbig-services/thinkbig-services.log 2>&1 &
 EOF
 chmod +x $rpmInstallDir/thinkbig-services/bin/run-thinkbig-services.sh
