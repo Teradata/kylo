@@ -25,7 +25,9 @@ import com.thinkbiganalytics.spark.dataprofiler.columns.IntegerColumnStatistics;
 import com.thinkbiganalytics.spark.dataprofiler.core.ProfilerTest;
 import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataItem;
 import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataList;
+
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -81,37 +83,37 @@ public class IntegerColumnTestCase1 extends ProfilerTest {
     
     @Test
     public void testIntegerNullCount() {
-    	assertEquals(nullCount, columnStats.getNullCount());
+        Assert.assertEquals(nullCount, columnStats.getNullCount());
     }
     
     
     @Test
     public void testIntegerTotalCount() {
-		assertEquals(totalCount, columnStats.getTotalCount());
+        Assert.assertEquals(totalCount, columnStats.getTotalCount());
     }
     
     
     @Test
     public void testIntegerUniqueCount() {
-		assertEquals(uniqueCount, columnStats.getUniqueCount());
+        Assert.assertEquals(uniqueCount, columnStats.getUniqueCount());
     }
     
     
     @Test
     public void testIntegerPercNullValues() {
-		assertEquals(percNullValues, columnStats.getPercNullValues(), ProfilerTest.epsilon);
+        assertEquals(percNullValues, columnStats.getPercNullValues(), epsilon);
     }
     
     
     @Test
     public void testIntegerPercUniqueValues() {
-		assertEquals(percUniqueValues, columnStats.getPercUniqueValues(), ProfilerTest.epsilon);
+        assertEquals(percUniqueValues, columnStats.getPercUniqueValues(), epsilon);
     }
     
     
     @Test
     public void testIntegerPercDuplicateValues() {
-		assertEquals(percDuplicateValues, columnStats.getPercDuplicateValues(), ProfilerTest.epsilon);
+        assertEquals(percDuplicateValues, columnStats.getPercDuplicateValues(), epsilon);
     }
     
 
@@ -121,7 +123,7 @@ public class IntegerColumnTestCase1 extends ProfilerTest {
         Iterator<TopNDataItem> iterator = items.descendingIterator();
 
         /* Verify that there are 3 items */
-        assertEquals(3, items.size());
+        Assert.assertEquals(3, items.size());
 
         /*
             Verify the top 3 item counts
@@ -133,13 +135,13 @@ public class IntegerColumnTestCase1 extends ProfilerTest {
         while (iterator.hasNext()) {
             TopNDataItem item = iterator.next();
             if (index == 1) {
-                assertEquals(Long.valueOf(1L), item.getCount());
+                Assert.assertEquals(Long.valueOf(1L), item.getCount());
             }
             else if (index == 2) {
-                assertEquals(Long.valueOf(1L), item.getCount());
+                Assert.assertEquals(Long.valueOf(1L), item.getCount());
             }
             else if (index == 3) {
-                assertEquals(Long.valueOf(1L), item.getCount());
+                Assert.assertEquals(Long.valueOf(1L), item.getCount());
             }
 
             index++;
@@ -149,37 +151,37 @@ public class IntegerColumnTestCase1 extends ProfilerTest {
     
     @Test
     public void testIntegerMax() {
-    	assertEquals(max, ((IntegerColumnStatistics)columnStats).getMax());
+        Assert.assertEquals(max, ((IntegerColumnStatistics) columnStats).getMax());
     }
     
     
     @Test
     public void testIntegerMin() {
-    	assertEquals(min, ((IntegerColumnStatistics)columnStats).getMin());
+        Assert.assertEquals(min, ((IntegerColumnStatistics) columnStats).getMin());
     }
     
     
     @Test
     public void testIntegerSum() {
-    	assertEquals(sum, ((IntegerColumnStatistics)columnStats).getSum());
+        Assert.assertEquals(sum, ((IntegerColumnStatistics) columnStats).getSum());
     }
     
     
     @Test
     public void testIntegerMean() {
-    	assertEquals(mean, ((IntegerColumnStatistics)columnStats).getMean(), ProfilerTest.epsilon);
+        assertEquals(mean, ((IntegerColumnStatistics) columnStats).getMean(), epsilon);
     }
     
     
     @Test
     public void testIntegerStddev() {
-    	assertEquals(stddev, ((IntegerColumnStatistics)columnStats).getStddev(), ProfilerTest.epsilon);
+        assertEquals(stddev, ((IntegerColumnStatistics) columnStats).getStddev(), epsilon);
     }
     
     
     @Test
     public void testIntegerVariance() {
-    	assertEquals(variance, ((IntegerColumnStatistics)columnStats).getVariance(), ProfilerTest.epsilon);
+        assertEquals(variance, ((IntegerColumnStatistics) columnStats).getVariance(), epsilon);
     }
     
     

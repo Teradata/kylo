@@ -21,11 +21,11 @@ package com.thinkbiganalytics.spark.dataprofiler.testcases;
  */
 
 import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataList;
+
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * TopN Test Case 3
@@ -43,9 +43,9 @@ public class TopNTestCase3 {
     public void testTopNValuesToWriteString01() {
         TopNDataList topNList = new TopNDataList(3);
         topNList.add(40.2f, 1L);
-        assertEquals(topNList.getTopNDataItemsForColumn().size(), 1);
+        Assert.assertEquals(topNList.getTopNDataItemsForColumn().size(), 1);
         String expectedRetVal = "1^A40.2^A1^B";
-        assertEquals(expectedRetVal, topNList.printTopNItems());
+        Assert.assertEquals(expectedRetVal, topNList.printTopNItems());
     }
 
     @Test
@@ -53,9 +53,9 @@ public class TopNTestCase3 {
         TopNDataList topNList = new TopNDataList(3);
         topNList.add(40.2f, 1L);
         topNList.add(160.7f, 2L);
-        assertEquals(topNList.getTopNDataItemsForColumn().size(), 2);
+        Assert.assertEquals(topNList.getTopNDataItemsForColumn().size(), 2);
         String expectedRetVal = "1^A160.7^A2^B2^A40.2^A1^B";
-        assertEquals(expectedRetVal, topNList.printTopNItems());
+        Assert.assertEquals(expectedRetVal, topNList.printTopNItems());
     }
 
     @Test
@@ -64,9 +64,9 @@ public class TopNTestCase3 {
         topNList.add(40.2f, 1L);
         topNList.add(160.7f, 2L);
         topNList.add(170.5f, 2L);
-        assertEquals(topNList.getTopNDataItemsForColumn().size(), 3);
+        Assert.assertEquals(topNList.getTopNDataItemsForColumn().size(), 3);
         String expectedRetVal = "1^A160.7^A2^B2^A170.5^A2^B3^A40.2^A1^B";
-        assertEquals(expectedRetVal, topNList.printTopNItems());
+        Assert.assertEquals(expectedRetVal, topNList.printTopNItems());
     }
 
 
@@ -77,9 +77,9 @@ public class TopNTestCase3 {
         topNList.add(160.7f, 2L);
         topNList.add(170.5f, 2L);
         topNList.add(null, 3L);
-        assertEquals(topNList.getTopNDataItemsForColumn().size(), 3);
+        Assert.assertEquals(topNList.getTopNDataItemsForColumn().size(), 3);
         String expectedRetVal = "1^Anull^A3^B2^A160.7^A2^B3^A170.5^A2^B";
-        assertEquals(expectedRetVal, topNList.printTopNItems());
+        Assert.assertEquals(expectedRetVal, topNList.printTopNItems());
     }
 
     @Test
@@ -90,9 +90,9 @@ public class TopNTestCase3 {
         topNList.add(170.5f, 2L);
         topNList.add(null, 3L);
         topNList.add(155.3f, 1L);
-        assertEquals(topNList.getTopNDataItemsForColumn().size(), 3);
+        Assert.assertEquals(topNList.getTopNDataItemsForColumn().size(), 3);
         String expectedRetVal = "1^Anull^A3^B2^A160.7^A2^B3^A170.5^A2^B";
-        assertEquals(expectedRetVal, topNList.printTopNItems());
+        Assert.assertEquals(expectedRetVal, topNList.printTopNItems());
     }
 
     @Test
@@ -104,9 +104,9 @@ public class TopNTestCase3 {
         topNList.add(null, 3L);
         topNList.add(155.3f, 1L);
         topNList.add(10.6f, 4L);
-        assertEquals(topNList.getTopNDataItemsForColumn().size(), 3);
+        Assert.assertEquals(topNList.getTopNDataItemsForColumn().size(), 3);
         String expectedRetVal = "1^A10.6^A4^B2^Anull^A3^B3^A160.7^A2^B";
-        assertEquals(expectedRetVal, topNList.printTopNItems());
+        Assert.assertEquals(expectedRetVal, topNList.printTopNItems());
     }
 
 
@@ -120,9 +120,9 @@ public class TopNTestCase3 {
         topNList.add(155.3f, 1L);
         topNList.add(10.6f, 4L);
         topNList.add(15.0f, 3L);
-        assertEquals(topNList.getTopNDataItemsForColumn().size(), 3);
+        Assert.assertEquals(topNList.getTopNDataItemsForColumn().size(), 3);
         String expectedRetVal = "1^A10.6^A4^B2^A15.0^A3^B3^Anull^A3^B";
-        assertEquals(expectedRetVal, topNList.printTopNItems());
+        Assert.assertEquals(expectedRetVal, topNList.printTopNItems());
     }
 
     @AfterClass

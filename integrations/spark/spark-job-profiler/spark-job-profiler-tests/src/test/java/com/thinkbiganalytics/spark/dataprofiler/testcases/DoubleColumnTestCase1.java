@@ -25,7 +25,9 @@ import com.thinkbiganalytics.spark.dataprofiler.columns.DoubleColumnStatistics;
 import com.thinkbiganalytics.spark.dataprofiler.core.ProfilerTest;
 import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataItem;
 import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataList;
+
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -79,37 +81,37 @@ public class DoubleColumnTestCase1 extends ProfilerTest {
 	
 	@Test
 	public void testDoubleNullCount() {
-		assertEquals(nullCount, columnStats.getNullCount());
+		Assert.assertEquals(nullCount, columnStats.getNullCount());
 	}
 	
 	
 	 @Test
 	 public void testDoubleTotalCount() {
-		 assertEquals(totalCount, columnStats.getTotalCount());
+		 Assert.assertEquals(totalCount, columnStats.getTotalCount());
 	 }
 
 
 	 @Test
 	 public void testDoubleUniqueCount() {
-		 assertEquals(uniqueCount, columnStats.getUniqueCount());
+		 Assert.assertEquals(uniqueCount, columnStats.getUniqueCount());
 	 }
 
 
 	 @Test
 	 public void testDoublePercNullValues() {
-		 assertEquals(percNullValues, columnStats.getPercNullValues(), ProfilerTest.epsilon);
+		 assertEquals(percNullValues, columnStats.getPercNullValues(), epsilon);
 	 }
 
 
 	 @Test
 	 public void testDoublePercUniqueValues() {
-		 assertEquals(percUniqueValues, columnStats.getPercUniqueValues(), ProfilerTest.epsilon);
+		 assertEquals(percUniqueValues, columnStats.getPercUniqueValues(), epsilon);
 	 }
 
 
 	 @Test
 	 public void testDoublePercDuplicateValues() {
-		 assertEquals(percDuplicateValues, columnStats.getPercDuplicateValues(), ProfilerTest.epsilon);
+		 assertEquals(percDuplicateValues, columnStats.getPercDuplicateValues(), epsilon);
 	 }
 
 
@@ -119,26 +121,26 @@ public class DoubleColumnTestCase1 extends ProfilerTest {
 		Iterator<TopNDataItem> iterator = items.descendingIterator();
 
 		//Verify that there are 3 items
-		assertEquals(3, items.size());
+		Assert.assertEquals(3, items.size());
 
 		//Verify the top 3 item counts
 		int index = 1;
 		while (iterator.hasNext()) {
 			TopNDataItem item = iterator.next();
 			if (index == 1) {
-				assertEquals(5.85d, item.getValue());
-				assertEquals(Long.valueOf(4L), item.getCount());
+				Assert.assertEquals(5.85d, item.getValue());
+				Assert.assertEquals(Long.valueOf(4L), item.getCount());
 			}
 			else if (index == 2) {
-				assertEquals(null, item.getValue());
-				assertEquals(Long.valueOf(3L), item.getCount());
+				Assert.assertEquals(null, item.getValue());
+				Assert.assertEquals(Long.valueOf(3L), item.getCount());
 			}
 			else if (index == 3) {
 				/*
                     Not checking value since it can be arbitrary.
                     All remaining values have count 1
                 */
-				assertEquals(Long.valueOf(1L), item.getCount());
+				Assert.assertEquals(Long.valueOf(1L), item.getCount());
 			}
 
 			index++;
@@ -147,38 +149,38 @@ public class DoubleColumnTestCase1 extends ProfilerTest {
 
 	 @Test
 	    public void testDoubleMax() {
-	    	assertEquals(max, ((DoubleColumnStatistics)columnStats).getMax(), ProfilerTest.epsilon);
-	    }
+		 assertEquals(max, ((DoubleColumnStatistics) columnStats).getMax(), epsilon);
+	 }
 	    
 	    
 	    @Test
 	    public void testDoubleMin() {
-	    	assertEquals(min, ((DoubleColumnStatistics)columnStats).getMin(), ProfilerTest.epsilon);
-	    }
+			assertEquals(min, ((DoubleColumnStatistics) columnStats).getMin(), epsilon);
+		}
 	    
 	    
 	    @Test
 	    public void testDoubleSum() {
-	    	assertEquals(sum, ((DoubleColumnStatistics)columnStats).getSum(), ProfilerTest.epsilon);
-	    }
+			assertEquals(sum, ((DoubleColumnStatistics) columnStats).getSum(), epsilon);
+		}
 	    
 	    
 	    @Test
 	    public void testDoubleMean() {
-	    	assertEquals(mean, ((DoubleColumnStatistics)columnStats).getMean(), ProfilerTest.epsilon);
-	    }
+			assertEquals(mean, ((DoubleColumnStatistics) columnStats).getMean(), epsilon);
+		}
 	    
 	    
 	    @Test
 	    public void testDoubleStddev() {
-	    	assertEquals(stddev, ((DoubleColumnStatistics)columnStats).getStddev(), ProfilerTest.epsilon);
-	    }
+			assertEquals(stddev, ((DoubleColumnStatistics) columnStats).getStddev(), epsilon);
+		}
 	    
 	    
 	    @Test
 	    public void testDoubleVariance() {
-	    	assertEquals(variance, ((DoubleColumnStatistics)columnStats).getVariance(), ProfilerTest.epsilon);
-	    }
+			assertEquals(variance, ((DoubleColumnStatistics) columnStats).getVariance(), epsilon);
+		}
 	    
 	    
 	    @AfterClass

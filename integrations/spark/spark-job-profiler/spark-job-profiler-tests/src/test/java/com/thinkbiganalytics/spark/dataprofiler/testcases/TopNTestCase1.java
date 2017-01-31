@@ -20,18 +20,16 @@ package com.thinkbiganalytics.spark.dataprofiler.testcases;
  * #L%
  */
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.Iterator;
-import java.util.TreeSet;
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataItem;
 import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataList;
 
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import java.util.Iterator;
+import java.util.TreeSet;
 
 /**
  * TopN Test Case 1
@@ -66,8 +64,8 @@ public class TopNTestCase1 {
 	
 	@Test
 	public void testTopNSummaryCount() {
-		
-			assertEquals(5, items.size());
+
+		Assert.assertEquals(5, items.size());
 	}
 	
 	
@@ -79,24 +77,24 @@ public class TopNTestCase1 {
 			TopNDataItem item = iterator.next();
 
 			if (index == 1) {
-				assertEquals("D", item.getValue());
-				assertEquals(Long.valueOf(25), item.getCount());
+				Assert.assertEquals("D", item.getValue());
+				Assert.assertEquals(Long.valueOf(25), item.getCount());
 			}
 			else if (index == 2) {
-				assertEquals("B", item.getValue());
-				assertEquals(Long.valueOf(20), item.getCount());
+				Assert.assertEquals("B", item.getValue());
+				Assert.assertEquals(Long.valueOf(20), item.getCount());
 			}
 			else if (index == 3) {
-				assertEquals("E", item.getValue());
-				assertEquals(Long.valueOf(19), item.getCount());
+				Assert.assertEquals("E", item.getValue());
+				Assert.assertEquals(Long.valueOf(19), item.getCount());
 			}
 			else if (index == 4) {
-				assertEquals("A", item.getValue());
-				assertEquals(Long.valueOf(18), item.getCount());
+				Assert.assertEquals("A", item.getValue());
+				Assert.assertEquals(Long.valueOf(18), item.getCount());
 			}
 			else if (index == 5) {
-				assertEquals("C", item.getValue());
-				assertEquals(Long.valueOf(15), item.getCount());
+				Assert.assertEquals("C", item.getValue());
+				Assert.assertEquals(Long.valueOf(15), item.getCount());
 			}
 
 			index++;
@@ -111,8 +109,8 @@ public class TopNTestCase1 {
 					"3^AE^A19^B" +
 					"4^AA^A18^B" +
 					"5^AC^A15^B";
-		
-		assertEquals(expectedRetVal, topNDataItemsString);
+
+		Assert.assertEquals(expectedRetVal, topNDataItemsString);
 	}
 	
 	

@@ -25,7 +25,9 @@ import com.thinkbiganalytics.spark.dataprofiler.columns.ColumnStatistics;
 import com.thinkbiganalytics.spark.dataprofiler.core.ProfilerTest;
 import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataItem;
 import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataList;
+
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -72,37 +74,37 @@ public class BooleanColumnTestCase1 extends ProfilerTest {
 	
 	@Test
 	public void testBooleanNullCount() {
-		assertEquals(nullCount, columnStats.getNullCount());
+		Assert.assertEquals(nullCount, columnStats.getNullCount());
 	}
 	
 	
 	@Test
 	public void testBooleanTotalCount() {
-		assertEquals(totalCount, columnStats.getTotalCount());
+		Assert.assertEquals(totalCount, columnStats.getTotalCount());
 	}
 	
 	
 	@Test
 	public void testBooleanUniqueCount() {
-		assertEquals(uniqueCount, columnStats.getUniqueCount());
+		Assert.assertEquals(uniqueCount, columnStats.getUniqueCount());
 	}
 	
 	
 	@Test
 	public void testBooleanPercNullValues() {
-		assertEquals(percNullValues, columnStats.getPercNullValues(), ProfilerTest.epsilon);
+		assertEquals(percNullValues, columnStats.getPercNullValues(), epsilon);
 	}
 	
 	
 	@Test
 	public void testBooleanPercUniqueValues() {
-		assertEquals(percUniqueValues, columnStats.getPercUniqueValues(), ProfilerTest.epsilon);
+		assertEquals(percUniqueValues, columnStats.getPercUniqueValues(), epsilon);
 	}
 	
 	
 	@Test
 	public void testBooleanPercDuplicateValues() {
-		assertEquals(percDuplicateValues, columnStats.getPercDuplicateValues(), ProfilerTest.epsilon);
+		assertEquals(percDuplicateValues, columnStats.getPercDuplicateValues(), epsilon);
 	}
 	
 
@@ -112,23 +114,23 @@ public class BooleanColumnTestCase1 extends ProfilerTest {
 		Iterator<TopNDataItem> iterator = items.descendingIterator();
 
 		//Verify that there are 3 items
-		assertEquals(3, items.size());
+		Assert.assertEquals(3, items.size());
 
 		//Verify the top 3 item counts
 		int index = 1;
 		while (iterator.hasNext()) {
 			TopNDataItem item = iterator.next();
 			if (index == 1) {
-				assertEquals(Boolean.TRUE, item.getValue());
-				assertEquals(Long.valueOf(5L), item.getCount());
+				Assert.assertEquals(Boolean.TRUE, item.getValue());
+				Assert.assertEquals(Long.valueOf(5L), item.getCount());
 			}
 			else if (index == 2) {
-				assertEquals(Boolean.FALSE, item.getValue());
-				assertEquals(Long.valueOf(3L), item.getCount());
+				Assert.assertEquals(Boolean.FALSE, item.getValue());
+				Assert.assertEquals(Long.valueOf(3L), item.getCount());
 			}
 			else if (index == 3) {
-				assertEquals(null, item.getValue());
-				assertEquals(Long.valueOf(2L), item.getCount());
+				Assert.assertEquals(null, item.getValue());
+				Assert.assertEquals(Long.valueOf(2L), item.getCount());
 			}
 
 			index++;
@@ -138,13 +140,13 @@ public class BooleanColumnTestCase1 extends ProfilerTest {
 	
 	@Test
 	public void testBooleanTrueCount() {
-		assertEquals(trueCount, ((BooleanColumnStatistics) columnStats).getTrueCount());
+		Assert.assertEquals(trueCount, ((BooleanColumnStatistics) columnStats).getTrueCount());
 	}
 	
 	
 	@Test
 	public void testBooleanFalseCount() {
-		assertEquals(falseCount, ((BooleanColumnStatistics) columnStats).getFalseCount());
+		Assert.assertEquals(falseCount, ((BooleanColumnStatistics) columnStats).getFalseCount());
 	}
 	
 	 @AfterClass

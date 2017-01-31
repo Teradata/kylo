@@ -21,11 +21,13 @@ package com.thinkbiganalytics.spark.dataprofiler.testcases;
  */
 
 import com.thinkbiganalytics.spark.dataprofiler.columns.ColumnStatistics;
-import com.thinkbiganalytics.spark.dataprofiler.columns.LongColumnStatistics;
+import com.thinkbiganalytics.spark.dataprofiler.columns.IntegerColumnStatistics;
 import com.thinkbiganalytics.spark.dataprofiler.core.ProfilerTest;
 import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataItem;
 import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataList;
+
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -36,11 +38,11 @@ import static org.junit.Assert.assertEquals;
 
 
 /**
- * Long Column Statistics Test Case
+ * Integer Column Statistics Test Case
  * @author jagrut sharma
  *
  */
-public class LongColumnTestCase1 extends ProfilerTest {
+public class IntegerColumnTestCase2 extends ProfilerTest {
 
 	private static ColumnStatistics columnStats;
 	private static long nullCount;
@@ -50,98 +52,96 @@ public class LongColumnTestCase1 extends ProfilerTest {
 	private static double percUniqueValues;
 	private static double percDuplicateValues;
 	private static TopNDataList topNValues;
-	private static long max;
-	private static long min;
+	private static int max;
+	private static int min;
 	private static long sum;
 	private static double mean;
 	private static double stddev;
 	private static double variance;
 
-
     @Before
     public void setUp() {
         super.setUp();
 
-        columnStats = columnStatsMap.get(9);	//phash
-        nullCount = 2L;
+        columnStats = columnStatsMap.get(3);	//age
+        nullCount = 1L;
         totalCount = 10L;
         uniqueCount = 7L;
-        percNullValues = 20.0d;
+        percNullValues = 10.0d;
         percUniqueValues = 70.0d;
         percDuplicateValues = 30.0d;
         topNValues = columnStats.getTopNValues();
-        max = 8782348100L;
-        min = 1456890911L;
-        sum = 43837413346L;
-        mean = 5479676668.25d;
-        stddev = 2930123653.19747d;
-        variance = 8585624623027292200d;
-      
+        max = 65;
+        min = 11;
+        sum = 272L;
+        mean = 30.22222222d;
+        stddev = 16.37598362d;
+        variance = 268.1728395d;
+        
     }
-	
 	
 	@Test
-    public void testLongNullCount() {
-    	assertEquals(nullCount, columnStats.getNullCount());
+    public void testIntegerNullCount() {
+        Assert.assertEquals(nullCount, columnStats.getNullCount());
     }
     
     
     @Test
-    public void testLongTotalCount() {
-		assertEquals(totalCount, columnStats.getTotalCount());
+    public void testIntegerTotalCount() {
+        Assert.assertEquals(totalCount, columnStats.getTotalCount());
     }
     
     
     @Test
-    public void testLongUniqueCount() {
-		assertEquals(uniqueCount, columnStats.getUniqueCount());
+    public void testIntegerUniqueCount() {
+        Assert.assertEquals(uniqueCount, columnStats.getUniqueCount());
     }
     
     
     @Test
-    public void testLongPercNullValues() {
-		assertEquals(percNullValues, columnStats.getPercNullValues(), ProfilerTest.epsilon);
+    public void testIntegerPercNullValues() {
+        assertEquals(percNullValues, columnStats.getPercNullValues(), epsilon);
     }
     
     
     @Test
-    public void testLongPercUniqueValues() {
-		assertEquals(percUniqueValues, columnStats.getPercUniqueValues(), ProfilerTest.epsilon);
+    public void testIntegerPercUniqueValues() {
+        assertEquals(percUniqueValues, columnStats.getPercUniqueValues(), epsilon);
     }
     
     
     @Test
-    public void testLongPercDuplicateValues() {
-		assertEquals(percDuplicateValues, columnStats.getPercDuplicateValues(), ProfilerTest.epsilon);
+    public void testIntegerPercDuplicateValues() {
+        assertEquals(percDuplicateValues, columnStats.getPercDuplicateValues(), epsilon);
     }
-    
 
-    @Test
-    public void testLongTopNValues() {
-        TreeSet<TopNDataItem> items = topNValues.getTopNDataItemsForColumn();
+
+	@Test
+    public void testIntegerTopNValues() {
+	    TreeSet<TopNDataItem> items = topNValues.getTopNDataItemsForColumn();
         Iterator<TopNDataItem> iterator = items.descendingIterator();
 
         //Verify that there are 3 items
-        assertEquals(3, items.size());
+        Assert.assertEquals(3, items.size());
 
         //Verify the top 3 item counts
         int index = 1;
         while (iterator.hasNext()) {
             TopNDataItem item = iterator.next();
             if (index == 1) {
-                assertEquals(2988626110L, item.getValue());
-                assertEquals(Long.valueOf(3L), item.getCount());
+                Assert.assertEquals(40, item.getValue());
+                Assert.assertEquals(Long.valueOf(3L), item.getCount());
             }
             else if (index == 2) {
-                assertEquals(null, item.getValue());
-                assertEquals(Long.valueOf(2L), item.getCount());
+                Assert.assertEquals(22, item.getValue());
+                Assert.assertEquals(Long.valueOf(2L), item.getCount());
             }
             else if (index == 3) {
-				/*
+                /*
                     Not checking value since it can be arbitrary.
                     All remaining values have count 1
                 */
-                assertEquals(Long.valueOf(1L), item.getCount());
+                Assert.assertEquals(Long.valueOf(1L), item.getCount());
             }
 
             index++;
@@ -150,44 +150,44 @@ public class LongColumnTestCase1 extends ProfilerTest {
     
     
     @Test
-    public void testLongMax() {
-    	assertEquals(max, ((LongColumnStatistics)columnStats).getMax());
+    public void testIntegerMax() {
+        Assert.assertEquals(max, ((IntegerColumnStatistics) columnStats).getMax());
     }
     
     
     @Test
-    public void testLongMin() {
-    	assertEquals(min, ((LongColumnStatistics)columnStats).getMin());
+    public void testIntegerMin() {
+        Assert.assertEquals(min, ((IntegerColumnStatistics) columnStats).getMin());
     }
     
     
     @Test
-    public void testLongSum() {
-    	assertEquals(sum, ((LongColumnStatistics)columnStats).getSum());
+    public void testIntegerSum() {
+        Assert.assertEquals(sum, ((IntegerColumnStatistics) columnStats).getSum());
     }
     
     
     @Test
-    public void testLongMean() {
-    	assertEquals(mean, ((LongColumnStatistics)columnStats).getMean(), ProfilerTest.epsilon);
+    public void testIntegerMean() {
+        assertEquals(mean, ((IntegerColumnStatistics) columnStats).getMean(), epsilon);
     }
     
     
     @Test
-    public void testLongStddev() {
-    	assertEquals(stddev, ((LongColumnStatistics)columnStats).getStddev(), ProfilerTest.epsilon);
+    public void testIntegerStddev() {
+        assertEquals(stddev, ((IntegerColumnStatistics) columnStats).getStddev(), epsilon);
     }
     
     
     @Test
-    public void testLongVariance() {
-    	//Due to the results being extremely large numbers, epsilon2 is used.
-    	assertEquals(variance, ((LongColumnStatistics)columnStats).getVariance(), ProfilerTest.epsilon2);
+    public void testIntegerVariance() {
+        assertEquals(variance, ((IntegerColumnStatistics) columnStats).getVariance(), epsilon);
     }
     
     
     @AfterClass
     public static void tearDownClass() {
-    	System.out.println("\t*** Completed run for LongColumnTestCase1 ***");
+    	System.out.println("\t*** Completed run for IntegerColumnTestCase2 ***");
     }
+	
 }

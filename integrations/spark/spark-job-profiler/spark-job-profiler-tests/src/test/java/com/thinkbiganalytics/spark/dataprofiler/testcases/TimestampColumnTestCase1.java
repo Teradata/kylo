@@ -25,7 +25,9 @@ import com.thinkbiganalytics.spark.dataprofiler.columns.TimestampColumnStatistic
 import com.thinkbiganalytics.spark.dataprofiler.core.ProfilerTest;
 import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataItem;
 import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataList;
+
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -74,37 +76,37 @@ public class TimestampColumnTestCase1 extends ProfilerTest {
 	
 	@Test
 	public void testTimestampNullCount() {
-		assertEquals(nullCount, columnStats.getNullCount());
+		Assert.assertEquals(nullCount, columnStats.getNullCount());
 	}
 	
 	
 	@Test
 	public void testTimestampTotalCount() {
-		assertEquals(totalCount, columnStats.getTotalCount());
+		Assert.assertEquals(totalCount, columnStats.getTotalCount());
 	}
 	
 	
 	@Test
 	public void testTimestampUniqueCount() {
-		assertEquals(uniqueCount, columnStats.getUniqueCount());
+		Assert.assertEquals(uniqueCount, columnStats.getUniqueCount());
 	}
 	
 	
 	@Test
 	public void testTimestampPercNullValues() {
-		assertEquals(percNullValues, columnStats.getPercNullValues(), ProfilerTest.epsilon);
+		assertEquals(percNullValues, columnStats.getPercNullValues(), epsilon);
 	}
 	
 	
 	@Test
 	public void testTimestampPercUniqueValues() {
-		assertEquals(percUniqueValues, columnStats.getPercUniqueValues(), ProfilerTest.epsilon);
+		assertEquals(percUniqueValues, columnStats.getPercUniqueValues(), epsilon);
 	}
 	
 	
 	@Test
 	public void testTimestampPercDuplicateValues() {
-		assertEquals(percDuplicateValues, columnStats.getPercDuplicateValues(), ProfilerTest.epsilon);
+		assertEquals(percDuplicateValues, columnStats.getPercDuplicateValues(), epsilon);
 	}
 
 
@@ -114,26 +116,26 @@ public class TimestampColumnTestCase1 extends ProfilerTest {
 		Iterator<TopNDataItem> iterator = items.descendingIterator();
 
 		//Verify that there are 3 items
-		assertEquals(3, items.size());
+		Assert.assertEquals(3, items.size());
 
 		//Verify the top 3 item counts
 		int index = 1;
 		while (iterator.hasNext()) {
 			TopNDataItem item = iterator.next();
 			if (index == 1) {
-				assertEquals(Timestamp.valueOf("2008-05-06 23:10:10"), item.getValue());
-				assertEquals(Long.valueOf(4L), item.getCount());
+				Assert.assertEquals(Timestamp.valueOf("2008-05-06 23:10:10"), item.getValue());
+				Assert.assertEquals(Long.valueOf(4L), item.getCount());
 			}
 			else if (index == 2) {
-				assertEquals(Timestamp.valueOf("2011-01-08 11:25:45"), item.getValue());
-				assertEquals(Long.valueOf(3L), item.getCount());
+				Assert.assertEquals(Timestamp.valueOf("2011-01-08 11:25:45"), item.getValue());
+				Assert.assertEquals(Long.valueOf(3L), item.getCount());
 			}
 			else if (index == 3) {
 				/*
                     Not checking value since it can be arbitrary.
                     All remaining values have count 1
                 */
-				assertEquals(Long.valueOf(1L), item.getCount());
+				Assert.assertEquals(Long.valueOf(1L), item.getCount());
 			}
 
 			index++;
@@ -143,13 +145,13 @@ public class TimestampColumnTestCase1 extends ProfilerTest {
 	
 	@Test
 	public void testTimestampMaxTimestamp() {
-		assertEquals(maxTimestamp, ((TimestampColumnStatistics) columnStats).getMaxTimestamp());
+		Assert.assertEquals(maxTimestamp, ((TimestampColumnStatistics) columnStats).getMaxTimestamp());
 	}
 	
 	
 	@Test
 	public void testTimestampMinTimestamp() {
-		assertEquals(minTimestamp, ((TimestampColumnStatistics) columnStats).getMinTimestamp());
+		Assert.assertEquals(minTimestamp, ((TimestampColumnStatistics) columnStats).getMinTimestamp());
 	}
 	
 	@AfterClass

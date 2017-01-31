@@ -25,24 +25,24 @@ import com.thinkbiganalytics.spark.dataprofiler.columns.ShortColumnStatistics;
 import com.thinkbiganalytics.spark.dataprofiler.core.ProfilerTest;
 import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataItem;
 import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataList;
+
+import org.hamcrest.Matchers;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Iterator;
 import java.util.TreeSet;
 
-import static org.hamcrest.Matchers.anyOf;
-import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-
 
 /**
  * Short Column Statistics Test Case
  * @author jagrut sharma
  *
  */
+
 public class ShortColumnTestCase1 extends ProfilerTest {
 	private static ColumnStatistics columnStats;
 	private static long nullCount;
@@ -82,37 +82,37 @@ public class ShortColumnTestCase1 extends ProfilerTest {
 	
 	@Test
     public void testShortNullCount() {
-    	assertEquals(nullCount, columnStats.getNullCount());
+        Assert.assertEquals(nullCount, columnStats.getNullCount());
     }
     
     
     @Test
     public void testShortTotalCount() {
-		assertEquals(totalCount, columnStats.getTotalCount());
+        Assert.assertEquals(totalCount, columnStats.getTotalCount());
     }
     
     
     @Test
     public void testShortUniqueCount() {
-		assertEquals(uniqueCount, columnStats.getUniqueCount());
+        Assert.assertEquals(uniqueCount, columnStats.getUniqueCount());
     }
     
     
     @Test
     public void testShortPercNullValues() {
-		assertEquals(percNullValues, columnStats.getPercNullValues(), ProfilerTest.epsilon);
+        assertEquals(percNullValues, columnStats.getPercNullValues(), epsilon);
     }
     
     
     @Test
     public void testShortPercUniqueValues() {
-		assertEquals(percUniqueValues, columnStats.getPercUniqueValues(), ProfilerTest.epsilon);
+        assertEquals(percUniqueValues, columnStats.getPercUniqueValues(), epsilon);
     }
     
     
     @Test
     public void testShortPercDuplicateValues() {
-		assertEquals(percDuplicateValues, columnStats.getPercDuplicateValues(), ProfilerTest.epsilon);
+        assertEquals(percDuplicateValues, columnStats.getPercDuplicateValues(), epsilon);
     }
     
     @Test
@@ -121,27 +121,27 @@ public class ShortColumnTestCase1 extends ProfilerTest {
         Iterator<TopNDataItem> iterator = items.descendingIterator();
 
         //Verify that there are 3 items
-        assertEquals(3, items.size());
+        Assert.assertEquals(3, items.size());
 
         //Verify the top 3 item counts
         int index = 1;
         while (iterator.hasNext()) {
             TopNDataItem item = iterator.next();
             if (index == 1) {
-                assertEquals((short) 100, item.getValue());
-                assertEquals(Long.valueOf(3L), item.getCount());
+                Assert.assertEquals((short) 100, item.getValue());
+                Assert.assertEquals(Long.valueOf(3L), item.getCount());
             }
             else if (index == 2) {
                 // tie for count 2
-                assertThat(String.valueOf(item.getValue()),
-                        anyOf(is(String.valueOf((short) 1400)), is("null")));
-                assertEquals(Long.valueOf(2L), item.getCount());
+                Assert.assertThat(String.valueOf(item.getValue()),
+                                  Matchers.anyOf(Matchers.is(String.valueOf((short) 1400)), Matchers.is("null")));
+                Assert.assertEquals(Long.valueOf(2L), item.getCount());
             }
             else if (index == 3) {
                 // tie for count 2
-                assertThat(String.valueOf(item.getValue()),
-                        anyOf(is(String.valueOf((short) 1400)), is("null")));
-                assertEquals(Long.valueOf(2L), item.getCount());
+                Assert.assertThat(String.valueOf(item.getValue()),
+                                  Matchers.anyOf(Matchers.is(String.valueOf((short) 1400)), Matchers.is("null")));
+                Assert.assertEquals(Long.valueOf(2L), item.getCount());
             }
 
             index++;
@@ -151,37 +151,37 @@ public class ShortColumnTestCase1 extends ProfilerTest {
     
     @Test
     public void testShortMax() {
-    	assertEquals(max, ((ShortColumnStatistics)columnStats).getMax());
+        Assert.assertEquals(max, ((ShortColumnStatistics) columnStats).getMax());
     }
     
     
     @Test
     public void testShortMin() {
-    	assertEquals(min, ((ShortColumnStatistics)columnStats).getMin());
+        Assert.assertEquals(min, ((ShortColumnStatistics) columnStats).getMin());
     }
     
     
     @Test
     public void testShortSum() {
-    	assertEquals(sum, ((ShortColumnStatistics)columnStats).getSum());
+        Assert.assertEquals(sum, ((ShortColumnStatistics) columnStats).getSum());
     }
     
     
     @Test
     public void testShortMean() {
-    	assertEquals(mean, ((ShortColumnStatistics)columnStats).getMean(), ProfilerTest.epsilon);
+        assertEquals(mean, ((ShortColumnStatistics) columnStats).getMean(), epsilon);
     }
     
     
     @Test
     public void testShortStddev() {
-    	assertEquals(stddev, ((ShortColumnStatistics)columnStats).getStddev(), ProfilerTest.epsilon);
+        assertEquals(stddev, ((ShortColumnStatistics) columnStats).getStddev(), epsilon);
     }
     
     
     @Test
     public void testShortVariance() {
-    	assertEquals(variance, ((ShortColumnStatistics)columnStats).getVariance(), ProfilerTest.epsilon);
+        assertEquals(variance, ((ShortColumnStatistics) columnStats).getVariance(), epsilon);
     }
     
     

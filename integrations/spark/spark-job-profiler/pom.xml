@@ -22,6 +22,7 @@
         <module>spark-job-profiler-app</module>
         <module>spark-job-profiler-spark-v1</module>
         <module>spark-job-profiler-spark-v2</module>
+        <module>spark-job-profiler-tests</module>
     </modules>
 
     

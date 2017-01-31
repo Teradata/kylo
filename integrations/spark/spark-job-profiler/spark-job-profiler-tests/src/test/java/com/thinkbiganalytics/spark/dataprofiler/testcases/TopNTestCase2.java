@@ -22,13 +22,13 @@ package com.thinkbiganalytics.spark.dataprofiler.testcases;
 
 import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataItem;
 import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataList;
+
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.TreeSet;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * TopN Test Case 2
@@ -54,7 +54,7 @@ public class TopNTestCase2 {
 
     @Test
     public void testTopNSummaryCount() {
-        assertEquals(4, items.size());
+        Assert.assertEquals(4, items.size());
     }
 
     @Test
@@ -64,7 +64,7 @@ public class TopNTestCase2 {
                 + "3^AItem4999998^A4999998^B"
                 + "4^AItem9999998^A4999998^B";
 
-        assertEquals(expectedRetVal, topNDataItemsString);
+        Assert.assertEquals(expectedRetVal, topNDataItemsString);
     }
 
     @AfterClass

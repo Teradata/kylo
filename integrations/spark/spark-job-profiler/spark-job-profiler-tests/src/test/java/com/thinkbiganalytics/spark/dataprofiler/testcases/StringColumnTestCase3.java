@@ -25,7 +25,9 @@ import com.thinkbiganalytics.spark.dataprofiler.columns.StringColumnStatistics;
 import com.thinkbiganalytics.spark.dataprofiler.core.ProfilerTest;
 import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataItem;
 import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataList;
+
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -91,37 +93,37 @@ public class StringColumnTestCase3 extends ProfilerTest {
 	
 	@Test
 	public void testStringNullCount() {
-		assertEquals(nullCount, columnStats.getNullCount());
+		Assert.assertEquals(nullCount, columnStats.getNullCount());
 	}
 	
 	
 	@Test
 	public void testStringTotalCount() {
-		assertEquals(totalCount, columnStats.getTotalCount());
+		Assert.assertEquals(totalCount, columnStats.getTotalCount());
 	}
 	
 	
 	@Test
 	public void testStringUniqueCount() {
-		assertEquals(uniqueCount, columnStats.getUniqueCount());
+		Assert.assertEquals(uniqueCount, columnStats.getUniqueCount());
 	}
 	
 	
 	@Test
 	public void testStringPercNullValues() {
-		assertEquals(percNullValues, columnStats.getPercNullValues(), ProfilerTest.epsilon);
+		assertEquals(percNullValues, columnStats.getPercNullValues(), epsilon);
 	}
 	
 	
 	@Test
 	public void testStringPercUniqueValues() {
-		assertEquals(percUniqueValues, columnStats.getPercUniqueValues(), ProfilerTest.epsilon);
+		assertEquals(percUniqueValues, columnStats.getPercUniqueValues(), epsilon);
 	}
 	
 	
 	@Test
 	public void testStringPercDuplicateValues() {
-		assertEquals(percDuplicateValues, columnStats.getPercDuplicateValues(), ProfilerTest.epsilon);
+		assertEquals(percDuplicateValues, columnStats.getPercDuplicateValues(), epsilon);
 	}
 
 
@@ -131,25 +133,25 @@ public class StringColumnTestCase3 extends ProfilerTest {
 		Iterator<TopNDataItem> iterator = items.descendingIterator();
 
 		//Verify that there are 3 items
-		assertEquals(3, items.size());
+		Assert.assertEquals(3, items.size());
 
 		//Verify the top 3 item counts
 		int index = 1;
 		while (iterator.hasNext()) {
 			TopNDataItem item = iterator.next();
 			if (index == 1) {
-				assertEquals("Rachael::", item.getValue());
-				assertEquals(Long.valueOf(2L), item.getCount());
+				Assert.assertEquals("Rachael::", item.getValue());
+				Assert.assertEquals(Long.valueOf(2L), item.getCount());
 			}
 			/*
                     Not checking values for index 2 and 3 since they can be arbitrary.
                     All remaining values have count 1
                 */
 			else if (index == 2) {
-				assertEquals(Long.valueOf(1L), item.getCount());
+				Assert.assertEquals(Long.valueOf(1L), item.getCount());
 			}
 			else if (index == 3) {
-				assertEquals(Long.valueOf(1L), item.getCount());
+				Assert.assertEquals(Long.valueOf(1L), item.getCount());
 			}
 
 			index++;
@@ -159,61 +161,61 @@ public class StringColumnTestCase3 extends ProfilerTest {
 	
 	@Test
 	public void testStringMaxLength() {
-		assertEquals(maxLength, ((StringColumnStatistics) columnStats).getMaxLength());
+		Assert.assertEquals(maxLength, ((StringColumnStatistics) columnStats).getMaxLength());
 	}
 	
 	
 	@Test
 	public void testStringMinLength() {
-		assertEquals(minLength, ((StringColumnStatistics) columnStats).getMinLength());
+		Assert.assertEquals(minLength, ((StringColumnStatistics) columnStats).getMinLength());
 	}
 	
 	
 	@Test
 	public void testStringLongestString() {
-		assertEquals(longestString, ((StringColumnStatistics) columnStats).getLongestString());
+		Assert.assertEquals(longestString, ((StringColumnStatistics) columnStats).getLongestString());
 	}
 	
 	
 	@Test
 	public void testStringShortestString() {
-		assertEquals(shortestString, ((StringColumnStatistics) columnStats).getShortestString());
+		Assert.assertEquals(shortestString, ((StringColumnStatistics) columnStats).getShortestString());
 	}
 	
 	
 	@Test
 	public void testStringEmptyCount() {
-		assertEquals(emptyCount, ((StringColumnStatistics) columnStats).getEmptyCount());
+		Assert.assertEquals(emptyCount, ((StringColumnStatistics) columnStats).getEmptyCount());
 	}
 	
 	
 	@Test
 	public void testStringPercEmptyValues() {
-		assertEquals(percEmptyValues, ((StringColumnStatistics) columnStats).getPercEmptyValues(), ProfilerTest.epsilon);
+		assertEquals(percEmptyValues, ((StringColumnStatistics) columnStats).getPercEmptyValues(), epsilon);
 	}
 	
 	
 	@Test
 	public void testStringMinStringCaseSensitive() {
-		assertEquals(minStringCase, ((StringColumnStatistics) columnStats).getMinStringCase());
+		Assert.assertEquals(minStringCase, ((StringColumnStatistics) columnStats).getMinStringCase());
 	}
 	
 	
 	@Test
 	public void testStringMaxStringCaseSensitive() {
-		assertEquals(maxStringCase, ((StringColumnStatistics) columnStats).getMaxStringCase());
+		Assert.assertEquals(maxStringCase, ((StringColumnStatistics) columnStats).getMaxStringCase());
 	}
 	
 	
 	@Test
 	public void testStringMinStringCaseInsensitive() {
-		assertEquals(minStringICase, ((StringColumnStatistics) columnStats).getMinStringICase());
+		Assert.assertEquals(minStringICase, ((StringColumnStatistics) columnStats).getMinStringICase());
 	}
 	
 	
 	@Test
 	public void testStringMaxStringCaseInsensitive() {
-		assertEquals(maxStringICase, ((StringColumnStatistics) columnStats).getMaxStringICase());
+		Assert.assertEquals(maxStringICase, ((StringColumnStatistics) columnStats).getMaxStringICase());
 	}
 	
 	@AfterClass

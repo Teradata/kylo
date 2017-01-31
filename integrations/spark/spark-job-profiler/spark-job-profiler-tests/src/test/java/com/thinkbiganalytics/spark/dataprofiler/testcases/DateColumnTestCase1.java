@@ -25,7 +25,9 @@ import com.thinkbiganalytics.spark.dataprofiler.columns.DateColumnStatistics;
 import com.thinkbiganalytics.spark.dataprofiler.core.ProfilerTest;
 import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataItem;
 import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataList;
+
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -73,37 +75,37 @@ public class DateColumnTestCase1 extends ProfilerTest {
 	
 	@Test
     public void testDateNullCount() {
-    	assertEquals(nullCount, columnStats.getNullCount());
+        Assert.assertEquals(nullCount, columnStats.getNullCount());
     }
     
     
     @Test
     public void testDateTotalCount() {
-		assertEquals(totalCount, columnStats.getTotalCount());
+        Assert.assertEquals(totalCount, columnStats.getTotalCount());
     }
     
     
     @Test
     public void testDateUniqueCount() {
-		assertEquals(uniqueCount, columnStats.getUniqueCount());
+        Assert.assertEquals(uniqueCount, columnStats.getUniqueCount());
     }
     
     
     @Test
     public void testDatePercNullValues() {
-		assertEquals(percNullValues, columnStats.getPercNullValues(), ProfilerTest.epsilon);
+        assertEquals(percNullValues, columnStats.getPercNullValues(), epsilon);
     }
     
     
     @Test
     public void testDatePercUniqueValues() {
-		assertEquals(percUniqueValues, columnStats.getPercUniqueValues(), ProfilerTest.epsilon);
+        assertEquals(percUniqueValues, columnStats.getPercUniqueValues(), epsilon);
     }
     
     
     @Test
     public void testDatePercDuplicateValues() {
-		assertEquals(percDuplicateValues, columnStats.getPercDuplicateValues(), ProfilerTest.epsilon);
+        assertEquals(percDuplicateValues, columnStats.getPercDuplicateValues(), epsilon);
     }
 
 
@@ -113,26 +115,26 @@ public class DateColumnTestCase1 extends ProfilerTest {
         Iterator<TopNDataItem> iterator = items.descendingIterator();
 
         //Verify that there are 3 items
-        assertEquals(3, items.size());
+        Assert.assertEquals(3, items.size());
 
         //Verify the top 3 item counts
         int index = 1;
         while (iterator.hasNext()) {
             TopNDataItem item = iterator.next();
             if (index == 1) {
-                assertEquals(Date.valueOf("2011-08-08"), item.getValue());
-                assertEquals(Long.valueOf(3L), item.getCount());
+                Assert.assertEquals(Date.valueOf("2011-08-08"), item.getValue());
+                Assert.assertEquals(Long.valueOf(3L), item.getCount());
             }
             else if (index == 2) {
-                assertEquals(Date.valueOf("1990-10-25"), item.getValue());
-                assertEquals(Long.valueOf(2L), item.getCount());
+                Assert.assertEquals(Date.valueOf("1990-10-25"), item.getValue());
+                Assert.assertEquals(Long.valueOf(2L), item.getCount());
             }
             else if (index == 3) {
 				/*
                     Not checking value since it can be arbitrary.
                     All remaining values have count 1
                 */
-                assertEquals(Long.valueOf(1L), item.getCount());
+                Assert.assertEquals(Long.valueOf(1L), item.getCount());
             }
 
             index++;
@@ -142,13 +144,13 @@ public class DateColumnTestCase1 extends ProfilerTest {
     
     @Test
     public void testDateMaxDate() {
-    	assertEquals(maxDate, ((DateColumnStatistics) columnStats).getMaxDate());
+        Assert.assertEquals(maxDate, ((DateColumnStatistics) columnStats).getMaxDate());
     }
     
     
     @Test
     public void testDateMinDate() {
-    	assertEquals(minDate, ((DateColumnStatistics)columnStats).getMinDate());
+        Assert.assertEquals(minDate, ((DateColumnStatistics) columnStats).getMinDate());
     }
     
     

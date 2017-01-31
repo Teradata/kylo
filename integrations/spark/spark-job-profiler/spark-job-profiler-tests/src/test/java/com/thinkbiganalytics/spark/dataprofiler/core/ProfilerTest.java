@@ -24,6 +24,7 @@ import com.thinkbiganalytics.spark.DataSet;
 import com.thinkbiganalytics.spark.SparkContextService;
 import com.thinkbiganalytics.spark.dataprofiler.columns.ColumnStatistics;
 import com.thinkbiganalytics.spark.dataprofiler.model.StatisticsModel;
+
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -36,8 +37,10 @@ import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -47,12 +50,14 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
 /**
  * Created by ru186002 on 19/10/2016.
  */
-@ContextConfiguration(classes = Profiler.class)
+
 @RunWith(SpringJUnit4ClassRunner.class)
+@ComponentScan(basePackages = {"com.thinkbiganalytics"})
+@ContextConfiguration(classes = {Profiler.class, SpringTestConfig.class})
+@Ignore
 public abstract class ProfilerTest {
 
     public static final String EMPTY_STRING = "";

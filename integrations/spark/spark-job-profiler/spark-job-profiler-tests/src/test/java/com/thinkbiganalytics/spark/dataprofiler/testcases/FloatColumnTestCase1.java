@@ -25,17 +25,17 @@ import com.thinkbiganalytics.spark.dataprofiler.columns.FloatColumnStatistics;
 import com.thinkbiganalytics.spark.dataprofiler.core.ProfilerTest;
 import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataItem;
 import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataList;
+
+import org.hamcrest.Matchers;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Iterator;
 import java.util.TreeSet;
 
-import static org.hamcrest.Matchers.anyOf;
-import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 
 /**
  * Float Column Statistics Test Case
@@ -83,37 +83,37 @@ public class FloatColumnTestCase1 extends ProfilerTest {
 	
 	@Test
     public void testFloatNullCount() {
-    	assertEquals(nullCount, columnStats.getNullCount());
+        Assert.assertEquals(nullCount, columnStats.getNullCount());
     }
     
     
     @Test
     public void testFloatTotalCount() {
-		assertEquals(totalCount, columnStats.getTotalCount());
+        Assert.assertEquals(totalCount, columnStats.getTotalCount());
     }
     
     
     @Test
     public void testFloatUniqueCount() {
-		assertEquals(uniqueCount, columnStats.getUniqueCount());
+        Assert.assertEquals(uniqueCount, columnStats.getUniqueCount());
     }
     
     
     @Test
     public void testFloatPercNullValues() {
-		assertEquals(percNullValues, columnStats.getPercNullValues(), ProfilerTest.epsilon);
+        assertEquals(percNullValues, columnStats.getPercNullValues(), epsilon);
     }
     
     
     @Test
     public void testFloatPercUniqueValues() {
-		assertEquals(percUniqueValues, columnStats.getPercUniqueValues(), ProfilerTest.epsilon);
+        assertEquals(percUniqueValues, columnStats.getPercUniqueValues(), epsilon);
     }
     
     
     @Test
     public void testFloatPercDuplicateValues() {
-		assertEquals(percDuplicateValues, columnStats.getPercDuplicateValues(), ProfilerTest.epsilon);
+        assertEquals(percDuplicateValues, columnStats.getPercDuplicateValues(), epsilon);
     }
 
 
@@ -123,27 +123,27 @@ public class FloatColumnTestCase1 extends ProfilerTest {
         Iterator<TopNDataItem> iterator = items.descendingIterator();
 
         //Verify that there are 3 items
-        assertEquals(3, items.size());
+        Assert.assertEquals(3, items.size());
 
         //Verify the top 3 item counts
         int index = 1;
         while (iterator.hasNext()) {
             TopNDataItem item = iterator.next();
             if (index == 1) {
-                assertEquals(null, item.getValue());
-                assertEquals(Long.valueOf(3L), item.getCount());
+                Assert.assertEquals(null, item.getValue());
+                Assert.assertEquals(Long.valueOf(3L), item.getCount());
             }
             else if (index == 2) {
                 // A tie for count 2
-                assertThat(Float.valueOf(item.getValue().toString()),
-                        anyOf(is(110.5f), is(160.7f)));
-                assertEquals(Long.valueOf(2L), item.getCount());
+                Assert.assertThat(Float.valueOf(item.getValue().toString()),
+                                  Matchers.anyOf(Matchers.is(110.5f), Matchers.is(160.7f)));
+                Assert.assertEquals(Long.valueOf(2L), item.getCount());
             }
             else if (index == 3) {
                 // A tie for count 2
-                assertThat(Float.valueOf(item.getValue().toString()),
-                        anyOf(is(110.5f), is(160.7f)));
-                assertEquals(Long.valueOf(2L), item.getCount());
+                Assert.assertThat(Float.valueOf(item.getValue().toString()),
+                                  Matchers.anyOf(Matchers.is(110.5f), Matchers.is(160.7f)));
+                Assert.assertEquals(Long.valueOf(2L), item.getCount());
             }
 
             index++;
@@ -153,37 +153,37 @@ public class FloatColumnTestCase1 extends ProfilerTest {
     
     @Test
     public void testFloatMax() {
-    	assertEquals(max, ((FloatColumnStatistics)columnStats).getMax(), ProfilerTest.epsilon);
+        assertEquals(max, ((FloatColumnStatistics) columnStats).getMax(), epsilon);
     }
     
     
     @Test
     public void testFloatMin() {
-    	assertEquals(min, ((FloatColumnStatistics)columnStats).getMin(), ProfilerTest.epsilon);
+        assertEquals(min, ((FloatColumnStatistics) columnStats).getMin(), epsilon);
     }
     
     
     @Test
     public void testFloatSum() {
-    	assertEquals(sum, ((FloatColumnStatistics)columnStats).getSum(), ProfilerTest.epsilon);
+        assertEquals(sum, ((FloatColumnStatistics) columnStats).getSum(), epsilon);
     }
     
     
     @Test
     public void testFloatMean() {
-    	assertEquals(mean, ((FloatColumnStatistics)columnStats).getMean(), ProfilerTest.epsilon);
+        assertEquals(mean, ((FloatColumnStatistics) columnStats).getMean(), epsilon);
     }
     
     
     @Test
     public void testFloatStddev() {
-    	assertEquals(stddev, ((FloatColumnStatistics)columnStats).getStddev(), ProfilerTest.epsilon);
+        assertEquals(stddev, ((FloatColumnStatistics) columnStats).getStddev(), epsilon);
     }
     
     
     @Test
     public void testFloatVariance() {
-    	assertEquals(variance, ((FloatColumnStatistics)columnStats).getVariance(), ProfilerTest.epsilon);
+        assertEquals(variance, ((FloatColumnStatistics) columnStats).getVariance(), epsilon);
     }
     
     

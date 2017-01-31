@@ -25,7 +25,9 @@ import com.thinkbiganalytics.spark.dataprofiler.columns.ColumnStatistics;
 import com.thinkbiganalytics.spark.dataprofiler.core.ProfilerTest;
 import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataItem;
 import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataList;
+
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -79,37 +81,37 @@ public class BigDecimalColumnTestCase1 extends ProfilerTest {
 
 	@Test
 	public void testBigDecimalNullCount() {
-		assertEquals(nullCount, columnStats.getNullCount());
+		Assert.assertEquals(nullCount, columnStats.getNullCount());
 	}
 
 
 	@Test
 	public void testBigDecimalTotalCount() {
-		assertEquals(totalCount, columnStats.getTotalCount());
+		Assert.assertEquals(totalCount, columnStats.getTotalCount());
 	}
 
 
 	@Test
 	public void testBigDecimalUniqueCount() {
-		assertEquals(uniqueCount, columnStats.getUniqueCount());
+		Assert.assertEquals(uniqueCount, columnStats.getUniqueCount());
 	}
 
 
 	@Test
 	public void testBigDecimalPercNullValues() {
-		assertEquals(percNullValues, columnStats.getPercNullValues(), ProfilerTest.epsilon);
+		assertEquals(percNullValues, columnStats.getPercNullValues(), epsilon);
 	}
 
 
 	@Test
 	public void testBigDecimalPercUniqueValues() {
-		assertEquals(percUniqueValues, columnStats.getPercUniqueValues(), ProfilerTest.epsilon);
+		assertEquals(percUniqueValues, columnStats.getPercUniqueValues(), epsilon);
 	}
 
 
 	@Test
 	public void testBigDecimalPercDuplicateValues() {
-		assertEquals(percDuplicateValues, columnStats.getPercDuplicateValues(), ProfilerTest.epsilon);
+		assertEquals(percDuplicateValues, columnStats.getPercDuplicateValues(), epsilon);
 	}
 
 
@@ -119,23 +121,23 @@ public class BigDecimalColumnTestCase1 extends ProfilerTest {
 		Iterator<TopNDataItem> iterator = items.descendingIterator();
 
 		//Verify that there are 3 items
-		assertEquals(3, items.size());
+		Assert.assertEquals(3, items.size());
 
 		//Verify the top 3 item counts
 		int index = 1;
 		while (iterator.hasNext()) {
 			TopNDataItem item = iterator.next();
 			if (index == 1) {
-				assertEquals(topFirstValue, new BigDecimal(String.valueOf(item.getValue())).setScale(5, BigDecimal.ROUND_HALF_UP));
-				assertEquals(Long.valueOf(4L), item.getCount());
+				Assert.assertEquals(topFirstValue, new BigDecimal(String.valueOf(item.getValue())).setScale(5, BigDecimal.ROUND_HALF_UP));
+				Assert.assertEquals(Long.valueOf(4L), item.getCount());
 			}
 			else if (index == 2) {
-				assertEquals(topSecondValue, new BigDecimal(String.valueOf(item.getValue())).setScale(5, BigDecimal.ROUND_HALF_UP));
-				assertEquals(Long.valueOf(3L), item.getCount());
+				Assert.assertEquals(topSecondValue, new BigDecimal(String.valueOf(item.getValue())).setScale(5, BigDecimal.ROUND_HALF_UP));
+				Assert.assertEquals(Long.valueOf(3L), item.getCount());
 			}
 			else if (index == 3) {
-				assertEquals(null, item.getValue());
-				assertEquals(Long.valueOf(2L), item.getCount());
+				Assert.assertEquals(null, item.getValue());
+				Assert.assertEquals(Long.valueOf(2L), item.getCount());
 			}
 			index++;
 		}
@@ -144,20 +146,20 @@ public class BigDecimalColumnTestCase1 extends ProfilerTest {
 	
 	@Test
     public void testBigDecimalMax() {
-    	assertEquals(max, ((BigDecimalColumnStatistics)columnStats).getMax().setScale(5, BigDecimal.ROUND_HALF_UP));
-    }
+		Assert.assertEquals(max, ((BigDecimalColumnStatistics) columnStats).getMax().setScale(5, BigDecimal.ROUND_HALF_UP));
+	}
     
     
     @Test
     public void testBigDecimalMin() {
-    	assertEquals(min, ((BigDecimalColumnStatistics)columnStats).getMin().setScale(5, BigDecimal.ROUND_HALF_UP));
-    }
+		Assert.assertEquals(min, ((BigDecimalColumnStatistics) columnStats).getMin().setScale(5, BigDecimal.ROUND_HALF_UP));
+	}
     
     
     @Test
     public void testBigDecimalSum() {
-    	assertEquals(sum, ((BigDecimalColumnStatistics)columnStats).getSum().setScale(5, BigDecimal.ROUND_HALF_UP));
-    }
+		Assert.assertEquals(sum, ((BigDecimalColumnStatistics) columnStats).getSum().setScale(5, BigDecimal.ROUND_HALF_UP));
+	}
     
     @AfterClass
     public static void tearDownClass() {
