@@ -24,18 +24,21 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * Created by sr186054 on 12/16/16.
+ * Test the naming/versioning of the process groups
  */
 public class TestNifiTemplateNameUtil {
 
 
+    /**
+     * Test to ensure the group gets the correct version timestamp and that it is able to be parsed
+     */
     @Test
     public void testProcessGroupNameVersioning(){
         String processGroupName = "my group";
         Assert.assertFalse(NifiTemplateNameUtil.isVersionedProcessGroup(processGroupName));
         String versionedName =  NifiTemplateNameUtil.getVersionedProcessGroupName(processGroupName);
         Assert.assertTrue(NifiTemplateNameUtil.isVersionedProcessGroup(versionedName));
-        Assert.assertEquals(processGroupName,NifiTemplateNameUtil.parseVersionedProcessGroupName(versionedName));
+        Assert.assertEquals(processGroupName, NifiTemplateNameUtil.parseVersionedProcessGroupName(versionedName));
     }
 
 }

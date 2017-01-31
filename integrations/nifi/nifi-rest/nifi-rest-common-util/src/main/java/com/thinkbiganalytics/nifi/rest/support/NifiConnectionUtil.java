@@ -34,8 +34,17 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Utiltiy class to get connection information out of the NiFi {@link ConnectionDTO} objects
+ */
 public class NifiConnectionUtil {
 
+    /**
+     * Return all processorIds marked as sources from a set of connections
+     *
+     * @param connections a set of connection objects
+     * @return a list of processor ids that are source processors
+     */
     public static List<String> getInputProcessorIds(Collection<ConnectionDTO> connections) {
         List<String> processorIds = new ArrayList<>();
         SourcesAndDestinations connectionItems = new SourcesAndDestinations(connections);
@@ -49,6 +58,11 @@ public class NifiConnectionUtil {
 
     }
 
+    /**
+     * Return a list of input port ids from a set of connections
+     * @param connections a set of connection objects
+     * @return a list of the port ids
+     */
     public static List<String> getInputPortIds(Collection<ConnectionDTO> connections) {
         List<String> inputPortIds = new ArrayList<>();
         if (connections != null) {
@@ -62,6 +76,9 @@ public class NifiConnectionUtil {
     }
 
 
+    /**
+     * Class marking information about a connection
+     */
     private static class SourcesAndDestinations {
 
         private List<String> destinationConnections = new ArrayList<>();
@@ -92,12 +109,16 @@ public class NifiConnectionUtil {
         }
     }
 
+    /**
+     * Return a list of processor ids that dont have any additional connections coming out of them
+     * @param connections a set of connection objects
+     * @return a list of ending processor ids
+     */
     public static List<String> getEndingProcessorIds(Collection<ConnectionDTO> connections) {
         List<String> processorIds = new ArrayList<>();
         SourcesAndDestinations connectionItems = new SourcesAndDestinations(connections);
 
         //find all destinations that are not in a source
-
         for (String dest : connectionItems.getDestinationConnections()) {
             if (!connectionItems.getSourceConnections().contains(dest)) {
                 processorIds.add(dest);
@@ -106,6 +127,12 @@ public class NifiConnectionUtil {
         return processorIds;
     }
 
+    /**
+     * Return a list of connection objects whose source group id matches the {@code sourceProcessGroupId}
+     * @param connections a collection of connection objects
+     * @param sourceProcessGroupId a groupid to match against the connection.source.groupId field
+     * @return a list of connections that have their source under the same {@code sourceProcessGroupId}
+     */
     public static List<ConnectionDTO> findConnectionsMatchingSourceGroupId(Collection<ConnectionDTO> connections, final String sourceProcessGroupId) {
         return Lists.newArrayList(Iterables.filter(connections, new Predicate<ConnectionDTO>() {
             @Override
@@ -115,6 +142,12 @@ public class NifiConnectionUtil {
         }));
     }
 
+    /**
+     * Return a list of connection objects whose destination group id matches the {@code destProcessGroupId}
+     * @param connections  a collection of connection objects
+     * @param destProcessGroupId a groupid to match against the connection.destination.groupId field
+     * @return a list of connections that have their destinations under the same {@code destProcessGroupId}
+     */
     public static List<ConnectionDTO> findConnectionsMatchingDestinationGroupId(Collection<ConnectionDTO> connections, final String destProcessGroupId) {
         return Lists.newArrayList(Iterables.filter(connections, new Predicate<ConnectionDTO>() {
             @Override
@@ -124,6 +157,12 @@ public class NifiConnectionUtil {
         }));
     }
 
+    /**
+     * Return a list of connections that have a destination id matching the supplied {@code destId}
+     * @param connections  a collection of connection objects
+     * @param destId a id to match against each connection.destination.id
+     * @return a list of connections that contain the {code destId}
+     */
     public static List<ConnectionDTO> findConnectionsMatchingDestinationId(Collection<ConnectionDTO> connections, final String destId) {
         return Lists.newArrayList(Iterables.filter(connections, new Predicate<ConnectionDTO>() {
             @Override
@@ -133,6 +172,12 @@ public class NifiConnectionUtil {
         }));
     }
 
+    /**
+     * Return a list of connections that have a destination id matching the supplied {@code sourceId}
+     * @param connections  a collection of connection objects
+     * @param sourceId a id to match against each connection.source.id
+     * @return a list of connections that contain the {code sourceId}
+     */
     public static List<ConnectionDTO> findConnectionsMatchingSourceId(Collection<ConnectionDTO> connections, final String sourceId) {
         return Lists.newArrayList(Iterables.filter(connections, new Predicate<ConnectionDTO>() {
             @Override
@@ -142,13 +187,20 @@ public class NifiConnectionUtil {
         }));
     }
 
+    /**
+     * Return a connection that has both the supplied source and destination id
+     * @param connections a collection of connection objects
+     * @param sourceId a sourceId to match
+     * @param destId a destination id to match
+     * @return a connection that has both the source and destination id
+     */
     public static ConnectionDTO findConnection(Collection<ConnectionDTO> connections, final String sourceId, final String destId) {
         ConnectionDTO connection = null;
         connection = Iterables.tryFind(connections, new Predicate<ConnectionDTO>() {
             @Override
             public boolean apply(ConnectionDTO connectionDTO) {
                 return connectionDTO.getSource().getId().equals(sourceId) && connectionDTO.getDestination()
-                        .getId().equalsIgnoreCase(destId);
+                    .getId().equalsIgnoreCase(destId);
             }
         }).orNull();
 
@@ -156,6 +208,12 @@ public class NifiConnectionUtil {
 
     }
 
+    /**
+     * Return a input or output port dto matching a give name
+     * @param ports a collection of port objects
+     * @param name a name to match
+     * @return the first port dto matching the supplied name
+     */
     public static PortDTO findPortMatchingName(Collection<PortDTO> ports, final String name) {
 
         return Iterables.tryFind(ports, new Predicate<PortDTO>() {
@@ -167,6 +225,12 @@ public class NifiConnectionUtil {
     }
 
 
+    /**
+     * Recursively return all the connection objects under a given process group.
+     * Recursively call any child process groups under the initial group and gather all their connections as well
+     * @param group that group to look under
+     * @return a set of connections under the supplied group and all the children
+     */
     public static Set<ConnectionDTO> getAllConnections(ProcessGroupDTO group) {
         Set<ConnectionDTO> connections = new HashSet<>();
         if (group != null) {
@@ -179,7 +243,6 @@ public class NifiConnectionUtil {
         }
         return connections;
     }
-
 
 
 }

@@ -27,10 +27,16 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Created by sr186054 on 1/21/16.
+ * Utility class to support the NiFi Template dto object
  */
 public class NifiTemplateUtil {
 
+    /**
+     * find all source level input processors in a template which dont have any connections coming into them
+     *
+     * @param template a nifi template
+     * @return a list of processors in the template that dont have any incoming connections
+     */
     public static List<ProcessorDTO>getInputProcessorsForTemplate(TemplateDTO template ){
         if (template != null && template.getSnippet() != null) {
             List<String> sourceIds = NifiConnectionUtil.getInputProcessorIds(template.getSnippet().getConnections());

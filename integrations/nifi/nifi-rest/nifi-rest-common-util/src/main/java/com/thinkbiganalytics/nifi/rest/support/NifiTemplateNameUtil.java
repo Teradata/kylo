@@ -25,16 +25,29 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.Date;
 
 /**
- * Created by sr186054 on 8/18/16.
+ * Utility class to support common naming of versioned process groups
  */
 public class NifiTemplateNameUtil {
 
-     static String VERSION_NAME_REGEX = "(.*) - (\\d{13})";
+    /**
+     * the regex pattern to match when looking for versioned process groups
+     **/
+    static String VERSION_NAME_REGEX = "(.*) - (\\d{13})";
 
+    /**
+     * Return the new name of the versioned process group
+     * @param name the process group name with out the version timestamp
+     * @return the new name that has the new version timestamp
+     */
     public static String getVersionedProcessGroupName(String name) {
         return name + " - " + new Date().getTime();
     }
 
+    /**
+     * Return the process group name, removing the versioned timestamp if one exists
+     * @param name a process group name
+     * @return the process group name, removing the versioned timestamp if one exists
+     */
     public static String parseVersionedProcessGroupName(String name) {
         if (isVersionedProcessGroup(name)) {
             return StringUtils.substringBefore(name, " - ");
@@ -42,6 +55,11 @@ public class NifiTemplateNameUtil {
         return name;
     }
 
+    /**
+     * Check to see if the incoming name includes a versioned timestamp
+     * @param name the process group name
+     * @return {@code true} if the incoming name contains the version timestamp, {@code false} if the name is not versioned.
+     */
     public static boolean isVersionedProcessGroup(String name) {
         return StringUtils.isNotBlank(name) && name.matches(VERSION_NAME_REGEX);
     }
