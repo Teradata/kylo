@@ -21,19 +21,24 @@ package com.thinkbiganalytics.server;
  */
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.kerberos.authentication.KerberosServiceAuthenticationProvider;
 import org.springframework.security.kerberos.web.authentication.SpnegoAuthenticationProcessingFilter;
 import org.springframework.security.kerberos.web.authentication.SpnegoEntryPoint;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+
+import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
 
 /**
  *
@@ -41,32 +46,39 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
  */
 @Configuration
 @EnableWebSecurity
+@Order(DefaultWebSecurityConfigurerAdapter.ORDER)
 @Profile("auth-krb-spnego")
-@Order(DefaultWebSecurityConfigurerAdapter.ORDER + 1)
-public class KerberosWebSecurityConfiguration extends DefaultWebSecurityConfigurerAdapter {
+public class KerberosWebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     
     @Inject 
     private SpnegoEntryPoint spnegoEntryPoint;
     
     @Inject
     private KerberosServiceAuthenticationProvider kerberosServiceAuthProvider;
+    
+    @Inject
+    @Named(JaasAuthConfig.SERVICES_AUTH_PROVIDER)
+    private AuthenticationProvider authenticationProvider;
+
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        super.configure(http);
-        
         http
+            .csrf().disable()
             .exceptionHandling()
                 .authenticationEntryPoint(spnegoEntryPoint)
+                .and()
+            .authorizeRequests()
+                .antMatchers("/**").authenticated()
                 .and()
             .addFilterBefore(spnegoAuthenticationProcessingFilter(), BasicAuthenticationFilter.class);
     }
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        super.configure(auth);
-        
-        auth.authenticationProvider(kerberosServiceAuthProvider);
+        auth
+            .authenticationProvider(kerberosServiceAuthProvider)
+            .authenticationProvider(authenticationProvider);
     }
     
     @Bean

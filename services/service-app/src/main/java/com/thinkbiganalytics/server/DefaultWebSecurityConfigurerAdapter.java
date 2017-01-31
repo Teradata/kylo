@@ -1,5 +1,20 @@
 package com.thinkbiganalytics.server;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.security.SecurityProperties;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+import org.springframework.core.annotation.Order;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+
 /*-
  * #%L
  * thinkbig-service-app
@@ -39,6 +54,7 @@ import org.springframework.security.web.authentication.rememberme.RememberMeAuth
 @Configuration
 @EnableWebSecurity
 @Order(DefaultWebSecurityConfigurerAdapter.ORDER)
+@Profile("!auth-krb-spnego")
 public class DefaultWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
 
     protected static final Logger LOG = LoggerFactory.getLogger(DefaultWebSecurityConfigurerAdapter.class);

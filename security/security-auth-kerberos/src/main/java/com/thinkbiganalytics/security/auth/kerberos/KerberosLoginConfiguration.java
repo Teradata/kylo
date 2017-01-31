@@ -21,11 +21,9 @@ package com.thinkbiganalytics.security.auth.kerberos;
  */
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 
 import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
@@ -38,7 +36,6 @@ import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
 @Configuration
 @EnableWebSecurity
 @Profile("auth-krb-login")
-@Order(SecurityProperties.ACCESS_OVERRIDE_ORDER + 2)
 public class KerberosLoginConfiguration {
     
     @Value("${security.auth.krb.login:required}")

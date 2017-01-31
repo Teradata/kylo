@@ -21,21 +21,20 @@ package com.thinkbiganalytics.security.auth.kerberos;
  */
 
 import java.io.IOException;
-import java.io.StringReader;
-import java.util.Properties;
-
-import javax.inject.Named;
+import java.util.Collections;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.FileSystemResource;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.kerberos.authentication.KerberosServiceAuthenticationProvider;
 import org.springframework.security.kerberos.authentication.sun.SunJaasKerberosTicketValidator;
-import org.springframework.security.kerberos.web.authentication.SpnegoAuthenticationProcessingFilter;
 import org.springframework.security.kerberos.web.authentication.SpnegoEntryPoint;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
@@ -60,22 +59,11 @@ public class KerberosSpnegoConfiguration {
 //        return new SpnegoEntryPoint("/login");
     }
 
-//    @Bean
-//    public SpnegoAuthenticationProcessingFilter spnegoAuthenticationProcessingFilter(@Named("krbAuthenticationManager") AuthenticationManager authenticationManager) {
-//        SpnegoAuthenticationProcessingFilter filter = new SpnegoAuthenticationProcessingFilter();
-//        filter.setAuthenticationManager(authenticationManager);
-//        return filter;
-//    }
-
     @Bean
     public KerberosServiceAuthenticationProvider kerberosServiceAuthenticationProvider() throws IOException {
         KerberosServiceAuthenticationProvider provider = new KerberosServiceAuthenticationProvider();
         provider.setTicketValidator(sunJaasKerberosTicketValidator());
-        
-        Properties users = new Properties();
-        users.load(new StringReader("dladmin=thinkbig,admin"));
-        
-        provider.setUserDetailsService(new InMemoryUserDetailsManager(users));
+        provider.setUserDetailsService(new DummyUserDetailsManager());
         return provider;
     }
 
@@ -88,4 +76,23 @@ public class KerberosSpnegoConfiguration {
         return ticketValidator;
     }
 
+    /**
+     * Since the SPNEGO filer requires a UserDetailsManager we given it this one since we 
+     * do not use UserDetailsManager to load user info in Kylo.
+     */
+    private class DummyUserDetailsManager extends InMemoryUserDetailsManager {
+
+        public DummyUserDetailsManager() {
+            super(Collections.emptyList());
+        }
+        
+        /* (non-Javadoc)
+         * @see org.springframework.security.provisioning.InMemoryUserDetailsManager#loadUserByUsername(java.lang.String)
+         */
+        @Override
+        public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+            // Return a new dummy user each time from the already authenticated username.
+            return new User(username, "", Collections.singleton(new SimpleGrantedAuthority("admin")));
+        }
+    }
 }
