@@ -64,28 +64,20 @@ import javax.jcr.RepositoryException;
 public class UpgradeKyloService implements ModeShapeAvailabilityListener {
 
     private static final Logger log = LoggerFactory.getLogger(UpgradeKyloService.class);
-
-    @Inject
-    private KyloVersionProvider kyloVersionProvider;
-
-    @Inject
-    private FeedManagerFeedProvider feedManagerFeedProvider;
-
-    @Inject
-    private FeedProvider feedProvider;
-
-    @Inject
-    private FeedManagerTemplateProvider feedManagerTemplateProvider;
-    
-    @Inject
-    private FeedManagerCategoryProvider feedManagerCategoryProvider;
-
     @Inject
     OpsManagerFeedProvider opsManagerFeedProvider;
-
     @Inject
     MetadataAccess metadataAccess;
-
+    @Inject
+    private KyloVersionProvider kyloVersionProvider;
+    @Inject
+    private FeedManagerFeedProvider feedManagerFeedProvider;
+    @Inject
+    private FeedProvider feedProvider;
+    @Inject
+    private FeedManagerTemplateProvider feedManagerTemplateProvider;
+    @Inject
+    private FeedManagerCategoryProvider feedManagerCategoryProvider;
     @Inject
     private AccessController accessController;
 
@@ -113,11 +105,11 @@ public class UpgradeKyloService implements ModeShapeAvailabilityListener {
         }
         ensureFeedTemplateFeedRelationships();
         // migrateUnusedFeedProperties();
-            version = metadataAccess.commit(() -> {
-                //ensure/update the version
-                KyloVersion kyloVersion = kyloVersionProvider.updateToCurrentVersion();
-                return kyloVersion;
-            }, MetadataAccess.SERVICE);
+        version = metadataAccess.commit(() -> {
+            //ensure/update the version
+            KyloVersion kyloVersion = kyloVersionProvider.updateToCurrentVersion();
+            return kyloVersion;
+        }, MetadataAccess.SERVICE);
 
         log.info("Upgrade check complete for Kylo {}", version.getVersion());
 
@@ -188,13 +180,10 @@ public class UpgradeKyloService implements ModeShapeAvailabilityListener {
     }
 
 
-
-
-
     public KyloVersion upgradeTo0_4_0() {
 
         return metadataAccess.commit(() -> metadataAccess.commit(() -> {
-            
+
             for (FeedManagerCategory category : feedManagerCategoryProvider.findAll()) {
                 // Ensure each category has an allowedActions (gets create if not present.)
                 category.getAllowedActions();
@@ -208,7 +197,7 @@ public class UpgradeKyloService implements ModeShapeAvailabilityListener {
                 for (FeedManagerFeed feedManagerFeed : domainFeeds) {
                     opsManagerFeedIds.add(opsManagerFeedProvider.resolveId(feedManagerFeed.getId().toString()));
                     feedManagerFeedMap.put(feedManagerFeed.getId().toString(), feedManagerFeed);
-                    
+
                     // Ensure each feed has an allowedActions (gets create if not present.)
                     feedManagerFeed.getAllowedActions();
                 }

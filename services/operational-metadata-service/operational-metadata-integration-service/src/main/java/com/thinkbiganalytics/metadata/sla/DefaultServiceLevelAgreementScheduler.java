@@ -55,26 +55,17 @@ import javax.inject.Inject;
 public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreementScheduler, ModeShapeAvailabilityListener {
 
     private static final Logger log = LoggerFactory.getLogger(DefaultServiceLevelAgreementScheduler.class);
-
-    private String DEFAULT_CRON = "0 0/5 * 1/1 * ? *";// every 5 min
-
-
-    @Value("${sla.cron.default:0 0/5 * 1/1 * ? *}")
-    private String defaultCron;
-
-
-    @Inject
-    private JobScheduler jobScheduler;
-
-    @Inject
-    private ServiceLevelAgreementChecker slaChecker;
-
-    @Inject
-    private MetadataAccess metadataAccess;
-
     @Inject
     ServiceLevelAgreementProvider slaProvider;
-
+    private String DEFAULT_CRON = "0 0/5 * 1/1 * ? *";// every 5 min
+    @Value("${sla.cron.default:0 0/5 * 1/1 * ? *}")
+    private String defaultCron;
+    @Inject
+    private JobScheduler jobScheduler;
+    @Inject
+    private ServiceLevelAgreementChecker slaChecker;
+    @Inject
+    private MetadataAccess metadataAccess;
     @Inject
     private ModeShapeAvailability modeShapeAvailability;
 
@@ -181,28 +172,28 @@ public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreem
 
     }
 
-    public void disableServiceLevelAgreement(ServiceLevelAgreement sla){
+    public void disableServiceLevelAgreement(ServiceLevelAgreement sla) {
 
-    ServiceLevelAgreement.ID slaId = sla.getId();
+        ServiceLevelAgreement.ID slaId = sla.getId();
         if (scheduledJobNames.containsKey(slaId)) {
-            JobIdentifier  scheduledJobId = jobIdentifierForName(scheduledJobNames.get(slaId));
+            JobIdentifier scheduledJobId = jobIdentifierForName(scheduledJobNames.get(slaId));
             try {
                 jobScheduler.pauseTriggersOnJob(scheduledJobId);
-            }catch (JobSchedulerException e){
-                log.error("Unable to pause the schedule for the disabled SLA {} ",sla.getName());
+            } catch (JobSchedulerException e) {
+                log.error("Unable to pause the schedule for the disabled SLA {} ", sla.getName());
             }
         }
     }
 
-    public void enableServiceLevelAgreement(ServiceLevelAgreement sla){
+    public void enableServiceLevelAgreement(ServiceLevelAgreement sla) {
 
         ServiceLevelAgreement.ID slaId = sla.getId();
         if (scheduledJobNames.containsKey(slaId)) {
-            JobIdentifier  scheduledJobId = jobIdentifierForName(scheduledJobNames.get(slaId));
+            JobIdentifier scheduledJobId = jobIdentifierForName(scheduledJobNames.get(slaId));
             try {
                 jobScheduler.resumeTriggersOnJob(scheduledJobId);
-            }catch (JobSchedulerException e){
-                log.error("Unable to resume the schedule for the enabled SLA {} ",sla.getName());
+            } catch (JobSchedulerException e) {
+                log.error("Unable to resume the schedule for the enabled SLA {} ", sla.getName());
             }
         }
     }
@@ -231,7 +222,7 @@ public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreem
                         if (sla.isEnabled()) {
                             slaChecker.checkAgreement(sla);
                         } else {
-                            log.info("SLA {} will not fire since it is disabled ",sla.getName());
+                            log.info("SLA {} will not fire since it is disabled ", sla.getName());
                         }
                     }, MetadataAccess.SERVICE);
                 }

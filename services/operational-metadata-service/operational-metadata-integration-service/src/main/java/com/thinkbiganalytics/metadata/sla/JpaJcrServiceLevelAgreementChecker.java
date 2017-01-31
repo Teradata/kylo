@@ -38,10 +38,9 @@ import javax.inject.Inject;
 public class JpaJcrServiceLevelAgreementChecker extends DefaultServiceLevelAgreementChecker {
 
 
+    private static final Logger LOG = LoggerFactory.getLogger(JpaJcrServiceLevelAgreementChecker.class);
     @Inject
     JcrMetadataAccess jcrMetadataAccess;
-
-    private static final Logger LOG = LoggerFactory.getLogger(JpaJcrServiceLevelAgreementChecker.class);
 
 
     public JpaJcrServiceLevelAgreementChecker() {
@@ -53,18 +52,18 @@ public class JpaJcrServiceLevelAgreementChecker extends DefaultServiceLevelAgree
         boolean shouldAlert = false;
         try {
             shouldAlert = jcrMetadataAccess.read(() -> {
-            // Get the last assessment that was created for this SLA (if any).
-            ServiceLevelAssessment previous = this.assessmentProvider.findLatestAssessmentNotEqualTo(agreement.getId(), assessment.getId());
+                // Get the last assessment that was created for this SLA (if any).
+                ServiceLevelAssessment previous = this.assessmentProvider.findLatestAssessmentNotEqualTo(agreement.getId(), assessment.getId());
 
-            if (previous != null) {
-                assessmentProvider.ensureServiceLevelAgreementOnAssessment(previous);
-                LOG.debug("found previous assessment {} ", previous.getClass());
+                if (previous != null) {
+                    assessmentProvider.ensureServiceLevelAgreementOnAssessment(previous);
+                    LOG.debug("found previous assessment {} ", previous.getClass());
 
-                return (!assessment.getResult().equals(AssessmentResult.SUCCESS) && assessment.compareTo(previous) != 0);
-            } else {
-                return true;
-            }
-        });
+                    return (!assessment.getResult().equals(AssessmentResult.SUCCESS) && assessment.compareTo(previous) != 0);
+                } else {
+                    return true;
+                }
+            });
         } catch (Exception e) {
             LOG.error("Error checking shouldAlert for {}. {} ", agreement.getName(), e.getMessage(), e);
         }
