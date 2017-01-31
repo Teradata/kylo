@@ -295,8 +295,8 @@ public class ExportImportFeedService {
                                                + " already exists.  If you would like to proceed with this import please check the box to 'Overwrite' this feed");
             return feed;
         }
-
-
+        //if we get here set the import overwrite to be true to allow for the template to be overwritten
+        importOptions.setOverwrite(true);
         ExportImportTemplateService.ImportTemplate template = exportImportTemplateService.importTemplate(fileName, byteArrayInputStream, importOptions);
         if (template.isVerificationToReplaceConnectingResuableTemplateNeeded()) {
             //if we dont have the permission to replace the reusable template, then return and ask for it.
