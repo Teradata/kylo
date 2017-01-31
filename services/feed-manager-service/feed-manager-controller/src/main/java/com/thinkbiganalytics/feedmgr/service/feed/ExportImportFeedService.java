@@ -172,39 +172,6 @@ public class ExportImportFeedService {
     }
 
 
-    private byte[] addToZip(byte[] zip, String file, String fileName) throws IOException {
-        InputStream zipInputStream = new ByteArrayInputStream(zip);
-        ZipInputStream zis = new ZipInputStream(zipInputStream);
-        byte[] buffer = new byte[1024];
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try (ZipOutputStream zos = new ZipOutputStream(baos)) {
-
-            ZipEntry entry;
-            while ((entry = zis.getNextEntry()) != null) {
-
-                ByteArrayOutputStream out = new ByteArrayOutputStream();
-                int len = 0;
-                while ((len = zis.read(buffer)) > 0) {
-                    out.write(buffer, 0, len);
-                }
-                out.close();
-
-                zos.putNextEntry(entry);
-                zos.write(out.toByteArray());
-                zos.closeEntry();
-
-            }
-            zis.closeEntry();
-            zis.close();
-
-            entry = new ZipEntry(fileName);
-            zos.putNextEntry(entry);
-            zos.write(file.getBytes());
-            zos.closeEntry();
-        }
-        return baos.toByteArray();
-    }
-
     private ImportFeed readFeedJson(String fileName, byte[] content) throws IOException {
 
         byte[] buffer = new byte[1024];
@@ -242,7 +209,7 @@ public class ExportImportFeedService {
         ExportImportTemplateService.ExportTemplate exportTemplate = exportImportTemplateService.exportTemplate(feed.getTemplateId());
         //merge zip files
         String feedJson = ObjectMapperSerializer.serialize(feed);
-        byte[] zipFile = addToZip(exportTemplate.getFile(), feedJson, FEED_JSON_FILE);
+        byte[] zipFile = ZipFileUtil.addToZip(exportTemplate.getFile(),feedJson, FEED_JSON_FILE);
         return new ExportFeed(feed.getSystemFeedName() + ".feed.zip", zipFile);
 
     }
