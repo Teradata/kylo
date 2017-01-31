@@ -9,10 +9,12 @@ var COMMON_APP_MODULE_NAME = "datalakeui.common";
 
 var gulp = require('gulp'),
 debug = require('gulp-debug');
+var htmlmin = require('gulp-htmlmin');
 var templateCache = require('gulp-angular-templatecache');
 
 gulp.task('prepare:templates', function () {
     return gulp.src(['src/main/resources/static-common/**/*.html', '!src/main/resources/static-common/**/codemirror/**/*.html'])
+        .pipe(htmlmin({collapseWhitespace: true, removeComments: true}))
         .pipe(templateCache({
             filename: 'templates.js',
             module: COMMON_APP_MODULE_NAME

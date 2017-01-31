@@ -45,13 +45,15 @@
                             <goal>minify</goal>
                         </goals>
                         <configuration>
+                            <closureLanguage>ECMASCRIPT5</closureLanguage>
+                            <closureCompilationLevel>WHITESPACE_ONLY</closureCompilationLevel>
                             <webappSourceDir>${project.basedir}/src/main/resources/static-common</webappSourceDir>
                             <jsSourceDir>js</jsSourceDir>
                             <webappTargetDir>${project.basedir}/src/main/resources/static-common</webappTargetDir>
-                            <skipMinify>true</skipMinify>
                             <jsEngine>CLOSURE</jsEngine>
                             <jsFinalFile>datalake-ui-common.js</jsFinalFile>
                             <jsTargetDir>js/min/</jsTargetDir>
+                            <nosuffix>true</nosuffix>
                             <!-- <cssSourceFiles>
                                 <cssSourceFile>file-1.css</cssSourceFile>
                                 ...
