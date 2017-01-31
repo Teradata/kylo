@@ -21,9 +21,8 @@ package com.thinkbiganalytics.server;
  */
 
 import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
+import com.thinkbiganalytics.auth.jwt.JwtRememberMeServices;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -31,39 +30,42 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.authentication.rememberme.RememberMeAuthenticationFilter;
 
 /**
+ * HTTP authentication with Spring Security.
  */
 @EnableWebSecurity
 public class RestSecurityConfiguration extends WebSecurityConfigurerAdapter {
-
-    protected static final Logger LOG = LoggerFactory.getLogger(RestSecurityConfiguration.class);
-
 
     @Autowired
     @Qualifier(JaasAuthConfig.SERVICES_AUTH_PROVIDER)
     private AuthenticationProvider authenticationProvider;
 
+    @Autowired
+    private JwtRememberMeServices rememberMeServices;
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        
-            http
+        http
                 .authenticationProvider(this.authenticationProvider)
-                .csrf()
-                .disable()
+                .csrf().disable()
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                    .and()
                 .authorizeRequests()
                     .antMatchers("/**").authenticated()
                     .and()
+                .rememberMe()
+                    .rememberMeServices(rememberMeServices)
+                    .and()
+                .addFilter(new RememberMeAuthenticationFilter(auth -> auth, rememberMeServices))
                 .httpBasic();
     }
 
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-            auth.authenticationProvider(authenticationProvider);
-    }
-
-    public void setAuthenticationProvider(AuthenticationProvider authenticationProvider) {
-            this.authenticationProvider = authenticationProvider;
+        auth.authenticationProvider(authenticationProvider);
     }
 }

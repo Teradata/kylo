@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.thinkbiganalytics.auth.config;
 
 /*-
@@ -23,35 +20,50 @@ package com.thinkbiganalytics.auth.config;
  * #L%
  */
 
+import com.thinkbiganalytics.auth.jwt.JwtRememberMeServices;
+
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.RememberMeServices;
+
+import javax.annotation.Nonnull;
 
 /**
  * Base security configuration.
- * 
- * @author Sean Felten
  */
 @Configuration
+@EnableConfigurationProperties(JwtProperties.class)
 public class SecurityConfig {
 
     @Bean
-    @ConfigurationProperties(prefix="security.password.encoder")
+    @ConfigurationProperties(prefix = "security.password.encoder")
     public PasswordEncoderFactory passwordEncoderFactory() {
         return new PasswordEncoderFactory();
     }
-    
-    
+
+    /**
+     * Creates a {@link RememberMeServices} for authenticating users by a JSON Web Token.
+     *
+     * @return the remember me service
+     */
+    @Bean
+    @ConfigurationProperties(prefix = "security.rememberme")
+    public JwtRememberMeServices rememberMeServices(@Nonnull final JwtProperties properties) {
+        return new JwtRememberMeServices(properties);
+    }
+
     protected static class PasswordEncoderFactory extends AbstractFactoryBean<PasswordEncoder> {
-        
-        enum Encoding { PLAIN, BCRYPT  }
-        
+
+        enum Encoding {PLAIN, BCRYPT}
+
         private Encoding encoding = Encoding.BCRYPT;
-        
+
         public void setEncoding(String encodingStr) {
             this.encoding = Encoding.valueOf(encodingStr.toUpperCase());
         }
