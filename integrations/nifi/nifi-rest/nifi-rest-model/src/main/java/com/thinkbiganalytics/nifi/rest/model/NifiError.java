@@ -25,7 +25,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.base.MoreObjects;
 
 /**
- * Created by sr186054 on 2/2/16.
+ * Error status information when dealing with NiFi
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class NifiError {
@@ -38,7 +38,11 @@ public class NifiError {
         private int level;
     }
 
+    /**
+     * the error message
+     **/
     private String message;
+    /** a string allowing for grouping of errors together **/
     private String category;
     private SEVERITY severity;
 
@@ -76,10 +80,18 @@ public class NifiError {
         this.message = message;
     }
 
+    /**
+     * Return a string used to group errors together
+     * @return a string used to group errors together
+     */
     public String getCategory() {
         return category;
     }
 
+    /**
+     * set
+     * @param category
+     */
     public void setCategory(String category) {
         this.category = category;
     }

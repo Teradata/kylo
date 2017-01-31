@@ -24,7 +24,8 @@ package com.thinkbiganalytics.nifi.rest.model;
 import com.thinkbiganalytics.metadata.MetadataField;
 
 /**
- * Created by sr186054 on 1/13/16.
+ * Hold Schedule information for the feed
+ *
  */
 public class NifiProcessorSchedule {
 
@@ -35,14 +36,29 @@ public class NifiProcessorSchedule {
     @MetadataField
     private Integer concurrentTasks;
 
+    /**
+     * Return the NiFi schedule period.
+     * If the {@link this#schedulingStrategy} is set to "TIMER_DRIVEN" this will either be a timer string (i.e. 1 hr, 5 sec)
+     * If the {@link this#schedulingStrategy} is set to "CRON_DRIVEN" this will be the cron expression
+     *
+     * @return the schedule period or cron expression
+     */
     public String getSchedulingPeriod() {
         return schedulingPeriod;
     }
 
+    /**
+     * set the schedule period (either timer string or cron expression)
+     * @param schedulingPeriod the schedule period (either timer string or cron expression)
+     */
     public void setSchedulingPeriod(String schedulingPeriod) {
         this.schedulingPeriod = schedulingPeriod;
     }
 
+    /**
+     * Return the strategy, "TIMER_DRIVEN","CRON_DRIVEN","TRIGGER_DRIVEN".  This strategy is used with the {@link this#schedulingPeriod}
+     * @return the strategy, "TIMER_DRIVEN","CRON_DRIVEN","TRIGGER_DRIVEN"
+     */
     public String getSchedulingStrategy() {
         return schedulingStrategy;
     }
@@ -51,6 +67,10 @@ public class NifiProcessorSchedule {
         this.schedulingStrategy = schedulingStrategy;
     }
 
+    /**
+     * The number of concurrent tasks allowed for the processor
+     * @return the number of concurrent tasks allowed for the processor
+     */
     public Integer getConcurrentTasks() {
         return concurrentTasks;
     }

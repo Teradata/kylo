@@ -36,9 +36,9 @@ import com.thinkbiganalytics.nifi.feedmgr.ReusableTemplateCreationCallback;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
+import com.thinkbiganalytics.nifi.rest.model.NiFiComponentErrors;
 import com.thinkbiganalytics.nifi.rest.model.NifiError;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
-import com.thinkbiganalytics.nifi.rest.model.NifiProcessorDTO;
 import com.thinkbiganalytics.nifi.rest.support.NifiConnectionUtil;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 import com.thinkbiganalytics.security.AccessController;
@@ -135,7 +135,7 @@ public class ExportImportTemplateService {
         String templateName;
         boolean success;
         private NifiProcessGroup templateResults;
-        private List<NifiProcessorDTO> controllerServiceErrors;
+        private List<NiFiComponentErrors> controllerServiceErrors;
         private String templateId;
         private String nifiTemplateId;
         private boolean zipFile;
@@ -215,12 +215,12 @@ public class ExportImportTemplateService {
 
         private void inspectForControllerServiceErrors() {
             if (templateResults != null) {
-                List<NifiProcessorDTO> errors = templateResults.getControllerServiceErrors();
+                List<NiFiComponentErrors> errors = templateResults.getControllerServiceErrors();
                 this.controllerServiceErrors = errors;
             }
         }
 
-        public List<NifiProcessorDTO> getControllerServiceErrors() {
+        public List<NiFiComponentErrors> getControllerServiceErrors() {
             return controllerServiceErrors;
         }
 

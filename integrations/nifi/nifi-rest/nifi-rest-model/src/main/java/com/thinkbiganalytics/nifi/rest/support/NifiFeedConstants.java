@@ -21,7 +21,7 @@ package com.thinkbiganalytics.nifi.rest.support;
  */
 
 /**
- * Created by sr186054 on 8/18/16.
+ * NiFi constants used by Kylo
  */
 public class NifiFeedConstants {
 

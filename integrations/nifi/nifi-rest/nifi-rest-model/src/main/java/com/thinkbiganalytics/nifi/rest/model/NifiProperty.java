@@ -28,12 +28,15 @@ import java.util.Map;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Created by sr186054 on 1/11/16.
+ * Represents a NiFi property for a processor or controller service along with render options indicating how it should be rendered in the user interface
  */
 @XmlRootElement
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class NifiProperty {
 
+    /**
+     * Nifi property options from the Nifi dto
+     **/
     private String processGroupName;
     private String processorName;
     private String processorId;
@@ -41,30 +44,36 @@ public class NifiProperty {
     private String processorType;
     private String key;
     private String value;
-    private String templateValue;
-    private boolean userEditable;
     private List<String> expressionProperties;
     private NiFiPropertyDescriptor propertyDescriptor;
-   //private ProcessorDTO processor;
 
+
+    /**
+     * copy of the value stored in the template, vs the on value stored here in the property to compare any changes
+     **/
+    private String templateValue;
+
+    /**
+     * flag indicating the admin chose to allow the user to configure this property when creating a feed
+     **/
+    private boolean userEditable;
+
+
+    /** how should the property be rendered **/
     private String renderType; // checkbox, input, editor-hive, editor-sql, editor-pig, etc
 
-    private Map<String,String> renderOptions;
+    /** Additional options for rendering  such as selectable values **/
+    private Map<String, String> renderOptions;
 
+    /** flag indicating the property is selected for modification in the kylo ui **/
     private boolean selected;
+    /** flag indicating this property is part of a processor who is an 'input' or processor without any incoming connections **/
     private boolean inputProperty;
 
-
-
-    private NifiProperty templateProperty; // a copy of the Template Property so it can be referenced back to when displaying data between the Feed and the template used;
-
-    public boolean isInputProperty() {
-        return inputProperty;
-    }
-
-    public void setInputProperty(boolean inputProperty) {
-        this.inputProperty = inputProperty;
-    }
+    /**
+     * a copy of the Template Property so it can be referenced back to when displaying data between the Feed and the template used
+     **/
+    private NifiProperty templateProperty;
 
     public NifiProperty() {
 
@@ -82,7 +91,6 @@ public class NifiProperty {
         this.userEditable = property.isUserEditable();
         this.expressionProperties = property.getExpressionProperties();
         this.propertyDescriptor = property.getPropertyDescriptor();
-       // this.processor = property.getProcessor();
         this.renderType = property.getRenderType();
         this.selected = property.isSelected();
         this.inputProperty = property.isInputProperty();
@@ -160,14 +168,10 @@ public class NifiProperty {
         this.propertyDescriptor = propertyDescriptor;
     }
 
-  /*  public ProcessorDTO getProcessor() {
-        return processor;
-    }
-
-    public void setProcessor(ProcessorDTO processor) {
-        this.processor = processor;
-    }
-*/
+    /**
+     * return a key string joining this properties processGroupId with the processorId and the property key
+     * @return a key string joining this properties processGroupId with the processorId and the property key
+     */
     public String getIdKey() {
         return this.getProcessGroupId()+"-"+this.getProcessorId()+"-"+this.getKey();
     }
@@ -244,4 +248,13 @@ public class NifiProperty {
     public void setRenderOptions(Map<String, String> renderOptions) {
         this.renderOptions = renderOptions;
     }
+
+    public boolean isInputProperty() {
+        return inputProperty;
+    }
+
+    public void setInputProperty(boolean inputProperty) {
+        this.inputProperty = inputProperty;
+    }
+
 }

@@ -31,31 +31,35 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Created by sr186054 on 1/22/16.
+ * Represents a NiFi component (processor or controller service) and any errors generated
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class NifiProcessorDTO {
+public class NiFiComponentErrors {
+
     private String processorName;
     private String processorId;
     private String processGroupName;
     private String processGroupId;
     private Collection<NifiError> validationErrors;
-    public NifiProcessorDTO() {
+
+    public NiFiComponentErrors() {
 
     }
 
-    public NifiProcessorDTO(String processorName, String processorId, String processGroupName, String processGroupId) {
+    public NiFiComponentErrors(String processorName, String processorId, String processGroupName, String processGroupId) {
         this.processorName = processorName;
         this.processorId = processorId;
         this.processGroupName = processGroupName;
         this.processGroupId = processGroupId;
     }
-    public NifiProcessorDTO(String processorName, String processorId, String processGroupId) {
+
+    public NiFiComponentErrors(String processorName, String processorId, String processGroupId) {
         this.processorName = processorName;
         this.processorId = processorId;
         this.processGroupName = processGroupName;
         this.processGroupId = processGroupId;
     }
+
     public String getProcessorName() {
         return processorName;
     }
@@ -89,7 +93,7 @@ public class NifiProcessorDTO {
     }
 
     public Collection<NifiError> getValidationErrors() {
-        if(validationErrors == null){
+        if (validationErrors == null) {
             validationErrors = new ArrayList<>();
         }
         return validationErrors;
@@ -102,32 +106,36 @@ public class NifiProcessorDTO {
 
     @JsonIgnore
     public void addValidationErrors(Collection<String> validationErrors) {
-        if(validationErrors != null && !validationErrors.isEmpty()) {
-            for(String error: validationErrors){
+        if (validationErrors != null && !validationErrors.isEmpty()) {
+            for (String error : validationErrors) {
                 addError(error);
             }
         }
     }
+
     @JsonIgnore
-    public void addError(NifiError.SEVERITY severity,String error, String category){
-        getValidationErrors().add(new NifiError(severity,error, category));
+    public void addError(NifiError.SEVERITY severity, String error, String category) {
+        getValidationErrors().add(new NifiError(severity, error, category));
     }
+
     @JsonIgnore
-    public void addError(NifiError error){
+    public void addError(NifiError error) {
         getValidationErrors().add(error);
     }
+
     @JsonIgnore
-    public void addError(String error){
+    public void addError(String error) {
         getValidationErrors().add(new NifiError(error));
     }
+
     @JsonIgnore
-    public List<NifiError> getFatalErrors(){
+    public List<NifiError> getFatalErrors() {
         List<NifiError> errors = null;
-        if(validationErrors != null && !validationErrors.isEmpty()){
+        if (validationErrors != null && !validationErrors.isEmpty()) {
             errors = Lists.newArrayList(Iterables.filter(validationErrors, new Predicate<NifiError>() {
                 @Override
                 public boolean apply(NifiError nifiError) {
-                   return NifiError.SEVERITY.FATAL.equals(nifiError.getSeverity());
+                    return NifiError.SEVERITY.FATAL.equals(nifiError.getSeverity());
                 }
             }));
         }
@@ -136,12 +144,18 @@ public class NifiProcessorDTO {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
-        NifiProcessorDTO that = (NifiProcessorDTO) o;
+        NiFiComponentErrors that = (NiFiComponentErrors) o;
 
-        if (!processorId.equals(that.processorId)) return false;
+        if (!processorId.equals(that.processorId)) {
+            return false;
+        }
         return processGroupId.equals(that.processGroupId);
 
     }

@@ -33,7 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by sr186054 on 1/22/16.
+ * Represents a NiFi process group that has been updated in Kylo and holds any error messages resulting from the NiFi update.
  */
 public class NifiProcessGroup {
 
@@ -48,7 +48,7 @@ public class NifiProcessGroup {
 
     private boolean success;
 
-    private List<NifiProcessorDTO> errors;
+    private List<NiFiComponentErrors> errors;
 
     private boolean rolledBack = false;
 
@@ -72,17 +72,17 @@ public class NifiProcessGroup {
     }
 
     private void populateErrors(){
-        this.errors = new ArrayList<NifiProcessorDTO>();
+        this.errors = new ArrayList<NiFiComponentErrors>();
         if(this.inputProcessor != null && this.processGroupEntity != null)
         {
-            NifiProcessorDTO error = NifiProcessorValidationUtil.getProcessorValidationErrors(this.inputProcessor, false);
+            NiFiComponentErrors error = NifiProcessorValidationUtil.getProcessorValidationErrors(this.inputProcessor, false);
             if(error != null && !error.getValidationErrors().isEmpty()) {
                 errors.add(error);
             }
         }
         if(this.downstreamProcessors != null && this.processGroupEntity != null)
         {
-            List<NifiProcessorDTO> processorErrors = NifiProcessorValidationUtil.getProcessorValidationErrors(this.downstreamProcessors, true);
+            List<NiFiComponentErrors> processorErrors = NifiProcessorValidationUtil.getProcessorValidationErrors(this.downstreamProcessors, true);
             if(processorErrors != null) {
                 errors.addAll(processorErrors);
             }
@@ -91,10 +91,10 @@ public class NifiProcessGroup {
     }
 
     public void addError(String processGroupId, String processorId, NifiError.SEVERITY severity,String error, String errorType){
-        final NifiProcessorDTO tmpDto = new NifiProcessorDTO("",processorId,processGroupId);
-        final List<NifiProcessorDTO> dtos = Lists.newArrayList(Iterables.filter(errors, new Predicate<NifiProcessorDTO>() {
+        final NiFiComponentErrors tmpDto = new NiFiComponentErrors("", processorId, processGroupId);
+        final List<NiFiComponentErrors> dtos = Lists.newArrayList(Iterables.filter(errors, new Predicate<NiFiComponentErrors>() {
                 @Override
-            public boolean apply(NifiProcessorDTO nifiProcessorDTO) {
+                public boolean apply(NiFiComponentErrors nifiProcessorDTO) {
                 return nifiProcessorDTO.equals(tmpDto);
             }
         }));
@@ -123,9 +123,9 @@ public class NifiProcessGroup {
         return processGroupEntity;
     }
 
-    public List<NifiProcessorDTO> getErrors() {
+    public List<NiFiComponentErrors> getErrors() {
         if (errors == null) {
-            errors = new ArrayList<NifiProcessorDTO>();
+            errors = new ArrayList<NiFiComponentErrors>();
         }
         return errors;
     }
@@ -135,9 +135,9 @@ public class NifiProcessGroup {
     }
 
     public boolean hasFatalErrors() {
-        List<NifiProcessorDTO> fatalErrors = new ArrayList<>();
+        List<NiFiComponentErrors> fatalErrors = new ArrayList<>();
         if(errors != null && !errors.isEmpty()) {
-            for(NifiProcessorDTO processor : errors){
+            for (NiFiComponentErrors processor : errors) {
                 List<NifiError> errors = processor.getFatalErrors();
                      if(errors != null && !errors.isEmpty()) {
                          return true;
@@ -156,17 +156,17 @@ public class NifiProcessGroup {
         this.rolledBack = rolledBack;
     }
 
-    public List<NifiProcessorDTO> getControllerServiceErrors(){
+    public List<NiFiComponentErrors> getControllerServiceErrors() {
         return getErrorsForCategory(CONTROLLER_SERVICE_CATEGORY);
     }
 
-    public List<NifiProcessorDTO> getErrorsForCategory(final String category){
+    public List<NiFiComponentErrors> getErrorsForCategory(final String category) {
         if(StringUtils.isBlank(category)){
             return null;
         }
-        return Lists.newArrayList(Iterables.filter(getErrors(), new Predicate<NifiProcessorDTO>() {
+        return Lists.newArrayList(Iterables.filter(getErrors(), new Predicate<NiFiComponentErrors>() {
             @Override
-            public boolean apply(NifiProcessorDTO nifiProcessorDTO) {
+            public boolean apply(NiFiComponentErrors nifiProcessorDTO) {
                 NifiError error = Iterables.tryFind(nifiProcessorDTO.getValidationErrors(), new Predicate<NifiError>() {
                     @Override
                     public boolean apply(NifiError nifiError) {
@@ -181,7 +181,7 @@ public class NifiProcessGroup {
 
     public List<NifiError> getAllErrors(){
         List<NifiError> errors = new ArrayList<>();
-        for(NifiProcessorDTO item : getErrors()) {
+        for (NiFiComponentErrors item : getErrors()) {
             if(item.getValidationErrors() != null && !item.getValidationErrors().isEmpty()) {
                 errors.addAll(item.getValidationErrors());
             }
