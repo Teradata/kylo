@@ -31,6 +31,9 @@ rpmLogDir=/var/log
 echo "    - Install thinkbig-ui application"
 tar -xf $rpmInstallDir/thinkbig-ui/thinkbig-ui-app-*.tar.gz -C $rpmInstallDir/thinkbig-ui --strip-components=1
 rm -rf $rpmInstallDir/thinkbig-ui/thinkbig-ui-app-*.tar.gz
+
+jwtkey=$(head -c 64 /dev/urandom | md5sum |cut -d' ' -f1)
+sed -i "s/security\.jwt\.key=<insert-256-bit-secret-key-here>/security\.jwt\.key=${jwtkey}/" $rpmInstallDir/thinkbig-ui/conf/application.properties
 echo "   - Installed thinkbig-ui to '$rpmInstallDir/thinkbig-ui'"
 
 if ! [ -f $rpmInstallDir/encrypt.key ]
@@ -153,6 +156,7 @@ rm -rf $rpmInstallDir/thinkbig-services/thinkbig-nifi-rest-client-v0-*.tar.gz
 rm -rf $rpmInstallDir/thinkbig-services/thinkbig-nifi-rest-client-v1-*.tar.gz
 rm -f $rpmInstallDir/thinkbig-services/lib/jetty*
 rm -f $rpmInstallDir/thinkbig-services/lib/servlet-api*
+sed -i "s/security\.jwt\.key=<insert-256-bit-secret-key-here>/security\.jwt\.key=${jwtkey}/" $rpmInstallDir/thinkbig-services/conf/application.properties
 echo "   - Installed thinkbig-services to '$rpmInstallDir/thinkbig-services'"
 
 cat << EOF > $rpmInstallDir/thinkbig-services/bin/run-thinkbig-services.sh
