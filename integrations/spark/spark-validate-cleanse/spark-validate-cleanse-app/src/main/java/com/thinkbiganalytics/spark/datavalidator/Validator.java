@@ -42,7 +42,6 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.RowFactory;
-import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.hive.HiveContext;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.Metadata;
@@ -83,7 +82,6 @@ public class Validator implements Serializable {
 
     /* Initialize Spark */
     private HiveContext hiveContext;
-    private SQLContext sqlContext;
 
     // Optimization to write directly from dataframe to the table vs. temporary table (not tested with < 1.6.x)
     private boolean useDirectInsert = true;
@@ -150,8 +148,6 @@ public class Validator implements Serializable {
                 log.info("Adding Hive parameter {}={}", param.getName(), param.getValue());
                 hiveContext.setConf(param.getName(), param.getValue());
             }
-
-            sqlContext = new SQLContext(sparkContext);
 
             log.info("Deployment Mode - " + sparkContext.getConf().get("spark.submit.deployMode"));
             policyMap = loader.loadFieldPolicy(fieldPolicyJsonPath);
