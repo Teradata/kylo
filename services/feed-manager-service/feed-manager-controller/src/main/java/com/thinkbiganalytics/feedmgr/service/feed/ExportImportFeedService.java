@@ -162,6 +162,13 @@ public class ExportImportFeedService {
         public void setSuccess(boolean success) {
             this.success = success;
         }
+
+        public void addErrorMessage(FeedMetadata feedMetadata, String errorMessage) {
+            if (nifiFeed == null) {
+                nifiFeed = new NifiFeed(feedMetadata, null);
+            }
+            nifiFeed.addErrorMessage(errorMessage);
+        }
     }
 
 
@@ -274,22 +281,37 @@ public class ExportImportFeedService {
             optionsCategory = null;
         }
 
+        //verify this feed and if it exists should we overwrite/proceed
+        final ImportFeed feed = readFeedJson(fileName, content);
+        FeedMetadata metadata = ObjectMapperSerializer.deserialize(feed.getFeedJson(), FeedMetadata.class);
+
+        FeedMetadata existingFeed = metadataAccess.read(() -> metadataService.getFeedByName(metadata.getSystemCategoryName(), metadata.getSystemFeedName()));
+        if (existingFeed != null && !importOptions.isOverwrite()) {
+            //if we dont have permission to overwrite then return with error that feed already exists
+            feed.setSuccess(false);
+            ExportImportTemplateService.ImportTemplate importTemplate = new ExportImportTemplateService.ImportTemplate(fileName);
+            feed.setTemplate(importTemplate);
+            feed.addErrorMessage(existingFeed, "The feed " + existingFeed.getCategoryAndFeedDisplayName()
+                                               + " already exists.  If you would like to proceed with this import please check the box to 'Overwrite' this feed");
+            return feed;
+        }
+
+
         ExportImportTemplateService.ImportTemplate template = exportImportTemplateService.importTemplate(fileName, byteArrayInputStream, importOptions);
         if (template.isVerificationToReplaceConnectingResuableTemplateNeeded()) {
-            ImportFeed feed = new ImportFeed(fileName);
-            feed.setTemplate(template);
-            return feed;
+            //if we dont have the permission to replace the reusable template, then return and ask for it.
+            ImportFeed askForPermissionFeed = new ImportFeed(fileName);
+            askForPermissionFeed.setTemplate(template);
+            return askForPermissionFeed;
         }
         if (template.isSuccess()) {
             //import the feed
-            ImportFeed feed = readFeedJson(fileName, content);
             feed.setTemplate(template);
             //now that we have the Feed object we need to create the instance of the feed
             NifiFeed nifiFeed = metadataAccess.commit(() -> {
-                FeedMetadata metadata = ObjectMapperSerializer.deserialize(feed.getFeedJson(), FeedMetadata.class);
-                metadata.setIsNew(true);
-                metadata.setFeedId(null);
-                metadata.setId(null);
+                metadata.setIsNew(existingFeed == null ? true : false);
+                metadata.setFeedId(existingFeed != null ? existingFeed.getFeedId() : null);
+                metadata.setId(existingFeed != null ? existingFeed.getId() : null);
                 //reassign the templateId to the newly registered template id
                 metadata.setTemplateId(template.getTemplateId());
                 if (metadata.getRegisteredTemplate() != null) {

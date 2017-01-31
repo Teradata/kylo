@@ -65,6 +65,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -606,13 +607,13 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
                 if (NifiProcessUtil.PROCESS_STATE.STOPPED.name().equals(dto.getState())) {
                     //if its stopped you can disable it.. otherwise stop it and then disable it
                     updateDto.setState(NifiProcessUtil.PROCESS_STATE.DISABLED.name());
-                    updateProcessor(updateDto);
+                    updateProcessorWithRetry(updateDto);
                 }
                 if (NifiProcessUtil.PROCESS_STATE.RUNNING.name().equals(dto.getState())) {
                     updateDto.setState(NifiProcessUtil.PROCESS_STATE.STOPPED.name());
-                    updateProcessor(updateDto);
+                    updateProcessorWithRetry(updateDto);
                     updateDto.setState(NifiProcessUtil.PROCESS_STATE.DISABLED.name());
-                    updateProcessor(updateDto);
+                    updateProcessorWithRetry(updateDto);
                 }
             }
         }
@@ -805,6 +806,11 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
     @Deprecated
     public ProcessorDTO updateProcessor(ProcessorDTO processorDTO) {
         return client.processors().update(processorDTO);
+    }
+
+    @Deprecated
+    public ProcessorDTO updateProcessorWithRetry(ProcessorDTO processorDTO) {
+        return client.processors().updateWithRetry(processorDTO, 10, 1000, TimeUnit.MILLISECONDS);
     }
 
     @Deprecated

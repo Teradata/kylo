@@ -129,7 +129,7 @@ public class ExportImportTemplateService {
         }
     }
 
-    public class ImportTemplate {
+    public static class ImportTemplate {
 
         String fileName;
         String templateName;

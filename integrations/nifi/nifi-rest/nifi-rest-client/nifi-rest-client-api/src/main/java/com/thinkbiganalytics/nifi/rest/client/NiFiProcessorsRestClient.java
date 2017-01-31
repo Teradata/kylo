@@ -23,6 +23,7 @@ package com.thinkbiganalytics.nifi.rest.client;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nonnull;
 
@@ -50,4 +51,15 @@ public interface NiFiProcessorsRestClient {
      */
     @Nonnull
     ProcessorDTO update(@Nonnull ProcessorDTO processor);
+
+    /**
+     * Updates a processor and retries {@code retryAmount} number of times if the update is unsuccessful
+     *
+     * @param processor   the processor
+     * @param retryNumber the current attempt
+     * @param retryAmount the max retry amount
+     * @return the updated processor
+     */
+    @Nonnull
+    ProcessorDTO updateWithRetry(@Nonnull ProcessorDTO processor, final int retries, final int timeout, @Nonnull final TimeUnit timeUnit);
 }

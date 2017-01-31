@@ -20,7 +20,9 @@ package com.thinkbiganalytics.nifi.v0.rest.client;
  * #L%
  */
 
+import com.google.common.util.concurrent.Uninterruptibles;
 import com.thinkbiganalytics.nifi.rest.client.NiFiProcessorsRestClient;
+import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
 import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 
@@ -28,6 +30,7 @@ import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.entity.ProcessorEntity;
 
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nonnull;
 import javax.ws.rs.NotFoundException;
@@ -71,4 +74,23 @@ public class NiFiProcessorsRestClientV0 implements NiFiProcessorsRestClient {
             throw new NifiComponentNotFoundException(processor.getId(), NifiConstants.NIFI_COMPONENT_TYPE.PROCESSOR, e);
         }
     }
+
+    public ProcessorDTO updateWithRetry(@Nonnull ProcessorDTO processor, final int retries, final int timeout, @Nonnull final TimeUnit timeUnit) {
+
+        Exception lastError = null;
+
+        for (int count = 0; count <= retries; ++count) {
+            try {
+                return update(processor);
+            } catch (final Exception e) {
+                lastError = e;
+                Uninterruptibles.sleepUninterruptibly(timeout, timeUnit);
+            }
+        }
+
+        // Give up
+        throw new NifiClientRuntimeException("Unable to update processor: " + processor.getId(), lastError);
+
+    }
+
 }
