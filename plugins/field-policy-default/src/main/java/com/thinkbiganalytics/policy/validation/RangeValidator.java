@@ -27,6 +27,9 @@ import com.thinkbiganalytics.policy.PolicyPropertyTypes;
 
 import org.apache.commons.lang3.Validate;
 
+/**
+ * validate the value is within  a given range (not including the min/max)
+ */
 @Validator(name = "Range", description = "Numeric must fall within range")
 public class RangeValidator implements ValidationPolicy<Number> {
 

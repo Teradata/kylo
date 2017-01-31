@@ -27,6 +27,9 @@ import com.thinkbiganalytics.policy.PropertyLabelValue;
 
 import org.apache.commons.lang3.StringUtils;
 
+/**
+ * validates a string is not null, optionally allowing the string to be empty
+ */
 @Validator(name = "Not Null", description = "Validate a value is not null")
 public class NotNullValidator implements ValidationPolicy {
 
@@ -40,8 +43,8 @@ public class NotNullValidator implements ValidationPolicy {
     @PolicyProperty(name = "TRIM_STRING", value = "true", displayName = "Trim String Values",
                     hint = " If the value is a String, should it be trimmed before checking for null?",
                     type = PolicyPropertyTypes.PROPERTY_TYPE.select, labelValues = {@PropertyLabelValue(label = "Yes", value = "true"),
-                                                                               @PropertyLabelValue(label = "No",
-                                                                                                   value = "false")})
+                                                                                    @PropertyLabelValue(label = "No",
+                                                                                                        value = "false")})
     private boolean trimString = true;
 
     public NotNullValidator(@PolicyPropertyRef(name = "EMPTY_STRING") boolean allowEmptyString,

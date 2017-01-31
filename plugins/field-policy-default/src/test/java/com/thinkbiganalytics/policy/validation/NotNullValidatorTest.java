@@ -26,7 +26,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Created by matthutton on 5/7/16.
+ * test the {@link NotNullValidator}
  */
 public class NotNullValidatorTest {
 

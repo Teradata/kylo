@@ -27,7 +27,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
- * Created by matthutton on 5/7/16.
+ * Test the {@link LengthValidator}
  */
 public class LengthValidatorTest {
 

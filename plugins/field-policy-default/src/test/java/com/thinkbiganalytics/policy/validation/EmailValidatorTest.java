@@ -26,7 +26,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Created by matthutton on 5/7/16.
+ * test the {@link EmailValidator}
  */
 public class EmailValidatorTest {
 
@@ -45,11 +45,6 @@ public class EmailValidatorTest {
         assertTrue(validator.validate("email@domain.co.jp"));
         assertTrue(validator.validate("firstname-lastname@domain.com"));
 
-        // Valid obscure email addresses that aren't supported
-        //assertTrue(validator.validate("firstname+lastname@domain.com"));
-        //assertTrue(validator.validate("email@123.123.123.123"));
-        //assertTrue(validator.validate("email@[123.123.123.123]"));
-        //assertTrue(validator.validate("“email”@domain.com"));
     }
 
     @Test
@@ -68,10 +63,6 @@ public class EmailValidatorTest {
         assertFalse(validator.validate("email@domain..com"));
         assertFalse(validator.validate("email@domain"));
 
-        // Should be invalid
-        // assertFalse(validator.validate(".email@domain.com"));
-        // assertFalse(validator.validate("email@-domain.com"));
-        //assertFalse(validator.validate("email@domain.web"));
     }
 
 }

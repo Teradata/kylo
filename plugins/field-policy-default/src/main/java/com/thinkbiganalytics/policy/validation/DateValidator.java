@@ -29,7 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Validates format
+ * Validates the date matches a given format of yyyy-MM-dd
  */
 @Validator(name = "Date", description = "Validate Hive-friendly date format")
 public class DateValidator implements ValidationPolicy<String> {

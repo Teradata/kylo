@@ -22,7 +22,7 @@ package com.thinkbiganalytics.policy.validation;
 
 
 /**
- * Validates US phone numbers
+ * Validates US zip codes
  */
 @Validator(name = "US Zip", description = "Validate US Zip")
 public class USZipCodeValidator extends RegexValidator implements ValidationPolicy<String> {

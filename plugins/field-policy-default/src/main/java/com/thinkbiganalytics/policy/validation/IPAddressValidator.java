@@ -22,7 +22,7 @@ package com.thinkbiganalytics.policy.validation;
 
 
 /**
- * Validates email address
+ * Validates an ip address
  */
 @Validator(name = "IP Address", description = "Valid IP Address")
 public class IPAddressValidator extends RegexValidator implements ValidationPolicy<String> {

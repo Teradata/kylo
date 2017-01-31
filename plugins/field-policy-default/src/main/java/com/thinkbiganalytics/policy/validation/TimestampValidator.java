@@ -35,7 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Validates format
+ * Validates the value is a given timestamp
  */
 @Validator(name = "Timestamp", description = "Validate Hive-friendly timstamp format")
 public class TimestampValidator implements ValidationPolicy<String> {

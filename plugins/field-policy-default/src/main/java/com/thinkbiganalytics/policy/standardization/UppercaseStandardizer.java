@@ -22,7 +22,7 @@ package com.thinkbiganalytics.policy.standardization;
 
 
 /**
- * Upper case
+ * Converts a value to upper case
  */
 @Standardizer(name = "Uppercase", description = "Convert string to uppercase")
 public class UppercaseStandardizer implements StandardizationPolicy {

@@ -26,6 +26,9 @@ import com.thinkbiganalytics.policy.PolicyPropertyRef;
 
 import org.apache.commons.lang3.Validate;
 
+/**
+ * Validates a string is within a min/max lenght
+ */
 @Validator(name = "Length", description = "Validate String falls between desired length")
 public class LengthValidator implements ValidationPolicy<String> {
 

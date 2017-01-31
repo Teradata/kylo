@@ -27,7 +27,7 @@ import static com.thinkbiganalytics.policy.standardization.DateTimeStandardizer.
 import static org.junit.Assert.assertEquals;
 
 /**
- * Created by matthutton on 5/6/16.
+ * Test the {@link DateTimeStandardizer}
  */
 public class DateTimeStandardizerTest {
 
