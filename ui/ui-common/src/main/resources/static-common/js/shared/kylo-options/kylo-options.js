@@ -20,46 +20,48 @@
 /*
  Module for popup menu
  */
-(function () {
+(function() {
 
-    var directive = function ($mdDialog,AboutKyloService) {
+    var directive = function($mdDialog, $window, AboutKyloService) {
         return {
             restrict: "E",
             scope: {
                 selectedOption: "&?",
-                openedMenu:"&?",
+                openedMenu: "&?",
                 menuIcon: "@?"
             },
             templateUrl: 'js/shared/kylo-options/kylo-options.html',
-            link: function ($scope, element, attrs) {
+            link: function($scope) {
 
                 //default the icon to be more_vert
-                if(!angular.isDefined($scope.menuIcon)){
+                if (!angular.isDefined($scope.menuIcon)) {
                     $scope.menuIcon = 'more_vert';
                 }
 
                 $scope.openMenu = function($mdOpenMenu, ev) {
                     //callback
-                    if($scope.openedMenu) {
+                    if ($scope.openedMenu) {
                         $scope.openedMenu();
                     }
-
                     $mdOpenMenu(ev);
                 };
 
                 $scope.aboutKylo = function() {
                     AboutKyloService.showAboutDialog();
-                    if($scope.selectedOption) {
+                    if ($scope.selectedOption) {
                         $scope.selectedOption()('aboutKylo');
                     }
+                };
+
+                /**
+                 * Redirects the user to the logout page.
+                 */
+                $scope.logout = function() {
+                    $window.location.href = "/logout";
                 }
-
-                $scope.$on('$destroy', function () {
-
-                });
             }
         }
     };
-    angular.module(COMMON_APP_MODULE_NAME)
-        .directive('kyloOptions', ['$mdDialog','AboutKyloService',directive]);
+
+    angular.module(COMMON_APP_MODULE_NAME).directive('kyloOptions', ['$mdDialog', '$window', 'AboutKyloService', directive]);
 }());
