@@ -37,7 +37,7 @@ import org.springframework.mail.javamail.JavaMailSenderImpl;
 import java.util.Properties;
 
 /**
- * Created by sr186054 on 7/22/16.
+ * Spring configuration creating the SLA email spring beans
  */
 @Configuration
 @PropertySource(value = "classpath:sla.email.properties", ignoreResourceNotFound = true)

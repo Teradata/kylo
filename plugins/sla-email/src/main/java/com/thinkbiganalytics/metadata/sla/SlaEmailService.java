@@ -31,7 +31,7 @@ import javax.inject.Inject;
 import javax.mail.MessagingException;
 
 /**
- * Created by sr186054 on 7/25/16.
+ * Spring service that is used to send emails based upon the defined "slaEmailConfiguratoin" bean that is defined in the {@link com.thinkbiganalytics.metadata.sla.config.EmailServiceLevelAgreementSpringConfiguration}
  */
 public class SlaEmailService {
 
@@ -44,7 +44,10 @@ public class SlaEmailService {
     private EmailConfiguration emailConfiguration;
 
     /**
-     * This method will send compose and send the message
+     * Send an email
+     * @param to the user(s) to send the email to
+     * @param subject the subject of the email
+     * @param body the email body
      */
     public void sendMail(String to, String subject, String body) {
         SimpleMailMessage message = new SimpleMailMessage();
@@ -55,12 +58,21 @@ public class SlaEmailService {
         mailSender.send(message);
     }
 
+    /**
+     * validate the email connection
+     *
+     * @return {@code true} if valid, {@code false} if not valid
+     */
     public boolean testConnection() throws MessagingException{
-      Properties props =  ((JavaMailSenderImpl)mailSender).getSession().getProperties();
+        Properties props =  ((JavaMailSenderImpl)mailSender).getSession().getProperties();
         ((JavaMailSenderImpl)mailSender).testConnection();
         return true;
     }
 
+    /**
+     *
+     * @return {@code true} if the configuration is setup, {@code false} if not configured
+     */
     public boolean isConfigured(){
         return emailConfiguration.isConfigured();
     }

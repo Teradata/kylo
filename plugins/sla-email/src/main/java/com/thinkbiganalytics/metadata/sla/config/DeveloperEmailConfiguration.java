@@ -25,7 +25,8 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.PropertySource;
 
 /**
- * Created by sr186054 on 8/9/16.
+ * Example configuration used to get email setup pulling from a properties file.
+ * This will only be invoked if the spring profile 'developer.email' is added to the active profiles
  */
 @Configuration
 @Profile("developer.email")
@@ -33,17 +34,6 @@ import org.springframework.context.annotation.PropertySource;
 public class DeveloperEmailConfiguration {
 
 
-/*
-        @Bean(name = "emailProperties")
-        public PropertyPlaceholderConfigurer jiraPropertiesConfigurer() {
-            PropertyPlaceholderConfigurer configurer = new
-                PropertyPlaceholderConfigurer();
-            configurer.setLocations(new ClassPathResource("/conf/sla.email.properties"));
-            configurer.setIgnoreUnresolvablePlaceholders(true);
-            configurer.setIgnoreResourceNotFound(true);
-            return configurer;
-        }
-*/
 
 
 }

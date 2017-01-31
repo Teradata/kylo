@@ -56,23 +56,18 @@ public class EmailServiceLevelAgreementAction implements ServiceLevelAgreementAc
         return true;
     }
 
+    /**
+     * Validate to ensure there is a configuration setup for the email
+     *
+     * @return a validation object containing information if the configuration is valid
+     */
     public ServiceLevelAgreementActionValidation validateConfiguration(){
 
         if(emailService.isConfigured()){
             return ServiceLevelAgreementActionValidation.VALID;
+        } else {
+            return new ServiceLevelAgreementActionValidation(false, "Email connection information is not setup.  Please contact an administrator to set this up.");
         }
-        else {
-            return new ServiceLevelAgreementActionValidation(false,"Email connection information is not setup.  Please contact an administrator to set this up.");
-        }
-
-        /*
-        try {
-            emailService.testConnection();
-            return ServiceLevelAgreementActionValidation.VALID;
-        }catch (MessagingException e){
-            return new ServiceLevelAgreementActionValidation(false,e.getMessage());
-        }
-        */
     }
 
 }

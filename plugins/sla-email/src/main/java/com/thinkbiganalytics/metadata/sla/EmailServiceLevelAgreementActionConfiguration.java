@@ -29,7 +29,8 @@ import com.thinkbiganalytics.policy.PolicyPropertyRef;
 import com.thinkbiganalytics.policy.PolicyPropertyTypes;
 
 /**
- * Created by sr186054 on 7/20/16.
+ * SLA action to allow users to send an email if an SLA is violated
+ * This will be presented to the user as a possible SLA action in the UI since it is annotated with the {@link ServiceLevelAgreementActionConfig}
  */
 @ServiceLevelAgreementActionConfig(
     name = "Email", description = "Email user(s) when the SLA is violated", actionClasses = {EmailServiceLevelAgreementAction.class}

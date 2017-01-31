@@ -21,7 +21,7 @@ package com.thinkbiganalytics.policy.precondition;
  */
 
 /**
- * Created by sr186054 on 7/14/16.
+ * Naming constants for the precondition used for the ui display of these rules
  */
 public interface PreconditionPolicyConstants {
 

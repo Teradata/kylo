@@ -44,7 +44,9 @@ import java.util.Set;
 import javax.inject.Inject;
 
 /**
- * Created by sr186054 on 8/6/16.
+ * Test Email settings.
+ * Currently set to ignore as email settings are needed to be configured on the server to ensure connection to the valid email server.
+ * Users can use this as a base test and update the {@link TestConfiguration} class with the proper connection information
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {TestConfiguration.class, DeveloperEmailConfiguration.class})

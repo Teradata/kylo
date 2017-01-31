@@ -35,13 +35,16 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Created by sr186054 on 7/12/16.
+ * A precondition building upon the  {@link FeedExecutedSinceFeeds} that will also fire if a given time/cron expression is met
  */
 @PreconditionPolicy(name = PreconditionPolicyConstants.FEED_EXECUTED_SINCE_FEEDS_OR_TIME_NAME,
                     shortDescription = "Policy will trigger the feed when all of the supplied feeds have successfully finished or always at the given cron expression supplied",
                     description = "Policy will trigger the feed when all of the supplied feeds have successfully finished or always at the given cron expression supplied.  Both the Cron Expression and the Feeds input are required attributes")
 public class FeedExecutedSinceFeedsOrTime extends FeedExecutedSinceFeeds {
 
+    /**
+     * a cron expression to check against to see if this precondition is valid
+     */
     @PolicyProperty(name = "Cron Expression", type = PolicyPropertyTypes.PROPERTY_TYPE.cron, required = true, hint = "Supply a cron expression to indicate when this feed should run")
     private String cronExpression;
 

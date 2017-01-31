@@ -32,7 +32,9 @@ import org.springframework.mail.javamail.JavaMailSenderImpl;
 import java.util.Properties;
 
 /**
- * Created by sr186054 on 8/6/16.
+ * Spring configuration to test the email notifications
+ * This is used in the {@link TestEmail} class
+ * Override the settings in the {@link this#emailConfiguration} method to setup this test to work with your email server
  */
 @Configuration
 public class TestConfiguration {
@@ -60,12 +62,11 @@ public class TestConfiguration {
         emailConfiguration.setHost("smtp.gmail.com");
         emailConfiguration.setPort(587);
         //Note Google accounts will not allow overriding the from address due to security reasons.  Other accounts will.
-        emailConfiguration.setFrom("sla-violation@thinkbiganalytics.com");
+        emailConfiguration.setFrom("some addresss");
         emailConfiguration.setSmtpAuth(true);
         emailConfiguration.setStarttls(true);
-        //emailConfiguration.setSmptAuthNtmlDomain("td");
-        emailConfiguration.setPassword("th1nkb1g");
-        emailConfiguration.setUsername("thinkbig.tester@gmail.com");
+        emailConfiguration.setPassword("someuser@gmail.com password");
+        emailConfiguration.setUsername("someuser@gmail.com email address");
         return emailConfiguration;
     }
 
@@ -79,10 +80,6 @@ public class TestConfiguration {
             mailProperties.put("mail.smtp.auth.ntlm.domain", emailConfiguration.getSmptAuthNtmlDomain());
         }
         mailProperties.put("mail.debug", "true");
-        // mailProperties.put("mail.transport.protocol", emailConfiguration.getProtocol());
-        //mailProperties.put("mail.smtp.connectiontimeout ",5000);
-        //mailProperties.put("mail.smtp.timeout",5000);
-        //mailProperties.put("mail.smtp.ssl.enable", "true");
 
         mailSender.setJavaMailProperties(mailProperties);
         mailSender.setHost(emailConfiguration.getHost());
