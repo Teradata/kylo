@@ -2,7 +2,7 @@ package com.thinkbiganalytics.security.auth.kerberos;
 
 /*-
  * #%L
- * thinkbig-nifi-rest-client-api
+ * thinkbig-security-auth-kerberos
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
@@ -21,22 +21,27 @@ package com.thinkbiganalytics.security.auth.kerberos;
  */
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+import org.springframework.core.annotation.Order;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 
 import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
 import com.thinkbiganalytics.auth.jaas.LoginConfigurationBuilder;
 import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
 
 /**
- * LDAP login configuration.
- * 
- * @author Sean Felten
+ * This configuration enables the components used in kerberos-based username/password authentication.
  */
-//@Configuration
-//@Profile("auth-ldap")
-public class KerberosLoginModuleConfiguration {
+@Configuration
+@EnableWebSecurity
+@Profile("auth-krb-login")
+@Order(SecurityProperties.ACCESS_OVERRIDE_ORDER + 2)
+public class KerberosLoginConfiguration {
     
-    @Value("${security.auth.krb.login.ui:required}")
+    @Value("${security.auth.krb.login:required}")
     private String uiLoginFlag;
 
     @Bean(name = "uiKrbLoginConfiguration")

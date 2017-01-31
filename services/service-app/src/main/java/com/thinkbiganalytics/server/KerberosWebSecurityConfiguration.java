@@ -2,7 +2,7 @@ package com.thinkbiganalytics.server;
 
 /*-
  * #%L
- * thinkbig-nifi-rest-client-api
+ * thinkbig-service-app
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
@@ -20,29 +20,19 @@ package com.thinkbiganalytics.server;
  * #L%
  */
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.Properties;
+import javax.inject.Inject;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.kerberos.authentication.KerberosAuthenticationProvider;
 import org.springframework.security.kerberos.authentication.KerberosServiceAuthenticationProvider;
-import org.springframework.security.kerberos.authentication.sun.SunJaasKerberosClient;
-import org.springframework.security.kerberos.authentication.sun.SunJaasKerberosTicketValidator;
 import org.springframework.security.kerberos.web.authentication.SpnegoAuthenticationProcessingFilter;
 import org.springframework.security.kerberos.web.authentication.SpnegoEntryPoint;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 /**
@@ -51,89 +41,45 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
  */
 @Configuration
 @EnableWebSecurity
-@Profile("auth-krb")
-@Order(SecurityProperties.ACCESS_OVERRIDE_ORDER + 1)
-public class KerberosWebSecurityConfiguration extends WebSecurityConfigurerAdapter {
-
-    @Value("${security.auth.krb.service-principal}")
-    private String servicePrincipal;
-
-    @Value("${security.auth.krb.keytab}")
-    private String keytabLocation;
+@Profile("auth-krb-spnego")
+@Order(DefaultWebSecurityConfigurerAdapter.ORDER + 1)
+public class KerberosWebSecurityConfiguration extends DefaultWebSecurityConfigurerAdapter {
+    
+    @Inject 
+    private SpnegoEntryPoint spnegoEntryPoint;
+    
+    @Inject
+    private KerberosServiceAuthenticationProvider kerberosServiceAuthProvider;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+        super.configure(http);
+        
         http
-            .csrf().disable()
             .exceptionHandling()
-                .authenticationEntryPoint(spnegoEntryPoint())
+                .authenticationEntryPoint(spnegoEntryPoint)
                 .and()
-            .authorizeRequests()
-                .anyRequest().authenticated()
-                .and()
-            .addFilterBefore(spnegoAuthenticationProcessingFilter(authenticationManagerBean()),
-                             BasicAuthenticationFilter.class);
+            .addFilterBefore(spnegoAuthenticationProcessingFilter(), BasicAuthenticationFilter.class);
     }
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth
-            .authenticationProvider(kerberosAuthenticationProvider())
-            .authenticationProvider(kerberosServiceAuthenticationProvider());
+        super.configure(auth);
+        
+        auth.authenticationProvider(kerberosServiceAuthProvider);
     }
     
-    @Bean(name="krbAuthenticationManager")
-    @Override
-    public AuthenticationManager authenticationManagerBean() throws Exception {
-        AuthenticationManager mgr = super.authenticationManagerBean();
-        return mgr;
-    }
-
     @Bean
-    public KerberosAuthenticationProvider kerberosAuthenticationProvider() throws IOException {
-        KerberosAuthenticationProvider provider = new KerberosAuthenticationProvider();
-        SunJaasKerberosClient client = new SunJaasKerberosClient();
-        client.setDebug(true);
-        provider.setKerberosClient(client);
-        
-        Properties users = new Properties();
-        users.load(new StringReader("dladmin@EXAMPLE.ORG=thinkbig,admin"));
-        
-        provider.setUserDetailsService(new InMemoryUserDetailsManager(users));
-        return provider;
-    }
-
-    @Bean
-    public SpnegoEntryPoint spnegoEntryPoint() {
-        return new SpnegoEntryPoint();
-    }
-
-    @Bean
-    public SpnegoAuthenticationProcessingFilter spnegoAuthenticationProcessingFilter(AuthenticationManager authenticationManager) {
+    public SpnegoAuthenticationProcessingFilter spnegoAuthenticationProcessingFilter() throws Exception {
         SpnegoAuthenticationProcessingFilter filter = new SpnegoAuthenticationProcessingFilter();
-        filter.setAuthenticationManager(authenticationManager);
+        filter.setAuthenticationManager(authenticationManagerBean());
         return filter;
     }
 
-    @Bean
-    public KerberosServiceAuthenticationProvider kerberosServiceAuthenticationProvider() throws IOException {
-        KerberosServiceAuthenticationProvider provider = new KerberosServiceAuthenticationProvider();
-        provider.setTicketValidator(sunJaasKerberosTicketValidator());
-        
-        Properties users = new Properties();
-        users.load(new StringReader("dladmin@EXAMPLE.ORG=thinkbig,admin"));
-        
-        provider.setUserDetailsService(new InMemoryUserDetailsManager(users));
-        return provider;
-    }
-
-    @Bean
-    public SunJaasKerberosTicketValidator sunJaasKerberosTicketValidator() {
-        SunJaasKerberosTicketValidator ticketValidator = new SunJaasKerberosTicketValidator();
-        ticketValidator.setServicePrincipal(servicePrincipal);
-        ticketValidator.setKeyTabLocation(new FileSystemResource(keytabLocation));
-        ticketValidator.setDebug(true);
-        return ticketValidator;
+    @Bean(name="krbAuthenticationManager")
+    @Override
+    public AuthenticationManager authenticationManagerBean() throws Exception {
+        return super.authenticationManagerBean();
     }
 
 }

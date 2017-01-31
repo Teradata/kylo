@@ -36,11 +36,17 @@ import org.springframework.security.web.authentication.rememberme.RememberMeAuth
 /**
  * HTTP authentication with Spring Security.
  */
-//@EnableWebSecurity
-public class RestSecurityConfiguration extends WebSecurityConfigurerAdapter {
+@Configuration
+@EnableWebSecurity
+@Order(DefaultWebSecurityConfigurerAdapter.ORDER)
+public class DefaultWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
 
-    @Autowired
-    @Qualifier(JaasAuthConfig.SERVICES_AUTH_PROVIDER)
+    protected static final Logger LOG = LoggerFactory.getLogger(DefaultWebSecurityConfigurerAdapter.class);
+    
+    public static final int ORDER = SecurityProperties.ACCESS_OVERRIDE_ORDER;
+
+    @Inject
+    @Named(JaasAuthConfig.SERVICES_AUTH_PROVIDER)
     private AuthenticationProvider authenticationProvider;
 
     @Autowired
@@ -63,9 +69,9 @@ public class RestSecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .httpBasic();
     }
 
-
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.authenticationProvider(authenticationProvider);
     }
 }
+
