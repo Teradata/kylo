@@ -47,6 +47,7 @@ import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.Metadata;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
+import org.apache.spark.storage.StorageLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -161,7 +162,7 @@ public class Validator implements Serializable {
             String sql = "SELECT "+selectStmt+" FROM " + feedTablename + " WHERE processing_dttm = '" + partition + "'";
             log.info("Executing query {}", sql);
             DataSet dataFrame = scs.sql(getHiveContext(), sql);
-            JavaRDD<Row> rddData = dataFrame.javaRDD().cache();
+            JavaRDD<Row> rddData = dataFrame.javaRDD();
 
             // Extract schema from the source table
             StructType sourceSchema = createModifiedSchema(feedTablename);
@@ -181,7 +182,8 @@ public class Validator implements Serializable {
                 }
             });
 
-            newResults.cache();
+            // Should Parameterize Storage Level
+            newResults.persist(StorageLevel.fromString("MEMORY_ONLY_SER"));
             newResults.count();
 
             Integer[] fieldInvalidCounts = new Integer[this.schema.length];
