@@ -110,13 +110,6 @@ public class JwtRememberMeServicesTest {
         service.decodeCookie("eyJhbGciOiJIUzI1NiIsImtpZCI6IkhNQUMifQ.eyJleHAiOjE0NjMxNTE5MDB9.L_00dw3cpWbxw32Pddj6Jq1xeFqPf8ZFdPWAUdmj39k");
     }
 
-    /** Verify exception if token is past the maximum validity. */
-    @Test(expected = InvalidCookieException.class)
-    public void decodeCookieWithPastMaxValidity() {
-        service.setTokenValiditySeconds(604799);
-        service.decodeCookie("eyJhbGciOiJIUzI1NiIsImtpZCI6IkhNQUMifQ.eyJleHAiOjE0NjI1NDcxMDAsInN1YiI6ImRsYWRtaW4iLCJncm91cHMiOlsiYWRtaW4iXX0.zxjsUt53buh9hBY6nzsD1m25MnTPnDw84B3YmGgcFfk");
-    }
-
     /** Verifies token serialization. */
     @Test
     public void encodeCookie() {

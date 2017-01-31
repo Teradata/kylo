@@ -96,7 +96,6 @@ public class JwtRememberMeServices extends AbstractRememberMeServices {
         // Build the JWT parser
         final JwtConsumer consumer = new JwtConsumerBuilder()
                 .setEvaluationTime(NumericDate.fromMilliseconds(DateTimeUtils.currentTimeMillis()))
-                .setMaxFutureValidityInMinutes(getExpirationTimeSeconds() / 60)
                 .setVerificationKey(getSecretKey())
                 .build();
 
