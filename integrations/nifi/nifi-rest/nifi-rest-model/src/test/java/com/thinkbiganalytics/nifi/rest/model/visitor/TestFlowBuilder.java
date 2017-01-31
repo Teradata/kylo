@@ -24,13 +24,14 @@ import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
 
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * Created by sr186054 on 8/13/16.
+ * Test the NiFiFlowBuilder
  */
 public class TestFlowBuilder {
 
@@ -66,18 +67,6 @@ public class TestFlowBuilder {
     public void testFlowBuilder() {
 
         //build a graph of processors
-
-        /*
-
-                          p1
-                          p2
-                       p3    p4
-                                p5
-                                   p6
-
-
-         */
-
         NifiVisitableProcessGroup parent = new NifiVisitableProcessGroup(processGroupDTO());
         NifiVisitableProcessor processor1 = processor();
         NifiVisitableProcessor processor2 = processor();
@@ -85,18 +74,21 @@ public class TestFlowBuilder {
         NifiVisitableProcessor processor4 = processor();
         NifiVisitableProcessor processor5 = processor();
         NifiVisitableProcessor processor6 = processor();
+        NifiVisitableProcessor processor7 = processor();
 
-        //connect parent to p2
+        //connect processors
         connect(processor1, processor2);
         connect(processor2, processor3);
         connect(processor2, processor4);
         connect(processor4, processor5);
         connect(processor5, processor6);
+        connect(processor5, processor7);
 
         parent.getStartingProcessors().add(processor1);
         NifiFlowBuilder builder = new NifiFlowBuilder();
-        // builder.setIdOnlyGraph(true);
         NifiFlowProcessGroup group = builder.build(parent);
-        int i = 0;
+        Assert.assertTrue(group.getStartingProcessors().size() == 1);
+        //assert processors 3,6,7 are ending/leaf processors
+        Assert.assertTrue(group.getEndingProcessors().size() == 3);
     }
 }
