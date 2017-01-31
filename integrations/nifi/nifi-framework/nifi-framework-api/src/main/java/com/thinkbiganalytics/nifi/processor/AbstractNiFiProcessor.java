@@ -35,7 +35,7 @@ import javax.annotation.Nonnull;
  */
 public abstract class AbstractNiFiProcessor extends AbstractProcessor {
 
-    /**
+    /*
      * Component log
      */
     private ComponentLog log;
