@@ -160,9 +160,11 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
 
     /**
      * Process the Events from Nifi
-     * If its a batch job, write the records to Ops manager
-     * if its a stream just write to the Nifi_event table
-     * When either are marked as the last event Notify the eventbus for the trigger feed mechanism to work.
+     * If it is a batch job, write the records to Ops manager.
+     * if it is a stream just write to the Nifi_event table.
+     * When either are marked as the last event Notify the event bus for the trigger feed mechanism to work.
+     *
+     * @param events  The events obtained from JMS
      */
     @JmsListener(destination = Queues.FEED_MANAGER_QUEUE, containerFactory = ActiveMqConstants.JMS_CONTAINER_FACTORY, concurrency = "10-50")
     public void receiveEvents(ProvenanceEventRecordDTOHolder events) {
