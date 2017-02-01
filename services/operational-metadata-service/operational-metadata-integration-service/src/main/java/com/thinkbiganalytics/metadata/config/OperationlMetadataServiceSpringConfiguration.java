@@ -33,7 +33,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * Created by sr186054 on 9/18/16.
+ * Spring configuration class for the beans in the current module
  */
 @Configuration
 public class OperationlMetadataServiceSpringConfiguration {
@@ -42,7 +42,6 @@ public class OperationlMetadataServiceSpringConfiguration {
     public NifiStatsJmsReceiver nifiStatsJmsReceiver() {
         return new NifiStatsJmsReceiver();
     }
-
 
     @Bean
     public ServiceLevelAgreementScheduler serviceLevelAgreementScheduler() {

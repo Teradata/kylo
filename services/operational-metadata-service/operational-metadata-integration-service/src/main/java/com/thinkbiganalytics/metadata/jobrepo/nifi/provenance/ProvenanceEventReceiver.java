@@ -22,7 +22,6 @@ package com.thinkbiganalytics.metadata.jobrepo.nifi.provenance;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.thinkbiganalytics.activemq.config.ActiveMqConstants;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
@@ -97,6 +96,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
     OpsManagerFeedProvider opsManagerFeedProvider;
     @Inject
     NifiBulletinExceptionExtractor nifiBulletinExceptionExtractor;
+
     /**
      * Temporary cache of completed events in to check against to ensure we trigger the same event twice
      */
@@ -105,6 +105,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
      * Cache of the Ops Manager Feed Object to ensure that we only process and create Job Executions for feeds that have been registered in Feed Manager
      */
     LoadingCache<String, OpsManagerFeed> opsManagerFeedCache = null;
+
     @Autowired
     private NifiEventProvider nifiEventProvider;
     @Autowired
@@ -125,6 +126,9 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
     private int lockAcquisitionRetryAmount = 4;
 
 
+    /**
+     * default constructor creates the feed cache
+     */
     public ProvenanceEventReceiver() {
         // create the loading Cache to get the Feed Manager Feeds.  If its not in the cache, query the JCR store for the Feed object otherwise return the NULL_FEED object
         opsManagerFeedCache = CacheBuilder.newBuilder().build(new CacheLoader<String, OpsManagerFeed>() {
@@ -164,7 +168,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
      * if it is a stream just write to the Nifi_event table.
      * When either are marked as the last event Notify the event bus for the trigger feed mechanism to work.
      *
-     * @param events  The events obtained from JMS
+     * @param events The events obtained from JMS
      */
     @JmsListener(destination = Queues.FEED_MANAGER_QUEUE, containerFactory = ActiveMqConstants.JMS_CONTAINER_FACTORY, concurrency = "10-50")
     public void receiveEvents(ProvenanceEventRecordDTOHolder events) {
@@ -214,7 +218,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
     }
 
 
-    /**
+    /*
      * Process this record and record the Job Obs
      */
     private NifiEvent receiveBatchEvent(BatchJobExecution jobExecution, ProvenanceEventRecordDTO event) {
@@ -234,7 +238,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
         return nifiEvent;
     }
 
-    /**
+    /*
      * Check to see if the event has a relationship to Feed Manager
      * In cases where a user is experimenting in NiFi and not using Feed Manager the event would not be registered
      */
@@ -255,7 +259,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
     }
 
 
-    /**
+    /*
      * Notify that the Job is complete either as a successful job or failed Job
      */
     private void notifyJobFinished(ProvenanceEventRecordDTO event) {
@@ -274,7 +278,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
         }
     }
 
-    /**
+    /*
      * Triggered for both Batch and Streaming Feed Jobs when the Job and any related Jobs (as a result of a Merge of other Jobs are complete but have a failure in the flow<br/> Example: <br/> Job
      * (FlowFile) 1,2,3 are all running<br/> Job 1,2,3 get Merged<br/> Job 1,2 finish<br/> Job 3 finishes <br/>
      *
@@ -286,7 +290,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
         this.eventService.notify(new FeedOperationStatusEvent(new OperationStatus(event.getFeedName(), null, state, "Failed Job")));
     }
 
-    /**
+    /*
      * Triggered for both Batch and Streaming Feed Jobs when the Job and any related Jobs (as a result of a Merge of other Jobs are complete<br/> Example: <br/> Job (FlowFile) 1,2,3 are all
      * running<br/> Job 1,2,3 get Merged<br/> Job 1,2 finish<br/> Job 3 finishes <br/>
      *
@@ -300,12 +304,20 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
     }
 
 
+    /**
+     * Fails the step identified by the parameters given
+     *
+     * @param jobExecution  the job execution
+     * @param stepExecution the step execution
+     * @param flowFileId    the id of the flow file
+     * @param componentId   the id of the component
+     */
     @Override
     public void failedStep(BatchJobExecution jobExecution, BatchStepExecution stepExecution, String flowFileId, String componentId) {
-        boolean added = nifiBulletinExceptionExtractor.addErrorMessagesToStep(stepExecution, flowFileId, componentId);
+        nifiBulletinExceptionExtractor.addErrorMessagesToStep(stepExecution, flowFileId, componentId);
     }
 
-    /**
+    /*
      * Indicates if the specified event hasn't already been processed.
      *
      * @param event the event to check

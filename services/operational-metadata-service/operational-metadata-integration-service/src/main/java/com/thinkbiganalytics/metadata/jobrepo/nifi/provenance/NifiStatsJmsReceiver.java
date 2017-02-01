@@ -37,7 +37,7 @@ import java.util.List;
 import javax.inject.Inject;
 
 /**
- * Created by sr186054 on 8/17/16.
+
  */
 public class NifiStatsJmsReceiver {
 

@@ -25,12 +25,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.joda.time.DateTime;
 
 /**
- * Created by sr186054 on 8/23/16.
+ * A model classs to represent the stats of a feed
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class NifiFeedProcessorStats {
-
-
     protected Long duration = 0L;
     protected DateTime minEventTime;
     protected DateTime maxEventTime;

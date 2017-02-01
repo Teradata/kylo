@@ -36,7 +36,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Created by sr186054 on 10/24/16.
+ *
  */
 @Component
 public class NifiBulletinExceptionExtractor {
@@ -46,15 +46,30 @@ public class NifiBulletinExceptionExtractor {
     @Autowired
     private LegacyNifiRestClient nifiRestClient;
 
+    /**
+     * Extracts the identifier for the flow file from a bulletin message
+     *
+     * @param message The bulleting message
+     * @return A UUID as string
+     */
     public String getFlowFileUUIDFromBulletinMessage(String message) {
         return StringUtils.substringBetween(message, "StandardFlowFileRecord[uuid=", ",");
     }
 
+    /**
+     * associates the error message from Nifi to the step given
+     *
+     * @param stepExecution The step execution object
+     * @param flowFileId    The UUID of the flow file to extract the error message from
+     * @param componentId   The ID of the component posting the bulletin
+     * @return true if error messages were added to stepExecution, false otherwise
+     * @throws NifiConnectionException if cannot query Nifi
+     */
     public boolean addErrorMessagesToStep(BatchStepExecution stepExecution, String flowFileId, String componentId) throws NifiConnectionException {
         if (StringUtils.isNotBlank(flowFileId) && StringUtils.isNotBlank(componentId)) {
             List<BulletinDTO> bulletins = getProcessorBulletinsForComponentInFlowFile(flowFileId, componentId);
             if (bulletins != null) {
-                //todo filter on level to get just ERRORS, Warns, fatals?
+                // TODO filter on level to get just ERRORS, Warns, fatals?
                 String msg = bulletins.stream().map(BulletinDTO::getMessage).collect(Collectors.joining(", "));
                 String exitMsg = StringUtils.isBlank(stepExecution.getExitMessage()) ? "" : stepExecution.getExitMessage() + "\n";
                 stepExecution.setExitMessage(exitMsg + msg);
@@ -65,6 +80,14 @@ public class NifiBulletinExceptionExtractor {
     }
 
 
+    /**
+     * queries for bulletins from component, in the flow file
+     *
+     * @param flowFileId  The UUID of the flow file to extract the error message from
+     * @param componentId The ID of the component posting the bulletin
+     * @return a list of bulletin objects that were posted by the component to the flow file
+     * @throws NifiConnectionException if cannot query Nifi
+     */
     public List<BulletinDTO> getProcessorBulletinsForComponentInFlowFile(String flowFileId, String componentId) throws NifiConnectionException {
         List<BulletinDTO> bulletins;
         try {

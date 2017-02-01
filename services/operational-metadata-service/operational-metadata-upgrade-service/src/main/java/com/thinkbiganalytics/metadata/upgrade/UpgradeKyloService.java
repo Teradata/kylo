@@ -57,9 +57,6 @@ import javax.jcr.Property;
 import javax.jcr.PropertyIterator;
 import javax.jcr.RepositoryException;
 
-/**
- * Created by sr186054 on 9/19/16.
- */
 @Service
 public class UpgradeKyloService implements ModeShapeAvailabilityListener {
 
@@ -92,15 +89,15 @@ public class UpgradeKyloService implements ModeShapeAvailabilityListener {
 
     @Override
     public void modeShapeAvailable() {
-
         upgradeCheck();
-
     }
 
+    /**
+     * checks the upgrade for Kylo and updates the version if needed
+     */
     public void upgradeCheck() {
-
         KyloVersion version = kyloVersionProvider.getKyloVersion();
-        if (version == null || version.getMajorVersionNumber() == null || (version.getMajorVersionNumber() != null && version.getMajorVersionNumber().floatValue() < 0.4f)) {
+        if (version == null || version.getMajorVersionNumber() == null || (version.getMajorVersionNumber() != null && version.getMajorVersionNumber()< 0.4f)) {
             version = upgradeTo0_4_0();
         }
         ensureFeedTemplateFeedRelationships();
@@ -112,11 +109,9 @@ public class UpgradeKyloService implements ModeShapeAvailabilityListener {
         }, MetadataAccess.SERVICE);
 
         log.info("Upgrade check complete for Kylo {}", version.getVersion());
-
-
     }
 
-    /**
+    /*
      * Ensure the Feed Template has the relationships setup to its related feeds
      */
     private void ensureFeedTemplateFeedRelationships() {
@@ -144,7 +139,7 @@ public class UpgradeKyloService implements ModeShapeAvailabilityListener {
         }, MetadataAccess.SERVICE);
     }
 
-    /**
+    /*
      * Migrate and remove or move any properties defined
      */
     private void migrateUnusedFeedProperties() {
@@ -179,7 +174,11 @@ public class UpgradeKyloService implements ModeShapeAvailabilityListener {
         }
     }
 
-
+    /**
+     * Performs the necessary actions to ensure that Kylo versions &lt; 0.4.0 are upgraded
+     *
+     * @return  the Kylo version after upgrade attempt
+     */
     public KyloVersion upgradeTo0_4_0() {
 
         return metadataAccess.commit(() -> metadataAccess.commit(() -> {
@@ -189,7 +188,7 @@ public class UpgradeKyloService implements ModeShapeAvailabilityListener {
                 category.getAllowedActions();
             }
 
-            //1 get all feeds defined in feed manager
+            // get all feeds defined in feed manager
             List<FeedManagerFeed> domainFeeds = feedManagerFeedProvider.findAll();
             Map<String, FeedManagerFeed> feedManagerFeedMap = new HashMap<>();
             if (domainFeeds != null && !domainFeeds.isEmpty()) {

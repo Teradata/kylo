@@ -33,20 +33,23 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 
 /**
- * SLA Checker that will lookup the SLA data from JCR and use it with the JPA SLA Assessments Created by sr186054 on 9/15/16.
+ * SLA Checker that will lookup the SLA data from JCR and use it with the JPA SLA Assessments.
  */
 public class JpaJcrServiceLevelAgreementChecker extends DefaultServiceLevelAgreementChecker {
 
 
     private static final Logger LOG = LoggerFactory.getLogger(JpaJcrServiceLevelAgreementChecker.class);
+
     @Inject
     JcrMetadataAccess jcrMetadataAccess;
 
-
-    public JpaJcrServiceLevelAgreementChecker() {
-        super();
-    }
-
+    /**
+     * Runs the assessment provider on the provided agreement and acts accordingly.
+     *
+     * @param agreement     The agreement to assess
+     * @param assessment    The strategy of assessment
+     * @return true if the assessment succeeds or is not found
+     */
     @Override
     protected boolean shouldAlert(ServiceLevelAgreement agreement, ServiceLevelAssessment assessment) {
         boolean shouldAlert = false;

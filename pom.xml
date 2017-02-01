@@ -864,7 +864,7 @@
                     <version>${plugin.surefire.version}</version>
                 </plugin>
                 <plugin>
-			<groupId>com.mycila</groupId>
+			<groupId>org.codehaus.mojo</groupId>
 			<artifactId>license-maven-plugin</artifactId>
 			<version>${plugin.license.version}</version>
                 </plugin>

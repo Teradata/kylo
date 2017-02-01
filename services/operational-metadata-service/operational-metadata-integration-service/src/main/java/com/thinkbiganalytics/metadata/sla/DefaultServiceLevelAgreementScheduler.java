@@ -50,7 +50,7 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 /**
- * Created by sr186054 on 7/22/16.
+ * Provides the default implementation for service level agreement scheduling.
  */
 public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreementScheduler, ModeShapeAvailabilityListener {
 
@@ -123,6 +123,12 @@ public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreem
         return uniqueName;
     }
 
+    /**
+     * removes a SLA from the scheduler, so that it is no longer executed.
+     *
+     * @param sla The Service Level Agreement object
+     * @return true if we were able to remove the SLA from the scheduler
+     */
     public boolean unscheduleServiceLevelAgreement(ServiceLevelAgreement sla) {
         boolean unscheduled = false;
         if (sla != null) {
@@ -131,7 +137,12 @@ public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreem
         return unscheduled;
     }
 
-
+    /**
+     * removes the SLA, identified by slaId, from the scheduler, so that it is no longer executed.
+     *
+     * @param slaId The ServiceLevelAgreement id
+     * @return true if we were able to remove the SLA from the scheduler
+     */
     public boolean unscheduleServiceLevelAgreement(ServiceLevelAgreement.ID slaId) {
         boolean unscheduled = false;
         JobIdentifier scheduledJobId = null;
@@ -172,8 +183,12 @@ public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreem
 
     }
 
+    /**
+     * Used to disable the schedule of the SLA, so that it no longer executes until subsequently re-enabled via {@link enableServiceLevelAgreement}
+     *
+     * @param sla The SLA to disable
+     */
     public void disableServiceLevelAgreement(ServiceLevelAgreement sla) {
-
         ServiceLevelAgreement.ID slaId = sla.getId();
         if (scheduledJobNames.containsKey(slaId)) {
             JobIdentifier scheduledJobId = jobIdentifierForName(scheduledJobNames.get(slaId));
@@ -185,6 +200,11 @@ public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreem
         }
     }
 
+    /**
+     * Used to enable the schedule of the SLA, so that once again executes after a being disabled via {@link disableServiceLevelAgreement}
+     *
+     * @param sla The SLA to enable
+     */
     public void enableServiceLevelAgreement(ServiceLevelAgreement sla) {
 
         ServiceLevelAgreement.ID slaId = sla.getId();
@@ -198,7 +218,11 @@ public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreem
         }
     }
 
-
+    /**
+     * Schedules an SLA to be run
+     *
+     * @param sla The SLA to schedule
+     */
     public void scheduleServiceLevelAgreement(ServiceLevelAgreement sla) {
         try {
             //Delete any jobs with this SLA if they already exist
@@ -237,10 +261,13 @@ public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreem
         if (!sla.isEnabled()) {
             disableServiceLevelAgreement(sla);
         }
-
-
     }
 
+    /**
+     * Called be the framework when the job is scheduled this is where we manage the life cycle of the SLAs
+     *
+     * @param event  the job event.
+     */
     public void onJobSchedulerEvent(JobSchedulerEvent event) {
         try {
             switch (event.getEvent()) {
