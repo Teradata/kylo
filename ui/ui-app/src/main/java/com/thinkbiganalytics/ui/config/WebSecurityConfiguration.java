@@ -63,7 +63,7 @@ public class WebSecurityConfiguration {
 
         @Override
         public void configure(WebSecurity web) throws Exception {
-            web.ignoring().antMatchers("/ui-common/**", "/js/vendor/**", "/images/**", "/styles/**", "/js/login/**", "/js/utils/**");
+            web.ignoring().antMatchers("/ui-common/**", "/js/vendor/**", "/images/**", "/styles/**", "/js/login/**", "/js/utils/**", "/proxy/**");
         }
 
         @Override
