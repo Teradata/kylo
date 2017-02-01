@@ -30,7 +30,7 @@ import org.apache.spark.sql.hive.HiveContext;
 /**
  * For Spark 1
  */
-//@Component
+@Component
 public class ProfilerSparkContextServiceV1 extends SparkContextService16 implements ProfilerSparkContextService {
 
     @Override

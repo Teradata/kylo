@@ -38,7 +38,7 @@ import scala.Tuple2;
 /**
  * For Spark 1
  */
-//@Component
+@Component
 public class ProfilerStrategyV1 implements ProfilerStrategy {
 
     @Override
