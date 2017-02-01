@@ -37,7 +37,7 @@ import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 
 /**
- * Created by sr186054 on 11/8/16.
+ * Service to listen for feed failure events and notify listeners when a feed fails
  */
 @Component
 public class FeedFailureService {

@@ -21,7 +21,8 @@ package com.thinkbiganalytics.jobrepo.repository.rest.model;
  */
 
 /**
- * Created by sr186054 on 12/14/15.
+ * Store data for job repository requests to identify what should be returned back in the response
+ *
  */
 public class JobAction {
     private String action;

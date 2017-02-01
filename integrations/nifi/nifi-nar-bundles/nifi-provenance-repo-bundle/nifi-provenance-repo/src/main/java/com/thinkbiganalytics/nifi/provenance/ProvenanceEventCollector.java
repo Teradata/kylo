@@ -122,7 +122,7 @@ public class ProvenanceEventCollector {
                 try {
 
                     cacheUtil.cacheAndBuildFlowFileGraph(event);
-                    //if the Flow gets an "Empty Queue" message it means a user empitied the queue that was stuck ina connection.
+                    //if the Flow gets an "Empty Queue" message it means a user emptied the queue that was stuck in a connection.
                     // this means the flow cannot complete and will be treated as a failed flow and failed job
                     if (ProvenanceEventUtil.isFlowFileQueueEmptied(event)) {
                         // a Drop event component id will be the connection, not the processor id. we will set the name of the component

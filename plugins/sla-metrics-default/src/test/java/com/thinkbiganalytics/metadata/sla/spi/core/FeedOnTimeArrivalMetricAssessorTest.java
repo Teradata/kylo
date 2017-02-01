@@ -20,7 +20,6 @@ package com.thinkbiganalytics.metadata.sla.spi.core;
  * #L%
  */
 
-import com.thinkbiganalytics.calendar.HolidayCalendarService;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.MetadataAction;
 import com.thinkbiganalytics.metadata.api.MetadataCommand;
@@ -47,14 +46,12 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.quartz.CronExpression;
-import org.quartz.impl.calendar.HolidayCalendar;
 import org.testng.Assert;
 
 import java.security.Principal;
 import java.text.ParseException;
 
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -71,12 +68,6 @@ public class FeedOnTimeArrivalMetricAssessorTest {
     private BatchJobExecutionProvider jobExecutionProvider;
 
     @Mock
-    private HolidayCalendar calendar;
-
-    @Mock
-    private HolidayCalendarService calendarService;
-
-    @Mock
     private MetricAssessmentBuilder builder;
 
     private MetadataAccess metadataAccess = new MockMetadataAccess();
@@ -91,7 +82,6 @@ public class FeedOnTimeArrivalMetricAssessorTest {
     public void setUp() throws Exception {
         initMocks(this);
 
-        when(this.calendarService.getCalendar(any(String.class))).thenReturn(this.calendar);
         when(this.builder.message(any(String.class))).thenReturn(this.builder);
         when(this.builder.metric(any(Metric.class))).thenReturn(this.builder);
         when(this.builder.result(any(AssessmentResult.class))).thenReturn(this.builder);
@@ -103,9 +93,7 @@ public class FeedOnTimeArrivalMetricAssessorTest {
         this.lateTime = new DateTime(CronExpressionUtil.getPreviousFireTime(cron)).plusHours(4);
         this.metric = new FeedOnTimeArrivalMetric("feed",
                                                   cron,
-                                                  Period.hours(lateTimeGracePeriod),
-                                                  Period.days(2),
-                                                  "USA");
+                                                  Period.hours(lateTimeGracePeriod));
     }
 
     @Test
@@ -113,7 +101,6 @@ public class FeedOnTimeArrivalMetricAssessorTest {
         DateTime feedEnd = this.lateTime.minusMinutes(1);
         BatchJobExecution feed = createFeedJobExecution(feedEnd);
         when(this.jobExecutionProvider.findLatestCompletedJobForFeed("feed")).thenReturn(feed);
-        when(this.calendar.isTimeIncluded(anyLong())).thenReturn(true);
 
         this.assessor.assess(metric, this.builder);
 
@@ -146,9 +133,8 @@ public class FeedOnTimeArrivalMetricAssessorTest {
         BatchJobExecution feed = createFeedJobExecution(lastFeedTime);
         when(this.jobExecutionProvider.findLatestCompletedJobForFeed("feed")).thenReturn(feed);
 
-        this.metric = new FeedOnTimeArrivalMetric("feed", cron, Period.hours(lateTimeGracePeriod), Period.days(2), "USA");
+        this.metric = new FeedOnTimeArrivalMetric("feed", cron, Period.hours(lateTimeGracePeriod));
 
-        when(this.calendar.isTimeIncluded(anyLong())).thenReturn(true);
         this.assessor.assess(metric, this.builder);
 
         //assert values
@@ -178,8 +164,7 @@ public class FeedOnTimeArrivalMetricAssessorTest {
         DateTime lastFeedTime = new DateTime(previousFireTime).plus(lateTimeGracePeriod - 1);
         BatchJobExecution feed = createFeedJobExecution(lastFeedTime);
         when(this.jobExecutionProvider.findLatestCompletedJobForFeed("feed")).thenReturn(feed);
-        when(this.calendar.isTimeIncluded(anyLong())).thenReturn(true);
-        this.metric = new FeedOnTimeArrivalMetric("feed", cron, Period.hours(lateTimeGracePeriod), Period.days(2), "USA");
+        this.metric = new FeedOnTimeArrivalMetric("feed", cron, Period.hours(lateTimeGracePeriod));
 
         this.assessor.assess(metric, this.builder);
 
@@ -210,8 +195,7 @@ public class FeedOnTimeArrivalMetricAssessorTest {
         DateTime lastFeedTime = new DateTime(previousFireTime).minusHours(lateTimeGracePeriod + 1);
         BatchJobExecution feed = createFeedJobExecution(lastFeedTime);
         when(this.jobExecutionProvider.findLatestCompletedJobForFeed("feed")).thenReturn(feed);
-        when(this.calendar.isTimeIncluded(anyLong())).thenReturn(true);
-        this.metric = new FeedOnTimeArrivalMetric("feed", cron, Period.hours(lateTimeGracePeriod), Period.days(2), "USA");
+        this.metric = new FeedOnTimeArrivalMetric("feed", cron, Period.hours(lateTimeGracePeriod));
 
         this.assessor.assess(metric, this.builder);
 
@@ -228,33 +212,16 @@ public class FeedOnTimeArrivalMetricAssessorTest {
         PowerMockito.mockStatic(DateTime.class);
         BDDMockito.given(DateTime.now()).willReturn(now);
         when(this.jobExecutionProvider.findLatestCompletedJobForFeed("feed")).thenReturn(feed);
-        when(this.calendar.isTimeIncluded(anyLong())).thenReturn(true);
 
         this.assessor.assess(metric, this.builder);
 
         verify(this.builder).result(AssessmentResult.FAILURE);
     }
 
-    @Test
-    public void testLateButHoliday() throws ParseException {
-        DateTime now = this.lateTime.plusMinutes(2);
-        DateTime feedEnd = this.lateTime.plusMinutes(1);
-        BatchJobExecution feed = createFeedJobExecution(feedEnd);
-
-        PowerMockito.mockStatic(DateTime.class);
-        BDDMockito.given(DateTime.now()).willReturn(now);
-        when(this.jobExecutionProvider.findLatestCompletedJobForFeed("feed")).thenReturn(feed);
-        when(this.calendar.isTimeIncluded(anyLong())).thenReturn(false);
-
-        this.assessor.assess(metric, this.builder);
-
-        verify(this.builder).result(AssessmentResult.SUCCESS);
-    }
 
     @Test
     public void testFeedNotFound() throws ParseException {
         when(this.jobExecutionProvider.findLatestCompletedJobForFeed("feed")).thenReturn(null);
-        when(this.calendar.isTimeIncluded(anyLong())).thenReturn(true);
         this.assessor.assess(metric, this.builder);
 
         verify(this.builder).result(AssessmentResult.WARNING);
@@ -264,8 +231,6 @@ public class FeedOnTimeArrivalMetricAssessorTest {
     private BatchJobExecution createFeedJobExecution(DateTime endTime) {
         BatchJobExecution feed = mock(BatchJobExecution.class);
         when(feed.getEndTime()).thenReturn(endTime);
-//        ExecutedFeed feed = new ExecutedFeed();
-//        feed.setEndTime(endTime);
         return feed;
     }
 

@@ -23,7 +23,6 @@ package com.thinkbiganalytics.metadata.sla.api.core;
  * #L%
  */
 
-import com.thinkbiganalytics.calendar.HolidayCalendarService;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
@@ -35,7 +34,6 @@ import com.thinkbiganalytics.metadata.sla.spi.MetricAssessor;
 import com.thinkbiganalytics.scheduler.util.CronExpressionUtil;
 
 import org.joda.time.DateTime;
-import org.quartz.Calendar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +43,7 @@ import java.util.Date;
 import javax.inject.Inject;
 
 /**
- * @author Sean Felten
+ * Metric assessor to assess the {@link FeedOnTimeArrivalMetric}
  */
 public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTimeArrivalMetric, Serializable> {
 
@@ -60,8 +58,7 @@ public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTim
     @Inject
     private MetadataAccess metadataAccess;
 
-    @Inject
-    private HolidayCalendarService calendarService;
+
 
 
     /* (non-Javadoc)
@@ -94,20 +91,10 @@ public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTim
         Date expectedDate = CronExpressionUtil.getPreviousFireTime(metric.getExpectedExpression());
         DateTime expectedTime = new DateTime(expectedDate);
         DateTime lateTime = expectedTime.plus(metric.getLatePeriod());
-        Calendar calendar = getCalendar(metric);
-        boolean isHoliday = false;
-        if (metric.getAsOfPeriod() != null) {
-            DateTime asOfTime = expectedTime.minus(metric.getAsOfPeriod());
-            isHoliday = !calendar.isTimeIncluded(asOfTime.getMillis());
-        }
 
         builder.compareWith(expectedDate, feedName);
 
-        if (isHoliday) {
-            LOG.debug("No data expected for feed {} due to a holiday", feedName);
-            builder.message("No data expected for feed " + feedName + " due to a holiday")
-                .result(AssessmentResult.SUCCESS);
-        } else if (lastFeedTime == null) {
+        if (lastFeedTime == null) {
             LOG.debug("Feed with the specified name {} not found", feedName);
             builder.message("Feed with the specified name " + feedName + " not found ")
                 .result(AssessmentResult.WARNING);
@@ -124,10 +111,6 @@ public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTim
             builder.message("Data for feed " + feedName + " has not arrived before the late time: " + lateTime + "\n The last successful feed was on " + lastFeedTime)
                 .result(AssessmentResult.FAILURE);
         }
-    }
-
-    private Calendar getCalendar(FeedOnTimeArrivalMetric metric) {
-        return this.calendarService.getCalendar(metric.getCalendarName());
     }
 
 

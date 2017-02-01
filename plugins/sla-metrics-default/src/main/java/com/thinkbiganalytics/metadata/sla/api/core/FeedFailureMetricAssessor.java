@@ -33,7 +33,7 @@ import java.io.Serializable;
 import javax.inject.Inject;
 
 /**
- * Created by sr186054 on 11/8/16.
+ * SLA assessor used to asses the {@link FeedFailedMetric} and violate the SLA if the feed fails
  */
 public class FeedFailureMetricAssessor implements MetricAssessor<FeedFailedMetric, Serializable> {
 

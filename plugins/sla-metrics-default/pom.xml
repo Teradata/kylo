@@ -58,11 +58,6 @@
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>kylo-calendar</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>kylo-sla-core</artifactId>
       <version>${project.version}</version>
     </dependency>

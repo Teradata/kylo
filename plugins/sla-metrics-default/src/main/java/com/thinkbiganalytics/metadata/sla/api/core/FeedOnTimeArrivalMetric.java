@@ -39,7 +39,6 @@ import com.thinkbiganalytics.policy.PolicyPropertyTypes;
 import com.thinkbiganalytics.policy.PropertyLabelValue;
 import com.thinkbiganalytics.scheduler.util.TimerToCronExpression;
 
-import org.apache.commons.lang3.StringUtils;
 import org.joda.time.Period;
 import org.quartz.CronExpression;
 
@@ -47,9 +46,8 @@ import java.text.ParseException;
 import java.util.Locale;
 
 /**
- * @author Sean Felten
- *
- *         TODO Wire CalendarName into the @PolicyProperty so its available on the UI
+ * SLA metric to ensure a feed gets executed by a specified time
+ * This will be exposed to the User Interface since it is annotated with {@link ServiceLevelAgreementMetric}
  */
 @ServiceLevelAgreementMetric(name = "Feed Processing deadline",
                              description = "Ensure a Feed processes data by a specified time")
@@ -89,62 +87,19 @@ public class FeedOnTimeArrivalMetric implements Metric {
                     required = true)
     private String lateUnits;
 
-    /*  @PolicyProperty(name = "AsOfTime",
-                        displayName = "As of time",
-                        type = PolicyPropertyTypes.PROPERTY_TYPE.number,
-                        hint = "as of time",
-                        group = "asOfTime",
-                        required = true) */
-    private Integer asOfTime;
-
-    /* @PolicyProperty(name = "AsOfUnits", displayName = "Units",
-                     type = PolicyPropertyTypes.PROPERTY_TYPE.select,
-                     group = "asOfTime",
-                     labelValues = {@PropertyLabelValue(label = "Days", value = "days"),
-                                    @PropertyLabelValue(label = "Hours", value = "hrs"),
-                                    @PropertyLabelValue(label = "Minutes", value = "min"),
-                                    @PropertyLabelValue(label = "Seconds", value = "sec")},
-                     required = true)*/
-    private String asOfUnits;
-
-
     @JsonIgnore
     private CronExpression expectedExpression;
-    private Period latePeriod;
-
-    private Period asOfPeriod;
-
-    private String calendarName;
-
 
     /**
-     *
-     */
+     * lateTime + lateUnits  as a Jodatime period object
+     **/
+    private Period latePeriod;
+
+
+
     public FeedOnTimeArrivalMetric() {
     }
 
-    public FeedOnTimeArrivalMetric(@PolicyPropertyRef(name = "FeedName") String feedName,
-                                   @PolicyPropertyRef(name = "ExpectedDeliveryTime") String cronString,
-                                   @PolicyPropertyRef(name = "NoLaterThanTime") Integer lateTime,
-                                   @PolicyPropertyRef(name = "NoLaterThanUnits") String lateUnits,
-                                   Integer asOfTime,
-                                   String asOfUnits) throws ParseException {
-        this.feedName = feedName;
-        this.cronString = cronString;
-        this.lateTime = lateTime;
-        this.lateUnits = lateUnits;
-        this.asOfTime = asOfTime;
-        this.asOfUnits = asOfUnits;
-
-        this.expectedExpression = new CronExpression(this.cronString);
-        this.latePeriod = TimerToCronExpression.timerStringToPeriod(this.lateTime + " " + this.lateUnits);
-
-        if (asOfTime != null && StringUtils.isNotBlank(asOfUnits)) {
-            this.asOfPeriod = TimerToCronExpression.timerStringToPeriod(this.asOfTime + " " + this.asOfUnits);
-        }
-
-
-    }
 
 
     public FeedOnTimeArrivalMetric(@PolicyPropertyRef(name = "FeedName") String feedName,
@@ -162,15 +117,12 @@ public class FeedOnTimeArrivalMetric implements Metric {
 
     public FeedOnTimeArrivalMetric(String feedName,
                                    CronExpression expectedExpression,
-                                   Period latePeriod,
-                                   Period asOfPeriod,
-                                   String calendarName) {
+                                   Period latePeriod
+    ) {
         super();
         this.feedName = feedName;
         this.expectedExpression = expectedExpression;
         this.latePeriod = latePeriod;
-        this.asOfPeriod = asOfPeriod;
-        this.calendarName = calendarName;
     }
 
 
@@ -194,8 +146,6 @@ public class FeedOnTimeArrivalMetric implements Metric {
             .add("feedName", this.feedName)
             .add("expectedExpression", this.expectedExpression)
             .add("latePeriod", this.latePeriod)
-            .add("asOfPeriod", this.asOfPeriod)
-            .add("calendarName", this.calendarName)
             .toString();
     }
 
@@ -228,22 +178,6 @@ public class FeedOnTimeArrivalMetric implements Metric {
 
     public void setLatePeriod(Period latePeriod) {
         this.latePeriod = latePeriod;
-    }
-
-    public Period getAsOfPeriod() {
-        return asOfPeriod;
-    }
-
-    public void setAsOfPeriod(Period asOfPeriod) {
-        this.asOfPeriod = asOfPeriod;
-    }
-
-    public String getCalendarName() {
-        return calendarName;
-    }
-
-    public void setCalendarName(String claendarName) {
-        this.calendarName = claendarName;
     }
 
     private String generateCronDescription(String cronExp) {

@@ -190,7 +190,7 @@ public class FeedFlowFileGuavaCache {
      */
     public void printSummary() {
         Map<String, FeedFlowFile> map = cache.asMap();
-        log.info("FeedFlowFile Cache Size: {} , root files {} ", map.size());
+        log.info("FeedFlowFile Cache Size: {}  ", map.size());
         log.info("ProvenanceEvent JMS Stats:  Sent {} statistics events to JMS.  Sent {} batch events to JMS ", AggregationEventProcessingStats.getStreamingEventsSent(),
                  AggregationEventProcessingStats.getBatchEventsSent());
 

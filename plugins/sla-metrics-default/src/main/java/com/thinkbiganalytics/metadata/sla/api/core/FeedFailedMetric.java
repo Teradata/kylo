@@ -26,7 +26,8 @@ import com.thinkbiganalytics.policy.PolicyProperty;
 import com.thinkbiganalytics.policy.PolicyPropertyTypes;
 
 /**
- * Created by sr186054 on 11/8/16.
+ * SLA metric used to notify if a feed fails
+ * This will be exposed to the User Interface since it is annotated with {@link ServiceLevelAgreementMetric}
  */
 @ServiceLevelAgreementMetric(name = "Feed Failure Notification",
                              description = "Act upon a Feed Failure")

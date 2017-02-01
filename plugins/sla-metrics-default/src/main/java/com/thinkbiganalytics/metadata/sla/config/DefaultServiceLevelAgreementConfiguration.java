@@ -33,7 +33,7 @@ import org.springframework.context.annotation.Configuration;
 import java.io.Serializable;
 
 /**
- * Created by sr186054 on 7/22/16.
+ * Spring bean configuration for the sla configurations
  */
 @Configuration
 public class DefaultServiceLevelAgreementConfiguration {
