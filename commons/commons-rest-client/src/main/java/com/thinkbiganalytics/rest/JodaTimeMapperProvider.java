@@ -57,11 +57,4 @@ public class JodaTimeMapperProvider implements ContextResolver<ObjectMapper> {
         return result;
     }
 
-    private static AnnotationIntrospector createJaxbJacksonAnnotationIntrospector() {
-
-        final AnnotationIntrospector jaxbIntrospector = new JaxbAnnotationIntrospector(TypeFactory.defaultInstance());
-        final AnnotationIntrospector jacksonIntrospector = new JacksonAnnotationIntrospector();
-
-        return AnnotationIntrospector.pair(jacksonIntrospector, jaxbIntrospector);
-    }
 }

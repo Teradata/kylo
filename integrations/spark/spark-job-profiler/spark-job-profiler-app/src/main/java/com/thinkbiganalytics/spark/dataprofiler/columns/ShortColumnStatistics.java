@@ -28,240 +28,245 @@ import org.apache.spark.sql.types.StructField;
 import java.util.ArrayList;
 
 /**
-* Class to hold profile statistics for columns of short data type <br>
-* [Hive data type: SMALLINT]
-* @author jagrut sharma
-*
-*/
+ * Class to hold profile statistics for columns of short data type <br>
+ * [Hive data type: SMALLINT]
+ */
 @SuppressWarnings("serial")
 public class ShortColumnStatistics extends ColumnStatistics {
 
-	/* Short specific metrics */
-	private short max;
-	private short min;
-	private long sum;
-	private double mean;
-	private double stddev;
-	private double variance;
-	
-	/* Other variables */
-	private double sumOfSquares;
-	private long oldTotalCount;
-	private long oldNullCount;
-	private double oldMean;
-	private double oldStdDev;
-	private double oldSumOfSquares;
+    /* Short specific metrics */
+    private short max;
+    private short min;
+    private long sum;
+    private double mean;
+    private double stddev;
+    private double variance;
 
-	private short columnShortValue;
+    /* Other variables */
+    private double sumOfSquares;
+    private long oldTotalCount;
+    private long oldNullCount;
+    private double oldMean;
+    private double oldStdDev;
+    private double oldSumOfSquares;
 
-	
-	/**
-	 * One-argument constructor
-	 * @param columnField field schema
-	 */
-	public ShortColumnStatistics(StructField columnField) {
+    private short columnShortValue;
 
-		super(columnField);
 
-		max = Short.MIN_VALUE;
-		min = Short.MAX_VALUE;
+    /**
+     * One-argument constructor
+     *
+     * @param columnField field schema
+     */
+    public ShortColumnStatistics(StructField columnField) {
 
-		sum = 0L;
-		mean = 0.0d;
-		stddev = 0.0d;
-		variance = 0.0d;
-		
-		sumOfSquares = 0.0d;
-		oldTotalCount = 0L;
-		oldNullCount = 0L;
-		oldMean = 0.0d;
-		oldStdDev = 0.0d;
-		oldSumOfSquares = 0.0d;
+        super(columnField);
 
-		columnShortValue = 0;
+        max = Short.MIN_VALUE;
+        min = Short.MAX_VALUE;
 
-	}
+        sum = 0L;
+        mean = 0.0d;
+        stddev = 0.0d;
+        variance = 0.0d;
 
-	/**
-	 * Calculate short-specific statistics by accommodating the value and frequency/count
-	 */
-	@Override
-	public void accomodate(Object columnValue, Long columnCount) {
+        sumOfSquares = 0.0d;
+        oldTotalCount = 0L;
+        oldNullCount = 0L;
+        oldMean = 0.0d;
+        oldStdDev = 0.0d;
+        oldSumOfSquares = 0.0d;
 
-		accomodateCommon(columnValue, columnCount);
+        columnShortValue = 0;
 
-		if (columnValue != null) {
-			columnShortValue = Short.valueOf(String.valueOf(columnValue));
+    }
 
-			if (max < columnShortValue) {
-				max = columnShortValue;
-			}
+    /**
+     * Calculate short-specific statistics by accommodating the value and frequency/count
+     */
+    @Override
+    public void accomodate(Object columnValue, Long columnCount) {
 
-			if (min > columnShortValue) {
-				min = columnShortValue;
-			}
+        accomodateCommon(columnValue, columnCount);
 
-			sum += (columnShortValue * columnCount);
+        if (columnValue != null) {
+            columnShortValue = Short.valueOf(String.valueOf(columnValue));
 
-			oldMean = 0.0d;
-			oldSumOfSquares = 0.0d;
+            if (max < columnShortValue) {
+                max = columnShortValue;
+            }
 
-			for (int i = 1; i <= columnCount; i++) {
-				oldMean = mean;
-				oldSumOfSquares = sumOfSquares;
+            if (min > columnShortValue) {
+                min = columnShortValue;
+            }
 
-				mean = oldMean + ((columnShortValue - oldMean) / (totalCount - columnCount + i - nullCount));
-				sumOfSquares = oldSumOfSquares + ((columnShortValue - mean) * (columnShortValue - oldMean));
-			}
+            sum += (columnShortValue * columnCount);
 
-			variance = sumOfSquares / (totalCount - nullCount);
-			stddev = Math.sqrt(variance);
-		}
-	}
+            oldMean = 0.0d;
+            oldSumOfSquares = 0.0d;
 
-	
-	/**
-	 * Combine with another column statistics 
-	 */
-	@Override
-	public void combine(ColumnStatistics v_columnStatistics) {
+            for (int i = 1; i <= columnCount; i++) {
+                oldMean = mean;
+                oldSumOfSquares = sumOfSquares;
 
-		saveMetricsForStdDevCalc();
-		
-		combineCommon(v_columnStatistics);
-		
-		ShortColumnStatistics vShort_columnStatistics = (ShortColumnStatistics) v_columnStatistics;
+                mean = oldMean + ((columnShortValue - oldMean) / (totalCount - columnCount + i - nullCount));
+                sumOfSquares = oldSumOfSquares + ((columnShortValue - mean) * (columnShortValue - oldMean));
+            }
 
-		max = (short) Math.max(max, vShort_columnStatistics.max);
-		min = (short) Math.min(min, vShort_columnStatistics.min);
-		sum += vShort_columnStatistics.sum;
-		mean = (double) sum / (totalCount - nullCount);
-		stddev = getCombinedStdDev(vShort_columnStatistics);
-		variance = Math.pow(stddev, 2);
-	}
-	
-	
-	/*
-	 * Save values for running statistical calculations
-	 */
-	private void saveMetricsForStdDevCalc() {
-		oldTotalCount = totalCount;
-		oldNullCount = nullCount;
-		oldMean = mean;
-		oldStdDev = stddev;
-	}
-	
-	
-	/*
-	 * Get combined standard deviations from two standard deviations
-	 */
-	private double getCombinedStdDev(ShortColumnStatistics vShort_columnStatistics) {
-		
-		double meanComb = (
-				((oldTotalCount - oldNullCount) * oldMean) + 
-				((vShort_columnStatistics.totalCount - vShort_columnStatistics.nullCount) * vShort_columnStatistics.mean)
-				)
-				/((oldTotalCount - oldNullCount) + (vShort_columnStatistics.totalCount - vShort_columnStatistics.nullCount));
-				
-		double term1 = (oldTotalCount - oldNullCount) * Math.pow(oldStdDev, 2);
-		double term2 = (vShort_columnStatistics.totalCount - vShort_columnStatistics.nullCount) * Math.pow(vShort_columnStatistics.stddev, 2);
-		double term3 = (oldTotalCount - oldNullCount) * Math.pow((oldMean - meanComb), 2);
-		double term4 = (vShort_columnStatistics.totalCount - vShort_columnStatistics.nullCount) * Math.pow((vShort_columnStatistics.mean - meanComb), 2);
-		double term5 = (oldTotalCount - oldNullCount) + (vShort_columnStatistics.totalCount - vShort_columnStatistics.nullCount);
-		return (Math.sqrt((term1 + term2 + term3 + term4) / term5));
-	}
-	
+            variance = sumOfSquares / (totalCount - nullCount);
+            stddev = Math.sqrt(variance);
+        }
+    }
 
-	/**
-	 * Print statistics to console
-	 */
-	@Override
-	public String getVerboseStatistics() {
 
-		return "{\n" + getVerboseStatisticsCommon()
-		+ "\n"
-		+ "ShortColumnStatistics ["
-		+ "max=" + max
-		+ ", min=" + min
-		+ ", sum=" + sum
-		+ ", mean=" + df.format(mean)
-		+ ", stddev=" + df.format(stddev)
-		+ ", variance=" + df.format(variance)
-		+ "]\n}";
-	}
+    /**
+     * Combine with another column statistics
+     */
+    @Override
+    public void combine(ColumnStatistics v_columnStatistics) {
 
-	
-	/**
-	 * Write statistics for output result table
-	 */
-	@Override
-	public void writeStatistics() {
-		
-		writeStatisticsCommon();
-		
-		rows = new ArrayList<>();
-		rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MAX), String.valueOf(max)));
-		rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MIN), String.valueOf(min)));
-		rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.SUM), String.valueOf(sum)));
-		rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MEAN), String.valueOf(mean)));
-		rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.STDDEV), String.valueOf(stddev)));
-		rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.VARIANCE), String.valueOf(variance)));
-		outputWriter.addRows(rows);
-		
-	}
+        saveMetricsForStdDevCalc();
 
-	
-	/**
-	 * Get maximum value
-	 * @return max value
-	 */
-	public short getMax() {
-		return max;
-	}
+        combineCommon(v_columnStatistics);
 
-	
-	/**
-	 * Get minimum value
-	 * @return min value
-	 */
-	public short getMin() {
-		return min;
-	}
+        ShortColumnStatistics vShort_columnStatistics = (ShortColumnStatistics) v_columnStatistics;
 
-	
-	/**
-	 * Get sum
-	 * @return sum
-	 */
-	public long getSum() {
-		return sum;
-	}
+        max = (short) Math.max(max, vShort_columnStatistics.max);
+        min = (short) Math.min(min, vShort_columnStatistics.min);
+        sum += vShort_columnStatistics.sum;
+        mean = (double) sum / (totalCount - nullCount);
+        stddev = getCombinedStdDev(vShort_columnStatistics);
+        variance = Math.pow(stddev, 2);
+    }
 
-	
-	/**
-	 * Get mean (average)
-	 * @return mean
-	 */
-	public double getMean() {
-		return mean;
-	}
 
-	
-	/**
-	 * Get standard deviation (population)
-	 * @return standard deviation (population)
-	 */
-	public double getStddev() {
-		return stddev;
-	}
+    /*
+     * Save values for running statistical calculations
+     */
+    private void saveMetricsForStdDevCalc() {
+        oldTotalCount = totalCount;
+        oldNullCount = nullCount;
+        oldMean = mean;
+        oldStdDev = stddev;
+    }
 
-	
-	/**
-	 * Get variance (population)
-	 * @return variance (population)
-	 */
-	public double getVariance() {
-		return variance;
-	}
+
+    /*
+     * Get combined standard deviations from two standard deviations
+     */
+    private double getCombinedStdDev(ShortColumnStatistics vShort_columnStatistics) {
+
+        double meanComb = (
+                              ((oldTotalCount - oldNullCount) * oldMean) +
+                              ((vShort_columnStatistics.totalCount - vShort_columnStatistics.nullCount) * vShort_columnStatistics.mean)
+                          )
+                          / ((oldTotalCount - oldNullCount) + (vShort_columnStatistics.totalCount - vShort_columnStatistics.nullCount));
+
+        double term1 = (oldTotalCount - oldNullCount) * Math.pow(oldStdDev, 2);
+        double term2 = (vShort_columnStatistics.totalCount - vShort_columnStatistics.nullCount) * Math.pow(vShort_columnStatistics.stddev, 2);
+        double term3 = (oldTotalCount - oldNullCount) * Math.pow((oldMean - meanComb), 2);
+        double term4 = (vShort_columnStatistics.totalCount - vShort_columnStatistics.nullCount) * Math.pow((vShort_columnStatistics.mean - meanComb), 2);
+        double term5 = (oldTotalCount - oldNullCount) + (vShort_columnStatistics.totalCount - vShort_columnStatistics.nullCount);
+        return (Math.sqrt((term1 + term2 + term3 + term4) / term5));
+    }
+
+
+    /**
+     * Print statistics to console
+     */
+    @Override
+    public String getVerboseStatistics() {
+
+        return "{\n" + getVerboseStatisticsCommon()
+               + "\n"
+               + "ShortColumnStatistics ["
+               + "max=" + max
+               + ", min=" + min
+               + ", sum=" + sum
+               + ", mean=" + df.format(mean)
+               + ", stddev=" + df.format(stddev)
+               + ", variance=" + df.format(variance)
+               + "]\n}";
+    }
+
+
+    /**
+     * Write statistics for output result table
+     */
+    @Override
+    public void writeStatistics() {
+
+        writeStatisticsCommon();
+
+        rows = new ArrayList<>();
+        rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MAX), String.valueOf(max)));
+        rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MIN), String.valueOf(min)));
+        rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.SUM), String.valueOf(sum)));
+        rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MEAN), String.valueOf(mean)));
+        rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.STDDEV), String.valueOf(stddev)));
+        rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.VARIANCE), String.valueOf(variance)));
+        outputWriter.addRows(rows);
+
+    }
+
+
+    /**
+     * Get maximum value
+     *
+     * @return max value
+     */
+    public short getMax() {
+        return max;
+    }
+
+
+    /**
+     * Get minimum value
+     *
+     * @return min value
+     */
+    public short getMin() {
+        return min;
+    }
+
+
+    /**
+     * Get sum
+     *
+     * @return sum
+     */
+    public long getSum() {
+        return sum;
+    }
+
+
+    /**
+     * Get mean (average)
+     *
+     * @return mean
+     */
+    public double getMean() {
+        return mean;
+    }
+
+
+    /**
+     * Get standard deviation (population)
+     *
+     * @return standard deviation (population)
+     */
+    public double getStddev() {
+        return stddev;
+    }
+
+
+    /**
+     * Get variance (population)
+     *
+     * @return variance (population)
+     */
+    public double getVariance() {
+        return variance;
+    }
 
 }

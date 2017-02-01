@@ -1,0 +1,978 @@
+[INFO] Scanning for projects...
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for com.thinkbiganalytics.datalake:thinkbig-spark-job-profiler-tests:jar:0.7.0-SNAPSHOT
+[WARNING] 'build.plugins.plugin.version' for org.codehaus.mojo:license-maven-plugin is missing. @ com.thinkbiganalytics.datalake:thinkbig-data-lake-accelerator:0.7.0-SNAPSHOT, /Users/js186104/Code/thinkbig/data-lake-accelerator/pom.xml, line 804, column 14
+[WARNING] 
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING] 
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING] 
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building thinkbig-spark-job-profiler-tests 0.7.0-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Users/js186104/Code/thinkbig/data-lake-accelerator/integrations/spark/spark-job-profiler/spark-job-profiler-tests/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:compile (default-compile) @ thinkbig-spark-job-profiler-tests ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Users/js186104/Code/thinkbig/data-lake-accelerator/integrations/spark/spark-job-profiler/spark-job-profiler-tests/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:testCompile (default-testCompile) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.19.1:test (default-test) @ thinkbig-spark-job-profiler-tests ---
+
+-------------------------------------------------------
+ T E S T S
+-------------------------------------------------------
+Running com.thinkbiganalytics.spark.dataprofiler.testcases.BigDecimalColumnCase1Test
+	*** Starting run for BigDecimalColumnCase1Test ***
+	*** Starting run for BigDecimalColumnCase1Test ***
+	*** Starting run for BigDecimalColumnCase1Test ***
+	*** Starting run for BigDecimalColumnCase1Test ***
+	*** Starting run for BigDecimalColumnCase1Test ***
+	*** Starting run for BigDecimalColumnCase1Test ***
+	*** Starting run for BigDecimalColumnCase1Test ***
+	*** Starting run for BigDecimalColumnCase1Test ***
+	*** Starting run for BigDecimalColumnCase1Test ***
+	*** Starting run for BigDecimalColumnCase1Test ***
+	*** Completed run for BigDecimalColumnCase1Test ***
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.524 sec - in com.thinkbiganalytics.spark.dataprofiler.testcases.BigDecimalColumnCase1Test
+
+Results :
+
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0
+
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 6.901 s
+[INFO] Finished at: 2017-01-31T17:01:44-08:00
+[INFO] Final Memory: 25M/437M
+[INFO] ------------------------------------------------------------------------
+[INFO] Scanning for projects...
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for com.thinkbiganalytics.datalake:thinkbig-spark-job-profiler-tests:jar:0.7.0-SNAPSHOT
+[WARNING] 'build.plugins.plugin.version' for org.codehaus.mojo:license-maven-plugin is missing. @ com.thinkbiganalytics.datalake:thinkbig-data-lake-accelerator:0.7.0-SNAPSHOT, /Users/js186104/Code/thinkbig/data-lake-accelerator/pom.xml, line 804, column 14
+[WARNING] 
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING] 
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING] 
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building thinkbig-spark-job-profiler-tests 0.7.0-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Users/js186104/Code/thinkbig/data-lake-accelerator/integrations/spark/spark-job-profiler/spark-job-profiler-tests/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:compile (default-compile) @ thinkbig-spark-job-profiler-tests ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Users/js186104/Code/thinkbig/data-lake-accelerator/integrations/spark/spark-job-profiler/spark-job-profiler-tests/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:testCompile (default-testCompile) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.19.1:test (default-test) @ thinkbig-spark-job-profiler-tests ---
+
+-------------------------------------------------------
+ T E S T S
+-------------------------------------------------------
+Running com.thinkbiganalytics.spark.dataprofiler.testcases.BooleanColumnCase1Test
+	*** Completed run for BooleanColumnCase1Test ***
+Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.688 sec - in com.thinkbiganalytics.spark.dataprofiler.testcases.BooleanColumnCase1Test
+
+Results :
+
+Tests run: 9, Failures: 0, Errors: 0, Skipped: 0
+
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 7.126 s
+[INFO] Finished at: 2017-01-31T17:01:52-08:00
+[INFO] Final Memory: 25M/437M
+[INFO] ------------------------------------------------------------------------
+[INFO] Scanning for projects...
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for com.thinkbiganalytics.datalake:thinkbig-spark-job-profiler-tests:jar:0.7.0-SNAPSHOT
+[WARNING] 'build.plugins.plugin.version' for org.codehaus.mojo:license-maven-plugin is missing. @ com.thinkbiganalytics.datalake:thinkbig-data-lake-accelerator:0.7.0-SNAPSHOT, /Users/js186104/Code/thinkbig/data-lake-accelerator/pom.xml, line 804, column 14
+[WARNING] 
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING] 
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING] 
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building thinkbig-spark-job-profiler-tests 0.7.0-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Users/js186104/Code/thinkbig/data-lake-accelerator/integrations/spark/spark-job-profiler/spark-job-profiler-tests/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:compile (default-compile) @ thinkbig-spark-job-profiler-tests ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Users/js186104/Code/thinkbig/data-lake-accelerator/integrations/spark/spark-job-profiler/spark-job-profiler-tests/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:testCompile (default-testCompile) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.19.1:test (default-test) @ thinkbig-spark-job-profiler-tests ---
+
+-------------------------------------------------------
+ T E S T S
+-------------------------------------------------------
+Running com.thinkbiganalytics.spark.dataprofiler.testcases.ByteColumnCase1Test
+	*** Completed run for ByteColumnCase1Test ***
+Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 6.409 sec - in com.thinkbiganalytics.spark.dataprofiler.testcases.ByteColumnCase1Test
+
+Results :
+
+Tests run: 13, Failures: 0, Errors: 0, Skipped: 0
+
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 8.816 s
+[INFO] Finished at: 2017-01-31T17:02:02-08:00
+[INFO] Final Memory: 25M/437M
+[INFO] ------------------------------------------------------------------------
+[INFO] Scanning for projects...
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for com.thinkbiganalytics.datalake:thinkbig-spark-job-profiler-tests:jar:0.7.0-SNAPSHOT
+[WARNING] 'build.plugins.plugin.version' for org.codehaus.mojo:license-maven-plugin is missing. @ com.thinkbiganalytics.datalake:thinkbig-data-lake-accelerator:0.7.0-SNAPSHOT, /Users/js186104/Code/thinkbig/data-lake-accelerator/pom.xml, line 804, column 14
+[WARNING] 
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING] 
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING] 
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building thinkbig-spark-job-profiler-tests 0.7.0-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Users/js186104/Code/thinkbig/data-lake-accelerator/integrations/spark/spark-job-profiler/spark-job-profiler-tests/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:compile (default-compile) @ thinkbig-spark-job-profiler-tests ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Users/js186104/Code/thinkbig/data-lake-accelerator/integrations/spark/spark-job-profiler/spark-job-profiler-tests/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:testCompile (default-testCompile) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.19.1:test (default-test) @ thinkbig-spark-job-profiler-tests ---
+
+-------------------------------------------------------
+ T E S T S
+-------------------------------------------------------
+
+Results :
+
+Tests run: 0, Failures: 0, Errors: 0, Skipped: 0
+
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 3.047 s
+[INFO] Finished at: 2017-01-31T17:02:07-08:00
+[INFO] Final Memory: 22M/309M
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:2.19.1:test (default-test) on project thinkbig-spark-job-profiler-tests: No tests were executed!  (Set -DfailIfNoTests=false to ignore this error.) -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
+[INFO] Scanning for projects...
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for com.thinkbiganalytics.datalake:thinkbig-spark-job-profiler-tests:jar:0.7.0-SNAPSHOT
+[WARNING] 'build.plugins.plugin.version' for org.codehaus.mojo:license-maven-plugin is missing. @ com.thinkbiganalytics.datalake:thinkbig-data-lake-accelerator:0.7.0-SNAPSHOT, /Users/js186104/Code/thinkbig/data-lake-accelerator/pom.xml, line 804, column 14
+[WARNING] 
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING] 
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING] 
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building thinkbig-spark-job-profiler-tests 0.7.0-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Users/js186104/Code/thinkbig/data-lake-accelerator/integrations/spark/spark-job-profiler/spark-job-profiler-tests/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:compile (default-compile) @ thinkbig-spark-job-profiler-tests ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Users/js186104/Code/thinkbig/data-lake-accelerator/integrations/spark/spark-job-profiler/spark-job-profiler-tests/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:testCompile (default-testCompile) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.19.1:test (default-test) @ thinkbig-spark-job-profiler-tests ---
+
+-------------------------------------------------------
+ T E S T S
+-------------------------------------------------------
+Running com.thinkbiganalytics.spark.dataprofiler.testcases.DateColumnCase1Test
+	*** Completed run for DateColumnCase1Test ***
+Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 6.08 sec - in com.thinkbiganalytics.spark.dataprofiler.testcases.DateColumnCase1Test
+
+Results :
+
+Tests run: 9, Failures: 0, Errors: 0, Skipped: 0
+
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 8.890 s
+[INFO] Finished at: 2017-01-31T17:02:17-08:00
+[INFO] Final Memory: 22M/309M
+[INFO] ------------------------------------------------------------------------
+[INFO] Scanning for projects...
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for com.thinkbiganalytics.datalake:thinkbig-spark-job-profiler-tests:jar:0.7.0-SNAPSHOT
+[WARNING] 'build.plugins.plugin.version' for org.codehaus.mojo:license-maven-plugin is missing. @ com.thinkbiganalytics.datalake:thinkbig-data-lake-accelerator:0.7.0-SNAPSHOT, /Users/js186104/Code/thinkbig/data-lake-accelerator/pom.xml, line 804, column 14
+[WARNING] 
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING] 
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING] 
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building thinkbig-spark-job-profiler-tests 0.7.0-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Users/js186104/Code/thinkbig/data-lake-accelerator/integrations/spark/spark-job-profiler/spark-job-profiler-tests/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:compile (default-compile) @ thinkbig-spark-job-profiler-tests ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Users/js186104/Code/thinkbig/data-lake-accelerator/integrations/spark/spark-job-profiler/spark-job-profiler-tests/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:testCompile (default-testCompile) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.19.1:test (default-test) @ thinkbig-spark-job-profiler-tests ---
+
+-------------------------------------------------------
+ T E S T S
+-------------------------------------------------------
+Running com.thinkbiganalytics.spark.dataprofiler.testcases.DoubleColumnCase1Test
+	*** Completed run for DoubleColumnCase1Test ***
+Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 5.396 sec - in com.thinkbiganalytics.spark.dataprofiler.testcases.DoubleColumnCase1Test
+
+Results :
+
+Tests run: 13, Failures: 0, Errors: 0, Skipped: 0
+
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 7.701 s
+[INFO] Finished at: 2017-01-31T17:02:26-08:00
+[INFO] Final Memory: 25M/437M
+[INFO] ------------------------------------------------------------------------
+[INFO] Scanning for projects...
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for com.thinkbiganalytics.datalake:thinkbig-spark-job-profiler-tests:jar:0.7.0-SNAPSHOT
+[WARNING] 'build.plugins.plugin.version' for org.codehaus.mojo:license-maven-plugin is missing. @ com.thinkbiganalytics.datalake:thinkbig-data-lake-accelerator:0.7.0-SNAPSHOT, /Users/js186104/Code/thinkbig/data-lake-accelerator/pom.xml, line 804, column 14
+[WARNING] 
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING] 
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING] 
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building thinkbig-spark-job-profiler-tests 0.7.0-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Users/js186104/Code/thinkbig/data-lake-accelerator/integrations/spark/spark-job-profiler/spark-job-profiler-tests/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:compile (default-compile) @ thinkbig-spark-job-profiler-tests ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Users/js186104/Code/thinkbig/data-lake-accelerator/integrations/spark/spark-job-profiler/spark-job-profiler-tests/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:testCompile (default-testCompile) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.19.1:test (default-test) @ thinkbig-spark-job-profiler-tests ---
+
+-------------------------------------------------------
+ T E S T S
+-------------------------------------------------------
+Running com.thinkbiganalytics.spark.dataprofiler.testcases.FloatColumnCase1Test
+	*** Completed run for FloatColumnCase1Test ***
+Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.846 sec - in com.thinkbiganalytics.spark.dataprofiler.testcases.FloatColumnCase1Test
+
+Results :
+
+Tests run: 13, Failures: 0, Errors: 0, Skipped: 0
+
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 9.189 s
+[INFO] Finished at: 2017-01-31T17:02:36-08:00
+[INFO] Final Memory: 25M/437M
+[INFO] ------------------------------------------------------------------------
+[INFO] Scanning for projects...
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for com.thinkbiganalytics.datalake:thinkbig-spark-job-profiler-tests:jar:0.7.0-SNAPSHOT
+[WARNING] 'build.plugins.plugin.version' for org.codehaus.mojo:license-maven-plugin is missing. @ com.thinkbiganalytics.datalake:thinkbig-data-lake-accelerator:0.7.0-SNAPSHOT, /Users/js186104/Code/thinkbig/data-lake-accelerator/pom.xml, line 804, column 14
+[WARNING] 
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING] 
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING] 
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building thinkbig-spark-job-profiler-tests 0.7.0-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Users/js186104/Code/thinkbig/data-lake-accelerator/integrations/spark/spark-job-profiler/spark-job-profiler-tests/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:compile (default-compile) @ thinkbig-spark-job-profiler-tests ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Users/js186104/Code/thinkbig/data-lake-accelerator/integrations/spark/spark-job-profiler/spark-job-profiler-tests/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:testCompile (default-testCompile) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.19.1:test (default-test) @ thinkbig-spark-job-profiler-tests ---
+
+-------------------------------------------------------
+ T E S T S
+-------------------------------------------------------
+Running com.thinkbiganalytics.spark.dataprofiler.testcases.IntegerColumnCase1Test
+	*** Completed run for IntegerColumnCase1Test ***
+Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.56 sec - in com.thinkbiganalytics.spark.dataprofiler.testcases.IntegerColumnCase1Test
+
+Results :
+
+Tests run: 13, Failures: 0, Errors: 0, Skipped: 0
+
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 7.137 s
+[INFO] Finished at: 2017-01-31T17:02:45-08:00
+[INFO] Final Memory: 25M/437M
+[INFO] ------------------------------------------------------------------------
+[INFO] Scanning for projects...
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for com.thinkbiganalytics.datalake:thinkbig-spark-job-profiler-tests:jar:0.7.0-SNAPSHOT
+[WARNING] 'build.plugins.plugin.version' for org.codehaus.mojo:license-maven-plugin is missing. @ com.thinkbiganalytics.datalake:thinkbig-data-lake-accelerator:0.7.0-SNAPSHOT, /Users/js186104/Code/thinkbig/data-lake-accelerator/pom.xml, line 804, column 14
+[WARNING] 
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING] 
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING] 
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building thinkbig-spark-job-profiler-tests 0.7.0-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Users/js186104/Code/thinkbig/data-lake-accelerator/integrations/spark/spark-job-profiler/spark-job-profiler-tests/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:compile (default-compile) @ thinkbig-spark-job-profiler-tests ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Users/js186104/Code/thinkbig/data-lake-accelerator/integrations/spark/spark-job-profiler/spark-job-profiler-tests/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:testCompile (default-testCompile) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.19.1:test (default-test) @ thinkbig-spark-job-profiler-tests ---
+
+-------------------------------------------------------
+ T E S T S
+-------------------------------------------------------
+Running com.thinkbiganalytics.spark.dataprofiler.testcases.IntegerColumnCase2Test
+	*** Completed run for IntegerColumnCase2Test ***
+Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.645 sec - in com.thinkbiganalytics.spark.dataprofiler.testcases.IntegerColumnCase2Test
+
+Results :
+
+Tests run: 13, Failures: 0, Errors: 0, Skipped: 0
+
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 6.919 s
+[INFO] Finished at: 2017-01-31T17:02:53-08:00
+[INFO] Final Memory: 25M/437M
+[INFO] ------------------------------------------------------------------------
+[INFO] Scanning for projects...
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for com.thinkbiganalytics.datalake:thinkbig-spark-job-profiler-tests:jar:0.7.0-SNAPSHOT
+[WARNING] 'build.plugins.plugin.version' for org.codehaus.mojo:license-maven-plugin is missing. @ com.thinkbiganalytics.datalake:thinkbig-data-lake-accelerator:0.7.0-SNAPSHOT, /Users/js186104/Code/thinkbig/data-lake-accelerator/pom.xml, line 804, column 14
+[WARNING] 
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING] 
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING] 
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building thinkbig-spark-job-profiler-tests 0.7.0-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Users/js186104/Code/thinkbig/data-lake-accelerator/integrations/spark/spark-job-profiler/spark-job-profiler-tests/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:compile (default-compile) @ thinkbig-spark-job-profiler-tests ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Users/js186104/Code/thinkbig/data-lake-accelerator/integrations/spark/spark-job-profiler/spark-job-profiler-tests/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:testCompile (default-testCompile) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.19.1:test (default-test) @ thinkbig-spark-job-profiler-tests ---
+
+-------------------------------------------------------
+ T E S T S
+-------------------------------------------------------
+Running com.thinkbiganalytics.spark.dataprofiler.testcases.LongColumnCase1Test
+	*** Completed run for LongColumnCase1Test ***
+Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 6.581 sec - in com.thinkbiganalytics.spark.dataprofiler.testcases.LongColumnCase1Test
+
+Results :
+
+Tests run: 13, Failures: 0, Errors: 0, Skipped: 0
+
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 8.964 s
+[INFO] Finished at: 2017-01-31T17:03:03-08:00
+[INFO] Final Memory: 25M/437M
+[INFO] ------------------------------------------------------------------------
+[INFO] Scanning for projects...
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for com.thinkbiganalytics.datalake:thinkbig-spark-job-profiler-tests:jar:0.7.0-SNAPSHOT
+[WARNING] 'build.plugins.plugin.version' for org.codehaus.mojo:license-maven-plugin is missing. @ com.thinkbiganalytics.datalake:thinkbig-data-lake-accelerator:0.7.0-SNAPSHOT, /Users/js186104/Code/thinkbig/data-lake-accelerator/pom.xml, line 804, column 14
+[WARNING] 
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING] 
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING] 
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building thinkbig-spark-job-profiler-tests 0.7.0-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Users/js186104/Code/thinkbig/data-lake-accelerator/integrations/spark/spark-job-profiler/spark-job-profiler-tests/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:compile (default-compile) @ thinkbig-spark-job-profiler-tests ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Users/js186104/Code/thinkbig/data-lake-accelerator/integrations/spark/spark-job-profiler/spark-job-profiler-tests/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:testCompile (default-testCompile) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.19.1:test (default-test) @ thinkbig-spark-job-profiler-tests ---
+
+-------------------------------------------------------
+ T E S T S
+-------------------------------------------------------
+Running com.thinkbiganalytics.spark.dataprofiler.testcases.ShortColumnCase1Test
+	*** Completed run for ShortColumnCase1Test ***
+Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 5.094 sec - in com.thinkbiganalytics.spark.dataprofiler.testcases.ShortColumnCase1Test
+
+Results :
+
+Tests run: 13, Failures: 0, Errors: 0, Skipped: 0
+
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 7.650 s
+[INFO] Finished at: 2017-01-31T17:03:12-08:00
+[INFO] Final Memory: 22M/309M
+[INFO] ------------------------------------------------------------------------
+[INFO] Scanning for projects...
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for com.thinkbiganalytics.datalake:thinkbig-spark-job-profiler-tests:jar:0.7.0-SNAPSHOT
+[WARNING] 'build.plugins.plugin.version' for org.codehaus.mojo:license-maven-plugin is missing. @ com.thinkbiganalytics.datalake:thinkbig-data-lake-accelerator:0.7.0-SNAPSHOT, /Users/js186104/Code/thinkbig/data-lake-accelerator/pom.xml, line 804, column 14
+[WARNING] 
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING] 
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING] 
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building thinkbig-spark-job-profiler-tests 0.7.0-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Users/js186104/Code/thinkbig/data-lake-accelerator/integrations/spark/spark-job-profiler/spark-job-profiler-tests/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:compile (default-compile) @ thinkbig-spark-job-profiler-tests ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Users/js186104/Code/thinkbig/data-lake-accelerator/integrations/spark/spark-job-profiler/spark-job-profiler-tests/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:testCompile (default-testCompile) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.19.1:test (default-test) @ thinkbig-spark-job-profiler-tests ---
+
+-------------------------------------------------------
+ T E S T S
+-------------------------------------------------------
+Running com.thinkbiganalytics.spark.dataprofiler.testcases.StringColumnCase1Test
+	*** Completed run for StringColumnCase1Test ***
+Tests run: 17, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.662 sec - in com.thinkbiganalytics.spark.dataprofiler.testcases.StringColumnCase1Test
+
+Results :
+
+Tests run: 17, Failures: 0, Errors: 0, Skipped: 0
+
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 7.056 s
+[INFO] Finished at: 2017-01-31T17:03:20-08:00
+[INFO] Final Memory: 25M/437M
+[INFO] ------------------------------------------------------------------------
+[INFO] Scanning for projects...
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for com.thinkbiganalytics.datalake:thinkbig-spark-job-profiler-tests:jar:0.7.0-SNAPSHOT
+[WARNING] 'build.plugins.plugin.version' for org.codehaus.mojo:license-maven-plugin is missing. @ com.thinkbiganalytics.datalake:thinkbig-data-lake-accelerator:0.7.0-SNAPSHOT, /Users/js186104/Code/thinkbig/data-lake-accelerator/pom.xml, line 804, column 14
+[WARNING] 
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING] 
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING] 
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building thinkbig-spark-job-profiler-tests 0.7.0-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Users/js186104/Code/thinkbig/data-lake-accelerator/integrations/spark/spark-job-profiler/spark-job-profiler-tests/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:compile (default-compile) @ thinkbig-spark-job-profiler-tests ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Users/js186104/Code/thinkbig/data-lake-accelerator/integrations/spark/spark-job-profiler/spark-job-profiler-tests/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:testCompile (default-testCompile) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.19.1:test (default-test) @ thinkbig-spark-job-profiler-tests ---
+
+-------------------------------------------------------
+ T E S T S
+-------------------------------------------------------
+Running com.thinkbiganalytics.spark.dataprofiler.testcases.StringColumnCase2Test
+	*** Completed run for StringColumnCase2Test ***
+Tests run: 17, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.573 sec - in com.thinkbiganalytics.spark.dataprofiler.testcases.StringColumnCase2Test
+
+Results :
+
+Tests run: 17, Failures: 0, Errors: 0, Skipped: 0
+
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 6.813 s
+[INFO] Finished at: 2017-01-31T17:03:28-08:00
+[INFO] Final Memory: 22M/309M
+[INFO] ------------------------------------------------------------------------
+[INFO] Scanning for projects...
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for com.thinkbiganalytics.datalake:thinkbig-spark-job-profiler-tests:jar:0.7.0-SNAPSHOT
+[WARNING] 'build.plugins.plugin.version' for org.codehaus.mojo:license-maven-plugin is missing. @ com.thinkbiganalytics.datalake:thinkbig-data-lake-accelerator:0.7.0-SNAPSHOT, /Users/js186104/Code/thinkbig/data-lake-accelerator/pom.xml, line 804, column 14
+[WARNING] 
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING] 
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING] 
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building thinkbig-spark-job-profiler-tests 0.7.0-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Users/js186104/Code/thinkbig/data-lake-accelerator/integrations/spark/spark-job-profiler/spark-job-profiler-tests/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:compile (default-compile) @ thinkbig-spark-job-profiler-tests ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Users/js186104/Code/thinkbig/data-lake-accelerator/integrations/spark/spark-job-profiler/spark-job-profiler-tests/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:testCompile (default-testCompile) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.19.1:test (default-test) @ thinkbig-spark-job-profiler-tests ---
+
+-------------------------------------------------------
+ T E S T S
+-------------------------------------------------------
+Running com.thinkbiganalytics.spark.dataprofiler.testcases.StringColumnCase3Test
+	*** Completed run for StringColumnCase1Test ***
+Tests run: 17, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.479 sec - in com.thinkbiganalytics.spark.dataprofiler.testcases.StringColumnCase3Test
+
+Results :
+
+Tests run: 17, Failures: 0, Errors: 0, Skipped: 0
+
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 6.925 s
+[INFO] Finished at: 2017-01-31T17:03:36-08:00
+[INFO] Final Memory: 25M/437M
+[INFO] ------------------------------------------------------------------------
+[INFO] Scanning for projects...
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for com.thinkbiganalytics.datalake:thinkbig-spark-job-profiler-tests:jar:0.7.0-SNAPSHOT
+[WARNING] 'build.plugins.plugin.version' for org.codehaus.mojo:license-maven-plugin is missing. @ com.thinkbiganalytics.datalake:thinkbig-data-lake-accelerator:0.7.0-SNAPSHOT, /Users/js186104/Code/thinkbig/data-lake-accelerator/pom.xml, line 804, column 14
+[WARNING] 
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING] 
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING] 
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building thinkbig-spark-job-profiler-tests 0.7.0-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Users/js186104/Code/thinkbig/data-lake-accelerator/integrations/spark/spark-job-profiler/spark-job-profiler-tests/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:compile (default-compile) @ thinkbig-spark-job-profiler-tests ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Users/js186104/Code/thinkbig/data-lake-accelerator/integrations/spark/spark-job-profiler/spark-job-profiler-tests/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:testCompile (default-testCompile) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.19.1:test (default-test) @ thinkbig-spark-job-profiler-tests ---
+
+-------------------------------------------------------
+ T E S T S
+-------------------------------------------------------
+Running com.thinkbiganalytics.spark.dataprofiler.testcases.StringColumnCase4Test
+	*** Completed run for StringColumnCase4Test ***
+Tests run: 17, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.493 sec - in com.thinkbiganalytics.spark.dataprofiler.testcases.StringColumnCase4Test
+
+Results :
+
+Tests run: 17, Failures: 0, Errors: 0, Skipped: 0
+
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 6.755 s
+[INFO] Finished at: 2017-01-31T17:03:44-08:00
+[INFO] Final Memory: 25M/437M
+[INFO] ------------------------------------------------------------------------
+[INFO] Scanning for projects...
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for com.thinkbiganalytics.datalake:thinkbig-spark-job-profiler-tests:jar:0.7.0-SNAPSHOT
+[WARNING] 'build.plugins.plugin.version' for org.codehaus.mojo:license-maven-plugin is missing. @ com.thinkbiganalytics.datalake:thinkbig-data-lake-accelerator:0.7.0-SNAPSHOT, /Users/js186104/Code/thinkbig/data-lake-accelerator/pom.xml, line 804, column 14
+[WARNING] 
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING] 
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING] 
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building thinkbig-spark-job-profiler-tests 0.7.0-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Users/js186104/Code/thinkbig/data-lake-accelerator/integrations/spark/spark-job-profiler/spark-job-profiler-tests/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:compile (default-compile) @ thinkbig-spark-job-profiler-tests ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Users/js186104/Code/thinkbig/data-lake-accelerator/integrations/spark/spark-job-profiler/spark-job-profiler-tests/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:testCompile (default-testCompile) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.19.1:test (default-test) @ thinkbig-spark-job-profiler-tests ---
+
+-------------------------------------------------------
+ T E S T S
+-------------------------------------------------------
+Running com.thinkbiganalytics.spark.dataprofiler.testcases.TimestampColumnCase1Test
+	*** Completed run for TimestampColumnCase1Test ***
+Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.493 sec - in com.thinkbiganalytics.spark.dataprofiler.testcases.TimestampColumnCase1Test
+
+Results :
+
+Tests run: 9, Failures: 0, Errors: 0, Skipped: 0
+
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 6.760 s
+[INFO] Finished at: 2017-01-31T17:03:52-08:00
+[INFO] Final Memory: 25M/437M
+[INFO] ------------------------------------------------------------------------
+[INFO] Scanning for projects...
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for com.thinkbiganalytics.datalake:thinkbig-spark-job-profiler-tests:jar:0.7.0-SNAPSHOT
+[WARNING] 'build.plugins.plugin.version' for org.codehaus.mojo:license-maven-plugin is missing. @ com.thinkbiganalytics.datalake:thinkbig-data-lake-accelerator:0.7.0-SNAPSHOT, /Users/js186104/Code/thinkbig/data-lake-accelerator/pom.xml, line 804, column 14
+[WARNING] 
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING] 
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING] 
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building thinkbig-spark-job-profiler-tests 0.7.0-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Users/js186104/Code/thinkbig/data-lake-accelerator/integrations/spark/spark-job-profiler/spark-job-profiler-tests/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:compile (default-compile) @ thinkbig-spark-job-profiler-tests ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Users/js186104/Code/thinkbig/data-lake-accelerator/integrations/spark/spark-job-profiler/spark-job-profiler-tests/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:testCompile (default-testCompile) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.19.1:test (default-test) @ thinkbig-spark-job-profiler-tests ---
+
+-------------------------------------------------------
+ T E S T S
+-------------------------------------------------------
+Running com.thinkbiganalytics.spark.dataprofiler.testcases.TimestampColumnCase2Test
+	*** Starting run for TimestampColumnCase2Test ***
+	*** Completed run for TimestampColumnCase2Test ***
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.478 sec - in com.thinkbiganalytics.spark.dataprofiler.testcases.TimestampColumnCase2Test
+
+Results :
+
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0
+
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 7.073 s
+[INFO] Finished at: 2017-01-31T17:04:00-08:00
+[INFO] Final Memory: 25M/437M
+[INFO] ------------------------------------------------------------------------
+[INFO] Scanning for projects...
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for com.thinkbiganalytics.datalake:thinkbig-spark-job-profiler-tests:jar:0.7.0-SNAPSHOT
+[WARNING] 'build.plugins.plugin.version' for org.codehaus.mojo:license-maven-plugin is missing. @ com.thinkbiganalytics.datalake:thinkbig-data-lake-accelerator:0.7.0-SNAPSHOT, /Users/js186104/Code/thinkbig/data-lake-accelerator/pom.xml, line 804, column 14
+[WARNING] 
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING] 
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING] 
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building thinkbig-spark-job-profiler-tests 0.7.0-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Users/js186104/Code/thinkbig/data-lake-accelerator/integrations/spark/spark-job-profiler/spark-job-profiler-tests/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:compile (default-compile) @ thinkbig-spark-job-profiler-tests ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Users/js186104/Code/thinkbig/data-lake-accelerator/integrations/spark/spark-job-profiler/spark-job-profiler-tests/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:testCompile (default-testCompile) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.19.1:test (default-test) @ thinkbig-spark-job-profiler-tests ---
+
+-------------------------------------------------------
+ T E S T S
+-------------------------------------------------------
+Running com.thinkbiganalytics.spark.dataprofiler.testcases.TopNCase1Test
+	*** Starting run for TopNCase1Test ***
+	*** Completed run for TopNCase1Test ***
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.053 sec - in com.thinkbiganalytics.spark.dataprofiler.testcases.TopNCase1Test
+
+Results :
+
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0
+
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 4.384 s
+[INFO] Finished at: 2017-01-31T17:04:06-08:00
+[INFO] Final Memory: 22M/309M
+[INFO] ------------------------------------------------------------------------
+[INFO] Scanning for projects...
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for com.thinkbiganalytics.datalake:thinkbig-spark-job-profiler-tests:jar:0.7.0-SNAPSHOT
+[WARNING] 'build.plugins.plugin.version' for org.codehaus.mojo:license-maven-plugin is missing. @ com.thinkbiganalytics.datalake:thinkbig-data-lake-accelerator:0.7.0-SNAPSHOT, /Users/js186104/Code/thinkbig/data-lake-accelerator/pom.xml, line 804, column 14
+[WARNING] 
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING] 
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING] 
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building thinkbig-spark-job-profiler-tests 0.7.0-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Users/js186104/Code/thinkbig/data-lake-accelerator/integrations/spark/spark-job-profiler/spark-job-profiler-tests/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:compile (default-compile) @ thinkbig-spark-job-profiler-tests ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Users/js186104/Code/thinkbig/data-lake-accelerator/integrations/spark/spark-job-profiler/spark-job-profiler-tests/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:testCompile (default-testCompile) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.19.1:test (default-test) @ thinkbig-spark-job-profiler-tests ---
+
+-------------------------------------------------------
+ T E S T S
+-------------------------------------------------------
+Running com.thinkbiganalytics.spark.dataprofiler.testcases.TopNCase2Test
+	*** Starting run for TopNCase2Test ***
+	*** Completed run for TopNCase2Test ***
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.996 sec - in com.thinkbiganalytics.spark.dataprofiler.testcases.TopNCase2Test
+
+Results :
+
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0
+
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 6.382 s
+[INFO] Finished at: 2017-01-31T17:04:14-08:00
+[INFO] Final Memory: 25M/437M
+[INFO] ------------------------------------------------------------------------
+[INFO] Scanning for projects...
+[WARNING] 
+[WARNING] Some problems were encountered while building the effective model for com.thinkbiganalytics.datalake:thinkbig-spark-job-profiler-tests:jar:0.7.0-SNAPSHOT
+[WARNING] 'build.plugins.plugin.version' for org.codehaus.mojo:license-maven-plugin is missing. @ com.thinkbiganalytics.datalake:thinkbig-data-lake-accelerator:0.7.0-SNAPSHOT, /Users/js186104/Code/thinkbig/data-lake-accelerator/pom.xml, line 804, column 14
+[WARNING] 
+[WARNING] It is highly recommended to fix these problems because they threaten the stability of your build.
+[WARNING] 
+[WARNING] For this reason, future Maven versions might no longer support building such malformed projects.
+[WARNING] 
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building thinkbig-spark-job-profiler-tests 0.7.0-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Users/js186104/Code/thinkbig/data-lake-accelerator/integrations/spark/spark-job-profiler/spark-job-profiler-tests/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:compile (default-compile) @ thinkbig-spark-job-profiler-tests ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /Users/js186104/Code/thinkbig/data-lake-accelerator/integrations/spark/spark-job-profiler/spark-job-profiler-tests/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:testCompile (default-testCompile) @ thinkbig-spark-job-profiler-tests ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.19.1:test (default-test) @ thinkbig-spark-job-profiler-tests ---
+
+-------------------------------------------------------
+ T E S T S
+-------------------------------------------------------
+Running com.thinkbiganalytics.spark.dataprofiler.testcases.TopNCase3Test
+	*** Starting run for TopNCase3Test ***
+	*** Completed run for TopNCase3Test ***
+Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.054 sec - in com.thinkbiganalytics.spark.dataprofiler.testcases.TopNCase3Test
+
+Results :
+
+Tests run: 7, Failures: 0, Errors: 0, Skipped: 0
+
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 2.246 s
+[INFO] Finished at: 2017-01-31T17:04:17-08:00
+[INFO] Final Memory: 25M/437M
+[INFO] ------------------------------------------------------------------------

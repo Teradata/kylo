@@ -30,246 +30,251 @@ import java.util.ArrayList;
 /**
  * Class to hold profile statistics for columns of float data type <br>
  * [Hive data type: FLOAT]
- * @author jagrut sharma
- *
  */
 @SuppressWarnings("serial")
 public class FloatColumnStatistics extends ColumnStatistics {
 
-	/* Float specific metrics */
-	private float max;
-	private float min;
-	private double sum;
-	private double mean;
-	private double stddev;
-	private double variance;
+    /* Float specific metrics */
+    private float max;
+    private float min;
+    private double sum;
+    private double mean;
+    private double stddev;
+    private double variance;
 
-	/* Other variables */
-	private double sumOfSquares;
-	private long oldTotalCount;
-	private long oldNullCount;
-	private double oldMean;
-	private double oldStdDev;
-	private double oldSumOfSquares;
+    /* Other variables */
+    private double sumOfSquares;
+    private long oldTotalCount;
+    private long oldNullCount;
+    private double oldMean;
+    private double oldStdDev;
+    private double oldSumOfSquares;
 
-	private float columnFloatValue;
-
-
-	/**
-	 * One-argument constructor
-	 * @param columnField field schema
-	 */
-	public FloatColumnStatistics(StructField columnField) {
-
-		super(columnField);
-
-		max = Float.MIN_VALUE;
-		min = Float.MAX_VALUE;
-		sum = 0.0d;
-		mean = 0.0d;
-		stddev = 0.0d;
-		variance = 0.0d;
-
-		sumOfSquares = 0.0d;
-		oldTotalCount = 0L;
-		oldNullCount = 0L;
-		oldMean = 0.0d;
-		oldStdDev = 0.0d;
-		oldSumOfSquares = 0.0d;
-
-		columnFloatValue = 0.0f;
-
-	}
+    private float columnFloatValue;
 
 
-	/**
-	 * Calculate float-specific statistics by accommodating the value and frequency/count
-	 */
-	@Override
-	public void accomodate(Object columnValue, Long columnCount) {
+    /**
+     * One-argument constructor
+     *
+     * @param columnField field schema
+     */
+    public FloatColumnStatistics(StructField columnField) {
 
-		accomodateCommon(columnValue, columnCount);
+        super(columnField);
 
-		if (columnValue != null) {
-			columnFloatValue = Float.valueOf(String.valueOf(columnValue));
+        max = Float.MIN_VALUE;
+        min = Float.MAX_VALUE;
+        sum = 0.0d;
+        mean = 0.0d;
+        stddev = 0.0d;
+        variance = 0.0d;
 
-			if (max < columnFloatValue) {
-				max = columnFloatValue;
-			}
+        sumOfSquares = 0.0d;
+        oldTotalCount = 0L;
+        oldNullCount = 0L;
+        oldMean = 0.0d;
+        oldStdDev = 0.0d;
+        oldSumOfSquares = 0.0d;
 
-			if (min > columnFloatValue) {
-				min = columnFloatValue;
-			}
+        columnFloatValue = 0.0f;
 
-			sum += (columnFloatValue * columnCount);
-
-			oldMean = 0.0d;
-			oldSumOfSquares = 0.0d;
-
-			for (int i = 1; i <= columnCount; i++) {
-				oldMean = mean;
-				oldSumOfSquares = sumOfSquares;
-
-				mean = oldMean + ((columnFloatValue - oldMean) / (totalCount - columnCount + i - nullCount));
-				sumOfSquares = oldSumOfSquares + ((columnFloatValue - mean) * (columnFloatValue - oldMean));
-			}
-
-			variance = sumOfSquares / (totalCount - nullCount);
-			stddev = Math.sqrt(variance);
-		}
-	}
+    }
 
 
-	/**
-	 * Combine with another column statistics 
-	 */
-	@Override
-	public void combine(ColumnStatistics v_columnStatistics) {
+    /**
+     * Calculate float-specific statistics by accommodating the value and frequency/count
+     */
+    @Override
+    public void accomodate(Object columnValue, Long columnCount) {
 
-		saveMetricsForStdDevCalc();
+        accomodateCommon(columnValue, columnCount);
 
-		combineCommon(v_columnStatistics);
+        if (columnValue != null) {
+            columnFloatValue = Float.valueOf(String.valueOf(columnValue));
 
-		FloatColumnStatistics vFloat_columnStatistics = (FloatColumnStatistics) v_columnStatistics;
+            if (max < columnFloatValue) {
+                max = columnFloatValue;
+            }
 
-		max = Math.max(max, vFloat_columnStatistics.max);
-		min = Math.min(min, vFloat_columnStatistics.min);
-		sum += vFloat_columnStatistics.sum;
-		mean = sum / (totalCount - nullCount);
+            if (min > columnFloatValue) {
+                min = columnFloatValue;
+            }
 
-		double term1 = (totalCount - nullCount) * Math.pow(stddev, 2);
-		double term2 = (vFloat_columnStatistics.totalCount - vFloat_columnStatistics.nullCount) * Math.pow(vFloat_columnStatistics.stddev, 2);
-		double term3 = (totalCount - nullCount) * Math.pow((mean - vFloat_columnStatistics.mean), 2);
-		double term4 = (vFloat_columnStatistics.totalCount - vFloat_columnStatistics.nullCount) * Math.pow((vFloat_columnStatistics.mean - mean), 2);
-		double term5 = (totalCount - nullCount) + (vFloat_columnStatistics.totalCount - vFloat_columnStatistics.nullCount);
-		stddev = Math.sqrt((term1 + term2 + term3 + term4) / term5);
+            sum += (columnFloatValue * columnCount);
 
-		stddev = getCombinedStdDev(vFloat_columnStatistics);
-		variance = Math.pow(stddev, 2);
-	}
+            oldMean = 0.0d;
+            oldSumOfSquares = 0.0d;
 
-	
-	/*
-	 * Save values for running statistical calculations
-	 */
-	private void saveMetricsForStdDevCalc() {
-		oldTotalCount = totalCount;
-		oldNullCount = nullCount;
-		oldMean = mean;
-		oldStdDev = stddev;
-	}
+            for (int i = 1; i <= columnCount; i++) {
+                oldMean = mean;
+                oldSumOfSquares = sumOfSquares;
 
-	
-	/*
-	 * Get combined standard deviations from two standard deviations
-	 */
-	private double getCombinedStdDev(FloatColumnStatistics vFloat_columnStatistics) {
+                mean = oldMean + ((columnFloatValue - oldMean) / (totalCount - columnCount + i - nullCount));
+                sumOfSquares = oldSumOfSquares + ((columnFloatValue - mean) * (columnFloatValue - oldMean));
+            }
 
-		double meanComb = (
-				((oldTotalCount - oldNullCount) * oldMean) + 
-				((vFloat_columnStatistics.totalCount - vFloat_columnStatistics.nullCount) * vFloat_columnStatistics.mean)
-				)
-				/((oldTotalCount - oldNullCount) + (vFloat_columnStatistics.totalCount - vFloat_columnStatistics.nullCount));
-
-		double term1 = (oldTotalCount - oldNullCount) * Math.pow(oldStdDev, 2);
-		double term2 = (vFloat_columnStatistics.totalCount - vFloat_columnStatistics.nullCount) * Math.pow(vFloat_columnStatistics.stddev, 2);
-		double term3 = (oldTotalCount - oldNullCount) * Math.pow((oldMean - meanComb), 2);
-		double term4 = (vFloat_columnStatistics.totalCount - vFloat_columnStatistics.nullCount) * Math.pow((vFloat_columnStatistics.mean - meanComb), 2);
-		double term5 = (oldTotalCount - oldNullCount) + (vFloat_columnStatistics.totalCount - vFloat_columnStatistics.nullCount);
-		return (Math.sqrt((term1 + term2 + term3 + term4) / term5));
-	}
+            variance = sumOfSquares / (totalCount - nullCount);
+            stddev = Math.sqrt(variance);
+        }
+    }
 
 
-	/**
-	 * Print statistics to console
-	 */
-	@Override
-	public String getVerboseStatistics() {
+    /**
+     * Combine with another column statistics
+     */
+    @Override
+    public void combine(ColumnStatistics v_columnStatistics) {
 
-		return "{\n" + getVerboseStatisticsCommon()
-		+ "\n"
-		+ "FloatColumnStatistics ["
-		+ "max=" + max
-		+ ", min=" + min
-		+ ", sum=" + sum
-		+ ", mean=" + df.format(mean)
-		+ ", stddev=" + df.format(stddev)
-		+ ", variance=" + df.format(variance)
-		+ "]\n}";
-	}
+        saveMetricsForStdDevCalc();
 
+        combineCommon(v_columnStatistics);
 
-	/**
-	 * Write statistics for output result table
-	 */
-	@Override
-	public void writeStatistics() {
+        FloatColumnStatistics vFloat_columnStatistics = (FloatColumnStatistics) v_columnStatistics;
 
-		writeStatisticsCommon();
+        max = Math.max(max, vFloat_columnStatistics.max);
+        min = Math.min(min, vFloat_columnStatistics.min);
+        sum += vFloat_columnStatistics.sum;
+        mean = sum / (totalCount - nullCount);
 
-		rows = new ArrayList<>();
-		rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MAX), String.valueOf(max)));
-		rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MIN), String.valueOf(min)));
-		rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.SUM), String.valueOf(sum)));
-		rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MEAN), String.valueOf(mean)));
-		rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.STDDEV), String.valueOf(stddev)));
-		rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.VARIANCE), String.valueOf(variance)));
-		outputWriter.addRows(rows);
+        double term1 = (totalCount - nullCount) * Math.pow(stddev, 2);
+        double term2 = (vFloat_columnStatistics.totalCount - vFloat_columnStatistics.nullCount) * Math.pow(vFloat_columnStatistics.stddev, 2);
+        double term3 = (totalCount - nullCount) * Math.pow((mean - vFloat_columnStatistics.mean), 2);
+        double term4 = (vFloat_columnStatistics.totalCount - vFloat_columnStatistics.nullCount) * Math.pow((vFloat_columnStatistics.mean - mean), 2);
+        double term5 = (totalCount - nullCount) + (vFloat_columnStatistics.totalCount - vFloat_columnStatistics.nullCount);
+        stddev = Math.sqrt((term1 + term2 + term3 + term4) / term5);
 
-	}
-
-	
-	/**
-	 * Get maximum value
-	 * @return max value
-	 */
-	public float getMax() {
-		return max;
-	}
+        stddev = getCombinedStdDev(vFloat_columnStatistics);
+        variance = Math.pow(stddev, 2);
+    }
 
 
-	/**
-	 * Get minimum value
-	 * @return min value
-	 */
-	public float getMin() {
-		return min;
-	}
-
-	
-	/**
-	 * Get sum
-	 * @return sum
-	 */
-	public double getSum() {
-		return sum;
-	}
-
-	
-	/**
-	 * Get mean (average)
-	 * @return mean
-	 */
-	public double getMean() {
-		return mean;
-	}
+    /*
+     * Save values for running statistical calculations
+     */
+    private void saveMetricsForStdDevCalc() {
+        oldTotalCount = totalCount;
+        oldNullCount = nullCount;
+        oldMean = mean;
+        oldStdDev = stddev;
+    }
 
 
-	/**
-	 * Get standard deviation (population)
-	 * @return standard deviation (population)
-	 */
-	public double getStddev() {
-		return stddev;
-	}
+    /*
+     * Get combined standard deviations from two standard deviations
+     */
+    private double getCombinedStdDev(FloatColumnStatistics vFloat_columnStatistics) {
+
+        double meanComb = (
+                              ((oldTotalCount - oldNullCount) * oldMean) +
+                              ((vFloat_columnStatistics.totalCount - vFloat_columnStatistics.nullCount) * vFloat_columnStatistics.mean)
+                          )
+                          / ((oldTotalCount - oldNullCount) + (vFloat_columnStatistics.totalCount - vFloat_columnStatistics.nullCount));
+
+        double term1 = (oldTotalCount - oldNullCount) * Math.pow(oldStdDev, 2);
+        double term2 = (vFloat_columnStatistics.totalCount - vFloat_columnStatistics.nullCount) * Math.pow(vFloat_columnStatistics.stddev, 2);
+        double term3 = (oldTotalCount - oldNullCount) * Math.pow((oldMean - meanComb), 2);
+        double term4 = (vFloat_columnStatistics.totalCount - vFloat_columnStatistics.nullCount) * Math.pow((vFloat_columnStatistics.mean - meanComb), 2);
+        double term5 = (oldTotalCount - oldNullCount) + (vFloat_columnStatistics.totalCount - vFloat_columnStatistics.nullCount);
+        return (Math.sqrt((term1 + term2 + term3 + term4) / term5));
+    }
 
 
-	/**
-	 * Get variance (population)
-	 * @return variance (population)
-	 */
-	public double getVariance() {
-		return variance;
-	}
+    /**
+     * Print statistics to console
+     */
+    @Override
+    public String getVerboseStatistics() {
+
+        return "{\n" + getVerboseStatisticsCommon()
+               + "\n"
+               + "FloatColumnStatistics ["
+               + "max=" + max
+               + ", min=" + min
+               + ", sum=" + sum
+               + ", mean=" + df.format(mean)
+               + ", stddev=" + df.format(stddev)
+               + ", variance=" + df.format(variance)
+               + "]\n}";
+    }
+
+
+    /**
+     * Write statistics for output result table
+     */
+    @Override
+    public void writeStatistics() {
+
+        writeStatisticsCommon();
+
+        rows = new ArrayList<>();
+        rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MAX), String.valueOf(max)));
+        rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MIN), String.valueOf(min)));
+        rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.SUM), String.valueOf(sum)));
+        rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MEAN), String.valueOf(mean)));
+        rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.STDDEV), String.valueOf(stddev)));
+        rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.VARIANCE), String.valueOf(variance)));
+        outputWriter.addRows(rows);
+
+    }
+
+
+    /**
+     * Get maximum value
+     *
+     * @return max value
+     */
+    public float getMax() {
+        return max;
+    }
+
+
+    /**
+     * Get minimum value
+     *
+     * @return min value
+     */
+    public float getMin() {
+        return min;
+    }
+
+
+    /**
+     * Get sum
+     *
+     * @return sum
+     */
+    public double getSum() {
+        return sum;
+    }
+
+
+    /**
+     * Get mean (average)
+     *
+     * @return mean
+     */
+    public double getMean() {
+        return mean;
+    }
+
+
+    /**
+     * Get standard deviation (population)
+     *
+     * @return standard deviation (population)
+     */
+    public double getStddev() {
+        return stddev;
+    }
+
+
+    /**
+     * Get variance (population)
+     *
+     * @return variance (population)
+     */
+    public double getVariance() {
+        return variance;
+    }
 
 }

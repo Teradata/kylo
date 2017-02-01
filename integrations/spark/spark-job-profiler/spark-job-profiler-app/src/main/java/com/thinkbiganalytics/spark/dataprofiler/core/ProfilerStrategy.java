@@ -29,15 +29,16 @@ import org.apache.spark.sql.types.StructField;
 import java.util.Map;
 
 /**
- * Created by ru186002 on 10/11/2016.
+ * ProfilerStrategy interface (to enable support for Spark 1 and 2)
  */
 public interface ProfilerStrategy {
 
     /**
      * Profile statistics for data frame
-     * @param set data frame to analyze
-     * @param bSchemaMap
+     *
+     * @param set        data frame to analyze
+     * @param bSchemaMap schema map for schema lookup
      * @return StatisticsModel
      */
-    StatisticsModel profileStatistics(DataSet set, Broadcast<Map<Integer,StructField>> bSchemaMap);
+    StatisticsModel profileStatistics(DataSet set, Broadcast<Map<Integer, StructField>> bSchemaMap);
 }

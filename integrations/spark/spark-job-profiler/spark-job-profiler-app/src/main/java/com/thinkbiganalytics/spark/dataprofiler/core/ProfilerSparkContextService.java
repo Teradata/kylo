@@ -28,7 +28,7 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.sql.hive.HiveContext;
 
 /**
- * Created by ru186002 on 10/11/2016.
+ * ProfilerSparkContextService interface (to enable support for Spark 1 and 2)
  */
 public interface ProfilerSparkContextService extends SparkContextService {
 
