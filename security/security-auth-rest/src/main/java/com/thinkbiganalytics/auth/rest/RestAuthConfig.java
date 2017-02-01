@@ -1,0 +1,64 @@
+package com.thinkbiganalytics.auth.rest;
+
+/*-
+ * #%L
+ * REST API Authentication
+ * %%
+ * Copyright (C) 2017 ThinkBig Analytics
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
+import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
+import com.thinkbiganalytics.auth.jaas.LoginConfigurationBuilder;
+import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+
+import javax.annotation.Nonnull;
+
+/**
+ * Spring configuration for the REST API Login Module.
+ */
+@Configuration
+@Profile("auth-rest")
+public class RestAuthConfig {
+
+    @Value("${security.auth.rest.login.services:required}")
+    private String servicesLoginFlag;
+
+    @Value("${security.auth.rest.login.url:http://localhost:8400/proxy}")
+    private String loginUrl;
+
+    /**
+     * Creates a new UI login configuration for the REST Login Module.
+     *
+     * @param builder the login configuration builder
+     * @return the UI login configuration
+     */
+    @Bean(name = "uiRestLoginConfiguration")
+    @Nonnull
+    public LoginConfiguration servicesRestLoginConfiguration(@Nonnull final LoginConfigurationBuilder builder) {
+        return builder
+                .loginModule(JaasAuthConfig.JAAS_UI)
+                    .moduleClass(RestLoginModule.class)
+                    .controlFlag(this.servicesLoginFlag)
+                    .option(RestLoginModule.LOGIN_URL, loginUrl)
+                    .add()
+                .build();
+    }
+}

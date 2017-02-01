@@ -20,6 +20,7 @@
         <module>security-auth-ldap</module>
         <module>security-auth-file</module>
         <module>security-auth-kylo</module>
+        <module>security-auth-rest</module>
     </modules>
 
     <dependencies>

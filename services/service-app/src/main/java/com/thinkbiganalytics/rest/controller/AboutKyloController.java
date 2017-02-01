@@ -22,8 +22,17 @@ package com.thinkbiganalytics.rest.controller;
 
 import com.thinkbiganalytics.metadata.api.app.KyloVersion;
 import com.thinkbiganalytics.metadata.api.app.KyloVersionProvider;
+import com.thinkbiganalytics.security.GroupPrincipal;
+import com.thinkbiganalytics.security.rest.model.UserPrincipal;
 
+import org.springframework.security.authentication.jaas.JaasGrantedAuthority;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -47,6 +56,42 @@ public class AboutKyloController {
 
     @Inject
     KyloVersionProvider kyloVersionProvider;
+
+    /**
+     * Gets information about the current user.
+     */
+    @GET
+    @Path("/me")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets information about the current user.")
+    @ApiResponses(
+            @ApiResponse(code = 200, message = "Returns the user.", response = UserPrincipal.class)
+    )
+    public Response getCurrentUser() {
+        // Create principal from current user
+        final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        final UserPrincipal user = new UserPrincipal();
+        user.setEnabled(true);
+
+        if (auth.getPrincipal() instanceof UserDetails) {
+            final UserDetails details = (UserDetails) auth.getPrincipal();
+            user.setGroups(details.getAuthorities().stream()
+                                   .map(GrantedAuthority::getAuthority)
+                                   .collect(Collectors.toSet()));
+            user.setSystemName(details.getUsername());
+        } else {
+            user.setGroups(auth.getAuthorities().stream()
+                                   .filter(JaasGrantedAuthority.class::isInstance)
+                                   .map(JaasGrantedAuthority.class::cast)
+                                   .filter(authority -> authority.getPrincipal() instanceof GroupPrincipal)
+                                   .map(JaasGrantedAuthority::getAuthority)
+                                   .collect(Collectors.toSet()));
+            user.setSystemName(auth.getPrincipal().toString());
+        }
+
+        // Return principal
+        return Response.ok(user).build();
+    }
 
     /**
      * Get Kylo Version for showing in UI About Dialog Box.

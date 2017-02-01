@@ -87,6 +87,11 @@
             <artifactId>kylo-security-auth-ldap</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.thinkbiganalytics.datalake</groupId>
+            <artifactId>thinkbig-security-auth-rest</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
 
       <dependency>
