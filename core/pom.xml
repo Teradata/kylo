@@ -14,7 +14,6 @@
 
     <modules>
       <module>ui-annotation</module>
-        <module>calendar</module>
         <module>alerts</module>
         <module>schema-discovery</module>
         <module>sla</module>
