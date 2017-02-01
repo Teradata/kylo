@@ -22,7 +22,7 @@
  */
 (function() {
 
-    var directive = function($mdDialog, $window, AboutKyloService) {
+    var directive = function($http, $mdDialog, $window, AboutKyloService) {
         return {
             restrict: "E",
             scope: {
@@ -37,6 +37,12 @@
                 if (!angular.isDefined($scope.menuIcon)) {
                     $scope.menuIcon = 'more_vert';
                 }
+
+                // Get user name
+                $scope.username = "User";
+                $http.get("/proxy/v1/about/me").then(function(response) {
+                    $scope.username = response.data.systemName;
+                });
 
                 $scope.openMenu = function($mdOpenMenu, ev) {
                     //callback
@@ -63,5 +69,5 @@
         }
     };
 
-    angular.module(COMMON_APP_MODULE_NAME).directive('kyloOptions', ['$mdDialog', '$window', 'AboutKyloService', directive]);
+    angular.module(COMMON_APP_MODULE_NAME).directive('kyloOptions', ['$http', '$mdDialog', '$window', 'AboutKyloService', directive]);
 }());
