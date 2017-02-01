@@ -16,7 +16,6 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>metadata-orientdb</module>
         <module>metadata-api</module>
         <module>metadata-core</module>
         <module>metadata-modeshape</module>
