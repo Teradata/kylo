@@ -21,88 +21,99 @@
 /**
  * Generic Interceptor to handle any Http Request errors and push them to the NotificationService
  */
-(function(){
-    var httpInterceptor = function ($provide, $httpProvider) {
-        $provide.factory('httpInterceptor', function ($q,$location,$window,$injector, Utils) {
+(function() {
+    var httpInterceptor = function($provide, $httpProvider) {
+        $provide.factory('httpInterceptor', function($q, $location, $window, $injector, Utils) {
             return {
-                // optional method
-/*
-                'request': function(config) {
-                    var path = $location.absUrl();
-                    var pathArray = path.split('/');
-                    var appContext = pathArray[3];
-                   console.log('path',path,'pathArray',pathArray,'appContext',appContext,'config.url',config.url)
-                    //if(config.url.indexOf("/api/") ==0) {
-                    if(appContext.indexOf("#") != 0 && appContext.indexOf("/#") != 0 ) {
-                        config.url = "/" + appContext + (config.url.indexOf("/") == 0 ? "" : "/") + config.url;
+                /**
+                 * Intercepts and modifies HTTP requests.
+                 *
+                 * @param {Object} request the HTTP request
+                 */
+                request: function(request) {
+                    // Add X-Requested-With header to disable basic auth
+                    if (angular.isUndefined(request.headers)) {
+                        request.headers = {};
                     }
-                    return config;
+                    request.headers["X-Requested-With"] = "XMLHttpRequest";
+                    return request;
                 },
 
-                // optional method
-                'requestError': function(rejection) {
-                    console.log('REQUEST ERROR',rejection)
-                    //if (canRecover(rejection)) {
-                    //    return responseOrNewPromise
-                   // }
-                    return $q.reject(rejection);
-                },
-                */
-                response: function (response) {
+                /**
+                 * Intercepts and handles HTTP responses.
+                 *
+                 * @param {Object} response the response
+                 * @returns {Promise} the response
+                 */
+                response: function(response) {
                     //injected manually to get around circular dependency problem.
                     var NotificationService = $injector.get('NotificationService');
 
-                    if(response.headers() && response.headers()['Location'] &&  response.headers()['Location'].endsWith('login.html')){
-                        NotificationService.errorWithGroupKey("Login Required","You are required to Login to view this content.","Login Required");
+                    // Check if login needed
+                    var redirectLocation;
 
-                    }
-                    var data = response.data;
-                    if(response && response.data && response.config && !Utils.endsWith(response.config.url,".html") && typeof response.data == 'string'){
-                        if(response.data.indexOf('<!-- login.html -->') >=0){
-                            NotificationService.errorWithGroupKey("Login Required","You are required to Login to view this content.","Login Required");
-                            $window.location.href = '/login.html';
+                    if (response.headers() && response.headers()['Location'] && response.headers()['Location'].endsWith('login.html')) {
+                        redirectLocation = null;
+                    } else if (response.data && response.config && !Utils.endsWith(response.config.url, ".html") && typeof response.data == 'string') {
+                        if (response.data.indexOf('<!-- login.html -->') >= 0) {
+                            redirectLocation = "/login.html";
                         }
                     }
+
+                    if (angular.isDefined(redirectLocation)) {
+                        NotificationService.errorWithGroupKey("Login Required", "You are required to login to view this content.", "Login Required");
+                        if (redirectLocation !== null) {
+                            $window.location.href = redirectLocation;
+                        }
+                    }
+
                     return response || $q.when(response);
                 },
-                responseError: function (rejection) {
+
+                /**
+                 * Intercepts and handles HTTP error responses.
+                 *
+                 * @param {Object} rejection the response
+                 * @returns {Promise} the response
+                 */
+                responseError: function(rejection) {
                     //injected manually to get around circular dependency problem.
                     var NotificationService = $injector.get('NotificationService');
 
-                    if(rejection.data == undefined){
+                    if (rejection.data == undefined) {
                         rejection.data = {};
                     }
-                    if(rejection.status === 401) {
-                        // you are not autorized
-                        NotificationService.errorWithGroupKey("Unauthorized","You are unauthorized to view this content.","Unauthorized");
+                    if (rejection.status === 401) {
+                        NotificationService.errorWithGroupKey("Login Required", "You are required to login to view this content.", "Login Required");
+                        $window.location.href = "/login.html";
                     }
-                    else if(rejection.status <=0){
+                    else if (rejection.status <= 0) {
                         //Usually -1 means aborted request
                         //for now remove this logic as it is cause errors to appear which are not errors.
                         //re visit if needed
-                     /*   if(rejection.config && rejection.config.timeout && rejection.config.timeout.$$state && rejection.config.timeout.$$state ==1){
-                            //aborted
-                        }
-                        else {
-                            //internet is down
-                            NotificationService.errorWithGroupKey("Connection Error", "Not Connected. Server is down.", "Connection Error");
-                        }
-                        */
+                        /*   if(rejection.config && rejection.config.timeout && rejection.config.timeout.$$state && rejection.config.timeout.$$state ==1){
+                         //aborted
+                         }
+                         else {
+                         //internet is down
+                         NotificationService.errorWithGroupKey("Connection Error", "Not Connected. Server is down.", "Connection Error");
+                         }
+                         */
                     }
-                    else  if(rejection.status === 400) {
+                    else if (rejection.status === 400) {
                         // Bad Request
-                        var  message = "An unexpected error occurred ";
+                        var message = "An unexpected error occurred ";
                         var errorMessage = rejection.data["message"];
                         var groupKey = errorMessage;
-                        if(groupKey == undefined || groupKey == '') {
+                        if (groupKey == undefined || groupKey == '') {
                             groupKey = 'OtherError';
                         }
                         var url = rejection.data["url"];
-                        if(url != undefined && url != null && url != ""){
-                            message +=" attempting to access: "+url
+                        if (url != undefined && url != null && url != "") {
+                            message += " attempting to access: " + url
                         }
-                        message +=".";
-                        if( rejection.data['handledException'] == undefined || (rejection.data['handledException'] != undefined && rejection.data['handledException'] == false )) {
+                        message += ".";
+                        if (rejection.data['handledException'] == undefined || (rejection.data['handledException'] != undefined && rejection.data['handledException'] == false )) {
                             if (rejection.data["url"]) {
                                 NotificationService.errorWithGroupKey("Error", message, url, errorMessage);
                             }
@@ -112,8 +123,8 @@
                         }
 
                     }
-                    else{
-                        if( rejection.data['handledException'] == undefined || (rejection.data['handledException'] != undefined && rejection.data['handledException'] == false )) {
+                    else {
+                        if (rejection.data['handledException'] == undefined || (rejection.data['handledException'] != undefined && rejection.data['handledException'] == false )) {
                             var message = "An unexpected error occurred ";
                             var rejectionMessage = rejection.data['message'];
                             if (rejectionMessage == undefined || rejectionMessage == '') {
