@@ -17,4 +17,4 @@ Add the following line to the bottom of `/etc/spark/conf/spark-env.sh`:
 `HADOOP_CONF_DIR="$HADOOP_CONF_DIR:/etc/hive/conf"`
 
 __An IOException may be thrown if the Hive scratch directory is not writable__  
-The `/tmp/thinkbig` directory should be owned by the `thinkbig` user and have the permissions 0700.
+The `/tmp/kylo` directory should be owned by the `kylo` user and have the permissions 0700.

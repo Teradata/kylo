@@ -4,10 +4,10 @@ Hadoop Sentry Plugin
 This module allows you to configure Kylo to query security groups from Sentry when creating a new category and a new feed. If you assign Sentry security groups at the category level, the feed level groups will be defaulted with those values. You will have the option to modify the groups as part of the feed creation process.
 
 To use this you need to do the following
-* Include this jar in the /opt/thinkbig/thinkbig-services/plugin folder
-* Copy the authorization.sentry.properties to the /opt/thinkbig/thinkbig-services/conf folder
+* Include this jar in the /opt/kylo/kylo-services/plugin folder
+* Copy the authorization.sentry.properties to the /opt/kylo/kylo-services/conf folder
 * Configure the authorization.sentry.properties file
-* Make sure the template you are using includes the PutFeedMetadat processor to register the 3 required
+* Make sure the template you are using includes the PutFeedMetadata processor to register the 3 required
 metadata attributes. See the HadoopAuthorizationService class to review the property names.
 
 This plugin is not installed by default as part of the RPM install

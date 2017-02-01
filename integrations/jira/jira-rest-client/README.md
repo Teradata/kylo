@@ -21,7 +21,7 @@ config.setUsername("USERNAME");
 config.setPassword("PASSWORD");
 config.setHttps(true);
 config.setKeystoreOnClasspath(true);
-config.setKeystorePath("/thinkbig_jira.jks");
+config.setKeystorePath("/kylo_jira.jks");
 config.setKeystorePassword("changeit");
 config.setHost("bugs.thinkbiganalytics.com");
 

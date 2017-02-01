@@ -7,7 +7,7 @@ The subprojects in this subdirectory are alternative and often optional implemen
 
 #### Deployment Process
 
-RPM and installation procedure should install selected JAR file(s) and dependencies to /opt/thinkbig/thinkbig-services/plugin folder
+RPM and installation procedure should install selected JAR file(s) and dependencies to /opt/kylo/kylo-services/plugin folder
 
 Other setup may be required based on the individual requirements of the project
 

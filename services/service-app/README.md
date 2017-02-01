@@ -5,7 +5,7 @@ This is the main backend application used by Kylo to communicate to the metadata
 
 NiFi Property Injection
 ====
-Kylo is able to inject properties defined in the *application.properties* ('/src/main/resources/application.properties' or deployed at '/opt/thinkbig/thinkbig-services/conf/application.properties') file into the Nifi Flow
+Kylo is able to inject properties defined in the *application.properties* ('/src/main/resources/application.properties' or deployed at '/opt/kylo/kylo-services/conf/application.properties') file into the Nifi Flow
 Kylo supports a variety of different strategies for injecting/replacing property values in the NiFi flow and NiFi controller services.
 
 ## Location of the properties files
@@ -17,7 +17,7 @@ Below is an example using Spring Boot profiles to load in these properties:
 
 Example
 
-1. Suppose there are 2 files that contain properties that are to be injected into the flows.  Put both of these on the classpath  (/opt/thinkbig/thinkbig/services/conf)
+1. Suppose there are 2 files that contain properties that are to be injected into the flows.  Put both of these on the classpath  (/opt/kylo/kylo/services/conf)
    - application-nifi1.properties
    - application-nifi2.properties
 2. Update the application.properties to include the new profiles

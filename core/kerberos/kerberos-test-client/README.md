@@ -7,11 +7,11 @@ java -jar thinkbig-kerberos-test-client-<version>.jar
 ## Example
 
 ~~~~
-[root@sandbox opt]# /usr/lib/jvm/java/bin/java -jar /opt/thinkbig-kerberos-test-client-0.4.2-SNAPSHOT.jar
+[root@sandbox opt]# /usr/lib/jvm/java/bin/java -jar /opt/kylo-kerberos-test-client-0.4.2-SNAPSHOT.jar
 
 Please enter the list of configuration resources:  /etc/hadoop/conf/core-site.xml,/etc/hadoop/conf/hdfs-site.xml
 
-Please enter the keytab file location: /etc/security/keytabs/thinkbig.headless.keytab
+Please enter the keytab file location: /etc/security/keytabs/kylo.headless.keytab
 
 Please enter the principal name: thinkbig@sandbox.hortonworks.com
 

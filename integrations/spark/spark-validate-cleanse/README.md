@@ -22,7 +22,7 @@ The project is a spark-submit job:
 ./bin/spark-submit \
   --class com.thinkbiganalytics.spark.datavalidator.Validator \
   --master yarn-client \
-  /path/to/jar/thinkbig-spark-validate-cleanse-<version>-jar-with-dependencies.jar \
+  /path/to/jar/kylo-spark-validate-cleanse-<version>-jar-with-dependencies.jar \
   <targetDatabase> <entity> <partition> </path/to/policy/file.json>
 
 Command-line arguments:

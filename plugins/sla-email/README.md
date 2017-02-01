@@ -1,7 +1,7 @@
 Service Level Agreement Email Action
 ====
 This module allows users to configure Service Level Agreements (SLA) to send emails when the SLA is violated.
-To use this you need to include this jar in the /plugin directory (/opt/thinkbig/thinkbig-services/plugin) and configure the properties (sla.email.properties) to connect to your mail server.
+To use this you need to include this jar in the /plugin directory (/opt/kylo/kylo-services/plugin) and configure the properties (sla.email.properties) to connect to your mail server.
 As part of the default rpm build this module and the respective properties file is included with the build.
 
 Email Properties

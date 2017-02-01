@@ -23,7 +23,7 @@ The project is a spark-submit job:
 ./bin/spark-submit \
   --class com.thinkbiganalytics.spark.dataprofiler.core.Profiler \
   --master yarn-client \
-  /path/to/jar/thinkbig-spark-job-profiler-\<version>-jar-with-dependencies.jar \
+  /path/to/jar/kylo-spark-job-profiler-\<version>-jar-with-dependencies.jar \
   \<object_type> \<object_description> \<top_n_integer> \<output_table> \<partition_key>
 
 Command-line arguments:

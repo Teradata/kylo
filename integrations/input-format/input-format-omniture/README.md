@@ -42,13 +42,13 @@ https://github.com/msukmanowsky/OmnitureDataFileInputFormat/blob/master/LICENSE
 #### On local file system
 * Location must be readable by `nifi` user
 * `cp thinkbig-input-format-omniture.jar /opt/nifi/data/lib/`
-* Ensure readable by nifi user `chown nifi:users /opt/nifi/data/lib/thinkbig-input-format-omniture.jar`
-* Ensure executable by nifi user `chmod u+x /opt/nifi/data/lib/thinkbig-input-format-omniture.jar`
+* Ensure readable by nifi user `chown nifi:users /opt/nifi/data/lib/kylo-input-format-omniture.jar`
+* Ensure executable by nifi user `chmod u+x /opt/nifi/data/lib/kylo-input-format-omniture.jar`
 * Restart Nifi
 * Go to Nifi
 * Find `Validate And Split Records` processor and stop it
 * Open its configuration properties
-* Set `Extra JARs` property of ExecuteSparkProcessor to `/opt/nifi/data/lib/thinkbig-input-format-omniture.jar`
+* Set `Extra JARs` property of ExecuteSparkProcessor to `/opt/nifi/data/lib/kylo-input-format-omniture.jar`
 * Repeat for all other ExecuteSparkProcessors
 
 ![Extra JARs path](images/input-format-in-spark-classpath.png)
