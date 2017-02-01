@@ -23,10 +23,10 @@ package com.thinkbiganalytics.spark.dataprofiler.functions;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.sql.Row;
 
-import scala.Tuple2;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import scala.Tuple2;
 
 /**
  * Get ((column index, column value), 1) for each column value in a row

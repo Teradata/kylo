@@ -26,11 +26,11 @@ import com.thinkbiganalytics.spark.dataprofiler.output.OutputRow;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.spark.sql.types.StructField;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import java.sql.Timestamp;
 import java.util.ArrayList;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Class to hold profile statistics for columns of timestamp data type <br>

@@ -26,7 +26,6 @@ import com.thinkbiganalytics.spark.dataprofiler.output.OutputRow;
 
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.sql.hive.HiveContext;
-import org.springframework.stereotype.Component;
 
 /**
  * For Spark 1

@@ -21,18 +21,7 @@ package com.thinkbiganalytics.spark.dataprofiler.testcases;
  */
 
 
-import com.thinkbiganalytics.spark.dataprofiler.core.Profiler;
-import com.thinkbiganalytics.spark.dataprofiler.core.ProfilerConfiguration;
-
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Ignore;
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 
 /**
  * Command Line Arguments Test Case

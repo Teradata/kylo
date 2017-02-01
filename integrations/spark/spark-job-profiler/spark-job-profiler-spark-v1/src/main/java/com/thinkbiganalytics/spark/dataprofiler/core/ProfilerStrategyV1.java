@@ -30,11 +30,10 @@ import com.thinkbiganalytics.spark.dataprofiler.model.StatisticsModel;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.sql.types.StructField;
-import org.springframework.stereotype.Component;
-
-import scala.Tuple2;
 
 import java.util.Map;
+
+import scala.Tuple2;
 
 /**
  * For Spark 1
