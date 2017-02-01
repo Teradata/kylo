@@ -6,7 +6,7 @@ MY_DIR=$(dirname $0)
 
 offline=false
 working_dir=$2
-KYLO_INSTALL_HOME=/opt/thinkbig
+KYLO_INSTALL_HOME=/opt/kylo
 
 if [ $# > 1 ]
 then

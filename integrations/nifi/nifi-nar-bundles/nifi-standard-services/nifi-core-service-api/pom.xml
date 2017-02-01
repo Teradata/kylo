@@ -3,10 +3,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>thinkbig-nifi-core-service-api</artifactId>
+    <artifactId>kylo-nifi-core-service-api</artifactId>
     <parent>
         <groupId>com.thinkbiganalytics.nifi.services</groupId>
-        <artifactId>thinkbig-nifi-standard-services</artifactId>
+        <artifactId>kylo-nifi-standard-services</artifactId>
         <version>0.7.0-SNAPSHOT</version>
     </parent>
 	<properties>
@@ -18,18 +18,18 @@
 
         <dependency>
             <groupId>com.thinkbiganalytics.metadata</groupId>
-            <artifactId>thinkbig-metadata-rest-model</artifactId>
+            <artifactId>kylo-metadata-rest-model</artifactId>
         </dependency>
 
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-nifi-provenance-model</artifactId>
+            <artifactId>kylo-nifi-provenance-model</artifactId>
             <version>0.7.0-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>com.thinkbiganalytics.metadata</groupId>
-            <artifactId>thinkbig-metadata-api</artifactId>
+            <artifactId>kylo-metadata-api</artifactId>
             <version>${project.version}</version>
         </dependency>
 

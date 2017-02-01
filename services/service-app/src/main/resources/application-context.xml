@@ -27,11 +27,11 @@
                         http://www.springframework.org/schema/context/spring-context.xsd">
 
     <bean id="applicationConfig"
-        class="com.thinkbiganalytics.server.ThinkbigServerApplication" />
+        class="com.thinkbiganalytics.server.KyloServerApplication" />
 
     <context:component-scan base-package="com.thinkbiganalytics">
         <context:exclude-filter type="assignable"
-            expression="com.thinkbiganalytics.server.ThinkbigServerApplication" />
+            expression="com.thinkbiganalytics.server.KyloServerApplication" />
     </context:component-scan>
 
     <!-- Deprecate the use of the name component-context.xml in favor of plugin-context.xml. 

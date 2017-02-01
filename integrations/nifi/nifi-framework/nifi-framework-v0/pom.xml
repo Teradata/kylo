@@ -5,12 +5,12 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <artifactId>thinkbig-nifi-framework</artifactId>
+    <artifactId>kylo-nifi-framework</artifactId>
     <groupId>com.thinkbiganalytics.datalake</groupId>
     <version>0.7.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>thinkbig-nifi-framework-v0</artifactId>
+  <artifactId>kylo-nifi-framework-v0</artifactId>
 
   <properties>
     <nifi.version>0.6.1</nifi.version>
@@ -29,7 +29,7 @@
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-nifi-framework-api</artifactId>
+      <artifactId>kylo-nifi-framework-api</artifactId>
       <version>${project.version}</version>
     </dependency>
   </dependencies>

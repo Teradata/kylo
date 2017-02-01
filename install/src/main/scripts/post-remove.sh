@@ -19,33 +19,33 @@
 # limitations under the License.
 # #L%
 ###
-rpmInstallDir=/opt/thinkbig
+rpmInstallDir=/opt/kylo
 
 echo "     2. Stopping Applications ... "
-service thinkbig-ui stop
-service thinkbig-services stop
-service thinkbig-spark-shell stop
+service kylo-ui stop
+service kylo-services stop
+service kylo-spark-shell stop
 
 echo "     3. Removing service configuration "
-chkconfig --del thinkbig-ui
-rm -rf /etc/init.d/thinkbig-ui
-echo "         - Removed thinkbig-ui script '/etc/init.d/thinkbig-ui'"
-chkconfig --del thinkbig-services
-rm -rf /etc/init.d/thinkbig-services
-echo "         - Removed thinkbig-services script '/etc/init.d/thinkbig-services'"
-chkconfig --del thinkbig-spark-shell
-rm -rf /etc/init.d/thinkbig-spark-shell
-echo "         - Removed thinkbig-spark-shell script '/etc/init.d/thinkbig-spark-shell'"
+chkconfig --del kylo-ui
+rm -rf /etc/init.d/kylo-ui
+echo "         - Removed kylo-ui script '/etc/init.d/kylo-ui'"
+chkconfig --del kylo-services
+rm -rf /etc/init.d/kylo-services
+echo "         - Removed kylo-services script '/etc/init.d/kylo-services'"
+chkconfig --del kylo-spark-shell
+rm -rf /etc/init.d/kylo-spark-shell
+echo "         - Removed kylo-spark-shell script '/etc/init.d/kylo-spark-shell'"
 rm -rf $rpmInstallDir/setup
 
 echo "     4. Deleting application folders "
-rm -rf $rpmInstallDir/thinkbig-ui
-echo "         - Removed thinkbig-ui"
-rm -rf $rpmInstallDir/thinkbig-services
-echo "         - Removed thinkbig-services"
+rm -rf $rpmInstallDir/kylo-ui
+echo "         - Removed kylo-ui"
+rm -rf $rpmInstallDir/kylo-services
+echo "         - Removed kylo-services"
 
 echo "     5. Deleting log folders "
-rm -rf /var/log/thinkbig-ui
-rm -rf /var/log/thinkbig-services
+rm -rf /var/log/kylo-ui
+rm -rf /var/log/kylo-services
 
 echo "    REMOVAL COMPLETE! "

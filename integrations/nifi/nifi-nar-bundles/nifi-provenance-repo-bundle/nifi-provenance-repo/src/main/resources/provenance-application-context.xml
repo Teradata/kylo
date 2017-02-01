@@ -32,6 +32,6 @@ http://www.springframework.org/schema/context/spring-context-3.0.xsd">
         class="org.springframework.context.annotation.ConfigurationClassPostProcessor"/>
 
   <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-    <property name="location" value="file:${thinkbig.nifi.configPath}/config.properties"/>
+    <property name="location" value="file:${kylo.nifi.configPath}/config.properties"/>
   </bean>
 </beans>

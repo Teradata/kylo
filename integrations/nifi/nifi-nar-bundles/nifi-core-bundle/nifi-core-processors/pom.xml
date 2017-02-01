@@ -3,10 +3,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>thinkbig-nifi-core-processors</artifactId>
+  <artifactId>kylo-nifi-core-processors</artifactId>
   <parent>
     <groupId>com.thinkbiganalytics.nifi.core</groupId>
-    <artifactId>thinkbig-nifi-core-bundle</artifactId>
+    <artifactId>kylo-nifi-core-bundle</artifactId>
     <version>0.7.0-SNAPSHOT</version>
   </parent>
   <properties>
@@ -17,29 +17,29 @@
   <dependencies>
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-nifi-framework-api</artifactId>
+      <artifactId>kylo-nifi-framework-api</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.nifi.services</groupId>
-      <artifactId>thinkbig-nifi-hadoop-service-api</artifactId>
+      <artifactId>kylo-nifi-hadoop-service-api</artifactId>
     </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.nifi.services</groupId>
-      <artifactId>thinkbig-nifi-core-service-api</artifactId>
+      <artifactId>kylo-nifi-core-service-api</artifactId>
     </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.metadata</groupId>
-      <artifactId>thinkbig-metadata-api</artifactId>
+      <artifactId>kylo-metadata-api</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.metadata</groupId>
-      <artifactId>thinkbig-metadata-rest-model</artifactId>
+      <artifactId>kylo-metadata-rest-model</artifactId>
       <version>${project.version}</version>
       <exclusions>
         <exclusion>
@@ -51,7 +51,7 @@
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-commons-hive</artifactId>
+      <artifactId>kylo-commons-hive</artifactId>
       <version>${project.version}</version>
     </dependency>
 
@@ -146,7 +146,7 @@
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-nifi-framework-v1</artifactId>
+      <artifactId>kylo-nifi-framework-v1</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>

@@ -3,7 +3,7 @@
          xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
-    <artifactId>thinkbig-hadoop-authorization-ranger-default</artifactId>
+    <artifactId>kylo-hadoop-authorization-ranger-default</artifactId>
     <groupId>com.thinkbiganalytics.datalake</groupId>
     <version>0.7.0-SNAPSHOT</version>
   </parent>
@@ -12,26 +12,26 @@
 	</properties>
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>thinkbig-ranger-rest-client</artifactId>
+  <artifactId>kylo-ranger-rest-client</artifactId>
 
   <dependencies>
     <dependency>
-      <artifactId>thinkbig-commons-rest-client</artifactId>
+      <artifactId>kylo-commons-rest-client</artifactId>
       <version>${project.version}</version>
       <groupId>com.thinkbiganalytics.datalake</groupId>
     </dependency>
     <dependency>
-      <artifactId>thinkbig-hadoop-authorization-core</artifactId>
+      <artifactId>kylo-hadoop-authorization-core</artifactId>
       <version>${project.version}</version>
       <groupId>com.thinkbiganalytics.datalake</groupId>
     </dependency>
     <dependency>
-      <artifactId>thinkbig-hadoop-authorization-api</artifactId>
+      <artifactId>kylo-hadoop-authorization-api</artifactId>
       <version>${project.version}</version>
       <groupId>com.thinkbiganalytics.datalake</groupId>
     </dependency>
     <dependency>
-      <artifactId>thinkbig-commons-util</artifactId>
+      <artifactId>kylo-commons-util</artifactId>
       <version>${project.version}</version>
       <groupId>com.thinkbiganalytics.datalake</groupId>
     </dependency>

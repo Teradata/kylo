@@ -3,7 +3,7 @@
 OFFLINE=false
 WORKING_DIR=$2
 NIFI_INSTALL_HOME=/opt/nifi
-KYLO_INSTALL_HOME=/opt/thinkbig
+KYLO_INSTALL_HOME=/opt/kylo
 
 if [ $# > 1 ]
 then
@@ -25,14 +25,14 @@ echo "Copying the configuration files"
 cp $NIFI_SETUP_DIR/nifi.properties $NIFI_INSTALL_HOME/current/conf
 sed -i 's/NIFI_LOG_DIR=\".*\"/NIFI_LOG_DIR=\"\/var\/log\/nifi\"/' $NIFI_INSTALL_HOME/current/bin/nifi-env.sh
 
-echo -e "\n\n# Set thinkbig nifi configuration file directory path" >> $NIFI_INSTALL_HOME/current/conf/bootstrap.conf
-echo -e "java.arg.15=-Dthinkbig.nifi.configPath=$NIFI_INSTALL_HOME/ext-config" >> $NIFI_INSTALL_HOME/current/conf/bootstrap.conf
+echo -e "\n\n# Set kylo nifi configuration file directory path" >> $NIFI_INSTALL_HOME/current/conf/bootstrap.conf
+echo -e "java.arg.15=-Dkylo.nifi.configPath=$NIFI_INSTALL_HOME/ext-config" >> $NIFI_INSTALL_HOME/current/conf/bootstrap.conf
 
-echo "Installing the thinkbig libraries to the NiFi lib"
+echo "Installing the kylo libraries to the NiFi lib"
 mkdir $NIFI_INSTALL_HOME/current/lib/app
 mkdir -p $NIFI_INSTALL_HOME/data/lib/app
 cp $NIFI_SETUP_DIR/*.nar $NIFI_INSTALL_HOME/data/lib
-cp $NIFI_SETUP_DIR/thinkbig-spark-*.jar $NIFI_INSTALL_HOME/data/lib/app
+cp $NIFI_SETUP_DIR/kylo-spark-*.jar $NIFI_INSTALL_HOME/data/lib/app
 
 echo "Creating symbolic links to jar files"
 $NIFI_SETUP_DIR/create-symbolic-links.sh
@@ -44,7 +44,7 @@ if [ $OFFLINE = true ]
 then
     cp $NIFI_SETUP_DIR/mysql-connector-java-*.jar $NIFI_INSTALL_HOME/mysql
 else
-    cp $KYLO_INSTALL_HOME/thinkbig-services/lib/mysql-connector-java-*.jar $NIFI_INSTALL_HOME/mysql
+    cp $KYLO_INSTALL_HOME/kylo-services/lib/mysql-connector-java-*.jar $NIFI_INSTALL_HOME/mysql
 fi
 
 echo "Copy the activeMQ required jars for the JMS processors to /opt/nifi/activemq"

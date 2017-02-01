@@ -6,8 +6,8 @@ if [ "$CONFIRM_DELETE" == "YES" ] ; then
 
 echo "Uninstalling all components that were installed from the RPM and setup-wizard"
 echo "Uninstalling kylo applications with RPM uninstall"
-/opt/thinkbig/remove-thinkbig-datalake-accelerator.sh
-rm -rf /opt/thinkbig
+/opt/kylo/remove-kylo.sh
+rm -rf /opt/kylo
 mysql -phadoop -e "drop database kylo;"
 mysql -phadoop -e "show databases;"
 
@@ -38,6 +38,6 @@ else
 fi
 
 # Dont delete users by default. It causes issues if you are re-installing everything
-#userdel thinkbig
+#userdel kylo
 #userdel nifi
 #userdel activemq

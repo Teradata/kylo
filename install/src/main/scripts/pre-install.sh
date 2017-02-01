@@ -19,6 +19,6 @@
 # limitations under the License.
 # #L%
 ###
-echo "Installing data lake accelerator"
-mkdir /opt/thinkbig
-chown thinkbig:thinkbig /opt/thinkbig
+echo "Installing Kylo"
+mkdir /opt/kylo
+chown kylo:kylo /opt/kylo

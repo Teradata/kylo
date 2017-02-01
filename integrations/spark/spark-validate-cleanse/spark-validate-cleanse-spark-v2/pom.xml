@@ -6,11 +6,11 @@
 
     <parent>
         <groupId>com.thinkbiganalytics.datalake</groupId>
-        <artifactId>thinkbig-spark-validate-cleanse</artifactId>
+        <artifactId>kylo-spark-validate-cleanse</artifactId>
         <version>0.7.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>thinkbig-spark-validate-cleanse-spark-v2</artifactId>
+    <artifactId>kylo-spark-validate-cleanse-spark-v2</artifactId>
     <version>0.7.0-SNAPSHOT</version>
 
     <properties>
@@ -24,12 +24,12 @@
     <dependencies>
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-commons-spark-${spark.binary.version}</artifactId>
+            <artifactId>kylo-commons-spark-${spark.binary.version}</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-spark-validate-cleanse-app</artifactId>
+            <artifactId>kylo-spark-validate-cleanse-app</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

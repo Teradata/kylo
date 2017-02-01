@@ -7,7 +7,7 @@ fi
 
 ## CHANGE below to password for postgres user
 
-sudo -u postgres psql -tAc "create user pguser with password 'thinkbig';";
+sudo -u postgres psql -tAc "create user pguser with password 'kylo';";
 sudo -u postgres psql -f kylo/create-database.sql
 
 echo "Created kylo database";

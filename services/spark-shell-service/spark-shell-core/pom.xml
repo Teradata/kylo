@@ -4,12 +4,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>thinkbig-spark-shell-core</artifactId>
+    <artifactId>kylo-spark-shell-core</artifactId>
 
     <name>Spark Shell Core</name>
 
     <parent>
-        <artifactId>thinkbig-spark-shell-service</artifactId>
+        <artifactId>kylo-spark-shell-service</artifactId>
         <groupId>com.thinkbiganalytics.datalake</groupId>
         <version>0.7.0-SNAPSHOT</version>
     </parent>
@@ -37,12 +37,12 @@
         <!-- Kylo -->
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-commons-rest-client</artifactId>
+            <artifactId>kylo-commons-rest-client</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-spark-shell-api</artifactId>
+            <artifactId>kylo-spark-shell-api</artifactId>
             <version>${project.version}</version>
         </dependency>
 

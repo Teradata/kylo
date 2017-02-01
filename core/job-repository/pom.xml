@@ -3,13 +3,13 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>com.thinkbiganalytics.datalake</groupId>
-    <artifactId>thinkbig-core</artifactId>
+    <artifactId>kylo-core</artifactId>
     <version>0.7.0-SNAPSHOT</version>
   </parent>
   <properties>
     <plugin.license.parentRelative>../../</plugin.license.parentRelative>
   </properties>
-  <artifactId>thinkbig-job-repository</artifactId>
+  <artifactId>kylo-job-repository</artifactId>
   <packaging>pom</packaging>
 
   <modules>

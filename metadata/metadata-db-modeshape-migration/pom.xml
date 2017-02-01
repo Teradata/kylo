@@ -3,10 +3,10 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>com.thinkbiganalytics.metadata</groupId>
-    <artifactId>thinkbig-metadata</artifactId>
+    <artifactId>kylo-metadata</artifactId>
     <version>0.7.0-SNAPSHOT</version>
   </parent>
-  <artifactId>thinkbig-metadata-db-modeshape-migration</artifactId>
+  <artifactId>kylo-metadata-db-modeshape-migration</artifactId>
 
   <properties>
     <jdbc.mysql.version>5.1.32</jdbc.mysql.version>
@@ -17,18 +17,18 @@
   <dependencies>
     <dependency>
       <groupId>com.thinkbiganalytics.metadata</groupId>
-      <artifactId>thinkbig-metadata-persistence</artifactId>
+      <artifactId>kylo-metadata-persistence</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.metadata</groupId>
-      <artifactId>thinkbig-metadata-modeshape</artifactId>
+      <artifactId>kylo-metadata-modeshape</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.metadata</groupId>
-      <artifactId>thinkbig-metadata-api</artifactId>
+      <artifactId>kylo-metadata-api</artifactId>
       <version>${project.version}</version>
     </dependency>
 

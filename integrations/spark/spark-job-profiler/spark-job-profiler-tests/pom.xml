@@ -4,42 +4,42 @@
 
   <parent>
     <groupId>com.thinkbiganalytics.datalake</groupId>
-    <artifactId>thinkbig-spark-job-profiler</artifactId>
+    <artifactId>kylo-spark-job-profiler</artifactId>
     <version>0.7.0-SNAPSHOT</version>
   </parent>
   <properties>
     <plugin.license.parentRelative>../../../../</plugin.license.parentRelative>
   </properties>
 
-  <artifactId>thinkbig-spark-job-profiler-tests</artifactId>
+  <artifactId>kylo-spark-job-profiler-tests</artifactId>
   <version>0.7.0-SNAPSHOT</version>
 
   <dependencies>
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-commons-hive</artifactId>
+      <artifactId>kylo-commons-hive</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-commons-spark-api</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-spark-validate-cleanse-api</artifactId>
+      <artifactId>kylo-commons-spark-api</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-spark-job-profiler-spark-v1</artifactId>
+      <artifactId>kylo-spark-validate-cleanse-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-spark-job-profiler-spark-v1</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-spark-job-profiler-spark-v2</artifactId>
+      <artifactId>kylo-spark-job-profiler-spark-v2</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

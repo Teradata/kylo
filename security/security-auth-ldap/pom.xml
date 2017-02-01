@@ -2,10 +2,10 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>thinkbig-security-auth-ldap</artifactId>
+    <artifactId>kylo-security-auth-ldap</artifactId>
     <parent>
         <groupId>com.thinkbiganalytics.datalake</groupId>
-        <artifactId>thinkbig-security</artifactId>
+        <artifactId>kylo-security</artifactId>
         <version>0.7.0-SNAPSHOT</version>
     </parent>
 	<properties>
@@ -43,12 +43,12 @@
         <!-- Think Big dependencies -->
         <dependency>
             <groupId>com.thinkbiganalytics.metadata</groupId>
-            <artifactId>thinkbig-metadata-api</artifactId>
+            <artifactId>kylo-metadata-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-security-auth</artifactId>
+            <artifactId>kylo-security-auth</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

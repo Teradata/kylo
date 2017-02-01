@@ -27,10 +27,10 @@
                         http://www.springframework.org/schema/context
                         http://www.springframework.org/schema/context/spring-context.xsd">
 
-    <bean id="applicationConfig" class="com.thinkbiganalytics.ThinkbigDataLakeUiApplication" />
+    <bean id="applicationConfig" class="com.thinkbiganalytics.KyloUiApplication" />
     
     <context:component-scan base-package="com.thinkbiganalytics">
-        <context:exclude-filter type="assignable" expression="com.thinkbiganalytics.ThinkbigDataLakeUiApplication" />
+        <context:exclude-filter type="assignable" expression="com.thinkbiganalytics.KyloUiApplication" />
     </context:component-scan>
     
     <!-- Deprecate the use of the name component-context.xml in favor of plugin-context.xml. 

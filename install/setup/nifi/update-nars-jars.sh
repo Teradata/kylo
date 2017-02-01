@@ -2,12 +2,12 @@
 
 MY_DIR=$(dirname $0)
 
-echo "Updating the thinkbig nifi nar and jar files"
+echo "Updating the kylo nifi nar and jar files"
 rm -rf /opt/nifi/data/lib/*.nar
 rm -rf /opt/nifi/data/lib/app/*.jar
 
-cp /opt/thinkbig/setup/nifi/*.nar /opt/nifi/data/lib
-cp /opt/thinkbig/setup/nifi/thinkbig-spark-*.jar /opt/nifi/data/lib/app
+cp /opt/kylo/setup/nifi/*.nar /opt/nifi/data/lib
+cp /opt/kylo/setup/nifi/kylo-spark-*.jar /opt/nifi/data/lib/app
 
 chown -R nifi:users /opt/nifi/data/lib
 

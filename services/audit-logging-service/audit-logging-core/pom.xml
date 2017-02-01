@@ -2,10 +2,10 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     
-    <artifactId>thinkbig-audit-logging-core</artifactId>
+    <artifactId>kylo-audit-logging-core</artifactId>
     <parent>
         <groupId>com.thinkbiganalytics.datalake</groupId>
-        <artifactId>thinkbig-audit-logging-service</artifactId>
+        <artifactId>kylo-audit-logging-service</artifactId>
         <version>0.7.0-SNAPSHOT</version>
     </parent>
 	<properties>
@@ -15,17 +15,17 @@
     <dependencies>
         <dependency>
             <groupId>com.thinkbiganalytics.metadata</groupId>
-            <artifactId>thinkbig-metadata-api</artifactId>
+            <artifactId>kylo-metadata-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-audit-logging-api</artifactId>
+            <artifactId>kylo-audit-logging-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-audit-logging-jpa</artifactId>
+            <artifactId>kylo-audit-logging-jpa</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

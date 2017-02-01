@@ -3,11 +3,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>thinkbig-classname-change-core</artifactId>
+  <artifactId>kylo-classname-change-core</artifactId>
 
   <parent>
     <groupId>com.thinkbiganalytics.datalake</groupId>
-    <artifactId>thinkbig-classname-change</artifactId>
+    <artifactId>kylo-classname-change</artifactId>
     <version>0.7.0-SNAPSHOT</version>
   </parent>
 	<properties>
@@ -18,13 +18,13 @@
   <dependencies>
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-classname-change-api</artifactId>
+      <artifactId>kylo-classname-change-api</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-ui-annotation-core</artifactId>
+      <artifactId>kylo-ui-annotation-core</artifactId>
       <version>${project.version}</version>
     </dependency>
 

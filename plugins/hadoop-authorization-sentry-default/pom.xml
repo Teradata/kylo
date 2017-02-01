@@ -3,7 +3,7 @@
          xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
-    <artifactId>thinkbig-plugins</artifactId>
+    <artifactId>kylo-plugins</artifactId>
     <groupId>com.thinkbiganalytics.datalake</groupId>
     <version>0.7.0-SNAPSHOT</version>
   </parent>
@@ -13,7 +13,7 @@
   <modelVersion>4.0.0</modelVersion>
   <packaging>pom</packaging>
 
-  <artifactId>thinkbig-hadoop-authorization-sentry-default</artifactId>
+  <artifactId>kylo-hadoop-authorization-sentry-default</artifactId>
 
   <modules>
     <module>hadoop-authorization-sentry</module>

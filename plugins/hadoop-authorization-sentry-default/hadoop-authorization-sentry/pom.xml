@@ -3,7 +3,7 @@
          xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
-    <artifactId>thinkbig-hadoop-authorization-sentry-default</artifactId>
+    <artifactId>kylo-hadoop-authorization-sentry-default</artifactId>
     <groupId>com.thinkbiganalytics.datalake</groupId>
     <version>0.7.0-SNAPSHOT</version>
   </parent>
@@ -12,28 +12,28 @@
   </properties>
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>thinkbig-hadoop-authorization-sentry</artifactId>
+  <artifactId>kylo-hadoop-authorization-sentry</artifactId>
 
   <dependencies>
 
     <!-- ThinkBig Dependency -->
 
     <dependency>
-      <artifactId>thinkbig-hadoop-authorization-core</artifactId>
+      <artifactId>kylo-hadoop-authorization-core</artifactId>
       <version>${project.version}</version>
       <groupId>com.thinkbiganalytics.datalake</groupId>
     </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-sentry-client</artifactId>
+      <artifactId>kylo-sentry-client</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <!-- Kerberos dependencies -->
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-kerberos-core</artifactId>
+      <artifactId>kylo-kerberos-core</artifactId>
       <version>${project.version}</version>
       <exclusions>
         <exclusion>
@@ -192,8 +192,8 @@
               <createDependencyReducedPom>false</createDependencyReducedPom>
               <artifactSet>
                 <includes>
-                  <include>com.thinkbiganalytics.datalake:thinkbig-sentry-client</include>
-                  <include>com.thinkbiganalytics.datalake:thinkbig-hadoop-authorization-core</include>
+                  <include>com.thinkbiganalytics.datalake:kylo-sentry-client</include>
+                  <include>com.thinkbiganalytics.datalake:kylo-hadoop-authorization-core</include>
                 </includes>
               </artifactSet>
             </configuration>

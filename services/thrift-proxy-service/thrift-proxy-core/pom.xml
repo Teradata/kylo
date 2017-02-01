@@ -3,10 +3,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>thinkbig-thrift-proxy-core</artifactId>
+  <artifactId>kylo-thrift-proxy-core</artifactId>
 
   <parent>
-    <artifactId>thinkbig-thrift-proxy</artifactId>
+    <artifactId>kylo-thrift-proxy</artifactId>
     <groupId>com.thinkbiganalytics.datalake</groupId>
     <version>0.7.0-SNAPSHOT</version>
   </parent>
@@ -17,32 +17,32 @@
   <dependencies>
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-schema-discovery-model2</artifactId>
+      <artifactId>kylo-schema-discovery-model2</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-schema-discovery-rdbms</artifactId>
+      <artifactId>kylo-schema-discovery-rdbms</artifactId>
       <version>${project.version}</version>
     </dependency>
 
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-commons-jdbc</artifactId>
+      <artifactId>kylo-commons-jdbc</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-kerberos-core</artifactId>
+      <artifactId>kylo-kerberos-core</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-commons-hive</artifactId>
+      <artifactId>kylo-commons-hive</artifactId>
       <version>${project.version}</version>
     </dependency>
 

@@ -4,14 +4,14 @@
 
   <parent>
     <groupId>com.thinkbiganalytics.datalake</groupId>
-    <artifactId>thinkbig-spark-shell-client</artifactId>
+    <artifactId>kylo-spark-shell-client</artifactId>
     <version>0.7.0-SNAPSHOT</version>
   </parent>
 	<properties>
 		<plugin.license.parentRelative>../../../../</plugin.license.parentRelative>
 	</properties>
 
-  <artifactId>thinkbig-spark-shell-client-app</artifactId>
+  <artifactId>kylo-spark-shell-client-app</artifactId>
   <description>Compiles and executes Scala code in a Spark context.</description>
 
   <dependencies>
@@ -96,34 +96,34 @@
     <!-- Think Big dependencies -->
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-commons-hive</artifactId>
+      <artifactId>kylo-commons-hive</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-commons-spark-api</artifactId>
+      <artifactId>kylo-commons-spark-api</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-commons-spark-repl</artifactId>
+      <artifactId>kylo-commons-spark-repl</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-schema-discovery-model2</artifactId>
+      <artifactId>kylo-schema-discovery-model2</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-spark-shell-rest-model</artifactId>
+      <artifactId>kylo-spark-shell-rest-model</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <!-- Kerberos dependencies -->
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-kerberos-core</artifactId>
+      <artifactId>kylo-kerberos-core</artifactId>
       <version>${project.version}</version>
       <exclusions>
         <exclusion>

@@ -1,8 +1,8 @@
 #!/bin/bash
 
 JAVA_HOME="/opt/java/current"
-LIB_JAR_LOCATION="/opt/thinkbig/lib/"
-LIB_JAR_NAME="thinkbig-nifi-hadoop-processors-*.jar"
+LIB_JAR_LOCATION="/opt/kylo/lib/"
+LIB_JAR_NAME="kylo-nifi-hadoop-processors-*.jar"
 ENCRYPT_CLASS_NAME="com.thinkbiganalytics.nifi.v2.sqoop.security.EncryptPassword"
 
 echo "*** Utility for generating encrypted password for use with Sqoop ***"

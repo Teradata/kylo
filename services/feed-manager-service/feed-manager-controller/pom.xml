@@ -3,10 +3,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>thinkbig-feed-manager-controller</artifactId>
+  <artifactId>kylo-feed-manager-controller</artifactId>
 
   <parent>
-    <artifactId>thinkbig-feed-manager-service</artifactId>
+    <artifactId>kylo-feed-manager-service</artifactId>
     <groupId>com.thinkbiganalytics.datalake</groupId>
     <version>0.7.0-SNAPSHOT</version>
   </parent>
@@ -18,131 +18,131 @@
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-job-repository-core</artifactId>
+      <artifactId>kylo-job-repository-core</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-job-repository-api</artifactId>
+      <artifactId>kylo-job-repository-api</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-commons-util</artifactId>
+      <artifactId>kylo-commons-util</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-nifi-rest-client-api</artifactId>
+      <artifactId>kylo-nifi-rest-client-api</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-nifi-rest-model</artifactId>
+      <artifactId>kylo-nifi-rest-model</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-feed-manager-rest-model</artifactId>
+      <artifactId>kylo-feed-manager-rest-model</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.metadata</groupId>
-      <artifactId>thinkbig-metadata-rest-controller</artifactId>
+      <artifactId>kylo-metadata-rest-controller</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-operational-metadata-rest-model</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-operational-metadata-api</artifactId>
+      <artifactId>kylo-operational-metadata-rest-model</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-operational-metadata-jpa</artifactId>
+      <artifactId>kylo-operational-metadata-api</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-operational-metadata-integration-service</artifactId>
+      <artifactId>kylo-operational-metadata-jpa</artifactId>
       <version>${project.version}</version>
     </dependency>
 
-
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-operational-metadata-rest-model</artifactId>
+      <artifactId>kylo-operational-metadata-integration-service</artifactId>
       <version>${project.version}</version>
     </dependency>
 
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-feed-manager-core</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-schema-discovery-api</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-schema-discovery-model2</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-scheduler-quartz</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-feed-manager-precondition-policy</artifactId>
+      <artifactId>kylo-operational-metadata-rest-model</artifactId>
       <version>${project.version}</version>
     </dependency>
 
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-sla-metrics-default</artifactId>
+      <artifactId>kylo-feed-manager-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-schema-discovery-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-schema-discovery-model2</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-scheduler-quartz</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-feed-manager-precondition-policy</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-sla-metrics-default</artifactId>
       <version>${project.version}</version>
      </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-sla-email</artifactId>
+      <artifactId>kylo-sla-email</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-sla-jira</artifactId>
+      <artifactId>kylo-sla-jira</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-hadoop-authorization-api</artifactId>
+      <artifactId>kylo-hadoop-authorization-api</artifactId>
       <version>${project.version}</version>
     </dependency>
 
@@ -163,21 +163,21 @@
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-thrift-proxy-core</artifactId>
+      <artifactId>kylo-thrift-proxy-core</artifactId>
       <version>${project.version}</version>
     </dependency>
 
 
     <dependency>
       <groupId>com.thinkbiganalytics.metadata</groupId>
-      <artifactId>thinkbig-metadata-api</artifactId>
+      <artifactId>kylo-metadata-api</artifactId>
       <version>${project.version}</version>
     </dependency>
 
 
     <dependency>
       <groupId>com.thinkbiganalytics.metadata</groupId>
-      <artifactId>thinkbig-metadata-persistence</artifactId>
+      <artifactId>kylo-metadata-persistence</artifactId>
       <version>${project.version}</version>
       <exclusions>
         <exclusion>
@@ -237,7 +237,7 @@
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-commons-hive</artifactId>
+      <artifactId>kylo-commons-hive</artifactId>
       <version>${project.version}</version>
     </dependency>
 
@@ -357,7 +357,7 @@
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-nifi-rest-client-v1</artifactId>
+      <artifactId>kylo-nifi-rest-client-v1</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>

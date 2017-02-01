@@ -11,7 +11,7 @@
     
     <parent>
         <groupId>com.thinkbiganalytics.datalake</groupId>
-        <artifactId>thinkbig-samples-plugins</artifactId>
+        <artifactId>kylo-samples-plugins</artifactId>
         <version>0.7.0-SNAPSHOT</version>
     </parent>
 	<properties>
@@ -21,7 +21,7 @@
     <dependencies>
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-security-auth</artifactId>
+            <artifactId>kylo-security-auth</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>

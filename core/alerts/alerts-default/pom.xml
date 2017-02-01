@@ -2,10 +2,10 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>thinkbig-alerts-default</artifactId>
+    <artifactId>kylo-alerts-default</artifactId>
     <parent>
         <groupId>com.thinkbiganalytics.datalake</groupId>
-        <artifactId>thinkbig-alerts</artifactId>
+        <artifactId>kylo-alerts</artifactId>
         <version>0.7.0-SNAPSHOT</version>
     </parent>
 	<properties>
@@ -15,22 +15,22 @@
     <dependencies>
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-alerts-api</artifactId>
+            <artifactId>kylo-alerts-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-security-api</artifactId>
+            <artifactId>kylo-security-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.thinkbiganalytics.metadata</groupId>
-            <artifactId>thinkbig-metadata-persistence</artifactId>
+            <artifactId>kylo-metadata-persistence</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-commons-jpa</artifactId>
+            <artifactId>kylo-commons-jpa</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -102,7 +102,7 @@
         </dependency>
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-commons-test-persistence</artifactId>
+            <artifactId>kylo-commons-test-persistence</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>

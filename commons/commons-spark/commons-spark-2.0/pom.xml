@@ -6,11 +6,11 @@
 
     <parent>
         <groupId>com.thinkbiganalytics.datalake</groupId>
-        <artifactId>thinkbig-commons-spark</artifactId>
+        <artifactId>kylo-commons-spark</artifactId>
         <version>0.7.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>thinkbig-commons-spark-2.0</artifactId>
+    <artifactId>kylo-commons-spark-2.0</artifactId>
     <version>0.7.0-SNAPSHOT</version>
 
     <properties>
@@ -24,7 +24,7 @@
     <dependencies>
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-commons-spark-api</artifactId>
+            <artifactId>kylo-commons-spark-api</artifactId>
             <version>${project.version}</version>
         </dependency>
 

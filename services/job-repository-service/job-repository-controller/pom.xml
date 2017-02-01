@@ -3,10 +3,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>thinkbig-job-repository-controller</artifactId>
+  <artifactId>kylo-job-repository-controller</artifactId>
 
   <parent>
-    <artifactId>thinkbig-job-repository-service</artifactId>
+    <artifactId>kylo-job-repository-service</artifactId>
     <groupId>com.thinkbiganalytics.datalake</groupId>
     <version>0.7.0-SNAPSHOT</version>
   </parent>
@@ -18,46 +18,46 @@
   <dependencies>
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-job-repository-api</artifactId>
+      <artifactId>kylo-job-repository-api</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-job-repository-core</artifactId>
+      <artifactId>kylo-job-repository-core</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-job-repository-rest-model</artifactId>
+      <artifactId>kylo-job-repository-rest-model</artifactId>
       <version>${project.version}</version>
     </dependency>
 
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-operational-metadata-api</artifactId>
+      <artifactId>kylo-operational-metadata-api</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-operational-metadata-integration-service</artifactId>
+      <artifactId>kylo-operational-metadata-integration-service</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.metadata</groupId>
-      <artifactId>thinkbig-metadata-persistence</artifactId>
+      <artifactId>kylo-metadata-persistence</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-operational-metadata-jpa</artifactId>
+      <artifactId>kylo-operational-metadata-jpa</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-operational-metadata-rest-model</artifactId>
+      <artifactId>kylo-operational-metadata-rest-model</artifactId>
       <version>${project.version}</version>
     </dependency>
 
@@ -67,7 +67,7 @@
 
     <dependency>
       <groupId>com.thinkbiganalytics.metadata</groupId>
-      <artifactId>thinkbig-metadata-api</artifactId>
+      <artifactId>kylo-metadata-api</artifactId>
       <version>${project.version}</version>
     </dependency>
 

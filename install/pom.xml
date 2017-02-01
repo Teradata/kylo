@@ -3,22 +3,20 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
-    <artifactId>thinkbig-data-lake-accelerator</artifactId>
+    <artifactId>kylo</artifactId>
     <groupId>com.thinkbiganalytics.datalake</groupId>
     <version>0.7.0-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>install</artifactId>
   <properties>
-    <start-class-thinkbig-nifi-ui>com.thinkbiganalytics.app.Application</start-class-thinkbig-nifi-ui>
-    <start-class-thinkbig-hive>com.thinkbiganalytics.hive.server.Application</start-class-thinkbig-hive>
     <!-- override using property -Drpm.install.dir -->
-    <rpm.install.dir>/opt/thinkbig</rpm.install.dir>
+    <rpm.install.dir>/opt/kylo</rpm.install.dir>
     <rpm.scripts.path>src/main/scripts</rpm.scripts.path>
     <!-- override using property -Drpm.log.dir -->
     <rpm.log.dir>/var/log</rpm.log.dir>
     <!-- override using property -Drpm.user -->
-    <rpm.user>thinkbig</rpm.user>
+    <rpm.user>kylo</rpm.user>
     <file.permissions>744</file.permissions>
   <plugin.license.parentRelative>../</plugin.license.parentRelative>
 	</properties>
@@ -28,12 +26,12 @@
     <!-- used to copy in the default dependencies to the plugin folder -->
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-sla-email</artifactId>
+      <artifactId>kylo-sla-email</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-sla-jira</artifactId>
+      <artifactId>kylo-sla-jira</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -69,7 +67,7 @@
           </execution>
         </executions>
         <configuration>
-          <name>thinkbig-datalake-accelerator</name>
+          <name>kylo</name>
           <license>Think Big 2015</license>
           <distribution>Think Big 2015</distribution>
           <group>com.thinkbiganalytics</group>
@@ -89,7 +87,7 @@
               <groupname>${rpm.user}</groupname>
               <sources>
                 <source>
-                  <location>../integrations/nifi/nifi-nar-bundles/nifi-hadoop-bundle/nifi-hadoop-processors/target/thinkbig-nifi-hadoop-processors-${project.version}.jar</location>
+                  <location>../integrations/nifi/nifi-nar-bundles/nifi-hadoop-bundle/nifi-hadoop-processors/target/kylo-nifi-hadoop-processors-${project.version}.jar</location>
                 </source>
               </sources>
             </mapping>
@@ -105,31 +103,31 @@
               </sources>
             </mapping>
             <mapping>
-              <directory>${rpm.install.dir}/thinkbig-ui</directory>
+              <directory>${rpm.install.dir}/kylo-ui</directory>
               <filemode>${file.permissions}</filemode>
               <username>${rpm.user}</username>
               <groupname>${rpm.user}</groupname>
               <sources>
                 <source>
-                  <location>../ui/ui-app/target/thinkbig-ui-app-${project.version}-distribution.tar.gz</location>
+                  <location>../ui/ui-app/target/kylo-ui-app-${project.version}-distribution.tar.gz</location>
                 </source>
               </sources>
             </mapping>
             <mapping>
-              <directory>${rpm.install.dir}/thinkbig-ui/lib</directory>
+              <directory>${rpm.install.dir}/kylo-ui/lib</directory>
               <filemode>${file.permissions}</filemode>
               <username>${rpm.user}</username>
               <groupname>${rpm.user}</groupname>
               <sources>
                 <source>
                   <location>
-                    ../ui/ui-app/target/thinkbig-ui-app-${project.version}.jar
+                    ../ui/ui-app/target/kylo-ui-app-${project.version}.jar
                   </location>
                 </source>
               </sources>
             </mapping>
             <mapping>
-              <directory>${rpm.install.dir}/thinkbig-ui/conf</directory>
+              <directory>${rpm.install.dir}/kylo-ui/conf</directory>
               <filemode>${file.permissions}</filemode>
               <username>${rpm.user}</username>
               <groupname>${rpm.user}</groupname>
@@ -152,85 +150,85 @@
               </sources>
             </mapping>
             <mapping>
-              <directory>${rpm.install.dir}/thinkbig-ui/bin</directory>
+              <directory>${rpm.install.dir}/kylo-ui/bin</directory>
               <filemode>${file.permissions}</filemode>
               <username>${rpm.user}</username>
               <groupname>${rpm.user}</groupname>
             </mapping>
             <mapping>
-              <directory>${rpm.install.dir}/thinkbig-ui/plugin</directory>
+              <directory>${rpm.install.dir}/kylo-ui/plugin</directory>
               <filemode>${file.permissions}</filemode>
               <username>${rpm.user}</username>
               <groupname>${rpm.user}</groupname>
             </mapping>
 
-            <!-- thinkbig services mappings -->
+            <!-- kylo services mappings -->
             <mapping>
-              <directory>${rpm.install.dir}/thinkbig-services</directory>
+              <directory>${rpm.install.dir}/kylo-services</directory>
               <filemode>${file.permissions}</filemode>
               <username>${rpm.user}</username>
               <groupname>${rpm.user}</groupname>
               <sources>
                 <source>
-                  <location>../services/service-app/target/thinkbig-service-app-${project.version}-distribution.tar.gz</location>
+                  <location>../services/service-app/target/kylo-service-app-${project.version}-distribution.tar.gz</location>
                 </source>
               </sources>
             </mapping>
             <mapping>
-              <directory>${rpm.install.dir}/thinkbig-services/lib</directory>
-              <filemode>${file.permissions}</filemode>
-              <username>${rpm.user}</username>
-              <groupname>${rpm.user}</groupname>
-              <sources>
-                <source>
-                  <location>
-                    ../services/service-app/target/thinkbig-service-app-${project.version}.jar
-                  </location>
-                </source>
-              </sources>
-            </mapping>
-            <mapping>
-              <directory>${rpm.install.dir}/thinkbig-services/lib/app</directory>
+              <directory>${rpm.install.dir}/kylo-services/lib</directory>
               <filemode>${file.permissions}</filemode>
               <username>${rpm.user}</username>
               <groupname>${rpm.user}</groupname>
               <sources>
                 <source>
                   <location>
-                    ../integrations/spark/spark-shell-client/spark-shell-client-v1/target/thinkbig-spark-shell-client-v1-${project.version}.jar
+                    ../services/service-app/target/kylo-service-app-${project.version}.jar
+                  </location>
+                </source>
+              </sources>
+            </mapping>
+            <mapping>
+              <directory>${rpm.install.dir}/kylo-services/lib/app</directory>
+              <filemode>${file.permissions}</filemode>
+              <username>${rpm.user}</username>
+              <groupname>${rpm.user}</groupname>
+              <sources>
+                <source>
+                  <location>
+                    ../integrations/spark/spark-shell-client/spark-shell-client-v1/target/kylo-spark-shell-client-v1-${project.version}.jar
                   </location>
                 </source>
                 <source>
                   <location>
-                    ../integrations/spark/spark-shell-client/spark-shell-client-v2/target/thinkbig-spark-shell-client-v2-${project.version}.jar
+                    ../integrations/spark/spark-shell-client/spark-shell-client-v2/target/kylo-spark-shell-client-v2-${project.version}.jar
                   </location>
                 </source>
               </sources>
             </mapping>
             <mapping>
-              <directory>${rpm.install.dir}/thinkbig-services</directory>
+              <directory>${rpm.install.dir}/kylo-services</directory>
               <filemode>${file.permissions}</filemode>
               <username>${rpm.user}</username>
               <groupname>${rpm.user}</groupname>
               <sources>
                 <source>
-                  <location>../integrations/nifi/nifi-rest/nifi-rest-client/nifi-rest-client-v0/target/thinkbig-nifi-rest-client-v0-${project.version}-distribution.tar.gz</location>
+                  <location>../integrations/nifi/nifi-rest/nifi-rest-client/nifi-rest-client-v0/target/kylo-nifi-rest-client-v0-${project.version}-distribution.tar.gz</location>
                 </source>
               </sources>
             </mapping>
             <mapping>
-              <directory>${rpm.install.dir}/thinkbig-services</directory>
+              <directory>${rpm.install.dir}/kylo-services</directory>
               <filemode>${file.permissions}</filemode>
               <username>${rpm.user}</username>
               <groupname>${rpm.user}</groupname>
               <sources>
                 <source>
-                  <location>../integrations/nifi/nifi-rest/nifi-rest-client/nifi-rest-client-v1/target/thinkbig-nifi-rest-client-v1-${project.version}-distribution.tar.gz</location>
+                  <location>../integrations/nifi/nifi-rest/nifi-rest-client/nifi-rest-client-v1/target/kylo-nifi-rest-client-v1-${project.version}-distribution.tar.gz</location>
                 </source>
               </sources>
             </mapping>
             <mapping>
-              <directory>${rpm.install.dir}/thinkbig-services/conf</directory>
+              <directory>${rpm.install.dir}/kylo-services/conf</directory>
               <filemode>${file.permissions}</filemode>
               <username>${rpm.user}</username>
               <groupname>${rpm.user}</groupname>
@@ -287,7 +285,7 @@
                 <source>
                   <location>../plugins/sla-jira/src/main/resources/conf</location>
                   <includes>
-                    <include>thinkbig_jira.jks</include>
+                    <include>kylo_jira.jks</include>
                     <include>jira.properties</include>
                   </includes>
                 </source>
@@ -304,13 +302,13 @@
               </sources>
             </mapping>
             <mapping>
-              <directory>${rpm.install.dir}/thinkbig-services/bin</directory>
+              <directory>${rpm.install.dir}/kylo-services/bin</directory>
               <filemode>${file.permissions}</filemode>
               <username>${rpm.user}</username>
               <groupname>${rpm.user}</groupname>
             </mapping>
             <mapping>
-              <directory>${rpm.install.dir}/thinkbig-services/plugin</directory>
+              <directory>${rpm.install.dir}/kylo-services/plugin</directory>
               <filemode>${file.permissions}</filemode>
               <username>${rpm.user}</username>
               <groupname>${rpm.user}</groupname>
@@ -318,37 +316,37 @@
                 <source>
                   <location>../plugins/sla-email/target</location>
                   <includes>
-                    <include>thinkbig-sla-email-${project.version}.jar</include>
+                    <include>kylo-sla-email-${project.version}.jar</include>
                   </includes>
                 </source>
                 <source>
                   <location>../plugins/sla-jira/target</location>
                   <includes>
-                    <include>thinkbig-sla-jira-${project.version}.jar</include>
+                    <include>kylo-sla-jira-${project.version}.jar</include>
                   </includes>
                 </source>
                 <source>
                   <location>../plugins/precondition-default/target</location>
                   <includes>
-                    <include>thinkbig-precondition-default-${project.version}.jar</include>
+                    <include>kylo-precondition-default-${project.version}.jar</include>
                   </includes>
                 </source>
                 <source>
                   <location>../plugins/schema-discovery-default/target</location>
                   <includes>
-                    <include>thinkbig-schema-discovery-default-${project.version}.jar</include>
+                    <include>kylo-schema-discovery-default-${project.version}.jar</include>
                   </includes>
                 </source>
               </sources>
             </mapping>
             <mapping>
-              <directory>${rpm.install.dir}/thinkbig-services/plugin</directory>
+              <directory>${rpm.install.dir}/kylo-services/plugin</directory>
               <filemode>${file.permissions}</filemode>
               <username>${rpm.user}</username>
               <groupname>${rpm.user}</groupname>
               <dependency>
                 <includes>
-                  <include>com.thinkbiganalytics.datalake:thinkbig-jira-rest-client</include>
+                  <include>com.thinkbiganalytics.datalake:kylo-jira-rest-client</include>
                 </includes>
               </dependency>
             </mapping>
@@ -378,7 +376,7 @@
                   <includes>
                     <include>create-symbolic-links.sh</include>
                     <include>install-nifi.sh</include>
-                    <include>install-thinkbig-components.sh</include>
+                    <include>install-kylo-components.sh</include>
                     <include>nifi</include>
                     <include>nifi.properties</include>
                     <include>update-nars-jars.sh</include>
@@ -393,121 +391,121 @@
                 <source>
                   <location>../integrations/nifi/nifi-nar-bundles/nifi-core-bundle/nifi-core-v0-nar/target</location>
                   <includes>
-                    <include>thinkbig-nifi-core-v0-nar-${project.version}.nar</include>
+                    <include>kylo-nifi-core-v0-nar-${project.version}.nar</include>
                   </includes>
                 </source>
                 <source>
                   <location>../integrations/nifi/nifi-nar-bundles/nifi-core-bundle/nifi-core-v1-nar/target</location>
                   <includes>
-                    <include>thinkbig-nifi-core-v1-nar-${project.version}.nar</include>
+                    <include>kylo-nifi-core-v1-nar-${project.version}.nar</include>
                   </includes>
                 </source>
                 <source>
                   <location>../integrations/nifi/nifi-nar-bundles/nifi-elasticsearch-bundle/nifi-elasticsearch-v0-nar/target</location>
                   <includes>
-                    <include>thinkbig-nifi-elasticsearch-v0-nar-${project.version}.nar</include>
+                    <include>kylo-nifi-elasticsearch-v0-nar-${project.version}.nar</include>
                   </includes>
                 </source>
                 <source>
                   <location>../integrations/nifi/nifi-nar-bundles/nifi-elasticsearch-bundle/nifi-elasticsearch-v1-nar/target</location>
                   <includes>
-                    <include>thinkbig-nifi-elasticsearch-v1-nar-${project.version}.nar</include>
+                    <include>kylo-nifi-elasticsearch-v1-nar-${project.version}.nar</include>
                   </includes>
                 </source>
                 <source>
                   <location>../integrations/nifi/nifi-nar-bundles/nifi-hadoop-bundle/nifi-hadoop-bundle-v0-nar/target</location>
                   <includes>
-                    <include>thinkbig-nifi-hadoop-v0-nar-${project.version}.nar</include>
+                    <include>kylo-nifi-hadoop-v0-nar-${project.version}.nar</include>
                   </includes>
                 </source>
                 <source>
                   <location>../integrations/nifi/nifi-nar-bundles/nifi-hadoop-bundle/nifi-hadoop-bundle-v1-nar/target</location>
                   <includes>
-                    <include>thinkbig-nifi-hadoop-v1-nar-${project.version}.nar</include>
+                    <include>kylo-nifi-hadoop-v1-nar-${project.version}.nar</include>
                   </includes>
                 </source>
                 <source>
                   <location>../integrations/nifi/nifi-nar-bundles/nifi-provenance-repo-bundle/nifi-provenance-repo-v0-nar/target</location>
                   <includes>
-                    <include>thinkbig-nifi-provenance-repo-v0-nar-${project.version}.nar</include>
+                    <include>kylo-nifi-provenance-repo-v0-nar-${project.version}.nar</include>
                   </includes>
                 </source>
                 <source>
                   <location>../integrations/nifi/nifi-nar-bundles/nifi-provenance-repo-bundle/nifi-provenance-repo-v1-nar/target</location>
                   <includes>
-                    <include>thinkbig-nifi-provenance-repo-v1-nar-${project.version}.nar</include>
+                    <include>kylo-nifi-provenance-repo-v1-nar-${project.version}.nar</include>
                   </includes>
                 </source>
                 <source>
                   <location>../integrations/nifi/nifi-nar-bundles/nifi-spark-bundle/nifi-spark-v0-nar/target</location>
                   <includes>
-                    <include>thinkbig-nifi-spark-v0-nar-${project.version}.nar</include>
+                    <include>kylo-nifi-spark-v0-nar-${project.version}.nar</include>
                   </includes>
                 </source>
                 <source>
                   <location>../integrations/nifi/nifi-nar-bundles/nifi-spark-bundle/nifi-spark-v1-nar/target</location>
                   <includes>
-                    <include>thinkbig-nifi-spark-v1-nar-${project.version}.nar</include>
+                    <include>kylo-nifi-spark-v1-nar-${project.version}.nar</include>
                   </includes>
                 </source>
                 <source>
                   <location>../integrations/nifi/nifi-nar-bundles/nifi-standard-services/nifi-core-service-bundle/nifi-core-service-nar/target</location>
                   <includes>
-                    <include>thinkbig-nifi-core-service-nar-${project.version}.nar</include>
+                    <include>kylo-nifi-core-service-nar-${project.version}.nar</include>
                   </includes>
                 </source>
                 <source>
                   <location>../integrations/nifi/nifi-nar-bundles/nifi-standard-services/nifi-hadoop-service-bundle/nifi-hadoop-service-v0-nar/target</location>
                   <includes>
-                    <include>thinkbig-nifi-hadoop-service-v0-nar-${project.version}.nar</include>
+                    <include>kylo-nifi-hadoop-service-v0-nar-${project.version}.nar</include>
                   </includes>
                 </source>
                 <source>
                   <location>../integrations/nifi/nifi-nar-bundles/nifi-standard-services/nifi-hadoop-service-bundle/nifi-hadoop-service-v1-nar/target</location>
                   <includes>
-                    <include>thinkbig-nifi-hadoop-service-v1-nar-${project.version}.nar</include>
+                    <include>kylo-nifi-hadoop-service-v1-nar-${project.version}.nar</include>
                   </includes>
                 </source>
                 <source>
                   <location>../integrations/nifi/nifi-nar-bundles/nifi-standard-services/nifi-standard-services-nar/target</location>
                   <includes>
-                    <include>thinkbig-nifi-standard-services-nar-${project.version}.nar</include>
+                    <include>kylo-nifi-standard-services-nar-${project.version}.nar</include>
                   </includes>
                 </source>
                 <source>
                   <location>../integrations/spark/spark-job-profiler/spark-job-profiler-spark-v1/target</location>
                   <includes>
-                    <include>thinkbig-spark-job-profiler-spark-v1-${project.version}-jar-with-dependencies.jar</include>
+                    <include>kylo-spark-job-profiler-spark-v1-${project.version}-jar-with-dependencies.jar</include>
                   </includes>
                 </source>
                 <source>
                   <location>../integrations/spark/spark-job-profiler/spark-job-profiler-spark-v2/target</location>
                   <includes>
-                    <include>thinkbig-spark-job-profiler-spark-v2-${project.version}-jar-with-dependencies.jar</include>
+                    <include>kylo-spark-job-profiler-spark-v2-${project.version}-jar-with-dependencies.jar</include>
                   </includes>
                 </source>
                 <source>
                   <location>../integrations/spark/spark-validate-cleanse/spark-validate-cleanse-spark-v1/target</location>
                   <includes>
-                    <include>thinkbig-spark-validate-cleanse-spark-v1-${project.version}-jar-with-dependencies.jar</include>
+                    <include>kylo-spark-validate-cleanse-spark-v1-${project.version}-jar-with-dependencies.jar</include>
                   </includes>
                 </source>
                 <source>
                   <location>../integrations/spark/spark-validate-cleanse/spark-validate-cleanse-spark-v2/target</location>
                   <includes>
-                    <include>thinkbig-spark-validate-cleanse-spark-v2-${project.version}-jar-with-dependencies.jar</include>
+                    <include>kylo-spark-validate-cleanse-spark-v2-${project.version}-jar-with-dependencies.jar</include>
                   </includes>
                 </source>
                 <source>
                   <location>../integrations/spark/spark-interpreter/spark-interpreter-spark-v1/target</location>
                   <includes>
-                    <include>thinkbig-spark-interpreter-spark-v1-${project.version}-jar-with-dependencies.jar</include>
+                    <include>kylo-spark-interpreter-spark-v1-${project.version}-jar-with-dependencies.jar</include>
                   </includes>
                 </source>
                 <source>
                   <location>../integrations/spark/spark-interpreter/spark-interpreter-spark-v2/target</location>
                   <includes>
-                    <include>thinkbig-spark-interpreter-spark-v2-${project.version}-jar-with-dependencies.jar</include>
+                    <include>kylo-spark-interpreter-spark-v2-${project.version}-jar-with-dependencies.jar</include>
                   </includes>
                 </source>
               </sources>
@@ -602,8 +600,8 @@
                 <source>
                   <location>setup</location>
                   <includes>
-                    <include>start-thinkbig-apps.sh</include>
-                    <include>stop-thinkbig-apps.sh</include>
+                    <include>start-kylo-apps.sh</include>
+                    <include>stop-kylo-apps.sh</include>
                   </includes>
                 </source>
               </sources>

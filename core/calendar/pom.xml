@@ -2,10 +2,10 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>thinkbig-calendar</artifactId>
+    <artifactId>kylo-calendar</artifactId>
 
     <parent>
-        <artifactId>thinkbig-core</artifactId>
+        <artifactId>kylo-core</artifactId>
         <groupId>com.thinkbiganalytics.datalake</groupId>
         <version>0.7.0-SNAPSHOT</version>
     </parent>
@@ -15,7 +15,7 @@
 
     <dependencies>
         <dependency>
-            <artifactId>thinkbig-commons-util</artifactId>
+            <artifactId>kylo-commons-util</artifactId>
             <groupId>com.thinkbiganalytics.datalake</groupId>
             <version>${project.version}</version>
         </dependency>

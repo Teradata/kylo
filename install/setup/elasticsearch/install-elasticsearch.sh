@@ -24,7 +24,7 @@ else
     curl -O https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/rpm/elasticsearch/2.3.0/elasticsearch-2.3.0.rpm
     echo "Executing RPM"
     rpm -ivh elasticsearch-2.3.0.rpm
-    cp /opt/thinkbig/setup/elasticsearch/elasticsearch.yml /etc/elasticsearch/
+    cp /opt/kylo/setup/elasticsearch/elasticsearch.yml /etc/elasticsearch/
     echo "Installing HQ plugin"
     /usr/share/elasticsearch/bin/plugin install royrusso/elasticsearch-HQ
 fi

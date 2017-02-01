@@ -49,7 +49,7 @@ import java.util.concurrent.Executors;
 @Import({SpringJerseyConfiguration.class})
 @ComponentScan("com.thinkbiganalytics")
 @EnableZuulProxy
-public class ThinkbigDataLakeUiApplication implements SchedulingConfigurer {
+public class KyloUiApplication implements SchedulingConfigurer {
 
 
   @Bean(destroyMethod = "shutdown")

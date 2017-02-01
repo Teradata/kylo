@@ -20,93 +20,93 @@
 # #L%
 ###
 
-chown -R thinkbig:users /opt/thinkbig
+chown -R kylo:users /opt/kylo
 
-rpmInstallDir=/opt/thinkbig
-pgrepMarkerThinkbigUi=thinkbig-ui-pgrep-marker
-pgrepMarkerThinkbigServices=thinkbig-services-pgrep-marker
-pgrepMarkerThinkbigSparkShell=thinkbig-spark-shell-pgrep-marker
+rpmInstallDir=/opt/kylo
+pgrepMarkerKyloUi=kylo-ui-pgrep-marker
+pgrepMarkerKyloServices=kylo-services-pgrep-marker
+pgrepMarkerKyloSparkShell=kylo-spark-shell-pgrep-marker
 rpmLogDir=/var/log
 
-echo "    - Install thinkbig-ui application"
-tar -xf $rpmInstallDir/thinkbig-ui/thinkbig-ui-app-*.tar.gz -C $rpmInstallDir/thinkbig-ui --strip-components=1
-rm -rf $rpmInstallDir/thinkbig-ui/thinkbig-ui-app-*.tar.gz
+echo "    - Install kylo-ui application"
+tar -xf $rpmInstallDir/kylo-ui/kylo-ui-app-*.tar.gz -C $rpmInstallDir/kylo-ui --strip-components=1
+rm -rf $rpmInstallDir/kylo-ui/kylo-ui-app-*.tar.gz
 
 jwtkey=$(head -c 64 /dev/urandom | md5sum |cut -d' ' -f1)
-sed -i "s/security\.jwt\.key=<insert-256-bit-secret-key-here>/security\.jwt\.key=${jwtkey}/" $rpmInstallDir/thinkbig-ui/conf/application.properties
-echo "   - Installed thinkbig-ui to '$rpmInstallDir/thinkbig-ui'"
+sed -i "s/security\.jwt\.key=<insert-256-bit-secret-key-here>/security\.jwt\.key=${jwtkey}/" $rpmInstallDir/kylo-ui/conf/application.properties
+echo "   - Installed kylo-ui to '$rpmInstallDir/kylo-ui'"
 
 if ! [ -f $rpmInstallDir/encrypt.key ]
 then
     head -c64 < /dev/urandom | base64 > $rpmInstallDir/encrypt.key
     chmod 400 $rpmInstallDir/encrypt.key
-    chown thinkbig:users $rpmInstallDir/encrypt.key
+    chown kylo:users $rpmInstallDir/encrypt.key
 fi
 
-cat << EOF > $rpmInstallDir/thinkbig-ui/bin/run-thinkbig-ui.sh
+cat << EOF > $rpmInstallDir/kylo-ui/bin/run-kylo-ui.sh
 #!/bin/bash
 export JAVA_HOME=/opt/java/current
 export PATH=\$JAVA_HOME/bin:\$PATH
-export THINKBIG_UI_OPTS=
+export KYLO_UI_OPTS=
 [ -f $rpmInstallDir/encrypt.key ] && export ENCRYPT_KEY="\$(cat $rpmInstallDir/encrypt.key)"
-java \$THINKBIG_UI_OPTS -cp $rpmInstallDir/thinkbig-ui/conf:$rpmInstallDir/thinkbig-ui/lib/*:$rpmInstallDir/thinkbig-ui/plugin/* com.thinkbiganalytics.ThinkbigDataLakeUiApplication --pgrep-marker=$pgrepMarkerThinkbigUi > /var/log/thinkbig-ui/thinkbig-ui.log 2>&1 &
+java \$KYLO_UI_OPTS -cp $rpmInstallDir/kylo-ui/conf:$rpmInstallDir/kylo-ui/lib/*:$rpmInstallDir/kylo-ui/plugin/* com.thinkbiganalytics.KyloUiApplication --pgrep-marker=$pgrepMarkerKyloUi > /var/log/kylo-ui/kylo-ui.log 2>&1 &
 EOF
-cat << EOF > $rpmInstallDir/thinkbig-ui/bin/run-thinkbig-ui-with-debug.sh
+cat << EOF > $rpmInstallDir/kylo-ui/bin/run-kylo-ui-with-debug.sh
   #!/bin/bash
 export JAVA_HOME=/opt/java/current
 export PATH=\$JAVA_HOME/bin:\$PATH
-export THINKBIG_UI_OPTS=
+export KYLO_UI_OPTS=
 [ -f $rpmInstallDir/encrypt.key ] && export ENCRYPT_KEY="\$(cat $rpmInstallDir/encrypt.key)"
 JAVA_DEBUG_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=9997
-java \$THINKBIG_UI_OPTS \$JAVA_DEBUG_OPTS -cp $rpmInstallDir/thinkbig-ui/conf:$rpmInstallDir/thinkbig-ui/lib/*:$rpmInstallDir/thinkbig-ui/plugin/* com.thinkbiganalytics.ThinkbigDataLakeUiApplication --pgrep-marker=$pgrepMarkerThinkbigUi > /var/log/thinkbig-ui/thinkbig-ui.log 2>&1 &
+java \$KYLO_UI_OPTS \$JAVA_DEBUG_OPTS -cp $rpmInstallDir/kylo-ui/conf:$rpmInstallDir/kylo-ui/lib/*:$rpmInstallDir/kylo-ui/plugin/* com.thinkbiganalytics.KyloDataLakeUiApplication --pgrep-marker=$pgrepMarkerKyloUi > /var/log/kylo-ui/kylo-ui.log 2>&1 &
 EOF
-chmod +x $rpmInstallDir/thinkbig-ui/bin/run-thinkbig-ui.sh
-chmod +x $rpmInstallDir/thinkbig-ui/bin/run-thinkbig-ui-with-debug.sh
-echo "   - Created thinkbig-ui script '$rpmInstallDir/thinkbig-ui/bin/run-thinkbig-ui.sh'"
+chmod +x $rpmInstallDir/kylo-ui/bin/run-kylo-ui.sh
+chmod +x $rpmInstallDir/kylo-ui/bin/run-kylo-ui-with-debug.sh
+echo "   - Created kylo-ui script '$rpmInstallDir/kylo-ui/bin/run-kylo-ui.sh'"
 
-cat << EOF > /etc/init.d/thinkbig-ui
+cat << EOF > /etc/init.d/kylo-ui
 #! /bin/sh
 # chkconfig: 345 98 22
-# description: thinkbig-ui
-# processname: thinkbig-ui
-RUN_AS_USER=thinkbig
+# description: kylo-ui
+# processname: kylo-ui
+RUN_AS_USER=kylo
 
 debug() {
-    if pgrep -f thinkbig-ui-pgrep-marker >/dev/null 2>&1
+    if pgrep -f kylo-ui-pgrep-marker >/dev/null 2>&1
       then
         echo Already running.
       else
-        echo Starting thinkbig-ui in debug mode...
-        grep 'address=' $rpmInstallDir/thinkbig-ui/bin/run-thinkbig-ui-with-debug.sh
-        su - \$RUN_AS_USER -c "$rpmInstallDir/thinkbig-ui/bin/run-thinkbig-ui-with-debug.sh"
+        echo Starting kylo-ui in debug mode...
+        grep 'address=' $rpmInstallDir/kylo-ui/bin/run-kylo-ui-with-debug.sh
+        su - \$RUN_AS_USER -c "$rpmInstallDir/kylo-ui/bin/run-kylo-ui-with-debug.sh"
     fi
 }
 
 start() {
-    if pgrep -f $pgrepMarkerThinkbigUi >/dev/null 2>&1
+    if pgrep -f $pgrepMarkerKyloUi >/dev/null 2>&1
       then
         echo Already running.
       else
-        echo Starting thinkbig-ui ...
-        su - \$RUN_AS_USER -c "$rpmInstallDir/thinkbig-ui/bin/run-thinkbig-ui.sh"
+        echo Starting kylo-ui ...
+        su - \$RUN_AS_USER -c "$rpmInstallDir/kylo-ui/bin/run-kylo-ui.sh"
     fi
 }
 
 stop() {
-    if pgrep -f $pgrepMarkerThinkbigUi >/dev/null 2>&1
+    if pgrep -f $pgrepMarkerKyloUi >/dev/null 2>&1
       then
-        echo Stopping thinkbig-ui ...
-        pkill -f $pgrepMarkerThinkbigUi
+        echo Stopping kylo-ui ...
+        pkill -f $pgrepMarkerKyloUi
       else
         echo Already stopped.
     fi
 }
 
 status() {
-    if pgrep -f $pgrepMarkerThinkbigUi >/dev/null 2>&1
+    if pgrep -f $pgrepMarkerKyloUi >/dev/null 2>&1
       then
           echo Running.  Here are the related processes:
-          pgrep -lf $pgrepMarkerThinkbigUi
+          pgrep -lf $pgrepMarkerKyloUi
       else
         echo Stopped.
     fi
@@ -126,105 +126,105 @@ case "\$1" in
         status
     ;;
     restart)
-       echo "Restarting thinkbig-ui"
+       echo "Restarting kylo-ui"
        stop
        sleep 2
        start
-       echo "thinkbig-ui started"
+       echo "kylo-ui started"
     ;;
 esac
 exit 0
 EOF
-chmod +x /etc/init.d/thinkbig-ui
-echo "   - Created thinkbig-ui script '/etc/init.d/thinkbig-ui'"
+chmod +x /etc/init.d/kylo-ui
+echo "   - Created kylo-ui script '/etc/init.d/kylo-ui'"
 
-mkdir -p $rpmLogDir/thinkbig-ui/
-echo "   - Created Log folder $rpmLogDir/thinkbig-ui/"
+mkdir -p $rpmLogDir/kylo-ui/
+echo "   - Created Log folder $rpmLogDir/kylo-ui/"
 
-chkconfig --add thinkbig-ui
-chkconfig thinkbig-ui on
-echo "   - Added service 'thinkbig-ui'"
-echo "    - Completed thinkbig-ui install"
+chkconfig --add kylo-ui
+chkconfig kylo-ui on
+echo "   - Added service 'kylo-ui'"
+echo "    - Completed kylo-ui install"
 
-echo "    - Install thinkbig-services application"
+echo "    - Install kylo-services application"
 
-tar -xf $rpmInstallDir/thinkbig-services/thinkbig-service-app-*.tar.gz -C $rpmInstallDir/thinkbig-services --strip-components=1
-tar -xf $rpmInstallDir/thinkbig-services/thinkbig-nifi-rest-client-v0-*.tar.gz -C $rpmInstallDir/thinkbig-services --strip-components=1
-tar -xf $rpmInstallDir/thinkbig-services/thinkbig-nifi-rest-client-v1-*.tar.gz -C $rpmInstallDir/thinkbig-services --strip-components=1
-rm -rf $rpmInstallDir/thinkbig-services/thinkbig-service-app-*.tar.gz
-rm -rf $rpmInstallDir/thinkbig-services/thinkbig-nifi-rest-client-v0-*.tar.gz
-rm -rf $rpmInstallDir/thinkbig-services/thinkbig-nifi-rest-client-v1-*.tar.gz
-rm -f $rpmInstallDir/thinkbig-services/lib/jetty*
-rm -f $rpmInstallDir/thinkbig-services/lib/servlet-api*
-sed -i "s/security\.jwt\.key=<insert-256-bit-secret-key-here>/security\.jwt\.key=${jwtkey}/" $rpmInstallDir/thinkbig-services/conf/application.properties
-echo "   - Installed thinkbig-services to '$rpmInstallDir/thinkbig-services'"
+tar -xf $rpmInstallDir/kylo-services/kylo-service-app-*.tar.gz -C $rpmInstallDir/kylo-services --strip-components=1
+tar -xf $rpmInstallDir/kylo-services/kylo-nifi-rest-client-v0-*.tar.gz -C $rpmInstallDir/kylo-services --strip-components=1
+tar -xf $rpmInstallDir/kylo-services/kylo-nifi-rest-client-v1-*.tar.gz -C $rpmInstallDir/kylo-services --strip-components=1
+rm -rf $rpmInstallDir/kylo-services/kylo-service-app-*.tar.gz
+rm -rf $rpmInstallDir/kylo-services/kylo-nifi-rest-client-v0-*.tar.gz
+rm -rf $rpmInstallDir/kylo-services/kylo-nifi-rest-client-v1-*.tar.gz
+rm -f $rpmInstallDir/kylo-services/lib/jetty*
+rm -f $rpmInstallDir/kylo-services/lib/servlet-api*
+sed -i "s/security\.jwt\.key=<insert-256-bit-secret-key-here>/security\.jwt\.key=${jwtkey}/" $rpmInstallDir/kylo-services/conf/application.properties
+echo "   - Installed kylo-services to '$rpmInstallDir/kylo-services'"
 
-cat << EOF > $rpmInstallDir/thinkbig-services/bin/run-thinkbig-services.sh
+cat << EOF > $rpmInstallDir/kylo-services/bin/run-kylo-services.sh
 #!/bin/bash
 export JAVA_HOME=/opt/java/current
 export PATH=\$JAVA_HOME/bin:\$PATH
-export THINKBIG_SERVICES_OPTS=
+export KYLO_SERVICES_OPTS=
 [ -f $rpmInstallDir/encrypt.key ] && export ENCRYPT_KEY="\$(cat $rpmInstallDir/encrypt.key)"
-THINKBIG_NIFI_PROFILE=\$(grep ^spring.profiles. $rpmInstallDir/thinkbig-services/conf/application.properties | grep -o nifi-v.)
-java \$THINKBIG_SERVICES_OPTS -cp $rpmInstallDir/thinkbig-services/conf:$rpmInstallDir/thinkbig-services/lib/*:$rpmInstallDir/thinkbig-services/lib/\${THINKBIG_NIFI_PROFILE}/*:$rpmInstallDir/thinkbig-services/plugin/* com.thinkbiganalytics.server.ThinkbigServerApplication --pgrep-marker=$pgrepMarkerThinkbigServices > /var/log/thinkbig-services/thinkbig-services.log 2>&1 &
+KYLO_NIFI_PROFILE=\$(grep ^spring.profiles. $rpmInstallDir/kylo-services/conf/application.properties | grep -o nifi-v.)
+java \$KYLO_SERVICES_OPTS -cp $rpmInstallDir/kylo-services/conf:$rpmInstallDir/kylo-services/lib/*:$rpmInstallDir/kylo-services/lib/\${KYLO_NIFI_PROFILE}/*:$rpmInstallDir/kylo-services/plugin/* com.thinkbiganalytics.server.KyloServerApplication --pgrep-marker=$pgrepMarkerKyloServices > /var/log/kylo-services/kylo-services.log 2>&1 &
 EOF
-cat << EOF > $rpmInstallDir/thinkbig-services/bin/run-thinkbig-services-with-debug.sh
+cat << EOF > $rpmInstallDir/kylo-services/bin/run-kylo-services-with-debug.sh
 #!/bin/bash
 export JAVA_HOME=/opt/java/current
 export PATH=\$JAVA_HOME/bin:\$PATH
-export THINKBIG_SERVICES_OPTS=
+export KYLO_SERVICES_OPTS=
 [ -f $rpmInstallDir/encrypt.key ] && export ENCRYPT_KEY="\$(cat $rpmInstallDir/encrypt.key)"
 JAVA_DEBUG_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=9998
-THINKBIG_NIFI_PROFILE=\$(grep ^spring.profiles. $rpmInstallDir/thinkbig-services/conf/application.properties | grep -o nifi-v.)
-java \$THINKBIG_SERVICES_OPTS \$JAVA_DEBUG_OPTS -cp $rpmInstallDir/thinkbig-services/conf:$rpmInstallDir/thinkbig-services/lib/*:$rpmInstallDir/thinkbig-services/lib/\${THINKBIG_NIFI_PROFILE}/*:$rpmInstallDir/thinkbig-services/plugin/* com.thinkbiganalytics.server.ThinkbigServerApplication --pgrep-marker=$pgrepMarkerThinkbigServices > /var/log/thinkbig-services/thinkbig-services.log 2>&1 &
+KYLO_NIFI_PROFILE=\$(grep ^spring.profiles. $rpmInstallDir/kylo-services/conf/application.properties | grep -o nifi-v.)
+java \$KYLO_SERVICES_OPTS \$JAVA_DEBUG_OPTS -cp $rpmInstallDir/kylo-services/conf:$rpmInstallDir/kylo-services/lib/*:$rpmInstallDir/kylo-services/lib/\${KYLO_NIFI_PROFILE}/*:$rpmInstallDir/kylo-services/plugin/* com.thinkbiganalytics.server.KyloServerApplication --pgrep-marker=$pgrepMarkerKyloServices > /var/log/kylo-services/kylo-services.log 2>&1 &
 EOF
-chmod +x $rpmInstallDir/thinkbig-services/bin/run-thinkbig-services.sh
-chmod +x $rpmInstallDir/thinkbig-services/bin/run-thinkbig-services-with-debug.sh
-echo "   - Created thinkbig-services script '$rpmInstallDir/thinkbig-services/bin/run-thinkbig-services.sh'"
+chmod +x $rpmInstallDir/kylo-services/bin/run-kylo-services.sh
+chmod +x $rpmInstallDir/kylo-services/bin/run-kylo-services-with-debug.sh
+echo "   - Created kylo-services script '$rpmInstallDir/kylo-services/bin/run-kylo-services.sh'"
 
-cat << EOF > /etc/init.d/thinkbig-services
+cat << EOF > /etc/init.d/kylo-services
 #! /bin/sh
 # chkconfig: 345 98 21
-# description: thinkbig-services
-# processname: thinkbig-services
-RUN_AS_USER=thinkbig
+# description: kylo-services
+# processname: kylo-services
+RUN_AS_USER=kylo
 
 debug() {
-    if pgrep -f thinkbig-services-pgrep-marker >/dev/null 2>&1
+    if pgrep -f kylo-services-pgrep-marker >/dev/null 2>&1
       then
         echo Already running.
       else
-        echo Starting thinkbig-services in debug mode...
-        grep 'address=' $rpmInstallDir/thinkbig-services/bin/run-thinkbig-services-with-debug.sh
-        su - \$RUN_AS_USER -c "$rpmInstallDir/thinkbig-services/bin/run-thinkbig-services-with-debug.sh"
+        echo Starting kylo-services in debug mode...
+        grep 'address=' $rpmInstallDir/kylo-services/bin/run-kylo-services-with-debug.sh
+        su - \$RUN_AS_USER -c "$rpmInstallDir/kylo-services/bin/run-kylo-services-with-debug.sh"
     fi
 }
 
 start() {
-    if pgrep -f $pgrepMarkerThinkbigServices >/dev/null 2>&1
+    if pgrep -f $pgrepMarkerKyloServices >/dev/null 2>&1
       then
         echo Already running.
       else
-        echo Starting thinkbig-services ...
-        su - \$RUN_AS_USER -c "$rpmInstallDir/thinkbig-services/bin/run-thinkbig-services.sh"
+        echo Starting kylo-services ...
+        su - \$RUN_AS_USER -c "$rpmInstallDir/kylo-services/bin/run-kylo-services.sh"
     fi
 }
 
 stop() {
-    if pgrep -f $pgrepMarkerThinkbigServices >/dev/null 2>&1
+    if pgrep -f $pgrepMarkerKyloServices >/dev/null 2>&1
       then
-        echo Stopping thinkbig-services ...
-        pkill -f $pgrepMarkerThinkbigServices
+        echo Stopping kylo-services ...
+        pkill -f $pgrepMarkerKyloServices
       else
         echo Already stopped.
     fi
 }
 
 status() {
-    if pgrep -f $pgrepMarkerThinkbigServices >/dev/null 2>&1
+    if pgrep -f $pgrepMarkerKyloServices >/dev/null 2>&1
       then
           echo Running.  Here are the related processes:
-          pgrep -lf $pgrepMarkerThinkbigServices
+          pgrep -lf $pgrepMarkerKyloServices
       else
         echo Stopped.
     fi
@@ -244,72 +244,72 @@ case "\$1" in
         status
     ;;
     restart)
-       echo "Restarting thinkbig-services"
+       echo "Restarting kylo-services"
        stop
        sleep 2
        start
-       echo "thinkbig-services started"
+       echo "kylo-services started"
     ;;
 esac
 exit 0
 EOF
-chmod +x /etc/init.d/thinkbig-services
-echo "   - Created thinkbig-services script '/etc/init.d/thinkbig-services'"
+chmod +x /etc/init.d/kylo-services
+echo "   - Created kylo-services script '/etc/init.d/kylo-services'"
 
-mkdir -p $rpmLogDir/thinkbig-services/
-echo "   - Created Log folder $rpmLogDir/thinkbig-services/"
+mkdir -p $rpmLogDir/kylo-services/
+echo "   - Created Log folder $rpmLogDir/kylo-services/"
 
-chkconfig --add thinkbig-services
-chkconfig thinkbig-services on
-echo "   - Added service 'thinkbig-services'"
+chkconfig --add kylo-services
+chkconfig kylo-services on
+echo "   - Added service 'kylo-services'"
 
 
-echo "    - Completed thinkbig-services install"
+echo "    - Completed kylo-services install"
 
-echo "    - Install thinkbig-spark-shell application"
+echo "    - Install kylo-spark-shell application"
 
-cat << EOF > $rpmInstallDir/thinkbig-services/bin/run-thinkbig-spark-shell.sh
+cat << EOF > $rpmInstallDir/kylo-services/bin/run-kylo-spark-shell.sh
 #!/bin/bash
 SPARK_PROFILE="v"\$(spark-submit --version 2>&1 | grep -o "version [0-9]" | grep -o "[0-9]")
-spark-submit --conf spark.driver.userClassPathFirst=true --class com.thinkbiganalytics.spark.SparkShellApp --driver-class-path /opt/thinkbig/thinkbig-services/conf --driver-java-options -Dlog4j.configuration=log4j-spark.properties $rpmInstallDir/thinkbig-services/lib/app/thinkbig-spark-shell-client-\${SPARK_PROFILE}-*.jar --pgrep-marker=$pgrepMarkerThinkbigSparkShell
+spark-submit --conf spark.driver.userClassPathFirst=true --class com.thinkbiganalytics.spark.SparkShellApp --driver-class-path /opt/kylo/kylo-services/conf --driver-java-options -Dlog4j.configuration=log4j-spark.properties $rpmInstallDir/kylo-services/lib/app/kylo-spark-shell-client-\${SPARK_PROFILE}-*.jar --pgrep-marker=$pgrepMarkerKyloSparkShell
 EOF
-chmod +x $rpmInstallDir/thinkbig-services/bin/run-thinkbig-spark-shell.sh
-echo "   - Created thinkbig-spark-shell script '$rpmInstallDir/thinkbig-services/bin/run-thinkbig-spark-shell.sh'"
+chmod +x $rpmInstallDir/kylo-services/bin/run-kylo-spark-shell.sh
+echo "   - Created kylo-spark-shell script '$rpmInstallDir/kylo-services/bin/run-kylo-spark-shell.sh'"
 
-cat << EOF > /etc/init.d/thinkbig-spark-shell
+cat << EOF > /etc/init.d/kylo-spark-shell
 #! /bin/sh
 # chkconfig: 345 98 20
-# description: thinkbig-spark-shell
-# processname: thinkbig-spark-shell
-stdout_log="/var/log/thinkbig-services/thinkbig-spark-shell.log"
-stderr_log="/var/log/thinkbig-services/thinkbig-spark-shell.err"
-RUN_AS_USER=thinkbig
+# description: kylo-spark-shell
+# processname: kylo-spark-shell
+stdout_log="/var/log/kylo-services/kylo-spark-shell.log"
+stderr_log="/var/log/kylo-services/kylo-spark-shell.err"
+RUN_AS_USER=kylo
 
 start() {
-    if pgrep -f $pgrepMarkerThinkbigSparkShell >/dev/null 2>&1
+    if pgrep -f $pgrepMarkerKyloSparkShell >/dev/null 2>&1
       then
         echo Already running.
       else
-        echo Starting thinkbig-spark-shell ...
-        su - \$RUN_AS_USER -c "$rpmInstallDir/thinkbig-services/bin/run-thinkbig-spark-shell.sh" >> "\$stdout_log" 2>> "\$stderr_log" &
+        echo Starting kylo-spark-shell ...
+        su - \$RUN_AS_USER -c "$rpmInstallDir/kylo-services/bin/run-kylo-spark-shell.sh" >> "\$stdout_log" 2>> "\$stderr_log" &
     fi
 }
 
 stop() {
-    if pgrep -f $pgrepMarkerThinkbigSparkShell >/dev/null 2>&1
+    if pgrep -f $pgrepMarkerKyloSparkShell >/dev/null 2>&1
       then
-        echo Stopping thinkbig-spark-shell ...
-        pkill -f $pgrepMarkerThinkbigSparkShell
+        echo Stopping kylo-spark-shell ...
+        pkill -f $pgrepMarkerKyloSparkShell
       else
         echo Already stopped.
     fi
 }
 
 status() {
-    if pgrep -f $pgrepMarkerThinkbigSparkShell >/dev/null 2>&1
+    if pgrep -f $pgrepMarkerKyloSparkShell >/dev/null 2>&1
       then
           echo Running.  Here are the related processes:
-          pgrep -lf $pgrepMarkerThinkbigSparkShell
+          pgrep -lf $pgrepMarkerKyloSparkShell
       else
         echo Stopped.
     fi
@@ -326,40 +326,40 @@ case "\$1" in
         status
     ;;
     restart)
-       echo "Restarting thinkbig-spark-shell"
+       echo "Restarting kylo-spark-shell"
        stop
        sleep 2
        start
-       echo "thinkbig-spark-shell started"
+       echo "kylo-spark-shell started"
     ;;
 esac
 exit 0
 EOF
-chmod +x /etc/init.d/thinkbig-spark-shell
-echo "   - Created thinkbig-spark-shell script '/etc/init.d/thinkbig-spark-shell'"
+chmod +x /etc/init.d/kylo-spark-shell
+echo "   - Created kylo-spark-shell script '/etc/init.d/kylo-spark-shell'"
 
-chkconfig --add thinkbig-spark-shell
-chkconfig thinkbig-spark-shell on
-echo "   - Added service 'thinkbig-spark-shell'"
+chkconfig --add kylo-spark-shell
+chkconfig kylo-spark-shell on
+echo "   - Added service 'kylo-spark-shell'"
 
 
-echo "    - Completed thinkbig-spark-shell install"
+echo "    - Completed kylo-spark-shell install"
 
 {
-echo "    - Create an RPM Removal script at: $rpmInstallDir/remove-thinkbig-datalake-accelerator.sh"
-lastRpm=$(rpm -qa | grep thinkbig-datalake-accelerator)
-touch $rpmInstallDir/remove-thinkbig-datalake-accelerator.sh
-echo "rpm -e $lastRpm " > $rpmInstallDir/remove-thinkbig-datalake-accelerator.sh
-chmod +x $rpmInstallDir/remove-thinkbig-datalake-accelerator.sh
+echo "    - Create an RPM Removal script at: $rpmInstallDir/remove-kylo.sh"
+lastRpm=$(rpm -qa | grep kylo)
+touch $rpmInstallDir/remove-kylo.sh
+echo "rpm -e $lastRpm " > $rpmInstallDir/remove-kylo.sh
+chmod +x $rpmInstallDir/remove-kylo.sh
 
 }
 
-chown -R thinkbig:thinkbig /opt/thinkbig
+chown -R kylo:kylo /opt/kylo
 
-chmod 744 $rpmLogDir/thinkbig*
+chmod 744 $rpmLogDir/kylo*
 
-chown thinkbig:thinkbig $rpmLogDir/thinkbig*
+chown kylo:kylo $rpmLogDir/kylo*
 
 echo "   INSTALL COMPLETE"
-echo "   - Please configure the application using the property files and scripts located under the '$rpmInstallDir/thinkbig-ui/conf' and '$rpmInstallDir/thinkbig-services/conf' folder.  See deployment guide for details."
-echo "   - To remove thinkbig-datalake-accelerator run $rpmInstallDir/remove-thinkbig-datalake-accelerator.sh "
+echo "   - Please configure the application using the property files and scripts located under the '$rpmInstallDir/kylo-ui/conf' and '$rpmInstallDir/kylo-services/conf' folder.  See deployment guide for details."
+echo "   - To remove kylo run $rpmInstallDir/remove-kylo.sh "

@@ -50,7 +50,7 @@ import javax.jms.ConnectionFactory;
 @EnableJms
 @ComponentScan(basePackages = {"com.thinkbiganalytics.activemq"})
 @PropertySources({
-                     @PropertySource(value = "file:${thinkbig.nifi.configPath}/config.properties", ignoreResourceNotFound = true),
+                     @PropertySource(value = "file:${kylo.nifi.configPath}/config.properties", ignoreResourceNotFound = true),
                      @PropertySource(value = "classpath:application.properties", ignoreResourceNotFound = true)
                  })
 public class ActiveMqConfig {

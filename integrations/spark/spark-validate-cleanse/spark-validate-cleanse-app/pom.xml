@@ -4,40 +4,40 @@
 
   <parent>
     <groupId>com.thinkbiganalytics.datalake</groupId>
-    <artifactId>thinkbig-spark-validate-cleanse</artifactId>
+    <artifactId>kylo-spark-validate-cleanse</artifactId>
     <version>0.7.0-SNAPSHOT</version>
   </parent>
 	<properties>
 		<plugin.license.parentRelative>../../../../</plugin.license.parentRelative>
 	</properties>
-  <artifactId>thinkbig-spark-validate-cleanse-app</artifactId>
+  <artifactId>kylo-spark-validate-cleanse-app</artifactId>
 
 
   <dependencies>
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-field-policy-core</artifactId>
+      <artifactId>kylo-field-policy-core</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-field-policy-default</artifactId>
+      <artifactId>kylo-field-policy-default</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-commons-hive</artifactId>
+      <artifactId>kylo-commons-hive</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-commons-spark-api</artifactId>
+      <artifactId>kylo-commons-spark-api</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-spark-validate-cleanse-api</artifactId>
+      <artifactId>kylo-spark-validate-cleanse-api</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

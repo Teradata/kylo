@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd /opt/thinkbig/setup
+cd /opt/kylo/setup
 
 wget https://archive.apache.org/dist/activemq/5.13.3/apache-activemq-5.13.3-bin.tar.gz -P ./activemq
 
@@ -12,6 +12,6 @@ wget --no-check-certificate --no-cookies --header "Cookie: oraclelicense=accept-
 
 wget https://archive.apache.org/dist/nifi/1.0.0/nifi-1.0.0-bin.tar.gz -P ./nifi
 
-cp /opt/thinkbig/thinkbig-services/lib/mysql-connector-java-*.jar ./nifi
+cp /opt/kylo/kylo-services/lib/mysql-connector-java-*.jar ./nifi
 
-tar -cvf thinkbig-install.tar *
+tar -cvf kylo-install.tar *

@@ -3,65 +3,65 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.thinkbiganalytics.datalake</groupId>
-        <artifactId>thinkbig-sla</artifactId>
+        <artifactId>kylo-sla</artifactId>
         <version>0.7.0-SNAPSHOT</version>
     </parent>
 	<properties>
 		<plugin.license.parentRelative>../../../</plugin.license.parentRelative>
 	</properties>
-    <artifactId>thinkbig-sla-core</artifactId>
+    <artifactId>kylo-sla-core</artifactId>
 
     <dependencies>
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-commons-util</artifactId>
+            <artifactId>kylo-commons-util</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-sla-api</artifactId>
+            <artifactId>kylo-sla-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-alerts-api</artifactId>
+            <artifactId>kylo-alerts-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <artifactId>thinkbig-job-repository-api</artifactId>
+            <artifactId>kylo-job-repository-api</artifactId>
             <groupId>com.thinkbiganalytics.datalake</groupId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-calendar</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-scheduler-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-scheduler-core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-scheduler-quartz</artifactId>
+            <artifactId>kylo-calendar</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-alerts-core</artifactId>
+            <artifactId>kylo-scheduler-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-          <artifactId>thinkbig-ui-annotation-core</artifactId>
+            <artifactId>kylo-scheduler-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.thinkbiganalytics.datalake</groupId>
+            <artifactId>kylo-scheduler-quartz</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.thinkbiganalytics.datalake</groupId>
+            <artifactId>kylo-alerts-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.thinkbiganalytics.datalake</groupId>
+          <artifactId>kylo-ui-annotation-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

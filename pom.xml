@@ -4,11 +4,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.thinkbiganalytics.datalake</groupId>
-    <artifactId>thinkbig-data-lake-accelerator</artifactId>
+    <artifactId>kylo</artifactId>
     <version>0.7.0-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <name>thinkbig-data-lake-accelerator</name>
-    <description>Thinkbig Data lake Accelerator</description>
+    <name>kylo</name>
+    <description>Kylo</description>
     <inceptionYear>2017</inceptionYear>
     <organization>
 	<name>ThinkBig Analytics</name>
@@ -373,7 +373,7 @@
 
 
             <dependency>
-                <artifactId>thinkbig-rest-client</artifactId>
+                <artifactId>kylo-rest-client</artifactId>
                 <groupId>com.thinkbiganalytics.datalake</groupId>
                 <version>${project.version}</version>
                 <exclusions>

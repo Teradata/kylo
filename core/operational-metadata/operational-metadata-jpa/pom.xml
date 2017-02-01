@@ -3,55 +3,55 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>com.thinkbiganalytics.datalake</groupId>
-    <artifactId>thinkbig-operational-metadata</artifactId>
+    <artifactId>kylo-operational-metadata</artifactId>
     <version>0.7.0-SNAPSHOT</version>
   </parent>
 	<properties>
 		<plugin.license.parentRelative>../../../</plugin.license.parentRelative>
 	</properties>
-  <artifactId>thinkbig-operational-metadata-jpa</artifactId>
+  <artifactId>kylo-operational-metadata-jpa</artifactId>
 
   <dependencies>
 
     <dependency>
         <groupId>com.thinkbiganalytics.metadata</groupId>
-        <artifactId>thinkbig-metadata-api</artifactId>
+        <artifactId>kylo-metadata-api</artifactId>
         <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-operational-metadata-api</artifactId>
+      <artifactId>kylo-operational-metadata-api</artifactId>
       <version>${project.version}</version>
     </dependency>
 
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-commons-jpa</artifactId>
+      <artifactId>kylo-commons-jpa</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-commons-feed-util</artifactId>
+      <artifactId>kylo-commons-feed-util</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-sla-api</artifactId>
+      <artifactId>kylo-sla-api</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-sla-core</artifactId>
+      <artifactId>kylo-sla-core</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-nifi-provenance-model</artifactId>
+      <artifactId>kylo-nifi-provenance-model</artifactId>
       <version>${project.version}</version>
     </dependency>
 

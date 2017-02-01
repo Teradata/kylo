@@ -3,10 +3,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>thinkbig-activemq-broker</artifactId>
+    <artifactId>kylo-activemq-broker</artifactId>
     <parent>
         <groupId>com.thinkbiganalytics.datalake</groupId>
-        <artifactId>thinkbig-jms-service</artifactId>
+        <artifactId>kylo-jms-service</artifactId>
         <version>0.4.2-SNAPSHOT</version>
     </parent>
 	<properties>
@@ -17,7 +17,7 @@
         <!-- Spring artifacts -->
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-activemq-core</artifactId>
+            <artifactId>kylo-activemq-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

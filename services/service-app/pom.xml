@@ -2,11 +2,11 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>thinkbig-service-app</artifactId>
+    <artifactId>kylo-service-app</artifactId>
   <packaging>jar</packaging>
 
     <parent>
-        <artifactId>thinkbig-services</artifactId>
+        <artifactId>kylo-services</artifactId>
         <groupId>com.thinkbiganalytics.datalake</groupId>
         <version>0.7.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
@@ -28,43 +28,43 @@
 
       <dependency>
         <groupId>com.thinkbiganalytics.datalake</groupId>
-        <artifactId>thinkbig-service-app-api</artifactId>
+        <artifactId>kylo-service-app-api</artifactId>
         <version>${project.version}</version>
       </dependency>
         <!-- Services monitoring code -->
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-service-monitor-nifi</artifactId>
+            <artifactId>kylo-service-monitor-nifi</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-service-monitor-ambari</artifactId>
+            <artifactId>kylo-service-monitor-ambari</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-service-monitor-pipeline-db</artifactId>
+            <artifactId>kylo-service-monitor-pipeline-db</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-service-monitor-controller</artifactId>
+            <artifactId>kylo-service-monitor-controller</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-security-controller</artifactId>
+            <artifactId>kylo-security-controller</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
            <groupId>com.thinkbiganalytics.datalake</groupId>
-           <artifactId>thinkbig-schema-discovery-controller</artifactId>
+           <artifactId>kylo-schema-discovery-controller</artifactId>
            <version>${project.version}</version>
          </dependency>
 
@@ -73,82 +73,82 @@
         <!-- Alerts -->
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-alerts-controller</artifactId>
+            <artifactId>kylo-alerts-controller</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-alerts-core</artifactId>
+            <artifactId>kylo-alerts-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-alerts-default</artifactId>
+            <artifactId>kylo-alerts-default</artifactId>
             <version>${project.version}</version>
         </dependency>
 
 
       <dependency>
         <groupId>com.thinkbiganalytics.datalake</groupId>
-        <artifactId>thinkbig-operational-metadata-integration-service</artifactId>
+        <artifactId>kylo-operational-metadata-integration-service</artifactId>
         <version>${project.version}</version>
       </dependency>
 
 
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-          <artifactId>thinkbig-alerts-core</artifactId>
+          <artifactId>kylo-alerts-core</artifactId>
           <version>${project.version}</version>
         </dependency>
 
 
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-security-auth</artifactId>
+            <artifactId>kylo-security-auth</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-security-auth</artifactId>
+            <artifactId>kylo-security-auth</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-security-auth-simple</artifactId>
+            <artifactId>kylo-security-auth-simple</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-security-auth-file</artifactId>
+            <artifactId>kylo-security-auth-file</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-security-auth-kylo</artifactId>
+            <artifactId>kylo-security-auth-kylo</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-security-auth-ldap</artifactId>
+            <artifactId>kylo-security-auth-ldap</artifactId>
             <version>${project.version}</version>
         </dependency>
       <dependency>
         <groupId>com.thinkbiganalytics.datalake</groupId>
-        <artifactId>thinkbig-hadoop-authorization-core</artifactId>
+        <artifactId>kylo-hadoop-authorization-core</artifactId>
         <version>${project.version}</version>
       </dependency>
 
 
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-job-repository-api</artifactId>
+            <artifactId>kylo-job-repository-api</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-job-repository-controller</artifactId>
+            <artifactId>kylo-job-repository-controller</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -157,26 +157,26 @@
         <!-- Field Policies -->
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-field-policy-controller</artifactId>
+            <artifactId>kylo-field-policy-controller</artifactId>
             <version>${project.version}</version>
         </dependency>
 
 
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-feed-manager-precondition-policy</artifactId>
+            <artifactId>kylo-feed-manager-precondition-policy</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-field-policy-default</artifactId>
+            <artifactId>kylo-field-policy-default</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-schema-discovery-default</artifactId>
+            <artifactId>kylo-schema-discovery-default</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -184,53 +184,53 @@
 
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-scheduler-controller</artifactId>
+            <artifactId>kylo-scheduler-controller</artifactId>
             <version>${project.version}</version>
         </dependency>
 
 
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-commons-rest-model</artifactId>
+            <artifactId>kylo-commons-rest-model</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-feed-manager-controller</artifactId>
+            <artifactId>kylo-feed-manager-controller</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-audit-logging-controller</artifactId>
+            <artifactId>kylo-audit-logging-controller</artifactId>
             <version>${project.version}</version>
         </dependency>
 
       <!--
       <dependency>
           <groupId>com.thinkbiganalytics.metadata</groupId>
-          <artifactId>thinkbig-metadata-db-modeshape-migration</artifactId>
+          <artifactId>kylo-metadata-db-modeshape-migration</artifactId>
           <version>${project.version}</version>
       </dependency>
 -->
         <!-- -->
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-thrift-proxy-controller</artifactId>
+            <artifactId>kylo-thrift-proxy-controller</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-spark-shell-controller</artifactId>
+            <artifactId>kylo-spark-shell-controller</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <!-- metadata server -->
         <dependency>
             <groupId>com.thinkbiganalytics.metadata</groupId>
-            <artifactId>thinkbig-metadata-rest-controller</artifactId>
+            <artifactId>kylo-metadata-rest-controller</artifactId>
             <version>${project.version}</version>
             <exclusions>
                 <exclusion>
@@ -247,26 +247,26 @@
         <!-- Kerberos Ticket Renewer -->
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-kerberos-core</artifactId>
+            <artifactId>kylo-kerberos-core</artifactId>
             <version>0.7.0-SNAPSHOT</version>
         </dependency>
 
         <!-- NiFi REST clients -->
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-nifi-rest-client-v0</artifactId>
+            <artifactId>kylo-nifi-rest-client-v0</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-nifi-rest-client-v1</artifactId>
+            <artifactId>kylo-nifi-rest-client-v1</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <!-- Kylo upgrade -->
         <dependency>
           <groupId>com.thinkbiganalytics.datalake</groupId>
-          <artifactId>thinkbig-operational-metadata-upgrade-service</artifactId>
+          <artifactId>kylo-operational-metadata-upgrade-service</artifactId>
           <version>${project.version}</version>
         </dependency>
 

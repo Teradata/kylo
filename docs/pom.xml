@@ -3,11 +3,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <artifactId>thinkbig-data-lake-accelerator</artifactId>
+        <artifactId>kylo</artifactId>
         <groupId>com.thinkbiganalytics.datalake</groupId>
         <version>0.7.0-SNAPSHOT</version>
     </parent>
-    <artifactId>thinkbig-docs</artifactId>
+    <artifactId>kylo-docs</artifactId>
     <packaging>pom</packaging>
 
     <properties>

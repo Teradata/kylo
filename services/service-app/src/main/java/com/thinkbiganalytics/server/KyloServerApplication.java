@@ -46,7 +46,7 @@ import java.util.concurrent.Executors;
 @EnableConfigServer
 @Import({DatabaseConfiguration.class, OperationalMetadataConfig.class,SpringJerseyConfiguration.class})
 @ComponentScan("com.thinkbiganalytics") //FIX this
-public class ThinkbigServerApplication implements SchedulingConfigurer {
+public class KyloServerApplication implements SchedulingConfigurer {
 
 
   @Bean(destroyMethod = "shutdown")

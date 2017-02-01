@@ -3,34 +3,34 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>com.thinkbiganalytics.datalake</groupId>
-    <artifactId>thinkbig-operational-metadata-service</artifactId>
+    <artifactId>kylo-operational-metadata-service</artifactId>
     <version>0.7.0-SNAPSHOT</version>
   </parent>
 	<properties>
 		<plugin.license.parentRelative>../../../</plugin.license.parentRelative>
 	</properties>
-  <artifactId>thinkbig-operational-metadata-upgrade-service</artifactId>
+  <artifactId>kylo-operational-metadata-upgrade-service</artifactId>
 
   <dependencies>
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-commons-feed-util</artifactId>
+      <artifactId>kylo-commons-feed-util</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-operational-metadata-api</artifactId>
+      <artifactId>kylo-operational-metadata-api</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.metadata</groupId>
-      <artifactId>thinkbig-metadata-persistence</artifactId>
+      <artifactId>kylo-metadata-persistence</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.metadata</groupId>
-      <artifactId>thinkbig-metadata-modeshape</artifactId>
+      <artifactId>kylo-metadata-modeshape</artifactId>
       <version>${project.version}</version>
       <exclusions>
         <exclusion>
@@ -90,13 +90,13 @@
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-operational-metadata-jpa</artifactId>
+      <artifactId>kylo-operational-metadata-jpa</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.metadata</groupId>
-      <artifactId>thinkbig-metadata-api</artifactId>
+      <artifactId>kylo-metadata-api</artifactId>
       <version>${project.version}</version>
     </dependency>
 

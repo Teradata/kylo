@@ -12,7 +12,7 @@ fi
 current_dir=$(pwd)
 echo "The working directory is $current_dir"
 
-echo "Welcome to the Think Big Data Lake Accelerator setup wizard. Lets get started !!!"
+echo "Welcome to the Kylo setup wizard. Lets get started !!!"
 echo " "
 echo "Please enter Y/y or N/n to the following questions:"
 echo " "
@@ -83,7 +83,7 @@ if [ $offline = true ]
 then
     cd $current_dir
 else
-    cd /opt/thinkbig/setup
+    cd /opt/kylo/setup
 fi
 
 if [ "$install_db" == "y"  ] || [ "$install_db" == "Y" ] ; then
@@ -121,8 +121,8 @@ if [ "$install_activemq" == "y"  ] || [ "$install_activemq" == "Y" ] ; then
 fi
 
 if [ "$java_type" == "1" ] ; then
-    echo "Using system Java 8 and remove the JAVA_HOME variable from thinkbig-ui and thinkbig-services"
-    ./java/remove-default-thinkbig-java-home.sh
+    echo "Using system Java 8 and remove the JAVA_HOME variable from kylo-ui and kylo-services"
+    ./java/remove-default-kylo-java-home.sh
 elif [ "$java_type" == "2" ] ; then
     if [ $offline = true ]
     then
@@ -132,8 +132,8 @@ elif [ "$java_type" == "2" ] ; then
     fi
 
 elif [ "$java_type" == "3" ] ; then
-    ./java/remove-default-thinkbig-java-home.sh
-    ./java/change-thinkbig-java-home.sh $java_home
+    ./java/remove-default-kylo-java-home.sh
+    ./java/change-kylo-java-home.sh $java_home
 fi
 
 if [ "$install_nifi" == "y"  ] || [ "$install_nifi" == "Y" ] ; then
@@ -152,9 +152,9 @@ if [ "$install_nifi" == "y"  ] || [ "$install_nifi" == "Y" ] ; then
 
     if [ $offline = true ]
     then
-        ./nifi/install-thinkbig-components.sh -O $current_dir
+        ./nifi/install-kylo-components.sh -O $current_dir
     else
-        ./nifi/install-thinkbig-components.sh
+        ./nifi/install-kylo-components.sh
     fi
 
 fi
