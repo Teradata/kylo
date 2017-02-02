@@ -135,7 +135,7 @@
         </dependency>
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-security-auth-kerberos</artifactId>
+            <artifactId>kylo-security-auth-kerberos</artifactId>
             <version>${project.version}</version>
         </dependency>
 
