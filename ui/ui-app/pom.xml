@@ -89,7 +89,7 @@
         </dependency>
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>kylo-security-auth-rest</artifactId>
+            <artifactId>kylo-security-auth-kylo-rest</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

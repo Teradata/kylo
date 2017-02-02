@@ -125,7 +125,7 @@
         </dependency>
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>kylo-security-auth-kylo</artifactId>
+            <artifactId>kylo-security-auth-kylo-local</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

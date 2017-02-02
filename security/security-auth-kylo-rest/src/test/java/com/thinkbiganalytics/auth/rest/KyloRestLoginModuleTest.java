@@ -39,7 +39,7 @@ import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
 
-public class RestLoginModuleTest {
+public class KyloRestLoginModuleTest {
 
     /** Verify logging in by querying a REST API. */
     @Test
@@ -63,7 +63,7 @@ public class RestLoginModuleTest {
         });
 
         // Mock login module
-        final RestLoginModule module = new RestLoginModule() {
+        final KyloRestLoginModule module = new KyloRestLoginModule() {
             @Nonnull
             @Override
             JerseyRestClient getClient(@Nonnull LoginJerseyClientConfig config) {
@@ -74,7 +74,7 @@ public class RestLoginModuleTest {
         // Test login
         final Subject subject = new Subject();
 
-        module.initialize(subject, callbackHandler, Collections.emptyMap(), Collections.singletonMap(RestLoginModule.LOGIN_URL, "http://localhost:8400/proxy"));
+        module.initialize(subject, callbackHandler, Collections.emptyMap(), Collections.singletonMap(KyloRestLoginModule.LOGIN_URL, "http://localhost:8400/proxy"));
         Assert.assertTrue(module.login());
         Assert.assertTrue(module.commit());
 

@@ -35,8 +35,8 @@ import javax.annotation.Nonnull;
  * Spring configuration for the REST API Login Module.
  */
 @Configuration
-@Profile("auth-rest")
-public class RestAuthConfig {
+@Profile("auth-kylo")
+public class KyloRestAuthConfig {
 
     @Value("${security.auth.rest.login.services:required}")
     private String servicesLoginFlag;
@@ -55,9 +55,9 @@ public class RestAuthConfig {
     public LoginConfiguration servicesRestLoginConfiguration(@Nonnull final LoginConfigurationBuilder builder) {
         return builder
                 .loginModule(JaasAuthConfig.JAAS_UI)
-                    .moduleClass(RestLoginModule.class)
+                    .moduleClass(KyloRestLoginModule.class)
                     .controlFlag(this.servicesLoginFlag)
-                    .option(RestLoginModule.LOGIN_URL, loginUrl)
+                    .option(KyloRestLoginModule.LOGIN_URL, loginUrl)
                     .add()
                 .build();
     }

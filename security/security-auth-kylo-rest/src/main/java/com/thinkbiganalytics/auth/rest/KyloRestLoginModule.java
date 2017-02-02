@@ -47,9 +47,9 @@ import javax.ws.rs.WebApplicationException;
 /**
  * Authenticates users by querying an external REST API. This allows the UI module to get a user's groups from the Services module.
  */
-public class RestLoginModule extends AbstractLoginModule implements LoginModule {
+public class KyloRestLoginModule extends AbstractLoginModule implements LoginModule {
 
-    private static final Logger log = LoggerFactory.getLogger(RestLoginModule.class);
+    private static final Logger log = LoggerFactory.getLogger(KyloRestLoginModule.class);
 
     /** Option for the URL of the REST API endpoint */
     public static final String LOGIN_URL = "loginUrl";

@@ -19,7 +19,7 @@
         <module>security-auth-simple</module>
         <module>security-auth-ldap</module>
         <module>security-auth-file</module>
-        <module>security-auth-kylo</module>
+        <module>security-auth-kylo-local</module>
         <module>security-auth-kylo-rest</module>
         <module>security-auth-kerberos</module>
     </modules>
