@@ -34,11 +34,11 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.kerberos.authentication.KerberosServiceAuthenticationProvider;
-import org.springframework.security.kerberos.web.authentication.SpnegoAuthenticationProcessingFilter;
 import org.springframework.security.kerberos.web.authentication.SpnegoEntryPoint;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
+import com.thinkbiganalytics.security.auth.kerberos.SpnegoValidationUserAuthenticationFilter;
 
 /**
  *
@@ -46,9 +46,9 @@ import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
  */
 @Configuration
 @EnableWebSecurity
-@Order(DefaultWebSecurityConfigurerAdapter.ORDER)
+@Order(DefaultWebSecurityConfigurer.ORDER)
 @Profile("auth-krb-spnego")
-public class KerberosWebSecurityConfiguration extends WebSecurityConfigurerAdapter {
+public class KerberosWebSecurityConfigurer extends WebSecurityConfigurerAdapter {
     
     @Inject 
     private SpnegoEntryPoint spnegoEntryPoint;
@@ -71,7 +71,7 @@ public class KerberosWebSecurityConfiguration extends WebSecurityConfigurerAdapt
             .authorizeRequests()
                 .antMatchers("/**").authenticated()
                 .and()
-            .addFilterBefore(spnegoAuthenticationProcessingFilter(), BasicAuthenticationFilter.class);
+            .addFilterBefore(spnegoFilter(), BasicAuthenticationFilter.class);
     }
 
     @Override
@@ -82,8 +82,8 @@ public class KerberosWebSecurityConfiguration extends WebSecurityConfigurerAdapt
     }
     
     @Bean
-    public SpnegoAuthenticationProcessingFilter spnegoAuthenticationProcessingFilter() throws Exception {
-        SpnegoAuthenticationProcessingFilter filter = new SpnegoAuthenticationProcessingFilter();
+    public SpnegoValidationUserAuthenticationFilter spnegoFilter() throws Exception {
+        SpnegoValidationUserAuthenticationFilter filter = new SpnegoValidationUserAuthenticationFilter();
         filter.setAuthenticationManager(authenticationManagerBean());
         return filter;
     }

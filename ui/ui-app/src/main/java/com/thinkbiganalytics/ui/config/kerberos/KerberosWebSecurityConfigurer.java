@@ -30,12 +30,13 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.kerberos.authentication.KerberosServiceAuthenticationProvider;
 import org.springframework.security.kerberos.web.authentication.SpnegoAuthenticationProcessingFilter;
 import org.springframework.security.kerberos.web.authentication.SpnegoEntryPoint;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
-import com.thinkbiganalytics.ui.config.DefaultWebSecurityConfigurerAdapter;
+import com.thinkbiganalytics.ui.config.DefaultWebSecurityConfigurer;
 
 /**
  *
@@ -44,8 +45,8 @@ import com.thinkbiganalytics.ui.config.DefaultWebSecurityConfigurerAdapter;
 @Configuration
 @EnableWebSecurity
 @Profile("auth-krb-spnego")
-@Order(DefaultWebSecurityConfigurerAdapter.ORDER + 1)
-public class KerberosWebSecurityConfiguration extends DefaultWebSecurityConfigurerAdapter {
+@Order(DefaultWebSecurityConfigurer.ORDER + 1)
+public class KerberosWebSecurityConfigurer extends WebSecurityConfigurerAdapter {
     
     @Inject 
     private SpnegoEntryPoint spnegoEntryPoint;
@@ -78,7 +79,6 @@ public class KerberosWebSecurityConfiguration extends DefaultWebSecurityConfigur
         return filter;
     }
 
-    @Bean(name="krbAuthenticationManager")
     @Override
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();

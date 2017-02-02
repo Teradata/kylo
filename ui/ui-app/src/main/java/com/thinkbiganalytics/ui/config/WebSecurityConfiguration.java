@@ -1,5 +1,26 @@
 package com.thinkbiganalytics.ui.config;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.security.SecurityProperties;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.authentication.rememberme.RememberMeAuthenticationFilter;
+
+import com.thinkbiganalytics.auth.AuthServiceAuthenticationProvider;
+import com.thinkbiganalytics.auth.AuthenticationService;
+import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
+import com.thinkbiganalytics.auth.jwt.JwtRememberMeServices;
+
 /*-
  * #%L
  * thinkbig-ui-app
@@ -19,25 +40,6 @@ package com.thinkbiganalytics.ui.config;
  * limitations under the License.
  * #L%
  */
-
-import com.thinkbiganalytics.auth.AuthServiceAuthenticationProvider;
-import com.thinkbiganalytics.auth.AuthenticationService;
-import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
-import com.thinkbiganalytics.auth.jwt.JwtRememberMeServices;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.security.SecurityProperties;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.core.annotation.Order;
-import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.web.authentication.rememberme.RememberMeAuthenticationFilter;
 
 /**
  * Form Based Auth with Spring Security.

@@ -48,10 +48,10 @@ import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
  */
 @Configuration
 @EnableWebSecurity
-@Order(DefaultWebSecurityConfigurerAdapter.ORDER)
-public class DefaultWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
+@Order(DefaultWebSecurityConfigurer.ORDER)
+public class DefaultWebSecurityConfigurer extends WebSecurityConfigurerAdapter {
 
-    protected static final Logger LOG = LoggerFactory.getLogger(DefaultWebSecurityConfigurerAdapter.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(DefaultWebSecurityConfigurer.class);
     
     public static final int ORDER = SecurityProperties.ACCESS_OVERRIDE_ORDER;
 

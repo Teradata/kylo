@@ -53,11 +53,11 @@ import org.springframework.security.web.authentication.rememberme.RememberMeAuth
  */
 @Configuration
 @EnableWebSecurity
-@Order(DefaultWebSecurityConfigurerAdapter.ORDER)
+@Order(DefaultWebSecurityConfigurer.ORDER)
 @Profile("!auth-krb-spnego")
-public class DefaultWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
+public class DefaultWebSecurityConfigurer extends WebSecurityConfigurerAdapter {
 
-    protected static final Logger LOG = LoggerFactory.getLogger(DefaultWebSecurityConfigurerAdapter.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(DefaultWebSecurityConfigurer.class);
     
     public static final int ORDER = SecurityProperties.ACCESS_OVERRIDE_ORDER;
 
