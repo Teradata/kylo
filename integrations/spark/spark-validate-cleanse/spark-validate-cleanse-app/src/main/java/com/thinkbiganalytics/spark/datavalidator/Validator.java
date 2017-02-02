@@ -98,6 +98,7 @@ public class Validator implements Serializable {
     private String qualifiedProfileName;
     private String targetDatabase;
     private String partition;
+    private String storageLevel;
 
     private FieldPolicy[] policies;
     private HCatDataType[] schema;
@@ -123,11 +124,11 @@ public class Validator implements Serializable {
     private final Vector<Accumulator<Integer>> accumList = new Vector<>();
     private CommandLineParams params;
 
-    public void setArguments(String targetDatabase, String entity, String partition, String fieldPolicyJsonPath) {
+    public void setArguments(String targetDatabase, String entity, String partition, String fieldPolicyJsonPath, String storageLevel) {
         this.validTableName = entity + "_valid";
         this.invalidTableName = entity + "_invalid";
         this.profileTableName = entity + "_profile";
-        ;
+        this.storageLevel = storageLevel;
         this.feedTablename = HiveUtils.quoteIdentifier(targetDatabase, entity + "_feed");
         this.refTablename = HiveUtils.quoteIdentifier(targetDatabase, validTableName);
         this.qualifiedProfileName = HiveUtils.quoteIdentifier(targetDatabase, profileTableName);
@@ -182,8 +183,7 @@ public class Validator implements Serializable {
                 }
             });
 
-            // Should Parameterize Storage Level
-            newResults.persist(StorageLevel.fromString("MEMORY_ONLY_SER"));
+            newResults.persist(StorageLevel.fromString(storageLevel));
             newResults.count();
 
             Integer[] fieldInvalidCounts = new Integer[this.schema.length];
@@ -579,8 +579,8 @@ public class Validator implements Serializable {
         log.info("Running Spark Validator with the following command line args (comma separated):" + StringUtils.join(args, ","));
 
         // Check how many arguments were passed in
-        if (args.length < 4) {
-            System.out.println("Proper Usage is: <targetDatabase> <entity> <partition> <path-to-policy-file>");
+        if (args.length < 5) {
+            System.out.println("Proper Usage is: <targetDatabase> <entity> <partition> <path-to-policy-file> <storage-level>");
             System.out.println("You can optionally add: --hiveConf hive.setting=value --hiveConf hive.other.setting=value");
             System.out.println("You provided " + args.length + " args which are (comma separated): " + StringUtils.join(args, ","));
             System.exit(1);
@@ -588,8 +588,8 @@ public class Validator implements Serializable {
         try {
             ApplicationContext ctx = new AnnotationConfigApplicationContext("com.thinkbiganalytics.spark");
             Validator app = ctx.getBean(Validator.class);
-            app.setArguments(args[0], args[1], args[2], args[3]);
-            app.addParameters(parseRemainingParameters(args, 4));
+            app.setArguments(args[0], args[1], args[2], args[3], args[4]);
+            app.addParameters(parseRemainingParameters(args, 5));
             app.doValidate();
         } catch (Exception e) {
             System.out.println(e);
