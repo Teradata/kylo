@@ -579,16 +579,25 @@ public class Validator implements Serializable {
         log.info("Running Spark Validator with the following command line args (comma separated):" + StringUtils.join(args, ","));
 
         // Check how many arguments were passed in
-        if (args.length < 5) {
+        final String storageLevel;
+
+        if (args.length == 4) {
+            storageLevel = "MEMORY_AND_DISK";
+        } else if (args.length == 5) {
+            storageLevel = args[4];
+        } else {
+            storageLevel = null;
             System.out.println("Proper Usage is: <targetDatabase> <entity> <partition> <path-to-policy-file> <storage-level>");
             System.out.println("You can optionally add: --hiveConf hive.setting=value --hiveConf hive.other.setting=value");
             System.out.println("You provided " + args.length + " args which are (comma separated): " + StringUtils.join(args, ","));
             System.exit(1);
         }
+
+        // Execute validator
         try {
             ApplicationContext ctx = new AnnotationConfigApplicationContext("com.thinkbiganalytics.spark");
             Validator app = ctx.getBean(Validator.class);
-            app.setArguments(args[0], args[1], args[2], args[3], args[4]);
+            app.setArguments(args[0], args[1], args[2], args[3], storageLevel);
             app.addParameters(parseRemainingParameters(args, 5));
             app.doValidate();
         } catch (Exception e) {

@@ -54,7 +54,7 @@ public class ValidatorTest {
         URL url = getClass().getClassLoader().getResource("example-policy.json");
         Path pathToPolicyFile = Paths.get(url.toURI());
         validator = new Validator();
-        validator.setArguments("emp", "sampletable", "20001", pathToPolicyFile.toString());
+        validator.setArguments("emp", "sampletable", "20001", pathToPolicyFile.toString(), "MEMORY_AND_DISK");
     }
 
 
