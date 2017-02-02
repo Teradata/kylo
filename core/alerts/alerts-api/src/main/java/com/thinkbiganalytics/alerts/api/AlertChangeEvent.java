@@ -39,7 +39,7 @@ import java.security.Principal;
 public interface AlertChangeEvent {
     
     /**
-     * @return the time when the the alert transitioned to this state
+     * @return the time when the alert transitioned to this state
      */
     DateTime getChangeTime();
     

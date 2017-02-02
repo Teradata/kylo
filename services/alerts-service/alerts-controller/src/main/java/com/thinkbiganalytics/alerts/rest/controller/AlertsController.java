@@ -90,8 +90,8 @@ public class AlertsController {
         List<Alert> alerts = new ArrayList<>();
         AlertCriteria criteria = createCriteria(limit, state, level, before, after, cleared);
 
-        provider.getAlerts(criteria).forEachRemaining(a -> alerts.add(a));
-        return new AlertRange(alerts.stream().map(a -> toModel(a)).collect(Collectors.toList()));
+        provider.getAlerts(criteria).forEachRemaining(alerts::add);
+        return new AlertRange(alerts.stream().map(this::toModel).collect(Collectors.toList()));
     }
 
     @GET
@@ -106,7 +106,7 @@ public class AlertsController {
         Alert.ID id = provider.resolve(idStr);
 
         return provider.getAlert(id)
-                        .map(a -> toModel(a))
+                        .map(this::toModel)
                         .orElseThrow(() -> new WebApplicationException("An alert with the given ID does not exists: " + idStr, Status.NOT_FOUND));
     }
 
@@ -139,7 +139,7 @@ public class AlertsController {
         final Alert.State state = toDomain(req.getState());
 
         class UpdateResponder implements AlertResponder {
-            Alert result = null;
+            private Alert result = null;
 
             @Override
             public void alertChange(Alert alert, AlertResponse response) {
@@ -170,7 +170,6 @@ public class AlertsController {
         provider.respondTo(id, responder);
         return toModel(responder.result);
     }
-
 
     private com.thinkbiganalytics.alerts.rest.model.Alert toModel(Alert alert) {
         com.thinkbiganalytics.alerts.rest.model.Alert result = new com.thinkbiganalytics.alerts.rest.model.Alert();

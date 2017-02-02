@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.thinkbiganalytics.alerts.rest.model;
 
 /*-
@@ -35,35 +32,47 @@ import java.util.List;
 
 /**
  * Represents an alert.
- * 
- * @author Sean Felten
  */
 @JsonInclude(Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Alert {
 
+    /** The severity level that alerts may have. */
     public enum Level {
         INFO, WARNING, MINOR, MAJOR, CRITICAL, FATAL
     }
 
+    /** The states that this alert may transition through. */
     public enum State {
         CREATED, UNHANDLED, IN_PROGRESS, HANDLED
     }
 
-
+    /** The ID of the alert */
     private String id;
+
+    /** A unique URI defining the type of alert */
     private URI type;
+
+    /** The level of this alert */
     private Level level;
+
+    /** Retrieves the current state of this alert */
     private State state;
+
+    /** Gets the time when this alert was created */
     private DateTime createdTime;
+
+    /** A description of this alert */
     private String description;
+
+    /** Indicates that alert responders will be invoked for this alert */
     private boolean actionable;
+
+    /** Indicates that this alert will appear in search results */
     private boolean cleared;
+
+    /** The ordered list of state change events */
     private List<AlertChangeEvent> events = new ArrayList<>();
-    
-    public Alert() {}
-
-
 
     public String getId() {
         return id;
@@ -112,7 +121,7 @@ public class Alert {
     public void setDescription(String description) {
         this.description = description;
     }
-    
+
     public boolean isCleared() {
         return cleared;
     }
@@ -128,7 +137,7 @@ public class Alert {
     public void setActionable(boolean actionable) {
         this.actionable = actionable;
     }
-    
+
     public List<AlertChangeEvent> getEvents() {
         return events;
     }

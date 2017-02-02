@@ -57,7 +57,7 @@ public interface Alert {
     ID getId();
     
     /**
-     * A unique URI defining the type of alert this is.  URIs allow for a more heirarichical 
+     * A unique URI defining the type of alert this is.  URIs allow for a more hierarchical
      * name space defining the type.
      * @return the unique type URI
      */
@@ -69,7 +69,7 @@ public interface Alert {
     String getDescription();
     
     /**
-     * @return thie level of this alert
+     * @return the level of this alert
      */
     Level getLevel();
     

@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.thinkbiganalytics.alerts.rest.model;
 
 /*-
@@ -25,23 +22,17 @@ package com.thinkbiganalytics.alerts.rest.model;
 
 /**
  * Contains the details necessary to update the state of an alert.
- * 
- * @author Sean Felten
  */
 public class AlertUpdateRequest {
 
+    /** New state for the alert */
     private Alert.State state;
-    private String description;
-    private boolean clear = false;
-    
-    // TODO not supporting arbitrary content in REST model for now
-//    private Serializable content;
-//    private String contentType;
 
-    
-    
-    public AlertUpdateRequest() {
-    }
+    /** A description of the change */
+    private String description;
+
+    /** Indicates that the alert should not appear in search results */
+    private boolean clear = false;
 
     public Alert.State getState() {
         return state;

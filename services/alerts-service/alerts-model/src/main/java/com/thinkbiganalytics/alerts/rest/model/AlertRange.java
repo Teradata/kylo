@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.thinkbiganalytics.alerts.rest.model;
 
 /*-
@@ -33,25 +30,31 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Contains the range of alerts as a result of a query.  There are also attributes for 
+ * Contains the range of alerts as a result of a query.  There are also attributes for
  * the result size and the alert IDs that bound the result.
- * @author Sean Felten
  */
 @JsonInclude(Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AlertRange {
 
+    /** Time of the newest alert in the results */
     private DateTime newestTime;
+
+    /** Time of the oldest alert in the results */
     private DateTime oldestTime;
+
+    /** Number of alerts in the results */
     private int size;
+
+    /** The list of alerts */
     private List<Alert> alerts;
-    
+
     public AlertRange() {
     }
-    
+
     public AlertRange(List<Alert> alerts) {
         assert alerts != null;
-        
+
         if (alerts.size() > 0) {
             this.newestTime = alerts.get(0).getCreatedTime();
             this.oldestTime = alerts.get(alerts.size() - 1).getCreatedTime();
@@ -59,7 +62,7 @@ public class AlertRange {
             this.newestTime = null;
             this.newestTime = null;
         }
-        
+
         this.alerts = new ArrayList<>(alerts);
         this.size = alerts.size();
     }

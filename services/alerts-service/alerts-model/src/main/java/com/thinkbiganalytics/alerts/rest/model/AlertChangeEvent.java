@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.thinkbiganalytics.alerts.rest.model;
 
 /*-
@@ -32,16 +29,21 @@ import org.joda.time.DateTime;
 
 /**
  * Represents a change event of an alert.
- * 
- * @author Sean Felten
  */
 @JsonInclude(Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AlertChangeEvent {
 
+    /** Gets the time when the alert transitioned to this state */
     private DateTime createdTime;
+
+    /** The new state */
     private State state;
+
+    /** A description of the change, or {@code null} */
     private String description;
+
+    /** The principal of the user that created the alert */
     private String user;
 
     public DateTime getCreatedTime() {
@@ -75,5 +77,5 @@ public class AlertChangeEvent {
     public void setUser(String user) {
         this.user = user;
     }
-    
+
 }

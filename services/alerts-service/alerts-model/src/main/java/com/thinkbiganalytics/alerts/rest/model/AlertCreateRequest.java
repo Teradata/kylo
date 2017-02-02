@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.thinkbiganalytics.alerts.rest.model;
 
 /*-
@@ -30,22 +27,21 @@ import java.net.URI;
 
 /**
  * Contains the details necessary to create a new alert.
- * 
- * @author Sean Felten
  */
 public class AlertCreateRequest {
-    
+
+    /** A unique URI defining the type of this alert */
     private URI type;
+
+    /** A description of this alert */
     private String description;
-    private Level level; 
-    
-    // TODO not supporting arbitrary content in REST model for now
-//    private Serializable content;
-//    private String contentType;
-    
+
+    /** The level of this alert */
+    private Level level;
+
     public AlertCreateRequest() {
     }
-    
+
     public AlertCreateRequest(URI type, String description, Level level) {
         this(type, description, level, null);
     }
