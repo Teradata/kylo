@@ -43,7 +43,7 @@ public class TestKerberosKinit {
 
     private static final String ENVIRONMENT_HDP = "HDP";
     private static final String ENVIRONMENT_CLOUDERA = "CLOUDERA";
-    private static String driverName = "org.apache.hive.jdbc.HiveDriver";
+    private static final String DRIVER_NAME = "org.apache.hive.jdbc.HiveDriver";
 
     public static void main(String[] args) throws Exception {
         final TestKerberosKinit testKerberosKinit = new TestKerberosKinit();
@@ -56,13 +56,16 @@ public class TestKerberosKinit {
             environmentCode = "1";
         }
 
-        String environment = null;
-        if (environmentCode.equals("1")) {
-            environment = ENVIRONMENT_HDP;
-        } else if (environmentCode.equals("2")) {
-            environment = ENVIRONMENT_CLOUDERA;
-        } else {
-            throw new Exception("Invalid environment code");
+        String environment;
+        switch (environmentCode) {
+            case "1":
+                environment = ENVIRONMENT_HDP;
+                break;
+            case "2":
+                environment = ENVIRONMENT_CLOUDERA;
+                break;
+            default:
+                throw new Exception("Invalid environment code");
         }
 
         System.out.println(" ");
@@ -136,11 +139,6 @@ public class TestKerberosKinit {
         }
     }
 
-    /**
-     *
-     * @param configurationFiles
-     * @return
-     */
     private static Configuration createConfigurationFromList(String configurationFiles) {
         Configuration config = new Configuration();
         String[] resources = configurationFiles.split(",");
@@ -150,22 +148,13 @@ public class TestKerberosKinit {
         return config;
     }
 
-    /**
-     *
-     * @param configuration
-     * @param keytabLocation
-     * @param principal
-     * @return
-     * @throws IOException
-     */
     private static UserGroupInformation generateKerberosTicket(Configuration configuration, String keytabLocation, String principal) throws IOException {
         System.setProperty("sun.security.krb5.debug", "false");
         configuration.set("hadoop.security.authentication", "Kerberos");
         UserGroupInformation.setConfiguration(configuration);
 
         System.out.println("Generating Kerberos ticket for principal: " + principal + " at key tab location: " + keytabLocation);
-        UserGroupInformation ugi = UserGroupInformation.loginUserFromKeytabAndReturnUGI(principal, keytabLocation);
-        return ugi;
+        return UserGroupInformation.loginUserFromKeytabAndReturnUGI(principal, keytabLocation);
     }
 
     private void testHdfsWithUserImpersonation(final String configResources, final String keytab, final String principal, String proxyUser, final String environment, final String hdfsUrl) {
@@ -240,14 +229,6 @@ public class TestKerberosKinit {
         }
     }
 
-    /**
-     *
-     * @param configResources
-     * @param keytab
-     * @param realUserPrincipal
-     * @param proxyUser
-     * @throws Exception
-     */
     private void testHiveJdbcConnection(final String configResources, final String keytab, final String realUserPrincipal, final String proxyUser, final String hiveHostName) throws Exception {
 
         final Configuration configuration = TestKerberosKinit.createConfigurationFromList(configResources);
@@ -258,9 +239,9 @@ public class TestKerberosKinit {
 
         HiveConnection realUserConnection = (HiveConnection) realugi.doAs(new PrivilegedExceptionAction<Connection>() {
             public Connection run() {
-                Connection connection = null;
+                Connection connection;
                 try {
-                    Class.forName(driverName);
+                    Class.forName(DRIVER_NAME);
                     String url = hiveHostName;
                     if (proxyUser != null) {
                         url = url + ";hive.server2.proxy.user=" + proxyUser;
@@ -268,7 +249,7 @@ public class TestKerberosKinit {
                     System.out.println("Hive URL: " + url);
                     connection = DriverManager.getConnection(url);
 
-                    Class.forName(driverName);
+                    Class.forName(DRIVER_NAME);
 
                     System.out.println("creating statement");
                     Statement stmt = connection.createStatement();
