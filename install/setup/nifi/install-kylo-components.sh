@@ -21,10 +21,6 @@ else
     NIFI_SETUP_DIR=$KYLO_INSTALL_HOME/setup/nifi
 fi
 
-echo "Copying the configuration files"
-cp $NIFI_SETUP_DIR/nifi.properties $NIFI_INSTALL_HOME/current/conf
-sed -i 's/NIFI_LOG_DIR=\".*\"/NIFI_LOG_DIR=\"\/var\/log\/nifi\"/' $NIFI_INSTALL_HOME/current/bin/nifi-env.sh
-
 echo -e "\n\n# Set kylo nifi configuration file directory path" >> $NIFI_INSTALL_HOME/current/conf/bootstrap.conf
 echo -e "java.arg.15=-Dkylo.nifi.configPath=$NIFI_INSTALL_HOME/ext-config" >> $NIFI_INSTALL_HOME/current/conf/bootstrap.conf
 
