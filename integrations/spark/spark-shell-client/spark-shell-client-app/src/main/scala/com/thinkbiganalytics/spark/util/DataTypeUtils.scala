@@ -62,7 +62,6 @@ object DataTypeUtils {
 
         // User-defined type
         case vectorType: VectorUDT => ObjectInspectorFactory.getStandardListObjectInspector(PrimitiveObjectInspectorFactory.javaDoubleObjectInspector)
-//        case userType: UserDefinedType[_] => getHiveObjectInspector(userType.sqlType)
 
         // Unsupported types
         case _ => throw new IllegalArgumentException("Unsupported data type: " + dataType)

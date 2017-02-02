@@ -1,12 +1,12 @@
 package com.thinkbiganalytics.spark.util
 
-import java.util
-
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.{JavaHiveDecimalObjectInspector, PrimitiveObjectInspectorFactory}
 import org.apache.spark.mllib.linalg.{VectorUDT, Vectors}
 import org.apache.spark.sql.types._
 import org.junit.{Assert, Test}
+
+import java.util
 
 class DataTypeUtilsTest {
 
@@ -29,7 +29,7 @@ class DataTypeUtilsTest {
         Assert.assertEquals(PrimitiveObjectInspectorFactory.javaIntObjectInspector, DataTypeUtils.getHiveObjectInspector(IntegerType))
         Assert.assertEquals(ObjectInspectorFactory.getStandardListObjectInspector(PrimitiveObjectInspectorFactory.javaIntObjectInspector), DataTypeUtils.getHiveObjectInspector(ArrayType(IntegerType)))
         Assert.assertEquals(ObjectInspectorFactory.getStandardMapObjectInspector(PrimitiveObjectInspectorFactory.javaStringObjectInspector, PrimitiveObjectInspectorFactory.javaIntObjectInspector),
-                            DataTypeUtils.getHiveObjectInspector(MapType(StringType, IntegerType)))
+            DataTypeUtils.getHiveObjectInspector(MapType(StringType, IntegerType)))
 
         // Test decimal type conversion
         val smallDecimalType = new DecimalType(10, 0)

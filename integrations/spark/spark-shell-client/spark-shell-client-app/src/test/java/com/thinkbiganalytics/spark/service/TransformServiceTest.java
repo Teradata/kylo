@@ -89,7 +89,7 @@ public class TransformServiceTest {
         service.startAsync();
         service.awaitRunning();
 
-        TransformResponse response = null;
+        final TransformResponse response;
         try {
             response = service.execute(request);
         } finally {
@@ -113,31 +113,7 @@ public class TransformServiceTest {
         Assert.assertEquals("spark_shell_temp", bindings.get(0).value());
         Assert.assertEquals("tableName", bindings.get(1).name());
         Assert.assertEquals("String", bindings.get(1).tpe());
-        Assert.assertTrue(((String)bindings.get(1).value()).matches("^[0-9a-f]{32}$"));
-    }
-
-    /** Verify setting up database during start-up. */
-    @Test
-    public void startUp() {
-        // Mock SQL context and script engine
-//        Dataset dataset = Mockito.mock(Dataset.class);
-//        ImmutableList<Row> tables = ImmutableList.of(RowFactory.create("table1", false), RowFactory.create("table2", false));
-//        Mockito.when(dataset.collectAsList()).thenReturn(tables);
-//
-//        SQLContext context = Mockito.mock(SQLContext.class);
-//        Mockito.when(context.sql(Mockito.anyString())).thenReturn(dataset);
-//
-//        SparkScriptEngine engine = Mockito.mock(SparkScriptEngine.class);
-//        Mockito.when(engine.getSparkContext()).thenReturn(Mockito.mock(SparkContext.class));
-//        Mockito.when(engine.getSQLContext()).thenReturn(context);
-//
-//        // Verify start-up
-//        TransformService service = new TransformService(engine, kerberosTicketConfiguration);
-//        service.startUp();
-//
-//        Mockito.verify(context).sql("CREATE DATABASE IF NOT EXISTS `spark_shell_temp`");
-//        Mockito.verify(context).sql("DROP TABLE IF EXISTS `spark_shell_temp`.`table1`");
-//        Mockito.verify(context).sql("DROP TABLE IF EXISTS `spark_shell_temp`.`table2`");
+        Assert.assertTrue(((String) bindings.get(1).value()).matches("^[0-9a-f]{32}$"));
     }
 
     /**

@@ -1,18 +1,19 @@
 package com.thinkbiganalytics.spark.metadata
 
-import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.{Callable, FutureTask}
-
 import com.thinkbiganalytics.spark.rest.model.TransformResponse
+
 import org.apache.spark.SparkContext
 import org.apache.spark.scheduler.StageInfo
+
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.{Callable, FutureTask}
 
 /** A Spark transformation job.
   *
   * This class is thread-safe but `run` should only be invoked once.
   *
-  * @param groupId the group id
-  * @param callable the transformation function
+  * @param groupId      the group id
+  * @param callable     the transformation function
   * @param sparkContext the Spark context
   */
 class TransformJob(val groupId: String, private val callable: Callable[TransformResponse], private val sparkContext: SparkContext) extends FutureTask[TransformResponse](callable) {
@@ -36,7 +37,7 @@ class TransformJob(val groupId: String, private val callable: Callable[Transform
 
     /** Sets the job progress for the specified stage.
       *
-      * @param stage the current stage
+      * @param stage          the current stage
       * @param tasksCompleted the number of completed tasks
       */
     def onStageProgress(stage: StageInfo, tasksCompleted: Int): Unit = {
@@ -75,7 +76,7 @@ class TransformJob(val groupId: String, private val callable: Callable[Transform
     def stages = _stages
 
     /** Sets the Spark stages. */
-    def stages_= (stages: Seq[StageInfo]) = {
+    def stages_=(stages: Seq[StageInfo]) = {
         _stages = stages
         tasksCompleted.set(0)
         tasksTotal.set(stages.map(_.numTasks).sum)

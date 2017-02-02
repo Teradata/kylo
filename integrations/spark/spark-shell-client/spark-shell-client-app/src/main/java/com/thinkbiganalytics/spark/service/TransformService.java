@@ -87,6 +87,7 @@ public class TransformService extends AbstractScheduledService {
     /** Maximum database size in bytes (soft limit) */
     private static final long MAX_BYTES = 10737418240L;
 
+    /** Kerberos authentication configuration */
     private KerberosTicketConfiguration kerberosTicketConfiguration;
 
     /** Tables with cached results */
@@ -101,6 +102,7 @@ public class TransformService extends AbstractScheduledService {
     @Autowired
     private TransformJobTracker tracker;
 
+    /** Provides access to the Spark context */
     @Autowired
     private SparkContextService scs;
 
@@ -112,9 +114,10 @@ public class TransformService extends AbstractScheduledService {
      * Constructs a {@code TransformService} using the specified engine to execute scripts.
      *
      * @param engine the script engine
-     * @param tracker
+     * @param kerberosTicketConfiguration Kerberos authentication configuration
+     * @param tracker job tracker
      */
-    public TransformService(@Nonnull final SparkScriptEngine engine, KerberosTicketConfiguration kerberosTicketConfiguration, TransformJobTracker tracker) {
+    public TransformService(@Nonnull final SparkScriptEngine engine, @Nonnull final KerberosTicketConfiguration kerberosTicketConfiguration, @Nonnull final TransformJobTracker tracker) {
         this();
         this.engine = engine;
         this.kerberosTicketConfiguration = kerberosTicketConfiguration;
@@ -151,7 +154,7 @@ public class TransformService extends AbstractScheduledService {
         TransformJob job;
         if (result instanceof Callable) {
             @SuppressWarnings("unchecked")
-            Callable<TransformResponse> callable = (Callable)result;
+            Callable<TransformResponse> callable = (Callable) result;
             job = new TransformJob(table, callable, engine.getSparkContext());
             tracker.submitJob(job);
         } else {
@@ -254,20 +257,21 @@ public class TransformService extends AbstractScheduledService {
         log.info("Starting transform service");
 
         // Create database
-        if(kerberosTicketConfiguration.isKerberosEnabled()) {
+        if (kerberosTicketConfiguration.isKerberosEnabled()) {
             createDatabaseWithKerberos();
-        }
-        else {
+        } else {
             createDatabaseWithoutKerberos();
         }
 
         // Add tracker
         tracker.addSparkListener(engine);
-//        engine.getSparkContext().addSparkListener(tracker);
 
         log.trace("exit");
     }
 
+    /**
+     * Creates a database for storing temporary results.
+     */
     void createDatabaseWithoutKerberos() {
         SQLContext context = this.engine.getSQLContext();
         scs.sql(context, "CREATE DATABASE IF NOT EXISTS " + HiveUtils.quoteIdentifier(DATABASE));
@@ -280,6 +284,9 @@ public class TransformService extends AbstractScheduledService {
         }
     }
 
+    /**
+     * Creates a database for storing temporary results.
+     */
     private void createDatabaseWithKerberos() {
         log.info("Initializing the database using Kerberos ");
 
@@ -382,7 +389,7 @@ public class TransformService extends AbstractScheduledService {
      * @throws IllegalStateException if a table name cannot be generated
      */
     private String newTableName() {
-        for (int i=0; i < 100; ++i) {
+        for (int i = 0; i < 100; ++i) {
             String name = UUID.randomUUID().toString();
             if (name.matches("^[a-fA-F].*")) {
                 return name.replace("-", "");
@@ -426,7 +433,12 @@ public class TransformService extends AbstractScheduledService {
         this.cache.put(table, Math.max(size, MIN_BYTES));
     }
 
-    public void setKerberosTicketConfiguration(KerberosTicketConfiguration kerberosTicketConfiguration) {
+    /**
+     * Sets the Kerberos authentication configuration.
+     *
+     * @param kerberosTicketConfiguration the Kerberos authentication configuration
+     */
+    public void setKerberosTicketConfiguration(@Nonnull final KerberosTicketConfiguration kerberosTicketConfiguration) {
         this.kerberosTicketConfiguration = kerberosTicketConfiguration;
     }
 

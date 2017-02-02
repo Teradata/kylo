@@ -1,12 +1,13 @@
 package com.thinkbiganalytics.spark.metadata
 
-import java.util.concurrent.Callable
-
 import com.thinkbiganalytics.spark.rest.model.TransformResponse
+
 import org.apache.spark.SparkContext
 import org.apache.spark.scheduler.StageInfo
 import org.junit.{Assert, Test}
 import org.mockito.Mockito
+
+import java.util.concurrent.Callable
 
 class TransformJobTest {
 
@@ -50,6 +51,7 @@ class TransformJobTest {
     }
 
     /** Verify executing the job. */
+    @Test
     def run(): Unit = {
         // Mock callable function and Spark context
         val response = new TransformResponse

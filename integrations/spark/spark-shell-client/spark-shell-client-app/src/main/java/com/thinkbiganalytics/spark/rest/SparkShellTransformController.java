@@ -73,8 +73,8 @@ public class SparkShellTransformController {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Queries a Hive table and applies a series of transformations on the rows.")
-    @ApiResponses(value = {
+    @ApiOperation("Queries a Hive table and applies a series of transformations on the rows.")
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Returns the status of the transformation.", response = TransformResponse.class),
             @ApiResponse(code = 400, message = "The request could not be parsed.", response = TransformResponse.class),
             @ApiResponse(code = 500, message = "There was a problem processing the data.", response = TransformResponse.class)
@@ -115,8 +115,8 @@ public class SparkShellTransformController {
     @Path("{table}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Fetches the status of a transformation.")
-    @ApiResponses(value = {
+    @ApiOperation("Fetches the status of a transformation.")
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Returns the status of the transformation.", response = TransformResponse.class),
             @ApiResponse(code = 404, message = "The transformation does not exist.", response = TransformResponse.class),
             @ApiResponse(code = 500, message = "There was a problem accessing the data.", response = TransformResponse.class)
@@ -135,11 +135,9 @@ public class SparkShellTransformController {
                 response.setTable(job.groupId());
                 return Response.ok(response).build();
             }
-        }
-        catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             return error(Response.Status.NOT_FOUND, "transform.unknownTable");
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
@@ -157,8 +155,7 @@ public class SparkShellTransformController {
 
         try {
             message = STRINGS.getString(key);
-        }
-        catch (MissingResourceException e) {
+        } catch (MissingResourceException e) {
             message = key;
         }
 

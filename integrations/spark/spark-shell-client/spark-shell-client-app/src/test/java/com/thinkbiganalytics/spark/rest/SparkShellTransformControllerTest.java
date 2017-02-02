@@ -155,7 +155,7 @@ public class SparkShellTransformControllerTest {
         Response response = controller.getTable("PendingJob");
         Assert.assertEquals(Response.Status.OK, response.getStatusInfo());
 
-        TransformResponse transformResponse = (TransformResponse)response.getEntity();
+        TransformResponse transformResponse = (TransformResponse) response.getEntity();
         Assert.assertEquals(0.5, transformResponse.getProgress(), 0.001);
         Assert.assertEquals(TransformResponse.Status.PENDING, transformResponse.getStatus());
         Assert.assertEquals("PendingJob", transformResponse.getTable());

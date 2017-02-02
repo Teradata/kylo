@@ -41,6 +41,8 @@ import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletCon
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.PropertySource;
 
+import javax.annotation.Nonnull;
+
 import io.swagger.jaxrs.listing.ApiListingResource;
 import io.swagger.jaxrs.listing.SwaggerSerializers;
 import scala.Function0;
@@ -73,10 +75,16 @@ public class SparkShellApp {
      * @return the embedded servlet container factory
      */
     @Bean
-    public EmbeddedServletContainerFactory getEmbeddedServletContainer () {
+    public EmbeddedServletContainerFactory getEmbeddedServletContainer() {
         return new TomcatEmbeddedServletContainerFactory();
     }
 
+    /**
+     * Creates the Spark configuration.
+     *
+     * @param sparkPort the Spark UI port
+     * @return the Spark configuration
+     */
     @Bean
     public SparkConf sparkConf(@Value("${spark.ui.port:8451}") String sparkPort) {
         return new SparkConf().setAppName("SparkShellServer").set("spark.ui.port", sparkPort);
@@ -88,10 +96,10 @@ public class SparkShellApp {
      * @return the Jersey configuration
      */
     @Bean
-    public ResourceConfig getJerseyConfig (@Value("${kerberos.spark.kerberosEnabled:false}") String kerberosEnabled,
-                                           @Value("${kerberos.spark.hadoopConfigurationResources}") String hadoopConfigurationResources,
-                                           @Value("${kerberos.spark.kerberosPrincipal}") String kerberosPrincipal,
-                                           @Value("${kerberos.spark.keytabLocation}") String keytabLocation) {
+    public ResourceConfig getJerseyConfig(@Value("${kerberos.spark.kerberosEnabled:false}") String kerberosEnabled,
+                                          @Value("${kerberos.spark.hadoopConfigurationResources}") String hadoopConfigurationResources,
+                                          @Value("${kerberos.spark.kerberosPrincipal}") String kerberosPrincipal,
+                                          @Value("${kerberos.spark.keytabLocation}") String keytabLocation) {
         ResourceConfig config = new ResourceConfig(ApiListingResource.class, SwaggerSerializers.class, SparkShellTransformController.class);
         startTransformationService(createKerberosTicketConfiguration(kerberosEnabled, hadoopConfigurationResources, kerberosPrincipal, keytabLocation));
         config.register(new AbstractBinder() {
@@ -114,13 +122,22 @@ public class SparkShellApp {
         return config;
     }
 
-    private KerberosTicketConfiguration createKerberosTicketConfiguration(String kerberosEnabled, String hadoopConfigurationResources, String kerberosPrincipal, String keytabLocation ) {
+    /**
+     * Gets the Kerberos configuration.
+     *
+     * @param kerberosEnabled {@code true} if Kerberos authentication is enabled, or {@code false} otherwise
+     * @param hadoopConfigurationResources the paths to the Hadoop configuration files
+     * @param kerberosPrincipal the Kerberos principal for authentication
+     * @param keytabLocation the path to the keytab file
+     * @return the Kerberos configuration
+     */
+    private KerberosTicketConfiguration createKerberosTicketConfiguration(@Nonnull final String kerberosEnabled, @Nonnull final String hadoopConfigurationResources,
+                                                                          @Nonnull final String kerberosPrincipal, @Nonnull final String keytabLocation) {
         KerberosTicketConfiguration config = new KerberosTicketConfiguration();
-        config.setKerberosEnabled("true".equals(kerberosEnabled) ? true: false);
+        config.setKerberosEnabled("true".equals(kerberosEnabled));
         config.setHadoopConfigurationResources(hadoopConfigurationResources);
         config.setKerberosPrincipal(kerberosPrincipal);
         config.setKeytabLocation(keytabLocation);
-
         return config;
     }
 
