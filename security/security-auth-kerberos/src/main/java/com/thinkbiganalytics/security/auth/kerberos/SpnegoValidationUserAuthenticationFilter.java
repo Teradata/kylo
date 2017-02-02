@@ -40,6 +40,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.codec.Base64;
 import org.springframework.security.kerberos.authentication.KerberosServiceRequestToken;
 import org.springframework.security.web.authentication.NullRememberMeServices;
@@ -99,7 +100,7 @@ public class SpnegoValidationUserAuthenticationFilter extends GenericFilterBean 
             
             // If the ticket has been authenticated then attempt to authenticate the username.
             try {
-                UsernamePasswordAuthenticationToken userToken = new UsernamePasswordAuthenticationToken(kerberosAuth.getPrincipal(), null);
+                UsernamePasswordAuthenticationToken userToken = extractUsernameToken(kerberosAuth);
                 Authentication usernameAuth = authenticationManager.authenticate(userToken);
                 
                 SecurityContextHolder.getContext().setAuthentication(usernameAuth);
@@ -173,6 +174,13 @@ public class SpnegoValidationUserAuthenticationFilter extends GenericFilterBean 
 
     protected boolean isTicketHeader(String header) {
         return header != null && (header.startsWith("Negotiate ") || header.startsWith("Kerberos "));
+    }
+
+    protected UsernamePasswordAuthenticationToken extractUsernameToken(Authentication kerberosAuth) {
+        String krbUser = ((User) kerberosAuth.getPrincipal()).getUsername();
+        int realmStart = krbUser.lastIndexOf('@');
+        String username = krbUser.substring(0, realmStart == -1 ? krbUser.length() : realmStart); 
+        return new UsernamePasswordAuthenticationToken(username, null);
     }
 
 }
