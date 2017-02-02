@@ -2,26 +2,26 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+  <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>com.thinkbiganalytics.datalake</groupId>
-        <artifactId>kylo-spark</artifactId>
-        <version>0.7.0-SNAPSHOT</version>
-    </parent>
+  <parent>
+    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <artifactId>kylo-spark</artifactId>
+    <version>0.7.0-SNAPSHOT</version>
+  </parent>
 
-    <artifactId>kylo-spark-interpreter</artifactId>
-    <packaging>pom</packaging>
+  <artifactId>kylo-spark-interpreter</artifactId>
+  <packaging>pom</packaging>
 
-    <properties>
-        <mainClass.name>com.thinkbiganalytics.spark.interpreter.App</mainClass.name>
+  <properties>
+    <mainClass.name>com.thinkbiganalytics.spark.interpreter.App</mainClass.name>
     <plugin.license.parentRelative>../../../</plugin.license.parentRelative>
-	</properties>
+  </properties>
 
-    <modules>
-        <module>spark-interpreter-app</module>
-        <module>spark-interpreter-spark-v1</module>
-        <module>spark-interpreter-spark-v2</module>
-    </modules>
+  <modules>
+    <module>spark-interpreter-app</module>
+    <module>spark-interpreter-spark-v1</module>
+    <module>spark-interpreter-spark-v2</module>
+  </modules>
 
 </project>

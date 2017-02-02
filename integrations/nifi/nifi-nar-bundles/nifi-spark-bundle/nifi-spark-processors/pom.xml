@@ -1,81 +1,81 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+  <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>kylo-nifi-spark-processors</artifactId>
-    <parent>
-        <groupId>com.thinkbiganalytics.nifi.spark</groupId>
-        <artifactId>kylo-nifi-spark-bundle</artifactId>
-        <version>0.7.0-SNAPSHOT</version>
-    </parent>
-    <packaging>jar</packaging>
+  <artifactId>kylo-nifi-spark-processors</artifactId>
+  <parent>
+    <groupId>com.thinkbiganalytics.nifi.spark</groupId>
+    <artifactId>kylo-nifi-spark-bundle</artifactId>
+    <version>0.7.0-SNAPSHOT</version>
+  </parent>
+  <packaging>jar</packaging>
 
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <plugin.license.parentRelative>../../../../../</plugin.license.parentRelative>
-	</properties>
+  </properties>
 
-    <dependencies>
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>kylo-nifi-framework-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+  <dependencies>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-nifi-framework-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>kylo-nifi-security-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.spark</groupId>
-            <artifactId>spark-launcher_${scala.binary.version}</artifactId>
-            <version>${spark.version}</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>jersey-core</artifactId>
-                    <groupId>com.sun.jersey</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-nifi-security-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-launcher_${scala.binary.version}</artifactId>
+      <version>${spark.version}</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>jersey-core</artifactId>
+          <groupId>com.sun.jersey</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
 
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-        </dependency>
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+    </dependency>
 
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-        </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+    </dependency>
 
-        <dependency>
-            <groupId>org.apache.nifi</groupId>
-            <artifactId>nifi-api</artifactId>
-        </dependency>
+    <dependency>
+      <groupId>org.apache.nifi</groupId>
+      <artifactId>nifi-api</artifactId>
+    </dependency>
 
-        <dependency>
-            <groupId>org.apache.nifi</groupId>
-            <artifactId>nifi-processor-utils</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-common</artifactId>
-            <version>${hadoop.version}</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>httpclient</artifactId>
-                    <groupId>org.apache.httpcomponents</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>jersey-core</artifactId>
-                    <groupId>com.sun.jersey</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-    </dependencies>
+    <dependency>
+      <groupId>org.apache.nifi</groupId>
+      <artifactId>nifi-processor-utils</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-common</artifactId>
+      <version>${hadoop.version}</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>httpclient</artifactId>
+          <groupId>org.apache.httpcomponents</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>jersey-core</artifactId>
+          <groupId>com.sun.jersey</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+  </dependencies>
 </project>
 
 

@@ -6,17 +6,17 @@
     <artifactId>kylo-operational-metadata</artifactId>
     <version>0.7.0-SNAPSHOT</version>
   </parent>
-	<properties>
-		<plugin.license.parentRelative>../../../</plugin.license.parentRelative>
-	</properties>
+  <properties>
+    <plugin.license.parentRelative>../../../</plugin.license.parentRelative>
+  </properties>
   <artifactId>kylo-operational-metadata-jpa</artifactId>
 
   <dependencies>
 
     <dependency>
-        <groupId>com.thinkbiganalytics.metadata</groupId>
-        <artifactId>kylo-metadata-api</artifactId>
-        <version>${project.version}</version>
+      <groupId>com.thinkbiganalytics.metadata</groupId>
+      <artifactId>kylo-metadata-api</artifactId>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
@@ -134,8 +134,6 @@
     </dependency>
 
 
-
-
     <!-- Testing -->
     <dependency>
       <groupId>org.assertj</groupId>
@@ -164,9 +162,9 @@
     </dependency>
 
     <dependency>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-configuration-processor</artifactId>
-        <optional>true</optional>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-configuration-processor</artifactId>
+      <optional>true</optional>
     </dependency>
   </dependencies>
 
@@ -218,34 +216,34 @@
         </dependencies>
       </plugin>
 
-	<plugin>
-		<groupId>org.codehaus.mojo</groupId>
-		<artifactId>license-maven-plugin</artifactId>
-		<configuration>
-		</configuration>
-		<executions>
-			<execution>
-				<id>first</id>
-				<goals>
-					<goal>update-file-header</goal>
-				</goals>
-				<configuration>
-				<roots>
-					<root>target/generated-sources</root>
-					<root>target/processed-source</root>
-				</roots>
-				</configuration>
-				<phase>process-sources</phase>
-			</execution>
-			<execution>
-				<id>second</id>
-				<goals>
-					<goal>check-file-header</goal>
-				</goals>
-				<phase>prepare-package</phase>
-			</execution>
-		</executions>
-	</plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>license-maven-plugin</artifactId>
+        <configuration>
+        </configuration>
+        <executions>
+          <execution>
+            <id>first</id>
+            <goals>
+              <goal>update-file-header</goal>
+            </goals>
+            <configuration>
+              <roots>
+                <root>target/generated-sources</root>
+                <root>target/processed-source</root>
+              </roots>
+            </configuration>
+            <phase>process-sources</phase>
+          </execution>
+          <execution>
+            <id>second</id>
+            <goals>
+              <goal>check-file-header</goal>
+            </goals>
+            <phase>prepare-package</phase>
+          </execution>
+        </executions>
+      </plugin>
 
 
     </plugins>

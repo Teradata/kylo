@@ -1,504 +1,504 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>kylo-service-app</artifactId>
+  <artifactId>kylo-service-app</artifactId>
   <packaging>jar</packaging>
 
-    <parent>
-        <artifactId>kylo-services</artifactId>
-        <groupId>com.thinkbiganalytics.datalake</groupId>
-        <version>0.7.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
-    </parent>
+  <parent>
+    <artifactId>kylo-services</artifactId>
+    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <version>0.7.0-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
 
   <properties>
     <timestamp>${maven.build.timestamp}</timestamp>
     <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
-  <plugin.license.parentRelative>../../</plugin.license.parentRelative>
-	</properties>
+    <plugin.license.parentRelative>../../</plugin.license.parentRelative>
+  </properties>
 
-    <dependencyManagement>
-        <dependencies>
-
-        </dependencies>
-    </dependencyManagement>
-
+  <dependencyManagement>
     <dependencies>
 
-      <dependency>
-        <groupId>com.thinkbiganalytics.datalake</groupId>
-        <artifactId>kylo-service-app-api</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-        <!-- Services monitoring code -->
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>kylo-service-monitor-nifi</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>kylo-service-monitor-ambari</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>kylo-service-monitor-pipeline-db</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>kylo-service-monitor-controller</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>kylo-security-controller</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-           <groupId>com.thinkbiganalytics.datalake</groupId>
-           <artifactId>kylo-schema-discovery-controller</artifactId>
-           <version>${project.version}</version>
-         </dependency>
-
-        <!-- end service monitoring -->
-
-        <!-- Alerts -->
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>kylo-alerts-controller</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>kylo-alerts-core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>kylo-alerts-default</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-
-      <dependency>
-        <groupId>com.thinkbiganalytics.datalake</groupId>
-        <artifactId>kylo-operational-metadata-integration-service</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-
-
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-          <artifactId>kylo-alerts-core</artifactId>
-          <version>${project.version}</version>
-        </dependency>
-
-
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>kylo-security-auth</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>kylo-security-auth</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>kylo-security-auth-simple</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>kylo-security-auth-file</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>kylo-security-auth-kylo-local</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>kylo-security-auth-ldap</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>kylo-security-auth-kerberos</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-      <dependency>
-        <groupId>com.thinkbiganalytics.datalake</groupId>
-        <artifactId>kylo-hadoop-authorization-core</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-
-
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>kylo-job-repository-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>kylo-job-repository-controller</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <!-- end Job Repo -->
-
-        <!-- Field Policies -->
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>kylo-field-policy-controller</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>kylo-feed-manager-precondition-policy</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>kylo-field-policy-default</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>kylo-schema-discovery-default</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-      <!-- scheduler -->
-
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>kylo-scheduler-controller</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>kylo-commons-rest-model</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>kylo-feed-manager-controller</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>kylo-audit-logging-controller</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-      <!--
-      <dependency>
-          <groupId>com.thinkbiganalytics.metadata</groupId>
-          <artifactId>kylo-metadata-db-modeshape-migration</artifactId>
-          <version>${project.version}</version>
-      </dependency>
--->
-        <!-- -->
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>kylo-thrift-proxy-controller</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>kylo-spark-shell-controller</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <!-- metadata server -->
-        <dependency>
-            <groupId>com.thinkbiganalytics.metadata</groupId>
-            <artifactId>kylo-metadata-rest-controller</artifactId>
-            <version>${project.version}</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>servlet-api</artifactId>
-                    <groupId>org.mortbay.jetty</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>servlet-api-2.5</artifactId>
-                    <groupId>org.mortbay.jetty</groupId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <!-- Kerberos Ticket Renewer -->
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>kylo-kerberos-core</artifactId>
-            <version>0.7.0-SNAPSHOT</version>
-        </dependency>
-
-        <!-- NiFi REST clients -->
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>kylo-nifi-rest-client-v0</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>kylo-nifi-rest-client-v1</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <!-- Kylo upgrade -->
-        <dependency>
-          <groupId>com.thinkbiganalytics.datalake</groupId>
-          <artifactId>kylo-operational-metadata-upgrade-service</artifactId>
-          <version>${project.version}</version>
-        </dependency>
-
-      <!-- Swagger -->
-        <dependency>
-            <groupId>io.swagger</groupId>
-            <artifactId>swagger-jersey2-jaxrs</artifactId>
-        </dependency>
-
-        <!-- jersey -->
-
-
-        <dependency>
-            <groupId>org.glassfish.jersey.core</groupId>
-            <artifactId>jersey-common</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.media</groupId>
-            <artifactId>jersey-media-json-jackson</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.glassfish.jersey.containers</groupId>
-            <artifactId>jersey-container-servlet</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.glassfish.jersey.media</groupId>
-            <artifactId>jersey-media-multipart</artifactId>
-        </dependency>
-
-        <!-- Jackson -->
-
-
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.fasterxml.jackson.jaxrs</groupId>
-            <artifactId>jackson-jaxrs-base</artifactId>
-        </dependency>
-
-
-        <!-- Servlet Jar -->
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>javax.ws.rs</groupId>
-            <artifactId>javax.ws.rs-api</artifactId>
-            <version>2.0.1</version>
-        </dependency>
-
-        <!-- Java Utilities -->
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-        </dependency>
-
-
-        <!-- Spring Boot -->
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.springframework.boot</groupId>
-                    <artifactId>spring-boot-starter-logging</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-jersey</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-jpa</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.hibernate</groupId>
-                    <artifactId>hibernate-entitymanager</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-config</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-config-server</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.httpcomponents</groupId>
-                    <artifactId>httpclient</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-entitymanager</artifactId>
-            <version>${hibernate.version}</version>
-        </dependency>
-
-        <!-- Spring -->
-
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context-support</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-jdbc</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- Jersey + Spring -->
-        <dependency>
-            <groupId>org.glassfish.jersey.ext</groupId>
-            <artifactId>jersey-spring3</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.glassfish.hk2.external</groupId>
-                    <artifactId>bean-validator</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-
-        <!-- JDBC Drivers -->
-
-        <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <version>5.1.32</version>
-        </dependency>
-        <dependency>
-            <groupId>postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <version>9.1-901-1.jdbc4</version>
-        </dependency>
-
-        <!-- mail -->
-        <dependency>
-            <groupId>com.sun.mail</groupId>
-            <artifactId>javax.mail</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>javax.mail</groupId>
-            <artifactId>javax.mail-api</artifactId>
-        </dependency>
-
-
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-        </dependency>
     </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-service-app-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <!-- Services monitoring code -->
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-service-monitor-nifi</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-service-monitor-ambari</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-service-monitor-pipeline-db</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-service-monitor-controller</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-security-controller</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-schema-discovery-controller</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <!-- end service monitoring -->
+
+    <!-- Alerts -->
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-alerts-controller</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-alerts-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-alerts-default</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-operational-metadata-integration-service</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-alerts-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-security-auth</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-security-auth</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-security-auth-simple</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-security-auth-file</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-security-auth-kylo-local</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-security-auth-ldap</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-security-auth-kerberos</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-hadoop-authorization-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-job-repository-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-job-repository-controller</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <!-- end Job Repo -->
+
+    <!-- Field Policies -->
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-field-policy-controller</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-feed-manager-precondition-policy</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-field-policy-default</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-schema-discovery-default</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <!-- scheduler -->
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-scheduler-controller</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-commons-rest-model</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-feed-manager-controller</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-audit-logging-controller</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <!--
+    <dependency>
+        <groupId>com.thinkbiganalytics.metadata</groupId>
+        <artifactId>kylo-metadata-db-modeshape-migration</artifactId>
+        <version>${project.version}</version>
+    </dependency>
+-->
+    <!-- -->
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-thrift-proxy-controller</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-spark-shell-controller</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <!-- metadata server -->
+    <dependency>
+      <groupId>com.thinkbiganalytics.metadata</groupId>
+      <artifactId>kylo-metadata-rest-controller</artifactId>
+      <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>servlet-api</artifactId>
+          <groupId>org.mortbay.jetty</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>servlet-api-2.5</artifactId>
+          <groupId>org.mortbay.jetty</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <!-- Kerberos Ticket Renewer -->
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-kerberos-core</artifactId>
+      <version>0.7.0-SNAPSHOT</version>
+    </dependency>
+
+    <!-- NiFi REST clients -->
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-nifi-rest-client-v0</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-nifi-rest-client-v1</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <!-- Kylo upgrade -->
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-operational-metadata-upgrade-service</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <!-- Swagger -->
+    <dependency>
+      <groupId>io.swagger</groupId>
+      <artifactId>swagger-jersey2-jaxrs</artifactId>
+    </dependency>
+
+    <!-- jersey -->
+
+
+    <dependency>
+      <groupId>org.glassfish.jersey.core</groupId>
+      <artifactId>jersey-common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.jersey.media</groupId>
+      <artifactId>jersey-media-json-jackson</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.glassfish.jersey.containers</groupId>
+      <artifactId>jersey-container-servlet</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.glassfish.jersey.media</groupId>
+      <artifactId>jersey-media-multipart</artifactId>
+    </dependency>
+
+    <!-- Jackson -->
+
+
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.fasterxml.jackson.jaxrs</groupId>
+      <artifactId>jackson-jaxrs-base</artifactId>
+    </dependency>
+
+
+    <!-- Servlet Jar -->
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>javax.ws.rs</groupId>
+      <artifactId>javax.ws.rs-api</artifactId>
+      <version>2.0.1</version>
+    </dependency>
+
+    <!-- Java Utilities -->
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+    </dependency>
+
+
+    <!-- Spring Boot -->
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-logging</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-jersey</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-jpa</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.hibernate</groupId>
+          <artifactId>hibernate-entitymanager</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-starter-config</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-config-server</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.httpcomponents</groupId>
+          <artifactId>httpclient</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-entitymanager</artifactId>
+      <version>${hibernate.version}</version>
+    </dependency>
+
+    <!-- Spring -->
+
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context-support</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-jdbc</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Jersey + Spring -->
+    <dependency>
+      <groupId>org.glassfish.jersey.ext</groupId>
+      <artifactId>jersey-spring3</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.glassfish.hk2.external</groupId>
+          <artifactId>bean-validator</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+
+    <!-- JDBC Drivers -->
+
+    <dependency>
+      <groupId>mysql</groupId>
+      <artifactId>mysql-connector-java</artifactId>
+      <version>5.1.32</version>
+    </dependency>
+    <dependency>
+      <groupId>postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>9.1-901-1.jdbc4</version>
+    </dependency>
+
+    <!-- mail -->
+    <dependency>
+      <groupId>com.sun.mail</groupId>
+      <artifactId>javax.mail</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>javax.mail</groupId>
+      <artifactId>javax.mail-api</artifactId>
+    </dependency>
+
+
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+    </dependency>
+  </dependencies>
 
 
   <build>
 
-      <resources>
-        <resource>
-          <directory>src/main/resources</directory>
-          <filtering>true</filtering>
-        </resource>
-      </resources>
-        <plugins>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+      </resource>
+    </resources>
+    <plugins>
 
-            <!-- create single distribution file -->
-            <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <configuration>
-                    <descriptors>
-                        <descriptor>src/main/assembly/descriptor.xml</descriptor>
-                    </descriptors>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>make-distribution</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
+      <!-- create single distribution file -->
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <descriptors>
+            <descriptor>src/main/assembly/descriptor.xml</descriptor>
+          </descriptors>
+        </configuration>
+        <executions>
+          <execution>
+            <id>make-distribution</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 
 </project>

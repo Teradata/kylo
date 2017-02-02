@@ -7,13 +7,13 @@
     <groupId>com.thinkbiganalytics.datalake</groupId>
     <version>0.7.0-SNAPSHOT</version>
   </parent>
-	<properties>
-		<plugin.license.parentRelative>../../</plugin.license.parentRelative>
-	</properties>
+  <properties>
+    <plugin.license.parentRelative>../../</plugin.license.parentRelative>
+  </properties>
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>kylo-jira</artifactId>
-<packaging>pom</packaging>
+  <packaging>pom</packaging>
   <modules>
     <module>jira-rest-client</module>
   </modules>

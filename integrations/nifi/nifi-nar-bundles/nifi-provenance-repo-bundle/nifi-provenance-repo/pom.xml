@@ -1,192 +1,192 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+  <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>kylo-nifi-provenance-repo</artifactId>
-    <parent>
-        <groupId>com.thinkbiganalytics.nifi.provenance</groupId>
-        <artifactId>kylo-nifi-provenance-repo-bundle</artifactId>
-        <version>0.7.0-SNAPSHOT</version>
-    </parent>
-    <packaging>jar</packaging>
+  <artifactId>kylo-nifi-provenance-repo</artifactId>
+  <parent>
+    <groupId>com.thinkbiganalytics.nifi.provenance</groupId>
+    <artifactId>kylo-nifi-provenance-repo-bundle</artifactId>
+    <version>0.7.0-SNAPSHOT</version>
+  </parent>
+  <packaging>jar</packaging>
 
-    <properties>
-        <nifi.version>1.1.0</nifi.version>
+  <properties>
+    <nifi.version>1.1.0</nifi.version>
     <plugin.license.parentRelative>../../../../../</plugin.license.parentRelative>
-	</properties>
+  </properties>
 
-    <dependencies>
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>kylo-nifi-jms</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+  <dependencies>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-nifi-jms</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
-        <dependency>
-            <groupId>com.thinkbiganalytics.metadata</groupId>
-            <artifactId>kylo-metadata-rest-model</artifactId>
-        </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.metadata</groupId>
+      <artifactId>kylo-metadata-rest-model</artifactId>
+    </dependency>
 
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>kylo-nifi-provenance-model</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-nifi-provenance-model</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>kylo-activemq-core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-
-        <dependency>
-            <groupId>com.thinkbiganalytics.nifi.services</groupId>
-            <artifactId>kylo-nifi-core-service-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.thinkbiganalytics.nifi.services</groupId>
-            <artifactId>kylo-nifi-core-service</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-activemq-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
 
-        <dependency>
-            <groupId>org.apache.nifi</groupId>
-            <artifactId>nifi-api</artifactId>
-        </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.nifi.services</groupId>
+      <artifactId>kylo-nifi-core-service-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.nifi.services</groupId>
+      <artifactId>kylo-nifi-core-service</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
 
-        <dependency>
-            <groupId>org.apache.nifi</groupId>
-            <artifactId>nifi-utils</artifactId>
-        </dependency>
+    <dependency>
+      <groupId>org.apache.nifi</groupId>
+      <artifactId>nifi-api</artifactId>
+    </dependency>
 
 
-        <!-- Needed just for the passthrough class so NiFi doesnt complain on startup if upgrading from previous version of Kylo that had this custom repository -->
-        <dependency>
-            <groupId>org.apache.nifi</groupId>
-            <artifactId>nifi-persistent-provenance-repository</artifactId>
-        </dependency>
+    <dependency>
+      <groupId>org.apache.nifi</groupId>
+      <artifactId>nifi-utils</artifactId>
+    </dependency>
 
 
-        <dependency>
-            <groupId>org.apache.nifi</groupId>
-            <artifactId>nifi-data-provenance-utils</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.nifi</groupId>
-            <artifactId>nifi-framework-core</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.nifi</groupId>
-            <artifactId>nifi-bootstrap</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-jms</artifactId>
-        </dependency>
+    <!-- Needed just for the passthrough class so NiFi doesnt complain on startup if upgrading from previous version of Kylo that had this custom repository -->
+    <dependency>
+      <groupId>org.apache.nifi</groupId>
+      <artifactId>nifi-persistent-provenance-repository</artifactId>
+    </dependency>
 
 
-        <dependency>
-            <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-osgi-bundle</artifactId>
-            <version>1.0.3</version>
-        </dependency>
+    <dependency>
+      <groupId>org.apache.nifi</groupId>
+      <artifactId>nifi-data-provenance-utils</artifactId>
+    </dependency>
 
-        <dependency>
-            <groupId>org.mapdb</groupId>
-            <artifactId>mapdb</artifactId>
-            <version>3.0.1</version>
-        </dependency>
+    <dependency>
+      <groupId>org.apache.nifi</groupId>
+      <artifactId>nifi-framework-core</artifactId>
+    </dependency>
 
-      <dependency>
-        <groupId>org.apache.commons</groupId>
-        <artifactId>commons-pool2</artifactId>
-        <version>2.0</version>
-      </dependency>
+    <dependency>
+      <groupId>org.apache.nifi</groupId>
+      <artifactId>nifi-bootstrap</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-jms</artifactId>
+    </dependency>
 
 
-      <!--
-      <dependency>
-          <groupId>org.apache.activemq</groupId>
-          <artifactId>activemq-broker</artifactId>
-      </dependency>
+    <dependency>
+      <groupId>org.jetbrains.kotlin</groupId>
+      <artifactId>kotlin-osgi-bundle</artifactId>
+      <version>1.0.3</version>
+    </dependency>
 
-      <dependency>
-          <groupId>org.apache.activemq</groupId>
-          <artifactId>activemq-client</artifactId>
-      </dependency>
+    <dependency>
+      <groupId>org.mapdb</groupId>
+      <artifactId>mapdb</artifactId>
+      <version>3.0.1</version>
+    </dependency>
 
-      <dependency>
-          <groupId>org.apache.activemq</groupId>
-          <artifactId>activemq-pool</artifactId>
-      </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-pool2</artifactId>
+      <version>2.0</version>
+    </dependency>
 
-      <dependency>
-          <groupId>org.apache.nifi</groupId>
-          <artifactId>nifi-client-dto</artifactId>
-      </dependency>
+
+    <!--
+    <dependency>
+        <groupId>org.apache.activemq</groupId>
+        <artifactId>activemq-broker</artifactId>
+    </dependency>
+
+    <dependency>
+        <groupId>org.apache.activemq</groupId>
+        <artifactId>activemq-client</artifactId>
+    </dependency>
+
+    <dependency>
+        <groupId>org.apache.activemq</groupId>
+        <artifactId>activemq-pool</artifactId>
+    </dependency>
+
+    <dependency>
+        <groupId>org.apache.nifi</groupId>
+        <artifactId>nifi-client-dto</artifactId>
+    </dependency>
 -->
 
-        <!-- Testing -->
-        <dependency>
-            <groupId>org.assertj</groupId>
-            <artifactId>assertj-core</artifactId>
-        </dependency>
+    <!-- Testing -->
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+    </dependency>
 
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-        </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-all</artifactId>
+    </dependency>
 
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
-            <scope>test</scope>
-        </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-test</artifactId>
+      <scope>test</scope>
+    </dependency>
 
-        <!-- test dependencies -->
-        <dependency>
-            <groupId>org.apache.nifi</groupId>
-            <artifactId>nifi-mock</artifactId>
-            <version>${nifi.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-            <scope>test</scope>
-        </dependency>
+    <!-- test dependencies -->
+    <dependency>
+      <groupId>org.apache.nifi</groupId>
+      <artifactId>nifi-mock</artifactId>
+      <version>${nifi.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-all</artifactId>
+      <scope>test</scope>
+    </dependency>
 
 
-    </dependencies>
+  </dependencies>
 
 
 </project>

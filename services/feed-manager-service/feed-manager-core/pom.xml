@@ -10,19 +10,18 @@
     <groupId>com.thinkbiganalytics.datalake</groupId>
     <version>0.7.0-SNAPSHOT</version>
   </parent>
-	<properties>
-		<plugin.license.parentRelative>../../../</plugin.license.parentRelative>
-	</properties>
-
+  <properties>
+    <plugin.license.parentRelative>../../../</plugin.license.parentRelative>
+  </properties>
 
 
   <dependencies>
 
     <dependency>
-    <artifactId>kylo-feed-manager-api</artifactId>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
-    <version>${project.version}</version>
-  </dependency>
+      <artifactId>kylo-feed-manager-api</artifactId>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <version>${project.version}</version>
+    </dependency>
 
     <dependency>
       <artifactId>kylo-commons-util</artifactId>
@@ -69,7 +68,6 @@
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
     </dependency>
-
 
 
   </dependencies>

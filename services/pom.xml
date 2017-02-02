@@ -1,33 +1,33 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>com.thinkbiganalytics.datalake</groupId>
-        <artifactId>kylo</artifactId>
-        <version>0.7.0-SNAPSHOT</version>
-    </parent>
-	<properties>
-		<plugin.license.parentRelative>../</plugin.license.parentRelative>
-	</properties>
-    <artifactId>kylo-services</artifactId>
-    <packaging>pom</packaging>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <artifactId>kylo</artifactId>
+    <version>0.7.0-SNAPSHOT</version>
+  </parent>
+  <properties>
+    <plugin.license.parentRelative>../</plugin.license.parentRelative>
+  </properties>
+  <artifactId>kylo-services</artifactId>
+  <packaging>pom</packaging>
 
-    <modules>
-        <module>service-app-api</module>
-        <module>field-policy-service</module>
-        <module>jms-service</module>
-        <module>spark-shell-service</module>
-        <module>scheduler-service</module>
-        <module>job-repository-service</module>
-        <module>service-monitor-service</module>
-        <module>thrift-proxy-service</module>
-        <module>feed-manager-service</module>
-        <module>security-service</module>
-        <module>schema-discovery-service</module>
-        <module>operational-metadata-service</module>
-        <module>audit-logging-service</module>
-        <module>service-app</module>
-        <module>alerts-service</module>
-        <module>metadata-service</module>
-    </modules>
+  <modules>
+    <module>service-app-api</module>
+    <module>field-policy-service</module>
+    <module>jms-service</module>
+    <module>spark-shell-service</module>
+    <module>scheduler-service</module>
+    <module>job-repository-service</module>
+    <module>service-monitor-service</module>
+    <module>thrift-proxy-service</module>
+    <module>feed-manager-service</module>
+    <module>security-service</module>
+    <module>schema-discovery-service</module>
+    <module>operational-metadata-service</module>
+    <module>audit-logging-service</module>
+    <module>service-app</module>
+    <module>alerts-service</module>
+    <module>metadata-service</module>
+  </modules>
 </project>

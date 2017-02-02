@@ -1,70 +1,69 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-<modelVersion>4.0.0</modelVersion>
+  <modelVersion>4.0.0</modelVersion>
 
-<artifactId>kylo-swagger-ui</artifactId>
-<packaging>jar</packaging>
+  <artifactId>kylo-swagger-ui</artifactId>
+  <packaging>jar</packaging>
 
-<parent>
-  <artifactId>kylo-ui</artifactId>
-  <groupId>com.thinkbiganalytics.datalake</groupId>
-  <version>0.7.0-SNAPSHOT</version>
-  <relativePath>../pom.xml</relativePath>
-</parent>
-	<properties>
-		<plugin.license.parentRelative>../../</plugin.license.parentRelative>
-	</properties>
-
-
-
-<dependencies>
-
-  <dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-web</artifactId>
-  </dependency>
-
-  <dependency>
-    <groupId>org.springframework</groupId>
-    <artifactId>spring-web</artifactId>
-  </dependency>
-
-  <dependency>
-    <groupId>org.springframework</groupId>
-    <artifactId>spring-core</artifactId>
-  </dependency>
-  <dependency>
-    <groupId>org.springframework</groupId>
-    <artifactId>spring-context</artifactId>
-  </dependency>
-  <dependency>
-    <groupId>org.springframework</groupId>
-    <artifactId>spring-context-support</artifactId>
-  </dependency>
-
-  <!-- Swagger -->
-  <dependency>
-    <groupId>io.swagger</groupId>
-    <artifactId>swagger-jersey2-jaxrs</artifactId>
-  </dependency>
-
-</dependencies>
+  <parent>
+    <artifactId>kylo-ui</artifactId>
+    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <version>0.7.0-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+  <properties>
+    <plugin.license.parentRelative>../../</plugin.license.parentRelative>
+  </properties>
 
 
-        <build>
-                <plugins>
-                        <plugin>
-                                <groupId>org.codehaus.mojo</groupId>
-                                <artifactId>license-maven-plugin</artifactId>
-                                <configuration>
-                                <excludes>
-                                        <exclude>**/swagger-ui/**/*</exclude>
-                                </excludes>
-                                </configuration>
-                        </plugin>
-                </plugins>
-        </build>
+  <dependencies>
+
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-web</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context-support</artifactId>
+    </dependency>
+
+    <!-- Swagger -->
+    <dependency>
+      <groupId>io.swagger</groupId>
+      <artifactId>swagger-jersey2-jaxrs</artifactId>
+    </dependency>
+
+  </dependencies>
+
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>license-maven-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <exclude>**/swagger-ui/**/*</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 
 
 </project>

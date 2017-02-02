@@ -1,22 +1,22 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>com.thinkbiganalytics.datalake</groupId>
-        <artifactId>kylo-services</artifactId>
-        <version>0.7.0-SNAPSHOT</version>
-    </parent>
-	<properties>
-		<plugin.license.parentRelative>../../</plugin.license.parentRelative>
-	</properties>
-    <artifactId>kylo-jms-service</artifactId>
-    <packaging>pom</packaging>
-    
-    <modules>
-        <module>activemq-core</module>
-    </modules>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <artifactId>kylo-services</artifactId>
+    <version>0.7.0-SNAPSHOT</version>
+  </parent>
+  <properties>
+    <plugin.license.parentRelative>../../</plugin.license.parentRelative>
+  </properties>
+  <artifactId>kylo-jms-service</artifactId>
+  <packaging>pom</packaging>
 
-    <dependencies>
+  <modules>
+    <module>activemq-core</module>
+  </modules>
 
-    </dependencies>
+  <dependencies>
+
+  </dependencies>
 </project>

@@ -2,72 +2,72 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+  <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>com.thinkbiganalytics.datalake</groupId>
-        <artifactId>kylo-spark-validate-cleanse</artifactId>
-        <version>0.7.0-SNAPSHOT</version>
-    </parent>
-	<properties>
-		<plugin.license.parentRelative>../../../../</plugin.license.parentRelative>
-	</properties>
-
-    <artifactId>kylo-spark-validate-cleanse-spark-v1</artifactId>
+  <parent>
+    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <artifactId>kylo-spark-validate-cleanse</artifactId>
     <version>0.7.0-SNAPSHOT</version>
+  </parent>
+  <properties>
+    <plugin.license.parentRelative>../../../../</plugin.license.parentRelative>
+  </properties>
 
-    <dependencies>
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>kylo-commons-spark-${spark.binary.version}</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>kylo-spark-validate-cleanse-app</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-    </dependencies>
+  <artifactId>kylo-spark-validate-cleanse-spark-v1</artifactId>
+  <version>0.7.0-SNAPSHOT</version>
 
-    <build>
-        <plugins>
+  <dependencies>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-commons-spark-${spark.binary.version}</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-spark-validate-cleanse-app</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+  </dependencies>
 
-            <!-- assembly -->
+  <build>
+    <plugins>
 
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <configuration>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-                    <archive>
-                        <manifest>
-                            <mainClass>${mainClass.name}</mainClass>
-                        </manifest>
-                    </archive>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>make-assembly</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.2</version>
-                <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
-                </configuration>
-            </plugin>
+      <!-- assembly -->
 
-        </plugins>
-    </build>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <descriptorRefs>
+            <descriptorRef>jar-with-dependencies</descriptorRef>
+          </descriptorRefs>
+          <archive>
+            <manifest>
+              <mainClass>${mainClass.name}</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
+        <executions>
+          <execution>
+            <id>make-assembly</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.2</version>
+        <configuration>
+          <source>1.7</source>
+          <target>1.7</target>
+        </configuration>
+      </plugin>
+
+    </plugins>
+  </build>
 
 </project>

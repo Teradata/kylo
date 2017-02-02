@@ -2,41 +2,41 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+  <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>kylo-spark-shell-rest-model</artifactId>
+  <artifactId>kylo-spark-shell-rest-model</artifactId>
 
-    <name>Spark Shell Service REST Model</name>
+  <name>Spark Shell Service REST Model</name>
 
-    <parent>
-        <artifactId>kylo-spark-shell-service</artifactId>
-        <groupId>com.thinkbiganalytics.datalake</groupId>
-        <version>0.7.0-SNAPSHOT</version>
-    </parent>
+  <parent>
+    <artifactId>kylo-spark-shell-service</artifactId>
+    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <version>0.7.0-SNAPSHOT</version>
+  </parent>
 
-    <properties>
-        <maven.compiler.source>1.7</maven.compiler.source>
-        <maven.compiler.target>1.7</maven.compiler.target>
-        <plugin.license.parentRelative>../../../</plugin.license.parentRelative>
-	</properties>
+  <properties>
+    <maven.compiler.source>1.7</maven.compiler.source>
+    <maven.compiler.target>1.7</maven.compiler.target>
+    <plugin.license.parentRelative>../../../</plugin.license.parentRelative>
+  </properties>
 
-    <dependencies>
-        <!-- Core -->
-        <dependency>
-            <groupId>com.google.code.findbugs</groupId>
-            <artifactId>jsr305</artifactId>
-        </dependency>
+  <dependencies>
+    <!-- Core -->
+    <dependency>
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>jsr305</artifactId>
+    </dependency>
 
-        <!-- Kylo -->
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>kylo-schema-discovery-model2</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>kylo-schema-discovery-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-    </dependencies>
+    <!-- Kylo -->
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-schema-discovery-model2</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-schema-discovery-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+  </dependencies>
 </project>

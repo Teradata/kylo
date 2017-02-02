@@ -11,9 +11,9 @@
     <version>0.7.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
-	<properties>
-		<plugin.license.parentRelative>../../../</plugin.license.parentRelative>
-	</properties>
+  <properties>
+    <plugin.license.parentRelative>../../../</plugin.license.parentRelative>
+  </properties>
 
   <dependencies>
     <dependency>
@@ -124,7 +124,6 @@
       <artifactId>hive-shims</artifactId>
       <version>${hive.version}</version>
     </dependency>
-
 
 
   </dependencies>
