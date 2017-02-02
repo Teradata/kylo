@@ -13,32 +13,16 @@
     <artifactId>kylo-spark-shell-client-v2</artifactId>
 
     <properties>
+        <plugin.license.parentRelative>../../../../</plugin.license.parentRelative>
+
         <scala.version>2.11.0</scala.version>
         <scala.binary.version>2.11</scala.binary.version>
         <spark.version>2.0.0</spark.version>
         <spark.binary.version>2.0</spark.binary.version>
-    <plugin.license.parentRelative>../../../../</plugin.license.parentRelative>
 	</properties>
 
     <dependencies>
-        <dependency>
-            <groupId>org.apache.spark</groupId>
-            <artifactId>spark-core_${scala.binary.version}</artifactId>
-            <version>${spark.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.spark</groupId>
-            <artifactId>spark-sql_${scala.binary.version}</artifactId>
-            <version>${spark.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.spark</groupId>
-            <artifactId>spark-hive_${scala.binary.version}</artifactId>
-            <version>${spark.version}</version>
-            <scope>provided</scope>
-        </dependency>
+        <!-- Kylo dependencies -->
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
             <artifactId>kylo-commons-hive</artifactId>
@@ -60,24 +44,45 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>com.thinkbiganalytics.datalake</groupId>
+            <artifactId>kylo-schema-discovery-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.thinkbiganalytics.datalake</groupId>
+            <artifactId>kylo-schema-discovery-model2</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- Scala dependencies -->
+        <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-compiler</artifactId>
             <version>${scala.version}</version>
             <scope>provided</scope>
         </dependency>
 
-      <dependency>
-        <groupId>com.thinkbiganalytics.datalake</groupId>
-        <artifactId>kylo-schema-discovery-api</artifactId>
-        <version>${project.version}</version>
-      </dependency>
+        <!-- Spark dependencies -->
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-core_${scala.binary.version}</artifactId>
+            <version>${spark.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-sql_${scala.binary.version}</artifactId>
+            <version>${spark.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-hive_${scala.binary.version}</artifactId>
+            <version>${spark.version}</version>
+            <scope>provided</scope>
+        </dependency>
 
-      <dependency>
-        <groupId>com.thinkbiganalytics.datalake</groupId>
-        <artifactId>kylo-schema-discovery-model2</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-
+        <!-- Testing dependencies -->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
@@ -88,11 +93,11 @@
             <artifactId>spark-mllib_${scala.binary.version}</artifactId>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 
     <build>
         <plugins>
+            <!-- Compiles Scala code -->
             <plugin>
                 <groupId>org.scala-tools</groupId>
                 <artifactId>maven-scala-plugin</artifactId>
@@ -118,6 +123,8 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <!-- Builds jar with dependencies -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>

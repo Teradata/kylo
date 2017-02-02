@@ -1,16 +1,17 @@
 package com.thinkbiganalytics.spark.metadata
 
-import java.util
-import java.util.concurrent.Callable
-import java.util.regex.Pattern
-
 import com.thinkbiganalytics.discovery.model.{DefaultQueryResult, DefaultQueryResultColumn}
 import com.thinkbiganalytics.hive.util.HiveUtils
 import com.thinkbiganalytics.spark.rest.model.TransformResponse
 import com.thinkbiganalytics.spark.util.DataTypeUtils
+
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, Row, SQLContext, SaveMode}
 import org.slf4j.LoggerFactory
+
+import java.util
+import java.util.concurrent.Callable
+import java.util.regex.Pattern
 
 import scala.collection.JavaConversions
 
@@ -21,7 +22,7 @@ import scala.collection.JavaConversions
   */
 abstract class TransformScript(destination: String, sendResults: Boolean, sqlContext: SQLContext) {
 
-    val log = LoggerFactory.getLogger(classOf[TransformScript])
+    private[this] val log = LoggerFactory.getLogger(classOf[TransformScript])
 
     /** Evaluates this transform script and stores the result in a Hive table. */
     def run(): Any = {
