@@ -35,7 +35,7 @@ public interface SparkShellProcessManager {
      * @param username the user who will be using the Spark Shell process
      * @return the Spark Shell process
      * @throws IllegalStateException if a Spark Shell process cannot be started
-     * @throws InterruptedException if the current thread is interrupted while it is waiting
+     * @throws InterruptedException  if the current thread is interrupted while it is waiting
      */
     @Nonnull
     SparkShellProcess getProcessForUser(@Nonnull String username) throws InterruptedException;
@@ -45,7 +45,7 @@ public interface SparkShellProcessManager {
      *
      * @return the system Spark Shell process
      * @throws IllegalStateException if a Spark Shell process cannot be started
-     * @throws InterruptedException if the current thread is interrupted while it is waiting
+     * @throws InterruptedException  if the current thread is interrupted while it is waiting
      */
     @Nonnull
     SparkShellProcess getSystemProcess() throws InterruptedException;
@@ -56,10 +56,10 @@ public interface SparkShellProcessManager {
      * <p>This method is not required to be implemented for every process manager. When a Spark Shell process is run on a remote machine then a process manager may require it to register once it
      * has finished starting.</p>
      *
-     * @param clientId the Spark Shell client id
+     * @param clientId     the Spark Shell client id
      * @param clientSecret the Spark Shell client secret
      * @param registration the Spark Shell registration request
-     * @throws IllegalArgumentException if the client id or secret is not recognized
+     * @throws IllegalArgumentException      if the client id or secret is not recognized
      * @throws UnsupportedOperationException if this process manager does not support registration
      */
     void register(@Nonnull String clientId, @Nonnull String clientSecret, @Nonnull RegistrationRequest registration);

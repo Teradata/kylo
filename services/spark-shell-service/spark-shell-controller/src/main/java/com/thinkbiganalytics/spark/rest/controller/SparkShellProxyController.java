@@ -59,6 +59,9 @@ import io.swagger.annotations.ApiResponses;
 import io.swagger.annotations.SwaggerDefinition;
 import io.swagger.annotations.Tag;
 
+/**
+ * Provides an endpoint for proxying to the actual Spark Shell service.
+ */
 @Api(tags = "Feed Manager - Data Wrangler")
 @Component
 @Path("/v1/spark/shell")
@@ -88,8 +91,8 @@ public class SparkShellProxyController {
     @Path("/transform/{table}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Fetches the status of a transformation.")
-    @ApiResponses(value = {
+    @ApiOperation("Fetches the status of a transformation.")
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Returns the status of the transformation.", response = TransformResponse.class),
             @ApiResponse(code = 404, message = "The transformation does not exist.", response = RestResponseStatus.class),
             @ApiResponse(code = 500, message = "There was a problem accessing the data.", response = RestResponseStatus.class)
@@ -174,8 +177,8 @@ public class SparkShellProxyController {
     @Path("/transform")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Queries a Hive table and applies a series of transformations on the rows.")
-    @ApiResponses(value = {
+    @ApiOperation("Queries a Hive table and applies a series of transformations on the rows.")
+    @ApiResponses({
             @ApiResponse(code = 200, message = "Returns the status of the transformation.", response = TransformResponse.class),
             @ApiResponse(code = 400, message = "The request could not be parsed.", response = RestResponseStatus.class),
             @ApiResponse(code = 500, message = "There was a problem processing the data.", response = RestResponseStatus.class)
@@ -183,7 +186,7 @@ public class SparkShellProxyController {
     @Nonnull
     public Response transform(@ApiParam(value = "The request indicates the transformations to apply to the source table and how the user wishes the results to be displayed. Exactly one parent or"
                                                 + " source must be specified.", required = true)
-                                  @Nullable final TransformRequest request) {
+                              @Nullable final TransformRequest request) {
         // Validate request
         if (request == null || request.getScript() == null) {
             throw error(Response.Status.BAD_REQUEST, "transform.missingScript", null);

@@ -17,7 +17,7 @@
     <properties>
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
-    <plugin.license.parentRelative>../../../</plugin.license.parentRelative>
+        <plugin.license.parentRelative>../../../</plugin.license.parentRelative>
 	</properties>
 
     <dependencies>
@@ -33,10 +33,10 @@
             <artifactId>kylo-schema-discovery-model2</artifactId>
             <version>${project.version}</version>
         </dependency>
-      <dependency>
-        <groupId>com.thinkbiganalytics.datalake</groupId>
-        <artifactId>kylo-schema-discovery-api</artifactId>
-        <version>${project.version}</version>
-      </dependency>
+        <dependency>
+            <groupId>com.thinkbiganalytics.datalake</groupId>
+            <artifactId>kylo-schema-discovery-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>
