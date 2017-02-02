@@ -54,10 +54,14 @@ import javax.security.auth.login.AppConfigurationEntry;
 public class JaasAuthConfig {
 
     public static final String JAAS_UI = "UI";
+    public static final String JAAS_UI_TOKEN = "UI-Token";
     public static final String JAAS_SERVICES = "Services";
+    public static final String JAAS_SERVICES_TOKEN = "Services-Token";
     
     public static final String SERVICES_AUTH_PROVIDER = "servicesAuthenticationProvider";
+    public static final String SERVICES_TOKEN_AUTH_PROVIDER = "servicesTokenAuthenticationProvider";
     public static final String UI_AUTH_PROVIDER = "uiAuthenticationProvider";
+    public static final String UI_TOKEN_AUTH_PROVIDER = "uiTokenAuthenticationProvider";
     
     public static final int DEFAULT_GRANTER_ORDER = Integer.MAX_VALUE - 100;
     
@@ -74,11 +78,31 @@ public class JaasAuthConfig {
     
     @Bean(name = SERVICES_AUTH_PROVIDER)
     public AuthenticationProvider servicesAuthenticationProvider(@Named("jaasConfiguration") javax.security.auth.login.Configuration config,
-                                                             List<AuthorityGranter> authorityGranters) {
+                                                                 List<AuthorityGranter> authorityGranters) {
         DefaultJaasAuthenticationProvider provider = new DefaultJaasAuthenticationProvider();
         provider.setConfiguration(config);
         provider.setAuthorityGranters(authorityGranters.toArray(new AuthorityGranter[authorityGranters.size()]));
         provider.setLoginContextName(JAAS_SERVICES);
+        return provider;
+    }
+    
+    @Bean(name = UI_TOKEN_AUTH_PROVIDER)
+    public AuthenticationProvider uiTokenAuthenticationProvider(@Named("jaasConfiguration") javax.security.auth.login.Configuration config,
+                                                                List<AuthorityGranter> authorityGranters) {
+        DefaultJaasAuthenticationProvider provider = new DefaultJaasAuthenticationProvider();
+        provider.setConfiguration(config);
+        provider.setAuthorityGranters(authorityGranters.toArray(new AuthorityGranter[authorityGranters.size()]));
+        provider.setLoginContextName(JAAS_UI_TOKEN);
+        return provider;
+    }
+    
+    @Bean(name = SERVICES_TOKEN_AUTH_PROVIDER)
+    public AuthenticationProvider servicesTokenAuthenticationProvider(@Named("jaasConfiguration") javax.security.auth.login.Configuration config,
+                                                                      List<AuthorityGranter> authorityGranters) {
+        DefaultJaasAuthenticationProvider provider = new DefaultJaasAuthenticationProvider();
+        provider.setConfiguration(config);
+        provider.setAuthorityGranters(authorityGranters.toArray(new AuthorityGranter[authorityGranters.size()]));
+        provider.setLoginContextName(JAAS_SERVICES_TOKEN);
         return provider;
     }
 

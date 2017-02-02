@@ -33,11 +33,13 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.kerberos.authentication.KerberosServiceAuthenticationProvider;
 import org.springframework.security.kerberos.web.authentication.SpnegoEntryPoint;
-import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.authentication.rememberme.RememberMeAuthenticationFilter;
 
 import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
+import com.thinkbiganalytics.auth.jwt.JwtRememberMeServices;
 import com.thinkbiganalytics.security.auth.kerberos.SpnegoValidationUserAuthenticationFilter;
 
 /**
@@ -57,28 +59,38 @@ public class KerberosWebSecurityConfigurer extends WebSecurityConfigurerAdapter 
     private KerberosServiceAuthenticationProvider kerberosServiceAuthProvider;
     
     @Inject
-    @Named(JaasAuthConfig.SERVICES_AUTH_PROVIDER)
-    private AuthenticationProvider authenticationProvider;
+    @Named(JaasAuthConfig.SERVICES_TOKEN_AUTH_PROVIDER)
+    private AuthenticationProvider userAuthProvider;
+
+    @Inject
+    private JwtRememberMeServices rememberMeServices;
 
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
             .csrf().disable()
+            .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
             .exceptionHandling()
                 .authenticationEntryPoint(spnegoEntryPoint)
                 .and()
             .authorizeRequests()
                 .antMatchers("/**").authenticated()
                 .and()
-            .addFilterBefore(spnegoFilter(), BasicAuthenticationFilter.class);
+            .rememberMe()
+                .rememberMeServices(rememberMeServices)
+                .and()
+            .addFilter(new RememberMeAuthenticationFilter(auth -> auth, rememberMeServices))
+            .addFilterAfter(spnegoFilter(), RememberMeAuthenticationFilter.class)
+            .httpBasic();
     }
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth
             .authenticationProvider(kerberosServiceAuthProvider)
-            .authenticationProvider(authenticationProvider);
+            .authenticationProvider(userAuthProvider);
     }
     
     @Bean
@@ -88,7 +100,6 @@ public class KerberosWebSecurityConfigurer extends WebSecurityConfigurerAdapter 
         return filter;
     }
 
-    @Bean(name="krbAuthenticationManager")
     @Override
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();

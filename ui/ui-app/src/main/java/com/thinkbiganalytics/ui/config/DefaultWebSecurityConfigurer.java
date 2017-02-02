@@ -1,20 +1,5 @@
 package com.thinkbiganalytics.ui.config;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.security.SecurityProperties;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.core.annotation.Order;
-import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-
 /*-
  * #%L
  * thinkbig-ui-app
@@ -35,9 +20,28 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
  * #L%
  */
 
+import javax.inject.Inject;
+import javax.inject.Named;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.security.SecurityProperties;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+import org.springframework.core.annotation.Order;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.authentication.rememberme.RememberMeAuthenticationFilter;
+
 import com.thinkbiganalytics.auth.AuthServiceAuthenticationProvider;
 import com.thinkbiganalytics.auth.AuthenticationService;
 import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
+import com.thinkbiganalytics.auth.jwt.JwtRememberMeServices;
 
 /**
  * Form Based Auth with Spring Security. Plugin a different AuthService by adding a new
@@ -49,6 +53,7 @@ import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
 @Configuration
 @EnableWebSecurity
 @Order(DefaultWebSecurityConfigurer.ORDER)
+@Profile("!auth-krb-spnego")
 public class DefaultWebSecurityConfigurer extends WebSecurityConfigurerAdapter {
 
     protected static final Logger LOG = LoggerFactory.getLogger(DefaultWebSecurityConfigurer.class);
@@ -58,6 +63,9 @@ public class DefaultWebSecurityConfigurer extends WebSecurityConfigurerAdapter {
     @Inject
     @Named(JaasAuthConfig.UI_AUTH_PROVIDER)
     private AuthenticationProvider uiAuthenticationProvider;
+    
+    @Inject
+    private JwtRememberMeServices rememberMeServices;
 
     @Override
     public void configure(WebSecurity web) throws Exception {
@@ -68,9 +76,12 @@ public class DefaultWebSecurityConfigurer extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http
             .csrf().disable()
+            .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
             .authorizeRequests()
                 .antMatchers("/login", "/login/**", "/login**").permitAll()
-                .anyRequest().authenticated()
+                .antMatchers("/**").authenticated()
+//                .anyRequest().authenticated()
                 .and()
             .formLogin()
                 .usernameParameter("username")
@@ -81,7 +92,12 @@ public class DefaultWebSecurityConfigurer extends WebSecurityConfigurerAdapter {
                 .and()
             .logout() 
                 .permitAll()
-                .and();
+                .and()
+            .rememberMe()
+                .rememberMeServices(rememberMeServices)
+                .and()
+            .addFilter(new RememberMeAuthenticationFilter(auth -> auth, rememberMeServices))
+            .httpBasic();
 
     }
 

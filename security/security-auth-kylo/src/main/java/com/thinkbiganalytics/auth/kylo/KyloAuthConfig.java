@@ -91,6 +91,14 @@ public class KyloAuthConfig {
                     .option(KyloLoginModule.USER_PROVIDER, userProvider)
                     .option(KyloLoginModule.REQUIRE_PASSWORD, this.authPassword)
                     .add()
+                .loginModule(JaasAuthConfig.JAAS_SERVICES_TOKEN)
+                    .moduleClass(KyloLoginModule.class)
+                    .controlFlag(this.servicesLoginFlag)
+                    .option(KyloLoginModule.METADATA_ACCESS, metadataAccess)
+                    .option(KyloLoginModule.PASSWORD_ENCODER, passwordEncoder)
+                    .option(KyloLoginModule.USER_PROVIDER, userProvider)
+                    .option(KyloLoginModule.REQUIRE_PASSWORD, this.authPassword)
+                    .add()
                 .build();
     }
     

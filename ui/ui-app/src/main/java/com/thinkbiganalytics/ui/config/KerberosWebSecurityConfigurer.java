@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.ui.config.kerberos;
+package com.thinkbiganalytics.ui.config;
 
 /*-
  * #%L
@@ -29,14 +29,16 @@ import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.kerberos.authentication.KerberosServiceAuthenticationProvider;
 import org.springframework.security.kerberos.web.authentication.SpnegoAuthenticationProcessingFilter;
 import org.springframework.security.kerberos.web.authentication.SpnegoEntryPoint;
-import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.authentication.rememberme.RememberMeAuthenticationFilter;
 
-import com.thinkbiganalytics.ui.config.DefaultWebSecurityConfigurer;
+import com.thinkbiganalytics.auth.jwt.JwtRememberMeServices;
 
 /**
  *
@@ -44,8 +46,8 @@ import com.thinkbiganalytics.ui.config.DefaultWebSecurityConfigurer;
  */
 @Configuration
 @EnableWebSecurity
-@Profile("auth-krb-spnego")
 @Order(DefaultWebSecurityConfigurer.ORDER + 1)
+@Profile("auth-krb-spnego")
 public class KerberosWebSecurityConfigurer extends WebSecurityConfigurerAdapter {
     
     @Inject 
@@ -53,22 +55,49 @@ public class KerberosWebSecurityConfigurer extends WebSecurityConfigurerAdapter 
     
     @Inject
     private KerberosServiceAuthenticationProvider kerberosServiceAuthProvider;
+    
+    @Inject
+    private JwtRememberMeServices rememberMeServices;
+
+    @Override
+    public void configure(WebSecurity web) throws Exception {
+        web.ignoring().antMatchers("/proxy/**", "/ui-common/**", "/js/vendor/**", "/images/**", "/styles/**", "/js/login/**", "/js/utils/**");
+    }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        super.configure(http);
-        
         http
+            .csrf().disable()
+            .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
             .exceptionHandling()
                 .authenticationEntryPoint(spnegoEntryPoint)
                 .and()
-            .addFilterBefore(spnegoAuthenticationProcessingFilter(), BasicAuthenticationFilter.class);
+            .authorizeRequests()
+                .antMatchers("/login", "/login/**", "/login**").permitAll()
+                .antMatchers("/**").authenticated()
+//                .anyRequest().authenticated()
+                .and()
+            .formLogin()
+                .usernameParameter("username")
+                .passwordParameter("password")
+                .loginPage("/login.html")
+                .loginProcessingUrl("/login")
+                .failureUrl("/login.html?error=true").permitAll()
+                .and()
+            .logout() 
+                .permitAll()
+                .and()
+            .rememberMe()
+                .rememberMeServices(rememberMeServices)
+                .and()
+            .addFilter(new RememberMeAuthenticationFilter(auth -> auth, rememberMeServices))
+            .addFilterAfter(spnegoAuthenticationProcessingFilter(), RememberMeAuthenticationFilter.class)
+            .httpBasic();
     }
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        super.configure(auth);
-        
         auth.authenticationProvider(kerberosServiceAuthProvider);
     }
     
