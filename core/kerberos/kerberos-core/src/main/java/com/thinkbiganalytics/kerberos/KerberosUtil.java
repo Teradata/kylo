@@ -35,7 +35,7 @@ import javax.sql.DataSource;
  */
 public class KerberosUtil {
 
-    private static Logger log = LoggerFactory.getLogger(KerberosUtil.class);
+    private static final Logger log = LoggerFactory.getLogger(KerberosUtil.class);
 
     public static Connection getConnectionWithOrWithoutKerberos(final DataSource dataSource, KerberosTicketConfiguration kerberosTicketConfiguration) throws SQLException {
         Connection connection = null;
