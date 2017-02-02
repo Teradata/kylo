@@ -136,11 +136,6 @@ public class StandardSqoopConnectionService
         sqoopConnectionProperties = Collections.unmodifiableList(properties);
     }
 
-    @Override
-    protected List<PropertyDescriptor> getSupportedPropertyDescriptors() {
-        return sqoopConnectionProperties;
-    }
-
     private String sourceConnectionString;
     private String sourceUserName;
     private PasswordMode passwordMode;
@@ -149,6 +144,11 @@ public class StandardSqoopConnectionService
     private String sourceEnteredPassword;
     private String sourceConnectionManager;
     private String sourceDriver;
+
+    @Override
+    protected List<PropertyDescriptor> getSupportedPropertyDescriptors() {
+        return sqoopConnectionProperties;
+    }
 
     @OnEnabled
     public void onConfigured(final ConfigurationContext context) throws InitializationException {

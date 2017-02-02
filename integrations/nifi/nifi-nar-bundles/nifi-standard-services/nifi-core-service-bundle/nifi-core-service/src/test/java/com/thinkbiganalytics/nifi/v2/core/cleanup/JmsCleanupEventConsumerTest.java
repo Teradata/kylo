@@ -28,7 +28,9 @@ import org.mockito.Mockito;
 
 public class JmsCleanupEventConsumerTest {
 
-    /** Test consuming and dispatching a cleanup trigger event. */
+    /**
+     * Test consuming and dispatching a cleanup trigger event.
+     */
     @Test
     public void test() {
         // Mock event and listener

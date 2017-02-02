@@ -62,11 +62,11 @@ public class MetadataClientProvider implements MetadataProvider {
     public MetadataClientProvider(URI baseUri) {
         this(new MetadataClient(baseUri));
     }
-    
+
     public MetadataClientProvider(URI baseUri, String username, String password) {
         this(new MetadataClient(baseUri, username, password));
     }
-    
+
     public MetadataClientProvider(MetadataClient client) {
         super();
         this.client = client;
@@ -75,14 +75,14 @@ public class MetadataClientProvider implements MetadataProvider {
     @Override
     public String getFeedId(String category, String feedName) {
         List<Feed> feeds = this.client.getFeeds(this.client.feedCriteria().category(category).name(feedName));
-        
+
         if (feeds.isEmpty()) {
             return null;
         } else {
             return feeds.get(0).getId();
         }
     }
-    
+
     @Override
     public FeedDependencyDeltaResults getFeedDependentResultDeltas(String feedId) {
         return this.client.getFeedDependencyDeltas(feedId);
@@ -95,8 +95,8 @@ public class MetadataClientProvider implements MetadataProvider {
     public Feed ensureFeed(String categoryName, String feedName, String descr) {
         return this.client
             .buildFeed(categoryName, feedName)
-                .description(descr)
-                .post();
+            .description(descr)
+            .post();
     }
 
     /* (non-Javadoc)
@@ -129,7 +129,7 @@ public class MetadataClientProvider implements MetadataProvider {
     public Feed ensureFeedDestination(String feedId, String datasourceId) {
         return this.client.addDestination(feedId, datasourceId);
     }
-    
+
     @Override
     public Properties updateFeedProperties(String feedId, Properties props) {
         return this.client.mergeFeedProperties(feedId, props);
@@ -146,9 +146,9 @@ public class MetadataClientProvider implements MetadataProvider {
     @Override
     public DirectoryDatasource ensureDirectoryDatasource(String datasetName, String descr, Path path) {
         return this.client.buildDirectoryDatasource(datasetName)
-                .description(descr)
-                .path(path.toString())
-                .post();
+            .description(descr)
+            .path(path.toString())
+            .post();
     }
 
     /* (non-Javadoc)
@@ -157,10 +157,10 @@ public class MetadataClientProvider implements MetadataProvider {
     @Override
     public HiveTableDatasource ensureHiveTableDatasource(String dsName, String descr, String databaseName, String tableName) {
         return this.client.buildHiveTableDatasource(dsName)
-                .description(descr)
-                .database(databaseName)
-                .tableName(tableName)
-                .post();
+            .description(descr)
+            .database(databaseName)
+            .tableName(tableName)
+            .post();
     }
 
     @Override

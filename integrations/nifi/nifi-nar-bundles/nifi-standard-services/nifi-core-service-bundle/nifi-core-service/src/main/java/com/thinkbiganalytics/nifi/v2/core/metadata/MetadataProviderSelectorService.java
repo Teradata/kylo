@@ -60,56 +60,49 @@ import javax.net.ssl.SSLContext;
  */
 public class MetadataProviderSelectorService extends AbstractControllerService implements MetadataProviderService {
 
-    private static final AllowableValue[] ALLOWABLE_IMPLEMENATIONS = {
-            new AllowableValue("LOCAL", "Local, In-memory storage", "An implemenation that stores metadata locally in memory (for development-only)"),
-            new AllowableValue("REMOTE", "REST API", "An implementation that accesses metadata via the metadata service REST API")
-    };
-
-    public static final PropertyDescriptor IMPLEMENTATION = new PropertyDescriptor.Builder()
-            .name("Implementation")
-            .description("Specifies which implementation of the metadata providers should be used")
-            .allowableValues(ALLOWABLE_IMPLEMENATIONS)
-            .defaultValue("REMOTE")
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .required(true)
-            .build();
-
     public static final PropertyDescriptor CLIENT_URL = new PropertyDescriptor.Builder()
-            .name("rest-client-url")
-            .displayName("REST Client URL")
-            .description("The base URL to the metadata server when the REST API client implementation is chosen.")
+        .name("rest-client-url")
+        .displayName("REST Client URL")
+        .description("The base URL to the metadata server when the REST API client implementation is chosen.")
         .defaultValue("http://localhost:8400/proxy/v1/metadata")
-            .addValidator(StandardValidators.URL_VALIDATOR)
-            .required(false)
-            .build();
-    
+        .addValidator(StandardValidators.URL_VALIDATOR)
+        .required(false)
+        .build();
     public static final PropertyDescriptor CLIENT_USERNAME = new PropertyDescriptor.Builder()
-            .name("client-username")
-            .displayName("REST Client User Name")
-            .description("Optional user name if the client requires a credential")
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .name("client-username")
+        .displayName("REST Client User Name")
+        .description("Optional user name if the client requires a credential")
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .defaultValue("dladmin")
-            .required(false)
-            .build();
-    
+        .required(false)
+        .build();
     public static final PropertyDescriptor CLIENT_PASSWORD = new PropertyDescriptor.Builder()
-            .name("client-password")
-            .displayName("REST Client Password")
-            .description("Optional password if the client requires a credential")
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .defaultValue("")
-            .sensitive(true)
-            .required(false)
-            .build();
-
+        .name("client-password")
+        .displayName("REST Client Password")
+        .description("Optional password if the client requires a credential")
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .defaultValue("")
+        .sensitive(true)
+        .required(false)
+        .build();
     public static final PropertyDescriptor SSL_CONTEXT_SERVICE = new PropertyDescriptor.Builder()
         .name("SSL Context Service")
         .description("The Controller Service to obtain the SSL Context")
         .required(false)
         .identifiesControllerService(SSLContextService.class)
         .build();
-
-
+    private static final AllowableValue[] ALLOWABLE_IMPLEMENATIONS = {
+        new AllowableValue("LOCAL", "Local, In-memory storage", "An implemenation that stores metadata locally in memory (for development-only)"),
+        new AllowableValue("REMOTE", "REST API", "An implementation that accesses metadata via the metadata service REST API")
+    };
+    public static final PropertyDescriptor IMPLEMENTATION = new PropertyDescriptor.Builder()
+        .name("Implementation")
+        .description("Specifies which implementation of the metadata providers should be used")
+        .allowableValues(ALLOWABLE_IMPLEMENATIONS)
+        .defaultValue("REMOTE")
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .required(true)
+        .build();
     private static final List<PropertyDescriptor> properties;
 
     static {
@@ -158,7 +151,7 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
             } else {
                 client = new MetadataClient(uri, user, password, sslContext);
             }
-            
+
             this.provider = new MetadataClientProvider(client);
             this.recorder = new MetadataClientRecorder(client);
             this.kyloProvenanceClientProvider = new KyloProvenanceClientProvider(client);
@@ -168,12 +161,11 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
     }
 
 
-
     @Override
     public MetadataProvider getProvider() {
         return this.provider;
     }
- 
+
     @Override
     public MetadataRecorder getRecorder() {
         return recorder;
@@ -212,8 +204,6 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
 
         return sslContextBuilder.build();
     }
-
-
 
 
 }

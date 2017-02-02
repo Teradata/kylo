@@ -20,7 +20,11 @@ package com.thinkbiganalytics.nifi.v2.thrift;
  * #L%
  */
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.Driver;
+import java.sql.DriverPropertyInfo;
+import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.Properties;
 import java.util.logging.Logger;
 
@@ -29,6 +33,7 @@ import java.util.logging.Logger;
  * (Because the DriverManager will refuse to use a driver not loaded by the system ClassLoader.)
  */
 class DriverShim implements Driver {
+
     private Driver driver;
 
     DriverShim(Driver d) {

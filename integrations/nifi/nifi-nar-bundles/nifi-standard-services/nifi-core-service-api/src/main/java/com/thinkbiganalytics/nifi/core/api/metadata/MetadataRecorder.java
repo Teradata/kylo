@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.nifi.core.api.metadata;
 
@@ -23,54 +23,52 @@ package com.thinkbiganalytics.nifi.core.api.metadata;
  * #L%
  */
 
-import java.util.Optional;
+import com.thinkbiganalytics.metadata.rest.model.feed.InitializationStatus;
 
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.processor.ProcessSession;
 
-import com.thinkbiganalytics.metadata.rest.model.feed.InitializationStatus;
+import java.util.Optional;
 
 /**
- * Records metadata that will eventually be committed to the metadata store; sometimes only 
+ * Records metadata that will eventually be committed to the metadata store; sometimes only
  * upon a flow's successful completion.
- * 
  */
 public interface MetadataRecorder {
-    
-    FlowFile loadWaterMark(ProcessSession session, 
-                           FlowFile ff, 
-                           String feedId, 
-                           String waterMarkName, 
-                           String parameterName, 
+
+    FlowFile loadWaterMark(ProcessSession session,
+                           FlowFile ff,
+                           String feedId,
+                           String waterMarkName,
+                           String parameterName,
                            String defaultValue) throws WaterMarkActiveException;
-    
+
     FlowFile recordWaterMark(ProcessSession session,
                              FlowFile ff,
                              String feedId,
                              String waterMarkName,
-                             String parameterName, 
+                             String parameterName,
                              String newValue);
-    
+
     FlowFile commitWaterMark(ProcessSession session, FlowFile ff, String feedId, String waterMarkName);
-    
+
     FlowFile commitAllWaterMarks(ProcessSession session, FlowFile ff, String feedId);
-    
+
     FlowFile releaseWaterMark(ProcessSession session, FlowFile ff, String feedId, String waterMarkName);
-    
+
     FlowFile releaseAllWaterMarks(ProcessSession session, FlowFile ff, String feedId);
 
-    
+
     Optional<InitializationStatus> getInitializationStatus(String feedId);
-    
+
     InitializationStatus startFeedInitialization(String feedId);
-    
+
     InitializationStatus completeFeedInitialization(String feedId);
-    
+
     InitializationStatus failFeedInitialization(String feedId);
-    
-    
+
+
     void updateFeedStatus(ProcessSession session, FlowFile ff, String statusMsg);
-    
 
     // TODO: Remove all following when working
 

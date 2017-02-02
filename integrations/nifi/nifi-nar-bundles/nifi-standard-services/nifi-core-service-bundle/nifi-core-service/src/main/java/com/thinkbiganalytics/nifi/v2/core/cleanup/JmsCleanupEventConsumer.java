@@ -42,7 +42,9 @@ public class JmsCleanupEventConsumer implements CleanupEventConsumer {
 
     private static final Logger LOG = LoggerFactory.getLogger(JmsPreconditionEventConsumer.class);
 
-    /** Map of feed category and name to listener */
+    /**
+     * Map of feed category and name to listener
+     */
     @Nonnull
     private final ConcurrentMap<String, CleanupListener> listeners = new ConcurrentHashMap<>();
 

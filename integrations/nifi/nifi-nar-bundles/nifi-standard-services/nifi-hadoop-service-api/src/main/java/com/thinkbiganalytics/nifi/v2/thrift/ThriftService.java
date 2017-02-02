@@ -30,5 +30,6 @@ import java.sql.Connection;
 @Tags({"thinkbig", "thrift", "hive", "spark", "jdbc", "database", "connection", "pooling"})
 @CapabilityDescription("Provides Database Connection Pooling Service. Connections can be asked from pool and returned after usage.")
 public interface ThriftService extends ControllerService {
+
     Connection getConnection() throws ProcessException;
 }

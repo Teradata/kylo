@@ -66,51 +66,42 @@ import javax.annotation.Nonnull;
 @CapabilityDescription("Provides a Thrift connection service.")
 public class ThriftConnectionPool extends AbstractControllerService implements ThriftService {
 
-    private String hadoopConfiguraiton;
-    private String principal;
-    private String keytab;
-
     public static final PropertyDescriptor DATABASE_URL = new PropertyDescriptor.Builder()
-            .name("Database Connection URL")
-            .description("A database connection URL used to connect to a database. May contain database system name, host, port, database name and some parameters."
-                    + " The exact syntax of a database connection URL is specified by your DBMS.")
-            .defaultValue(null)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .required(true)
-            .build();
-
+        .name("Database Connection URL")
+        .description("A database connection URL used to connect to a database. May contain database system name, host, port, database name and some parameters."
+                     + " The exact syntax of a database connection URL is specified by your DBMS.")
+        .defaultValue(null)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .required(true)
+        .build();
     public static final PropertyDescriptor DB_DRIVERNAME = new PropertyDescriptor.Builder()
-            .name("Database Driver Class Name")
-            .description("Database driver class name")
-            .defaultValue(null)
-            .required(true)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .build();
-
+        .name("Database Driver Class Name")
+        .description("Database driver class name")
+        .defaultValue(null)
+        .required(true)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .build();
     public static final PropertyDescriptor DB_DRIVER_JAR_URL = new PropertyDescriptor.Builder()
-            .name("Database Driver Jar Url")
-            .description("Optional database driver jar file path url. For example 'file:///var/tmp/mariadb-java-client-1.1.7.jar'")
-            .defaultValue(null)
-            .required(false)
-            .addValidator(StandardValidators.URL_VALIDATOR)
-            .build();
-
+        .name("Database Driver Jar Url")
+        .description("Optional database driver jar file path url. For example 'file:///var/tmp/mariadb-java-client-1.1.7.jar'")
+        .defaultValue(null)
+        .required(false)
+        .addValidator(StandardValidators.URL_VALIDATOR)
+        .build();
     public static final PropertyDescriptor DB_USER = new PropertyDescriptor.Builder()
-            .name("Database User")
-            .description("Database user name")
-            .defaultValue(null)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .build();
-
+        .name("Database User")
+        .description("Database user name")
+        .defaultValue(null)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .build();
     public static final PropertyDescriptor DB_PASSWORD = new PropertyDescriptor.Builder()
-            .name("Password")
-            .description("The password for the database user")
-            .defaultValue(null)
-            .required(false)
-            .sensitive(true)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .build();
-
+        .name("Password")
+        .description("The password for the database user")
+        .defaultValue(null)
+        .required(false)
+        .sensitive(true)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .build();
     public static final PropertyDescriptor DB_VALIDATION_QUERY = new PropertyDescriptor.Builder()
         .name("Validation Query")
         .description("Query to be used when testing the Datasource. ")
@@ -119,44 +110,76 @@ public class ThriftConnectionPool extends AbstractControllerService implements T
         .sensitive(false)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .build();
-
     public static final PropertyDescriptor MAX_WAIT_TIME = new PropertyDescriptor.Builder()
-            .name("Max Wait Time")
-            .description("The maximum amount of time that the pool will wait (when there are no available connections) "
-                    + " for a connection to be returned before failing, or -1 to wait indefinitely. ")
-            .defaultValue("500 millis")
-            .required(true)
-            .addValidator(StandardValidators.TIME_PERIOD_VALIDATOR)
-            .sensitive(false)
-            .build();
-
+        .name("Max Wait Time")
+        .description("The maximum amount of time that the pool will wait (when there are no available connections) "
+                     + " for a connection to be returned before failing, or -1 to wait indefinitely. ")
+        .defaultValue("500 millis")
+        .required(true)
+        .addValidator(StandardValidators.TIME_PERIOD_VALIDATOR)
+        .sensitive(false)
+        .build();
     public static final PropertyDescriptor MAX_TOTAL_CONNECTIONS = new PropertyDescriptor.Builder()
-            .name("Max Total Connections")
-            .description("The maximum number of active connections that can be allocated from this pool at the same time, "
-                    + " or negative for no limit.")
-            .defaultValue("8")
-            .required(true)
-            .addValidator(StandardValidators.INTEGER_VALIDATOR)
-            .sensitive(false)
-            .build();
-
+        .name("Max Total Connections")
+        .description("The maximum number of active connections that can be allocated from this pool at the same time, "
+                     + " or negative for no limit.")
+        .defaultValue("8")
+        .required(true)
+        .addValidator(StandardValidators.INTEGER_VALIDATOR)
+        .sensitive(false)
+        .build();
     public static final PropertyDescriptor HADOOP_CONFIGURATION_RESOURCES = new PropertyDescriptor.Builder()
         .name("Hadoop Configuration Resources")
         .description("A file or comma separated list of files which contains the Hadoop file system configuration. Without this, Hadoop "
                      + "will search the classpath for a 'core-site.xml' and 'hdfs-site.xml' file or will revert to a default configuration.")
         .required(false).addValidator(createMultipleFilesExistValidator())
         .build();
-
-    /** Property for Kerberos service keytab */
+    private String hadoopConfiguraiton;
+    private String principal;
+    private String keytab;
+    /**
+     * Property for Kerberos service keytab
+     */
     private PropertyDescriptor kerberosKeytab;
 
-    /** Property for Kerberos service principal */
+    /**
+     * Property for Kerberos service principal
+     */
     private PropertyDescriptor kerberosPrincipal;
 
-    /** List of properties */
+    /**
+     * List of properties
+     */
     private List<PropertyDescriptor> properties;
 
     private volatile BasicDataSource dataSource;
+
+    /*
+     * Validates that one or more files exist, as specified in a single property.
+     */
+    public static final Validator createMultipleFilesExistValidator() {
+        return new Validator() {
+            @Override
+            public ValidationResult validate(String subject, String input, ValidationContext context) {
+                final String[] files = input.split(",");
+                for (String filename : files) {
+                    try {
+                        final File file = new File(filename.trim());
+                        final boolean valid = file.exists() && file.isFile();
+                        if (!valid) {
+                            final String message = "File " + file + " does not exist or is not a file";
+                            return new ValidationResult.Builder().subject(subject).input(input).valid(false).explanation(message).build();
+                        }
+                    } catch (SecurityException e) {
+                        final String message = "Unable to access " + filename + " due to " + e.getMessage();
+                        return new ValidationResult.Builder().subject(subject).input(input).valid(false).explanation(message).build();
+                    }
+                }
+                return new ValidationResult.Builder().subject(subject).input(input).valid(true).build();
+            }
+
+        };
+    }
 
     @Override
     protected void init(@Nonnull final ControllerServiceInitializationContext config) throws InitializationException {
@@ -226,9 +249,9 @@ public class ThriftConnectionPool extends AbstractControllerService implements T
     /**
      * using Thread.currentThread().getContextClassLoader() will ensure that you are using the ClassLoader for your NAR.
      *
-     * @param urlString     URL of the class
-     * @param drvName       the driver string
-     * @return  the class loader
+     * @param urlString URL of the class
+     * @param drvName   the driver string
+     * @return the class loader
      * @throws InitializationException if there is a problem obtaining the ClassLoader
      */
     protected ClassLoader getDriverClassLoader(String urlString, String drvName) throws InitializationException {
@@ -273,8 +296,7 @@ public class ThriftConnectionPool extends AbstractControllerService implements T
     @Override
     public Connection getConnection() throws ProcessException {
         try {
-            if (kerberosAuthentication())
-            {
+            if (kerberosAuthentication()) {
                 final Connection con = dataSource.getConnection();
                 return con;
             }
@@ -292,15 +314,14 @@ public class ThriftConnectionPool extends AbstractControllerService implements T
      * @return false
      */
     @SuppressWarnings("static-access")
-    protected boolean kerberosAuthentication()
-    {
-        ComponentLog loggerInstance ;
+    protected boolean kerberosAuthentication() {
+        ComponentLog loggerInstance;
         loggerInstance = getLogger();
 
         //Kerberos Security Validation
 
         String principal = this.principal;
-        String keyTab =  this.keytab;
+        String keyTab = this.keytab;
         String hadoopConfigurationResources = hadoopConfiguraiton;
 
         // If all 3 fields are filled out then assume kerberos is enabled and we want to authenticate the user
@@ -310,9 +331,9 @@ public class ThriftConnectionPool extends AbstractControllerService implements T
         }
 
         //Get Security class object reference
-        Configuration configuration  = null;
+        Configuration configuration = null;
         ApplySecurityPolicy applySecurityObject = null;
-        if(loadConfigurationForKerberosAuthentication) {
+        if (loadConfigurationForKerberosAuthentication) {
             applySecurityObject = new ApplySecurityPolicy();
 
             try {
@@ -325,10 +346,9 @@ public class ThriftConnectionPool extends AbstractControllerService implements T
             }
         }
 
-        if(loadConfigurationForKerberosAuthentication && SecurityUtil.isSecurityEnabled(configuration))  // Check if kerberos security is enabled in cluster
+        if (loadConfigurationForKerberosAuthentication && SecurityUtil.isSecurityEnabled(configuration))  // Check if kerberos security is enabled in cluster
         {
-            if(principal.equals("") && keyTab.equals("") )
-            {
+            if (principal.equals("") && keyTab.equals("")) {
                 loggerInstance.error("Kerberos Principal and Kerberos KeyTab information missing in Kerboeros enabled cluster.");
                 return false;
             }
@@ -338,13 +358,10 @@ public class ThriftConnectionPool extends AbstractControllerService implements T
                 loggerInstance.info("User anuthentication initiated");
 
                 boolean authenticationStatus = applySecurityObject.validateUserWithKerberos(loggerInstance, hadoopConfigurationResources, principal, keyTab);
-                if (authenticationStatus)
-                {
+                if (authenticationStatus) {
                     loggerInstance.info("User authenticated successfully.");
                     return true;
-                }
-                else
-                {
+                } else {
                     loggerInstance.error("User authentication failed.");
                     return false;
                 }
@@ -357,34 +374,6 @@ public class ThriftConnectionPool extends AbstractControllerService implements T
         }
 
         return true;
-    }
-
-
-    /*
-     * Validates that one or more files exist, as specified in a single property.
-     */
-    public static final Validator createMultipleFilesExistValidator() {
-        return new Validator() {
-            @Override
-            public ValidationResult validate(String subject, String input, ValidationContext context) {
-                final String[] files = input.split(",");
-                for (String filename : files) {
-                    try {
-                        final File file = new File(filename.trim());
-                        final boolean valid = file.exists() && file.isFile();
-                        if (!valid) {
-                            final String message = "File " + file + " does not exist or is not a file";
-                            return new ValidationResult.Builder().subject(subject).input(input).valid(false).explanation(message).build();
-                        }
-                    } catch (SecurityException e) {
-                        final String message = "Unable to access " + filename + " due to " + e.getMessage();
-                        return new ValidationResult.Builder().subject(subject).input(input).valid(false).explanation(message).build();
-                    }
-                }
-                return new ValidationResult.Builder().subject(subject).input(input).valid(true).build();
-            }
-
-        };
     }
 
     @Override

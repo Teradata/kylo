@@ -45,22 +45,21 @@ import java.util.List;
  */
 public class SpringContextLoaderService extends AbstractControllerService implements SpringContextService {
 
-    private volatile AbstractRefreshableConfigApplicationContext context;
-
     public static final PropertyDescriptor CONFIG_CLASSES = new PropertyDescriptor.Builder()
-            .name("Configuraton Classes")
-            .description("A comma-separated list of fully qualified names of java config classes")
+        .name("Configuraton Classes")
+        .description("A comma-separated list of fully qualified names of java config classes")
 //            .defaultValue("com.thinkbiganalytics.controller.precond.PreconditionJmsConfiguration")
 //            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .addValidator(Validator.VALID)
-            .required(false)
-            .build();
-
+        .addValidator(Validator.VALID)
+        .required(false)
+        .build();
     private static final List<PropertyDescriptor> properties;
 
     static {
         properties = Collections.singletonList(CONFIG_CLASSES);
     }
+
+    private volatile AbstractRefreshableConfigApplicationContext context;
 
     @Override
     protected List<PropertyDescriptor> getSupportedPropertyDescriptors() {

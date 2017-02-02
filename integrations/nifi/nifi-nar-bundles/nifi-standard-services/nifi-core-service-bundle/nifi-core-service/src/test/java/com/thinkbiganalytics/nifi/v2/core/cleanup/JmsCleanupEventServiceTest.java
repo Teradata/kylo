@@ -48,27 +48,39 @@ import java.util.List;
 
 public class JmsCleanupEventServiceTest {
 
-    /** Identifier for the cleanup event service */
+    /**
+     * Identifier for the cleanup event service
+     */
     private static final String CLEANUP_SERVICE_IDENTIFIER = "cleanupEventService";
 
-    /** Processor property for the cleanup event service */
+    /**
+     * Processor property for the cleanup event service
+     */
     private static final PropertyDescriptor CLEANUP_SERVICE_PROPERTY = new PropertyDescriptor.Builder()
-            .name("Feed Cleanup Event Service")
-            .description("Service that manages the cleanup of feeds.")
-            .identifiesControllerService(CleanupEventService.class)
-            .required(true)
-            .build();
+        .name("Feed Cleanup Event Service")
+        .description("Service that manages the cleanup of feeds.")
+        .identifiesControllerService(CleanupEventService.class)
+        .required(true)
+        .build();
 
-    /** Identifier for the spring context service */
+    /**
+     * Identifier for the spring context service
+     */
     private static final String SPRING_SERVICE_IDENTIFIER = "springContextService";
 
-    /** Cleanup event service for testing */
+    /**
+     * Cleanup event service for testing
+     */
     private final JmsCleanupEventService cleanupService = new JmsCleanupEventService();
 
-    /** Mock cleanup event consumer */
+    /**
+     * Mock cleanup event consumer
+     */
     private final CleanupEventConsumer consumer = Mockito.mock(CleanupEventConsumer.class);
 
-    /** Test runner */
+    /**
+     * Test runner
+     */
     private final TestRunner runner = TestRunners.newTestRunner(new AbstractProcessor() {
         @Override
         protected List<PropertyDescriptor> getSupportedPropertyDescriptors() {
@@ -81,7 +93,9 @@ public class JmsCleanupEventServiceTest {
         }
     });
 
-    /** Initialize instance variables. */
+    /**
+     * Initialize instance variables.
+     */
     @Before
     public void setUp() throws Exception {
         // Setup controllers
@@ -96,15 +110,17 @@ public class JmsCleanupEventServiceTest {
         runner.enableControllerService(springService);
     }
 
-    /** Verify property validators. */
+    /**
+     * Verify property validators.
+     */
     @Test
     public void testValidators() {
         // Test with no properties
         runner.disableControllerService(cleanupService);
-        runner.setProperty(cleanupService, JmsCleanupEventService.SPRING_SERVICE, (String)null);
+        runner.setProperty(cleanupService, JmsCleanupEventService.SPRING_SERVICE, (String) null);
         runner.enableControllerService(cleanupService);
         runner.enqueue(new byte[0]);
-        Collection<ValidationResult> results = ((MockProcessContext)runner.getProcessContext()).validate();
+        Collection<ValidationResult> results = ((MockProcessContext) runner.getProcessContext()).validate();
         Assert.assertEquals(1, results.size());
 
         String expected = "'Feed Cleanup Event Service' validated against 'cleanupEventService' is invalid because Controller Service is not valid: 'Spring Context Service' is invalid because Spring "
@@ -116,11 +132,13 @@ public class JmsCleanupEventServiceTest {
         runner.setProperty(cleanupService, JmsCleanupEventService.SPRING_SERVICE, SPRING_SERVICE_IDENTIFIER);
         runner.enableControllerService(cleanupService);
         runner.enqueue(new byte[0]);
-        results = ((MockProcessContext)runner.getProcessContext()).validate();
+        results = ((MockProcessContext) runner.getProcessContext()).validate();
         Assert.assertEquals(0, results.size());
     }
 
-    /** Verify adding and removing cleanup event listeners. */
+    /**
+     * Verify adding and removing cleanup event listeners.
+     */
     @Test
     public void test() throws Exception {
         // Test adding listener
@@ -142,7 +160,7 @@ public class JmsCleanupEventServiceTest {
         @SuppressWarnings("unchecked")
         public <T> T getBean(Class<T> requiredType) throws BeansException {
             if (CleanupEventConsumer.class.equals(requiredType)) {
-                return (T)consumer;
+                return (T) consumer;
             }
             throw new IllegalArgumentException();
         }

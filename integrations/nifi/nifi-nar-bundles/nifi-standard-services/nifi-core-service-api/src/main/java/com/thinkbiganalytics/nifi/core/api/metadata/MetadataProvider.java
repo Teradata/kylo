@@ -43,7 +43,7 @@ import javax.annotation.Nonnull;
 /**
  */
 public interface MetadataProvider {
-    
+
     String getFeedId(String category, String feedName);
 
     FeedDependencyDeltaResults getFeedDependentResultDeltas(String feedId);
@@ -57,7 +57,7 @@ public interface MetadataProvider {
     Feed ensureFeedDestination(String feedId, String id);
 
     Feed ensurePrecondition(String feedId, Metric... metrics);
-    
+
     Properties updateFeedProperties(String feedId, Properties props);
 
     DirectoryDatasource ensureDirectoryDatasource(String datasetName, String string, Path path);
@@ -87,7 +87,7 @@ public interface MetadataProvider {
     /**
      * Merges the specified properties into the feed's properties.
      *
-     * @param id the feed id
+     * @param id    the feed id
      * @param props the new properties
      * @return the merged properties
      */

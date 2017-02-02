@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.nifi.v2.core.metadata;
 
@@ -49,34 +49,31 @@ import java.util.Set;
  *
  */
 public class MetadataClientRecorder implements MetadataRecorder {
-    
+
     private static final Logger log = LoggerFactory.getLogger(MetadataClientRecorder.class);
-    
+
     private static final String CURRENT_WATER_MARKS_ATTR = "activeWaterMarks";
     private static final ObjectReader WATER_MARKS_READER = new ObjectMapper().reader().forType(Map.class);
     private static final ObjectWriter WATER_MARKS_WRITER = new ObjectMapper().writer().forType(Map.class);
-    
+    // TODO: Remove this
+    public Map<String, Boolean> workaroundRegistration = new HashMap<>();
     private MetadataClient client;
     private Set<String> activeWaterMarks = Collections.synchronizedSet(new HashSet<>());
     private Map<String, InitializationStatus> activeInitStatuses = Collections.synchronizedMap(new HashMap<>());
-    
-    // TODO: Remove this
-    public Map<String, Boolean> workaroundRegistration = new HashMap<>();
 
-    
+
     public MetadataClientRecorder() {
         this(URI.create("http://localhost:8420/api/v1/metadata"));
     }
-    
+
     public MetadataClientRecorder(URI baseUri) {
         this(new MetadataClient(baseUri));
     }
-    
+
     public MetadataClientRecorder(MetadataClient client) {
         this.client = client;
     }
-    
-    
+
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder#loadWaterMark(org.apache.nifi.processor.ProcessSession, org.apache.nifi.flowfile.FlowFile, java.lang.String, java.lang.String)
@@ -84,26 +81,26 @@ public class MetadataClientRecorder implements MetadataRecorder {
     @Override
     public FlowFile loadWaterMark(ProcessSession session, FlowFile ff, String feedId, String waterMarkName, String parameterName, String defaultValue) throws WaterMarkActiveException {
         recordActiveWaterMark(feedId, waterMarkName);
-        
+
         String value = getHighWaterMarkValue(feedId, waterMarkName).orElse(defaultValue);
         FlowFile resultFF = addCurrentWaterMarksAttr(session, ff, waterMarkName, parameterName);
         resultFF = session.putAttribute(resultFF, parameterName, value);
         return session.putAttribute(resultFF, initValueParameterName(parameterName), value);
     }
-    
+
     private void recordActiveWaterMark(String feedId, String waterMarkName) throws WaterMarkActiveException {
         String feedWaterMarkName = asFeedWaterMarkName(feedId, waterMarkName);
         boolean added = this.activeWaterMarks.add(feedWaterMarkName);
-        
-        if (! added) {
+
+        if (!added) {
             throw new WaterMarkActiveException(waterMarkName);
         }
     }
-    
+
     private boolean releaseActiveWaterMark(String feedId, String waterMarkName) {
         return this.activeWaterMarks.remove(asFeedWaterMarkName(feedId, waterMarkName));
     }
-    
+
     private String asFeedWaterMarkName(String feedId, String waterMarkName) {
         return feedId + "." + waterMarkName;
     }
@@ -114,7 +111,7 @@ public class MetadataClientRecorder implements MetadataRecorder {
     @Override
     public FlowFile recordWaterMark(ProcessSession session, FlowFile ff, String feedId, String waterMarkName, String parameterName, String newValue) {
         Map<String, String> actives = getCurrentWaterMarksAttr(ff);
-        
+
         if (actives.containsKey(waterMarkName)) {
             return session.putAttribute(ff, parameterName, newValue);
         } else {
@@ -129,10 +126,10 @@ public class MetadataClientRecorder implements MetadataRecorder {
     public FlowFile commitWaterMark(ProcessSession session, FlowFile ff, String feedId, String waterMarkName) {
         Map<String, String> actives = getCurrentWaterMarksAttr(ff);
         FlowFile resultFF = ff;
-        
+
         if (actives.containsKey(waterMarkName)) {
             String parameterName = actives.remove(waterMarkName);
-            
+
             try {
                 String value = ff.getAttribute(parameterName);
                 updateHighWaterMarkValue(feedId, waterMarkName, value);
@@ -140,7 +137,7 @@ public class MetadataClientRecorder implements MetadataRecorder {
                 releaseActiveWaterMark(feedId, waterMarkName);
                 resultFF = setCurrentWaterMarksAttr(session, resultFF, actives);
             }
-            
+
             return resultFF;
         } else {
             throw new IllegalStateException("No active high-water mark named \"" + waterMarkName + "\"");
@@ -154,12 +151,12 @@ public class MetadataClientRecorder implements MetadataRecorder {
     public FlowFile commitAllWaterMarks(ProcessSession session, FlowFile ff, String feedId) {
         Map<String, String> actives = getCurrentWaterMarksAttr(ff);
         FlowFile resultFF = ff;
-        
+
         // TODO do more efficiently
         for (String waterMarkName : new HashSet<String>(actives.keySet())) {
             resultFF = commitWaterMark(session, resultFF, feedId, waterMarkName);
         }
-        
+
         return resultFF;
     }
 
@@ -170,19 +167,19 @@ public class MetadataClientRecorder implements MetadataRecorder {
     public FlowFile releaseWaterMark(ProcessSession session, FlowFile ff, String feedId, String waterMarkName) {
         Map<String, String> actives = getCurrentWaterMarksAttr(ff);
         FlowFile resultFF = ff;
-        
+
         if (actives.containsKey(waterMarkName)) {
             String parameterName = actives.remove(waterMarkName);
-            
+
             try {
                 String value = getHighWaterMarkValue(feedId, waterMarkName)
-                                .orElse(ff.getAttribute(initValueParameterName(parameterName)));
+                    .orElse(ff.getAttribute(initValueParameterName(parameterName)));
                 resultFF = session.putAttribute(resultFF, parameterName, value);
             } finally {
                 releaseActiveWaterMark(feedId, waterMarkName);
                 resultFF = setCurrentWaterMarksAttr(session, resultFF, actives);
             }
-            
+
             return resultFF;
         } else {
             throw new IllegalStateException("No active high-water mark named \"" + waterMarkName + "\"");
@@ -196,15 +193,14 @@ public class MetadataClientRecorder implements MetadataRecorder {
     public FlowFile releaseAllWaterMarks(ProcessSession session, FlowFile ff, String feedId) {
         Map<String, String> actives = getCurrentWaterMarksAttr(ff);
         FlowFile resultFF = ff;
-        
+
         for (String waterMarkName : new HashSet<String>(actives.keySet())) {
             resultFF = releaseWaterMark(session, resultFF, feedId, waterMarkName);
         }
-        
+
         return resultFF;
     }
 
-    
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder#getFeedInitializationStatus(java.lang.String)
@@ -262,14 +258,14 @@ public class MetadataClientRecorder implements MetadataRecorder {
     @Override
     public void updateFeedStatus(ProcessSession session, FlowFile ff, String statusMsg) {
         // TODO Auto-generated method stub
-        
-    }    
-    
+
+    }
+
     //-=-=-=-=-=-=-=-
-    
+
 
     @Override
-	@Deprecated
+    @Deprecated
     // TODO: Remove workaroundRegistration
     public void recordFeedInitialization(String systemCategory, String feedName) {
         String key = feedKey(systemCategory, feedName);
@@ -278,10 +274,10 @@ public class MetadataClientRecorder implements MetadataRecorder {
     }
 
     @Override
-	@Deprecated
+    @Deprecated
     // TODO: Remove workaroundRegistration
     public boolean isFeedInitialized(String systemCategory, String feedName) {
-        String key = feedKey(systemCategory,feedName);
+        String key = feedKey(systemCategory, feedName);
         Boolean result = workaroundRegistration.get(key);
         log.warn("isFeedInitialized feed {} size {} result {}", key, workaroundRegistration.size(), result);
         return (result == null ? false : result);
@@ -290,7 +286,7 @@ public class MetadataClientRecorder implements MetadataRecorder {
     private Map<String, String> getCurrentWaterMarksAttr(FlowFile ff) {
         try {
             String activeStr = ff.getAttribute(CURRENT_WATER_MARKS_ATTR);
-            
+
             if (activeStr == null) {
                 return new HashMap<>();
             } else {
@@ -301,10 +297,10 @@ public class MetadataClientRecorder implements MetadataRecorder {
             throw new IllegalStateException(e);
         }
     }
-    
+
     private FlowFile addCurrentWaterMarksAttr(ProcessSession session, FlowFile ff, String waterMarkName, String parameterName) throws WaterMarkActiveException {
         Map<String, String> actives = getCurrentWaterMarksAttr(ff);
-        
+
         actives.put(waterMarkName, parameterName);
         return setCurrentWaterMarksAttr(session, ff, actives);
     }
@@ -332,7 +328,7 @@ public class MetadataClientRecorder implements MetadataRecorder {
 
     // TODO: Remove workaround
     private String feedKey(String systemCategory, String feedName) {
-        return systemCategory+"."+feedName;
+        return systemCategory + "." + feedName;
     }
 
 }

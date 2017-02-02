@@ -1,118 +1,118 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+  <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>kylo-nifi-core-service</artifactId>
-    <parent>
-        <groupId>com.thinkbiganalytics.nifi.services</groupId>
-        <artifactId>kylo-nifi-core-service-bundle</artifactId>
-        <version>0.7.0-SNAPSHOT</version>
-    </parent>
-	<properties>
-		<plugin.license.parentRelative>../../../../../../</plugin.license.parentRelative>
-	</properties>
-    <packaging>jar</packaging>
+  <artifactId>kylo-nifi-core-service</artifactId>
+  <parent>
+    <groupId>com.thinkbiganalytics.nifi.services</groupId>
+    <artifactId>kylo-nifi-core-service-bundle</artifactId>
+    <version>0.7.0-SNAPSHOT</version>
+  </parent>
+  <properties>
+    <plugin.license.parentRelative>../../../../../../</plugin.license.parentRelative>
+  </properties>
+  <packaging>jar</packaging>
 
-    <dependencies>
+  <dependencies>
 
-        <dependency>
-            <groupId>com.thinkbiganalytics.nifi.services</groupId>
-            <artifactId>kylo-nifi-core-service-api</artifactId>
-        </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.nifi.services</groupId>
+      <artifactId>kylo-nifi-core-service-api</artifactId>
+    </dependency>
 
-        <dependency>
-            <groupId>com.thinkbiganalytics.nifi.services</groupId>
-            <artifactId>kylo-nifi-hadoop-service-api</artifactId>
-        </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.nifi.services</groupId>
+      <artifactId>kylo-nifi-hadoop-service-api</artifactId>
+    </dependency>
 
-        <dependency>
-            <groupId>com.thinkbiganalytics.metadata</groupId>
-            <artifactId>kylo-metadata-rest-model</artifactId>
-        </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.metadata</groupId>
+      <artifactId>kylo-metadata-rest-model</artifactId>
+    </dependency>
 
-        <dependency>
-            <groupId>com.thinkbiganalytics.metadata</groupId>
-            <artifactId>kylo-metadata-rest-client-spring</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.nifi</groupId>
-            <artifactId>nifi-ssl-context-service-api</artifactId>
-            <version>${nifi.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.nifi</groupId>
-            <artifactId>nifi-ssl-context-service</artifactId>
-            <version>${nifi.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-
-        <dependency>
-            <groupId>com.thinkbiganalytics.metadata</groupId>
-            <artifactId>kylo-metadata-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.metadata</groupId>
+      <artifactId>kylo-metadata-rest-client-spring</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.nifi</groupId>
+      <artifactId>nifi-ssl-context-service-api</artifactId>
+      <version>${nifi.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.nifi</groupId>
+      <artifactId>nifi-ssl-context-service</artifactId>
+      <version>${nifi.version}</version>
+      <scope>test</scope>
+    </dependency>
 
 
-        <dependency>
-            <groupId>com.thinkbiganalytics.metadata</groupId>
-            <artifactId>kylo-metadata-jms</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.metadata</groupId>
+      <artifactId>kylo-metadata-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
-        <dependency>
-            <groupId>org.apache.nifi</groupId>
-            <artifactId>nifi-api</artifactId>
-        </dependency>
 
-        <dependency>
-            <groupId>org.apache.nifi</groupId>
-            <artifactId>nifi-processor-utils</artifactId>
-        </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.metadata</groupId>
+      <artifactId>kylo-metadata-jms</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-jms</artifactId>
-        </dependency>
+    <dependency>
+      <groupId>org.apache.nifi</groupId>
+      <artifactId>nifi-api</artifactId>
+    </dependency>
 
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-beans</artifactId>
-        </dependency>
+    <dependency>
+      <groupId>org.apache.nifi</groupId>
+      <artifactId>nifi-processor-utils</artifactId>
+    </dependency>
 
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context</artifactId>
-        </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-jms</artifactId>
+    </dependency>
 
-        <dependency>
-            <groupId>com.google.code.findbugs</groupId>
-            <artifactId>jsr305</artifactId>
-            <optional>true</optional>
-        </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-beans</artifactId>
+    </dependency>
 
-        <!-- Testing -->
-        <dependency>
-            <groupId>org.assertj</groupId>
-            <artifactId>assertj-core</artifactId>
-            <scope>test</scope>
-        </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context</artifactId>
+    </dependency>
 
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <scope>test</scope>
-        </dependency>
+    <dependency>
+      <groupId>com.google.code.findbugs</groupId>
+      <artifactId>jsr305</artifactId>
+      <optional>true</optional>
+    </dependency>
 
-        <dependency>
-            <groupId>org.apache.nifi</groupId>
-            <artifactId>nifi-mock</artifactId>
-            <scope>test</scope>
-        </dependency>
+    <!-- Testing -->
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <scope>test</scope>
+    </dependency>
 
-    </dependencies>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.nifi</groupId>
+      <artifactId>nifi-mock</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+  </dependencies>
 
 
 </project>

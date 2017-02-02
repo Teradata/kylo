@@ -26,7 +26,7 @@ import org.apache.nifi.controller.ControllerService;
 
 /**
  * Interface for a connection provider service for Sqoop<br>
- *     Provides information for connecting to a relational system
+ * Provides information for connecting to a relational system
  */
 @Tags({"thinkbig", "ingest", "sqoop", "rdbms", "database", "table"})
 @CapabilityDescription("Provides information for connecting to a relational system for running a sqoop job")
@@ -36,7 +36,7 @@ public interface SqoopConnectionService extends ControllerService {
     /**
      * Connection string to access source system
      *
-     * @return  the connection string
+     * @return the connection string
      */
 
     String getConnectionString();
@@ -72,7 +72,7 @@ public interface SqoopConnectionService extends ControllerService {
     /**
      * Gets the password
      *
-     * @return  the password
+     * @return the password
      */
     String getEnteredPassword();
 

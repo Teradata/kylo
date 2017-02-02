@@ -1,42 +1,42 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+  <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>kylo-nifi-standard-services-nar</artifactId>
-    <parent>
-        <groupId>com.thinkbiganalytics.nifi.services</groupId>
-        <artifactId>kylo-nifi-standard-services</artifactId>
-        <version>0.7.0-SNAPSHOT</version>
-    </parent>
-    <packaging>nar</packaging>
-    <properties>
-        <maven.javadoc.skip>true</maven.javadoc.skip>
-        <source.skip>true</source.skip>
+  <artifactId>kylo-nifi-standard-services-nar</artifactId>
+  <parent>
+    <groupId>com.thinkbiganalytics.nifi.services</groupId>
+    <artifactId>kylo-nifi-standard-services</artifactId>
+    <version>0.7.0-SNAPSHOT</version>
+  </parent>
+  <packaging>nar</packaging>
+  <properties>
+    <maven.javadoc.skip>true</maven.javadoc.skip>
+    <source.skip>true</source.skip>
     <plugin.license.parentRelative>../../../../../</plugin.license.parentRelative>
-	</properties>
+  </properties>
 
-    <dependencies>
+  <dependencies>
 
-        <dependency>
-            <groupId>com.thinkbiganalytics.nifi.services</groupId>
-            <artifactId>kylo-nifi-core-service-api</artifactId>
-            <version>${project.version}</version>
-            <scope>compile</scope>
-        </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.nifi.services</groupId>
+      <artifactId>kylo-nifi-core-service-api</artifactId>
+      <version>${project.version}</version>
+      <scope>compile</scope>
+    </dependency>
 
-        <dependency>
-            <groupId>com.thinkbiganalytics.nifi.services</groupId>
-            <artifactId>kylo-nifi-hadoop-service-api</artifactId>
-            <version>${project.version}</version>
-            <scope>compile</scope>
-        </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.nifi.services</groupId>
+      <artifactId>kylo-nifi-hadoop-service-api</artifactId>
+      <version>${project.version}</version>
+      <scope>compile</scope>
+    </dependency>
 
-        <dependency>
-            <groupId>org.apache.nifi</groupId>
-            <artifactId>nifi-standard-services-api-nar</artifactId>
-            <version>${nifi.version}</version>
-            <type>nar</type>
-        </dependency>
-    </dependencies>
+    <dependency>
+      <groupId>org.apache.nifi</groupId>
+      <artifactId>nifi-standard-services-api-nar</artifactId>
+      <version>${nifi.version}</version>
+      <type>nar</type>
+    </dependency>
+  </dependencies>
 
 </project>

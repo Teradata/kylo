@@ -28,11 +28,11 @@ import org.apache.nifi.controller.ControllerService;
  */
 @Tags({"thinkbig", "metadata", "client", "feed", "dataset", "operation"})
 @CapabilityDescription("Exposes the metadata providers to access and manipulate metadata related to "
-        + "feeds, datasets, and data operations.")
+                       + "feeds, datasets, and data operations.")
 public interface MetadataProviderService extends ControllerService {
 
     MetadataProvider getProvider();
-    
+
     MetadataRecorder getRecorder();
 
     KyloNiFiFlowProvider getKyloNiFiFlowProvider();

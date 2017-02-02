@@ -30,4 +30,5 @@ import org.apache.nifi.controller.ControllerService;
 @CapabilityDescription("Service that manages the cleanup of feeds.")
 @Tags({"thinkbig", "feed", "precondition", "event", "trigger"})
 public interface CleanupEventService extends ControllerService, CleanupEventConsumer {
+
 }

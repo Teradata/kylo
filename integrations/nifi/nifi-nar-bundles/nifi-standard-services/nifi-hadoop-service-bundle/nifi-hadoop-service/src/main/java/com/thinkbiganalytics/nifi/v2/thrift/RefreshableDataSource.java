@@ -53,52 +53,6 @@ public class RefreshableDataSource extends BasicDataSource {
     private ClassLoader driverClassLoader;
     private String validationQuery;
 
-    public static class Builder {
-
-        private String driverClassName;
-        private String url;
-        private String username;
-        private String password;
-        private ClassLoader driverClassLoader;
-        private String validationQuery;
-
-        public Builder driverClassName(String driverClassName) {
-            this.driverClassName = driverClassName;
-            return this;
-        }
-
-        public Builder url(String url) {
-            this.url = url;
-            return this;
-        }
-
-        public Builder username(String username) {
-            this.username = username;
-            return this;
-        }
-
-        public Builder password(String password) {
-            this.password = password;
-            return this;
-        }
-
-        public Builder driverClassLoader(ClassLoader classLoader) {
-            this.driverClassLoader = classLoader;
-            return this;
-        }
-
-        public Builder validationQuery(String validationQuery) {
-            this.validationQuery = validationQuery;
-            return this;
-        }
-
-        public RefreshableDataSource build() {
-            return new RefreshableDataSource(driverClassName, url, username, password, driverClassLoader, validationQuery);
-        }
-
-    }
-
-
     public RefreshableDataSource(String driverClassName, String url, String username, String password, ClassLoader driverClassLoader, String validationQuery) {
         this.driverClassName = driverClassName;
         this.url = url;
@@ -108,6 +62,7 @@ public class RefreshableDataSource extends BasicDataSource {
         this.validationQuery = validationQuery;
         refresh();
     }
+
 
     public RefreshableDataSource() {
 
@@ -195,12 +150,11 @@ public class RefreshableDataSource extends BasicDataSource {
         return testAndRefreshIfInvalid(username, password);
     }
 
-    //Rest of DataSource methods
-
     private DataSource getDataSource() {
         return target.get();
     }
 
+    //Rest of DataSource methods
 
     @Override
     public PrintWriter getLogWriter() throws SQLException {
@@ -213,13 +167,13 @@ public class RefreshableDataSource extends BasicDataSource {
     }
 
     @Override
-    public void setLoginTimeout(int seconds) throws SQLException {
-        getDataSource().setLoginTimeout(seconds);
+    public int getLoginTimeout() throws SQLException {
+        return getDataSource().getLoginTimeout();
     }
 
     @Override
-    public int getLoginTimeout() throws SQLException {
-        return getDataSource().getLoginTimeout();
+    public void setLoginTimeout(int seconds) throws SQLException {
+        getDataSource().setLoginTimeout(seconds);
     }
 
     @Override
@@ -237,7 +191,6 @@ public class RefreshableDataSource extends BasicDataSource {
         return getDataSource().isWrapperFor(iface);
     }
 
-
     private DataSource create() {
         BasicDataSource dataSource = new BasicDataSource();
         dataSource.setDriverClassName(driverClassName);
@@ -246,6 +199,51 @@ public class RefreshableDataSource extends BasicDataSource {
         dataSource.setUsername(username);
         dataSource.setPassword(password);
         return dataSource;
+    }
+
+    public static class Builder {
+
+        private String driverClassName;
+        private String url;
+        private String username;
+        private String password;
+        private ClassLoader driverClassLoader;
+        private String validationQuery;
+
+        public Builder driverClassName(String driverClassName) {
+            this.driverClassName = driverClassName;
+            return this;
+        }
+
+        public Builder url(String url) {
+            this.url = url;
+            return this;
+        }
+
+        public Builder username(String username) {
+            this.username = username;
+            return this;
+        }
+
+        public Builder password(String password) {
+            this.password = password;
+            return this;
+        }
+
+        public Builder driverClassLoader(ClassLoader classLoader) {
+            this.driverClassLoader = classLoader;
+            return this;
+        }
+
+        public Builder validationQuery(String validationQuery) {
+            this.validationQuery = validationQuery;
+            return this;
+        }
+
+        public RefreshableDataSource build() {
+            return new RefreshableDataSource(driverClassName, url, username, password, driverClassLoader, validationQuery);
+        }
+
     }
 
 }

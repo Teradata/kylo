@@ -20,8 +20,10 @@ package com.thinkbiganalytics.nifi.v2.core.precondition;
  * #L%
  */
 
-import java.util.Collections;
-import java.util.List;
+import com.thinkbiganalytics.nifi.core.api.precondition.FeedPreconditionEventService;
+import com.thinkbiganalytics.nifi.core.api.precondition.PreconditionEventConsumer;
+import com.thinkbiganalytics.nifi.core.api.precondition.PreconditionListener;
+import com.thinkbiganalytics.nifi.core.api.spring.SpringContextService;
 
 import org.apache.nifi.annotation.lifecycle.OnEnabled;
 import org.apache.nifi.components.PropertyDescriptor;
@@ -29,21 +31,19 @@ import org.apache.nifi.controller.AbstractControllerService;
 import org.apache.nifi.controller.ConfigurationContext;
 import org.apache.nifi.reporting.InitializationException;
 
-import com.thinkbiganalytics.nifi.core.api.precondition.FeedPreconditionEventService;
-import com.thinkbiganalytics.nifi.core.api.precondition.PreconditionEventConsumer;
-import com.thinkbiganalytics.nifi.core.api.precondition.PreconditionListener;
-import com.thinkbiganalytics.nifi.core.api.spring.SpringContextService;
+import java.util.Collections;
+import java.util.List;
 
 /**
  */
 public class JmsFeedPreconditionEventService extends AbstractControllerService implements FeedPreconditionEventService {
 
     public static final PropertyDescriptor SPRING_SERVICE = new PropertyDescriptor.Builder()
-            .name("Spring Context Service")
-            .description("Service for loading spring a spring context and providing bean lookup")
-            .required(true)
-            .identifiesControllerService(SpringContextService.class)
-            .build();
+        .name("Spring Context Service")
+        .description("Service for loading spring a spring context and providing bean lookup")
+        .required(true)
+        .identifiesControllerService(SpringContextService.class)
+        .build();
 
     private SpringContextService springService;
 
@@ -63,7 +63,7 @@ public class JmsFeedPreconditionEventService extends AbstractControllerService i
     @Override
     public void addListener(String category, String feedName, PreconditionListener listener) {
         PreconditionEventConsumer consumer = this.springService.getBean(PreconditionEventConsumer.class);
-        getLogger().debug("Adding preconditon listener: {}.{} - {} to consumer {}", new Object[]{ category, feedName, listener, consumer});
+        getLogger().debug("Adding preconditon listener: {}.{} - {} to consumer {}", new Object[]{category, feedName, listener, consumer});
 
         consumer.addListener(category, feedName, listener);
     }

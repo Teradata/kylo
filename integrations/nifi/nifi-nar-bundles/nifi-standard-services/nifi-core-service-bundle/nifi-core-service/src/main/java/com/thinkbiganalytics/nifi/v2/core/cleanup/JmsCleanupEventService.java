@@ -40,18 +40,24 @@ import javax.annotation.Nonnull;
  */
 public class JmsCleanupEventService extends AbstractControllerService implements CleanupEventService {
 
-    /** Property for the Spring context service */
+    /**
+     * Property for the Spring context service
+     */
     public static final PropertyDescriptor SPRING_SERVICE = new PropertyDescriptor.Builder()
-            .name("Spring Context Service")
-            .description("Service for loading a Spring context and providing bean lookup.")
-            .identifiesControllerService(SpringContextService.class)
-            .required(true)
-            .build();
+        .name("Spring Context Service")
+        .description("Service for loading a Spring context and providing bean lookup.")
+        .identifiesControllerService(SpringContextService.class)
+        .required(true)
+        .build();
 
-    /** List of property descriptors */
+    /**
+     * List of property descriptors
+     */
     private static final List<PropertyDescriptor> properties = ImmutableList.of(SPRING_SERVICE);
 
-    /** Spring context service */
+    /**
+     * Spring context service
+     */
     private SpringContextService springService;
 
     @Override
