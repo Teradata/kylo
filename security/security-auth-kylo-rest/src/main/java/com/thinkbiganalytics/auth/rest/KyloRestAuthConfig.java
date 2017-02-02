@@ -32,16 +32,16 @@ import org.springframework.context.annotation.Profile;
 import javax.annotation.Nonnull;
 
 /**
- * Spring configuration for the REST API Login Module.
+ * Spring configuration for the Kylo REST API Login Module.
  */
 @Configuration
 @Profile("auth-kylo")
 public class KyloRestAuthConfig {
 
-    @Value("${security.auth.rest.login.services:required}")
-    private String servicesLoginFlag;
+    @Value("${security.auth.kylo.login.ui:required}")
+    private String uiLoginFlag;
 
-    @Value("${security.auth.rest.login.url:http://localhost:8400/proxy}")
+    @Value("${security.auth.kylo.login.url:http://localhost:8400/proxy}")
     private String loginUrl;
 
     /**
@@ -50,13 +50,18 @@ public class KyloRestAuthConfig {
      * @param builder the login configuration builder
      * @return the UI login configuration
      */
-    @Bean(name = "uiRestLoginConfiguration")
+    @Bean(name = "uiKyloRestLoginConfiguration")
     @Nonnull
     public LoginConfiguration servicesRestLoginConfiguration(@Nonnull final LoginConfigurationBuilder builder) {
         return builder
                 .loginModule(JaasAuthConfig.JAAS_UI)
                     .moduleClass(KyloRestLoginModule.class)
-                    .controlFlag(this.servicesLoginFlag)
+                    .controlFlag(this.uiLoginFlag)
+                    .option(KyloRestLoginModule.LOGIN_URL, loginUrl)
+                    .add()
+                .loginModule(JaasAuthConfig.JAAS_UI_TOKEN)
+                    .moduleClass(KyloRestLoginModule.class)
+                    .controlFlag(this.uiLoginFlag)
                     .option(KyloRestLoginModule.LOGIN_URL, loginUrl)
                     .add()
                 .build();

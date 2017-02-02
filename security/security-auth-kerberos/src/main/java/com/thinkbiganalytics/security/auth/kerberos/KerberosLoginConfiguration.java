@@ -50,6 +50,11 @@ public class KerberosLoginConfiguration {
                     .controlFlag(this.uiLoginFlag)
                     .option("storeKey", "true")
                     .add()
+                .loginModule(JaasAuthConfig.JAAS_SERVICES)
+                    .moduleClass(com.sun.security.auth.module.Krb5LoginModule.class)
+                    .controlFlag(this.uiLoginFlag)
+                    .option("storeKey", "true")
+                    .add()
                 .build();
     }
 }

@@ -21,12 +21,14 @@ package com.thinkbiganalytics.ui.config;
  */
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
@@ -38,6 +40,7 @@ import org.springframework.security.kerberos.web.authentication.SpnegoAuthentica
 import org.springframework.security.kerberos.web.authentication.SpnegoEntryPoint;
 import org.springframework.security.web.authentication.rememberme.RememberMeAuthenticationFilter;
 
+import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
 import com.thinkbiganalytics.auth.jwt.JwtRememberMeServices;
 
 /**
@@ -56,6 +59,10 @@ public class KerberosWebSecurityConfigurer extends WebSecurityConfigurerAdapter 
     @Inject
     private KerberosServiceAuthenticationProvider kerberosServiceAuthProvider;
     
+    @Inject
+    @Named(JaasAuthConfig.UI_TOKEN_AUTH_PROVIDER)
+    private AuthenticationProvider userAuthProvider;
+
     @Inject
     private JwtRememberMeServices rememberMeServices;
 
@@ -98,7 +105,9 @@ public class KerberosWebSecurityConfigurer extends WebSecurityConfigurerAdapter 
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.authenticationProvider(kerberosServiceAuthProvider);
+        auth
+            .authenticationProvider(kerberosServiceAuthProvider)
+            .authenticationProvider(userAuthProvider);
     }
     
     @Bean
