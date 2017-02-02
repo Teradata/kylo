@@ -70,29 +70,43 @@
 
             }
 
+            var addToFilter = function (filterStr, addStr) {
+                if (filterStr != null && filterStr != "") {
+                    filterStr += ",";
+                }
+                filterStr += addStr;
+                return filterStr;
+            }
+
             var formParams = {};
             var startDateSet = false;
             var endDateSet = false;
             self.filtered = false;
             formParams['limit'] = self.limitRows;
             formParams['sort'] = '-executionid';
+            var filter = "";
             if(!_.contains(self.selectedFeedNames,'All') && self.selectedFeedNames.length >0){
-                formParams['feedName'] = self.selectedFeedNames.join(',');
+                filter = addToFilter(filter, "feedName==\"" + self.selectedFeedNames.join(',') + "\"");
                 self.filtered = true;
             }
             if(self.startDate != null && self.startDate !== '') {
-                formParams['starttime>'] = new moment(self.startDate).format('MM/DD/YYYY');
+                var m = new moment(self.startDate);
+                var filterStr = 'startTimeMillis>' + m.toDate().getTime();
+                filter = addToFilter(filter, filterStr)
                 self.filtered = true;
                 startDateSet = true;
             }
             if(self.endDate != null && self.endDate !== '') {
-                formParams['starttime<'] =new moment(self.endDate).format('MM/DD/YYYY');
+                var m = new moment(self.endDate);
+                var filterStr = 'startTimeMillis<' + m.toDate().getTime();
+                filter = addToFilter(filter, filterStr)
                 self.filtered = true;
                 endDateSet = true;
             }
             if(startDateSet && !endDateSet || startDateSet && endDateSet){
                 formParams['sort'] = 'executionid';
             }
+            formParams['filter'] = filter;
 
 
             $("#charts_tab_pivot_chart").html('<div class="bg-info"><i class="fa fa-refresh fa-spin"></i> Rendering Pivot Table...</div>')

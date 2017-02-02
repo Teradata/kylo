@@ -24,7 +24,7 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * Created by sr186054 on 4/14/16.
+ * Represents a job that is scheduled in the {@link JobScheduler}
  */
 public interface ScheduledJob {
 

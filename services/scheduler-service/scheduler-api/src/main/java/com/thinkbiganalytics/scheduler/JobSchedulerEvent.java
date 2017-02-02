@@ -21,7 +21,7 @@ package com.thinkbiganalytics.scheduler;
  */
 
 /**
- * Created by sr186054 on 1/14/17.
+ * Metadata about events in the {@link JobScheduler}
  */
 public class JobSchedulerEvent {
 

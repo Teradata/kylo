@@ -21,7 +21,7 @@ package com.thinkbiganalytics.scheduler;
  */
 
 /**
- * Created by sr186054 on 4/14/16.
+ * An identifier indicating a trigger event
  */
 public interface TriggerIdentifier extends ScheduleIdentifier {
 

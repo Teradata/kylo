@@ -43,7 +43,7 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * Created by sr186054 on 4/14/16.
+ * Transforms a scheduler REST object to/from the scheduler domain object
  */
 public class Model {
 

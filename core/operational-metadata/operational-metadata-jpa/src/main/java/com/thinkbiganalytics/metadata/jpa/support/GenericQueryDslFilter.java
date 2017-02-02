@@ -27,6 +27,7 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Operator;
 import com.querydsl.core.types.Ops;
 import com.querydsl.core.types.Path;
+import com.querydsl.core.types.dsl.ComparablePath;
 import com.querydsl.core.types.dsl.EntityPathBase;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberPath;
@@ -89,9 +90,13 @@ public class GenericQueryDslFilter {
     static final ImmutableMultimap<Operator, Class<? extends Path>> operatorPaths =
         new ImmutableMultimap.Builder<Operator, Class<? extends Path>>()
             .put(Ops.GT, NumberPath.class)
+            .put(Ops.GT, ComparablePath.class)
             .put(Ops.LT, NumberPath.class)
+            .put(Ops.LT, ComparablePath.class)
             .put(Ops.GOE, NumberPath.class)
+            .put(Ops.GOE, ComparablePath.class)
             .put(Ops.LOE, NumberPath.class)
+            .put(Ops.LOE, ComparablePath.class)
             .put(Ops.LIKE_IC, StringPath.class)
             .build();
 
@@ -165,7 +170,7 @@ public class GenericQueryDslFilter {
     }
 
     /**
-     * Buld the QueryDSL where filter from the filter string
+     * Build the QueryDSL where filter from the filter string
      *
      * Example filter strings:
      * endTime==NULL  will be  where JOB_EXECUTION.END_TIME IS NULL

@@ -29,12 +29,11 @@ import com.thinkbiganalytics.scheduler.rest.model.ScheduleIdentifier;
 import com.thinkbiganalytics.scheduler.rest.model.ScheduledJob;
 import com.thinkbiganalytics.scheduler.rest.model.TriggerInfo;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -54,7 +53,7 @@ import io.swagger.annotations.ApiResponses;
 @Path("/v1/scheduler")
 public class SchedulerRestController {
 
-    @Autowired
+    @Inject
     private JobScheduler quartzScheduler;
 
     @GET

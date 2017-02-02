@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by sr186054 on 9/24/15.
+ * Return information about a given scheduled job
  */
 public interface JobInfo {
 

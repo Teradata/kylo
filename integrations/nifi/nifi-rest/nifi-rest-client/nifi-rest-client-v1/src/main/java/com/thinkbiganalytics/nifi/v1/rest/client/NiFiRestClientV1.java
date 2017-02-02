@@ -149,6 +149,16 @@ public class NiFiRestClientV1 extends JerseyRestClient implements NiFiRestClient
 
     @Nonnull
     @Override
+    public List<BulletinDTO> getBulletinsMatchingMessage(@Nonnull String regexPattern) {
+        return Optional.ofNullable(get("/flow/bulletin-board", ImmutableMap.of("message", regexPattern), BulletinBoardEntity.class))
+            .map(BulletinBoardEntity::getBulletinBoard)
+            .map(BulletinBoardDTO::getBulletins)
+            .map(bulletins -> bulletins.stream().map(BulletinEntity::getBulletin).collect(Collectors.toList()))
+            .orElse(Collections.emptyList());
+    }
+
+    @Nonnull
+    @Override
     public NiFiPortsRestClient ports() {
         if (ports == null) {
             ports = new NiFiPortsRestClientV1(this);

@@ -21,11 +21,22 @@ package com.thinkbiganalytics.metadata.jpa.jobrepo.nifi;
  */
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.util.List;
 
 /**
  * Spring data repository for {@link JpaNifiRelatedRootFlowFiles}
  */
 public interface NifiRelatedRootFlowFilesRepository extends JpaRepository<JpaNifiRelatedRootFlowFiles, JpaNifiRelatedRootFlowFiles.NifiRelatedFlowFilesPK> {
 
+
+    @Query(value = " select relatedJobs.flowFileId "
+                   + " from JpaNifiRelatedRootFlowFiles relatedJobs "
+                   + " where relatedJobs.relationId in ( "
+                   + "   select related.relationId from JpaNifiRelatedRootFlowFiles related "
+                   + "   where related.flowFileId = :flowFileId)")
+    List<String> findRelatedFlowFiles(@Param("flowFileId") String flowFileId);
 
 }

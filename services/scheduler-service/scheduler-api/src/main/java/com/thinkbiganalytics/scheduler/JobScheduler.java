@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.TimeZone;
 
 /**
- * Created by sr186054 on 9/23/15.
+ * Scheduler interface
  */
 public interface JobScheduler {
 

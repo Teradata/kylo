@@ -291,7 +291,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
     }
 
     /**
-     * When the job is complete determine its status, write out exection context, and determine if all related jobs are complete
+     * When the job is complete determine its status, write out execution context, and determine if all related jobs are complete
      */
     private void finishJob(ProvenanceEventRecordDTO event, JpaBatchJobExecution jobExecution) {
 
@@ -517,7 +517,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         List<SearchCriteria> searchCriterias = GenericQueryDslFilter.parseFilterString(filter);
         SearchCriteria feedFilter = searchCriterias.stream().map(searchCriteria -> searchCriteria.withKey(CommonFilterTranslations.resolvedFilter(jobExecution, searchCriteria.getKey()))).filter(
             sc -> sc.getKey().equalsIgnoreCase(CommonFilterTranslations.jobExecutionFeedNameFilterKey)).findFirst().orElse(null);
-        if (feedFilter != null && feedFilter.getPreviousSearchCriteria() != null) {
+        if (feedFilter != null && feedFilter.getPreviousSearchCriteria() != null && !feedFilter.isValueCollection()) {
             //remove the feed filter from the list and filter by this feed
             searchCriterias.remove(feedFilter.getPreviousSearchCriteria());
             return findAllForFeed(feedFilter.getValue().toString(), searchCriterias, pageable);
@@ -656,7 +656,9 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
     }
 
 
-
+    public List<String> findRelatedFlowFiles(String flowFileId) {
+        return relatedRootFlowFilesRepository.findRelatedFlowFiles(flowFileId);
+    }
 
 
 

@@ -974,6 +974,12 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
         return client.getBulletins(processorId);
     }
 
+    public List<BulletinDTO> getBulletinsMatchingMessage(String regexPattern) {
+        return client.getBulletinsMatchingMessage(regexPattern);
+    }
+
+
+
     @Deprecated
     public Set<PortDTO> getInputPorts(String groupId) throws NifiComponentNotFoundException {
         return client.processGroups().getInputPorts(groupId);

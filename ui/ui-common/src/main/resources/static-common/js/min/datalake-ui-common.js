@@ -1,6 +1,6 @@
 /*-
  * #%L
- * thinkbig-ui-common
+ * kylo-ui-common
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%

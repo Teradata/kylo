@@ -112,6 +112,12 @@ public class JpaBatchJobExecution implements BatchJobExecution {
     private DateTime endTime;
 
 
+    @Column(name = "START_TIME", insertable = false, updatable = false)
+    private Long startTimeMillis;
+
+    @Column(name = "END_TIME", insertable = false, updatable = false)
+    private Long endTimeMillis;
+
     @Column(name = "START_YEAR")
     private Integer startYear;
 
@@ -154,7 +160,6 @@ public class JpaBatchJobExecution implements BatchJobExecution {
     private BatchJobInstance jobInstance;
 
     @OneToMany(targetEntity = JpaBatchJobExecutionParameter.class, mappedBy = "jobExecution",fetch = FetchType.LAZY, orphanRemoval = true)
-   // @Fetch(FetchMode.JOIN)
     private Set<BatchJobExecutionParameter> jobParameters =null;
 
 
@@ -384,6 +389,15 @@ public class JpaBatchJobExecution implements BatchJobExecution {
 
     public Integer getEndDay() {
         return endDay;
+    }
+
+
+    public Long getStartTimeMillis() {
+        return startTimeMillis;
+    }
+
+    public Long getEndTimeMillis() {
+        return endTimeMillis;
     }
 
     /**

@@ -172,10 +172,18 @@ public interface BatchJobExecutionProvider extends BatchJobExecutionFilters{
 
     /**
      * Return a list of job status objects matching a specific filter
-     * @param filter
+     * @param filter a filter string
      * @return a list of job status objects matching a specific filter
      */
     List<JobStatusCount> getJobStatusCount(String filter);
+
+    /**
+     * Find all flowFiles that are related to the supplied flow file
+     *
+     * @param flowFileId a flowfile id
+     * @return a list of related flowfile ids
+     */
+    public List<String> findRelatedFlowFiles(String flowFileId);
 
 
 }

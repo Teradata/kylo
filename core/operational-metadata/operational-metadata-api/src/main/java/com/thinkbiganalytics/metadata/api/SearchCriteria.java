@@ -20,6 +20,8 @@ package com.thinkbiganalytics.metadata.api;
  * #L%
  */
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * SearchCriteria used for querying data
  */
@@ -105,6 +107,13 @@ public class SearchCriteria {
      */
     public SearchCriteria withKey(String key){
         return new SearchCriteria(key, this);
+    }
+
+    /**
+     * @return {@code true} if the value is a collection of items (i.e. used in an IN clause) {@code false} if its a single value search
+     */
+    public boolean isValueCollection() {
+        return (value != null && (value instanceof String) && StringUtils.contains((String) value, "\"") && StringUtils.contains((String) value, ","));
     }
 
     /**

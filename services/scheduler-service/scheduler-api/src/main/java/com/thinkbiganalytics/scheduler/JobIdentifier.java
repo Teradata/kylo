@@ -21,7 +21,7 @@ package com.thinkbiganalytics.scheduler;
  */
 
 /**
- * Created by sr186054 on 4/14/16.
+ * Represents a identifer for a scheduled job
  */
 public interface JobIdentifier extends ScheduleIdentifier {
 

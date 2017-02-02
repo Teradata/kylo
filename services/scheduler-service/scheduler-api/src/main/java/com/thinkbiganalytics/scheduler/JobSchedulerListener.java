@@ -21,7 +21,7 @@ package com.thinkbiganalytics.scheduler;
  */
 
 /**
- * Created by sr186054 on 1/14/17.
+ * Listener called after a event {@link JobSchedulerEvent} is triggered
  */
 public interface JobSchedulerListener {
 

@@ -25,7 +25,7 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 /**
- * Created by sr186054 on 4/12/16.
+ * Spring configuration to redirect the url for /feed-mgr/ to point to the static-feed-mgr directory to load the web files
  */
 @Configuration
 public class FeedManagerStaticContentConfiguration extends WebMvcConfigurerAdapter {

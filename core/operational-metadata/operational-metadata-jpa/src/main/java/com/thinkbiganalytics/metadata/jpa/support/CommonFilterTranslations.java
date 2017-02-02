@@ -48,6 +48,8 @@ public class CommonFilterTranslations {
             .put("feedName", jobExecutionFeedNameFilterKey)
             .put("feedname", jobExecutionFeedNameFilterKey)
             .put("jobName", "jobInstance.jobName")
+            .put("jobStartTime", "startTimeMillis")
+            .put("jobEndTime", "endTimeMillis")
             .put("executionId","jobExecutionId")
             .put("executionid", "jobExecutionId")
             .put("job", "jobInstance.jobName").build();

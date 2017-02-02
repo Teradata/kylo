@@ -1,0 +1,449 @@
+/*-
+ * #%L
+ * thinkbig-ui-feed-manager
+ * %%
+ * Copyright (C) 2017 ThinkBig Analytics
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
+/**
+ * Styles for the feed-manager
+ */
+
+.property-name {
+  color: grey;
+}
+
+#content.define-feed, #content.register-nifi-template, #content.visual-query {
+  padding: 0 !important;
+}
+
+#define-feed-dest-schema-container, #define-feed-data-processing-container {
+  width: 100%;
+}
+
+#define-feed-dest-schema-container .repeated-item {
+  box-sizing: border-box;
+  height: 80px;
+  margin-right: 16px;
+}
+
+#define-feed-data-processing-container .repeated-item {
+  box-sizing: border-box;
+  height: 60px;
+  margin-right: 16px;
+}
+
+/**
+ * Stepper styles
+ */
+thinkbig-stepper .step-complete {
+  /* */
+}
+
+thinkbig-stepper card-layout:not(.not-centered), thinkbig-stepper div.centered, div.centered {
+  align-items: flex-start;
+  flex-flow: row nowrap;
+  justify-content: center;
+  display: flex;
+  top: 250px;
+  display: -webkit-flex; /* Safari */
+  -webkit-align-items: flex-start; /* Safari 7.0+ */
+  -webkit-justify-content: center; /* Safari 6.1+ */
+}
+
+thinkbig-stepper card-layout:not(.not-centered) section:first-child {
+  align-self: auto;
+  -webkit-align-self: auto; /* Safari 7.0+ */
+  -webkit-flex: 0 1 960px; /* Safari 6.1+ */
+  -ms-flex: 0 1 960px; /* IE 10 */
+  flex: 0 1 960px;
+  order: 0;
+  display: inline-block;
+  overflow: hidden;
+}
+
+thinkbig-stepper card-layout.not-centered section:first-child, thinkbig-stepper div.centered card-layout {
+  align-self: auto;
+  -webkit-align-self: auto; /* Safari 7.0+ */
+  order: 0;
+  display: inline-block;
+}
+
+thinkbig-stepper md-tabs-wrapper {
+  height: 75px;
+  background-color: #ffffff;
+}
+
+thinkbig-stepper md-pagination-wrapper {
+  height: 75px;
+}
+
+thinkbig-stepper md-tabs-canvas {
+  height: 75px;
+}
+
+thinkbig-stepper .md-tab {
+  height: 75px;
+  padding-top: 27px;
+}
+
+thinkbig-stepper .md-tab.arrow-tab {
+  background-image: url('../images/75_arrow.svg');
+  background-repeat: no-repeat;
+  background-position: right center;
+}
+
+thinkbig-stepper .md-tab.arrow-tab.md-active {
+  /* background-image:url('../images/75_arrow_dropshadow.svg');*/
+  background-repeat: no-repeat;
+  background-position: right center;
+}
+
+.step-label {
+  padding-right: 10px;
+}
+
+thinkbig-step-buttons {
+  float: right;
+  padding-top: 20px;
+}
+
+/**
+ * Define Feed details
+ */
+
+.table-schema-checkbox {
+  margin-top: -10px;
+}
+
+/**
+ * Nifi property rendering
+ */
+
+.nifi-property-input md-radio-group {
+  padding-top: 10px;
+  padding-bottom: 15px;
+}
+
+.nifi-property-input md-select {
+  margin: inherit;
+}
+
+/**
+ * Feed Import
+ */
+.feed.import.category {
+  width: 410px;
+}
+
+/**
+ * Feed Categories
+ */
+
+.feed-categories md-card {
+  border: 2px solid #EEEEEE;
+  box-shadow: none;
+}
+
+.feed-categories md-card md-card-title {
+  padding: 8px;
+  max-height: 60px;
+}
+
+.feed-categories md-card-title-text .category-header {
+  font-size: 16px;
+  font-weight: 400;
+}
+
+.feed-categories md-card-title-text .category-subheader {
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.feed-categories md-card-content {
+  padding-top: 0px;
+}
+
+.feed-categories md-card md-card-content {
+  padding-top: 0px;
+  padding-bottom: 8px;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+/**
+ * Hive Tables page
+ */
+
+.table-column-header {
+  color: rgb(130, 130, 130);
+  text-align: left;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+table.hive-table {
+  border: 1px solid #EEEEEE;
+  border-spacing: 2px;
+}
+
+table.hive-table th {
+  border-bottom: 1px solid #EEEEEE;
+  color: rgb(130, 130, 130);
+  text-align: left;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 16px 16px 16px 0;
+}
+
+table.hive-table th, table.hive-table td {
+  border-bottom: 1px solid #EEEEEE;
+  border-spacing: 2px;
+  padding: 2px;
+}
+
+table.hive-table th:first-child, table.hive-table td:first-child {
+  padding-left: 8px;
+}
+
+table.hive-table th:last-child, table.hive-table td:last-child {
+  padding-right: 8px;
+}
+
+.hive-table tbody tr:hover {
+  background-color: #eeeeee;
+}
+
+/**
+ * Register Templates
+ */
+
+.registered-templates md-list-item:hover {
+  background-color: #ECECEC;
+  cursor: pointer;
+}
+
+.register-template-property h3 {
+  font-size: 16px;
+  font-weight: 400;
+  letter-spacing: .010em;
+  margin: 0;
+  line-height: 1.5em;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+card-layout .register-nifi-template-header {
+  height: inherit !important;;
+  max-height: inherit !important;
+}
+
+/**
+ * Categories autocomplete
+ */
+
+.autocomplete-categories-template li {
+  border-bottom: 1px solid #ccc;
+  height: auto;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  white-space: normal;
+}
+
+.autocomplete-categories-template li:last-child {
+  border-bottom-width: 0;
+}
+
+.autocomplete-categories-template .item-title,
+.autocomplete-categories-template .item-metadata {
+  display: block;
+  line-height: 2;
+}
+
+.autocomplete-categories-template .item-title md-icon {
+  height: 18px;
+  width: 18px;
+}
+
+/**
+ * Global Search styles
+ */
+
+md-input-container.global-search .md-input {
+  border-color: white !important;
+  font-size: 14px;
+}
+
+.elastic-search-property-table {
+  margin-top: 0px;
+  border-collapse: collapse;
+  margin-left: 30px;
+}
+
+.elastic-search-property-table td {
+  padding: 5px;
+  border-collapse: collapse;
+  border-spacing: 0px;
+}
+
+.elastic-search-property-table tr:not(:last-child) td {
+}
+
+/**
+ * Visual Query
+ */
+
+card-layout.visual-query-canvas section:first-child {
+  align-self: auto;
+  flex: auto !important;
+  order: 0;
+  display: inline-block;
+  overflow: hidden;
+}
+
+.visual-query-auto-complete-centered {
+  min-height: 200px;
+  height: 200px;
+
+}
+
+.visual-query-auto-complete-top {
+
+}
+
+/**
+ * Profile Page
+ */
+
+.profile .md-subhead {
+  /* align heading with the charts, where charts are slightly to the right of the heading  */
+  padding-left: 13px;
+  font-weight: 500;
+}
+
+.profile .summary {
+  /* min-width so that charts do not overlap on small screens */
+  min-width: 380px;
+}
+
+.profile .stats {
+  /* min-width so that charts do not overlap on small screens */
+  min-width: 380px;
+}
+
+.profile .nvd3 .nv-discretebar .nv-groups text {
+  fill: dimgray;
+}
+
+.profile .nvd3 .nv-multibarHorizontal .nv-groups text {
+  fill: dimgray;
+}
+
+.profile .item-title {
+  /* white-space: normal; so that long comments wrap into multi-line rather than scroll out of the screen */
+  white-space: normal;
+}
+
+.profile .md-caption {
+  color: dimgray;
+}
+
+.profile.profile-invalid .violation.hint {
+  /* wrap long lines inside the violation reasons, otherwise columns are not wide enough and
+  violation reasons scroll out of view */
+  white-space: normal;
+}
+
+.profile.profile-invalid label {
+  white-space: nowrap;
+}
+
+.profile.column.button {
+  min-height: 48px;
+  margin-top: 0px;
+  margin-bottom: 0;
+}
+
+.profile.column.icon {
+  height: auto;
+  color: #f08c38;
+}
+
+/**
+ * Property list editor
+ */
+
+/* User-defined properties and fields */
+.feed-user-property > div:first-child {
+  margin-top: 20px;
+  padding: 4px;
+}
+
+.feed-user-property .md-button.md-icon-button {
+  height: 36px;
+  margin: 16px 0 0 0;
+  padding: 0;
+  width: 36px;
+}
+
+.feed-user-property .md-button.md-icon-button .material-icons {
+  font-size: 18px;
+}
+
+.user-field-list {
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+.user-field-list li {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  padding-top: 6px;
+}
+
+.user-field-list .md-button.user-field-delete {
+  margin: 8px 0 0 0;
+}
+
+.user-field-list .md-button.user-field-move-down, .user-field-list .md-button.user-field-move-up {
+  height: 24px;
+  margin: 0;
+  min-height: 24px;
+  padding: 0;
+}
+
+.user-field-list md-checkbox {
+  margin-top: 4px;
+}
+
+.user-field-list md-input-container {
+  margin-bottom: 0;
+}
+
+.user-field-list div:not(:first-child) md-input-container {
+  margin-top: 0;
+}
+
+/* Permissions Table */
+md-list-item .md-list-item-inner > md-checkbox.permissions-indent-1 {
+  margin-left: 59px;
+}
+
+md-list-item .md-list-item-inner > md-checkbox.permissions-indent-2 {
+  margin-left: 115px;
+}

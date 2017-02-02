@@ -169,6 +169,15 @@ public class NiFiRestClientV0 extends JerseyRestClient implements NiFiRestClient
                 .orElse(Collections.emptyList());
     }
 
+    @Nonnull
+    @Override
+    public List<BulletinDTO> getBulletinsMatchingMessage(@Nonnull String regexPattern) {
+        return Optional.ofNullable(get("/controller/bulletin-board", ImmutableMap.of("message", regexPattern), BulletinBoardEntity.class))
+            .map(BulletinBoardEntity::getBulletinBoard)
+            .map(BulletinBoardDTO::getBulletins)
+            .orElse(Collections.emptyList());
+    }
+
     /**
      * Gets the NiFi cluster type.
      *

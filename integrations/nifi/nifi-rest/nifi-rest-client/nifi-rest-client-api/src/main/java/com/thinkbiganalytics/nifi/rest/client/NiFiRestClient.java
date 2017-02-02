@@ -77,6 +77,15 @@ public interface NiFiRestClient {
     List<BulletinDTO> getBulletins(@Nonnull String sourceId);
 
     /**
+     * Gets the current bulletins with the message matching the supplied regex pattern
+     *
+     * @param regexPattern the regex pattern to matching against the Bulletin message
+     * @return the bulletins
+     */
+    @Nonnull
+    List<BulletinDTO> getBulletinsMatchingMessage(@Nonnull String regexPattern);
+
+    /**
      * Gets the client for managing ports.
      *
      * @return the NiFi Ports client

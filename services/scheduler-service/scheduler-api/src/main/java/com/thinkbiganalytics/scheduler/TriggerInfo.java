@@ -23,66 +23,69 @@ package com.thinkbiganalytics.scheduler;
 
 import java.util.Date;
 
+/**
+ * Information about a scheduled items trigger indicating its schedule and when it should be fired next
+ */
 public interface TriggerInfo {
 
-  Date getNextFireTime();
+    Date getNextFireTime();
 
-  Date getPreviousFireTime();
+    Date getPreviousFireTime();
 
-  Date getStartTime();
+    Date getStartTime();
 
-  Date getEndTime();
+    Date getEndTime();
 
-  String getCronExpression();
+    String getCronExpression();
 
-  String getCronExpressionSummary();
+    String getCronExpressionSummary();
 
-  String getDescription();
+    String getDescription();
 
-  boolean isSimpleTrigger();
+    boolean isSimpleTrigger();
 
-  void setSimpleTrigger(boolean isSimpleTrigger);
+    void setSimpleTrigger(boolean isSimpleTrigger);
 
-  boolean isScheduled();
+    boolean isScheduled();
 
-  void setScheduled(boolean scheduled);
+    void setScheduled(boolean scheduled);
 
-  TriggerInfo.TriggerState getState();
+    TriggerInfo.TriggerState getState();
 
-  TriggerIdentifier getTriggerIdentifier();
+    TriggerIdentifier getTriggerIdentifier();
 
-  JobIdentifier getJobIdentifier();
+    JobIdentifier getJobIdentifier();
 
-  void setTriggerIdentifier(TriggerIdentifier triggerIdentifier);
+    void setTriggerIdentifier(TriggerIdentifier triggerIdentifier);
 
-  void setJobIdentifier(JobIdentifier jobIdentifier);
+    void setJobIdentifier(JobIdentifier jobIdentifier);
 
-  void setNextFireTime(Date nextFireTime);
+    void setNextFireTime(Date nextFireTime);
 
-  void setPreviousFireTime(Date previousFireTime);
+    void setPreviousFireTime(Date previousFireTime);
 
-  void setStartTime(Date startTime);
+    void setStartTime(Date startTime);
 
-  void setEndTime(Date endTime);
+    void setEndTime(Date endTime);
 
-  void setCronExpression(String cronExpression);
+    void setCronExpression(String cronExpression);
 
-  void setCronExpressionSummary(String summary);
+    void setCronExpressionSummary(String summary);
 
-  void setDescription(String description);
+    void setDescription(String description);
 
-  void setState(TriggerInfo.TriggerState state);
+    void setState(TriggerInfo.TriggerState state);
 
-  void setTriggerClass(Class triggerClass);
+    void setTriggerClass(Class triggerClass);
 
-  Class getTriggerClass();
+    Class getTriggerClass();
 
-  public static enum TriggerState {
-    NONE,
-    NORMAL,
-    PAUSED,
-    COMPLETE,
-    ERROR,
-    BLOCKED;
-  }
+    public static enum TriggerState {
+        NONE,
+        NORMAL,
+        PAUSED,
+        COMPLETE,
+        ERROR,
+        BLOCKED;
+    }
 }
