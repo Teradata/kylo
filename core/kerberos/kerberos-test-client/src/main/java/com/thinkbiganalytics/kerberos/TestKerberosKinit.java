@@ -41,9 +41,9 @@ import java.util.Scanner;
  */
 public class TestKerberosKinit {
 
-    private static String driverName = "org.apache.hive.jdbc.HiveDriver";
     private static final String ENVIRONMENT_HDP = "HDP";
     private static final String ENVIRONMENT_CLOUDERA = "CLOUDERA";
+    private static String driverName = "org.apache.hive.jdbc.HiveDriver";
 
     public static void main(String[] args) throws Exception {
         final TestKerberosKinit testKerberosKinit = new TestKerberosKinit();
@@ -136,6 +136,38 @@ public class TestKerberosKinit {
         }
     }
 
+    /**
+     *
+     * @param configurationFiles
+     * @return
+     */
+    private static Configuration createConfigurationFromList(String configurationFiles) {
+        Configuration config = new Configuration();
+        String[] resources = configurationFiles.split(",");
+        for (String resource : resources) {
+            config.addResource(new Path(resource));
+        }
+        return config;
+    }
+
+    /**
+     *
+     * @param configuration
+     * @param keytabLocation
+     * @param principal
+     * @return
+     * @throws IOException
+     */
+    private static UserGroupInformation generateKerberosTicket(Configuration configuration, String keytabLocation, String principal) throws IOException {
+        System.setProperty("sun.security.krb5.debug", "false");
+        configuration.set("hadoop.security.authentication", "Kerberos");
+        UserGroupInformation.setConfiguration(configuration);
+
+        System.out.println("Generating Kerberos ticket for principal: " + principal + " at key tab location: " + keytabLocation);
+        UserGroupInformation ugi = UserGroupInformation.loginUserFromKeytabAndReturnUGI(principal, keytabLocation);
+        return ugi;
+    }
+
     private void testHdfsWithUserImpersonation(final String configResources, final String keytab, final String principal, String proxyUser, final String environment, final String hdfsUrl) {
         final String path = "/user";
         try {
@@ -208,90 +240,6 @@ public class TestKerberosKinit {
         }
     }
 
-    /*
-    private void testHiveJdbcConnectionWithUserImpersonation(final String configResources, final String keytab,final String realUserPrincipal ,  String proxyUser) throws Exception {
-        System.out.println("*******************");
-        System.out.println("Testing user impersonation for a hive query for proxy user: " + proxyUser + " and authenticating as: " + realUserPrincipal);
-        System.out.println("*******************");
-
-        final Configuration configuration = TestKerberosKinit.createConfigurationFromList(configResources);
-        UserGroupInformation realugi = TestKerberosKinit.generateKerberosTicket(configuration, keytab, realUserPrincipal);
-
-        System.out.println(" ");
-        System.out.println("Sucessfully got a kerberos ticket in the JVM");
-
-        // Get delegation token for authenticated user
-        HiveConnection realUserConnection = (HiveConnection) realugi.doAs(new PrivilegedExceptionAction<Connection>() {
-            public Connection run() {
-                Connection connection = null;
-                try {
-                    Class.forName(driverName);
-                    connection = DriverManager.getConnection("jdbc:hive2://localhost:10000/default;principal=" + realUserPrincipal);
-
-                } catch (Exception e) {
-                    throw new RuntimeException("Error getting delegation token", e);
-                }
-                return connection;
-            }
-        });
-
-
-        String delegationToken = realUserConnection.getDelegationToken(proxyUser, realUserPrincipal);
-
-        System.out.println("Delegation token is: " + delegationToken);
-
-
-        setDelegationToken(realugi, delegationToken, HiveAuthFactory.HS2_CLIENT_TOKEN);
-
-        Connection con = (Connection) realugi.doAs(new PrivilegedExceptionAction<Object>() {
-            public Object run() {
-                Connection tcon = null;
-                try {
-                    Class.forName(driverName);
-                    System.out.println("Getting connection");
-                    tcon = DriverManager.getConnection("jdbc:hive2://localhost:10000/default;auth=delegationToken");
-
-                    System.out.println("creating statement");
-                    Statement stmt = tcon.createStatement();
-
-                    String sql = "show databases";
-                    ResultSet res = stmt.executeQuery(sql);
-                    System.out.println(" \n");
-                    System.out.println("Executing the Hive Query:");
-                    System.out.println(" ");
-
-                    int itr =1;
-
-                    System.out.println("List of Databases");
-                    while (res.next()) {
-                        System.out.println(res.getString(itr));
-                    }
-                } catch (Exception e) {
-                    System.out.println("Error testing showing hive databases");
-                    e.printStackTrace();
-                }
-                return tcon;
-
-            }
-        });
-        con.close();
-
-        realUserConnection.cancelDelegationToken(delegationToken);
-        realUserConnection.close();
-        System.out.println(" ");
-        System.out.println("Delegation token " + delegationToken + " has been removed");
-    }
-
-
-    public static void setDelegationToken(UserGroupInformation ugi, String tokenStr, String tokenService)
-        throws IOException {
-        Token<DelegationTokenIdentifier> delegationToken = new Token<DelegationTokenIdentifier>();
-        delegationToken.decodeFromUrlString(tokenStr);
-        delegationToken.setService(new Text(tokenService));
-        ugi.addToken(delegationToken);
-    }
-    */
-
     /**
      *
      * @param configResources
@@ -344,37 +292,5 @@ public class TestKerberosKinit {
         });
 
 
-    }
-
-    /**
-     *
-     * @param configurationFiles
-     * @return
-     */
-    private static Configuration createConfigurationFromList(String configurationFiles) {
-        Configuration config = new Configuration();
-        String[] resources = configurationFiles.split(",");
-        for (String resource : resources) {
-            config.addResource(new Path(resource));
-        }
-        return config;
-    }
-
-    /**
-     *
-     * @param configuration
-     * @param keytabLocation
-     * @param principal
-     * @return
-     * @throws IOException
-     */
-    private static UserGroupInformation generateKerberosTicket(Configuration configuration, String keytabLocation, String principal) throws IOException {
-        System.setProperty("sun.security.krb5.debug", "false");
-        configuration.set("hadoop.security.authentication", "Kerberos");
-        UserGroupInformation.setConfiguration(configuration);
-
-        System.out.println("Generating Kerberos ticket for principal: " + principal + " at key tab location: " + keytabLocation);
-        UserGroupInformation ugi = UserGroupInformation.loginUserFromKeytabAndReturnUGI(principal, keytabLocation);
-        return ugi;
     }
 }
