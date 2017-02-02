@@ -108,6 +108,7 @@ public class KerberosWebSecurityConfigurer extends WebSecurityConfigurerAdapter 
         return filter;
     }
 
+    @Bean
     @Override
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();

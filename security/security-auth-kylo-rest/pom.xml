@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>kylo-security-auth-rest</artifactId>
+    <artifactId>kylo-security-auth-kylo-rest</artifactId>
     <parent>
         <groupId>com.thinkbiganalytics.datalake</groupId>
         <artifactId>kylo-security</artifactId>
@@ -14,8 +14,8 @@
 		<plugin.license.parentRelative>../../</plugin.license.parentRelative>
 	</properties>
 
-    <name>REST API Authentication</name>
-    <description>Authenticates users by making a REST API call.</description>
+    <name>Kylo REST API Authentication</name>
+    <description>Authenticates users by making a call to the Kylo user/group REST API.</description>
 
     <dependencies>
         <!-- Core dependencies -->
