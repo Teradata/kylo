@@ -42,6 +42,15 @@ public interface HadoopAuthorizationService {
     public static final String REGISTRATION_HIVE_SCHEMA = "nifi:registration:hiveSchema";
     public static final String REGISTRATION_HIVE_TABLES = "nifi:registration:hiveTableNames";
 
+    public static List<String> convertNewlineDelimetedTextToList(String text) {
+        List<String> result = new ArrayList<>();
+        if (StringUtils.isNotEmpty(text)) {
+            String listWithCommas = text.replace("\n", ",");
+            result = Arrays.asList(listWithCommas.split(",")).stream().collect(Collectors.toList());
+        }
+        return result;
+    }
+
     void initialize(AuthorizationConfiguration configuration);
 
     HadoopAuthorizationGroup getGroupByName(String groupName);
@@ -58,23 +67,14 @@ public interface HadoopAuthorizationService {
 
     void deleteHivePolicy(String categoryName, String feedName);
 
-    void deleteHdfsPolicy(String categoryName, String feedName , List<String> hdfsPaths);
+    void deleteHdfsPolicy(String categoryName, String feedName, List<String> hdfsPaths);
 
     void updateReadOnlyHivePolicy(String categoryName, String feedName, List<String> groups, String datebaseName, List<String> tableNames);
 
     void updateReadOnlyHdfsPolicy(String categoryName, String feedName, List<String> groups, List<String> hdfsPaths);
 
-    void updateSecurityGroupsForAllPolicies(String categoryName, String feedName,List<String> hadoopAuthorizationGroups, Map<String,Object> feedProperties);
+    void updateSecurityGroupsForAllPolicies(String categoryName, String feedName, List<String> hadoopAuthorizationGroups, Map<String, Object> feedProperties);
 
     String getType();
-
-    public static List<String> convertNewlineDelimetedTextToList(String text) {
-        List<String> result = new ArrayList<>();
-        if(StringUtils.isNotEmpty(text)) {
-            String listWithCommas = text.replace("\n", ",");
-            result = Arrays.asList(listWithCommas.split(",")).stream().collect(Collectors.toList());
-        }
-        return result;
-    }
 
 }

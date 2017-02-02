@@ -42,12 +42,10 @@ import javax.inject.Inject;
  */
 public abstract class BaseHadoopAuthorizationService implements HadoopAuthorizationService {
 
-    private static final Logger log = LoggerFactory.getLogger(BaseHadoopAuthorizationService.class);
-
     public static final String REGISTRATION_HDFS_FOLDERS = "nifi:registration:hdfsFolders";
     public static final String REGISTRATION_HIVE_SCHEMA = "nifi:registration:hiveSchema";
     public static final String REGISTRATION_HIVE_TABLES = "nifi:registration:hiveTableNames";
-
+    private static final Logger log = LoggerFactory.getLogger(BaseHadoopAuthorizationService.class);
     /**
      * Event listener for precondition events
      */
@@ -77,11 +75,11 @@ public abstract class BaseHadoopAuthorizationService implements HadoopAuthorizat
         @Override
         public void notify(final FeedPropertyChangeEvent metadataEvent) {
             PropertyChange change = metadataEvent.getData();
-            
+
             if (change.getHadoopSecurityGroupNames() != null && hadoopAuthorizationChangesRequired(metadataEvent)) {
                 try {
                     String hdfsFolders = change.getNewProperties().getProperty(REGISTRATION_HDFS_FOLDERS);
-                    
+
                     if (!StringUtils.isEmpty(hdfsFolders)) {
                         String hdfsFoldersWithCommas = hdfsFolders.replace("\n", ",");
                         List<String> hdfsFoldersConverted = Arrays.asList(hdfsFoldersWithCommas.split(",")).stream().collect(Collectors.toList());
