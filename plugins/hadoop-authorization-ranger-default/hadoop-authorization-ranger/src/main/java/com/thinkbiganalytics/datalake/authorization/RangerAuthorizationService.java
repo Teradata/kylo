@@ -65,7 +65,7 @@ public class RangerAuthorizationService extends BaseHadoopAuthorizationService {
     /**
      * @return : comma separated string
      */
-    public static String convertListToString(List<String> list, String delim) {
+    private static String convertListToString(List<String> list, String delim) {
 
         StringBuilder sb = new StringBuilder();
 
@@ -139,21 +139,20 @@ public class RangerAuthorizationService extends BaseHadoopAuthorizationService {
     }
 
     @Override
-    public void createReadOnlyHivePolicy(String categoryName, String feedName, List<String> securityGroupNames, String datebaseName, List<String> tableNames) {
+    public void createReadOnlyHivePolicy(String categoryName, String feedName, List<String> securityGroupNames, String databaseName, List<String> tableNames) {
 
         RangerCreateOrUpdatePolicy rangerCreateOrUpdatePolicy = new RangerCreateOrUpdatePolicy();
 
-        List<String> hivePermissions = new ArrayList();
+        List<String> hivePermissions = new ArrayList<>();
         hivePermissions.add(HIVE_READ_ONLY_PERMISSION);
         String rangerHivePolicyName = getHivePolicyName(categoryName, feedName);
         String hiveDescription = "Ranger policy created for group list " + securityGroupNames.toString() + " for resource " + tableNames.toString();
-        String hiveDatabases = datebaseName;
         String hiveTables = convertListToString(tableNames, ",");
 
         rangerCreateOrUpdatePolicy = new RangerCreateOrUpdatePolicy();
 
         rangerCreateOrUpdatePolicy.setPolicyName(rangerHivePolicyName);
-        rangerCreateOrUpdatePolicy.setDatabases(hiveDatabases);
+        rangerCreateOrUpdatePolicy.setDatabases(databaseName);
         rangerCreateOrUpdatePolicy.setTables(hiveTables);
         rangerCreateOrUpdatePolicy.setColumns(HIVE_COLUMN_PERMISSION);
         rangerCreateOrUpdatePolicy.setUdfs("");
@@ -181,7 +180,7 @@ public class RangerAuthorizationService extends BaseHadoopAuthorizationService {
         /**
          * Create HDFS Policy
          */
-        List<String> hdfsPermissions = new ArrayList();
+        List<String> hdfsPermissions = new ArrayList<>();
         hdfsPermissions.add(HDFS_READ_ONLY_PERMISSION);
         String rangerHdfsPolicyName = getHdfsPolicyName(categoryName, feedName);
         String description = "Ranger policy created for group list " + securityGroupNames.toString() + " for resource " + hdfsPaths.toString();
@@ -208,7 +207,7 @@ public class RangerAuthorizationService extends BaseHadoopAuthorizationService {
     @Override
     public void updateReadOnlyHivePolicy(String categoryName, String feedName, List<String> groups, String datebaseNames, List<String> tableNames) {
 
-        int policyId = 0;
+        int policyId;
 
         String rangerHivePolicyName = getHivePolicyName(categoryName, feedName);
         Map<String, Object> searchHiveCriteria = new HashMap<>();
@@ -230,9 +229,9 @@ public class RangerAuthorizationService extends BaseHadoopAuthorizationService {
             }
         }
 
-        List<String> hivePermissions = new ArrayList();
+        List<String> hivePermissions = new ArrayList<>();
         hivePermissions.add(HIVE_READ_ONLY_PERMISSION);
-        String hiveDescription = "Ranger policy updated for group list " + groups.toString() + " for resource " + datebaseNames.toString();
+        String hiveDescription = "Ranger policy updated for group list " + groups.toString() + " for resource " + datebaseNames;
         String hiveTables = convertListToString(tableNames, ",");
 
         RangerCreateOrUpdatePolicy rangerUpdatePolicy = new RangerCreateOrUpdatePolicy();
@@ -286,7 +285,7 @@ public class RangerAuthorizationService extends BaseHadoopAuthorizationService {
         /**
          * Update HDFS Policy
          */
-        List<String> hdfsPermissions = new ArrayList();
+        List<String> hdfsPermissions = new ArrayList<>();
         hdfsPermissions.add(HDFS_READ_ONLY_PERMISSION);
 
         String description = "Ranger policy updated for group list " + groups.toString() + " for resource " + hdfsPaths.toString();
@@ -316,9 +315,9 @@ public class RangerAuthorizationService extends BaseHadoopAuthorizationService {
      */
     public void updateSecurityGroupsForAllPolicies(String categoryName, String feedName, List<String> securityGroupNames, Map<String, Object> feedProperties) {
         String rangerHdfsPolicyName = getHdfsPolicyName(categoryName, feedName);
-        RangerPolicy hdfsPolicy = (RangerPolicy) searchHdfsPolicy(rangerHdfsPolicyName);
+        RangerPolicy hdfsPolicy = searchHdfsPolicy(rangerHdfsPolicyName);
         String rangerHivePolicyName = getHivePolicyName(categoryName, feedName);
-        RangerPolicy hivePolicy = (RangerPolicy) searchHivePolicy(rangerHivePolicyName);
+        RangerPolicy hivePolicy = searchHivePolicy(rangerHivePolicyName);
 
         if (securityGroupNames == null || securityGroupNames.isEmpty()) {
             // Only delete if the policies exists. It's possibile that someone adds a security group right after feed creation and before initial ingestion
@@ -337,7 +336,7 @@ public class RangerAuthorizationService extends BaseHadoopAuthorizationService {
                     createReadOnlyHdfsPolicy(categoryName, feedName, securityGroupNames, hdfsFolders);
                 }
             } else {
-                List<String> hdfsPermissions = new ArrayList();
+                List<String> hdfsPermissions = new ArrayList<>();
                 hdfsPermissions.add(HDFS_READ_ONLY_PERMISSION);
 
                 RangerCreateOrUpdatePolicy updatePolicy = new RangerCreateOrUpdatePolicy();
@@ -356,7 +355,7 @@ public class RangerAuthorizationService extends BaseHadoopAuthorizationService {
                     createOrUpdateReadOnlyHivePolicy(categoryName, feedName, securityGroupNames, hiveSchema, hiveTables);
                 }
             } else {
-                List<String> hivePermissions = new ArrayList();
+                List<String> hivePermissions = new ArrayList<>();
                 hivePermissions.add(HIVE_READ_ONLY_PERMISSION);
                 RangerCreateOrUpdatePolicy updatePolicy = new RangerCreateOrUpdatePolicy();
                 BeanUtils.copyProperties(hivePolicy, updatePolicy);
@@ -406,7 +405,7 @@ public class RangerAuthorizationService extends BaseHadoopAuthorizationService {
 
     }
 
-    public List<RangerPolicy> searchPolicy(Map<String, Object> searchCriteria) {
+    private List<RangerPolicy> searchPolicy(Map<String, Object> searchCriteria) {
         return rangerRestClient.searchPolicies(searchCriteria);
     }
 
@@ -449,7 +448,7 @@ public class RangerAuthorizationService extends BaseHadoopAuthorizationService {
         List<RangerPolicy> hadoopPolicyList = this.searchPolicy(searchHdfsCriteria);
 
         if (hadoopPolicyList.size() == 0) {
-            log.info("Ranger Plugin : Unable to find Ranger HDFS policy " + rangerHdfsPolicyName+ " ... Ignoring");
+            log.info("Ranger Plugin : Unable to find Ranger HDFS policy " + rangerHdfsPolicyName + " ... Ignoring");
         } else if (hadoopPolicyList.size() > 1) {
             throw new RuntimeException("Unable to find HDFS unique policy.");
         } else {
