@@ -133,46 +133,36 @@ public interface BatchJobExecutionRepository extends JpaRepository<JpaBatchJobEx
                    + "and job.endTime > :sinceDate ")
     Set<JpaBatchJobExecution> findJobsForFeedCompletedSince(@Param("feedName") String feedName, @Param("sinceDate") DateTime sinceDate);
 
-
-    @Query(value = "select job from JpaBatchJobExecution as job "
-                   + "join JpaNifiEventJobExecution as nifiEventJob on nifiEventJob.jobExecution.jobExecutionId = job.jobExecutionId "
-                   + "join JpaNifiEvent nifiEvent on nifiEvent.eventId = nifiEventJob.eventId "
-                   + "and nifiEvent.flowFileId = nifiEventJob.flowFileId "
-                   + "where nifiEvent.feedName = :feedName "
-                   + "and job.status = 'COMPLETED' "
-                   + "and job.endTime = (SELECT max(job2.endTime) "
-                   + "        from JpaBatchJobExecution as job2 "
-                   + "        join JpaNifiEventJobExecution as nifiEventJob2 on nifiEventJob2.jobExecution.jobExecutionId = job2.jobExecutionId "
-                   + "        join JpaNifiEvent nifiEvent2 on nifiEvent2.eventId = nifiEventJob2.eventId "
-                   + "        and nifiEvent2.flowFileId = nifiEventJob2.flowFileId "
-                   + "        where nifiEvent2.feedName = :feedName "
-                   + "        and job2.status = 'COMPLETED' )"
-                   + " order by job.jobExecutionId")
+    @Query("select job from JpaBatchJobExecution as job "
+           + "join JpaBatchJobInstance  jobInstance on jobInstance.jobInstanceId = job.jobInstance.jobInstanceId "
+           + "join JpaOpsManagerFeed  feed on feed.id = jobInstance.feed.id "
+           + "where feed.name = :feedName "
+           + "and job.endTimeMillis = (SELECT max(job2.endTimeMillis)"
+           + "     from JpaBatchJobExecution as job2 "
+           + "join JpaBatchJobInstance  jobInstance2 on jobInstance2.jobInstanceId = job2.jobInstance.jobInstanceId "
+           + "join JpaOpsManagerFeed  feed2 on feed2.id = jobInstance2.feed.id "
+           + "where feed2.name = :feedName "
+           + "and job2.status = 'COMPLETED')"
+           + "order by job.jobExecutionId DESC ")
     List<JpaBatchJobExecution> findLatestCompletedJobForFeed(@Param("feedName") String feedName);
 
+    /**
+     @Query(value = "select case when(count(job)) > 0 then true else false end "
+     + " from JpaBatchJobExecution as job "
+     + "join JpaNifiEventJobExecution as nifiEventJob on nifiEventJob.jobExecution.jobExecutionId = job.jobExecutionId "
+     + "join JpaNifiEvent nifiEvent on nifiEvent.eventId = nifiEventJob.eventId "
+     + "and nifiEvent.flowFileId = nifiEventJob.flowFileId "
+     + "where nifiEvent.feedName = :feedName "
+     + "and job.endTime is null")
+     */
     @Query(value = "select case when(count(job)) > 0 then true else false end "
                    + " from JpaBatchJobExecution as job "
-                   + "join JpaNifiEventJobExecution as nifiEventJob on nifiEventJob.jobExecution.jobExecutionId = job.jobExecutionId "
-                   + "join JpaNifiEvent nifiEvent on nifiEvent.eventId = nifiEventJob.eventId "
-                   + "and nifiEvent.flowFileId = nifiEventJob.flowFileId "
-                   + "where nifiEvent.feedName = :feedName "
+                   + "join JpaBatchJobInstance  jobInstance on jobInstance.jobInstanceId = job.jobInstance.jobInstanceId "
+                   + "join JpaOpsManagerFeed  feed on feed.id = jobInstance.feed.id "
+                   + "where feed.name = :feedName "
                    + "and job.endTime is null")
     Boolean isFeedRunning(@Param("feedName") String feedName);
 
-/*
-    @Query("select new JpaOpsManagerFeedHealth(f,"
-           + "count(*) as ALL_COUNT,"
-           + "count(case when job.status <> 'ABANDONED' AND (job.status = 'FAILED' or job.EXIT_CODE = 'FAILED') then 1 else null end _) as UNHEALTHY_COUNT,"
-           + "count(case when job.status <> 'ABANDONED' AND job.EXIT_CODE = 'COMPLETED' then 1 else null end) as HEALTHY_COUNT,"
-           + "count(case when job.status = 'ABANDONED' then 1 else null end) as ABANDONED_COUNT,"
-           + "MAX(job.JOB_EXECUTION_ID) as LATEST_JOB_EXECUTION_ID "
-           + "FROM JpaBatchJobExecution as job "
-           + " join JpaBatchJobInstance inst on inst.jobExecution.id = job.id "
-           + "join JoaOpsManagerFeed f on f.id = inst.feed.id"
-           + "group by f.id, f.name")
-
-
-*/
 
 
 }

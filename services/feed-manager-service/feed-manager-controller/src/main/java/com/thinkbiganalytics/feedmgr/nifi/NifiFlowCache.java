@@ -357,8 +357,11 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
      */
     public synchronized void rebuildAll() {
         loaded = false;
-        ensureNiFiKyloReportingTask();
-
+        try {
+            ensureNiFiKyloReportingTask();
+        } catch (Exception e) {
+            log.error("Exception while trying to ensure KyloReportingTask {}", e.getMessage(), e);
+        }
         List<NifiFlowProcessGroup> allFlows = nifiRestClient.getFeedFlows();
 
         List<RegisteredTemplate> templates = null;
@@ -669,7 +672,7 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
             lastSyncTimeMap.entrySet().stream().filter(entry -> ((DateTime.now().getMillis() - entry.getValue().getMillis()) > expireAfter)).forEach(entry -> {
                 syncMap.remove(entry.getKey());
                 itemsRemoved.add(entry.getKey());
-                log.info("Expiring Cache {}.  This cache has not been used in over {} minutes", minutes, entry.getKey());
+                log.info("Expiring Cache {}.  This cache has not been used in over {} minutes", entry.getKey(), minutes);
             });
             itemsRemoved.stream().forEach(item -> lastSyncTimeMap.remove(item));
 

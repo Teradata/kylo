@@ -112,10 +112,18 @@ public interface BatchJobExecutionProvider extends BatchJobExecutionFilters{
     /**
      * find or create the job execution from the provenance event
      * This will create a new job execution if one does not exist for this event using the {@link ProvenanceEventRecordDTO#jobFlowFileId}
-     * @param event
+     * @param event a provenance event
      * @return the job execution
      */
     BatchJobExecution getOrCreateJobExecution(ProvenanceEventRecordDTO event);
+
+    /**
+     * find the job execution from the provenance event
+     *
+     * @param event a provenance event
+     * @return the job execution
+     */
+    BatchJobExecution findJobExecution(ProvenanceEventRecordDTO event);
 
     /**
      * Returns all completed JobExecution records that were started since {@code sinceDate}

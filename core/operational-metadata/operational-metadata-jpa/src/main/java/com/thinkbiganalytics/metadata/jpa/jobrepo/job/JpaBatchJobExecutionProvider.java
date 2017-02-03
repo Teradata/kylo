@@ -319,7 +319,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         }
 
         jobExecution.setEndTime(DateTimeUtil.convertToUTC(event.getEventTime()));
-        log.info("Finishing Job: {} with a status of: {}", jobExecution.getJobExecutionId(), jobExecution.getStatus());
+        log.info("Finishing Job: {} with a status of: {} for event: {} ", jobExecution.getJobExecutionId(), jobExecution.getStatus(), event.getEventId());
         //add in execution contexts
         Map<String, String> allAttrs = event.getAttributeMap();
         if (allAttrs != null && !allAttrs.isEmpty()) {
@@ -336,6 +336,10 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
             }
         }
 
+    }
+
+    public JpaBatchJobExecution findJobExecution(ProvenanceEventRecordDTO event) {
+        return jobExecutionRepository.findByFlowFile(event.getJobFlowFileId());
     }
 
 
@@ -392,7 +396,6 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         JpaBatchJobExecution jpaBatchJobExecution = (JpaBatchJobExecution) jobExecution;
         checkAndRelateJobs(event, nifiEvent);
         batchStepExecutionProvider.createStepExecution(jobExecution, event);
-
         if (jobExecution.isFinished()) {
             //ensure failures
             batchStepExecutionProvider.ensureFailureSteps(jpaBatchJobExecution);
@@ -465,6 +468,9 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         }
     }
 
+    /**
+     * check to see if any jobs related to the incoming job are still running, and if so finish them
+     **/
     private void ensureRelatedJobsAreFinished(ProvenanceEventRecordDTO event, BatchJobExecution jobExecution) {
         //Check related jobs
         if (event.isFinalJobEvent() && jobExecutionRepository.hasRelatedJobs(jobExecution.getJobExecutionId())) {

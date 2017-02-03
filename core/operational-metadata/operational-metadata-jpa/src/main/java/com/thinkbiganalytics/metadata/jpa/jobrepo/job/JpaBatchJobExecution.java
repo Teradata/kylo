@@ -405,7 +405,6 @@ public class JpaBatchJobExecution implements BatchJobExecution {
      */
     public void failJob(){
         StringBuffer stringBuffer = null;
-        setExitMessage(stringBuffer != null ? stringBuffer.toString() : "");
         setStatus(JpaBatchJobExecution.JobStatus.FAILED);
         setExitCode(ExecutionConstants.ExitCode.FAILED);
         if(endTime == null){
@@ -418,13 +417,17 @@ public class JpaBatchJobExecution implements BatchJobExecution {
                     if (stringBuffer == null) {
                         stringBuffer = new StringBuffer();
                     } else {
-                        stringBuffer.append(",");
+                        stringBuffer.append("\n");
                     }
                     stringBuffer.append("Failed Step " + se.getStepName());
                 }
                 if (se.getEndTime() == null) {
                     ((JpaBatchStepExecution) se).setEndTime(DateTimeUtil.getNowUTCTime());
                 }
+            }
+            if (stringBuffer != null) {
+                //append the exit message
+                setExitMessage(getExitMessage() != null ? getExitMessage() + "\n" + stringBuffer.toString() : stringBuffer.toString());
             }
         }
     }
@@ -446,22 +449,13 @@ public class JpaBatchJobExecution implements BatchJobExecution {
      * Finish the job and update teh status and end time as being completed, or failed, based upon the status of the {@link BatchStepExecution}'s
      */
     public void completeOrFailJob() {
-        StringBuffer stringBuffer = null;
         boolean failedJob = false;
         Set<BatchStepExecution> steps = getStepExecutions();
         if(steps != null) {
             for (BatchStepExecution se : steps) {
                 if (BatchStepExecution.StepStatus.FAILED.equals(se.getStatus())) {
                     failedJob = true;
-                    if (stringBuffer == null) {
-                        stringBuffer = new StringBuffer();
-                    } else {
-                        stringBuffer.append(",");
-                    }
-                    stringBuffer.append("Failed Step " + se.getStepName());
-                }
-                if (se.getEndTime() == null) {
-                    ((JpaBatchStepExecution) se).setEndTime(DateTimeUtil.getNowUTCTime());
+                    break;
                 }
             }
         }

@@ -129,4 +129,12 @@ public interface OpsManagerFeedProvider {
      * @param feedName
      */
     void abandonFeedJobs(String feedName);
+
+
+    /**
+     * subscribe to feed deletion events
+     *
+     * @param listener a delete feed listener
+     */
+    void subscribeFeedDeletion(DeleteFeedListener listener);
 }

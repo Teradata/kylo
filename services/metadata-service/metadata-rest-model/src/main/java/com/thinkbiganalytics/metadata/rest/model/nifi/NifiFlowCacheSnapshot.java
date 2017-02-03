@@ -234,10 +234,6 @@ public class NifiFlowCacheSnapshot {
         this.connectionIdToConnection = connectionIdToConnection;
     }
 
-
-
-
-    //DEAL WITH REMOVAL of items... removal /change of streaming feeds!
     public void update(NifiFlowCacheSnapshot syncSnapshot) {
         processorIdToFeedNameMap.putAll(syncSnapshot.getProcessorIdToFeedNameMap());
         processorIdToFeedProcessGroupId.putAll(syncSnapshot.getProcessorIdToFeedProcessGroupId());
@@ -245,8 +241,8 @@ public class NifiFlowCacheSnapshot {
         allStreamingFeeds = new HashSet<>(syncSnapshot.getAllStreamingFeeds());
         allFeeds.addAll(syncSnapshot.getAllFeeds());
         snapshotDate = syncSnapshot.getSnapshotDate();
-        connectionIdToConnection = syncSnapshot.getConnectionIdToConnection();
-        connectionIdToConnectionName = syncSnapshot.getConnectionIdToConnectionName();
+        connectionIdToConnection.putAll(syncSnapshot.getConnectionIdToConnection());
+        connectionIdToConnectionName.putAll(syncSnapshot.getConnectionIdToConnectionName());
     }
 
 

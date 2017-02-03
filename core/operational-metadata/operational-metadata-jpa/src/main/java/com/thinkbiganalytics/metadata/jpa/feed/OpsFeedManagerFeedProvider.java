@@ -27,6 +27,7 @@ import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.thinkbiganalytics.metadata.api.feed.DeleteFeedListener;
 import com.thinkbiganalytics.metadata.api.feed.FeedHealth;
 import com.thinkbiganalytics.metadata.api.feed.LatestFeedJobExecution;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
@@ -45,6 +46,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -67,6 +69,13 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
 
     @Autowired
     private JPAQueryFactory factory;
+
+    /**
+     * list of delete feed listeners
+     **/
+    private List<DeleteFeedListener> deleteFeedListeners = new ArrayList<>();
+
+
 
 
     @Autowired
@@ -128,6 +137,8 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
             //first delete all jobs for this feed
             deleteFeedJobs(FeedNameUtil.category(feed.getName()),FeedNameUtil.feed(feed.getName()));
             repository.delete(feed.getId());
+            //notify the listeners
+            notifyOnFeedDeleted(feed);
         }
     }
 
@@ -217,6 +228,20 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
      */
     public void abandonFeedJobs(String feed){
         repository.abandonFeedJobs(feed);
+    }
+
+
+    /**
+     * Subscribe to feed deletion events
+     *
+     * @param listener a delete feed listener
+     */
+    public void subscribeFeedDeletion(DeleteFeedListener listener) {
+        deleteFeedListeners.add(listener);
+    }
+
+    public void notifyOnFeedDeleted(OpsManagerFeed feed) {
+        deleteFeedListeners.stream().forEach(listener -> listener.onFeedDelete(feed));
     }
 
 

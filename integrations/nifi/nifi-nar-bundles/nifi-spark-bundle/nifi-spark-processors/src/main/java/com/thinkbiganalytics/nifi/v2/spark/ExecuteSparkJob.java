@@ -352,7 +352,7 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
                         getLog().info("Security is enabled");
 
                         if (principal.equals("") && keyTab.equals("")) {
-                            getLog().error("Kerberos Principal and Kerberos KeyTab information missing in Kerboeros enabled cluster.");
+                            getLog().error("Kerberos Principal and Kerberos KeyTab information missing in Kerboeros enabled cluster. {} ", new Object[]{flowFile});
                             session.transfer(flowFile, REL_FAILURE);
                             return;
                         }
@@ -364,20 +364,20 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
                             if (authenticationStatus) {
                                 getLog().info("User authenticated successfully.");
                             } else {
-                                getLog().info("User authentication failed.");
+                                getLog().error("User authentication failed.  {} ", new Object[]{flowFile});
                                 session.transfer(flowFile, REL_FAILURE);
                                 return;
                             }
 
                         } catch (Exception unknownException) {
-                            getLog().error("Unknown exception occured while validating user :" + unknownException.getMessage());
+                            getLog().error("Unknown exception occured while validating user : {}.  {} ", new Object[]{unknownException.getMessage(), flowFile});
                             session.transfer(flowFile, REL_FAILURE);
                             return;
                         }
 
                     }
                 } catch (IOException e1) {
-                    getLog().error("Unknown exception occurred while authenticating user :" + e1.getMessage());
+                    getLog().error("Unknown exception occurred while authenticating user : {} and flow file: {}", new Object[]{e1.getMessage(), flowFile});
                     session.transfer(flowFile, REL_FAILURE);
                     return;
                 }
@@ -445,7 +445,7 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
             boolean completed = spark.waitFor(sparkProcessTimeout, TimeUnit.SECONDS);
             if(!completed){
                 spark.destroyForcibly();
-                getLog().error("Spark process timed out after " + sparkProcessTimeout + " seconds");
+                getLog().error("Spark process timed out after {} seconds using flow file: {}  ", new Object[]{sparkProcessTimeout, flowFile});
                 session.transfer(flowFile, REL_FAILURE);
                 return;
             }
@@ -454,16 +454,16 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
 
             flowFile = session.putAttribute(flowFile, PROVENANCE_SPARK_EXIT_CODE_KEY, exitCode + "");
             if (exitCode != 0) {
-                logger.info("*** Completed with failed status " + exitCode);
+                logger.error("ExecuteSparktJob for {} and flowfile: {} completed with failed status {} ", new Object[]{context.getName(), flowFile, exitCode});
                 flowFile = session.putAttribute(flowFile, PROVENANCE_JOB_STATUS_KEY, "Failed");
                 session.transfer(flowFile, REL_FAILURE);
             } else {
-                logger.info("*** Completed with status " + exitCode);
+                logger.info("ExecuteSparktJob for {} and flowfile: {} completed with success status {} ", new Object[]{context.getName(), flowFile, exitCode});
                 flowFile = session.putAttribute(flowFile, PROVENANCE_JOB_STATUS_KEY, "Success");
                 session.transfer(flowFile, REL_SUCCESS);
             }
         } catch (final Exception e) {
-            logger.error("Unable to execute Spark job", new Object[]{flowFile, e});
+            logger.error("Unable to execute Spark job {},{}", new Object[]{flowFile, e.getMessage()}, e);
             flowFile = session.putAttribute(flowFile, PROVENANCE_JOB_STATUS_KEY, "Failed With Exception");
             flowFile = session.putAttribute(flowFile, "Spark Exception:", e.getMessage());
             session.transfer(flowFile, REL_FAILURE);

@@ -20,6 +20,7 @@ package com.thinkbiganalytics.metadata.jobrepo.nifi.provenance;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
 import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecution;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
@@ -32,11 +33,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- *
+ * process NiFi Bulletins
  */
 @Component
 public class NifiBulletinExceptionExtractor {
@@ -45,6 +47,8 @@ public class NifiBulletinExceptionExtractor {
 
     @Autowired
     private LegacyNifiRestClient nifiRestClient;
+
+    private static List<String> bulletinErrorLevels = ImmutableList.of("WARN", "ERROR");
 
     /**
      * Extracts the identifier for the flow file from a bulletin message
@@ -69,8 +73,9 @@ public class NifiBulletinExceptionExtractor {
         if (StringUtils.isNotBlank(flowFileId) && StringUtils.isNotBlank(componentId)) {
             List<BulletinDTO> bulletins = getProcessorBulletinsForComponentInFlowFile(flowFileId, componentId);
             if (bulletins != null) {
-                // TODO filter on level to get just ERRORS, Warns, fatals?
-                String msg = bulletins.stream().map(BulletinDTO::getMessage).collect(Collectors.joining(", "));
+                String
+                    msg =
+                    bulletins.stream().filter(bulletinDTO -> bulletinErrorLevels.contains(bulletinDTO.getLevel().toUpperCase())).map(BulletinDTO::getMessage).collect(Collectors.joining(", "));
                 String exitMsg = StringUtils.isBlank(stepExecution.getExitMessage()) ? "" : stepExecution.getExitMessage() + "\n";
                 stepExecution.setExitMessage(exitMsg + msg);
                 return true;
@@ -78,6 +83,37 @@ public class NifiBulletinExceptionExtractor {
         }
         return false;
     }
+
+    /**
+     * queries for bulletins from component, in the flow file
+     *
+     * @param flowFileIds The collection UUID of the flow file to extract the error message from
+     * @return a list of bulletin objects that were posted by the component to the flow file
+     * @throws NifiConnectionException if cannot query Nifi
+     */
+    public List<BulletinDTO> getErrorBulletinsForFlowFiles(Collection<String> flowFileIds) throws NifiConnectionException {
+        List<BulletinDTO> bulletins;
+        try {
+            String regexPattern = flowFileIds.stream().collect(Collectors.joining("|"));
+
+            bulletins = nifiRestClient.getBulletinsMatchingMessage(regexPattern);
+            log.info("Query for {} bulletins returned {} results ", regexPattern, bulletins.size());
+            if (bulletins != null && !bulletins.isEmpty()) {
+                bulletins = bulletins.stream().filter(bulletinDTO -> bulletinErrorLevels.contains(bulletinDTO.getLevel().toUpperCase())).collect(Collectors.toList());
+            }
+
+            return bulletins;
+        } catch (NifiClientRuntimeException e) {
+            if (e instanceof NifiConnectionException) {
+                throw e;
+            } else {
+                log.error("Error getProcessorBulletinsForFlowFiles ", flowFileIds);
+            }
+        }
+        return null;
+    }
+
+
 
 
     /**

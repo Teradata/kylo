@@ -29,6 +29,7 @@ import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.event.feed.FeedOperationStatusEvent;
 import com.thinkbiganalytics.metadata.api.event.feed.OperationStatus;
+import com.thinkbiganalytics.metadata.api.feed.DeleteFeedListener;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
@@ -45,14 +46,18 @@ import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTOHolde
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.web.api.dto.BulletinDTO;
 import org.hibernate.exception.LockAcquisitionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -61,9 +66,12 @@ import javax.inject.Inject;
  * JMS Listener for NiFi Provenance Events.
  */
 @Component
-public class ProvenanceEventReceiver implements FailedStepExecutionListener {
+public class ProvenanceEventReceiver implements FailedStepExecutionListener, DeleteFeedListener {
 
     private static final Logger log = LoggerFactory.getLogger(ProvenanceEventReceiver.class);
+
+    @Value("${kylo.ops.mgr.query.nifi.bulletins:false}")
+    private boolean queryForNiFiBulletins;
     /**
      * Empty feed object for Loading Cache
      */
@@ -93,6 +101,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
             return null;
         }
     };
+
     @Inject
     OpsManagerFeedProvider opsManagerFeedProvider;
     @Inject
@@ -107,13 +116,13 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
      */
     LoadingCache<String, OpsManagerFeed> opsManagerFeedCache = null;
 
-    @Autowired
+    @Inject
     private NifiEventProvider nifiEventProvider;
-    @Autowired
+    @Inject
     private BatchJobExecutionProvider batchJobExecutionProvider;
-    @Autowired
+    @Inject
     private BatchStepExecutionProvider batchStepExecutionProvider;
-    @Autowired
+    @Inject
     private LegacyNifiRestClient nifiRestClient;
     @Inject
     private MetadataAccess metadataAccess;
@@ -152,11 +161,14 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
     @PostConstruct
     private void init() {
         batchStepExecutionProvider.subscribeToFailedSteps(this);
+        opsManagerFeedProvider.subscribeFeedDeletion(this);
     }
 
 
     /**
      * Unique key for the Event in relation to the Job
+     * @param event a provenance event
+     * @return a unique key representing the event
      */
     private String triggeredEventsKey(ProvenanceEventRecordDTO event) {
         return event.getJobFlowFileId() + "_" + event.getEventId();
@@ -171,7 +183,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
      *
      * @param events The events obtained from JMS
      */
-    @JmsListener(destination = Queues.FEED_MANAGER_QUEUE, containerFactory = ActiveMqConstants.JMS_CONTAINER_FACTORY, concurrency = "10-50")
+    @JmsListener(destination = Queues.FEED_MANAGER_QUEUE, containerFactory = ActiveMqConstants.JMS_CONTAINER_FACTORY, concurrency = "3-10")
     public void receiveEvents(ProvenanceEventRecordDTOHolder events) {
         log.info("About to process {} events from the {} queue ", events.getEvents().size(), Queues.FEED_MANAGER_QUEUE);
         events.getEvents().stream()
@@ -180,6 +192,12 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
             .forEach(event -> processEvent(event, 0));
     }
 
+    /**
+     * process the event and persist it along with creating the Job and Step.  If there is a lock error it will retry until it hits the {@link this#lockAcquisitionRetryAmount}
+     *
+     * @param event        a provenance event
+     * @param retryAttempt the retry number.  If there is a lock error it will retry until it hits the {@link this#lockAcquisitionRetryAmount}
+     */
     private void processEvent(ProvenanceEventRecordDTO event, int retryAttempt) {
         try {
             if (event.isBatchJob()) {
@@ -188,7 +206,6 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
                                                                        MetadataAccess.SERVICE);
                 NifiEvent nifiEvent = metadataAccess.commit(() -> receiveBatchEvent(jobExecution, event),
                                                             MetadataAccess.SERVICE);
-
             } else {
                 NifiEvent nifiEvent = metadataAccess.commit(() -> nifiEventProvider.create(event),
                                                             MetadataAccess.SERVICE);
@@ -219,29 +236,32 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
     }
 
 
-    /*
-     * Process this record and record the Job Obs
+    /**
+     * Process this record and record the Job and steps
+     * @param jobExecution the job execution
+     * @param event a provenance event
+     * @return a persisted nifi event object
      */
     private NifiEvent receiveBatchEvent(BatchJobExecution jobExecution, ProvenanceEventRecordDTO event) {
         NifiEvent nifiEvent = null;
         log.debug("Received ProvenanceEvent {}.  is end of Job: {}.  is ending flowfile:{}, isBatch: {}", event, event.isEndOfJob(), event.isEndingFlowFileEvent(), event.isBatchJob());
         nifiEvent = nifiEventProvider.create(event);
-        if (event.isBatchJob()) {
-            //query it again
+        //query it again
             jobExecution = batchJobExecutionProvider.findByJobExecutionId(jobExecution.getJobExecutionId());
             BatchJobExecution job = batchJobExecutionProvider.save(jobExecution, event, nifiEvent);
             if (job == null) {
                 log.error(" Detected a Batch event, but could not find related Job record. for event: {}  is end of Job: {}.  is ending flowfile:{}, isBatch: {}", event, event.isEndOfJob(),
                           event.isEndingFlowFileEvent(), event.isBatchJob());
             }
-        }
 
         return nifiEvent;
     }
 
-    /*
-     * Check to see if the event has a relationship to Feed Manager
+    /**
+     *  Check to see if the event has a relationship to Feed Manager
      * In cases where a user is experimenting in NiFi and not using Feed Manager the event would not be registered
+     * @param event a provenance event
+     * @return {@code true} if the event has a feed associaetd with it {@code false} if there is no feed associated with it
      */
     private boolean isRegisteredWithFeedManager(ProvenanceEventRecordDTO event) {
 
@@ -260,8 +280,9 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
     }
 
 
-    /*
+    /**
      * Notify that the Job is complete either as a successful job or failed Job
+     * @param event a provenance event
      */
     private void notifyJobFinished(ProvenanceEventRecordDTO event) {
         if (event.isFinalJobEvent()) {
@@ -279,29 +300,71 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
         }
     }
 
-    /*
-     * Triggered for both Batch and Streaming Feed Jobs when the Job and any related Jobs (as a result of a Merge of other Jobs are complete but have a failure in the flow<br/> Example: <br/> Job
+    /**
+     *  Triggered for both Batch and Streaming Feed Jobs when the Job and any related Jobs (as a result of a Merge of other Jobs are complete but have a failure in the flow<br/> Example: <br/> Job
      * (FlowFile) 1,2,3 are all running<br/> Job 1,2,3 get Merged<br/> Job 1,2 finish<br/> Job 3 finishes <br/>
      *
      * This will fire when Job3 finishes indicating this entire flow is complete<br/>
+     * @param event a provenance event
      */
     private void failedJob(ProvenanceEventRecordDTO event) {
+        if (queryForNiFiBulletins && event.isBatchJob()) {
+            queryForNiFiErrorBulletins(event);
+        }
         FeedOperation.State state = FeedOperation.State.FAILURE;
         log.debug("FAILED JOB for Event {} ", event);
         this.eventService.notify(new FeedOperationStatusEvent(new OperationStatus(event.getFeedName(), null, state, "Failed Job")));
+
     }
 
-    /*
+    /**
      * Triggered for both Batch and Streaming Feed Jobs when the Job and any related Jobs (as a result of a Merge of other Jobs are complete<br/> Example: <br/> Job (FlowFile) 1,2,3 are all
      * running<br/> Job 1,2,3 get Merged<br/> Job 1,2 finish<br/> Job 3 finishes <br/>
      *
      * This will fire when Job3 finishes indicating this entire flow is complete<br/>
+     * @param event a provenance event
      */
     private void successfulJob(ProvenanceEventRecordDTO event) {
 
         FeedOperation.State state = FeedOperation.State.SUCCESS;
         log.debug("Success JOB for Event {} ", event);
         this.eventService.notify(new FeedOperationStatusEvent(new OperationStatus(event.getFeedName(), null, state, "Job Succeeded for feed: " + event.getFeedName())));
+    }
+
+    /**
+     * Make a REST call to NiFi and query for the NiFi Bulletins that have a flowfile id matching for this job execution and write the bulletin message to the {@link
+     * BatchJobExecution#setExitMessage(String)}
+     *
+     * @param event a provenance event
+     */
+    private void queryForNiFiErrorBulletins(ProvenanceEventRecordDTO event) {
+        try {
+            metadataAccess.commit(() -> {
+                //query for nifi logs
+                List<String> relatedFlowFiles = batchJobExecutionProvider.findRelatedFlowFiles(event.getFlowFileUuid());
+                if (relatedFlowFiles == null) {
+                    relatedFlowFiles = new ArrayList<>();
+                }
+                if (relatedFlowFiles.isEmpty()) {
+                    relatedFlowFiles.add(event.getFlowFileUuid());
+                }
+                log.info("Failed Job {}/{}. Found {} related flow files. ", event.getEventId(), event.getFlowFileUuid(), relatedFlowFiles.size());
+                List<BulletinDTO> bulletinDTOS = nifiBulletinExceptionExtractor.getErrorBulletinsForFlowFiles(relatedFlowFiles);
+                if (bulletinDTOS != null && !bulletinDTOS.isEmpty()) {
+                    //write them back to the job
+                    BatchJobExecution jobExecution = batchJobExecutionProvider.findJobExecution(event);
+                    if (jobExecution != null) {
+                        String msg = jobExecution.getExitMessage() != null ? jobExecution.getExitMessage() + "\n" : "";
+                        msg += "NiFi exceptions: \n" + bulletinDTOS.stream().map(bulletinDTO -> bulletinDTO.getMessage()).collect(Collectors.joining("\n"));
+                        jobExecution.setExitMessage(msg);
+                        this.batchJobExecutionProvider.save(jobExecution);
+                    }
+                }
+            }, MetadataAccess.SERVICE);
+        } catch (Exception e) {
+            log.error("Unable to query NiFi and save exception bulletins for job failure eventid/flowfile : {} / {}. Exception Message:  {}", event.getEventId(), event.getFlowFileUuid(),
+                      e.getMessage(), e);
+        }
     }
 
 
@@ -326,5 +389,16 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
      */
     private boolean ensureNewEvent(ProvenanceEventRecordDTO event) {
         return metadataAccess.read(() -> !nifiEventProvider.exists(event), MetadataAccess.SERVICE);
+    }
+
+    /**
+     * When a feed is deleted remove it from the cache of feed names
+     *
+     * @param feed a delete feed
+     */
+    @Override
+    public void onFeedDelete(OpsManagerFeed feed) {
+        log.info("Notified that feed {} has been deleted.  Removing this feed from the ProvenanceEventReceiver cache. ", feed.getName());
+        opsManagerFeedCache.invalidate(feed.getName());
     }
 }

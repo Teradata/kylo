@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Collection;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
@@ -74,39 +75,42 @@ public class FeedFlowFileMapDbCache implements FeedFlowFileCacheListener {
 
 
     public FeedFlowFileMapDbCache(String fileLocation) {
-        log.info("Initialize FeedFlowFileMapDbCache cache, keeping running flowfiles for {} days", expireAfterNumber);
+        log.info("Initialize FeedFlowFileMapDbCache cache at: {}, keeping running flowfiles for {} days", fileLocation, expireAfterNumber);
 
-        //delete the file after its loaded/opened
-        inMemoryDb = DBMaker.fileDB(fileLocation).fileMmapEnable()
-            .fileMmapEnableIfSupported() // Only enable mmap on supported platforms
-            .fileMmapPreclearDisable()   // Make mmap file faster
-            .cleanerHackEnable()
-            .checksumHeaderBypass()
-            .fileDeleteAfterOpen()
-            .closeOnJvmShutdown().make();
-        memFeedFlowFileCache =
-            (HTreeMap<String, FeedFlowFile>) inMemoryDb.hashMap("feedFlowFile").keySerializer(Serializer.STRING).valueSerializer(Serializer.JAVA).expireAfterCreate(expireAfterNumber,
-                                                                                                                                                                    expireAfterUnit)
-                .createOrOpen();
+        try {
+            //delete the file after its loaded/opened
+            inMemoryDb = DBMaker.fileDB(fileLocation).fileMmapEnable()
+                .fileMmapEnableIfSupported() // Only enable mmap on supported platforms
+                .fileMmapPreclearDisable()   // Make mmap file faster
+                .cleanerHackEnable()
+                .checksumHeaderBypass()
+                .fileDeleteAfterOpen()
+                .closeOnJvmShutdown().make();
+            memFeedFlowFileCache =
+                (HTreeMap<String, FeedFlowFile>) inMemoryDb.hashMap("feedFlowFile").keySerializer(Serializer.STRING).valueSerializer(Serializer.JAVA).expireAfterCreate(expireAfterNumber,
+                                                                                                                                                                        expireAfterUnit)
+                    .createOrOpen();
 
-        //create a new db that will be used when persisting the data to disk
-        persistentDb = DBMaker.fileDB(fileLocation).fileMmapEnable()
-            .fileMmapEnableIfSupported() // Only enable mmap on supported platforms
-            .fileMmapPreclearDisable()   // Make mmap file faster
-            .cleanerHackEnable()
-            .checksumHeaderBypass()
-            .closeOnJvmShutdown().make();
-        persistentFlowFileCache =
-            (HTreeMap<String, FeedFlowFile>) persistentDb.hashMap("feedFlowFile").keySerializer(Serializer.STRING).valueSerializer(Serializer.JAVA)
-                .createOrOpen();
+            //create a new db that will be used when persisting the data to disk
+            persistentDb = DBMaker.fileDB(fileLocation).fileMmapEnable()
+                .fileMmapEnableIfSupported() // Only enable mmap on supported platforms
+                .fileMmapPreclearDisable()   // Make mmap file faster
+                .cleanerHackEnable()
+                .checksumHeaderBypass()
+                .closeOnJvmShutdown().make();
+            persistentFlowFileCache =
+                (HTreeMap<String, FeedFlowFile>) persistentDb.hashMap("feedFlowFile").keySerializer(Serializer.STRING).valueSerializer(Serializer.JAVA)
+                    .createOrOpen();
 
-        log.info("CREATED NEW FeedFlowFileMapDbCache cache with starting size of: {} ", memFeedFlowFileCache.size());
+            log.info("Successfully created FeedFlowFileMapDbCache cache at: {},  with starting size of: {} ", fileLocation, memFeedFlowFileCache.size());
+        } catch (Exception e) {
+            log.error("Error creating mapdb cache. {}.  If NiFi goes down with flows in progress Kylo will not be able to connect the running flows on restart to their Kylo job executions",
+                      e.getMessage(), e);
+            memFeedFlowFileCache = new ConcurrentHashMap<>();
+            persistentFlowFileCache = new ConcurrentHashMap<>();
+        }
     }
 
-    public FeedFlowFileMapDbCache() {
-        this("feed-flowfile-cache.db");
-
-    }
 
 
     @PostConstruct
@@ -163,11 +167,15 @@ public class FeedFlowFileMapDbCache implements FeedFlowFileCacheListener {
         flowFiles.stream().forEach(feedFlowFile -> cacheFlowFile(feedFlowFile));
         log.info("Successfully persisted {}  flow files to disk via MapDB.  Persisted Map Size is: {} entries ", flowFiles.size(), persistentFlowFileCache.size());
         if (flowFiles != null && !flowFiles.isEmpty()) {
-            inMemoryDb.commit();
-            inMemoryDb.close();
-            persistentDb.commit();
-            persistentDb.close();
-            log.info("Successfully closed the flow file MapDB cache file.");
+            if (inMemoryDb != null) {
+                inMemoryDb.commit();
+                inMemoryDb.close();
+            }
+            if (persistentDb != null) {
+                persistentDb.commit();
+                persistentDb.close();
+                log.info("Successfully closed the flow file MapDB cache file.");
+            }
         }
         return flowFiles.size();
     }
