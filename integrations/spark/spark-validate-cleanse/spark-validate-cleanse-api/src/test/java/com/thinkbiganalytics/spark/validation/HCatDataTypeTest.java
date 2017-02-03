@@ -26,9 +26,6 @@ import org.junit.Test;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-/**
- * Created by matthutton on 5/3/16.
- */
 public class HCatDataTypeTest {
 
     @Test

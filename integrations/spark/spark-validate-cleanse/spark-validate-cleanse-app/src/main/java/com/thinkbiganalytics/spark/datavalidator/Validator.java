@@ -65,7 +65,8 @@ import java.util.Map;
 import java.util.Vector;
 
 /**
- * Cleanses and validates a table of strings according to defined field-level policies. Records are split into good and bad. <p> blog.cloudera.com/blog/2015/07/how-to-do-data-quality-checks-using-apache-spark-dataframes/
+ * Cleanses and validates a table of strings according to defined field-level policies. Records are split into good and bad.
+ * <p> blog.cloudera.com/blog/2015/07/how-to-do-data-quality-checks-using-apache-spark-dataframes/
  */
 @Component
 public class Validator implements Serializable {
@@ -104,7 +105,7 @@ public class Validator implements Serializable {
     private Map<String, FieldPolicy> policyMap = new HashMap<>();
 
     /*
-    Cache for performance. Validators accept different paramters (numeric,string, etc) so we need to resolve the type using reflection
+    Cache for performance. Validators accept different parameters (numeric,string, etc) so we need to resolve the type using reflection
      */
     private Map<Class, Class> validatorParamType = new HashMap<>();
 
@@ -158,7 +159,7 @@ public class Validator implements Serializable {
             this.policies = resolvePolicies(fields);
 
             String selectStmt = toSelectFields();
-            String sql = "SELECT "+selectStmt+" FROM " + feedTablename + " WHERE processing_dttm = '" + partition + "'";
+            String sql = "SELECT " + selectStmt + " FROM " + feedTablename + " WHERE processing_dttm = '" + partition + "'";
             log.info("Executing query {}", sql);
             DataSet dataFrame = scs.sql(getHiveContext(), sql);
             JavaRDD<Row> rddData = dataFrame.javaRDD();
@@ -198,10 +199,9 @@ public class Validator implements Serializable {
             } else {
                 invalidDF = validatedDF.filter(VALID_INVALID_COL + " = '0'").drop(VALID_INVALID_COL).drop(PROCESSING_DTTM_COL).toDF();
             }
-            //invalidDF.show(1);
             writeToTargetTable(invalidDF, invalidTableName);
 
-            // Write out the valid records (dropping our two columns)
+            // Write out the valid records (dropping the two columns)
             DataSet validDF = null;
             if (useDirectInsert) {
                 validDF = validatedDF.filter(VALID_INVALID_COL + " = '1'").drop(VALID_INVALID_COL).drop(REJECT_REASON_COL).toDF();
@@ -230,12 +230,12 @@ public class Validator implements Serializable {
 
     protected String toSelectFields(FieldPolicy[] policies1) {
         List<String> fields = new ArrayList<>();
-        log.info("Building select statement for # of policies {}",policies1.length);
+        log.info("Building select statement for # of policies {}", policies1.length);
         for (int i = 0; i < policies1.length; i++) {
             if (policies1[i].getField() != null) {
                 log.info("policy [{}] name {} feedName", i, policies1[i].getField(), policies1[i].getFeedField());
                 String feedField = StringUtils.defaultIfEmpty(policies1[i].getFeedField(), policies1[i].getField());
-                fields.add("`" + feedField + "` as `" + policies1[i].getField()+"`");
+                fields.add("`" + feedField + "` as `" + policies1[i].getField() + "`");
             }
         }
         fields.add("`processing_dttm`");
@@ -249,7 +249,7 @@ public class Validator implements Serializable {
     private void writeStatsToProfileTable(long validCount, long invalidCount, Integer[] fieldInvalidCounts) {
 
         try {
-            // Create a temporary table we can use to copy data from. Writing directly to our partition from a spark dataframe doesn't work.
+            // Create a temporary table that can be used to copy data from. Writing directly to the partition from a spark dataframe doesn't work.
             String tempTable = profileTableName + "_" + System.currentTimeMillis();
 
             // Refactor this into something common with profile table
@@ -288,7 +288,6 @@ public class Validator implements Serializable {
             String insertSQL = "INSERT OVERWRITE TABLE " + qualifiedProfileName
                                + " PARTITION (processing_dttm='" + partition + "')"
                                + " SELECT columnname, metrictype, metricvalue FROM " + HiveUtils.quoteIdentifier(tempTable);
-            log.info("Writing profile stats {}", insertSQL);
 
             log.info("Writing profile stats {}", insertSQL);
             scs.sql(getHiveContext(), insertSQL);
@@ -308,12 +307,12 @@ public class Validator implements Serializable {
         List<StructField> fieldsList = new Vector<>();
         for (int i = 0; i < fields.length; i++) {
             if (policyMap.containsKey(fields[i].name().toLowerCase())) {
-                log.info("Adding field {}",fields[i].name());
+                log.info("Adding field {}", fields[i].name());
                 fieldsList.add(fields[i]);
             }
         }
-        //Collections.addAll(fieldsList, fields);
-        // Insert our two custom fields before the processing partition column
+
+        // Insert the two custom fields before the processing partition column
         fieldsList.add(new StructField(PROCESSING_DTTM_COL, DataTypes.StringType, true, Metadata.empty()));
         fieldsList.add(fieldsList.size() - 1, new StructField(VALID_INVALID_COL, DataTypes.StringType, true, Metadata.empty()));
         fieldsList.add(fieldsList.size() - 1, new StructField(REJECT_REASON_COL, DataTypes.StringType, true, Metadata.empty()));
@@ -336,12 +335,11 @@ public class Validator implements Serializable {
             sourceDF.writeToTable(PROCESSING_DTTM_COL, qualifiedTable);
             return;
         } else {
-            // Legacy
-            // Create a temporary table we can use to copy data from. Writing directly to our partition from a spark dataframe doesn't work.
+            // Legacy way: Create a temporary table we can use to copy data from. Writing directly to the partition from a spark dataframe doesn't work.
             String tempTable = targetTable + "_" + System.currentTimeMillis();
             sourceDF.registerTempTable(tempTable);
 
-            // Insert the data into our partition
+            // Insert the data into the partition
             final String sql = "INSERT OVERWRITE TABLE " + qualifiedTable + " PARTITION (processing_dttm='" + partition + "') SELECT * FROM " + HiveUtils.quoteIdentifier(tempTable);
             log.info("Writing to target {}", sql);
             scs.sql(getHiveContext(), sql);
@@ -355,7 +353,7 @@ public class Validator implements Serializable {
     public Row cleanseAndValidateRow(Row row) {
         int nulls = 1;
 
-        // Create placeholder for our new values plus two columns for validation and reject_reason
+        // Create placeholder for the new values plus two columns for validation and reject_reason
         Object[] newValues = new Object[schema.length + 2];
         boolean valid = true;
         String sbRejectReason = null;
@@ -374,10 +372,8 @@ public class Validator implements Serializable {
                 if (val == null) {
                     nulls++;
                 }
-                //log.info("Unchecked type with val {}", val);
                 newValues[idx] = val;
             } else {
-                //log.info("Checked type with type {} val {}", dataType.getName(), val);
                 String fieldValue = (val != null ? val.toString() : null);
                 if (StringUtils.isEmpty(fieldValue)) {
                     nulls++;
@@ -386,18 +382,18 @@ public class Validator implements Serializable {
                 fieldValue = standardizeField(fieldPolicy, fieldValue);
                 newValues[idx] = fieldValue;
 
-                // Record results in our appended columns
+                // Record results in the appended columns
                 result = validateField(fieldPolicy, dataType, fieldValue);
                 if (!result.isValid()) {
                     valid = false;
                     results = (results == null ? new Vector<ValidationResult>() : results);
                     results.add(result);
-                    // Record fact that we had an invalid column
+                    // Record fact that we there was an invalid column
                     accumList.get(idx).add(1);
                 }
             }
         }
-        // Return success unless all values were null.  That would indicate a blank line in the file
+        // Return success unless all values were null.  That would indicate a blank line in the file.
         if (nulls >= schema.length) {
             valid = false;
             results = (results == null ? new Vector<ValidationResult>() : results);
@@ -407,11 +403,10 @@ public class Validator implements Serializable {
         // Convert to reject reasons to JSON
         sbRejectReason = toJSONArray(results);
 
-        // Record the results in our appended columns, move processing partition value last
+        // Record the results in the appended columns, move processing partition value last
         newValues[schema.length + 1] = newValues[schema.length - 1];
         newValues[schema.length] = sbRejectReason;
         newValues[schema.length - 1] = (valid ? "1" : "0");
-        // log.info("Creating row with values {}", newValues);
         return RowFactory.create(newValues);
     }
 
@@ -434,7 +429,7 @@ public class Validator implements Serializable {
     }
 
     /**
-     * Perform validation using both schema validation our validation policies
+     * Perform validation using both schema validation the validation policies
      */
     protected ValidationResult validateField(FieldPolicy fieldPolicy, HCatDataType fieldDataType, String fieldValue) {
 
@@ -470,7 +465,7 @@ public class Validator implements Serializable {
 
     protected ValidationResult validateValue(ValidationPolicy validator, HCatDataType fieldDataType, String fieldValue) {
         try {
-            // Resolve the type of parameter required by the validator. We use a cache to avoid cost of reflection
+            // Resolve the type of parameter required by the validator. A cache is used to avoid cost of reflection.
             Class expectedParamClazz = resolveValidatorParamType(validator);
             Object nativeValue = fieldValue;
             if (expectedParamClazz != String.class) {
@@ -490,7 +485,7 @@ public class Validator implements Serializable {
 
     }
 
-    /* Resolve the type of param required by the validator. We use a cache to avoid cost of reflection */
+    /* Resolve the type of param required by the validator. A cache is used to avoid cost of reflection */
     protected Class resolveValidatorParamType(ValidationPolicy validator) {
         Class expectedParamClazz = validatorParamType.get(validator.getClass());
         if (expectedParamClazz == null) {
@@ -527,13 +522,12 @@ public class Validator implements Serializable {
     }
 
     /**
-     * Converts the table schema into our corresponding data type structures
+     * Converts the table schema into the corresponding data type structures
      */
     protected HCatDataType[] resolveDataTypes(StructField[] fields) {
         List<HCatDataType> cols = new Vector<>();
 
         for (StructField field : fields) {
-            // log.info("Found field {}",field);
             String colName = field.name();
             String dataType = field.dataType().simpleString();
             cols.add(HCatDataType.createFromDataType(colName, dataType));

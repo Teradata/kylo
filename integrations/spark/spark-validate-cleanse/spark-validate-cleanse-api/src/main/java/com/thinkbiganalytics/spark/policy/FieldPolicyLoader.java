@@ -33,9 +33,6 @@ import java.io.FileReader;
 import java.io.Serializable;
 import java.util.Map;
 
-/**
- * Created by ru186002 on 05/01/2017.
- */
 @Component
 public class FieldPolicyLoader implements Serializable {
 
@@ -43,7 +40,7 @@ public class FieldPolicyLoader implements Serializable {
 
     /**
      * read the JSON file path and return the JSON string
-     * @param path
+     * @param path path to field policy JSON file
      */
     public Map<String, FieldPolicy> loadFieldPolicy(String path) {
         log.info("Loading Field Policy JSON file at {} ", path);
@@ -80,7 +77,6 @@ public class FieldPolicyLoader implements Serializable {
             }
             policyJson = sb.toString();
         } catch (Exception e) {
-            //LOG THE ERROR
             log.error("Error parsing field policy file. Please verify valid JSON at path {}", e.getMessage(), e);
         }
         Map<String, FieldPolicy> map = new FieldPoliciesJsonTransformer(policyJson).buildPolicies();

@@ -28,20 +28,20 @@ import com.thinkbiganalytics.spark.validation.HCatDataType;
  */
 public class InvalidFormatException extends Exception {
 
-  private HCatDataType type;
-  private String value;
+    private HCatDataType type;
+    private String value;
 
-  public InvalidFormatException(HCatDataType type, String value) {
-    super("Value [" + value + "] cannot be converted to type " + type.getName());
-    this.type = type;
-    this.value = value;
-  }
+    public InvalidFormatException(HCatDataType type, String value) {
+        super("Value [" + value + "] cannot be converted to type " + type.getName());
+        this.type = type;
+        this.value = value;
+    }
 
-  public HCatDataType getType() {
-    return type;
-  }
+    public HCatDataType getType() {
+        return type;
+    }
 
-  public String getValue() {
-    return value;
-  }
+    public String getValue() {
+        return value;
+    }
 }

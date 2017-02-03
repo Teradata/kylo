@@ -22,12 +22,12 @@ The project is a spark-submit job:
 ./bin/spark-submit \
   --class com.thinkbiganalytics.spark.datavalidator.Validator \
   --master yarn-client \
-  /path/to/jar/kylo-spark-validate-cleanse-<version>-jar-with-dependencies.jar \
-  <targetDatabase> <entity> <partition> </path/to/policy/file.json>
+  /path/to/jar/kylo-spark-validate-cleanse-\<version>-jar-with-dependencies.jar \
+  \<targetDatabase> \<entity> \<partition> \</path/to/policy/file.json>
 
 Command-line arguments:
 * targetDatabase - name of the Hive database
-* entity - root name of the Hive table (e.g. employee). The actual table names will be derived based on convention.  employee_feed
+* entity - root name of the Hive table (e.g. employee). The actual table names will be derived based on convention.  e.g. employee_feed
 * partition - name of the partition in the source
 * path-to-policy-file - path to the json policy file
 

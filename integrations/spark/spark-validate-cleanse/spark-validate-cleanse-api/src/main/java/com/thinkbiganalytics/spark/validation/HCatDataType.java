@@ -158,7 +158,6 @@ public class HCatDataType implements Cloneable, Serializable {
                 this.min = minDecimal.toBigInteger();
                 this.max = maxDecimal.toBigInteger();
             } else if (clazz == BigDecimal.class) {
-                // Note: Not sure what to set this to. for now it is not validated anyway
                 this.min = null;
                 this.max = null;
             } else {
@@ -273,7 +272,7 @@ public class HCatDataType implements Cloneable, Serializable {
      * @return whether value is valid
      */
     public boolean isValueConvertibleToType(String val) {
-        return isValueConvertibleToType(val,false);
+        return isValueConvertibleToType(val, false);
     }
 
 
@@ -296,7 +295,7 @@ public class HCatDataType implements Cloneable, Serializable {
                     if (max != null && max.compareTo(nativeValue) < 0) {
                         return false;
                     }
-                    if (digits != null && ! (!enforcePrecision || (enforcePrecision && validatePrecision(nativeValue)))) {
+                    if (digits != null && !(!enforcePrecision || (enforcePrecision && validatePrecision(nativeValue)))) {
                         return false;
                     }
 
