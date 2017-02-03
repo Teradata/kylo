@@ -159,24 +159,16 @@ public class HDFSUtil {
 
         for (FileStatus status : fileStatus) {
 
-            /**
-             * Apply ACL recursively on each file/directory.
-             */
-
+            // Apply ACL recursively on each file/directory.
             if (status.isDirectory()) {
 
-                /**
-                 * Flush ACL before creating new one.
-                 */
-
+                // Flush ACL before creating new one.
                 flushAcl(fileSystem, status.getPath());
 
                 listAllDirAndFlushPolicy(fileSystem, status.getPath());
             } else {
-                /**
-                 * Flush ACL before creating new one.
-                 */
 
+                // Flush ACL before creating new one.
                 flushAcl(fileSystem, status.getPath());
             }
         }
@@ -194,59 +186,40 @@ public class HDFSUtil {
         FileStatus[] fileStatus = fileSystem.listStatus(path);
 
         for (FileStatus status : fileStatus) {
-            /**
-             * Flush ACL before creating new one.
-             */
 
+            // Flush ACL before creating new one.
             flushAcl(fileSystem, status.getPath());
 
-            /**
-             * Apply ACL recursively on each file/directory.
-             */
-
+            // Apply ACL recursively on each file/directory.
             if (status.isDirectory()) {
                 String groupListForPermission[] = groups.split(",");
                 for (int groupCounter = 0; groupCounter < groupListForPermission.length; groupCounter++) {
 
-                    /**
-                     * Create HDFS ACL for each for each Path on HDFS
-                     */
-
+                    // Create HDFS ACL for each for each Path on HDFS
                     AclEntry aclEntryOwner = new AclEntry.Builder().setName(groupListForPermission[groupCounter])
                         .setPermission(fsActionObject).setScope(AclEntryScope.ACCESS).setType(AclEntryType.GROUP).build();
 
                     AclEntry aclEntryOther = new AclEntry.Builder().setPermission(FsAction.NONE).setScope(AclEntryScope.ACCESS).setType(AclEntryType.OTHER).build();
 
-                    /**
-                     * Apply ACL on Path
-                     */
-
+                    // Apply ACL on Path
                     applyAcl(fileSystem, status.getPath(), aclEntryOwner);
                     applyAcl(fileSystem, status.getPath(), aclEntryOther);
 
                 }
 
-                /**
-                 * Recursive call made to apply acl on each sub directory
-                 */
+                // Recursive call made to apply acl on each sub directory
                 listAllDirAndApplyPolicy(fileSystem, status.getPath(), groups, hdfsPermission);
             } else {
                 String groupListForPermission[] = groups.split(",");
                 for (int groupCounter = 0; groupCounter < groupListForPermission.length; groupCounter++) {
 
-                    /**
-                     * Create HDFS ACL for each for each Path on HDFS
-                     */
-
+                    // Create HDFS ACL for each for each Path on HDFS
                     AclEntry aclEntryOwner = new AclEntry.Builder().setName(groupListForPermission[groupCounter])
                         .setPermission(fsActionObject).setScope(AclEntryScope.ACCESS).setType(AclEntryType.GROUP).build();
 
                     AclEntry aclEntryOther = new AclEntry.Builder().setPermission(FsAction.NONE).setScope(AclEntryScope.ACCESS).setType(AclEntryType.OTHER).build();
 
-                    /**
-                     * Apply ACL on Path
-                     */
-
+                    // Apply ACL on Path
                     applyAcl(fileSystem, status.getPath(), aclEntryOwner);
                     applyAcl(fileSystem, status.getPath(), aclEntryOther);
 
@@ -348,9 +321,7 @@ public class HDFSUtil {
             return FsAction.EXECUTE;
         }
 
-        /**
-         * Default Permission - None
-         */
+        // Default Permission - None
         return FsAction.NONE;
 
     }

@@ -62,9 +62,6 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
     SentryClient sentryClientObject;
     SentryConnection sentryConnection;
 
-    /**
-     * @return : comma separated string
-     */
     private static String convertListToString(List<String> list, String delim) {
 
         StringBuilder sb = new StringBuilder();
@@ -103,7 +100,7 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
     @Override
     public void createOrUpdateReadOnlyHivePolicy(String categoryName, String feedName, List<String> hadoopAuthorizationGroups, String datebaseName, List<String> tableNames) {
 
-        if(this.sentryConnection.getKerberosTicketConfiguration().isKerberosEnabled()){
+        if (this.sentryConnection.getKerberosTicketConfiguration().isKerberosEnabled()) {
             try {
                 authenticatePolicyCreatorWithKerberos().doAs(new PrivilegedExceptionAction<Void>() {
                     @Override
@@ -121,12 +118,10 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
                         return null;
                     }
                 });
-            } catch (Exception e){
-                e.printStackTrace();
-                throw new RuntimeException("Error Creating Sentry Policy using Kerberos Authentication" +e.getMessage());
-            } 
-        }
-        else{
+            } catch (Exception e) {
+                throw new RuntimeException("Error Creating Sentry Policy using Kerberos Authentication" + e.getMessage());
+            }
+        } else {
             String sentryPolicyName = getHivePolicyName(categoryName, feedName);
             if (!(sentryClientObject.checkIfRoleExists(sentryPolicyName))) {
                 createReadOnlyHivePolicy(categoryName, feedName, hadoopAuthorizationGroups, datebaseName, tableNames);
@@ -144,7 +139,7 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
     @Override
     public void createOrUpdateReadOnlyHdfsPolicy(String categoryName, String feedName, List<String> hadoopAuthorizationGroups, List<String> hdfsPaths) {
 
-        if(this.sentryConnection.getKerberosTicketConfiguration().isKerberosEnabled()){
+        if (this.sentryConnection.getKerberosTicketConfiguration().isKerberosEnabled()) {
             try {
                 authenticatePolicyCreatorWithKerberos().doAs(new PrivilegedExceptionAction<Void>() {
                     @Override
@@ -154,12 +149,9 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
                     }
                 });
             } catch (Exception e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-                throw new RuntimeException("Error Creating Sentry Policy using Kerberos Authentication" +e.getMessage());
-            } }
-        else
-        {
+                throw new RuntimeException("Error Creating Sentry Policy using Kerberos Authentication" + e.getMessage());
+            }
+        } else {
             createReadOnlyHdfsPolicy(categoryName, feedName, hadoopAuthorizationGroups, hdfsPaths);
         }
     }
@@ -265,9 +257,9 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
      */
     @Override
     public void updateSecurityGroupsForAllPolicies(String categoryName, String feedName, List<String> securityGroupNames, Map<String, Object> feedProperties) {
-        if(this.sentryConnection.getKerberosTicketConfiguration().isKerberosEnabled()){
+        if (this.sentryConnection.getKerberosTicketConfiguration().isKerberosEnabled()) {
             try {
-                authenticatePolicyCreatorWithKerberos().doAs( new PrivilegedExceptionAction<Void>()  {
+                authenticatePolicyCreatorWithKerberos().doAs(new PrivilegedExceptionAction<Void>() {
                     @Override
                     public Void run() throws Exception {
 
@@ -278,7 +270,7 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
                             if ((sentryClientObject.checkIfRoleExists(sentryPolicyName))) {
                                 deleteHivePolicy(categoryName, feedName);
                             }
-                            if(!StringUtils.isEmpty((String)feedProperties.get(REGISTRATION_HDFS_FOLDERS))) {
+                            if (!StringUtils.isEmpty((String) feedProperties.get(REGISTRATION_HDFS_FOLDERS))) {
                                 String hdfsFoldersWithCommas = ((String) feedProperties.get(REGISTRATION_HDFS_FOLDERS)).replace("\n", ",");
                                 List<String> hdfsFolders = Arrays.asList(hdfsFoldersWithCommas.split(",")).stream().collect(Collectors.toList());
                                 deleteHdfsPolicy(categoryName, feedName, hdfsFolders);
@@ -286,7 +278,7 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
 
                         } else {
 
-                            if(!StringUtils.isEmpty((String)feedProperties.get(REGISTRATION_HDFS_FOLDERS))) {
+                            if (!StringUtils.isEmpty((String) feedProperties.get(REGISTRATION_HDFS_FOLDERS))) {
                                 String hdfsFoldersWithCommas = ((String) feedProperties.get(REGISTRATION_HDFS_FOLDERS)).replace("\n", ",");
                                 List<String> hdfsFolders = Arrays.asList(hdfsFoldersWithCommas.split(",")).stream().collect(Collectors.toList());
                                 createReadOnlyHdfsPolicy(categoryName, feedName, securityGroupNames, hdfsFolders);
@@ -294,16 +286,18 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
 
                             String sentryHivePolicyName = getHivePolicyName(categoryName, feedName);
                             if (!sentryClientObject.checkIfRoleExists(sentryHivePolicyName)) {
-                                if(!StringUtils.isEmpty((String)feedProperties.get(REGISTRATION_HIVE_TABLES))) {
+                                if (!StringUtils.isEmpty((String) feedProperties.get(REGISTRATION_HIVE_TABLES))) {
                                     String hiveTablesWithCommas = ((String) feedProperties.get(REGISTRATION_HIVE_TABLES)).replace("\n", ",");
-                                    List<String> hiveTables = Arrays.asList(hiveTablesWithCommas.split(",")).stream().collect(Collectors.toList()); //Stream.of(hiveTablesWithCommas).collect(Collectors.toList());
+                                    List<String>
+                                        hiveTables =
+                                        Arrays.asList(hiveTablesWithCommas.split(",")).stream().collect(Collectors.toList()); //Stream.of(hiveTablesWithCommas).collect(Collectors.toList());
                                     String hiveSchema = ((String) feedProperties.get(REGISTRATION_HIVE_SCHEMA));
                                     createOrUpdateReadOnlyHivePolicy(categoryName, feedName, securityGroupNames, hiveSchema, hiveTables);
                                 }
 
                             } else {
 
-                                if(!StringUtils.isEmpty((String)feedProperties.get(REGISTRATION_HIVE_TABLES))) {
+                                if (!StringUtils.isEmpty((String) feedProperties.get(REGISTRATION_HIVE_TABLES))) {
                                     try {
                                         sentryClientObject.dropRole(sentryHivePolicyName);
                                     } catch (SentryClientException e) {
@@ -311,7 +305,9 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
                                     }
 
                                     String hiveTablesWithCommas = ((String) feedProperties.get(REGISTRATION_HIVE_TABLES)).replace("\n", ",");
-                                    List<String> hiveTables = Arrays.asList(hiveTablesWithCommas.split(",")).stream().collect(Collectors.toList()); //Stream.of(hiveTablesWithCommas).collect(Collectors.toList());
+                                    List<String>
+                                        hiveTables =
+                                        Arrays.asList(hiveTablesWithCommas.split(",")).stream().collect(Collectors.toList()); //Stream.of(hiveTablesWithCommas).collect(Collectors.toList());
                                     String hiveSchema = ((String) feedProperties.get(REGISTRATION_HIVE_SCHEMA));
                                     List<String> hivePermissions = new ArrayList();
                                     hivePermissions.add(HIVE_READ_ONLY_PERMISSION);
@@ -323,11 +319,9 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
                     }
                 });
             } catch (Exception e) {
-                throw new RuntimeException("Error Creating Sentry Policy using Kerberos Authentication" +e.getMessage());
-            } 
-        }
-        else
-        {
+                throw new RuntimeException("Error Creating Sentry Policy using Kerberos Authentication" + e.getMessage());
+            }
+        } else {
             if (securityGroupNames == null || securityGroupNames.isEmpty()) {
 
                 String sentryPolicyName = getHivePolicyName(categoryName, feedName);
@@ -335,14 +329,14 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
                     deleteHivePolicy(categoryName, feedName);
                 }
 
-                if(!StringUtils.isEmpty((String) feedProperties.get(REGISTRATION_HDFS_FOLDERS))) {
+                if (!StringUtils.isEmpty((String) feedProperties.get(REGISTRATION_HDFS_FOLDERS))) {
                     String hdfsFoldersWithCommas = ((String) feedProperties.get(REGISTRATION_HDFS_FOLDERS)).replace("\n", ",");
                     List<String> hdfsFolders = Arrays.asList(hdfsFoldersWithCommas.split(",")).stream().collect(Collectors.toList());
                     deleteHdfsPolicy(categoryName, feedName, hdfsFolders);
                 }
             } else {
 
-                if(!StringUtils.isEmpty((String) feedProperties.get(REGISTRATION_HDFS_FOLDERS))) {
+                if (!StringUtils.isEmpty((String) feedProperties.get(REGISTRATION_HDFS_FOLDERS))) {
                     String hdfsFoldersWithCommas = ((String) feedProperties.get(REGISTRATION_HDFS_FOLDERS)).replace("\n", ",");
                     List<String> hdfsFolders = Arrays.asList(hdfsFoldersWithCommas.split(",")).stream().collect(Collectors.toList());
                     createReadOnlyHdfsPolicy(categoryName, feedName, securityGroupNames, hdfsFolders);
@@ -351,7 +345,7 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
                 String sentryHivePolicyName = getHivePolicyName(categoryName, feedName);
                 if (!sentryClientObject.checkIfRoleExists(sentryHivePolicyName)) {
 
-                    if(!StringUtils.isEmpty((String) feedProperties.get(REGISTRATION_HIVE_TABLES))) {
+                    if (!StringUtils.isEmpty((String) feedProperties.get(REGISTRATION_HIVE_TABLES))) {
                         String hiveTablesWithCommas = ((String) feedProperties.get(REGISTRATION_HIVE_TABLES)).replace("\n", ",");
                         List<String> hiveTables = Arrays.asList(hiveTablesWithCommas.split(",")).stream().collect(Collectors.toList()); //Stream.of(hiveTablesWithCommas).collect(Collectors.toList());
                         String hiveSchema = ((String) feedProperties.get(REGISTRATION_HIVE_SCHEMA));
@@ -360,7 +354,7 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
                     }
                 } else {
 
-                    if(!StringUtils.isEmpty((String) feedProperties.get(REGISTRATION_HIVE_TABLES))) {
+                    if (!StringUtils.isEmpty((String) feedProperties.get(REGISTRATION_HIVE_TABLES))) {
                         try {
                             sentryClientObject.dropRole(sentryHivePolicyName);
                         } catch (SentryClientException e) {
@@ -381,7 +375,7 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
 
     @Override
     public void deleteHivePolicy(String categoryName, String feedName) {
-        if(this.sentryConnection.getKerberosTicketConfiguration().isKerberosEnabled()){
+        if (this.sentryConnection.getKerberosTicketConfiguration().isKerberosEnabled()) {
             try {
                 authenticatePolicyCreatorWithKerberos().doAs(new PrivilegedExceptionAction<Void>() {
                     @Override
@@ -398,11 +392,9 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
                     }
                 });
             } catch (Exception e) {
-                throw new RuntimeException("Failed to Delete Hive Policy With Kerberos" +e.getMessage());
+                throw new RuntimeException("Failed to Delete Hive Policy With Kerberos" + e.getMessage());
             }
-        }
-        else
-        {
+        } else {
             String sentryPolicyName = getHivePolicyName(categoryName, feedName);
             if (sentryClientObject.checkIfRoleExists(sentryPolicyName)) {
                 try {
@@ -422,7 +414,7 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
         /**
          * Delete ACL from list of HDFS Paths
          */
-        if(this.sentryConnection.getKerberosTicketConfiguration().isKerberosEnabled()){
+        if (this.sentryConnection.getKerberosTicketConfiguration().isKerberosEnabled()) {
             try {
                 authenticatePolicyCreatorWithKerberos().doAs(new PrivilegedExceptionAction<Void>() {
                     @Override
@@ -439,11 +431,9 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
 
                 });
             } catch (Exception e) {
-                throw new RuntimeException("Failed to clear HDFS ACL policy with Kerberos" +e.getMessage());
-            } 
-        }
-        else
-        {
+                throw new RuntimeException("Failed to clear HDFS ACL policy with Kerberos" + e.getMessage());
+            }
+        } else {
             String allPathForAclDeletion = convertListToString(hdfsPaths, ",");
             try {
                 sentryClientObject.flushACL(sentryConnection.getHadoopConfiguration(), allPathForAclDeletion);
@@ -456,7 +446,6 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
 
     @Override
     public String getType() {
-        // TODO Auto-generated method stub
         return HADOOP_AUTHORIZATION_TYPE_SENTRY;
     }
 
@@ -464,20 +453,19 @@ public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
         return KYLO_POLICY_PREFIX + "_" + categoryName + "_" + feedName + "_" + HIVE_REPOSITORY_TYPE;
     }
 
-    private UserGroupInformation authenticatePolicyCreatorWithKerberos()
-    {
+    private UserGroupInformation authenticatePolicyCreatorWithKerberos() {
         /**
          * Kerberos Authentication Before Enabling Sentry Policy
          */
         UserGroupInformation userGroupInformation = null;
-        if(this.sentryConnection.getKerberosTicketConfiguration().isKerberosEnabled()){
+        if (this.sentryConnection.getKerberosTicketConfiguration().isKerberosEnabled()) {
             KerberosTicketGenerator ticket = new KerberosTicketGenerator();
             try {
                 userGroupInformation = ticket.generateKerberosTicket(this.sentryConnection.getKerberosTicketConfiguration());
                 log.info("Kerberos Authentication is successfull.");
                 return userGroupInformation;
             } catch (IOException e) {
-                throw new RuntimeException("Unable to authenticate with Kerberos while creating Sentry Policy  " +e.getMessage());
+                throw new RuntimeException("Unable to authenticate with Kerberos while creating Sentry Policy  " + e.getMessage());
             }
         }
         return userGroupInformation;

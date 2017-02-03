@@ -30,7 +30,7 @@ import java.sql.SQLException;
  */
 public class SentrySearchPolicyMapper implements RowMapper<SentrySearchPolicy> {
 
-    private final String ROLE = "role";
+    private static final String ROLE = "role";
 
     @Override
     public SentrySearchPolicy mapRow(ResultSet rs, int rowNum) throws SQLException {
