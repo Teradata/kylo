@@ -199,25 +199,19 @@ public class RangerPolicies {
 
     {
         Map<String, Object> searchParams = new HashMap<>();
-        ArrayList<String> columns = new ArrayList<String>();
-        ArrayList<String> columnFamilies = new ArrayList<String>();
-        ArrayList<String> tables = new ArrayList<String>();
-        ArrayList<String> udfs = new ArrayList<String>();
+        ArrayList<String> columns = new ArrayList<>();
+        ArrayList<String> columnFamilies = new ArrayList<>();
+        ArrayList<String> tables = new ArrayList<>();
+        ArrayList<String> udfs = new ArrayList<>();
 
-        //Add columns to list
-        if (columns.isEmpty()) {
-            //Do not add anything to list
-        } else {
+        if (!columns.isEmpty()) {
             for (int colCnt = 0; colCnt < columns.size(); colCnt++) {
                 columns.add(getColumns().get(colCnt));
             }
             searchParams.put("columns", columns);
         }
 
-        //Add columnfamilies to list
-        if (columnFamilies.isEmpty()) {
-            //Do not add anything to list
-        } else {
+        if (!columnFamilies.isEmpty()) {
             for (int colFamilyCnt = 0; colFamilyCnt < getColumnFamilies().size(); colFamilyCnt++) {
                 columnFamilies.add(getColumnFamilies().get(colFamilyCnt));
             }
@@ -225,9 +219,7 @@ public class RangerPolicies {
         }
 
         //Add tables
-        if (tables.isEmpty()) {
-            //Do not add anything to list
-        } else {
+        if (!tables.isEmpty()) {
             for (int tableCnt = 0; tableCnt < getTables().size(); tableCnt++) {
                 tables.add(getTables().get(tableCnt));
             }
@@ -235,9 +227,7 @@ public class RangerPolicies {
         }
 
         //Add udf names to list
-        if (udfs.isEmpty()) {
-
-        } else {
+        if (!udfs.isEmpty()) {
             for (int udfCnt = 0; udfCnt < getUdfs().size(); udfCnt++) {
                 tables.add(getUdfs().get(udfCnt));
             }

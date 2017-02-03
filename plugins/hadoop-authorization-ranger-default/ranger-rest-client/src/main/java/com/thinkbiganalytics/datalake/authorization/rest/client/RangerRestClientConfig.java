@@ -34,10 +34,7 @@ import com.thinkbiganalytics.rest.JerseyClientConfig;
 
 public class RangerRestClientConfig extends JerseyClientConfig {
 
-// apiPath not require here value is set in RangerRestClient 
-
     private String apiPath = "/service";
-
 
     public RangerRestClientConfig(String apiPath) {
         this.apiPath = apiPath;
@@ -49,8 +46,6 @@ public class RangerRestClientConfig extends JerseyClientConfig {
 
     public RangerRestClientConfig(String host, String username, String password) {
         super(host, username, password);
-        //this.apiPath = apiPath;
-
     }
 
     public RangerRestClientConfig(String host, String username, String password, boolean https, boolean keystoreOnClasspath, String keystorePath, String keystorePassword, String apiPath) {

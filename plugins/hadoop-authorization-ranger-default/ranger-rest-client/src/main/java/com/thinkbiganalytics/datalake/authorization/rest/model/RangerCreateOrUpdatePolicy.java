@@ -32,11 +32,11 @@ import java.util.Map;
 public class RangerCreateOrUpdatePolicy {
 
 
-    final private String groupList = "groupList";
-    final private String permList = "permList";
+    private static final String GROUP_LIST = "groupList";
+    private static final String PERMISSIONS_LIST = "permList";
 
 
-    private ArrayList<Map<String, List<String>>> permMapList = new ArrayList<Map<String, List<String>>>();
+    private final ArrayList<Map<String, List<String>>> permMapList = new ArrayList<>();
 
     private int id;
     private String createDate;
@@ -167,18 +167,12 @@ public class RangerCreateOrUpdatePolicy {
         return this.permMapList;
     }
 
-    public void setPermMapList(List<String> groupList, List<String> permList2) {
+    public void setPermMapList(List<String> groupList, List<String> permissionList) {
 
-        Map<String, List<String>> permList = new HashMap<String, List<String>>();
+        Map<String, List<String>> permList = new HashMap<>();
 
-        List<String> groupValueList = new ArrayList<String>();
-        List<String> permValueList = new ArrayList<String>();
-
-        groupValueList = groupList;
-        permValueList = permList2;
-
-        permList.put(this.groupList, groupValueList);
-        permList.put(this.permList, permValueList);
+        permList.put(GROUP_LIST, groupList);
+        permList.put(PERMISSIONS_LIST, permissionList);
 
         this.permMapList.add(permList);
 
