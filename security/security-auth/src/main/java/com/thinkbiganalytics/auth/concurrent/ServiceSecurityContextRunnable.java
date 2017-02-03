@@ -23,7 +23,7 @@ package com.thinkbiganalytics.auth.concurrent;
  * #L%
  */
 
-import com.thinkbiganalytics.auth.ServiceAuthenticatoinToken;
+import com.thinkbiganalytics.auth.ServiceAuthenticationToken;
 
 import org.springframework.security.concurrent.DelegatingSecurityContextRunnable;
 import org.springframework.security.core.context.SecurityContext;
@@ -42,7 +42,7 @@ public class ServiceSecurityContextRunnable implements Runnable {
      */
     public ServiceSecurityContextRunnable(Runnable runnable) {
         SecurityContext context = SecurityContextHolder.createEmptyContext();
-        context.setAuthentication(new ServiceAuthenticatoinToken());
+        context.setAuthentication(new ServiceAuthenticationToken());
         
         this.delegate = new DelegatingSecurityContextRunnable(runnable, context);
     }

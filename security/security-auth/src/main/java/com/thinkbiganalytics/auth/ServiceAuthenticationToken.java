@@ -35,13 +35,13 @@ import java.util.Arrays;
  * An authentication representing a general service account token.  Used internally by service threads.
  * @author Sean Felten
  */
-public class ServiceAuthenticatoinToken extends AbstractAuthenticationToken {
+public class ServiceAuthenticationToken extends AbstractAuthenticationToken {
 
     private static final long serialVersionUID = 1L;
     
     private static final UsernamePrincipal USER = new UsernamePrincipal("service");
     
-    public ServiceAuthenticatoinToken() {
+    public ServiceAuthenticationToken() {
         super(Arrays.asList(new JaasGrantedAuthority("ROLE_SERVICE", new ServiceGroupPrincipal()),
                             new JaasGrantedAuthority("admin", new ServiceGroupPrincipal()))); // ModeShape role
     }

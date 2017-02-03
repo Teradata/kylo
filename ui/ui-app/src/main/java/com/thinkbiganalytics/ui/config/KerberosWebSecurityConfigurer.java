@@ -36,7 +36,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.kerberos.authentication.KerberosServiceAuthenticationProvider;
-import org.springframework.security.kerberos.web.authentication.SpnegoAuthenticationProcessingFilter;
 import org.springframework.security.kerberos.web.authentication.SpnegoEntryPoint;
 import org.springframework.security.web.authentication.rememberme.RememberMeAuthenticationFilter;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
@@ -46,7 +45,7 @@ import com.thinkbiganalytics.auth.jwt.JwtRememberMeServices;
 import com.thinkbiganalytics.security.auth.kerberos.SpnegoValidationUserAuthenticationFilter;
 
 /**
- *
+ * A WebSecurityConfigurerAdapter that configures Kerberos SPNEGO authentication.
  * @author Sean Felten
  */
 @Configuration
@@ -60,6 +59,10 @@ public class KerberosWebSecurityConfigurer extends WebSecurityConfigurerAdapter 
     
     @Inject
     private KerberosServiceAuthenticationProvider kerberosServiceAuthProvider;
+    
+    @Inject
+    @Named(JaasAuthConfig.UI_AUTH_PROVIDER)
+    private AuthenticationProvider userPasswordAuthProvider;
     
     @Inject
     @Named(JaasAuthConfig.UI_TOKEN_AUTH_PROVIDER)
@@ -109,7 +112,8 @@ public class KerberosWebSecurityConfigurer extends WebSecurityConfigurerAdapter 
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth
             .authenticationProvider(kerberosServiceAuthProvider)
-            .authenticationProvider(userAuthProvider);
+            .authenticationProvider(userAuthProvider)
+            .authenticationProvider(userPasswordAuthProvider);
     }
     
     @Bean

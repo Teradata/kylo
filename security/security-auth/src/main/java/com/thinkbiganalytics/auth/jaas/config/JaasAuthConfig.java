@@ -3,6 +3,23 @@
  */
 package com.thinkbiganalytics.auth.jaas.config;
 
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import javax.inject.Named;
+import javax.security.auth.login.AppConfigurationEntry;
+
+import org.apache.commons.lang3.ArrayUtils;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
+import org.springframework.core.annotation.Order;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.jaas.AuthorityGranter;
+import org.springframework.security.authentication.jaas.DefaultJaasAuthenticationProvider;
+import org.springframework.security.authentication.jaas.memory.InMemoryConfiguration;
+
 /*-
  * #%L
  * thinkbig-security-auth
@@ -26,25 +43,9 @@ package com.thinkbiganalytics.auth.jaas.config;
 import com.thinkbiganalytics.auth.DefaultPrincipalAuthorityGranter;
 import com.thinkbiganalytics.auth.RolePrincipalAuthorityGranter;
 import com.thinkbiganalytics.auth.UserRoleAuthorityGranter;
+import com.thinkbiganalytics.auth.jaas.UsernameJaasAuthenticationProvider;
 import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
 import com.thinkbiganalytics.auth.jaas.LoginConfigurationBuilder;
-
-import org.apache.commons.lang3.ArrayUtils;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Scope;
-import org.springframework.core.annotation.Order;
-import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.jaas.AuthorityGranter;
-import org.springframework.security.authentication.jaas.DefaultJaasAuthenticationProvider;
-import org.springframework.security.authentication.jaas.memory.InMemoryConfiguration;
-
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import javax.inject.Named;
-import javax.security.auth.login.AppConfigurationEntry;
 
 /**
  *
@@ -89,7 +90,7 @@ public class JaasAuthConfig {
     @Bean(name = UI_TOKEN_AUTH_PROVIDER)
     public AuthenticationProvider uiTokenAuthenticationProvider(@Named("jaasConfiguration") javax.security.auth.login.Configuration config,
                                                                 List<AuthorityGranter> authorityGranters) {
-        DefaultJaasAuthenticationProvider provider = new DefaultJaasAuthenticationProvider();
+        UsernameJaasAuthenticationProvider provider = new UsernameJaasAuthenticationProvider();
         provider.setConfiguration(config);
         provider.setAuthorityGranters(authorityGranters.toArray(new AuthorityGranter[authorityGranters.size()]));
         provider.setLoginContextName(JAAS_UI_TOKEN);
@@ -99,7 +100,7 @@ public class JaasAuthConfig {
     @Bean(name = SERVICES_TOKEN_AUTH_PROVIDER)
     public AuthenticationProvider servicesTokenAuthenticationProvider(@Named("jaasConfiguration") javax.security.auth.login.Configuration config,
                                                                       List<AuthorityGranter> authorityGranters) {
-        DefaultJaasAuthenticationProvider provider = new DefaultJaasAuthenticationProvider();
+        UsernameJaasAuthenticationProvider provider = new UsernameJaasAuthenticationProvider();
         provider.setConfiguration(config);
         provider.setAuthorityGranters(authorityGranters.toArray(new AuthorityGranter[authorityGranters.size()]));
         provider.setLoginContextName(JAAS_SERVICES_TOKEN);

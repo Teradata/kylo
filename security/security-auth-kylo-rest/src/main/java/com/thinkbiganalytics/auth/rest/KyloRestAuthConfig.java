@@ -43,6 +43,12 @@ public class KyloRestAuthConfig {
 
     @Value("${security.auth.kylo.login.url:http://localhost:8400/proxy}")
     private String loginUrl;
+    
+    @Value("${security.auth.kylo.login.username}")
+    private String loginUser;
+    
+    @Value("${security.auth.kylo.login.password}")
+    private String loginPassword;
 
     /**
      * Creates a new UI login configuration for the REST Login Module.
@@ -63,6 +69,8 @@ public class KyloRestAuthConfig {
                     .moduleClass(KyloRestLoginModule.class)
                     .controlFlag(this.uiLoginFlag)
                     .option(KyloRestLoginModule.LOGIN_URL, loginUrl)
+                    .option(KyloRestLoginModule.LOGIN_USER, loginUser)
+                    .option(KyloRestLoginModule.LOGIN_PASSWORD, loginPassword)
                     .add()
                 .build();
     }

@@ -53,16 +53,36 @@ public class KyloRestLoginModule extends AbstractLoginModule implements LoginMod
 
     /** Option for the URL of the REST API endpoint */
     public static final String LOGIN_URL = "loginUrl";
+    
+    /** Option for the URL of the REST API endpoint */
+    public static final String LOGIN_USER = "loginUser";
+    
+    /** Option for the URL of the REST API endpoint */
+    public static final String LOGIN_PASSWORD = "loginPassword";
 
     /** REST API client configuration */
     private LoginJerseyClientConfig config;
+    
+    /** Alternate username (such as service account) to use when making the REST call */
+    private String loginUser = null;
+    
+    /** The password to use when a loginUser property is set */
+    private String loginPassword = null;
 
     @Override
     public void initialize(@Nonnull final Subject subject, @Nonnull final CallbackHandler callbackHandler, @Nonnull final Map<String, ?> sharedState, @Nonnull final Map<String, ?> options) {
         super.initialize(subject, callbackHandler, sharedState, options);
 
-        final URI uri = URI.create(options.get(LOGIN_URL).toString());
-        config = new LoginJerseyClientConfig(uri);
+        try {
+            final URI uri = URI.create(options.get(LOGIN_URL).toString());
+            config = new LoginJerseyClientConfig(uri);
+            loginUser = (String) getOption(LOGIN_USER).orElse(null);
+            loginPassword = loginUser == null ? null : (String) getOption(LOGIN_PASSWORD)
+                                .orElseThrow(() -> new IllegalArgumentException("A REST login password is required if a login username was provided"));
+        } catch (RuntimeException e) {
+            log.error("Unhandled exception during initialization", e);
+            throw e;
+        }
     }
 
     @Override
@@ -70,11 +90,20 @@ public class KyloRestLoginModule extends AbstractLoginModule implements LoginMod
         // Get username and password
         final NameCallback nameCallback = new NameCallback("Username: ");
         final PasswordCallback passwordCallback = new PasswordCallback("Password: ", false);
-        handle(nameCallback, passwordCallback);
-
-        // Fetch user from API
-        final String username = nameCallback.getName();
-        final String password = new String(passwordCallback.getPassword());
+        final String username;
+        final String password;
+        
+        if (loginUser == null) {
+            // Use user's own username and password to access the REST API if a loginUser was not provided.
+            handle(nameCallback, passwordCallback);
+            username = nameCallback.getName();
+            password = new String(passwordCallback.getPassword());
+        } else {
+            // Using the loginUser to access API so only need the authenticating user's name.
+            handle(nameCallback);
+            username = loginUser;
+            password = loginPassword;
+        }
 
         final LoginJerseyClientConfig userConfig = new LoginJerseyClientConfig(config);
         userConfig.setUsername(username);
@@ -82,7 +111,7 @@ public class KyloRestLoginModule extends AbstractLoginModule implements LoginMod
 
         final UserPrincipal user;
         try {
-            user = getClient(userConfig).get("/v1/about/me", null, UserPrincipal.class);
+            user = retrieveUser(nameCallback.getName(), userConfig);
         } catch (final NotAuthorizedException e) {
             log.debug("Received unauthorized response from Login API for user: {}", username);
             throw new CredentialException("The username and password combination do not match.");
@@ -106,6 +135,11 @@ public class KyloRestLoginModule extends AbstractLoginModule implements LoginMod
         addNewUserPrincipal(user.getSystemName());
         user.getGroups().forEach(this::addNewGroupPrincipal);
         return true;
+    }
+
+    protected UserPrincipal retrieveUser(String user, final LoginJerseyClientConfig userConfig) {
+        String endpoint = loginUser == null ? "/v1/about/me" : "/v1/security/users/" + user;
+        return getClient(userConfig).get(endpoint, null, UserPrincipal.class);
     }
 
     @Override

@@ -36,7 +36,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -48,6 +47,8 @@ import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.util.Assert;
 import org.springframework.web.filter.GenericFilterBean;
+
+import com.thinkbiganalytics.auth.UsernameAuthenticationToken;
 
 /**
  * Performs SPNEGO validation of the Kerberos ticket and, if valid, performs further authentication
@@ -100,7 +101,7 @@ public class SpnegoValidationUserAuthenticationFilter extends GenericFilterBean 
             
             // If the ticket has been authenticated then attempt to authenticate the username.
             try {
-                UsernamePasswordAuthenticationToken userToken = extractUsernameToken(kerberosAuth);
+                UsernameAuthenticationToken userToken = extractUsernameToken(kerberosAuth);
                 Authentication usernameAuth = authenticationManager.authenticate(userToken);
                 
                 SecurityContextHolder.getContext().setAuthentication(usernameAuth);
@@ -176,11 +177,11 @@ public class SpnegoValidationUserAuthenticationFilter extends GenericFilterBean 
         return header != null && (header.startsWith("Negotiate ") || header.startsWith("Kerberos "));
     }
 
-    protected UsernamePasswordAuthenticationToken extractUsernameToken(Authentication kerberosAuth) {
+    protected UsernameAuthenticationToken extractUsernameToken(Authentication kerberosAuth) {
         String krbUser = ((User) kerberosAuth.getPrincipal()).getUsername();
         int realmStart = krbUser.lastIndexOf('@');
         String username = krbUser.substring(0, realmStart == -1 ? krbUser.length() : realmStart); 
-        return new UsernamePasswordAuthenticationToken(username, null);
+        return new UsernameAuthenticationToken(username);
     }
 
 }

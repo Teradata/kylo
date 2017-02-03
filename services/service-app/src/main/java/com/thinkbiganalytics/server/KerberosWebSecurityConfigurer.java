@@ -60,6 +60,10 @@ public class KerberosWebSecurityConfigurer extends WebSecurityConfigurerAdapter 
     private KerberosServiceAuthenticationProvider kerberosServiceAuthProvider;
     
     @Inject
+    @Named(JaasAuthConfig.SERVICES_AUTH_PROVIDER)
+    private AuthenticationProvider userPasswordAuthProvider;
+    
+    @Inject
     @Named(JaasAuthConfig.SERVICES_TOKEN_AUTH_PROVIDER)
     private AuthenticationProvider userAuthProvider;
 
@@ -91,7 +95,8 @@ public class KerberosWebSecurityConfigurer extends WebSecurityConfigurerAdapter 
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth
             .authenticationProvider(kerberosServiceAuthProvider)
-            .authenticationProvider(userAuthProvider);
+            .authenticationProvider(userAuthProvider)
+            .authenticationProvider(userPasswordAuthProvider);
     }
     
     @Bean
