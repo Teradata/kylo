@@ -41,7 +41,7 @@ import java.util.Set;
 
 /**
  * This code will find all Process groups matching the Version name of  <Name> - {13 digit timestamp} and if the group doesnt have anything in its Queue, it will remove it
- * Created by sr186054 on 12/15/16.
+ *
  */
 public class CleanupStaleFeedRevisions {
 

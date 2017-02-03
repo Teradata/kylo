@@ -35,7 +35,6 @@ import org.springframework.stereotype.Service;
 import java.util.Map;
 
 /**
- * Created by sr186054 on 5/3/16.
  * Helper class to get Controller Service Properties from Nifi and also merge any of these properties specified in our .properties file
  */
 @Service

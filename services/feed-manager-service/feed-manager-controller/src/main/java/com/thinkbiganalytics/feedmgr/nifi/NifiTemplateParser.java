@@ -33,12 +33,15 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 /**
- * Created by sr186054 on 5/7/16.
+ * Utility to get the name of a template for an xml string
  */
 public class NifiTemplateParser {
 
 
-
+    /**
+     * @param nifiTemplate the nifi template xml string
+     * @return the name of the template
+     */
     public static String getTemplateName(String nifiTemplate) throws ParserConfigurationException, XPathExpressionException, IOException, SAXException {
 
         XPathFactory xpathFactory = XPathFactory.newInstance();

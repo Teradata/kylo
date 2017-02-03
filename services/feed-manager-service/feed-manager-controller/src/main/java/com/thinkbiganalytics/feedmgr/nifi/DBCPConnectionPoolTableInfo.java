@@ -42,7 +42,7 @@ import javax.inject.Inject;
 import javax.sql.DataSource;
 
 /**
- * Created by sr186054 on 1/28/16.
+ * Allow Kylo to use a NiFi database pool connection to display database metadata with tables and columns.
  */
 @Service
 public class DBCPConnectionPoolTableInfo {
@@ -59,13 +59,22 @@ public class DBCPConnectionPoolTableInfo {
     @Qualifier("kerberosHiveConfiguration")
     private KerberosTicketConfiguration kerberosHiveConfiguration;
 
+    /**
+     * Return a list of table names matchig a pattern
+     *
+     * @param serviceId   a NiFi controller service id
+     * @param serviceName a NiFi controller service name
+     * @param schema      A schema pattern to look for
+     * @param tableName   A table pattern to look for
+     * @return a list of schema.table names matching the pattern for the database
+     */
     public List<String> getTableNamesForControllerService(String serviceId, String serviceName, String schema, String tableName) {
         ControllerServiceDTO controllerService = getControllerService(serviceId, serviceName);
 
         if (controllerService != null) {
             DescribeTableWithControllerServiceBuilder builder = new DescribeTableWithControllerServiceBuilder(controllerService);
             DescribeTableWithControllerService serviceProperties = builder.schemaName(schema).tableName(tableName).build();
-           return getTableNamesForControllerService(serviceProperties);
+            return getTableNamesForControllerService(serviceProperties);
         } else {
             log.error("Cannot getTable Names for Controller Service. Unable to obtain Controller Service for serviceId or Name ({} , {})", serviceId, serviceName);
         }
@@ -73,6 +82,14 @@ public class DBCPConnectionPoolTableInfo {
     }
 
 
+    /**
+     * Describe the database table and fields available for a given NiFi controller service
+     * @param serviceId a NiFi controller service id
+     * @param serviceName a NiFi controller service name
+     * @param schema A schema  to look for
+     * @param tableName A table  to look for
+     * @return the database table and fields
+     */
     public TableSchema describeTableForControllerService(String serviceId, String serviceName, String schema, String tableName) {
 
         ControllerServiceDTO controllerService = getControllerService(serviceId, serviceName);
@@ -87,6 +104,11 @@ public class DBCPConnectionPoolTableInfo {
     }
 
 
+    /**
+     * Return a list of schema.table_name
+     * @param serviceProperties properties describing where and what to look for
+     * @return a list of schema.table_name
+     */
     private List<String> getTableNamesForControllerService(DescribeTableWithControllerService serviceProperties) {
 
         if (serviceProperties != null) {

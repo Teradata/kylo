@@ -22,6 +22,7 @@ package com.thinkbiganalytics.feedmgr.nifi;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.util.concurrent.Uninterruptibles;
 import com.thinkbiganalytics.DateTimeUtil;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
@@ -160,7 +161,16 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
 
     private DateTime lastUpdated = null;
 
+    @PostConstruct
+    private void init() {
+        nifiConnectionService.subscribeConnectionListener(this);
+        modeShapeAvailability.subscribe(this);
+        initExpireTimerThread();
+    }
 
+    /**
+     * Modeshape is available
+     */
     @Override
     public void modeShapeAvailable() {
         this.modeShapeAvailable = true;
@@ -168,7 +178,9 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
     }
 
 
-
+    /**
+     * NiFi has made a connection
+     */
     @Override
     public void onNiFiConnected() {
         this.nifiConnected = true;
@@ -178,22 +190,26 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
     @Override
     public void onNiFiDisconnected() {
         this.nifiConnected = false;
+        //reset the flag to force cache initialization on nifi availability
+        this.loaded = false;
     }
 
 
-    @PostConstruct
-    private void init() {
-        nifiConnectionService.subscribeConnectionListener(this);
-        modeShapeAvailability.subscribe(this);
-        initExpireTimerThread();
-    }
-
+    /**
+     * When modeshape and nifi are connected and ready attempt to initialize the cache
+     */
     private void checkAndInitializeCache() {
         if (modeShapeAvailable && nifiConnected && !loaded) {
-            rebuildAll();
+            rebuildCacheWithRetry();
         }
     }
 
+    /**
+     * rebuild a given cache resetting the cache with the given sync id to the latest data in the cache
+     *
+     * @param syncId a cache id
+     * @return the latest cache
+     */
     public NiFiFlowCacheSync refreshAll(String syncId) {
         NiFiFlowCacheSync sync = getSync(syncId);
         if (!sync.isUnavailable()) {
@@ -204,12 +220,18 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
         }
     }
 
+    /**
+     * Check to see if the cache is loaded
+     * @return {@code true} if the cache is populated, {@code false} if the cache is not populated
+     */
     public boolean isAvailable() {
         return loaded;
     }
 
     /**
      * Return only the records that were updated since the last sync
+     * @param syncId a cache id
+     * @return updates that have been applied to the cache.
      */
     public NiFiFlowCacheSync syncAndReturnUpdates(String syncId) {
         NiFiFlowCacheSync sync = getSync(syncId);
@@ -219,12 +241,21 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
         return sync;
     }
 
+    /**
+     * Return the data in the cache for a given cache id
+     * @param syncId a cache id
+     * @return the data in the cache for a given cache id
+     */
     public NiFiFlowCacheSync getCache(String syncId) {
         NiFiFlowCacheSync sync = getSync(syncId);
-
         return sync;
     }
 
+    /**
+     * Preview any new updates that will be applied to a given cache
+     * @param syncId a cache id
+     * @return any new updates that will be applied to a given cache
+     */
     public NiFiFlowCacheSync previewUpdates(String syncId) {
         NiFiFlowCacheSync sync = getSync(syncId, true);
         if (!sync.isUnavailable()) {
@@ -232,6 +263,77 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
         }
         return sync;
     }
+
+
+    /**
+     * Rebuild the base cache that others will update from.
+     */
+    public synchronized void rebuildAll() {
+        loaded = false;
+
+        try {
+            ensureNiFiKyloReportingTask();
+        } catch (Exception e) {
+            log.error("Exception while trying to ensure KyloReportingTask {}", e.getMessage(), e);
+        }
+        List<NifiFlowProcessGroup> allFlows = nifiRestClient.getFeedFlows();
+
+        List<RegisteredTemplate> templates = null;
+        clearAll();
+
+        templates = metadataAccess.read(() -> metadataService.getRegisteredTemplates(), MetadataAccess.SERVICE);
+        Map<String, RegisteredTemplate> feedTemplatesMap = new HashMap<>();
+
+        //populate the template mappings and feeds to determine if the feed uses a streaming or batch template
+        templates.stream().forEach(template -> populateTemplateMappingCache(template, feedTemplatesMap));
+
+        allFlows.stream().forEach(nifiFlowProcessGroup -> {
+            RegisteredTemplate template = feedTemplatesMap.get(nifiFlowProcessGroup.getFeedName());
+            if (template != null) {
+                updateFlow(nifiFlowProcessGroup.getFeedName(), template.isStream(), nifiFlowProcessGroup);
+            } else {
+                //this is possibly a reusable template.
+                //update the processorid and connection name maps
+                updateProcessorIdMaps(nifiFlowProcessGroup.getFeedName(), nifiFlowProcessGroup.getProcessorMap().values());
+                this.connectionIdToConnectionMap.putAll(toConnectionIdMap(nifiFlowProcessGroup.getConnectionIdMap().values()));
+            }
+        });
+        loaded = true;
+
+
+    }
+
+    /**
+     * Rebuilds the cache.
+     * If an exception occurs during the rebuild it will attempt to retry to build it up to 10 times before aborting
+     */
+    public void rebuildCacheWithRetry() {
+        Exception lastError = null;
+        int retries = 10;
+        int waitTime = 5;
+        for (int count = 1; count <= retries; ++count) {
+            try {
+                log.info("Attempting to build the NiFiFlowCache");
+                rebuildAll();
+                if (loaded) {
+                    log.info("Successfully built the NiFiFlowCache");
+                    break;
+                }
+            } catch (final Exception e) {
+                log.error("Error attempting to build cache.  The system will attempt to retry {} more times.  Next attempt to rebuild in {} seconds.  The error was: {}. ", (retries - count), waitTime,
+                          e.getMessage());
+                lastError = e;
+                Uninterruptibles.sleepUninterruptibly(waitTime, TimeUnit.SECONDS);
+            }
+        }
+        if (!loaded) {
+            log.error(
+                "Unable to build the NiFi Flow Cache!  You will need to manually rebuild the cache using the following url:  http://KYLO_HOST:PORT/proxy/v1/metadata/nifi-provenance/nifi-flow-cache/reset-cache ",
+                lastError);
+        }
+    }
+
+
 
 
     private NiFiFlowCacheSync previewUpdates(NiFiFlowCacheSync sync) {
@@ -326,6 +428,7 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
     }
 
 
+    /** clears the current cache ***/
     private void clearAll() {
         processorIdToFeedProcessGroupId.clear();
         processorIdToFeedProcessGroupId.clear();
@@ -352,41 +455,6 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
         });
     }
 
-    /**
-     * Rebuild the base cache that others will update from.
-     */
-    public synchronized void rebuildAll() {
-        loaded = false;
-        try {
-            ensureNiFiKyloReportingTask();
-        } catch (Exception e) {
-            log.error("Exception while trying to ensure KyloReportingTask {}", e.getMessage(), e);
-        }
-        List<NifiFlowProcessGroup> allFlows = nifiRestClient.getFeedFlows();
-
-        List<RegisteredTemplate> templates = null;
-        clearAll();
-
-        templates = metadataAccess.read(() -> metadataService.getRegisteredTemplates(), MetadataAccess.SERVICE);
-        Map<String, RegisteredTemplate> feedTemplatesMap = new HashMap<>();
-
-        //populate the template mappings and feeds to determine if the feed uses a streaming or batch template
-        templates.stream().forEach(template -> populateTemplateMappingCache(template, feedTemplatesMap));
-
-        allFlows.stream().forEach(nifiFlowProcessGroup -> {
-            RegisteredTemplate template = feedTemplatesMap.get(nifiFlowProcessGroup.getFeedName());
-            if (template != null) {
-                updateFlow(nifiFlowProcessGroup.getFeedName(), template.isStream(), nifiFlowProcessGroup);
-            } else {
-                //this is possibly a reusable template.
-                //update the processorid and connection name maps
-                updateProcessorIdMaps(nifiFlowProcessGroup.getFeedName(), nifiFlowProcessGroup.getProcessorMap().values());
-                this.connectionIdToConnectionMap.putAll(toConnectionIdMap(nifiFlowProcessGroup.getConnectionIdMap().values()));
-            }
-        });
-        loaded = true;
-
-    }
 
     /**
      * Ensure that there is a configured reporting task
@@ -484,8 +552,11 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
     }
 
 
-
-
+    /**
+     * add processors to the cache
+     * @param templateName a template name
+     * @param processors processors to add to the cache
+     */
     public void updateProcessorIdNames(String templateName, Collection<ProcessorDTO> processors) {
 
         Map<String, String> processorIdToProcessorName = new HashMap<>();
@@ -496,6 +567,11 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
         this.processorIdToProcessorName.putAll(processorIdToProcessorName);
     }
 
+    /**
+     * Add connections to the cache
+     * @param templateName a template name
+     * @param connections connections to add to the cache
+     */
     public void updateConnectionMap(String templateName, Collection<ConnectionDTO> connections) {
         Map<String, NifiFlowConnection> connectionIdToConnectionMap = new HashMap<>();
         if (connections != null) {
@@ -511,16 +587,24 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
     }
 
 
-
     /**
+     * Update cache for a feeds flow
      * Used by CreateFeed builder
-     **/
+     * @param feed a feed
+     * @param feedProcessGroup the process group created with this feed
+     */
     public void updateFlow(FeedMetadata feed, NifiFlowProcessGroup feedProcessGroup) {
         // feedProcessGroup.calculateCriticalPathProcessors();
         String feedName = feed.getCategoryAndFeedName();
         this.updateFlow(feedName, feed.getRegisteredTemplate().isStream(), feedProcessGroup.getId(), feedProcessGroup.getProcessorMap().values(), feedProcessGroup.getConnectionIdMap().values());
     }
 
+    /**
+     * Update  cache for a feed
+     * @param feedName the name of the feed
+     * @param isStream {@code true} if its a streaming feed, {@code false} if its a batch feed
+     * @param feedProcessGroup the process group created with this feed
+     */
     public void updateFlow(String feedName, boolean isStream, NifiFlowProcessGroup feedProcessGroup) {
         //  feedProcessGroup.calculateCriticalPathProcessors();
         this.updateFlow(feedName, isStream, feedProcessGroup.getId(), feedProcessGroup.getProcessorMap().values(), feedProcessGroup.getConnectionIdMap().values());
@@ -662,6 +746,9 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
 
     }
 
+    /**
+     * Expire any cache entries that havent been touched in 60 minutes
+     */
     public void checkAndExpireUnusedCache() {
         int minutes = 60;
         try {

@@ -38,7 +38,7 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 /**
- * Created by sr186054 on 12/21/16.
+ * Service to notify when NiFi goes up or down
  */
 @Component
 public class NifiConnectionService {
