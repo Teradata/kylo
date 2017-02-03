@@ -23,8 +23,14 @@ package com.thinkbiganalytics.nifi.core.api.precondition;
 import com.thinkbiganalytics.metadata.rest.model.event.FeedPreconditionTriggerEvent;
 
 /**
+ * A listener which gets called for precondition events
  */
 public interface PreconditionListener {
 
+    /**
+     * method is called by the service we registered with, when new precondition events arrive.
+     *
+     * @param event The event that occurred
+     */
     void triggered(FeedPreconditionTriggerEvent event);
 }

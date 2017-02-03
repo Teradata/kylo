@@ -23,17 +23,39 @@ package com.thinkbiganalytics.nifi.core.api.metadata;
 import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheSync;
 
 /**
- * Created by sr186054 on 12/21/16.
+ * Used to interact with a cache of nifi flow events
  */
 public interface KyloNiFiFlowProvider {
 
-
+    /**
+     * Gets the nifi flow data since syncId
+     *
+     * @param syncId the id of the last flow
+     * @return a cache of new flow data
+     */
     NiFiFlowCacheSync getNiFiFlowUpdates(String syncId);
 
+    /**
+     * Resets the cache from the syncId
+     *
+     * @param syncId the id of the flow
+     * @return a cache that has been reset
+     */
     NiFiFlowCacheSync resetNiFiFlowCache(String syncId);
 
+    /**
+     * check to see if new data is available in the nifi flow
+     *
+     * @return true if new data is available
+     */
     boolean isNiFiFlowDataAvailable();
 
+    /**
+     * Returns the max event ID for a given cluster
+     *
+     * @param clusterNodeId the cluster to search for the max event id
+     * @return the event id
+     */
     Long findNiFiMaxEventId(String clusterNodeId);
 
 }

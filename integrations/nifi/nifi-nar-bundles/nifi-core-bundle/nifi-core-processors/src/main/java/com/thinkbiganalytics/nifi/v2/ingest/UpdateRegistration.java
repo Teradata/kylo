@@ -20,8 +20,6 @@ package com.thinkbiganalytics.nifi.v2.ingest;
  * #L%
  */
 
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder;
 import com.thinkbiganalytics.nifi.processor.AbstractNiFiProcessor;
 
 import org.apache.nifi.annotation.behavior.EventDriven;
@@ -30,7 +28,6 @@ import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.flowfile.FlowFile;
-import org.apache.nifi.logging.ComponentLog;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.Relationship;
@@ -96,23 +93,7 @@ public class UpdateRegistration extends AbstractNiFiProcessor {
         if (flowFile == null) {
             return;
         }
-        ComponentLog logger = getLog();
-        try {
-            final MetadataProviderService metadataService = context.getProperty(METADATA_SERVICE).asControllerService(MetadataProviderService.class);
-            final String categoryName = context.getProperty(FEED_CATEGORY).evaluateAttributeExpressions(flowFile).getValue();
-            final String feedName = context.getProperty(FEED_NAME).evaluateAttributeExpressions(flowFile).getValue();
 
-            final MetadataRecorder client = metadataService.getRecorder();
-
-            // TODO: Restore when working
-            //client.recordFeedInitialization(session, incoming, true);
-
-            //TODO: Remove workaround
-            client.recordFeedInitialization(categoryName, feedName);
-
-        } catch (final Exception e) {
-            logger.warn("Failed to update registration due to {}. Will proceed anyway resulting in new files going through registration.", new Object[]{flowFile, e});
-        }
         session.transfer(flowFile, REL_SUCCESS);
     }
 

@@ -31,9 +31,24 @@ import org.apache.nifi.controller.ControllerService;
                        + "feeds, datasets, and data operations.")
 public interface MetadataProviderService extends ControllerService {
 
+    /**
+     * gets a provider for working with metadata
+     *
+     * @return the metadata provider
+     */
     MetadataProvider getProvider();
 
+    /**
+     * get a meta data recorder for holding metadata that will eventually be persisted to the meta data store
+     *
+     * @return the metadata recorder
+     */
     MetadataRecorder getRecorder();
 
+    /**
+     * get the nifi flow provider used for interacting with nifi flow events
+     *
+     * @return the nifi flow provider
+     */
     KyloNiFiFlowProvider getKyloNiFiFlowProvider();
 }

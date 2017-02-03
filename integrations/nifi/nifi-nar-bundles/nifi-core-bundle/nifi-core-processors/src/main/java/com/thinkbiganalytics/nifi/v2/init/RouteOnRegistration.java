@@ -21,8 +21,6 @@ package com.thinkbiganalytics.nifi.v2.init;
  */
 
 
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder;
 import com.thinkbiganalytics.nifi.processor.AbstractNiFiProcessor;
 
 import org.apache.nifi.annotation.behavior.EventDriven;
@@ -94,26 +92,6 @@ public class RouteOnRegistration extends AbstractNiFiProcessor {
             return;
         }
 
-        try {
-            final MetadataProviderService metadataService = context.getProperty(METADATA_SERVICE).asControllerService(MetadataProviderService.class);
-            final String categoryName = context.getProperty(FEED_CATEGORY).evaluateAttributeExpressions(flowFile).getValue();
-            final String feedName = context.getProperty(FEED_NAME).evaluateAttributeExpressions(flowFile).getValue();
-
-            final MetadataRecorder recorder = metadataService.getRecorder();
-
-            // TODO: restore workaround
-            //boolean required = recorder.isFeedInitialized(flowFile);
-
-            // TODO: remove this workaround
-            boolean isInitialized = recorder.isFeedInitialized(categoryName, feedName);
-            if (isInitialized) {
-                session.transfer(flowFile, REL_SUCCESS);
-                return;
-            }
-
-        } catch (final Exception e) {
-            getLog().warn("Routing to registration required. Unable to determine registration status. Failed to route on registration due to {}", new Object[]{flowFile, e});
-        }
         session.transfer(flowFile, REL_REGISTRATION_REQ);
     }
 

@@ -21,8 +21,6 @@ package com.thinkbiganalytics.nifi.v2.ingest;
  */
 
 
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder;
 import com.thinkbiganalytics.nifi.processor.AbstractNiFiProcessor;
 
 import org.apache.nifi.annotation.behavior.EventDriven;
@@ -32,7 +30,6 @@ import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.flowfile.FlowFile;
-import org.apache.nifi.logging.ComponentLog;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.Relationship;
@@ -94,28 +91,7 @@ public class RouteOnRegistration extends AbstractNiFiProcessor {
         if (flowFile == null) {
             return;
         }
-        final ComponentLog logger = getLog();
 
-        try {
-            final MetadataProviderService metadataService = context.getProperty(METADATA_SERVICE).asControllerService(MetadataProviderService.class);
-            final String categoryName = context.getProperty(FEED_CATEGORY).evaluateAttributeExpressions(flowFile).getValue();
-            final String feedName = context.getProperty(FEED_NAME).evaluateAttributeExpressions(flowFile).getValue();
-
-            final MetadataRecorder recorder = metadataService.getRecorder();
-
-            // TODO: restore workaround
-            //boolean required = recorder.isFeedInitialized(flowFile);
-
-            // TODO: remove this workaround
-            boolean isInitialized = recorder.isFeedInitialized(categoryName, feedName);
-            if (isInitialized) {
-                session.transfer(flowFile, REL_SUCCESS);
-                return;
-            }
-
-        } catch (final Exception e) {
-            logger.warn("Routing to registration required. Unable to determine registration status. Failed to route on registration due to {}", new Object[]{flowFile, e});
-        }
         session.transfer(flowFile, REL_REGISTRATION_REQ);
     }
 

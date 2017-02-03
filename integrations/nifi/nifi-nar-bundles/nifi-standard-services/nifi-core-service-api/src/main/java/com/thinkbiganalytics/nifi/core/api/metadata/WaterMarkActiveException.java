@@ -30,6 +30,11 @@ public class WaterMarkActiveException extends Exception {
 
     private static final long serialVersionUID = 1L;
 
+    /**
+     * constructs an exception for the load water mark failure
+     *
+     * @param waterMarkName the name for the watermark
+     */
     public WaterMarkActiveException(String waterMarkName) {
         super(waterMarkName);
     }

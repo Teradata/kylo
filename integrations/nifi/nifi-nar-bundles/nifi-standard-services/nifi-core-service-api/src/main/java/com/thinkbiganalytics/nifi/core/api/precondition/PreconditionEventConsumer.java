@@ -20,9 +20,24 @@ package com.thinkbiganalytics.nifi.core.api.precondition;
  * #L%
  */
 
+/**
+ * For adding listener's to precondition events
+ */
 public interface PreconditionEventConsumer {
 
+    /**
+     * Adds listener for acting on precondition events
+     *
+     * @param category The category of the feed
+     * @param feedName The name of the feed
+     * @param listener The listener to be notified of precondition events
+     */
     void addListener(String category, String feedName, PreconditionListener listener);
 
+    /**
+     * Removes the listener on precondition events
+     *
+     * @param listener The listener to be removed
+     */
     void removeListener(PreconditionListener listener);
 }

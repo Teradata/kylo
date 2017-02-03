@@ -25,6 +25,7 @@ import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.controller.ControllerService;
 
 /**
+ * interface for the interacting with feed preconditions
  */
 @Tags({"thinkbig", "feed", "precondition", "event", "trigger"})
 @CapabilityDescription("")

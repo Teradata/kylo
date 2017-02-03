@@ -261,28 +261,6 @@ public class MetadataClientRecorder implements MetadataRecorder {
 
     }
 
-    //-=-=-=-=-=-=-=-
-
-
-    @Override
-    @Deprecated
-    // TODO: Remove workaroundRegistration
-    public void recordFeedInitialization(String systemCategory, String feedName) {
-        String key = feedKey(systemCategory, feedName);
-        log.warn("recordFeedInit feed {} size {}", key, workaroundRegistration.size());
-        workaroundRegistration.put(key, true);
-    }
-
-    @Override
-    @Deprecated
-    // TODO: Remove workaroundRegistration
-    public boolean isFeedInitialized(String systemCategory, String feedName) {
-        String key = feedKey(systemCategory, feedName);
-        Boolean result = workaroundRegistration.get(key);
-        log.warn("isFeedInitialized feed {} size {} result {}", key, workaroundRegistration.size(), result);
-        return (result == null ? false : result);
-    }
-
     private Map<String, String> getCurrentWaterMarksAttr(FlowFile ff) {
         try {
             String activeStr = ff.getAttribute(CURRENT_WATER_MARKS_ATTR);
