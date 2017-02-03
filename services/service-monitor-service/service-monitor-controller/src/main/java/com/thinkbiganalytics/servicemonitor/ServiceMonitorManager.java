@@ -97,7 +97,9 @@ public class ServiceMonitorManager implements ApplicationContextAware, Initializ
 
 
   /**
-   * Run a service check on the system
+   *  Run a service check on the system.
+   *  Each service will run in a separate thread and return status back
+   * @return a list of service status objects
    */
   public List<ServiceStatusResponse> doServiceCheck() {
     List<ServiceStatusResponse> serviceHealthResponseList = new ArrayList<ServiceStatusResponse>();

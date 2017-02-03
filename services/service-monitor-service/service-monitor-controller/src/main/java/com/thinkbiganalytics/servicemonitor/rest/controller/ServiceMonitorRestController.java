@@ -49,7 +49,7 @@ public class ServiceMonitorRestController {
      */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("Gets the list of all services.")
+    @ApiOperation("Gets the list of all services and their health")
     @ApiResponses(
             @ApiResponse(code = 200, message = "Returns the services.", response = ServiceStatusResponse.class, responseContainer = "List")
     )

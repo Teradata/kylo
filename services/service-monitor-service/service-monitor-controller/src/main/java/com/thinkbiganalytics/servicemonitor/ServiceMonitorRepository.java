@@ -31,7 +31,7 @@ public interface ServiceMonitorRepository {
   /**
    * Returns the status of services
    *
-   * @return The status of ingestion services
+   * @return The status of services
    */
   List<ServiceStatusResponse> listServices();
 }

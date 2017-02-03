@@ -22,17 +22,20 @@ package com.thinkbiganalytics.servicemonitor;
 
 import com.thinkbiganalytics.servicemonitor.model.ServiceStatusResponse;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-import javax.inject.Named;
+import javax.inject.Inject;
 
 
-@Named
+/**
+ * Service that will do service status checks
+ */
+@Component
 public class DefaultServiceMonitorRepository implements ServiceMonitorRepository {
 
-  @Autowired
+  @Inject
   private ServiceMonitorManager serviceStatus;
 
   public List<ServiceStatusResponse> listServices() {
