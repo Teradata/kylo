@@ -25,7 +25,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.thinkbiganalytics.scheduler.TriggerIdentifier;
 
 /**
- * Created by sr186054 on 9/23/15.
+ * A default trigger identifier
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DefaultTriggerIdentifier extends DefaultScheduleIdentifier implements TriggerIdentifier {

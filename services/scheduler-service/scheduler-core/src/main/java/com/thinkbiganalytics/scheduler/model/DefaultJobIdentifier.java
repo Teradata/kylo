@@ -25,7 +25,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.thinkbiganalytics.scheduler.JobIdentifier;
 
 /**
- * Created by sr186054 on 9/23/15.
+ * a Job identifier
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DefaultJobIdentifier extends DefaultScheduleIdentifier implements JobIdentifier {

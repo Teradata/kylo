@@ -28,25 +28,25 @@ import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 import javax.inject.Inject;
 
 /**
- * Created by sr186054 on 9/20/15.
+ * Spring configuration to setup the Quartz scheduler
  */
 @Configuration
 public class QuartzSpringConfiguration {
 
-  @Inject
-  private ApplicationContext applicationContext;
+    @Inject
+    private ApplicationContext applicationContext;
 
-  @Bean(name = "schedulerFactoryBean")
-  public SchedulerFactoryBean schedulerFactoryBean() {
-    SchedulerFactoryBean scheduler = new SchedulerFactoryBean();
-    scheduler.setApplicationContextSchedulerContextKey("applicationContext");
-    //Enable autowiring of Beans inside each QuartzJobBean
-    AutowiringSpringBeanJobFactory jobFactory = new AutowiringSpringBeanJobFactory();
-    jobFactory.setApplicationContext(applicationContext);
-    scheduler.setJobFactory(jobFactory);
+    @Bean(name = "schedulerFactoryBean")
+    public SchedulerFactoryBean schedulerFactoryBean() {
+        SchedulerFactoryBean scheduler = new SchedulerFactoryBean();
+        scheduler.setApplicationContextSchedulerContextKey("applicationContext");
+        //Enable autowiring of Beans inside each QuartzJobBean
+        AutowiringSpringBeanJobFactory jobFactory = new AutowiringSpringBeanJobFactory();
+        jobFactory.setApplicationContext(applicationContext);
+        scheduler.setJobFactory(jobFactory);
 
-    return scheduler;
-  }
+        return scheduler;
+    }
 
 
 }

@@ -31,9 +31,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import static org.junit.Assert.assertNotNull;
 
 
-
 /**
- * Created by matthutton on 3/11/16.
+ *
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = QuartzSpringConfiguration.class)

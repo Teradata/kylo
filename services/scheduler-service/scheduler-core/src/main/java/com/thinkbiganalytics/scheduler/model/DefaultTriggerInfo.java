@@ -29,7 +29,7 @@ import com.thinkbiganalytics.scheduler.TriggerInfo;
 import java.util.Date;
 
 /**
- * Created by sr186054 on 9/24/15.
+ * Default trigger information
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DefaultTriggerInfo implements TriggerInfo {

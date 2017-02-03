@@ -27,22 +27,22 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.scheduling.quartz.SpringBeanJobFactory;
 
 /**
- * Created by sr186054 on 9/21/15.
+ * Spring factory bean to work with Quartz to create schedule job instances
  */
 public final class AutowiringSpringBeanJobFactory extends SpringBeanJobFactory implements
                                                                                ApplicationContextAware {
 
-  private transient AutowireCapableBeanFactory beanFactory;
+    private transient AutowireCapableBeanFactory beanFactory;
 
-  @Override
-  public void setApplicationContext(final ApplicationContext context) {
-    beanFactory = context.getAutowireCapableBeanFactory();
-  }
+    @Override
+    public void setApplicationContext(final ApplicationContext context) {
+        beanFactory = context.getAutowireCapableBeanFactory();
+    }
 
-  @Override
-  protected Object createJobInstance(final TriggerFiredBundle bundle) throws Exception {
-    final Object job = super.createJobInstance(bundle);
-    beanFactory.autowireBean(job);
-    return job;
-  }
+    @Override
+    protected Object createJobInstance(final TriggerFiredBundle bundle) throws Exception {
+        final Object job = super.createJobInstance(bundle);
+        beanFactory.autowireBean(job);
+        return job;
+    }
 }

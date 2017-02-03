@@ -26,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Date;
 
 /**
- * Created by sr186054 on 9/24/15.
+ * Trigger Info user interface object
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TriggerInfo {

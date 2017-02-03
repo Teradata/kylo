@@ -43,61 +43,61 @@ import javax.annotation.PostConstruct;
 
 public class SimpleSchedulerQuartzJobBeanSetup {
 
-  private String cronExpresson;
-  private String groupName;
-  private String jobName;
-  private String quartzJobBean;
-  private Map<String, Object> dataMap;
-  private boolean fireImmediately;
-  private static final Logger LOG = LoggerFactory.getLogger(SimpleSchedulerQuartzJobBeanSetup.class);
+    private String cronExpresson;
+    private String groupName;
+    private String jobName;
+    private String quartzJobBean;
+    private Map<String, Object> dataMap;
+    private boolean fireImmediately;
+    private static final Logger log = LoggerFactory.getLogger(SimpleSchedulerQuartzJobBeanSetup.class);
 
-  @Autowired
-  @Qualifier("quartzScheduler")
-  private QuartzScheduler quartzScheduler;
+    @Autowired
+    @Qualifier("quartzScheduler")
+    private QuartzScheduler quartzScheduler;
 
-  @PostConstruct
-  private void schedule() {
-    try {
-      scheduleMetadataJob();
-    } catch (SchedulerException e) {
-      throw new RuntimeException(e);
+    @PostConstruct
+    private void schedule() {
+        try {
+            scheduleMetadataJob();
+        } catch (SchedulerException e) {
+            throw new RuntimeException(e);
+        }
     }
-  }
 
-  public void scheduleMetadataJob() throws SchedulerException {
-    try {
-      Class clazz = Class.forName(quartzJobBean);
-      quartzScheduler.scheduleJob("Podium", jobName, clazz, cronExpresson, dataMap, fireImmediately);
-    } catch (ClassNotFoundException e) {
-      //throw new RuntimeException(e);
+    public void scheduleMetadataJob() throws SchedulerException {
+        try {
+            Class clazz = Class.forName(quartzJobBean);
+            quartzScheduler.scheduleJob("Scheduler", jobName, clazz, cronExpresson, dataMap, fireImmediately);
+        } catch (ClassNotFoundException e) {
+            //swallow the exception when
+        }
     }
-  }
 
-  public void setCronExpresson(String cronExpresson) {
-    this.cronExpresson = cronExpresson;
-  }
+    public void setCronExpresson(String cronExpresson) {
+        this.cronExpresson = cronExpresson;
+    }
 
-  public void setGroupName(String groupName) {
-    this.groupName = groupName;
-  }
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
+    }
 
-  public void setJobName(String jobName) {
-    this.jobName = jobName;
-  }
+    public void setJobName(String jobName) {
+        this.jobName = jobName;
+    }
 
-  public void setQuartzJobBean(String quartzJobBean) {
-    this.quartzJobBean = quartzJobBean;
-  }
+    public void setQuartzJobBean(String quartzJobBean) {
+        this.quartzJobBean = quartzJobBean;
+    }
 
-  public void setDataMap(Map<String, Object> dataMap) {
-    this.dataMap = dataMap;
-  }
+    public void setDataMap(Map<String, Object> dataMap) {
+        this.dataMap = dataMap;
+    }
 
-  public void setQuartzScheduler(QuartzScheduler quartzScheduler) {
-    this.quartzScheduler = quartzScheduler;
-  }
+    public void setQuartzScheduler(QuartzScheduler quartzScheduler) {
+        this.quartzScheduler = quartzScheduler;
+    }
 
-  public void setFireImmediately(boolean fireImmediately) {
-    this.fireImmediately = fireImmediately;
-  }
+    public void setFireImmediately(boolean fireImmediately) {
+        this.fireImmediately = fireImmediately;
+    }
 }

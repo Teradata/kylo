@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by sr186054 on 9/24/15.
+ * Hold information about a job
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class JobInfo {

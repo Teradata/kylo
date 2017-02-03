@@ -25,47 +25,63 @@ import com.thinkbiganalytics.scheduler.TriggerInfo;
 import java.util.Collection;
 
 /**
- * Created by sr186054 on 4/14/16.
+ * Check for status information for triggers
  */
 public class ScheduledJobState {
 
 
-  public static boolean isRunning(Collection<TriggerInfo> triggerInfos) {
-    boolean running = false;
-    if (triggerInfos != null) {
-      for (TriggerInfo triggerInfo : triggerInfos) {
-        running = triggerInfo.getState().equals(TriggerInfo.TriggerState.BLOCKED) || triggerInfo.isSimpleTrigger();
-        if (running) {
-          break;
+    /**
+     * Check to see if a list of triggers have at least 1 triggerInfo that is running
+     *
+     * @param triggerInfos a collection of trigger info
+     * @return {@code true} if the list of triggerInfos have at least 1 that is running, {@code false} if none of the triggerInfos are running
+     */
+    public static boolean isRunning(Collection<TriggerInfo> triggerInfos) {
+        boolean running = false;
+        if (triggerInfos != null) {
+            for (TriggerInfo triggerInfo : triggerInfos) {
+                running = triggerInfo.getState().equals(TriggerInfo.TriggerState.BLOCKED) || triggerInfo.isSimpleTrigger();
+                if (running) {
+                    break;
+                }
+            }
         }
-      }
+        return running;
     }
-    return running;
-  }
 
-  public static boolean isPaused(Collection<TriggerInfo> triggerInfos) {
-    boolean paused = false;
-    if (triggerInfos != null) {
-      for (TriggerInfo triggerInfo : triggerInfos) {
-        paused = triggerInfo.getState().equals(TriggerInfo.TriggerState.PAUSED);
-        if (paused) {
-          break;
+    /**
+     * Check to see if a list of triggers have at least 1 triggerInfo that is paused
+     * @param triggerInfos a collection of trigger info
+     * @return {@code true} if the list of triggerInfos have at least 1 that is paused, {@code false} if none of the triggerInfos are paused
+     */
+    public static boolean isPaused(Collection<TriggerInfo> triggerInfos) {
+        boolean paused = false;
+        if (triggerInfos != null) {
+            for (TriggerInfo triggerInfo : triggerInfos) {
+                paused = triggerInfo.getState().equals(TriggerInfo.TriggerState.PAUSED);
+                if (paused) {
+                    break;
+                }
+            }
         }
-      }
+        return paused;
     }
-    return paused;
-  }
 
-  public static boolean isScheduled(Collection<TriggerInfo> triggerInfos) {
-    boolean scheduled = false;
-    if (triggerInfos != null) {
-      for (TriggerInfo triggerInfo : triggerInfos) {
-        if (triggerInfo.isScheduled()) {
-          scheduled = true;
-          break;
+    /**
+     * Check to see if a list of triggers have at least 1 triggerInfo that is scheduled
+     * @param triggerInfos a collection of trigger info
+     * @return {@code true} if the list of triggerInfos have at least 1 that is scheduled, {@code false} if none of the triggerInfos are scheduled
+     */
+    public static boolean isScheduled(Collection<TriggerInfo> triggerInfos) {
+        boolean scheduled = false;
+        if (triggerInfos != null) {
+            for (TriggerInfo triggerInfo : triggerInfos) {
+                if (triggerInfo.isScheduled()) {
+                    scheduled = true;
+                    break;
+                }
+            }
         }
-      }
+        return scheduled;
     }
-    return scheduled;
-  }
 }

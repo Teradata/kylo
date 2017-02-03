@@ -31,7 +31,7 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 
 /**
- * Created by matthutton on 3/12/16.
+ *
  */
 public class SimpleSchedulerSetupTest {
 
@@ -63,6 +63,7 @@ public class SimpleSchedulerSetupTest {
     }
 
     static class TestJob {
+
         public void run() {
             //
         }

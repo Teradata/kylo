@@ -24,7 +24,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * Created by sr186054 on 4/14/16.
+ * a schedule identifier for the user interface representing both JobIdentifier and TriggerIdentifiers
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ScheduleIdentifier {

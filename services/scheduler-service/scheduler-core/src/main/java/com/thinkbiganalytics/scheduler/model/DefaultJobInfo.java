@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by sr186054 on 9/24/15.
+ * JobInformation
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DefaultJobInfo implements JobInfo {

@@ -25,9 +25,10 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
 /**
- * Created by matthutton on 3/11/16.
+ *
  */
 public class MockJob implements Job {
+
     public MockJob() {
 
     }

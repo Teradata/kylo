@@ -21,7 +21,7 @@ package com.thinkbiganalytics.scheduler;
  */
 
 /**
- * Thrown when an execption occurs while interacting with the {@link JobScheduler}
+ * Thrown when an exception occurs while interacting with the {@link JobScheduler}
  */
 public class JobSchedulerException extends Exception {
 

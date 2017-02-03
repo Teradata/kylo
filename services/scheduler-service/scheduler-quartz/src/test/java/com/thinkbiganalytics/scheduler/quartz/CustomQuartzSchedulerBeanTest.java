@@ -39,15 +39,15 @@ public class CustomQuartzSchedulerBeanTest {
     CustomQuartzSchedulerBean toTest;
 
     @Mock
-    CronTriggerFactoryBean             ctfb;
+    CronTriggerFactoryBean ctfb;
     @Mock
-    JobDetail                          jobDetail;
+    JobDetail jobDetail;
     @Mock
     MethodInvokingJobDetailFactoryBean mijdfb;
     @Mock
     QuartzScheduler scheduler;
     @Mock
-    Trigger                            trigger;
+    Trigger trigger;
 
     @Before
     public void before() {
@@ -70,7 +70,7 @@ public class CustomQuartzSchedulerBeanTest {
 
     @Test
     public void afterPropertiesSetJobTestJobDetailAndTriggerAreNullAndMethodInvokingJobDetailFactoryBeanNotNull()
-            throws Exception {
+        throws Exception {
         toTest.setCronTriggerFactoryBean(ctfb);
         toTest.setJobDetail(null);
         toTest.setMethodInvokingJobDetailFactoryBean(mijdfb);

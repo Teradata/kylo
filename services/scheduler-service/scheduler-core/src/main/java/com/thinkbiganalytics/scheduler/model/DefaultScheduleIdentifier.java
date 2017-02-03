@@ -27,7 +27,7 @@ import com.thinkbiganalytics.scheduler.ScheduleIdentifier;
 import com.thinkbiganalytics.scheduler.support.IdentifierUtil;
 
 /**
- * Created by sr186054 on 9/23/15.
+ * a base identifier for jobs and triggers
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DefaultScheduleIdentifier implements ScheduleIdentifier {

@@ -20,16 +20,19 @@ package com.thinkbiganalytics.scheduler.support;
  * #L%
  */
 
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * Created by sr186054 on 9/25/15.
+ * Ensure the unique identifier is working
  */
 public class IdentifierUtilTest {
 
     @Test
     public void testId(){
-        IdentifierUtil.createUniqueName("test",10);
+        String name1 = IdentifierUtil.createUniqueName("test", 10);
+        String name2 = IdentifierUtil.createUniqueName("test", 10);
 
+        Assert.assertNotEquals(name1, name2);
     }
 }

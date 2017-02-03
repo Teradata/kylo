@@ -28,23 +28,64 @@ import java.util.Map;
  */
 public interface JobInfo {
 
-  JobIdentifier getJobIdentifier();
+    /**
+     * Return the job identifier
+     *
+     * @return the identifier for the scheduled job
+     */
+    JobIdentifier getJobIdentifier();
 
-  void setJobIdentifier(JobIdentifier jobIdentifier);
+    /**
+     * set the job identifier
+     * @param jobIdentifier the identifier for the scheduled job
+     */
+    void setJobIdentifier(JobIdentifier jobIdentifier);
 
-  List<TriggerInfo> getTriggers();
+    /**
+     * Return the list of triggers associated with the job
+     * @return the list of triggers associated with the job
+     */
+    List<TriggerInfo> getTriggers();
 
-  void setTriggers(List<TriggerInfo> triggers);
+    /**
+     * set the triggers on this job
+     * @param triggers the triggers associated with th job
+     */
+    void setTriggers(List<TriggerInfo> triggers);
 
-  String getDescription();
+    /**
+     * Return a description about the job
+     * @return a description about the job
+     */
+    String getDescription();
 
-  void setDescription(String description);
+    /**
+     * set a description about the job
+     * @param description a description about the job
+     */
+    void setDescription(String description);
 
-  Class getJobClass();
+    /**
+     * Return the class associated with this job
+     * @return the class associated with this job
+     */
+    Class getJobClass();
 
-  void setJobClass(Class jobClass);
+    /**
+     * set the class associated with this job
+     * @param jobClass the class associated with this job
+     */
+    void setJobClass(Class jobClass);
 
-  Map<String, Object> getJobData();
+    /**
+     * Return any additional data for this job
+     * @return any additional data for this job
+     */
+    Map<String, Object> getJobData();
 
-  void setJobData(Map<String, Object> jobData);
+    /**
+     * set any additional data for this job
+     * @param jobData any additional data for this job
+     */
+    void setJobData(Map<String, Object> jobData);
 }

@@ -40,9 +40,8 @@ import java.util.Date;
 import static org.junit.Assert.assertNotNull;
 
 /**
- * Created by matthutton on 3/11/16.
+ *
  */
-
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = {"classpath:/application-context.xml"})
 public class AutowiringSpringBeanJobFactoryTest {

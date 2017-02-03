@@ -72,95 +72,158 @@ public interface JobScheduler {
 
   /**
    * Schedule a Job to run with a specific interval starting now
-   *
-   * @param period interval in milliseconds
+   * @param jobIdentifier a job identifier
+   * @param runnable a runnable task
+   * @param period interval in millis
+   * @throws JobSchedulerException
    */
   void scheduleAtFixedRate(JobIdentifier jobIdentifier, Runnable runnable, long period) throws JobSchedulerException;
 
-  //Cron Utils
+    /**
+     * Return the next fire time for a cron expression
+     *
+     * @param cronExpression a cron expression
+     * @return the next fire time
+     */
   Date getNextFireTime(String cronExpression) throws ParseException;
 
+  /**
+   *  Return the next fire time for a cron expression from a previous fire time
+   * @param lastFireTime  a previous fire time
+   * @param cronExpression a cron expression
+   * @return the next fire time, relative to the lastFireTime
+   * @throws ParseException
+   */
   Date getNextFireTime(Date lastFireTime, String cronExpression) throws ParseException;
 
+  /**
+   * Return a list of the next fire times for a cron expression
+   * @param cronExpression a cron expression
+   * @param count the number of dates to return
+   * @return a list of dates
+   * @throws ParseException
+   */
   List<Date> getNextFireTimes(String cronExpression, Integer count) throws ParseException;
 
+  /**
+   * Return the previous fire time for a cron expression
+   * @param cronExpression a cron expression
+   * @return the previous fire time
+   * @throws ParseException
+   */
   Date getPreviousFireTime(String cronExpression) throws ParseException;
 
+  /**
+   * Return the previous time from lastFireTime for a cron expression
+   * @param lastFireTime the previous fire time
+   * @param cronExpression a cron expression
+   * @return the previous time from lastFireTime for a cron expression
+   * @throws ParseException
+   */
   Date getPreviousFireTime(Date lastFireTime, String cronExpression) throws ParseException;
 
+  /**
+   * Return a list of previous fire times for a cron expression
+   * @param cronExpression a cron expression
+   * @param count the number of dates to return
+   * @return a list of previous fire times for a cron expression
+   * @throws ParseException
+   */
   List<Date> getPreviousFireTimes(String cronExpression, Integer count) throws ParseException;
 
-  //Manage Scheduler and Jobs
-
   /**
-   * Start the Scheduler after it has been Paused Misfires on Triggers during the pause time will be ignored
+   * Start the Scheduler after it has been Paused
+   * @throws JobSchedulerException
    */
   void startScheduler() throws JobSchedulerException;
 
   /**
-   * Pause the Scheduler and Halts the firing of all Triggers Misfires on Triggers during the pause time will be ignored
+   * Pause the Scheduler and Halts the firing of all Triggers.
+   * @throws JobSchedulerException
    */
   void pauseScheduler() throws JobSchedulerException;
 
   /**
-   * Pause all Triggers Resume All is needed to be called Misfires on Triggers will be applied depending upon the Trigger misfire
-   * Instructions
+   * Pause all
+   * @throws JobSchedulerException
    */
   void pauseAll() throws JobSchedulerException;
 
   /**
-   * Resume All Triggers that have been Paused Misfires on Triggers will be applied depending upon the Trigger misfire
-   * Instructions
+   * Resume all jobs and triggers
+   * @throws JobSchedulerException
    */
   void resumeAll() throws JobSchedulerException;
 
   /**
    * Manually Trigger a specific Job
+   * @param jobIdentifier a job identifier
+   * @throws JobSchedulerException
    */
   void triggerJob(JobIdentifier jobIdentifier) throws JobSchedulerException;
 
   /**
-   * Pause a given Trigger
+   *  Pause a given Trigger
+   * @param triggerIdentifier a trigger identifier
+   * @throws JobSchedulerException
    */
   void pauseTrigger(TriggerIdentifier triggerIdentifier) throws JobSchedulerException;
 
   /**
    * Resume a give Trigger
+   * @param triggerIdentifier a trigger identifier
+   * @throws JobSchedulerException
    */
   void resumeTrigger(TriggerIdentifier triggerIdentifier) throws JobSchedulerException;
 
 
   /**
-   *
-   * @param jobIdentifier
+   * pause a given job
+   * @param jobIdentifier a job identifier
    * @throws JobSchedulerException
    */
   void pauseTriggersOnJob(JobIdentifier jobIdentifier) throws JobSchedulerException;
 
   /**
-   *
-   * @param jobIdentifier
+   * resume a given job
+   * @param jobIdentifier a job identifier
    * @throws JobSchedulerException
    */
   void resumeTriggersOnJob(JobIdentifier jobIdentifier) throws JobSchedulerException;
 
   /**
    * Update a Triggers Cron Expression
+   * @param triggerIdentifier a trigger identifier
+   * @param cronExpression an updated cron expression
+   * @throws JobSchedulerException
    */
   void updateTrigger(TriggerIdentifier triggerIdentifier, String cronExpression) throws JobSchedulerException;
 
   /**
    * Delete a Job
+   * @param jobIdentifier a job identifier
+   * @throws JobSchedulerException
    */
   void deleteJob(JobIdentifier jobIdentifier) throws JobSchedulerException;
 
   /**
-   * get a List of all the Jobs scheduled along with their current Triggers
+   * Return a list of jobs scheduled
+   * @return a list of jobs scheduled
+   * @throws JobSchedulerException
    */
   List<JobInfo> getJobs() throws JobSchedulerException;
 
+  /**
+   * Return Metadata and properties about the schedule
+   * @return Metadata and properties about the schedule
+   * @throws JobSchedulerException
+   */
   Map<String, Object> getMetaData() throws JobSchedulerException;
 
+  /**
+   * Listen when schedule events are fired.
+   * @param listener a scheduler listener
+   */
   void subscribeToJobSchedulerEvents(JobSchedulerListener listener);
 
 

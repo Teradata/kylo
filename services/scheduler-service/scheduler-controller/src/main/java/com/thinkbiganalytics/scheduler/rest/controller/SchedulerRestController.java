@@ -144,17 +144,6 @@ public class SchedulerRestController {
 
     }
 
-/*
-    @RequestMapping(value = "/api/v1/scheduler/job/delete", method = RequestMethod.POST)
-    @ResponseBody
-    public RestResponseStatus deleteJob(@RequestBody JobIdentifier jobIdentifier) throws JobSchedulerException {
-
-        quartzScheduler.deleteJob(jobIdentifier);
-        return RestResponseStatus.SUCCESS;
-
-    }
-*/
-
     @POST
     @Path("/jobs/trigger")
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
