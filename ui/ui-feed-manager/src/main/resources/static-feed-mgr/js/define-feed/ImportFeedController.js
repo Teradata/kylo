@@ -40,32 +40,23 @@
         self.categorySelectedItemChange = selectedItemChange;
         self.categorySearchTextChanged = searchTextChange;
         self.categoriesService = CategoriesService;
+
         self.model = {
             category: {}
         };
 
         function searchTextChange(text) {
-            //   $log.info('Text changed to ' + text);
         }
         function selectedItemChange(item) {
             if(item != null && item != undefined) {
                 self.model.category.name = item.name;
                 self.model.category.id = item.id;
                 self.model.category.systemName = item.systemName;
-                $http.get(RestUrlService.GET_FEEDS_URL).then(function(response) {
-                    self.existingFeedNames = {};
-                    angular.forEach(response.data, function(feed) {
-                        if (feed.categoryId === item.id) {
-                            self.existingFeedNames[feed.systemFeedName] = true;
-                        }
-                    });
-                });
             }
             else {
                 self.model.category.name = null;
                 self.model.category.id = null;
                 self.model.category.systemName = null;
-                self.existingFeedNames = {};
             }
         }
 
@@ -73,7 +64,7 @@
             // Appending dialog to document.body to cover sidenav in docs app
             var confirm = $mdDialog.confirm()
                 .title('Import Connecting Reusable Flow')
-                .textContent(' The Feed you are importing also contains its reusable flow.  Do you want to also import the reusable flow and version that as well?')
+                .textContent(' The Feed you are importing also contains its reusable flow.  Do you want to also import the reusable flow?')
                 .ariaLabel('Import Connecting Reusable Flow')
                 .targetEvent(ev)
                 .ok('Please do it!')
@@ -189,9 +180,18 @@
             else if (self.verifiedToCreateConnectingReusableTemplate && !self.createConnectingReusableTemplate) {
                 createConnectingReusableFlow = 'NO';
             }
+            if (angular.isDefined(self.categorySearchText) && self.categorySearchText != null && self.categorySearchText != "" && self.model.category.systemName == null) {
+                //error the category has text in it, but not selected
+                //attempt to get it
+                var category = CategoriesService.findCategoryByName(self.categorySearchText);
+                if (category != null) {
+                    self.model.category = category;
+                }
+            }
+
             FileUpload.uploadFileToUrl(file, uploadUrl, successFn, errorFn, {
                 overwrite: self.overwrite,
-                categorySystemName: angular.isDefined(self.model.category.systemName) ? self.model.category.systemName : "",
+                categorySystemName: angular.isDefined(self.model.category.systemName) && self.model.category.systemName != null ? self.model.category.systemName : "",
                 importConnectingReusableFlow: createConnectingReusableFlow
             });
         };

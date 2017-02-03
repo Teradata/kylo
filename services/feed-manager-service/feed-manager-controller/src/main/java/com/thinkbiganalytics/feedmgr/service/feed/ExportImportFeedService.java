@@ -33,6 +33,7 @@ import com.thinkbiganalytics.feedmgr.support.ZipFileUtil;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.security.AccessController;
+import com.thinkbiganalytics.support.FeedNameUtil;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -46,7 +47,6 @@ import java.io.InputStream;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 
 import javax.inject.Inject;
 
@@ -252,13 +252,14 @@ public class ExportImportFeedService {
         final ImportFeed feed = readFeedJson(fileName, content);
         FeedMetadata metadata = ObjectMapperSerializer.deserialize(feed.getFeedJson(), FeedMetadata.class);
 
-        FeedMetadata existingFeed = metadataAccess.read(() -> metadataService.getFeedByName(metadata.getSystemCategoryName(), metadata.getSystemFeedName()));
+        String feedCategory = optionsCategory != null ? optionsCategory.getSystemName() : metadata.getSystemCategoryName();
+        FeedMetadata existingFeed = metadataAccess.read(() -> metadataService.getFeedByName(feedCategory, metadata.getSystemFeedName()));
         if (existingFeed != null && !importOptions.isOverwrite()) {
             //if we dont have permission to overwrite then return with error that feed already exists
             feed.setSuccess(false);
             ExportImportTemplateService.ImportTemplate importTemplate = new ExportImportTemplateService.ImportTemplate(fileName);
             feed.setTemplate(importTemplate);
-            feed.addErrorMessage(existingFeed, "The feed " + existingFeed.getCategoryAndFeedDisplayName()
+            feed.addErrorMessage(existingFeed, "The feed " + FeedNameUtil.fullName(feedCategory, metadata.getSystemFeedName())
                                                + " already exists.  If you would like to proceed with this import please check the box to 'Overwrite' this feed");
             return feed;
         }
