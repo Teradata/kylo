@@ -65,8 +65,9 @@ md-list .md-button:not(.md-no-style) {
 }
 
 md-list-item.with-padding.md-no-proxy {
-  padding: 16px !important;
+  padding: 8px !important;
 }
+
 
 md-list-item .md-no-style, md-list-item:not(.with-padding).md-no-proxy {
   padding: 0px !important;
@@ -950,4 +951,21 @@ md-select.rows-per-page .md-select-value {
   border-bottom-style: inherit;
   min-width: inherit;
   padding: inherit;
+}
+
+.filter-help {
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 7px 8px -4px rgba(0, 0, 0, 0.2),
+  0 13px 19px 2px rgba(0, 0, 0, 0.14),
+  0 5px 24px 4px rgba(0, 0, 0, 0.12);
+  width: 350px;
+}
+
+.filter-help-item {
+  display: flex;
+  padding: 8px;
+  position: relative;
+  transition: background 0.15s linear;
+  width: auto;
 }

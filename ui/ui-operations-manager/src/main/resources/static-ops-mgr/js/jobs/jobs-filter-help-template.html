@@ -1,0 +1,64 @@
+<div class="filter-help"
+     aria-label="Filter help"
+     role="listbox" layout-fill>
+  <md-content style="max-height: 320px;overflow-y: auto;overflow-x:hidden" layout="column">
+    <md-list>
+      <md-list-item class="filter-help-item layout-padding-left-right  with-padding" layout="column">
+        <span class="md-subheader">Filter Help</span>
+      </md-list-item>
+
+      <md-divider></md-divider>
+      <mid-list-item class="layout-padding-left-right  with-padding">
+        <span class="md-subheader">Filter Syntax</span>
+      </mid-list-item>
+
+      <mid-list-item class="filter-help-item layout-padding-left-right  with-padding" layout="column" layout-align="start start">
+        <span>{field} {operator} {value}</span>
+
+        <span style="padding:5px;"></span>
+        <span class="hint">'%' is used for a wildcard when using the '=~', LIKE, operator</span>
+        <span style="padding:5px;"></span>
+        <span class="hint"> If no field/operator is specified a LIKE filter on the job name will be performed</span>
+      </mid-list-item>
+
+
+      <md-divider></md-divider>
+      <mid-list-item class="layout-padding-left-right  with-padding">
+        <span class="md-subheader">Filter Fields</span>
+      </mid-list-item>
+      <mid-list-item class="filter-help-item layout-padding-left-right  with-padding"
+                     tabindex="-1"
+                     role="option"
+                     ng-repeat="item in ctrl.filterHelpFields" layout="column" layout-align="start start">
+        <span class="hint">{{item.displayName}}</span>
+        <span>{{ item.description}}</span>
+      </mid-list-item>
+      <md-divider></md-divider>
+
+      <mid-list-item class="layout-padding-left-right with-padding">
+        <span class="md-subheader">Filter Operators</span>
+      </mid-list-item>
+      <md-list-item class="filter-help-item layout-padding-left-right  with-padding"
+                    tabindex="-1"
+                    role="option"
+                    ng-repeat="item in ctrl.filterHelpOperators" layout="column" layout-align="start start">
+        <span class="hint">{{item.displayName}}</span>
+        <span>{{ item.description}}</span>
+      </md-list-item>
+      <md-divider></md-divider>
+
+      <mid-list-item class="layout-padding-left-right  with-padding">
+        <span class="md-subheader">Filter Examples</span>
+      </mid-list-item>
+      <mid-list-item class="filter-help-item layout-padding-left-right  with-padding"
+                     tabindex="-1"
+                     role="option"
+                     ng-repeat="item in ctrl.filterHelpExamples" layout="column" layout-align="start start">
+        <span class="hint">{{item.displayName}}</span>
+        <span>{{ item.description}}</span>
+      </mid-list-item>
+
+    </md-list>
+
+  </md-content>
+</div>

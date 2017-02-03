@@ -24,6 +24,9 @@
             <input ng-model="$cardFilterHeader.filterModel" ng-model-options="$cardFilterHeader.filterModelOptions"/>
         </md-input-container>
  <div layout="row" layout-align="space-between center">
+   <md-button aria-label="Filter Help" class="md-icon-button filter-help-button" ng-click="$cardFilterHeader.showFilterHelpPanel($event)" ng-if="$cardFilterHeader.renderHelp">
+     <ng-md-icon md-icon icon="help" size="15" style="fill:grey;"></ng-md-icon>
+   </md-button>
            <tba-view-type-selection view-type="$cardFilterHeader.viewType" style="margin-left:10px;"></tba-view-type-selection>
    <tba-options-menu sort-options="$cardFilterHeader.sortOptions" show-pagination="false" menu-key="{{$cardFilterHeader.pageName}}" selected-option="$cardFilterHeader.selectedOption"
                      opened-menu="$cardFilterHeader.menuOpen" additional-options="$cardFilterHeader.additionalOptions" selected-additional-option="$cardFilterHeader.selectedAdditionalOption"

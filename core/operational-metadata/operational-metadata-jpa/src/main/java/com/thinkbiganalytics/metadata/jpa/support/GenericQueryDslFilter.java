@@ -32,11 +32,13 @@ import com.querydsl.core.types.dsl.EntityPathBase;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.core.types.dsl.StringPath;
+import com.thinkbiganalytics.Formatters;
 import com.thinkbiganalytics.metadata.api.SearchCriteria;
 
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.ConvertUtilsBean;
 import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -149,7 +151,7 @@ public class GenericQueryDslFilter {
                         }
 
                         if(value != null){
-                            Object convertedValue = getValueForQuery(p,op,value);
+                            Object convertedValue = getValueForQuery(p, filter.getKey(), op, value);
                             if(convertedValue != null && convertedValue instanceof Collection){
                                 op = Ops.IN;
                             }
@@ -202,7 +204,6 @@ public class GenericQueryDslFilter {
 
             //Pattern used to match the <column><operator><value>
             String validOperatorsRegEx = operators.keySet().stream().map(key -> key).collect(Collectors.joining("|"));
-            //Pattern columnOperatorValuePattern = Pattern.compile("(.*)(==|>=|<=|=~|=IN|<|>)(.*)");
             Pattern columnOperatorValuePattern = Pattern.compile("(.*)("+validOperatorsRegEx+")(.*)");
 
             filterConditionsList.stream().forEach(filter -> {
@@ -242,6 +243,20 @@ public class GenericQueryDslFilter {
         }
     }
 
+    private static Long convertDateTimeStringToMillis(String filterKey, Object value) {
+        Long millis = null;
+        if (CommonFilterTranslations.isDateStoredAsMillisField(filterKey) && value instanceof String) {
+            //attempt to convert the incoming value to a long
+            try {
+                DateTime dateTime = Formatters.parseDateTime((String) value);
+                millis = dateTime.getMillis();
+            } catch (IllegalArgumentException e) {
+                //uanble to parse the value
+            }
+        }
+        return millis;
+    }
+
     /**
      * converts the String filter value to the proper QueryDSL Type based upon the Path provided
      * @param path the path to the field to query
@@ -249,12 +264,12 @@ public class GenericQueryDslFilter {
      * @param value the value to match
      * @return the object value applying a comma separated string to a list of objects for IN clause functions
      */
-    private static Object getValueForQuery(Path path, Operator op, Object value) {
+    private static Object getValueForQuery(Path path, String filterKey, Operator op, Object value) {
         Class type = path.getType();
         Object o = null;
+        boolean isDateTimeMillisField = CommonFilterTranslations.isDateStoredAsMillisField(filterKey);
 
-
-         if(Ops.EQ.equals(op) || Ops.EQ_IGNORE_CASE.equals(op)){
+        if (Ops.EQ.equals(op) || Ops.EQ_IGNORE_CASE.equals(op)) {
             // handle the in clause correctly
             if(value instanceof String){
                 String sValue = (String) value;
@@ -266,7 +281,13 @@ public class GenericQueryDslFilter {
                 List<Object> convertedItems = new ArrayList<>();
                 for(String item: items){
                     try {
-                     Object convertedListItem = beanUtilsBean.getConvertUtils().convert(item, type);
+                        Object convertedListItem = null;
+                        if (isDateTimeMillisField) {
+                            convertedListItem = convertDateTimeStringToMillis(filterKey, item);
+                        }
+                        if (convertedListItem == null) {
+                            convertedListItem = beanUtilsBean.getConvertUtils().convert(item, type);
+                        }
                         convertedItems.add(convertedListItem);
                     }catch (Exception e){
                         //handle conversion error
@@ -277,7 +298,12 @@ public class GenericQueryDslFilter {
             }
         }
         else {
-              o = beanUtilsBean.getConvertUtils().convert(value, type);
+            if (isDateTimeMillisField) {
+                o = convertDateTimeStringToMillis(filterKey, value);
+            }
+            if (o == null) {
+                o = beanUtilsBean.getConvertUtils().convert(value, type);
+            }
          }
        return o;
     }

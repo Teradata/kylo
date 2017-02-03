@@ -30,7 +30,8 @@ angular.module(COMMON_APP_MODULE_NAME).directive("tbaCardFilterHeader", function
             onSelectedOption: '&',
             additionalOptions: '=?',
             onSelectedAdditionalOption: "&?",
-            onMenuOpen: '&?'
+            onMenuOpen: '&?',
+            onShowFilterHelp: '&?'
         },
         controllerAs:'$cardFilterHeader',
         templateUrl:'js/shared/card-filter-header/card-filter-header-template.html',
@@ -44,6 +45,9 @@ angular.module(COMMON_APP_MODULE_NAME).directive("tbaCardFilterHeader", function
         controller: function($scope, $element, TableOptionsService, PaginationDataService){
             var self = this;
             self.filterModelOptions = self.filterModelOptions || {};
+
+            self.renderHelp = angular.isDefined(self.onShowFilterHelp);
+
 
             /**
              * Called when a user Clicks on a table Option
@@ -61,6 +65,12 @@ angular.module(COMMON_APP_MODULE_NAME).directive("tbaCardFilterHeader", function
             this.selectedAdditionalOption = function (option) {
                 if (self.onSelectedAdditionalOption) {
                     self.onSelectedAdditionalOption()(option);
+                }
+            }
+
+            this.showFilterHelpPanel = function (ev) {
+                if (self.onShowFilterHelp) {
+                    self.onShowFilterHelp()(ev);
                 }
             }
 

@@ -20,6 +20,7 @@ package com.thinkbiganalytics.metadata.jpa.support;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.querydsl.core.types.dsl.EntityPathBase;
@@ -50,13 +51,31 @@ public class CommonFilterTranslations {
             .put("jobName", "jobInstance.jobName")
             .put("jobStartTime", "startTimeMillis")
             .put("jobEndTime", "endTimeMillis")
+            .put("startTime", "startTimeMillis")
+            .put("endTime", "endTimeMillis")
+            .put("starttime", "startTimeMillis")
+            .put("endtime", "endTimeMillis")
             .put("executionId","jobExecutionId")
             .put("executionid", "jobExecutionId")
             .put("job", "jobInstance.jobName").build();
 
+    static final ImmutableList<String> dateToMillisFields =
+        new ImmutableList.Builder<String>()
+            .add("jobStartTime")
+            .add("startTime")
+            .add("starttime")
+            .add("jobEndTime")
+            .add("endTime")
+            .add("endtime")
+            .add("startTimeMillis")
+            .add("endTimeMillis").build();
+
 
     static final ImmutableMap<Class<? extends EntityPathBase>, Map<String,String>> queryDslFilters = new ImmutableMap.Builder<Class<? extends EntityPathBase>, Map<String,String>>().put(QJpaBatchJobExecution.class,jobExecutionFilters).build();
 
+    public static boolean isDateStoredAsMillisField(String filterField) {
+        return dateToMillisFields.contains(filterField);
+    }
 
     /**
      * Check to see if the incoming path,column exist as a filter that should be resolved to a more complex string

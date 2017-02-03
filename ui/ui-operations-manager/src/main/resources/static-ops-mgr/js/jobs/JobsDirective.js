@@ -41,7 +41,7 @@
         };
     }
 
-    function JobsCardController($scope, $http, $stateParams, $interval, $timeout, $q, $mdToast, JobData, TableOptionsService, PaginationDataService, AlertsService, StateService, IconService,
+    function JobsCardController($scope, $http, $stateParams, $interval, $timeout, $q, $mdToast, $mdPanel, JobData, TableOptionsService, PaginationDataService, AlertsService, StateService, IconService,
                                 TabService,
                                 AccessControlService, BroadcastService) {
         var self = this;
@@ -165,7 +165,6 @@
                 TableOptionsService.saveSortOption(self.pageName, currentOption)
             }
             return sortOptions;
-
         }
 
         /**
@@ -281,6 +280,12 @@
                     }
                     params.filter += "jobInstance.feed.name=="+self.feedFilter;
                 }
+                //if the filter doesnt contain an operator, then default it to look for the job name
+                if (params.filter != '' && params.filter != null && !containsFilterOperator(params.filter)) {
+                    params.filter = 'job=~%' + params.filter;
+                }
+
+
                 var query = tabTitle != 'All' ? tabTitle.toLowerCase() : '';
                // console.log('QUERY WITH ',params)
 
@@ -290,6 +295,18 @@
 
             return self.deferred;
 
+        }
+
+        function containsFilterOperator(filterStr) {
+            var contains = false;
+            var ops = ['==', '>', '<', '>=', '<=', '=~']
+            for (var i = 0; i < ops.length; i++) {
+                contains = filterStr.indexOf(ops[i]) >= 0;
+                if (contains) {
+                    break;
+                }
+            }
+            return contains;
         }
 
         function updateJob(instanceId, newJob) {
@@ -465,6 +482,63 @@
             })
         };
 
+        this.filterHelpOperators = [];
+        this.filterHelpFields = []
+        this.filterHelpExamples = [];
+
+        var newHelpItem = function (label, description) {
+            return {displayName: label, description: description};
+        }
+
+        this.filterHelpOperators.push(newHelpItem("Equals", "=="));
+        this.filterHelpOperators.push(newHelpItem("Like condition", "=~"));
+        this.filterHelpOperators.push(newHelpItem("In Clause", "Comma separated surrounded with quote    ==\"value1,value2\"   "));
+        this.filterHelpOperators.push(newHelpItem("Greater than, less than", ">,>=,<,<="));
+        this.filterHelpOperators.push(newHelpItem("Multiple Filters", "Filers separated by a comma    field1==value,field2==value  "));
+
+        this.filterHelpFields.push(newHelpItem("Filter on a feed name", "feed"));
+        this.filterHelpFields.push(newHelpItem("Filter on a job name", "job"));
+        this.filterHelpFields.push(newHelpItem("Filter on a job start time", "jobStartTime"));
+        this.filterHelpFields.push(newHelpItem("Filter on a job end time", "jobEndTime"));
+        this.filterHelpFields.push(newHelpItem("Filter on a job id", "executionId"));
+        this.filterHelpFields.push(newHelpItem("Start time date part filters", "startYear,startMonth,startDay"));
+        this.filterHelpFields.push(newHelpItem("End time date part filters", "endYear,endMonth,endDay"));
+
+        this.filterHelpExamples.push(newHelpItem("Find job names that equal 'my.job1' ", "job==my.job1"));
+        this.filterHelpExamples.push(newHelpItem("Find job names starting with 'my' ", "job=~my"));
+        this.filterHelpExamples.push(newHelpItem("Find jobs for 'my.job1' or 'my.job2' ", "job==\"my.job1,my.job2\""));
+        this.filterHelpExamples.push(newHelpItem("Find 'my.job1' starting in 2017 ", "job==my.job1,startYear==2017"));
+        this.filterHelpExamples.push(newHelpItem("Find jobs that started on February 1st 2017", "startTime>=2017-02-01,startTime<2017-02-02"));
+
+        this.showFilterHelpPanel = function (ev) {
+            var position = $mdPanel.newPanelPosition()
+                .relativeTo('.filter-help-button')
+                .addPanelPosition($mdPanel.xPosition.ALIGN_END, $mdPanel.yPosition.BELOW);
+
+            var config = {
+                attachTo: angular.element(document.body),
+                controller: JobFilterHelpPanelMenuCtrl,
+                controllerAs: 'ctrl',
+                templateUrl: 'js/jobs/jobs-filter-help-template.html',
+                panelClass: 'filter-help',
+                position: position,
+                locals: {
+                    'filterHelpExamples': self.filterHelpExamples,
+                    'filterHelpOperators': self.filterHelpOperators,
+                    'filterHelpFields': self.filterHelpFields
+                },
+                openFrom: ev,
+                clickOutsideToClose: true,
+                escapeToClose: true,
+                focusOnOpen: false,
+                zIndex: 2
+            };
+
+            $mdPanel.open(config);
+        };
+
+
+
         $scope.$on('$destroy', function() {
             clearAllTimeouts();
         });
@@ -479,3 +553,8 @@
     angular.module(MODULE_OPERATIONS).controller("JobsCardController", JobsCardController);
     angular.module(MODULE_OPERATIONS).directive('tbaJobs', directive);
 })();
+
+function JobFilterHelpPanelMenuCtrl(mdPanelRef, $timeout) {
+    this._mdPanelRef = mdPanelRef;
+
+}
