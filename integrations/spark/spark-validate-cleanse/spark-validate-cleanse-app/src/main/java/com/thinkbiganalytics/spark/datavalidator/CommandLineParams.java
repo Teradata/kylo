@@ -34,7 +34,14 @@ public class CommandLineParams implements Serializable {
     @Parameter(names = {"-h", "--hiveConf"}, description = "Hive configuration parameters", converter = ParameterConverter.class)
     private List<Param> hiveParams;
 
+    @Parameter(names = "--storageLevel", description = "Storage for RDD persistance")
+    private String storageLevel = "MEMORY_AND_DISK";
+
     public List<Param> getHiveParams() {
         return hiveParams == null ? new ArrayList<Param>(0) : hiveParams;
+    }
+
+    public String getStorageLevel() {
+        return storageLevel;
     }
 }
