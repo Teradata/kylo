@@ -58,7 +58,7 @@ export PATH=\$JAVA_HOME/bin:\$PATH
 export KYLO_UI_OPTS=
 [ -f $rpmInstallDir/encrypt.key ] && export ENCRYPT_KEY="\$(cat $rpmInstallDir/encrypt.key)"
 JAVA_DEBUG_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=9997
-java \$KYLO_UI_OPTS \$JAVA_DEBUG_OPTS -cp $rpmInstallDir/kylo-ui/conf:$rpmInstallDir/kylo-ui/lib/*:$rpmInstallDir/kylo-ui/plugin/* com.thinkbiganalytics.KyloDataLakeUiApplication --pgrep-marker=$pgrepMarkerKyloUi > /var/log/kylo-ui/kylo-ui.log 2>&1 &
+java \$KYLO_UI_OPTS \$JAVA_DEBUG_OPTS -cp $rpmInstallDir/kylo-ui/conf:$rpmInstallDir/kylo-ui/lib/*:$rpmInstallDir/kylo-ui/plugin/* com.thinkbiganalytics.KyloUiApplication --pgrep-marker=$pgrepMarkerKyloUi > /var/log/kylo-ui/kylo-ui.log 2>&1 &
 EOF
 chmod +x $rpmInstallDir/kylo-ui/bin/run-kylo-ui.sh
 chmod +x $rpmInstallDir/kylo-ui/bin/run-kylo-ui-with-debug.sh

@@ -37,6 +37,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.kerberos.authentication.KerberosServiceAuthenticationProvider;
 import org.springframework.security.kerberos.web.authentication.SpnegoEntryPoint;
 import org.springframework.security.web.authentication.rememberme.RememberMeAuthenticationFilter;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
 import com.thinkbiganalytics.auth.jwt.JwtRememberMeServices;
@@ -81,7 +82,7 @@ public class KerberosWebSecurityConfigurer extends WebSecurityConfigurerAdapter 
             .rememberMe()
                 .rememberMeServices(rememberMeServices)
                 .and()
-            .addFilter(new RememberMeAuthenticationFilter(auth -> auth, rememberMeServices))
+            .addFilterBefore(new RememberMeAuthenticationFilter(auth -> auth, rememberMeServices), BasicAuthenticationFilter.class)
             .addFilterAfter(spnegoFilter(), RememberMeAuthenticationFilter.class)
             .httpBasic();
     }

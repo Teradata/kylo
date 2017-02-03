@@ -39,9 +39,11 @@ import org.springframework.security.kerberos.authentication.KerberosServiceAuthe
 import org.springframework.security.kerberos.web.authentication.SpnegoAuthenticationProcessingFilter;
 import org.springframework.security.kerberos.web.authentication.SpnegoEntryPoint;
 import org.springframework.security.web.authentication.rememberme.RememberMeAuthenticationFilter;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
 import com.thinkbiganalytics.auth.jwt.JwtRememberMeServices;
+import com.thinkbiganalytics.security.auth.kerberos.SpnegoValidationUserAuthenticationFilter;
 
 /**
  *
@@ -98,8 +100,8 @@ public class KerberosWebSecurityConfigurer extends WebSecurityConfigurerAdapter 
             .rememberMe()
                 .rememberMeServices(rememberMeServices)
                 .and()
-            .addFilter(new RememberMeAuthenticationFilter(auth -> auth, rememberMeServices))
-            .addFilterAfter(spnegoAuthenticationProcessingFilter(), RememberMeAuthenticationFilter.class)
+            .addFilterBefore(new RememberMeAuthenticationFilter(auth -> auth, rememberMeServices), BasicAuthenticationFilter.class)
+            .addFilterAfter(spnegoFilter(), RememberMeAuthenticationFilter.class)
             .httpBasic();
     }
 
@@ -111,8 +113,8 @@ public class KerberosWebSecurityConfigurer extends WebSecurityConfigurerAdapter 
     }
     
     @Bean
-    public SpnegoAuthenticationProcessingFilter spnegoAuthenticationProcessingFilter() throws Exception {
-        SpnegoAuthenticationProcessingFilter filter = new SpnegoAuthenticationProcessingFilter();
+    public SpnegoValidationUserAuthenticationFilter spnegoFilter() throws Exception {
+        SpnegoValidationUserAuthenticationFilter filter = new SpnegoValidationUserAuthenticationFilter();
         filter.setAuthenticationManager(authenticationManagerBean());
         return filter;
     }

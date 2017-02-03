@@ -29,14 +29,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.kerberos.authentication.KerberosServiceAuthenticationProvider;
 import org.springframework.security.kerberos.authentication.sun.SunJaasKerberosTicketValidator;
 import org.springframework.security.kerberos.web.authentication.SpnegoEntryPoint;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
 /**
  *
@@ -63,7 +59,9 @@ public class KerberosSpnegoConfiguration {
     public KerberosServiceAuthenticationProvider kerberosServiceAuthenticationProvider() throws IOException {
         KerberosServiceAuthenticationProvider provider = new KerberosServiceAuthenticationProvider();
         provider.setTicketValidator(sunJaasKerberosTicketValidator());
-        provider.setUserDetailsService(new DummyUserDetailsManager());
+        // Since this provider requires a UserDetailsService even though we do not use UserDetals
+        // set one here that only returns the a new UserDetails with the given username each time.
+        provider.setUserDetailsService(username -> new User(username, "", Collections.emptySet()));
         return provider;
     }
 
@@ -74,25 +72,5 @@ public class KerberosSpnegoConfiguration {
         ticketValidator.setKeyTabLocation(new FileSystemResource(keytabLocation));
         ticketValidator.setDebug(true);
         return ticketValidator;
-    }
-
-    /**
-     * Since the SPNEGO filer requires a UserDetailsManager we given it this one since we 
-     * do not use UserDetailsManager to load user info in Kylo.
-     */
-    private class DummyUserDetailsManager extends InMemoryUserDetailsManager {
-
-        public DummyUserDetailsManager() {
-            super(Collections.emptyList());
-        }
-        
-        /* (non-Javadoc)
-         * @see org.springframework.security.provisioning.InMemoryUserDetailsManager#loadUserByUsername(java.lang.String)
-         */
-        @Override
-        public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-            // Return a new dummy user each time from the already authenticated username.
-            return new User(username, "", Collections.singleton(new SimpleGrantedAuthority("admin")));
-        }
     }
 }

@@ -37,6 +37,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.rememberme.RememberMeAuthenticationFilter;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 import com.thinkbiganalytics.auth.AuthServiceAuthenticationProvider;
 import com.thinkbiganalytics.auth.AuthenticationService;
@@ -96,7 +97,7 @@ public class DefaultWebSecurityConfigurer extends WebSecurityConfigurerAdapter {
             .rememberMe()
                 .rememberMeServices(rememberMeServices)
                 .and()
-            .addFilter(new RememberMeAuthenticationFilter(auth -> auth, rememberMeServices))
+            .addFilterBefore(new RememberMeAuthenticationFilter(auth -> auth, rememberMeServices), BasicAuthenticationFilter.class)
             .httpBasic();
 
     }
