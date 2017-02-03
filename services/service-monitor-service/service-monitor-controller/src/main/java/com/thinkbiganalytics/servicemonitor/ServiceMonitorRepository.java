@@ -28,10 +28,10 @@ import java.util.List;
 
 public interface ServiceMonitorRepository {
 
-  /**
-   * Returns the status of services
-   *
-   * @return The status of services
-   */
-  List<ServiceStatusResponse> listServices();
+    /**
+     * Returns the status of services
+     *
+     * @return The status of services
+     */
+    List<ServiceStatusResponse> listServices();
 }

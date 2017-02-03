@@ -51,7 +51,7 @@ public class ServiceMonitorRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the list of all services and their health")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "Returns the services.", response = ServiceStatusResponse.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Returns the services.", response = ServiceStatusResponse.class, responseContainer = "List")
     )
     public Response listServices() {
         return Response.ok(serviceRepository.listServices()).build();

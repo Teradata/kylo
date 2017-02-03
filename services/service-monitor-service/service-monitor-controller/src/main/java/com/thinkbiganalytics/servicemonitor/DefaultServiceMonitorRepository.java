@@ -35,10 +35,10 @@ import javax.inject.Inject;
 @Component
 public class DefaultServiceMonitorRepository implements ServiceMonitorRepository {
 
-  @Inject
-  private ServiceMonitorManager serviceStatus;
+    @Inject
+    private ServiceMonitorManager serviceStatus;
 
-  public List<ServiceStatusResponse> listServices() {
-    return serviceStatus.doServiceCheck();
-  }
+    public List<ServiceStatusResponse> listServices() {
+        return serviceStatus.doServiceCheck();
+    }
 }
