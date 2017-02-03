@@ -44,10 +44,10 @@ public class KyloRestAuthConfig {
     @Value("${security.auth.kylo.login.url:http://localhost:8400/proxy}")
     private String loginUrl;
     
-    @Value("${security.auth.kylo.login.username}")
+    @Value("${security.auth.kylo.login.username:#{null}}")
     private String loginUser;
     
-    @Value("${security.auth.kylo.login.password}")
+    @Value("${security.auth.kylo.login.password:#{null}}")
     private String loginPassword;
 
     /**
