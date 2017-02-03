@@ -78,7 +78,6 @@
         }
 
         this.fetchSchedulerDetails = function() {
-         //   if(!this.fetchingMetadata) {
                 this.fetchingMetadata = true;
                 $http.get(API_URL_BASE + "/metadata").success(function (data) {
                     self.clearSchedulerDetails();
@@ -91,7 +90,6 @@
                     this.fetchingMetadata = false;
                     // console.log("failed to retrieve the jobs ")
                 });
-          //  }
         }
 
 
@@ -131,14 +129,11 @@ function justFiredJob(job){
 
 
         this.pauseScheduler = function(){
-          //  var proceed = confirm("Are you sure you want to pause the scheduler?");
-          //  if(proceed) {
                 $http.post(API_URL_BASE+"/pause").success(function (data) {
                     self.fetchSchedulerDetails();
                 }).error(function (xhr, status, err) {
                     console.log("failed to standby the scheduler  ", xhr, status, err)
                 });
-          //  }
         }
 
         this.resumeScheduler = function(){
@@ -267,26 +262,7 @@ function justFiredJob(job){
             this.fetchSchedulerDetails();
             this.fetchJobs();
         }
-        /**
 
-        this.clearRefreshInterval = function () {
-            if (self.refreshInterval != null) {
-                $interval.cancel(self.refreshInterval);
-                self.refreshInterval = null;
-                self.refreshIntervalSet = false;
-            }
-        }
-
-
-        this.setRefreshInterval = function () {
-            this.clearRefreshInterval();
-            if (self.refreshIntervalTime ) {
-                self.refreshInterval = $interval(function() {self.refresh();}, self.refreshIntervalTime);
-                self.refreshIntervalSet = true;
-
-            }
-        }
-*/
 
 
         this.init();

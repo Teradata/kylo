@@ -187,7 +187,6 @@
 
                 $http.get(JobData.LOAD_JOB_URL(self.jobExecutionId), {timeout: canceler.promise, params: params}).then(successFn, errorFn);
             }
-            // self.showProgress = true;
 
             return self.deferred;
 

@@ -61,10 +61,6 @@
             return PaginationDataService.paginationId(self.pageName);
         }
 
-        //      loadData();
-
-//        setRefreshInterval();
-
 
         $scope.$watch(function(){
             return self.viewType;

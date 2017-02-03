@@ -119,8 +119,11 @@
 
         $scope.$watch(function() {
             return self.filter;
-        }, function(newVal) {
-            return loadJobs(true).promise;
+        }, function (newVal, oldVal) {
+            if (newVal != oldVal) {
+                return loadJobs(true).promise;
+            }
+
         })
 
         this.onViewTypeChange = function(viewType) {

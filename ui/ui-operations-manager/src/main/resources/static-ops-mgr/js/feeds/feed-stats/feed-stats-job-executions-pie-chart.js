@@ -35,7 +35,7 @@
                 $scope.$on('$destroy', function () {
 
                 });
-            } //DOM manipulation\}
+            }
         }
 
     };

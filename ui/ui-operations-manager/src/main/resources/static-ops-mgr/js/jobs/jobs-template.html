@@ -50,13 +50,6 @@
                                        <ng-md-icon icon="{{job.icon}}" size="20" options='{"rotation": "clock"}' ></ng-md-icon>
                                        {{job.displayStatus}}</span>
                                 </div>
-                                <!--
-                                <div ng-if="vm.hideFeedColumn == false" flex="20" flex-sm="30" flex-xs="45" layout="column" class="item-column  md-list-item-text" ng-click="vm.jobDetails($event,job)">
-                                   <span class="item-title">{{job.feedName}}
-                                   </span>
-                                    <span class="column-title column-title-bottom">Feed</span>
-                                </div>
-                                -->
                                 <div flex="25" layout="column" hide show-gt-xs  show-lg show-xl show-sm show-md class="item-column  md-list-item-text" ng-click="vm.jobDetails($event,job)">
                                     <span class="item-title" ng-if="job.startTime">{{job.startTime | date: 'MMM d, yyyy HH:mm:ss'}}</span>
                                     <span class="item-title" ng-if="job.startTime == undefined"> N/A </span>
@@ -67,8 +60,6 @@
                                     <span class="column-title column-title-bottom">Run Time</span>
                                 </div>
                                 <div flex="20" flex-gt-md="20" layout="row" hide show-gt-sm class="item-column  md-list-item-text">
-                                   <!-- <md-button class="border-btn action-btn" ng-if="job.status =='FAILED'" ng-click="vm.restartJob($event,job)">RESTART</md-button> -->
-                                    <!-- <md-button class="border-btn action-btn" ng-if="job.status =='STARTED' || job.status =='STARTING'" ng-click="vm.stopJob($event,job)">STOP</md-button>-->
                                     <md-button class="border-btn action-btn" ng-if="job.status !='COMPLETED' && job.status !='FAILED' && job.status !='ABANDONED'" ng-click="vm.failJob($event,job)">FAIL
                                     </md-button>
                                     <md-button class="border-btn action-btn" ng-if="job.status =='FAILED'" ng-click="vm.abandonJob($event,job)">ABANDON</md-button>
@@ -133,8 +124,6 @@
                                     <td md-cell hide show-gt-md>{{job.runTime | time}}</td>
                                     <td md-cell >{{job.status}}</td>
                                     <td md-cell hide show-gt-md>
-                                      <!--   <md-button class="border-btn action-btn" ng-if="job.status =='FAILED'" ng-click="vm.restartJob($event,job)">RESTART</md-button>
-                                         <md-button class="border-btn action-btn" ng-if="job.status =='STARTED' || job.status =='STARTING'" ng-click="vm.stopJob($event,job)">STOP</md-button> -->
                                         <md-button class="border-btn action-btn" ng-if="job.status !='COMPLETED' && job.status !='FAILED'" ng-click="vm.failJob($event,job)">FAIL</md-button>
                                         <md-button class="border-btn action-btn" ng-if="job.status =='FAILED'" ng-click="vm.abandonJob($event,job)">ABANDON</md-button>
                                          <span ng-if="job.errorMessage != ''">
