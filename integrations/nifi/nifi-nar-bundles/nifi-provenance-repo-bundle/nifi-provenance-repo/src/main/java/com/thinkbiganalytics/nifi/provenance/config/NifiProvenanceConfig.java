@@ -34,6 +34,7 @@ import com.thinkbiganalytics.nifi.provenance.util.SpringApplicationContext;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -43,6 +44,12 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class NifiProvenanceConfig {
 
+    /**
+     * location of where map db should store the persist cache file to disk
+     **/
+    @Value("${kylo.provenance.feedflowfile.mapdb.cache.location:/opt/nifi/feed-flowfile-cache.db}")
+    private String feedFlowFileMapDbCacheLocation;
+
     private static final Logger log = LoggerFactory.getLogger(NifiProvenanceConfig.class);
 
     @Bean
@@ -50,6 +57,10 @@ public class NifiProvenanceConfig {
         return new SpringApplicationContext();
     }
 
+    /**
+     * The KyloProvenanceEventReportingTask will override these defaults based upon its batch property ("Processing batch size")
+     * @return an object pool for processing ProvenanceEventRecordDTO objects
+     */
     @Bean
     public ProvenanceEventObjectPool provenanceEventObjectPool() {
         GenericObjectPoolConfig config = new GenericObjectPoolConfig();
@@ -64,7 +75,8 @@ public class NifiProvenanceConfig {
 
     @Bean
     public FeedFlowFileMapDbCache feedFlowFileMapDbCache() {
-        return new FeedFlowFileMapDbCache();
+        String location = feedFlowFileMapDbCacheLocation;
+        return new FeedFlowFileMapDbCache(location);
     }
 
     @Bean
