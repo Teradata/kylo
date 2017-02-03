@@ -46,7 +46,12 @@ public interface FeedOperationsProvider {
     /**
      * Find the last Completed Feed Operation for the {@code feedId}
      */
-    List<FeedOperation> find(Feed.ID feedId);
+    List<FeedOperation> findLatestCompleted(Feed.ID feedId);
+
+    /**
+     * Find the last Feed Operation of any status for the {@code feedId}
+     */
+    List<FeedOperation> findLatest(Feed.ID feedId);
 
     boolean isFeedRunning(Feed.ID feedId);
 

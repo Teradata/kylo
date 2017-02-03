@@ -43,6 +43,7 @@ import java.util.List;
  *
  * @author Sean Felten
  */
+@SuppressWarnings("Duplicates")
 public class FeedExecutedSinceFeedAssessor extends MetadataMetricAssessor<FeedExecutedSinceFeed> {
 
     private static final Logger LOG = LoggerFactory.getLogger(FeedExecutedSinceFeedAssessor.class);
@@ -57,73 +58,68 @@ public class FeedExecutedSinceFeedAssessor extends MetadataMetricAssessor<FeedEx
     public void assess(FeedExecutedSinceFeed metric, MetricAssessmentBuilder<Serializable> builder) {
         LOG.debug("Assessing metric {}", metric.getDescription());
 
-        FeedProvider fPvdr = getFeedProvider();
-        FeedOperationsProvider opPvdr = getFeedOperationsProvider();
-        List<Feed> tested = fPvdr.getFeeds(fPvdr.feedCriteria().name(metric.getFeedName()).category(metric.getCategoryName()));
-        LOG.debug("Tested feeds {}", tested);
-        List<Feed> since = fPvdr.getFeeds(fPvdr.feedCriteria().name(metric.getSinceFeedName()).category(metric.getSinceCategoryName()));
-        LOG.debug("Since feeds {}", since);
+        FeedProvider feedProvider = getFeedProvider();
+        FeedOperationsProvider opsProvider = getFeedOperationsProvider();
+        List<Feed> mainFeeds = feedProvider.getFeeds(feedProvider.feedCriteria().name(metric.getFeedName()).category(metric.getCategoryName()));
+        LOG.debug("Main feeds {}", mainFeeds);
+        List<Feed> triggeredFeeds = feedProvider.getFeeds(feedProvider.feedCriteria().name(metric.getSinceFeedName()).category(metric.getSinceCategoryName()));
+        LOG.debug("Triggered feeds {}", triggeredFeeds);
 
         builder.metric(metric);
         
-        if (! tested.isEmpty() && ! since.isEmpty()) {
-            Feed testedFeed = tested.get(0);
-            Feed sinceFeed = since.get(0);
-            List<FeedOperation> testedOps = opPvdr.find(testedFeed.getId());
-            List<FeedOperation> sinceOps = opPvdr.find(sinceFeed.getId());
+        if (! mainFeeds.isEmpty() && ! triggeredFeeds.isEmpty()) {
+            Feed mainFeed = mainFeeds.get(0);
+            Feed triggeredFeed = triggeredFeeds.get(0);
+            List<FeedOperation> mainFeedOps = opsProvider.findLatestCompleted(mainFeed.getId());
+            List<FeedOperation> triggeredFeedOps = opsProvider.findLatest(triggeredFeed.getId());
 
-            boolean isSinceFeedRunning = opPvdr.isFeedRunning(sinceFeed.getId());
-            if (isSinceFeedRunning) {
-                LOG.debug("SinceFeed is still running");
-                builder
-                        .result(AssessmentResult.FAILURE)
-                        .message("Feed " + sinceFeed.getName() + " is still running.");
-            } else if (testedOps.isEmpty()) {
+            if (mainFeedOps.isEmpty()) {
                 // If the feed we are checking has never run then it can't have run before the "since" feed.
-                LOG.debug("TestedOps is empty");
+                LOG.debug("Main feed ops is empty");
                 builder
                     .result(AssessmentResult.FAILURE)
-                    .message("Feed " + testedFeed.getName() + " has never executed.");
+                    .message("Main feed " + mainFeed.getName() + " has never executed.");
             } else {
                 // If the "since" feed has never run then the tested feed has run before it.
-                if (sinceOps.isEmpty()) {
-                    LOG.debug("SinceOps is empty");
+                if (triggeredFeedOps.isEmpty()) {
+                    LOG.debug("Triggered feed ops is empty");
                     builder
                         .result(AssessmentResult.SUCCESS)
-                        .message("Feed " + sinceFeed.getName() + " has never executed since feed " + testedFeed.getName() + ".");
+                        .message("Triggered feed " + triggeredFeed.getName() + " has never executed");
                 } else {
 
-                    boolean isTestedOpsRunning = opPvdr.isFeedRunning(testedFeed.getId());
+                    DateTime mainFeedStopTime = mainFeedOps.get(0).getStopTime();
+                    DateTime triggeredFeedStartTime = triggeredFeedOps.get(0).getStartTime();
+                    LOG.debug("Main feed stop time {}", mainFeedStopTime);
+                    LOG.debug("Triggered feed start time {}", triggeredFeedStartTime);
 
-                    DateTime testedTime = testedOps.get(0).getStopTime();
-                    DateTime sinceTime = sinceOps.get(0).getStopTime();
-                    LOG.debug("TestedTime {}", testedTime);
-                    LOG.debug("SinceTime {}", sinceTime);
-
-                    if (testedTime.isBefore(sinceTime)) {
-                        LOG.debug("testedTime is before sinceTime");
+                    if (mainFeedStopTime.isBefore(triggeredFeedStartTime)) {
+                        LOG.debug("Main feed stop time is before triggered feed start time");
                         builder
                             .result(AssessmentResult.FAILURE)
-                            .message("Feed " + testedFeed.getName() + " has not executed since feed "
-                                     + sinceFeed.getName() + ": " + sinceTime);
+                            .message("Main feed " + mainFeed.getName() + " has not executed since triggered feed "
+                                     + triggeredFeed.getName() + ": " + triggeredFeedStartTime);
                     } else {
-                        LOG.debug("testedTime is after sinceTime");
-                        if (isTestedOpsRunning) {
-                            LOG.debug("testedFeed is still running");
-                            builder
-                                .result(AssessmentResult.FAILURE)
-                                .message("Feed " + sinceFeed.getName() + " has executed since feed " + testedFeed.getName() + ", but " + testedFeed.getName() + " is still running");
-                        } else {
-                            LOG.debug("testedFeed has finished running");
+                        LOG.debug("Main feed stop time is after triggered feed start time");
+                        boolean isMainFeedRunning = opsProvider.isFeedRunning(mainFeed.getId());
+                        if (isMainFeedRunning) {
+                            //todo whether to trigger the feed while the other one is already running should be a
+                            // configuration parameter defined by the user
+                            LOG.debug("Main feed is still running");
                             builder
                                 .result(AssessmentResult.SUCCESS)
-                                .message("Feed " + sinceFeed.getName() + " has executed since feed " + testedFeed.getName() + ".");
+                                .message("Triggered feed " + triggeredFeed.getName() + " has executed since feed " + mainFeed.getName() + ", but main feed " + mainFeed.getName() + " is still running");
+                        } else {
+                            LOG.debug("Main is not running");
+                            builder
+                                .result(AssessmentResult.SUCCESS)
+                                .message("Triggered feed " + triggeredFeed.getName() + " has executed since main feed " + mainFeed.getName() + ".");
                         }
                     }
                 }
             }
         } else {
-            LOG.debug("Either tested or since feed does not exist");
+            LOG.debug("Either triggered or main feed does not exist");
             builder
                 .result(AssessmentResult.FAILURE)
                 .message("Either feed " + metric.getSinceCategoryAndFeedName() + " and/or feed " + metric.getSinceCategoryAndFeedName() + " does not exist.");

@@ -346,6 +346,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
     /**
      * Get or Create the JobExecution for a given ProvenanceEvent
      */
+    @Override
     public synchronized JpaBatchJobExecution getOrCreateJobExecution(ProvenanceEventRecordDTO event) {
         JpaBatchJobExecution jobExecution = null;
         boolean isNew = false;
@@ -389,6 +390,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         return jobExecution;
     }
 
+    @Override
     public BatchJobExecution save(BatchJobExecution jobExecution, ProvenanceEventRecordDTO event, NifiEvent nifiEvent) {
         if (jobExecution == null) {
             return null;
@@ -493,10 +495,12 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
      * @param sinceDate the min end date for the jobs on the {@code feedName}
      * @return the job executions for a feed that have been completed since a given date
      */
+    @Override
     public Set<? extends BatchJobExecution> findJobsForFeedCompletedSince(String feedName, DateTime sinceDate) {
         return jobExecutionRepository.findJobsForFeedCompletedSince(feedName, sinceDate);
     }
 
+    @Override
     public BatchJobExecution findLatestCompletedJobForFeed(String feedName) {
         List<JpaBatchJobExecution> jobExecutions = jobExecutionRepository.findLatestCompletedJobForFeed(feedName);
         if (jobExecutions != null && !jobExecutions.isEmpty()) {
@@ -506,6 +510,17 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         }
     }
 
+    @Override
+    public BatchJobExecution findLatestJobForFeed(String feedName) {
+        List<JpaBatchJobExecution> jobExecutions = jobExecutionRepository.findLatestJobForFeed(feedName);
+        if (jobExecutions != null && !jobExecutions.isEmpty()) {
+            return jobExecutions.get(0);
+        } else {
+            return null;
+        }
+    }
+
+    @Override
     public Boolean isFeedRunning(String feedName) {
         return jobExecutionRepository.isFeedRunning(feedName);
     }
@@ -517,6 +532,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
      * @param pageable
      * @return a paged result set of all the job executions matching the incoming filter
      */
+    @Override
     public Page<? extends BatchJobExecution> findAll(String filter, Pageable pageable) {
         QJpaBatchJobExecution jobExecution = QJpaBatchJobExecution.jpaBatchJobExecution;
         //if the filter contains a filter on the feed then delegate to the findAllForFeed method to include any check data jobs
@@ -539,6 +555,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
     /**
      * Finds all job Executions for a Feed, including any related Check Data Jobs
      */
+    @Override
     public Page<? extends BatchJobExecution> findAllForFeed(String feedName, String filter, Pageable pageable) {
 
         List<SearchCriteria> searchCriterias = GenericQueryDslFilter.parseFilterString(filter);
@@ -570,6 +587,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
     /**
      * Get count of Jobs grouped by Status
      */
+    @Override
     public List<JobStatusCount> getJobStatusCount(String filter) {
 
         QJpaBatchJobExecution jobExecution = QJpaBatchJobExecution.jpaBatchJobExecution;
@@ -598,7 +616,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
     }
 
-
+    @Override
     public List<JobStatusCount> getJobStatusCountByDate() {
 
         QJpaBatchJobExecution jobExecution = QJpaBatchJobExecution.jpaBatchJobExecution;
@@ -629,6 +647,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
      *
      * @param period period to look back from the current time to get job execution status
      */
+    @Override
     public List<JobStatusCount> getJobStatusCountByDateFromNow(ReadablePeriod period, String filter) {
 
         QJpaBatchJobExecution jobExecution = QJpaBatchJobExecution.jpaBatchJobExecution;

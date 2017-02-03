@@ -57,7 +57,7 @@ public class FeedOperationBatchJobExecutionJobWrapper implements FeedOperation {
      */
     @Override
     public DateTime getStartTime() {
-        return this.executed.getCreateTime();
+        return this.executed.getStartTime();
     }
 
     /* (non-Javadoc)

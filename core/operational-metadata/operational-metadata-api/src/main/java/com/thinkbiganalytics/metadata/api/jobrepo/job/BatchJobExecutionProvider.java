@@ -134,11 +134,18 @@ public interface BatchJobExecutionProvider extends BatchJobExecutionFilters{
     Set<? extends BatchJobExecution> findJobsForFeedCompletedSince(String feedName,  DateTime sinceDate);
 
     /**
-     * Returns the latest job execution for a feed
+     * Returns the latest completed job execution for a feed
      * @param feedName
      * @return the job execution
      */
     BatchJobExecution findLatestCompletedJobForFeed(String feedName);
+
+    /**
+     * Returns the latest job execution of any status for a feed
+     * @param feedName
+     * @return the job execution
+     */
+    BatchJobExecution findLatestJobForFeed(String feedName);
 
     /**
      * check if a feed is running

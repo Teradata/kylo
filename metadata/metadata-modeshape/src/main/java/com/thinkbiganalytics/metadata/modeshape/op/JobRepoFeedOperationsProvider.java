@@ -43,6 +43,8 @@ import com.thinkbiganalytics.metadata.modeshape.op.FeedOperationExecutedJobWrapp
 import com.thinkbiganalytics.support.FeedNameUtil;
 
 import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -61,7 +63,9 @@ import javax.inject.Inject;
  * @author Sean Felten
  */
 public class JobRepoFeedOperationsProvider implements FeedOperationsProvider {
-    
+
+    private static final Logger LOG = LoggerFactory.getLogger(JobRepoFeedOperationsProvider.class);
+
     @Inject
     private JcrFeedProvider feedProvider;
 
@@ -156,35 +160,33 @@ public class JobRepoFeedOperationsProvider implements FeedOperationsProvider {
             return null;
         }
     }
-    /*
-
 
     @Override
-    public List<FeedOperation> find(FeedOperationCriteria criteria) {
-        // TODO Replace with more efficient, sql-based filtering...
-        Criteria execCriteria = (Criteria) criteria;
-
-        return this.jobRepo.findJobs(0, Integer.MAX_VALUE).stream()
-                        .filter(execCriteria)
-                        .limit(execCriteria.getLimit())
-                        .map(exec -> createOperation(exec))
-                        .collect(Collectors.toList());
-    }
-
-*/
-
-
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.op.FeedOperationsProvider#find(Feed.ID, int)
-     */
-    @Override
-    public List<FeedOperation> find(Feed.ID feedId) {
-        return metadata.<List<FeedOperation>>read(() -> {
-            List<FeedOperation> operations = new ArrayList<FeedOperation>();
+    public List<FeedOperation> findLatestCompleted(Feed.ID feedId) {
+        return metadata.read(() -> {
+            List<FeedOperation> operations = new ArrayList<>();
             Feed<?> feed = this.feedProvider.getFeed(feedId);
 
             if (feed != null) {
                 BatchJobExecution latestJobExecution = this.jobExecutionProvider.findLatestCompletedJobForFeed(feed.getQualifiedName());
+
+                if (latestJobExecution != null) {
+                    LOG.debug("Latest completed job execution id {} ", latestJobExecution.getJobExecutionId());
+                    operations.add(createOperation(latestJobExecution));
+                }
+            }
+            return operations;
+        });
+    }
+    
+    @Override
+    public List<FeedOperation> findLatest(Feed.ID feedId) {
+        return metadata.read(() -> {
+            List<FeedOperation> operations = new ArrayList<>();
+            Feed<?> feed = this.feedProvider.getFeed(feedId);
+
+            if (feed != null) {
+                BatchJobExecution latestJobExecution = this.jobExecutionProvider.findLatestJobForFeed(feed.getQualifiedName());
 
                 if (latestJobExecution != null) {
                     operations.add(createOperation(latestJobExecution));
@@ -193,7 +195,7 @@ public class JobRepoFeedOperationsProvider implements FeedOperationsProvider {
             return operations;
         });
     }
-    
+
     @Override
     public FeedDependencyDeltaResults getDependentDeltaResults(Feed.ID feedId, Set<String> props) {
         Feed feed = this.feedProvider.getFeed(feedId);
