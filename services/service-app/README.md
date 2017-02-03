@@ -117,13 +117,13 @@ nifi.service.<NIFI_CONTROLLER_SERVICE_NAME>.<NIFI_PROPERTY_NAME>
 | Controller Service         | Property                | application.properties key                               |
 | -------------------------- | ----------------------- | ---------------------------------------------------------|
 | Hive Thrift Service        | Database Connection Url | nifi.service.hive_thrift_service.database_connection_url |
-| Think Big Metadata Service | Rest Client Url         | nifi.service.think_big_metadata_service.rest_client_url  |
+| Kylo Metadata Service      | Rest Client Url         | nifi.service.kylo_metadata_service.rest_client_url       |
 
 Examples:
 
 ```properties
 nifi.service.hive_thrift_service.database_connection_url=jdbc:hive2://localhost:10000/default
-nifi.service.think_big_metadata_service.rest_client_url=http://localhost:8400/proxy/v1/metadata
+nifi.service.kylo_metadata_service.rest_client_url=http://localhost:8400/proxy/v1/metadata
 ```
 
 *NOTE:* Kylo will only do this replacement when the controller service is initially created by Kylo upon Feed or Reusable Template creation.  If the service already exists in NiFi then it will not do this replacement. 

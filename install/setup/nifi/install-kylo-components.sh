@@ -38,9 +38,9 @@ mkdir $NIFI_INSTALL_HOME/mysql
 
 if [ $OFFLINE = true ]
 then
-    cp $NIFI_SETUP_DIR/mysql-connector-java-*.jar $NIFI_INSTALL_HOME/mysql
+    cp $NIFI_SETUP_DIR/mariadb-java-client-*.jar $NIFI_INSTALL_HOME/mysql
 else
-    cp $KYLO_INSTALL_HOME/kylo-services/lib/mysql-connector-java-*.jar $NIFI_INSTALL_HOME/mysql
+    cp $KYLO_INSTALL_HOME/kylo-services/lib/mariadb-java-client-*.jar $NIFI_INSTALL_HOME/mysql
 fi
 
 echo "Copy the activeMQ required jars for the JMS processors to /opt/nifi/activemq"

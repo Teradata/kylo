@@ -12,6 +12,6 @@ wget --no-check-certificate --no-cookies --header "Cookie: oraclelicense=accept-
 
 wget https://archive.apache.org/dist/nifi/1.0.0/nifi-1.0.0-bin.tar.gz -P ./nifi
 
-cp /opt/kylo/kylo-services/lib/mysql-connector-java-*.jar ./nifi
+cp /opt/kylo/kylo-services/lib/mariadb-java-client-*.jar ./nifi
 
 tar -cvf kylo-install.tar *

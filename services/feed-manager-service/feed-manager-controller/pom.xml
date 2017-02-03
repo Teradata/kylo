@@ -325,11 +325,12 @@
     <!-- JDBC Drivers -->
 
     <dependency>
-      <groupId>mysql</groupId>
-      <artifactId>mysql-connector-java</artifactId>
-      <version>5.1.32</version>
+      <groupId>org.mariadb.jdbc</groupId>
+      <artifactId>mariadb-java-client</artifactId>
+      <version>1.5.7</version>
       <scope>test</scope>
     </dependency>
+
     <dependency>
       <groupId>postgresql</groupId>
       <artifactId>postgresql</artifactId>

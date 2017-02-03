@@ -210,7 +210,7 @@ public class NifiRestTest {
                 //first create it
                 ControllerServiceDTO controllerServiceDTO = new ControllerServiceDTO();
                 controllerServiceDTO.setType(NifiFlowCache.NiFiMetadataControllerServiceType);
-                controllerServiceDTO.setName("Think Big Metadata Service");
+                controllerServiceDTO.setName("Kylo Metadata Service");
                 metadataService = nifiRestClient.getNiFiRestClient().reportingTasks().createReportingTaskControllerService(controllerServiceDTO);
                 //find the properties to inject
                 Map<String, String> stringConfigProperties = new HashMap<>();

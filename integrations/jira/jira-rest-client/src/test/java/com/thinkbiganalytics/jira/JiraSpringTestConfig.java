@@ -51,7 +51,7 @@ public class JiraSpringTestConfig {
         BasicDataSource dataSource = new BasicDataSource();
         dataSource.setUrl("jdbc:mysql://localhost:3306/pipeline_db");
         dataSource.setUsername("root");
-        dataSource.setDriverClassName("com.mysql.jdbc.Driver");
+        dataSource.setDriverClassName("org.mariadb.jdbc.Driver");
         //dataSource.setPassword("password");
         return dataSource;
     }

@@ -271,12 +271,12 @@ This script downloads the extension zip file and extracts the replacement jar fi
             property in the thinkbig-services application.properties file.
 
 
-        .. There is a controller service that requires a MySQL database connection. You will need to copy the MySQL connector jar to a location on the NiFI node. The
+        .. There is a controller service that requires a MySQL database connection. You will need to copy the database driver jar to a location on the NiFI node. The
            pre-defined templates have the default location set to /opt/nifi/mysql.
 
-           1. Create a folder to store the MySQL jar in.
+           1. Create a folder to store the database driver jar in.
 
-           2. SCP the /opt/thinkbig/thinkbig-services/lib/mysql-connector-java-<version>.jar to the folder in step #1
+           2. SCP the /opt/thinkbig/thinkbig-services/lib/mariadb-java-client-<version>.jar to the folder in step #1
 
            3. If you created a folder name other than the /opt/nifi/mysql default folder you will need to update the "MySQL" controller service and set the new location. You can do
               this by logging into NiFi and going to the Controller Services section on the top right.

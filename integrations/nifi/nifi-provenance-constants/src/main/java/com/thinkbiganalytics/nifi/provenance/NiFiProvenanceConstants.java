@@ -26,7 +26,7 @@ package com.thinkbiganalytics.nifi.provenance;
 public interface NiFiProvenanceConstants {
 
 
-    String NiFiMetadataServiceName = "Think Big Metadata Service";
+    String NiFiMetadataServiceName = "Kylo Metadata Service";
 
     String NiFiMetadataControllerServiceType = "com.thinkbiganalytics.nifi.v2.core.metadata.MetadataProviderSelectorService";
 

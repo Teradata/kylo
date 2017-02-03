@@ -394,7 +394,7 @@ Before installing the Kylo stack the below needs to be done on the cluster.
     nifi.service.hive_thrift_service.kerberos_keytab=/etc/security/keytabs/nifi.service.keytab
     nifi.service.hive_thrift_service.hadoop_configuration_resources=/etc/hadoop/conf/core-site.xml,/etc/hadoop/conf/hdfs-site.xml
 
-    nifi.service.think_big_metadata_service.rest_client_url=http://<KYLO_EDGE_HOSTNAME>:8400/proxy/v1/metadata
+    nifi.service.kylo_metadata_service.rest_client_url=http://<KYLO_EDGE_HOSTNAME>:8400/proxy/v1/metadata
 
     nifi.executesparkjob.sparkmaster=yarn-cluster
     nifi.executesparkjob.extra_jars=/usr/hdp/current/spark-client/lib/datanucleus-api-jdo-3.2.6.jar,/usr/hdp/current/spark-client/lib/datanucleus-core-3.2.10.jar,/usr/hdp/current/spark-client/lib/datanucleus-rdbms-3.2.9.jar
