@@ -30,6 +30,7 @@ import com.thinkbiganalytics.jobrepo.query.model.ExecutedStep;
 import com.thinkbiganalytics.jobrepo.query.model.ExecutionStatus;
 import com.thinkbiganalytics.jobrepo.query.model.ExitStatus;
 import com.thinkbiganalytics.metadata.api.feed.LatestFeedJobExecution;
+import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiEventStepExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecution;
@@ -56,7 +57,10 @@ public class JobModelTransform {
         if (jobExecutionContext != null) {
             job.setExecutionContext(new HashMap<>(jobExecutionContext));
         }
-        job.setJobType(jobExecution.getJobInstance().getFeed().getFeedType().name());
+        OpsManagerFeed feed = jobExecution.getJobInstance().getFeed();
+        if (feed != null) {
+            job.setJobType(feed.getFeedType().name());
+        }
         Map<String, String> jobParams = jobExecution.getJobParametersAsMap();
         if (jobParams != null) {
             job.setJobParameters(new HashMap<>(jobParams));

@@ -519,7 +519,7 @@ public class JobsRestController {
     }
 
     private PageRequest pageRequest(Integer start, Integer limit, String sort) {
-        if (sort != null) {
+        if (StringUtils.isNotBlank(sort)) {
             Sort.Direction dir = Sort.Direction.ASC;
             if (sort.startsWith("-")) {
                 dir = Sort.Direction.DESC;
