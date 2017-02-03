@@ -454,11 +454,11 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
 
             flowFile = session.putAttribute(flowFile, PROVENANCE_SPARK_EXIT_CODE_KEY, exitCode + "");
             if (exitCode != 0) {
-                logger.error("ExecuteSparktJob for {} and flowfile: {} completed with failed status {} ", new Object[]{context.getName(), flowFile, exitCode});
+                logger.error("ExecuteSparkJob for {} and flowfile: {} completed with failed status {} ", new Object[]{context.getName(), flowFile, exitCode});
                 flowFile = session.putAttribute(flowFile, PROVENANCE_JOB_STATUS_KEY, "Failed");
                 session.transfer(flowFile, REL_FAILURE);
             } else {
-                logger.info("ExecuteSparktJob for {} and flowfile: {} completed with success status {} ", new Object[]{context.getName(), flowFile, exitCode});
+                logger.info("ExecuteSparkJob for {} and flowfile: {} completed with success status {} ", new Object[]{context.getName(), flowFile, exitCode});
                 flowFile = session.putAttribute(flowFile, PROVENANCE_JOB_STATUS_KEY, "Success");
                 session.transfer(flowFile, REL_SUCCESS);
             }
