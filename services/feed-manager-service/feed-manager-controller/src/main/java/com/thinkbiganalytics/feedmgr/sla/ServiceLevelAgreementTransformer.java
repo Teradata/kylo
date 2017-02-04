@@ -24,7 +24,7 @@ import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.policy.PolicyTransformException;
 
 /**
- * Created by sr186054 on 7/18/16.
+ * Transform user interface SLA metrics {@link ServiceLevelAgreementRule} to/from domain {@link Metric} objects
  */
 public interface ServiceLevelAgreementTransformer {
 

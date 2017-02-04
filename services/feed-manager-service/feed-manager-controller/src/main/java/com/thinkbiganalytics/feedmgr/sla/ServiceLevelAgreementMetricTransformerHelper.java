@@ -41,7 +41,6 @@ import java.util.stream.Collectors;
 
 /**
  * Transforms SLA UI objects (to / from the Rest/Model)
- * Created by sr186054 on 7/19/16.
  */
 public class ServiceLevelAgreementMetricTransformerHelper {
 
@@ -134,32 +133,29 @@ public class ServiceLevelAgreementMetricTransformerHelper {
     }
 
 
-
     public ServiceLevelAgreement getServiceLevelAgreement(ServiceLevelAgreementGroup serviceLevelAgreement) {
         ServiceLevelAgreement transformedSla = new ServiceLevelAgreement();
         transformedSla.setId(serviceLevelAgreement.getId());
         transformedSla.setName(serviceLevelAgreement.getName());
         transformedSla.setDescription(serviceLevelAgreement.getDescription());
         for (ServiceLevelAgreementRule rule : serviceLevelAgreement.getRules()) {
-                    try {
-                        ObligationGroup group = new ObligationGroup();
-                        Metric policy = ServiceLevelAgreementMetricTransformer.instance().fromUiModel(rule);
-                        Obligation obligation = new Obligation(policy.getDescription());
-                        obligation.setMetrics(Lists.newArrayList(policy));
-                        group.addObligation(obligation);
-                        group.setCondition(rule.getCondition().name());
-                        transformedSla.addGroup(group);
-                    } catch (PolicyTransformException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
+            try {
+                ObligationGroup group = new ObligationGroup();
+                Metric policy = ServiceLevelAgreementMetricTransformer.instance().fromUiModel(rule);
+                Obligation obligation = new Obligation(policy.getDescription());
+                obligation.setMetrics(Lists.newArrayList(policy));
+                group.addObligation(obligation);
+                group.setCondition(rule.getCondition().name());
+                transformedSla.addGroup(group);
+            } catch (PolicyTransformException e) {
+                throw new RuntimeException(e);
+            }
+        }
 
         return transformedSla;
     }
 
-    /**
-     * TODO return the Check object that has the related cron Schedule as well
-     */
+
     public List<ServiceLevelAgreementActionConfiguration> getActionConfigurations(ServiceLevelAgreementGroup serviceLevelAgreement) {
         List<ServiceLevelAgreementActionConfiguration> actionConfigurations = new ArrayList<>();
         if (serviceLevelAgreement.getActionConfigurations() != null) {
@@ -174,7 +170,6 @@ public class ServiceLevelAgreementMetricTransformerHelper {
         }
         return actionConfigurations;
     }
-
 
 
     /**
@@ -199,15 +194,14 @@ public class ServiceLevelAgreementMetricTransformerHelper {
         }
 
         //transform the Actions if they exist.
-        //TODO add in the Schedule prop
         if (sla.getSlaChecks() != null) {
             List<ServiceLevelAgreementActionUiConfigurationItem> agreementActionUiConfigurationItems = new ArrayList<>();
-            for(ServiceLevelAgreementCheck check: sla.getSlaChecks()) {
+            for (ServiceLevelAgreementCheck check : sla.getSlaChecks()) {
                 for (ServiceLevelAgreementActionConfiguration actionConfig : check.getActionConfigurations()) {
-                   if(actionConfig != null) {
-                       ServiceLevelAgreementActionUiConfigurationItem uiModel = ServiceLevelAgreementActionConfigTransformer.instance().toUIModel(actionConfig);
-                       agreementActionUiConfigurationItems.add(uiModel);
-                   }
+                    if (actionConfig != null) {
+                        ServiceLevelAgreementActionUiConfigurationItem uiModel = ServiceLevelAgreementActionConfigTransformer.instance().toUIModel(actionConfig);
+                        agreementActionUiConfigurationItems.add(uiModel);
+                    }
                 }
             }
             slaGroup.setActionConfigurations(agreementActionUiConfigurationItems);

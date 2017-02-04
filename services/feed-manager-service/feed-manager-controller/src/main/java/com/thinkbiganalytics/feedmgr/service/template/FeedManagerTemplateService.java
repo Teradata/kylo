@@ -36,61 +36,146 @@ public interface FeedManagerTemplateService {
 
     String nifiTemplateIdForTemplateName(String templateName);
 
+    /**
+     * Register a template, save it, and return
+     *
+     * @param registeredTemplate a template to register/update
+     * @return the registered template
+     */
     RegisteredTemplate registerTemplate(RegisteredTemplate registeredTemplate);
 
+    /**
+     * Return all properties registered for a template
+     *
+     * @param templateId a template id
+     * @return all properties registered for a template
+     */
     List<NifiProperty> getTemplateProperties(String templateId);
 
+    /**
+     * Return a registered template by its id
+     *
+     * @param templateId a template id
+     * @return a registered template, or null if not found
+     */
     RegisteredTemplate getRegisteredTemplate(String templateId);
 
+    /**
+     * Return a template matching the incoming name
+     *
+     * @param templateName a template name
+     * @return a template matching the incoming name
+     */
     RegisteredTemplate getRegisteredTemplateByName(String templateName);
 
+    /**
+     * Return a template matching just on the NiFi templateId .
+     * This will only call out to NiFi and match on the Nifi template id.
+     *
+     * @param nifiTemplateId   the NiFi template id
+     * @param nifiTemplateName the name of the template
+     * @return a template matching the NiFi templateId .
+     */
     RegisteredTemplate getRegisteredTemplateForNifiProperties(String nifiTemplateId, String nifiTemplateName);
 
+    /**
+     * Return a template with both the registered properties, and then adding in all the other properties (not registered in Kylo) that exist in NiFi for every processor
+     *
+     * @param templateId   a registered template id, or a nifi template id (for new nifi templates (not yet registered in Kylo)
+     * @param templateName the name of the template
+     * @return a template with both the registered properties, and then adding in all the other properties (not registered in Kylo) that exist in NiFi for every processor
+     */
     RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId, String templateName);
 
+    /**
+     * Deletes a template
+     * @param templateId a registered template id
+     */
     boolean deleteRegisteredTemplate(String templateId);
 
+    /**
+     * change the state of the template to be {@link com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate.State#ENABLED}
+     * @param templateId the template id
+     * @return the updated template
+     */
     RegisteredTemplate enableTemplate(String templateId);
 
+    /**
+     * change the state of the template to be {@link com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate.State#DISABLED}
+     * @param templateId the template id
+     * @return the updated template
+     */
     RegisteredTemplate disableTemplate(String templateId);
 
+
+    /**
+     * Return all registered templates
+     *
+     * @return a list of all registered templates
+     */
     List<RegisteredTemplate> getRegisteredTemplates();
 
     /**
-     * Ensures the RegisteredTemplate#inputProcessors contains processors that both have properties exposed for the end user and those that dont
+     *  Ensures the {@link RegisteredTemplate#inputProcessors} contains processors contains all properties, both that have been exposed for the end user input and those that don't
+     * @param registeredTemplate the template to inspect
      */
     public void ensureRegisteredTemplateInputProcessors(RegisteredTemplate registeredTemplate);
 
     /**
-     * Synchronize the Nifitemplate Ids to make sure its in sync with the id stored in our metadata store for the RegisteredTemplate
-     * @param template
+     *  Synchronize the Nifi template Ids to make sure its in sync with the id stored in our metadata store for the RegisteredTemplate
+     * @param template the template to sync
+     * @return the updated template
      */
     RegisteredTemplate syncTemplateId(RegisteredTemplate template);
 
 
     /**
      * Returns the Ports available in the Reusable_templates process group
+     *
+     * @return the Ports available in the Reusable_templates process group
      */
     Set<PortDTO> getReusableFeedInputPorts();
 
 
     /**
-     * Walks the flow of children connected to each {@code inputPortIds} and builds a List of objects containing Processor and property info
+     * Return all the processors that are connected to a given NiFi input port
+     *
+     * @param inputPortIds the ports to inspect
+     * @return all the processors that are connected to a given NiFi input port
      */
     List<RegisteredTemplate.Processor> getReusableTemplateProcessorsForInputPorts(List<String> inputPortIds);
 
+    /**
+     * Return processors for a template and optionally walk the graph and obtain those connected to the reusable flows, if any
+     * @param templateId the template id to inspect
+     * @param includeReusableProcessors true if it shouls walk the connections to reusable process groups, false if not
+     * @return the list of processors
+     */
     List<RegisteredTemplate.Processor> getRegisteredTemplateProcessors(String templateId, boolean includeReusableProcessors);
 
-
+    /**
+     * For a given Template and its related connection info to the reusable templates, walk the graph to return the Processors.
+     * The system will first walk the incoming templateid.  If the {@code connectionInfo} parameter is set it will make the connections to the incoming template and continue walking those processors
+     *
+     * @param nifiTemplateId the NiFi templateId required to start walking the flow
+     * @param connectionInfo the connections required to connect
+     * @return a list of all the processors for a template and possible connections
+     */
     List<RegisteredTemplate.FlowProcessor>  getNiFiTemplateFlowProcessors(String templateId, List<ReusableTemplateConnectionInfo> connectionInfo);
 
+    /**
+     * Return a list of Processors and their properties for the incoming template
+     *
+     * @param nifiTemplateId a NiFi template id
+     * @return a list of Processors and their properties for the incoming template
+     */
     List<RegisteredTemplate.Processor> getNiFiTemplateProcessorsWithProperties(String templateId);
 
 
     /**
      * saves the order as indicated via index in the supplied {@code orderedTemplateIds}
-     * @param orderedTemplateIds
-     * @param exclude
+     * @param orderedTemplateIds a list of the template ids in order
+     * @param exclude a list of ids it should skip and not save
      */
     void orderTemplates(List<String> orderedTemplateIds, Set<String> exclude);
 

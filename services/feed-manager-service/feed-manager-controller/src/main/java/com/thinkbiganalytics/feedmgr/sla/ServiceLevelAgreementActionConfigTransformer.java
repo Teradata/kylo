@@ -49,12 +49,12 @@ public class ServiceLevelAgreementActionConfigTransformer
 
     public ServiceLevelAgreementActionUiConfigurationItem buildUiModel(ServiceLevelAgreementActionConfig annotation, ServiceLevelAgreementActionConfiguration policy,
                                                                        List<FieldRuleProperty> properties) {
-return buildUiModel(annotation,policy.getClass(),properties);
+        return buildUiModel(annotation, policy.getClass(), properties);
     }
 
 
     private ServiceLevelAgreementActionUiConfigurationItem buildUiModel(ServiceLevelAgreementActionConfig annotation, Class policyClass,
-                                                                       List<FieldRuleProperty> properties) {
+                                                                        List<FieldRuleProperty> properties) {
         String desc = annotation.description();
         String shortDesc = annotation.shortDescription();
         if (StringUtils.isBlank(desc) && StringUtils.isNotBlank(shortDesc)) {
@@ -74,23 +74,21 @@ return buildUiModel(annotation,policy.getClass(),properties);
         return rule;
     }
 
-    public List<ServiceLevelAgreementActionValidation> validateAction(String actionConfigurationClassName ){
+    public List<ServiceLevelAgreementActionValidation> validateAction(String actionConfigurationClassName) {
         List<ServiceLevelAgreementActionValidation> validation = null;
         try {
             Class<? extends ServiceLevelAgreementActionConfiguration> configurationClass = ClassNameChangeRegistry.findClass(actionConfigurationClassName);
             ServiceLevelAgreementActionConfig annotation = (ServiceLevelAgreementActionConfig) configurationClass.getAnnotation(ServiceLevelAgreementActionConfig.class);
-            Class<?extends ServiceLevelAgreementAction>[] actions = annotation.actionClasses();
-            if(actions != null){
-                List< Class<?extends ServiceLevelAgreementAction>> actionClassList = Lists.newArrayList(actions);
+            Class<? extends ServiceLevelAgreementAction>[] actions = annotation.actionClasses();
+            if (actions != null) {
+                List<Class<? extends ServiceLevelAgreementAction>> actionClassList = Lists.newArrayList(actions);
                 validation = ServiceLevelAgreementActionUtil.validateActionConfiguration(actionClassList);
-            }
-            else {
-                validation.add(new ServiceLevelAgreementActionValidation(false, "No Actions are defined for :"+actionConfigurationClassName));
+            } else {
+                validation.add(new ServiceLevelAgreementActionValidation(false, "No Actions are defined for :" + actionConfigurationClassName));
             }
 
-        }catch (ClassNotFoundException e)
-        {
-            validation.add(new ServiceLevelAgreementActionValidation(false,"ImmutableAction Configuration Not Found: "+e.getMessage()));
+        } catch (ClassNotFoundException e) {
+            validation.add(new ServiceLevelAgreementActionValidation(false, "ImmutableAction Configuration Not Found: " + e.getMessage()));
         }
 
         return validation;
@@ -107,15 +105,13 @@ return buildUiModel(annotation,policy.getClass(),properties);
             List<FieldRuleProperty> properties = getUiProperties(c);
             ServiceLevelAgreementActionConfig policy = (ServiceLevelAgreementActionConfig) c.getAnnotation(ServiceLevelAgreementActionConfig.class);
             ServiceLevelAgreementActionUiConfigurationItem
-                configItem = buildUiModel(policy,c,properties);
-                 rules.add(configItem);
+                configItem = buildUiModel(policy, c, properties);
+            rules.add(configItem);
 
         }
 
         return rules;
     }
-
-
 
 
     @Override

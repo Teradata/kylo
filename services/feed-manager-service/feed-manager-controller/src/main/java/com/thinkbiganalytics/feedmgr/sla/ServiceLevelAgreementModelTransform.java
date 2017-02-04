@@ -214,9 +214,9 @@ public class ServiceLevelAgreementModelTransform {
         FeedServiceLevelAgreement feedServiceLevelAgreement = new FeedServiceLevelAgreement(slaModel);
         if (feeds != null && !feeds.isEmpty()) {
             final Set<Feed> feedModels = feeds.stream()
-                    .filter(feed -> feed != null)
-                    .map(Model.DOMAIN_TO_FEED::apply)
-                    .collect(Collectors.toSet());
+                .filter(feed -> feed != null)
+                .map(Model.DOMAIN_TO_FEED::apply)
+                .collect(Collectors.toSet());
             feedServiceLevelAgreement.setFeeds(feedModels);
         }
         return feedServiceLevelAgreement;

@@ -29,7 +29,7 @@ import java.util.List;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
- * Created by sr186054 on 7/18/16.
+ * UI object representing the possible ServiceLevelAgreement actions one can perform.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ServiceLevelAgreementActionUiConfigurationItem extends BaseUiPolicyRule {

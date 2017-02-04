@@ -45,12 +45,12 @@ public class ServiceLevelAgreementMetricTransformer
     @Override
     public ServiceLevelAgreementRule buildUiModel(ServiceLevelAgreementMetric annotation, Metric policy,
                                                   List<FieldRuleProperty> properties) {
-      return buildUiModel(annotation,policy.getClass(),properties);
+        return buildUiModel(annotation, policy.getClass(), properties);
     }
 
 
     private ServiceLevelAgreementRule buildUiModel(ServiceLevelAgreementMetric annotation, Class policyClass,
-                                                                        List<FieldRuleProperty> properties) {
+                                                   List<FieldRuleProperty> properties) {
         String desc = annotation.description();
         String shortDesc = annotation.shortDescription();
         if (StringUtils.isBlank(desc) && StringUtils.isNotBlank(shortDesc)) {
@@ -68,9 +68,6 @@ public class ServiceLevelAgreementMetricTransformer
     }
 
 
-
-
-
     public List<ServiceLevelAgreementRule> discoverSlaMetrics() {
 
         List<ServiceLevelAgreementRule> rules = new ArrayList<>();
@@ -79,15 +76,13 @@ public class ServiceLevelAgreementMetricTransformer
         for (Class c : metrics) {
             List<FieldRuleProperty> properties = getUiProperties(c);
             ServiceLevelAgreementMetric policy = (ServiceLevelAgreementMetric) c.getAnnotation(ServiceLevelAgreementMetric.class);
-            rules.add(buildUiModel(policy,c,properties));
+            rules.add(buildUiModel(policy, c, properties));
         }
         return rules;
     }
 
 
-
-
-        @Override
+    @Override
     public Class<ServiceLevelAgreementMetric> getAnnotationClass() {
         return ServiceLevelAgreementMetric.class;
     }

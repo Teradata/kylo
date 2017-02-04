@@ -25,7 +25,7 @@ import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
 import com.thinkbiganalytics.policy.rest.model.BaseUiPolicyRule;
 
 /**
- * Created by sr186054 on 7/18/16.
+ * A User Interface object containing information about various Service Level Agreement Metrics that can be used to create a SLA
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ServiceLevelAgreementRule extends BaseUiPolicyRule {

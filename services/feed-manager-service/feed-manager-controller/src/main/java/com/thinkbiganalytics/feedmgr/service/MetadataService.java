@@ -139,7 +139,7 @@ public interface MetadataService {
     /**
      * Change the state of the feed to be {@link FeedMetadata.STATE#ENABLED}
      *
-     * @param feedId
+     * @param feedId the feed id
      * @return a summary of the feed after being enabled
      */
     FeedSummary enableFeed(String feedId);
@@ -147,7 +147,7 @@ public interface MetadataService {
     /**
      * Change the state of the feed to be {@link FeedMetadata.STATE#DISABLED}
      *
-     * @param feedId
+     * @param feedId the feed id
      * @return a summary of the feed after being disabled
      */
     FeedSummary disableFeed(String feedId);
@@ -199,7 +199,7 @@ public interface MetadataService {
     /**
      * Return a feed matching the feedId.
      *
-     * @param feedId
+     * @param feedId the feed id
      * @param refreshTargetTableSchema if true it will attempt to update the metadata of the destination table {@link FeedMetadata#table} with the real the destination
      * @return a feed matching the feedId
      */

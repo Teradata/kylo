@@ -51,9 +51,9 @@ import java.util.Set;
 import javax.inject.Inject;
 
 /**
- * Created by sr186054 on 7/18/16.
+ * Service for interacting with SLA's
  */
-public class ServiceLevelAgreementService implements ServicesApplicationStartupListener{
+public class ServiceLevelAgreementService implements ServicesApplicationStartupListener {
 
     @Inject
     private FeedManagerFeedService feedManagerFeedService;
@@ -81,7 +81,8 @@ public class ServiceLevelAgreementService implements ServicesApplicationStartupL
     public void onStartup(DateTime startTime) {
         discoverServiceLevelAgreementRules();
     }
-    private  List<ServiceLevelAgreementRule>  discoverServiceLevelAgreementRules(){
+
+    private List<ServiceLevelAgreementRule> discoverServiceLevelAgreementRules() {
         List<ServiceLevelAgreementRule> rules = ServiceLevelAgreementMetricTransformer.instance().discoverSlaMetrics();
         serviceLevelAgreementRules = rules;
         return serviceLevelAgreementRules;
@@ -89,10 +90,9 @@ public class ServiceLevelAgreementService implements ServicesApplicationStartupL
 
     public List<ServiceLevelAgreementRule> discoverSlaMetrics() {
         List<ServiceLevelAgreementRule> rules = serviceLevelAgreementRules;
-        if(rules == null){
-          rules = discoverServiceLevelAgreementRules();
+        if (rules == null) {
+            rules = discoverServiceLevelAgreementRules();
         }
-
 
         feedManagerFeedService
             .applyFeedSelectOptions(
@@ -136,7 +136,6 @@ public class ServiceLevelAgreementService implements ServicesApplicationStartupL
             }
         });
     }
-
 
 
     public void disableServiceLevelAgreementSchedule(Feed.ID feedId) {
@@ -213,11 +212,11 @@ public class ServiceLevelAgreementService implements ServicesApplicationStartupL
 
     public List<ServiceLevelAgreementActionUiConfigurationItem> discoverActionConfigurations() {
 
-      return ServiceLevelAgreementActionConfigTransformer.instance().discoverActionConfigurations();
+        return ServiceLevelAgreementActionConfigTransformer.instance().discoverActionConfigurations();
     }
 
 
-    public List<ServiceLevelAgreementActionValidation> validateAction(String actionConfigurationClassName ) {
+    public List<ServiceLevelAgreementActionValidation> validateAction(String actionConfigurationClassName) {
         return ServiceLevelAgreementActionConfigTransformer.instance().validateAction(actionConfigurationClassName);
     }
 
@@ -230,71 +229,70 @@ public class ServiceLevelAgreementService implements ServicesApplicationStartupL
     private ServiceLevelAgreement saveAndScheduleSla(ServiceLevelAgreementGroup serviceLevelAgreement, FeedMetadata feed) {
         return metadataAccess.commit(() -> {
 
-                if (serviceLevelAgreement != null) {
-                    ServiceLevelAgreementMetricTransformerHelper transformer = new ServiceLevelAgreementMetricTransformerHelper();
-                    if (feed != null) {
-                        transformer.applyFeedNameToCurrentFeedProperties(serviceLevelAgreement, feed.getCategory().getSystemName(), feed.getSystemFeedName());
-                    }
-                    ServiceLevelAgreement sla = transformer.getServiceLevelAgreement(serviceLevelAgreement);
-
-                    ServiceLevelAgreementBuilder slaBuilder = null;
-                    com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement.ID existingId = null;
-                    if (StringUtils.isNotBlank(sla.getId())) {
-                        existingId = slaProvider.resolve(sla.getId());
-                    }
-                    if (existingId != null) {
-                        slaBuilder = slaProvider.builder(existingId);
-                    } else {
-                        slaBuilder = slaProvider.builder();
-                    }
-
-                    slaBuilder.name(sla.getName()).description(sla.getDescription());
-                    for (com.thinkbiganalytics.metadata.rest.model.sla.ObligationGroup group : sla.getGroups()) {
-                        ObligationGroupBuilder groupBuilder = slaBuilder.obligationGroupBuilder(ObligationGroup.Condition.valueOf(group.getCondition()));
-                        for (Obligation o : group.getObligations()) {
-                            groupBuilder.obligationBuilder().metric(o.getMetrics()).description(o.getDescription()).build();
-                        }
-                        groupBuilder.build();
-                    }
-                    com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement savedSla = slaBuilder.build();
-
-                    List<ServiceLevelAgreementActionConfiguration> actions = transformer.getActionConfigurations(serviceLevelAgreement);
-
-                    // now assign the sla checks
-                    slaProvider.slaCheckBuilder(savedSla.getId()).removeSlaChecks().actionConfigurations(actions).build();
-
-                    //all referencing Feeds
-                    List<String> systemCategoryAndFeedNames = transformer.getCategoryFeedNames(serviceLevelAgreement);
-                    Set<Feed> slaFeeds = new HashSet<Feed>();
-                    Set<Feed.ID> slaFeedIds = new HashSet<Feed.ID>();
-                    for (String categoryAndFeed : systemCategoryAndFeedNames) {
-                        //fetch and update the reference to the sla
-                        String categoryName = StringUtils.trim(StringUtils.substringBefore(categoryAndFeed, "."));
-                        String feedName = StringUtils.trim(StringUtils.substringAfterLast(categoryAndFeed, "."));
-                        Feed feedEntity = feedProvider.findBySystemName(categoryName, feedName);
-                        if (feedEntity != null) {
-                            slaFeeds.add(feedEntity);
-                            slaFeedIds.add(feedEntity.getId());
-                        }
-                    }
-
-
-                    if (feed != null) {
-                        Feed.ID feedId = feedProvider.resolveFeed(feed.getFeedId());
-                        if (!slaFeedIds.contains(feedId)) {
-                            Feed feedEntity = feedProvider.getFeed(feedId);
-                            slaFeeds.add(feedEntity);
-                        }
-                    }
-                    //relate them
-                    feedSlaProvider.relateFeeds(savedSla, slaFeeds);
-                    com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement restModel = ServiceLevelAgreementModelTransform.toModel(savedSla, slaFeeds, true);
-                    //schedule it
-                    serviceLevelAgreementScheduler.scheduleServiceLevelAgreement(savedSla);
-                    return restModel;
-
+            if (serviceLevelAgreement != null) {
+                ServiceLevelAgreementMetricTransformerHelper transformer = new ServiceLevelAgreementMetricTransformerHelper();
+                if (feed != null) {
+                    transformer.applyFeedNameToCurrentFeedProperties(serviceLevelAgreement, feed.getCategory().getSystemName(), feed.getSystemFeedName());
                 }
-                return null;
+                ServiceLevelAgreement sla = transformer.getServiceLevelAgreement(serviceLevelAgreement);
+
+                ServiceLevelAgreementBuilder slaBuilder = null;
+                com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement.ID existingId = null;
+                if (StringUtils.isNotBlank(sla.getId())) {
+                    existingId = slaProvider.resolve(sla.getId());
+                }
+                if (existingId != null) {
+                    slaBuilder = slaProvider.builder(existingId);
+                } else {
+                    slaBuilder = slaProvider.builder();
+                }
+
+                slaBuilder.name(sla.getName()).description(sla.getDescription());
+                for (com.thinkbiganalytics.metadata.rest.model.sla.ObligationGroup group : sla.getGroups()) {
+                    ObligationGroupBuilder groupBuilder = slaBuilder.obligationGroupBuilder(ObligationGroup.Condition.valueOf(group.getCondition()));
+                    for (Obligation o : group.getObligations()) {
+                        groupBuilder.obligationBuilder().metric(o.getMetrics()).description(o.getDescription()).build();
+                    }
+                    groupBuilder.build();
+                }
+                com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement savedSla = slaBuilder.build();
+
+                List<ServiceLevelAgreementActionConfiguration> actions = transformer.getActionConfigurations(serviceLevelAgreement);
+
+                // now assign the sla checks
+                slaProvider.slaCheckBuilder(savedSla.getId()).removeSlaChecks().actionConfigurations(actions).build();
+
+                //all referencing Feeds
+                List<String> systemCategoryAndFeedNames = transformer.getCategoryFeedNames(serviceLevelAgreement);
+                Set<Feed> slaFeeds = new HashSet<Feed>();
+                Set<Feed.ID> slaFeedIds = new HashSet<Feed.ID>();
+                for (String categoryAndFeed : systemCategoryAndFeedNames) {
+                    //fetch and update the reference to the sla
+                    String categoryName = StringUtils.trim(StringUtils.substringBefore(categoryAndFeed, "."));
+                    String feedName = StringUtils.trim(StringUtils.substringAfterLast(categoryAndFeed, "."));
+                    Feed feedEntity = feedProvider.findBySystemName(categoryName, feedName);
+                    if (feedEntity != null) {
+                        slaFeeds.add(feedEntity);
+                        slaFeedIds.add(feedEntity.getId());
+                    }
+                }
+
+                if (feed != null) {
+                    Feed.ID feedId = feedProvider.resolveFeed(feed.getFeedId());
+                    if (!slaFeedIds.contains(feedId)) {
+                        Feed feedEntity = feedProvider.getFeed(feedId);
+                        slaFeeds.add(feedEntity);
+                    }
+                }
+                //relate them
+                feedSlaProvider.relateFeeds(savedSla, slaFeeds);
+                com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement restModel = ServiceLevelAgreementModelTransform.toModel(savedSla, slaFeeds, true);
+                //schedule it
+                serviceLevelAgreementScheduler.scheduleServiceLevelAgreement(savedSla);
+                return restModel;
+
+            }
+            return null;
 
 
         });
@@ -321,7 +319,6 @@ public class ServiceLevelAgreementService implements ServicesApplicationStartupL
         });
 
     }
-
 
 
 }

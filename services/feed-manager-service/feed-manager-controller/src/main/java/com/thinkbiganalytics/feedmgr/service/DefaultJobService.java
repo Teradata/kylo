@@ -108,7 +108,7 @@ public class DefaultJobService implements JobService {
             BatchJobExecution execution = this.jobExecutionProvider.findByJobExecutionId(executionId);
             if (execution != null && !execution.isFailed()) {
                 Set<BatchStepExecution> steps = execution.getStepExecutions();
-                if(steps != null) {
+                if (steps != null) {
                     for (BatchStepExecution step : steps) {
                         if (!step.isFinished()) {
                             step.setStatus(BatchStepExecution.StepStatus.FAILED);
@@ -135,7 +135,6 @@ public class DefaultJobService implements JobService {
             return execution;
         });
     }
-
 
 
 }

@@ -349,6 +349,7 @@ public abstract class AbstractFeedManagerTemplateService implements FeedManagerT
 
     /**
      * Return a list of Processors and their properties for the incoming template
+     *
      * @param nifiTemplateId a NiFi template id
      * @return a list of Processors and their properties for the incoming template
      */
