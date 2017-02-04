@@ -151,7 +151,6 @@
             return loadJobs(true).promise;
         };
 
-        //Sort Functions
         /**
          * Build the possible Sorting Options
          * @returns {*[]}
@@ -287,7 +286,6 @@
 
 
                 var query = tabTitle != 'All' ? tabTitle.toLowerCase() : '';
-               // console.log('QUERY WITH ',params)
 
                 $http.get(JobData.JOBS_QUERY_URL + "/" + query, {timeout: canceler.promise, params: params}).then(successFn, errorFn);
             }

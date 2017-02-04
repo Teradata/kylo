@@ -32,7 +32,6 @@ angular.module(MODULE_FEED_MGR).service('RestUrlService', function () {
     this.GET_TEMPLATES_URL = self.TEMPLATES_BASE_URL;
     this.GET_UNREGISTERED_TEMPLATES_URL = self.TEMPLATES_BASE_URL + "/unregistered";
     this.HADOOP_AUTHORIZATATION_BASE_URL = self.ROOT + "/proxy/v1/feedmgr/hadoop-authorization";
-    //this.UPLOAD_SAMPLE_TABLE_FILE = self.FEEDS_BASE_URL + "/table/sample-file";
 
     this.UPLOAD_SAMPLE_TABLE_FILE = this.SCHEMA_DISCOVERY_BASE_URL + "/hive/sample-file";
     this.LIST_FILE_PARSERS = this.SCHEMA_DISCOVERY_BASE_URL + "/file-parsers";
