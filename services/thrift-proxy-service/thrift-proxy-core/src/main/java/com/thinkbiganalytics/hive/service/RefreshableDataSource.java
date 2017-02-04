@@ -52,17 +52,11 @@ public class RefreshableDataSource implements DataSource {
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(RefreshableDataSource.class);
 
     private static final String DEFAULT_DATASOURCE_NAME = "DEFAULT";
-
-    //private AtomicReference<DataSource> target = new AtomicReference<DataSource>();
-    private ConcurrentHashMap<String,DataSource> datasources = new ConcurrentHashMap<>();
-
-    private AtomicBoolean isRefreshing = new AtomicBoolean(false);
     String propertyPrefix;
-
-
     @Autowired
     Environment env;
-
+    private ConcurrentHashMap<String, DataSource> datasources = new ConcurrentHashMap<>();
+    private AtomicBoolean isRefreshing = new AtomicBoolean(false);
     @Inject
     @Qualifier("kerberosHiveConfiguration")
     private KerberosTicketConfiguration kerberosTicketConfiguration;
@@ -71,23 +65,19 @@ public class RefreshableDataSource implements DataSource {
         this.propertyPrefix = propertyPrefix;
     }
 
-    //@PostConstruct
     public void refresh() {
         if (isRefreshing.compareAndSet(false, true)) {
             log.info("REFRESHING DATASOURCE for {} ", propertyPrefix);
             boolean userImpersonationEnabled = Boolean.valueOf(env.getProperty("hive.userImpersonation.enabled"));
-            if(userImpersonationEnabled && propertyPrefix.equals("hive.datasource")) {
+            if (userImpersonationEnabled && propertyPrefix.equals("hive.datasource")) {
                 String currentUser = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-                DataSource dataSource = create(true,currentUser);
+                DataSource dataSource = create(true, currentUser);
                 datasources.put(currentUser, dataSource);
-            }
-            else {
-                DataSource dataSource = create(false,null);
+            } else {
+                DataSource dataSource = create(false, null);
                 datasources.put(DEFAULT_DATASOURCE_NAME, dataSource);
             }
             isRefreshing.set(false);
-        } else {
-            //unable to refresh.  Refresh already in progress
         }
     }
 
@@ -114,11 +104,10 @@ public class RefreshableDataSource implements DataSource {
             DataSourceUtils.releaseConnection(connection, this.getDataSource());
         }
         return valid;
-
     }
 
     private Connection getConnectionForValidation() throws SQLException {
-        if(getDataSource() == null) {
+        if (getDataSource() == null) {
             refresh();
         }
         return KerberosUtil.getConnectionWithOrWithoutKerberos(getDataSource(), kerberosTicketConfiguration);
@@ -156,15 +145,12 @@ public class RefreshableDataSource implements DataSource {
         return testAndRefreshIfInvalid(username, password);
     }
 
-    //Rest of DataSource methods
-
     private DataSource getDataSource() {
         boolean userImpersonationEnabled = Boolean.valueOf(env.getProperty("hive.userImpersonation.enabled"));
-        if(userImpersonationEnabled && propertyPrefix.equals("hive.datasource")) {
+        if (userImpersonationEnabled && propertyPrefix.equals("hive.datasource")) {
             String currentUser = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
             return datasources.get(currentUser);
-        }
-        else {
+        } else {
             return datasources.get(DEFAULT_DATASOURCE_NAME);
         }
     }
@@ -181,13 +167,13 @@ public class RefreshableDataSource implements DataSource {
     }
 
     @Override
-    public void setLoginTimeout(int seconds) throws SQLException {
-        getDataSource().setLoginTimeout(seconds);
+    public int getLoginTimeout() throws SQLException {
+        return getDataSource().getLoginTimeout();
     }
 
     @Override
-    public int getLoginTimeout() throws SQLException {
-        return getDataSource().getLoginTimeout();
+    public void setLoginTimeout(int seconds) throws SQLException {
+        getDataSource().setLoginTimeout(seconds);
     }
 
     @Override
@@ -218,7 +204,7 @@ public class RefreshableDataSource implements DataSource {
         String password = env.getProperty(prefix + "password");
         String userName = env.getProperty(prefix + "username");
 
-        if(proxyUser && propertyPrefix.equals("hive.datasource")) {
+        if (proxyUser && propertyPrefix.equals("hive.datasource")) {
             userName = principal;
             url = url + ";hive.server2.proxy.user=" + principal;
         }

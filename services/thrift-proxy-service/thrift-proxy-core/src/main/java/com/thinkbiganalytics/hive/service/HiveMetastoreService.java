@@ -57,26 +57,23 @@ public class HiveMetastoreService {
     private static final Logger log = LoggerFactory.getLogger(HiveMetastoreService.class);
 
 
-
     @Inject
     @Qualifier("hiveMetatoreJdbcTemplate")
     private JdbcTemplate hiveMetatoreJdbcTemplate;
-
-    public DataSource getDataSource(){
-
-      return hiveMetatoreJdbcTemplate.getDataSource();
-    }
-
-
     private DatabaseType metastoreDatabaseType = null;
 
-    private DatabaseType getMetastoreDatabaseType(){
-        if(metastoreDatabaseType == null){
+    public DataSource getDataSource() {
+
+        return hiveMetatoreJdbcTemplate.getDataSource();
+    }
+
+    private DatabaseType getMetastoreDatabaseType() {
+        if (metastoreDatabaseType == null) {
             try {
                 metastoreDatabaseType = DatabaseType.fromMetaData(getDataSource());
                 return metastoreDatabaseType;
             } catch (MetaDataAccessException e) {
-                log.error("Unable to determine Metastore Database Type.  Using default type of "+DatabaseType.MYSQL+". "+e.getMessage(),e);
+                log.error("Unable to determine Metastore Database Type.  Using default type of " + DatabaseType.MYSQL + ". " + e.getMessage(), e);
             }
             return DatabaseType.MYSQL;
         }
@@ -84,10 +81,7 @@ public class HiveMetastoreService {
     }
 
 
-
-    public  List<DatabaseMetadata> getTableColumns(List<String> tablesFilter) throws DataAccessException{
-
-        List<DatabaseMetadata> metadata = new ArrayList<>();
+    public List<DatabaseMetadata> getTableColumns(List<String> tablesFilter) throws DataAccessException {
 
         String query = "SELECT d.NAME as \"DATABASE_NAME\", t.TBL_NAME, c.COLUMN_NAME "
                        + "FROM COLUMNS_V2 c "
@@ -96,7 +90,7 @@ public class HiveMetastoreService {
                        + "JOIN  DBS d on d.DB_ID = t.DB_ID "
                        + "ORDER BY d.NAME, t.TBL_NAME";
 
-        if(DatabaseType.POSTGRES.equals(getMetastoreDatabaseType())){
+        if (DatabaseType.POSTGRES.equals(getMetastoreDatabaseType())) {
             query = "SELECT d.\"NAME\" as \"DATABASE_NAME\", t.\"TBL_NAME\", c.\"COLUMN_NAME\" "
                     + "FROM \"COLUMNS_V2\" c "
                     + "JOIN  \"SDS\" s on s.\"CD_ID\" = c.\"CD_ID\" "
@@ -105,8 +99,7 @@ public class HiveMetastoreService {
                     + "ORDER BY d.\"NAME\", t.\"TBL_NAME\"";
         }
 
-
-       metadata = hiveMetatoreJdbcTemplate.query(query, new RowMapper<DatabaseMetadata>() {
+        List<DatabaseMetadata> metadata = hiveMetatoreJdbcTemplate.query(query, new RowMapper<DatabaseMetadata>() {
             @Override
             public DatabaseMetadata mapRow(ResultSet rs, int i) throws SQLException {
                 DefaultDatabaseMetadata row = new DefaultDatabaseMetadata();
@@ -117,40 +110,39 @@ public class HiveMetastoreService {
             }
         });
 
-
-        return tablesFilter == null? metadata : filterDatabaseMetadata(metadata, tablesFilter);
+        return tablesFilter == null ? metadata : filterDatabaseMetadata(metadata, tablesFilter);
 
     }
 
     private List<DatabaseMetadata> filterDatabaseMetadata(List<DatabaseMetadata> allTables, List<String> tablesFilter) {
         List<DatabaseMetadata> results = new ArrayList<>();
         allTables.forEach(metadata -> {
-            if(tablesFilter.contains(metadata.getDatabaseName() + "." + metadata.getTableName())) {
+            if (tablesFilter.contains(metadata.getDatabaseName() + "." + metadata.getTableName())) {
                 results.add(metadata);
             }
         });
         return results;
     }
 
-    public List<String> getAllTables() throws DataAccessException{
-        List<String> allTables = new ArrayList<>();
+    public List<String> getAllTables() throws DataAccessException {
+
         String query = "SELECT d.NAME as \"DATABASE_NAME\", t.TBL_NAME FROM TBLS t JOIN DBS d on d.DB_ID = t.DB_ID ORDER BY d.NAME, t.TBL_NAME";
-        if(DatabaseType.POSTGRES.equals(getMetastoreDatabaseType())){
+        if (DatabaseType.POSTGRES.equals(getMetastoreDatabaseType())) {
             query = "SELECT d.\"NAME\" as \"DATABASE_NAME\", t.\"TBL_NAME\" FROM \"TBLS\" t JOIN \"DBS\" d on d.\"DB_ID\" = t.\"DB_ID\" ORDER BY d.\"NAME\", t.\"TBL_NAME\"";
         }
-        allTables = hiveMetatoreJdbcTemplate.query(query, new RowMapper<String>() {
+        List<String>  allTables = hiveMetatoreJdbcTemplate.query(query, new RowMapper<String>() {
             @Override
             public String mapRow(ResultSet rs, int i) throws SQLException {
                 String dbName = rs.getString("DATABASE_NAME");
                 String tableName = rs.getString("TBL_NAME");
-                return dbName+"."+tableName;
+                return dbName + "." + tableName;
             }
         });
         return allTables;
     }
 
 
-    public  List<TableSchema> getTableSchemas() throws DataAccessException{
+    public List<TableSchema> getTableSchemas() throws DataAccessException {
 
         String query = "SELECT d.NAME as \"DATABASE_NAME\", t.TBL_NAME, c.COLUMN_NAME c.TYPE_NAME "
                        + "FROM COLUMNS_V2 c "
@@ -158,7 +150,7 @@ public class HiveMetastoreService {
                        + "JOIN  TBLS t ON s.SD_ID = t.SD_ID "
                        + "JOIN  DBS d on d.DB_ID = t.DB_ID "
                        + "ORDER BY d.NAME, t.TBL_NAME";
-        if(DatabaseType.POSTGRES.equals(getMetastoreDatabaseType())){
+        if (DatabaseType.POSTGRES.equals(getMetastoreDatabaseType())) {
             query = "SELECT d.\"NAME\" as \"DATABASE_NAME\", t.\"TBL_NAME\", c.\"COLUMN_NAME\",c.\"TYPE_NAME\" "
                     + "FROM \"COLUMNS_V2\" c "
                     + "JOIN  \"SDS\" s on s.\"CD_ID\" = c.\"CD_ID\" "
@@ -166,10 +158,9 @@ public class HiveMetastoreService {
                     + "JOIN  \"DBS\" d on d.\"DB_ID\" = t.\"DB_ID\" ";
 
 
-
         }
-       final List<TableSchema> metadata = new ArrayList<>();
-        final Map<String,Map<String,TableSchema>> databaseTables = new HashMap<>();
+        final List<TableSchema> metadata = new ArrayList<>();
+        final Map<String, Map<String, TableSchema>> databaseTables = new HashMap<>();
 
         hiveMetatoreJdbcTemplate.query(query, new RowMapper<Object>() {
             @Override
@@ -178,11 +169,11 @@ public class HiveMetastoreService {
                 String columnName = rs.getString("COLUMN_NAME");
                 String tableName = rs.getString("TBL_NAME");
                 String columnType = rs.getString("TYPE_NAME");
-                if(!databaseTables.containsKey(dbName)){
-                    databaseTables.put(dbName,new HashMap<String,TableSchema>());
+                if (!databaseTables.containsKey(dbName)) {
+                    databaseTables.put(dbName, new HashMap<String, TableSchema>());
                 }
-                Map<String,TableSchema>tables = databaseTables.get(dbName);
-                if(!tables.containsKey(tableName)){
+                Map<String, TableSchema> tables = databaseTables.get(dbName);
+                if (!tables.containsKey(tableName)) {
                     DefaultTableSchema schema = new DefaultTableSchema();
                     schema.setName(tableName);
                     schema.setSchemaName(dbName);

@@ -20,8 +20,6 @@ package com.thinkbiganalytics.hive.config;
  * #L%
  */
 
-//import com.thinkbiganalytics.hive.service.RefreshableDataSource;
-
 import com.thinkbiganalytics.hive.service.HiveService;
 import com.thinkbiganalytics.hive.service.RefreshableDataSource;
 
@@ -50,14 +48,14 @@ public class HiveDataSourceConfiguration {
     private Environment env;
 
 
-    @Bean(name="hiveJdbcTemplate")
-    public JdbcTemplate hiveJdbcTemplate(@Qualifier("hiveDataSource")   DataSource dataSource) {
+    @Bean(name = "hiveJdbcTemplate")
+    public JdbcTemplate hiveJdbcTemplate(@Qualifier("hiveDataSource") DataSource dataSource) {
         return new JdbcTemplate(dataSource);
     }
 
 
-    @Bean(name="hiveMetatoreJdbcTemplate")
-    public JdbcTemplate hiveMetatoreJdbcTemplate(@Qualifier("hiveMetastoreDataSource")  DataSource hiveMetastoreDataSource) {
+    @Bean(name = "hiveMetatoreJdbcTemplate")
+    public JdbcTemplate hiveMetatoreJdbcTemplate(@Qualifier("hiveMetastoreDataSource") DataSource hiveMetastoreDataSource) {
         return new JdbcTemplate(hiveMetastoreDataSource);
     }
 
@@ -68,18 +66,15 @@ public class HiveDataSourceConfiguration {
     }
 
 
-    @Bean(name="hiveDataSource")
+    @Bean(name = "hiveDataSource")
     public DataSource dataSource() {
-
-        //  DataSource ds = DataSourceBuilder.create().build();
-        // return ds;
 
         RefreshableDataSource ds = new RefreshableDataSource("hive.datasource");
         return ds;
     }
 
 
-    @Bean(name="hiveMetastoreDataSource")
+    @Bean(name = "hiveMetastoreDataSource")
     @ConfigurationProperties(prefix = "hive.metastore.datasource")
     public DataSource metadataDataSource() {
         DataSource ds = DataSourceBuilder.create().build();
