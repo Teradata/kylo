@@ -34,7 +34,7 @@ import java.util.Set;
  */
 public interface FeedManagerTemplateService {
 
-    String templateIdForTemplateName(String templateName);
+    String nifiTemplateIdForTemplateName(String templateName);
 
     RegisteredTemplate registerTemplate(RegisteredTemplate registeredTemplate);
 

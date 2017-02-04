@@ -39,6 +39,7 @@ import java.util.TreeMap;
  *
  *
  * Helper class to get Environment Properties
+ * reference for RefreshScope: http://cloud.spring.io/spring-cloud-static/docs/1.0.x/spring-cloud.html#_refresh_scope
  */
 @RefreshScope
 public class SpringEnvironmentProperties {

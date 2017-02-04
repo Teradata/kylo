@@ -32,7 +32,8 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Created by sr186054 on 2/23/16.
+ * persist the feed metadata to the file.
+ * This should only be used in test cases and is not scalable for production use.
  */
 public class FileObjectPersistence {
 

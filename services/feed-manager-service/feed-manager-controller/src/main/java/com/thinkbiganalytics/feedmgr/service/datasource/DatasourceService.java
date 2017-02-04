@@ -47,7 +47,7 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 /**
- * Created by sr186054 on 11/15/16.
+ * Provides access to the {@link DatasourceDefinition} and {@link com.thinkbiganalytics.metadata.rest.model.feed.FeedLineage}
  */
 public class DatasourceService  {
 
@@ -113,7 +113,10 @@ public class DatasourceService  {
     }
 
 
-
+    /**
+     * Load the 'datasource-definitions.json' datasource definitions file
+     * this is called on startup of Kylo
+     */
     public void loadDefinitionsFromFile() {
 
 
@@ -125,6 +128,9 @@ public class DatasourceService  {
         updateDatasourceDefinitions(definitions);
     }
 
+    /**
+     * Update any definitions
+     */
     public Set<DatasourceDefinition> updateDatasourceDefinitions(List<DatasourceDefinition> definitions) {
         if (definitions != null) {
             final List<DatasourceDefinition> datasourceDefinitions = definitions;
@@ -151,6 +157,10 @@ public class DatasourceService  {
     }
 
 
+    /**
+     * Return the saved datasource definitions
+     * @return a list of the configured datasource definitions
+     */
     public Set<DatasourceDefinition> getDatasourceDefinitions(){
        return  metadataAccess.read(() -> {
           Set<com.thinkbiganalytics.metadata.api.datasource.DatasourceDefinition> datasourceDefinitions =  datasourceDefinitionProvider.getDatasourceDefinitions();
@@ -162,6 +172,9 @@ public class DatasourceService  {
     }
 
 
+    /**
+     * Listener to load the definitions from the file once Modeshape starts
+     */
     public class DatasourceLoadStartupListener implements ModeShapeAvailabilityListener {
 
         @Override

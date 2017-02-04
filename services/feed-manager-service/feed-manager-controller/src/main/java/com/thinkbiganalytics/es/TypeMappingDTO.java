@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by sr186054 on 2/10/16.
+ * Store information about the Elastic search types
  */
 public class TypeMappingDTO {
     String type;

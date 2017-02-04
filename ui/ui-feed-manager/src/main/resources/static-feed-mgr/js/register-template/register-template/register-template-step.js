@@ -166,12 +166,6 @@
                     var datasourceDefinitions = response.data.templateProcessorDatasourceDefinitions;
                     self.allowUserDefinedFailureProcessors = response.data.userDefinedFailureProcessors;
 
-                    self.leafProcessors = _.filter(response.data.processors, function (processor) {
-                        return processor.leaf == true;
-                    });
-
-                    self.processorFlowTypeOptions = response.data.processorFlowTypes;
-
                     //merge in those already selected/saved on this template
                     _.each(datasourceDefinitions, function (def) {
                         def.selectedDatasource = false;
@@ -188,7 +182,7 @@
                             }
                         }
                     });
-                    //sort with SOURCEs first
+                    //sort with SOURCE's first
                     self.processorDatasourceDefinitions = _.sortBy(datasourceDefinitions, function (def) {
                         if (def.datasourceDefinition.connectionType == 'SOURCE') {
                             return 1;
@@ -226,7 +220,6 @@
                         self.registerTemplateForm["port-" + connection.feedOutputPortName].$setValidity("invalidConnection", true);
                         if (!angular.isDefined(self.connectionMap[connection.inputPortDisplayName])) {
                             connection.inputPortDisplayName = null;
-                            // self.$error["port-" + connection.feedOutputPortName] = true;
                             //mark as invalid
                             self.registerTemplateForm["port-" + connection.feedOutputPortName].$setValidity("invalidConnection", false);
                         }
@@ -249,43 +242,6 @@
          * Initialize the connections and flow data
          */
         initTemplateFlowData();
-
-        this.removeProcessorFlowType = function (flowTypeRelationship) {
-            var item = _.find(self.templateFlowTypeProcessors, function (flowTypeRelationship) {
-                return flowTypeRelationship._id == flowTypeRelationship._id;
-            });
-            if (item != undefined) {
-                //remove it
-                self.templateFlowTypeProcessors.splice(_.indexOf(self.templateFlowTypeProcessors, flowTypeRelationship), 1);
-            }
-        }
-
-        /**
-         * Adds a placeholder processor type with a marker field of 'isEmpty' to indicate this processortype is new and needs to be set
-         */
-        this.addFlowProcessorType = function () {
-            var alreadyAdding = _.find(self.templateFlowTypeProcessors, function (flowTypeRelationship) {
-                return flowTypeRelationship.isEmpty != undefined && flowTypeRelationship.isEmpty == true;
-            });
-            if (alreadyAdding == undefined) {
-                self.templateFlowTypeProcessors.push({isNew: true, isEmpty: true, name: '', flowId: '', flowType: 'NORMAL_FLOW', relationship: 'success', id: _.uniqueId()})
-            }
-        }
-
-        /**
-         * Called when the user changes the processor in the select for defining the flow types
-         * @param processor
-         */
-        this.changeProcessorFlowType = function (flowTypeRelationship) {
-
-            //remove the isEmpty marker to allow for another Add
-            if (flowTypeRelationship.isEmpty != undefined) {
-                flowTypeRelationship.isEmpty = undefined
-            }
-            //   var matchingProcessor = self.flowIdFlowProcessorMap[flowTypeRelationship.flowId];
-            //  flowTypeRelationship.flowId = matchingProcessor.flowId
-            //  angular.extend(processor, matchingProcessor);
-        }
 
         /**
          * Called when the user changes the radio buttons

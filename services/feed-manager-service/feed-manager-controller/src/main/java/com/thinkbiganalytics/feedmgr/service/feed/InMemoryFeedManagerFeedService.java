@@ -53,6 +53,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
+/**
+ * In memory implementation
+ */
 public class InMemoryFeedManagerFeedService extends AbstractFeedManagerFeedService implements FeedManagerFeedService {
 
     @Inject
@@ -109,19 +112,6 @@ public class InMemoryFeedManagerFeedService extends AbstractFeedManagerFeedServi
         return summaryList;
     }
 
-
-    /**
-     * Get a list of all the feeds which use a Template designated as being reusable
-     */
-    @Override
-    public List<FeedMetadata> getReusableFeeds() {
-        return Lists.newArrayList(Iterables.filter(feeds.values(), new Predicate<FeedMetadata>() {
-            @Override
-            public boolean apply(FeedMetadata feedMetadata) {
-                return feedMetadata.isReusableFeed();
-            }
-        }));
-    }
 
     public List<FeedSummary> getFeedSummaryForCategory(String categoryId) {
         List<FeedSummary> summaryList = new ArrayList<>();
@@ -253,17 +243,6 @@ public class InMemoryFeedManagerFeedService extends AbstractFeedManagerFeedServi
     @Override
     public void deleteFeed(@Nonnull String feedId) {
         feeds.remove(feedId);
-    }
-
-    public void updateFeedsWithTemplate(String oldTemplateId, String newTemplateId) {
-        List<FeedMetadata> feedsToUpdate = getFeedsWithTemplate(oldTemplateId);
-        if (feedsToUpdate != null && !feedsToUpdate.isEmpty()) {
-            for (FeedMetadata feedMetadata : feedsToUpdate) {
-                feedMetadata.setTemplateId(newTemplateId);
-            }
-            //save the feeds
-            FileObjectPersistence.getInstance().writeFeedsToFile(feeds.values());
-        }
     }
 
     @Override

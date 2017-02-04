@@ -280,7 +280,7 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
 
     public FeedManagerTemplate ensureNifiTemplateId(FeedManagerTemplate feedManagerTemplate) {
             if (feedManagerTemplate.getNifiTemplateId() == null) {
-                String nifiTemplateId = templateIdForTemplateName(feedManagerTemplate.getName());
+                String nifiTemplateId = nifiTemplateIdForTemplateName(feedManagerTemplate.getName());
                 feedManagerTemplate.setNifiTemplateId(nifiTemplateId);
             }
             return feedManagerTemplate;

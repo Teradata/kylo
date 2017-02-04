@@ -144,17 +144,28 @@ public class NifiControllerServiceProperties {
     }
 
 
+    /**
+     * Find a Controller service with a given display name
+     *
+     * @param serviceName a controller service name
+     * @return a Controller service with a given display name or null if not found
+     */
     public ControllerServiceDTO getControllerServiceByName(String serviceName) {
         ControllerServiceDTO controllerService = null;
-            try {
-                controllerService = nifiRestClient.getControllerServiceByName(null, serviceName);
-            } catch (NifiClientRuntimeException e) {
-                log.error("Unable to find Nifi Controller Service with name: " + serviceName + ".  " + e.getMessage(), e);
-            }
+        try {
+            controllerService = nifiRestClient.getControllerServiceByName(null, serviceName);
+        } catch (NifiClientRuntimeException e) {
+            log.error("Unable to find Nifi Controller Service with name: " + serviceName + ".  " + e.getMessage(), e);
+        }
 
         return controllerService;
     }
 
+    /**
+     * Find a controller service with a given NiFi id or null if not found
+     * @param serviceId a controller service id
+     * @return a controller service with a given NiFi id or null if not found
+     */
     public ControllerServiceDTO getControllerServiceById(String serviceId) {
         ControllerServiceDTO controllerService = null;
         try {
@@ -168,6 +179,12 @@ public class NifiControllerServiceProperties {
         return controllerService;
     }
 
+    /**
+     * return the property prepended with the prefix used in the .properties file to denote nifi controller service settings.
+     * the default prefix is 'nifi.'
+     * @param serviceName a service name
+     * @return the property prepended with the prefix used in the .properties file to denote nifi controller service settings.
+     */
     public String getEnvironmentControllerServicePropertyPrefix(String serviceName){
         return NifiEnvironmentProperties.getEnvironmentControllerServicePropertyPrefix(serviceName);
     }

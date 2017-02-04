@@ -35,7 +35,6 @@ import javax.inject.Inject;
 
 /**
  * Configures the allowable actions for feed management.
- * @author Sean Felten
  */
 @Configuration
 public class FeedManagerSecurityConfiguration {

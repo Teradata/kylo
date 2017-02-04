@@ -37,7 +37,6 @@ import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceService;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
-import com.thinkbiganalytics.feedmgr.support.Constants;
 import com.thinkbiganalytics.metadata.rest.model.data.DatasourceDefinition;
 import com.thinkbiganalytics.nifi.feedmgr.TemplateCreationHelper;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
@@ -555,13 +554,13 @@ public class TemplatesRestController {
 
         if (saved.isReusableTemplate()) {
             //attempt to auto create the Feed using this template
-            FeedMetadata metadata = metadataService.getFeedByName(Constants.REUSABLE_TEMPLATES_CATEGORY_NAME, saved.getTemplateName());
+            FeedMetadata metadata = metadataService.getFeedByName(TemplateCreationHelper.REUSABLE_TEMPLATES_CATEGORY_NAME, saved.getTemplateName());
             if (metadata == null) {
                 metadata = new FeedMetadata();
                 FeedCategory category = metadataService.getCategoryBySystemName(TemplateCreationHelper.REUSABLE_TEMPLATES_PROCESS_GROUP_NAME);
                 if(category == null){
                     category = new FeedCategory();
-                    category.setName(Constants.REUSABLE_TEMPLATES_CATEGORY_NAME);
+                    category.setName(TemplateCreationHelper.REUSABLE_TEMPLATES_CATEGORY_NAME);
                     metadataService.saveCategory(category);
                 }
                 metadata.setCategory(category);

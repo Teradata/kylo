@@ -30,7 +30,7 @@ import java.util.List;
 import javax.inject.Inject;
 
 /**
- * Created by sr186054 on 5/5/16.
+ *
  */
 public class FeedManagerPreconditionService {
     @Inject

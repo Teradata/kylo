@@ -38,7 +38,6 @@ import com.thinkbiganalytics.support.FeedNameUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -51,7 +50,7 @@ import java.util.zip.ZipInputStream;
 import javax.inject.Inject;
 
 /**
- * Created by sr186054 on 5/6/16.
+ * Service used to export and import feeds
  */
 public class ExportImportFeedService {
 
@@ -59,7 +58,7 @@ public class ExportImportFeedService {
 
     private static final String FEED_JSON_FILE = "feed.json";
 
-    @Autowired
+    @Inject
     MetadataService metadataService;
 
     @Inject

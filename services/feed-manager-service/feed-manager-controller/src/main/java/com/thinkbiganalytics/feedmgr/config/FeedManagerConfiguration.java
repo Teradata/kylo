@@ -27,6 +27,7 @@ import com.thinkbiganalytics.feedmgr.nifi.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.SpringCloudContextEnvironmentChangedListener;
 import com.thinkbiganalytics.feedmgr.nifi.SpringEnvironmentProperties;
+import com.thinkbiganalytics.feedmgr.service.DefaultJobService;
 import com.thinkbiganalytics.feedmgr.service.ExportImportTemplateService;
 import com.thinkbiganalytics.feedmgr.service.FeedManagerMetadataService;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
@@ -44,9 +45,9 @@ import com.thinkbiganalytics.feedmgr.service.template.DefaultFeedManagerTemplate
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
 import com.thinkbiganalytics.feedmgr.service.template.TemplateModelTransform;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
+import com.thinkbiganalytics.jobrepo.service.JobService;
 import com.thinkbiganalytics.metadata.core.feed.FeedPreconditionService;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -54,8 +55,10 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.util.Assert;
 
+import javax.inject.Inject;
+
 /**
- * Created by sr186054 on 2/26/16.
+ * Spring Bean configuration for feed manager
  */
 @Configuration
 @PropertySource("classpath:application.properties")
@@ -65,7 +68,7 @@ public class FeedManagerConfiguration {
     public FeedManagerConfiguration() {
     }
 
-    @Autowired
+    @Inject
     private Environment env;
 
 
@@ -196,6 +199,11 @@ public class FeedManagerConfiguration {
     @Bean
     public DerivedDatasourceFactory derivedDatasourceFactory() {
         return new DerivedDatasourceFactory();
+    }
+
+    @Bean
+    public JobService jobService() {
+        return new DefaultJobService();
     }
 
 }

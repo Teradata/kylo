@@ -33,7 +33,6 @@ import org.elasticsearch.common.collect.ImmutableOpenMap;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.index.query.QueryStringQueryBuilder;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -44,7 +43,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Created by sr186054 on 2/10/16.
+ * Elastic Search Client
  */
 public class ElasticSearch {
 
@@ -54,7 +53,15 @@ public class ElasticSearch {
         this.clientConfig = clientConfig;
     }
 
+    /**
+     * the elastic search client
+     **/
     private Client client;
+
+    /**
+     * Return the client.  If the client has not been setup yet, it will create and configure it
+     * @return
+     */
     public Client getClient(){
         if(this.client == null) {
             Client client = null;
@@ -62,9 +69,9 @@ public class ElasticSearch {
                 String hostName = clientConfig.getHost();
                 String clusterName = clientConfig.getClusterName();
                 Settings settings = Settings.settingsBuilder()
-                        .put("cluster.name", clusterName).build();
+                    .put("cluster.name", clusterName).build();
                 client = TransportClient.builder().settings(settings).build()
-                        .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(hostName), clientConfig.getPort()));
+                    .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(hostName), clientConfig.getPort()));
                 this.client = client;
             } catch (UnknownHostException e) {
                 throw new RuntimeException(e);
@@ -74,12 +81,7 @@ public class ElasticSearch {
         return client;
     }
 
-    public SearchResponse search(String query, int size){
-        SearchRequestBuilder srb1 = getClient()
-                .prepareSearch().setQuery(QueryBuilders.queryStringQuery(query)).setSize(size);
-        SearchResponse response = srb1.execute().actionGet();
-        return response;
-    }
+
 
     public SearchResult search(String query, int size, int start){
         SearchRequestBuilder srb1 = getClient()
@@ -102,40 +104,6 @@ public class ElasticSearch {
         searchResult.setTookInMillis(response.getTookInMillis());
         searchResult.setSearchHits(Lists.newArrayList(response.getHits().getHits()));
         return searchResult;
-    }
-
-    public SearchResult searchTable(String query, int size, int start){
-
-        QueryStringQueryBuilder queryStringQueryBuilder = QueryBuilders.queryStringQuery(query);
-
-        SearchRequestBuilder srb1 = getClient()
-                .prepareSearch().setQuery(queryStringQueryBuilder).setFrom(start).setSize(size);
-        SearchResponse response = srb1.execute().actionGet();
-        SearchResult searchResult = new SearchResult();
-        searchResult.setTotalHits(response.getHits().getTotalHits());
-
-        searchResult.setFrom(new Long(start+1));
-        searchResult.setTo(new Long(start + size));
-
-        if(searchResult.getTotalHits() < (start + size)) {
-            searchResult.setTo(searchResult.getTotalHits());
-        }
-
-        if(searchResult.getTotalHits() == 0){
-            searchResult.setFrom(0L);
-        }
-
-        searchResult.setTookInMillis(response.getTookInMillis());
-        searchResult.setSearchHits(Lists.newArrayList(response.getHits().getHits()));
-        return searchResult;
-    }
-
-
-    public SearchResponse search2(String query, int size, List<String> indicies){
-        SearchRequestBuilder srb1 = getClient()
-                .prepareSearch().setIndices(indicies.toArray(new String[indicies.size()])).setQuery(QueryBuilders.queryStringQuery(query)).setSize(size);
-        SearchResponse response = srb1.execute().actionGet();
-        return response;
     }
 
     /**

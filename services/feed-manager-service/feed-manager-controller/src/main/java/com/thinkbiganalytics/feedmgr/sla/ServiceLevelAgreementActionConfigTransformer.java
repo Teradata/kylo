@@ -40,7 +40,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Created by sr186054 on 4/21/16.
+ * Transform to/from  {@link ServiceLevelAgreementActionUiConfigurationItem} / {@link ServiceLevelAgreementActionConfiguration}
  */
 public class ServiceLevelAgreementActionConfigTransformer
     extends BasePolicyAnnotationTransformer<ServiceLevelAgreementActionUiConfigurationItem, ServiceLevelAgreementActionConfiguration, ServiceLevelAgreementActionConfig> {

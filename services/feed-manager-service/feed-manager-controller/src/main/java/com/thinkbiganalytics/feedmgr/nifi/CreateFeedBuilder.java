@@ -63,7 +63,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 
 /**
- * Builds a NiFi feed based on a NiFi template and a Feed Manager Feed. Internally this uses the NiFi REST API.
+ * Builds/updates a NiFi feed flow based on a NiFi template and a Feed Manager Feed.
  */
 public class CreateFeedBuilder {
 
@@ -180,33 +180,11 @@ public class CreateFeedBuilder {
     }
 
 
-    private void connectFeedToReusableTemplate(String feedGroupId) throws NifiComponentNotFoundException {
-        ProcessGroupDTO reusableTemplateCategory = restClient.getProcessGroupByName("root", reusableTemplateCategoryName);
-        ProcessGroupDTO feedProcessGroup = restClient.getProcessGroup(feedGroupId, false, false);
-        String feedCategoryId = feedProcessGroup.getParentGroupId();
-        if(reusableTemplateCategory == null){
-            throw new NifiClientRuntimeException("Unable to find the Reusable Template Group. Please ensure NiFi has the 'reusable_templates' processgroup and appropriate reusable flow for this feed."
-                                                 + " You may need to import the base reusable template for this feed.");
-        }
-        String reusableTemplateCategoryGroupId = reusableTemplateCategory.getId();
-        for (InputOutputPort port : inputOutputPorts) {
-            restClient.connectFeedToGlobalTemplate(feedGroupId, port.getOutputPortName(), feedCategoryId, reusableTemplateCategoryGroupId, port.getInputPortName());
-        }
-    }
-
-    private void ensureInputPortsForReuseableTemplate(String feedGroupId) throws NifiComponentNotFoundException {
-        ProcessGroupDTO template = restClient.getProcessGroup(feedGroupId, false, false);
-        String categoryId = template.getParentGroupId();
-        restClient.createReusableTemplateInputPort(categoryId, feedGroupId);
-
-    }
-
-
-    private boolean hasConnectionPorts() {
-        return !inputOutputPorts.isEmpty() || isReusableTemplate;
-    }
-
-
+    /**
+     * Build the NiFi flow instance
+     *
+     * @return an object indicating if the feed flow was successfully built or not
+     */
     public NifiProcessGroup build() throws FeedCreationException {
         try {
             newProcessGroup = null;
@@ -334,33 +312,6 @@ public class CreateFeedBuilder {
         }
     }
 
-    private ProcessorDTO fetchInputProcessorForProcessGroup(ProcessGroupDTO entity) {
-        // Find first processor by type
-        final List<ProcessorDTO> inputProcessors = NifiProcessUtil.getInputProcessors(entity);
-        final ProcessorDTO input = Optional.ofNullable(NifiProcessUtil.findFirstProcessorsByType(inputProcessors, inputProcessorType))
-                .orElseGet(() -> inputProcessors.stream()
-                        .filter(processor -> !processor.getType().equals(NifiProcessUtil.CLEANUP_TYPE))
-                        .findFirst()
-                        .orElse(null)
-                );
-
-        // Update cached type
-        if (input != null) {
-            inputProcessorType = input.getType();
-        }
-
-        return input;
-    }
-
-    private void updatePortConnectionsForProcessGroup(String processGroupId) throws NifiComponentNotFoundException {
-        //if the feed has an outputPort that should go to a reusable Flow then make those connections
-        if (!inputOutputPorts.isEmpty()) {
-            connectFeedToReusableTemplate(processGroupId);
-        }
-        if (isReusableTemplate) {
-            ensureInputPortsForReuseableTemplate(processGroupId);
-        }
-    }
 
     public ProcessGroupDTO rollback() throws FeedRollbackException {
         if (newProcessGroup != null) {
@@ -425,6 +376,62 @@ public class CreateFeedBuilder {
 
         }
         return null;
+    }
+
+
+    private void connectFeedToReusableTemplate(String feedGroupId) throws NifiComponentNotFoundException {
+        ProcessGroupDTO reusableTemplateCategory = restClient.getProcessGroupByName("root", reusableTemplateCategoryName);
+        ProcessGroupDTO feedProcessGroup = restClient.getProcessGroup(feedGroupId, false, false);
+        String feedCategoryId = feedProcessGroup.getParentGroupId();
+        if (reusableTemplateCategory == null) {
+            throw new NifiClientRuntimeException("Unable to find the Reusable Template Group. Please ensure NiFi has the 'reusable_templates' processgroup and appropriate reusable flow for this feed."
+                                                 + " You may need to import the base reusable template for this feed.");
+        }
+        String reusableTemplateCategoryGroupId = reusableTemplateCategory.getId();
+        for (InputOutputPort port : inputOutputPorts) {
+            restClient.connectFeedToGlobalTemplate(feedGroupId, port.getOutputPortName(), feedCategoryId, reusableTemplateCategoryGroupId, port.getInputPortName());
+        }
+    }
+
+    private void ensureInputPortsForReuseableTemplate(String feedGroupId) throws NifiComponentNotFoundException {
+        ProcessGroupDTO template = restClient.getProcessGroup(feedGroupId, false, false);
+        String categoryId = template.getParentGroupId();
+        restClient.createReusableTemplateInputPort(categoryId, feedGroupId);
+
+    }
+
+
+    private boolean hasConnectionPorts() {
+        return !inputOutputPorts.isEmpty() || isReusableTemplate;
+    }
+
+
+    private ProcessorDTO fetchInputProcessorForProcessGroup(ProcessGroupDTO entity) {
+        // Find first processor by type
+        final List<ProcessorDTO> inputProcessors = NifiProcessUtil.getInputProcessors(entity);
+        final ProcessorDTO input = Optional.ofNullable(NifiProcessUtil.findFirstProcessorsByType(inputProcessors, inputProcessorType))
+            .orElseGet(() -> inputProcessors.stream()
+                .filter(processor -> !processor.getType().equals(NifiProcessUtil.CLEANUP_TYPE))
+                .findFirst()
+                .orElse(null)
+            );
+
+        // Update cached type
+        if (input != null) {
+            inputProcessorType = input.getType();
+        }
+
+        return input;
+    }
+
+    private void updatePortConnectionsForProcessGroup(String processGroupId) throws NifiComponentNotFoundException {
+        //if the feed has an outputPort that should go to a reusable Flow then make those connections
+        if (!inputOutputPorts.isEmpty()) {
+            connectFeedToReusableTemplate(processGroupId);
+        }
+        if (isReusableTemplate) {
+            ensureInputPortsForReuseableTemplate(processGroupId);
+        }
     }
 
 

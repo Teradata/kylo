@@ -22,6 +22,7 @@ package com.thinkbiganalytics.feedmgr.service.template;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
+import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.service.FileObjectPersistence;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService;
@@ -39,7 +40,7 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 /**
- * Created by sr186054 on 5/1/16.
+ * in memory implementation of the FeedTemplateService for use in testing
  */
 public class InMemoryFeedManagerTemplateService extends AbstractFeedManagerTemplateService implements FeedManagerTemplateService {
 
@@ -94,10 +95,15 @@ public class InMemoryFeedManagerTemplateService extends AbstractFeedManagerTempl
       registeredTemplates.remove(template.getId());
       //update those feeds that were pointing to this old one, to this new one
 
-
-
-      feedProvider.updateFeedsWithTemplate(template.getId(), registeredTemplate.getId());
-      }
+        List<FeedMetadata> feedsToUpdate = feedProvider.getFeedsWithTemplate(registeredTemplate.getId());
+        if (feedsToUpdate != null && !feedsToUpdate.isEmpty()) {
+            for (FeedMetadata feedMetadata : feedsToUpdate) {
+                feedMetadata.setTemplateId(template.getId());
+            }
+            //save the feeds
+            FileObjectPersistence.getInstance().writeFeedsToFile(feedProvider.getFeeds());
+        }
+    }
 
     registeredTemplates.put(registeredTemplate.getId(), registeredTemplate);
     if(registeredTemplates.containsKey(registeredTemplate.getNifiTemplateId())){

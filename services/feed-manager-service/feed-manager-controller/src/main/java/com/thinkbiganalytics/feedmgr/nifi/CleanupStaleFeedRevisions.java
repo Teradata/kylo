@@ -40,14 +40,18 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * This code will find all Process groups matching the Version name of  <Name> - {13 digit timestamp} and if the group doesnt have anything in its Queue, it will remove it
+ * This code will find all Process groups matching the Version name of  <Name> - {13 digit timestamp} and if the group doesn't have anything in its Queue, it will delete it from NiFi
  *
  */
 public class CleanupStaleFeedRevisions {
 
     private static final Logger log = LoggerFactory.getLogger(CleanupStaleFeedRevisions.class);
 
+    /**
+     * the name of the parent group to look at or the word 'all' to access everything
+     **/
     private String processGroupId;
+
     LegacyNifiRestClient restClient;
 
     private Set<PortDTO> stoppedPorts = new HashSet<>();
@@ -56,7 +60,12 @@ public class CleanupStaleFeedRevisions {
     private NiFiPropertyDescriptorTransform propertyDescriptorTransform;
 
 
-
+    /**
+     * Cleanup versioned process groups that are no longer active
+     * @param restClient the nifi rest client
+     * @param processGroupId a parent process group (i.e. a category) to look at, or the word 'all' to clean up everything
+     * @param propertyDescriptorTransform the transformation bean
+     */
     public CleanupStaleFeedRevisions(LegacyNifiRestClient restClient, String processGroupId, NiFiPropertyDescriptorTransform propertyDescriptorTransform) {
         this.processGroupId = processGroupId;
         this.restClient = restClient;
@@ -64,6 +73,10 @@ public class CleanupStaleFeedRevisions {
     }
 
 
+    /**
+     * Cleanup all versioned feed process groups
+     * if the {@link this#processGroupId} == 'all' then it will clean up everything, otherwise it will cleanup just the children under the {@link this#processGroupId}
+     */
     public void cleanup() {
         deletedProcessGroups.clear();
         Set<String> categoriesToCleanup = new HashSet<>();
@@ -83,6 +96,10 @@ public class CleanupStaleFeedRevisions {
     }
 
 
+    /**
+     * Return the list of groups that were deleted as part of the {@link this#cleanup()} activity
+     * @return the list of groups that were deleted as part of the {@link this#cleanup()} activity
+     */
     public Set<ProcessGroupDTO> getDeletedProcessGroups() {
         return deletedProcessGroups;
     }

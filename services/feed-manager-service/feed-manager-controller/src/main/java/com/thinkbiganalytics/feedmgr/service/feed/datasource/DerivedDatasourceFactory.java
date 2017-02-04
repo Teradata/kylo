@@ -46,7 +46,7 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 
 /**
- * Created by sr186054 on 11/15/16.
+ * Create and assign {@link DerivedDatasource} based upon a template or feed
  */
 public class DerivedDatasourceFactory {
 

@@ -47,26 +47,80 @@ import javax.annotation.Nonnull;
 @Service
 public interface MetadataService {
 
+    /**
+     * Register a template, save it, and return
+     *
+     * @param registeredTemplate a template to register/update
+     * @return the registered template
+     */
     RegisteredTemplate registerTemplate(RegisteredTemplate registeredTemplate);
 
+    /**
+     * Return all properties registered for a template
+     *
+     * @param templateId a template id
+     * @return all properties registered for a template
+     */
     List<NifiProperty> getTemplateProperties(String templateId);
 
+    /**
+     * Return a registered template by its id
+     *
+     * @param templateId a template id
+     * @return a registered template, or null if not found
+     */
     RegisteredTemplate getRegisteredTemplate(String templateId);
 
+    /**
+     * Return a template matching the incoming name
+     *
+     * @param templateName a template name
+     * @return a template matching the incoming name
+     */
     RegisteredTemplate getRegisteredTemplateByName(String templateName);
 
+    /**
+     * Return a template with both the registered properties, and then adding in all the other properties (not registered in Kylo) that exist in NiFi for every processor
+     *
+     * @param templateId   a registered template id, or a nifi template id (for new nifi templates (not yet registered in Kylo)
+     * @param templateName the name of the template
+     * @return a template with both the registered properties, and then adding in all the other properties (not registered in Kylo) that exist in NiFi for every processor
+     */
     RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId, String templateName);
 
+    /**
+     * Return a template matching just on the NiFi templateId .
+     * This will only call out to NiFi and match on the Nifi template id.
+     *
+     * @param nifiTemplateId the NiFi template id
+     * @param nifiTemplateName the name of the template
+     * @return a template matching the NiFi templateId .
+     */
     RegisteredTemplate getRegisteredTemplateForNifiProperties(final String nifiTemplateId, final String nifiTemplateName);
 
+    /**
+     * Deletes a template
+     * @param templateId a registered template id
+     */
     void deleteRegisteredTemplate(String templateId);
 
-    // List<String> getRegisteredTemplateIds();
-
+    /**
+     * Return all registered templates
+     * @return a list of all registered templates
+     */
     List<RegisteredTemplate> getRegisteredTemplates();
 
+    /**
+     * Create a new Feed in NiFi
+     * @param feedMetadata metadata about the feed
+     * @return an object with status information about the newly created feed, or error information if unsuccessful
+     */
     NifiFeed createFeed(FeedMetadata feedMetadata);
 
+    /**
+     * Save the feed metadata to Kylo
+     * @param feed metadata about the feed
+     */
     void saveFeed(FeedMetadata feed);
 
     /**
@@ -82,32 +136,102 @@ public interface MetadataService {
      */
     void deleteFeed(@Nonnull String feedId);
 
+    /**
+     * Change the state of the feed to be {@link FeedMetadata.STATE#ENABLED}
+     *
+     * @param feedId
+     * @return a summary of the feed after being enabled
+     */
     FeedSummary enableFeed(String feedId);
 
+    /**
+     * Change the state of the feed to be {@link FeedMetadata.STATE#DISABLED}
+     *
+     * @param feedId
+     * @return a summary of the feed after being disabled
+     */
     FeedSummary disableFeed(String feedId);
 
+    /**
+     *
+     * @return a list of all the feeds in the system
+     */
     Collection<FeedMetadata> getFeeds();
 
+    /**
+     * Return a list of feeds, optionally returning a more verbose object populating all the templates and properties.
+     * Verbose will return {@link FeedMetadata} objects, false will return {@link FeedSummary} objects
+     * @param verbose  true will return {@link FeedMetadata} objects, false will return {@link FeedSummary} objects
+     * @return a list of feed objects
+     */
     Collection<? extends UIFeed> getFeeds(boolean verbose);
 
+    /**
+     *
+     * @return a list of feeds
+     */
     List<FeedSummary> getFeedSummaryData();
 
+    /**
+     * Return a list of feeds in a given category
+     *
+     * @param categoryId the category to look at
+     * @return a list of feeds in a given category
+     */
     List<FeedSummary> getFeedSummaryForCategory(String categoryId);
 
+    /**
+     * Return a feed matching on its system category name and  system feed name
+     *
+     * @param categoryName the system name for a category
+     * @param feedName the system feed name
+     * @return a feed matching on its system category name and  system feed name
+     */
     FeedMetadata getFeedByName(String categoryName, String feedName);
 
+    /**
+     * Return a feed matching the feedId
+     * @param feedId the feed id
+     * @return a feed matching the feedId, null if not found
+     */
     FeedMetadata getFeedById(String feedId);
 
+    /**
+     * Return a feed matching the feedId.
+     *
+     * @param feedId
+     * @param refreshTargetTableSchema if true it will attempt to update the metadata of the destination table {@link FeedMetadata#table} with the real the destination
+     * @return a feed matching the feedId
+     */
     FeedMetadata getFeedById(String feedId, boolean refreshTargetTableSchema);
 
-    List<FeedMetadata> getReusableFeeds();
 
+    /**
+     * Return the categories
+     * @return the categories
+     */
     Collection<FeedCategory> getCategories();
 
+    /**
+     * Return a category matching a system name
+     *
+     * @param name a category system name
+     * @return the matching category, or null if not found
+     */
     FeedCategory getCategoryBySystemName(final String name);
 
+    /**
+     * save a category
+     * @param category a category to save
+     */
     void saveCategory(FeedCategory category);
 
+    /**
+     * Delete a category
+     * @param categoryId
+     * @return true if deleted, false if not
+     * @throws InvalidOperationException if unable to delete (categories cannot be deleted if there are feeds assigned to them)
+     */
     boolean deleteCategory(String categoryId) throws InvalidOperationException;
 
     /**

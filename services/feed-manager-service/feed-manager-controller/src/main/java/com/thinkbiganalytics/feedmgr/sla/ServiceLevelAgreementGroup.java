@@ -28,7 +28,7 @@ import java.util.List;
 import io.swagger.annotations.ApiModel;
 
 /**
- * Created by sr186054 on 7/19/16.
+ *  User interface object used to hold information about a given SLA
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @ApiModel(value = "Service Level Agreement UI Form Object", description = "A Service Level Agreement that is in the correct for for the UI to parse and display on a form with inputs.")

@@ -33,8 +33,6 @@ import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 import javax.validation.Payload;
 /**
- * Created by Jeremy Merrifield on 6/14/16.
- *
  * Validate the properties are correct for a new feed category
  */
 @Target({ElementType.FIELD,ElementType.METHOD, ElementType.PARAMETER})

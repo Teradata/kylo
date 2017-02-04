@@ -25,7 +25,7 @@ import org.elasticsearch.search.SearchHit;
 import java.util.List;
 
 /**
- * Created by sr186054 on 2/10/16.
+ * An object storing the elastic search query, metadata about the results, and the results themselves
  */
 public class SearchResult {
 

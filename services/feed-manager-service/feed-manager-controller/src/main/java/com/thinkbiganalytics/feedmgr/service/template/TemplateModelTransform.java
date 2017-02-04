@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 
 /**
- * Created by sr186054 on 5/4/16.
+ * Transforms data from the domain {@link FeedManagerTemplate} to the REST object {@link RegisteredTemplate}
  */
 public class TemplateModelTransform {
 

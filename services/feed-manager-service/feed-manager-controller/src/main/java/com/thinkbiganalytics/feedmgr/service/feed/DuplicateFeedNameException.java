@@ -25,8 +25,7 @@ package com.thinkbiganalytics.feedmgr.service.feed;
 
 /**
  * Thrown when there is an attempt to create a new feed using an existing category and feed combination.
- * 
- * @author Sean Felten
+ *
  */
 public class DuplicateFeedNameException extends RuntimeException {
 

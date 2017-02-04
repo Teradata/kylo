@@ -21,7 +21,8 @@ package com.thinkbiganalytics.es;
  */
 
 /**
- * Created by sr186054 on 5/13/16.
+ * Configuration object to help setup the {@link ElasticSearch} client
+ * This is configured as a spring bean {@link com.thinkbiganalytics.feedmgr.config.FeedManagerConfiguration}
  */
 public class ElasticSearchClientConfig {
 

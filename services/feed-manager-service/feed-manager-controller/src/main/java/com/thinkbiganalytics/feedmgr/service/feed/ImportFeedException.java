@@ -21,7 +21,7 @@ package com.thinkbiganalytics.feedmgr.service.feed;
  */
 
 /**
- * Created by sr186054 on 11/17/16.
+ * Exception thrown when an feed import fails
  */
 public class ImportFeedException extends RuntimeException {
 

@@ -30,7 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.sql.DataSource;
 
 /**
- * simple Connection Pooling service to return a new DataSource
+ * A Connection Pooling service to return a new DataSource
  * Used for the DBSchemaParser class
  */
 public class PoolingDataSourceService {

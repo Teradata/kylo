@@ -148,12 +148,8 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     @Inject
     private DerivedDatasourceFactory derivedDatasourceFactory;
 
-    @Override
-    public List<FeedMetadata> getReusableFeeds() {
-        return null;
-    }
 
-    // I had to use autowired instead of Inject to allow null values.
+    // use autowired instead of Inject to allow null values.
     @Autowired(required = false)
     @Qualifier("hadoopAuthorizationService")
     private HadoopAuthorizationService hadoopAuthorizationService;
@@ -215,8 +211,9 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
                 feedMetadata = feedModelTransform.domainToFeedMetadata(domainFeed);
             }
             if (refreshTargetTableSchema && feedMetadata != null) {
-           //commented out for now as some issues were found with feeds with TEXTFILE as their output
-          //      feedModelTransform.refreshTableSchemaFromHive(feedMetadata);
+                //commented out for now as some issues were found with feeds with TEXTFILE as their output
+                //this will attempt to sync the schema stored in modeshape with that in Hive
+                // feedModelTransform.refreshTableSchemaFromHive(feedMetadata);
             }
             return feedMetadata;
         });
@@ -313,7 +310,6 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
         return metadataAccess.read(() -> feedProvider.resolveFeed(fid));
     }
 
-    // @Transactional(transactionManager = "metadataTransactionManager")
     public NifiFeed createFeed(final FeedMetadata feedMetadata) {
         if (feedMetadata.getState() == null) {
             if (feedMetadata.isActive()) {
@@ -327,7 +323,6 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     }
 
     @Override
-    //@Transactional(transactionManager = "metadataTransactionManager")
     public void saveFeed(final FeedMetadata feed) {
         if (StringUtils.isBlank(feed.getId())) {
             feed.setIsNew(true);
@@ -515,7 +510,6 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
         });
     }
 
-    // @Transactional(transactionManager = "metadataTransactionManager")
     private boolean enableFeed(final Feed.ID feedId) {
         return metadataAccess.commit(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ADMIN_FEEDS);
@@ -617,11 +611,6 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
                 }
             }
         }
-    }
-
-    @Override
-    public void updateFeedsWithTemplate(String oldTemplateId, String newTemplateId) {
-        //not needed
     }
 
     @Nonnull

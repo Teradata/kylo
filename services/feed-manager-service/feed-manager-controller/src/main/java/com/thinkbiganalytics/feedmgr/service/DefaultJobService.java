@@ -41,15 +41,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.Set;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 
 /**
- * Created by sr186054 on 4/14/16.
+ * Service to perform actions on batch job executions
  */
-@Named
-public class NifiJobService implements JobService {
+public class DefaultJobService implements JobService {
 
-    private static final Logger log = LoggerFactory.getLogger(NifiJobService.class);
+    private static final Logger log = LoggerFactory.getLogger(DefaultJobService.class);
 
     private static DateTimeFormatter utcDateTimeFormat = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSS").withZoneUTC();
 
@@ -57,7 +55,7 @@ public class NifiJobService implements JobService {
     private MetadataAccess metadataAccess;
 
     @Autowired
-    private BatchJobExecutionProvider nifiJobExecutionProvider;
+    private BatchJobExecutionProvider jobExecutionProvider;
 
     @SuppressWarnings("SpringJavaAutowiringInspection")
     @Inject
@@ -65,10 +63,7 @@ public class NifiJobService implements JobService {
 
     @Override
     public Long restartJobExecution(Long executionId) throws JobExecutionException {
-        log.info("Attempt to Restart Job with Execution id of: {} ", executionId);
-        //1 find the NifiProvenance Event associated with this JobExecution
-        //1 find all steps that have failed
-
+        //not supported now
         return null;
 
     }
@@ -86,7 +81,7 @@ public class NifiJobService implements JobService {
     @Override
     public void abandonJobExecution(Long executionId) throws JobExecutionException {
         metadataAccess.commit(() -> {
-            BatchJobExecution execution = this.nifiJobExecutionProvider.findByJobExecutionId(executionId);
+            BatchJobExecution execution = this.jobExecutionProvider.findByJobExecutionId(executionId);
             if (execution != null) {
                 if (execution.getStartTime() == null) {
                     execution.setStartTime(DateTimeUtil.getNowUTCTime());
@@ -99,7 +94,7 @@ public class NifiJobService implements JobService {
                 msg += " Job manually abandoned @ " + utcDateTimeFormat.print(DateTimeUtil.getNowUTCTime());
                 execution.setExitMessage(msg);
                 //also stop any running steps??
-                this.nifiJobExecutionProvider.save(execution);
+                this.jobExecutionProvider.save(execution);
 
             }
             return execution;
@@ -110,7 +105,7 @@ public class NifiJobService implements JobService {
     public void failJobExecution(Long executionId) {
         metadataAccess.commit(() -> {
 
-            BatchJobExecution execution = this.nifiJobExecutionProvider.findByJobExecutionId(executionId);
+            BatchJobExecution execution = this.jobExecutionProvider.findByJobExecutionId(executionId);
             if (execution != null && !execution.isFailed()) {
                 Set<BatchStepExecution> steps = execution.getStepExecutions();
                 if(steps != null) {
@@ -135,7 +130,7 @@ public class NifiJobService implements JobService {
                 String msg = execution.getExitMessage() != null ? execution.getExitMessage() + "\n" : "";
                 msg += " Job manually failed @ " + utcDateTimeFormat.print(DateTimeUtil.getNowUTCTime());
                 execution.setExitMessage(msg);
-                this.nifiJobExecutionProvider.save(execution);
+                this.jobExecutionProvider.save(execution);
             }
             return execution;
         });

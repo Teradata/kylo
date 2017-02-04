@@ -37,24 +37,70 @@ import java.util.Set;
 
 import javax.annotation.Nonnull;
 
+/**
+ * Common Feed Manager actions
+ */
 public interface FeedManagerFeedService {
 
-    List<FeedMetadata> getReusableFeeds();
-
+    /**
+     * Return a feed matching its system category and system feed name
+     *
+     * @param categoryName a system category name
+     * @param feedName     a system feed name
+     * @return a feed matching its system category and system feed name
+     */
     FeedMetadata getFeedByName(String categoryName, String feedName);
 
+    /**
+     * Return a feed matching the incoming id
+     *
+     * @param id a feed id
+     * @return a feed matching the id, or null if not found
+     */
     FeedMetadata getFeedById(String id);
 
+    /**
+     * Return a feed matching the feedId.
+     *
+     * @param feedId
+     * @param refreshTargetTableSchema if true it will attempt to update the metadata of the destination table {@link FeedMetadata#table} with the real the destination
+     * @return a feed matching the feedId
+     */
     FeedMetadata getFeedById(String id, boolean refreshTargetTableSchema);
 
+    /**
+     *
+     * @return a list of all the feeds in the system
+     */
     Collection<FeedMetadata> getFeeds();
 
+    /**
+     * Return a list of feeds, optionally returning a more verbose object populating all the templates and properties.
+     * Verbose will return {@link FeedMetadata} objects, false will return {@link FeedSummary} objects
+     * @param verbose  true will return {@link FeedMetadata} objects, false will return {@link FeedSummary} objects
+     * @return a list of feed objects
+     */
     Collection<? extends UIFeed> getFeeds(boolean verbose);
 
+    /**
+     *
+     * @return a list of feeds
+     */
     List<FeedSummary> getFeedSummaryData();
 
+    /**
+     * Return a list of feeds in a given category
+     *
+     * @param categoryId the category to look at
+     * @return a list of feeds in a given category
+     */
     List<FeedSummary> getFeedSummaryForCategory(String categoryId);
 
+    /**
+     * Find all the feeds assigned to a given template
+     * @param registeredTemplateId a registered template id
+     * @return all the feeds assigned to a given template
+     */
     List<FeedMetadata> getFeedsWithTemplate(String registeredTemplateId);
 
     /**
@@ -65,8 +111,17 @@ public interface FeedManagerFeedService {
      */
     Feed.ID resolveFeed(@Nonnull Serializable fid);
 
+    /**
+     * Create a new Feed in NiFi
+     * @param feedMetadata metadata about the feed
+     * @return an object with status information about the newly created feed, or error information if unsuccessful
+     */
     NifiFeed createFeed(FeedMetadata feedMetadata);
 
+    /**
+     * Save the feed metadata to Kylo
+     * @param feed metadata about the feed
+     */
     void saveFeed(FeedMetadata feed);
 
     /**
@@ -85,11 +140,22 @@ public interface FeedManagerFeedService {
      */
     void enableFeedCleanup(@Nonnull String feedId);
 
+    /**
+     * Change the state of the feed to be {@link FeedMetadata.STATE#ENABLED}
+     *
+     * @param feedId
+     * @return a summary of the feed after being enabled
+     */
     FeedSummary enableFeed(String feedId);
 
+    /**
+     * Change the state of the feed to be {@link FeedMetadata.STATE#DISABLED}
+     *
+     * @param feedId
+     * @return a summary of the feed after being disabled
+     */
     FeedSummary disableFeed(String feedId);
 
-    void updateFeedsWithTemplate(String oldTemplateId, String newTemplateId);
 
     void applyFeedSelectOptions(List<FieldRuleProperty> properties);
 

@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by sr186054 on 1/13/16.
+ * Service for access to ui functions
  */
 public class UIService {
 
@@ -37,6 +37,9 @@ public class UIService {
         return LazyHolder.INSTANCE;
     }
 
+    /**
+     * common CodeMirror types supported by the user interface
+     **/
     private Map<String, String> supportedCodeMirrorTypes = new HashMap<>();
 
 

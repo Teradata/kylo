@@ -45,7 +45,7 @@ import java.util.concurrent.Executors;
 @EnableConfigurationProperties
 @EnableConfigServer
 @Import({DatabaseConfiguration.class, OperationalMetadataConfig.class,SpringJerseyConfiguration.class})
-@ComponentScan("com.thinkbiganalytics") //FIX this
+@ComponentScan("com.thinkbiganalytics")
 public class KyloServerApplication implements SchedulingConfigurer {
 
 

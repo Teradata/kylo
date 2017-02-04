@@ -47,5 +47,11 @@ public interface NiFiPropertyDescriptorTransform {
     @Nonnull
     NiFiPropertyDescriptor toNiFiPropertyDescriptor(@Nonnull PropertyDescriptorDTO propertyDescriptorDTO);
 
+    /**
+     * Returns the of items in queue for the passed in statistics
+     *
+     * @param processGroupStatusDTO a groups statistics
+     * @return the of items in queue for the passed in statistics
+     */
     String getQueuedCount(ProcessGroupStatusDTO processGroupStatusDTO);
 }

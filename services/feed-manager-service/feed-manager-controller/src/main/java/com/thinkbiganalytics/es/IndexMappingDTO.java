@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by sr186054 on 2/10/16.
+ *  Return the Elastic Search Index Mapping data
  */
 public class IndexMappingDTO {
 

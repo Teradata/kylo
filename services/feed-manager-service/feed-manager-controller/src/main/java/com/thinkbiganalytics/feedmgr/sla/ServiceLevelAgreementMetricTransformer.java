@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Created by sr186054 on 4/21/16. Transforms UI Model to/from Metric class
+ * Transforms UI Model to/from Metric class
  */
 public class ServiceLevelAgreementMetricTransformer
     extends BasePolicyAnnotationTransformer<ServiceLevelAgreementRule, Metric, ServiceLevelAgreementMetric> implements ServiceLevelAgreementTransformer {

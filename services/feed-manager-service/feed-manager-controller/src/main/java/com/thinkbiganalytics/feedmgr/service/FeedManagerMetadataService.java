@@ -262,7 +262,6 @@ public class FeedManagerMetadataService implements MetadataService {
         return true;
     }
 
-    //@Transactional(transactionManager = "metadataTransactionManager")
     public FeedSummary enableFeed(String feedId) {
         return metadataAccess.commit(() -> {
             FeedMetadata feedMetadata = feedProvider.getFeedById(feedId);
@@ -281,7 +280,6 @@ public class FeedManagerMetadataService implements MetadataService {
 
     }
 
-    //@Transactional(transactionManager = "metadataTransactionManager")
     public FeedSummary disableFeed(final String feedId) {
         return metadataAccess.commit(() -> {
             FeedMetadata feedMetadata = feedProvider.getFeedById(feedId);
@@ -331,11 +329,6 @@ public class FeedManagerMetadataService implements MetadataService {
     @Override
     public FeedMetadata getFeedById(String feedId, boolean refreshTargetTableSchema) {
         return feedProvider.getFeedById(feedId, refreshTargetTableSchema);
-    }
-
-    @Override
-    public List<FeedMetadata> getReusableFeeds() {
-        return feedProvider.getReusableFeeds();
     }
 
     @Override

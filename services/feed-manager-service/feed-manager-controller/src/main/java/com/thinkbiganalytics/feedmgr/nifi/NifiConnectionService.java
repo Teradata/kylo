@@ -69,6 +69,10 @@ public class NifiConnectionService {
         connectionListeners.stream().forEach(nifiConnectionListener -> nifiConnectionListener.onNiFiDisconnected());
     }
 
+    /**
+     * Check to ensure NiFi is up.
+     * Notifie the listeners if NiFi changes state
+     */
     public void checkConnection() {
         boolean connectionCheck = isConnected();
         if (!isConnected.get() && connectionCheck) {

@@ -78,7 +78,7 @@ public class ConfigurationController {
             properties = StreamSupport.stream(((AbstractEnvironment) env).getPropertySources().spliterator(), false)
                     .filter(source -> source instanceof PropertiesPropertySource)
                     .flatMap(source -> ((PropertiesPropertySource) source).getSource().entrySet().stream())
-                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (value1, value2) -> value1));
         } else {
             properties = Collections.emptyMap();
         }
@@ -93,7 +93,7 @@ public class ConfigurationController {
     @ApiResponses({
             @ApiResponse(code = 200, message = "Returns a mapping between the module name and the URL path.", response = Map.class)
     })
-    public Response pipelineControllerUrl() {
+    public Response moduleUrls() {
         final String contextPath = env.getProperty("server.contextPath");
         final String url = StringUtils.isNoneBlank(contextPath) ? contextPath : "";
 

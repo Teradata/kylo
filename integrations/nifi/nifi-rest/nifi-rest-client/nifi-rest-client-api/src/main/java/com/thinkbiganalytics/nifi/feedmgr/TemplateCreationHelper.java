@@ -71,6 +71,8 @@ public class TemplateCreationHelper {
 
     public static String REUSABLE_TEMPLATES_PROCESS_GROUP_NAME = "reusable_templates";
 
+    public static final String REUSABLE_TEMPLATES_CATEGORY_NAME = "Reusable Templates";
+
     private List<NifiError> errors = new ArrayList<>();
 
     LegacyNifiRestClient restClient;

@@ -55,10 +55,25 @@ public class NifiPropertyUtil {
 
     /**
      * various modes used for updating properties
+     *
      */
     public static enum PROPERTY_MATCH_AND_UPDATE_MODE{
-        DONT_UPDATE,UPDATE_ALL_PROPERTIES, UPDATE_NON_EXPRESSION_PROPERTIES;
+        /**
+         * this mode will not update any properties
+         */
+        DONT_UPDATE,
+        /**
+         * this mode will update all the properties
+         */
+        UPDATE_ALL_PROPERTIES,
+        /**
+         * this mode will skip over any properties with the ${metadata. prefix in the value string of the property
+         */
+        UPDATE_NON_EXPRESSION_PROPERTIES;
 
+        /**
+         * @return true if the update should happen, false if not
+         */
         public boolean performUpdate() {
             return !DONT_UPDATE.equals(this);
         }

@@ -21,12 +21,18 @@ package com.thinkbiganalytics.feedmgr.nifi;
  */
 
 /**
- * Created by sr186054 on 12/21/16.
+ * Listener that can subscribe to the {@link NifiConnectionService} to get notified when NiFi is up or down
  */
 public interface NifiConnectionListener {
 
+    /**
+     * called when Kylo makes connection to NiFi
+     */
     void onNiFiConnected();
 
+    /**
+     * Called when Kylo looses connection to NiFi
+     */
     void onNiFiDisconnected();
 
 }

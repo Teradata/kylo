@@ -74,7 +74,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathExpressionException;
 
 /**
- * Created by sr186054 on 5/6/16.
+ * Export or Import a template
  */
 public class ExportImportTemplateService {
 
@@ -270,22 +270,25 @@ public class ExportImportTemplateService {
             this.isXmlImport = isXmlImport;
         }
 
+        /**
+         * Update the NiFi Flow Cache with the new processors information
+         *
+         * @param templateName    the name of the template
+         * @param processGroupDTO the group where this template resides (under the reusable_templates) group
+         */
         @Override
         public void beforeMarkAsRunning(String templateName, ProcessGroupDTO processGroupDTO) {
             //update the cache
-            //1 get the template flowtype mappings
             Collection<ProcessorDTO> processors = NifiProcessUtil.getProcessors(processGroupDTO);
             nifiFlowCache.updateProcessorIdNames(templateName, processors);
             nifiFlowCache.updateConnectionMap(templateName, NifiConnectionUtil.getAllConnections(processGroupDTO));
-
-
         }
 
     }
 
     /**
      * Called when the system imports a Reusable template either from a ZIP file or an xml file uploaded in kylo.
-     * This will update the NifiFlowCache and get the correct processors and update the cache settings for the KyloProvenanceReportingTask
+     * @param importTemplate
      */
     private void importReusableTemplateSuccess(ImportTemplate importTemplate) {
 
