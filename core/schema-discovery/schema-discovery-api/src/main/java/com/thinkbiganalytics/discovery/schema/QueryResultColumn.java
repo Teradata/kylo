@@ -20,34 +20,108 @@ package com.thinkbiganalytics.discovery.schema;
  * #L%
  */
 
-
+/**
+ * Represent a column in the query result
+ */
 public interface QueryResultColumn {
 
+    /**
+     * Get column type
+     *
+     * @return data type
+     */
     String getDataType();
 
+    /**
+     * Set column type
+     *
+     * @param dataType data type
+     */
     void setDataType(String dataType);
 
+    /**
+     * Get table name
+     *
+     * @return table name
+     */
     String getTableName();
 
+    /**
+     * Set table name
+     *
+     * @param tableName table name
+     */
     void setTableName(String tableName);
 
+    /**
+     * Get database name
+     *
+     * @return database name
+     */
     String getDatabaseName();
 
+
+    /**
+     * Set database name
+     *
+     * @param databaseName database name
+     */
     void setDatabaseName(String databaseName);
 
+
+    /**
+     * Get column display name
+     *
+     * @return display name
+     */
     String getDisplayName();
 
+    /**
+     * Set column display name
+     *
+     * @param displayName display name
+     */
     void setDisplayName(String displayName);
 
+    /**
+     * Get column label in hive
+     *
+     * @return column label
+     */
     String getHiveColumnLabel();
 
+    /**
+     * Set column label in hive
+     *
+     * @param hiveColumnLabel column label
+     */
     void setHiveColumnLabel(String hiveColumnLabel);
 
+    /**
+     * Get column index
+     *
+     * @return index
+     */
     int getIndex();
 
+    /**
+     * Set column index
+     *
+     * @param index index
+     */
     void setIndex(int index);
 
+    /**
+     * Get column field
+     *
+     * @return field
+     */
     String getField();
 
+    /**
+     * Set column field
+     *
+     * @param field field
+     */
     void setField(String field);
 }

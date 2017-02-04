@@ -104,13 +104,12 @@ public class DBSchemaParser {
             try {
                 databaseType = DatabaseType.fromMetaData(conn);
             } catch (MetaDataAccessException e) {
-                //if we cant get the db type treat it as normal looking for TABLE and VIEW
+                //if can't get the db type, then treat it as normal looking for TABLE and VIEW
             }
 
             if (DatabaseType.TERADATA.equals(databaseType)) {
                 return conn.getMetaData().getTables(catalog, schema, tableName, null);  //Teradata-specific
-            }
-            else {
+            } else {
                 return conn.getMetaData().getTables(catalog, schema, tableName, new String[]{"TABLE", "VIEW"});
             }
         } catch (final SQLException e) {
@@ -129,7 +128,7 @@ public class DBSchemaParser {
 
     /**
      * Lists the tables in the specified schema.
-     * Some databases use the catalog (i.e. MySQL), some dont (i.e. Teradata)
+     * Some databases use the catalog (i.e. MySQL), some don't (i.e. Teradata)
      * This should work for all cases.
      *
      * @param schema the schema name, or {@code null}
@@ -247,7 +246,6 @@ public class DBSchemaParser {
                 primaryKeys.add(columnName);
             }
         } catch (SQLException e) {
-            //   e.printStackTrace();
             //attempt to use the catalog instead of the schema
             try {
                 ResultSet rs = conn.getMetaData().getPrimaryKeys(schema, null, tableName);

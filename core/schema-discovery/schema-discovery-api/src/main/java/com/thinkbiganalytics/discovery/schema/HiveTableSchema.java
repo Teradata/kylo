@@ -27,24 +27,31 @@ public interface HiveTableSchema extends TableSchema {
 
     /**
      * Returns the storage format of the data such as the serde
+     *
+     * @return hive storage format
      */
     String getHiveFormat();
 
     /**
      * Set the storage format of the data such as the serde
+     *
+     * @param hiveFormat hive storage format
      */
     void setHiveFormat(String hiveFormat);
 
     /**
      * Whether the data represents a binary or structured format like AVRO, ORC
+     *
+     * @return true/false indicating if data is in a structured format
      */
     Boolean isStructured();
 
     /**
      * Whether the data represents a binary format or structured format like AVRO, ORC
+     *
+     * @param binary indication if data is in a structured format
      */
     void setStructured(boolean binary);
-
 
 
 }

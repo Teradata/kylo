@@ -20,9 +20,6 @@ package com.thinkbiganalytics.discovery.api;
  * #L%
  */
 
-/**
- * Created by matthutton on 12/27/16.
- */
 public interface DatabaseMetadata {
 
     String getDatabaseName();

@@ -34,9 +34,10 @@ public interface FileSchemaParser {
 
     /**
      * Parse the provided file and builds a schema with data types that fit the target
-     * @param is the raw data to parse
+     *
+     * @param is      the raw data to parse
      * @param charset the character-set (e.g. UTF-8)
-     * @param target the target platform (e.g. Hive)
+     * @param target  the target platform (e.g. Hive)
      * @return a derived schema for the source
      */
     Schema parse(InputStream is, Charset charset, TableSchemaType target) throws IOException;

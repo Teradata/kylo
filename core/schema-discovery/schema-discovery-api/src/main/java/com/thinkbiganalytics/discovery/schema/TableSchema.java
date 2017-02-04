@@ -26,12 +26,16 @@ package com.thinkbiganalytics.discovery.schema;
 public interface TableSchema extends Schema {
 
     /**
-     * Name of the table schema
+     * Get table schema name
+     *
+     * @return name
      */
     String getSchemaName();
 
     /**
-     * Database name
+     * Get database name
+     *
+     * @return name
      */
     String getDatabaseName();
 

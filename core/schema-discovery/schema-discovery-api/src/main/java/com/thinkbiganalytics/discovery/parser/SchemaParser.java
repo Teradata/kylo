@@ -29,16 +29,46 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface SchemaParser {
 
+    /**
+     * Name of schema parser
+     *
+     * @return name
+     */
     String name();
 
+    /**
+     * Description of parser
+     *
+     * @return description
+     */
     String description();
 
+    /**
+     * Whether parser supports binary types
+     *
+     * @return true/false
+     */
     boolean supportsBinary() default false;
 
+    /**
+     * Whether parser supports preview
+     *
+     * @return true/false
+     */
     boolean supportsPreview() default true;
 
+    /**
+     * Whether parser allows skipping the header in file
+     *
+     * @return true/false
+     */
     boolean allowSkipHeader() default false;
 
+    /**
+     * Whether parser generates a Hive Serde
+     *
+     * @return true/false
+     */
     boolean generatesHiveSerde() default true;
 
     String[] tags() default "";

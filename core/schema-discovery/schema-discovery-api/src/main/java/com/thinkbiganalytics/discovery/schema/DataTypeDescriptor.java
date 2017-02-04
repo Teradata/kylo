@@ -27,16 +27,22 @@ public interface DataTypeDescriptor {
 
     /**
      * Represents a date
+     *
+     * @return true/false indicating a date or not
      */
     Boolean isDate();
 
     /**
      * Represents a numeric type
+     *
+     * @return true/false indicating a numeric type or not
      */
     Boolean isNumeric();
 
     /**
      * Whether the data type represents a complex type such as binary, structure, or array
+     *
+     * @return true/false indicating a type is complex or not
      */
     Boolean isComplex();
 

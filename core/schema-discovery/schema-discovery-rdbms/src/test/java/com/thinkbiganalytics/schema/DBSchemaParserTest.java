@@ -35,9 +35,6 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.sql.DataSource;
 
-/**
- * Created by sr186054 on 1/9/17.
- */
 @RunWith(SpringJUnit4ClassRunner.class)
 @TestPropertySource(locations = "classpath:test-application.properties")
 @SpringApplicationConfiguration(classes = {CommonsSpringConfiguration.class, TestDbSchemaConfig.class})

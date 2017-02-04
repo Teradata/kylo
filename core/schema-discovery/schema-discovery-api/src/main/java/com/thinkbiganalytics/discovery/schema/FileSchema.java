@@ -27,16 +27,22 @@ public interface FileSchema extends Schema {
 
     /**
      * Retrieve canonical format name such as CSV, XML, JPG, etc.
+     *
+     * @return canonical format string
      */
     String getFormat();
 
     /**
      * Whether the file is a binary
+     *
+     * @return true/false indicating if file is binary type
      */
     boolean isBinary();
 
     /**
      * Whether the file contains embedded schema such as AVRO, XSD, etc.
+     *
+     * @return true/false indicating if file has schema included within it
      */
     boolean hasEmbeddedSchema();
 

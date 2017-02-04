@@ -20,12 +20,30 @@ package com.thinkbiganalytics.discovery.schema;
  * #L%
  */
 
+/**
+ * Gets database metadata
+ */
 public interface DatabaseMetadata {
 
+    /**
+     * Get the database name
+     *
+     * @return database name
+     */
     String getDatabaseName();
 
+    /**
+     * Get the table name
+     *
+     * @return table name
+     */
     String getTableName();
 
+    /**
+     * Get the column name
+     *
+     * @return column name
+     */
     String getColumnName();
 
 }

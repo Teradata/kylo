@@ -30,9 +30,6 @@ import org.springframework.context.annotation.Primary;
 
 import javax.sql.DataSource;
 
-/**
- * Created by sr186054 on 1/9/17.
- */
 @EnableAutoConfiguration
 @ComponentScan(basePackages = {"com.thinkbiganalytics"})
 @Configuration

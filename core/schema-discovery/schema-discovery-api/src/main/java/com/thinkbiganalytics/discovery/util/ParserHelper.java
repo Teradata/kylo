@@ -56,7 +56,8 @@ public class ParserHelper {
     protected static int MAX_ROWS = 1000;
 
     /**
-     * Extracts the given number of rows from the file and returns a new reader for the sample.  This method protects memory in the case where a large file can be submitted with no delimiters.
+     * Extracts the given number of rows from the file and returns a new reader for the sample.
+     * This method protects memory in the case where a large file can be submitted with no delimiters.
      */
     public static String extractSampleLines(InputStream is, Charset charset, int rows) throws IOException {
 
@@ -65,7 +66,7 @@ public class ParserHelper {
         Validate.notNull(charset, "charset cannot be null");
         Validate.exclusiveBetween(1, MAX_ROWS, rows, "invalid number of sample rows");
 
-        // Sample the file in case there are no newlines we don't want to
+        // Sample the file in case there are no newlines
         StringWriter swBlock = new StringWriter();
         IOUtils.copyLarge(new InputStreamReader(is, charset), swBlock, -1, MAX_CHARS);
         try (BufferedReader br = new BufferedReader(new StringReader(swBlock.toString()))) {
@@ -112,6 +113,7 @@ public class ParserHelper {
                 return "string";
         }
     }
+
     /*
     Convert the JDBC sql type to a hive type
      */
@@ -145,11 +147,11 @@ public class ParserHelper {
                             Double.parseDouble(v);
                             currentPass = JDBCType.DOUBLE;
                         } catch (NumberFormatException ex) {
-                            // return immediately if we know its non-numeric
+                            // return immediately for non-numeric case
                             return JDBCType.VARCHAR;
                         }
                     }
-                    // If we ever see a double then use that
+                    // If a double is encountered, use that type
                     if (guess == null || currentPass == JDBCType.DOUBLE) {
                         guess = currentPass;
                     }
@@ -169,7 +171,6 @@ public class ParserHelper {
         for (Field field : fields) {
             if (StringUtils.isEmpty(field.getDerivedDataType())) {
                 JDBCType jdbcType = JDBCType.VARCHAR;
-                ;
                 try {
                     if (!StringUtils.isEmpty(field.getNativeDataType())) {
                         jdbcType = JDBCType.valueOf(field.getNativeDataType());
@@ -195,7 +196,7 @@ public class ParserHelper {
 
     /*
     Returns whether the provided field represents a complex structure such as ARRAY, STRUCT, or BINARY
- */
+    */
     public static DataTypeDescriptor hiveTypeToDescriptor(String hiveType) {
         HiveDataTypeDescriptor descriptor = new HiveDataTypeDescriptor();
         if (hiveType != null) {

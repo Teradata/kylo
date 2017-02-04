@@ -23,22 +23,64 @@ package com.thinkbiganalytics.discovery.schema;
 import java.util.List;
 import java.util.Map;
 
-
+/**
+ * Represents a query result
+ */
 public interface QueryResult {
 
+    /**
+     * Get columns in query result
+     *
+     * @return list of {@link QueryResultColumn}
+     */
     List<QueryResultColumn> getColumns();
 
+    /**
+     * Whether query result is empty
+     *
+     * @return true/false indicating if query result is empty
+     */
     boolean isEmpty();
 
+    /**
+     * Set columns in query result
+     *
+     * @param columns list of {@link QueryResultColumn}
+     */
     void setColumns(List<QueryResultColumn> columns);
 
-    List<Map<String,Object>> getRows();
+    /**
+     * Get rows in query result
+     *
+     * @return list of rows
+     */
+    List<Map<String, Object>> getRows();
 
+    /**
+     * Add row in query result
+     *
+     * @param data a row
+     */
     void addRow(Map<String, Object> data);
 
+    /**
+     * Get query string
+     *
+     * @return query
+     */
     String getQuery();
 
-    Map<String,QueryResultColumn> getColumnFieldMap();
+    /**
+     * Get column field map
+     *
+     * @return map
+     */
+    Map<String, QueryResultColumn> getColumnFieldMap();
 
+    /**
+     * Get column display name map
+     *
+     * @return map
+     */
     Map<String, QueryResultColumn> getColumnDisplayNameMap();
 }

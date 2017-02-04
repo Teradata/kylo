@@ -25,43 +25,57 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Schema represents the structure and encoding of a dataset. Given a embedded schema such as cobol copybook, avro the schema only derives information required to extract field structure and
+ * Schema represents the structure and encoding of a dataset. Given a embedded schema such as cobol copybook or avro, the schema only derives information required to extract field structure and
  * properties of that schema that might be considered useful metadata.
  */
 public interface Schema {
 
     /**
      * Returns the unique id of the schema object
+     *
+     * @return {@link UUID}
      */
     UUID getID();
 
     /**
      * Returns the unique name
+     *
+     * @return name
      */
     String getName();
 
     /**
      * Sets the unique name
+     *
+     * @param name name
      */
     void setName(String name);
 
     /**
      * Business description of the object
+     *
+     * @return business description
      */
     String getDescription();
 
     /**
      * Return the canonical charset name
+     *
+     * @return charset name
      */
     String getCharset();
 
     /**
      * Return format-specific properties of the data structure. For example, whether the file contains a header, footer, field or row delimiter types, escape characters, etc.
+     *
+     * @return map of properties
      */
     Map<String, String> getProperties();
 
     /**
      * Returns the field structure
+     *
+     * @return list of fields
      */
     List<Field> getFields();
 
