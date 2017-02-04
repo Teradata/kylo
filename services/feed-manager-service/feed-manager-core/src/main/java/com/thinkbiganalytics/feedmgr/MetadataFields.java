@@ -26,7 +26,8 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import java.util.List;
 
 /**
- * Created by sr186054 on 4/4/16.
+ * Utiltiy to inspect a class or {@link FeedMetadata} object and return information about all the fields annotated with {@link com.thinkbiganalytics.metadata.MetadataField}
+ * Fields annotated with {@link com.thinkbiganalytics.metadata.MetadataField} are accessible when registering a template in Kylo and can be injected into a NiFi flow when the feed is created.
  */
 public class MetadataFields {
 

@@ -48,7 +48,7 @@ import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 
 /**
- * @author Sean Felten
+ * Service for assessing {@link FeedPrecondition}
  */
 public class FeedPreconditionService {
 

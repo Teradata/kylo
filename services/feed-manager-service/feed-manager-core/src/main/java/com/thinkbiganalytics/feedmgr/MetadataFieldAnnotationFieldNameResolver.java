@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by sr186054 on 4/4/16.
+ * Utility to inspect any object/class looking for {@link MetadataField} annotations on fields and return information about that field and the annotation
  */
 public class MetadataFieldAnnotationFieldNameResolver extends AnnotationFieldNameResolver {
 
