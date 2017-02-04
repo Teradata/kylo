@@ -30,7 +30,7 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  *
- * @author Sean Felten
+ * Spring configuration for the Audit Logging
  */
 @Configuration
 public class AuditLoggingServiceConfig {

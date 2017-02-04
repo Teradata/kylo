@@ -42,7 +42,6 @@ import javax.inject.Inject;
 
 /**
  * Retrieves and creates audit log entries.
- * @author Sean Felten
  */
 public class JpaAuditLogProvider implements AuditLogProvider {
     

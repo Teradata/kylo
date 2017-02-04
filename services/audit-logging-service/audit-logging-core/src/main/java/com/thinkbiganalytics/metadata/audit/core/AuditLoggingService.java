@@ -38,8 +38,7 @@ import javax.inject.Inject;
 /**
  * A service responsible for producing audit log entries from things like metadata events
  * and annotated methods.
- * 
- * @author Sean Felten
+ *
  */
 public class AuditLoggingService {
     
@@ -55,7 +54,8 @@ public class AuditLoggingService {
     }
     
     /**
-     * @param eventService
+     * Listen for events that may trigger an audit entry
+     * @param eventService event service bus
      */
     public void addListeners(MetadataEventService eventService) {
         eventService.addListener(new FeedChangeEventListener());

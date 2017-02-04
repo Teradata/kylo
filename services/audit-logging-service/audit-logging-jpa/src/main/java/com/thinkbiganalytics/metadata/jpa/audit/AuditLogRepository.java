@@ -34,7 +34,7 @@ import java.util.List;
 
 /**
  *
- * @author Sean Felten
+ * Spring data repository for {@link JpaAuditLogEntry}
  */
 public interface AuditLogRepository extends JpaRepository<JpaAuditLogEntry, AuditLogEntry.ID> {
 

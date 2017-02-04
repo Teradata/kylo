@@ -47,6 +47,9 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
+/**
+ * Rest endpoints for exposing Audit log information
+ */
 @Component
 @Api(tags = "Security - Audit Log", produces = "application/json")
 @Path("/v1/auditlog")
@@ -62,13 +65,13 @@ public class AuditLogController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Get recent log entries.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "Returns the log entries.", response = AuditLogEntry.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Returns the log entries.", response = AuditLogEntry.class, responseContainer = "List")
     )
     public List<AuditLogEntry> getList(@QueryParam("limit") @DefaultValue("10") int limit) {
         return metadataAccess.read(() -> {
             return this.auditProvider.list(limit).stream()
-                            .map(transformer)
-                            .collect(Collectors.toList());
+                .map(transformer)
+                .collect(Collectors.toList());
         });
     }
 
@@ -77,27 +80,27 @@ public class AuditLogController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets a specific log entry.")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Returns the log entry.", response = AuditLogEntry.class),
-            @ApiResponse(code = 404, message = "The entry could not be found.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 200, message = "Returns the log entry.", response = AuditLogEntry.class),
+                      @ApiResponse(code = 404, message = "The entry could not be found.", response = RestResponseStatus.class)
+                  })
     public AuditLogEntry findById(@PathParam("id") String idStr) {
         return metadataAccess.read(() -> {
             com.thinkbiganalytics.metadata.api.audit.AuditLogEntry.ID id = auditProvider.resolveId(idStr);
             return this.auditProvider.findById(id)
-                            .map(transformer)
-                            .orElseThrow(() -> new WebApplicationException("No audit log entery exists with ID: " + idStr, Status.NOT_FOUND));
+                .map(transformer)
+                .orElseThrow(() -> new WebApplicationException("No audit log entery exists with ID: " + idStr, Status.NOT_FOUND));
         });
     }
 
     private static final Function<com.thinkbiganalytics.metadata.api.audit.AuditLogEntry, AuditLogEntry> transformer
         = (domain) -> {
-            AuditLogEntry entry = new AuditLogEntry();
-            entry.setCreatedTime(domain.getCreatedTime());
-            entry.setId(domain.getId().toString());
-            entry.setType(domain.getType());
-            entry.setUser(domain.getUser().getName());
-            entry.setDescription(domain.getDescription());
-            entry.setEntityId(domain.getEntityId().toString());
-            return entry;
-        };
+        AuditLogEntry entry = new AuditLogEntry();
+        entry.setCreatedTime(domain.getCreatedTime());
+        entry.setId(domain.getId().toString());
+        entry.setType(domain.getType());
+        entry.setUser(domain.getUser().getName());
+        entry.setDescription(domain.getDescription());
+        entry.setEntityId(domain.getEntityId().toString());
+        return entry;
+    };
 }

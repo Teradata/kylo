@@ -44,8 +44,6 @@ import javax.persistence.Table;
 
 /**
  * An audit log entry describing a metadata change of operation attempt.
- * 
- * @author Sean Felten
  */
 @Entity
 @Table(name = "AUDIT_LOG")

@@ -30,21 +30,45 @@ import java.security.Principal;
 
 /**
  * An audit log entry describing a metadata change or operation attempt.
- * @author Sean Felten
  */
 public interface AuditLogEntry {
 
     interface ID extends Serializable { }
-    
+
+    /**
+     * Return the unique id associated with the audit entry
+     *
+     * @return the unique id associated with the audit entry
+     */
     ID getId();
-    
+
+    /**
+     * Return the time of the audit event
+     * @return the time of the audit event
+     */
     DateTime getCreatedTime();
-    
+
+    /**
+     * Return the user associated with the audit event
+     * @return the user associated with the audit event
+     */
     Principal getUser();
-    
+
+    /**
+     * Return a discriminator defining the type of audit log entry
+     * @return a string defining the type of audit log entry
+     */
     String getType();
-    
+
+    /**
+     * Return a description about the audit event
+     * @return a description about the audit event
+     */
     String getDescription();
-    
+
+    /**
+     * Return a entity id this audit event is realted to
+     * @return a entity id this audit event is realted to
+     */
     String getEntityId();
 }

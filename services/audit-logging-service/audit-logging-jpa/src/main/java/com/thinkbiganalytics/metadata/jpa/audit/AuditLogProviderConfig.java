@@ -30,7 +30,7 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * Configures the AuditLogProvider implementation.
- * @author Sean Felten
+ *
  */
 @Configuration
 public class AuditLogProviderConfig {
