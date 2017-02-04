@@ -118,6 +118,14 @@
               <exclude>org.slf4j:*</exclude>
             </excludes>
           </artifactSet>
+          <filters>
+            <filter>
+              <artifact>org.apache.tomcat.embed:tomcat-embed-core</artifact>
+              <excludes>
+                <exclude>javax/servlet/**</exclude>
+              </excludes>
+            </filter>
+          </filters>
           <transformers>
             <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
               <resource>META-INF/spring.factories</resource>
