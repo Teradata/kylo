@@ -23,10 +23,15 @@ package com.thinkbiganalytics.app;
 import org.joda.time.DateTime;
 
 /**
- * Created by sr186054 on 9/21/16.
+ * Listener that will get notified with the services-app starts up
  */
 public interface ServicesApplicationStartupListener {
 
+    /**
+     * notified when services-app starts up
+     *
+     * @param startTime the time the application started
+     */
     void onStartup(DateTime startTime);
 
 }
