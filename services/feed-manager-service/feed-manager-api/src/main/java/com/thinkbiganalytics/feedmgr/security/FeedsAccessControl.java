@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.feedmgr.security;
 
@@ -27,8 +27,6 @@ import com.thinkbiganalytics.security.action.Action;
 
 /**
  * Actions involving feeds.
- * 
- * @author Sean Felten
  */
 public interface FeedsAccessControl {
 
