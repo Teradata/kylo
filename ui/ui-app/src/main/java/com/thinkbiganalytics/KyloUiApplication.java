@@ -21,8 +21,6 @@ package com.thinkbiganalytics;
  */
 
 
-import com.thinkbiganalytics.ui.config.SpringJerseyConfiguration;
-
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
@@ -34,7 +32,6 @@ import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 
@@ -44,9 +41,7 @@ import java.util.concurrent.Executors;
 @Configuration
 @SpringBootApplication(exclude = {VelocityAutoConfiguration.class, DataSourceAutoConfiguration.class,HibernateJpaAutoConfiguration.class,
                                   DataSourceTransactionManagerAutoConfiguration.class })
-//@EnableAutoConfiguration(exclude = {VelocityAutoConfiguration.class, DataSourceAutoConfiguration.class })
 @EnableConfigurationProperties
-@Import({SpringJerseyConfiguration.class})
 @ComponentScan("com.thinkbiganalytics")
 @EnableZuulProxy
 public class KyloUiApplication implements SchedulingConfigurer {

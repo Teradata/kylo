@@ -26,7 +26,7 @@ import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 /**
- * Created by sr186054 on 4/19/16.
+ * Redirect traffic to operations manager or feed-manager
  */
 @Configuration
 public class WebMvcConfig {
