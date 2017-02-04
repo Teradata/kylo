@@ -71,7 +71,7 @@ public class NifiConnectionService {
 
     /**
      * Check to ensure NiFi is up.
-     * Notifie the listeners if NiFi changes state
+     * Notifies the listeners if NiFi changes state
      */
     public void checkConnection() {
         boolean connectionCheck = isConnected();
