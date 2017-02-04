@@ -39,7 +39,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Created by sr186054 on 4/5/16.
+ * Test the Precondition policy transformation to/from user interface objects
  */
 public class TestPreconditionPolicyTransform {
 

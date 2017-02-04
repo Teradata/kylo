@@ -32,7 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by sr186054 on 7/12/16.
+ * Transformation class to assist in obtaining the transformed preconditions
  */
 public class PreconditionPolicyTransformer {
 
@@ -42,6 +42,12 @@ public class PreconditionPolicyTransformer {
         this.preconditionRules = preconditionRules;
     }
 
+    /**
+     * applies the feed names back to the precondition properties
+     *
+     * @param category the system category name
+     * @param feed     the system feed name
+     */
     public void applyFeedNameToCurrentFeedProperties(String category, String feed) {
         if (this.preconditionRules != null) {
             List<FieldRuleProperty>

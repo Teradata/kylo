@@ -33,7 +33,7 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 /**
- * Created by sr186054 on 9/21/16.
+ * A cache of all the preconditions found on the classpath, transformed to user interface objects
  */
 @Service
 public class PreconditionPolicyRuleCache implements ServicesApplicationStartupListener {

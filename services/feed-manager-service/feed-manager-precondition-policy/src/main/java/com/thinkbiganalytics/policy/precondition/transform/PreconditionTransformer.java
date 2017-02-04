@@ -25,7 +25,7 @@ import com.thinkbiganalytics.policy.precondition.Precondition;
 import com.thinkbiganalytics.policy.rest.model.PreconditionRule;
 
 /**
- * Created by sr186054 on 4/21/16.
+ * Transform a user interface {@link PreconditionRule} to/from the domain {@link com.thinkbiganalytics.policy.precondition.Precondition}
  */
 public interface PreconditionTransformer {
 

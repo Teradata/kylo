@@ -33,7 +33,8 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.List;
 
 /**
- * Created by sr186054 on 4/21/16.
+ * Transform a user interface {@link PreconditionRule} to/from the domain {@link com.thinkbiganalytics.policy.precondition.Precondition}
+ * Domain classes need to be annotated with the {@link PreconditionPolicy} annotation
  */
 public class PreconditionAnnotationTransformer
     extends BasePolicyAnnotationTransformer<PreconditionRule, Precondition, PreconditionPolicy> implements PreconditionTransformer {

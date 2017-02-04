@@ -33,11 +33,16 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Created by sr186054 on 4/22/16.
+ * Service that returns all classes annotated with {@link PreconditionPolicy} transforming the Java classes to user interface friendly {@link PreconditionRule} objects
  */
 public class AvailablePolicies {
 
 
+    /**
+     * Find all classes annotated with {@link PreconditionPolicy} and transfrom them into the user interface object
+     *
+     * @return user interface objects of the {@link PreconditionPolicy} on the classpath
+     */
     public static List<PreconditionRule> discoverPreconditions() {
 
         List<PreconditionRule> rules = new ArrayList<>();
