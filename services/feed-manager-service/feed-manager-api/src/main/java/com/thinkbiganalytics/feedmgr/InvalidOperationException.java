@@ -21,7 +21,7 @@ package com.thinkbiganalytics.feedmgr;
  */
 
 /**
- * Created by sr186054 on 4/4/16.
+ * Exception if the system is unable to perform an operation
  */
 public class InvalidOperationException extends Exception {
 
