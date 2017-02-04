@@ -25,7 +25,10 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 /**
- * Created by sr186054 on 4/19/16.
+ * Redirect to swagger using the url: /api-docs/index.html
+ * Api docs are documented with Swagger.
+ * code under /resources/swagger-ui is pulled from: https://github.com/swagger-api/swagger-ui
+ *
  */
 @Configuration
 public class SwaggerResourceConfiguration extends WebMvcConfigurerAdapter {
