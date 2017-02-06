@@ -31,5 +31,11 @@ import java.sql.Connection;
 @CapabilityDescription("Provides Database Connection Pooling Service. Connections can be asked from pool and returned after usage.")
 public interface ThriftService extends ControllerService {
 
+    /**
+     * provides access to the SQL connection for Nifi processors
+     *
+     * @return the current connection
+     * @throws ProcessException to the nifi processor, if there is any issue with the current connection
+     */
     Connection getConnection() throws ProcessException;
 }

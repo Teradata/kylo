@@ -30,7 +30,6 @@ import org.apache.nifi.controller.ControllerService;
  */
 @Tags({"thinkbig", "ingest", "sqoop", "rdbms", "database", "table"})
 @CapabilityDescription("Provides information for connecting to a relational system for running a sqoop job")
-
 public interface SqoopConnectionService extends ControllerService {
 
     /**
