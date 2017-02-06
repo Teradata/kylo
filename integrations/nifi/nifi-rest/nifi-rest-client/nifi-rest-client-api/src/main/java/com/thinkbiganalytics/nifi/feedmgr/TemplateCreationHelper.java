@@ -208,6 +208,11 @@ public class TemplateCreationHelper {
     @Nonnull
     private ControllerServiceDTO tryToEnableControllerService(@Nonnull final ControllerServiceDTO controllerService, @Nullable final Map<String, String> properties,
                                                               @Nonnull final Map<String, ControllerServiceDTO> enabledServices, @Nonnull final Map<String, ControllerServiceDTO> allServices) {
+        // Check if already enabled
+        if ("ENABLED".equals(controllerService.getState())) {
+            return controllerService;
+        }
+
         // Fix controller service references
         final NiFiPropertyDescriptorTransform propertyDescriptorTransform = restClient.getPropertyDescriptorTransform();
         final List<NifiProperty> changedProperties = fixControllerServiceReferences(properties, enabledServices, allServices,
