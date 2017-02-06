@@ -36,8 +36,12 @@ class DriverShim implements Driver {
 
     private Driver driver;
 
-    DriverShim(Driver d) {
-        this.driver = d;
+    /**
+     * constructor used to wrap a driver
+     * @param driver
+     */
+    DriverShim(Driver driver) {
+        this.driver = driver;
     }
 
     @Override

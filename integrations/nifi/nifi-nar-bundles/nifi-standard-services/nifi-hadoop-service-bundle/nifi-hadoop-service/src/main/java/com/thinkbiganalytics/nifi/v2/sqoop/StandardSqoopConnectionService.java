@@ -38,6 +38,9 @@ public class StandardSqoopConnectionService
     extends AbstractControllerService
     implements SqoopConnectionService {
 
+    /**
+     * A property to provide the connection string for accessing the relational source system.
+     */
     public static final PropertyDescriptor SOURCE_CONNECTION_STRING = new PropertyDescriptor.Builder()
         .name("Source Connection String")
         .description("The connection string for accessing the relational source system. "
@@ -53,6 +56,9 @@ public class StandardSqoopConnectionService
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .build();
 
+    /**
+     * A property to get the user name for accessing the relational source system
+     */
     public static final PropertyDescriptor SOURCE_USERNAME = new PropertyDescriptor.Builder()
         .name("Source User Name")
         .description("The user name for accessing the relational source system")
@@ -61,6 +67,10 @@ public class StandardSqoopConnectionService
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .build();
 
+
+    /**
+     * A property to get the password mode, which indicates type of password and how it is provided.
+     */
     public static final PropertyDescriptor PASSWORD_MODE = new PropertyDescriptor.Builder()
         .name("Password Mode")
         .description("Indicates type of password and how it is provided. "
@@ -72,6 +82,9 @@ public class StandardSqoopConnectionService
         .defaultValue(PasswordMode.ENCRYPTED_ON_HDFS_FILE.toString())
         .build();
 
+    /**
+     * A property to get the HDFS location containing encrypted password file for accessing the relational source system.
+     */
     public static final PropertyDescriptor SOURCE_PASSWORD_HDFS_FILE = new PropertyDescriptor.Builder()
         .name("Source Password File")
         .description("The HDFS location containing encrypted password file for accessing the relational source system.")
@@ -81,6 +94,9 @@ public class StandardSqoopConnectionService
         .sensitive(true)
         .build();
 
+    /**
+     * A property to get the passphrase to decrypt the password for connecting to source system.
+     */
     public static final PropertyDescriptor SOURCE_PASSWORD_PASSPHRASE = new PropertyDescriptor.Builder()
         .name("Source Password Passphrase")
         .description("The passphrase to decrypt the password for connecting to source system.")
@@ -90,6 +106,9 @@ public class StandardSqoopConnectionService
         .sensitive(true)
         .build();
 
+    /**
+     * A property to get the password (can be either encrypted or clear text).
+     */
     public static final PropertyDescriptor SOURCE_ENTERED_PASSWORD = new PropertyDescriptor.Builder()
         .name("Source Password (Encrypted Base64/Clear Text)")
         .description("The password (can be either encrypted or clear text). "
@@ -101,6 +120,9 @@ public class StandardSqoopConnectionService
         .sensitive(true)
         .build();
 
+    /**
+     * A property to get the connection manager (also called connector) to use for accessing the relational source system.
+     */
     public static final PropertyDescriptor SOURCE_CONNECTION_MANAGER = new PropertyDescriptor.Builder()
         .name("Source Connection Manager")
         .description("The connection manager (also called connector) to use for accessing the relational source system. "
@@ -111,6 +133,9 @@ public class StandardSqoopConnectionService
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .build();
 
+    /**
+     * A property to get the driver for accessing the relational source system.
+     */
     public static final PropertyDescriptor SOURCE_DRIVER = new PropertyDescriptor.Builder()
         .name("Source Driver (Avoid providing value)")
         .description("The driver for accessing the relational source system. "
@@ -150,9 +175,13 @@ public class StandardSqoopConnectionService
         return sqoopConnectionProperties;
     }
 
+    /**
+     * called when the controller service is initiated.  It will set up access to the various properties
+     * @param context  the configuration context gives access to properties
+     * @throws InitializationException if there are any issues accessing the connections
+     */
     @OnEnabled
     public void onConfigured(final ConfigurationContext context) throws InitializationException {
-
         sourceConnectionString = context.getProperty(SOURCE_CONNECTION_STRING).evaluateAttributeExpressions().getValue();
         sourceUserName = context.getProperty(SOURCE_USERNAME).evaluateAttributeExpressions().getValue();
         passwordMode = PasswordMode.valueOf(context.getProperty(PASSWORD_MODE).getValue());

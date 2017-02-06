@@ -66,6 +66,9 @@ import javax.annotation.Nonnull;
 @CapabilityDescription("Provides a Thrift connection service.")
 public class ThriftConnectionPool extends AbstractControllerService implements ThriftService {
 
+    /**
+     * A property to get the database connection URL used to connect to a database.
+     */
     public static final PropertyDescriptor DATABASE_URL = new PropertyDescriptor.Builder()
         .name("Database Connection URL")
         .description("A database connection URL used to connect to a database. May contain database system name, host, port, database name and some parameters."
@@ -74,6 +77,10 @@ public class ThriftConnectionPool extends AbstractControllerService implements T
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .required(true)
         .build();
+
+    /**
+     * A property to get the database driver class name
+     */
     public static final PropertyDescriptor DB_DRIVERNAME = new PropertyDescriptor.Builder()
         .name("Database Driver Class Name")
         .description("Database driver class name")
@@ -81,6 +88,10 @@ public class ThriftConnectionPool extends AbstractControllerService implements T
         .required(true)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .build();
+
+    /**
+     * A property to get an optional database driver jar file path url. For example 'file:///var/tmp/mariadb-java-client-1.1.7.jar'
+     */
     public static final PropertyDescriptor DB_DRIVER_JAR_URL = new PropertyDescriptor.Builder()
         .name("Database Driver Jar Url")
         .description("Optional database driver jar file path url. For example 'file:///var/tmp/mariadb-java-client-1.1.7.jar'")
@@ -88,12 +99,20 @@ public class ThriftConnectionPool extends AbstractControllerService implements T
         .required(false)
         .addValidator(StandardValidators.URL_VALIDATOR)
         .build();
+
+    /**
+     * A property to get the database user name
+     */
     public static final PropertyDescriptor DB_USER = new PropertyDescriptor.Builder()
         .name("Database User")
         .description("Database user name")
         .defaultValue(null)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .build();
+
+    /**
+     * A property to get the password for the database user
+     */
     public static final PropertyDescriptor DB_PASSWORD = new PropertyDescriptor.Builder()
         .name("Password")
         .description("The password for the database user")
@@ -102,6 +121,10 @@ public class ThriftConnectionPool extends AbstractControllerService implements T
         .sensitive(true)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .build();
+
+    /**
+     * A property to get the query to be used when testing the Datasource.
+     */
     public static final PropertyDescriptor DB_VALIDATION_QUERY = new PropertyDescriptor.Builder()
         .name("Validation Query")
         .description("Query to be used when testing the Datasource. ")
@@ -110,6 +133,10 @@ public class ThriftConnectionPool extends AbstractControllerService implements T
         .sensitive(false)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .build();
+
+    /**
+     * A property to get the maximum amount of time that the pool will wait for an available connection
+     */
     public static final PropertyDescriptor MAX_WAIT_TIME = new PropertyDescriptor.Builder()
         .name("Max Wait Time")
         .description("The maximum amount of time that the pool will wait (when there are no available connections) "
@@ -119,6 +146,10 @@ public class ThriftConnectionPool extends AbstractControllerService implements T
         .addValidator(StandardValidators.TIME_PERIOD_VALIDATOR)
         .sensitive(false)
         .build();
+
+    /**
+     * A property to get the  maximum number of active connections that can be allocated from this pool at the same time
+     */
     public static final PropertyDescriptor MAX_TOTAL_CONNECTIONS = new PropertyDescriptor.Builder()
         .name("Max Total Connections")
         .description("The maximum number of active connections that can be allocated from this pool at the same time, "
@@ -128,15 +159,20 @@ public class ThriftConnectionPool extends AbstractControllerService implements T
         .addValidator(StandardValidators.INTEGER_VALIDATOR)
         .sensitive(false)
         .build();
+
+    /**
+     * A property to get a file, or comma separated list of files, which contains the Hadoop file system configuration.
+     */
     public static final PropertyDescriptor HADOOP_CONFIGURATION_RESOURCES = new PropertyDescriptor.Builder()
         .name("Hadoop Configuration Resources")
-        .description("A file or comma separated list of files which contains the Hadoop file system configuration. Without this, Hadoop "
+        .description("A file, or comma separated list of files, which contains the Hadoop file system configuration. Without this, Hadoop "
                      + "will search the classpath for a 'core-site.xml' and 'hdfs-site.xml' file or will revert to a default configuration.")
         .required(false).addValidator(createMultipleFilesExistValidator())
         .build();
     private String hadoopConfiguraiton;
     private String principal;
     private String keytab;
+
     /**
      * Property for Kerberos service keytab
      */
@@ -154,7 +190,7 @@ public class ThriftConnectionPool extends AbstractControllerService implements T
 
     private volatile BasicDataSource dataSource;
 
-    /*
+    /**
      * Validates that one or more files exist, as specified in a single property.
      */
     public static final Validator createMultipleFilesExistValidator() {
@@ -241,7 +277,13 @@ public class ThriftConnectionPool extends AbstractControllerService implements T
         final String dburl = context.getProperty(DATABASE_URL).getValue();
 
         dataSource =
-            new RefreshableDataSource.Builder().driverClassName(drv).url(dburl).username(user).password(passw).driverClassLoader(getDriverClassLoader(urlString, drv)).validationQuery(validationQuery)
+            new RefreshableDataSource.Builder()
+                .driverClassName(drv)
+                .url(dburl)
+                .username(user)
+                .password(passw)
+                .driverClassLoader(getDriverClassLoader(urlString, drv))
+                .validationQuery(validationQuery)
                 .build();
         getLogger().info("Created new ThirftConnectionPool with Refreshable Datasource for " + urlString);
     }

@@ -36,7 +36,7 @@ import java.util.logging.Logger;
 import javax.sql.DataSource;
 
 /**
- * Created by sr186054 on 9/13/16.
+ * a refreshable data source provides additional functionality over a basic data source that allows the connection to be maintained
  */
 public class RefreshableDataSource extends BasicDataSource {
 
@@ -53,6 +53,16 @@ public class RefreshableDataSource extends BasicDataSource {
     private ClassLoader driverClassLoader;
     private String validationQuery;
 
+    /**
+     * default constructor takes the parameters needed to keep connections refreshed
+     *
+     * @param driverClassName   the driver class name
+     * @param url               the JDBC url
+     * @param username          the user name
+     * @param password          the user password
+     * @param driverClassLoader the driver class loader
+     * @param validationQuery   the query used to test connections
+     */
     public RefreshableDataSource(String driverClassName, String url, String username, String password, ClassLoader driverClassLoader, String validationQuery) {
         this.driverClassName = driverClassName;
         this.url = url;
@@ -63,11 +73,9 @@ public class RefreshableDataSource extends BasicDataSource {
         refresh();
     }
 
-
-    public RefreshableDataSource() {
-
-    }
-
+    /**
+     * called to refresh the connection if needed
+     */
     public void refresh() {
         if (isRefreshing.compareAndSet(false, true)) {
             log.info("REFRESHING DATASOURCE for {} ", this.url);
@@ -78,10 +86,24 @@ public class RefreshableDataSource extends BasicDataSource {
         }
     }
 
+    /**
+     * test the connection to see if it can be used to communicate with the JDBC source
+     *
+     * @return true if the connection is alive
+     * @throws SQLException if the connection is not alive
+     */
     public boolean testConnection() throws SQLException {
         return testConnection(null, null);
     }
 
+    /**
+     * test the connection to see if it can be used to communicate with the JDBC source
+     *
+     * @param username a username to connect with if needed
+     * @param password a password to connect with if needed
+     * @return true if the connection is alive
+     * @throws SQLException if the connection is not alive
+     */
     public boolean testConnection(String username, String password) throws SQLException {
         boolean valid = false;
         Connection connection = null;
@@ -107,7 +129,6 @@ public class RefreshableDataSource extends BasicDataSource {
             }
         }
         return valid;
-
     }
 
     private Connection getConnectionForValidation() throws SQLException {
@@ -141,8 +162,6 @@ public class RefreshableDataSource extends BasicDataSource {
     @Override
     public Connection getConnection() throws SQLException {
         return testAndRefreshIfInvalid();
-
-
     }
 
     @Override
@@ -201,6 +220,9 @@ public class RefreshableDataSource extends BasicDataSource {
         return dataSource;
     }
 
+    /**
+     * A builder class for collecting required parameters to create/maintain a connection
+     **/
     public static class Builder {
 
         private String driverClassName;
