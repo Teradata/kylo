@@ -75,9 +75,9 @@ public class SchemaDiscoveryRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Determines the schema of the provided file.")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Returns the schema.", response = Schema.class),
-            @ApiResponse(code = 500, message = "The schema could not be determined.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 200, message = "Returns the schema.", response = Schema.class),
+                      @ApiResponse(code = 500, message = "The schema could not be determined.", response = RestResponseStatus.class)
+                  })
     public Response uploadFile(@FormDataParam("parser") String parserDescriptor,
                                @FormDataParam("file") InputStream fileInputStream,
                                @FormDataParam("file") FormDataContentDisposition fileMetaData) throws Exception {
@@ -103,7 +103,7 @@ public class SchemaDiscoveryRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the available file parsers.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "Returns the file parsers.", response = SchemaParserDescriptor.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Returns the file parsers.", response = SchemaParserDescriptor.class, responseContainer = "List")
     )
     public Response getFileParsers() {
         List<FileSchemaParser> parsers = FileParserFactory.instance().listSchemaParsers();

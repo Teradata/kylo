@@ -31,43 +31,37 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.List;
 import java.util.Vector;
 
+/**
+ * A model used to pass the default field
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DefaultField implements Field {
 
+    private List<String> sampleValues = new Vector<>();
     private String name;
-
     private String description = "";
-
     private String nativeDataType;
-
     private String derivedDataType;
-
     private boolean primaryKey = false;
-
     private boolean nullable = true;
-
     private boolean modifiable = true;
-
     @JsonDeserialize(as = DefaultDataTypeDescriptor.class)
     private DataTypeDescriptor dataTypeDescriptor;
-
-    public List<String> sampleValues = new Vector<>();
-
     private boolean updatedTracker;
 
     private String precisionScale;
 
     private boolean createdTracker;
 
-
-    public void setNativeDataType(String nativeDataType) {
-        this.nativeDataType = nativeDataType;
-    }
-
+    @Override
     public String getDerivedDataType() {
         return derivedDataType;
     }
 
+    @Override
+    public void setDerivedDataType(String type) {
+        this.derivedDataType = type;
+    }
 
     @Override
     public Boolean isPrimaryKey() {
@@ -79,6 +73,7 @@ public class DefaultField implements Field {
         return nullable;
     }
 
+    @Override
     public String getName() {
         return name;
     }
@@ -87,6 +82,7 @@ public class DefaultField implements Field {
         this.name = name;
     }
 
+    @Override
     public String getDescription() {
         return description;
     }
@@ -111,6 +107,7 @@ public class DefaultField implements Field {
         this.nullable = (nullable == null ? true : nullable);
     }
 
+    @Override
     public List<String> getSampleValues() {
         return sampleValues;
     }
@@ -120,13 +117,12 @@ public class DefaultField implements Field {
     }
 
     @Override
-    public void setDerivedDataType(String type) {
-        this.derivedDataType = type;
-    }
-
-    @Override
     public String getNativeDataType() {
         return this.nativeDataType;
+    }
+
+    public void setNativeDataType(String nativeDataType) {
+        this.nativeDataType = nativeDataType;
     }
 
     @Override
@@ -153,10 +149,13 @@ public class DefaultField implements Field {
      * Returns the structure in the format: Name | DataType | Desc | Primary \ CreatedTracker | UpdatedTracker
      */
     public String asFieldStructure() {
-        return name + "|" + getDataTypeWithPrecisionAndScale() + "|" + description + "|" + BooleanUtils.toInteger(primaryKey) + "|" + BooleanUtils.toInteger(createdTracker) + "|" + BooleanUtils
-            .toInteger(updatedTracker);
+        return name + "|" + getDataTypeWithPrecisionAndScale() + "|" + description + "|" +
+               BooleanUtils.toInteger(primaryKey) + "|" + BooleanUtils.toInteger(createdTracker) + "|" +
+               BooleanUtils.toInteger(updatedTracker);
     }
 
+
+    @Override
     public String getDataTypeWithPrecisionAndScale() {
         return derivedDataType + (StringUtils.isNotBlank(precisionScale) ? "(" + precisionScale + ")" : "");
     }

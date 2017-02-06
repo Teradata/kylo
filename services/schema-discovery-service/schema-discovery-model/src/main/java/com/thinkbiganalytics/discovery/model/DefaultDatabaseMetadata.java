@@ -20,7 +20,12 @@ package com.thinkbiganalytics.discovery.model;
  * #L%
  */
 
-public class DefaultDatabaseMetadata implements com.thinkbiganalytics.discovery.schema.DatabaseMetadata {
+import com.thinkbiganalytics.discovery.schema.DatabaseMetadata;
+
+/**
+ * A model to pass the database metadata
+ */
+public class DefaultDatabaseMetadata implements DatabaseMetadata {
 
     private String databaseName;
     private String tableName;

@@ -24,6 +24,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.thinkbiganalytics.discovery.schema.TableSchema;
 import com.thinkbiganalytics.metadata.MetadataField;
 
+/**
+ * Model used top pass the database and schema
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DefaultTableSchema extends AbstractSchema implements TableSchema {
 
@@ -41,12 +44,10 @@ public class DefaultTableSchema extends AbstractSchema implements TableSchema {
         this.schemaName = schemaName;
     }
 
-
     @Override
     public String getDatabaseName() {
         return databaseName;
     }
-
 
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;

@@ -23,6 +23,9 @@ package com.thinkbiganalytics.discovery.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.thinkbiganalytics.discovery.schema.HiveTableSchema;
 
+/**
+ * The model used to pass the hive schema
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DefaultHiveSchema extends DefaultTableSchema implements HiveTableSchema {
 
@@ -30,10 +33,12 @@ public class DefaultHiveSchema extends DefaultTableSchema implements HiveTableSc
 
     private Boolean structured = false;
 
+    @Override
     public String getHiveFormat() {
         return hiveFormat;
     }
 
+    @Override
     public void setHiveFormat(String hiveFormat) {
         this.hiveFormat = hiveFormat;
     }

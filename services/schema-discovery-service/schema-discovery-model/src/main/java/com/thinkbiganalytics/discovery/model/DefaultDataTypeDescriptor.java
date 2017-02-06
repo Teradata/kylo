@@ -23,9 +23,9 @@ package com.thinkbiganalytics.discovery.model;
 import com.thinkbiganalytics.discovery.schema.DataTypeDescriptor;
 
 /**
- * Information about the data type
+ * A model to pass the data type
  */
-public class DefaultDataTypeDescriptor implements DataTypeDescriptor{
+public class DefaultDataTypeDescriptor implements DataTypeDescriptor {
 
     boolean isDate;
 

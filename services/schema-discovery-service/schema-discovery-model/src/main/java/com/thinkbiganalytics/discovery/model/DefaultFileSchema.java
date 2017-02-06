@@ -19,9 +19,13 @@ package com.thinkbiganalytics.discovery.model;
  * limitations under the License.
  * #L%
  */
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.thinkbiganalytics.discovery.schema.FileSchema;
 
+/**
+ * The model used to pass a file schema
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DefaultFileSchema extends AbstractSchema implements FileSchema {
 
@@ -34,22 +38,22 @@ public class DefaultFileSchema extends AbstractSchema implements FileSchema {
         return format;
     }
 
+    public void setFormat(String format) {
+        this.format = format;
+    }
+
     @Override
     public boolean isBinary() {
         return binary;
     }
 
+    public void setBinary(boolean binary) {
+        this.binary = binary;
+    }
+
     @Override
     public boolean hasEmbeddedSchema() {
         return embeddedSchema;
-    }
-
-    public void setFormat(String format) {
-        this.format = format;
-    }
-
-    public void setBinary(boolean binary) {
-        this.binary = binary;
     }
 
     public boolean isEmbeddedSchema() {

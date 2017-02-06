@@ -50,8 +50,8 @@ public class AbstractSchema implements Schema {
 
     private Map<String, String> properties = new HashMap<>();
 
-    @JsonDeserialize(contentAs=DefaultField.class)
-    @JsonSerialize(contentAs=DefaultField.class)
+    @JsonDeserialize(contentAs = DefaultField.class)
+    @JsonSerialize(contentAs = DefaultField.class)
     private List<Field> fields = new ArrayList<>();
 
     private String schemaName;
@@ -68,8 +68,17 @@ public class AbstractSchema implements Schema {
     }
 
     @Override
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Override
     public String getDescription() {
         return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     @Override
@@ -77,9 +86,17 @@ public class AbstractSchema implements Schema {
         return charset;
     }
 
+    public void setCharset(String charset) {
+        this.charset = charset;
+    }
+
     @Override
     public Map<String, String> getProperties() {
         return properties;
+    }
+
+    public void setProperties(Map<String, String> properties) {
+        this.properties = properties;
     }
 
     @Override
@@ -91,24 +108,8 @@ public class AbstractSchema implements Schema {
         this.fields = fields;
     }
 
-    public void setProperties(Map<String, String> properties) {
-        this.properties = properties;
-    }
-
     public void setUuid(UUID uuid) {
         this.uuid = uuid;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public void setCharset(String charset) {
-        this.charset = charset;
     }
 
     @JsonIgnore

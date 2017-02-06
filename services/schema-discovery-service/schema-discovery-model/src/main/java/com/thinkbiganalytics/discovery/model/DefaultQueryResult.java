@@ -33,43 +33,39 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by sr186054 on 3/31/16.
+ * Model used to pass the query results
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DefaultQueryResult implements QueryResult {
 
     private String query;
 
-    public DefaultQueryResult() {
-
-    }
-
-    public DefaultQueryResult(@JsonProperty("query") String query) {
-        this.query = query;
-    }
-
-    @JsonDeserialize(contentAs=DefaultQueryResultColumn.class)
-    @JsonSerialize(contentAs=DefaultQueryResultColumn.class)
+    @JsonDeserialize(contentAs = DefaultQueryResultColumn.class)
+    @JsonSerialize(contentAs = DefaultQueryResultColumn.class)
     private List<QueryResultColumn> columns;
 
-    @JsonDeserialize(contentAs=DefaultQueryResultColumn.class)
-    @JsonSerialize(contentAs=DefaultQueryResultColumn.class)
+    @JsonDeserialize(contentAs = DefaultQueryResultColumn.class)
+    @JsonSerialize(contentAs = DefaultQueryResultColumn.class)
     private Map<String, QueryResultColumn> columnFieldMap;
 
-    @JsonDeserialize(contentAs=DefaultQueryResultColumn.class)
-    @JsonSerialize(contentAs=DefaultQueryResultColumn.class)
+    @JsonDeserialize(contentAs = DefaultQueryResultColumn.class)
+    @JsonSerialize(contentAs = DefaultQueryResultColumn.class)
     private Map<String, QueryResultColumn> columnDisplayNameMap;
 
     private List<Map<String, Object>> rows;
 
-    @Override
-    public List<QueryResultColumn> getColumns() {
-        return columns;
+    /**
+     * constructor
+     *
+     * @param query the query string
+     */
+    public DefaultQueryResult(@JsonProperty("query") String query) {
+        this.query = query;
     }
 
     @Override
-    public boolean isEmpty() {
-        return this.getRows().isEmpty();
+    public List<QueryResultColumn> getColumns() {
+        return columns;
     }
 
     @Override
@@ -86,6 +82,11 @@ public class DefaultQueryResult implements QueryResult {
                 index++;
             }
         }
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return this.getRows().isEmpty();
     }
 
     @Override

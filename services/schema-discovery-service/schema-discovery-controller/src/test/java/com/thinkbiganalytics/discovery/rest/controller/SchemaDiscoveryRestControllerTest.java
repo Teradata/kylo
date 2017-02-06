@@ -67,7 +67,6 @@ public class SchemaDiscoveryRestControllerTest extends JerseyTest {
 
     @Test
     public void testUploadFileDirect() throws Exception {
-
         SchemaParserDescriptor descriptor = createMockParserDescriptor();
         SchemaDiscoveryRestController c = new SchemaDiscoveryRestController();
         Response response = c.uploadFile(ObjectMapperSerializer.serialize(descriptor), new ByteArrayInputStream("ABC".getBytes()), null);

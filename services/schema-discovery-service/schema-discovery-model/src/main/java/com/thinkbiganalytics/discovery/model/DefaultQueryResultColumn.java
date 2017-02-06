@@ -24,7 +24,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.thinkbiganalytics.discovery.schema.QueryResultColumn;
 
 /**
- * Created by sr186054 on 3/31/16.
+ * The Model used to pass query result columns
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DefaultQueryResultColumn implements QueryResultColumn {
@@ -37,10 +37,12 @@ public class DefaultQueryResultColumn implements QueryResultColumn {
     private String databaseName;
     private int index;
 
+    @Override
     public String getField() {
         return field;
     }
 
+    @Override
     public void setField(String field) {
         this.field = field;
     }

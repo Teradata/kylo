@@ -39,8 +39,13 @@ public class FileParserFactory {
 
     private static final Logger log = LoggerFactory.getLogger(FileParserFactory.class);
 
-    private static FileParserFactory instance = new FileParserFactory();
+    private static final FileParserFactory instance = new FileParserFactory();
 
+    /**
+     * File parser factory returns the current instance
+     *
+     * @return the current instance of the file parser factory
+     */
     public static FileParserFactory instance() {
         return instance;
     }
@@ -48,8 +53,8 @@ public class FileParserFactory {
     /**
      * Returns a list of available schema parsers. Parsers are guaranteed to be annotated with @SchemaParser and implement FileSchemaParser interface
      */
+    @SuppressWarnings("unchecked")
     private List<Class<SchemaParser>> listSchemaParsersClasses() {
-
         List<Class<SchemaParser>> supportedParsers = new ArrayList<>();
 
         Set<Class<?>> parsers = ReflectionPolicyAnnotationDiscoverer.getTypesAnnotatedWith(SchemaParser.class);
@@ -57,7 +62,7 @@ public class FileParserFactory {
             if (FileSchemaParser.class.isAssignableFrom(c)) {
                 supportedParsers.add(c);
             } else {
-                log.warn("[" + c + "] is annotated with @SchemaParser and does not impellement the FileSchemaParser interface so will be ignored.");
+                log.warn("[" + c + "] is annotated with @SchemaParser and does not implement the FileSchemaParser interface so will be ignored.");
             }
         }
         return supportedParsers;
@@ -65,6 +70,8 @@ public class FileParserFactory {
 
     /**
      * Returns a list of available schema parsers. Parsers are guaranteed to be annotated with @SchemaParser and implement FileSchemaParser interface
+     *
+     * @return a list of file schema parsers
      */
     public List<FileSchemaParser> listSchemaParsers() {
 
