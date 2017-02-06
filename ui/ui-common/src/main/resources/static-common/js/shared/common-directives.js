@@ -38,25 +38,64 @@ angular.module(COMMON_APP_MODULE_NAME).directive('currentTime', function ($http,
             dateFormat: '@',
             refreshInterval: '@'
         },
-        template: "<span>{{currentTimeUtc}}</span>",
+        template: "<span>{{currentTime}}</span>",
         link: function (scope, element, attrs) {
+
+            /** query the server for its time on this interval... in between use javascript offset **/
+            var fullRefreshInterval = 60000; // refresh query the end point every 60 sec
+
+            var lastFullRefresh = null;
+            var currentTimeInMillis = null;
+
 
             if (scope.dateFormat == null) {
                 scope.dateFormat = 'MMM d, yyyy HH:mm:ss';
             }
 
-            function getTime() {
+            function setTimeUsingJavaScript() {
+                if (currentTimeInMillis != null) {
+                    //diff
+                    var millisDiff = new Date().getTime() - currentTimeInMillis;
+                    // add these millis to the systemTime
+                    currentTimeInMillis = currentTimeInMillis + millisDiff;
+                    scope.currentTime = $filter('date')(currentTimeInMillis, scope.dateFormat)
+                }
+            }
+
+            /**
+             *  set the currentTime
+             */
+            function setTime() {
+                if (shouldPerformFullRefresh()) {
+                    lastFullRefresh = new Date().getTime();
+                    refreshTime();
+                }
+                else {
+                    setTimeUsingJavaScript();
+                }
+            }
+
+            function refreshTime() {
                 $http.get('/proxy/v1/configuration/system-time').then(function (response) {
-                    scope.currentTimeUtc = $filter('date')(response.data, scope.dateFormat)
+                    scope.currentTime = $filter('date')(response.data, scope.dateFormat)
+                    currentTimeInMillis = response.data;
                 });
             }
 
-            getTime();
+            /**
+             * should it query to the server again?
+             * @returns {boolean}
+             */
+            function shouldPerformFullRefresh() {
+                return lastFullRefresh == null || (new Date().getTime() - lastFullRefresh > fullRefreshInterval);
+            }
+
+            setTime();
             if (scope.refreshInterval == null) {
                 scope.refreshInterval = 5000;
             }
             if (scope.refreshInterval > 1000) {
-                $interval(getTime, scope.refreshInterval);
+                $interval(setTime, scope.refreshInterval);
             }
         }
     };

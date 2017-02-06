@@ -27,18 +27,27 @@
                refreshTime:"@"
             },
             link: function ($scope, element, attrs) {
+
+                //flag if true it will truncate output
+                //if hours it will show hours/min (remove sec)
+                //if days it will show days/hrs  (remove min)
+
+                var truncateFormat = true;
+
+
                 $scope.time = $scope.startTime;
+                $scope.previousDisplayStr = '';
                 $scope.$watch('startTime',function(newVal,oldVal){
                     $scope.time = $scope.startTime;
                     format();
                 })
                 format();
-                $scope.seconds =0;
-                $scope.minutes =0;
-                $scope.hours =0;
-                $scope.days = 0;
-                $scope.months = 0;
-                $scope.years = 0;
+                var seconds = 0;
+                var minutes = 0;
+                var hours = 0;
+                var days = 0;
+                var months = 0;
+                var years = 0;
                 if($scope.refreshTime == undefined){
                     $scope.refreshTime = 1000;
                 }
@@ -49,45 +58,50 @@
 
                 }
 
-                function formatDaysHoursMinutesSeconds(ms){
+                function format() {
+                    var ms = $scope.time;
                     days = Math.floor(ms / (24*60*60*1000));
-                    daysms=ms % (24*60*60*1000);
+                    var daysms = ms % (24 * 60 * 60 * 1000);
                     hours = Math.floor((daysms)/(60*60*1000));
-                    hoursms=ms % (60*60*1000);
+                    var hoursms = ms % (60 * 60 * 1000);
                     minutes = Math.floor((hoursms)/(60*1000));
-                    minutesms=ms % (60*1000);
-                    sec = Math.floor((minutesms)/(1000));
+                    var minutesms = ms % (60 * 1000);
+                    seconds = Math.floor((minutesms) / (1000));
 
+                    var secondsStr = '';
+                    var minutesStr = '';
+                    var hoursStr = '';
+                    var daysStr = '';
+
+                    var str = seconds + ' sec';
+                    secondsStr = str;
+                    var truncateFormatStr = str + 'ago';
+                    if (hours > 0 || (hours == 0 && minutes > 0)) {
+                        minutesStr = minutes + ' min ';
+                        str = minutesStr + str;
+                        truncateFormatStr = minutesStr + 'ago';
+                    }
+                    if (days > 0 || days == 0 && hours > 0) {
+                        hoursStr = hours + ' hrs ';
+                        str = hoursStr + str;
+                        truncateFormatStr = hoursStr + " ago";
+                    }
+                    if (days > 0) {
+                        daysStr = days + " days ";
+                        str = daysStr + str;
+                        truncateFormatStr = daysStr + " ago";
+                    }
+
+                    var displayStr = truncateFormat ? truncateFormatStr : str;
+
+                    if ($scope.previousDisplayStr == '' || $scope.previousDisplayStr != displayStr) {
+                        element.html(displayStr);
+                        element.attr('title', displayStr);
+                    }
+                    $scope.previousDisplayStr = displayStr;
 
                 }
 
-                function format(){
-                    $scope.seconds = Math.floor(($scope.time / 1000) % 60);
-                    $scope.minutes = Math.floor((($scope.time / (60000)) % 60));
-                    $scope.hours = Math.floor($scope.time / 3600000);
-                    $scope.days = 0;
-                    $scope.months = 0;
-                    $scope.years = 0;
-                    if($scope.hours <0){
-                        $scope.hours = 0;
-                    }
-                    if($scope.minutes <0){
-                        $scope.minutes = 0;
-                    }
-                    if($scope.seconds <0){
-                        $scope.seconds = 0;
-                    }
-                    var str = $scope.seconds+' sec';
-                    if($scope.hours >0 || ($scope.hours ==0 && $scope.minutes >0)) {
-                      str = $scope.minutes+' min '+str;
-                    }
-                    if($scope.hours >0){
-                        str =  $scope.hours+' hrs '+str;
-                    }
-
-                    element.html(str);
-                    element.attr('title',str)
-                }
 
                 var interval = $interval(update, $scope.refreshTime);
 
@@ -105,6 +119,6 @@
 
 
     angular.module(COMMON_APP_MODULE_NAME)
-        .directive('tbaTimerOld',['$interval', directive]);
+        .directive('tbaTimer', ['$interval', directive]);
 
 }());
