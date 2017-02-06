@@ -25,8 +25,6 @@ package com.thinkbiganalytics.security;
 
 /**
  * A principal representing a privileged service operating with administrative rights.
- * 
- * @author Sean Felten
  */
 public class ServiceGroupPrincipal extends GroupPrincipal {
 

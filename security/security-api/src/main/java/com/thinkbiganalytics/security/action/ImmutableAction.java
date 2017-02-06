@@ -31,7 +31,6 @@ import java.util.stream.Collectors;
 
 /**
  * Simple and immutable implementation of Action useful for creating constants.
- * @author Sean Felten
  */
 public class ImmutableAction implements Action {
 
@@ -41,10 +40,22 @@ public class ImmutableAction implements Action {
     private final List<Action> hierarchy;
     private final int hash;
     
+    
+    /**
+     * Constructs a new action as a child of the given hierarchy chain of parent actions, if any.
+     * @param name the name
+     * @param title the title
+     * @param descr the description
+     * @param parents an order list of parent actions (if any) starting from the top
+     * @return a new immutable action
+     */
     public static ImmutableAction create(String name, String title, String descr, Action... parents) {
         return new ImmutableAction(name, title, descr, Arrays.asList(parents));
     }
-    
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.security.action.Action#subAction(java.lang.String, java.lang.String, java.lang.String)
+     */
     public ImmutableAction subAction(String name, String title, String descr) {
         return new ImmutableAction(name, title, descr, this.hierarchy);
     }
@@ -69,8 +80,35 @@ public class ImmutableAction implements Action {
         return description;
     }
     
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.security.action.Action#getHierarchy()
+     */
     public List<Action> getHierarchy() {
         return hierarchy;
+    }
+    
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        return this.systemName;
+    }
+    
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode() {
+        return this.hash;
+    }
+    
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof Action && obj.hashCode() == this.hash;
     }
 
     protected ImmutableAction(String systemName, String title, String descr, List<Action> parents) {
@@ -83,24 +121,11 @@ public class ImmutableAction implements Action {
         this.title = title;
         this.description = descr;
         this.hierarchy = Collections.unmodifiableList(new ArrayList<>(list));
+        // The hash only needs to be generated once since this object is immutable.
+        // This action's hash value is a hash of its and all its parents system names.
         this.hash = this.hierarchy.stream() 
                         .map(a -> a.getSystemName())
                         .collect(Collectors.toList())
                         .hashCode();
     }
-    
-    @Override
-    public String toString() {
-        return this.systemName;
-    }
-    
-    @Override
-    public int hashCode() {
-        return this.hash;
-    }
-    
-    @Override
-    public boolean equals(Object obj) {
-        return obj instanceof Action && obj.hashCode() == this.hash;
-    }
- }
+}

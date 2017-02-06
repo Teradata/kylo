@@ -22,7 +22,7 @@ package com.thinkbiganalytics.security.service.user;
 
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
-import com.thinkbiganalytics.security.action.config.ActionsGroupBuilder;
+import com.thinkbiganalytics.security.action.config.ActionsModuleBuilder;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -39,7 +39,7 @@ public class UsersGroupsSecurityConfiguration {
     private MetadataAccess metadata;
 
     @Inject
-    private ActionsGroupBuilder builder;
+    private ActionsModuleBuilder builder;
 
     @Bean
     public PostMetadataConfigAction usersGroupsSecurityConfigAction() {

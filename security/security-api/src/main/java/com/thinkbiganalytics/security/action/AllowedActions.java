@@ -31,29 +31,81 @@ import java.util.Set;
  * Represents a set of actions that may be allowed or disallowed for a user or group.
  * It also supports checking whether certain actions are permitted based on the principals
  * of the active security context.
- * @author Sean Felten
  */
 public interface AllowedActions {
 
     /**
-     * Retrieves the set permitted actions available based on the current security context in effect.
+     * Retrieves the hierarchical set of allowable actions.
      * @return the set of allowed actions
      */
     List<AllowableAction> getAvailableActions();
     
+    /**
+     * Checks whether the given actions are implied by this set of actions based on the current
+     * security context, i.e. the principals associates with the current user executing the current thread.
+     * @param actions the actions to check
+     * @throws AccessControlException thrown if any of the actions being checked are not present
+     */
     void checkPermission(Set<Action> actions);
     
+    /**
+     * Checks whether the given actions are implied by this set of actions based on the current
+     * security context, i.e. the principals associates with the current user executing the current thread.
+     * @param actions the actions to check
+     * @throws AccessControlException thrown if any of the actions being checked are not present
+     */
     void checkPermission(Action action, Action... more);
     
+    /**
+     * Updates this object to enable the given action(s) for the specified principal.
+     * @param principal the principal to which the action(s) are granted
+     * @param action an action to grant
+     * @param more optional additional actions to grant
+     * @return true if actions had not already been granted to that principal, otherwise false.
+     */
     boolean enable(Principal principal, Action action, Action... more);
     
+    /**
+     * Updates this object to enable the given action(s) for the specified principal.
+     * @param principal the principal to which the action(s) are granted
+     * @param actions the set of actions to grant
+     * @return true if actions had not already been granted to that principal, otherwise false.
+     */
     boolean enable(Principal principal, Set<Action> actions);
     
+    /**
+     * Updates this object to enable only the given action(s) for the specified principal and disabling any others
+     * the principal may have had enabled.
+     * @param principal the principal to which the action(s) are granted
+     * @param action an action to grant
+     * @param more optional additional actions to grant
+     * @return true if actions had not already been granted to that principal, otherwise false.
+     */
     boolean enableOnly(Principal principal, Action action, Action... more);
     
+    /**
+     * Updates this object to enable only the given action(s) for the specified principal and disabling any others
+     * the principal may have had enabled.
+     * @param principal the principal to which the action(s) are granted
+     * @param actions the set of actions to grant
+     * @return true if actions had not already been granted to that principal, otherwise false.
+     */
     boolean enableOnly(Principal principal, Set<Action> actions);
     
+    /**
+     * Updates this object to disable the given action(s) for the specified principal.
+     * @param principal the principal to which the action(s) are granted
+     * @param action an action to revoke
+     * @param more optional additional actions to revoke
+     * @return true if actions at least 1 action has been revoked for that principal, otherwise false.
+     */
     boolean disable(Principal principal, Action action, Action... more);
     
+    /**
+     * Updates this object to disable the given action(s) for the specified principal.
+     * @param principal the principal to which the action(s) are granted
+     * @param actions the set of actions to revoke
+     * @return true if actions at least 1 action has been revoked for that principal, otherwise false.
+     */
     boolean disable(Principal principal, Set<Action> actions);
 }

@@ -30,7 +30,7 @@ import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.UsernamePrincipal;
 import com.thinkbiganalytics.security.action.AllowedActions;
-import com.thinkbiganalytics.security.action.config.ActionsGroupBuilder;
+import com.thinkbiganalytics.security.action.config.ActionsModuleBuilder;
 import com.thinkbiganalytics.security.action.config.ActionsTreeBuilder;
 
 import org.modeshape.jcr.security.SimplePrincipal;
@@ -44,7 +44,7 @@ import javax.jcr.security.Privilege;
  *
  * @author Sean Felten
  */
-public class JcrActionsGroupBuilder extends JcrAbstractActionsBuilder implements ActionsGroupBuilder {
+public class JcrActionsGroupBuilder extends JcrAbstractActionsBuilder implements ActionsModuleBuilder {
     
     public static final String ALLOWED_ACTIONS = "tba:allowedActions";
     
@@ -64,10 +64,10 @@ public class JcrActionsGroupBuilder extends JcrAbstractActionsBuilder implements
     }
 
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.security.action.config.ActionsGroupBuilder#group(java.lang.String)
+     * @see com.thinkbiganalytics.security.action.config.ActionsModuleBuilder#group(java.lang.String)
      */
     @Override
-    public ActionsTreeBuilder<ActionsGroupBuilder> group(String name) {
+    public ActionsTreeBuilder<ActionsModuleBuilder> group(String name) {
         Session session = JcrMetadataAccess.getActiveSession();
         
         try {
@@ -83,7 +83,7 @@ public class JcrActionsGroupBuilder extends JcrAbstractActionsBuilder implements
     }
 
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.security.action.config.ActionsGroupBuilder#build()
+     * @see com.thinkbiganalytics.security.action.config.ActionsModuleBuilder#build()
      */
     @Override
     public AllowedActions build() {

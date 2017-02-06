@@ -34,8 +34,6 @@ import java.util.Set;
 /**
  * A principal representing a user group.  This is an immutable implementation
  * of the {@link Group} principal.
- * 
- * @author Sean Felten
  */
 public class GroupPrincipal extends BasePrincipal implements Group {
 

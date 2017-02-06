@@ -30,7 +30,7 @@ import com.thinkbiganalytics.metadata.modeshape.common.SecurityPaths;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrActionsGroupBuilder;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActionsGroupProvider;
 import com.thinkbiganalytics.security.AccessController;
-import com.thinkbiganalytics.security.action.config.ActionsGroupBuilder;
+import com.thinkbiganalytics.security.action.config.ActionsModuleBuilder;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -74,7 +74,7 @@ public class ModeShapeAuthConfig {
     
     @Bean(name = "prototypesActionGroupsBuilder")
     @Scope("prototype")
-    public ActionsGroupBuilder prototypesActionGroupsBuilder() {
+    public ActionsModuleBuilder prototypesActionGroupsBuilder() {
         return new JcrActionsGroupBuilder(SecurityPaths.PROTOTYPES.toString());
     }
 

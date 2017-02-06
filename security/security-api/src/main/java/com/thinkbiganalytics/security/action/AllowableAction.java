@@ -28,7 +28,6 @@ import java.util.stream.Stream;
 
 /**
  * Describes an action that may be authorized for a user or group.
- * @author Sean Felten
  */
 public interface AllowableAction extends Action {
 
@@ -38,9 +37,7 @@ public interface AllowableAction extends Action {
     List<AllowableAction> getSubActions();
     
     /**
-     * Streams the full sub-action tree defined below this action 
-     * using pre-order traversal.
-     * .
+     * Streams the full sub-action tree defined below this action using pre-order traversal.
      * @return a stream of sub-actions of this action
      */
     Stream<AllowableAction> stream();

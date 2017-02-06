@@ -26,7 +26,7 @@ package com.thinkbiganalytics.feedmgr.config;
 import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
-import com.thinkbiganalytics.security.action.config.ActionsGroupBuilder;
+import com.thinkbiganalytics.security.action.config.ActionsModuleBuilder;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -43,7 +43,7 @@ public class FeedManagerSecurityConfiguration {
     private MetadataAccess metadata;
 
     @Inject
-    private ActionsGroupBuilder builder;
+    private ActionsModuleBuilder builder;
 
     @Bean
     public PostMetadataConfigAction feedManagerSecurityConfigAction() {

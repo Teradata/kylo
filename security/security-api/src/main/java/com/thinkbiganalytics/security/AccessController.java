@@ -28,8 +28,9 @@ import com.thinkbiganalytics.security.action.Action;
 import java.util.Set;
 
 /**
- *
- * @author Sean Felten
+ * Defines the component responsible for making access control checks.  Access checks  
+ * should be inserted into places before attempting a particular action.  Each access check
+ * is made against the context of the current authenticated user executing the code.
  */
 public interface AccessController {
     

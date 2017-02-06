@@ -26,8 +26,10 @@ package com.thinkbiganalytics.security.action;
 import java.util.Optional;
 
 /**
- *
- * @author Sean Felten
+ * Provides a means to lookup the allowed actions of a particular module.  Lookup can be for all
+ * existing actions or for only those that have been granted to the current user; i.e. the 
+ * principals of the current security context.
+ * <p> This 
  */
 public interface AllowedModuleActionsProvider {
     

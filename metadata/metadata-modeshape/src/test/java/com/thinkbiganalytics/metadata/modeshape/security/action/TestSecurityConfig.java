@@ -26,7 +26,7 @@ package com.thinkbiganalytics.metadata.modeshape.security.action;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
 import com.thinkbiganalytics.security.action.Action;
-import com.thinkbiganalytics.security.action.config.ActionsGroupBuilder;
+import com.thinkbiganalytics.security.action.config.ActionsModuleBuilder;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -60,7 +60,7 @@ public class TestSecurityConfig {
     private MetadataAccess metadata;
     
     @Inject
-    private ActionsGroupBuilder builder;
+    private ActionsModuleBuilder builder;
 
     @Bean
     public PostMetadataConfigAction configAuthorization() {

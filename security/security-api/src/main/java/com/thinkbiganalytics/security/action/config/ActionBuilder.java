@@ -26,18 +26,32 @@ package com.thinkbiganalytics.security.action.config;
 import com.thinkbiganalytics.security.action.Action;
 
 /**
- *
- * @author Sean Felten
+ * A builder for constructing a new action in an action hierarchy.
  */
 public interface ActionBuilder<P> {
 
+    /**
+     * Sets the action title.
+     */
     ActionBuilder<P> title(String name);
 
+    /**
+     * Sets the action description.
+     */
     ActionBuilder<P> description(String name);
     
+    /**
+     * Starts a new builder for a sub-action of the one being built 
+     * with this builder.  The system name from the supplied
+     * action will be used for the system name of the new sub-action.
+     */
     ActionBuilder<ActionBuilder<P>> subAction(Action action);
 
-    ActionBuilder<ActionBuilder<P>> subAction(String name);
+    /**
+     * Starts a new builder for a sub-action of the one being built 
+     * with this builder; using the provided system name for the new sub-action.
+     */
+    ActionBuilder<ActionBuilder<P>> subAction(String systemName);
 
     P add();
 }
