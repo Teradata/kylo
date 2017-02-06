@@ -413,13 +413,13 @@ public class SqoopExportBuilder {
                     .append(sourceNullInterpretationStrategyCustomNullStringLabel)              //--input-null-string
                     .append(SPACE_STRING)
                     .append("'")
-                    .append(sourceNullInterpretationStrategyCustomNullString)
+                    .append(sourceNullInterpretationStrategyCustomNullString)                   //"user provided"
                     .append("'")
                     .append(SPACE_STRING)
                     .append(sourceNullInterpretationStrategyCustomNullNonStringLabel)           //--input-null-non-string
                     .append(SPACE_STRING)
                     .append("'")
-                    .append(sourceNullInterpretationStrategyCustomNullNonString)
+                    .append(sourceNullInterpretationStrategyCustomNullNonString)                //"user provided"
                     .append("'")
                     .append(SPACE_STRING);
             }
@@ -428,7 +428,7 @@ public class SqoopExportBuilder {
         /* Handle other job parameters */
         commandStringBuffer.append(clusterMapTasksLabel)                                        //--num-mappers
             .append(START_SPACE_QUOTE)
-            .append(clusterMapTasks)
+            .append(clusterMapTasks)                                                            //"user provided"
             .append(END_QUOTE_SPACE);
 
         return commandStringBuffer.toString();

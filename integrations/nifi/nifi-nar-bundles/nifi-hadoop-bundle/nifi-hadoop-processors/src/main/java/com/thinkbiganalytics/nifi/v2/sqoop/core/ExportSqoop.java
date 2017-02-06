@@ -75,7 +75,7 @@ import javax.annotation.Nonnull;
 public class ExportSqoop extends AbstractNiFiProcessor {
 
     /**
-     * Property to provide the connection service
+     * Property to provide connection service for executing sqoop jobs.
      */
     public static final PropertyDescriptor SQOOP_CONNECTION_SERVICE = new PropertyDescriptor.Builder()
         .name("Sqoop Connection Service")
@@ -85,7 +85,7 @@ public class ExportSqoop extends AbstractNiFiProcessor {
         .build();
 
     /**
-     * Porperty to provide source HDFS directory
+     * Property to provide source HDFS directory to get the data from for export.
      */
     public static final PropertyDescriptor SOURCE_HDFS_DIRECTORY = new PropertyDescriptor.Builder()
         .name("Source HDFS Directory")
@@ -96,7 +96,7 @@ public class ExportSqoop extends AbstractNiFiProcessor {
         .build();
 
     /**
-     * Property to specify the HDFS file delimiter
+     * Property to provide delimiter for source data on HDFS.
      */
     public static final PropertyDescriptor SOURCE_HDFS_FILE_DELIMITER = new PropertyDescriptor.Builder()
         .name("Source HDFS File Delimiter")
@@ -108,7 +108,7 @@ public class ExportSqoop extends AbstractNiFiProcessor {
         .build();
 
     /**
-     * Property to direct how to interpret nulls
+     * Property to provide method for identifying nulls in source HDFS data.
      */
     public static final PropertyDescriptor SOURCE_NULL_INTERPRETATION_STRATEGY = new PropertyDescriptor.Builder()
         .name("Source Null Interpret Strategy")
@@ -124,29 +124,29 @@ public class ExportSqoop extends AbstractNiFiProcessor {
         .build();
 
     /**
-     * Property to help map string values to null
+     * Property to provide custom string for identifying null strings in HDFS data.
      */
     public static final PropertyDescriptor SOURCE_NULL_CUSTOM_STRING_IDENTIFIER = new PropertyDescriptor.Builder()
         .name("Source Null String Identifier")
-        .description("Custom string for identifying null strings in HDFS data")
+        .description("Custom string for identifying null strings in HDFS data.")
         .required(false)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
 
     /**
-     * Property to help map custom strings, for non-string datatypes, to null
+     * Property to provide custom string for identifying null non-strings in HDFS data.
      */
     public static final PropertyDescriptor SOURCE_NULL_CUSTOM_NON_STRING_IDENTIFIER = new PropertyDescriptor.Builder()
         .name("Source Null Non-String Identifier")
-        .description("Custom string for identifying null non-strings in HDFS data")
+        .description("Custom string for identifying null non-strings in HDFS data.")
         .required(false)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
 
     /**
-     * Property to specify the target table name
+     * Property to provide the table to populate in the target relational system. NOTE: This table must already exist.
      */
     public static final PropertyDescriptor TARGET_TABLE_NAME = new PropertyDescriptor.Builder()
         .name("Target Table")
@@ -157,7 +157,7 @@ public class ExportSqoop extends AbstractNiFiProcessor {
         .build();
 
     /**
-     * Property to limit number of map tasks exporting data
+     * Property to provide number of map tasks to export data in parallel.
      */
     public static final PropertyDescriptor CLUSTER_MAP_TASKS = new PropertyDescriptor.Builder()
         .name("Cluster Map Tasks")
@@ -199,11 +199,6 @@ public class ExportSqoop extends AbstractNiFiProcessor {
     private List<PropertyDescriptor> properties;
     private Set<Relationship> relationships;
 
-    /**
-     * Readies properties and relationships when the processor is initialized
-     *
-     * @param context passed to parent class to initialize processor
-     */
     @Override
     protected void init(@Nonnull final ProcessorInitializationContext context) {
         super.init(context);
@@ -342,13 +337,12 @@ public class ExportSqoop extends AbstractNiFiProcessor {
      * Called by the framework this method does additional validation on properties
      *
      * @param validationContext used to retrieves the properties to check
-     * @return A collection of ValidationResult's which will be checked by the framework
+     * @return A collection of {@link ValidationResult} which will be checked by the framework
      */
     @Override
     protected Collection<ValidationResult> customValidate(ValidationContext validationContext) {
         final List<ValidationResult> results = new ArrayList<>();
-        final ExportNullInterpretationStrategy
-            sourceNullInterpretationStrategy =
+        final ExportNullInterpretationStrategy sourceNullInterpretationStrategy =
             ExportNullInterpretationStrategy.valueOf(validationContext.getProperty(SOURCE_NULL_INTERPRETATION_STRATEGY).getValue());
         final String sourceNullCustomStringIdentifier = validationContext.getProperty(SOURCE_NULL_CUSTOM_STRING_IDENTIFIER).evaluateAttributeExpressions().getValue();
         final String sourceNullCustomNonStringIdentifier = validationContext.getProperty(SOURCE_NULL_CUSTOM_NON_STRING_IDENTIFIER).evaluateAttributeExpressions().getValue();

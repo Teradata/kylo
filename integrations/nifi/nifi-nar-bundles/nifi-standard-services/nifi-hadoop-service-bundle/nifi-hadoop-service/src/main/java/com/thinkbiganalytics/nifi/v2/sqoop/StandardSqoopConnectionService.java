@@ -176,10 +176,10 @@ public class StandardSqoopConnectionService
     }
 
     /**
-     * called when the controller service is initiated.  It will set up access to the various properties
+     * Called when the controller service is initiated.  It will set up access to the various properties.
      *
      * @param context the configuration context gives access to properties
-     * @throws InitializationException if there are any issues accessing the connections
+     * @throws InitializationException if there are any issues accessing the properties
      */
     @OnEnabled
     public void onConfigured(final ConfigurationContext context) throws InitializationException {

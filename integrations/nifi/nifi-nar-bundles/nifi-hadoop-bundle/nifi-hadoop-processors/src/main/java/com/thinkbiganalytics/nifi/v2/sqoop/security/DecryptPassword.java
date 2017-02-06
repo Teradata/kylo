@@ -33,7 +33,12 @@ import javax.crypto.spec.SecretKeySpec;
 /**
  * A utility to decrypt passwords, provided in Base64 encoding.
  */
-/* Uses Sqoop's decryption algorithm */
+/* Uses Sqoop's decryption algorithm
+
+   References:
+   1) https://github.com/apache/sqoop/blob/trunk/src/java/org/apache/sqoop/util/password/CryptoFileLoader.java
+   2) http://ingest.tips/2015/03/12/managing-passwords-sqoop/
+*/
 
 public class DecryptPassword {
 
