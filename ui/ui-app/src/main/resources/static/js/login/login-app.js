@@ -17,7 +17,7 @@
  * limitations under the License.
  * #L%
  */
-﻿angular.module('app',[]);
+angular.module('app', []);
 
 var app = angular.module('app', [
     'ngMaterial',

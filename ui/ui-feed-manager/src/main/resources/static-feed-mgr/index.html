@@ -7,9 +7,9 @@
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
-  
+
       http://www.apache.org/licenses/LICENSE-2.0
-  
+
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -357,34 +357,34 @@
       </md-button>
     </md-list-item>
   </md-list>
-
 </md-sidenav>
 
 <div flex layout="column" tabIndex="-1" role="main" class="md-whiteframe-z2" layout-fill style="background-color:#F9F9F9;">
   <add-button></add-button>
   <md-toolbar layout="row" class="md-whiteframe-z1 page-header" layout-align="space-between center">
-
-    <md-button class="menu toggle-side-nav" ng-hide="mc.isSideNavHidden()" ng-click="mc.toggleSideNavList()" aria-label="Show Menu">
-      <ng-md-icon icon="menu"></ng-md-icon>
-    </md-button>
-    <ui-router-breadcrumbs displayname-property="data.displayName" template-url="js/shared/ui-router-breadcrumbs/uiBreadcrumbs.tpl.html"
-                           style="padding-left:25px;width:400px;align-self: center"></ui-router-breadcrumbs>
-    <div layout="row" layout-fill layout-align="center" style="align-self: center; ">
-      <ng-md-icon icon="search"></ng-md-icon>
-      <md-input-container class="condensed-no-float md-block global-search" md-no-float style="margin-top:8px;margin-bottom:-15px;" flex>
-        <input ng-model="mc.searchQuery" ng-keypress="mc.onSearchKeypress($event)" placeholder="Global Search" style="color:white">
-      </md-input-container>
-      <md-button class=" border-btn-white " ng-click="mc.search()">
-        Search
+    <div class="md-toolbar-tools">
+      <md-button class="menu toggle-side-nav" ng-hide="mc.isSideNavHidden()" ng-click="mc.toggleSideNavList()" aria-label="Show Menu">
+        <ng-md-icon icon="menu"></ng-md-icon>
       </md-button>
 
-    </div>
+      <ui-router-breadcrumbs style="padding-left:25px;" displayname-property="data.displayName" template-url="js/shared/ui-router-breadcrumbs/uiBreadcrumbs.tpl.html" flex
+                             md-truncate></ui-router-breadcrumbs>
+      <div layout="row" layout-fill layout-align="center"
+           ng-class="{'global-search-container-sm':$mdMedia('xs'),'global-search-container-sm':$mdMedia('sm'),'global-search-container':$mdMedia('gt-sm') }" flex hide-xs>
+        <ng-md-icon icon="search"></ng-md-icon>
+        <md-input-container class="condensed-no-float md-block global-search" md-no-float style="margin-top:8px;margin-bottom:-15px;" flex>
+          <input ng-model="mc.searchQuery" ng-keypress="mc.onSearchKeypress($event)" placeholder="Global Search" style="color:white">
+        </md-input-container>
+        <md-button ng-class="{'border-btn-white-sm':$mdMedia('sm'),'border-btn-white-sm':$mdMedia('xs'),'border-btn-white':$mdMedia('gt-sm') }" ng-click="mc.search()">
+          Search
+        </md-button>
 
-    <div layout="column" flex="95" layout-align="start end">
-      <current-time  class="md-caption"></current-time>
-      <kylo-options class="ng-isolate-scope" style="margin-right: -20px;"></kylo-options>
+      </div>
+      <span flex></span>
+      <div>
+        <kylo-options class="ng-isolate-scope" style="margin-right: -20px;"></kylo-options>
+      </div>
     </div>
-    <span flex="5"></span>
 
 
   </md-toolbar>

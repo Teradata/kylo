@@ -36,6 +36,8 @@
 
         this.searchQuery = '';
 
+        $scope.$mdMedia = $mdMedia;
+
         this.search = function() {
             ElasticSearchService.searchQuery = this.searchQuery;
             if (self.currentState.name != 'search') {

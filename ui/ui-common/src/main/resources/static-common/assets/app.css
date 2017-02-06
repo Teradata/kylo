@@ -282,6 +282,17 @@ md-list.padding-left md-list-item {
   line-height: inherit;
 }
 
+.md-button.border-btn-white-sm {
+  text-align: center !important;
+  height: 28px;
+  font-size: 12px;
+  padding: 0;
+  /*padding: 0 16px 0 16px; */
+  color: white;
+  border: 1px solid white;
+  line-height: inherit;
+}
+
 .md-button.md-icon-button.rounded-rectangle {
   border-radius: 3px;
 }

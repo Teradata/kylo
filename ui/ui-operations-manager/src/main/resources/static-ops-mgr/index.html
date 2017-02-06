@@ -221,16 +221,16 @@
 
 
     <md-toolbar layout="row" class="md-whiteframe-z1 page-header" layout-align="space-between center">
+      <div class="md-toolbar-tools">
         <md-button class="menu toggle-side-nav" hide-gt-md ng-click="mc.toggleSideNavList()" aria-label="Show Menu">
-            <ng-md-icon icon="menu"></ng-md-icon>
+          <ng-md-icon icon="menu"></ng-md-icon>
         </md-button>
         <ui-router-breadcrumbs displayname-property="data.displayName" template-url="js/shared/ui-router-breadcrumbs/uiBreadcrumbs.tpl.html" style="padding-left:25px;"></ui-router-breadcrumbs>
-        <span flex="20"></span>
-        <div layout="column" flex="75" layout-align="start end">
-            <current-time  class="md-caption"></current-time>
-            <kylo-options class="ng-isolate-scope" style="margin-right: -20px;"></kylo-options>
+        <span flex></span>
+        <div>
+          <kylo-options class="ng-isolate-scope" style="margin-right: -20px;"></kylo-options>
         </div>
-        <span flex="5"></span>
+      </div>
     </md-toolbar>
 
     <md-content flex id="content" md-scroll-y>

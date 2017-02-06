@@ -283,6 +283,17 @@ card-layout .register-nifi-template-header {
  * Global Search styles
  */
 
+.global-search-container-sm {
+  align-self: center;
+  min-width: 300px;
+}
+
+.global-search-container {
+  align-self: center;
+  min-width: 500px;
+  padding-top: 10px;
+}
+
 md-input-container.global-search .md-input {
   border-color: white !important;
   font-size: 14px;
