@@ -27,6 +27,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ConfigurationClassPostProcessor;
 
 /**
+ * The spring configuration class for the precondition beans
  */
 @Configuration
 public class PreconditionJmsConfiguration {

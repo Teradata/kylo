@@ -49,16 +49,22 @@ import java.util.Properties;
 
 import javax.annotation.Nonnull;
 
-/**
- */
+
 public class MetadataClientProvider implements MetadataProvider {
 
     private MetadataClient client;
 
+    /**
+     * constructor creates a MetaDataClientProvider with the default URI constant
+     */
     public MetadataClientProvider() {
         this(URI.create("http://localhost:8077/api/v1/metadata"));
     }
 
+    /**
+     * constructor creates a MetaDataClientProvider with the URI provided
+     * @param baseUri   the REST endpoint of the Metadata store
+     * */
     public MetadataClientProvider(URI baseUri) {
         this(new MetadataClient(baseUri));
     }
@@ -67,6 +73,11 @@ public class MetadataClientProvider implements MetadataProvider {
         this(new MetadataClient(baseUri, username, password));
     }
 
+    /**
+     * constructor creates a MetadataClientProvider with the required {@link MetadataClient}
+     *
+     * @param client  the MetadataClient will be used to connect with the Metadata store
+     */
     public MetadataClientProvider(MetadataClient client) {
         super();
         this.client = client;

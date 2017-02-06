@@ -75,12 +75,24 @@ public class JmsCleanupEventService extends AbstractControllerService implements
         springService = context.getProperty(SPRING_SERVICE).asControllerService(SpringContextService.class);
     }
 
+    /**
+     * adds a listener to be notified on receipt of cleanup events.
+     *
+     * @param category the category system name
+     * @param feedName the feed system name
+     * @param listener the listener to be added
+     */
     @Override
     public void addListener(@Nonnull final String category, @Nonnull final String feedName, @Nonnull final CleanupListener listener) {
         getLogger().debug("Adding cleanup listener: {}.{} - {}", new Object[]{category, feedName, listener});
         springService.getBean(CleanupEventConsumer.class).addListener(category, feedName, listener);
     }
 
+    /**
+     * removes the listener that was previously added with {@link addListener}
+     *
+     * @param listener the listener to be removed
+     */
     @Override
     public void removeListener(@Nonnull CleanupListener listener) {
         springService.getBean(CleanupEventConsumer.class).removeListener(listener);

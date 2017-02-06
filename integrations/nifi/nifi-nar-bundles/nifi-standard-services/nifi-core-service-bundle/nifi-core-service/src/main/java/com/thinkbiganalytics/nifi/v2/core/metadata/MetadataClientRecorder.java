@@ -45,9 +45,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-/**
- *
- */
 public class MetadataClientRecorder implements MetadataRecorder {
 
     private static final Logger log = LoggerFactory.getLogger(MetadataClientRecorder.class);
@@ -55,21 +52,31 @@ public class MetadataClientRecorder implements MetadataRecorder {
     private static final String CURRENT_WATER_MARKS_ATTR = "activeWaterMarks";
     private static final ObjectReader WATER_MARKS_READER = new ObjectMapper().reader().forType(Map.class);
     private static final ObjectWriter WATER_MARKS_WRITER = new ObjectMapper().writer().forType(Map.class);
-    // TODO: Remove this
-    public Map<String, Boolean> workaroundRegistration = new HashMap<>();
+
     private MetadataClient client;
     private Set<String> activeWaterMarks = Collections.synchronizedSet(new HashSet<>());
     private Map<String, InitializationStatus> activeInitStatuses = Collections.synchronizedMap(new HashMap<>());
 
-
+    /**
+     * constructor creates a MetadataClientRecorder with the default URI constant
+     */
     public MetadataClientRecorder() {
         this(URI.create("http://localhost:8420/api/v1/metadata"));
     }
 
+    /**
+     * constructor creates a MetadataClientRecorder with the URI provided
+     * @param baseUri   the REST endpoint of the Metadata recorder
+     */
     public MetadataClientRecorder(URI baseUri) {
         this(new MetadataClient(baseUri));
     }
 
+    /**
+     * constructor creates a MetadataClientProvider with the required {@link MetadataClientRecorder}
+     *
+     * @param client the MetadataClient will be used to connect with the Metadata store
+     */
     public MetadataClientRecorder(MetadataClient client) {
         this.client = client;
     }
@@ -302,11 +309,6 @@ public class MetadataClientRecorder implements MetadataRecorder {
 
     private String initValueParameterName(String parameterName) {
         return parameterName + ".original";
-    }
-
-    // TODO: Remove workaround
-    private String feedKey(String systemCategory, String feedName) {
-        return systemCategory + "." + feedName;
     }
 
 }

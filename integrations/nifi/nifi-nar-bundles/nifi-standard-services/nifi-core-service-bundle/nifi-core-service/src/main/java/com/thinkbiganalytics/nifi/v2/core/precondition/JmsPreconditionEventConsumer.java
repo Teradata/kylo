@@ -33,6 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
+ * Consumes the precondition events in JMS
  */
 public class JmsPreconditionEventConsumer implements PreconditionEventConsumer {
 
@@ -40,6 +41,9 @@ public class JmsPreconditionEventConsumer implements PreconditionEventConsumer {
 
     private ConcurrentMap<String, PreconditionListener> listeners = new ConcurrentHashMap<>();
 
+    /**
+     * default constructor
+     */
     public JmsPreconditionEventConsumer() {
         LOG.debug("New JmsPreconditionEventConsumer {}", this);
     }
@@ -63,11 +67,13 @@ public class JmsPreconditionEventConsumer implements PreconditionEventConsumer {
 
     }
 
+    @Override
     public void addListener(String category, String feedName, PreconditionListener listener) {
         LOG.info("{} Adding listener for '{}.{}'", this, category, feedName);
         this.listeners.put(generateKey(category, feedName), listener);
     }
 
+    @Override
     public void removeListener(PreconditionListener listener) {
         LOG.info("{} Removing listener {}", this, listener);
         this.listeners.values().remove(listener);

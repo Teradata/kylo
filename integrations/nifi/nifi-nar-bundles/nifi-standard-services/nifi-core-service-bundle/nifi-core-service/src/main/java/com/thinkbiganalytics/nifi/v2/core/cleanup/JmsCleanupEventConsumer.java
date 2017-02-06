@@ -48,6 +48,13 @@ public class JmsCleanupEventConsumer implements CleanupEventConsumer {
     @Nonnull
     private final ConcurrentMap<String, CleanupListener> listeners = new ConcurrentHashMap<>();
 
+    /**
+     * adds a listener to be notified on receipt of cleanup events
+     *
+     * @param category the category system name
+     * @param feedName the feed system name
+     * @param listener the listener to be added
+     */
     @Override
     public void addListener(@Nonnull String category, @Nonnull String feedName, @Nonnull CleanupListener listener) {
         listeners.put(generateKey(category, feedName), listener);
@@ -69,6 +76,11 @@ public class JmsCleanupEventConsumer implements CleanupEventConsumer {
         }
     }
 
+    /**
+     * removes the listener that was previously added with {@link addListener}
+     *
+     * @param listener the listener to be removed
+     */
     @Override
     public void removeListener(@Nonnull CleanupListener listener) {
         listeners.values().remove(listener);

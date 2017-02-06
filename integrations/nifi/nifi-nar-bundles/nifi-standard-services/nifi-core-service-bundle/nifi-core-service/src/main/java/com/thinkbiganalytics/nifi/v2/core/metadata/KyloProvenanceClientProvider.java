@@ -25,23 +25,28 @@ import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheSync;
 import com.thinkbiganalytics.nifi.core.api.metadata.KyloNiFiFlowProvider;
 
 /**
- * Created by sr186054 on 12/21/16.
+ * an implementation of {@link KyloNifiFlowProvider}, used to interact with a cache of nifi flow events
  */
 public class KyloProvenanceClientProvider implements KyloNiFiFlowProvider {
 
     private MetadataClient client;
 
 
+    /**
+     * constructor requires a client
+     *
+     * @param client
+     */
     public KyloProvenanceClientProvider(MetadataClient client) {
         super();
         this.client = client;
     }
 
-
     @Override
     public NiFiFlowCacheSync getNiFiFlowUpdates(String syncId) {
         return client.getFlowUpdates(syncId);
     }
+
 
     @Override
     public NiFiFlowCacheSync resetNiFiFlowCache(String syncId) {
@@ -53,6 +58,7 @@ public class KyloProvenanceClientProvider implements KyloNiFiFlowProvider {
         return client.findNiFiMaxEventId(clusterNodeId);
     }
 
+    @Override
     public boolean isNiFiFlowDataAvailable() {
         return client.isNiFiFlowDataAvailable();
     }

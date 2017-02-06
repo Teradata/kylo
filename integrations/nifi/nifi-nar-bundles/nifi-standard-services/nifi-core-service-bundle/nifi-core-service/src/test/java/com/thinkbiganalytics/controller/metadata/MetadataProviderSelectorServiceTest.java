@@ -39,8 +39,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by sr186054 on 11/1/16. To test with SSL 1. use the nifi-toolkit to generate selfsigned key and trust store tls-toolkit.sh standalone -n 'localhost' -C 'CN=kylo, OU=ThinkBig' -o . 2. set
- * the application properties to make thinkbig-services run under SSL  using the generated files from #1  (example below) server.ssl.key-store=/Users/sr186054/tools/test-ssl/test/localhost/keystore.jks
+ * To test with SSL 1. use the nifi-toolkit to generate selfsigned key and trust store tls-toolkit.sh standalone -n 'localhost' -C 'CN=kylo, OU=ThinkBig' -o . 2. set the application properties to make
+ * thinkbig-services run under SSL  using the generated files from #1  (example below) server.ssl.key-store=/Users/sr186054/tools/test-ssl/test/localhost/keystore.jks
  * server.ssl.key-store-password=sxkJ96yw2ZZktkVFtflln2IqjxkXPCD+vh3gAPDhQ18 server.ssl.key-store-type=jks server.ssl.trust-store=/Users/sr186054/tools/test-ssl/test/localhost/truststore.jks
  * server.ssl.trust-store-password=S1+cc2FKMzk2td/p6OJE0U6FUM3fV5jnlrYj46CoUSU server.ssl.trust-store-type=JKS 3. setup the SSLContextService below to use the truststore and client keystore 4. run the
  * #testMetadataService method to assess the connections

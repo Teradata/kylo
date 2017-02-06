@@ -35,9 +35,13 @@ import java.util.Collections;
 import java.util.List;
 
 /**
+ * used to communicate precondition events via JMS
  */
 public class JmsFeedPreconditionEventService extends AbstractControllerService implements FeedPreconditionEventService {
 
+    /**
+     * Property provides the service for loading spring a spring context and providing bean lookup
+     */
     public static final PropertyDescriptor SPRING_SERVICE = new PropertyDescriptor.Builder()
         .name("Spring Context Service")
         .description("Service for loading spring a spring context and providing bean lookup")
@@ -52,6 +56,11 @@ public class JmsFeedPreconditionEventService extends AbstractControllerService i
         return Collections.singletonList(SPRING_SERVICE);
     }
 
+    /**
+     * responds to the onConfigured event to wire in the spring context service as a controller service
+     * @param context
+     * @throws InitializationException
+     */
     @OnEnabled
     public void onConfigured(final ConfigurationContext context) throws InitializationException {
         this.springService = context.getProperty(SPRING_SERVICE).asControllerService(SpringContextService.class);
