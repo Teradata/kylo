@@ -35,13 +35,9 @@ import java.util.HashMap;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-/**
- * Created by Jeremy Merrifield on 2/22/16.
- */
 public class MergeHiveTableMetadataTest {
 
     private InputStream testDocument;
-    private TestRunner nifiTestRunner;
 
     @Before
     public void setUp() throws IOException {
@@ -57,7 +53,7 @@ public class MergeHiveTableMetadataTest {
     }
 
     private void runProcessor(InputStream testDocument) {
-        nifiTestRunner = TestRunners.newTestRunner(new MergeHiveTableMetadata()); // no failures
+        TestRunner nifiTestRunner = TestRunners.newTestRunner(new MergeHiveTableMetadata());
         nifiTestRunner.setValidateExpressionUsage(true);
         nifiTestRunner.setProperty(MergeHiveTableMetadata.DATABASE_NAME, "NAME");
         nifiTestRunner.setProperty(MergeHiveTableMetadata.DATABASE_OWNER, "OWNER_NAME");

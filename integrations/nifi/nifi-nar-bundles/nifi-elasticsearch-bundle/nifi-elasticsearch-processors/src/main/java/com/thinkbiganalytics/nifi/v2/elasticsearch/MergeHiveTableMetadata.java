@@ -46,6 +46,7 @@ import org.codehaus.jettison.json.JSONObject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -63,18 +64,26 @@ import java.util.Set;
 @CapabilityDescription("Aggregate JSON across multiple documents into one document representing a Hive table (V2)")
 public class MergeHiveTableMetadata extends AbstractNiFiProcessor {
 
-    // relationships
+    /**
+     * Success Relationship for when JSON objects are successfully merged
+     */
     public static final Relationship REL_SUCCESS = new Relationship.Builder()
         .name("success")
-        .description("Json objects that are successfully merged are transferred to this relationship")
+        .description("JSON objects that are successfully merged are transferred to this relationship")
         .build();
 
+    /**
+     * Failure Relationship for when the merge of JSON metadata does not succeed.
+     */
     public static final Relationship REL_FAILURE = new Relationship.Builder()
         .name("failure")
         .description(
-            "Json objects that are un-successfully merged are transferred to this relationship")
+            "JSON objects that are un-successfully merged are transferred to this relationship")
         .build();
-    // properties
+
+    /**
+     * A property for the name of the hive database field
+     */
     public static final PropertyDescriptor DATABASE_NAME = new PropertyDescriptor.Builder()
         .name("Database Name Field")
         .description("The name of the hive database field")
@@ -82,6 +91,10 @@ public class MergeHiveTableMetadata extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
+
+    /**
+     * A property for the database owner field name
+     */
     public static final PropertyDescriptor DATABASE_OWNER = new PropertyDescriptor.Builder()
         .name("Database Owner Field")
         .description("Database owner field name")
@@ -89,6 +102,10 @@ public class MergeHiveTableMetadata extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
+
+    /**
+     * A property for the table create time
+     */
     public static final PropertyDescriptor TABLE_CREATE_TIME = new PropertyDescriptor.Builder()
         .name("Table Create Time Field")
         .description("Field representing the table create time")
@@ -96,6 +113,10 @@ public class MergeHiveTableMetadata extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
+
+    /**
+     * A property for the table name
+     */
     public static final PropertyDescriptor TABLE_NAME = new PropertyDescriptor.Builder()
         .name("Table Name Field")
         .description("Field holding the table name")
@@ -103,6 +124,10 @@ public class MergeHiveTableMetadata extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
+
+    /**
+     * A property for the table type
+     */
     public static final PropertyDescriptor TABLE_TYPE = new PropertyDescriptor.Builder()
         .name("Table Type Field")
         .description("Field representing what type of hive table it is")
@@ -110,6 +135,10 @@ public class MergeHiveTableMetadata extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
+
+    /**
+     * A property for the column name
+     */
     public static final PropertyDescriptor COLUMN_NAME = new PropertyDescriptor.Builder()
         .name("Column Name Field")
         .description("Field representing the column name")
@@ -117,6 +146,10 @@ public class MergeHiveTableMetadata extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
+
+    /**
+     * A property for the column type
+     */
     public static final PropertyDescriptor COLUMN_TYPE = new PropertyDescriptor.Builder()
         .name("Column Type Field")
         .description("Field representing what the column type is")
@@ -127,6 +160,9 @@ public class MergeHiveTableMetadata extends AbstractNiFiProcessor {
     private final Set<Relationship> relationships;
     private final List<PropertyDescriptor> propDescriptors;
 
+    /**
+     * default constructor constructs the relationship and property collections
+     */
     public MergeHiveTableMetadata() {
         final Set<Relationship> r = new HashSet<>();
         r.add(REL_SUCCESS);
@@ -177,7 +213,7 @@ public class MergeHiveTableMetadata extends AbstractNiFiProcessor {
 
                 @Override
                 public void process(InputStream in) throws IOException {
-                    sb.append(IOUtils.toString(in));
+                    sb.append(IOUtils.toString(in, Charset.defaultCharset()));
                 }
 
             });
@@ -189,7 +225,7 @@ public class MergeHiveTableMetadata extends AbstractNiFiProcessor {
                 public void process(final OutputStream out) throws IOException {
                     try {
                         JSONArray array = new JSONArray(sb.toString());
-                        Map<String, Metadata> tables = new HashMap();
+                        Map<String, Metadata> tables = new HashMap<>();
 
                         for (int i = 0; i < array.length(); i++) {
                             JSONObject jsonObj = array.getJSONObject(i);
@@ -223,7 +259,7 @@ public class MergeHiveTableMetadata extends AbstractNiFiProcessor {
                                 tables.put(key, meta);
                             }
                         }
-                        List<Metadata> tablesAsList = new ArrayList();
+                        List<Metadata> tablesAsList = new ArrayList<>();
                         Iterator iter = tables.entrySet().iterator();
                         while (iter.hasNext()) {
                             Map.Entry pair = (Map.Entry) iter.next();
@@ -257,7 +293,7 @@ public class MergeHiveTableMetadata extends AbstractNiFiProcessor {
         private String tableCreateTime;
         private String tableName;
         private String tableType;
-        private List<HiveColumn> hiveColumns = new ArrayList();
+        private List<HiveColumn> hiveColumns = new ArrayList<>();
 
         public List<HiveColumn> getHiveColumns() {
             return hiveColumns;

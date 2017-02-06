@@ -44,8 +44,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Created by Jeremy Merrifield on 2/14/16.
- * <p>
  * Integration test so we can validate the processor sends data to elasticsearch without having to deploy it
  */
 public class IndexElasticSearchTest {
@@ -59,7 +57,6 @@ public class IndexElasticSearchTest {
     private InputStream insertDocument;
     private InputStream updateDocument;
     private InputStream metadataDocument;
-    private TestRunner nifiTestRunner;
     private Client esClient = null;
 
     @Before
@@ -85,13 +82,13 @@ public class IndexElasticSearchTest {
     public void tester() {
         runProcessor(insertDocument, TEST_INDEX, TEST_TYPE, TEST_ID);
         Map searchResult = queryElasticSearch("2");
-        assertTrue("The first name did not match as expected", ((String) searchResult.get("first_name")).equals("Albert"));
-        assertTrue("The last name did not match as expected", ((String) searchResult.get("last_name")).equals("Freeman"));
+        assertTrue("The first name did not match as expected", searchResult.get("first_name").equals("Albert"));
+        assertTrue("The last name did not match as expected", searchResult.get("last_name").equals("Freeman"));
 
         runProcessor(updateDocument, TEST_INDEX, TEST_TYPE, TEST_ID);
         searchResult = queryElasticSearch("2");
-        assertTrue("The first name did not match as expected", ((String) searchResult.get("first_name")).equals("Jacob"));
-        assertTrue("The last name did not match as expected", ((String) searchResult.get("last_name")).equals("Thomas"));
+        assertTrue("The first name did not match as expected", searchResult.get("first_name").equals("Jacob"));
+        assertTrue("The last name did not match as expected", searchResult.get("last_name").equals("Thomas"));
 
     }
 
@@ -101,7 +98,7 @@ public class IndexElasticSearchTest {
     }
 
     private void runProcessor(InputStream testDocument, String index, String type, String idField) {
-        nifiTestRunner = TestRunners.newTestRunner(new IndexElasticSearch()); // no failures
+        TestRunner nifiTestRunner = TestRunners.newTestRunner(new IndexElasticSearch());
         nifiTestRunner.setValidateExpressionUsage(true);
         nifiTestRunner.setProperty(IndexElasticSearch.HOST_NAME, TEST_HOST);
         nifiTestRunner.setProperty(IndexElasticSearch.INDEX_NAME, index);
@@ -124,11 +121,9 @@ public class IndexElasticSearchTest {
     }
 
     private Map queryElasticSearch(String id) {
-        Map result = null;
         GetResponse response = esClient.prepareGet(TEST_INDEX, TEST_TYPE, id)
             .execute()
             .actionGet();
-        result = response.getSource();
-        return result;
+        return response.getSource();
     }
 }

@@ -63,18 +63,26 @@ import java.util.UUID;
 @CapabilityDescription("Write FlowFile from a JSON array to Elasticsearch (V2)")
 public class IndexElasticSearch extends AbstractNiFiProcessor {
 
-    // relationships
+    /**
+     * Success Relationship for JSON objects that are successfully indexed in elasticsearch
+     */
     public static final Relationship REL_SUCCESS = new Relationship.Builder()
         .name("success")
         .description("Json objects that are successfully indexed in elasticsearch are transferred to this relationship")
         .build();
 
+    /**
+     * Failure Relationship for JSON objects that are fail to index in elasticsearch
+     */
     public static final Relationship REL_FAILURE = new Relationship.Builder()
         .name("failure")
         .description(
             "Json objects that are un-successfully indexed in elasticsearch are transferred to this relationship")
         .build();
-    // properties
+
+    /**
+     * Property for the name of the index
+     */
     public static final PropertyDescriptor INDEX_NAME = new PropertyDescriptor.Builder()
         .name("IndexName")
         .description("The name of the index")
@@ -82,6 +90,10 @@ public class IndexElasticSearch extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
+
+    /**
+     * Property for the index type
+     */
     public static final PropertyDescriptor TYPE = new PropertyDescriptor.Builder()
         .name("Type")
         .description("Elasticsearch type")
@@ -89,6 +101,10 @@ public class IndexElasticSearch extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
+
+    /**
+     * Property for the elastic search host name
+     */
     public static final PropertyDescriptor HOST_NAME = new PropertyDescriptor.Builder()
         .name("HostName")
         .description("Elasticsearch host")
@@ -96,6 +112,10 @@ public class IndexElasticSearch extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
+
+    /**
+     * Property for the elastic search cluster name
+     */
     public static final PropertyDescriptor CLUSTER_NAME = new PropertyDescriptor.Builder()
         .name("ClusterName")
         .description("Elasticsearch cluster")
@@ -103,9 +123,13 @@ public class IndexElasticSearch extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
+
+    /**
+     * Property for the id to use for indexing into elasticsearch.
+     */
     public static final PropertyDescriptor ID_FIELD = new PropertyDescriptor.Builder()
         .name("IdField")
-        .description("Id that you want to use for indexing into elasticsearch. If it is empty then a uuid will be generated")
+        .description("Id that you want to use for indexing into elasticsearch. If it is empty then a UUID will be generated")
         .required(false)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
@@ -113,6 +137,9 @@ public class IndexElasticSearch extends AbstractNiFiProcessor {
     private final Set<Relationship> relationships;
     private final List<PropertyDescriptor> propDescriptors;
 
+    /**
+     * default constructor constructs the relationship and property collections
+     */
     public IndexElasticSearch() {
         final Set<Relationship> r = new HashSet<>();
         r.add(REL_SUCCESS);
@@ -194,7 +221,7 @@ public class IndexElasticSearch extends AbstractNiFiProcessor {
 
         for (int i = 0; i < array.length(); i++) {
             JSONObject jsonObj = array.getJSONObject(i);
-            String id = null;
+            String id;
             if (idField != null && idField.length() > 0) {
                 id = jsonObj.getString(idField);
             } else {
