@@ -192,6 +192,8 @@ public class ThriftConnectionPool extends AbstractControllerService implements T
 
     /**
      * Validates that one or more files exist, as specified in a single property.
+     *
+     * @return a validator which describes the result of the validation
      */
     public static final Validator createMultipleFilesExistValidator() {
         return new Validator() {

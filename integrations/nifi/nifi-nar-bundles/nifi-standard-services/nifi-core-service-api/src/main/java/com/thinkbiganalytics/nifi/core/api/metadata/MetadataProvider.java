@@ -96,7 +96,7 @@ public interface MetadataProvider {
      * @param datasourceId the datasource id
      * @return the feed
      */
-    Feed ensureFeedDestination(String feedId, String id);
+    Feed ensureFeedDestination(String feedId, String datasourceId);
 
     /**
      * gets, or creates a feed, based on certain preconditions given as Metric's
@@ -112,6 +112,8 @@ public interface MetadataProvider {
      *
      * @param feedId the feed id
      * @param props  the datasource id
+     *               
+     * @return the updated properties
      */
     Properties updateFeedProperties(String feedId, Properties props);
 
@@ -165,11 +167,15 @@ public interface MetadataProvider {
 
     /**
      * Begin tracking the run time of the operation on the feedDestination
+     *
+     * @param feedDestination   the feed destination
+     * @param opStart the time it starts
+     * @return a data operation
      */
     DataOperation beginOperation(FeedDestination feedDestination, DateTime opStart);
 
     /**
-     * complete the operation begun by {@link beginOperation}
+     * complete the operation begun by beginOperation
      *
      * @param id        the id of the operation
      * @param status    the status of the operation
@@ -179,11 +185,11 @@ public interface MetadataProvider {
     DataOperation completeOperation(String id, String status, Dataset changeSet);
 
     /**
-     * complete the operation begun by {@link beginOperation}
+     * complete the operation begun by beginOperation
      *
-     * @param id        the id of the operation
-     * @param status    the status of the operation
-     * @param state     the state of the operation
+     * @param id     the id of the operation
+     * @param status the status of the operation
+     * @param state  the state of the operation
      * @return a data operation object which is used to track the metadata of the operation
      */
     DataOperation completeOperation(String id, String status, State state);

@@ -63,8 +63,9 @@ public class MetadataClientProvider implements MetadataProvider {
 
     /**
      * constructor creates a MetaDataClientProvider with the URI provided
-     * @param baseUri   the REST endpoint of the Metadata store
-     * */
+     *
+     * @param baseUri the REST endpoint of the Metadata store
+     */
     public MetadataClientProvider(URI baseUri) {
         this(new MetadataClient(baseUri));
     }
@@ -76,7 +77,7 @@ public class MetadataClientProvider implements MetadataProvider {
     /**
      * constructor creates a MetadataClientProvider with the required {@link MetadataClient}
      *
-     * @param client  the MetadataClient will be used to connect with the Metadata store
+     * @param client the MetadataClient will be used to connect with the Metadata store
      */
     public MetadataClientProvider(MetadataClient client) {
         super();

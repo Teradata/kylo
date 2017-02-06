@@ -58,8 +58,9 @@ public class JmsFeedPreconditionEventService extends AbstractControllerService i
 
     /**
      * responds to the onConfigured event to wire in the spring context service as a controller service
-     * @param context
-     * @throws InitializationException
+     *
+     * @param context the configuration context of the processor
+     * @throws InitializationException if there are any errors getting the spring controller service
      */
     @OnEnabled
     public void onConfigured(final ConfigurationContext context) throws InitializationException {

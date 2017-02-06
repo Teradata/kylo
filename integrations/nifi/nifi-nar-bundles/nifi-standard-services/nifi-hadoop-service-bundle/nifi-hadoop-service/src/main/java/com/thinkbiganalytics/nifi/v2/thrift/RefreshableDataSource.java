@@ -109,7 +109,6 @@ public class RefreshableDataSource extends BasicDataSource {
         Connection connection = null;
         Statement statement = null;
         try {
-
             if (StringUtils.isNotBlank(username) || StringUtils.isNotBlank(password)) {
                 connection = getConnectionForValidation(username, password);
             } else {
@@ -118,8 +117,6 @@ public class RefreshableDataSource extends BasicDataSource {
             statement = connection.createStatement();
             statement.execute(validationQuery);
             valid = true;
-        } catch (SQLException e) {
-            throw e;
         } finally {
             if (statement != null) {
                 statement.close();

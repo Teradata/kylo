@@ -89,7 +89,7 @@ public class JmsCleanupEventService extends AbstractControllerService implements
     }
 
     /**
-     * removes the listener that was previously added with {@link addListener}
+     * removes the listener that was previously added with addListener
      *
      * @param listener the listener to be removed
      */

@@ -1,6 +1,3 @@
-/**
- *
- */
 package com.thinkbiganalytics.nifi.v2.core.metadata;
 
 /*-
@@ -66,7 +63,8 @@ public class MetadataClientRecorder implements MetadataRecorder {
 
     /**
      * constructor creates a MetadataClientRecorder with the URI provided
-     * @param baseUri   the REST endpoint of the Metadata recorder
+     *
+     * @param baseUri the REST endpoint of the Metadata recorder
      */
     public MetadataClientRecorder(URI baseUri) {
         this(new MetadataClient(baseUri));

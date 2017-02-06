@@ -25,7 +25,7 @@ import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheSync;
 import com.thinkbiganalytics.nifi.core.api.metadata.KyloNiFiFlowProvider;
 
 /**
- * an implementation of {@link KyloNifiFlowProvider}, used to interact with a cache of nifi flow events
+ * an implementation of KyloNifiFlowProvider, used to interact with a cache of nifi flow events
  */
 public class KyloProvenanceClientProvider implements KyloNiFiFlowProvider {
 
@@ -33,9 +33,9 @@ public class KyloProvenanceClientProvider implements KyloNiFiFlowProvider {
 
 
     /**
-     * constructor requires a client
+     * constructor which requires a client
      *
-     * @param client
+     * @param client the metadata client
      */
     public KyloProvenanceClientProvider(MetadataClient client) {
         super();

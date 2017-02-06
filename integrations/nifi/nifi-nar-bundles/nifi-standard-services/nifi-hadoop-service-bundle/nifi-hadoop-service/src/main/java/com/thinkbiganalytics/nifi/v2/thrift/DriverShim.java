@@ -34,11 +34,12 @@ import java.util.logging.Logger;
  */
 class DriverShim implements Driver {
 
-    private Driver driver;
+    private final Driver driver;
 
     /**
      * constructor used to wrap a driver
-     * @param driver
+     *
+     * @param driver the driver to wrap
      */
     DriverShim(Driver driver) {
         this.driver = driver;
