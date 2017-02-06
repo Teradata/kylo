@@ -32,6 +32,7 @@ public class PySparkUtils {
 
     /**
      * Basic validation to check that a string is for the form value1,value2,value3 and so on
+     *
      * @param appArgs String containing value to check
      * @return true/false result of validation
      */
@@ -41,7 +42,7 @@ public class PySparkUtils {
         }
 
         if ((appArgs.charAt(0) == CSV_DELIMITER.charAt(0))
-            || (appArgs.charAt(appArgs.length()-1) == CSV_DELIMITER.charAt(0))) {
+            || (appArgs.charAt(appArgs.length() - 1) == CSV_DELIMITER.charAt(0))) {
             return false;
         }
 
@@ -49,8 +50,7 @@ public class PySparkUtils {
 
         try {
             providedArgs = appArgs.split(",");
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return false;
         }
 
@@ -59,6 +59,7 @@ public class PySparkUtils {
 
     /**
      * Get an array of values that are separated by commas in a single string
+     *
      * @param appArgs String containing comma-separated values
      * @return String array of the values
      */
@@ -72,10 +73,11 @@ public class PySparkUtils {
 
     /**
      * Get a string of values separated by comma from an array of values
+     *
      * @param values Array of string values
      * @return String containing values separated by comma
      */
-    public String getCsvStringFromArray (@Nonnull String[] values) {
+    public String getCsvStringFromArray(@Nonnull String[] values) {
         if (values.length == 0) {
             return "";
         }
@@ -83,7 +85,7 @@ public class PySparkUtils {
         StringBuilder retVal = new StringBuilder();
         for (int i = 0; i < values.length; i++) {
             retVal.append(values[i]);
-            if (i!= values.length - 1) {
+            if (i != values.length - 1) {
                 retVal.append(",");
             }
         }
@@ -92,6 +94,7 @@ public class PySparkUtils {
 
     /**
      * Basic validation to check that a string is in the form key1=value1,key2=value2,key3=value3 and so on
+     *
      * @param args String containing value to check
      * @return true/false result of validation
      */
@@ -101,7 +104,7 @@ public class PySparkUtils {
             return false;
         }
 
-        for (String keyValuePair: keyValueArgsAsList) {
+        for (String keyValuePair : keyValueArgsAsList) {
             if (!validateKeyValuePair(keyValuePair)) {
                 return false;
             }
@@ -112,6 +115,7 @@ public class PySparkUtils {
 
     /**
      * Basic validation to check that a string is in the form key=value
+     *
      * @param keyValuePair String containing value to check
      * @return true/false result of validation
      */

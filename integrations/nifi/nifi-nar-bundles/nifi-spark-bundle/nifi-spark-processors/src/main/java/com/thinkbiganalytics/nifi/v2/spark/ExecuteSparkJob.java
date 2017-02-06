@@ -63,8 +63,7 @@ import javax.annotation.Nonnull;
 @EventDriven
 @InputRequirement(InputRequirement.Requirement.INPUT_REQUIRED)
 @Tags({"spark", "thinkbig"})
-@CapabilityDescription("Execute a Spark job. "
-)
+@CapabilityDescription("Execute a Spark job.")
 public class ExecuteSparkJob extends AbstractNiFiProcessor {
 
     public static final String SPARK_NETWORK_TIMEOUT_CONFIG_NAME = "spark.network.timeout";
@@ -80,10 +79,12 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         .name("success")
         .description("Successful result.")
         .build();
+
     public static final Relationship REL_FAILURE = new Relationship.Builder()
         .name("failure")
         .description("Spark execution failed. Incoming FlowFile will be penalized and routed to this relationship")
         .build();
+
     private final Set<Relationship> relationships;
 
     public static final PropertyDescriptor APPLICATION_JAR = new PropertyDescriptor.Builder()
@@ -143,6 +144,7 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
+
     public static final PropertyDescriptor DRIVER_MEMORY = new PropertyDescriptor.Builder()
         .name("Driver Memory")
         .description("How much RAM to allocate to the driver")
@@ -151,6 +153,7 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
+
     public static final PropertyDescriptor EXECUTOR_MEMORY = new PropertyDescriptor.Builder()
         .name("Executor Memory")
         .description("How much RAM to allocate to the executor")
@@ -159,6 +162,7 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
+
     public static final PropertyDescriptor NUMBER_EXECUTORS = new PropertyDescriptor.Builder()
         .name("Number of Executors")
         .description("The number of exectors to be used")
@@ -167,6 +171,7 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
+
     public static final PropertyDescriptor EXECUTOR_CORES = new PropertyDescriptor.Builder()
         .name("Executor Cores")
         .description("The number of executor cores to be used")
@@ -175,6 +180,7 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
+
     public static final PropertyDescriptor SPARK_APPLICATION_NAME = new PropertyDescriptor.Builder()
         .name("Spark Application Name")
         .description("The name of the spark application")
@@ -182,6 +188,7 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
+
     public static final PropertyDescriptor NETWORK_TIMEOUT = new PropertyDescriptor.Builder()
         .name("Network Timeout")
         .description(
@@ -191,6 +198,7 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
+
     public static final PropertyDescriptor HADOOP_CONFIGURATION_RESOURCES = new PropertyDescriptor.Builder()
         .name("Hadoop Configuration Resources")
         .description("A file or comma separated list of files which contains the Hadoop file system configuration. Without this, Hadoop "
@@ -213,6 +221,7 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
+
     public static final PropertyDescriptor PROCESS_TIMEOUT = new PropertyDescriptor.Builder()
         .name("Spark Process Timeout")
         .description("Time to wait for successful completion of Spark process. Routes to failure if Spark process runs for longer than expected here")
@@ -223,13 +232,19 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         .build();
 
 
-    /** Kerberos service keytab */
+    /**
+     * Kerberos service keytab
+     */
     private PropertyDescriptor kerberosKeyTab;
 
-    /** Kerberos service principal */
+    /**
+     * Kerberos service principal
+     */
     private PropertyDescriptor kerberosPrincipal;
 
-    /** List of properties */
+    /**
+     * List of properties
+     */
     private List<PropertyDescriptor> propDescriptors;
 
     public ExecuteSparkJob() {
@@ -319,7 +334,7 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
             Integer sparkProcessTimeout = context.getProperty(PROCESS_TIMEOUT).evaluateAttributeExpressions(flowFile).asTimePeriod(TimeUnit.SECONDS).intValue();
 
             String[] confs = null;
-            if(!StringUtils.isEmpty(sparkConfs)){
+            if (!StringUtils.isEmpty(sparkConfs)) {
                 confs = sparkConfs.split("\\|");
             }
 
@@ -335,13 +350,13 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
                 getLog().info("No extra jars to be added to class path");
             }
 
-            // If all 3 fields are filled out then assume kerberos is enabled and we want to authenticate the user
+            // If all 3 fields are filled out then assume kerberos is enabled, and user should be authenticated
             boolean authenticateUser = false;
             if (!StringUtils.isEmpty(principal) && !StringUtils.isEmpty(keyTab) && !StringUtils.isEmpty(hadoopConfigurationResources)) {
                 authenticateUser = true;
             }
 
-            if(authenticateUser) {
+            if (authenticateUser) {
                 ApplySecurityPolicy applySecurityObject = new ApplySecurityPolicy();
                 Configuration configuration;
                 try {
@@ -396,9 +411,9 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
                 .setConf(SparkLauncher.EXECUTOR_CORES, executorCores)
                 .setConf(SPARK_NETWORK_TIMEOUT_CONFIG_NAME, networkTimeout)
                 .setSparkHome(sparkHome)
-                .setAppName(sparkApplicationName) ;
+                .setAppName(sparkApplicationName);
 
-            if(authenticateUser) {
+            if (authenticateUser) {
                 launcher.setConf(SPARK_YARN_KEYTAB, keyTab);
                 launcher.setConf(SPARK_YARN_PRINCIPAL, principal);
             }
@@ -406,10 +421,10 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
                 launcher.addAppArgs(args);
             }
 
-            if(confs != null){
-                for(String conf : confs){
+            if (confs != null) {
+                for (String conf : confs) {
                     getLog().info("Adding sparkconf '" + conf + "'");
-                    launcher.addSparkArg(SPARK_CONFIG_NAME,conf);
+                    launcher.addSparkArg(SPARK_CONFIG_NAME, conf);
                 }
             }
 
@@ -425,7 +440,6 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
             if (StringUtils.isNotEmpty(extraFiles)) {
                 launcher.addSparkArg(SPARK_EXTRA_FILES_CONFIG_NAME, extraFiles);
             }
-
 
             Process spark = launcher.launch();
 
@@ -443,7 +457,7 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
 
              /* Wait for job completion */
             boolean completed = spark.waitFor(sparkProcessTimeout, TimeUnit.SECONDS);
-            if(!completed){
+            if (!completed) {
                 spark.destroyForcibly();
                 getLog().error("Spark process timed out after {} seconds using flow file: {}  ", new Object[]{sparkProcessTimeout, flowFile});
                 session.transfer(flowFile, REL_FAILURE);
@@ -474,7 +488,6 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
     /*
      * Validates that one or more files exist, as specified in a single property.
      */
-
     public static final Validator createMultipleFilesExistValidator() {
         return new Validator() {
             @Override

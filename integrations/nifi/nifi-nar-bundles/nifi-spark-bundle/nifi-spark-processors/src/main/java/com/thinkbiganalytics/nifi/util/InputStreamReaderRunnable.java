@@ -29,9 +29,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-/*
- * This is a helper class
- * Used for reading and clearing Process buffers
+/**
+ * Helper class for reading and clearing Process buffers
  */
 
 public class InputStreamReaderRunnable implements Runnable {
@@ -50,7 +49,6 @@ public class InputStreamReaderRunnable implements Runnable {
         try {
             String line = reader.readLine();
             while (line != null) {
-                //System.out.println(line);
                 if (level == LogLevel.DEBUG) {
                     logger.debug(line);
                 } else if (level == LogLevel.INFO) {

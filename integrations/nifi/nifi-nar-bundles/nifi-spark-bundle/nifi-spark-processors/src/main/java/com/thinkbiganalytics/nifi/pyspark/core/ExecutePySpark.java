@@ -317,23 +317,23 @@ public class ExecutePySpark extends AbstractNiFiProcessor {
 
             /* Get app arguments */
             String[] pySparkAppArgsArray = null;
-            if (!StringUtils.isEmpty(pySparkAppArgs)){
+            if (!StringUtils.isEmpty(pySparkAppArgs)) {
                 pySparkAppArgsArray = pySparkUtils.getCsvValuesAsArray(pySparkAppArgs);
-                logger.info("Provided application arguments: {}", new Object[] { pySparkUtils.getCsvStringFromArray(pySparkAppArgsArray) });
+                logger.info("Provided application arguments: {}", new Object[]{pySparkUtils.getCsvStringFromArray(pySparkAppArgsArray)});
             }
 
             /* Get additional python files */
             String[] pySparkAdditionalFilesArray = null;
             if (!StringUtils.isEmpty(pySparkAdditionalFiles)) {
                 pySparkAdditionalFilesArray = pySparkUtils.getCsvValuesAsArray(pySparkAdditionalFiles);
-                logger.info("Provided python files: {}", new Object[] { pySparkUtils.getCsvStringFromArray(pySparkAdditionalFilesArray) });
+                logger.info("Provided python files: {}", new Object[]{pySparkUtils.getCsvStringFromArray(pySparkAdditionalFilesArray)});
             }
 
             /* Get additional config key-value pairs */
             String[] additionalSparkConfigOptionsArray = null;
             if (!StringUtils.isEmpty(additionalSparkConfigOptions)) {
                 additionalSparkConfigOptionsArray = pySparkUtils.getCsvValuesAsArray(additionalSparkConfigOptions);
-                logger.info("Provided spark config options: {}", new Object[] { pySparkUtils.getCsvStringFromArray(additionalSparkConfigOptionsArray) });
+                logger.info("Provided spark config options: {}", new Object[]{pySparkUtils.getCsvStringFromArray(additionalSparkConfigOptionsArray)});
             }
 
             /* Determine if Kerberos is enabled */
@@ -344,7 +344,7 @@ public class ExecutePySpark extends AbstractNiFiProcessor {
             }
 
             /* For Kerberized cluster, attempt user authentication */
-            if(kerberosEnabled) {
+            if (kerberosEnabled) {
                 logger.info("Attempting user authentication for Kerberos");
                 ApplySecurityPolicy applySecurityObject = new ApplySecurityPolicy();
                 Configuration configuration;
@@ -390,33 +390,33 @@ public class ExecutePySpark extends AbstractNiFiProcessor {
             logger.info("Configuring PySpark job for execution");
             SparkLauncher pySparkLauncher = new SparkLauncher()
                 .setAppResource(pySparkAppFile);
-            logger.info("PySpark app file set to: {}", new Object[] { pySparkAppFile });
+            logger.info("PySpark app file set to: {}", new Object[]{pySparkAppFile});
 
-            if (pySparkAppArgsArray!=null && pySparkAppArgsArray.length > 0) {
+            if (pySparkAppArgsArray != null && pySparkAppArgsArray.length > 0) {
                 pySparkLauncher = pySparkLauncher
                     .addAppArgs(pySparkAppArgsArray);
-                logger.info("App arguments set to: {}", new Object[] { pySparkUtils.getCsvStringFromArray(pySparkAppArgsArray) });
+                logger.info("App arguments set to: {}", new Object[]{pySparkUtils.getCsvStringFromArray(pySparkAppArgsArray)});
             }
 
             pySparkLauncher = pySparkLauncher
                 .setAppName(pySparkAppName)
                 .setMaster(sparkMaster);
 
-            logger.info("App name set to: {}", new Object[] { pySparkAppName });
-            logger.info("Spark master set to: {}", new Object[] { sparkMaster });
+            logger.info("App name set to: {}", new Object[]{pySparkAppName});
+            logger.info("Spark master set to: {}", new Object[]{sparkMaster});
 
-            if (pySparkAdditionalFilesArray!=null && pySparkAdditionalFilesArray.length > 0) {
+            if (pySparkAdditionalFilesArray != null && pySparkAdditionalFilesArray.length > 0) {
                 for (String pySparkAdditionalFile : pySparkAdditionalFilesArray) {
                     pySparkLauncher = pySparkLauncher
                         .addPyFile(pySparkAdditionalFile);
-                    logger.info("Additional python file set to: {}", new Object[] { pySparkAdditionalFile });
+                    logger.info("Additional python file set to: {}", new Object[]{pySparkAdditionalFile});
                 }
             }
 
             if (sparkMaster.equals("yarn")) {
                 pySparkLauncher = pySparkLauncher
                     .setDeployMode(sparkYarnDeployMode);
-                logger.info("YARN deploy mode set to: {}", new Object[] { sparkYarnDeployMode });
+                logger.info("YARN deploy mode set to: {}", new Object[]{sparkYarnDeployMode});
             }
 
             pySparkLauncher = pySparkLauncher
@@ -427,35 +427,35 @@ public class ExecutePySpark extends AbstractNiFiProcessor {
                 .setConf(SparkLauncher.EXECUTOR_CORES, executorCores)
                 .setConf(CONFIG_PROP_SPARK_NETWORK_TIMEOUT, networkTimeout);
 
-            logger.info("Spark home set to: {} ", new Object[] { sparkHome });
-            logger.info("Driver memory set to: {} ", new Object[] { driverMemory });
-            logger.info("Executor memory set to: {} ", new Object[] { executorMemory });
-            logger.info("Executor instances set to: {} ", new Object[] { executorInstances });
-            logger.info("Executor cores set to: {} ", new Object[] { executorCores });
-            logger.info("Network timeout set to: {} ", new Object[] { networkTimeout });
+            logger.info("Spark home set to: {} ", new Object[]{sparkHome});
+            logger.info("Driver memory set to: {} ", new Object[]{driverMemory});
+            logger.info("Executor memory set to: {} ", new Object[]{executorMemory});
+            logger.info("Executor instances set to: {} ", new Object[]{executorInstances});
+            logger.info("Executor cores set to: {} ", new Object[]{executorCores});
+            logger.info("Network timeout set to: {} ", new Object[]{networkTimeout});
 
             if (kerberosEnabled) {
                 pySparkLauncher = pySparkLauncher
                     .setConf(CONFIG_PROP_SPARK_YARN_PRINCIPAL, kerberosPrincipal);
                 pySparkLauncher = pySparkLauncher
                     .setConf(CONFIG_PROP_SPARK_YARN_KEYTAB, kerberosKeyTab);
-                logger.info("Kerberos principal set to: {} ", new Object[] { kerberosPrincipal });
-                logger.info("Kerberos keytab set to: {} ", new Object[] { kerberosKeyTab });
+                logger.info("Kerberos principal set to: {} ", new Object[]{kerberosPrincipal});
+                logger.info("Kerberos keytab set to: {} ", new Object[]{kerberosKeyTab});
             }
 
             if (!StringUtils.isEmpty(yarnQueue)) {
                 pySparkLauncher = pySparkLauncher
                     .setConf(CONFIG_PROP_SPARK_YARN_QUEUE, yarnQueue);
-                logger.info("YARN queue set to: {} ", new Object[] { yarnQueue });
+                logger.info("YARN queue set to: {} ", new Object[]{yarnQueue});
             }
 
-            if (additionalSparkConfigOptionsArray!=null && additionalSparkConfigOptionsArray.length > 0) {
+            if (additionalSparkConfigOptionsArray != null && additionalSparkConfigOptionsArray.length > 0) {
                 for (String additionalSparkConfigOption : additionalSparkConfigOptionsArray) {
                     String[] confKeyValue = additionalSparkConfigOption.split("=");
                     if (confKeyValue.length == 2) {
                         pySparkLauncher = pySparkLauncher
                             .setConf(confKeyValue[0], confKeyValue[1]);
-                        logger.info("Spark additional config option set to: {}={}", new Object[] {confKeyValue[0], confKeyValue[1]});
+                        logger.info("Spark additional config option set to: {}={}", new Object[]{confKeyValue[0], confKeyValue[1]});
                     }
                 }
             }
@@ -587,8 +587,7 @@ public class ExecutePySpark extends AbstractNiFiProcessor {
                                 .build();
                         }
                     }
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     return new ValidationResult.Builder()
                         .subject(this.getClass().getSimpleName())
                         .input(input)
