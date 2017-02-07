@@ -114,6 +114,10 @@ public class ProvenanceFeedLookup {
         return getFlowCache().getProcessorIdToProcessorName().get(processorId);
     }
 
+    public boolean isKyloManagedConnection(String connectionId) {
+        return getFlowCache().getConnectionIdToConnectionName().containsKey(connectionId);
+    }
+
     /**
      * Check to make sure the processorId is managed by Kylo and in the cache.
      *
@@ -121,7 +125,7 @@ public class ProvenanceFeedLookup {
      * @return true if the processor is mapped to a Kylo managed feed flow,  false if not
      */
     public boolean isKyloManaged(String processorId) {
-        return StringUtils.isNotBlank(getProcessorName(processorId));
+        return StringUtils.isNotBlank(getProcessorName(processorId)) || isKyloManagedConnection(processorId);
     }
 
 

@@ -128,6 +128,7 @@ public class ProvenanceEventCollector {
                         // a Drop event component id will be the connection, not the processor id. we will set the name of the component
                         event.setComponentName("FlowFile Queue emptied");
                         event.setIsFailure(true);
+                        event.setHasFailedEvents(true);
                         event.getFeedFlowFile().incrementFailedEvents();
                     }
                     //only process if we can get the feed name, otherwise its no use
