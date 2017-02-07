@@ -27,7 +27,6 @@ import com.thinkbiganalytics.metadata.api.MetadataCriteria;
 
 /**
  *
- * @author Sean Felten
  */
 public abstract class AbstractMetadataCriteria<C extends MetadataCriteria<C>> implements MetadataCriteria<C> {
 

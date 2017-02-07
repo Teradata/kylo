@@ -40,7 +40,6 @@ import java.util.Set;
 
 /**
  *
- * @author Sean Felten
  */
 public class SimpleObligationAssessment implements ObligationAssessment {
     

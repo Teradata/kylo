@@ -57,7 +57,6 @@ import javax.persistence.Transient;
 /**
  * Implements the JPA-based alert type managed in the Kylo alert store.
  * 
- * @author Sean Felten
  */
 @Entity
 @Table(name = "KYLO_ALERT")

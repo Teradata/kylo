@@ -27,7 +27,6 @@ import com.thinkbiganalytics.metadata.api.MetadataException;
 
 /**
  *
- * @author Sean Felten
  */
 public class FeedNotFoundExcepton extends MetadataException {
 

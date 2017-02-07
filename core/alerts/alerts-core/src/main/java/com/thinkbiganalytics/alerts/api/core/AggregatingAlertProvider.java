@@ -72,7 +72,6 @@ import reactor.fn.Consumer;
 
 /**
  *
- * @author Sean Felten
  */
 public class AggregatingAlertProvider implements AlertProvider, AlertSourceAggregator, AlertNotifyReceiver, Consumer<Event<Alert>> {
     

@@ -48,7 +48,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  *
- * @author Sean Felten
  */
 @SpringApplicationConfiguration(classes = { ModeShapeEngineConfig.class, JcrTestConfig.class })
 public class JcrUserProviderTest extends AbstractTestNGSpringContextTests {

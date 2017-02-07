@@ -26,7 +26,6 @@ package com.thinkbiganalytics.metadata.api;
 /**
  * Thrown when there was a framework problem accessing metadata. 
  * 
- * @author Sean Felten
  */
 public class MetadataAccessException extends MetadataException {
 

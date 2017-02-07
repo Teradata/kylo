@@ -27,7 +27,6 @@ import com.thinkbiganalytics.security.BasePrincipal;
 
 /**
  *
- * @author Sean Felten
  */
 public class TestUserPrincipal extends BasePrincipal {
 

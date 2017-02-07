@@ -48,7 +48,6 @@ import java.net.URI;
 /**
  * LDAP login configuration.
  * 
- * @author Sean Felten
  */
 @Configuration
 @Profile("auth-ldap")

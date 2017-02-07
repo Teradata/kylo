@@ -29,7 +29,6 @@ package com.thinkbiganalytics.alerts.api;
  * that the actual state of an alert may have changed again before this notification
  * has been delivered.
  * 
- * @author Sean Felten
  */
 public interface AlertListener {
 

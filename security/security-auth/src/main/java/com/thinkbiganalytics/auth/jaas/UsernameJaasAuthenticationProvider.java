@@ -31,7 +31,6 @@ import com.thinkbiganalytics.auth.UsernameAuthenticationToken;
 
 /**
  * A type of {@link DefaultJaasAuthenticationProvider} that only accepts a UsernameAuthenticationToken.
- * @author Sean Felten
  */
 public class UsernameJaasAuthenticationProvider extends DefaultJaasAuthenticationProvider {
 

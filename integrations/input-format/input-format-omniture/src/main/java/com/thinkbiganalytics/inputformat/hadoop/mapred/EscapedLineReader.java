@@ -34,7 +34,6 @@ import java.io.InputStream;
 /**
  * A class that provides an escaped line reader from an input stream.
  *
- * @author Mike Sukmanowsky (<a href="mailto:mike.sukmanowsky@gmail.com">mike.sukmanowsky@gmail.com</a>)
  */
 public class EscapedLineReader {
 

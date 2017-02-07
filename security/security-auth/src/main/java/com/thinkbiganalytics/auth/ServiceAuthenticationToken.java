@@ -33,7 +33,6 @@ import java.util.Arrays;
 
 /**
  * An authentication representing a general service account token.  Used internally by service threads.
- * @author Sean Felten
  */
 public class ServiceAuthenticationToken extends AbstractAuthenticationToken {
 

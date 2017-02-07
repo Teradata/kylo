@@ -37,7 +37,6 @@ import javax.inject.Inject;
 
 /**
  *
- * @author Sean Felten
  */
 public class AggregateMetadataAccess implements MetadataAccess {
     

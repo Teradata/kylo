@@ -34,7 +34,6 @@ import java.util.Set;
 /**
  * A security context that is in effect when an operation is being executed with 
  * the credential authenticated via Spring security.
- * @author Sean Felten
  */
 public class SpringSecurityContext implements SecurityContext {
     

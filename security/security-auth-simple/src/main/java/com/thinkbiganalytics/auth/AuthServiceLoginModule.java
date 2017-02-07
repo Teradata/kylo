@@ -39,7 +39,6 @@ import javax.security.auth.callback.PasswordCallback;
 
 /**
  * A LoginModule that delegates to an AuthenticationService to authenticate a user name and password.
- * @author Sean Felten
  */
 public class AuthServiceLoginModule extends AbstractLoginModule {
 

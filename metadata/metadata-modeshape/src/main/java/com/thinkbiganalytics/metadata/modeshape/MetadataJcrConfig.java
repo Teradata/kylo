@@ -59,7 +59,6 @@ import java.util.List;
 
 /**
  *
- * @author Sean Felten
  */
 @Configuration
 public class MetadataJcrConfig {

@@ -48,7 +48,6 @@ import javax.jcr.security.Privilege;
 
 /**
  *
- * @author Sean Felten
  */
 public class JcrAllowedActions extends JcrObject implements AllowedActions {
 

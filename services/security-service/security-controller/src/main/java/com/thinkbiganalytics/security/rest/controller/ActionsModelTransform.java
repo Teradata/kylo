@@ -43,7 +43,6 @@ import java.util.stream.Collectors;
  * Contains transformation functions and methods for converting objects between 
  * the REST and domain access control models.
  * 
- * @author Sean Felten
  */
 public class ActionsModelTransform {
     

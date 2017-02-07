@@ -32,7 +32,6 @@ import java.util.UUID;
 
 /**
  *
- * @author Sean Felten
  */
 public abstract class BaseId implements Serializable {
     

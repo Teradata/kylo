@@ -28,7 +28,6 @@ import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 
 /**
  *
- * @author Sean Felten
  */
 public interface FeedCriteria extends MetadataCriteria<FeedCriteria> {
 

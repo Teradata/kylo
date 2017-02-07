@@ -45,7 +45,6 @@ import com.thinkbiganalytics.security.auth.kerberos.SpnegoValidationUserAuthenti
 
 /**
  *
- * @author Sean Felten
  */
 @Configuration
 @EnableWebSecurity

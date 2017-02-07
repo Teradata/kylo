@@ -30,7 +30,6 @@ import java.nio.file.Path;
 /**
  * Defines and resolves paths of users and user groups within the JCR repository.
  * 
- * @author Sean Felten
  */
 public interface UsersPaths {
 

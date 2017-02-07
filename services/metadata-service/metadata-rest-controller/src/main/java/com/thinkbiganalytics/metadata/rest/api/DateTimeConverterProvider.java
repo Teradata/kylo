@@ -36,7 +36,6 @@ import javax.ws.rs.ext.Provider;
 
 /**
  *
- * @author Sean Felten
  */
 @Provider
 public class DateTimeConverterProvider implements ParamConverterProvider {

@@ -45,7 +45,6 @@ import javax.jcr.RepositoryException;
 
 /**
  *
- * @author Sean Felten
  */
 public class JcrServiceLevelAgreement extends AbstractJcrAuditableSystemEntity implements ServiceLevelAgreement, Serializable {
 

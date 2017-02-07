@@ -33,7 +33,6 @@ import java.util.Set;
 
 /**
  * A granter that, when presented with a UsernamePrincipal, returns a set containing the "ROLE_USER" role name.
- * @author Sean Felten
  */
 public class UserRoleAuthorityGranter implements AuthorityGranter {
 

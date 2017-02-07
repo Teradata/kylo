@@ -25,7 +25,6 @@ package com.thinkbiganalytics.metadata.core.feed;
 
 /**
  *
- * @author Sean Felten
  */
 public class FeedCreateException extends RuntimeException {
 

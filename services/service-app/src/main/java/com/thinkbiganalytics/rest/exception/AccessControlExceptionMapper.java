@@ -39,7 +39,6 @@ import javax.ws.rs.ext.Provider;
 
 /**
  *
- * @author Sean Felten
  */
 @Provider
 @Component

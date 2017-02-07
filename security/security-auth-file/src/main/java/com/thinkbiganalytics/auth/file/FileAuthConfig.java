@@ -35,7 +35,6 @@ import org.springframework.context.annotation.Profile;
 
 /**
  * Configures a file-based login module.
- * @author Sean Felten
  */
 @Configuration
 @Profile("auth-file")

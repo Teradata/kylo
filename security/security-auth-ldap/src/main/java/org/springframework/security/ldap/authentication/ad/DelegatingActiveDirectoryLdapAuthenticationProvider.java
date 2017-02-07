@@ -35,7 +35,6 @@ import java.util.Collections;
  * A decorator provider around a ActiveDirectoryLdapAuthenticationProvider because the latter hads been declared
  * final.  Allows disabling/enabling the loading of user group membership info after successful authentication.
  * 
- * @author Sean Felten
  */
 public class DelegatingActiveDirectoryLdapAuthenticationProvider extends AbstractLdapAuthenticationProvider {
     

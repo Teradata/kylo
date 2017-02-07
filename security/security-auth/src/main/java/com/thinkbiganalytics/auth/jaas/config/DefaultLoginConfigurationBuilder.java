@@ -38,7 +38,6 @@ import javax.security.auth.spi.LoginModule;
 
 /**
  * Default implementation of LoginConfigurationBuilder.
- * @author Sean Felten
  */
 public class DefaultLoginConfigurationBuilder implements LoginConfigurationBuilder {
 

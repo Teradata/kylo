@@ -31,7 +31,6 @@ import java.util.ArrayList;
 /***
  * Class for setting parameters for HDFS policy which returns JSON policy object
  *
- * @author sv186029
  */
 public class HDFSPolicy {
 

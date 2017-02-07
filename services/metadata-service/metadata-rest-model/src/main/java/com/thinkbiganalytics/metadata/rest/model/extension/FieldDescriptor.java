@@ -29,7 +29,6 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 /**
  *
- * @author Sean Felten
  */
 @JsonInclude(Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)

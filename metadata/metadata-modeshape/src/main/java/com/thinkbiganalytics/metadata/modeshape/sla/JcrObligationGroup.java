@@ -42,7 +42,6 @@ import javax.jcr.RepositoryException;
 
 /**
  *
- * @author Sean Felten
  */
 public class JcrObligationGroup extends JcrObject implements ObligationGroup, Serializable {
     

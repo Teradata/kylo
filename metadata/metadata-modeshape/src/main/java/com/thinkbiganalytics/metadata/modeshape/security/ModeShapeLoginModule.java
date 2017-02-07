@@ -33,7 +33,6 @@ import javax.security.auth.callback.CallbackHandler;
 /**
  * A module that (for now) simply adds ModeShape's course-grained "readwrite" role principal to the logged in user's subject.
  * This module does not attempt to authenticate the user but simply updates the subject upon successful login.
- * @author Sean Felten
  */
 public class ModeShapeLoginModule extends AbstractLoginModule {
     

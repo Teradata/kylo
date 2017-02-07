@@ -34,7 +34,6 @@ import javax.jcr.Credentials;
 /**
  * Credentials used to override those derived from the current security context.
  * 
- * @author Sean Felten
  */
 public class OverrideCredentials implements Credentials {
     

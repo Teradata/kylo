@@ -34,7 +34,6 @@ import java.util.Set;
 /**
  * A granter that, when presented with a GroupPrincipal, returns a set containing the name of that principal (the role's name)
  * and another name constructed by prefixing "ROLE_" to the upper case principal name (Spring's default role name format.)
- * @author Sean Felten
  */
 public class RolePrincipalAuthorityGranter implements AuthorityGranter {
 

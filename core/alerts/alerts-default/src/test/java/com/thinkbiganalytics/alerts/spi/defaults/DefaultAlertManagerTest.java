@@ -57,7 +57,6 @@ import static org.mockito.Mockito.verify;
 
 /**
  *
- * @author Sean Felten
  */
 @TestPropertySource(locations = "classpath:test-jpa-application.properties")
 @SpringApplicationConfiguration(classes = { MetadataPersistenceConfig.class, TestPersistenceConfiguration.class, DefaultAlertManagerConfig.class })

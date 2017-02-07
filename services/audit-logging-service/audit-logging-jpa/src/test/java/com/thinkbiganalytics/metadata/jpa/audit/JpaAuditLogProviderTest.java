@@ -46,7 +46,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  *
- * @author Sean Felten
  */
 @TestPropertySource(locations = "classpath:test-jpa-application.properties")
 @SpringApplicationConfiguration(classes = { MetadataPersistenceConfig.class, TestPersistenceConfiguration.class, AuditLogProviderConfig.class })

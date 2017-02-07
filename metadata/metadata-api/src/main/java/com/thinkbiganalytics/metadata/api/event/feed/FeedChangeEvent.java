@@ -31,7 +31,6 @@ import java.security.Principal;
 
 /**
  *
- * @author Sean Felten
  */
 public class FeedChangeEvent extends AbstractMetadataEvent<FeedChange> {
 

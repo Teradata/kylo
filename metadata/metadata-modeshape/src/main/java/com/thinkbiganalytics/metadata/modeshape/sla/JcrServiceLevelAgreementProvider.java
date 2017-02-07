@@ -70,7 +70,6 @@ import javax.jcr.query.QueryResult;
 
 /**
  *
- * @author Sean Felten
  */
 public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLevelAgreement, ServiceLevelAgreement.ID> implements ServiceLevelAgreementProvider {
 

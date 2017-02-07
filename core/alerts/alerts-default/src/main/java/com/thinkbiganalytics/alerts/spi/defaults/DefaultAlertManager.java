@@ -68,7 +68,6 @@ import javax.inject.Inject;
 
 /**
  *
- * @author Sean Felten
  */
 public class DefaultAlertManager extends QueryDslRepositorySupport implements AlertManager {
     

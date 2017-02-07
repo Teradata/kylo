@@ -28,7 +28,6 @@ import com.thinkbiganalytics.metadata.api.feed.Feed;
 
 /**
  *
- * @author Sean Felten
  */
 public class PreconditionTriggerEvent extends AbstractMetadataEvent<Feed.ID> {
 

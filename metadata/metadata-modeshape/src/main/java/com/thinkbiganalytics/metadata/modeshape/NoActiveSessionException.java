@@ -25,7 +25,6 @@ package com.thinkbiganalytics.metadata.modeshape;
 
 /**
  *
- * @author Sean Felten
  */
 public class NoActiveSessionException extends RuntimeException {
 

@@ -42,7 +42,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  *
- * @author Sean Felten
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = { ReactorContiguration.class })

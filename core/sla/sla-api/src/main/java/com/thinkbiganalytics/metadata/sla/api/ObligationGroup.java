@@ -29,7 +29,6 @@ import java.util.List;
  * Groups together a set of obligations under an assessment rule governing how these obligations
  * contribute to the overall assessment of an SLA.
  * 
- * @author Sean Felten
  */
 public interface ObligationGroup {
 

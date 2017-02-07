@@ -27,7 +27,6 @@ package com.thinkbiganalytics.alerts.spi;
  * Service provider interface that aggregates alert sources/managers by allowing each
  * to be registered by an implementor of this interface.
  * 
- * @author Sean Felten
  */
 public interface AlertSourceAggregator {
 

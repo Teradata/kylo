@@ -41,7 +41,6 @@ import java.util.List;
 
 /**
  *
- * @author Sean Felten
  */
 @SuppressWarnings("Duplicates")
 public class FeedExecutedSinceFeedAssessor extends MetadataMetricAssessor<FeedExecutedSinceFeed> {

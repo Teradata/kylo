@@ -31,7 +31,6 @@ import java.util.Objects;
 
 /**
  *
- * @author Sean Felten
  */
 public abstract class AbstractMetadataEvent<C extends Serializable> implements MetadataEvent<C> {
     

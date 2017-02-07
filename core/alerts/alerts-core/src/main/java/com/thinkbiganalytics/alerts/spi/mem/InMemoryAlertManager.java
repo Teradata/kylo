@@ -66,7 +66,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  *
- * @author Sean Felten
  */
 public class InMemoryAlertManager implements AlertManager {
     

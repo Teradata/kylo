@@ -29,7 +29,6 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * @author Sean Felten
  */
 public abstract class BaseJpaId implements Serializable {
 

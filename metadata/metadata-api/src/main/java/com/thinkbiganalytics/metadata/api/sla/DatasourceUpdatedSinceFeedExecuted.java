@@ -27,7 +27,6 @@ import java.beans.Transient;
 
 /**
  *
- * @author Sean Felten
  */
 public class DatasourceUpdatedSinceFeedExecuted extends DependentDatasource {
 

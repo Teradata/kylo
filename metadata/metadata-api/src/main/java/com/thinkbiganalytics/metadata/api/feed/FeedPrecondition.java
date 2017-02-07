@@ -28,7 +28,6 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 
 /**
  *
- * @author Sean Felten
  */
 public interface FeedPrecondition {
     

@@ -30,7 +30,6 @@ import java.security.Principal;
 
 /**
  *
- * @author Sean Felten
  */
 public interface MetadataEvent<C extends Serializable> extends Serializable {
 

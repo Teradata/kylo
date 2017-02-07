@@ -31,7 +31,6 @@ import java.text.ParseException;
 
 /**
  *
- * @author Sean Felten
  */
 public class FeedExecutedSinceSchedule extends DependentFeed {
 

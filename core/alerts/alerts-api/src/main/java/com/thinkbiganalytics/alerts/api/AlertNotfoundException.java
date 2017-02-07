@@ -25,7 +25,6 @@ package com.thinkbiganalytics.alerts.api;
 
 /**
  *
- * @author Sean Felten
  */
 public class AlertNotfoundException extends RuntimeException {
 

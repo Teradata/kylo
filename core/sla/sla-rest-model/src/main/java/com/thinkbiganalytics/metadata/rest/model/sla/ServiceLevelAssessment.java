@@ -36,7 +36,6 @@ import java.util.List;
 
 /**
  *
- * @author Sean Felten
  */
 @JsonInclude(Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)

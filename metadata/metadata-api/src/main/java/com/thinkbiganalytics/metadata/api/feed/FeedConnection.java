@@ -29,7 +29,6 @@ import java.io.Serializable;
 
 /**
  *
- * @author Sean Felten
  */
 public interface FeedConnection extends Serializable {
 

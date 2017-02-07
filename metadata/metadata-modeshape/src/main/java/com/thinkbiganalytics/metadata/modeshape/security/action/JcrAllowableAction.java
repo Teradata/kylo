@@ -43,7 +43,6 @@ import javax.jcr.nodetype.NodeType;
 
 /**
  *
- * @author Sean Felten
  */
 public class JcrAllowableAction extends JcrObject implements AllowableAction {
     

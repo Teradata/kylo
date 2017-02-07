@@ -53,7 +53,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Test for the ActiveDirectoryLoginModule.  Note that these tests are disabled by default as it 
  * requires an actual Active Directory instance running as configured in the file ad-test.properties.
  * 
- * @author Sean Felten
  */
 @SpringApplicationConfiguration(classes = { 
                                             SecurityConfig.class, 

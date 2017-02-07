@@ -29,7 +29,6 @@ import java.util.Collection;
 
 /**
  * A builder for producing obligations for an SLA.
- * @author Sean Felten
  */
 public interface ObligationBuilder<B> {
 

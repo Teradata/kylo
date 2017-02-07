@@ -29,7 +29,6 @@ import java.io.Serializable;
 
 /**
  * An assessor responsible for generating assessments of the types of metrics that it accepts.
- * @author Sean Felten
  * @param <M>
  */
 public interface MetricAssessor<M extends Metric, D extends Serializable> {

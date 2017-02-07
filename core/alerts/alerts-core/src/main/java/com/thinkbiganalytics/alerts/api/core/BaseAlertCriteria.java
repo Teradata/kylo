@@ -45,7 +45,6 @@ import java.util.function.Predicate;
  * This implementation also has a default predicate implementation but subclasses are not 
  * required to support or use this implementation.
  * 
- * @author Sean Felten
  */
 public class BaseAlertCriteria implements AlertCriteria, Predicate<Alert> {
     

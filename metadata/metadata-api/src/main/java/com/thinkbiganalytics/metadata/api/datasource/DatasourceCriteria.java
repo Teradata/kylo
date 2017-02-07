@@ -29,7 +29,6 @@ import org.joda.time.DateTime;
 
 /**
  *
- * @author Sean Felten
  */
 public interface DatasourceCriteria extends MetadataCriteria<DatasourceCriteria> {
 

@@ -34,7 +34,6 @@ import org.springframework.security.ldap.server.ApacheDSContainer;
 
 /**
  *
- * @author Sean Felten
  */
 @Configuration
 @EnableAutoConfiguration

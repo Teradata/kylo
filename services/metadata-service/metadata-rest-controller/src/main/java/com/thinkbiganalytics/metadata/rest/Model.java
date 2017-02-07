@@ -48,7 +48,6 @@ import java.util.stream.Collectors;
 
 /**
  * Convenience functions and methods to transform between the metadata domain model and the REST model. 
- * @author Sean Felten
  */
 public class Model {
 

@@ -29,7 +29,6 @@ import java.io.Serializable;
  * Instances of this object provide a means for a responder to change the state of an actionable alert.
  * An instance is passed whenever an AlertResponder is notified of a alert change.  That response instance
  * is only applicable within the context of that responder's alertChange() method.
- * @author Sean Felten
  */
 public interface AlertResponse {
 

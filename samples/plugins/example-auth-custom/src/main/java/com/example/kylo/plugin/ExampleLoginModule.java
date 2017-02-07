@@ -42,7 +42,6 @@ import javax.security.auth.login.CredentialException;
  * LoginModule extends {@link AbstractLoginModule}, which simplifies some of the boiler plate
  * behavior that all login modules must follow.
  * 
- * @author Sean Felten
  */
 public class ExampleLoginModule extends AbstractLoginModule {
 

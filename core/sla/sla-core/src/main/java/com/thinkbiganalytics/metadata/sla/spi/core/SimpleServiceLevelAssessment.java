@@ -43,7 +43,6 @@ import java.util.UUID;
 
 /**
  *
- * @author Sean Felten
  */
 public class SimpleServiceLevelAssessment implements ServiceLevelAssessment {
     

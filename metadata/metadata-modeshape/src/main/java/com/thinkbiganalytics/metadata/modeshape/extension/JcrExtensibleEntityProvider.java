@@ -50,7 +50,6 @@ import javax.jcr.query.QueryResult;
 
 /**
  *
- * @author Sean Felten
  */
 public class JcrExtensibleEntityProvider implements ExtensibleEntityProvider {
 

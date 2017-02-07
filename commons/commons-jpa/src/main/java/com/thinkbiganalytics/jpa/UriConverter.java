@@ -30,7 +30,6 @@ import javax.persistence.AttributeConverter;
 /**
  * Converts URIs to/from strings.
  * 
- * @author Sean Felten
  */
 public class UriConverter implements AttributeConverter<URI, String> {
 

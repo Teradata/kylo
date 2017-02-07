@@ -25,7 +25,6 @@ package com.thinkbiganalytics.metadata.sla.api;
 
 /**
  *
- * @author Sean Felten
  */
 public class AgreementNotFoundException extends ServiceLevelAgreementException {
 

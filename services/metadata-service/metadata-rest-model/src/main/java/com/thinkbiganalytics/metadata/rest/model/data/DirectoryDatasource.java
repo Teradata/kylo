@@ -28,7 +28,6 @@ import java.util.Set;
 
 /**
  *
- * @author Sean Felten
  */
 public class DirectoryDatasource extends Datasource {
     

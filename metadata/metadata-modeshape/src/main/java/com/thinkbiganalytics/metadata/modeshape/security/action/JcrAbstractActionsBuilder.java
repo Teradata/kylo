@@ -29,7 +29,6 @@ import java.security.Principal;
 
 /**
  *
- * @author Sean Felten
  */
 public abstract class JcrAbstractActionsBuilder {
 

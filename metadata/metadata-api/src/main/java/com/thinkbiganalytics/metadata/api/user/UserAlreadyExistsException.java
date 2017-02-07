@@ -28,7 +28,6 @@ import com.thinkbiganalytics.metadata.api.MetadataException;
 /**
  * Thrown when there is an attempt to create a user when one already exists with the same name.
  * 
- * @author Sean Felten
  */
 public class UserAlreadyExistsException extends MetadataException {
 

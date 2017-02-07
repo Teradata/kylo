@@ -49,7 +49,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  *
- * @author Sean Felten
  */
 public class InMemoryDatasourceProvider implements DatasourceProvider {
     

@@ -30,7 +30,6 @@ import java.nio.file.Path;
 /**
  * Defines and resolves security-related paths within the JCR repository.
  *
- * @author Sean Felten
  */
 public interface SecurityPaths {
 

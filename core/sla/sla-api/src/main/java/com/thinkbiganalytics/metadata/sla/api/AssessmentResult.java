@@ -26,7 +26,6 @@ package com.thinkbiganalytics.metadata.sla.api;
 /**
  * The possible result of an assessment of an SLA, obligation, or metic.
  * 
- * @author Sean Felten
  */
 public enum AssessmentResult {
     SUCCESS, WARNING, FAILURE;

@@ -32,7 +32,6 @@ import com.thinkbiganalytics.metadata.rest.model.extension.FieldDescriptor;
 
 /**
  *
- * @author Sean Felten
  */
 public class ExtensiblesModel {
 

@@ -32,7 +32,6 @@ import java.util.Set;
 
 /**
  * The default granter that will simply return a set containing the name of the principal.
- * @author Sean Felten
  */
 public class DefaultPrincipalAuthorityGranter implements AuthorityGranter {
 

@@ -29,7 +29,6 @@ import java.net.URI;
 
 /**
  *
- * @author Sean Felten
  */
 public interface AssessmentAlerts {
     

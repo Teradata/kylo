@@ -29,7 +29,6 @@ import java.util.Set;
 /**
  * Described a assessment of an obligation.
  * 
- * @author Sean Felten
  */
 public interface ObligationAssessment extends Comparable<ObligationAssessment>, Serializable {
     

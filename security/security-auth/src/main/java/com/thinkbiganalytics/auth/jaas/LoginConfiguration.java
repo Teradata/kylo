@@ -29,7 +29,6 @@ import javax.security.auth.login.AppConfigurationEntry;
 
 /**
  *
- * @author Sean Felten
  */
 public interface LoginConfiguration {
 

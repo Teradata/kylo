@@ -37,7 +37,6 @@ import javax.jcr.RepositoryException;
 
 /**
  *
- * @author Sean Felten
  */
 public class JcrEntity extends JcrObject implements ExtensibleEntity {
 

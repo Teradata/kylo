@@ -27,7 +27,6 @@ import com.thinkbiganalytics.security.action.Action;
 
 /**
  *
- * @author Sean Felten
  */
 public interface UsersGroupsAccessContol {
 

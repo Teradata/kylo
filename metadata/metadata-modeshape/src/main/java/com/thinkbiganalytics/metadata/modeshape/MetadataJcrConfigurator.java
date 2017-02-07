@@ -66,7 +66,6 @@ import javax.jcr.version.VersionManager;
 
 /**
  *
- * @author Sean Felten
  */
 public class MetadataJcrConfigurator {
     

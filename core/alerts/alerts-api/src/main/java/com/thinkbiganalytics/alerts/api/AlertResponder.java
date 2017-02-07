@@ -29,7 +29,6 @@ package com.thinkbiganalytics.alerts.api;
  * guaranteed to see the latest state of the alert by the time this responder is invoked.
  * In other words, all responders will see any subsequent state changes that preceding responders
  * may have triggered before this responder was triggered.
- * @author Sean Felten
  */
 public interface AlertResponder {
 

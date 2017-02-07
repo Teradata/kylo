@@ -30,7 +30,6 @@ import javax.persistence.PreUpdate;
 
 /**
  *
- * @author Sean Felten
  */
 public class AuditTimestampListener {
 

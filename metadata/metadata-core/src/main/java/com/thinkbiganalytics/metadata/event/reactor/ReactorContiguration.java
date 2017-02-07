@@ -35,7 +35,6 @@ import reactor.bus.EventBus;
 
 /**
  *
- * @author Sean Felten
  */
 @Configuration
 public class ReactorContiguration {

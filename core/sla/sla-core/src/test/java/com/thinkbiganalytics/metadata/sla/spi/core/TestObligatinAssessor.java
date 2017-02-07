@@ -32,7 +32,6 @@ import com.thinkbiganalytics.metadata.sla.spi.ObligationAssessor;
 
 /**
  *
- * @author Sean Felten
  */
 public class TestObligatinAssessor implements ObligationAssessor<Obligation> {
     

@@ -49,7 +49,6 @@ import com.thinkbiganalytics.auth.jaas.LoginConfigurationBuilder;
 
 /**
  *
- * @author Sean Felten
  */
 @Configuration
 public class JaasAuthConfig {

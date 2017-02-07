@@ -27,7 +27,6 @@ import java.util.Map;
 
 /**
  *
- * @author Sean Felten
  */
 public interface GenericType {
     

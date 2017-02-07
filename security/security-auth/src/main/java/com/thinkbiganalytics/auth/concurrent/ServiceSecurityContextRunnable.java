@@ -31,7 +31,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
  *
- * @author Sean Felten
  */
 public class ServiceSecurityContextRunnable implements Runnable {
 

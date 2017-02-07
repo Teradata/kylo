@@ -41,7 +41,6 @@ import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
 
 /**
  *
- * @author Sean Felten
  */
 @Configuration
 public class ModeShapeAuthConfig {

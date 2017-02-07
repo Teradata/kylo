@@ -32,7 +32,6 @@ import javax.persistence.MappedSuperclass;
 
 /**
  * Base type for entities that have standard timestamp auditing columns in their tables.
- * @author Sean Felten
  */
 @MappedSuperclass
 @EntityListeners(AuditTimestampListener.class)

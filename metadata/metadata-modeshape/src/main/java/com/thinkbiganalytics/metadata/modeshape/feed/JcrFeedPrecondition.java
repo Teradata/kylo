@@ -36,7 +36,6 @@ import javax.jcr.RepositoryException;
 
 /**
  *
- * @author Sean Felten
  */
 public class JcrFeedPrecondition extends JcrObject implements FeedPrecondition {
 

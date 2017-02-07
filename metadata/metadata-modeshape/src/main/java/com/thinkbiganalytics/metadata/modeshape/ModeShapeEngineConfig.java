@@ -48,7 +48,6 @@ import javax.jcr.Repository;
 
 /**
  *
- * @author Sean Felten
  */
 @Configuration
 @Import({ MetadataJcrConfig.class, ModeShapeAuthConfig.class })

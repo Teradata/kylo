@@ -39,7 +39,6 @@ import java.util.Objects;
 
 /**
  *
- * @author Sean Felten
  */
 @SuppressWarnings("serial")
 @JsonInclude(Include.NON_EMPTY)

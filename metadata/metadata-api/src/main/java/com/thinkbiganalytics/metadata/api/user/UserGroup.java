@@ -34,7 +34,6 @@ import javax.annotation.Nonnull;
 /**
  * Represents a group of users and/or other groups of users.
  * 
- * @author Sean Felten
  */
 public interface UserGroup {
     

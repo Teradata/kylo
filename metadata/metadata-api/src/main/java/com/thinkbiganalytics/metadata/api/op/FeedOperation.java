@@ -30,7 +30,6 @@ import java.util.Map;
 
 /**
  * Defines the state of an operation performed by a feed.
- * @author Sean Felten
  */
 public interface FeedOperation extends Serializable {
     

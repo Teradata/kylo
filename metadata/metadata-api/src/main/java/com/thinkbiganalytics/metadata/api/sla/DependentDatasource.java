@@ -27,7 +27,6 @@ import com.thinkbiganalytics.metadata.sla.api.Metric;
 
 /**
  *
- * @author Sean Felten
  */
 public abstract class DependentDatasource implements Metric {
     

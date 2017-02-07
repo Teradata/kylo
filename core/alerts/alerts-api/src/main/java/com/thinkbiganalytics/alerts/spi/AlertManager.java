@@ -32,7 +32,6 @@ import java.net.URI;
 /**
  * A kind of AlertSource that provides alert creation and change management functions.
  * 
- * @author Sean Felten
  */
 public interface AlertManager extends AlertSource {
     

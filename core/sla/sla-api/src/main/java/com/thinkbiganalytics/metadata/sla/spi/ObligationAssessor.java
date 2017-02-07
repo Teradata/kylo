@@ -27,7 +27,6 @@ import com.thinkbiganalytics.metadata.sla.api.Obligation;
 
 /**
  * An assessor responsible for generating assessments of the types of obligations that it accepts.
- * @author Sean Felten
  */
 public interface ObligationAssessor<O extends Obligation> {
     

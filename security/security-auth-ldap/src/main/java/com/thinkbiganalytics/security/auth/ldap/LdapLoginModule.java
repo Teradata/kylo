@@ -47,7 +47,6 @@ import javax.security.auth.login.CredentialException;
 
 /**
  *
- * @author Sean Felten
  */
 public class LdapLoginModule extends AbstractLoginModule {
     

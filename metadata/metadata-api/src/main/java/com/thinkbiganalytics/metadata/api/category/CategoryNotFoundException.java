@@ -27,7 +27,6 @@ import com.thinkbiganalytics.metadata.api.MetadataException;
 import com.thinkbiganalytics.metadata.api.category.Category.ID;
 
 /**
- * @author Sean Felten
  */
 public class CategoryNotFoundException extends MetadataException {
 

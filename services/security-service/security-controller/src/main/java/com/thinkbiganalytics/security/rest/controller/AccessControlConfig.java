@@ -28,7 +28,6 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  *
- * @author Sean Felten
  */
 @Configuration
 public class AccessControlConfig {

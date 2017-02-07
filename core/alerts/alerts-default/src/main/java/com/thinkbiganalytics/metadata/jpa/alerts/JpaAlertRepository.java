@@ -33,7 +33,6 @@ import java.util.List;
 
 /**
  *
- * @author Sean Felten
  */
 public interface JpaAlertRepository extends JpaRepository<JpaAlert, JpaAlert.ID>, JpaSpecificationExecutor<JpaAlert> {
 

@@ -24,7 +24,6 @@ import com.thinkbiganalytics.metadata.sla.api.Metric;
 
 /**
  *
- * @author Sean Felten
  */
 class TestMetric implements Metric {
     

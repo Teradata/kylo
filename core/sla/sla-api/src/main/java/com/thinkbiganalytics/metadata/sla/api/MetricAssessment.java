@@ -28,7 +28,6 @@ import java.io.Serializable;
 /**
  * Reports an assessment of a metric.
  * 
- * @author Sean Felten
  */
 public interface MetricAssessment<D extends Serializable> extends Comparable<MetricAssessment<D>>, Serializable {
     

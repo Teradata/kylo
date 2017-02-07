@@ -60,7 +60,6 @@ import javax.inject.Inject;
 
 /**
  *
- * @author Sean Felten
  */
 public class JobRepoFeedOperationsProvider implements FeedOperationsProvider {
 

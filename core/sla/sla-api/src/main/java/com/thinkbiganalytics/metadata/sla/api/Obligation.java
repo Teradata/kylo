@@ -26,7 +26,6 @@ import java.util.Set;
 /**
  * Describes an obligation that must be met as part of an SLA.
  * 
- * @author Sean Felten
  */
 public interface Obligation {
 

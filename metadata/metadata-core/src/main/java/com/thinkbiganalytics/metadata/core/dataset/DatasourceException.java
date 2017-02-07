@@ -25,7 +25,6 @@ package com.thinkbiganalytics.metadata.core.dataset;
 
 /**
  *
- * @author Sean Felten
  */
 public class DatasourceException extends RuntimeException {
 

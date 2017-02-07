@@ -29,7 +29,6 @@ import java.util.Collections;
 /**
  * A security context that is in effect when an administrative operation is being executed under 
  * the ModeShaepAdminPrincipal credential
- * @author Sean Felten
  */
 public class OverrideSecurityContext implements SecurityContext {
     

@@ -28,7 +28,6 @@ import java.util.Objects;
 
 /**
  * Base type describing the metadata change as part a metadata event.  Subclasses should provide the details of the change.
- * @author Sean Felten
  */
 public class MetadataChange implements Serializable {
 

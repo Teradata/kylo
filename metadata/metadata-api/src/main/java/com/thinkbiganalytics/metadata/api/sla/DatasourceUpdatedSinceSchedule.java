@@ -30,7 +30,6 @@ import java.text.ParseException;
 
 /**
  *
- * @author Sean Felten
  */
 public class DatasourceUpdatedSinceSchedule extends DependentDatasource {
 

@@ -42,7 +42,6 @@ import javax.jcr.security.Privilege;
 
 /**
  *
- * @author Sean Felten
  */
 public class JcrActionsGroupBuilder extends JcrAbstractActionsBuilder implements ActionsModuleBuilder {
     

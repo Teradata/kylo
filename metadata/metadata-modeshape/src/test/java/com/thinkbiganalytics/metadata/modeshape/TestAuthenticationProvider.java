@@ -32,7 +32,6 @@ import javax.jcr.Credentials;
 
 /**
  *
- * @author Sean Felten
  */
 public class TestAuthenticationProvider implements AuthenticationProvider {
 

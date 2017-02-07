@@ -36,7 +36,6 @@ import java.util.Set;
 
 /**
  *
- * @author Sean Felten
  */
 @SuppressWarnings("serial")
 @JsonInclude(Include.NON_EMPTY)

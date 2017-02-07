@@ -40,7 +40,6 @@ import javax.jcr.nodetype.ConstraintViolationException;
 
 /**
  *
- * @author Sean Felten
  */
 public class JcrPropertiesEntity extends JcrEntity implements Propertied {
 

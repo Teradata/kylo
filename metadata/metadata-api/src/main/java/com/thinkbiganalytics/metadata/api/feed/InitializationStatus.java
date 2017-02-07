@@ -28,7 +28,6 @@ import org.joda.time.DateTimeZone;
 
 /**
  *
- * @author Sean Felten
  */
 public class InitializationStatus {
 

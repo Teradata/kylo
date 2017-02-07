@@ -48,7 +48,6 @@ import javax.security.auth.spi.LoginModule;
 
 /**
  *
- * @author Sean Felten
  */
 public abstract class AbstractLoginModule implements LoginModule {
 

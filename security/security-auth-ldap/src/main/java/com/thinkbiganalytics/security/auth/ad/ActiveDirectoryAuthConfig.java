@@ -44,7 +44,6 @@ import java.net.URI;
 /**
  * Active Directory login configuration.
  * 
- * @author Sean Felten
  */
 @Configuration
 @Profile("auth-ad")

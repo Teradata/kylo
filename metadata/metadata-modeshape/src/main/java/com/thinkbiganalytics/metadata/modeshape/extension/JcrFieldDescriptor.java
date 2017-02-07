@@ -33,7 +33,6 @@ import javax.jcr.nodetype.PropertyDefinition;
 
 /**
  *
- * @author Sean Felten
  */
 public class JcrFieldDescriptor implements FieldDescriptor {
     

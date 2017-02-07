@@ -35,7 +35,6 @@ import java.util.List;
  * This type defines the basic alert abstraction. Only the basic properties of an alert are defined
  * here.  This kind of object also acts as a container for the more type-specific details returned from
  * its content property.
- * @author Sean Felten
  */
 public interface Alert {
     /** The opaque identifier of this event */

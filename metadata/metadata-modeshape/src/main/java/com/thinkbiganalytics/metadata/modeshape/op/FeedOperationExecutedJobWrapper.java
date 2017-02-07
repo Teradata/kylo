@@ -36,7 +36,6 @@ import java.util.stream.Stream;
 
 /**
  *
- * @author Sean Felten
  */
 @SuppressWarnings("serial")
 public class FeedOperationExecutedJobWrapper implements FeedOperation {

@@ -27,7 +27,6 @@ import com.thinkbiganalytics.metadata.sla.api.Metric;
 
 /**
  * Thrown when an assessor could not be found that can assess a particular kind of metric.
- * @author Sean Felten
  */
 public class AssessorNotFoundException extends RuntimeException {
     private static final long serialVersionUID = 3406314751186303643L;

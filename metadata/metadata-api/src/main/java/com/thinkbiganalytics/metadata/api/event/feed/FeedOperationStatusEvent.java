@@ -27,7 +27,6 @@ import com.thinkbiganalytics.metadata.api.event.AbstractMetadataEvent;
 
 /**
  *
- * @author Sean Felten
  */
 public class FeedOperationStatusEvent extends AbstractMetadataEvent<OperationStatus> {
 

@@ -30,7 +30,6 @@ import javax.jcr.Node;
 
 /**
  *
- * @author Sean Felten
  */
 public class JcrFeedDestination extends JcrFeedConnection implements FeedDestination {
 

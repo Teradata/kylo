@@ -31,7 +31,6 @@ import org.springframework.context.annotation.Primary;
 
 /**
  *
- * @author Sean Felten
  */
 @Configuration
 public class MetadataPersistenceConfig {

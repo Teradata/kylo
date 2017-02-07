@@ -44,7 +44,6 @@ import javax.security.auth.login.AccountException;
 
 /**
  *
- * @author Sean Felten
  */
 public class ActiveDirectoryLoginModule extends AbstractLoginModule {
     

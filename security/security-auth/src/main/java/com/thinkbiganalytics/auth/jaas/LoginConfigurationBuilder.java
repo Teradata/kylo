@@ -30,7 +30,6 @@ import javax.security.auth.spi.LoginModule;
 
 /**
  *
- * @author Sean Felten
  */
 public interface LoginConfigurationBuilder {
 

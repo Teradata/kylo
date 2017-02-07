@@ -30,7 +30,6 @@ import java.util.Objects;
 
 /**
  *
- * @author Sean Felten
  */
 public class ServiceLevelAgreementChange extends MetadataChange {
 

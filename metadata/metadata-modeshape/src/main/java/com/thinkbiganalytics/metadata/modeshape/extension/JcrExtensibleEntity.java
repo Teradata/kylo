@@ -30,7 +30,6 @@ import javax.jcr.Node;
 
 /**
  *
- * @author Sean Felten
  */
 public class JcrExtensibleEntity  extends JcrEntity implements ExtensibleEntity {
 

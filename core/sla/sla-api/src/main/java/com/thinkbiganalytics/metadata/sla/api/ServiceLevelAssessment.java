@@ -31,7 +31,6 @@ import java.util.Set;
 /**
  * The overall assessment of this SLA.
  * 
- * @author Sean Felten
  */
 public interface ServiceLevelAssessment extends Comparable<ServiceLevelAssessment>, Serializable {
 

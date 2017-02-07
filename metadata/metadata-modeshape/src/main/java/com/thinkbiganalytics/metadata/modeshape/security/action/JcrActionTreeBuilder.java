@@ -36,7 +36,6 @@ import javax.jcr.security.Privilege;
 
 /**
  *
- * @author Sean Felten
  */
 public class JcrActionTreeBuilder<P> extends JcrAbstractActionsBuilder implements ActionsTreeBuilder<P> {
     

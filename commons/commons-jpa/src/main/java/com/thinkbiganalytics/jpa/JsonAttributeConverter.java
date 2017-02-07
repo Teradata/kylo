@@ -44,7 +44,6 @@ import javax.persistence.AttributeConverter;
  * JSON serialized form as produced by Jackson.  Implementations must extend this type in order
  * to specify the source object type that is converted.  This subtype is what is specified
  * to the @Converter annotation on the field .
- * @author Sean Felten
  */
 public class JsonAttributeConverter<O> implements AttributeConverter<O, String> {
     

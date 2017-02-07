@@ -44,7 +44,6 @@ import javax.persistence.Table;
 
 /**
  *
- * @author Sean Felten
  */
 @Embeddable
 @Table(name = "KYLO_ALERT_CHANGE")

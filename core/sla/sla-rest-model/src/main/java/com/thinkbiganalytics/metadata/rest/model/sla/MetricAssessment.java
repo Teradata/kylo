@@ -31,7 +31,6 @@ import com.thinkbiganalytics.metadata.sla.api.Metric;
 
 /**
  *
- * @author Sean Felten
  */
 @JsonInclude(Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)

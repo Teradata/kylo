@@ -32,7 +32,6 @@ import java.io.Serializable;
 
 /**
  *
- * @author Sean Felten
  */
 public class DatasourceUpdatedSinceFeedExecutedAssessor extends MetadataMetricAssessor<DatasourceUpdatedSinceFeedExecuted> {
 

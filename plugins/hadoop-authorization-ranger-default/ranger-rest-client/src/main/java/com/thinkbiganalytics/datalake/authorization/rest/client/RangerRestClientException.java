@@ -23,7 +23,6 @@ package com.thinkbiganalytics.datalake.authorization.rest.client;
 /**
  * RangerRestClientException : Exception Supporting class
  *
- * @author sv186029
  */
 
 public class RangerRestClientException extends RuntimeException {

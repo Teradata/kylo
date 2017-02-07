@@ -25,7 +25,6 @@ package com.thinkbiganalytics.metadata.modeshape.security;
 
 /**
  *
- * @author Sean Felten
  */
 public class ModeShapeReadOnlyPrincipal extends ModeShapePrincipal {
     

@@ -41,7 +41,6 @@ import javax.jcr.Session;
 
 /**
  *
- * @author Sean Felten
  */
 public class JcrAllowedActionsGroupProvider implements AllowedModuleActionsProvider {
 

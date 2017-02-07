@@ -25,7 +25,6 @@ package com.thinkbiganalytics.metadata.api;
 
 /**
  *
- * @author Sean Felten
  */
 public class DatasourceAlreadyExistsException extends MetadataException {
 

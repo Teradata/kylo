@@ -35,7 +35,6 @@ import javax.jcr.Session;
 /**
  * Extension of the ModeShape JcrTools that allows printing to any PrintStream, and not just
  * System.out.
- * @author Sean Felten
  */
 public class JcrTool extends JcrTools {
 

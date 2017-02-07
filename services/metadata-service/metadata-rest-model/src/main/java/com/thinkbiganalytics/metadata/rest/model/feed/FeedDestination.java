@@ -33,7 +33,6 @@ import java.io.Serializable;
 
 /**
  *
- * @author Sean Felten
  */
 @SuppressWarnings("serial")
 @JsonInclude(Include.NON_EMPTY)

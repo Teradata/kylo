@@ -34,7 +34,6 @@ import java.io.Serializable;
  * A service for producing assessments SLAs.  It is also used to register obligation and metric assessors
  * that may be delegated the responsibility of producing assessments of their associated obligation/metric types. 
  * 
- * @author Sean Felten
  */
 public interface ServiceLevelAssessor {
 

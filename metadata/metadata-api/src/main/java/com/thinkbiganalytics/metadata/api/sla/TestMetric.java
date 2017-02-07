@@ -28,7 +28,6 @@ import com.thinkbiganalytics.metadata.sla.api.Metric;
 
 /**
  * FOR TESTING ONLY.  This metric will always be assessed with the result it has been set on it.
- * @author Sean Felten
  */
 public abstract class TestMetric implements Metric {
 

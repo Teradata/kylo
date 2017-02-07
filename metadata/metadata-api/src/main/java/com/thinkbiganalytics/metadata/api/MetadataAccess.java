@@ -33,7 +33,6 @@ import java.security.Principal;
  * the metadata API is used.  Applications may inject/obtain and use instances of this type to pass commands
  * that read and manipulate metadata entities via the providers.
  * 
- * @author Sean Felten
  */
 public interface MetadataAccess {
 

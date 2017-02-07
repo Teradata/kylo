@@ -44,7 +44,6 @@ import java.util.stream.Collectors;
 /**
  * Really just a generic path implementation but currently being used in the JCR utilities.
  * 
- * @author Sean Felten
  */
 public class JcrPath implements Path {
     

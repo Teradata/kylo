@@ -32,7 +32,6 @@ import java.util.List;
 
 /**
  * A builder for creating new SLAs.
- * @author Sean Felten
  */
 public interface ServiceLevelAgreementBuilder {
 

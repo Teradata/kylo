@@ -34,7 +34,6 @@ import javax.jcr.RepositoryException;
 
 /**
  *
- * @author Sean Felten
  */
 public abstract class JcrFeedConnection extends JcrObject implements FeedConnection {
 

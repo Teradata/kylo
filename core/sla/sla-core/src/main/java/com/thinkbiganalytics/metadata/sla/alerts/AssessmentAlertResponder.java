@@ -30,7 +30,6 @@ import com.thinkbiganalytics.alerts.sla.AssessmentAlerts;
 
 /**
  *
- * @author Sean Felten
  */
 public class AssessmentAlertResponder implements AlertResponder {
 

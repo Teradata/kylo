@@ -36,7 +36,6 @@ import org.springframework.security.kerberos.web.authentication.SpnegoEntryPoint
 
 /**
  *
- * @author Sean Felten
  */
 @Configuration
 @EnableWebSecurity

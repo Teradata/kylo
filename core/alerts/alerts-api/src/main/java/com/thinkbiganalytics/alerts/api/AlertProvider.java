@@ -34,7 +34,6 @@ import java.util.Optional;
  * for synchronously retrieving and responding to alerts, as well as registering listeners/
  * responders to react to new alerts that enter the system.
  * 
- * @author Sean Felten
  */
 public interface AlertProvider {
     

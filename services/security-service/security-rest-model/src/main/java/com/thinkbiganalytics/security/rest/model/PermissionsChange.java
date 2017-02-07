@@ -33,7 +33,6 @@ import java.util.Set;
 /**
  * Represents a request to change permissions for set of user/roles.
  * 
- * @author Sean Felten
  */
 @JsonInclude(Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)

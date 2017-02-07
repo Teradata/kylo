@@ -40,7 +40,6 @@ import java.util.List;
 /**
  * Class to write profile statistics result to Hive table
  *
- * @author jagrut sharma
  */
 @SuppressWarnings("serial")
 public class OutputWriter implements Serializable {

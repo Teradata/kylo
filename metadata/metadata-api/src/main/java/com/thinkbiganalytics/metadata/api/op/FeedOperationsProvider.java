@@ -30,7 +30,6 @@ import java.util.Set;
 
 /**
  *
- * @author Sean Felten
  */
 public interface FeedOperationsProvider {
     

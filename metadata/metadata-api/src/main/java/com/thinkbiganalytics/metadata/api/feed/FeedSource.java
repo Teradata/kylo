@@ -27,7 +27,6 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 
 /**
  *
- * @author Sean Felten
  */
 public interface FeedSource extends FeedConnection {
 

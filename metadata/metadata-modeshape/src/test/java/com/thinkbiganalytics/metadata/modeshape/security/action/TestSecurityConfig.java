@@ -35,7 +35,6 @@ import javax.inject.Inject;
 
 /**
  *
- * @author Sean Felten
  */
 @Configuration
 public class TestSecurityConfig {

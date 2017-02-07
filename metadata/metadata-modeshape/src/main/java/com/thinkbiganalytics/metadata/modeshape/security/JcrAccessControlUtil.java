@@ -46,7 +46,6 @@ import javax.jcr.security.Privilege;
 
 /**
  *
- * @author Sean Felten
  */
 public class JcrAccessControlUtil {
     

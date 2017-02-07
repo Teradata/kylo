@@ -28,7 +28,6 @@ import java.util.function.Predicate;
 
 /**
  *
- * @author Sean Felten
  */
 public interface EventMatcher<E extends MetadataEvent<? extends Serializable>> extends Predicate<E> {
 

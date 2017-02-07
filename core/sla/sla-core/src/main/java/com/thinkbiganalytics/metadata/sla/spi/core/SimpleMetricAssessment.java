@@ -35,7 +35,6 @@ import java.util.List;
 
 /**
  *
- * @author Sean Felten
  */
 public class SimpleMetricAssessment<D extends Serializable> implements MetricAssessment<D> {
     

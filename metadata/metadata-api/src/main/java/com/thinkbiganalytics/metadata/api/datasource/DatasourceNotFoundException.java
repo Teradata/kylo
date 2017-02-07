@@ -28,7 +28,6 @@ import com.thinkbiganalytics.metadata.api.datasource.Datasource.ID;
 
 /**
  *
- * @author Sean Felten
  */
 public class DatasourceNotFoundException extends MetadataException {
 

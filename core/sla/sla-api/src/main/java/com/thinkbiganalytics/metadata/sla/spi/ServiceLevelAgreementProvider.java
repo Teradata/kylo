@@ -31,7 +31,6 @@ import java.util.List;
 /**
  * A provider for creating and managing SLAs.
  * 
- * @author Sean Felten
  */
 public interface ServiceLevelAgreementProvider {
     

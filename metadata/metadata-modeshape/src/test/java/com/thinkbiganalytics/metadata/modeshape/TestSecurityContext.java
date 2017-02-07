@@ -25,7 +25,6 @@ import org.modeshape.jcr.security.SecurityContext;
 /**
  * A security context that is in effect when an administrative operation is being executed under 
  * the ModeShaepAdminPrincipal credential
- * @author Sean Felten
  */
 public class TestSecurityContext implements SecurityContext {
     

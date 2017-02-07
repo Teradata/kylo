@@ -36,7 +36,6 @@ import static org.junit.Assert.fail;
 /**
  * This helper class can be used to unit test the get/set methods of JavaBean-style Value Objects.
  *
- * @author rob.dawson
  */
 public class JavaBeanTester {
 

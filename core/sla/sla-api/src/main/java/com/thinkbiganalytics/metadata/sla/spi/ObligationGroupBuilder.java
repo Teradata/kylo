@@ -27,7 +27,6 @@ import com.thinkbiganalytics.metadata.sla.api.Obligation;
 
 /**
  *
- * @author Sean Felten
  */
 public interface ObligationGroupBuilder {
     

@@ -41,7 +41,6 @@ import java.io.IOException;
 
 /**
  *
- * @author Sean Felten
  */
 @Configuration
 public class JcrTestConfig {

@@ -30,7 +30,6 @@ import org.apache.commons.lang3.StringUtils;
 import java.beans.Transient;
 
 /**
- * @author Sean Felten
  */
 public class FeedExecutedSinceFeed extends DependentFeed {
 

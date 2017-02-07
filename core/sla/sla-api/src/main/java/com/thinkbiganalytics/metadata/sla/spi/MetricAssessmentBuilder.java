@@ -32,7 +32,6 @@ import java.util.Comparator;
 
 /**
  * An assessor responsible for generating assessments of the types of metrics that it accepts.
- * @author Sean Felten
  */
 public interface MetricAssessmentBuilder<D extends Serializable> {
 

@@ -37,7 +37,6 @@ import java.util.UUID;
 
 /**
  *
- * @author Sean Felten
  */
 public class BaseDatasource implements Datasource {
 

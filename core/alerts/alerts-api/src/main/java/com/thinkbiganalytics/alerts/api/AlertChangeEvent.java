@@ -34,7 +34,6 @@ import java.security.Principal;
  * Each instance of this type represents a state transition of an alert.  Initially, all alerts
  * will start with one change event: either UNHANDLED or CREATED.  Actionable alerts will have the
  * former event, and non-actionable alerts with the latter.
- * @author Sean Felten
  */
 public interface AlertChangeEvent {
     

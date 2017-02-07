@@ -29,7 +29,6 @@ import org.apache.commons.lang3.StringUtils;
 
 /**
  *
- * @author Sean Felten
  */
 public abstract class DependentFeed implements Metric {
 

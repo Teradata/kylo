@@ -32,7 +32,6 @@ import org.springframework.security.core.GrantedAuthority;
 /**
  * A type of token representing only a username that must be validated.  This implementation
  * simply wraps a UsernamePasswordAuthenticationToken with a null password.
- * @author Sean Felten
  */
 public class UsernameAuthenticationToken extends AbstractAuthenticationToken {
 

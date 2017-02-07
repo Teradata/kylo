@@ -28,7 +28,6 @@ import java.util.List;
 
 /**
  *
- * @author Sean Felten
  */
 public class FieldsPolicy {
     

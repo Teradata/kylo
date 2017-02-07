@@ -54,7 +54,6 @@ import javax.jcr.nodetype.NoSuchNodeTypeException;
 import javax.jcr.nodetype.NodeType;
 
 /**
- * @author Sean Felten
  */
 public class JcrUtil {
 

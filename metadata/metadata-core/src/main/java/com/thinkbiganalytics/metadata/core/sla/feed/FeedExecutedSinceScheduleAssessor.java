@@ -40,7 +40,6 @@ import java.util.List;
 
 /**
  *
- * @author Sean Felten
  */
 public class FeedExecutedSinceScheduleAssessor extends MetadataMetricAssessor<FeedExecutedSinceSchedule> {
 

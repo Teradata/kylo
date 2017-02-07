@@ -33,7 +33,6 @@ import java.util.List;
 /**
  * Describes an SLA, which is a collection of obligations that must be met when assessed.
  * 
- * @author Sean Felten
  */
 public interface ServiceLevelAgreement {
     interface ID extends Serializable {};

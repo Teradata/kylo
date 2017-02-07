@@ -34,7 +34,6 @@ import java.util.Comparator;
 
 /**
  * The builder that is used to generate assessment of obligations.
- * @author Sean Felten
  */
 public interface ObligationAssessmentBuilder {
 

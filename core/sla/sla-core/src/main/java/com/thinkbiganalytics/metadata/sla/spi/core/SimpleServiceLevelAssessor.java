@@ -54,7 +54,6 @@ import java.util.Set;
 
 /**
  *
- * @author Sean Felten
  */
 public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
 

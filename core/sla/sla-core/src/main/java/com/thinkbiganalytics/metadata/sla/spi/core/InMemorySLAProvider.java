@@ -54,7 +54,6 @@ import java.util.UUID;
 
 /**
  *
- * @author Sean Felten
  */
 public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
 

@@ -48,7 +48,6 @@ import javax.jcr.RepositoryException;
 
 /**
  *
- * @author Sean Felten
  */
 public class JcrUserGroup extends AbstractJcrAuditableSystemEntity implements UserGroup {
 

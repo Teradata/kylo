@@ -34,7 +34,6 @@ import javax.inject.Inject;
 
 /**
  *
- * @author Sean Felten
  */
 public abstract class MetadataMetricAssessor<M extends Metric> 
         implements MetricAssessor<M, Serializable> {

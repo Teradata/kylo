@@ -53,7 +53,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  *
- * @author Sean Felten
  */
 @SpringApplicationConfiguration(classes = { 
                                             SecurityConfig.class, 

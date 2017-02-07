@@ -36,7 +36,6 @@ import java.io.Serializable;
 
 /**
  *
- * @author Sean Felten
  */
 public class WithinScheduleAssessor extends MetadataMetricAssessor<WithinSchedule> {
 

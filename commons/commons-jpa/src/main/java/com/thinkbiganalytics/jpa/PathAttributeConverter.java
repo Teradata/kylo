@@ -30,7 +30,6 @@ import javax.persistence.AttributeConverter;
 
 /**
  * Converts Path objects to String columns.
- * @author Sean Felten
  */
 public class PathAttributeConverter implements AttributeConverter<Path, String> {
 

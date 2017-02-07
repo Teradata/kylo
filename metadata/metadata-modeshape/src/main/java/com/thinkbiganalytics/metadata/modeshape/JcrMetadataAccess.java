@@ -65,7 +65,6 @@ import javax.transaction.TransactionManager;
 
 /**
  *
- * @author Sean Felten
  */
 public class JcrMetadataAccess implements MetadataAccess {
 

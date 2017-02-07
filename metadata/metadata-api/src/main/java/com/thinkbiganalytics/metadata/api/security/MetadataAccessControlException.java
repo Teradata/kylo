@@ -27,7 +27,6 @@ import java.security.AccessControlException;
 
 /**
  *
- * @author Sean Felten
  */
 public class MetadataAccessControlException extends AccessControlException {
 

@@ -46,7 +46,6 @@ import com.thinkbiganalytics.security.auth.kerberos.SpnegoValidationUserAuthenti
 
 /**
  * A WebSecurityConfigurerAdapter that configures Kerberos SPNEGO authentication.
- * @author Sean Felten
  */
 @Configuration
 @EnableWebSecurity

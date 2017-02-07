@@ -48,7 +48,6 @@ import reactor.fn.Consumer;
 
 /**
  *
- * @author Sean Felten
  */
 public class ReactorMetadataEventService implements MetadataEventService {
     

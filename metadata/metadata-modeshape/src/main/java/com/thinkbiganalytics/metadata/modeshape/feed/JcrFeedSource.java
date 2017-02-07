@@ -31,7 +31,6 @@ import javax.jcr.Node;
 
 /**
  *
- * @author Sean Felten
  */
 public class JcrFeedSource extends JcrFeedConnection implements FeedSource {
 

@@ -35,7 +35,6 @@ import java.util.List;
 
 /**
  *
- * @author Sean Felten
  */
 @SuppressWarnings("serial")
 @JsonInclude(Include.NON_EMPTY)
