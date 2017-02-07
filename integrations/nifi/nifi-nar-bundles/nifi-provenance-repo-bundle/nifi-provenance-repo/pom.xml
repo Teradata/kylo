@@ -66,13 +66,6 @@
     </dependency>
 
 
-    <!-- Needed just for the passthrough class so NiFi doesnt complain on startup if upgrading from previous version of Kylo that had this custom repository -->
-    <dependency>
-      <groupId>org.apache.nifi</groupId>
-      <artifactId>nifi-persistent-provenance-repository</artifactId>
-    </dependency>
-
-
     <dependency>
       <groupId>org.apache.nifi</groupId>
       <artifactId>nifi-data-provenance-utils</artifactId>
@@ -133,37 +126,11 @@
     </dependency>
 
 
-    <!--
-    <dependency>
-        <groupId>org.apache.activemq</groupId>
-        <artifactId>activemq-broker</artifactId>
-    </dependency>
-
-    <dependency>
-        <groupId>org.apache.activemq</groupId>
-        <artifactId>activemq-client</artifactId>
-    </dependency>
-
-    <dependency>
-        <groupId>org.apache.activemq</groupId>
-        <artifactId>activemq-pool</artifactId>
-    </dependency>
-
-    <dependency>
-        <groupId>org.apache.nifi</groupId>
-        <artifactId>nifi-client-dto</artifactId>
-    </dependency>
--->
-
     <!-- Testing -->
     <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
+      <scope>test</scope>
     </dependency>
 
     <dependency>
@@ -172,7 +139,6 @@
       <scope>test</scope>
     </dependency>
 
-    <!-- test dependencies -->
     <dependency>
       <groupId>org.apache.nifi</groupId>
       <artifactId>nifi-mock</artifactId>
