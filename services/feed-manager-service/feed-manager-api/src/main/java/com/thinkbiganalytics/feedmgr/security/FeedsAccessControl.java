@@ -1,6 +1,3 @@
-/**
- *
- */
 package com.thinkbiganalytics.feedmgr.security;
 
 /*-
@@ -30,50 +27,50 @@ import com.thinkbiganalytics.security.action.Action;
  */
 public interface FeedsAccessControl {
 
-    static final Action FEEDS_SUPPORT = Action.create("accessFeedsSupport",
-                                                      "Access Feed Support",
-                                                      "Allows access to feeds and feed-related functions");
+    Action FEEDS_SUPPORT = Action.create("accessFeedsSupport",
+                                         "Access Feed Support",
+                                         "Allows access to feeds and feed-related functions");
 
-    static final Action ACCESS_CATEGORIES = FEEDS_SUPPORT.subAction("accessCategories",
-                                                                    "Access Feeds",
-                                                                    "Allows access to feeds");
-    static final Action EDIT_CATEGORIES = ACCESS_CATEGORIES.subAction("editCategories",
-                                                                      "Edit Feeds",
-                                                                      "Allows creating and editing new feeds");
-    static final Action ADMIN_CATEGORIES = ACCESS_CATEGORIES.subAction("adminCategories",
-                                                                       "Import Feeds",
-                                                                       "Allows importing of previously exported feeds");
+    Action ACCESS_CATEGORIES = FEEDS_SUPPORT.subAction("accessCategories",
+                                                       "Access Categories",
+                                                       "Allows access to categories");
+    Action EDIT_CATEGORIES = ACCESS_CATEGORIES.subAction("editCategories",
+                                                         "Edit Categories",
+                                                         "Allows creating and editing new categories");
+    Action ADMIN_CATEGORIES = ACCESS_CATEGORIES.subAction("adminCategories",
+                                                          "Administer Categories",
+                                                          "Allows the administration of any category; even those created by others");
 
-    static final Action ACCESS_FEEDS = FEEDS_SUPPORT.subAction("accessFeeds",
-                                                               "Access Feeds",
-                                                               "Allows access to feeds");
-    static final Action EDIT_FEEDS = ACCESS_FEEDS.subAction("editFeeds",
-                                                            "Edit Feeds",
-                                                            "Allows creating and editing new feeds");
-    static final Action IMPORT_FEEDS = ACCESS_FEEDS.subAction("importFeeds",
-                                                              "Import Feeds",
-                                                              "Allows importing of previously exported feeds");
-    static final Action EXPORT_FEEDS = ACCESS_FEEDS.subAction("exportFeeds",
-                                                              "Export Feeds",
-                                                              "Allows exporting feeds definitions");
-    static final Action ADMIN_FEEDS = ACCESS_FEEDS.subAction("adminFeeds",
-                                                             "Administer Feeds",
-                                                             "Allows the administration of any feed; even those created by others");
+    Action ACCESS_FEEDS = FEEDS_SUPPORT.subAction("accessFeeds",
+                                                  "Access Feeds",
+                                                  "Allows access to feeds");
+    Action EDIT_FEEDS = ACCESS_FEEDS.subAction("editFeeds",
+                                               "Edit Feeds",
+                                               "Allows creating and editing new feeds");
+    Action IMPORT_FEEDS = ACCESS_FEEDS.subAction("importFeeds",
+                                                 "Import Feeds",
+                                                 "Allows importing of previously exported feeds");
+    Action EXPORT_FEEDS = ACCESS_FEEDS.subAction("exportFeeds",
+                                                 "Export Feeds",
+                                                 "Allows exporting feeds definitions");
+    Action ADMIN_FEEDS = ACCESS_FEEDS.subAction("adminFeeds",
+                                                "Administer Feeds",
+                                                "Allows the administration of any feed; even those created by others");
 
-    static final Action ACCESS_TEMPLATES = FEEDS_SUPPORT.subAction("accessTemplates",
-                                                                   "Access Templates",
-                                                                   "Allows access to feed templates");
-    static final Action EDIT_TEMPLATES = ACCESS_TEMPLATES.subAction("editTemplates",
-                                                                    "Edit Templates",
-                                                                    "Allows creating and editing new feed templates");
-    static final Action IMPORT_TEMPLATES = ACCESS_TEMPLATES.subAction("importTemplates",
-                                                                      "Import Templates",
-                                                                      "Allows importing of previously exported templates");
-    static final Action EXPORT_TEMPLATES = ACCESS_TEMPLATES.subAction("exportTemplates",
-                                                                      "Export Templates",
-                                                                      "Allows exporting template definitions");
-    static final Action ADMIN_TEMPLATES = ACCESS_TEMPLATES.subAction("adminTemplates",
-                                                                     "Administer Templates",
-                                                                     "Allows the administration of any feed template; even those created by others");
+    Action ACCESS_TEMPLATES = FEEDS_SUPPORT.subAction("accessTemplates",
+                                                      "Access Templates",
+                                                      "Allows access to feed templates");
+    Action EDIT_TEMPLATES = ACCESS_TEMPLATES.subAction("editTemplates",
+                                                       "Edit Templates",
+                                                       "Allows creating and editing new feed templates");
+    Action IMPORT_TEMPLATES = ACCESS_TEMPLATES.subAction("importTemplates",
+                                                         "Import Templates",
+                                                         "Allows importing of previously exported templates");
+    Action EXPORT_TEMPLATES = ACCESS_TEMPLATES.subAction("exportTemplates",
+                                                         "Export Templates",
+                                                         "Allows exporting template definitions");
+    Action ADMIN_TEMPLATES = ACCESS_TEMPLATES.subAction("adminTemplates",
+                                                        "Administer Templates",
+                                                        "Allows the administration of any feed template; even those created by others");
 
 }
