@@ -67,7 +67,7 @@ public class JcrActionsGroupBuilder extends JcrAbstractActionsBuilder implements
      * @see com.thinkbiganalytics.security.action.config.ActionsModuleBuilder#group(java.lang.String)
      */
     @Override
-    public ActionsTreeBuilder<ActionsModuleBuilder> group(String name) {
+    public ActionsTreeBuilder<ActionsModuleBuilder> module(String name) {
         Session session = JcrMetadataAccess.getActiveSession();
         
         try {

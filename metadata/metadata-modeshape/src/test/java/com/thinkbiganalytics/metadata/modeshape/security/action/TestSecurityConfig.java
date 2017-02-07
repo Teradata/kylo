@@ -69,7 +69,7 @@ public class TestSecurityConfig {
             // tool.printSubgraph(JcrMetadataAccess.getActiveSession(), "/metadata");
 
             return builder
-                            .group("services")
+                            .module("services")
                                 .action(MANAGE_AUTH)
                                 .action(MANAGE_OPS)
                                 .action(ADMIN_OPS)

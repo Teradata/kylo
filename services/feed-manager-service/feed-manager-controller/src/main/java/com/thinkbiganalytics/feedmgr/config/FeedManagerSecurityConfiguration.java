@@ -49,7 +49,7 @@ public class FeedManagerSecurityConfiguration {
     public PostMetadataConfigAction feedManagerSecurityConfigAction() {
         return () -> metadata.commit(() -> {
             return builder
-                            .group("services")
+                            .module("services")
                                 .action(FeedsAccessControl.FEEDS_SUPPORT)
                                 .action(FeedsAccessControl.ACCESS_FEEDS)
                                 .action(FeedsAccessControl.EDIT_FEEDS)

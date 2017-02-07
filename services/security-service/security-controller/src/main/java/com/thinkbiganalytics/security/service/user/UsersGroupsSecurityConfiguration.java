@@ -45,7 +45,7 @@ public class UsersGroupsSecurityConfiguration {
     public PostMetadataConfigAction usersGroupsSecurityConfigAction() {
         return () -> metadata.commit(() -> {
             return builder
-                        .group("services")
+                        .module("services")
                             .action(UsersGroupsAccessContol.USERS_GROUPS_SUPPORT)
                             .action(UsersGroupsAccessContol.ACCESS_USERS)
                             .action(UsersGroupsAccessContol.ADMIN_USERS)

@@ -50,7 +50,7 @@ public class OperationsSecurityConfiguration {
     public PostMetadataConfigAction operationsSecurityConfigAction() {
         return () -> metadata.commit(() -> {
             return builder
-                            .group("services")
+                            .module("services")
                                 .action(OperationsAccessControl.ACCESS_OPS)
                                 .action(OperationsAccessControl.ADMIN_OPS)
                                 .add()

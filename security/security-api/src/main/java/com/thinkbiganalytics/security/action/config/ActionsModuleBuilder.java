@@ -26,11 +26,19 @@ package com.thinkbiganalytics.security.action.config;
 import com.thinkbiganalytics.security.action.AllowedActions;
 
 /**
- *
+ * A builder used to construct/augment an action hierarchy tree of a module.
+ * Used by system components/plugins when they are initialized to augments the set of actions available
+ * to users based on that component's access control requirements.
  */
 public interface ActionsModuleBuilder {
 
-    ActionsTreeBuilder<ActionsModuleBuilder> group(String name);
+    /**
+     * Starts a new builder to add an action hierarchy to the actions of the module with the given name.
+     */
+    ActionsTreeBuilder<ActionsModuleBuilder> module(String name);
     
+    /**
+     * Builds the action hierarchy tree on the module and returns the resulting AllowedActions.
+     */
     AllowedActions build();
 }
