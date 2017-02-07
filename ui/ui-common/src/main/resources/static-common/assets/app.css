@@ -285,12 +285,14 @@ md-list.padding-left md-list-item {
 .md-button.border-btn-white-sm {
   text-align: center !important;
   height: 28px;
+  min-height: 28px;
+  line-height: 28px;
   font-size: 12px;
   padding: 0;
   /*padding: 0 16px 0 16px; */
   color: white;
   border: 1px solid white;
-  line-height: inherit;
+  margin-top: 10px;
 }
 
 .md-button.md-icon-button.rounded-rectangle {
