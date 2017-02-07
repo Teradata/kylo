@@ -325,7 +325,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
             }
         }
         NifiFeed feed = super.createFeed(feedMetadata);
-        //register the audit for the updagte event
+        //register the audit for the update event
         if (feed.isSuccess() && !feedMetadata.isNew()) {
 
             Feed.State state = Feed.State.valueOf(feedMetadata.getState());
