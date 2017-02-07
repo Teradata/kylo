@@ -89,57 +89,67 @@ import javax.annotation.Nonnull;
 import javax.net.ssl.SSLContext;
 
 /**
- * @author Sean Felten
+ * A client for accessing the metadata store
  */
 public class MetadataClient {
 
-    private static final Logger log = LoggerFactory.getLogger(MetadataClient.class);
     public static final List<MediaType> ACCEPT_TYPES = Collections.unmodifiableList(Arrays.asList(MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN));
-
     public static final ParameterizedTypeReference<List<ExtensibleTypeDescriptor>> TYPE_LIST = new ParameterizedTypeReference<List<ExtensibleTypeDescriptor>>() {
     };
     public static final ParameterizedTypeReference<List<Feed>> FEED_LIST = new ParameterizedTypeReference<List<Feed>>() {
     };
-    //   public static final ParameterizedTypeReference<FeedDependencyDeltaResults> FEED_RESULT_DELTAS = new ParameterizedTypeReference<FeedDependencyDeltaResults>() { };
     public static final ParameterizedTypeReference<List<Datasource>> DATASOURCE_LIST = new ParameterizedTypeReference<List<Datasource>>() {
     };
-    public static final ParameterizedTypeReference<List<Metric>> METRIC_LIST = new ParameterizedTypeReference<List<Metric>>() {
-    };
-
+    private static final Logger log = LoggerFactory.getLogger(MetadataClient.class);
     private static final Function<UriComponentsBuilder, UriComponentsBuilder> ALL_DATASOURCES = new TargetDatasourceCriteria();
     private static final Function<UriComponentsBuilder, UriComponentsBuilder> ALL_FEEDS = new TargetFeedCriteria();
 
     private final URI base;
     private final RestTemplate template;
+    private String category;
 
-
-    public static CredentialsProvider createCredentialProvider(String username, String password) {
-        CredentialsProvider credsProvider = new BasicCredentialsProvider();
-        credsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password));
-        return credsProvider;
-    }
-
-    public static Path path(String first, String... more) {
-        return Paths.get(first, more);
-    }
-
-
+    /**
+     * constructor, creates a metadata client for the base uri given
+     *
+     * @param base the URI of the metadata server
+     */
     public MetadataClient(URI base) {
         this(base, null, null, null);
     }
 
+    /**
+     * constructor, creates a metadata client for the base uri given, using the sslContext provided
+     *
+     * @param base       the URI of the metadata server
+     * @param sslContext the SSL context
+     */
     public MetadataClient(URI base, SSLContext sslContext) {
         this(base, null, null, sslContext);
     }
 
+    /**
+     * constructor, creates a metadata client for the base uri given and authenticates to the server with the username and password provided.
+     *
+     * @param base     the URI of the metadata server
+     * @param username the username to access the server
+     * @param password the password of the user
+     */
     public MetadataClient(URI base, String username, String password) {
         this(base, username, password, null);
     }
 
+    /**
+     * constructor, creates a metadata client for the base uri given, using the sslContext provided and authenticates to the server
+     * with the username and password.
+     *
+     * @param base       the URI of the metadata server
+     * @param username   the username to access the server
+     * @param password   the password of the user
+     * @param sslContext the SSL context
+     */
     public MetadataClient(URI base, String username, String password, SSLContext sslContext) {
         this(base, createCredentialProvider(username, password), sslContext);
     }
-
 
     public MetadataClient(URI base, CredentialsProvider credsProvider, SSLContext sslContext) {
         super();
@@ -159,36 +169,109 @@ public class MetadataClient {
         this.template.getMessageConverters().add(new MappingJackson2HttpMessageConverter(mapper));
     }
 
+    /**
+     * creates a credentials provider
+     *
+     * @param username the user name f
+     * @param password the password
+     * @return a credentials provider
+     */
+    public static CredentialsProvider createCredentialProvider(String username, String password) {
+        CredentialsProvider credsProvider = new BasicCredentialsProvider();
+        credsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password));
+        return credsProvider;
+    }
 
+    /**
+     * Converts one or more strings to a path, compatible with the OS representation of a path
+     *
+     * @param first The base path
+     * @param more  Additional directories to join to create a path, if any
+     * @return The completed, OS compatible path
+     */
+    public static Path path(String first, String... more) {
+        return Paths.get(first, more);
+    }
+
+    /**
+     * gets the extensible types from the metadata store
+     *
+     * @return a list of extensible type descriptors
+     */
     public List<ExtensibleTypeDescriptor> getExtensibleTypes() {
         return get(path("extension", "type"), null, TYPE_LIST);
     }
 
+    /**
+     * gets the extensible type descriptor from the metadata store
+     *
+     * @param nameOrId the name or ID of the descriptor
+     * @return the extensible type descriptor
+     */
     public ExtensibleTypeDescriptor getExtensibleType(String nameOrId) {
         return get(path("extension", "type", nameOrId), ExtensibleTypeDescriptor.class);
     }
 
+    /**
+     * Creates a FeedBuilder initialized with the name and category given
+     *
+     * @param categoryName the name of the category
+     * @param name         the name of the feed
+     * @return a FeedBuilder used to further construct feed details
+     */
     public FeedBuilder buildFeed(String categoryName, String name) {
         return new FeedBuilderImpl(categoryName, name);
     }
 
-
+    /**
+     * get the named high water mark for the feed given by feedId
+     *
+     * @param feedId        the id of the feed
+     * @param waterMarkName the name of the water mark
+     * @return a string option
+     */
     public Optional<String> getHighWaterMarkValue(String feedId, String waterMarkName) {
         return optinal(() -> get(path("feed", feedId, "watermark", waterMarkName), String.class));
     }
 
+    /**
+     * Update the named high water mar, for the feed given by feedId, with the given value
+     *
+     * @param feedId        the id of the feed
+     * @param waterMarkName the name of the water mark
+     * @param value         the new value for the high water mark
+     */
     public void updateHighWaterMarkValue(String feedId, String waterMarkName, String value) {
         put(path("feed", feedId, "watermark", waterMarkName), value, MediaType.TEXT_PLAIN);
     }
 
+    /**
+     * Find out if the feed given has been initialized
+     *
+     * @param feedId the id of the feed
+     * @return an InitializationStatus, which can be used to get the status
+     */
     public InitializationStatus getCurrentInitStatus(String feedId) {
         return nullable(() -> get(Paths.get("feed", feedId, "initstatus"), InitializationStatus.class));
     }
 
+    /**
+     * update the initialization status of the feed
+     *
+     * @param feedId the id of the feed
+     * @param status the status of the feed
+     */
     public void updateCurrentInitStatus(String feedId, InitializationStatus status) {
         put(Paths.get("feed", feedId, "initstatus"), status, MediaType.APPLICATION_JSON);
     }
 
+    /**
+     * adds a datasource, to serve as the source, to the feed
+     *
+     * @param feedId       the id of the feed
+     * @param datasourceId the id of the datasource to be added
+     * @return the feed
+     */
     public Feed addSource(String feedId, String datasourceId) {
         Form form = new Form();
         form.add("datasourceId", datasourceId);
@@ -196,6 +279,13 @@ public class MetadataClient {
         return post(path("feed", feedId, "source"), form, Feed.class);
     }
 
+    /**
+     * adds a datasource, to serve as the destination, of the feed
+     *
+     * @param feedId       the id of the feed
+     * @param datasourceId the id of the datasource to be added
+     * @return the feed
+     */
     public Feed addDestination(String feedId, String datasourceId) {
         Form form = new Form();
         form.add("datasourceId", datasourceId);
@@ -203,31 +293,71 @@ public class MetadataClient {
         return post(path("feed", feedId, "destination"), form, Feed.class);
     }
 
+    /**
+     * creates a SLA with the metadata server, returns the SLA as created
+     *
+     * @param sla the SLA to create
+     * @return the SLA as created by the server
+     */
     public ServiceLevelAgreement createSla(ServiceLevelAgreement sla) {
         return post(path("sla"), sla, MediaType.APPLICATION_JSON, ServiceLevelAgreement.class);
     }
 
+    /**
+     * makes a precondition for the feed given
+     *
+     * @param feedId  the id of the feed
+     * @param metrics on or more metrics that represent the precondition
+     */
     public Feed setPrecondition(String feedId, Metric... metrics) {
         return setPrecondition(feedId, Arrays.asList(metrics));
     }
 
+    /**
+     * makes a precondition for the feed given
+     *
+     * @param feedId  the id of the feed
+     * @param metrics on or more metrics that represent the precondition
+     */
     public Feed setPrecondition(String feedId, List<Metric> metrics) {
         FeedPrecondition precond = new FeedPrecondition("Feed " + feedId + " Precondition", "", metrics);
         return setPrecondition(feedId, precond);
     }
 
+    /**
+     * makes a precondition for the feed given
+     *
+     * @param feedId  the id of the feed
+     * @param precond the precondition
+     */
     public Feed setPrecondition(String feedId, FeedPrecondition precond) {
         return post(path("feed", feedId, "precondition"), precond, MediaType.APPLICATION_JSON, Feed.class);
     }
 
+    /**
+     * a factory method to creates a new feed criteria
+     *
+     * @return a feed criteria instance
+     */
     public FeedCriteria feedCriteria() {
         return new TargetFeedCriteria();
     }
 
+    /**
+     * gets the list of all feeds
+     *
+     * @return all feeds
+     */
     public List<Feed> getFeeds() {
         return getFeeds((FeedCriteria) ALL_FEEDS);
     }
 
+    /**
+     * gets a list of feeds matching the criteria given
+     *
+     * @param criteria the criteria of the feeds to return
+     * @return a list of feeds
+     */
     public List<Feed> getFeeds(FeedCriteria criteria) {
         try {
             return get(path("feed"), (TargetFeedCriteria) criteria, FEED_LIST);
@@ -236,18 +366,32 @@ public class MetadataClient {
         }
     }
 
+    /**
+     * get the feed matching the id given
+     *
+     * @param id the id of the feed
+     * @return the feed instance
+     */
     public Feed getFeed(String id) {
         return get(path("feed", id), Feed.class);
     }
 
+    /**
+     * get the feed matching the named feed in the category given
+     *
+     * @param categoryName the name of the category
+     * @param feedName     the name of the feed
+     */
     public Feed getFeed(String categoryName, String feedName) {
         return get(path("feed"), Feed.class);
     }
 
+    /**
+     * get the feed
+     */
     public FeedDependencyGraph getFeedDependency(String id) {
         return get(path("feed", id, "depfeeds"), FeedDependencyGraph.class);
     }
-
 
     public FeedDependencyDeltaResults getFeedDependencyDeltas(String feedId) {
         return get(path("feed", feedId, "depfeeds", "delta"), FeedDependencyDeltaResults.class);
@@ -268,30 +412,71 @@ public class MetadataClient {
         return get(path("feed", id, "props"), Properties.class);
     }
 
-    public Properties mergeFeedProperties(String id, Properties props) {
-        return post(path("feed", id, "props"), props, MediaType.APPLICATION_JSON, Properties.class);
+    /**
+     * merge the properties given into the feed
+     *
+     * @param feedId the id of the feed
+     * @param props  a list of properties to merge into the feed
+     * @return the properties of the feed after the merge
+     */
+    public Properties mergeFeedProperties(String feedId, Properties props) {
+        return post(path("feed", feedId, "props"), props, MediaType.APPLICATION_JSON, Properties.class);
     }
 
-    public Properties replaceFeedProperties(String id, Properties props) {
-        return put(path("feed", id), props, MediaType.APPLICATION_JSON, Properties.class);
+    /**
+     * replace the properties of the feed with thos given in props
+     *
+     * @param feedId the id of the feed
+     * @param props  a list of properties to merge into the feed
+     * @return the properties of the feed after the operation has succeeded
+     */
+    public Properties replaceFeedProperties(String feedId, Properties props) {
+        return put(path("feed", feedId), props, MediaType.APPLICATION_JSON, Properties.class);
     }
 
+    /**
+     * a factory to create a new object that acts as a DirectoryDatasourceBuilder initialized with the name given
+     *
+     * @param name the name to reference the directory data source by
+     * @return the directory data source builder
+     */
     public DirectoryDatasourceBuilder buildDirectoryDatasource(String name) {
         return new DirectoryDatasourceBuilderImpl(name);
     }
 
+    /**
+     * a factory to create a new object that acts as a HiveTableDatasourceBuilder initialized with the name given
+     *
+     * @param name the name to reference the hive table data source by
+     * @return the hive table source builder
+     */
     public HiveTableDatasourceBuilder buildHiveTableDatasource(String name) {
         return new HiveTableDatasourceBuilderImpl(name);
     }
 
+    /**
+     * a factory method to create a new data source criteria
+     *
+     * @return a data source criteria model object
+     */
     public DatasourceCriteria datasourceCriteria() {
         return new TargetDatasourceCriteria();
     }
 
+    /**
+     * get the data sources available in the system
+     *
+     * @return the list of datasources
+     */
     public List<Datasource> getDatasources() {
         return get(path("datasource"), ALL_DATASOURCES, DATASOURCE_LIST);
     }
 
+    /**
+     * get the data sources available in the system, that match the criteria given
+     *
+     * @return the list of datasources
+     */
     public List<Datasource> getDatasources(DatasourceCriteria criteria) {
         try {
             return get(path("datasource"), (TargetDatasourceCriteria) criteria, DATASOURCE_LIST);
@@ -300,6 +485,13 @@ public class MetadataClient {
         }
     }
 
+    /**
+     * tells that an operation has begun, and allows us to set the status
+     *
+     * @param feedDestinationId the id of the destination feed
+     * @param status            the status of the operation since begun
+     * @return the operation
+     */
     public DataOperation beginOperation(String feedDestinationId, String status) {
         Form form = new Form();
         form.add("feedDestinationId", feedDestinationId);
@@ -308,26 +500,51 @@ public class MetadataClient {
         return post(path("dataop"), form, DataOperation.class);
     }
 
+    /**
+     * update the system with the info given in the operation. In other words the operation
+     * will be consulted and the metadata within will be persisted to the server.
+     *
+     * @param op the operation
+     * @return the operation, as recorded by the system
+     */
     public DataOperation updateDataOperation(DataOperation op) {
         return put(path("dataop", op.getId()), op, MediaType.APPLICATION_JSON, DataOperation.class);
     }
 
+    /**
+     * get the operation with the given id
+     *
+     * @param id the id of the operation
+     * @return the operation with the given id
+     */
     public DataOperation getDataOperation(String id) {
         return get(path("dataop", id), DataOperation.class);
     }
 
-    public ServiceLevelAssessment assessPrecondition(String id) {
-        return get(path("feed", id, "precondition", "assessment"), ServiceLevelAssessment.class);
+    /**
+     * checks the pre-conditions of the feed with the given id and returns the result in an assessment object
+     *
+     * @param feedId the id of the feed
+     * @return the assessment of the feed, which can be consulted to check the state of the conditions for the SLA
+     */
+    public ServiceLevelAssessment assessPrecondition(String feedId) {
+        return get(path("feed", feedId, "precondition", "assessment"), ServiceLevelAssessment.class);
     }
 
-    public String getPreconditionResult(String id) {
-        return get(path("feed", id, "precondition", "assessment", "result"), String.class);
+    /**
+     * get the results of the preconditions for the feed identified by id
+     *
+     * @param feedId the id of the feed
+     * @return a string representation of the assessment of the feed
+     */
+    public String getPreconditionResult(String feedId) {
+        return get(path("feed", feedId, "precondition", "assessment", "result"), String.class);
     }
 
     private ObjectMapper createObjectMapper() {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JodaModule());
-// TODO Module dependency is causing a conflict somehow.     
+// TODO Module dependency is causing a conflict somehow.
 //        mapper.registerModule(new JavaTimeModule());
         mapper.setSerializationInclusion(Include.NON_NULL);
         return mapper;
@@ -367,7 +584,6 @@ public class MetadataClient {
         }
     }
 
-
     private Feed postFeed(Feed feed) {
         return post(path("feed"), feed, MediaType.APPLICATION_JSON, Feed.class);
     }
@@ -380,26 +596,45 @@ public class MetadataClient {
         return post(path("datasource", "directory"), ds, MediaType.APPLICATION_JSON, DirectoryDatasource.class);
     }
 
-
+    /**
+     * get flow updates since the last time we synchronized with NiFi
+     *
+     * @param syncId the synchronization id
+     * @return the cache of flow events
+     */
     public NiFiFlowCacheSync getFlowUpdates(String syncId) {
         return get(path("nifi-provenance", "nifi-flow-cache", "get-flow-updates"), new NifiFlowSyncParameters(syncId), NiFiFlowCacheSync.class);
     }
 
+    /**
+     * reset flow events for the given id
+     *
+     * @param syncId the synchronization id
+     * @return the cache of flow events after reset
+     */
     public NiFiFlowCacheSync resetFlowUpdates(String syncId) {
         return get(path("nifi-provenance", "nifi-flow-cache", "reset-flow-updates"), new NifiFlowSyncParameters(syncId), NiFiFlowCacheSync.class);
     }
 
-
+    /**
+     * finds the max event for NiFi
+     *
+     * @param clusterNodeId the NifI cluster to query
+     * @return the id of the most recent event
+     */
     public Long findNiFiMaxEventId(String clusterNodeId) {
         log.info("findNifiMaxEventId ", clusterNodeId);
         return get(path("nifi-provenance", "max-event-id"), new MaxNifiEventParameters(clusterNodeId), Long.class);
     }
 
-
+    /**
+     * queries to see if NiFi has new data flow events
+     *
+     * @return true if there new events, false otherwise
+     */
     public Boolean isNiFiFlowDataAvailable() {
         return get(path("nifi-provenance", "nifi-flow-cache", "available"), Boolean.class);
     }
-
 
     private UriComponentsBuilder base(Path path) {
         return UriComponentsBuilder.fromUri(this.base).path("/").path(path.toString());
@@ -465,7 +700,6 @@ public class MetadataClient {
         }
     }
 
-
     private <R> R handle(ResponseEntity<R> resp) {
         if (resp.getStatusCode().is2xxSuccessful()) {
             return resp.getBody();
@@ -473,7 +707,6 @@ public class MetadataClient {
             throw new WebResponseException(ResponseEntity.status(resp.getStatusCode()).headers(resp.getHeaders()).build());
         }
     }
-
 
     private static class Form extends LinkedMultiValueMap<String, String> {
 
@@ -498,7 +731,6 @@ public class MetadataClient {
 
     }
 
-
     private static class NifiFlowSyncParameters implements Function<UriComponentsBuilder, UriComponentsBuilder> {
 
         private String syncId;
@@ -517,25 +749,6 @@ public class MetadataClient {
         }
 
     }
-
-    private static class NifiFlowSyncParameters implements Function<UriComponentsBuilder, UriComponentsBuilder> {
-
-        private String syncId;
-
-        public NifiFlowSyncParameters(String syncId) {
-            this.syncId = syncId;
-        }
-
-        public UriComponentsBuilder apply(UriComponentsBuilder target) {
-            UriComponentsBuilder result = target;
-
-            if (!Strings.isNullOrEmpty(this.syncId)) {
-                result = result.queryParam("syncId", this.syncId);
-            }
-            return result;
-        }
-
-    }    private String category;
 
     private static class TargetDatasourceCriteria implements DatasourceCriteria, Function<UriComponentsBuilder, UriComponentsBuilder> {
 
