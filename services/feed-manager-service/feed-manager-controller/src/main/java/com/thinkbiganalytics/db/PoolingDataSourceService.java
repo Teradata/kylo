@@ -45,6 +45,7 @@ public class PoolingDataSourceService {
         String user;
         String password;
         String url;
+        String driverClassName;
         boolean testOnBorrow;
         String validationQuery;
 
@@ -54,10 +55,11 @@ public class PoolingDataSourceService {
             this.url = url;
         }
 
-        public DataSourceProperties(String user, String password, String url, boolean testOnBorrow, String validationQuery) {
+        public DataSourceProperties(String user, String password, String url, String driverClassName, boolean testOnBorrow, String validationQuery) {
             this.user = user;
             this.password = password;
             this.url = url;
+            this.driverClassName = driverClassName;
             this.testOnBorrow = testOnBorrow;
             this.validationQuery = validationQuery;
         }
@@ -101,6 +103,14 @@ public class PoolingDataSourceService {
         public void setValidationQuery(String validationQuery) {
             this.validationQuery = validationQuery;
         }
+
+        public String getDriverClassName() {
+            return driverClassName;
+        }
+
+        public void setDriverClassName(String driverClassName) {
+            this.driverClassName = driverClassName;
+        }
     }
 
 
@@ -111,7 +121,11 @@ public class PoolingDataSourceService {
 
 
     private static DataSource createDatasource(DataSourceProperties props) {
-        DataSource ds = DataSourceBuilder.create().url(props.getUrl()).username(props.getUser()).password(props.getPassword()).build();
+        DataSourceBuilder builder = DataSourceBuilder.create().url(props.getUrl()).username(props.getUser()).password(props.getPassword());
+        if (StringUtils.isNotBlank(props.getDriverClassName())) {
+            builder.driverClassName(props.getDriverClassName());
+        }
+        DataSource ds = builder.build();
         if (props.isTestOnBorrow() && StringUtils.isNotBlank(props.getValidationQuery())) {
             if (ds instanceof org.apache.tomcat.jdbc.pool.DataSource) {
                 ((org.apache.tomcat.jdbc.pool.DataSource) ds).setTestOnBorrow(true);

@@ -182,6 +182,10 @@ public class DBCPConnectionPoolTableInfo {
         String uri = properties.get(serviceProperties.getConnectionStringPropertyKey());
         String user = properties.get(serviceProperties.getUserNamePropertyKey());
         String password = properties.get(serviceProperties.getPasswordPropertyKey());
+        String driverClassName = properties.get(serviceProperties.getDriverClassNamePropertyKey());
+        if (StringUtils.isBlank(driverClassName)) {
+            driverClassName = nifiControllerServiceProperties.getEnvironmentPropertyValueForControllerService(serviceProperties.getControllerServiceName(), "database_driver_class_name");
+        }
         if (StringUtils.isBlank(password)) {
             password = nifiControllerServiceProperties.getEnvironmentPropertyValueForControllerService(serviceProperties.getControllerServiceName(), "password");
         }
@@ -192,7 +196,7 @@ public class DBCPConnectionPoolTableInfo {
             validationQuery = parseValidationQueryFromConnectionString(uri);
         }
         boolean testOnBorrow = StringUtils.isNotBlank(validationQuery);
-        return new PoolingDataSourceService.DataSourceProperties(user, password, uri, testOnBorrow, validationQuery);
+        return new PoolingDataSourceService.DataSourceProperties(user, password, uri, driverClassName, testOnBorrow, validationQuery);
     }
 
 
@@ -201,6 +205,7 @@ public class DBCPConnectionPoolTableInfo {
         private String connectionStringPropertyKey;
         private String userNamePropertyKey;
         private String passwordPropertyKey;
+        private String driverClassNamePropertyKey;
         private String controllerServiceType;
         private String controllerServiceName;
         private String controllerServiceId;
@@ -233,6 +238,11 @@ public class DBCPConnectionPoolTableInfo {
             return this;
         }
 
+        public DescribeTableWithControllerServiceBuilder driverClassNamePropertyKey(String driverClassNamePropertyKey) {
+            this.driverClassNamePropertyKey = driverClassNamePropertyKey;
+            return this;
+        }
+
         public DescribeTableWithControllerServiceBuilder controllerServiceType(String controllerServiceType) {
             this.controllerServiceType = controllerServiceType;
 
@@ -244,6 +254,7 @@ public class DBCPConnectionPoolTableInfo {
                 this.connectionStringPropertyKey = "Database Connection URL";
                 this.userNamePropertyKey = "Database User";
                 this.passwordPropertyKey = "Password";
+                this.driverClassNamePropertyKey = "Database Driver Class Name";
             } else if ("com.thinkbiganalytics.nifi.v2.sqoop.StandardSqoopConnectionService".equalsIgnoreCase(controllerServiceType)) {
                 this.connectionStringPropertyKey = "Source Connection String";
                 this.userNamePropertyKey = "Source User Name";
@@ -289,6 +300,7 @@ public class DBCPConnectionPoolTableInfo {
             serviceProperties.setUserNamePropertyKey(userNamePropertyKey);
             serviceProperties.setPasswordPropertyKey(passwordPropertyKey);
             serviceProperties.setControllerServiceDTO(this.controllerServiceDTO);
+            serviceProperties.setDriverClassNamePropertyKey(this.driverClassNamePropertyKey);
             return serviceProperties;
         }
     }
@@ -299,6 +311,7 @@ public class DBCPConnectionPoolTableInfo {
         private String connectionStringPropertyKey;
         private String userNamePropertyKey;
         private String passwordPropertyKey;
+        private String driverClassNamePropertyKey;
         private String controllerServiceType;
         private String controllerServiceName;
         private String controllerServiceId;
@@ -328,6 +341,14 @@ public class DBCPConnectionPoolTableInfo {
 
         public void setPasswordPropertyKey(String passwordPropertyKey) {
             this.passwordPropertyKey = passwordPropertyKey;
+        }
+
+        public String getDriverClassNamePropertyKey() {
+            return driverClassNamePropertyKey;
+        }
+
+        public void setDriverClassNamePropertyKey(String driverClassNamePropertyKey) {
+            this.driverClassNamePropertyKey = driverClassNamePropertyKey;
         }
 
         public String getControllerServiceType() {
