@@ -88,7 +88,7 @@ public class NifiFeedProcessorStatisticsRestController {
     public Response findStats(@PathParam("feedName") String feedName, @PathParam("timeframe") @DefaultValue("HOUR") NifiFeedProcessorStatisticsProvider.TimeFrame timeframe) {
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
         return metadataAccess.read(() -> {
-            List<? extends NifiFeedProcessorStats> list = statsProvider.findForFeedProcessorStatistics(feedName, timeframe);
+            List<? extends NifiFeedProcessorStats> list = statsProvider.findFeedProcessorStatisticsByProcessorName(feedName, timeframe);
             List<com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStats> model = NifiFeedProcessorStatsTransform.toModel(list);
             return Response.ok(model).build();
         });

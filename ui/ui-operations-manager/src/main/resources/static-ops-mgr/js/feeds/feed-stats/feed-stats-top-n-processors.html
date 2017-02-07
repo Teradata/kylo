@@ -38,15 +38,16 @@
             <md-option value="{{opt.value}}" ng-repeat="opt in vm.timeFrameOptions track by opt.value">{{ opt.label }}</md-option>
           </md-select>
         </md-input-container>
-        <span flex="10"></span>
+        <span flex></span>
+        <div flex="20" class="md-block layout-padding-top-bottom" ng-if="vm.showProcessorChartLoading || vm.showFeedTimeChartLoading">
+          <div layout="column">
+            <span style="padding-top:30px;">&nbsp;</span>
+            <md-progress-linear md-mode="indeterminate"></md-progress-linear>
+          </div>
 
-        <!--   <div layout="row" ng-if="vm.selectedTimeFrameOptionObject != null" class="hint layout-padding-top">
-             <span>{{vm.selectedTimeFrameOptionObject.data.startTime | date:'MM/dd/yy HH:mm:ss'}}</span>
-             <span> - </span>
-             <span>{{vm.selectedTimeFrameOptionObject.data.endTime | date:'MM/dd/yy HH:mm:ss'}}</span>
-           </div>
-   -->
+        </div>
       </div>
+
       <nvd3 flex options="vm.statusPieChartOptions" data="vm.statusPieChartData" api="vm.statusPieChartApi"></nvd3>
       <div layout="row" flex>
         <div layout="column" flex="25">
@@ -66,6 +67,7 @@
           <span class="md-caption">Flows Job Duration (sec)</span>
         </div>
       </div>
+
       <nvd3 options="vm.feedChartOptions" data="vm.feedChartData" api="vm.feedChartApi"></nvd3>
 
 
@@ -75,14 +77,13 @@
           <md-option value="{{opt}}" ng-repeat="opt in vm.processorStatsFunctions">{{ opt }}</md-option>
         </md-select>
       </md-input-container>
-      <div>Sum {{vm.selectedProcessorStatisticFunction}} is {{vm.totalProcessorSelectedFunctionValue}}</div>
+      <div flex layout="row" layout-align="start end">
+        <span flex>Sum {{vm.selectedProcessorStatisticFunction}} is {{vm.totalProcessorSelectedFunctionValue}}</span>
+        <span flex="20" ng-if="vm.showProcessorChartLoading">
+          <md-progress-linear md-mode="indeterminate"></md-progress-linear>
+        </span>
+      </div>
       <nvd3 flex options="vm.processorDurationChartOptions" data="vm.processorDurationChartData" api="vm.chartApi" config="{deepWatchOptions:true}"></nvd3>
-
-
-      <!--
-            <nvd3 options="vm.feedBytesChartOptions" data="vm.feedBytesChartData" api="vm.feedBytesChartApi"></nvd3>
-            -->
-
     </div>
     <div ng-if="!vm.dataLoaded" class="kpi-loading">
       <md-progress-circular md-mode="indeterminate" md-diameter="96"></md-progress-circular>

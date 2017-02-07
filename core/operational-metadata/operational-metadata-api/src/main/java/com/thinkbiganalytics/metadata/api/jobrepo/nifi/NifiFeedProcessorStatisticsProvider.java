@@ -36,10 +36,12 @@ public interface NifiFeedProcessorStatisticsProvider {
      */
     public static enum TimeFrame {
 
-        FIVE_MIN(new Long(1000 * 60 * 5), "Last 5 Minutes"), TEN_MIN(new Long(1000 * 60 * 10), "Last 10 Minutes"), THIRTY_MIN(new Long(1000 * 60 * 30), "Last 30 Minutes"),
+        ONE_MIN(new Long(1000 * 60), "Last Minute"), THREE_MIN(ONE_MIN.millis * 3, "Last 3 Minutes"), FIVE_MIN(ONE_MIN.millis * 5, "Last 5 Minutes"),
+        TEN_MIN(new Long(1000 * 60 * 10), "Last 10 Minutes"), THIRTY_MIN(new Long(1000 * 60 * 30), "Last 30 Minutes"),
         HOUR(new Long(1000 * 60 * 60), "Last Hour"),
         THREE_HOUR(HOUR.millis * 3, "Last 3 Hours"), FIVE_HOUR(HOUR.millis * 5, "Last 5 Hours"), TEN_HOUR(HOUR.millis * 10, "Last 10 Hours"),
-        DAY(HOUR.millis * 24, " Last Day"), WEEK(DAY.millis * 7, "Last Week"), MONTH(DAY.millis * 30, " Last Month"), YEAR(DAY.millis * 365, "Last Year");
+        DAY(HOUR.millis * 24, " Last Day"), THREE_DAYS(DAY.millis * 3, " Last 3 Days"), WEEK(DAY.millis * 7, "Last Week"), MONTH(DAY.millis * 30, " Last Month"),
+        THREE_MONTHS(MONTH.millis * 3, " Last 3 Months"), SIX_MONTHS(DAY.millis * (365 / 2), "Last 6 Months"), YEAR(DAY.millis * 365, "Last Year");
 
         protected Long millis;
         private String displayName;
@@ -77,23 +79,41 @@ public interface NifiFeedProcessorStatisticsProvider {
      */
     List<? extends NifiFeedProcessorStats> findWithinTimeWindow(DateTime start, DateTime end);
 
+    /**
+     * Find a list of stats for a given feed within a time window grouped by feed and processor
+     * @param feedName a feed name
+     * @param start a start date
+     * @param end an end date
+     * @return a list of feed processor statistics
+     */
+    List<? extends NifiFeedProcessorStats> findFeedProcessorStatisticsByProcessorId(String feedName, DateTime start, DateTime end);
 
     /**
      * Find a list of stats for a given feed within a time window grouped by feed and processor
-     * @param feedName
-     * @param start
-     * @param end
+     * @param feedName a feed name
+     * @param start a start date
+     * @param end an end date
      * @return a list of feed processor statistics
      */
-    List<? extends NifiFeedProcessorStats> findForFeedProcessorStatistics(String feedName, DateTime start, DateTime end);
+    List<? extends NifiFeedProcessorStats> findFeedProcessorStatisticsByProcessorName(String feedName, DateTime start, DateTime end);
 
     /**
-     * Find stats for a given feed within a given timeframe
-     * @param feedName
-     * @param timeFrame
+     * Find stats for a given feed within a given timeframe grouped by processor id related to the feed
+     *
+     * @param feedName  the feed name
+     * @param timeFrame a timeframe to look back
      * @return a list of feed processor statistics
      */
-    List<? extends NifiFeedProcessorStats> findForFeedProcessorStatistics(String feedName, TimeFrame timeFrame);
+    List<? extends NifiFeedProcessorStats> findFeedProcessorStatisticsByProcessorId(String feedName, TimeFrame timeFrame);
+
+    /**
+     * Find stats for a given feed within a given timeframe grouped by processor name related to the feed
+     *
+     * @param feedName  the feed name
+     * @param timeFrame a timeframe to look back
+     * @return a list of feed processor statistics
+     */
+    List<? extends NifiFeedProcessorStats> findFeedProcessorStatisticsByProcessorName(String feedName, TimeFrame timeFrame);
 
     /**
      * Find stats for a given feed and time frame grouped by the stats eventTime

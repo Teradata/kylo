@@ -59,9 +59,14 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
         return statisticsRepository.save((JpaNifiFeedProcessorStats) t);
     }
 
-    public List<? extends JpaNifiFeedProcessorStats> findForFeedProcessorStatistics(String feedName, TimeFrame timeFrame) {
+    public List<? extends JpaNifiFeedProcessorStats> findFeedProcessorStatisticsByProcessorId(String feedName, TimeFrame timeFrame) {
         DateTime now = DateTime.now();
-        return findForFeedProcessorStatistics(feedName, timeFrame.startTimeRelativeTo(now), now);
+        return findFeedProcessorStatisticsByProcessorId(feedName, timeFrame.startTimeRelativeTo(now), now);
+    }
+
+    public List<? extends JpaNifiFeedProcessorStats> findFeedProcessorStatisticsByProcessorName(String feedName, TimeFrame timeFrame) {
+        DateTime now = DateTime.now();
+        return findFeedProcessorStatisticsByProcessorName(feedName, timeFrame.startTimeRelativeTo(now), now);
     }
 
     public List<? extends JpaNifiFeedProcessorStats> findForFeedStatisticsGroupedByTime(String feedName, TimeFrame timeFrame) {
@@ -108,7 +113,7 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
 
 
     @Override
-    public List<? extends JpaNifiFeedProcessorStats> findForFeedProcessorStatistics(String feedName, DateTime start, DateTime end) {
+    public List<? extends JpaNifiFeedProcessorStats> findFeedProcessorStatisticsByProcessorId(String feedName, DateTime start, DateTime end) {
         QJpaNifiFeedProcessorStats stats = QJpaNifiFeedProcessorStats.jpaNifiFeedProcessorStats;
         JPAQuery
             query = factory.select(
@@ -125,6 +130,30 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
                        .and(stats.minEventTime.goe(start)
                                 .and(stats.maxEventTime.loe(end))))
             .groupBy(stats.feedName, stats.processorId, stats.processorName)
+            .orderBy(stats.processorName.asc());
+
+        return (List<JpaNifiFeedProcessorStats>) query.fetch();
+    }
+
+
+    @Override
+    public List<? extends JpaNifiFeedProcessorStats> findFeedProcessorStatisticsByProcessorName(String feedName, DateTime start, DateTime end) {
+        QJpaNifiFeedProcessorStats stats = QJpaNifiFeedProcessorStats.jpaNifiFeedProcessorStats;
+        JPAQuery
+            query = factory.select(
+            Projections.bean(JpaNifiFeedProcessorStats.class,
+                             stats.feedName, stats.processorName,
+                             stats.bytesIn.sum().as("bytesIn"), stats.bytesOut.sum().as("bytesOut"), stats.duration.sum().as("duration"),
+                             stats.jobsStarted.sum().as("jobsStarted"), stats.jobsFinished.sum().as("jobsFinished"), stats.jobDuration.sum().as("jobDuration"),
+                             stats.flowFilesStarted.sum().as("flowFilesStarted"), stats.flowFilesFinished.sum().as("flowFilesFinished"), stats.totalCount.sum().as("totalCount"),
+                             stats.maxEventTime.max().as("maxEventTime"), stats.minEventTime.min().as("minEventTime"), stats.jobsFailed.sum().as("jobsFailed"),
+                             stats.count().as("resultSetCount"))
+        )
+            .from(stats)
+            .where(stats.feedName.eq(feedName)
+                       .and(stats.minEventTime.goe(start)
+                                .and(stats.maxEventTime.loe(end))))
+            .groupBy(stats.feedName, stats.processorName)
             .orderBy(stats.processorName.asc());
 
         return (List<JpaNifiFeedProcessorStats>) query.fetch();
