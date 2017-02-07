@@ -39,8 +39,11 @@ import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
+import com.thinkbiganalytics.metadata.api.event.MetadataChange;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventListener;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
+import com.thinkbiganalytics.metadata.api.event.feed.FeedChange;
+import com.thinkbiganalytics.metadata.api.event.feed.FeedChangeEvent;
 import com.thinkbiganalytics.metadata.api.event.feed.FeedPropertyChangeEvent;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
@@ -71,10 +74,13 @@ import com.thinkbiganalytics.support.FeedNameUtil;
 
 import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.Serializable;
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -318,7 +324,20 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
                 feedMetadata.setState(Feed.State.DISABLED.name());
             }
         }
-        return super.createFeed(feedMetadata);
+        NifiFeed feed = super.createFeed(feedMetadata);
+        //register the audit for the updagte event
+        if (feed.isSuccess() && !feedMetadata.isNew()) {
+
+            Feed.State state = Feed.State.valueOf(feedMetadata.getState());
+            Feed.ID id = feedManagerFeedProvider.resolveId(feedMetadata.getId());
+            final Principal principal = SecurityContextHolder.getContext().getAuthentication() != null
+                                        ? SecurityContextHolder.getContext().getAuthentication()
+                                        : null;
+            FeedChange change = new FeedChange(MetadataChange.ChangeType.UPDATE, id, state);
+            FeedChangeEvent event = new FeedChangeEvent(change, DateTime.now(), principal);
+            metadataEventService.notify(event);
+        }
+        return feed;
 
     }
 
