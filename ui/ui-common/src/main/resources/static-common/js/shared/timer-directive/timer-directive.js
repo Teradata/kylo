@@ -24,15 +24,14 @@
             restrict: "EA",
             scope: {
                startTime:"=",
-               refreshTime:"@"
+                refreshTime: "@",
+                truncatedFormat: '=?',
+                addAgoSuffix: '=?'
             },
             link: function ($scope, element, attrs) {
 
-                //flag if true it will truncate output
-                //if hours it will show hours/min (remove sec)
-                //if days it will show days/hrs  (remove min)
-
-                var truncateFormat = true;
+                $scope.truncatedFormat = angular.isDefined($scope.truncatedFormat) ? $scope.truncatedFormat : false;
+                $scope.addAgoSuffix = angular.isDefined($scope.addAgoSuffix) ? $scope.addAgoSuffix : false;
 
 
                 $scope.time = $scope.startTime;
@@ -72,27 +71,28 @@
                     var minutesStr = '';
                     var hoursStr = '';
                     var daysStr = '';
+                    var agoSuffix = $scope.addAgoSuffix ? 'ago' : '';
 
-                    var str = seconds + ' sec';
+                    var str = seconds + ' sec ';
                     secondsStr = str;
-                    var truncateFormatStr = str + 'ago';
+                    var truncateFormatStr = str + agoSuffix;
                     if (hours > 0 || (hours == 0 && minutes > 0)) {
                         minutesStr = minutes + ' min ';
                         str = minutesStr + str;
-                        truncateFormatStr = minutesStr + 'ago';
+                        truncateFormatStr = minutesStr + agoSuffix;
                     }
                     if (days > 0 || days == 0 && hours > 0) {
                         hoursStr = hours + ' hrs ';
                         str = hoursStr + str;
-                        truncateFormatStr = hoursStr + " ago";
+                        truncateFormatStr = hoursStr + agoSuffix;
                     }
                     if (days > 0) {
                         daysStr = days + " days ";
                         str = daysStr + str;
-                        truncateFormatStr = daysStr + " ago";
+                        truncateFormatStr = daysStr + agoSuffix;
                     }
 
-                    var displayStr = truncateFormat ? truncateFormatStr : str;
+                    var displayStr = $scope.truncatedFormat ? truncateFormatStr : str;
 
                     if ($scope.previousDisplayStr == '' || $scope.previousDisplayStr != displayStr) {
                         element.html(displayStr);

@@ -54,7 +54,7 @@
                                    </span>
                             </div>
                             <div flex="30" layout="column" class="item-column md-list-item-text ">
-                                   <span class="item-title"><tba-timer start-time="feed.timeSinceEndTime"></tba-timer>
+                                   <span class="item-title"><tba-timer start-time="feed.timeSinceEndTime" truncated-format="true" add-ago-suffix="true"></tba-timer>
                                    </span>
                                 <span class="column-title column-title-bottom">Since</span>
                             </div>
@@ -114,7 +114,9 @@
                                          {{feed.displayStatus}}
                                        </span>
                         </td>
-                        <td md-cell ><tba-timer start-time="feed.timeSinceEndTime"></tba-timer></td>
+                          <td md-cell>
+                            <tba-timer start-time="feed.timeSinceEndTime" truncated-format="true" add-ago-suffix="true"></tba-timer>
+                          </td>
                         <td md-cell>{{feed.runTimeString}}</td>
                         </tr>
                         </tbody>
