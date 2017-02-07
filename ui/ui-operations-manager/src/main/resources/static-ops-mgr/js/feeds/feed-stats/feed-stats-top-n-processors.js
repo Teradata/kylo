@@ -102,12 +102,12 @@
             },
             'Flows Started': {
                 axisLabel: 'Count', fn: function (stats) {
-                    return stats.flowsStarted
+                    return stats.jobsStarted != undefined ? stats.jobsStarted : 0;
                 }
             },
             'Flows Finished': {
                 axisLabel: 'Count', fn: function (stats) {
-                    return stats.flowsFinished
+                    return stats.jobsFinished != undefined ? stats.jobsFinished : 0;
                 }
             },
             'Total Events': {
