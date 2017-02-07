@@ -456,7 +456,7 @@
                 if (self.chartApi && self.chartApi.update) {
 
                     self.processorDurationChartOptions.chart.yAxis.axisLabel = configMap.axisLabel
-                    self.processorDurationChartOptions.chart.height = 50 * values.length;
+                    self.processorDurationChartOptions.chart.height = 30 * values.length;
                     if (configMap.valueFormatFn != undefined) {
                         self.processorDurationChartOptions.chart.valueFormat = configMap.valueFormatFn;
                         self.processorDurationChartOptions.chart.yAxis.tickFormat = configMap.valueFormatFn;
