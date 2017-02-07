@@ -1,7 +1,7 @@
 #!/bin/bash
 
-OFFLINE=false
-WORKING_DIR=$2
+KYLO_OFFLINE=false
+KYLO_WORKING_DIR=$2
 NIFI_INSTALL_HOME=/opt/nifi
 KYLO_INSTALL_HOME=/opt/kylo
 
@@ -10,13 +10,13 @@ then
     if [ "$1" = "-o" ] || [ "$1" = "-O" ]
     then
         echo "Working in offline mode"
-        OFFLINE=true
+        KYLO_OFFLINE=true
     fi
 fi
 
-if [ $OFFLINE = true ]
+if [ $KYLO_OFFLINE = true ]
 then
-    NIFI_SETUP_DIR=$WORKING_DIR/nifi
+    NIFI_SETUP_DIR=$KYLO_WORKING_DIR/nifi
 else
     NIFI_SETUP_DIR=$KYLO_INSTALL_HOME/setup/nifi
 fi
@@ -36,7 +36,7 @@ $NIFI_SETUP_DIR/create-symbolic-links.sh
 echo "Copy the mysql lib from a lib folder to /opt/nifi/mysql"
 mkdir $NIFI_INSTALL_HOME/mysql
 
-if [ $OFFLINE = true ]
+if [ $KYLO_OFFLINE = true ]
 then
     cp $NIFI_SETUP_DIR/mariadb-java-client-*.jar $NIFI_INSTALL_HOME/mysql
 else
