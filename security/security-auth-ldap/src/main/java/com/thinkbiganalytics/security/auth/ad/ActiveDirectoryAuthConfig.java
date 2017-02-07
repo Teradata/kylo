@@ -59,6 +59,8 @@ public class ActiveDirectoryAuthConfig {
     public LoginConfiguration servicesAdLoginConfiguration(DelegatingActiveDirectoryLdapAuthenticationProvider authProvider,
                                                            UserDetailsContextMapper userMapper,
                                                            LoginConfigurationBuilder builder) {
+        // @formatter:off
+
         return builder
                 .loginModule(JaasAuthConfig.JAAS_SERVICES)
                     .moduleClass(ActiveDirectoryLoginModule.class)
@@ -66,12 +68,16 @@ public class ActiveDirectoryAuthConfig {
                     .option(ActiveDirectoryLoginModule.AUTH_PROVIDER, authProvider)
                     .add()
                 .build();
+
+        // @formatter:on
     }
     
     @Bean(name = "uiActiveDirectoryLoginConfiguration")
     public LoginConfiguration uiAdLoginConfiguration(DelegatingActiveDirectoryLdapAuthenticationProvider authProvider,
                                                      UserDetailsContextMapper userMapper,
                                                      LoginConfigurationBuilder builder) {
+        // @formatter:off
+
         return builder
                 .loginModule(JaasAuthConfig.JAAS_UI)
                     .moduleClass(ActiveDirectoryLoginModule.class)
@@ -79,6 +85,8 @@ public class ActiveDirectoryAuthConfig {
                     .option(ActiveDirectoryLoginModule.AUTH_PROVIDER, authProvider)
                     .add()
                 .build();
+
+        // @formatter:on
     }
 
 

@@ -59,6 +59,8 @@ public class KyloRestAuthConfig {
     @Bean(name = "uiKyloRestLoginConfiguration")
     @Nonnull
     public LoginConfiguration servicesRestLoginConfiguration(@Nonnull final LoginConfigurationBuilder builder) {
+        // @formatter:off
+
         return builder
                 .loginModule(JaasAuthConfig.JAAS_UI)
                     .moduleClass(KyloRestLoginModule.class)
@@ -73,5 +75,7 @@ public class KyloRestAuthConfig {
                     .option(KyloRestLoginModule.LOGIN_PASSWORD, loginPassword)
                     .add()
                 .build();
+
+        // @formatter:on
     }
 }

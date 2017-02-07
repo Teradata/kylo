@@ -48,6 +48,8 @@ public class FileAuthConfig {
 
     @Bean(name = "servicesFileLoginConfiguration" )
     public LoginConfiguration servicesFileLoginConfiguration(LoginConfigurationBuilder builder) {
+        // @formatter:off
+
         return builder
                         .loginModule(JaasAuthConfig.JAAS_SERVICES)
                             .moduleClass(UsersRolesLoginModule.class)
@@ -58,10 +60,14 @@ public class FileAuthConfig {
                             .option("rolesProperties", "roles.properties")
                             .add()
                         .build();
+
+        // @formatter:on
     }
     
     @Bean(name = "uiFileLoginConfiguration")
     public LoginConfiguration uiFileLoginConfiguration(LoginConfigurationBuilder builder) {
+        // @formatter:off
+
         return builder
                         .loginModule(JaasAuthConfig.JAAS_UI)
                             .moduleClass(UsersRolesLoginModule.class)
@@ -72,6 +78,8 @@ public class FileAuthConfig {
                             .option("rolesProperties", "roles.properties")
                             .add()
                         .build();
+
+        // @formatter:on
     }
 
 }

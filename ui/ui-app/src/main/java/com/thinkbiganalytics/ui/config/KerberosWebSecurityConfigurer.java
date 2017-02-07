@@ -77,6 +77,8 @@ public class KerberosWebSecurityConfigurer extends WebSecurityConfigurerAdapter 
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+        // @formatter:off
+
         http
             .csrf().disable()
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -105,6 +107,8 @@ public class KerberosWebSecurityConfigurer extends WebSecurityConfigurerAdapter 
             .addFilterBefore(new RememberMeAuthenticationFilter(auth -> auth, rememberMeServices), BasicAuthenticationFilter.class)
             .addFilterAfter(spnegoFilter(), RememberMeAuthenticationFilter.class)
             .httpBasic();
+        
+        // @formatter:on
     }
 
     @Override

@@ -56,6 +56,8 @@ public class SimpleAuthConfig {
     
     @Bean(name = "servicesLoginConfiguration")
     public LoginConfiguration servicesLoginConfiguration(LoginConfigurationBuilder builder) {
+        // @formatter:off
+
         return builder
                         .loginModule(JaasAuthConfig.JAAS_SERVICES)
                             .moduleClass(AuthServiceLoginModule.class)
@@ -63,10 +65,14 @@ public class SimpleAuthConfig {
                             .option("authService", authenticationService())
                             .add()
                         .build();
+
+        // @formatter:on
     }
     
     @Bean(name = "uiServiceLoginConfiguration")
     public LoginConfiguration uiServiceLoginConfiguration(LoginConfigurationBuilder builder) {
+        // @formatter:off
+
         return builder
                         .loginModule(JaasAuthConfig.JAAS_UI)
                             .moduleClass(AuthServiceLoginModule.class)
@@ -74,5 +80,7 @@ public class SimpleAuthConfig {
                             .option("authService", authenticationService())
                             .add()
                         .build();
+        
+        // @formatter:on
     }
 }

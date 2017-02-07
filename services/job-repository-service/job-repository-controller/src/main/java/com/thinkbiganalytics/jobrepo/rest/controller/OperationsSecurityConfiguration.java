@@ -47,6 +47,8 @@ public class OperationsSecurityConfiguration {
 
     @Bean
     public PostMetadataConfigAction operationsSecurityConfigAction() {
+        //@formatter:off
+
         return () -> metadata.commit(() -> {
             return builder
                             .module("services")
@@ -55,5 +57,7 @@ public class OperationsSecurityConfiguration {
                                 .add()
                             .build();
             }, MetadataAccess.SERVICE);
+
+        //@formatter:on
     }
 }

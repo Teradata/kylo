@@ -47,6 +47,8 @@ public class FeedManagerSecurityConfiguration {
 
     @Bean
     public PostMetadataConfigAction feedManagerSecurityConfigAction() {
+        //@formatter:off
+
         return () -> metadata.commit(() -> {
             return builder
                             .module("services")
@@ -67,5 +69,7 @@ public class FeedManagerSecurityConfiguration {
                                 .add()
                             .build();
             }, MetadataAccess.SERVICE);
+
+        // @formatter:on
     }
 }

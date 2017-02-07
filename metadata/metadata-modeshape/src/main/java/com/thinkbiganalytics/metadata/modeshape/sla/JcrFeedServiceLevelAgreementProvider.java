@@ -192,20 +192,22 @@ public class JcrFeedServiceLevelAgreementProvider implements FeedServiceLevelAgr
                 ExtensibleType feedSla = typeProvider.getType(JcrFeedServiceLevelAgreementRelationship.TYPE_NAME);
                 if (feedSla == null) {
                     feedSla = typeProvider.buildType(JcrFeedServiceLevelAgreementRelationship.TYPE_NAME)
-                        .field(JcrFeedServiceLevelAgreementRelationship.FEEDS)
-                        .type(FieldDescriptor.Type.WEAK_REFERENCE)
-                        .displayName("Feeds")
-                        .description("The Feeds referenced on this SLA")
-                        .required(false)
-                        .collection(true)
-                        .add()
+                        // @formatter:off
+                         .field(JcrFeedServiceLevelAgreementRelationship.FEEDS)
+                            .type(FieldDescriptor.Type.WEAK_REFERENCE)
+                            .displayName("Feeds")
+                            .description("The Feeds referenced on this SLA")
+                            .required(false)
+                            .collection(true)
+                            .add()
                         .field(JcrFeedServiceLevelAgreementRelationship.SLA)
-                        .type(FieldDescriptor.Type.WEAK_REFERENCE)
-                        .displayName("SLA")
-                        .description("The SLA")
-                        .required(true)
-                        .add()
+                            .type(FieldDescriptor.Type.WEAK_REFERENCE)
+                            .displayName("SLA")
+                            .description("The SLA")
+                            .required(true)
+                            .add()
                         .build();
+                        // @formatter:on
                 }
 
                 return feedSla.getName();

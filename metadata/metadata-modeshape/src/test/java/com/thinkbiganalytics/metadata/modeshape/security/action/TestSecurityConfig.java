@@ -64,6 +64,8 @@ public class TestSecurityConfig {
     @Bean
     public PostMetadataConfigAction configAuthorization() {
         return () -> metadata.commit(() -> {
+            //@formatter:off
+
             // JcrTool tool = new JcrTool(true);
             // tool.printSubgraph(JcrMetadataAccess.getActiveSession(), "/metadata");
 
@@ -86,6 +88,8 @@ public class TestSecurityConfig {
                                 .action(ADMIN_TEMPLATES)
                                 .add()
                             .build();
+
+            //@formatter:on
         }, MetadataAccess.SERVICE);
     }
 }

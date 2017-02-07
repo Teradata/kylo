@@ -43,6 +43,8 @@ public class UsersGroupsSecurityConfiguration {
 
     @Bean
     public PostMetadataConfigAction usersGroupsSecurityConfigAction() {
+        //@formatter:off
+
         return () -> metadata.commit(() -> {
             return builder
                         .module("services")
@@ -55,5 +57,7 @@ public class UsersGroupsSecurityConfiguration {
                         .build();
 
             }, MetadataAccess.SERVICE);
+
+        //@formatter:on
     }
 }

@@ -52,12 +52,16 @@ public class ModeShapeAuthConfig {
 
     @Bean(name = "servicesModeShapeLoginConfiguration")
     public LoginConfiguration servicesModeShapeLoginConfiguration(LoginConfigurationBuilder builder) {
+        // @formatter:off
+
         return builder
                         .loginModule(JaasAuthConfig.JAAS_SERVICES)
                             .moduleClass(ModeShapeLoginModule.class)
                             .controlFlag(LoginModuleControlFlag.REQUIRED)
                             .add()
                         .build();
+
+        // @formatter:on
     }
     
     // TODO: Move this to somewhere else more appropriate

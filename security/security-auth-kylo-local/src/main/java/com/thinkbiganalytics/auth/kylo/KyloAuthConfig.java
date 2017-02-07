@@ -82,6 +82,8 @@ public class KyloAuthConfig {
     @Bean(name = "servicesKyloLoginConfiguration")
     @Nonnull
     public LoginConfiguration servicesKyloLoginConfiguration(@Nonnull final LoginConfigurationBuilder builder) {
+        // @formatter:off
+
         return builder
                 .loginModule(JaasAuthConfig.JAAS_SERVICES)
                     .moduleClass(KyloLoginModule.class)
@@ -100,6 +102,8 @@ public class KyloAuthConfig {
                     .option(KyloLoginModule.REQUIRE_PASSWORD, this.authPassword)
                     .add()
                 .build();
+
+        // @formatter:on
     }
     
     @Bean

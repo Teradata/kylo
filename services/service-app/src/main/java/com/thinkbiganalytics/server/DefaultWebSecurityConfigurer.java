@@ -49,7 +49,7 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 @Configuration
 @EnableWebSecurity
 @Order(DefaultWebSecurityConfigurer.ORDER)
-@Profile("!auth-krb-spnego")
+@Profile("!auth-krb-spnego")  // TODO find a better way than just disabling due to the presence of SPNEGO config (adjust order?)
 public class DefaultWebSecurityConfigurer extends WebSecurityConfigurerAdapter {
 
     protected static final Logger LOG = LoggerFactory.getLogger(DefaultWebSecurityConfigurer.class);
@@ -65,6 +65,8 @@ public class DefaultWebSecurityConfigurer extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+        // @formatter:off
+
         http
                 .authenticationProvider(this.authenticationProvider)
                 .csrf().disable()
@@ -78,6 +80,8 @@ public class DefaultWebSecurityConfigurer extends WebSecurityConfigurerAdapter {
                     .and()
                 .addFilterBefore(new RememberMeAuthenticationFilter(auth -> auth, rememberMeServices), BasicAuthenticationFilter.class)
                 .httpBasic();
+
+        // @formatter:on
     }
 
     @Override

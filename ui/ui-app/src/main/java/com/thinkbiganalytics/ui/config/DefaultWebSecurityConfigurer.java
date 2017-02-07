@@ -54,7 +54,7 @@ import com.thinkbiganalytics.auth.jwt.JwtRememberMeServices;
 @Configuration
 @EnableWebSecurity
 @Order(DefaultWebSecurityConfigurer.ORDER)
-@Profile("!auth-krb-spnego")
+@Profile("!auth-krb-spnego")  // TODO find a better way than just disabling due to the presence of SPNEGO config (adjust order?)
 public class DefaultWebSecurityConfigurer extends WebSecurityConfigurerAdapter {
 
     protected static final Logger LOG = LoggerFactory.getLogger(DefaultWebSecurityConfigurer.class);
@@ -75,6 +75,8 @@ public class DefaultWebSecurityConfigurer extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+        // @formatter:off
+
         http
             .csrf().disable()
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -100,6 +102,7 @@ public class DefaultWebSecurityConfigurer extends WebSecurityConfigurerAdapter {
             .addFilterBefore(new RememberMeAuthenticationFilter(auth -> auth, rememberMeServices), BasicAuthenticationFilter.class)
             .httpBasic();
 
+        // @formatter:on
     }
 
     @Override

@@ -43,6 +43,8 @@ public class ExampleLoginConfig {
 
     @Bean(name = "exampleLoginConfiguration")
     public LoginConfiguration servicesLdapLoginConfiguration(LoginConfigurationBuilder builder) {
+        // @formatter:off
+        
         // This uses the same LoginModule and settings in the authentication process of both the Kylo UI and Kylo services.
         return builder
                 .loginModule(JaasAuthConfig.JAAS_UI)
@@ -58,5 +60,7 @@ public class ExampleLoginConfig {
                     .option(ExampleLoginModule.PASSWORD, "admin".toCharArray())
                     .add()
                 .build();
+
+        // @formatter:on
     }
 }

@@ -32,7 +32,8 @@ import org.junit.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class SimpleServiceLevelAssessorTest {
-    
+    // @formatter:off
+
     private InMemorySLAProvider provider;
     
     private SimpleServiceLevelAssessor assessor;
@@ -357,5 +358,6 @@ public class SimpleServiceLevelAssessorTest {
             .extracting("result")
             .contains(AssessmentResult.FAILURE, AssessmentResult.WARNING);
     }
-
+    
+    // @formatter:on
 }

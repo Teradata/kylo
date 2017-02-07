@@ -44,6 +44,8 @@ public class KerberosLoginConfiguration {
     @Bean(name = "uiKrbLoginConfiguration")
     @SuppressWarnings("restriction")
     public LoginConfiguration servicesLdapLoginConfiguration(LoginConfigurationBuilder builder) {
+        // @formatter:off
+
         return builder
                 .loginModule(JaasAuthConfig.JAAS_UI)
                     .moduleClass(com.sun.security.auth.module.Krb5LoginModule.class)
@@ -56,5 +58,7 @@ public class KerberosLoginConfiguration {
                     .option("storeKey", "true")
                     .add()
                 .build();
+
+        // @formatter:on
     }
 }

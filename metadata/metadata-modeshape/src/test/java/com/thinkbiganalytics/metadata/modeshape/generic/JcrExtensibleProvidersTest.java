@@ -44,6 +44,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringApplicationConfiguration(classes = { ModeShapeEngineConfig.class, JcrTestConfig.class })
 public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests {
+    // @formatter:off
 
     @Inject
     private ExtensibleTypeProvider typeProvider;
@@ -184,4 +185,6 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
 
         assertThat(typeName).isEqualTo("Person");
     }
+    
+    // @formatter:on
 }

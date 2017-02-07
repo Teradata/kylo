@@ -63,6 +63,8 @@ public class LdapAuthConfig {
     public LoginConfiguration servicesLdapLoginConfiguration(LdapAuthenticator authenticator,
                                                              LdapAuthoritiesPopulator authoritiesPopulator,
                                                              LoginConfigurationBuilder builder) {
+        // @formatter:off
+
         return builder
                 .loginModule(JaasAuthConfig.JAAS_SERVICES)
                     .moduleClass(LdapLoginModule.class)
@@ -71,12 +73,16 @@ public class LdapAuthConfig {
                     .option(LdapLoginModule.AUTHORITIES_POPULATOR, authoritiesPopulator)
                     .add()
                 .build();
+
+        // @formatter:on
     }
     
     @Bean(name = "uiLdapLoginConfiguration")
     public LoginConfiguration uiLdapLoginConfiguration(LdapAuthenticator authenticator,
                                                        LdapAuthoritiesPopulator authoritiesPopulator,
                                                        LoginConfigurationBuilder builder) {
+        // @formatter:off
+
         return builder
                 .loginModule(JaasAuthConfig.JAAS_UI)
                     .moduleClass(LdapLoginModule.class)
@@ -85,6 +91,8 @@ public class LdapAuthConfig {
                     .option(LdapLoginModule.AUTHORITIES_POPULATOR, authoritiesPopulator)
                     .add()
                 .build();
+
+        // @formatter:on
     }
 
 

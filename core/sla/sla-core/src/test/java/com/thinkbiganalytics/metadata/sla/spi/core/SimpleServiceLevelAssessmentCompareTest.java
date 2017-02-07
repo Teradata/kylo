@@ -29,7 +29,8 @@ import org.junit.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class SimpleServiceLevelAssessmentCompareTest {
-    
+    // @formatter:off
+
     private InMemorySLAProvider provider;
     
     private SimpleServiceLevelAssessor assessor;
@@ -120,4 +121,6 @@ public class SimpleServiceLevelAssessmentCompareTest {
         assertThat(assmt1).isNotEqualByComparingTo(assmt2);
         assertThat(assmt1).isLessThan(assmt2);
     }
+    
+    // @formatter:on
 }
