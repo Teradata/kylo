@@ -44,38 +44,49 @@ import javax.jms.Queue;
  */
 public class JmsChangeEventDispatcher {
 
-    /** JMS topic for triggering feeds for cleanup */
+    /**
+     * Event listener for cleanup events
+     */
+    private final MetadataEventListener<CleanupTriggerEvent> cleanupListener = new CleanupTriggerDispatcher();
+
+    /**
+     * Event listener for precondition events
+     */
+    private final MetadataEventListener<PreconditionTriggerEvent> preconditionListener = new PreconditionTriggerDispatcher();
+
+    /**
+     * JMS topic for triggering feeds for cleanup
+     */
     @Inject
     @Named("cleanupTriggerQueue")
     private Queue cleanupTriggerQueue;
-
-    /** Metadata event bus */
+    /**
+     * Metadata event bus
+     */
     @Inject
     private MetadataEventService eventService;
-
-    /** Feed object provider */
+    /**
+     * Feed object provider
+     */
     @Inject
     private FeedProvider feedProvider;
-
-    /** Spring JMS messaging template */
+    /**
+     * Spring JMS messaging template
+     */
     @Inject
     @Named("metadataMessagingTemplate")
     private JmsMessagingTemplate jmsMessagingTemplate;
-
-    /** Metadata transaction wrapper */
+    /**
+     * Metadata transaction wrapper
+     */
     @Inject
     private MetadataAccess metadata;
-
-    /** JMS topic for triggering feeds based on preconditions */
+    /**
+     * JMS topic for triggering feeds based on preconditions
+     */
     @Inject
     @Named("preconditionTriggerQueue")
     private Queue preconditionTriggerQueue;
-
-    /** Event listener for cleanup events */
-    private final MetadataEventListener<CleanupTriggerEvent> cleanupListener = new CleanupTriggerDispatcher();
-
-    /** Event listener for precondition events */
-    private final MetadataEventListener<PreconditionTriggerEvent> preconditionListener = new PreconditionTriggerDispatcher();
 
     /**
      * Adds listeners for transferring events.

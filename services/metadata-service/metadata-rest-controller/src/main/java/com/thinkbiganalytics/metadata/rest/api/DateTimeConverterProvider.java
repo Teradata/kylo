@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.rest.api;
 
@@ -34,13 +34,12 @@ import javax.ws.rs.ext.ParamConverter;
 import javax.ws.rs.ext.ParamConverterProvider;
 import javax.ws.rs.ext.Provider;
 
-/**
- *
- */
+
 @Provider
 public class DateTimeConverterProvider implements ParamConverterProvider {
 
     private static final DateTimeFormatter DT_FORMATTER = ISODateTimeFormat.dateTime();
+
     /*
      * (non-Javadoc)
      * 
@@ -49,7 +48,7 @@ public class DateTimeConverterProvider implements ParamConverterProvider {
      */
     @Override
     public <T> ParamConverter<T> getConverter(final Class<T> rawType, Type genericType, Annotation[] annotations) {
-        return (! DateTime.class.isAssignableFrom(rawType)) ? null : new ParamConverter<T>() {
+        return (!DateTime.class.isAssignableFrom(rawType)) ? null : new ParamConverter<T>() {
             @Override
             public T fromString(String value) {
                 return rawType.cast(DT_FORMATTER.parseDateTime(value));

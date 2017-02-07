@@ -63,6 +63,9 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.SwaggerDefinition;
 import io.swagger.annotations.Tag;
 
+/**
+ * A controller to use when debugging issues with the UI
+ */
 @Api(tags = "Internal", produces = "application/json")
 @Component
 @Path("/v1/metadata/debug")
@@ -78,6 +81,15 @@ public class DebugController {
     @Inject
     private MetadataEventService eventService;
 
+    /**
+     * Allows the caller to update status events for the feed
+     *
+     * @param feedName the name of the feed
+     * @param opIdStr  the operation for the feed
+     * @param stateStr the new state to persist
+     * @param status   the status of the operation
+     * @return the feed operation status event
+     */
     @POST
     @Path("feedop/event")
     public String postFeedOperationStatusEvent(@QueryParam("feed") String feedName,
@@ -94,6 +106,11 @@ public class DebugController {
         return event.toString();
     }
 
+    /**
+     * creates a hive table model object for debugging
+     *
+     * @return the hive table data source model
+     */
     @GET
     @Path("datasource/hivetable")
     @Produces(MediaType.APPLICATION_JSON)
@@ -101,6 +118,11 @@ public class DebugController {
         return new HiveTableDatasource("table1", "database1", "table1");
     }
 
+    /**
+     * returns a list of metrics for debugging
+     *
+     * @return a list of metrics
+     */
     @GET
     @Path("metrics")
     @Produces(MediaType.APPLICATION_JSON)
@@ -119,6 +141,11 @@ public class DebugController {
         return metrics;
     }
 
+    /**
+     * returns a new feed precondition model for debugging
+     *
+     * @return the precondition model
+     */
     @GET
     @Path("precondition")
     @Produces(MediaType.APPLICATION_JSON)
@@ -129,6 +156,12 @@ public class DebugController {
         return procond;
     }
 
+    /**
+     * delete the JCR tree specified by the path
+     *
+     * @param abspath the path with JCR to delete
+     * @return a confirmation message that the path was deleted
+     */
     @DELETE
     @Path("jcr/{abspath: .*}")
     @Produces(MediaType.TEXT_PLAIN)
@@ -151,6 +184,12 @@ public class DebugController {
         return sw.toString();
     }
 
+    /**
+     * prints the nodes of the JCR path given, for debugging
+     *
+     * @param abspath the path in JCR
+     * @return a printout of the JCR tree
+     */
     @GET
     @Path("jcr/{abspath: .*}")
     @Produces(MediaType.TEXT_PLAIN)
@@ -175,6 +214,12 @@ public class DebugController {
     }
 
 
+    /**
+     * Prints the subgraph of the node in JCR
+     *
+     * @param jcrId the id of the node in JCR
+     * @return the subgraph print out
+     */
     @GET
     @Path("jcr")
     @Produces(MediaType.TEXT_PLAIN)

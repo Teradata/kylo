@@ -105,12 +105,12 @@ public class ServerConfiguration {
 
             @Override
             public <R> R commit(MetadataCommand<R> cmd, MetadataRollbackCommand rollbackCmd, Principal... principals) {
-              return commit(cmd,principals);
+                return commit(cmd, principals);
             }
 
             @Override
             public void commit(MetadataAction action, MetadataRollbackAction rollbackAction, Principal... principals) {
-             commit(action,principals);
+                commit(action, principals);
             }
 
             @Override
@@ -148,8 +148,7 @@ public class ServerConfiguration {
     }
 
     @Bean
-    public ServerConfigurationInitialization serverConfigurationInitialization()
-    {
+    public ServerConfigurationInitialization serverConfigurationInitialization() {
         return new ServerConfigurationInitialization();
     }
 

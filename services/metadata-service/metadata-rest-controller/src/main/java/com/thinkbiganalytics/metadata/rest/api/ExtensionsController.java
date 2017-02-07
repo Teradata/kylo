@@ -61,6 +61,11 @@ public class ExtensionsController {
     @Inject
     private ExtensibleTypeProvider typeProvider;
 
+    /**
+     * gets the extensible types in Kylo
+     *
+     * @return a list of extensible type descriptors
+     */
     @Path("type")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -71,6 +76,12 @@ public class ExtensionsController {
         });
     }
 
+    /**
+     * gets an extensible type descriptor by its' name or ID
+     *
+     * @param id the name or id of the desired extensible type descriptor
+     * @return the extensible type descriptor
+     */
     @Path("type/{nameOrId}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -100,6 +111,11 @@ public class ExtensionsController {
         });
     }
 
+    /**
+     * delete the extensible type with the id given
+     *
+     * @param id the id of the type
+     */
     @Path("type/{id}")
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
@@ -111,6 +127,12 @@ public class ExtensionsController {
         });
     }
 
+    /**
+     * creates a new extensible type
+     *
+     * @param descr a model of the extensible type descriptor
+     * @return the type that was persisted to the metadata store
+     */
     @Path("type")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
@@ -123,6 +145,13 @@ public class ExtensionsController {
         });
     }
 
+    /**
+     * an endpoint to allow updating of an extensible type
+     *
+     * @param id    the id of the extensible type
+     * @param descr a descriptor with the type info
+     * @return the extensible type as persisted to the metadata store
+     */
     @Path("type/{id}")
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
@@ -131,7 +160,7 @@ public class ExtensionsController {
                                                ExtensibleTypeDescriptor descr) {
         return metadata.read(() -> {
             ExtensibleType.ID domainId = this.typeProvider.resolve(id);
-            ExtensibleType type =  ExtensiblesModel.updateType(descr, domainId, this.typeProvider);
+            ExtensibleType type = ExtensiblesModel.updateType(descr, domainId, this.typeProvider);
 
             return ExtensiblesModel.DOMAIN_TO_TYPE.apply(type);
         });

@@ -64,23 +64,39 @@ public class DatasourceController {
     @Inject
     private MetadataAccess metadata;
 
+    /**
+     * get a list of datasource that match the criteria provided
+     *
+     * @param name   The name of a data source
+     * @param owner  The owner of a data source
+     * @param on     The time of the data source
+     * @param after  To specify data source to created after the time given
+     * @param before To specify data source to created after the time given
+     * @param type   the type of the data source
+     * @return a list of data sources
+     */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public List<Datasource> getDatasources(@QueryParam(DatasourceCriteria.NAME)final String name,
-                                           @QueryParam(DatasourceCriteria.OWNER)final String owner,
-                                           @QueryParam(DatasourceCriteria.ON)final String on,
-                                           @QueryParam(DatasourceCriteria.AFTER)final String after,
-                                           @QueryParam(DatasourceCriteria.BEFORE)final String before,
-                                           @QueryParam(DatasourceCriteria.TYPE)final String type ) {
+    public List<Datasource> getDatasources(@QueryParam(DatasourceCriteria.NAME) final String name,
+                                           @QueryParam(DatasourceCriteria.OWNER) final String owner,
+                                           @QueryParam(DatasourceCriteria.ON) final String on,
+                                           @QueryParam(DatasourceCriteria.AFTER) final String after,
+                                           @QueryParam(DatasourceCriteria.BEFORE) final String before,
+                                           @QueryParam(DatasourceCriteria.TYPE) final String type) {
         return this.metadata.read(() -> {
             com.thinkbiganalytics.metadata.api.datasource.DatasourceCriteria criteria = createDatasourceCriteria(name, owner, on, after, before, type);
-//            List<com.thinkbiganalytics.metadata.api.datasource.Datasource> existing = datasetProvider.getDatasources();
             List<com.thinkbiganalytics.metadata.api.datasource.Datasource> existing = datasetProvider.getDatasources(criteria);
 
             return new ArrayList<>(Collections2.transform(existing, Model.DOMAIN_TO_DS));
         });
     }
 
+    /**
+     * gets the datasource with the id provided
+     *
+     * @param idStr the datasource id
+     * @return the datasource object
+     */
     @GET
     @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -98,6 +114,11 @@ public class DatasourceController {
     }
 
 
+    /**
+     * get the datasource definitions
+     *
+     * @return the set of datasource definitions
+     */
     @GET
     @Path("/datasource-definitions")
     @Produces(MediaType.APPLICATION_JSON)
@@ -111,86 +132,29 @@ public class DatasourceController {
         });
     }
 
-
-//    @POST
-//    @Path("/hivetable")
-//    @Consumes(MediaType.APPLICATION_JSON)
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public HiveTableDatasource createHiveTable(final HiveTableDatasource ds,
-//                                               @QueryParam("ensure") @DefaultValue("false") final boolean ensure) {
-//        Model.validateCreate(ds);
-//
-//        return this.metadata.commit(() -> {
-//            com.thinkbiganalytics.metadata.api.datasource.DatasourceCriteria crit = datasetProvider.datasetCriteria()
-//                .name(ds.getName())
-//                .type(com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource.class);
-//            List<com.thinkbiganalytics.metadata.api.datasource.Datasource> existing = datasetProvider.getDatasources(crit);
-//
-//            if (existing.isEmpty()) {
-//                com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource table
-//                    = datasetProvider.ensureDatasource(ds.getName(),
-//                                                       ds.getDescription(),
-//                                                       com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource.class);
-//                table.setDatabase(ds.getDatabase());
-//                table.setTableName(ds.getTableName());
-////                    = datasetProvider.ensureHiveTableDatasource(ds.getName(),
-////                                                                ds.getDescription(),
-////                                                                ds.getDatabase(),
-////                                                                ds.getTableName());
-//                return Model.DOMAIN_TO_TABLE_DS.apply(table);
-//            } else if (ensure) {
-//                return Model.DOMAIN_TO_TABLE_DS.apply((com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource) existing.iterator().next());
-//            } else {
-//                throw new WebApplicationException("A hive table datasource with the given name already exists: " + ds.getName(), Status.CONFLICT);
-//            }
-//        });
-//    }
-
-//    @POST
-//    @Path("/directory")
-//    @Consumes(MediaType.APPLICATION_JSON)
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public Datasource createDirectory(final DirectoryDatasource ds,
-//                                               @QueryParam("ensure") @DefaultValue("true") final boolean ensure) {
-//        Model.validateCreate(ds);
-//
-//        return this.metadata.commit(() -> {
-//            com.thinkbiganalytics.metadata.api.datasource.DatasourceCriteria crit
-//                = datasetProvider.datasetCriteria()
-//                    .name(ds.getName())
-//                    .type(com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDatasource.class);
-//            List<com.thinkbiganalytics.metadata.api.datasource.Datasource> existing = datasetProvider.getDatasources(crit);
-//
-//            if (existing.isEmpty()) {
-//                com.thinkbiganalytics.metadata.api.datasource.Datasource dir
-//                    = datasetProvider.ensureDatasource(ds.getName(),
-//                                                       ds.getDescription(),
-//                                                       com.thinkbiganalytics.metadata.api.datasource.Datasource.class);
-//                // TODO add paths
-//                return Model.DOMAIN_TO_DS.apply(dir);
-//            } else if (ensure) {
-//                return Model.DOMAIN_TO_DIR_DS.apply((com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDatasource) existing.iterator().next());
-//            } else {
-//                throw new WebApplicationException("A directory datasource with the given name already exists: " + ds.getName(), Status.BAD_REQUEST);
-//            }
-//        });
-//    }
-
     private com.thinkbiganalytics.metadata.api.datasource.DatasourceCriteria createDatasourceCriteria(String name,
                                                                                                       String owner,
                                                                                                       String on,
                                                                                                       String after,
                                                                                                       String before,
                                                                                                       String type) {
-            com.thinkbiganalytics.metadata.api.datasource.DatasourceCriteria criteria = datasetProvider.datasetCriteria();
+        com.thinkbiganalytics.metadata.api.datasource.DatasourceCriteria criteria = datasetProvider.datasetCriteria();
 
-            if (StringUtils.isNotEmpty(name)) criteria.name(name);
-    //        if (StringUtils.isNotEmpty(owner)) criteria.owner(owner);  // TODO implement
-            if (StringUtils.isNotEmpty(on)) criteria.createdOn(Formatters.parseDateTime(on));
-            if (StringUtils.isNotEmpty(after)) criteria.createdAfter(Formatters.parseDateTime(after));
-            if (StringUtils.isNotEmpty(before)) criteria.createdBefore(Formatters.parseDateTime(before));
-    //        if (StringUtils.isNotEmpty(type)) criteria.type(name);  // TODO figure out model type mapping
-
-            return criteria;
+        if (StringUtils.isNotEmpty(name)) {
+            criteria.name(name);
         }
+        //        if (StringUtils.isNotEmpty(owner)) criteria.owner(owner);  // TODO implement
+        if (StringUtils.isNotEmpty(on)) {
+            criteria.createdOn(Formatters.parseDateTime(on));
+        }
+        if (StringUtils.isNotEmpty(after)) {
+            criteria.createdAfter(Formatters.parseDateTime(after));
+        }
+        if (StringUtils.isNotEmpty(before)) {
+            criteria.createdBefore(Formatters.parseDateTime(before));
+        }
+        //        if (StringUtils.isNotEmpty(type)) criteria.type(name);  // TODO figure out model type mapping
+
+        return criteria;
+    }
 }
