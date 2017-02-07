@@ -40,6 +40,7 @@ import com.thinkbiganalytics.security.AccessController;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -69,6 +70,10 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
 
     @Inject
     private NiFiPropertyDescriptorTransform propertyDescriptorTransform;
+
+    @Value("${nifi.remove.inactive.versioned.feeds:true}")
+    private boolean removeInactiveNifiVersionedFeedFlows;
+
 
 
     protected abstract RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId);
@@ -151,7 +156,7 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
 
         CreateFeedBuilder
             feedBuilder = CreateFeedBuilder.newFeed(nifiRestClient,nifiFlowCache, feedMetadata, registeredTemplate.getNifiTemplateId(), propertyExpressionResolver, propertyDescriptorTransform).enabled(enabled)
-            .versionProcessGroup(false);
+            .removeInactiveVersionedProcessGroup(removeInactiveNifiVersionedFeedFlows);
 
         if (registeredTemplate.isReusableTemplate()) {
             feedBuilder.setReusableTemplate(true);
@@ -178,6 +183,7 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
                 feed.setEnableAfterSave(enableLater);
                 feed.setSuccess(true);
                 feedBuilder.checkAndRemoveVersionedProcessGroup();
+
             } catch (Exception e) {
                 feed.setSuccess(false);
                 feed.addErrorMessage(e);

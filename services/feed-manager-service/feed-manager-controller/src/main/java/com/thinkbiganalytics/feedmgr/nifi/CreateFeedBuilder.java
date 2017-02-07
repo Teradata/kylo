@@ -83,11 +83,13 @@ public class CreateFeedBuilder {
     private String reusableTemplateCategoryName = TemplateCreationHelper.REUSABLE_TEMPLATES_PROCESS_GROUP_NAME;
     private boolean isReusableTemplate;
 
+
     /**
-     * if true it will version off the existing feed process group to a <feed> - timestamp name
+     * if true it will remove the versioned process group with the <feed> - timestamp
+     * if false it will keep thhe versioned process group
      * These can be cleaned up later through the {@code CleanupStaleFeedRevisions} class
      */
-    private boolean versionProcessGroup;
+    private boolean removeInactiveVersionedProcessGroup;
 
     /** List of Input / Output Port connections */
     @Nonnull
@@ -109,6 +111,11 @@ public class CreateFeedBuilder {
     private List<NifiError> errors = new ArrayList<>();
 
     TemplateCreationHelper templateCreationHelper;
+
+    /**
+     * the category group in NiFi where this feed resides
+     **/
+    private ProcessGroupDTO categoryGroup;
 
 
     protected CreateFeedBuilder(LegacyNifiRestClient restClient, NifiFlowCache nifiFlowCache, FeedMetadata feedMetadata, String templateId, PropertyExpressionResolver propertyExpressionResolver, NiFiPropertyDescriptorTransform propertyDescriptorTransform) {
@@ -143,8 +150,8 @@ public class CreateFeedBuilder {
         return this;
     }
 
-    public CreateFeedBuilder versionProcessGroup(boolean versionProcessGroup){
-        this.versionProcessGroup = versionProcessGroup;
+    public CreateFeedBuilder removeInactiveVersionedProcessGroup(boolean removeInactiveVersionedProcessGroup) {
+        this.removeInactiveVersionedProcessGroup = removeInactiveVersionedProcessGroup;
         return this;
     }
 
@@ -281,9 +288,9 @@ public class CreateFeedBuilder {
                             //  cleanupControllerServices();
                             newProcessGroup.setSuccess(false);
                         }
-                        List<NifiError> helperErrors = templateCreationHelper.getErrors();
-                        if (helperErrors != null) {
-                            errors.addAll(helperErrors);
+                        List<NifiError> templateCreationErrors = templateCreationHelper.getErrors();
+                        if (templateCreationErrors != null) {
+                            errors.addAll(templateCreationErrors);
                         }
 
                         //add any global errors to the object
@@ -302,8 +309,17 @@ public class CreateFeedBuilder {
                     }
                     templateCreationHelper.cleanupControllerServices();
                     //align items
+                    log.info("Aligning Feed flows in NiFi ");
                     AlignProcessGroupComponents alignProcessGroupComponents = new AlignProcessGroupComponents(restClient.getNiFiRestClient(), entity.getParentGroupId());
                     alignProcessGroupComponents.autoLayout();
+
+                    //if this is a new feedProcessGroup (i.e. new category), align the root level items also
+                    //fetch the parent to get that id to align
+                    if (previousFeedProcessGroup == null) {
+                        //  log.info("This is the first feed created in the category {}.  Aligning the categories. ", feedMetadata.getCategory().getSystemName());
+                        //  new AlignProcessGroupComponents(restClient.getNiFiRestClient(), this.categoryGroup.getParentGroupId()).autoLayout();
+                    }
+
                 }
             }
             return newProcessGroup;
@@ -337,7 +353,7 @@ public class CreateFeedBuilder {
                 }
 
                 //attempt to reset the last version back to this feed process group... do so only if there is no feed group with this name
-                //there shouldt be as we should have deleted it above
+                //there shouldn't be as we should have deleted it above
                 if (feedGroup == null) {
                     if (previousFeedProcessGroup != null) {
 
@@ -438,17 +454,17 @@ public class CreateFeedBuilder {
     private String createProcessGroupForFeed() throws FeedCreationException {
         //create Category Process group
         String processGroupId = null;
-        ProcessGroupDTO categoryGroup = restClient.getProcessGroupByName("root", category);
+        this.categoryGroup = restClient.getProcessGroupByName("root", category);
 
         if (categoryGroup == null) {
             try {
                 ProcessGroupDTO group = restClient.createProcessGroup(category);
-                categoryGroup = group;
+                this.categoryGroup = group;
             } catch (Exception e) {
                 //Swallow exception... it will be handled later
             }
         }
-        if (categoryGroup == null) {
+        if (this.categoryGroup == null) {
             throw new FeedCreationException("Unable to get or create the Process group for the Category " + category
                                             + ". Error occurred while creating instance of template " + templateId + " for Feed "
                                             + feedName);
@@ -456,7 +472,7 @@ public class CreateFeedBuilder {
 
         //1 create the processGroup
         //check to see if the feed exists... if so version off the old group and create a new group with this feed
-        ProcessGroupDTO feedGroup = restClient.getProcessGroupByName(categoryGroup.getId(), feedName);
+        ProcessGroupDTO feedGroup = restClient.getProcessGroupByName(this.categoryGroup.getId(), feedName);
         if (feedGroup != null) {
             try {
                 previousFeedProcessGroup = feedGroup;
@@ -467,7 +483,7 @@ public class CreateFeedBuilder {
             }
         }
 
-        ProcessGroupDTO group = restClient.createProcessGroup(categoryGroup.getId(), feedName);
+        ProcessGroupDTO group = restClient.createProcessGroup(this.categoryGroup.getId(), feedName);
         if (group != null) {
             processGroupId = group.getId();
         }
@@ -479,14 +495,14 @@ public class CreateFeedBuilder {
      * removes the {@code previousFeedProcessGroup} from nifi
      */
     public void checkAndRemoveVersionedProcessGroup() {
-        if(!this.versionProcessGroup && previousFeedProcessGroup != null) {
+        if (this.removeInactiveVersionedProcessGroup && previousFeedProcessGroup != null) {
           removeProcessGroup(previousFeedProcessGroup);
         }
     }
 
 
     /**
-     * Removes a given processGroup from NiFi
+     * Removes a given processGroup from NiFi if nothing is in its queue
      * @param processGroupDTO
      */
     private void removeProcessGroup(ProcessGroupDTO processGroupDTO){
