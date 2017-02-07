@@ -27,7 +27,6 @@ import com.thinkbiganalytics.policy.rest.model.PreconditionRule;
 import java.util.List;
 
 /**
- * Created by sr186054 on 2/22/16.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FeedSchedule extends NifiProcessorSchedule {

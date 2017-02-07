@@ -30,7 +30,6 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Created by matthutton on 1/18/16.
  */
 public class PartitionKey implements Cloneable {
 

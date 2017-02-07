@@ -27,7 +27,6 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 
 /**
- * Created by sr186054 on 6/20/16.
  */
 @Aspect
 public class NifiRestClientAroundAspect {

@@ -42,7 +42,6 @@ import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
 /**
- * Created by sr186054 on 11/15/16.
  */
 public class JcrDatasourceDefinitionProvider extends BaseJcrProvider<DatasourceDefinition, DatasourceDefinition.ID> implements DatasourceDefinitionProvider {
 

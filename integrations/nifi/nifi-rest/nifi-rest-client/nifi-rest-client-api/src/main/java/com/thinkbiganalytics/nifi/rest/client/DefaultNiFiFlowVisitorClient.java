@@ -47,7 +47,6 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Created by sr186054 on 12/27/16.
  */
 public class DefaultNiFiFlowVisitorClient implements NiFiFlowVisitorClient {
 

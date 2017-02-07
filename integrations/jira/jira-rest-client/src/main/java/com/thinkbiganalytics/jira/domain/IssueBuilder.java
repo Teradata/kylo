@@ -21,7 +21,6 @@ package com.thinkbiganalytics.jira.domain;
  */
 
 /**
- * Created by sr186054 on 10/19/15.
  */
 public class IssueBuilder {
     private String projectKey;

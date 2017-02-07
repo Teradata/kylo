@@ -31,7 +31,6 @@ import org.junit.Test;
 import java.io.IOException;
 
 /**
- * Created by sr186054 on 9/25/15.
  */
 public class SchedulerObjectSerializatoinTest {
 

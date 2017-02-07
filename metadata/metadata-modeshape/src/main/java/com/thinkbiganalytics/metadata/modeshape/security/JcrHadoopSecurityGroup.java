@@ -31,7 +31,6 @@ import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
 /**
- * Created by Jeremy Merrifield on 9/20/16.
  */
 public class JcrHadoopSecurityGroup extends JcrEntity implements HadoopSecurityGroup {
     public static final String DESCRIPTION = "jcr:description";

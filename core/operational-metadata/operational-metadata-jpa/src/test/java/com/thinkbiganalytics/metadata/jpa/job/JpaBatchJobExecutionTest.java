@@ -51,7 +51,6 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 
 /**
- * Created by sr186054 on 11/29/16.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @TestPropertySource(locations = "classpath:test-application.properties")

@@ -36,7 +36,6 @@ import java.util.Map;
  *
  * @see AlertSummary
  *
- * Created by sr186054 on 10/2/15.
  */
 public class AmbariAlertsCommand extends AmbariServiceCheckRestCommand<AlertSummary> {
 

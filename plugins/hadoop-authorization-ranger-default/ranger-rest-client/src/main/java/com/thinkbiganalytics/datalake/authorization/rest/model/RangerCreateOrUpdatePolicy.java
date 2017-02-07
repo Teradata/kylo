@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by Shashi Vishwakarma on 10/05/16.
  */
 
 public class RangerCreateOrUpdatePolicy {

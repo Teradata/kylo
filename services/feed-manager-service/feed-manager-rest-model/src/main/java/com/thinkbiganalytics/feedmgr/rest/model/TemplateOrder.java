@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by sr186054 on 11/17/16.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TemplateOrder {

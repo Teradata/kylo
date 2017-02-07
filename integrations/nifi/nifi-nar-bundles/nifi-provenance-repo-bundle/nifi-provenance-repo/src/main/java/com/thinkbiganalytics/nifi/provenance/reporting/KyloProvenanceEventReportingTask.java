@@ -65,7 +65,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Created by sr186054 on 11/7/16.
  */
 @Tags({"reporting", "kylo", "provenance"})
 @CapabilityDescription("Publishes Provenance Events to the JMS queues for Kylo")

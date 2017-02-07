@@ -33,7 +33,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
- * Created by sr186054 on 12/20/16.
  */
 public class NifiFlowCacheSnapshot {
 

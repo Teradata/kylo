@@ -21,7 +21,6 @@ package com.thinkbiganalytics.feedmgr.rest.model;
  */
 
 /**
- * Created by sr186054 on 7/15/16.
  */
 public class ImportOptions {
 

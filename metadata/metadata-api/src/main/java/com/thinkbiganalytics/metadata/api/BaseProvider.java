@@ -24,7 +24,6 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * Created by sr186054 on 5/4/16.
  */
 public interface BaseProvider<T, PK extends Serializable> {
     T create(T t);

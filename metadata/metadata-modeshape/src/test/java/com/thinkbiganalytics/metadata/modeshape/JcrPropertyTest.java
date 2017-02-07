@@ -67,7 +67,6 @@ import javax.jcr.Session;
 import javax.jcr.version.Version;
 
 /**
- * Created by sr186054 on 6/4/16.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {ModeShapeEngineConfig.class, JcrTestConfig.class})

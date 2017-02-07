@@ -31,7 +31,6 @@ import javax.jcr.PropertyIterator;
 import javax.jcr.Value;
 
 /**
- * Created by sr186054 on 6/7/16.
  */
 public abstract class JcrFeedConnection extends JcrObject implements FeedConnection {
 

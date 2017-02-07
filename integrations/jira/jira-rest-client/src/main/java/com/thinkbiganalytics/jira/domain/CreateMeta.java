@@ -35,7 +35,6 @@ import java.util.Map;
 import javax.annotation.Generated;
 
 /**
- * Created by sr186054 on 10/16/15.
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("org.jsonschema2pojo")

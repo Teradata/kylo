@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Holds a list of ReusableConnectionInfo passed in as a POST Created by sr186054 on 12/29/16.
  */
 public class NiFiTemplateFlowResponse {
 

@@ -21,7 +21,6 @@ package com.thinkbiganalytics.metadata.jpa.feed;
  */
 
 /**
- * Created by sr186054 on 11/28/16.
  */
 
 import com.thinkbiganalytics.jpa.BaseJpaId;

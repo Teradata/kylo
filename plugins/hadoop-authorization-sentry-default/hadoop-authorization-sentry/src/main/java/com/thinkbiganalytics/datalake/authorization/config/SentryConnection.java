@@ -25,7 +25,6 @@ import com.thinkbiganalytics.kerberos.KerberosTicketConfiguration;
 import javax.sql.DataSource;
 
 /**
- * Created by Shashi Vishwakarma on 20/9/16.
  */
 
 public class SentryConnection implements AuthorizationConfiguration {

@@ -23,7 +23,6 @@ package com.thinkbiganalytics.metadata.rest.model.feed;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
- * Created by sr186054 on 11/16/16.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FeedLineageStyle {

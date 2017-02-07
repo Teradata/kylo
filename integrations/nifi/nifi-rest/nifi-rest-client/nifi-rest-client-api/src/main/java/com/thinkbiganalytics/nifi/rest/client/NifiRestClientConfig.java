@@ -23,7 +23,6 @@ package com.thinkbiganalytics.nifi.rest.client;
 import com.thinkbiganalytics.rest.JerseyClientConfig;
 
 /**
- * Created by sr186054 on 10/16/15.
  */
 public class NifiRestClientConfig extends JerseyClientConfig {
 

@@ -23,7 +23,6 @@ package com.thinkbiganalytics.metadata.modeshape.common;
 import javax.jcr.Node;
 
 /**
- * Created by sr186054 on 6/6/16.
  */
 public class AbstractJcrSystemEntity extends JcrPropertiesEntity {
 

@@ -32,7 +32,6 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * Created by sr186054 on 12/2/16.
  */
 public class JobStatusTransform {
 

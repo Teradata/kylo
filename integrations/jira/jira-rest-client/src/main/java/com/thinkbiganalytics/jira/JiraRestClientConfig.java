@@ -22,7 +22,6 @@ package com.thinkbiganalytics.jira;
 
 import com.thinkbiganalytics.rest.JerseyClientConfig;
 /**
- * Created by sr186054 on 10/16/15.
  */
 public class JiraRestClientConfig extends JerseyClientConfig {
 

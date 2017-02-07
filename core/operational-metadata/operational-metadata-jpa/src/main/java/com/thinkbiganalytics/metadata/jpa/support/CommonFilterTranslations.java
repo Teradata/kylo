@@ -37,7 +37,6 @@ import java.util.stream.Collectors;
 /**
  * Helper class to map simple filter strings to more complex filters/joins
  *
- * Created by sr186054 on 12/5/16.
  */
 public class CommonFilterTranslations {
 

@@ -37,7 +37,6 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 /**
- * Created by sr186054 on 3/3/16.
  */
 @Component
 public class SendJmsMessage {

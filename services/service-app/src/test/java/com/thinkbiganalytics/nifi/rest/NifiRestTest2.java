@@ -36,7 +36,6 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.ProcessingException;
 
 /**
- * Created by sr186054 on 6/20/16.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {SpringNifiRestConfiguration.class})

@@ -29,7 +29,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Created by sr186054 on 11/15/16.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DatasourceDefinition {

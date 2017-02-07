@@ -29,7 +29,6 @@ import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplate;
 import javax.jcr.Node;
 
 /**
- * Created by sr186054 on 6/8/16.
  */
 public class JcrFeedManagerFeed<C extends JcrFeedManagerCategory> extends JcrFeed<C> implements FeedManagerFeed<C> {
 

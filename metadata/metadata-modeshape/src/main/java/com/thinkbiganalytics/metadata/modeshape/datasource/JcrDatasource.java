@@ -40,7 +40,6 @@ import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
 /**
- * Created by sr186054 on 6/5/16.
  */
 public class JcrDatasource extends AbstractJcrAuditableSystemEntity implements Datasource {
     

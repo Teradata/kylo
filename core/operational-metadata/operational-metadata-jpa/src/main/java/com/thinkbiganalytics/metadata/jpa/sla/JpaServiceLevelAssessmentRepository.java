@@ -29,7 +29,6 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 /**
- * Created by sr186054 on 9/14/16.
  */
 public interface JpaServiceLevelAssessmentRepository extends JpaRepository<JpaServiceLevelAssessment, JpaServiceLevelAssessment.ID> {
 

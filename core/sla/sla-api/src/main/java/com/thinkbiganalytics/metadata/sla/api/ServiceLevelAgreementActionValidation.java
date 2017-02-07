@@ -21,7 +21,6 @@ package com.thinkbiganalytics.metadata.sla.api;
  */
 
 /**
- * Created by sr186054 on 8/8/16.
  */
 public class ServiceLevelAgreementActionValidation {
 

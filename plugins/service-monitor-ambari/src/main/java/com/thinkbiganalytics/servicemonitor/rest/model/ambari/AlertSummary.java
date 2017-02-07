@@ -21,7 +21,6 @@ package com.thinkbiganalytics.servicemonitor.rest.model.ambari;
  */
 
 /**
- * Created by sr186054 on 10/2/15.
  */
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;

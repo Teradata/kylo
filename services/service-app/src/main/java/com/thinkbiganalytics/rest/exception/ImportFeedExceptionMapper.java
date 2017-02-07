@@ -28,7 +28,6 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.core.Response;
 
 /**
- * Created by sr186054 on 11/17/16.
  */
 public class ImportFeedExceptionMapper extends BaseExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<ImportFeedException> {
 

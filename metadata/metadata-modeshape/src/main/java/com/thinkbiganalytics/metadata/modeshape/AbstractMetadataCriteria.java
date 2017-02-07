@@ -33,7 +33,6 @@ import javax.jcr.Session;
 import javax.jcr.query.QueryResult;
 
 /**
- * Created by sr186054 on 6/7/16.
  */
 public abstract class AbstractMetadataCriteria<C extends MetadataCriteria<C>> implements MetadataCriteria<C> {
 

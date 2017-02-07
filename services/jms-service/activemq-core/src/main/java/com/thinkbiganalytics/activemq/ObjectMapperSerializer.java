@@ -31,7 +31,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 
 /**
- * Created by sr186054 on 3/3/16.
  */
 public class ObjectMapperSerializer {
     private static final Logger log = LoggerFactory.getLogger(ObjectMapperSerializer.class);

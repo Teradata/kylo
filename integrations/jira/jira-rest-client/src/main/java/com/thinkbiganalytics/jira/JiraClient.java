@@ -26,7 +26,6 @@ import com.thinkbiganalytics.jira.domain.ServerInfo;
 import java.util.List;
 
 /**
- * Created by sr186054 on 10/16/15.
  */
 public interface JiraClient {
 

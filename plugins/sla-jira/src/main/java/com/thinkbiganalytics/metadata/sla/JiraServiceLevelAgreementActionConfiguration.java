@@ -29,7 +29,6 @@ import com.thinkbiganalytics.policy.PolicyPropertyTypes;
 import com.thinkbiganalytics.policy.PropertyLabelValue;
 
 /**
- * Created by sr186054 on 7/20/16.
  */
 @ServiceLevelAgreementActionConfig(
     name = "Jira",

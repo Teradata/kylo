@@ -30,7 +30,6 @@ import java.util.Map;
 /**
  * A command to get component status of a given cluster.
  *
- * Created by sr186054 on 10/1/15.
  */
 public class AmbariServicesComponentInfoCommand extends AmbariServiceCheckRestCommand<ServiceComponentInfoSummary> {
 

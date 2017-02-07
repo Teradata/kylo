@@ -26,7 +26,6 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfigu
 import java.util.List;
 
 /**
- * Created by sr186054 on 7/20/16.
  */
 public class BaseServiceLevelAgreementActionConfiguration implements ServiceLevelAgreementActionConfiguration {
 

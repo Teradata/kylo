@@ -26,7 +26,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * Created by Shashi Vishwakarma on 19/9/2016.
  */
 public class SentrySearchPolicyMapper implements RowMapper<SentrySearchPolicy> {
 

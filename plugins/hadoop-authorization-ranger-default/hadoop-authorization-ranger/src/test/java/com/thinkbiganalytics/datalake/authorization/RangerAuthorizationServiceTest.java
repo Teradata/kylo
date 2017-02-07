@@ -34,7 +34,6 @@ import java.util.List;
 import static org.junit.Assert.assertNotNull;
 
 /**
- * Created by Jeremy Merrifield on 9/12/16.
  *
  * Integration Tests for interacting with Ranger
  */

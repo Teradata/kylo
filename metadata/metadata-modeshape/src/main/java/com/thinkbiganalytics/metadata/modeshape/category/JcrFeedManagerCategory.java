@@ -30,7 +30,6 @@ import java.util.List;
 import javax.jcr.Node;
 
 /**
- * Created by sr186054 on 6/8/16.
  */
 public class JcrFeedManagerCategory extends JcrCategory implements FeedManagerCategory {
 

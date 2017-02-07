@@ -36,7 +36,6 @@ import org.springframework.stereotype.Component;
 import javax.inject.Inject;
 
 /**
- * Created by sr186054 on 11/10/16.
  */
 @Component
 public class FeedTestUtil {

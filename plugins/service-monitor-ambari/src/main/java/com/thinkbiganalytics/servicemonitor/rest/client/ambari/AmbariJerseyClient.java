@@ -39,7 +39,6 @@ import javax.ws.rs.client.WebTarget;
 /**
  * Ambari REST client.
  *
- * Created by sr186054 on 11/3/16.
  */
 public class AmbariJerseyClient extends JerseyRestClient implements AmbariClient {
 

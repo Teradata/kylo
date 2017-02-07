@@ -21,7 +21,6 @@ package com.thinkbiganalytics.jira.domain;
  */
 
 /**
- * Created by sr186054 on 10/22/15.
  */
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;

@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by sr186054 on 11/18/16.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DatasourceDefinitions {

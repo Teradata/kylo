@@ -23,7 +23,6 @@ package com.thinkbiganalytics.feedmgr.rest.model;
 import java.util.Date;
 
 /**
- * Created by sr186054 on 4/1/16.
  */
 public interface UIFeed {
     String getCategoryName();

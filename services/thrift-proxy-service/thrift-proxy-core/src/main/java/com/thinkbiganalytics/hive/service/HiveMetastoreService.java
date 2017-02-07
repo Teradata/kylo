@@ -49,7 +49,6 @@ import javax.inject.Inject;
 import javax.sql.DataSource;
 
 /**
- * Created by sr186054 on 2/17/16.
  */
 @Service("hiveMetastoreService")
 public class HiveMetastoreService {

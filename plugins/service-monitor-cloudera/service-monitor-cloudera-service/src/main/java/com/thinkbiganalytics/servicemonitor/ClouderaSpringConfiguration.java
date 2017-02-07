@@ -29,7 +29,6 @@ import org.springframework.context.annotation.Configuration;
 /**
  * Spring configuration for Cloudera service monitor.
  *
- * Created by sr186054 on 4/13/16.
  */
 @Configuration
 public class ClouderaSpringConfiguration {

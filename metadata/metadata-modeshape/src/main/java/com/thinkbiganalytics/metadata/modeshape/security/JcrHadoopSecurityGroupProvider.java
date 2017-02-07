@@ -33,7 +33,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by Jeremy Merrifield on 9/20/16.
  */
 @Service
 public class JcrHadoopSecurityGroupProvider  extends BaseJcrProvider<HadoopSecurityGroup, HadoopSecurityGroup.ID> implements HadoopSecurityGroupProvider {

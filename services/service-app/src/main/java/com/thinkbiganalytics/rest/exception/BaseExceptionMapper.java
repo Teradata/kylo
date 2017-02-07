@@ -31,7 +31,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
 /**
- * Created by Jeremy Merrifield on 6/14/16.
  */
 public class BaseExceptionMapper {
 

@@ -26,7 +26,6 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import java.util.Set;
 
 /**
- * Created by sr186054 on 8/5/16.
  */
 public interface FeedServiceLevelAgreement extends ServiceLevelAgreement {
 

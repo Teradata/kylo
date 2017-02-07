@@ -37,7 +37,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import javax.sql.DataSource;
 
 /**
- * Created by sr186054 on 4/1/16.
  */
 @Configuration
 @PropertySource("classpath:application.properties")

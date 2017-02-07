@@ -54,7 +54,6 @@ import javax.inject.Inject;
 import javax.sql.DataSource;
 
 /**
- * Created by sr186054 on 2/11/16.
  */
 public class HiveService {
 

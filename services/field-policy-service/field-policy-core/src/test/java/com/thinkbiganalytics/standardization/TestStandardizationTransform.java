@@ -42,7 +42,6 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * Created by sr186054 on 4/5/16.
  */
 public class TestStandardizationTransform {
 

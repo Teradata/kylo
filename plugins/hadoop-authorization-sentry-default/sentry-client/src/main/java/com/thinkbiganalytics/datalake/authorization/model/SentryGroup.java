@@ -21,7 +21,6 @@ package com.thinkbiganalytics.datalake.authorization.model;
  */
 
 /**
- * Created by Jeremy Merrifield on 9/12/16.
  */
 public class SentryGroup implements HadoopAuthorizationGroup {
 

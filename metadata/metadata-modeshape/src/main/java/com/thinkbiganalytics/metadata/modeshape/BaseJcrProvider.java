@@ -51,7 +51,6 @@ import javax.jcr.Session;
 import javax.jcr.query.QueryResult;
 
 /**
- * Created by sr186054 on 6/5/16.
  */
 public abstract class BaseJcrProvider<T, PK extends Serializable> implements BaseProvider<T, PK> {
     private static final Logger log = LoggerFactory.getLogger(BaseJcrProvider.class);

@@ -32,7 +32,6 @@ import org.slf4j.LoggerFactory;
 import java.io.Serializable;
 
 /**
- * Created by sr186054 on 8/16/16.
  */
 public class GroupedStats extends BaseStatistics implements Serializable {
 

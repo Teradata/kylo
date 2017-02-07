@@ -31,7 +31,6 @@ import java.util.Set;
 import javax.jcr.Node;
 
 /**
- * Created by sr186054 on 8/5/16. a Join Object that Relates Feeds to SLAs
  *
  * @see JcrFeedServiceLevelAgreementProvider#relate(ServiceLevelAgreement, Set)
  */

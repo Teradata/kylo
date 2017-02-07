@@ -32,7 +32,6 @@ import org.slf4j.LoggerFactory;
  * Cloudera resource manager which first attempts to get configured Cloudera API version and if that fails it
  * falls back to first API version.
  *
- * Created by sr186054 on 10/8/15.
  */
 class ClouderaRootResourceManager {
 

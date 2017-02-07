@@ -61,7 +61,6 @@ import java.util.stream.Collectors;
       return jobExecutionRepository.findAll(GenericQueryDslFilter.buildFilter(jobExecution, filter), pageable);
     }
  *
- * Created by sr186054 on 11/29/16.
  */
 public class GenericQueryDslFilter {
 

@@ -49,7 +49,6 @@ import java.util.function.Consumer;
 import javax.inject.Inject;
 
 /**
- * Created by sr186054 on 6/8/16.
  */
 public class JcrFeedTemplateProvider extends BaseJcrProvider<FeedManagerTemplate, FeedManagerTemplate.ID> implements FeedManagerTemplateProvider {
 

@@ -31,7 +31,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Created by sr186054 on 10/16/15.
  */
 public class Issue extends  BasicIssue  {
 

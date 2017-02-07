@@ -27,7 +27,6 @@ import com.thinkbiganalytics.servicemonitor.model.ServiceStatusResponse;
 import javax.inject.Inject;
 
 /**
- * Created by sr186054 on 9/30/15.
  */
 
 public class PipelineDatabaseServiceStatusCheck implements ServiceStatusCheck {

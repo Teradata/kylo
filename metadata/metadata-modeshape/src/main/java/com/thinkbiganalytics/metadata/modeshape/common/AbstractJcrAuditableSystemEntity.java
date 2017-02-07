@@ -25,7 +25,6 @@ import org.joda.time.DateTime;
 import javax.jcr.Node;
 
 /**
- * Created by sr186054 on 6/6/16.
  */
 public class AbstractJcrAuditableSystemEntity extends AbstractJcrSystemEntity {
 

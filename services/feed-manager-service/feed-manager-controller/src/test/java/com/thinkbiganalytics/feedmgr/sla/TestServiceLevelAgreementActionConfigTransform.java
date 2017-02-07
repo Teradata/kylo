@@ -30,7 +30,6 @@ import org.junit.Test;
 import java.io.IOException;
 
 /**
- * Created by sr186054 on 7/20/16.
  */
 public class TestServiceLevelAgreementActionConfigTransform {
 

@@ -31,7 +31,6 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Created by matthutton on 12/27/16.
  */
 public class TableSetupTest {
 

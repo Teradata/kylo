@@ -39,7 +39,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Created by sr186054 on 8/11/16. Simple object to store Graph of a Nifi flow. . This is populated via the Nifi Rest Client Each NifiFlowProcessor has a pointer to its parent/children. You can walk
  * the graph starting with the Set of startingProcessors, or lookup into the graph using hte processorMap and then traverse it back and forth by a specific processor.
  *
  * When walking the flow the system removes the internal Processgroups and connects the processors together.

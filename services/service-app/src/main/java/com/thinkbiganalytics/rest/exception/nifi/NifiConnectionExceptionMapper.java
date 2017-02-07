@@ -33,7 +33,6 @@ import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
 /**
- * Created by sr186054 on 6/20/16.
  */
 @Provider
 @Configuration

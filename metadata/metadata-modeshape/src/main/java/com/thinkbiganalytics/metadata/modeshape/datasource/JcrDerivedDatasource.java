@@ -31,7 +31,6 @@ import java.util.stream.Collectors;
 import javax.jcr.Node;
 
 /**
- * Created by sr186054 on 11/10/16.
  */
 public class JcrDerivedDatasource extends JcrDatasource implements DerivedDatasource {
 

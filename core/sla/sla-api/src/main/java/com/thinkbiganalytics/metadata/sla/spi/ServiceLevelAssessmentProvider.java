@@ -26,7 +26,6 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 import java.util.List;
 
 /**
- * Created by sr186054 on 7/23/16.
  */
 public interface ServiceLevelAssessmentProvider {
 

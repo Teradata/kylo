@@ -24,7 +24,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * Created by sr186054 on 6/17/16.
  */
 public class SystemNamingServiceTest {
 

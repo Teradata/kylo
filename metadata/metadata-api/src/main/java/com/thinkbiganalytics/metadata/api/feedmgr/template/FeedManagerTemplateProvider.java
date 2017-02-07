@@ -23,7 +23,6 @@ package com.thinkbiganalytics.metadata.api.feedmgr.template;
 import com.thinkbiganalytics.metadata.api.BaseProvider;
 
 /**
- * Created by sr186054 on 5/4/16.
  */
 public interface FeedManagerTemplateProvider  extends BaseProvider<FeedManagerTemplate,FeedManagerTemplate.ID> {
 

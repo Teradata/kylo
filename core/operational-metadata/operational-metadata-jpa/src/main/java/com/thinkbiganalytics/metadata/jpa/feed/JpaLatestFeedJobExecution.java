@@ -41,7 +41,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 /**
- * Created by sr186054 on 11/28/16.
  */
 @Entity
 @Table(name = "LATEST_FINISHED_FEED_JOB_VW")

@@ -21,7 +21,6 @@ package com.thinkbiganalytics.kerberos;
  */
 
 /**
- * Created by Jeremy Merrifield on 8/30/16.
  */
 public class KerberosTicketConfiguration {
 

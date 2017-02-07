@@ -24,7 +24,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.thinkbiganalytics.metadata.rest.model.data.DatasourceDefinition;
 
 /**
- * Created by sr186054 on 11/15/16.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TemplateProcessorDatasourceDefinition {

@@ -31,7 +31,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * Created by sr186054 on 8/17/16.
  */
 public class AggregatedFeedProcessorStatisticsHolder implements Serializable {
 

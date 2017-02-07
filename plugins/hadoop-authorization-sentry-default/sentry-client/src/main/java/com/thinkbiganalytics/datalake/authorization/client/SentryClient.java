@@ -37,7 +37,6 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Created by Shashi Vishwakarma on 9/9/16.
  */
 
 public class SentryClient {

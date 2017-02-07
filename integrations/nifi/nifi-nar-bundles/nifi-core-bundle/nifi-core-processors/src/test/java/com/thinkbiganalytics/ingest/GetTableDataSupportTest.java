@@ -35,7 +35,6 @@ import java.util.TimeZone;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Created by matthutton on 3/24/16.
  */
 public class GetTableDataSupportTest {
 

@@ -51,7 +51,6 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.GenericType;
 
 /**
- * Created by sr186054 on 10/15/15.
  */
 public class JiraJerseyClient extends JerseyRestClient implements JiraClient{
 

@@ -39,7 +39,6 @@ import java.io.IOException;
 import java.util.HashMap;
 
 /**
- * Created by Shashi Vishwakarma on 19/9/2016.
  */
 
 public class HDFSUtil {

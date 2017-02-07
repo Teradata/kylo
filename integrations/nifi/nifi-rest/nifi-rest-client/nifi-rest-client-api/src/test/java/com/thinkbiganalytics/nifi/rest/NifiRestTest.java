@@ -40,7 +40,6 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Created by sr186054 on 1/11/16.
  */
 public class NifiRestTest {
 

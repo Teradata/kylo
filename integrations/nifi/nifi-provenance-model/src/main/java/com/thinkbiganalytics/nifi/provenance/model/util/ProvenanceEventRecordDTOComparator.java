@@ -25,7 +25,6 @@ import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import java.util.Comparator;
 
 /**
- * Created by sr186054 on 8/17/16.
  */
 public class ProvenanceEventRecordDTOComparator implements Comparator<ProvenanceEventRecordDTO> {
 

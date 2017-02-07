@@ -30,7 +30,6 @@ import javax.validation.Payload;
 import javax.validation.constraints.Pattern;
 
 /**
- * Created by Jeremy Merrifield on 6/14/16.
  */
 @Target({ElementType.FIELD,ElementType.METHOD, ElementType.PARAMETER})
 @Constraint(validatedBy={})

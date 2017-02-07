@@ -39,7 +39,6 @@ import java.util.Properties;
  *
  * @Type(type = "com.thinkbiganalytics.jpa.TruncateStringUserType",parameters = {@Parameter(name = "length",value = "250")})
  *
- * Created by sr186054 on 8/31/16.
  */
 public class TruncateStringUserType implements UserType, ParameterizedType {
 

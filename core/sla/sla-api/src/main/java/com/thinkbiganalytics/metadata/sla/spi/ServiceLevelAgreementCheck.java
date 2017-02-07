@@ -29,7 +29,6 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * Stores SLA Actions and their associated Cron Schedule Created by sr186054 on 7/21/16.
  */
 public interface ServiceLevelAgreementCheck {
 

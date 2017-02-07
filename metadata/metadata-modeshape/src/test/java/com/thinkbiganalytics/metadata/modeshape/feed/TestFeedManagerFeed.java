@@ -55,7 +55,6 @@ import java.util.Set;
 import javax.inject.Inject;
 
 /**
- * Created by sr186054 on 11/7/16.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {ModeShapeEngineConfig.class, JcrTestConfig.class, FeedTestConfig.class})

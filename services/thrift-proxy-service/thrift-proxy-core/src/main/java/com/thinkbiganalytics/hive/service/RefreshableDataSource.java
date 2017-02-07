@@ -45,7 +45,6 @@ import javax.inject.Inject;
 import javax.sql.DataSource;
 
 /**
- * Created by sr186054 on 9/13/16.
  */
 public class RefreshableDataSource implements DataSource {
 

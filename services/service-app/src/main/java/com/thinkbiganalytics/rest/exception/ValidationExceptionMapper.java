@@ -33,7 +33,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
 
 /**
- * Created by Jeremy Merrifield on 6/13/16.
  *
  * If you use the Bean Validation annotations this mapper will catch exception thrown
  */

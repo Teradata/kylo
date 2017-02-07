@@ -39,7 +39,6 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by sr186054 on 4/22/16.
  */
 public class TestJsonPolicies {
 

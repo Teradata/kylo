@@ -58,7 +58,6 @@ import javax.jcr.query.Row;
 import javax.jcr.query.RowIterator;
 
 /**
- * Created by sr186054 on 8/4/16.
  */
 public class JcrFeedServiceLevelAgreementProvider implements FeedServiceLevelAgreementProvider, ModeShapeAvailabilityListener {
 

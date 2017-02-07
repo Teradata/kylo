@@ -40,7 +40,6 @@ import javax.jcr.version.VersionIterator;
 import javax.jcr.version.VersionManager;
 
 /**
- * Created by sr186054 on 6/13/16.
  */
 public class JcrVersionUtil {
 

@@ -21,7 +21,6 @@ package com.thinkbiganalytics.metadata.rest.model.nifi;
  */
 
 /**
- * Created by sr186054 on 1/19/17.
  */
 public class NiFiFlowCacheConnectionData {
 

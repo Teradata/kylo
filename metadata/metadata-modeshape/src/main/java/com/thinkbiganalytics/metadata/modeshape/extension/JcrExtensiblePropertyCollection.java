@@ -23,7 +23,6 @@ package com.thinkbiganalytics.metadata.modeshape.extension;
 import java.util.Collection;
 
 /**
- * Created by sr186054 on 8/4/16. Wrapper object that allows Extensible entity properties marked as *multiple (collection) to be saved into the system allowing the backend to determine the correct JCR
  * type in the collection
  */
 public class JcrExtensiblePropertyCollection {

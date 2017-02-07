@@ -21,7 +21,6 @@ package com.thinkbiganalytics.feedmgr.rest.model;
  */
 
 /**
- * Created by sr186054 on 4/28/16.
  */
 public class ReusableTemplateConnectionInfo {
 

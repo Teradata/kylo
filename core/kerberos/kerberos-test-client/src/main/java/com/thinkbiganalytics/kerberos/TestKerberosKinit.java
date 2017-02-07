@@ -37,7 +37,6 @@ import java.sql.Statement;
 import java.util.Scanner;
 
 /**
- * Created by Jeremy Merrifield on 10/28/16.
  */
 public class TestKerberosKinit {
 

@@ -32,7 +32,6 @@ import javax.ws.rs.ext.Provider;
  *
  * @see JodaMapper
  *
- * Created by sr186054 on 10/16/15.
  */
 @Provider
 public class JodaTimeMapperProvider implements ContextResolver<ObjectMapper> {

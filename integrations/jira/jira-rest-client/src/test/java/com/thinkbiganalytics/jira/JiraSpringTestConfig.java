@@ -33,7 +33,6 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import javax.sql.DataSource;
 
 /**
- * Created by mk186074 on 10/13/15.
  */
 @Configuration
 @ComponentScan(basePackages = {"com.thinkbiganalytics"})

@@ -25,7 +25,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.Date;
 
 /**
- * Created by sr186054 on 2/19/16.
  * Lightweight view of Feed Data with just the essential feed information
  */
 @JsonIgnoreProperties(ignoreUnknown = true)

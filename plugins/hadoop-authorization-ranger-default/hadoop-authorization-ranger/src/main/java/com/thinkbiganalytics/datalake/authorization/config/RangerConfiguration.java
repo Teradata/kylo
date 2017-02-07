@@ -29,7 +29,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
 /**
- * Created by Jeremy Merrifield on 9/9/16.
  */
 @Configuration
 @PropertySource("classpath:/conf/authorization.ranger.properties")

@@ -36,7 +36,6 @@ import org.mockito.Mockito;
 import java.util.Properties;
 
 /**
- * Created by Jeremy Merrifield on 10/6/16.
  */
 public class PutFeedMetadataTest {
 

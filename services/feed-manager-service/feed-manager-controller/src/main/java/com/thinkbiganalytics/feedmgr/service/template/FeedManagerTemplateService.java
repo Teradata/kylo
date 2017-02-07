@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Created by sr186054 on 5/1/16.
  */
 public interface FeedManagerTemplateService {
 

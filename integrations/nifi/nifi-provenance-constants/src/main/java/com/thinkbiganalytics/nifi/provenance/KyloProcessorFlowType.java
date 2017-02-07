@@ -23,7 +23,6 @@ package com.thinkbiganalytics.nifi.provenance;
 import java.io.Serializable;
 
 /**
- * Created by sr186054 on 12/28/16.
  */
 public enum KyloProcessorFlowType implements Serializable {
 

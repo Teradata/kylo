@@ -29,7 +29,6 @@ import javax.sql.DataSource;
 /**
  * Sentry Client configuration class for setting sentry connection information.
  *
- * Created by Shashi Vishwakarma on 19/9/2016.
  */
 public class SentryClientConfig {
 

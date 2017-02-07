@@ -27,7 +27,6 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 /**
- * Created by sr186054 on 7/25/16.
  */
 public class ServerConfigurationInitialization {
 

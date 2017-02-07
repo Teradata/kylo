@@ -32,7 +32,6 @@ import java.util.Date;
 import static org.junit.Assert.assertNotNull;
 
 /**
- * Created by matthutton on 3/11/16.
  */
 public class TriggerInfoImplTest {
 

@@ -30,7 +30,6 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.ProcessingException;
 
 /**
- * Created by sr186054 on 6/19/16.
  */
 public class NifiRestClientExceptionTranslator {
 

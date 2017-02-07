@@ -23,7 +23,6 @@ package com.thinkbiganalytics.metadata.api.feedmgr.template;
 import com.thinkbiganalytics.metadata.api.MetadataException;
 
 /**
- * Created by sr186054 on 11/7/16.
  */
 public class TemplateDeletionException extends MetadataException {
 

@@ -55,7 +55,6 @@ import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
 /**
- * Created by sr186054 on 8/4/16.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {ModeShapeEngineConfig.class, JcrTestConfig.class})

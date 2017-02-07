@@ -38,7 +38,6 @@ import javax.inject.Inject;
 /**
  * Cloudera REST API client.
  *
- * Created by sr186054 on 10/1/15.
  */
 @Component
 public class ClouderaClient {

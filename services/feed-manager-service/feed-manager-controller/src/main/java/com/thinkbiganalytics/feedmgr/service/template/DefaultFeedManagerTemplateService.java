@@ -46,7 +46,6 @@ import java.util.stream.IntStream;
 import javax.inject.Inject;
 
 /**
- * Created by sr186054 on 5/4/16.
  */
 public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTemplateService implements FeedManagerTemplateService {
 

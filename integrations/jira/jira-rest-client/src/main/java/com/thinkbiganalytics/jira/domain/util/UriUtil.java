@@ -23,7 +23,6 @@ package com.thinkbiganalytics.jira.domain.util;
 import java.net.URI;
 
 /**
- * Created by sr186054 on 10/16/15.
  */
 public class UriUtil {
 

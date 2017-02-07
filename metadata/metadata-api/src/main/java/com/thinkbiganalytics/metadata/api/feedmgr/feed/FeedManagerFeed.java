@@ -27,7 +27,6 @@ import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import org.joda.time.DateTime;
 
 /**
- * Created by sr186054 on 5/4/16.
  */
 public interface FeedManagerFeed<C extends FeedManagerCategory> extends Feed<C>{
 

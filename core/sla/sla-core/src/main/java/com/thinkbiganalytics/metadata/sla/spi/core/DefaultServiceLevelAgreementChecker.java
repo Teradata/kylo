@@ -44,7 +44,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 /**
- * Created by sr186054 on 9/15/16.
  */
 public class DefaultServiceLevelAgreementChecker implements ServiceLevelAgreementChecker {
 

@@ -36,7 +36,6 @@ import javax.jcr.Session;
 import javax.jcr.query.QueryResult;
 
 /**
- * Created by sr186054 on 6/8/16.
  */
 public class TagProvider {
 

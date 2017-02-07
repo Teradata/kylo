@@ -27,7 +27,6 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ClassPathResource;
 
 /**
- * Created by sr186054 on 8/9/16.
  */
 @Configuration
 @Profile("developer.jira")

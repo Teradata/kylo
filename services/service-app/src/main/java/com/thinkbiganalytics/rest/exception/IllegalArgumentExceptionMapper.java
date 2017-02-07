@@ -28,7 +28,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
 
 /**
- * Created by Jeremy Merrifield on 6/14/16.
  */
 @Provider
 @Configuration

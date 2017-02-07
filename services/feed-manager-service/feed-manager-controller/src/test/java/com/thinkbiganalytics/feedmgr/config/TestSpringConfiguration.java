@@ -73,7 +73,6 @@ import javax.jcr.Credentials;
 import javax.jcr.Repository;
 
 /**
- * Created by sr186054 on 7/21/16.
  */
 @Configuration
 public class TestSpringConfiguration {

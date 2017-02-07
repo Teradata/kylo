@@ -27,7 +27,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 /**
- * Created by sr186054 on 10/16/15.
  */
 public class BasicIssue {
     private  URI self;

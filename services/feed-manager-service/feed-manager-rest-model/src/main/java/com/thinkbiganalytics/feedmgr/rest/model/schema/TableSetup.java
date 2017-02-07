@@ -39,7 +39,6 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 /**
- * Created by sr186054 on 2/12/16.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TableSetup {

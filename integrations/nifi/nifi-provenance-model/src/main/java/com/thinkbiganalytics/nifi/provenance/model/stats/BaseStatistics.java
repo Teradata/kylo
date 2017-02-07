@@ -25,7 +25,6 @@ import org.joda.time.DateTime;
 import java.io.Serializable;
 
 /**
- * Created by sr186054 on 8/16/16.
  */
 public class BaseStatistics implements Serializable {
 

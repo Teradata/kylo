@@ -21,7 +21,6 @@ package com.thinkbiganalytics.metadata.modeshape.common;
  */
 
 /**
- * Created by sr186054 on 6/7/16.
  */
 public class JcrPropertyConstants {
 

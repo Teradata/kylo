@@ -31,7 +31,6 @@ import java.sql.SQLException;
 import javax.sql.DataSource;
 
 /**
- * Created by Jeremy Merrifield on 9/28/16.
  */
 public class KerberosUtil {
 

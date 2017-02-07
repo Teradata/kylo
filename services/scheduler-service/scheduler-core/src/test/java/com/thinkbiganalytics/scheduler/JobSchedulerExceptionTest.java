@@ -27,7 +27,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Created by matthutton on 3/14/16.
  */
 public class JobSchedulerExceptionTest {
 

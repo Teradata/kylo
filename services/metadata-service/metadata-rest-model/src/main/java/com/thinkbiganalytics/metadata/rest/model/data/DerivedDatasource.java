@@ -25,7 +25,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.Map;
 
 /**
- * Created by sr186054 on 11/15/16.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DerivedDatasource extends Datasource {

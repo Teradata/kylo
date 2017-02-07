@@ -37,7 +37,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 /**
- * Created by sr186054 on 9/1/16.
  */
 @Entity
 @Table(name = "BATCH_STEP_EXECUTION_CTX_VALS")

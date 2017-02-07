@@ -28,7 +28,6 @@ import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.annotation.PropertySource;
 
 /**
- * Created by sr186054 on 8/7/16.
  */
 @Configuration
 @ImportResource("classpath:/conf/jira-rest-client.xml")

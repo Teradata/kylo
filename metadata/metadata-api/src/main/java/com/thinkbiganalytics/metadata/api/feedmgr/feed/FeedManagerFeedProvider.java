@@ -29,7 +29,6 @@ import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import java.util.List;
 
 /**
- * Created by sr186054 on 5/4/16.
  */
 public interface FeedManagerFeedProvider extends BaseProvider<FeedManagerFeed, Feed.ID> {
 

@@ -36,7 +36,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 /**
- * Created by sr186054 on 10/15/15.
  */
 @Ignore("Ignore Jira tests")
 public class JerseyClientTest {

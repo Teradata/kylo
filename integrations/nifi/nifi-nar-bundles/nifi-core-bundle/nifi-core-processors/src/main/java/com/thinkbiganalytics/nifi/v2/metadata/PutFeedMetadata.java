@@ -21,7 +21,6 @@ package com.thinkbiganalytics.nifi.v2.metadata;
  */
 
 /**
- * Created by Jeremy Merrifield on 10/6/16.
  */
 
 import com.google.common.collect.ImmutableList;

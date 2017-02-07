@@ -46,7 +46,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Created by sr186054 on 12/1/16.
  */
 public class JobModelTransform {
 

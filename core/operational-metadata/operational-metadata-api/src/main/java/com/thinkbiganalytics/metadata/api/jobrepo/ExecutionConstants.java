@@ -21,7 +21,6 @@ package com.thinkbiganalytics.metadata.api.jobrepo;
  */
 
 /**
- * Created by sr186054 on 9/1/16.
  */
 public interface ExecutionConstants {
 

@@ -28,7 +28,6 @@ import org.apache.commons.lang3.StringUtils;
 /**
  * Superclass for checking status of Ambari services.
  *
- * Created by sr186054 on 10/12/15.
  */
 public class AmbariServiceCheckRestCommand<T> extends RestCommand<T> {
 

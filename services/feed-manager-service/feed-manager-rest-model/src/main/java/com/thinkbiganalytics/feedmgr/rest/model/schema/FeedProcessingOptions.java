@@ -23,7 +23,6 @@ package com.thinkbiganalytics.feedmgr.rest.model.schema;
 import com.thinkbiganalytics.metadata.MetadataField;
 
 /**
- * Created by sr186054 on 10/10/16.
  */
 public class FeedProcessingOptions {
 

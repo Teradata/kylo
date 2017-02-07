@@ -31,7 +31,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
- * Created by sr186054 on 3/21/16.
  */
 public class TemplateDtoWrapper extends TemplateDTO {
     private TemplateDTO templateDto;

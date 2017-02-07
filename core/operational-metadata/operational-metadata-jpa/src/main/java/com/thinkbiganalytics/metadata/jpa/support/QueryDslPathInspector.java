@@ -31,7 +31,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Helper class to inspect the QueryDSL generated Q classes for use in the GenericQueryDslFilter Created by sr186054 on 11/30/16.
  */
 public class QueryDslPathInspector {
 

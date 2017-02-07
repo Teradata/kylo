@@ -28,7 +28,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 
 /**
- * Created by sr186054 on 8/14/16.
  */
 public class ProvenanceEventUtil {
 

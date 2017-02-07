@@ -31,7 +31,6 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 /**
- * Created by sr186054 on 4/22/16.
  */
 public class AvailablePoliciesTest {
 

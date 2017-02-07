@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by sr186054 on 2/5/16.
  */
 public class NifiFeed {
 

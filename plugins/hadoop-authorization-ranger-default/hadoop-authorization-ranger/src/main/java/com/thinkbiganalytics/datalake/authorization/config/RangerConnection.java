@@ -21,7 +21,6 @@ package com.thinkbiganalytics.datalake.authorization.config;
  */
 
 /**
- * Created by Jeremy Merrifield on 9/10/16.
  */
 public class RangerConnection implements AuthorizationConfiguration {
 

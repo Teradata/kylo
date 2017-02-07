@@ -24,7 +24,6 @@ import org.jadira.usertype.spi.shared.AbstractVersionableUserType;
 import org.joda.time.DateTime;
 
 /**
- * Created by sr186054 on 12/7/16.
  */
 public class PersistentDateTimeAsMillisLong extends AbstractVersionableUserType<DateTime, Long, LongColumnDateTimeMapper> {
 

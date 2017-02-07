@@ -30,7 +30,6 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 
 /**
- * Created by Jeremy Merrifield on 8/24/16.
  */
 @Service
 public class KerberosTicketGenerator {

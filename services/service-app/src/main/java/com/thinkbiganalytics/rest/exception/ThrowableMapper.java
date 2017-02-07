@@ -31,7 +31,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
 
 /**
- * Created by sr186054 on 9/22/15.
  */
 @Provider
 @Configuration

@@ -35,7 +35,6 @@ import java.util.UUID;
 
 /**
  * Cache used to help Kylo and NiFi keep the Flows and processors in Sync. This is used by Kylo when creating feeds and registering templates. It is also used by the KyloProvenanceEventReportingTask
- * in NiFi to determine ProvenanceEvents and the processsor/feed information. Created by sr186054 on 12/21/16.
  */
 public class NiFiFlowCacheSync {
 

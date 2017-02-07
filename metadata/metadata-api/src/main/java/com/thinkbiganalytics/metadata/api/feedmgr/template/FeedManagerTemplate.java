@@ -28,7 +28,6 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * Created by sr186054 on 5/4/16.
  */
 public interface FeedManagerTemplate {
 

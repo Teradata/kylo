@@ -23,7 +23,6 @@ package com.thinkbiganalytics.feedmgr.rest.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
- * Created by Jeremy Merrifield on 9/20/16.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class HadoopSecurityGroup {

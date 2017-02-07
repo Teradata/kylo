@@ -28,7 +28,6 @@ import org.junit.Test;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Created by matthutton on 3/12/16.
  */
 public class ScheduleIdentifierTest {
 

@@ -23,7 +23,6 @@ package com.thinkbiganalytics.feedmgr.rest.model.schema;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
- * Created by sr186054 on 2/5/16.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TableOptions {

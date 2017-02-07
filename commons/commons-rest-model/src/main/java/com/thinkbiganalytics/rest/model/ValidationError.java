@@ -21,7 +21,6 @@ package com.thinkbiganalytics.rest.model;
  */
 
 /**
- * Created by Jeremy Merrifield on 6/13/16.
  */
 public class ValidationError {
     private String fieldValue;

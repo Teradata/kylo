@@ -25,7 +25,6 @@ package com.thinkbiganalytics.rest;
  * Configuration class used by the {@link JerseyRestClient}
  * Parameters here allow you to setup a client and optionally pass in information to connect using Https
  *
- * Created by sr186054 on 10/15/15.
  */
 public class JerseyClientConfig {
 

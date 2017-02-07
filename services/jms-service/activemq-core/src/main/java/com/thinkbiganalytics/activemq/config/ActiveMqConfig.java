@@ -44,7 +44,6 @@ import javax.jms.ConnectionFactory;
 
 
 /**
- * Created by sr186054 on 3/2/16.
  */
 @Configuration
 @EnableJms

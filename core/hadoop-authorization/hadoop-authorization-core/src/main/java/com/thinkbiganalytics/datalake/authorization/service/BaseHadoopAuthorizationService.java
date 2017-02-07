@@ -38,7 +38,6 @@ import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 
 /**
- * Created by Jeremy Merrifield on 10/14/16.
  */
 public abstract class BaseHadoopAuthorizationService implements HadoopAuthorizationService {
 

@@ -27,7 +27,6 @@ import java.util.List;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Created by Jeremy Merrifield on 11/3/16.
  */
 public class HadoopAuthorizationServiceTest {
 

@@ -22,7 +22,6 @@ package com.thinkbiganalytics.datalake.authorization.rest.model;
 
 
 /**
- * Created by Shashi Vishwakarma on 10/05/16.
  */
 
 public class RangerPolicy {

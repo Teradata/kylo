@@ -35,7 +35,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 /**
- * Created by sr186054 on 4/19/16.
  */
 @Configuration
 @EnableAspectJAutoProxy(proxyTargetClass = true)

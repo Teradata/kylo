@@ -25,7 +25,6 @@ import com.thinkbiganalytics.metadata.sla.api.ObligationAssessment;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 
 /**
- * Created by sr186054 on 7/20/16.
  */
 public class ServiceLevelAssessmentAlertUtil {
 

@@ -66,7 +66,6 @@ import javax.ws.rs.core.Response;
 /**
  * Generic JerseyRestClient
  *
- * Created by sr186054 on 10/15/15.
  */
 public class JerseyRestClient {
 

@@ -32,7 +32,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Created by Shashi Vishwakarma on 9/9/16.
  */
 
 public interface HadoopAuthorizationService {

@@ -40,7 +40,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
- * Created by sr186054 on 1/26/16.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class RegisteredTemplate {

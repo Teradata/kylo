@@ -36,7 +36,6 @@ import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
 /**
- * Created by sr186054 on 11/14/16.
  */
 public class JcrDatasourceDefinition extends AbstractJcrAuditableSystemEntity implements DatasourceDefinition {
 

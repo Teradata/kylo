@@ -21,7 +21,6 @@ package com.thinkbiganalytics.metadata.api.feed;
  */
 
 /**
- * Created by sr186054 on 2/2/17.
  */
 public interface DeleteFeedListener {
 

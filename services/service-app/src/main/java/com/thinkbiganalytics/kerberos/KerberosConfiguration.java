@@ -29,7 +29,6 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 
 /**
- * Created by Jeremy Merrifield on 8/30/16.
  */
 @Configuration
 @PropertySource("classpath:application.properties")

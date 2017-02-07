@@ -28,7 +28,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 
 /**
- * Created by sr186054 on 2/26/16.
  */
 // Ignore due to dependency on MySQL
 @Ignore
