@@ -61,6 +61,9 @@ public class BatchFeedProcessorEvents implements Serializable {
     private DateTime lastEventTime;
 
 
+    /**
+     * the last time the events were sent to JMS
+     **/
     private DateTime lastCollectionTime;
 
     /**
@@ -118,7 +121,8 @@ public class BatchFeedProcessorEvents implements Serializable {
     private boolean isSuppressEvent(ProvenanceEventRecordDTO event) {
         if (event.isStream() || event.getFeedFlowFile().isStream()) {
             event.setStream(true);
-            log.warn(" EVENT {} WAS SUPPRESSED because its parent starting event was detected as a stream for feed {} and processor: {} ", event, maxEventsPerSecond, feedName, processorName);
+            log.warn(" Event {} has been suppressed from Kylo Ops Manager. Its parent starting event was detected as a stream for feed {} and processor: {} ", event, maxEventsPerSecond, feedName,
+                     processorName);
             return true;
         } else if (event.isStartOfJob()) {
             DateTime time = event.getEventTime().withMillisOfSecond(0);
@@ -126,7 +130,7 @@ public class BatchFeedProcessorEvents implements Serializable {
             if (startingJobEventsBySecond.get(time).size() > maxEventsPerSecond) {
                 event.getFeedFlowFile().setStream(true);
                 event.setStream(true);
-                log.warn(" EVENT  {} WAS SUPPRESSED FROM Kylo Ops Manager.  more than {} events per second were detected for feed {} and processor: {} ", event, maxEventsPerSecond, feedName,
+                log.warn(" Event  {} has been suppressed from Kylo Ops Manager.  more than {} events per second were detected for feed {} and processor: {} ", event, maxEventsPerSecond, feedName,
                          processorName);
                 return true;
             }
@@ -134,9 +138,6 @@ public class BatchFeedProcessorEvents implements Serializable {
         return false;
     }
 
-    private String mapKey(ProvenanceEventRecordDTO eventRecordDTO) {
-        return eventRecordDTO.getJobFlowFileId();
-    }
 
     /**
      * Add an event from Nifi to be processed
@@ -152,15 +153,8 @@ public class BatchFeedProcessorEvents implements Serializable {
                 lastEventTime = event.getEventTime();
             }
 
-            log.info("BATCH Adding Batch event {} ", event);
             event.setIsBatchJob(true);
-                /*
-                event.getFlowFile().getRootFlowFile().markAsBatch();
-                if (event.getPreviousEvent() == null && !event.isStartOfJob()) {
-                    event.getFlowFile().setPreviousEventForEvent(event);
-                }
-                */
-                jmsEvents.add(event);
+            jmsEvents.add(event);
 
             lastEventTime = event.getEventTime();
             return true;
@@ -189,7 +183,7 @@ public class BatchFeedProcessorEvents implements Serializable {
 
     /**
      * get the feed name for the batch of events
-     * @return
+     * @return the name of the feed
      */
     public String getFeedName() {
         return feedName;
@@ -197,7 +191,7 @@ public class BatchFeedProcessorEvents implements Serializable {
 
     /**
      * Sets the feed name
-     * @param feedName
+     * @param feedName the name of the feed
      */
     public void setFeedName(String feedName) {
         this.feedName = feedName;
@@ -205,7 +199,7 @@ public class BatchFeedProcessorEvents implements Serializable {
 
     /**
      * Gets the processorId
-     * @return
+     * @return the processor Id
      */
     public String getProcessorId() {
         return processorId;
@@ -213,7 +207,7 @@ public class BatchFeedProcessorEvents implements Serializable {
 
     /**
      * Sets the processor id
-     * @param processorId
+     * @param processorId the processor id
      */
     public void setProcessorId(String processorId) {
         this.processorId = processorId;
@@ -229,7 +223,7 @@ public class BatchFeedProcessorEvents implements Serializable {
 
     /**
      *
-     * @param processorName
+     * @param processorName the name of the processor
      */
     public void setProcessorName(String processorName) {
         this.processorName = processorName;
@@ -237,8 +231,8 @@ public class BatchFeedProcessorEvents implements Serializable {
 
     /**
      *
-     * @param maxEventsPerSecond
-     * @return
+     * @param maxEventsPerSecond the max number of events allowed per sec to be considered a batch job
+     * @return this class
      */
     public BatchFeedProcessorEvents setMaxEventsPerSecond(Integer maxEventsPerSecond) {
         this.maxEventsPerSecond = maxEventsPerSecond;

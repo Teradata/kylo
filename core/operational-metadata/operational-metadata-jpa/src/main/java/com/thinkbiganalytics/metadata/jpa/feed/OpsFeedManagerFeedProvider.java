@@ -42,6 +42,8 @@ import com.thinkbiganalytics.support.FeedNameUtil;
 
 import org.joda.time.DateTime;
 import org.joda.time.ReadablePeriod;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -56,6 +58,8 @@ import javax.inject.Inject;
  */
 @Service
 public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
+
+    private static final Logger log = LoggerFactory.getLogger(OpsFeedManagerFeedProvider.class);
 
     private OpsManagerFeedRepository repository;
     private FeedHealthRepository feedHealthRepository;
@@ -134,11 +138,13 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
     public void delete(OpsManagerFeed.ID id) {
         OpsManagerFeed feed = findById(id);
         if (feed != null) {
+            log.info("Deleting feed {} ({})  and all job executions. ", feed.getName(), feed.getId());
             //first delete all jobs for this feed
             deleteFeedJobs(FeedNameUtil.category(feed.getName()),FeedNameUtil.feed(feed.getName()));
             repository.delete(feed.getId());
             //notify the listeners
             notifyOnFeedDeleted(feed);
+            log.info("Successfully deleted the feed {} ({})  and all job executions. ", feed.getName(), feed.getId());
         }
     }
 
