@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.rest.client;
 
@@ -33,11 +33,10 @@ import java.net.URI;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- *
- * @author Sean Felten
+ * A test case for service level agreements
  */
 public class ServiceLevelAgreementClientTest {
-    
+
     private static MetadataClient client;
 
     @BeforeClass
@@ -45,14 +44,14 @@ public class ServiceLevelAgreementClientTest {
         client = new MetadataClient(URI.create("http://localhost:8077/api/v1/metadata/"));
     }
 
-//    @Test
+    //    @Test
     public void testCreateSLA() {
         ServiceLevelAgreement sla = new ServiceLevelAgreement("TestSLA1",
                                                               new FeedExecutedSinceFeed("category", "FeedA", "category", "FeedX"),
                                                               new FeedExecutedSinceFeed("category", "FeedB", "category", "FeedX"));
 
         ServiceLevelAgreement result = client.createSla(sla);
-        
+
         assertThat(result).isNotNull();
     }
 }

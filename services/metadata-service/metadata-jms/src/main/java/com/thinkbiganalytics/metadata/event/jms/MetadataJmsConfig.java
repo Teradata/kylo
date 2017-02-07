@@ -42,7 +42,9 @@ import javax.jms.Topic;
 @ComponentScan({"com.thinkbiganalytics.activemq"})
 public class MetadataJmsConfig {
 
-    /** JMS connection factory */
+    /**
+     * JMS connection factory
+     */
     @Inject
     private ConnectionFactory connectionFactory;
 

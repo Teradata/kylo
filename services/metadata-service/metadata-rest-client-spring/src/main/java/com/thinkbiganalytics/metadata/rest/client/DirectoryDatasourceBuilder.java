@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.rest.client;
 
@@ -26,12 +26,13 @@ package com.thinkbiganalytics.metadata.rest.client;
 import com.thinkbiganalytics.metadata.rest.model.data.DirectoryDatasource;
 
 /**
- *
- * @author Sean Felten
+ * A builder that extends a DatasourceBuilder to add typical file set metadata
  */
 public interface DirectoryDatasourceBuilder extends DatasourceBuilder<DirectoryDatasourceBuilder, DirectoryDatasource> {
 
     DirectoryDatasourceBuilder path(String path);
+
     DirectoryDatasourceBuilder regexPattern(String pattern);
+
     DirectoryDatasourceBuilder globPattern(String pattern);
 }

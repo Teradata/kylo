@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.rest.client;
 
@@ -26,16 +26,22 @@ package com.thinkbiganalytics.metadata.rest.client;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 
 /**
+ * A builder to construct a datasource model
  *
- * @author Sean Felten
+ * @param <B> a builder sub type
+ * @param <D> a datasource sub type
  */
 public interface DatasourceBuilder<B extends DatasourceBuilder<B, D>, D extends Datasource> {
 
     B description(String descr);
-    B ownder(String owner);
+
+    B owner(String owner);
+
     B encrypted(boolean flag);
+
     B compressed(boolean flag);
-    
+
     D build();
+
     D post();
 }
