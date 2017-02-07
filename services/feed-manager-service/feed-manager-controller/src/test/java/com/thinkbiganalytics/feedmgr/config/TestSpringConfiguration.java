@@ -64,8 +64,10 @@ import org.modeshape.jcr.ModeShapeEngine;
 import org.modeshape.jcr.api.txn.TransactionManagerLookup;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
 import java.security.Principal;
+import java.util.Properties;
 
 import javax.jcr.Credentials;
 import javax.jcr.Repository;
@@ -333,5 +335,15 @@ public class TestSpringConfiguration {
     @Bean
     NiFiPropertyDescriptorTransform propertyDescriptorTransform() {
         return new NiFiPropertyDescriptorTransformV1();
+    }
+
+
+    @Bean
+    public static PropertySourcesPlaceholderConfigurer properties() throws Exception {
+        final PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer = new PropertySourcesPlaceholderConfigurer();
+        Properties properties = new Properties();
+        properties.setProperty("nifi.remove.inactive.versioned.feeds", "true");
+        propertySourcesPlaceholderConfigurer.setProperties(properties);
+        return propertySourcesPlaceholderConfigurer;
     }
 }
