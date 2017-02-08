@@ -45,6 +45,12 @@ public class FileAuthConfig {
 
     @Value("${security.auth.file.login.services:required}")
     private String servicesLoginFlag;
+    
+    @Value("${security.auth.file.users:users.properties}")
+    private String usersResource;
+    
+    @Value("${security.auth.file.groups:groups.properties}")
+    private String groupsResource;
 
     @Bean(name = "servicesFileLoginConfiguration")
     public LoginConfiguration servicesFileLoginConfiguration(LoginConfigurationBuilder builder) {
@@ -55,9 +61,9 @@ public class FileAuthConfig {
                             .moduleClass(UsersRolesLoginModule.class)
                             .controlFlag(this.servicesLoginFlag)      
                             .option("defaultUsersProperties", "users.default.properties")
-                            .option("defaultRolesProperties", "roles.default.properties")
-                            .option("usersProperties", "users.properties")
-                            .option("rolesProperties", "roles.properties")
+                            .option("defaultRolesProperties", "groups.default.properties")
+                            .option("usersProperties", usersResource)
+                            .option("rolesProperties", groupsResource)
                             .add()
                         .build();
 
@@ -73,9 +79,9 @@ public class FileAuthConfig {
                             .moduleClass(UsersRolesLoginModule.class)
                             .controlFlag(this.uiLoginFlag)
                             .option("defaultUsersProperties", "users.default.properties")
-                            .option("defaultRolesProperties", "roles.default.properties")
-                            .option("usersProperties", "users.properties")
-                            .option("rolesProperties", "roles.properties")
+                            .option("defaultRolesProperties", "groups.default.properties")
+                            .option("usersProperties", usersResource)
+                            .option("rolesProperties", groupsResource)
                             .add()
                         .build();
 
