@@ -41,6 +41,7 @@ public class FieldDescriptor {
     private boolean collection = false;
     private boolean required = false;
     private String defaultValue;
+
     public FieldDescriptor() {
     }
 

@@ -34,6 +34,7 @@ public class MetadataChange implements Serializable {
     private static final long serialVersionUID = 1L;
     private final ChangeType change;
     private final String description;
+
     public MetadataChange(ChangeType change) {
         this(change, "");
     }

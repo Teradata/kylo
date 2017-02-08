@@ -29,6 +29,7 @@ public class AbstractJcrSystemEntity extends JcrPropertiesEntity {
     public static final String TITLE = JcrPropertyConstants.TITLE;
     public static final String SYSTEM_NAME = JcrPropertyConstants.SYSTEM_NAME;
     public static final String DESCRIPTION = JcrPropertyConstants.DESCRIPTION;
+
     public AbstractJcrSystemEntity(Node node) {
         super(node);
     }

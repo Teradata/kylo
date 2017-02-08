@@ -48,6 +48,7 @@ public class ServiceLevelAssessment {
     private ServiceLevelAgreement agreement;
     private String message;
     private Result result;
+
     public ServiceLevelAssessment() {
         this.obligationAssessments = new ArrayList<>();
     }

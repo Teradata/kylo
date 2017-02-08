@@ -42,6 +42,7 @@ public class InitializationStatus implements Serializable {
 
     private State state;
     private DateTime timestamp;
+
     public InitializationStatus() {
         super();
     }

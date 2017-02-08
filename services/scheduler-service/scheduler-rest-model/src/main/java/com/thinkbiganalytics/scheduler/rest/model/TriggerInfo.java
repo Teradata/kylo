@@ -42,6 +42,7 @@ public class TriggerInfo {
     private String description;
     private Class triggerClass;
     private String cronExpressionSummary;
+
     public TriggerInfo() {
 
     }

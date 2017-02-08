@@ -41,6 +41,7 @@ public class PermissionsChange {
     private ActionGroup actionSet;
     private Set<String> users = new HashSet<>();
     private Set<String> groups = new HashSet<>();
+
     public PermissionsChange() {
     }
 

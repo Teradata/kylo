@@ -45,6 +45,7 @@ public class FeedOperation {
     private DateTime startTime;
     private DateTime stopTiime;
     private Map<String, String> results;
+
     public FeedOperation() {
         super();
     }

@@ -33,6 +33,7 @@ public class InitializationStatus {
 
     private final State state;
     private final DateTime timestamp;
+
     public InitializationStatus(State state) {
         this(state, DateTime.now(DateTimeZone.UTC));
     }

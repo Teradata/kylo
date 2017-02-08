@@ -62,6 +62,7 @@ public class NifiFlowBuilder {
             return new NifiFlowProcessGroup(group.getId(), group.getName());
         }
     };
+    Map<String, NifiFlowProcessor> cache = new ConcurrentHashMap<>();
     /**
      * Convert a {@link NifiVisitableProcessor} to a  simplified {@link NifiFlowProcessor}
      */
@@ -100,8 +101,6 @@ public class NifiFlowBuilder {
         flowProcessGroup.setStartingProcessors(starting);
         return flowProcessGroup;
     };
-    Map<String, NifiFlowProcessor> cache = new ConcurrentHashMap<>();
-
 
     /**
      * Build the {@link NifiFlowProcessGroup} from the visited {@link NifiVisitableProcessGroup} returning the simplified graph of objects that make up the flow

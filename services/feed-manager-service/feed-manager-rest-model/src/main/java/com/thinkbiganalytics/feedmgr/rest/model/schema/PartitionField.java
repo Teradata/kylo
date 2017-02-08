@@ -105,11 +105,13 @@ public class PartitionField {
         private boolean useColumnDataType;
         private String formula;
         private String defaultDataType;
+
         PARTITON_FORMULA(String defaultDataType) {
             this.formula = this.name();
             this.defaultDataType = defaultDataType;
             this.useColumnDataType = false;
         }
+
         PARTITON_FORMULA(String defaultDataType, boolean useColumnDataType) {
             this.formula = this.name().toLowerCase();
             this.defaultDataType = defaultDataType;

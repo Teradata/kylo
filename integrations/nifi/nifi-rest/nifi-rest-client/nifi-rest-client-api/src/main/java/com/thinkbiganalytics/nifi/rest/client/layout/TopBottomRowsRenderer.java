@@ -146,6 +146,7 @@ public class TopBottomRowsRenderer extends AbstractRenderer {
 
     enum Location {
         TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT;
+
         static {
             TOP_LEFT.next = TOP_RIGHT;
             TOP_RIGHT.next = BOTTOM_LEFT;

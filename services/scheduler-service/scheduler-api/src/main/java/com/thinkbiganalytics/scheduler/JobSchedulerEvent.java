@@ -29,6 +29,7 @@ public class JobSchedulerEvent {
     private JobIdentifier jobIdentifier;
     private TriggerIdentifier triggerIdentifier;
     private String message;
+
     public JobSchedulerEvent(EVENT event) {
         this.event = event;
     }

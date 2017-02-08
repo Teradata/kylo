@@ -39,6 +39,7 @@ public class NifiError {
      **/
     private String category;
     private SEVERITY severity;
+
     public NifiError() {
 
     }

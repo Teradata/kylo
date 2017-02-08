@@ -50,9 +50,11 @@ public class Dataset implements Serializable {
     private ChangeType changeType;
     private ContentType contentType;
     private List<? extends ChangeSet> changeSets;
+
     public Dataset() {
         super();
     }
+
     public Dataset(Datasource src, ChangeType change, ContentType content, ChangeSet... changeSets) {
         this(new DateTime(), src, change, content, Arrays.asList(changeSets));
     }
