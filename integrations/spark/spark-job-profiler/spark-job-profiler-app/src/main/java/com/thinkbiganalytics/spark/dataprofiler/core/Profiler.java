@@ -181,7 +181,7 @@ public class Profiler {
                 List<String> profiledColumns = new ArrayList<>();
                 for (FieldPolicy fieldPolicy : policyMap.values()) {
                     if (fieldPolicy.isProfile()) {
-                        profiledColumns.add(fieldPolicy.getField());
+                        profiledColumns.add(HiveUtils.quoteIdentifier(fieldPolicy.getField().toLowerCase()));
                     }
                 }
 
