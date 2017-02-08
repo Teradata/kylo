@@ -117,6 +117,7 @@ public abstract class AbstractFeedManagerTemplateService implements FeedManagerT
 
     /**
      * Return properties registered for a template
+     *
      * @param templateId a RegisteredTemplate id
      * @return the properties registered for the template
      */
@@ -132,6 +133,7 @@ public abstract class AbstractFeedManagerTemplateService implements FeedManagerT
     /**
      * Return the processors in RegisteredTemplate that are input processors ( processors without any incoming connections).
      * This will call out to NiFi to inspect and obtain the NiFi template if it doesn't exist on the registeredTemplate
+     *
      * @param registeredTemplate the template to inspect
      * @return the processors in RegisteredTemplate that are input processors without any incoming connections
      */
@@ -145,6 +147,7 @@ public abstract class AbstractFeedManagerTemplateService implements FeedManagerT
 
     /**
      * Return the input processors (processors without any incoming connections) in a NiFi template object
+     *
      * @param nifiTemplate the NiFi template
      * @return the input processors (processors without any incoming connections) in a NiFi template object
      */
@@ -154,7 +157,7 @@ public abstract class AbstractFeedManagerTemplateService implements FeedManagerT
             List<ProcessorDTO> inputProcessors = NifiTemplateUtil.getInputProcessorsForTemplate(nifiTemplate);
             if (inputProcessors != null) {
                 inputProcessors.stream().forEach(processorDTO -> {
-                    RegisteredTemplate.Processor p = toRegisteredTemplateProcessor(processorDTO,false);
+                    RegisteredTemplate.Processor p = toRegisteredTemplateProcessor(processorDTO, false);
                     p.setInputProcessor(true);
                     processors.add(p);
                 });
@@ -168,7 +171,7 @@ public abstract class AbstractFeedManagerTemplateService implements FeedManagerT
      * Return a Registered Template for incoming {@link RegisteredTemplate#id} or a {@link TemplateDTO#id}
      * If there is no RegisteredTemplate matching the incoming id it will attempt to fetch the template from NiFi either by the id or name
      *
-     * @param templateId  a {@link RegisteredTemplate#id} or a {@link TemplateDTO#id}
+     * @param templateId   a {@link RegisteredTemplate#id} or a {@link TemplateDTO#id}
      * @param templateName the name of the template
      * @return a Registered Template object either for an existing registerd template in the system or a non registered NiFi template
      */
@@ -207,6 +210,7 @@ public abstract class AbstractFeedManagerTemplateService implements FeedManagerT
 
     /**
      * Ensure that the NiFi template Ids are correct and match our metadata for the Template Name
+     *
      * @param template a registered template
      * @return the updated template with the {@link RegisteredTemplate#nifiTemplateId} correctly matching NiFi
      */
@@ -276,8 +280,6 @@ public abstract class AbstractFeedManagerTemplateService implements FeedManagerT
      * Merge all saved properties on the RegisteredTemplate along with the properties in the NiFi template
      * The resulting object will have the {@link RegisteredTemplate#properties} updated so they are in sync with NiFi.
      *
-     *
-     * @param registeredTemplate
      * @return a RegisteredTemplate that has the properties updated with those in NiFi
      */
     public RegisteredTemplate mergeRegisteredTemplateProperties(RegisteredTemplate registeredTemplate) {
@@ -308,7 +310,7 @@ public abstract class AbstractFeedManagerTemplateService implements FeedManagerT
                 NifiPropertyUtil.matchAndSetPropertyByProcessorName(properties, registeredTemplate.getProperties(),
                                                                     NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_NON_EXPRESSION_PROPERTIES);
             }
-            if (!templateDTO.getId().equalsIgnoreCase(registeredTemplate.getNifiTemplateId())) {
+            if (templateDTO != null && !templateDTO.getId().equalsIgnoreCase(registeredTemplate.getNifiTemplateId())) {
                 syncTemplateId(registeredTemplate);
 
             }
@@ -330,7 +332,6 @@ public abstract class AbstractFeedManagerTemplateService implements FeedManagerT
     }
 
     /**
-     *
      * @return all input ports under the {@link TemplateCreationHelper#REUSABLE_TEMPLATES_PROCESS_GROUP_NAME} process group
      */
     public Set<PortDTO> getReusableFeedInputPorts() {
@@ -417,6 +418,7 @@ public abstract class AbstractFeedManagerTemplateService implements FeedManagerT
 
     /**
      * Return all the processors that are connected to a given NiFi input port
+     *
      * @param inputPortIds the ports to inspect
      * @return all the processors that are connected to a given NiFi input port
      */
@@ -463,7 +465,7 @@ public abstract class AbstractFeedManagerTemplateService implements FeedManagerT
         p.setGroupId(processorDTO.getParentGroupId());
         p.setType(processorDTO.getType());
         p.setName(processorDTO.getName());
-        if(setProperties) {
+        if (setProperties) {
             p.setProperties(NifiPropertyUtil.getPropertiesForProcessor(new ProcessGroupDTO(), processorDTO, propertyDescriptorTransform));
         }
         return p;
