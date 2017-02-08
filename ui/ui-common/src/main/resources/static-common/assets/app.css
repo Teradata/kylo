@@ -604,6 +604,10 @@ card-layout.card-full-width section:first-child {
   padding: 15px;
 }
 
+.item-column-title {
+  padding-bottom: 0;
+}
+
 .item-column:first-child {
   padding-left: 25px;
 }
