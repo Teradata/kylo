@@ -63,17 +63,6 @@ public class NifiFlowBuilder {
         }
     };
     /**
-     * Convert a {@link NifiVisitableProcessGroup} to a  simplified {@link NifiFlowProcessGroup}
-     */
-    private final Function<NifiVisitableProcessGroup, NifiFlowProcessGroup> NIFI_DTO_GROUP_TO_FLOW_GROUP = group -> {
-
-        NifiFlowProcessGroup flowProcessGroup = PROCESS_GROUP_DTO_TO_FLOW_GROUP.apply(group.getDto());
-        Set<NifiFlowProcessor> starting = new HashSet<>(Collections2.transform(group.getStartingProcessors(), NIFI_PROCESSOR_DTO_TO_FLOW_PROCESSOR));
-        flowProcessGroup.setStartingProcessors(starting);
-        return flowProcessGroup;
-    };
-    Map<String, NifiFlowProcessor> cache = new ConcurrentHashMap<>();
-    /**
      * Convert a {@link NifiVisitableProcessor} to a  simplified {@link NifiFlowProcessor}
      */
     private final Function<NifiVisitableProcessor, NifiFlowProcessor> NIFI_PROCESSOR_DTO_TO_FLOW_PROCESSOR = new Function<NifiVisitableProcessor, NifiFlowProcessor>() {
@@ -101,6 +90,18 @@ public class NifiFlowBuilder {
         }
 
     };
+    /**
+     * Convert a {@link NifiVisitableProcessGroup} to a  simplified {@link NifiFlowProcessGroup}
+     */
+    private final Function<NifiVisitableProcessGroup, NifiFlowProcessGroup> NIFI_DTO_GROUP_TO_FLOW_GROUP = group -> {
+
+        NifiFlowProcessGroup flowProcessGroup = PROCESS_GROUP_DTO_TO_FLOW_GROUP.apply(group.getDto());
+        Set<NifiFlowProcessor> starting = new HashSet<>(Collections2.transform(group.getStartingProcessors(), NIFI_PROCESSOR_DTO_TO_FLOW_PROCESSOR));
+        flowProcessGroup.setStartingProcessors(starting);
+        return flowProcessGroup;
+    };
+    Map<String, NifiFlowProcessor> cache = new ConcurrentHashMap<>();
+
 
     /**
      * Build the {@link NifiFlowProcessGroup} from the visited {@link NifiVisitableProcessGroup} returning the simplified graph of objects that make up the flow
@@ -124,6 +125,7 @@ public class NifiFlowBuilder {
         return flowProcessGroup;
     }
 
+
     /**
      * Transform  a {@link NifiVisitableProcessGroup} to a  simplified {@link NifiFlowProcessGroup}
      *
@@ -132,6 +134,4 @@ public class NifiFlowBuilder {
     private NifiFlowProcessGroup toFlowProcessGroup(NifiVisitableProcessGroup group) {
         return NIFI_DTO_GROUP_TO_FLOW_GROUP.apply(group);
     }
-
-
 }
