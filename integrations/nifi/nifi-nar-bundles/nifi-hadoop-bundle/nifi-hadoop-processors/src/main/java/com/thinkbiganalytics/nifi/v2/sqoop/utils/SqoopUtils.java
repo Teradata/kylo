@@ -84,7 +84,7 @@ public class SqoopUtils {
      * @param logger             Logger
      * @return extraction record count
      */
-    public int getSqoopRecordCount(SqoopProcessResult sqoopProcessResult, ComponentLog logger) {
+    public long getSqoopRecordCount(SqoopProcessResult sqoopProcessResult, ComponentLog logger) {
         String[] logLines = sqoopProcessResult.getLogLines();
 
         if ((sqoopProcessResult.getExitValue() != 0) || (logLines[0] == null)) {
@@ -106,7 +106,7 @@ public class SqoopUtils {
         int end = recordCountLogLine.indexOf(END_RECORD_COUNT_IDENTIFIER);
         String numberString = recordCountLogLine.substring(start + START_RECORD_COUNT_IDENTIFIER.length(), end).trim();
         try {
-            return Integer.parseInt(numberString);
+            return Long.parseLong(numberString);
         } catch (Exception e) {
             logger.warn("Unable to parse number of records extracted. " + e.getMessage());
             return -1;
@@ -120,7 +120,7 @@ public class SqoopUtils {
      * @param logger                   Logger
      * @return export record count
      */
-    public int getSqoopExportRecordCount(SqoopProcessResult sqoopExportProcessResult, ComponentLog logger) {
+    public long getSqoopExportRecordCount(SqoopProcessResult sqoopExportProcessResult, ComponentLog logger) {
         String[] logLines = sqoopExportProcessResult.getLogLines();
 
         if ((sqoopExportProcessResult.getExitValue() != 0) || (logLines[0] == null)) {
@@ -139,7 +139,7 @@ public class SqoopUtils {
         int end = recordExportCountLogLine.indexOf(END_EXPORT_RECORD_COUNT_IDENTIFIER);
         String numberString = recordExportCountLogLine.substring(start + START_EXPORT_RECORD_COUNT_IDENTIFIER.length(), end).trim();
         try {
-            return Integer.parseInt(numberString);
+            return Long.parseLong(numberString);
         } catch (Exception e) {
             logger.warn("Unable to parse number of records exported. " + e.getMessage());
             return -1;

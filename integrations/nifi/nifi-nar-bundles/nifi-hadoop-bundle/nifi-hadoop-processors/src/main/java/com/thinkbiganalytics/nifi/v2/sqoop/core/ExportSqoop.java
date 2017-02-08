@@ -312,7 +312,7 @@ public class ExportSqoop extends AbstractNiFiProcessor {
 
         int resultExportStatus = sqoopExportProcessResult.getExitValue();
         SqoopUtils sqoopUtils = new SqoopUtils();
-        int recordsExportCount = sqoopUtils.getSqoopExportRecordCount(sqoopExportProcessResult, logger);
+        long recordsExportCount = sqoopUtils.getSqoopExportRecordCount(sqoopExportProcessResult, logger);
 
         String sqoopExportCommandWithCredentialsMasked = sqoopUtils.maskCredentials(sqoopExportCommand,
                                                                                     sqoopUtils.getCredentialsToMask());

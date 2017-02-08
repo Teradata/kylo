@@ -587,7 +587,7 @@ public class ImportSqoop extends AbstractNiFiProcessor {
 
         int resultStatus = sqoopProcessResult.getExitValue();
         SqoopUtils sqoopUtils = new SqoopUtils();
-        int recordsCount = sqoopUtils.getSqoopRecordCount(sqoopProcessResult, logger);
+        long recordsCount = sqoopUtils.getSqoopRecordCount(sqoopProcessResult, logger);
 
         String sqoopCommandWithCredentialsMasked = sqoopUtils.maskCredentials(sqoopCommand,
                                                                               sqoopUtils.getCredentialsToMask());
