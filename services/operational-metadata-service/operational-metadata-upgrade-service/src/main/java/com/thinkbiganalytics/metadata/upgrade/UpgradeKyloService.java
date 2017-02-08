@@ -1,5 +1,26 @@
 package com.thinkbiganalytics.metadata.upgrade;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+
+import javax.inject.Inject;
+import javax.jcr.Property;
+import javax.jcr.PropertyIterator;
+import javax.jcr.RepositoryException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.annotation.Order;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
+import com.thinkbiganalytics.jobrepo.security.OperationsAccessControl;
+
 /*-
  * #%L
  * thinkbig-operational-metadata-upgrade-service
@@ -21,6 +42,7 @@ package com.thinkbiganalytics.metadata.upgrade;
  */
 
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
 import com.thinkbiganalytics.metadata.api.app.KyloVersion;
 import com.thinkbiganalytics.metadata.api.app.KyloVersionProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
@@ -32,33 +54,17 @@ import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
+import com.thinkbiganalytics.metadata.api.user.User;
+import com.thinkbiganalytics.metadata.api.user.UserGroup;
+import com.thinkbiganalytics.metadata.api.user.UserProvider;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaOpsManagerFeed;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailability;
-import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailabilityListener;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedManagerFeed;
-import com.thinkbiganalytics.security.AccessController;
+import com.thinkbiganalytics.security.action.AllowedModuleActionsProvider;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-import javax.jcr.Property;
-import javax.jcr.PropertyIterator;
-import javax.jcr.RepositoryException;
-
-@Service
-public class UpgradeKyloService implements ModeShapeAvailabilityListener {
+@Order(PostMetadataConfigAction.DEFAULT_ORDER + 100)
+public class UpgradeKyloService implements PostMetadataConfigAction {
 
     private static final Logger log = LoggerFactory.getLogger(UpgradeKyloService.class);
     @Inject
@@ -76,28 +82,28 @@ public class UpgradeKyloService implements ModeShapeAvailabilityListener {
     @Inject
     private FeedManagerCategoryProvider feedManagerCategoryProvider;
     @Inject
-    private AccessController accessController;
-
+    private UserProvider userProvider;
     @Inject
-    private ModeShapeAvailability modeShapeAvailability;
+    private PasswordEncoder passwordEncoder;
+    @Inject
+    private AllowedModuleActionsProvider actionsProvider;
 
-
-    @PostConstruct
-    private void init() {
-        modeShapeAvailability.subscribe(this);
-    }
-
-    @Override
-    public void modeShapeAvailable() {
+    
+    public void run() {
         upgradeCheck();
-    }
+    };
 
     /**
      * checks the upgrade for Kylo and updates the version if needed
      */
     public void upgradeCheck() {
         KyloVersion version = kyloVersionProvider.getKyloVersion();
-        if (version == null || version.getMajorVersionNumber() == null || (version.getMajorVersionNumber() != null && version.getMajorVersionNumber() < 0.4f)) {
+        
+        if (version == null) {
+            setupFreshInstall();
+        }
+        
+        if (version == null || version.getMajorVersionNumber() == null || (version.getMajorVersionNumber() != null && version.getMajorVersionNumber()< 0.4f)) {
             version = upgradeTo0_4_0();
         }
         ensureFeedTemplateFeedRelationships();
@@ -109,6 +115,58 @@ public class UpgradeKyloService implements ModeShapeAvailabilityListener {
         }, MetadataAccess.SERVICE);
 
         log.info("Upgrade check complete for Kylo {}", version.getVersion());
+    }
+
+    /**
+     * 
+     */
+    private void setupFreshInstall() {
+        metadataAccess.commit(() -> {
+            User dladmin = createDefaultUser("dladmin", "Data Lake Administrator", "thinkbig");
+            User analyst = createDefaultUser("analyst", "Analyst", "analyst");
+            User designer = createDefaultUser("designer", "Designer", "designer");
+            User operator = createDefaultUser("operator", "Operator", "operator");
+            
+            // Create default groups if they don't exist.
+            UserGroup adminsGroup = createDefaultGroup("admin", "Administrators");
+            UserGroup opsGroup = createDefaultGroup("operations", "Operations");
+            UserGroup designersGroup = createDefaultGroup("designer", "Designers");
+            UserGroup analystsGroup = createDefaultGroup("analyst", "Analysts");
+            UserGroup usersGroup = createDefaultGroup("user", "Users");
+            
+            // Add default users to their respective groups
+            adminsGroup.addUser(dladmin);
+            designersGroup.addUser(designer);
+            analystsGroup.addUser(analyst);
+            opsGroup.addUser(operator);
+            usersGroup.addUser(dladmin);
+            usersGroup.addUser(analyst);
+            usersGroup.addUser(designer);
+            usersGroup.addUser(operator);
+            
+            // Setup initial group access control.  Administrators group already has all rights.
+            actionsProvider.getAllowedActions("services")
+                            .ifPresent((allowed) -> {
+                                allowed.enable(opsGroup.getRootPrincial(), 
+                                               OperationsAccessControl.ADMIN_OPS,
+                                               FeedsAccessControl.ACCESS_CATEGORIES,
+                                               FeedsAccessControl.ACCESS_FEEDS);
+                                allowed.enable(designersGroup.getRootPrincial(), 
+                                               OperationsAccessControl.ACCESS_OPS,
+                                               FeedsAccessControl.EDIT_FEEDS,
+                                               FeedsAccessControl.IMPORT_FEEDS,
+                                               FeedsAccessControl.EXPORT_FEEDS,
+                                               FeedsAccessControl.EDIT_CATEGORIES,
+                                               FeedsAccessControl.EDIT_TEMPLATES);
+                                allowed.enable(analystsGroup.getRootPrincial(), 
+                                               OperationsAccessControl.ACCESS_OPS,
+                                               FeedsAccessControl.EDIT_FEEDS,
+                                               FeedsAccessControl.ACCESS_CATEGORIES,
+                                               FeedsAccessControl.IMPORT_TEMPLATES,
+                                               FeedsAccessControl.EXPORT_TEMPLATES,
+                                               FeedsAccessControl.ACCESS_TEMPLATES);
+                            });
+        }, MetadataAccess.SERVICE);
     }
 
     /*
@@ -224,5 +282,27 @@ public class UpgradeKyloService implements ModeShapeAvailabilityListener {
         }), MetadataAccess.SERVICE);
     }
 
+    
+    protected User createDefaultUser(String username, String displayName, String password) {
+        Optional<User> userOption = userProvider.findUserBySystemName(username);
+        User user = null;
+        
+        // Create the user if it doesn't exists.
+        if (userOption.isPresent()) {
+            user = userOption.get();
+        } else {
+            user = userProvider.ensureUser(username);
+            user.setPassword(passwordEncoder.encode(password));
+            user.setDisplayName(displayName);
+        }
+        
+        return user;
+    }
+
+    protected UserGroup createDefaultGroup(String groupName, String title) {
+        UserGroup newGroup = userProvider.ensureGroup(groupName);
+        newGroup.setTitle(title);
+        return newGroup;
+    }
 
 }

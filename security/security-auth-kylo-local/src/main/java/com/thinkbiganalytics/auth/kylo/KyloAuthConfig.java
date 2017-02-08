@@ -23,20 +23,15 @@ package com.thinkbiganalytics.auth.kylo;
 import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
 import com.thinkbiganalytics.auth.jaas.LoginConfigurationBuilder;
 import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
-import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
-import com.thinkbiganalytics.jobrepo.security.OperationsAccessControl;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
 import com.thinkbiganalytics.metadata.api.user.User;
 import com.thinkbiganalytics.metadata.api.user.UserGroup;
 import com.thinkbiganalytics.metadata.api.user.UserProvider;
-import com.thinkbiganalytics.security.action.AllowedModuleActionsProvider;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
@@ -62,12 +57,6 @@ public class KyloAuthConfig {
 
     @Inject
     private UserProvider userProvider;
-
-    @Inject
-    private AllowedModuleActionsProvider actionsProvider;
-
-    @Inject
-    private MetadataAccess metadata;
 
     @Value("${auth.kylo.password.required:false}")
     private boolean authPassword;
@@ -105,11 +94,6 @@ public class KyloAuthConfig {
 
         // @formatter:on
     }
-
-    @Bean
-    public PostMetadataConfigAction addDefaultUsersAction() {
-        return new PopulateDefaultKyloEntitiesAction();
-    }
     
     protected User createDefaultUser(String username, String displayName) {
         Optional<User> userOption = userProvider.findUserBySystemName(username);
@@ -140,59 +124,5 @@ public class KyloAuthConfig {
         }
         
         return newGroup;
-    }
-
-    @Order(PostMetadataConfigAction.DEFAULT_ORDER + 100)
-    private class PopulateDefaultKyloEntitiesAction implements PostMetadataConfigAction {
-
-        @Override
-        public void run() {
-            metadata.commit(() -> {
-                User dladmin = createDefaultUser("dladmin", "Data Lake Administrator");
-                User analyst = createDefaultUser("analyst", "Analyst");
-                User designer = createDefaultUser("designer", "Designer");
-                User operator = createDefaultUser("operator", "Operator");
-                
-                // Create default groups if they don't exist.
-                UserGroup usersGroup = createDefaultGroup("users", "Users", "user");
-                UserGroup opsGroup = createDefaultGroup("operations", "Operations", null);
-                UserGroup designersGroup = createDefaultGroup("designers", "Designers", "designer");
-                UserGroup analystsGroup = createDefaultGroup("analysts", "Analysts", "analyst");
-                UserGroup adminsGroup = createDefaultGroup("admins", "Administrators", "admin");
-                
-                // Add default users to their respective groups
-                usersGroup.addUser(dladmin);
-                usersGroup.addUser(analyst);
-                usersGroup.addUser(designer);
-                usersGroup.addUser(operator);
-                opsGroup.addUser(operator);
-                designersGroup.addUser(designer);
-                analystsGroup.addUser(analyst);
-                adminsGroup.addUser(dladmin);
-                
-                // Setup initial access control.  Administrators group already has all rights.
-                actionsProvider.getAllowedActions("services")
-                                .ifPresent((allowed) -> {
-                                    allowed.enable(opsGroup.getRootPrincial(), 
-                                                   OperationsAccessControl.ADMIN_OPS,
-                                                   FeedsAccessControl.ACCESS_CATEGORIES,
-                                                   FeedsAccessControl.ACCESS_FEEDS);
-                                    allowed.enable(designersGroup.getRootPrincial(), 
-                                                   OperationsAccessControl.ACCESS_OPS,
-                                                   FeedsAccessControl.EDIT_FEEDS,
-                                                   FeedsAccessControl.IMPORT_FEEDS,
-                                                   FeedsAccessControl.EXPORT_FEEDS,
-                                                   FeedsAccessControl.EDIT_CATEGORIES,
-                                                   FeedsAccessControl.EDIT_TEMPLATES);
-                                    allowed.enable(analystsGroup.getRootPrincial(), 
-                                                   OperationsAccessControl.ACCESS_OPS,
-                                                   FeedsAccessControl.EDIT_FEEDS,
-                                                   FeedsAccessControl.ACCESS_CATEGORIES,
-                                                   FeedsAccessControl.IMPORT_TEMPLATES,
-                                                   FeedsAccessControl.EXPORT_TEMPLATES,
-                                                   FeedsAccessControl.ACCESS_TEMPLATES);
-                                });
-            }, MetadataAccess.SERVICE);
-        }
     }
 }
