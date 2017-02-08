@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.modeshape.extension;
 
@@ -35,13 +35,13 @@ import javax.jcr.nodetype.PropertyDefinition;
  *
  */
 public class JcrFieldDescriptor implements FieldDescriptor {
-    
+
     public static final String DESCRIPTION = JcrExtensibleType.DESCRIPTION;
     public static final String NAME = JcrExtensibleType.NAME;
 
     private Node descriptorNode;
     private PropertyDefinition propertyDef;
-    
+
     public JcrFieldDescriptor(Node descNode, PropertyDefinition def) {
         this.propertyDef = def;
         this.descriptorNode = descNode;
@@ -99,12 +99,10 @@ public class JcrFieldDescriptor implements FieldDescriptor {
         } else if (code == PropertyType.REFERENCE) {
 //                return prop.get
             return FieldDescriptor.Type.ENTITY;  // TODO look up relationship
-        }
-        else if (code == PropertyType.WEAKREFERENCE) {
+        } else if (code == PropertyType.WEAKREFERENCE) {
 //                return prop.get
             return Type.WEAK_REFERENCE;
-        }
-        else {
+        } else {
             // Use string by default
             return FieldDescriptor.Type.STRING;
         }

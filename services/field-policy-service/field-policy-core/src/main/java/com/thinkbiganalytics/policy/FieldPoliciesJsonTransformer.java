@@ -37,77 +37,76 @@ import java.util.Map;
  */
 public class FieldPoliciesJsonTransformer {
 
-  private static final Logger log = LoggerFactory.getLogger(FieldPoliciesJsonTransformer.class);
-  /**
-   * JSON array of com.thinkbiganalytics.policy.rest.model.FieldPolicy objects
-   */
-  private String jsonFieldPolicies;
+    private static final Logger log = LoggerFactory.getLogger(FieldPoliciesJsonTransformer.class);
+    List<com.thinkbiganalytics.policy.rest.model.FieldPolicy>
+        uiFieldPolicies;
+    /**
+     * JSON array of com.thinkbiganalytics.policy.rest.model.FieldPolicy objects
+     */
+    private String jsonFieldPolicies;
 
-  List<com.thinkbiganalytics.policy.rest.model.FieldPolicy>
-      uiFieldPolicies;
+    public FieldPoliciesJsonTransformer(String jsonFieldPolicies) {
+        this.jsonFieldPolicies = jsonFieldPolicies;
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            uiFieldPolicies =
+                mapper.readValue(jsonFieldPolicies,
+                                 new TypeReference<List<com.thinkbiganalytics.policy.rest.model.FieldPolicy>>() {
+                                 });
 
-  public FieldPoliciesJsonTransformer(String jsonFieldPolicies) {
-    this.jsonFieldPolicies = jsonFieldPolicies;
-    ObjectMapper mapper = new ObjectMapper();
-    try {
-      uiFieldPolicies =
-          mapper.readValue(jsonFieldPolicies,
-                           new TypeReference<List<com.thinkbiganalytics.policy.rest.model.FieldPolicy>>() {
-                           });
-
-    } catch (Exception e) {
-      e.printStackTrace();
-      log.error("ERROR converting Field Policy JSON to Rest Models : {}", e.getMessage(), e);
-    }
-
-
-  }
-
-  /**
-   * build a map of field to field policies
-   *
-   * @return a map with the field name as the key and a field policy object as the valure listing the possible {@link StandardizationPolicy} and {@link ValidationPolicy} associated with the given
-   * field
-   */
-  public Map<String, FieldPolicy> buildPolicies() {
-
-    Map<String, FieldPolicy> fieldPolicyMap = new HashMap<>();
-    PolicyTransformationListener listener = new PolicyTransformationListener();
-    if (uiFieldPolicies != null) {
-      for (com.thinkbiganalytics.policy.rest.model.FieldPolicy uiFieldPolicy : uiFieldPolicies) {
-        FieldPolicyTransformer transformer = new FieldPolicyTransformer(uiFieldPolicy);
-        transformer.setListener(listener);
-        if (uiFieldPolicy.getFieldName() != null) {
-          fieldPolicyMap.put(uiFieldPolicy.getFieldName().toLowerCase().trim(), transformer.buildPolicy());
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("ERROR converting Field Policy JSON to Rest Models : {}", e.getMessage(), e);
         }
-      }
-    }
-    log.info("Transformed UI Policies to Field Policies.  {} ", listener.getCounts());
-    return fieldPolicyMap;
 
-  }
 
-  /**
-   * Listener to count the total standardizers/validators on a given field
-   */
-  private class PolicyTransformationListener implements FieldPolicyTransformerListener {
-
-    private int validationCount = 0;
-    private int standardizationCount = 0;
-
-    @Override
-    public void onAddValidationPolicy(ValidationPolicy policy) {
-      validationCount++;
     }
 
-    @Override
-    public void onAddStandardizationPolicy(StandardizationPolicy policy) {
-      standardizationCount++;
+    /**
+     * build a map of field to field policies
+     *
+     * @return a map with the field name as the key and a field policy object as the valure listing the possible {@link StandardizationPolicy} and {@link ValidationPolicy} associated with the given
+     * field
+     */
+    public Map<String, FieldPolicy> buildPolicies() {
+
+        Map<String, FieldPolicy> fieldPolicyMap = new HashMap<>();
+        PolicyTransformationListener listener = new PolicyTransformationListener();
+        if (uiFieldPolicies != null) {
+            for (com.thinkbiganalytics.policy.rest.model.FieldPolicy uiFieldPolicy : uiFieldPolicies) {
+                FieldPolicyTransformer transformer = new FieldPolicyTransformer(uiFieldPolicy);
+                transformer.setListener(listener);
+                if (uiFieldPolicy.getFieldName() != null) {
+                    fieldPolicyMap.put(uiFieldPolicy.getFieldName().toLowerCase().trim(), transformer.buildPolicy());
+                }
+            }
+        }
+        log.info("Transformed UI Policies to Field Policies.  {} ", listener.getCounts());
+        return fieldPolicyMap;
+
     }
 
-    public String getCounts() {
-      return "Total Validation Policies: " + validationCount + ", Total Standardization Policies: " + standardizationCount;
+    /**
+     * Listener to count the total standardizers/validators on a given field
+     */
+    private class PolicyTransformationListener implements FieldPolicyTransformerListener {
+
+        private int validationCount = 0;
+        private int standardizationCount = 0;
+
+        @Override
+        public void onAddValidationPolicy(ValidationPolicy policy) {
+            validationCount++;
+        }
+
+        @Override
+        public void onAddStandardizationPolicy(StandardizationPolicy policy) {
+            standardizationCount++;
+        }
+
+        public String getCounts() {
+            return "Total Validation Policies: " + validationCount + ", Total Standardization Policies: " + standardizationCount;
+        }
     }
-  }
 
 }

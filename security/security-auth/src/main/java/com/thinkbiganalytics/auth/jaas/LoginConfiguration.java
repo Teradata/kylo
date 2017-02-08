@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.auth.jaas;
 
@@ -33,6 +33,6 @@ import javax.security.auth.login.AppConfigurationEntry;
 public interface LoginConfiguration {
 
     AppConfigurationEntry[] getApplicationEntries(String appName);
-    
+
     Map<String, AppConfigurationEntry[]> getAllApplicationEntries();
 }

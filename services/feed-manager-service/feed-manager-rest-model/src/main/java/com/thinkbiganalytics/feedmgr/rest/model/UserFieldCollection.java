@@ -30,10 +30,14 @@ import java.util.Set;
  */
 public class UserFieldCollection {
 
-    /** User-defined fields for categories */
+    /**
+     * User-defined fields for categories
+     */
     private Set<UserField> categoryFields;
 
-    /** User-defined fields for feeds */
+    /**
+     * User-defined fields for feeds
+     */
     private Set<UserField> feedFields;
 
     /**

@@ -32,30 +32,22 @@ public interface BatchStepExecutionProvider {
 
 
     /**
-     *  Update a StepExecution record
-     * @param stepExecution
-     * @return
+     * Update a StepExecution record
      */
     BatchStepExecution update(BatchStepExecution stepExecution);
 
     /**
      * For a given JobExecution ensure the steps matching the nifi failed events are failed, if the Job is indicated as having failures
-     * @param jobExecution
-     * @return
      */
     boolean ensureFailureSteps(BatchJobExecution jobExecution);
 
     /**
      * Create a new StepExecution record  from a Provenance Event Record
-     * @param jobExecution
-     * @param event
-     * @return
      */
     BatchStepExecution createStepExecution(BatchJobExecution jobExecution, ProvenanceEventRecordDTO event);
 
     /**
      * When a step fails, get notified of the failure
-     * @param listener
      */
     void subscribeToFailedSteps(FailedStepExecutionListener listener);
 

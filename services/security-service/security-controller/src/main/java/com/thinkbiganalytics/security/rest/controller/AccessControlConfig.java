@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.security.rest.controller;
 
@@ -45,8 +45,8 @@ public class AccessControlConfig {
 //            return actions;
 //        };
 //    }
-    
-    @Bean(name="actionsModelTransform")
+
+    @Bean(name = "actionsModelTransform")
     public ActionsModelTransform modelTransform() {
         return new ActionsModelTransform();
     }

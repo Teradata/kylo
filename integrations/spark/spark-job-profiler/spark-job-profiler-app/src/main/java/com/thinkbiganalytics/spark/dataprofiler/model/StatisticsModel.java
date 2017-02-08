@@ -54,9 +54,8 @@ import java.util.Map;
 @SuppressWarnings("serial")
 public class StatisticsModel implements Serializable {
 
-    private final Map<Integer, ColumnStatistics> columnStatisticsMap = new HashMap<>();
     private static final Logger log = LoggerFactory.getLogger(StatisticsModel.class);
-
+    private final Map<Integer, ColumnStatistics> columnStatisticsMap = new HashMap<>();
 
     /**
      * Include a column value in calculation of profile statistics for the column

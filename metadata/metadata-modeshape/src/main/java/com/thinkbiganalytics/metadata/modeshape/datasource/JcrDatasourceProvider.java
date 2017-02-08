@@ -62,26 +62,8 @@ import javax.jcr.RepositoryException;
 public class JcrDatasourceProvider extends BaseJcrProvider<Datasource, Datasource.ID> implements DatasourceProvider {
 
     private static final Logger log = LoggerFactory.getLogger(JcrDatasourceProvider.class);
-
-    @Inject
-    private MetadataAccess metadataAccess;
-
     private static final Map<Class<? extends Datasource>, Class<? extends JcrDatasource>> DOMAIN_TYPES_MAP;
-
-    static {
-        Map<Class<? extends Datasource>, Class<? extends JcrDatasource>> map = new HashMap<>();
-        map.put(DerivedDatasource.class, JcrDerivedDatasource.class);
-        DOMAIN_TYPES_MAP = map;
-    }
-
     private static final Map<String, Class<? extends JcrDatasource>> NODE_TYPES_MAP;
-
-    static {
-        Map<String, Class<? extends JcrDatasource>> map = new HashMap<>();
-        map.put(JcrDerivedDatasource.NODE_TYPE, JcrDerivedDatasource.class);
-        NODE_TYPES_MAP = map;
-    }
-
     public static JcrObjectTypeResolver<? extends JcrDatasource> TYPE_RESOLVER = new JcrObjectTypeResolver<JcrDatasource>() {
         @Override
         public Class<? extends JcrDatasource> resolve(Node node) {
@@ -96,6 +78,37 @@ public class JcrDatasourceProvider extends BaseJcrProvider<Datasource, Datasourc
             }
         }
     };
+
+    static {
+        Map<Class<? extends Datasource>, Class<? extends JcrDatasource>> map = new HashMap<>();
+        map.put(DerivedDatasource.class, JcrDerivedDatasource.class);
+        DOMAIN_TYPES_MAP = map;
+    }
+
+    static {
+        Map<String, Class<? extends JcrDatasource>> map = new HashMap<>();
+        map.put(JcrDerivedDatasource.NODE_TYPE, JcrDerivedDatasource.class);
+        NODE_TYPES_MAP = map;
+    }
+
+    @Inject
+    private MetadataAccess metadataAccess;
+
+    public static Class<? extends JcrEntity> resolveJcrEntityClass(String jcrNodeType) {
+        if (NODE_TYPES_MAP.containsKey(jcrNodeType)) {
+            return NODE_TYPES_MAP.get(jcrNodeType);
+        } else {
+            return JcrDatasource.class;
+        }
+    }
+
+    public static Class<? extends JcrEntity> resolveJcrEntityClass(Node node) {
+        try {
+            return resolveJcrEntityClass(node.getPrimaryNodeType().getName());
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to determine type of node: " + node, e);
+        }
+    }
 
     /**
      * Finds the derived ds by Type and System Name
@@ -129,7 +142,7 @@ public class JcrDatasourceProvider extends BaseJcrProvider<Datasource, Datasourc
      * gets or creates the Derived datasource
      */
     public DerivedDatasource ensureDerivedDatasource(String datasourceType, String identityString, String title, String desc, Map<String, Object> properties) {
-       //ensure the identity String is not null
+        //ensure the identity String is not null
         if (identityString == null) {
             identityString = "";
         }
@@ -181,23 +194,6 @@ public class JcrDatasourceProvider extends BaseJcrProvider<Datasource, Datasourc
         }
 
         return derivedDatasource;
-    }
-
-
-    public static Class<? extends JcrEntity> resolveJcrEntityClass(String jcrNodeType) {
-        if (NODE_TYPES_MAP.containsKey(jcrNodeType)) {
-            return NODE_TYPES_MAP.get(jcrNodeType);
-        } else {
-            return JcrDatasource.class;
-        }
-    }
-
-    public static Class<? extends JcrEntity> resolveJcrEntityClass(Node node) {
-        try {
-            return resolveJcrEntityClass(node.getPrimaryNodeType().getName());
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Failed to determine type of node: " + node, e);
-        }
     }
 
     @Override

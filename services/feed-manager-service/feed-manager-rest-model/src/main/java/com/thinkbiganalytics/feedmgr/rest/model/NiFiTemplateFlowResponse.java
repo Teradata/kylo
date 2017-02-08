@@ -30,18 +30,14 @@ import java.util.stream.Collectors;
  */
 public class NiFiTemplateFlowResponse {
 
-    private List<KyloProcessorFlowTypeOption> processorFlowTypes;
-
-    private boolean userDefinedFailureProcessors;
-
-    private NiFiTemplateFlowRequest request;
-
-    private List<TemplateProcessorDatasourceDefinition> templateProcessorDatasourceDefinitions;
-
     /**
      * Returned set of pro
      */
     List<RegisteredTemplate.FlowProcessor> processors;
+    private List<KyloProcessorFlowTypeOption> processorFlowTypes;
+    private boolean userDefinedFailureProcessors;
+    private NiFiTemplateFlowRequest request;
+    private List<TemplateProcessorDatasourceDefinition> templateProcessorDatasourceDefinitions;
 
 
     public NiFiTemplateFlowResponse() {

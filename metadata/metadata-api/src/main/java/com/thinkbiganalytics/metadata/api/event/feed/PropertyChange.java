@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Properties;
 
 public class PropertyChange implements Serializable {
+
     private static final long serialVersionUID = 1L;
 
     private static final String NIFI_NAMESPACE = "nifi";
@@ -37,7 +38,8 @@ public class PropertyChange implements Serializable {
     private String feedId;
     private List<String> hadoopSecurityGroupNames;
 
-    public PropertyChange(String feedId, String feedCategorySystemName, String feedSystemName, List<String> hadoopSecurityGroupNames, Map<String, Object> oldProperties, Map<String, Object> newProperties) {
+    public PropertyChange(String feedId, String feedCategorySystemName, String feedSystemName, List<String> hadoopSecurityGroupNames, Map<String, Object> oldProperties,
+                          Map<String, Object> newProperties) {
         this.feedId = feedId;
         this.oldProperties = convertMapToProperties(oldProperties);
         this.newProperties = convertMapToProperties(newProperties);
@@ -51,9 +53,9 @@ public class PropertyChange implements Serializable {
         Properties oldProperties = getOldNifiMetadataProperties();
         Properties newProperties = getNewNifiMetadataProperties();
 
-        oldProperties.forEach((k,v) -> {
-            if(newProperties.get(k) == null) {
-                nifiProperties.setProperty((String)k,(String)v);
+        oldProperties.forEach((k, v) -> {
+            if (newProperties.get(k) == null) {
+                nifiProperties.setProperty((String) k, (String) v);
             }
         });
         return nifiProperties;
@@ -61,10 +63,10 @@ public class PropertyChange implements Serializable {
 
     private Properties getOldNifiMetadataProperties() {
         Properties nifiProperties = new Properties();
-        oldProperties.forEach((k,v) -> {
-            String key = (String)k;
-            if(key.startsWith(NIFI_NAMESPACE + ":")) {
-                nifiProperties.setProperty((String)k, (String)v);
+        oldProperties.forEach((k, v) -> {
+            String key = (String) k;
+            if (key.startsWith(NIFI_NAMESPACE + ":")) {
+                nifiProperties.setProperty((String) k, (String) v);
             }
         });
 
@@ -73,10 +75,10 @@ public class PropertyChange implements Serializable {
 
     private Properties getNewNifiMetadataProperties() {
         Properties nifiProperties = new Properties();
-        newProperties.forEach((k,v) -> {
-            String key = (String)k;
-            if(key.startsWith(NIFI_NAMESPACE + ":")) {
-                nifiProperties.setProperty((String)k, (String)v);
+        newProperties.forEach((k, v) -> {
+            String key = (String) k;
+            if (key.startsWith(NIFI_NAMESPACE + ":")) {
+                nifiProperties.setProperty((String) k, (String) v);
             }
         });
 

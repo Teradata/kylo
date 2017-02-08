@@ -25,13 +25,13 @@ import com.thinkbiganalytics.metadata.api.category.Category;
 
 /**
  */
-public interface FeedManagerCategory extends Category{
+public interface FeedManagerCategory extends Category {
 
     String getIcon();
 
-    String getIconColor();
-
     void setIcon(String icon);
+
+    String getIconColor();
 
     void setIconColor(String iconColor);
 }

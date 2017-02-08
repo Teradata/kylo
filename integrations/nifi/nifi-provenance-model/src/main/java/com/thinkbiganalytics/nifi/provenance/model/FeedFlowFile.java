@@ -115,10 +115,13 @@ public class FeedFlowFile implements Serializable {
     private boolean isBuiltFromMapDb;
 
 
+    public FeedFlowFile(String id) {
+        this.id = id;
+    }
+
     public String getId() {
         return id;
     }
-
 
     public Long getFirstEventId() {
         return firstEventId;
@@ -130,10 +133,6 @@ public class FeedFlowFile implements Serializable {
 
     public String getFirstEventProcessorId() {
         return firstEventProcessorId;
-    }
-
-    public FeedFlowFile(String id) {
-        this.id = id;
     }
 
     public boolean isStream() {

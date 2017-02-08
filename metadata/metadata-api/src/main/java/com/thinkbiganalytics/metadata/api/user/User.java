@@ -37,11 +37,6 @@ import javax.annotation.Nullable;
 public interface User {
 
     /**
-     * A unique identifier for a user.
-     */
-    interface ID extends Serializable {}
-
-    /**
      * Gets the display name for this user.
      *
      * @return the display name
@@ -130,8 +125,9 @@ public interface User {
     Principal getPrincipal();
 
     /**
-     * Collects a set of all group principals, both direct membership and transitive membership, 
+     * Collects a set of all group principals, both direct membership and transitive membership,
      * associated with this user.
+     *
      * @return the set of group principals
      */
     @Nonnull
@@ -151,4 +147,11 @@ public interface User {
      * @param groups the groups
      */
     void setGroups(@Nonnull Set<UserGroup> groups);
+
+    /**
+     * A unique identifier for a user.
+     */
+    interface ID extends Serializable {
+
+    }
 }

@@ -36,7 +36,9 @@ import javax.ws.rs.NotFoundException;
  */
 public class NiFiPortsRestClientV0 implements NiFiPortsRestClient {
 
-    /** REST client for communicating with NiFi */
+    /**
+     * REST client for communicating with NiFi
+     */
     private final NiFiRestClientV0 client;
 
     /**

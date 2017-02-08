@@ -21,9 +21,9 @@ package com.thinkbiganalytics.nifi.rest.model.visitor;
  */
 
 /**
- * Visitor that will walk a flow starting with a process group walking the connections, input/output ports, funnels etc, returning a {@link NifiVisitableProcessGroup} containing the graph of processors connected together
- * This visitor will eliminate the connections between processors and directly connect processors to other processors.
- * The connection objects are still maintained in a separate map on the returned {@link NifiVisitableProcessGroup}
+ * Visitor that will walk a flow starting with a process group walking the connections, input/output ports, funnels etc, returning a {@link NifiVisitableProcessGroup} containing the graph of
+ * processors connected together This visitor will eliminate the connections between processors and directly connect processors to other processors. The connection objects are still maintained in a
+ * separate map on the returned {@link NifiVisitableProcessGroup}
  */
 public interface NifiFlowVisitor {
 
@@ -43,12 +43,14 @@ public interface NifiFlowVisitor {
 
     /**
      * visit a process group
+     *
      * @param processGroup the process group to visit
      */
     void visitProcessGroup(NifiVisitableProcessGroup processGroup);
 
     /**
      * Return a visited processor by its processor id
+     *
      * @param id the processor id
      * @return the visited processor
      */
@@ -56,11 +58,11 @@ public interface NifiFlowVisitor {
 
     /**
      * Return the visited process group by its process group id
+     *
      * @param id the process group id
      * @return the visited process group
      */
     NifiVisitableProcessGroup getProcessGroup(String id);
-
 
 
 }

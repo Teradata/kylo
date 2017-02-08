@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.jpa.audit;
 
@@ -44,9 +44,9 @@ import javax.inject.Inject;
  * Retrieves and creates audit log entries.
  */
 public class JpaAuditLogProvider implements AuditLogProvider {
-    
+
     public static final int DEFAULT_LIMIT = 100;
-    
+
     private AuditLogRepository repository;
 
     @Inject
@@ -66,7 +66,7 @@ public class JpaAuditLogProvider implements AuditLogProvider {
             return new JpaAuditLogEntry.AuditLogId(id);
         }
     }
-    
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.audit.AuditLogProvider#list()
      */
@@ -74,7 +74,7 @@ public class JpaAuditLogProvider implements AuditLogProvider {
     public List<AuditLogEntry> list() {
         return list(DEFAULT_LIMIT);
     }
-    
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.audit.AuditLogProvider#list(int)
      */

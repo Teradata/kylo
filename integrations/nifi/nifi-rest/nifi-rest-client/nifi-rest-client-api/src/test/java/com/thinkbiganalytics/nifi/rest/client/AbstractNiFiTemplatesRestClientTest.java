@@ -34,7 +34,9 @@ import java.util.Set;
 
 public class AbstractNiFiTemplatesRestClientTest {
 
-    /** Verifies finding templates by an input port name */
+    /**
+     * Verifies finding templates by an input port name
+     */
     @Test
     public void findByInputPortName() {
         // Mock templates with only basic info
@@ -84,7 +86,9 @@ public class AbstractNiFiTemplatesRestClientTest {
         Assert.assertEquals(0, client.findByInputPortName("invalid").size());
     }
 
-    /** Verifies finding templates by matching the template name */
+    /**
+     * Verifies finding templates by matching the template name
+     */
     @Test
     public void findByName() {
         // Mock templates

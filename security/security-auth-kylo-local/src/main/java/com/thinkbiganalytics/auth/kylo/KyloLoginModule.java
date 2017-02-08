@@ -49,30 +49,46 @@ import javax.security.auth.spi.LoginModule;
  */
 public class KyloLoginModule extends AbstractLoginModule implements LoginModule {
 
-    /** Option for the {@link MetadataAccess} object */
+    /**
+     * Option for the {@link MetadataAccess} object
+     */
     public static final String METADATA_ACCESS = "metadataAccess";
 
-    /** Option for the {@link PasswordEncoder} object */
+    /**
+     * Option for the {@link PasswordEncoder} object
+     */
     public static final String PASSWORD_ENCODER = "passwordEncoder";
 
-    /** Option for the {@link UserProvider} object */
+    /**
+     * Option for the {@link UserProvider} object
+     */
     public static final String USER_PROVIDER = "userProvider";
-    
-    /** Option that indicates whether password authentication is required */
+
+    /**
+     * Option that indicates whether password authentication is required
+     */
     public static final String REQUIRE_PASSWORD = "requirePassword";
 
-    /** Metadata store */
+    /**
+     * Metadata store
+     */
     private MetadataAccess metadata;
 
-    /** Password encoder */
+    /**
+     * Password encoder
+     */
     private PasswordEncoder passwordEncoder;
-    
-    /** Whether to required password validation for authentication */
+
+    /**
+     * Whether to required password validation for authentication
+     */
     private boolean requirePassword = false;
 
-    /** Metadata user provider */
+    /**
+     * Metadata user provider
+     */
     private UserProvider userProvider;
-    
+
 
     @Override
     public void initialize(@Nonnull final Subject subject, @Nonnull final CallbackHandler callbackHandler, @Nonnull final Map<String, ?> sharedState, @Nonnull final Map<String, ?> options) {
@@ -89,7 +105,7 @@ public class KyloLoginModule extends AbstractLoginModule implements LoginModule 
         // Get username and password
         final NameCallback nameCallback = new NameCallback("Username: ");
         final PasswordCallback passwordCallback = new PasswordCallback("Password: ", false);
-        
+
         if (requirePassword) {
             handle(nameCallback, passwordCallback);
         } else {
@@ -99,21 +115,21 @@ public class KyloLoginModule extends AbstractLoginModule implements LoginModule 
         // Authenticate user
         metadata.read(() -> {
             Optional<User> user = userProvider.findUserBySystemName(nameCallback.getName());
-            
+
             if (user.isPresent()) {
-                if (! user.get().isEnabled()) {
+                if (!user.get().isEnabled()) {
                     throw new AccountLockedException("The account \"" + nameCallback.getName() + "\" is currently disabled");
                 } else if (requirePassword && passwordEncoder.matches(new String(passwordCallback.getPassword()), user.get().getPassword())) {
                     throw new CredentialException("The username and/or password combination do not match");
                 }
-                
+
                 addPrincipal(user.get().getPrincipal());
                 addAllPrincipals(user.get().getAllGroupPrincipals());
             } else {
                 throw new AccountNotFoundException("No account exists with name name \"" + nameCallback.getName() + "\"");
             }
         }, MetadataAccess.SERVICE);
-        
+
         return true;
     }
 
@@ -136,9 +152,6 @@ public class KyloLoginModule extends AbstractLoginModule implements LoginModule 
 
     /**
      * TODO
-     *
-     * @param cause
-     * @return
      */
     @Nonnull
     private LoginException newLoginException(@Nonnull final Throwable cause) {

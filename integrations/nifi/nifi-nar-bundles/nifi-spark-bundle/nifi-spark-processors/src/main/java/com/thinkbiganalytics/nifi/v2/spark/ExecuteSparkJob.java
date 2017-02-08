@@ -84,9 +84,6 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         .name("failure")
         .description("Spark execution failed. Incoming FlowFile will be penalized and routed to this relationship")
         .build();
-
-    private final Set<Relationship> relationships;
-
     public static final PropertyDescriptor APPLICATION_JAR = new PropertyDescriptor.Builder()
         .name("ApplicationJAR")
         .description("Path to the JAR file containing the Spark job application")
@@ -94,7 +91,6 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
-
     public static final PropertyDescriptor EXTRA_JARS = new PropertyDescriptor.Builder()
         .name("Extra JARs")
         .description("A file or a list of files separated by comma which should be added to the class path")
@@ -102,7 +98,6 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
-
     public static final PropertyDescriptor YARN_QUEUE = new PropertyDescriptor.Builder()
         .name("Yarn Queue")
         .description("Optional Yarn Queue")
@@ -110,7 +105,6 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
-
     public static final PropertyDescriptor MAIN_CLASS = new PropertyDescriptor.Builder()
         .name("MainClass")
         .description("Qualified classname of the Spark job application class")
@@ -118,7 +112,6 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
-
     public static final PropertyDescriptor MAIN_ARGS = new PropertyDescriptor.Builder()
         .name("MainArgs")
         .description("Comma separated arguments to be passed into the main as args")
@@ -126,7 +119,6 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
-
     public static final PropertyDescriptor SPARK_HOME = new PropertyDescriptor.Builder()
         .name("SparkHome")
         .description("Qualified classname of the Spark job application class")
@@ -135,7 +127,6 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
-
     public static final PropertyDescriptor SPARK_MASTER = new PropertyDescriptor.Builder()
         .name("SparkMaster")
         .description("The Spark master")
@@ -144,7 +135,6 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
-
     public static final PropertyDescriptor DRIVER_MEMORY = new PropertyDescriptor.Builder()
         .name("Driver Memory")
         .description("How much RAM to allocate to the driver")
@@ -153,7 +143,6 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
-
     public static final PropertyDescriptor EXECUTOR_MEMORY = new PropertyDescriptor.Builder()
         .name("Executor Memory")
         .description("How much RAM to allocate to the executor")
@@ -162,7 +151,6 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
-
     public static final PropertyDescriptor NUMBER_EXECUTORS = new PropertyDescriptor.Builder()
         .name("Number of Executors")
         .description("The number of exectors to be used")
@@ -171,7 +159,6 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
-
     public static final PropertyDescriptor EXECUTOR_CORES = new PropertyDescriptor.Builder()
         .name("Executor Cores")
         .description("The number of executor cores to be used")
@@ -180,7 +167,6 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
-
     public static final PropertyDescriptor SPARK_APPLICATION_NAME = new PropertyDescriptor.Builder()
         .name("Spark Application Name")
         .description("The name of the spark application")
@@ -188,7 +174,6 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
-
     public static final PropertyDescriptor NETWORK_TIMEOUT = new PropertyDescriptor.Builder()
         .name("Network Timeout")
         .description(
@@ -198,14 +183,12 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
-
     public static final PropertyDescriptor HADOOP_CONFIGURATION_RESOURCES = new PropertyDescriptor.Builder()
         .name("Hadoop Configuration Resources")
         .description("A file or comma separated list of files which contains the Hadoop file system configuration. Without this, Hadoop "
                      + "will search the classpath for a 'core-site.xml' and 'hdfs-site.xml' file or will revert to a default configuration.")
         .required(false).addValidator(createMultipleFilesExistValidator())
         .build();
-
     public static final PropertyDescriptor SPARK_CONFS = new PropertyDescriptor.Builder()
         .name("Spark Configurations")
         .description("Pipe separated arguments to be passed into the Spark as configurations i.e <CONF1>=<VALUE1>|<CONF2>=<VALUE2>..")
@@ -213,7 +196,6 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
-
     public static final PropertyDescriptor EXTRA_SPARK_FILES = new PropertyDescriptor.Builder()
         .name("Extra Files")
         .description("Comma separated file paths to be passed to the Spark Executors")
@@ -221,7 +203,6 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
-
     public static final PropertyDescriptor PROCESS_TIMEOUT = new PropertyDescriptor.Builder()
         .name("Spark Process Timeout")
         .description("Time to wait for successful completion of Spark process. Routes to failure if Spark process runs for longer than expected here")
@@ -230,8 +211,7 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.TIME_PERIOD_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
-
-
+    private final Set<Relationship> relationships;
     /**
      * Kerberos service keytab
      */
@@ -252,6 +232,38 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         r.add(REL_SUCCESS);
         r.add(REL_FAILURE);
         relationships = Collections.unmodifiableSet(r);
+    }
+
+    /*
+     * Validates that one or more files exist, as specified in a single property.
+     */
+    public static final Validator createMultipleFilesExistValidator() {
+        return new Validator() {
+            @Override
+            public ValidationResult validate(String subject, String input, ValidationContext context) {
+                final String[] files = input.split(",");
+                for (String filename : files) {
+                    try {
+                        final File file = new File(filename.trim());
+                        if (!file.exists()) {
+                            final String message = "file " + filename + " does not exist";
+                            return new ValidationResult.Builder().subject(subject).input(input).valid(false).explanation(message).build();
+                        } else if (!file.isFile()) {
+                            final String message = filename + " is not a file";
+                            return new ValidationResult.Builder().subject(subject).input(input).valid(false).explanation(message).build();
+                        } else if (!file.canRead()) {
+                            final String message = "could not read " + filename;
+                            return new ValidationResult.Builder().subject(subject).input(input).valid(false).explanation(message).build();
+                        }
+                    } catch (SecurityException e) {
+                        final String message = "Unable to access " + filename + " due to " + e.getMessage();
+                        return new ValidationResult.Builder().subject(subject).input(input).valid(false).explanation(message).build();
+                    }
+                }
+                return new ValidationResult.Builder().subject(subject).input(input).valid(true).build();
+            }
+
+        };
     }
 
     @Override
@@ -483,37 +495,5 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
             session.transfer(flowFile, REL_FAILURE);
         }
 
-    }
-
-    /*
-     * Validates that one or more files exist, as specified in a single property.
-     */
-    public static final Validator createMultipleFilesExistValidator() {
-        return new Validator() {
-            @Override
-            public ValidationResult validate(String subject, String input, ValidationContext context) {
-                final String[] files = input.split(",");
-                for (String filename : files) {
-                    try {
-                        final File file = new File(filename.trim());
-                        if (!file.exists()) {
-                            final String message = "file " + filename + " does not exist";
-                            return new ValidationResult.Builder().subject(subject).input(input).valid(false).explanation(message).build();
-                        } else if (!file.isFile()) {
-                            final String message = filename + " is not a file";
-                            return new ValidationResult.Builder().subject(subject).input(input).valid(false).explanation(message).build();
-                        } else if (!file.canRead()) {
-                            final String message = "could not read " + filename;
-                            return new ValidationResult.Builder().subject(subject).input(input).valid(false).explanation(message).build();
-                        }
-                    } catch (SecurityException e) {
-                        final String message = "Unable to access " + filename + " due to " + e.getMessage();
-                        return new ValidationResult.Builder().subject(subject).input(input).valid(false).explanation(message).build();
-                    }
-                }
-                return new ValidationResult.Builder().subject(subject).input(input).valid(true).build();
-            }
-
-        };
     }
 }

@@ -33,6 +33,7 @@ public class LongColumnDateTimeMapper extends AbstractVersionableLongColumnMappe
 
     public LongColumnDateTimeMapper() {
     }
+
     public DateTime fromNonNullString(String s) {
         return new Instant(s).toDateTime(DateTimeZone.UTC);
     }

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.security.auth.ad;
 
@@ -46,23 +46,21 @@ import javax.security.auth.login.AccountException;
  *
  */
 public class ActiveDirectoryLoginModule extends AbstractLoginModule {
-    
-    private static final Logger log = LoggerFactory.getLogger(ActiveDirectoryLoginModule.class);
 
     public static final String AUTH_PROVIDER = "authProvider";
-    
+    private static final Logger log = LoggerFactory.getLogger(ActiveDirectoryLoginModule.class);
     private AbstractLdapAuthenticationProvider authProvider;
-    
-    
+
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.auth.jaas.AbstractLoginModule#initialize(javax.security.auth.Subject, javax.security.auth.callback.CallbackHandler, java.util.Map, java.util.Map)
      */
     @Override
     public void initialize(Subject subject, CallbackHandler callbackHandler, Map<String, ?> sharedState, Map<String, ?> options) {
         super.initialize(subject, callbackHandler, sharedState, options);
-        
+
         this.authProvider = (AbstractLdapAuthenticationProvider) getOption(AUTH_PROVIDER)
-                        .orElseThrow(() -> new IllegalArgumentException("The \"" + AUTH_PROVIDER + "\" option is required"));
+            .orElseThrow(() -> new IllegalArgumentException("The \"" + AUTH_PROVIDER + "\" option is required"));
     }
 
     /* (non-Javadoc)
@@ -74,11 +72,11 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
         final PasswordCallback passwordCallback = new PasswordCallback("Password: ", false);
 
         handle(nameCallback, passwordCallback);
-        
+
         if (nameCallback.getName() == null) {
             throw new AccountException("No username provided for authentication");
         }
-        
+
         Principal userPrincipal = new UsernamePrincipal(nameCallback.getName());
         String password = new String(passwordCallback.getPassword());
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userPrincipal, password);
@@ -86,19 +84,19 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
         log.debug("Authenticating: {}", userPrincipal);
         Authentication authenticated = this.authProvider.authenticate(authentication);
         log.debug("Successfully Authenticated: {}", userPrincipal);
-        
+
         setUserPrincipal(userPrincipal);
 
         for (GrantedAuthority grant : authenticated.getAuthorities()) {
             String groupName = grant.getAuthority();
 
             log.debug("Found group for {}: {}", userPrincipal, groupName);
-            
+
             if (groupName != null) {
                 addNewGroupPrincipal(groupName);
             }
         }
-        
+
         return true;
     }
 

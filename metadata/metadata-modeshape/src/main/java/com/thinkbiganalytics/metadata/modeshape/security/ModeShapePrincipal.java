@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.modeshape.security;
 
@@ -31,7 +31,7 @@ import com.thinkbiganalytics.security.BasePrincipal;
 public class ModeShapePrincipal extends BasePrincipal {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
 

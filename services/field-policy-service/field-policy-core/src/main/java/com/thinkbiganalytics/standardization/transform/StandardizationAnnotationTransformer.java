@@ -35,36 +35,37 @@ import java.util.List;
 public class StandardizationAnnotationTransformer
     extends BasePolicyAnnotationTransformer<FieldStandardizationRule, StandardizationPolicy, Standardizer> implements StandardizationTransformer {
 
-  private static final StandardizationAnnotationTransformer instance = new StandardizationAnnotationTransformer();
+    private static final StandardizationAnnotationTransformer instance = new StandardizationAnnotationTransformer();
 
-  /**
-   * Create the User interface object
-   *
-   * @param annotation the class annotation to look for
-   * @param policy     the domain object needed to convert
-   * @param properties the fields that should be used/injected when creating the ui object t
-   * @return the converted user interface object
-   */
-  @Override
-  public FieldStandardizationRule buildUiModel(Standardizer annotation, StandardizationPolicy policy,
-                                               List<FieldRuleProperty> properties) {
-    FieldStandardizationRule
-        rule =
-        new FieldStandardizationRuleBuilder(annotation.name()).objectClassType(policy.getClass()).description(
-            annotation.description()).addProperties(properties).build();
-    return rule;
-  }
+    public static StandardizationAnnotationTransformer instance() {
+        return instance;
+    }
 
-  /**
-   * Return the Standardizer annotation to look for
-   * @return the Standardizer annotation class
-   */
-  @Override
-  public Class<Standardizer> getAnnotationClass() {
-    return Standardizer.class;
-  }
+    /**
+     * Create the User interface object
+     *
+     * @param annotation the class annotation to look for
+     * @param policy     the domain object needed to convert
+     * @param properties the fields that should be used/injected when creating the ui object t
+     * @return the converted user interface object
+     */
+    @Override
+    public FieldStandardizationRule buildUiModel(Standardizer annotation, StandardizationPolicy policy,
+                                                 List<FieldRuleProperty> properties) {
+        FieldStandardizationRule
+            rule =
+            new FieldStandardizationRuleBuilder(annotation.name()).objectClassType(policy.getClass()).description(
+                annotation.description()).addProperties(properties).build();
+        return rule;
+    }
 
-  public static StandardizationAnnotationTransformer instance() {
-    return instance;
-  }
+    /**
+     * Return the Standardizer annotation to look for
+     *
+     * @return the Standardizer annotation class
+     */
+    @Override
+    public Class<Standardizer> getAnnotationClass() {
+        return Standardizer.class;
+    }
 }

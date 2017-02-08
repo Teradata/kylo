@@ -28,10 +28,11 @@ import org.joda.time.ReadablePeriod;
 
 /**
  * Projected DTO object used to gather stats about a feed and job executions
+ *
  * @see com.thinkbiganalytics.metadata.jpa.feed.OpsFeedManagerFeedProvider#getJobStatusCountByDateFromNow(String, ReadablePeriod)
  * @see JpaBatchJobExecutionProvider#getJobStatusCount(String)
  */
-public class JpaBatchJobExecutionStatusCounts  implements JobStatusCount {
+public class JpaBatchJobExecutionStatusCounts implements JobStatusCount {
 
     private String feedName;
     private String jobName;
@@ -48,18 +49,18 @@ public class JpaBatchJobExecutionStatusCounts  implements JobStatusCount {
         this.count = count;
     }
 
-    public JpaBatchJobExecutionStatusCounts(String status,  Integer year, Integer month, Integer day,Long count) {
+    public JpaBatchJobExecutionStatusCounts(String status, Integer year, Integer month, Integer day, Long count) {
         this.status = status;
         this.count = count;
-        this.date = new DateTime().withDate(year,month,day);
+        this.date = new DateTime().withDate(year, month, day);
     }
-    public JpaBatchJobExecutionStatusCounts(String status,  String feedName, Integer year, Integer month, Integer day,Long count) {
+
+    public JpaBatchJobExecutionStatusCounts(String status, String feedName, Integer year, Integer month, Integer day, Long count) {
         this.status = status;
         this.count = count;
         this.feedName = feedName;
         this.date = new DateTime().withDate(year, month, day).withMillisOfDay(0);
     }
-
 
 
     public JpaBatchJobExecutionStatusCounts(JobStatusCount jobStatusCount) {

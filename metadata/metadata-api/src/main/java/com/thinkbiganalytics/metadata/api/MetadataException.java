@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.api;
 
@@ -50,5 +50,5 @@ public class MetadataException extends RuntimeException {
         super(cause);
     }
 
-    
+
 }

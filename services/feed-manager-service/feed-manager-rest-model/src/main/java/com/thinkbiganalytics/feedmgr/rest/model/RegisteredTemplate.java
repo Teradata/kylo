@@ -43,6 +43,7 @@ import java.util.stream.Collectors;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class RegisteredTemplate {
+
     private List<NifiProperty> properties;
 
     private List<Processor> nonInputProcessors;
@@ -90,11 +91,11 @@ public class RegisteredTemplate {
     @JsonIgnore
     private TemplateDTO nifiTemplate;
 
-    public RegisteredTemplate(){
+    public RegisteredTemplate() {
 
     }
 
-    public RegisteredTemplate(RegisteredTemplate registeredTemplate){
+    public RegisteredTemplate(RegisteredTemplate registeredTemplate) {
         this.id = registeredTemplate.getId();
         this.nifiTemplateId = registeredTemplate.getNifiTemplateId();
         this.templateName = registeredTemplate.getTemplateName();
@@ -108,18 +109,36 @@ public class RegisteredTemplate {
         this.description = registeredTemplate.getDescription();
         this.state = registeredTemplate.getState();
         //copy properties???
-        if(registeredTemplate.getProperties() != null) {
+        if (registeredTemplate.getProperties() != null) {
             this.properties = new ArrayList<>(registeredTemplate.getProperties());
         }
         this.reusableTemplate = registeredTemplate.isReusableTemplate();
-        if(registeredTemplate.getReusableTemplateConnections() != null) {
+        if (registeredTemplate.getReusableTemplateConnections() != null) {
             this.reusableTemplateConnections = new ArrayList<>(registeredTemplate.getReusableTemplateConnections());
         }
-        this.feedsCount= registeredTemplate.getFeedsCount();
+        this.feedsCount = registeredTemplate.getFeedsCount();
         this.registeredDatasourceDefinitions = registeredTemplate.getRegisteredDatasourceDefinitions();
         this.order = registeredTemplate.getOrder();
         this.isStream = registeredTemplate.isStream();
         this.initializeProcessors();
+    }
+
+    @JsonIgnore
+    public static Predicate<NifiProperty> isValidInput() {
+        return property -> property.isInputProperty() && !NifiProcessUtil.CLEANUP_TYPE.equalsIgnoreCase(property.getProcessorType());
+    }
+
+    @JsonIgnore
+    public static Predicate<Processor> isValidInputProcessor() {
+        return processor -> !NifiProcessUtil.CLEANUP_TYPE.equalsIgnoreCase(processor.getType());
+    }
+
+    @JsonIgnore
+    public static Predicate<NifiProperty> isPropertyModifiedFromTemplateValue() {
+        return property -> (property.isSelected() && ((property.getValue() == null && property.getTemplateValue() != null)
+                                                      || (property.getValue() != null && !property.getValue().equalsIgnoreCase(property.getTemplateValue()))
+        ));
+
     }
 
     public List<NifiProperty> getProperties() {
@@ -186,7 +205,6 @@ public class RegisteredTemplate {
         this.dataTransformation = dataTransformation;
     }
 
-
     public String getIcon() {
         return icon;
     }
@@ -211,15 +229,13 @@ public class RegisteredTemplate {
         this.description = description;
     }
 
-
     public String getId() {
         return id;
     }
 
-    public void setId(String id){
+    public void setId(String id) {
         this.id = id;
     }
-
 
     public boolean isReusableTemplate() {
         return reusableTemplate;
@@ -238,7 +254,7 @@ public class RegisteredTemplate {
         this.reusableTemplateConnections = reusableTemplateConnections;
     }
 
-    public boolean usesReusableTemplate(){
+    public boolean usesReusableTemplate() {
         return getReusableTemplateConnections() != null && !getReusableTemplateConnections().isEmpty();
     }
 
@@ -266,24 +282,6 @@ public class RegisteredTemplate {
         this.inputProcessors = inputProcessors;
     }
 
-    @JsonIgnore
-    public static Predicate<NifiProperty> isValidInput(){
-        return property -> property.isInputProperty() && !NifiProcessUtil.CLEANUP_TYPE.equalsIgnoreCase(property.getProcessorType());
-    }
-
-    @JsonIgnore
-    public static Predicate<Processor> isValidInputProcessor(){
-        return processor -> !NifiProcessUtil.CLEANUP_TYPE.equalsIgnoreCase(processor.getType());
-    }
-
-    @JsonIgnore
-    public static Predicate<NifiProperty> isPropertyModifiedFromTemplateValue() {
-        return property -> (property.isSelected() && ((property.getValue() == null && property.getTemplateValue() != null)
-                                                      || (property.getValue() != null && !property.getValue().equalsIgnoreCase(property.getTemplateValue()))
-        ));
-
-    }
-
     public List<NifiProperty> findModifiedDefaultProperties() {
         if (properties != null) {
             return getProperties().stream().filter(isPropertyModifiedFromTemplateValue()).collect(Collectors.toList());
@@ -293,7 +291,7 @@ public class RegisteredTemplate {
     }
 
     @JsonIgnore
-    public void initializeNonInputProcessors(){
+    public void initializeNonInputProcessors() {
         Map<String, Processor> processorMap = new HashMap<>();
 
         properties.stream().filter(property -> !property.isInputProperty()).forEach(property -> {
@@ -303,7 +301,7 @@ public class RegisteredTemplate {
     }
 
     @JsonIgnore
-    public void initializeInputProcessors(){
+    public void initializeInputProcessors() {
         Map<String, Processor> processorMap = new HashMap<>();
 
         properties.stream().filter(isValidInput()).forEach(property -> {
@@ -312,20 +310,19 @@ public class RegisteredTemplate {
         inputProcessors = Lists.newArrayList(processorMap.values());
     }
 
-    public void initializeProcessors(){
+    public void initializeProcessors() {
         Map<String, Processor> processorMap = new HashMap<>();
         Map<String, Processor> inputProcessorMap = new HashMap<>();
         Map<String, Processor> nonInputProcessorMap = new HashMap<>();
 
         properties.stream().forEach(property -> {
             processorMap.computeIfAbsent(property.getProcessorId(), processorId -> new Processor(property.getProcessorId())).addProperty(property);
-            if(property.isInputProperty()){
+            if (property.isInputProperty()) {
                 //dont allow the cleanup processor as a valid input selection
-                if(property.isInputProperty() && !NifiProcessUtil.CLEANUP_TYPE.equalsIgnoreCase(property.getProcessorType())) {
+                if (property.isInputProperty() && !NifiProcessUtil.CLEANUP_TYPE.equalsIgnoreCase(property.getProcessorType())) {
                     inputProcessorMap.computeIfAbsent(property.getProcessorId(), processorId -> processorMap.get(property.getProcessorId()));
                 }
-            }
-            else{
+            } else {
                 nonInputProcessorMap.computeIfAbsent(property.getProcessorId(), processorId -> processorMap.get(property.getProcessorId()));
             }
 
@@ -336,6 +333,66 @@ public class RegisteredTemplate {
 
     }
 
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
+    }
+
+    public List<String> getTemplateOrder() {
+        return templateOrder;
+    }
+
+    public void setTemplateOrder(List<String> templateOrder) {
+        this.templateOrder = templateOrder;
+    }
+
+    public Long getOrder() {
+        return order;
+    }
+
+    public void setOrder(Long order) {
+        this.order = order;
+    }
+
+    public List<TemplateProcessorDatasourceDefinition> getRegisteredDatasourceDefinitions() {
+        if (registeredDatasourceDefinitions == null) {
+            registeredDatasourceDefinitions = new ArrayList<>();
+        }
+        return registeredDatasourceDefinitions;
+    }
+
+    public void setRegisteredDatasourceDefinitions(List<TemplateProcessorDatasourceDefinition> registeredDatasources) {
+        this.registeredDatasourceDefinitions = registeredDatasources;
+    }
+
+    public TemplateDTO getNifiTemplate() {
+        return nifiTemplate;
+    }
+
+    public void setNifiTemplate(TemplateDTO nifiTemplate) {
+        this.nifiTemplate = nifiTemplate;
+    }
+
+    @JsonIgnore
+    public Set<String> getFeedNames() {
+        return feedNames;
+    }
+
+    @JsonIgnore
+    public void setFeedNames(Set<String> feedNames) {
+        this.feedNames = feedNames;
+    }
+
+    public boolean isStream() {
+        return isStream;
+    }
+
+    public void setStream(boolean isStream) {
+        this.isStream = isStream;
+    }
 
     public static class FlowProcessor extends RegisteredTemplate.Processor {
 
@@ -369,6 +426,8 @@ public class RegisteredTemplate {
     }
 
     public static class Processor {
+
+        List<NifiProperty> properties;
         private String type;
         private String name;
         private String id;
@@ -376,9 +435,8 @@ public class RegisteredTemplate {
         private String groupId;
         private boolean inputProcessor;
         private boolean userDefinedInputProcessor;
-        List<NifiProperty> properties;
 
-        public Processor(){
+        public Processor() {
 
         }
 
@@ -387,26 +445,26 @@ public class RegisteredTemplate {
         }
 
 
-        private void setProcessorData(NifiProperty property){
-            if(StringUtils.isBlank(name)){
+        private void setProcessorData(NifiProperty property) {
+            if (StringUtils.isBlank(name)) {
                 name = property.getProcessorName();
             }
-            if(StringUtils.isBlank(groupName)){
+            if (StringUtils.isBlank(groupName)) {
                 groupName = property.getProcessGroupName();
             }
-            if(StringUtils.isBlank(groupId)){
+            if (StringUtils.isBlank(groupId)) {
                 groupId = property.getProcessGroupId();
             }
-            if(StringUtils.isBlank(type)) {
+            if (StringUtils.isBlank(type)) {
                 type = property.getProcessorType();
             }
-            if(property.isInputProperty()){
-                inputProcessor =true;
+            if (property.isInputProperty()) {
+                inputProcessor = true;
             }
         }
 
 
-        public void addProperty(NifiProperty property){
+        public void addProperty(NifiProperty property) {
             getProperties().add(property);
             setProcessorData(property);
         }
@@ -468,7 +526,7 @@ public class RegisteredTemplate {
         }
 
         public List<NifiProperty> getProperties() {
-            if(properties == null){
+            if (properties == null) {
                 properties = new ArrayList<>();
             }
             return properties;
@@ -479,68 +537,6 @@ public class RegisteredTemplate {
         }
 
 
-    }
-
-
-    public String getState() {
-        return state;
-    }
-
-    public void setState(String state) {
-        this.state = state;
-    }
-
-    public List<String> getTemplateOrder() {
-        return templateOrder;
-    }
-
-    public void setTemplateOrder(List<String> templateOrder) {
-        this.templateOrder = templateOrder;
-    }
-
-    public Long getOrder() {
-        return order;
-    }
-
-    public void setOrder(Long order) {
-        this.order = order;
-    }
-
-    public List<TemplateProcessorDatasourceDefinition> getRegisteredDatasourceDefinitions() {
-        if(registeredDatasourceDefinitions == null) {
-            registeredDatasourceDefinitions = new ArrayList<>();
-        }
-        return registeredDatasourceDefinitions;
-    }
-
-    public void setRegisteredDatasourceDefinitions(List<TemplateProcessorDatasourceDefinition> registeredDatasources) {
-        this.registeredDatasourceDefinitions = registeredDatasources;
-    }
-
-    public TemplateDTO getNifiTemplate() {
-        return nifiTemplate;
-    }
-
-    public void setNifiTemplate(TemplateDTO nifiTemplate) {
-        this.nifiTemplate = nifiTemplate;
-    }
-
-    @JsonIgnore
-    public Set<String> getFeedNames() {
-        return feedNames;
-    }
-    @JsonIgnore
-    public void setFeedNames(Set<String> feedNames) {
-        this.feedNames = feedNames;
-    }
-
-
-    public boolean isStream() {
-        return isStream;
-    }
-
-    public void setStream(boolean isStream) {
-        this.isStream = isStream;
     }
 
 

@@ -54,6 +54,10 @@ public class TimestampColumnCase1Test extends ProfilerTest {
     private static Timestamp maxTimestamp;
     private static Timestamp minTimestamp;
 
+    @AfterClass
+    public static void tearDownClass() {
+        System.out.println("\t*** Completed run for TimestampColumnCase1Test ***");
+    }
 
     @Before
     public void setUp() {
@@ -71,42 +75,35 @@ public class TimestampColumnCase1Test extends ProfilerTest {
         minTimestamp = Timestamp.valueOf("2007-03-16 08:24:31");
     }
 
-
     @Test
     public void testTimestampNullCount() {
         Assert.assertEquals(nullCount, columnStats.getNullCount());
     }
-
 
     @Test
     public void testTimestampTotalCount() {
         Assert.assertEquals(totalCount, columnStats.getTotalCount());
     }
 
-
     @Test
     public void testTimestampUniqueCount() {
         Assert.assertEquals(uniqueCount, columnStats.getUniqueCount());
     }
-
 
     @Test
     public void testTimestampPercNullValues() {
         assertEquals(percNullValues, columnStats.getPercNullValues(), epsilon);
     }
 
-
     @Test
     public void testTimestampPercUniqueValues() {
         assertEquals(percUniqueValues, columnStats.getPercUniqueValues(), epsilon);
     }
 
-
     @Test
     public void testTimestampPercDuplicateValues() {
         assertEquals(percDuplicateValues, columnStats.getPercDuplicateValues(), epsilon);
     }
-
 
     @Test
     public void testTimestampTopNValues() {
@@ -138,21 +135,14 @@ public class TimestampColumnCase1Test extends ProfilerTest {
         }
     }
 
-
     @Test
     public void testTimestampMaxTimestamp() {
         Assert.assertEquals(maxTimestamp, ((TimestampColumnStatistics) columnStats).getMaxTimestamp());
     }
 
-
     @Test
     public void testTimestampMinTimestamp() {
         Assert.assertEquals(minTimestamp, ((TimestampColumnStatistics) columnStats).getMinTimestamp());
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-        System.out.println("\t*** Completed run for TimestampColumnCase1Test ***");
     }
 
 }

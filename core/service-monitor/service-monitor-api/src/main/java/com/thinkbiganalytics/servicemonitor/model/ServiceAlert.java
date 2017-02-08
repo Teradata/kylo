@@ -36,61 +36,59 @@ public interface ServiceAlert {
      */
     String getServiceName();
 
-  void setServiceName(String serviceName);
+    void setServiceName(String serviceName);
 
     /**
      * The name of the component for this alert
      */
     String getComponentName();
 
-  void setComponentName(String componentName);
+    void setComponentName(String componentName);
 
-  /**
-   * The label shown on the service component -> alert details page
-   * @return
-   */
-  String getLabel();
+    /**
+     * The label shown on the service component -> alert details page
+     */
+    String getLabel();
 
-  /**
-   * Set the label for this alert
-   * @param label
-   */
-  void setLabel(String label);
+    /**
+     * Set the label for this alert
+     */
+    void setLabel(String label);
 
-  String getMessage();
+    String getMessage();
 
-  void setMessage(String message);
+    void setMessage(String message);
 
-  Date getFirstTimestamp();
+    Date getFirstTimestamp();
 
-  void setFirstTimestamp(Date firstTimestamp);
+    void setFirstTimestamp(Date firstTimestamp);
 
-  Date getLatestTimestamp();
+    Date getLatestTimestamp();
 
-  void setLatestTimestamp(Date latestTimestamp);
+    void setLatestTimestamp(Date latestTimestamp);
 
-  STATE getState();
+    STATE getState();
 
-  void setState(STATE state);
+    void setState(STATE state);
 
-  public enum STATE {
-    OK(1), UNKNOWN(2), WARNING(3), CRITICAL(4);
-    private int severity;
+    public enum STATE {
+        OK(1), UNKNOWN(2), WARNING(3), CRITICAL(4);
+        private int severity;
 
-    STATE(int severity) {
-      this.severity = severity;
+        STATE(int severity) {
+            this.severity = severity;
+        }
+
+        public int getSeverity() {
+            return this.severity;
+        }
+
+        public boolean isError() {
+            return this.severity > 1;
+        }
+
+        public boolean isHealthy() {
+            return this.severity == 1;
+        }
     }
-
-    public int getSeverity() {
-      return this.severity;
-    }
-
-    public boolean isError() {
-      return this.severity > 1;
-    }
-
-    public boolean isHealthy() {
-      return this.severity == 1;
-    }
-  }
 }

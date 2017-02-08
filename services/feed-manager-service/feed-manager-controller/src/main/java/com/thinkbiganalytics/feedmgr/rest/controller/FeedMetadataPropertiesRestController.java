@@ -57,9 +57,9 @@ public class FeedMetadataPropertiesRestController {
     @ApiOperation(value = "Gets the available metadata properties.",
                   notes = "Returns a list of all properties that can be assigned during the feed registration process.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "Returns the metadata properties.", response = AnnotatedFieldProperty.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Returns the metadata properties.", response = AnnotatedFieldProperty.class, responseContainer = "List")
     )
-    public Response getProperties(){
+    public Response getProperties() {
         List<AnnotatedFieldProperty> properties = propertyExpressionResolver.getMetadataProperties();
         return Response.ok(properties).build();
     }

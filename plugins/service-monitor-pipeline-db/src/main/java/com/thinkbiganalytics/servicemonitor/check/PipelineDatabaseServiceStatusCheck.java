@@ -31,19 +31,19 @@ import javax.inject.Inject;
 
 public class PipelineDatabaseServiceStatusCheck implements ServiceStatusCheck {
 
-  @Inject
-  DatabaseServiceCheckDao databaseServiceCheckDao;
+    @Inject
+    DatabaseServiceCheckDao databaseServiceCheckDao;
 
 
-  @Override
-  public ServiceStatusResponse healthCheck() {
+    @Override
+    public ServiceStatusResponse healthCheck() {
 
-    return databaseServiceCheckDao.healthCheck();
+        return databaseServiceCheckDao.healthCheck();
 
 
-  }
+    }
 
-  protected void setDatabaseServiceCheckDao(DatabaseServiceCheckDao databaseServiceCheckDao) {
-    this.databaseServiceCheckDao = databaseServiceCheckDao;
-  }
+    protected void setDatabaseServiceCheckDao(DatabaseServiceCheckDao databaseServiceCheckDao) {
+        this.databaseServiceCheckDao = databaseServiceCheckDao;
+    }
 }

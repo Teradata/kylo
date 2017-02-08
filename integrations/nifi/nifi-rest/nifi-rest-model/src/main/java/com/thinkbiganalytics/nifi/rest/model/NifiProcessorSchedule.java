@@ -25,7 +25,6 @@ import com.thinkbiganalytics.metadata.MetadataField;
 
 /**
  * Hold Schedule information for the feed
- *
  */
 public class NifiProcessorSchedule {
 
@@ -49,6 +48,7 @@ public class NifiProcessorSchedule {
 
     /**
      * set the schedule period (either timer string or cron expression)
+     *
      * @param schedulingPeriod the schedule period (either timer string or cron expression)
      */
     public void setSchedulingPeriod(String schedulingPeriod) {
@@ -57,6 +57,7 @@ public class NifiProcessorSchedule {
 
     /**
      * Return the strategy, "TIMER_DRIVEN","CRON_DRIVEN","TRIGGER_DRIVEN".  This strategy is used with the {@link this#schedulingPeriod}
+     *
      * @return the strategy, "TIMER_DRIVEN","CRON_DRIVEN","TRIGGER_DRIVEN"
      */
     public String getSchedulingStrategy() {
@@ -69,6 +70,7 @@ public class NifiProcessorSchedule {
 
     /**
      * The number of concurrent tasks allowed for the processor
+     *
      * @return the number of concurrent tasks allowed for the processor
      */
     public Integer getConcurrentTasks() {

@@ -29,7 +29,6 @@ import java.io.Serializable;
 
 /**
  * Group Statistics by Processor
- *
  */
 public class AggregatedProcessorStatistics implements Serializable {
 
@@ -38,7 +37,6 @@ public class AggregatedProcessorStatistics implements Serializable {
     String processorId;
     String processorName;
     GroupedStats stats;
-
 
 
     public AggregatedProcessorStatistics(String processorId, String processorName, String collectionId) {

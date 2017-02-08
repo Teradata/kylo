@@ -77,7 +77,7 @@ public class UtilityRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Validates the specified cron expression.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "Returns the result.", response = Map.class)
+        @ApiResponse(code = 200, message = "Returns the result.", response = Map.class)
     )
     public Response validateCronExpression(@QueryParam("cronExpression") String cronExpression) {
         boolean valid = CronExpression.isValidExpression(cronExpression);
@@ -89,7 +89,7 @@ public class UtilityRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the next matching times of the cron expression.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "Returns the times.", response = String.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Returns the times.", response = String.class, responseContainer = "List")
     )
     public Response previewCronExpression(@QueryParam("cronExpression") String cronExpression, @QueryParam("number") @DefaultValue("3") Integer number) {
         List<Date> dates = new ArrayList<>();
@@ -113,7 +113,7 @@ public class UtilityRestController {
     @Produces(MediaType.TEXT_PLAIN)
     @ApiOperation("Generates a system name from the specified name.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "Returns the system name.", response = String.class)
+        @ApiResponse(code = 200, message = "Returns the system name.", response = String.class)
     )
     public Response generateSystemName(@QueryParam("name") String name) {
         String systemName = SystemNamingService.generateSystemName(name);
@@ -125,7 +125,7 @@ public class UtilityRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the languages supported by CodeMirror.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "Returns a mime-type to language mapping.", response = Map.class)
+        @ApiResponse(code = 200, message = "Returns a mime-type to language mapping.", response = Map.class)
     )
     public Response codeMirrorTypes() {
         Map<String, String> types = UIService.getInstance().getCodeMirrorTypes();
@@ -137,7 +137,7 @@ public class UtilityRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the list of available icon colors.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "Returns the icon colors.", response = Map.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Returns the icon colors.", response = Map.class, responseContainer = "List")
     )
     public Response iconColors() {
 
@@ -166,7 +166,7 @@ public class UtilityRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the list of available icons.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "Returns the icons.", response = String.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Returns the icons.", response = String.class, responseContainer = "List")
     )
     public Response icons() {
         String iconJson = fileResourceService.getResourceAsString("classpath:/icons.json");
@@ -200,7 +200,7 @@ public class UtilityRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Gets the list of partition functions.", notes = "These functions can be used to produce partition values.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "Returns the partition functions.", response = String.class, responseContainer = "Set")
+        @ApiResponse(code = 200, message = "Returns the partition functions.", response = String.class, responseContainer = "Set")
     )
     @Nonnull
     public Response partitionFunctions() {

@@ -35,35 +35,36 @@ import java.util.List;
 public class ValidatorAnnotationTransformer
     extends BasePolicyAnnotationTransformer<FieldValidationRule, ValidationPolicy, Validator> implements ValidationTransformer {
 
-  private static final ValidatorAnnotationTransformer instance = new ValidatorAnnotationTransformer();
+    private static final ValidatorAnnotationTransformer instance = new ValidatorAnnotationTransformer();
 
-  /**
-   * Create the User interface object
-   *
-   * @param annotation the Validator class annotation to look for
-   * @param policy     the domain object needed to convert
-   * @param properties the fields that should be used/injected when creating the ui object t
-   * @return the converted user interface object
-   */
-  @Override
-  public FieldValidationRule buildUiModel(Validator annotation, ValidationPolicy policy,
-                                          List<FieldRuleProperty> properties) {
+    public static ValidatorAnnotationTransformer instance() {
+        return instance;
+    }
 
-    FieldValidationRule rule = new FieldValidationRuleBuilder(annotation.name()).objectClassType(policy.getClass()).description(
-        annotation.description()).addProperties(properties).build();
-    return rule;
-  }
+    /**
+     * Create the User interface object
+     *
+     * @param annotation the Validator class annotation to look for
+     * @param policy     the domain object needed to convert
+     * @param properties the fields that should be used/injected when creating the ui object t
+     * @return the converted user interface object
+     */
+    @Override
+    public FieldValidationRule buildUiModel(Validator annotation, ValidationPolicy policy,
+                                            List<FieldRuleProperty> properties) {
 
-  /**
-   * Return the Validator annotation class
-   * @return the Validator annotation class
-   */
-  @Override
-  public Class<Validator> getAnnotationClass() {
-    return Validator.class;
-  }
+        FieldValidationRule rule = new FieldValidationRuleBuilder(annotation.name()).objectClassType(policy.getClass()).description(
+            annotation.description()).addProperties(properties).build();
+        return rule;
+    }
 
-  public static ValidatorAnnotationTransformer instance() {
-    return instance;
-  }
+    /**
+     * Return the Validator annotation class
+     *
+     * @return the Validator annotation class
+     */
+    @Override
+    public Class<Validator> getAnnotationClass() {
+        return Validator.class;
+    }
 }

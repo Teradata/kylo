@@ -27,10 +27,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class NifiFeedProcessorStatsTransform {
+
     /**
      * Converts the domain model objects to the rest model equivalent
      *
-     * @param domains   A list of domain objects
+     * @param domains A list of domain objects
      * @return a list of converted objects, or null if the provided list was empty
      */
     public static List<NifiFeedProcessorStats> toModel(List<? extends com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStats> domains) {
@@ -43,7 +44,7 @@ public class NifiFeedProcessorStatsTransform {
     /**
      * Converts a domain model object to the rest model equivalent
      *
-     * @param domain   The domain object
+     * @param domain The domain object
      * @return the rest model object
      */
     public static NifiFeedProcessorStats toModel(com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStats domain) {

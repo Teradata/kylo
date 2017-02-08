@@ -57,10 +57,14 @@ import io.swagger.annotations.ApiResponses;
 @Path("/api/v1/spark/shell/transform")
 public class SparkShellTransformController {
 
-    /** Resources for error messages */
+    /**
+     * Resources for error messages
+     */
     private static final ResourceBundle STRINGS = ResourceBundle.getBundle("spark-shell");
 
-    /** Service for evaluating transform scripts */
+    /**
+     * Service for evaluating transform scripts
+     */
     @Context
     public TransformService transformService;
 
@@ -75,10 +79,10 @@ public class SparkShellTransformController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Queries a Hive table and applies a series of transformations on the rows.")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Returns the status of the transformation.", response = TransformResponse.class),
-            @ApiResponse(code = 400, message = "The request could not be parsed.", response = TransformResponse.class),
-            @ApiResponse(code = 500, message = "There was a problem processing the data.", response = TransformResponse.class)
-    })
+                      @ApiResponse(code = 200, message = "Returns the status of the transformation.", response = TransformResponse.class),
+                      @ApiResponse(code = 400, message = "The request could not be parsed.", response = TransformResponse.class),
+                      @ApiResponse(code = 500, message = "There was a problem processing the data.", response = TransformResponse.class)
+                  })
     @Nonnull
     public Response create(@ApiParam(value = "The request indicates the transformations to apply to the source table and how the user wishes the results to be displayed. Exactly one parent or source"
                                              + " must be specified.", required = true)
@@ -117,10 +121,10 @@ public class SparkShellTransformController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Fetches the status of a transformation.")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Returns the status of the transformation.", response = TransformResponse.class),
-            @ApiResponse(code = 404, message = "The transformation does not exist.", response = TransformResponse.class),
-            @ApiResponse(code = 500, message = "There was a problem accessing the data.", response = TransformResponse.class)
-    })
+                      @ApiResponse(code = 200, message = "Returns the status of the transformation.", response = TransformResponse.class),
+                      @ApiResponse(code = 404, message = "The transformation does not exist.", response = TransformResponse.class),
+                      @ApiResponse(code = 500, message = "There was a problem accessing the data.", response = TransformResponse.class)
+                  })
     @Nonnull
     public Response getTable(@Nonnull @PathParam("table") final String id) {
         try {

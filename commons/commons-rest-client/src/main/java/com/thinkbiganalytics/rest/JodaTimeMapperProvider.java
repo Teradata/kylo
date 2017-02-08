@@ -31,7 +31,6 @@ import javax.ws.rs.ext.Provider;
  * A Jersey client provider that adds Joda time mapping  to the Object mapper.
  *
  * @see JodaMapper
- *
  */
 @Provider
 public class JodaTimeMapperProvider implements ContextResolver<ObjectMapper> {
@@ -42,18 +41,18 @@ public class JodaTimeMapperProvider implements ContextResolver<ObjectMapper> {
         defaultObjectMapper = createDefaultMapper();
     }
 
-    @Override
-    public ObjectMapper getContext(final Class<?> type) {
-
-         return new JodaMapper();
-
-    }
-
     private static ObjectMapper createDefaultMapper() {
         final ObjectMapper result = new ObjectMapper();
         result.enable(SerializationFeature.INDENT_OUTPUT);
 
         return result;
+    }
+
+    @Override
+    public ObjectMapper getContext(final Class<?> type) {
+
+        return new JodaMapper();
+
     }
 
 }

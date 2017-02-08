@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.security.rest.controller;
 
@@ -40,15 +40,14 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * Contains transformation functions and methods for converting objects between 
+ * Contains transformation functions and methods for converting objects between
  * the REST and domain access control models.
- * 
  */
 public class ActionsModelTransform {
-    
-    public Function<AllowedActions, PermissionsChange> availableActionsToPermissionsChange(ChangeType changeType, 
-                                                                                           String name, 
-                                                                                           Set<String> users, 
+
+    public Function<AllowedActions, PermissionsChange> availableActionsToPermissionsChange(ChangeType changeType,
+                                                                                           String name,
+                                                                                           Set<String> users,
                                                                                            Set<String> groups) {
         return (allowed) -> {
             ActionGroup actionSet = availableActionsToActionSet(name).apply(allowed);
@@ -74,8 +73,8 @@ public class ActionsModelTransform {
         return (allowable) -> {
             Action action = new Action(allowable.getSystemName(), allowable.getTitle(), allowable.getDescription());
             action.setActions(allowable.getSubActions().stream()
-                              .map(allowableActionToActionSet())
-                              .collect(Collectors.toList()));
+                                  .map(allowableActionToActionSet())
+                                  .collect(Collectors.toList()));
             return action;
         };
     }
@@ -95,7 +94,7 @@ public class ActionsModelTransform {
                     actionSet.addAction(newAction);
                     return newAction;
                 });
-            
+
             addHierarchy(subAction, itr);
         }
     }
@@ -110,7 +109,7 @@ public class ActionsModelTransform {
                     parentAction.addAction(newAction);
                     return newAction;
                 });
-            
+
             addHierarchy(subAction, itr);
         }
     }
@@ -124,13 +123,13 @@ public class ActionsModelTransform {
 
     public Set<Principal> toUserPrincipals(Set<String> userNames) {
         return userNames.stream()
-                        .map(name -> new UsernamePrincipal(name))
-                        .collect(Collectors.toSet());
+            .map(name -> new UsernamePrincipal(name))
+            .collect(Collectors.toSet());
     }
 
     public Set<Principal> toGroupPrincipals(Set<String> userNames) {
         return userNames.stream()
-                        .map(name -> new GroupPrincipal(name))
-                        .collect(Collectors.toSet());
+            .map(name -> new GroupPrincipal(name))
+            .collect(Collectors.toSet());
     }
 }

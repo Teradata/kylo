@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.modeshape.security.action;
 
@@ -47,12 +47,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  *
  */
-@SpringApplicationConfiguration(classes = { ModeShapeEngineConfig.class, JcrTestConfig.class, TestSecurityConfig.class })
+@SpringApplicationConfiguration(classes = {ModeShapeEngineConfig.class, JcrTestConfig.class, TestSecurityConfig.class})
 public class JcrAllowedActionsTest extends AbstractTestNGSpringContextTests {
-    
+
     @Inject
     private JcrMetadataAccess metadata;
-    
+
     @Inject
     private AllowedModuleActionsProvider provider;
 
@@ -69,125 +69,125 @@ public class JcrAllowedActionsTest extends AbstractTestNGSpringContextTests {
 //            System.out.println(result);
 //        });
 //    }
-    
+
     @Test
     public void testAdminGetAvailable() throws Exception {
         this.metadata.read(new AdminCredentials(), () -> {
             Optional<AllowedActions> option = this.provider.getAvailableActions("services");
-            
+
             assertThat(option.isPresent()).isTrue();
-            
+
             AllowedActions actions = option.get(); // Throws exception on failure
-            
+
             actions.checkPermission(TestSecurityConfig.EXPORT_FEEDS);
         });
     }
-    
+
     @Test
     public void testTestGetAvailable() throws Exception {
         this.metadata.read(new TestCredentials(), () -> {
             Optional<AllowedActions> option = this.provider.getAvailableActions("services");
-            
+
             assertThat(option.isPresent()).isTrue();
-            
+
             option.get().checkPermission(TestSecurityConfig.EXPORT_FEEDS); // Throws exception on failure
         });
     }
-    
-    @Test(dependsOnMethods="testAdminGetAvailable")
+
+    @Test(dependsOnMethods = "testAdminGetAvailable")
     public void testAdminGetAllowed() throws Exception {
         this.metadata.read(new AdminCredentials(), () -> {
             Optional<AllowedActions> option = this.provider.getAllowedActions("services");
-            
+
             assertThat(option.isPresent()).isTrue();
-            
+
             AllowedActions actions = option.get(); // Throws exception on failure
-            
+
             actions.checkPermission(TestSecurityConfig.EXPORT_FEEDS);
         });
     }
-    
-    @Test(dependsOnMethods="testTestGetAvailable", expectedExceptions=AccessControlException.class)
+
+    @Test(dependsOnMethods = "testTestGetAvailable", expectedExceptions = AccessControlException.class)
     public void testTestGetAllowed() throws Exception {
         this.metadata.read(new TestCredentials(), () -> {
             Optional<AllowedActions> option = this.provider.getAllowedActions("services");
-            
+
             assertThat(option.isPresent()).isTrue();
-            
+
             option.get().checkPermission(TestSecurityConfig.EXPORT_FEEDS);
         });
     }
-    
-    @Test(dependsOnMethods={ "testAdminGetAllowed", "testTestGetAllowed" })
+
+    @Test(dependsOnMethods = {"testAdminGetAllowed", "testTestGetAllowed"})
     public void testEnableExport() {
         boolean changed = this.metadata.commit(new AdminCredentials(), () -> {
             Optional<AllowedActions> option = this.provider.getAllowedActions("services");
-            
+
             assertThat(option.isPresent()).isTrue();
-            
+
             return option.get().enable(new TestUserPrincipal(), TestSecurityConfig.EXPORT_FEEDS);
         });
-        
+
         assertThat(changed).isTrue();
-        
+
         boolean passed = this.metadata.read(new TestCredentials(), () -> {
             Optional<AllowedActions> option = this.provider.getAllowedActions("services");
-            
+
             assertThat(option.isPresent()).isTrue();
-            
-            option.get().checkPermission(TestSecurityConfig.EXPORT_FEEDS); 
+
+            option.get().checkPermission(TestSecurityConfig.EXPORT_FEEDS);
             return true;
         });
-        
+
         assertThat(passed).isTrue();
     }
-    
-    @Test(dependsOnMethods="testEnableExport", expectedExceptions=AccessControlException.class)
+
+    @Test(dependsOnMethods = "testEnableExport", expectedExceptions = AccessControlException.class)
     public void testDisableExport() {
         boolean changed = this.metadata.commit(new AdminCredentials(), () -> {
             Optional<AllowedActions> option = this.provider.getAllowedActions("services");
-            
+
             assertThat(option.isPresent()).isTrue();
-            
+
             return option.get().disable(new TestUserPrincipal(), TestSecurityConfig.EXPORT_FEEDS);
         });
-        
+
         assertThat(changed).isTrue();
-        
+
         this.metadata.read(new TestCredentials(), () -> {
             Optional<AllowedActions> option = this.provider.getAllowedActions("services");
-            
+
             assertThat(option.isPresent()).isTrue();
-            
-            option.get().checkPermission(TestSecurityConfig.EXPORT_FEEDS); 
+
+            option.get().checkPermission(TestSecurityConfig.EXPORT_FEEDS);
         });
     }
-    
-    @Test(dependsOnMethods="testDisableExport", expectedExceptions=AccessControlException.class)
+
+    @Test(dependsOnMethods = "testDisableExport", expectedExceptions = AccessControlException.class)
     public void testEnableOnlyCreate() {
         boolean changed = this.metadata.commit(new AdminCredentials(), () -> {
             Optional<AllowedActions> option = this.provider.getAllowedActions("services");
-            
+
             assertThat(option.isPresent()).isTrue();
-            
+
             option.get().enable(new TestUserPrincipal(), TestSecurityConfig.EXPORT_FEEDS);
             return option.get().enableOnly(new TestUserPrincipal(), TestSecurityConfig.CREATE_FEEDS);
         });
-        
+
         assertThat(changed).isTrue();
-        
+
         this.metadata.read(new TestCredentials(), () -> {
             Optional<AllowedActions> option = this.provider.getAllowedActions("services");
-            
+
             assertThat(option.isPresent()).isTrue();
-            
+
             try {
                 option.get().checkPermission(TestSecurityConfig.CREATE_FEEDS);
             } catch (Exception e) {
                 Assert.fail("Permission check should pass", e);
-            } 
-            
-            option.get().checkPermission(TestSecurityConfig.EXPORT_FEEDS); 
+            }
+
+            option.get().checkPermission(TestSecurityConfig.EXPORT_FEEDS);
         });
     }
 }

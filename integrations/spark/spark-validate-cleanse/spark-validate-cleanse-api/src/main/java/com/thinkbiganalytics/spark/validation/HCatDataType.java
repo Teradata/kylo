@@ -63,25 +63,21 @@ public class HCatDataType implements Cloneable, Serializable {
     }
 
     /**
+     * Whether the value is numeric
+     */
+    boolean isnumeric;
+    /**
      * Class instance returned from converting string to native of this type
      */
     private Class convertibleType;
-
     /**
      * Whether this is string type
      */
     private boolean isstring;
-
     /**
      * whether this is unchecked type (essentially any type not defined)
      */
     private boolean unchecked;
-
-    /**
-     * Whether the value is numeric
-     */
-    boolean isnumeric;
-
     /**
      * Minimum size of number
      */
@@ -213,6 +209,10 @@ public class HCatDataType implements Cloneable, Serializable {
         return (hcatType == null ? UNCHECKED_TYPE : hcatType);
     }
 
+    public static Map<String, HCatDataType> getDataTypes() {
+        return dataTypes;
+    }
+
     private int getNumberOfDecimalPlaces(BigDecimal bigDecimal) {
         String string = bigDecimal.stripTrailingZeros().toPlainString();
         int index = string.indexOf(".");
@@ -275,7 +275,6 @@ public class HCatDataType implements Cloneable, Serializable {
         return isValueConvertibleToType(val, false);
     }
 
-
     public boolean isValueConvertibleToType(String val, boolean enforcePrecision) {
         try {
             if (val != null && !isnumeric) {
@@ -323,10 +322,6 @@ public class HCatDataType implements Cloneable, Serializable {
 
     public String getNativeType() {
         return nativeType;
-    }
-
-    public static Map<String, HCatDataType> getDataTypes() {
-        return dataTypes;
     }
 
     public boolean isUnchecked() {

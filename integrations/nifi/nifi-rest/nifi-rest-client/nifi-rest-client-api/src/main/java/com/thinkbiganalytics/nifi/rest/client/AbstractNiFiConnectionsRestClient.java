@@ -49,7 +49,7 @@ public abstract class AbstractNiFiConnectionsRestClient implements NiFiConnectio
      * Creates a request to drop the contents of the queue for the specified connection.
      *
      * @param processGroupId the process group id
-     * @param connectionId the connection id
+     * @param connectionId   the connection id
      * @return the drop request
      * @throws NifiComponentNotFoundException if the process group or connection does not exist
      */
@@ -60,8 +60,8 @@ public abstract class AbstractNiFiConnectionsRestClient implements NiFiConnectio
      * Cancels and/or removes the specified request to drop the contents of a connection.
      *
      * @param processGroupId the process group id
-     * @param connectionId the connection id
-     * @param dropRequestId the drop request id
+     * @param connectionId   the connection id
+     * @param dropRequestId  the drop request id
      * @return the drop request, if found
      */
     @Nonnull
@@ -71,12 +71,12 @@ public abstract class AbstractNiFiConnectionsRestClient implements NiFiConnectio
      * Sends a request to drop the contents of a queue and waits for it to finish.
      *
      * @param processGroupId the process group id
-     * @param connectionId the connection id
-     * @param retries number of retries, at least 0; will try {@code retries} + 1 times
-     * @param timeout duration to wait between retries
-     * @param timeUnit unit of time for {@code timeout}
+     * @param connectionId   the connection id
+     * @param retries        number of retries, at least 0; will try {@code retries} + 1 times
+     * @param timeout        duration to wait between retries
+     * @param timeUnit       unit of time for {@code timeout}
      * @return the drop request, if finished
-     * @throws NifiClientRuntimeException if the operation times out
+     * @throws NifiClientRuntimeException     if the operation times out
      * @throws NifiComponentNotFoundException if the process group or connection does not exist
      */
     protected DropRequestDTO deleteQueueWithRetries(@Nonnull final String processGroupId, @Nonnull final String connectionId, final int retries, final int timeout, @Nonnull final TimeUnit timeUnit) {
@@ -84,10 +84,10 @@ public abstract class AbstractNiFiConnectionsRestClient implements NiFiConnectio
         DropRequestDTO dropRequest = createDropRequest(processGroupId, connectionId);
 
         // Wait for finished
-        for (int count=0; !dropRequest.isFinished() && count < retries; ++count) {
+        for (int count = 0; !dropRequest.isFinished() && count < retries; ++count) {
             Uninterruptibles.sleepUninterruptibly(timeout, timeUnit);
             dropRequest = getDropRequest(processGroupId, connectionId, dropRequest.getId())
-                    .orElseThrow(() -> new NifiComponentNotFoundException(connectionId, NifiConstants.NIFI_COMPONENT_TYPE.CONNECTION, null));
+                .orElseThrow(() -> new NifiComponentNotFoundException(connectionId, NifiConstants.NIFI_COMPONENT_TYPE.CONNECTION, null));
         }
 
         if (!dropRequest.isFinished()) {
@@ -96,15 +96,15 @@ public abstract class AbstractNiFiConnectionsRestClient implements NiFiConnectio
 
         // Cleanup
         return deleteDropRequest(processGroupId, connectionId, dropRequest.getId())
-                .orElseThrow(() -> new NifiComponentNotFoundException(connectionId, NifiConstants.NIFI_COMPONENT_TYPE.CONNECTION, null));
+            .orElseThrow(() -> new NifiComponentNotFoundException(connectionId, NifiConstants.NIFI_COMPONENT_TYPE.CONNECTION, null));
     }
 
     /**
      * Gets the current status of the specified drop request for a connection.
      *
      * @param processGroupId the process group id
-     * @param connectionId the connection id
-     * @param dropRequestId the drop request id
+     * @param connectionId   the connection id
+     * @param dropRequestId  the drop request id
      * @return the drop request, if found
      */
     @Nonnull

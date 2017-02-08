@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.jpa.audit;
 
@@ -30,7 +30,6 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * Configures the AuditLogProvider implementation.
- *
  */
 @Configuration
 public class AuditLogProviderConfig {

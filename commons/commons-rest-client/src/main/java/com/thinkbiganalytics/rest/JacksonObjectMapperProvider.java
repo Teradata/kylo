@@ -36,7 +36,9 @@ import javax.ws.rs.ext.Provider;
 @Provider
 public class JacksonObjectMapperProvider implements ContextResolver<ObjectMapper> {
 
-    /** Custom object mapper */
+    /**
+     * Custom object mapper
+     */
     @Nonnull
     private final ObjectMapper objectMapper;
 

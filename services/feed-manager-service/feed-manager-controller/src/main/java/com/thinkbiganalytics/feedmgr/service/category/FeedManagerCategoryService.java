@@ -54,17 +54,17 @@ public interface FeedManagerCategoryService {
     Set<UserField> getUserFields();
 
     /**
+     * Sets the user-defined fields for all categories.
+     *
+     * @param userFields the new set of user-defined fields
+     */
+    void setUserFields(@Nonnull Set<UserField> userFields);
+
+    /**
      * Gets the user-defined fields for all categories.
      *
      * @return the user-defined fields
      */
     @Nonnull
     Set<UserProperty> getUserProperties();
-
-    /**
-     * Sets the user-defined fields for all categories.
-     *
-     * @param userFields the new set of user-defined fields
-     */
-    void setUserFields(@Nonnull Set<UserField> userFields);
 }

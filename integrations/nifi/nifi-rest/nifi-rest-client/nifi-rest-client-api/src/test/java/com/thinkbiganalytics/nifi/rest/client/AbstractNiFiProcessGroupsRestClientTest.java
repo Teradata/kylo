@@ -34,7 +34,9 @@ import javax.ws.rs.ClientErrorException;
 
 public class AbstractNiFiProcessGroupsRestClientTest {
 
-    /** Verify deleting a process group. */
+    /**
+     * Verify deleting a process group.
+     */
     @Test
     public void deleteWithRetries() {
         // Mock process group
@@ -50,7 +52,9 @@ public class AbstractNiFiProcessGroupsRestClientTest {
         Assert.assertEquals(Optional.empty(), client.deleteWithRetries(group, 1, 0, TimeUnit.NANOSECONDS));
     }
 
-    /** Verify failure to delete due to timeout error. */
+    /**
+     * Verify failure to delete due to timeout error.
+     */
     @Test(expected = NifiClientRuntimeException.class)
     public void deleteWithTimeout() {
         // Mock process group
@@ -66,7 +70,9 @@ public class AbstractNiFiProcessGroupsRestClientTest {
         client.deleteWithRetries(group, 0, 0, TimeUnit.NANOSECONDS);
     }
 
-    /** Verify finding a process group by name. */
+    /**
+     * Verify finding a process group by name.
+     */
     @Test
     public void findByName() {
         // Mock process groups

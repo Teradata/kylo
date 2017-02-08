@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.rest.model.data;
 
@@ -48,14 +48,14 @@ import java.util.Set;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonTypeInfo(use = Id.NAME, include = As.PROPERTY)
 @JsonSubTypes({
-    @JsonSubTypes.Type(value = DirectoryDatasource.class),
-    @JsonSubTypes.Type(value = HiveTableDatasource.class),
-    @JsonSubTypes.Type(value = DerivedDatasource.class)
-    }
+                  @JsonSubTypes.Type(value = DirectoryDatasource.class),
+                  @JsonSubTypes.Type(value = HiveTableDatasource.class),
+                  @JsonSubTypes.Type(value = DerivedDatasource.class)
+              }
 )
 public class Datasource implements Serializable {
-    
-    @JsonSerialize(using=DateTimeSerializer.class)
+
+    @JsonSerialize(using = DateTimeSerializer.class)
     private DateTime creationTime;
 
     private String id;
@@ -66,12 +66,12 @@ public class Datasource implements Serializable {
     private boolean compressed;
     private Set<Feed> sourceForFeeds = new HashSet<>();
     private Set<Feed> destinationForFeeds = new HashSet<>();
-    
+
 
     public Datasource() {
         super();
     }
-    
+
     public Datasource(String name) {
         super();
         this.name = name;
@@ -119,6 +119,10 @@ public class Datasource implements Serializable {
         return creationTime;
     }
 
+    public void setCreationTime(DateTime creationTime) {
+        this.creationTime = creationTime;
+    }
+
     public Set<Feed> getSourceForFeeds() {
         if (sourceForFeeds == null) {
             sourceForFeeds = new HashSet<>();
@@ -131,10 +135,6 @@ public class Datasource implements Serializable {
             destinationForFeeds = new HashSet<>();
         }
         return destinationForFeeds;
-    }
-
-    public void setCreationTime(DateTime creationTime) {
-        this.creationTime = creationTime;
     }
 
     public boolean isEncrypted() {

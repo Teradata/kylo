@@ -50,7 +50,7 @@ import javax.inject.Inject;
 @Configuration
 @Profile("auth-kylo")
 public class KyloAuthConfig {
-    
+
     @Value("${security.auth.kylo.login.services:required}")
     private String servicesLoginFlag;
 
@@ -62,13 +62,13 @@ public class KyloAuthConfig {
 
     @Inject
     private UserProvider userProvider;
-    
+
     @Inject
     private AllowedModuleActionsProvider actionsProvider;
-    
+
     @Inject
     private MetadataAccess metadata;
-    
+
     @Value("${auth.kylo.password.required:false}")
     private boolean authPassword;
 
@@ -105,21 +105,22 @@ public class KyloAuthConfig {
 
         // @formatter:on
     }
-    
+
     @Bean
     public PostMetadataConfigAction addDefaultUsersAction() {
         return new PopulateDefaultKyloEntitiesAction();
     }
-    
-    
+
+
     @Order(PostMetadataConfigAction.DEFAULT_ORDER + 100)
     private class PopulateDefaultKyloEntitiesAction implements PostMetadataConfigAction {
+
         @Override
         public void run() {
             metadata.commit(() -> {
                 Optional<User> dlOption = userProvider.findUserBySystemName("dladmin");
                 User dladmin = null;
-                
+
                 // Create the dladmin user if it doesn't exists.
                 if (dlOption.isPresent()) {
                     dladmin = dlOption.get();
@@ -128,39 +129,39 @@ public class KyloAuthConfig {
                     dladmin.setPassword(passwordEncoder.encode("thinkbig"));
                     dladmin.setDisplayName("Data Lake Administrator");
                 }
-                
+
                 // Create default groups if they don't exist.
                 UserGroup userGroup = userProvider.ensureGroup("user");
                 UserGroup opsGroup = userProvider.ensureGroup("operations");
                 UserGroup designerGroup = userProvider.ensureGroup("designer");
                 UserGroup analystGroup = userProvider.ensureGroup("analyst");
                 UserGroup adminGroup = userProvider.ensureGroup("admin");
-                
+
                 // Add dladmin to admin group
                 adminGroup.addUser(dladmin);
-                
+
                 // Setup initial access control.  Admin group already has all rights.
                 actionsProvider.getAllowedActions("services")
-                                .ifPresent((allowed) -> {
-                                    allowed.enable(opsGroup.getRootPrincial(), 
-                                                   OperationsAccessControl.ADMIN_OPS,
-                                                   FeedsAccessControl.ACCESS_CATEGORIES,
-                                                   FeedsAccessControl.ACCESS_FEEDS);
-                                    allowed.enable(designerGroup.getRootPrincial(), 
-                                                   OperationsAccessControl.ACCESS_OPS,
-                                                   FeedsAccessControl.EDIT_FEEDS,
-                                                   FeedsAccessControl.IMPORT_FEEDS,
-                                                   FeedsAccessControl.EXPORT_FEEDS,
-                                                   FeedsAccessControl.EDIT_CATEGORIES,
-                                                   FeedsAccessControl.EDIT_TEMPLATES);
-                                    allowed.enable(analystGroup.getRootPrincial(), 
-                                                   OperationsAccessControl.ACCESS_OPS,
-                                                   FeedsAccessControl.EDIT_FEEDS,
-                                                   FeedsAccessControl.ACCESS_CATEGORIES,
-                                                   FeedsAccessControl.IMPORT_TEMPLATES,
-                                                   FeedsAccessControl.EXPORT_TEMPLATES,
-                                                   FeedsAccessControl.ACCESS_TEMPLATES);
-                                });
+                    .ifPresent((allowed) -> {
+                        allowed.enable(opsGroup.getRootPrincial(),
+                                       OperationsAccessControl.ADMIN_OPS,
+                                       FeedsAccessControl.ACCESS_CATEGORIES,
+                                       FeedsAccessControl.ACCESS_FEEDS);
+                        allowed.enable(designerGroup.getRootPrincial(),
+                                       OperationsAccessControl.ACCESS_OPS,
+                                       FeedsAccessControl.EDIT_FEEDS,
+                                       FeedsAccessControl.IMPORT_FEEDS,
+                                       FeedsAccessControl.EXPORT_FEEDS,
+                                       FeedsAccessControl.EDIT_CATEGORIES,
+                                       FeedsAccessControl.EDIT_TEMPLATES);
+                        allowed.enable(analystGroup.getRootPrincial(),
+                                       OperationsAccessControl.ACCESS_OPS,
+                                       FeedsAccessControl.EDIT_FEEDS,
+                                       FeedsAccessControl.ACCESS_CATEGORIES,
+                                       FeedsAccessControl.IMPORT_TEMPLATES,
+                                       FeedsAccessControl.EXPORT_TEMPLATES,
+                                       FeedsAccessControl.ACCESS_TEMPLATES);
+                    });
             }, MetadataAccess.SERVICE);
         }
     }

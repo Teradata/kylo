@@ -46,10 +46,7 @@ import java.util.stream.Collectors;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class FeedMetadata implements UIFeed {
 
-    public static enum STATE {
-        NEW, ENABLED, DISABLED
-    }
-
+    boolean isNew = false;
     private String id;
 
     @MetadataField(description = "The unique feed GUID")
@@ -94,40 +91,37 @@ public class FeedMetadata implements UIFeed {
     //indicates this feed has inputPorts and is a "reusable template" for other feeds
     @JsonProperty("reusableFeed")
     private boolean isReusableFeed;
-    boolean isNew = false;
-
     private FeedProcessingOptions options;
-
     //deprecated
     private Long version;
-
     private String versionName;
-
-    // private NifiProcessGroup nifiProcessGroup;
-
     private RegisteredTemplate registeredTemplate;
 
+    // private NifiProcessGroup nifiProcessGroup;
     /**
      * User-defined business metadata
      */
     private Set<UserProperty> userProperties;
+    @MetadataField(description = "List of Ranger/Sentry groups that you want to grant access for this feed")
+    private String hadoopSecurityGroups;
+    @MetadataField(description = "Type of authorization system used. NONE, RANGER, or SENTRY")
+    private String hadoopAuthorizationType;
+    private List<HadoopSecurityGroup> securityGroups;
+    /**
+     * List of feed IDs dependent on this feed
+     */
+    private List<FeedSummary> usedByFeeds;
+
+    public FeedMetadata() {
+    }
 
     public String getTemplateId() {
         return templateId;
     }
 
-    @MetadataField(description = "List of Ranger/Sentry groups that you want to grant access for this feed")
-    private String hadoopSecurityGroups;
-
-    @MetadataField(description = "Type of authorization system used. NONE, RANGER, or SENTRY")
-    private String hadoopAuthorizationType;
-
-    private List<HadoopSecurityGroup> securityGroups;
-
-    /** List of feed IDs dependent on this feed */
-    private List<FeedSummary> usedByFeeds;
-
-    public FeedMetadata() {}
+    public void setTemplateId(String templateId) {
+        this.templateId = templateId;
+    }
 
     @Override
     public String getId() {
@@ -136,10 +130,6 @@ public class FeedMetadata implements UIFeed {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public void setTemplateId(String templateId) {
-        this.templateId = templateId;
     }
 
     public String getTemplateName() {
@@ -262,11 +252,6 @@ public class FeedMetadata implements UIFeed {
         this.active = active;
     }
 
-    public void setVersion(Long version) {
-        this.version = version;
-        setVersionName(version + "");
-    }
-
     public Long getVersion() {
         if (StringUtils.isNotBlank(versionName)) {
             try {
@@ -279,12 +264,17 @@ public class FeedMetadata implements UIFeed {
         }
     }
 
-    public void setVersionName(String versionName) {
-        this.versionName = versionName;
+    public void setVersion(Long version) {
+        this.version = version;
+        setVersionName(version + "");
     }
 
     public String getVersionName() {
         return this.versionName;
+    }
+
+    public void setVersionName(String versionName) {
+        this.versionName = versionName;
     }
 
     @JsonIgnore
@@ -447,7 +437,6 @@ public class FeedMetadata implements UIFeed {
         this.isNew = isNew;
     }
 
-
     public FeedProcessingOptions getOptions() {
         return options;
     }
@@ -462,5 +451,9 @@ public class FeedMetadata implements UIFeed {
 
     public void setUsedByFeeds(List<FeedSummary> usedByFeeds) {
         this.usedByFeeds = usedByFeeds;
+    }
+
+    public static enum STATE {
+        NEW, ENABLED, DISABLED
     }
 }

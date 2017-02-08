@@ -27,12 +27,11 @@ import com.thinkbiganalytics.rest.JerseyClientConfig;
 public class NifiRestClientConfig extends JerseyClientConfig {
 
     private String apiPath = "/nifi-api/";
+    private String clusterType = "NODE";
 
     public NifiRestClientConfig(String apiPath) {
         this.apiPath = apiPath;
     }
-
-    private String clusterType = "NODE";
 
     public NifiRestClientConfig() {
 

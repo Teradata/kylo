@@ -43,53 +43,53 @@ import javax.annotation.Generated;
                    })
 public class ClusterItem {
 
-  @JsonProperty("href")
-  private String href;
-  @JsonProperty("Clusters")
-  private Cluster cluster;
-  @JsonIgnore
-  private Map<String, Object> additionalProperties = new HashMap<String, Object>();
+    @JsonProperty("href")
+    private String href;
+    @JsonProperty("Clusters")
+    private Cluster cluster;
+    @JsonIgnore
+    private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
-  /**
-   * @return The href
-   */
-  @JsonProperty("href")
-  public String getHref() {
-    return href;
-  }
+    /**
+     * @return The href
+     */
+    @JsonProperty("href")
+    public String getHref() {
+        return href;
+    }
 
-  /**
-   * @param href The href
-   */
-  @JsonProperty("href")
-  public void setHref(String href) {
-    this.href = href;
-  }
+    /**
+     * @param href The href
+     */
+    @JsonProperty("href")
+    public void setHref(String href) {
+        this.href = href;
+    }
 
-  /**
-   * @return The Clusters
-   */
-  @JsonProperty("Clusters")
-  public Cluster getCluster() {
-    return cluster;
-  }
+    /**
+     * @return The Clusters
+     */
+    @JsonProperty("Clusters")
+    public Cluster getCluster() {
+        return cluster;
+    }
 
-  /**
-   * @param Clusters The Clusters
-   */
-  @JsonProperty("Clusters")
-  public void setCluster(Cluster cluster) {
-    this.cluster = cluster;
-  }
+    /**
+     * @param Clusters The Clusters
+     */
+    @JsonProperty("Clusters")
+    public void setCluster(Cluster cluster) {
+        this.cluster = cluster;
+    }
 
-  @JsonAnyGetter
-  public Map<String, Object> getAdditionalProperties() {
-    return this.additionalProperties;
-  }
+    @JsonAnyGetter
+    public Map<String, Object> getAdditionalProperties() {
+        return this.additionalProperties;
+    }
 
-  @JsonAnySetter
-  public void setAdditionalProperty(String name, Object value) {
-    this.additionalProperties.put(name, value);
-  }
+    @JsonAnySetter
+    public void setAdditionalProperty(String name, Object value) {
+        this.additionalProperties.put(name, value);
+    }
 
 }

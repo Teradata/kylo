@@ -1,4 +1,3 @@
-
 package com.thinkbiganalytics.jira.domain;
 
 /*-
@@ -36,14 +35,14 @@ import javax.annotation.Generated;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("org.jsonschema2pojo")
 @JsonPropertyOrder({
-    "self",
-    "id",
-    "author",
-    "body",
-    "updateAuthor",
-    "created",
-    "updated"
-})
+                       "self",
+                       "id",
+                       "author",
+                       "body",
+                       "updateAuthor",
+                       "created",
+                       "updated"
+                   })
 public class Comment {
 
     @JsonProperty("self")
@@ -64,9 +63,7 @@ public class Comment {
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
-     * 
-     * @return
-     *     The self
+     * @return The self
      */
     @JsonProperty("self")
     public String getSelf() {
@@ -74,9 +71,7 @@ public class Comment {
     }
 
     /**
-     * 
-     * @param self
-     *     The self
+     * @param self The self
      */
     @JsonProperty("self")
     public void setSelf(String self) {
@@ -84,9 +79,7 @@ public class Comment {
     }
 
     /**
-     * 
-     * @return
-     *     The id
+     * @return The id
      */
     @JsonProperty("id")
     public String getId() {
@@ -94,9 +87,7 @@ public class Comment {
     }
 
     /**
-     * 
-     * @param id
-     *     The id
+     * @param id The id
      */
     @JsonProperty("id")
     public void setId(String id) {
@@ -104,9 +95,7 @@ public class Comment {
     }
 
     /**
-     * 
-     * @return
-     *     The author
+     * @return The author
      */
     @JsonProperty("author")
     public User getAuthor() {
@@ -114,9 +103,7 @@ public class Comment {
     }
 
     /**
-     * 
-     * @param author
-     *     The author
+     * @param author The author
      */
     @JsonProperty("author")
     public void setAuthor(User author) {
@@ -124,9 +111,7 @@ public class Comment {
     }
 
     /**
-     * 
-     * @return
-     *     The body
+     * @return The body
      */
     @JsonProperty("body")
     public String getBody() {
@@ -134,9 +119,7 @@ public class Comment {
     }
 
     /**
-     * 
-     * @param body
-     *     The body
+     * @param body The body
      */
     @JsonProperty("body")
     public void setBody(String body) {
@@ -144,9 +127,7 @@ public class Comment {
     }
 
     /**
-     * 
-     * @return
-     *     The updateAuthor
+     * @return The updateAuthor
      */
     @JsonProperty("updateAuthor")
     public User getUpdateAuthor() {
@@ -154,9 +135,7 @@ public class Comment {
     }
 
     /**
-     * 
-     * @param updateAuthor
-     *     The updateAuthor
+     * @param updateAuthor The updateAuthor
      */
     @JsonProperty("updateAuthor")
     public void setUpdateAuthor(User updateAuthor) {
@@ -164,9 +143,7 @@ public class Comment {
     }
 
     /**
-     * 
-     * @return
-     *     The created
+     * @return The created
      */
     @JsonProperty("created")
     public String getCreated() {
@@ -174,9 +151,7 @@ public class Comment {
     }
 
     /**
-     * 
-     * @param created
-     *     The created
+     * @param created The created
      */
     @JsonProperty("created")
     public void setCreated(String created) {
@@ -184,9 +159,7 @@ public class Comment {
     }
 
     /**
-     * 
-     * @return
-     *     The updated
+     * @return The updated
      */
     @JsonProperty("updated")
     public String getUpdated() {
@@ -194,9 +167,7 @@ public class Comment {
     }
 
     /**
-     * 
-     * @param updated
-     *     The updated
+     * @param updated The updated
      */
     @JsonProperty("updated")
     public void setUpdated(String updated) {

@@ -55,9 +55,19 @@ import io.swagger.annotations.ApiResponses;
 @Path("/v1/auditlog")
 public class AuditLogController {
 
+    private static final Function<com.thinkbiganalytics.metadata.api.audit.AuditLogEntry, AuditLogEntry> transformer
+        = (domain) -> {
+        AuditLogEntry entry = new AuditLogEntry();
+        entry.setCreatedTime(domain.getCreatedTime());
+        entry.setId(domain.getId().toString());
+        entry.setType(domain.getType());
+        entry.setUser(domain.getUser().getName());
+        entry.setDescription(domain.getDescription());
+        entry.setEntityId(domain.getEntityId().toString());
+        return entry;
+    };
     @Inject
     private MetadataAccess metadataAccess;
-
     @Inject
     private AuditLogProvider auditProvider;
 
@@ -91,16 +101,4 @@ public class AuditLogController {
                 .orElseThrow(() -> new WebApplicationException("No audit log entery exists with ID: " + idStr, Status.NOT_FOUND));
         });
     }
-
-    private static final Function<com.thinkbiganalytics.metadata.api.audit.AuditLogEntry, AuditLogEntry> transformer
-        = (domain) -> {
-        AuditLogEntry entry = new AuditLogEntry();
-        entry.setCreatedTime(domain.getCreatedTime());
-        entry.setId(domain.getId().toString());
-        entry.setType(domain.getType());
-        entry.setUser(domain.getUser().getName());
-        entry.setDescription(domain.getDescription());
-        entry.setEntityId(domain.getEntityId().toString());
-        return entry;
-    };
 }

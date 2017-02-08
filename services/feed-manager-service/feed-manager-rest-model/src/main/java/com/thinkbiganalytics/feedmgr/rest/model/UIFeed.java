@@ -25,6 +25,7 @@ import java.util.Date;
 /**
  */
 public interface UIFeed {
+
     String getCategoryName();
 
     String getCategoryId();

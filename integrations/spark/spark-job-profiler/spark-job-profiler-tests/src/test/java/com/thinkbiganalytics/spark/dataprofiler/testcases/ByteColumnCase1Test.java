@@ -57,6 +57,11 @@ public class ByteColumnCase1Test extends ProfilerTest {
     private static double stddev;
     private static double variance;
 
+    @AfterClass
+    public static void tearDownClass() {
+        System.out.println("\t*** Completed run for ByteColumnCase1Test ***");
+    }
+
     @Before
     public void setUp() {
         super.setUp();
@@ -77,42 +82,35 @@ public class ByteColumnCase1Test extends ProfilerTest {
         variance = 1344.77551d;
     }
 
-
     @Test
     public void testByteNullCount() {
         Assert.assertEquals(nullCount, columnStats.getNullCount());
     }
-
 
     @Test
     public void testByteTotalCount() {
         Assert.assertEquals(totalCount, columnStats.getTotalCount());
     }
 
-
     @Test
     public void testByteUniqueCount() {
         Assert.assertEquals(uniqueCount, columnStats.getUniqueCount());
     }
-
 
     @Test
     public void testBytePercNullValues() {
         assertEquals(percNullValues, columnStats.getPercNullValues(), epsilon);
     }
 
-
     @Test
     public void testBytePercUniqueValues() {
         assertEquals(percUniqueValues, columnStats.getPercUniqueValues(), epsilon);
     }
 
-
     @Test
     public void testBytePercDuplicateValues() {
         assertEquals(percDuplicateValues, columnStats.getPercDuplicateValues(), epsilon);
     }
-
 
     @Test
     public void testByteTopNValues() {
@@ -144,45 +142,33 @@ public class ByteColumnCase1Test extends ProfilerTest {
         }
     }
 
-
     @Test
     public void testByteMax() {
         Assert.assertEquals(max, ((ByteColumnStatistics) columnStats).getMax());
     }
-
 
     @Test
     public void testByteMin() {
         Assert.assertEquals(min, ((ByteColumnStatistics) columnStats).getMin());
     }
 
-
     @Test
     public void testByteSum() {
         Assert.assertEquals(sum, ((ByteColumnStatistics) columnStats).getSum());
     }
-
 
     @Test
     public void testByteMean() {
         assertEquals(mean, ((ByteColumnStatistics) columnStats).getMean(), epsilon);
     }
 
-
     @Test
     public void testByteStddev() {
         assertEquals(stddev, ((ByteColumnStatistics) columnStats).getStddev(), epsilon);
     }
 
-
     @Test
     public void testByteVariance() {
         assertEquals(variance, ((ByteColumnStatistics) columnStats).getVariance(), epsilon);
-    }
-
-
-    @AfterClass
-    public static void tearDownClass() {
-        System.out.println("\t*** Completed run for ByteColumnCase1Test ***");
     }
 }    

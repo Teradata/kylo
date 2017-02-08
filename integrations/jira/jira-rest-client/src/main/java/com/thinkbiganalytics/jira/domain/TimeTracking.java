@@ -1,4 +1,3 @@
-
 package com.thinkbiganalytics.jira.domain;
 
 /*-
@@ -36,7 +35,7 @@ import javax.annotation.Generated;
 @Generated("org.jsonschema2pojo")
 @JsonPropertyOrder({
 
-})
+                   })
 public class TimeTracking {
 
     @JsonIgnore

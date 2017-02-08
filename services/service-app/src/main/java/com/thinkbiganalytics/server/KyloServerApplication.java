@@ -44,25 +44,24 @@ import java.util.concurrent.Executors;
 @EnableAutoConfiguration(exclude = {VelocityAutoConfiguration.class})
 @EnableConfigurationProperties
 @EnableConfigServer
-@Import({DatabaseConfiguration.class, OperationalMetadataConfig.class,SpringJerseyConfiguration.class})
+@Import({DatabaseConfiguration.class, OperationalMetadataConfig.class, SpringJerseyConfiguration.class})
 @ComponentScan("com.thinkbiganalytics")
 public class KyloServerApplication implements SchedulingConfigurer {
 
 
-  @Bean(destroyMethod = "shutdown")
-  public Executor scheduledTaskExecutor() {
-    return Executors.newScheduledThreadPool(25);
-  }
+    public static void main(String[] args) {
+        SpringApplication.run("classpath:application-context.xml", args);
+    }
 
-  @Override
-  public void configureTasks(ScheduledTaskRegistrar scheduledTaskRegistrar) {
-    scheduledTaskRegistrar.setScheduler(scheduledTaskExecutor());
-  }
+    @Bean(destroyMethod = "shutdown")
+    public Executor scheduledTaskExecutor() {
+        return Executors.newScheduledThreadPool(25);
+    }
 
-
-  public static void main(String[] args) {
-    SpringApplication.run("classpath:application-context.xml", args);
-  }
+    @Override
+    public void configureTasks(ScheduledTaskRegistrar scheduledTaskRegistrar) {
+        scheduledTaskRegistrar.setScheduler(scheduledTaskExecutor());
+    }
 
 
 }

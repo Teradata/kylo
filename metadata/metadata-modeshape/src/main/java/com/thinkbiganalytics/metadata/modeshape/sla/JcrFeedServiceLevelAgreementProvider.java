@@ -62,14 +62,11 @@ import javax.jcr.query.RowIterator;
 public class JcrFeedServiceLevelAgreementProvider implements FeedServiceLevelAgreementProvider, ModeShapeAvailabilityListener {
 
     @Inject
+    FeedProvider feedProvider;
+    @Inject
     private ExtensibleTypeProvider typeProvider;
-
     @Inject
     private ExtensibleEntityProvider entityProvider;
-
-    @Inject
-    FeedProvider feedProvider;
-
     @Inject
     private JcrMetadataAccess metadata;
 

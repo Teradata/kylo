@@ -78,7 +78,7 @@ public class FeedsRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the latest execution of the specified feed.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "Returns the latest execution.", response = ExecutedFeed.class)
+        @ApiResponse(code = 200, message = "Returns the latest execution.", response = ExecutedFeed.class)
     )
     public ExecutedFeed findLatestFeedsByName(@PathParam("feedName") String feedName, @Context HttpServletRequest request) {
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
@@ -95,7 +95,7 @@ public class FeedsRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Provides a detailed health status of every feed.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "Returns the health.", response = FeedStatus.class)
+        @ApiResponse(code = 200, message = "Returns the health.", response = FeedStatus.class)
     )
     public FeedStatus getFeedHealth(@Context HttpServletRequest request) {
 
@@ -112,7 +112,7 @@ public class FeedsRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Provides a summarized health status of every feed.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "Returns the health.", response = FeedHealth.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Returns the health.", response = FeedHealth.class, responseContainer = "List")
     )
     public List<FeedHealth> getFeedHealthCounts(@Context HttpServletRequest request) {
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
@@ -128,7 +128,7 @@ public class FeedsRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets a health summary for the specified feed.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "Returns the health.", response = FeedHealth.class)
+        @ApiResponse(code = 200, message = "Returns the health.", response = FeedHealth.class)
     )
     public FeedHealth getFeedHealthCounts(@Context HttpServletRequest request, @PathParam("feedName") String feedName) {
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
@@ -147,7 +147,7 @@ public class FeedsRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the detailed health status of the specified feed.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "Returns the health.", response = FeedStatus.class)
+        @ApiResponse(code = 200, message = "Returns the health.", response = FeedStatus.class)
     )
     public FeedStatus getFeedHealthForFeed(@Context HttpServletRequest request, @PathParam("feedName") String feedName) {
 
@@ -167,7 +167,7 @@ public class FeedsRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets a daily health summary for the specified feed.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "Returns the health.", response = JobStatusCount.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Returns the health.", response = JobStatusCount.class, responseContainer = "List")
     )
     public List<JobStatusCount> findFeedDailyStatusCount(@PathParam("feedName") String feedName,
                                                          @QueryParam("period") String periodString) {
@@ -190,7 +190,7 @@ public class FeedsRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the name of every feed.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "Returns the feed names.", response = String.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Returns the feed names.", response = String.class, responseContainer = "List")
     )
     public List<String> getFeedNames() {
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);

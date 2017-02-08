@@ -42,15 +42,21 @@ import javax.inject.Inject;
  */
 public class UserMetadataService implements UserService {
 
-    /** Metadata access provider */
+    /**
+     * Metadata access provider
+     */
     @Inject
     private MetadataAccess metadataAccess;
 
-    /** Metadata users and groups provider */
+    /**
+     * Metadata users and groups provider
+     */
     @Inject
     private UserProvider userProvider;
-    
-    /** Access controller for permission checks */
+
+    /**
+     * Access controller for permission checks
+     */
     @Inject
     private AccessController accessController;
 
@@ -58,9 +64,9 @@ public class UserMetadataService implements UserService {
     public boolean deleteGroup(@Nonnull final String groupId) {
         return metadataAccess.commit(() -> {
             accessController.checkPermission(AccessController.SERVICES, UsersGroupsAccessContol.ADMIN_GROUPS);
-            
+
             userProvider.findGroupByName(groupId)
-                    .ifPresent(userProvider::deleteGroup);
+                .ifPresent(userProvider::deleteGroup);
             return true;
         });
     }
@@ -69,9 +75,9 @@ public class UserMetadataService implements UserService {
     public boolean deleteUser(@Nonnull final String userId) {
         return metadataAccess.commit(() -> {
             accessController.checkPermission(AccessController.SERVICES, UsersGroupsAccessContol.ADMIN_USERS);
-            
+
             userProvider.findUserBySystemName(userId)
-                    .ifPresent(userProvider::deleteUser);
+                .ifPresent(userProvider::deleteUser);
             return true;
         });
     }
@@ -81,9 +87,9 @@ public class UserMetadataService implements UserService {
     public Optional<GroupPrincipal> getGroup(@Nonnull final String groupId) {
         return metadataAccess.read(() -> {
             accessController.checkPermission(AccessController.SERVICES, UsersGroupsAccessContol.ACCESS_GROUPS);
-        
+
             return userProvider.findGroupByName(groupId)
-                        .map(UserModelTransform.toGroupPrincipal());
+                .map(UserModelTransform.toGroupPrincipal());
         });
     }
 
@@ -92,10 +98,10 @@ public class UserMetadataService implements UserService {
     public List<GroupPrincipal> getGroups() {
         return metadataAccess.read(() -> {
             accessController.checkPermission(AccessController.SERVICES, UsersGroupsAccessContol.ACCESS_GROUPS);
-            
+
             return StreamSupport.stream(userProvider.findGroups().spliterator(), false)
-                        .map(UserModelTransform.toGroupPrincipal())
-                        .collect(Collectors.toList());
+                .map(UserModelTransform.toGroupPrincipal())
+                .collect(Collectors.toList());
         });
     }
 
@@ -104,9 +110,9 @@ public class UserMetadataService implements UserService {
     public Optional<UserPrincipal> getUser(@Nonnull final String userId) {
         return metadataAccess.read(() -> {
             accessController.checkPermission(AccessController.SERVICES, UsersGroupsAccessContol.ACCESS_USERS);
-            
+
             return userProvider.findUserBySystemName(userId)
-                        .map(UserModelTransform.toUserPrincipal());
+                .map(UserModelTransform.toUserPrincipal());
         });
     }
 
@@ -115,10 +121,10 @@ public class UserMetadataService implements UserService {
     public List<UserPrincipal> getUsers() {
         return metadataAccess.read(() -> {
             accessController.checkPermission(AccessController.SERVICES, UsersGroupsAccessContol.ACCESS_USERS);
-            
+
             return StreamSupport.stream(userProvider.findUsers().spliterator(), false)
-                        .map(UserModelTransform.toUserPrincipal())
-                        .collect(Collectors.toList());
+                .map(UserModelTransform.toUserPrincipal())
+                .collect(Collectors.toList());
         });
     }
 
@@ -127,11 +133,11 @@ public class UserMetadataService implements UserService {
     public Optional<List<UserPrincipal>> getUsersByGroup(@Nonnull final String groupId) {
         return metadataAccess.read(() -> {
             accessController.checkPermission(AccessController.SERVICES, UsersGroupsAccessContol.ACCESS_GROUPS, UsersGroupsAccessContol.ACCESS_USERS);
-            
+
             return userProvider.findGroupByName(groupId)
-                    .map(users -> StreamSupport.stream(users.getUsers().spliterator(), false)
-                         .map(UserModelTransform.toUserPrincipal())
-                         .collect(Collectors.toList()));
+                .map(users -> StreamSupport.stream(users.getUsers().spliterator(), false)
+                    .map(UserModelTransform.toUserPrincipal())
+                    .collect(Collectors.toList()));
         });
     }
 
@@ -139,9 +145,9 @@ public class UserMetadataService implements UserService {
     public void updateGroup(@Nonnull final GroupPrincipal principal) {
         metadataAccess.commit(() -> {
             accessController.checkPermission(AccessController.SERVICES, UsersGroupsAccessContol.ADMIN_GROUPS);
-            
+
             final UserGroup group = userProvider.findGroupByName(principal.getSystemName())
-                    .orElseGet(() -> userProvider.createGroup(principal.getSystemName()));
+                .orElseGet(() -> userProvider.createGroup(principal.getSystemName()));
             group.setDescription(principal.getDescription());
             group.setTitle(principal.getTitle());
             return userProvider.updateGroup(group);
@@ -152,16 +158,16 @@ public class UserMetadataService implements UserService {
     public void updateUser(@Nonnull final UserPrincipal principal) {
         metadataAccess.commit(() -> {
             accessController.checkPermission(AccessController.SERVICES, UsersGroupsAccessContol.ADMIN_USERS);
-            
+
             final User user = userProvider.findUserBySystemName(principal.getSystemName())
-                    .orElseGet(() -> userProvider.createUser(principal.getSystemName()));
+                .orElseGet(() -> userProvider.createUser(principal.getSystemName()));
             user.setDisplayName(principal.getDisplayName());
             user.setEmail(principal.getEmail());
             user.setEnabled(principal.isEnabled());
 
             final Set<UserGroup> groups = principal.getGroups().stream()
-                    .map(groupName -> userProvider.findGroupByName(groupName).get())
-                    .collect(Collectors.toSet());
+                .map(groupName -> userProvider.findGroupByName(groupName).get())
+                .collect(Collectors.toSet());
             user.setGroups(groups);
 
             return userProvider.updateUser(user);

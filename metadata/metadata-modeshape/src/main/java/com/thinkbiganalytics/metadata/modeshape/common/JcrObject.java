@@ -47,15 +47,6 @@ public class JcrObject {
 
     private String versionableIdentifier;
 
-    public String getObjectId() throws RepositoryException {
-        if (this.node.isNodeType("nt:frozenNode")) {
-            return this.versionableIdentifier;
-        } else {
-            return this.node.getIdentifier();
-        }
-    }
-
-
     /**
      *
      */
@@ -68,7 +59,15 @@ public class JcrObject {
             throw new MetadataRepositoryException("Unable to create JcrObject from node " + nodeName, e);
         }
     }
-    
+
+    public String getObjectId() throws RepositoryException {
+        if (this.node.isNodeType("nt:frozenNode")) {
+            return this.versionableIdentifier;
+        } else {
+            return this.node.getIdentifier();
+        }
+    }
+
     /* (non-Javadoc)
      * @see java.lang.Object#toString()
      */
@@ -89,11 +88,11 @@ public class JcrObject {
         }
     }
 
-    public boolean isNew(){
+    public boolean isNew() {
         return this.node.isNew();
     }
 
-    public boolean isModified(){
+    public boolean isModified() {
         return this.node.isModified();
     }
 
@@ -101,7 +100,7 @@ public class JcrObject {
         try {
             this.node.refresh(keepChanges);
         } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Unable to refresh Node. ",e);
+            throw new MetadataRepositoryException("Unable to refresh Node. ", e);
         }
     }
 
@@ -113,15 +112,15 @@ public class JcrObject {
         }
     }
 
-    public String getNodeName(){
+    public String getNodeName() {
         try {
-        return this.node.getName();
+            return this.node.getName();
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Unable to get the Node Name", e);
         }
     }
 
-    public void remove(){
+    public void remove() {
         try {
             this.node.remove();
         } catch (RepositoryException e) {
@@ -129,10 +128,10 @@ public class JcrObject {
         }
     }
 
-    public boolean isLive(){
-        if(this.node != null) {
+    public boolean isLive() {
+        if (this.node != null) {
             try {
-                if(this.node.getSession() != null) {
+                if (this.node.getSession() != null) {
                     return this.node.getSession().isLive();
                 }
             } catch (RepositoryException e) {
@@ -160,42 +159,39 @@ public class JcrObject {
         if (o != null) {
             if (o instanceof Collection) {
                 //convert the objects to the correct type if needed
-                if(JcrObject.class.isAssignableFrom(objectType)) {
+                if (JcrObject.class.isAssignableFrom(objectType)) {
                     Set<T> objects = new HashSet<>();
-                    for(Object collectionObj: (Collection) o){
+                    for (Object collectionObj : (Collection) o) {
                         T obj = null;
-                        if(collectionObj instanceof Node){
+                        if (collectionObj instanceof Node) {
 
                             try {
                                 obj = ConstructorUtils.invokeConstructor(objectType, (Node) collectionObj);
-                            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException| InstantiationException e) {
+                            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
                                 obj = (T) collectionObj;
                             }
 
-                        }
-                        else {
+                        } else {
                             obj = (T) collectionObj;
                         }
                         objects.add(obj);
                     }
                     return objects;
-                }
-                else{
+                } else {
                     return new HashSet<T>((Collection) o);
                 }
             } else {
                 Set<T> set = new HashSet<>();
-                if(JcrObject.class.isAssignableFrom(objectType) && o instanceof Node){
+                if (JcrObject.class.isAssignableFrom(objectType) && o instanceof Node) {
                     T obj = null;
                     try {
                         obj = ConstructorUtils.invokeConstructor(objectType, (Node) o);
                         set.add((T) obj);
-                    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException| InstantiationException e) {
+                    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
 
                     }
                     set.add(obj);
-                }
-                else {
+                } else {
                     set.add((T) o);
                 }
                 return set;
@@ -203,17 +199,18 @@ public class JcrObject {
         }
         return new HashSet<T>();
     }
+
     public <T> T getProperty(String name, Class<T> type) {
         return getProperty(name, type, false);
     }
 
-    public <T> T getProperty(String name, Class<T> type,boolean allowNotFound) {
-      return getPropertyFromNode(this.node,name,type,allowNotFound);
+    public <T> T getProperty(String name, Class<T> type, boolean allowNotFound) {
+        return getPropertyFromNode(this.node, name, type, allowNotFound);
     }
 
-    protected <T> T getPropertyFromNode(Node node, String name, Class<T> type, boolean allowNotFound){
-        Object o = JcrPropertyUtil.getProperty(node, name,allowNotFound);
-        if(allowNotFound && o == null){
+    protected <T> T getPropertyFromNode(Node node, String name, Class<T> type, boolean allowNotFound) {
+        Object o = JcrPropertyUtil.getProperty(node, name, allowNotFound);
+        if (allowNotFound && o == null) {
             return null;
         }
         if (type.isEnum()) {
@@ -259,7 +256,7 @@ public class JcrObject {
     public void setVersionableIdentifier(String versionableIdentifier) {
         this.versionableIdentifier = versionableIdentifier;
     }
-    
+
     @Override
     public boolean equals(Object obj) {
         if (getClass().isInstance(obj)) {
@@ -269,7 +266,7 @@ public class JcrObject {
             return false;
         }
     }
-    
+
     @Override
     public int hashCode() {
         return this.node.hashCode();

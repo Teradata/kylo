@@ -71,24 +71,19 @@ import scala.Tuple2;
 @Configuration
 public class Profiler {
 
+    private static final Logger log = LoggerFactory.getLogger(Profiler.class);
     /* Schema lookup table */
     private Broadcast<Map<Integer, StructField>> bSchemaMap;
-
     @SuppressWarnings("SpringJavaAutowiringInspection")
     @Autowired
     private ProfilerSparkContextService sparkContextService;
-
     @SuppressWarnings("SpringJavaAutowiringInspection")
     @Autowired
     private ProfilerStrategy profilerStrategy;
-
     @SuppressWarnings("SpringJavaAutowiringInspection")
     @Autowired
     private FieldPolicyLoader loader;
-
     private Map<String, FieldPolicy> policyMap = new HashMap<>();
-
-    private static final Logger log = LoggerFactory.getLogger(Profiler.class);
 
     /**
      * Main entry point into program
@@ -341,15 +336,15 @@ public class Profiler {
     private void showCommandLineArgs() {
 
         log.info("*** \nInfo: Required command line arguments:\n"
-                           + "1. object type: valid values are {table, query}\n"
-                           + "2. object description: valid values are {<database.table>, <query>}\n"
-                           + "3. n for top_n values: valid value is {<integer>}\n"
-                           + "4. output table: valid values are {<table>, <database.table>}"
-                           + "5. full path to policy file "
-                           + "\n"
-                           + "Info: Optional command line argument:\n"
-                           + "6. partition_key: valid value is {<string>}\n\n"
-                           + "(Note: Only alphanumeric and underscore characters for table names and partition key)"
-                           + "\n***");
+                 + "1. object type: valid values are {table, query}\n"
+                 + "2. object description: valid values are {<database.table>, <query>}\n"
+                 + "3. n for top_n values: valid value is {<integer>}\n"
+                 + "4. output table: valid values are {<table>, <database.table>}"
+                 + "5. full path to policy file "
+                 + "\n"
+                 + "Info: Optional command line argument:\n"
+                 + "6. partition_key: valid value is {<string>}\n\n"
+                 + "(Note: Only alphanumeric and underscore characters for table names and partition key)"
+                 + "\n***");
     }
 }

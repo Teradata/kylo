@@ -37,7 +37,7 @@ public interface NiFiTemplatesRestClient {
      * Imports a template.
      *
      * @param name the name of the template
-     * @param xml an XML document representing the template
+     * @param xml  an XML document representing the template
      * @return the new template
      */
     @Nonnull

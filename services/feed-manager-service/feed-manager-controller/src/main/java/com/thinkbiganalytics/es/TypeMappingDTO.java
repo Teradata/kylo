@@ -29,6 +29,7 @@ import java.util.List;
  * Store information about the Elastic search types
  */
 public class TypeMappingDTO {
+
     String type;
     List<String> fields;
 
@@ -41,7 +42,7 @@ public class TypeMappingDTO {
     }
 
     public List<String> getFields() {
-        if(fields == null) {
+        if (fields == null) {
             fields = new ArrayList<>();
         }
         return fields;
@@ -54,8 +55,8 @@ public class TypeMappingDTO {
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
-                .add("type", type)
-                .add("fields", fields)
-                .toString();
+            .add("type", type)
+            .add("fields", fields)
+            .toString();
     }
 }

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.alerts.api.core;
 
@@ -39,15 +39,14 @@ import java.util.function.Predicate;
 
 /**
  * A generic AlertCriteria implementation that simply records the criteria settings.
- * It is useful as a base implementation to be extended by AlertProviders, AlertSources, 
+ * It is useful as a base implementation to be extended by AlertProviders, AlertSources,
  * and AlertManagers.
  * <P>
- * This implementation also has a default predicate implementation but subclasses are not 
+ * This implementation also has a default predicate implementation but subclasses are not
  * required to support or use this implementation.
- * 
  */
 public class BaseAlertCriteria implements AlertCriteria, Predicate<Alert> {
-    
+
     private int limit = Integer.MAX_VALUE;
     private Set<URI> types = new HashSet<>();
     private Set<Alert.State> states = new HashSet<>();
@@ -55,8 +54,8 @@ public class BaseAlertCriteria implements AlertCriteria, Predicate<Alert> {
     private DateTime afterTime;
     private DateTime beforeTime;
     private boolean includeCleared = false;
-    
-    
+
+
     /**
      * Transfers the contents of this criteria to the given criteria.
      */
@@ -71,20 +70,32 @@ public class BaseAlertCriteria implements AlertCriteria, Predicate<Alert> {
         this.levels.forEach((l) -> updated.set(updated.get().level(l)));
         return updated.get();
     }
-    
-    
+
+
     /* (non-Javadoc)
      * @see java.util.function.Predicate#test(java.lang.Object)
      */
     @Override
     public boolean test(Alert alert) {
-        if (this.types.size() > 0 && ! testTypes(alert)) return false;
-        if (this.states.size() > 0 && ! testStates(alert)) return false;
-        if (this.levels.size() > 0 && ! testLevels(alert)) return false;
-        if (this.afterTime != null && ! testAfterTime(alert)) return false;
-        if (this.beforeTime != null && ! testBeforeTime(alert)) return false;
-        if (! this.testCleared(alert)) return false;
-        
+        if (this.types.size() > 0 && !testTypes(alert)) {
+            return false;
+        }
+        if (this.states.size() > 0 && !testStates(alert)) {
+            return false;
+        }
+        if (this.levels.size() > 0 && !testLevels(alert)) {
+            return false;
+        }
+        if (this.afterTime != null && !testAfterTime(alert)) {
+            return false;
+        }
+        if (this.beforeTime != null && !testBeforeTime(alert)) {
+            return false;
+        }
+        if (!this.testCleared(alert)) {
+            return false;
+        }
+
         return true;
     }
 
@@ -102,8 +113,12 @@ public class BaseAlertCriteria implements AlertCriteria, Predicate<Alert> {
      */
     @Override
     public AlertCriteria type(URI type, URI... others) {
-        if (type != null) this.types.add(type);
-        if (others != null) Arrays.stream(others).forEach(uri -> this.types.add(uri));
+        if (type != null) {
+            this.types.add(type);
+        }
+        if (others != null) {
+            Arrays.stream(others).forEach(uri -> this.types.add(uri));
+        }
         return this;
     }
 
@@ -112,8 +127,12 @@ public class BaseAlertCriteria implements AlertCriteria, Predicate<Alert> {
      */
     @Override
     public AlertCriteria state(State state, State... others) {
-        if (state != null) this.states.add(state);
-        if (others != null) Arrays.stream(others).forEach(s -> this.states.add(s));
+        if (state != null) {
+            this.states.add(state);
+        }
+        if (others != null) {
+            Arrays.stream(others).forEach(s -> this.states.add(s));
+        }
         return this;
     }
 
@@ -122,8 +141,12 @@ public class BaseAlertCriteria implements AlertCriteria, Predicate<Alert> {
      */
     @Override
     public AlertCriteria level(Level level, Level... others) {
-        if (level != null) this.levels.add(level);
-        if (others != null) Arrays.stream(others).forEach(l -> this.levels.add(l));
+        if (level != null) {
+            this.levels.add(level);
+        }
+        if (others != null) {
+            Arrays.stream(others).forEach(l -> this.levels.add(l));
+        }
         return this;
     }
 
@@ -144,19 +167,19 @@ public class BaseAlertCriteria implements AlertCriteria, Predicate<Alert> {
         this.beforeTime = time;
         return this;
     }
-    
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.alerts.api.AlertCriteria#includedCleared(boolean)
      */
     @Override
     public AlertCriteria includedCleared(boolean flag) {
-        this.includeCleared  = flag;
+        this.includeCleared = flag;
         return this;
     }
 
 
     protected boolean testTypes(Alert alert) {
-        return this.types.stream().anyMatch(uri -> { 
+        return this.types.stream().anyMatch(uri -> {
             // A match means the type URIs are equal (handles opaque URIs) or the matching URI is a parent as defined by relativize.
             return uri.equals(alert.getType()) || uri.relativize(alert.getType()) != alert.getType();
         });
@@ -181,9 +204,9 @@ public class BaseAlertCriteria implements AlertCriteria, Predicate<Alert> {
     protected boolean testBeforeTime(Alert alert) {
         return alert.getCreatedTime().isBefore(this.beforeTime);
     }
-    
+
     protected boolean testCleared(Alert alert) {
-        return ! alert.isCleared() || this.includeCleared;
+        return !alert.isCleared() || this.includeCleared;
     }
 
 

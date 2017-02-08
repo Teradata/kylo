@@ -27,5 +27,4 @@ import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 public interface FeedManagerCategoryProvider extends CategoryProvider<FeedManagerCategory> {
 
 
-
 }

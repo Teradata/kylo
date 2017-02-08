@@ -26,13 +26,13 @@ import com.thinkbiganalytics.metadata.sla.api.Metric;
  *
  */
 class TestMetric implements Metric {
-    
+
     private int intValue;
     private String stringValue;
-    
+
     public TestMetric() {
     }
-    
+
     public TestMetric(int field1, String field2) {
         super();
         this.intValue = field1;
@@ -43,19 +43,19 @@ class TestMetric implements Metric {
     public String getDescription() {
         return "Test metric: " + this.intValue + " " + this.stringValue;
     }
-    
+
     public int getIntValue() {
         return intValue;
     }
-    
-    public String getStringValue() {
-        return stringValue;
-    }
-    
+
     protected void setIntValue(int intValue) {
         this.intValue = intValue;
     }
-    
+
+    public String getStringValue() {
+        return stringValue;
+    }
+
     protected void setStringValue(String stringValue) {
         this.stringValue = stringValue;
     }

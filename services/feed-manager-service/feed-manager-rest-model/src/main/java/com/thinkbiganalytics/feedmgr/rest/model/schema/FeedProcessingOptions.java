@@ -27,12 +27,12 @@ import com.thinkbiganalytics.metadata.MetadataField;
 public class FeedProcessingOptions {
 
 
+    @MetadataField(description = "When processing data should the system skip the header row? (true/false)")
+    private boolean skipHeader;
+
     public FeedProcessingOptions() {
 
     }
-
-    @MetadataField(description = "When processing data should the system skip the header row? (true/false)")
-    private boolean skipHeader;
 
     public boolean isSkipHeader() {
         return skipHeader;

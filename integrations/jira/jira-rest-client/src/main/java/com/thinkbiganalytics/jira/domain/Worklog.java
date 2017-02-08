@@ -1,4 +1,3 @@
-
 package com.thinkbiganalytics.jira.domain;
 
 /*-
@@ -38,11 +37,11 @@ import javax.annotation.Generated;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("org.jsonschema2pojo")
 @JsonPropertyOrder({
-    "startAt",
-    "maxResults",
-    "total",
-    "worklogs"
-})
+                       "startAt",
+                       "maxResults",
+                       "total",
+                       "worklogs"
+                   })
 public class Worklog {
 
     @JsonProperty("startAt")
@@ -57,9 +56,7 @@ public class Worklog {
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
-     * 
-     * @return
-     *     The startAt
+     * @return The startAt
      */
     @JsonProperty("startAt")
     public Integer getStartAt() {
@@ -67,9 +64,7 @@ public class Worklog {
     }
 
     /**
-     * 
-     * @param startAt
-     *     The startAt
+     * @param startAt The startAt
      */
     @JsonProperty("startAt")
     public void setStartAt(Integer startAt) {
@@ -77,9 +72,7 @@ public class Worklog {
     }
 
     /**
-     * 
-     * @return
-     *     The maxResults
+     * @return The maxResults
      */
     @JsonProperty("maxResults")
     public Integer getMaxResults() {
@@ -87,9 +80,7 @@ public class Worklog {
     }
 
     /**
-     * 
-     * @param maxResults
-     *     The maxResults
+     * @param maxResults The maxResults
      */
     @JsonProperty("maxResults")
     public void setMaxResults(Integer maxResults) {
@@ -97,9 +88,7 @@ public class Worklog {
     }
 
     /**
-     * 
-     * @return
-     *     The total
+     * @return The total
      */
     @JsonProperty("total")
     public Integer getTotal() {
@@ -107,9 +96,7 @@ public class Worklog {
     }
 
     /**
-     * 
-     * @param total
-     *     The total
+     * @param total The total
      */
     @JsonProperty("total")
     public void setTotal(Integer total) {
@@ -117,9 +104,7 @@ public class Worklog {
     }
 
     /**
-     * 
-     * @return
-     *     The worklogs
+     * @return The worklogs
      */
     @JsonProperty("worklogs")
     public List<Object> getWorklogs() {
@@ -127,9 +112,7 @@ public class Worklog {
     }
 
     /**
-     * 
-     * @param worklogs
-     *     The worklogs
+     * @param worklogs The worklogs
      */
     @JsonProperty("worklogs")
     public void setWorklogs(List<Object> worklogs) {

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.rest.model.feed;
 
@@ -35,7 +35,10 @@ public interface FeedCriteria {
     static final String DEST_ID = "destid";
 
     FeedCriteria sourceDatasource(String dsId);
+
     FeedCriteria destinationDatasource(String dsId);
+
     FeedCriteria name(String name);
+
     FeedCriteria category(String name);
 }

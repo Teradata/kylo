@@ -28,9 +28,9 @@ import java.util.List;
 
 public interface ServiceLevelAgreementActionConfiguration extends Serializable {
 
-    void setActionClasses(List<Class<? extends ServiceLevelAgreementAction>> actionClasses);
-
     List<Class<? extends ServiceLevelAgreementAction>> getActionClasses();
+
+    void setActionClasses(List<Class<? extends ServiceLevelAgreementAction>> actionClasses);
 
 
 }

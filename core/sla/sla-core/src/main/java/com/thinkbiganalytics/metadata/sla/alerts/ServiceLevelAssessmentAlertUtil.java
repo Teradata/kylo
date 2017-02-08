@@ -35,16 +35,16 @@ public class ServiceLevelAssessmentAlertUtil {
 
         // Generate a description string for the issue in outline form using the results and messages
         // of the assessment components: sla assessment->obligation assessments->metric assessments
-        if(slaAssmt.getObligationAssessments() != null) {
+        if (slaAssmt.getObligationAssessments() != null) {
             for (ObligationAssessment obAssmnt : slaAssmt.getObligationAssessments()) {
-                if(obAssmnt.getMetricAssessments() != null) {
+                if (obAssmnt.getMetricAssessments() != null) {
                     for (MetricAssessment metricAssmnt : obAssmnt.getMetricAssessments()) {
 
-                            descrBldr
-                                .append("Requirement: ")
-                                .append(metricAssmnt.getMetricDescription())
+                        descrBldr
+                            .append("Requirement: ")
+                            .append(metricAssmnt.getMetricDescription())
                             .append("\n\n")
-                          .append("Result: ")
+                            .append("Result: ")
                             .append(metricAssmnt.getMessage())
                             .append("\n\n");
                     }

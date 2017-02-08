@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.rest.model.feed.transform;
 
@@ -30,7 +30,7 @@ import java.util.List;
  *
  */
 public class FieldsPolicy {
-    
+
     List<FieldPolicy> fieldPolicies = new ArrayList<>();
 
     public List<FieldPolicy> getFieldPolicies() {
@@ -40,7 +40,7 @@ public class FieldsPolicy {
     public void setFieldPolicies(List<FieldPolicy> fieldPolicies) {
         this.fieldPolicies = fieldPolicies;
     }
-    
+
     public void addPolicy(FieldPolicy policy) {
         this.fieldPolicies.add(policy);
     }

@@ -34,7 +34,7 @@ import java.util.Set;
 /**
  * Provider for accessing and creating {@link BatchJobExecution}
  */
-public interface BatchJobExecutionProvider extends BatchJobExecutionFilters{
+public interface BatchJobExecutionProvider extends BatchJobExecutionFilters {
 
     /**
      * Execution Context key that determines the type of job {@link com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed.FeedType}
@@ -72,39 +72,35 @@ public interface BatchJobExecutionProvider extends BatchJobExecutionFilters{
 
     /**
      * save the Provenance event and return the associated job execution
-     * @param event
-     * @param nifiEvent
+     *
      * @return the job execution
      */
     BatchJobExecution save(ProvenanceEventRecordDTO event, NifiEvent nifiEvent);
 
     /**
      * save the Provenance event and return the associated job execution
-     * @param jobExecution
-     * @param event
-     * @param nifiEvent
+     *
      * @return the job execution
      */
     BatchJobExecution save(BatchJobExecution jobExecution, ProvenanceEventRecordDTO event, NifiEvent nifiEvent);
 
     /**
      * find a given job exeuction using the NiFi event id and corresponding job flow file id
-     * @param eventId
-     * @param flowfileid
+     *
      * @return the job execution
      */
     BatchJobExecution findByEventAndFlowFile(Long eventId, String flowfileid);
 
     /**
      * find a job exeuction by its unique key
-     * @param jobExecutionId
+     *
      * @return the job execution
      */
     BatchJobExecution findByJobExecutionId(Long jobExecutionId);
 
     /**
      * save/update a job execution
-     * @param jobExecution
+     *
      * @return the updated job execution
      */
     BatchJobExecution save(BatchJobExecution jobExecution);
@@ -112,6 +108,7 @@ public interface BatchJobExecutionProvider extends BatchJobExecutionFilters{
     /**
      * find or create the job execution from the provenance event
      * This will create a new job execution if one does not exist for this event using the {@link ProvenanceEventRecordDTO#jobFlowFileId}
+     *
      * @param event a provenance event
      * @return the job execution
      */
@@ -127,66 +124,63 @@ public interface BatchJobExecutionProvider extends BatchJobExecutionFilters{
 
     /**
      * Returns all completed JobExecution records that were started since {@code sinceDate}
-     * @param feedName
-     * @param sinceDate
+     *
      * @return the set of job executions
      */
-    Set<? extends BatchJobExecution> findJobsForFeedCompletedSince(String feedName,  DateTime sinceDate);
+    Set<? extends BatchJobExecution> findJobsForFeedCompletedSince(String feedName, DateTime sinceDate);
 
     /**
      * Returns the latest completed job execution for a feed
-     * @param feedName
+     *
      * @return the job execution
      */
     BatchJobExecution findLatestCompletedJobForFeed(String feedName);
 
     /**
      * Returns the latest job execution of any status for a feed
-     * @param feedName
+     *
      * @return the job execution
      */
     BatchJobExecution findLatestJobForFeed(String feedName);
 
     /**
      * check if a feed is running
-     * @param feedName
+     *
      * @return true if running, false if not
      */
     Boolean isFeedRunning(String feedName);
 
     /**
      * find all job executions matching a particular filter string, returning a paged result set
-     * @param filter
-     * @param pageable
+     *
      * @return a paged result set of job executions matching the filter and pageable criteria
      */
     Page<? extends BatchJobExecution> findAll(String filter, Pageable pageable);
 
     /**
      * find all job executions for a given feed matching a particular filter string, returning a paged result set
-     * @param feedName
-     * @param filter
-     * @param pageable
+     *
      * @return a paged result set of job executions matching the filter and pageable criteria
      */
-    Page<? extends BatchJobExecution> findAllForFeed(String feedName,String filter, Pageable pageable);
+    Page<? extends BatchJobExecution> findAllForFeed(String feedName, String filter, Pageable pageable);
 
     /**
      * Return a list of job status objects grouped by day
+     *
      * @return a list of job status objects grouped by day
      */
     List<JobStatusCount> getJobStatusCountByDate();
 
     /**
      * Return a list of job status objects grouped by day using a supplied filter and looking back a specific period
-     * @param period
-     * @param filter
+     *
      * @return a list of job status objects grouped by day since the passed in period
      */
     List<JobStatusCount> getJobStatusCountByDateFromNow(ReadablePeriod period, String filter);
 
     /**
      * Return a list of job status objects matching a specific filter
+     *
      * @param filter a filter string
      * @return a list of job status objects matching a specific filter
      */

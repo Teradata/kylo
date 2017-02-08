@@ -234,12 +234,12 @@ public class InMemoryFeedProvider implements FeedProvider {
             }
 
             ServiceLevelAgreement sla = this.slaProvider.builder()
-                    .name("Precondition for feed " + feed.getName() + " (" + feed.getId() + ")")
-                    .description(descr)
-                    .obligationBuilder(Condition.REQUIRED)
-                    .metric(metrics)
-                    .build()
-                    .build();
+                .name("Precondition for feed " + feed.getName() + " (" + feed.getId() + ")")
+                .description(descr)
+                .obligationBuilder(Condition.REQUIRED)
+                .metric(metrics)
+                .build()
+                .build();
 
             return setupPrecondition(feed, sla);
         } else {
@@ -373,6 +373,36 @@ public class InMemoryFeedProvider implements FeedProvider {
         return feed;
     }
 
+    @Override
+    public Feed updateFeedServiceLevelAgreement(Feed.ID feedId, ServiceLevelAgreement sla) {
+        return null;
+    }
+
+    @Override
+    public Map<String, Object> mergeFeedProperties(Feed.ID feedId, Map<String, Object> properties) {
+        return null;
+    }
+
+    @Override
+    public Map<String, Object> replaceProperties(Feed.ID feedId, Map<String, Object> properties) {
+        return null;
+    }
+
+    @Nonnull
+    @Override
+    public Set<UserFieldDescriptor> getUserFields() {
+        return Collections.emptySet();
+    }
+
+    @Override
+    public void setUserFields(@Nonnull Set<UserFieldDescriptor> userFields) {
+    }
+
+    @Override
+    public void populateInverseFeedDependencies() {
+
+    }
+
     private static class Criteria extends AbstractMetadataCriteria<FeedCriteria> implements FeedCriteria, Predicate<Feed> {
 
         private String name;
@@ -445,7 +475,6 @@ public class InMemoryFeedProvider implements FeedProvider {
 
     }
 
-
     private class PreconditionbuilderImpl implements PreconditionBuilder {
 
         private final ServiceLevelAgreementBuilder slaBuilder;
@@ -492,35 +521,5 @@ public class InMemoryFeedProvider implements FeedProvider {
         public ServiceLevelAgreementBuilder actionConfigurations(List<? extends ServiceLevelAgreementActionConfiguration> actionConfigurations) {
             return null;
         }
-    }
-
-
-    @Override
-    public Feed updateFeedServiceLevelAgreement(Feed.ID feedId, ServiceLevelAgreement sla) {
-        return null;
-    }
-
-    @Override
-    public Map<String, Object> mergeFeedProperties(Feed.ID feedId, Map<String, Object> properties) {
-        return null;
-    }
-
-    @Override
-    public Map<String, Object> replaceProperties(Feed.ID feedId, Map<String, Object> properties) {
-        return null;
-    }
-
-    @Nonnull
-    @Override
-    public Set<UserFieldDescriptor> getUserFields() {
-        return Collections.emptySet();
-    }
-
-    @Override
-    public void setUserFields(@Nonnull Set<UserFieldDescriptor> userFields) {}
-
-    @Override
-    public void populateInverseFeedDependencies() {
-
     }
 }

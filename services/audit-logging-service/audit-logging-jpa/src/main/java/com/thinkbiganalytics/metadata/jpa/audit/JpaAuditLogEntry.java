@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.jpa.audit;
 
@@ -88,9 +88,17 @@ public class JpaAuditLogEntry implements AuditLogEntry {
         return this.id;
     }
 
+    public void setId(AuditLogId id) {
+        this.id = id;
+    }
+
     @Override
     public DateTime getCreatedTime() {
         return createdTime;
+    }
+
+    public void setCreatedTime(DateTime createdTime) {
+        this.createdTime = createdTime;
     }
 
     @Override
@@ -98,9 +106,17 @@ public class JpaAuditLogEntry implements AuditLogEntry {
         return user;
     }
 
+    public void setUser(UsernamePrincipal user) {
+        this.user = user;
+    }
+
     @Override
     public String getType() {
         return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     @Override
@@ -108,35 +124,18 @@ public class JpaAuditLogEntry implements AuditLogEntry {
         return description;
     }
 
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     @Override
     public String getEntityId() {
         return entityId;
     }
 
-    public void setId(AuditLogId id) {
-        this.id = id;
-    }
-
-    public void setCreatedTime(DateTime createdTime) {
-        this.createdTime = createdTime;
-    }
-
-    public void setUser(UsernamePrincipal user) {
-        this.user = user;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
     public void setEntityId(String entityId) {
         this.entityId = entityId;
     }
-
 
 
     @Embeddable
@@ -147,15 +146,16 @@ public class JpaAuditLogEntry implements AuditLogEntry {
         @Column(name = "id", columnDefinition = "binary(16)")
         private UUID uuid;
 
-        public static AuditLogId create() {
-            return new AuditLogId(UUID.randomUUID());
+        public AuditLogId() {
         }
 
 
-        public AuditLogId() {}
-
         public AuditLogId(Serializable ser) {
             super(ser);
+        }
+
+        public static AuditLogId create() {
+            return new AuditLogId(UUID.randomUUID());
         }
 
         @Override
@@ -170,6 +170,7 @@ public class JpaAuditLogEntry implements AuditLogEntry {
     }
 
     public static class UsernamePrincipalConverter implements AttributeConverter<Principal, String> {
+
         @Override
         public String convertToDatabaseColumn(Principal principal) {
             return principal.getName();

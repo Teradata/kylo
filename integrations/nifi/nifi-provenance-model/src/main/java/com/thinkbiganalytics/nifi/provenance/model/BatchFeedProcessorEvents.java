@@ -41,41 +41,31 @@ import java.util.Set;
 public class BatchFeedProcessorEvents implements Serializable {
 
     private static final Logger log = LoggerFactory.getLogger(BatchFeedProcessorEvents.class);
-
-    /**
-     * The name of the feed.  Derived from the process group {category}.{feed}
-     */
-    private String feedName;
-
-
-    private String processorName;
-
-    /**
-     * The Processor Id
-     */
-    private String processorId;
-
-    /**
-     * The time for the Last Event that has been processed
-     */
-    private DateTime lastEventTime;
-
-
-    /**
-     * the last time the events were sent to JMS
-     **/
-    private DateTime lastCollectionTime;
-
-    /**
-     * Collection of events that will be sent to jms
-     */
-    private Set<ProvenanceEventRecordDTO> jmsEvents = new LinkedHashSet<>();
-
     /**
      * Map to determine if the events coming in are rapid fire.  if so they wil be suppressed based upon the supplied {@code maxEventsPerSecond} allowed
      */
     Map<DateTime, Set<ProvenanceEventRecordDTO>> startingJobEventsBySecond = new HashMap<>();
-
+    /**
+     * The name of the feed.  Derived from the process group {category}.{feed}
+     */
+    private String feedName;
+    private String processorName;
+    /**
+     * The Processor Id
+     */
+    private String processorId;
+    /**
+     * The time for the Last Event that has been processed
+     */
+    private DateTime lastEventTime;
+    /**
+     * the last time the events were sent to JMS
+     **/
+    private DateTime lastCollectionTime;
+    /**
+     * Collection of events that will be sent to jms
+     */
+    private Set<ProvenanceEventRecordDTO> jmsEvents = new LinkedHashSet<>();
     /**
      * The max number of starting job events for the given feed and processor allowed to pass through per second This parameter is passed in via the constructor
      */
@@ -100,6 +90,7 @@ public class BatchFeedProcessorEvents implements Serializable {
 
     /**
      * Add the event to be processed
+     *
      * @param event the event to add to the batch
      * @return true if added, false if not
      */
@@ -141,9 +132,9 @@ public class BatchFeedProcessorEvents implements Serializable {
 
     /**
      * Add an event from Nifi to be processed
+     *
      * @param event the event to add for batch processing
      * @return returns true if successfully added, false if not.  It may return false if the event is suppressed
-     *
      * @see this#isSuppressEvent(ProvenanceEventRecordDTO)
      */
     public boolean addEvent(ProvenanceEventRecordDTO event) {
@@ -165,6 +156,7 @@ public class BatchFeedProcessorEvents implements Serializable {
 
     /**
      * for all the events that have been processed, send them off to the JMS queue
+     *
      * @return the list of events that have been sent
      */
     public List<ProvenanceEventRecordDTO> collectEventsToBeSentToJmsQueue() {
@@ -183,6 +175,7 @@ public class BatchFeedProcessorEvents implements Serializable {
 
     /**
      * get the feed name for the batch of events
+     *
      * @return the name of the feed
      */
     public String getFeedName() {
@@ -191,6 +184,7 @@ public class BatchFeedProcessorEvents implements Serializable {
 
     /**
      * Sets the feed name
+     *
      * @param feedName the name of the feed
      */
     public void setFeedName(String feedName) {
@@ -199,6 +193,7 @@ public class BatchFeedProcessorEvents implements Serializable {
 
     /**
      * Gets the processorId
+     *
      * @return the processor Id
      */
     public String getProcessorId() {
@@ -207,6 +202,7 @@ public class BatchFeedProcessorEvents implements Serializable {
 
     /**
      * Sets the processor id
+     *
      * @param processorId the processor id
      */
     public void setProcessorId(String processorId) {
@@ -214,7 +210,6 @@ public class BatchFeedProcessorEvents implements Serializable {
     }
 
     /**
-     *
      * @return the display name for the processor
      */
     public String getProcessorName() {
@@ -222,7 +217,6 @@ public class BatchFeedProcessorEvents implements Serializable {
     }
 
     /**
-     *
      * @param processorName the name of the processor
      */
     public void setProcessorName(String processorName) {
@@ -230,7 +224,6 @@ public class BatchFeedProcessorEvents implements Serializable {
     }
 
     /**
-     *
      * @param maxEventsPerSecond the max number of events allowed per sec to be considered a batch job
      * @return this class
      */

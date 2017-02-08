@@ -28,7 +28,6 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * Spring configuration for Cloudera client.
- *
  */
 @Configuration
 public class ClouderaClientConfig {

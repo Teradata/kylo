@@ -45,10 +45,14 @@ public interface ExtensionsConstants {
     String TYPE_DESCRIPTOR_TYPE = "tba:typeDescriptor";
     String FIELD_DESCRIPTOR_TYPE = "tba:fieldDescriptor";
 
-    /** Name of the extensible type for all categories */
+    /**
+     * Name of the extensible type for all categories
+     */
     String USER_CATEGORY = "usr:category";
 
-    /** Name of the extensible type for all feeds */
+    /**
+     * Name of the extensible type for all feeds
+     */
     String USER_FEED = "usr:feed";
 
     /**

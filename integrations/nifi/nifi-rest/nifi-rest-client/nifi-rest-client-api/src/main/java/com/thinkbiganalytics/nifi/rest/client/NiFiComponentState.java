@@ -25,9 +25,13 @@ package com.thinkbiganalytics.nifi.rest.client;
  */
 public enum NiFiComponentState {
 
-    /** The component is schedule to execute */
+    /**
+     * The component is schedule to execute
+     */
     RUNNING,
 
-    /** The component will not be executed */
+    /**
+     * The component will not be executed
+     */
     STOPPED
 }

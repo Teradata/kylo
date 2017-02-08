@@ -31,11 +31,14 @@ import javax.annotation.Nonnull;
  */
 public class LoginJerseyClientConfig extends JerseyClientConfig {
 
-    /** Base URL path */
+    /**
+     * Base URL path
+     */
     private String path;
 
     /**
      * Constructs a {@code LoginJerseyClientConfig} by copying another.
+     *
      * @param other the configuration to copy
      */
     public LoginJerseyClientConfig(@Nonnull final LoginJerseyClientConfig other) {
@@ -47,6 +50,7 @@ public class LoginJerseyClientConfig extends JerseyClientConfig {
 
     /**
      * Constructs a {@code LoginJerseyClientConfig} from the specified URI.
+     *
      * @param uri the URI to the REST API
      */
     public LoginJerseyClientConfig(@Nonnull final URI uri) {

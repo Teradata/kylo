@@ -41,19 +41,15 @@ import java.util.Set;
 
 /**
  * This code will find all Process groups matching the Version name of  <Name> - {13 digit timestamp} and if the group doesn't have anything in its Queue, it will delete it from NiFi
- *
  */
 public class CleanupStaleFeedRevisions {
 
     private static final Logger log = LoggerFactory.getLogger(CleanupStaleFeedRevisions.class);
-
+    LegacyNifiRestClient restClient;
     /**
      * the name of the parent group to look at or the word 'all' to access everything
      **/
     private String processGroupId;
-
-    LegacyNifiRestClient restClient;
-
     private Set<PortDTO> stoppedPorts = new HashSet<>();
 
     private Set<ProcessGroupDTO> deletedProcessGroups = new HashSet<>();
@@ -62,8 +58,9 @@ public class CleanupStaleFeedRevisions {
 
     /**
      * Cleanup versioned process groups that are no longer active
-     * @param restClient the nifi rest client
-     * @param processGroupId a parent process group (i.e. a category) to look at, or the word 'all' to clean up everything
+     *
+     * @param restClient                  the nifi rest client
+     * @param processGroupId              a parent process group (i.e. a category) to look at, or the word 'all' to clean up everything
      * @param propertyDescriptorTransform the transformation bean
      */
     public CleanupStaleFeedRevisions(LegacyNifiRestClient restClient, String processGroupId, NiFiPropertyDescriptorTransform propertyDescriptorTransform) {
@@ -98,6 +95,7 @@ public class CleanupStaleFeedRevisions {
 
     /**
      * Return the list of groups that were deleted as part of the {@link this#cleanup()} activity
+     *
      * @return the list of groups that were deleted as part of the {@link this#cleanup()} activity
      */
     public Set<ProcessGroupDTO> getDeletedProcessGroups() {
@@ -119,7 +117,7 @@ public class CleanupStaleFeedRevisions {
             });
         startPorts();
         //relayout the group
-        if(!deletedItems.isEmpty()) {
+        if (!deletedItems.isEmpty()) {
             new AlignProcessGroupComponents(restClient.getNiFiRestClient(), processGroupId).autoLayout();
         }
     }
@@ -188,7 +186,7 @@ public class CleanupStaleFeedRevisions {
 
     private boolean hasItemsInQueue(ProcessGroupStatusDTO statusDTO) {
         String queuedCount = propertyDescriptorTransform.getQueuedCount(statusDTO);
-        return StringUtils.isNotBlank(queuedCount) && !queuedCount.equalsIgnoreCase("0") ;
+        return StringUtils.isNotBlank(queuedCount) && !queuedCount.equalsIgnoreCase("0");
     }
 
 

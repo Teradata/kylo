@@ -40,15 +40,17 @@ import javax.annotation.Nonnull;
  */
 public interface Category extends AccessControlled {
 
-    interface ID extends Serializable {}
-
     ID getId();
 
     List<? extends Feed> getFeeds();
 
     String getDisplayName();
 
+    void setDisplayName(String displayName);
+
     String getName();
+
+    void setName(String name);
 
     Integer getVersion();
 
@@ -58,13 +60,9 @@ public interface Category extends AccessControlled {
 
     DateTime getCreatedTime();
 
-    DateTime getModifiedTime();
-
-    void setDisplayName(String displayName);
-
-    void setName(String name);
-
     void setCreatedTime(DateTime createdTime);
+
+    DateTime getModifiedTime();
 
     void setModifiedTime(DateTime modifiedTime);
 
@@ -83,7 +81,7 @@ public interface Category extends AccessControlled {
      * <p>If the user-defined field descriptors are given then a check is made to ensure that all required properties are specified.</p>
      *
      * @param userProperties the new user-defined properties
-     * @param userFields the user-defined field descriptors
+     * @param userFields     the user-defined field descriptors
      * @throws MissingUserPropertyException if a required property is empty or missing
      * @see CategoryProvider#getUserFields() for the user-defined field descriptors
      * @since 0.4.0
@@ -93,4 +91,8 @@ public interface Category extends AccessControlled {
     List<? extends HadoopSecurityGroup> getSecurityGroups();
 
     void setSecurityGroups(List<? extends HadoopSecurityGroup> securityGroups);
+
+    interface ID extends Serializable {
+
+    }
 }

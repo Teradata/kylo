@@ -60,7 +60,9 @@ import io.swagger.annotations.Tag;
 @SwaggerDefinition(tags = @Tag(name = "Security - Users", description = "manages users"))
 public class UsersController {
 
-    /** Service for accessing Kylo users */
+    /**
+     * Service for accessing Kylo users
+     */
     @Inject
     UserService userService;
 
@@ -75,9 +77,9 @@ public class UsersController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Adds or updates a Kylo user.")
     @ApiResponses({
-        @ApiResponse(code = 204, message = "The user was added or updated."),
-        @ApiResponse(code = 500, message = "There was a problem adding or updating the user.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 204, message = "The user was added or updated."),
+                      @ApiResponse(code = 500, message = "There was a problem adding or updating the user.", response = RestResponseStatus.class)
+                  })
     @Nonnull
     public Response addUser(@Nonnull final UserPrincipal user) {
         userService.updateUser(user);
@@ -95,10 +97,10 @@ public class UsersController {
     @Path("{userId}")
     @ApiOperation("Deletes the specified user.")
     @ApiResponses({
-        @ApiResponse(code = 204, message = "The user was deleted."),
-        @ApiResponse(code = 404, message = "The user was not found.", response = RestResponseStatus.class),
-        @ApiResponse(code = 500, message = "There was a problem deleting the user.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 204, message = "The user was deleted."),
+                      @ApiResponse(code = 404, message = "The user was not found.", response = RestResponseStatus.class),
+                      @ApiResponse(code = 500, message = "There was a problem deleting the user.", response = RestResponseStatus.class)
+                  })
     @Nonnull
     public Response deleteUser(@Nonnull @PathParam("userId") final String userId) {
         if (userService.deleteUser(decodeUserId(userId))) {
@@ -120,10 +122,10 @@ public class UsersController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Returns the specified user.")
     @ApiResponses({
-        @ApiResponse(code = 200, message = "The requested user.", response = UserPrincipal.class),
-        @ApiResponse(code = 404, message = "The user was not found.", response = RestResponseStatus.class),
-        @ApiResponse(code = 500, message = "There was a problem accessing the user.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 200, message = "The requested user.", response = UserPrincipal.class),
+                      @ApiResponse(code = 404, message = "The user was not found.", response = RestResponseStatus.class),
+                      @ApiResponse(code = 500, message = "There was a problem accessing the user.", response = RestResponseStatus.class)
+                  })
     @Nonnull
     public Response getUser(@Nonnull @PathParam("userId") final String userId) {
         final UserPrincipal user = userService.getUser(decodeUserId(userId)).orElseThrow(NotFoundException::new);
@@ -139,9 +141,9 @@ public class UsersController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Returns a list of all users.")
     @ApiResponses({
-        @ApiResponse(code = 200, message = "The list of users.", response = UserPrincipal.class, responseContainer = "List"),
-        @ApiResponse(code = 500, message = "There was a problem accessing the users.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 200, message = "The list of users.", response = UserPrincipal.class, responseContainer = "List"),
+                      @ApiResponse(code = 500, message = "There was a problem accessing the users.", response = RestResponseStatus.class)
+                  })
     @Nonnull
     public Response getUsers() {
         final List<UserPrincipal> users = userService.getUsers();

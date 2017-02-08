@@ -25,25 +25,8 @@ import java.io.Serializable;
 
 /**
  * Represents a feed in the operational store.
- *
  */
 public interface OpsManagerFeed {
-
-    /**
-     * The type of feed
-     * FEED is the default type and represents the majority of feeds in the system
-     * CHECK represents a Data Confidence check feed.  CHECK feeds are new feed flows that have a pointer back to a specific feed for which to do a Data Confidence check on.
-     */
-    enum FeedType {
-        FEED, CHECK
-    }
-
-    /**
-     * The ID for the Feed
-     */
-    interface ID extends Serializable {
-
-    }
 
     /**
      * @return the unique ID of this Feed
@@ -55,14 +38,30 @@ public interface OpsManagerFeed {
      */
     String getName();
 
-
     /**
-     * {@link FeedType#FEED} is the default type and represents the majority of feeds in the system
-     * {@link FeedType#CHECK} represents a Data Confidence check feed.  {@link FeedType#CHECK} feeds are new feed flows that have a pointer back to a specific feed for which to do a Data Confidence check on.
+     * {@link FeedType#FEED} is the default type and represents the majority of feeds in the system {@link FeedType#CHECK} represents a Data Confidence check feed.  {@link FeedType#CHECK} feeds are
+     * new feed flows that have a pointer back to a specific feed for which to do a Data Confidence check on.
      *
      * @return the type of feed
      */
     FeedType getFeedType();
+
+    /**
+     * The type of feed
+     * FEED is the default type and represents the majority of feeds in the system
+     * CHECK represents a Data Confidence check feed.  CHECK feeds are new feed flows that have a pointer back to a specific feed for which to do a Data Confidence check on.
+     */
+    enum FeedType {
+        FEED, CHECK
+    }
+
+
+    /**
+     * The ID for the Feed
+     */
+    interface ID extends Serializable {
+
+    }
 
 
 }

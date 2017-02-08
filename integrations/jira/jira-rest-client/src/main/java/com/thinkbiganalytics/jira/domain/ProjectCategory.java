@@ -1,4 +1,3 @@
-
 package com.thinkbiganalytics.jira.domain;
 
 /*-
@@ -36,11 +35,11 @@ import javax.annotation.Generated;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("org.jsonschema2pojo")
 @JsonPropertyOrder({
-    "self",
-    "id",
-    "description",
-    "name"
-})
+                       "self",
+                       "id",
+                       "description",
+                       "name"
+                   })
 public class ProjectCategory {
 
     @JsonProperty("self")
@@ -55,9 +54,7 @@ public class ProjectCategory {
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
-     * 
-     * @return
-     *     The self
+     * @return The self
      */
     @JsonProperty("self")
     public String getSelf() {
@@ -65,9 +62,7 @@ public class ProjectCategory {
     }
 
     /**
-     * 
-     * @param self
-     *     The self
+     * @param self The self
      */
     @JsonProperty("self")
     public void setSelf(String self) {
@@ -75,9 +70,7 @@ public class ProjectCategory {
     }
 
     /**
-     * 
-     * @return
-     *     The id
+     * @return The id
      */
     @JsonProperty("id")
     public String getId() {
@@ -85,9 +78,7 @@ public class ProjectCategory {
     }
 
     /**
-     * 
-     * @param id
-     *     The id
+     * @param id The id
      */
     @JsonProperty("id")
     public void setId(String id) {
@@ -95,9 +86,7 @@ public class ProjectCategory {
     }
 
     /**
-     * 
-     * @return
-     *     The description
+     * @return The description
      */
     @JsonProperty("description")
     public String getDescription() {
@@ -105,9 +94,7 @@ public class ProjectCategory {
     }
 
     /**
-     * 
-     * @param description
-     *     The description
+     * @param description The description
      */
     @JsonProperty("description")
     public void setDescription(String description) {
@@ -115,9 +102,7 @@ public class ProjectCategory {
     }
 
     /**
-     * 
-     * @return
-     *     The name
+     * @return The name
      */
     @JsonProperty("name")
     public String getName() {
@@ -125,9 +110,7 @@ public class ProjectCategory {
     }
 
     /**
-     * 
-     * @param name
-     *     The name
+     * @param name The name
      */
     @JsonProperty("name")
     public void setName(String name) {

@@ -44,10 +44,14 @@ import javax.servlet.http.HttpServletResponse;
 
 public class JwtRememberMeServicesTest {
 
-    /** The JWT Remember Me service to be tested */
+    /**
+     * The JWT Remember Me service to be tested
+     */
     private JwtRememberMeServices service;
 
-    /** Create service and setup environment for tests */
+    /**
+     * Create service and setup environment for tests
+     */
     @Before
     public void setUp() {
         DateTimeUtils.setCurrentMillisFixed(1461942300000L);
@@ -58,13 +62,17 @@ public class JwtRememberMeServicesTest {
         service = new JwtRememberMeServices(properties);
     }
 
-    /** Reset date/time after tests. */
+    /**
+     * Reset date/time after tests.
+     */
     @After
     public void tearDown() {
         DateTimeUtils.setCurrentMillisSystem();
     }
 
-    /** Verifies token deserialization. */
+    /**
+     * Verifies token deserialization.
+     */
     @Test
     public void decodeCookie() {
         // Test with no groups
@@ -85,32 +93,42 @@ public class JwtRememberMeServicesTest {
         Assert.assertArrayEquals(expected, actual);
     }
 
-    /** Verify exception if subject is blank. */
+    /**
+     * Verify exception if subject is blank.
+     */
     @Test(expected = InvalidCookieException.class)
     public void decodeCookieWithBlankSubject() {
         service.decodeCookie("eyJhbGciOiJIUzI1NiIsImtpZCI6IkhNQUMifQ.eyJleHAiOjE0NjMxNTE5MDAsInN1YiI6IiIsImdyb3VwcyI6W119.TZlPnjJgAW5oP9DztgE9r10rZhMv0GAnhlbGhRiMtmA");
     }
 
-    /** Verify exception if token is expired. */
+    /**
+     * Verify exception if token is expired.
+     */
     @Test(expected = InvalidCookieException.class)
     public void decodeCookieWithExpired() {
         service.setTokenValiditySeconds(JwtRememberMeServices.TWO_WEEKS_S);
         service.decodeCookie("eyJhbGciOiJIUzI1NiIsImtpZCI6IkhNQUMifQ.eyJleHAiOjE0NjE5NDIzMDAsInN1YiI6ImRsYWRtaW4iLCJncm91cHMiOlsiYWRtaW4iXX0.AsXMAoAM1EPAw5mk4YHNXWsB9H8-lVf4JrQ6K9zHIfw");
     }
 
-    /** Verify exception if token signature is invalid. */
+    /**
+     * Verify exception if token signature is invalid.
+     */
     @Test(expected = InvalidCookieException.class)
     public void decodeCookieWithInvalid() {
         service.decodeCookie("eyJhbGciOiJIUzI1NiIsImtpZCI6IkhNQUMifQ.eyJleHAiOjE0NjMxNTE5MDAsInN1YiI6IiIsImdyb3VwcyI6W119.L_00dw3cpWbxw32Pddj6Jq1xeFqPf8ZFdPWAUdmj39k");
     }
 
-    /** Verify exception if subject is missing. */
+    /**
+     * Verify exception if subject is missing.
+     */
     @Test(expected = InvalidCookieException.class)
     public void decodeCookieWithMissingSubject() {
         service.decodeCookie("eyJhbGciOiJIUzI1NiIsImtpZCI6IkhNQUMifQ.eyJleHAiOjE0NjMxNTE5MDB9.L_00dw3cpWbxw32Pddj6Jq1xeFqPf8ZFdPWAUdmj39k");
     }
 
-    /** Verifies token serialization. */
+    /**
+     * Verifies token serialization.
+     */
     @Test
     public void encodeCookie() {
         // Test with no groups
@@ -129,14 +147,16 @@ public class JwtRememberMeServicesTest {
         Assert.assertEquals(expected, actual);
     }
 
-    /** Verify extracting tokens from authentication. */
+    /**
+     * Verify extracting tokens from authentication.
+     */
     @Test
     public void onLoginSuccess() throws Exception {
         // Mock request, response, and authentication
         final AtomicReference<Cookie> cookie = new AtomicReference<>();
         final HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
         Mockito.doAnswer(answer -> cookie.compareAndSet(null, answer.getArgumentAt(0, Cookie.class)))
-                .when(response).addCookie(Mockito.any());
+            .when(response).addCookie(Mockito.any());
 
         final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
         Mockito.when(request.getContextPath()).thenReturn("");
@@ -149,7 +169,9 @@ public class JwtRememberMeServicesTest {
                             cookie.get().getValue());
     }
 
-    /** Verify building a user from tokens. */
+    /**
+     * Verify building a user from tokens.
+     */
     @Test
     public void processAutoLoginCookie() throws Exception {
         final UserDetails user = service.processAutoLoginCookie(new String[]{"dladmin", "admin"}, Mockito.mock(HttpServletRequest.class), Mockito.mock(HttpServletResponse.class));

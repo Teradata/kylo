@@ -1,4 +1,3 @@
-
 package com.thinkbiganalytics.jira.domain;
 
 /*-
@@ -39,13 +38,13 @@ import javax.annotation.Generated;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("org.jsonschema2pojo")
 @JsonPropertyOrder({
-    "self",
-    "id",
-    "key",
-    "name",
-    "avatarUrls",
-    "projectCategory"
-})
+                       "self",
+                       "id",
+                       "key",
+                       "name",
+                       "avatarUrls",
+                       "projectCategory"
+                   })
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Project {
 
@@ -68,11 +67,8 @@ public class Project {
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
 
-
     /**
-     * 
-     * @return
-     *     The self
+     * @return The self
      */
     @JsonProperty("self")
     public String getSelf() {
@@ -80,9 +76,7 @@ public class Project {
     }
 
     /**
-     * 
-     * @param self
-     *     The self
+     * @param self The self
      */
     @JsonProperty("self")
     public void setSelf(String self) {
@@ -90,9 +84,7 @@ public class Project {
     }
 
     /**
-     * 
-     * @return
-     *     The id
+     * @return The id
      */
     @JsonProperty("id")
     public String getId() {
@@ -100,9 +92,7 @@ public class Project {
     }
 
     /**
-     * 
-     * @param id
-     *     The id
+     * @param id The id
      */
     @JsonProperty("id")
     public void setId(String id) {
@@ -110,9 +100,7 @@ public class Project {
     }
 
     /**
-     * 
-     * @return
-     *     The key
+     * @return The key
      */
     @JsonProperty("key")
     public String getKey() {
@@ -120,9 +108,7 @@ public class Project {
     }
 
     /**
-     * 
-     * @param key
-     *     The key
+     * @param key The key
      */
     @JsonProperty("key")
     public void setKey(String key) {
@@ -130,9 +116,7 @@ public class Project {
     }
 
     /**
-     * 
-     * @return
-     *     The name
+     * @return The name
      */
     @JsonProperty("name")
     public String getName() {
@@ -140,9 +124,7 @@ public class Project {
     }
 
     /**
-     * 
-     * @param name
-     *     The name
+     * @param name The name
      */
     @JsonProperty("name")
     public void setName(String name) {
@@ -150,9 +132,7 @@ public class Project {
     }
 
     /**
-     * 
-     * @return
-     *     The avatarUrls
+     * @return The avatarUrls
      */
     @JsonProperty("avatarUrls")
     public AvatarUrls getAvatarUrls() {
@@ -160,9 +140,7 @@ public class Project {
     }
 
     /**
-     * 
-     * @param avatarUrls
-     *     The avatarUrls
+     * @param avatarUrls The avatarUrls
      */
     @JsonProperty("avatarUrls")
     public void setAvatarUrls(AvatarUrls avatarUrls) {
@@ -170,15 +148,20 @@ public class Project {
     }
 
     /**
-     * 
-     * @return
-     *     The projectCategory
+     * @return The projectCategory
      */
     @JsonProperty("projectCategory")
     public ProjectCategory getProjectCategory() {
         return projectCategory;
     }
 
+    /**
+     * @param projectCategory The projectCategory
+     */
+    @JsonProperty("projectCategory")
+    public void setProjectCategory(ProjectCategory projectCategory) {
+        this.projectCategory = projectCategory;
+    }
 
     @JsonProperty("issuetypes")
     public List<IssueType> getIssueTypes() {
@@ -188,16 +171,6 @@ public class Project {
     @JsonProperty("issuetypes")
     public void setIssueTypes(List<IssueType> issueTypes) {
         this.issueTypes = issueTypes;
-    }
-
-    /**
-     * 
-     * @param projectCategory
-     *     The projectCategory
-     */
-    @JsonProperty("projectCategory")
-    public void setProjectCategory(ProjectCategory projectCategory) {
-        this.projectCategory = projectCategory;
     }
 
     @JsonAnyGetter
@@ -218,6 +191,6 @@ public class Project {
 
     protected MoreObjects.ToStringHelper getToStringHelper() {
         return MoreObjects.toStringHelper(this).
-                add("key", key);
+            add("key", key);
     }
 }

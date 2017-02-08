@@ -30,7 +30,6 @@ import java.util.List;
 public interface DependentFeedPrecondition {
 
     /**
-     *
      * @return a list of the <systemCategory.systemFeedName> of the feeds that a feed depends upon
      */
     List<String> getDependentFeedNames();

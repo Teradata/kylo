@@ -42,13 +42,11 @@ public @interface PreconditionPolicy {
 
     /**
      * The description of the precondition.  This will be displayed in the UI.
-     * @return
      */
     String description();
 
     /**
      * A shorter description.
-     * @return
      */
     String shortDescription() default "";
 }

@@ -27,9 +27,6 @@ import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.feed.LatestFeedJobExecution;
 import com.thinkbiganalytics.metadata.jpa.feed.OpsFeedManagerFeedProvider;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -60,7 +57,7 @@ public class DataConfidenceRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the data confidence metrics.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "Returns the data confidence metrics.", response = DataConfidenceSummary.class)
+        @ApiResponse(code = 200, message = "Returns the data confidence metrics.", response = DataConfidenceSummary.class)
     )
     public DataConfidenceSummary getDataConfidenceSummary() {
         DataConfidenceSummary summary = null;

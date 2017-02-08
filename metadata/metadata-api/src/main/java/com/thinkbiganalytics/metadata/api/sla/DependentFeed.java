@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.api.sla;
 
@@ -36,7 +36,7 @@ public abstract class DependentFeed implements Metric {
     private String categoryName;
 
     private String categoryAndFeed;
-    
+
     public DependentFeed() {
     }
 
@@ -47,13 +47,13 @@ public abstract class DependentFeed implements Metric {
         this.categoryAndFeed = categoryAndFeed;
     }
 
-    public DependentFeed(String categoryName,String feedName) {
+    public DependentFeed(String categoryName, String feedName) {
         super();
         this.categoryName = categoryName;
         this.feedName = feedName;
-        this.categoryAndFeed = categoryName+"."+feedName;
+        this.categoryAndFeed = categoryName + "." + feedName;
     }
-    
+
     public String getFeedName() {
         return feedName;
     }
@@ -70,7 +70,7 @@ public abstract class DependentFeed implements Metric {
         this.categoryName = categoryName;
     }
 
-    public String getCategoryAndFeed(){
+    public String getCategoryAndFeed() {
         return categoryAndFeed;
     }
 }

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.modeshape.security;
 
@@ -35,7 +35,7 @@ import javax.security.auth.callback.CallbackHandler;
  * This module does not attempt to authenticate the user but simply updates the subject upon successful login.
  */
 public class ModeShapeLoginModule extends AbstractLoginModule {
-    
+
     private ModeShapePrincipal principal;
 
     @Override

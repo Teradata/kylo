@@ -40,7 +40,7 @@ public class LabelValue {
      */
     private String hint;
 
-    public LabelValue(){
+    public LabelValue() {
 
     }
 
@@ -67,7 +67,6 @@ public class LabelValue {
 
     /**
      * Set the label
-     * @param label
      */
     public void setLabel(String label) {
         this.label = label;
@@ -75,6 +74,7 @@ public class LabelValue {
 
     /**
      * get the value
+     *
      * @return the value
      */
     public String getValue() {
@@ -83,7 +83,6 @@ public class LabelValue {
 
     /**
      * set the value
-     * @param value
      */
     public void setValue(String value) {
         this.value = value;
@@ -91,7 +90,6 @@ public class LabelValue {
 
     /**
      * get additional information describing this option
-     * @return
      */
     public String getHint() {
         return hint;
@@ -99,7 +97,6 @@ public class LabelValue {
 
     /**
      * set additional information describing this option
-     * @param hint
      */
     public void setHint(String hint) {
         this.hint = hint;

@@ -37,14 +37,12 @@ import java.util.stream.Collectors;
 public class FeedServiceLevelAgreement extends ServiceLevelAgreement {
 
     private ServiceLevelAgreement serviceLevelAgreement;
+    private Set<Feed> feeds;
 
 
     public FeedServiceLevelAgreement(com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement restModel) {
         this.serviceLevelAgreement = restModel;
     }
-
-
-    private Set<Feed> feeds;
 
     public Set<Feed> getFeeds() {
         return feeds;

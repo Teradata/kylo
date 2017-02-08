@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.alerts.api;
 
@@ -34,43 +34,49 @@ public interface AlertResponse {
 
     /**
      * Changes an alert status to in-progress.
+     *
      * @param description a description of the change (may be null)
      */
     Alert inProgress(String description);
-    
+
     /**
      * Changes an alert status to in-progress.
+     *
      * @param description a description of the change (may be null)
-     * @param content alert type-specific content associated with the state change
+     * @param content     alert type-specific content associated with the state change
      */
     <C extends Serializable> Alert inProgress(String description, C content);
-    
+
     /**
      * Changes an alert status to handled.
+     *
      * @param description a description of the change (may be null)
      */
     Alert handle(String description);
-    
+
     /**
      * Changes an alert status to handled.
+     *
      * @param description a description of the change (may be null)
-     * @param content alert type-specific content associated with the state change
+     * @param content     alert type-specific content associated with the state change
      */
     <C extends Serializable> Alert handle(String description, C content);
-    
+
     /**
      * Changes an alert status to unhandled.
+     *
      * @param description a description of the change (may be null)
      */
     Alert unhandle(String description);
-    
+
     /**
      * Changes an alert status to unhandled.
+     *
      * @param description a description of the change (may be null)
-     * @param content alert type-specific content associated with the state change
+     * @param content     alert type-specific content associated with the state change
      */
     <C extends Serializable> Alert unhandle(String description, C content);
-    
+
     /**
      * clears (hides or removes) an alert.  No other responder will see this alert if cleared.
      */

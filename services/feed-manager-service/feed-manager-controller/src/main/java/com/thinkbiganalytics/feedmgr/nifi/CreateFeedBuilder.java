@@ -70,9 +70,8 @@ public class CreateFeedBuilder {
     private static final Logger log = LoggerFactory.getLogger(CreateFeedBuilder.class);
 
     LegacyNifiRestClient restClient;
-
+    TemplateCreationHelper templateCreationHelper;
     private NifiFlowCache nifiFlowCache;
-
     private String templateId;
     private String category;
     private String feedName;
@@ -82,43 +81,33 @@ public class CreateFeedBuilder {
     private String inputProcessorType;
     private String reusableTemplateCategoryName = TemplateCreationHelper.REUSABLE_TEMPLATES_PROCESS_GROUP_NAME;
     private boolean isReusableTemplate;
-
-
     /**
      * if true it will remove the versioned process group with the <feed> - timestamp
      * if false it will keep thhe versioned process group
      * These can be cleaned up later through the {@code CleanupStaleFeedRevisions} class
      */
     private boolean removeInactiveVersionedProcessGroup;
-
-    /** List of Input / Output Port connections */
+    /**
+     * List of Input / Output Port connections
+     */
     @Nonnull
     private List<InputOutputPort> inputOutputPorts = Lists.newArrayList();
-
     private NifiProcessGroup newProcessGroup = null;
     private ProcessGroupDTO previousFeedProcessGroup = null;
-
-
     private String version;
-
     private List<NifiProperty> properties;
     private NifiProcessorSchedule feedSchedule;
     private NiFiPropertyDescriptorTransform propertyDescriptorTransform;
-
-
     private List<NifiProperty> modifiedProperties;
-
     private List<NifiError> errors = new ArrayList<>();
-
-    TemplateCreationHelper templateCreationHelper;
-
     /**
      * the category group in NiFi where this feed resides
      **/
     private ProcessGroupDTO categoryGroup;
 
 
-    protected CreateFeedBuilder(LegacyNifiRestClient restClient, NifiFlowCache nifiFlowCache, FeedMetadata feedMetadata, String templateId, PropertyExpressionResolver propertyExpressionResolver, NiFiPropertyDescriptorTransform propertyDescriptorTransform) {
+    protected CreateFeedBuilder(LegacyNifiRestClient restClient, NifiFlowCache nifiFlowCache, FeedMetadata feedMetadata, String templateId, PropertyExpressionResolver propertyExpressionResolver,
+                                NiFiPropertyDescriptorTransform propertyDescriptorTransform) {
         this.restClient = restClient;
         this.nifiFlowCache = nifiFlowCache;
         this.feedMetadata = feedMetadata;
@@ -131,7 +120,8 @@ public class CreateFeedBuilder {
     }
 
 
-    public static CreateFeedBuilder newFeed(LegacyNifiRestClient restClient, NifiFlowCache nifiFlowCache, FeedMetadata feedMetadata, String templateId, PropertyExpressionResolver propertyExpressionResolver, NiFiPropertyDescriptorTransform propertyDescriptorTransform) {
+    public static CreateFeedBuilder newFeed(LegacyNifiRestClient restClient, NifiFlowCache nifiFlowCache, FeedMetadata feedMetadata, String templateId,
+                                            PropertyExpressionResolver propertyExpressionResolver, NiFiPropertyDescriptorTransform propertyDescriptorTransform) {
         return new CreateFeedBuilder(restClient, nifiFlowCache, feedMetadata, templateId, propertyExpressionResolver, propertyDescriptorTransform);
     }
 
@@ -212,8 +202,6 @@ public class CreateFeedBuilder {
                     //mark the new services that were created as a result of creating the new flow from the template
                     templateCreationHelper.identifyNewlyCreatedControllerServiceReferences();
 
-
-
                     //match the properties incoming to the defined properties
                     updateProcessGroupProperties(processGroupId);
 
@@ -224,8 +212,6 @@ public class CreateFeedBuilder {
                     ProcessorDTO cleanupProcessor = NifiProcessUtil.findFirstProcessorsByType(NifiProcessUtil.getInputProcessors(entity),
                                                                                               "com.thinkbiganalytics.nifi.v2.metadata.TriggerCleanup");
                     List<ProcessorDTO> nonInputProcessors = NifiProcessUtil.getNonInputProcessors(entity);
-
-
 
                     //update any references to the controller services and try to assign the value to an enabled service if it is not already
                     if (input != null) {
@@ -244,7 +230,7 @@ public class CreateFeedBuilder {
 
                     //Validate and if invalid Delete the process group
                     if (newProcessGroup.hasFatalErrors()) {
-                       removeProcessGroup(entity);
+                        removeProcessGroup(entity);
                         // cleanupControllerServices();
                         newProcessGroup.setSuccess(false);
                     } else {
@@ -253,32 +239,31 @@ public class CreateFeedBuilder {
                         updateFeedSchedule(newProcessGroup, input);
 
                         //Cache the processorIds to the respective flowIds for availability in the ProvenanceReportingTask
-                        NifiVisitableProcessGroup group = restClient.getFlowOrder(newProcessGroup.getProcessGroupEntity(),null);
+                        NifiVisitableProcessGroup group = restClient.getFlowOrder(newProcessGroup.getProcessGroupEntity(), null);
                         NifiFlowProcessGroup
                             flow =
                             new NifiFlowBuilder().build(
-                            group);
-                        nifiFlowCache.updateFlow(feedMetadata,flow);
+                                group);
+                        nifiFlowCache.updateFlow(feedMetadata, flow);
 
                         //disable all inputs
-                       restClient.disableInputProcessors(newProcessGroup.getProcessGroupEntity().getId());
-                       //mark everything else as running
+                        restClient.disableInputProcessors(newProcessGroup.getProcessGroupEntity().getId());
+                        //mark everything else as running
                         templateCreationHelper.markProcessorsAsRunning(newProcessGroup);
-                       //if desired start the input processor
+                        //if desired start the input processor
                         if (input != null) {
-                            if(enabled) {
+                            if (enabled) {
                                 markInputAsRunning(newProcessGroup, input);
                                 ///make the input/output ports in the category group as running
                                 if (hasConnectionPorts()) {
                                     templateCreationHelper.markConnectionPortsAsRunning(entity);
                                 }
-                            }
-                            else {
+                            } else {
                                 ///make the input/output ports in the category group as running
                                 if (hasConnectionPorts()) {
                                     templateCreationHelper.markConnectionPortsAsRunning(entity);
                                 }
-                                markInputAsStopped(newProcessGroup,input);
+                                markInputAsStopped(newProcessGroup, input);
                             }
                         }
 
@@ -374,11 +359,10 @@ public class CreateFeedBuilder {
                             }
 
                             //Set the state correctly for the inputs
-                            if(enabled) {
+                            if (enabled) {
                                 restClient.setInputProcessorState(entity.getId(),
                                                                   inputProcessorType, NifiProcessUtil.PROCESS_STATE.RUNNING);
-                            }
-                            else {
+                            } else {
                                 restClient.setInputProcessorState(entity.getId(),
                                                                   inputProcessorType, NifiProcessUtil.PROCESS_STATE.STOPPED);
                             }
@@ -496,28 +480,30 @@ public class CreateFeedBuilder {
      */
     public void checkAndRemoveVersionedProcessGroup() {
         if (this.removeInactiveVersionedProcessGroup && previousFeedProcessGroup != null) {
-          removeProcessGroup(previousFeedProcessGroup);
+            removeProcessGroup(previousFeedProcessGroup);
         }
     }
 
 
     /**
      * Removes a given processGroup from NiFi if nothing is in its queue
-     * @param processGroupDTO
      */
-    private void removeProcessGroup(ProcessGroupDTO processGroupDTO){
-        if(processGroupDTO != null) {
+    private void removeProcessGroup(ProcessGroupDTO processGroupDTO) {
+        if (processGroupDTO != null) {
             try {
                 //validate if nothing is in the queue then remove it
                 Optional<ProcessGroupStatusDTO> statusDTO = restClient.getNiFiRestClient().processGroups().getStatus(processGroupDTO.getId());
                 if (statusDTO.isPresent() && propertyDescriptorTransform.getQueuedCount(statusDTO.get()).equalsIgnoreCase("0")) {
                     //get connections linking to this group, delete them
                     Set<ConnectionDTO> connectionDTOs = restClient.getProcessGroupConnections(processGroupDTO.getParentGroupId());
-                    if(connectionDTOs == null){
+                    if (connectionDTOs == null) {
                         connectionDTOs = new HashSet<>();
                     }
-                    Set<ConnectionDTO> versionedConnections = connectionDTOs.stream().filter(connectionDTO -> connectionDTO.getDestination().getGroupId().equalsIgnoreCase(processGroupDTO.getId()) || connectionDTO.getSource().getGroupId().equalsIgnoreCase(processGroupDTO.getId()) )
-                        .collect(Collectors.toSet());
+                    Set<ConnectionDTO>
+                        versionedConnections =
+                        connectionDTOs.stream().filter(connectionDTO -> connectionDTO.getDestination().getGroupId().equalsIgnoreCase(processGroupDTO.getId()) || connectionDTO.getSource().getGroupId()
+                            .equalsIgnoreCase(processGroupDTO.getId()))
+                            .collect(Collectors.toSet());
                     restClient.deleteProcessGroupAndConnections(processGroupDTO, versionedConnections);
                     log.info("removed the versioned processgroup {} ", processGroupDTO.getName());
                 } else {
@@ -528,7 +514,6 @@ public class CreateFeedBuilder {
             }
         }
     }
-
 
 
     /**
@@ -548,8 +533,8 @@ public class CreateFeedBuilder {
         // now apply any of the incoming metadata properties to this
 
         List<NifiProperty> modifiedFeedMetadataProperties = NifiPropertyUtil.matchAndSetPropertyValues(rootProcessGroup.getName(),
-                                                                        activeProcessGroupName.getName(),
-                                                                        propertiesToUpdate, properties);
+                                                                                                       activeProcessGroupName.getName(),
+                                                                                                       propertiesToUpdate, properties);
         modifiedProperties.addAll(modifiedStaticProperties);
         modifiedProperties.addAll(modifiedFeedMetadataProperties);
         restClient.updateProcessGroupProperties(modifiedProperties);
@@ -559,33 +544,35 @@ public class CreateFeedBuilder {
 
 
     private void markInputAsRunning(NifiProcessGroup newProcessGroup, ProcessorDTO input) {
-        setInputProcessorState(newProcessGroup,input, NifiProcessUtil.PROCESS_STATE.RUNNING);
+        setInputProcessorState(newProcessGroup, input, NifiProcessUtil.PROCESS_STATE.RUNNING);
     }
+
     private void markInputAsStopped(NifiProcessGroup newProcessGroup, ProcessorDTO input) {
-        setInputProcessorState(newProcessGroup,input, NifiProcessUtil.PROCESS_STATE.STOPPED);
+        setInputProcessorState(newProcessGroup, input, NifiProcessUtil.PROCESS_STATE.STOPPED);
     }
 
     private void setInputProcessorState(NifiProcessGroup newProcessGroup, ProcessorDTO input, NifiProcessUtil.PROCESS_STATE state) {
 
-            setInputProcessorState(newProcessGroup.getProcessGroupEntity(),
-                                              input,state);
+        setInputProcessorState(newProcessGroup.getProcessGroupEntity(),
+                               input, state);
     }
 
     /**
      * Sets the First processors in the {@code processGroup} matching the passed in {@code input} ProcessorType to the passed in {@code state}
      * If the input ins null it will use the default {@code inputType} supplied from the builder
+     *
      * @param processGroup the group which should be inspected for the input processors
-     * @param input the processor type to match when finding the correct input
-     * @param state the state to set the matched input processor
+     * @param input        the processor type to match when finding the correct input
+     * @param state        the state to set the matched input processor
      */
     private void setInputProcessorState(ProcessGroupDTO processGroup, ProcessorDTO input, NifiProcessUtil.PROCESS_STATE state) {
         try {
-            if(input != null && (StringUtils.isBlank(inputProcessorType) || !inputProcessorType.equalsIgnoreCase(input.getType()))){
+            if (input != null && (StringUtils.isBlank(inputProcessorType) || !inputProcessorType.equalsIgnoreCase(input.getType()))) {
                 inputProcessorType = input.getType();
             }
 
             restClient.setInputProcessorState(processGroup.getId(),
-                                              inputProcessorType,state);
+                                              inputProcessorType, state);
         } catch (Exception error) {
             String
                 errorMsg =
@@ -597,9 +584,6 @@ public class CreateFeedBuilder {
             newProcessGroup.setSuccess(false);
         }
     }
-
-
-
 
 
     private void updateFeedSchedule(NifiProcessGroup newProcessGroup, ProcessorDTO input) {

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.sla.spi.core;
 
@@ -34,12 +34,12 @@ import com.thinkbiganalytics.metadata.sla.spi.ObligationAssessor;
  *
  */
 public class TestObligatinAssessor implements ObligationAssessor<Obligation> {
-    
+
     private String expectedDescription;
 
     public TestObligatinAssessor() {
     }
-    
+
     public TestObligatinAssessor(String expectedDescription) {
         super();
         this.expectedDescription = expectedDescription;
@@ -54,21 +54,21 @@ public class TestObligatinAssessor implements ObligationAssessor<Obligation> {
     @SuppressWarnings("unchecked")
     public void assess(Obligation obligation, ObligationAssessmentBuilder builder) {
         AssessmentResult result = AssessmentResult.SUCCESS;
-        
+
         for (Metric metric : obligation.getMetrics()) {
             MetricAssessment assessment = builder.assess(metric);
             result = result.max(assessment.getResult());
         }
-        
+
         if (this.expectedDescription != null) {
             builder.compareWith(this.expectedDescription);
-            
-            if (! obligation.getDescription().equals(this.expectedDescription)) {
+
+            if (!obligation.getDescription().equals(this.expectedDescription)) {
                 builder.message("The expected description does not match: " + this.expectedDescription);
                 result = AssessmentResult.FAILURE;
             }
         }
-        
+
         builder.result(result);
     }
 

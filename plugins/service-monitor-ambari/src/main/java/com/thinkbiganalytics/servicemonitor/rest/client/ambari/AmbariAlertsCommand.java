@@ -35,45 +35,44 @@ import java.util.Map;
  * http://localhost:8080/api/v1/clusters/Sandbox/alerts?fields=*&Alert/service_name.in%28HDFS%29
  *
  * @see AlertSummary
- *
  */
 public class AmbariAlertsCommand extends AmbariServiceCheckRestCommand<AlertSummary> {
 
-  private Map<String, Object> parameters;
-  private StringBuffer sb = new StringBuffer();
+    private Map<String, Object> parameters;
+    private StringBuffer sb = new StringBuffer();
 
-  public String getPathString() {
-    return "?" + sb.toString();
-  }
+    AmbariAlertsCommand(String clusterName, String services) {
+        super(clusterName, services);
+    }
 
-  AmbariAlertsCommand(String clusterName, String services) {
-    super(clusterName, services);
-  }
+    public String getPathString() {
+        return "?" + sb.toString();
+    }
 
-  @Override
-  public String payload() {
-    return null;
-  }
+    @Override
+    public String payload() {
+        return null;
+    }
 
-  @Override
-  public void beforeRestRequest() {
-    sb = new StringBuffer();
-    super.beforeRestRequest();
-    List<String> serviceList = ServiceMonitorCheckUtil.getServiceNames(this.getServices());
-    String serviceString = StringUtils.join(serviceList, ",");
-    parameters = new HashMap<>();
-    sb.append("fields=*");
-    sb.append("&Alert/service_name.in(").append(serviceString).append(")");
-  }
+    @Override
+    public void beforeRestRequest() {
+        sb = new StringBuffer();
+        super.beforeRestRequest();
+        List<String> serviceList = ServiceMonitorCheckUtil.getServiceNames(this.getServices());
+        String serviceString = StringUtils.join(serviceList, ",");
+        parameters = new HashMap<>();
+        sb.append("fields=*");
+        sb.append("&Alert/service_name.in(").append(serviceString).append(")");
+    }
 
-  @Override
-  public String getUrl() {
-    return "clusters/" + getClusterName() + "/alerts";
-  }
+    @Override
+    public String getUrl() {
+        return "clusters/" + getClusterName() + "/alerts";
+    }
 
-  @Override
-  public Map<String, Object> getParameters() {
-    return parameters;
-  }
+    @Override
+    public Map<String, Object> getParameters() {
+        return parameters;
+    }
 
 }

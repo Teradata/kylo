@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.security.action.config;
 
@@ -39,16 +39,16 @@ public interface ActionBuilder<P> {
      * Sets the action description.
      */
     ActionBuilder<P> description(String name);
-    
+
     /**
-     * Starts a new builder for a sub-action of the one being built 
+     * Starts a new builder for a sub-action of the one being built
      * with this builder.  The system name from the supplied
      * action will be used for the system name of the new sub-action.
      */
     ActionBuilder<ActionBuilder<P>> subAction(Action action);
 
     /**
-     * Starts a new builder for a sub-action of the one being built 
+     * Starts a new builder for a sub-action of the one being built
      * with this builder; using the provided system name for the new sub-action.
      */
     ActionBuilder<ActionBuilder<P>> subAction(String systemName);

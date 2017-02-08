@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.api.extension;
 
@@ -27,9 +27,9 @@ package com.thinkbiganalytics.metadata.api.extension;
  *
  */
 public interface TypeDescriptor {
-    
+
     String getTitle();
-    
+
     String getDescription();
 
 }

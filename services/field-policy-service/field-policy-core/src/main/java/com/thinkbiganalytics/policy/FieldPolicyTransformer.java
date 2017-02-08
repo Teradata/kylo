@@ -35,71 +35,70 @@ import java.util.List;
  */
 public class FieldPolicyTransformer {
 
-  private com.thinkbiganalytics.policy.rest.model.FieldPolicy uiFieldPolicy;
-  private FieldPolicyTransformerListener listener;
+    private com.thinkbiganalytics.policy.rest.model.FieldPolicy uiFieldPolicy;
+    private FieldPolicyTransformerListener listener;
 
-  public FieldPolicyTransformer(com.thinkbiganalytics.policy.rest.model.FieldPolicy uiFieldPolicy) {
-    this.uiFieldPolicy = uiFieldPolicy;
-  }
-
-  public void setListener(FieldPolicyTransformerListener listener) {
-    this.listener = listener;
-  }
-
-  /**
-   * Get the Standardization policy from the User Interface {@link com.thinkbiganalytics.policy.rest.model.FieldPolicy} policy
-   */
-  public List<StandardizationPolicy> getStandardizationPolicies() {
-    List<StandardizationPolicy> policies = new ArrayList<>();
-    List<FieldStandardizationRule> rules = uiFieldPolicy.getStandardization();
-    if (rules != null) {
-      for (FieldStandardizationRule rule : rules) {
-        try {
-          StandardizationPolicy policy = StandardizationAnnotationTransformer.instance().fromUiModel(rule);
-          policies.add(policy);
-          if (listener != null) {
-            listener.onAddStandardizationPolicy(policy);
-          }
-        } catch (PolicyTransformException e) {
-          throw new RuntimeException(e);
-        }
-      }
+    public FieldPolicyTransformer(com.thinkbiganalytics.policy.rest.model.FieldPolicy uiFieldPolicy) {
+        this.uiFieldPolicy = uiFieldPolicy;
     }
-    return policies;
-  }
-  /**
-   * Get the Validation policy from the User Interface {@link com.thinkbiganalytics.policy.rest.model.FieldPolicy} policy
-   * @return
-   */
-  public List<ValidationPolicy> getValidationPolicies() {
-    List<ValidationPolicy> policies = new ArrayList<>();
-    List<FieldValidationRule> rules = uiFieldPolicy.getValidation();
-    if (rules != null) {
-      for (FieldValidationRule rule : rules) {
-        try {
-          ValidationPolicy policy = ValidatorAnnotationTransformer.instance().fromUiModel(rule);
-          policies.add(policy);
-          if (listener != null) {
-            listener.onAddValidationPolicy(policy);
-          }
-        } catch (PolicyTransformException e) {
-          throw new RuntimeException(e);
-        }
-      }
+
+    public void setListener(FieldPolicyTransformerListener listener) {
+        this.listener = listener;
     }
-    return policies;
-  }
 
-  /**
-   * Build the domain level policies attached to the field holding both the Standardization and Validation domain objects transformed from the user interface object
-   * @return
-   */
-  public FieldPolicy buildPolicy() {
-    List<StandardizationPolicy> standardizationPolicies = getStandardizationPolicies();
-    List<ValidationPolicy> validators = getValidationPolicies();
-    return FieldPolicyBuilder.newBuilder().fieldName(uiFieldPolicy.getFieldName()).feedFieldName(uiFieldPolicy.getFeedFieldName()).setProfile(uiFieldPolicy.isProfile()).addValidators(validators)
-        .addStandardizers(standardizationPolicies).build();
+    /**
+     * Get the Standardization policy from the User Interface {@link com.thinkbiganalytics.policy.rest.model.FieldPolicy} policy
+     */
+    public List<StandardizationPolicy> getStandardizationPolicies() {
+        List<StandardizationPolicy> policies = new ArrayList<>();
+        List<FieldStandardizationRule> rules = uiFieldPolicy.getStandardization();
+        if (rules != null) {
+            for (FieldStandardizationRule rule : rules) {
+                try {
+                    StandardizationPolicy policy = StandardizationAnnotationTransformer.instance().fromUiModel(rule);
+                    policies.add(policy);
+                    if (listener != null) {
+                        listener.onAddStandardizationPolicy(policy);
+                    }
+                } catch (PolicyTransformException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+        return policies;
+    }
 
-  }
+    /**
+     * Get the Validation policy from the User Interface {@link com.thinkbiganalytics.policy.rest.model.FieldPolicy} policy
+     */
+    public List<ValidationPolicy> getValidationPolicies() {
+        List<ValidationPolicy> policies = new ArrayList<>();
+        List<FieldValidationRule> rules = uiFieldPolicy.getValidation();
+        if (rules != null) {
+            for (FieldValidationRule rule : rules) {
+                try {
+                    ValidationPolicy policy = ValidatorAnnotationTransformer.instance().fromUiModel(rule);
+                    policies.add(policy);
+                    if (listener != null) {
+                        listener.onAddValidationPolicy(policy);
+                    }
+                } catch (PolicyTransformException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+        return policies;
+    }
+
+    /**
+     * Build the domain level policies attached to the field holding both the Standardization and Validation domain objects transformed from the user interface object
+     */
+    public FieldPolicy buildPolicy() {
+        List<StandardizationPolicy> standardizationPolicies = getStandardizationPolicies();
+        List<ValidationPolicy> validators = getValidationPolicies();
+        return FieldPolicyBuilder.newBuilder().fieldName(uiFieldPolicy.getFieldName()).feedFieldName(uiFieldPolicy.getFeedFieldName()).setProfile(uiFieldPolicy.isProfile()).addValidators(validators)
+            .addStandardizers(standardizationPolicies).build();
+
+    }
 
 }

@@ -40,26 +40,28 @@ public interface FeedHealth {
 
     /**
      * Return the name of the feed.
-     * @return
      */
     String getFeedName();
 
     /**
      * Return the latest batch job execution id {@link BatchJobExecution#getJobExecutionId()}
+     *
      * @return the latest batch job execution
      */
     Long getJobExecutionId();
 
     /**
      * Return the latest job instance id with respect to the {@link this#getJobInstanceId()}
-     * @see BatchJobInstance#getJobInstanceId()
+     *
      * @return the latest job instance id
+     * @see BatchJobInstance#getJobInstanceId()
      */
     Long getJobInstanceId();
 
     /**
      * Return the latest batch job execution start time.
      * The job is referenced via the {@link this#getJobExecutionId()}
+     *
      * @return the latest batch job execution start time
      */
     DateTime getStartTime();
@@ -67,6 +69,7 @@ public interface FeedHealth {
     /**
      * Return the latest batch job execution end time.
      * The job is referenced via the {@link this#getJobExecutionId()}
+     *
      * @return the latest batch job execution end time.
      */
     DateTime getEndTime();
@@ -74,6 +77,7 @@ public interface FeedHealth {
     /**
      * Return the status for the latest job execution.
      * The job is referenced via the {@link this#getJobExecutionId()}
+     *
      * @return the status for the latest job execution.
      */
     BatchJobExecution.JobStatus getStatus();
@@ -81,6 +85,7 @@ public interface FeedHealth {
     /**
      * Return the exit code for the latest job execution.
      * The job is referenced via the {@link this#getJobExecutionId()}
+     *
      * @return the exit code for the latest job execution
      */
     ExecutionConstants.ExitCode getExitCode();
@@ -88,36 +93,43 @@ public interface FeedHealth {
     /**
      * Return a message indicating information about what happened during the latest job execution.
      * The job is referenced via the {@link this#getJobExecutionId()}
+     *
      * @return a message indicating information about what happened during the latest job execution
      */
     String getExitMessage();
 
     /**
      * Return the number of batch job executions that have been run for this feed
+     *
      * @return the number of batch job executions that have been run for this feed
      */
     Long getAllCount();
 
     /**
      * Return the number of batch job executions that have a status {@link BatchJobExecution#getStatus()} of Failed
+     *
      * @return the number of batch job executions that have Failed
      */
     Long getFailedCount();
 
     /**
-     * Return the number of batch job executions that are not Abandoned and have a status, {@link BatchJobExecution#getStatus()}, or exit code {@link BatchJobExecution#getExitCode()} of Completed indicating the Job is complete and has not failed.
+     * Return the number of batch job executions that are not Abandoned and have a status, {@link BatchJobExecution#getStatus()}, or exit code {@link BatchJobExecution#getExitCode()} of Completed
+     * indicating the Job is complete and has not failed.
+     *
      * @return the number of batch job executions that have Completed.
      */
     Long getCompletedCount();
 
     /**
      * Return the number of batch job executions that have a status {@link BatchJobExecution#getStatus()} of Abandoned
+     *
      * @return the number of batch job executions that have Abandoned.
      */
     Long getAbandonedCount();
 
     /**
      * Return the number of batch job executions that are running
+     *
      * @return the number of batch job executions that are running
      */
     Long getRunningCount();

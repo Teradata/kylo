@@ -30,15 +30,17 @@ import javax.annotation.Nonnull;
  */
 public interface KerberosProperties {
 
-    /** Defines the time interval for refreshing a Kerberos ticket */
+    /**
+     * Defines the time interval for refreshing a Kerberos ticket
+     */
     PropertyDescriptor KERBEROS_RELOGIN_PERIOD = new PropertyDescriptor.Builder()
-            .name("Kerberos Relogin Period")
-            .required(false)
-            .description("Period of time which should pass before attempting a kerberos relogin")
-            .defaultValue("4 hours")
-            .addValidator(StandardValidators.TIME_PERIOD_VALIDATOR)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .build();
+        .name("Kerberos Relogin Period")
+        .required(false)
+        .description("Period of time which should pass before attempting a kerberos relogin")
+        .defaultValue("4 hours")
+        .addValidator(StandardValidators.TIME_PERIOD_VALIDATOR)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .build();
 
     /**
      * Creates a new property for the Kerberos service keytab.

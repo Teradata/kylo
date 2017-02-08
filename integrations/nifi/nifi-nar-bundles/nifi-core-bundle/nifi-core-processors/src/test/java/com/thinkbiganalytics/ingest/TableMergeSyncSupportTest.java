@@ -58,6 +58,14 @@ public class TableMergeSyncSupportTest {
     public final HiveRunnerConfig CONFIG = new HiveRunnerConfig() {{
         setHiveExecutionEngine("mr");
     }};
+    private final String sourceSchema = "emp_sr";
+    private final String sourceTable = "employee_valid";
+    private final String targetSchema = "emp_sr";
+    private final String targetTable = "employee";
+    private final String targetTableNP = "employee_np";
+    private final String processingPartition = "20160119074340";
+    private final PartitionSpec spec = new PartitionSpec("country|string|country\nyear|int|year(hired)");
+    private final PartitionSpec specNP = new PartitionSpec("");
     /**
      * Cater for all the parameters in the script that we want to test. Note that the "hadoop.tmp.dir" is one of the dirs defined by the test harness
      */
@@ -74,14 +82,6 @@ public class TableMergeSyncSupportTest {
         "hive-test-support/create_table.sql"
     }, encoding = "UTF-8")
     private HiveShell hiveShell;
-    private final String sourceSchema = "emp_sr";
-    private final String sourceTable = "employee_valid";
-    private final String targetSchema = "emp_sr";
-    private final String targetTable = "employee";
-    private final String targetTableNP = "employee_np";
-    private final String processingPartition = "20160119074340";
-    private final PartitionSpec spec = new PartitionSpec("country|string|country\nyear|int|year(hired)");
-    private final PartitionSpec specNP = new PartitionSpec("");
 
     @Before
     public void setupSupport() throws SQLException {

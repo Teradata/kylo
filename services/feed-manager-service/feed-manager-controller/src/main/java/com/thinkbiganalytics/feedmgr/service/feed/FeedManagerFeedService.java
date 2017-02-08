@@ -62,14 +62,12 @@ public interface FeedManagerFeedService {
     /**
      * Return a feed matching the feedId.
      *
-     * @param feedId
      * @param refreshTargetTableSchema if true it will attempt to update the metadata of the destination table {@link FeedMetadata#table} with the real the destination
      * @return a feed matching the feedId
      */
     FeedMetadata getFeedById(String id, boolean refreshTargetTableSchema);
 
     /**
-     *
      * @return a list of all the feeds in the system
      */
     Collection<FeedMetadata> getFeeds();
@@ -77,13 +75,13 @@ public interface FeedManagerFeedService {
     /**
      * Return a list of feeds, optionally returning a more verbose object populating all the templates and properties.
      * Verbose will return {@link FeedMetadata} objects, false will return {@link FeedSummary} objects
-     * @param verbose  true will return {@link FeedMetadata} objects, false will return {@link FeedSummary} objects
+     *
+     * @param verbose true will return {@link FeedMetadata} objects, false will return {@link FeedSummary} objects
      * @return a list of feed objects
      */
     Collection<? extends UIFeed> getFeeds(boolean verbose);
 
     /**
-     *
      * @return a list of feeds
      */
     List<FeedSummary> getFeedSummaryData();
@@ -98,6 +96,7 @@ public interface FeedManagerFeedService {
 
     /**
      * Find all the feeds assigned to a given template
+     *
      * @param registeredTemplateId a registered template id
      * @return all the feeds assigned to a given template
      */
@@ -113,6 +112,7 @@ public interface FeedManagerFeedService {
 
     /**
      * Create a new Feed in NiFi
+     *
      * @param feedMetadata metadata about the feed
      * @return an object with status information about the newly created feed, or error information if unsuccessful
      */
@@ -120,6 +120,7 @@ public interface FeedManagerFeedService {
 
     /**
      * Save the feed metadata to Kylo
+     *
      * @param feed metadata about the feed
      */
     void saveFeed(FeedMetadata feed);
@@ -143,7 +144,6 @@ public interface FeedManagerFeedService {
     /**
      * Change the state of the feed to be {@link FeedMetadata.STATE#ENABLED}
      *
-     * @param feedId
      * @return a summary of the feed after being enabled
      */
     FeedSummary enableFeed(String feedId);
@@ -151,7 +151,6 @@ public interface FeedManagerFeedService {
     /**
      * Change the state of the feed to be {@link FeedMetadata.STATE#DISABLED}
      *
-     * @param feedId
      * @return a summary of the feed after being disabled
      */
     FeedSummary disableFeed(String feedId);
@@ -168,6 +167,13 @@ public interface FeedManagerFeedService {
     Set<UserField> getUserFields();
 
     /**
+     * Sets the user-defined fields for feeds.
+     *
+     * @param userFields the new set of user-defined fields
+     */
+    void setUserFields(@Nonnull Set<UserField> userFields);
+
+    /**
      * Gets the user-defined fields for feeds within the specified category.
      *
      * @param categoryId the category id
@@ -175,11 +181,4 @@ public interface FeedManagerFeedService {
      */
     @Nonnull
     Optional<Set<UserProperty>> getUserFields(@Nonnull String categoryId);
-
-    /**
-     * Sets the user-defined fields for feeds.
-     *
-     * @param userFields the new set of user-defined fields
-     */
-    void setUserFields(@Nonnull Set<UserField> userFields);
 }

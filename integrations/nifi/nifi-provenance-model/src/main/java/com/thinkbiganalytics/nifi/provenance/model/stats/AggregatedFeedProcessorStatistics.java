@@ -35,12 +35,11 @@ public class AggregatedFeedProcessorStatistics implements Serializable {
 
     String feedName;
     String processGroup;
+    Map<String, AggregatedProcessorStatistics> processorStats = new ConcurrentHashMap<>();
     private String collectionId;
     private Long totalEvents = 0L;
     private Long minEventId = 0L;
     private Long maxEventId = 0L;
-
-    Map<String, AggregatedProcessorStatistics> processorStats = new ConcurrentHashMap<>();
 
     public AggregatedFeedProcessorStatistics() {
     }

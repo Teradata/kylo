@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.rest.model.op;
 
@@ -45,42 +45,26 @@ import java.util.Objects;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Dataset implements Serializable {
 
-    public enum ChangeType {
-        UPDATE, DELETE
-    }
-    
-    public enum ContentType {
-        PARTITIONS, FILES
-    }
-
     private String time;
     private Datasource datasource;
     private ChangeType changeType;
     private ContentType contentType;
     private List<? extends ChangeSet> changeSets;
-    
     public Dataset() {
         super();
     }
-    
-    @Override
-    public String toString() {
-        return "Dataset - datasource: " + Objects.toString(this.datasource.getName()) + ", content type: " 
-                + Objects.toString(this.contentType) + ", changes set: " + Objects.toString(this.changeSets);
-    }
-    
     public Dataset(Datasource src, ChangeType change, ContentType content, ChangeSet... changeSets) {
         this(new DateTime(), src, change, content, Arrays.asList(changeSets));
     }
-    
+
     public Dataset(Datasource src, ChangeType change, ContentType content, List<? extends ChangeSet> changeSets) {
         this(new DateTime(), src, change, content, changeSets);
     }
-    
+
     public Dataset(DateTime time, Datasource src, ChangeType change, ContentType content, ChangeSet... changeSets) {
         this(time, src, change, content, Arrays.asList(changeSets));
     }
-    
+
     public Dataset(DateTime time, Datasource src, ChangeType change, ContentType content, List<? extends ChangeSet> changeSets) {
         super();
         this.time = Formatters.print(time);
@@ -90,19 +74,25 @@ public class Dataset implements Serializable {
         this.changeSets = changeSets;
     }
 
+    @Override
+    public String toString() {
+        return "Dataset - datasource: " + Objects.toString(this.datasource.getName()) + ", content type: "
+               + Objects.toString(this.contentType) + ", changes set: " + Objects.toString(this.changeSets);
+    }
+
     public String getTime() {
         return time;
+    }
+
+    @JsonIgnore
+    public void setTime(DateTime dateTime) {
+        this.time = Formatters.print(dateTime);
     }
 
     public void setTime(String time) {
         this.time = time;
     }
-    
-    @JsonIgnore
-    public void setTime(DateTime dateTime) {
-        this.time = Formatters.print(dateTime);
-    }
-    
+
     public Datasource getDatasource() {
         return datasource;
     }
@@ -133,5 +123,13 @@ public class Dataset implements Serializable {
 
     public void setChangeSets(List<? extends ChangeSet> changeSets) {
         this.changeSets = changeSets;
+    }
+
+    public enum ChangeType {
+        UPDATE, DELETE
+    }
+
+    public enum ContentType {
+        PARTITIONS, FILES
     }
 }

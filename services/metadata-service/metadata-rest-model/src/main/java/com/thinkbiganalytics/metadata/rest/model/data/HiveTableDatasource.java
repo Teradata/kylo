@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.rest.model.data;
 
@@ -36,11 +36,11 @@ public class HiveTableDatasource extends Datasource {
     private String modifiers;
     private List<HiveTableColumn> columns = new ArrayList<>();
     private List<HiveTablePartition> partitions = new ArrayList<>();
-    
+
     public HiveTableDatasource() {
         super();
     }
-    
+
     public HiveTableDatasource(String name, String database, String tableName) {
         super(name);
         this.database = database;

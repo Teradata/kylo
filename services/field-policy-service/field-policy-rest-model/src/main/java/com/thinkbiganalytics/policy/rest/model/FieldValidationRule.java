@@ -27,6 +27,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * Refer to the {@link FieldValidationRuleBuilder} for building this object
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class FieldValidationRule  extends BaseUiPolicyRule {
+public class FieldValidationRule extends BaseUiPolicyRule {
 
 }

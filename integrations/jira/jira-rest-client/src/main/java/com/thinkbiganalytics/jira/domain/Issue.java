@@ -32,62 +32,61 @@ import java.util.Set;
 
 /**
  */
-public class Issue extends  BasicIssue  {
+public class Issue extends BasicIssue {
 
 
-    private  Status status;
-    private  IssueType issueType;
-    private  Project project;
-    private  URI transitionsUri;
-    private  Collection<Component> components;
-    private  String summary;
-    private  String description;
-    private  User reporter;
-    private  User assignee;
-    private  Resolution resolution;
-    private  DateTime creationDate;
-    private  DateTime updateDate;
-    private  DateTime dueDate;
-    private  Priority priority;
-    private  Votes votes;
-    private  Collection<Version> fixVersions;
-    private  Collection<Version> affectedVersions;
+    private Status status;
+    private IssueType issueType;
+    private Project project;
+    private URI transitionsUri;
+    private Collection<Component> components;
+    private String summary;
+    private String description;
+    private User reporter;
+    private User assignee;
+    private Resolution resolution;
+    private DateTime creationDate;
+    private DateTime updateDate;
+    private DateTime dueDate;
+    private Priority priority;
+    private Votes votes;
+    private Collection<Version> fixVersions;
+    private Collection<Version> affectedVersions;
 
-    private  Collection<Comment> comments;
+    private Collection<Comment> comments;
 
-    private  Collection<IssueLink> issueLinks;
-
+    private Collection<IssueLink> issueLinks;
 
     //private  Collection<Worklog> worklogs;
- //   private  BasicWatchers watchers;
+    //   private  BasicWatchers watchers;
 
-    private  TimeTracking timeTracking;
-   // private  Collection<Subtask> subtasks;
-   // private  Collection<ChangelogGroup> changelog;
-   // private  Operations operations;
-    private  Set<String> labels;
+    private TimeTracking timeTracking;
+    // private  Collection<Subtask> subtasks;
+    // private  Collection<ChangelogGroup> changelog;
+    // private  Operations operations;
+    private Set<String> labels;
 
 
-
-    public Issue(String projectKey, String issueTypeName, String summary,String description) {
-        Project project= new Project();
+    public Issue(String projectKey, String issueTypeName, String summary, String description) {
+        Project project = new Project();
         project.setKey(projectKey);
 
         IssueType issueType = new IssueType();
         issueType.setName(issueTypeName);
-        this.project =project;
+        this.project = project;
         this.issueType = issueType;
         this.description = description;
         this.summary = summary;
     }
 
 
-    public Issue(String projectKey, String issueTypeName, String summary,String description, String assigneeName) {
-        this(projectKey,issueTypeName,summary,description);
+    public Issue(String projectKey, String issueTypeName, String summary, String description, String assigneeName) {
+        this(projectKey, issueTypeName, summary, description);
         User user = new User();
         user.setName(assigneeName);
         this.setAssignee(user);
     }
+
     public Issue(GetIssue getIssue) {
         super(getIssue);
         this.status = getIssue.getFields().getStatus();
@@ -106,22 +105,21 @@ public class Issue extends  BasicIssue  {
         this.votes = getIssue.getFields().getVotes();
         this.fixVersions = getIssue.getFields().getFixVersions();
         this.affectedVersions = getIssue.getFields().getAffectedVersions();
-        if(getIssue.getFields().getComments() != null) {
+        if (getIssue.getFields().getComments() != null) {
             this.comments = getIssue.getFields().getComments().getComments();
         }
         this.issueLinks = getIssue.getFields().getIssuelinks();
         this.timeTracking = getIssue.getFields().getTimetracking();
-        if(getIssue.getFields().getLabels() != null) {
+        if (getIssue.getFields().getLabels() != null) {
             this.labels = new HashSet(getIssue.getFields().getLabels());
         }
     }
 
 
     public Issue(URI self, String key, Long id) {
-      super(self,key,id);
+        super(self, key, id);
     }
-    
-    
+
 
     public Status getStatus() {
         return status;
@@ -130,28 +128,39 @@ public class Issue extends  BasicIssue  {
     /**
      * @return reporter of this issue or <code>null</code> if this issue has no reporter
      */
-    
+
     public User getReporter() {
         return reporter;
+    }
+
+    public void setReporter(User reporter) {
+        this.reporter = reporter;
     }
 
     /**
      * @return assignee of this issue or <code>null</code> if this issue is unassigned.
      */
-    
+
     public User getAssignee() {
         return assignee;
     }
 
+    public void setAssignee(User assignee) {
+        this.assignee = assignee;
+    }
 
     public String getSummary() {
         return summary;
     }
 
+    public void setSummary(String summary) {
+        this.summary = summary;
+    }
+
     /**
      * @return priority of this issue
      */
-    
+
     public Priority getPriority() {
         return priority;
     }
@@ -159,11 +168,10 @@ public class Issue extends  BasicIssue  {
     /**
      * @return issue links for this issue (possibly nothing) or <code>null</code> when issue links are deactivated for this JIRA instance
      */
-    
+
     public Iterable<IssueLink> getIssueLinks() {
         return issueLinks;
     }
-
 
     /**
      * @return issue type
@@ -171,7 +179,6 @@ public class Issue extends  BasicIssue  {
     public IssueType getIssueType() {
         return issueType;
     }
-
 
     /**
      * @return comments for this issue
@@ -191,26 +198,26 @@ public class Issue extends  BasicIssue  {
         return project;
     }
 
+    public void setProject(Project project) {
+        this.project = project;
+    }
+
     /**
      * @return <code>null</code when voting is disabled in JIRA
      */
-    
+
     public Votes getVotes() {
         return votes;
     }
-
-
 
     public Iterable<Version> getFixVersions() {
         return fixVersions;
     }
 
-    
     public URI getTransitionsUri() {
         return transitionsUri;
     }
 
-    
     public Iterable<Version> getAffectedVersions() {
         return affectedVersions;
     }
@@ -223,13 +230,10 @@ public class Issue extends  BasicIssue  {
         return labels;
     }
 
-
     public URI getVotesUri() {
         return UriUtil.path(getSelf(), "votes");
     }
 
-
-    
     public Resolution getResolution() {
         return resolution;
     }
@@ -246,50 +250,32 @@ public class Issue extends  BasicIssue  {
         return dueDate;
     }
 
-    
+    public void setDueDate(DateTime dueDate) {
+        this.dueDate = dueDate;
+    }
+
     public TimeTracking getTimeTracking() {
         return timeTracking;
     }
 
-    
     public String getDescription() {
         return description;
-    }
-
-    public void setProject(Project project) {
-        this.project = project;
-    }
-
-    public void setAssignee(User assignee) {
-        this.assignee = assignee;
-    }
-
-    public void setReporter(User reporter) {
-        this.reporter = reporter;
     }
 
     public void setDescription(String description) {
         this.description = description;
     }
 
-    public void setSummary(String summary) {
-        this.summary = summary;
-    }
-
-    public void setDueDate(DateTime dueDate) {
-        this.dueDate = dueDate;
-    }
-
     @Override
-        protected MoreObjects.ToStringHelper getToStringHelper() {
-            return super.getToStringHelper().
-                add("project", project).
-                add("status", status).
-                add("description", description).
-                add("reporter", reporter).
-                add("assignee", assignee).addValue("\n").
-                add("issueType", issueType).
-                add("creationDate", creationDate);
+    protected MoreObjects.ToStringHelper getToStringHelper() {
+        return super.getToStringHelper().
+            add("project", project).
+            add("status", status).
+            add("description", description).
+            add("reporter", reporter).
+            add("assignee", assignee).addValue("\n").
+            add("issueType", issueType).
+            add("creationDate", creationDate);
 
     }
 }

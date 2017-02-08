@@ -38,7 +38,9 @@ import javax.ws.rs.NotFoundException;
  */
 public class JerseySparkShellRestClient implements SparkShellRestClient {
 
-    /** Map of Spark Shell processes to Jersey REST clients */
+    /**
+     * Map of Spark Shell processes to Jersey REST clients
+     */
     @Nonnull
     private final Map<SparkShellProcess, JerseyRestClient> clients = new WeakHashMap<>();
 

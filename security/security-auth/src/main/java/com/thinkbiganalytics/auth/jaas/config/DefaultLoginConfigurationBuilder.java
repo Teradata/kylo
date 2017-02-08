@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.auth.jaas.config;
 
@@ -42,7 +42,7 @@ import javax.security.auth.spi.LoginModule;
 public class DefaultLoginConfigurationBuilder implements LoginConfigurationBuilder {
 
     private DefaultLoginConfiguration configuration = new DefaultLoginConfiguration();
-    
+
     public DefaultLoginConfigurationBuilder() {
     }
 
@@ -65,9 +65,9 @@ public class DefaultLoginConfigurationBuilder implements LoginConfigurationBuild
     protected void addEntry(String appName, AppConfigurationEntry configEntries) {
         this.configuration.addEntry(appName, configEntries);
     }
-    
+
     public class DefaultModuleBuilder implements ModuleBuilder {
-        
+
         private String appName;
         private Class<? extends LoginModule> moduleClass;
         private LoginModuleControlFlag flag;
@@ -111,7 +111,7 @@ public class DefaultLoginConfigurationBuilder implements LoginConfigurationBuild
             this.options.put(name, value);
             return this;
         }
-        
+
         @Override
         public ModuleBuilder options(Map<String, Object> options) {
             this.options.putAll(options);
@@ -125,7 +125,7 @@ public class DefaultLoginConfigurationBuilder implements LoginConfigurationBuild
             return confBuilder;
         }
     }
-    
+
     public class DefaultLoginConfiguration implements LoginConfiguration {
 
         private Map<String, List<AppConfigurationEntry>> configEntries = new HashMap<>();
@@ -135,22 +135,22 @@ public class DefaultLoginConfigurationBuilder implements LoginConfigurationBuild
             List<AppConfigurationEntry> list = this.configEntries.get(appName);
             return list != null ? list.toArray(new AppConfigurationEntry[list.size()]) : new AppConfigurationEntry[0];
         }
-        
+
         @Override
         public Map<String, AppConfigurationEntry[]> getAllApplicationEntries() {
             return this.configEntries.entrySet().stream()
-                            .collect(Collectors.toMap(e -> e.getKey(), 
-                                                      e -> e.getValue().toArray(new AppConfigurationEntry[e.getValue().size()])));
+                .collect(Collectors.toMap(e -> e.getKey(),
+                                          e -> e.getValue().toArray(new AppConfigurationEntry[e.getValue().size()])));
         }
-        
+
         protected void addEntry(String appName, AppConfigurationEntry entry) {
             List<AppConfigurationEntry> list = this.configEntries.get(appName);
-            
+
             if (list == null) {
                 list = new ArrayList<>();
                 this.configEntries.put(appName, list);
             }
-            
+
             list.add(entry);
         }
     }

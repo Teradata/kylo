@@ -41,7 +41,7 @@ import javax.persistence.Table;
  * View entity summarizing a feed and its {@link com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution} execution counts
  */
 @Entity
-@Table(name="BATCH_FEED_SUMMARY_COUNTS_VW")
+@Table(name = "BATCH_FEED_SUMMARY_COUNTS_VW")
 public class JpaBatchFeedSummaryCounts implements BatchFeedSummaryCounts {
 
     @OneToOne(targetEntity = JpaOpsManagerFeed.class, fetch = FetchType.LAZY)
@@ -51,22 +51,22 @@ public class JpaBatchFeedSummaryCounts implements BatchFeedSummaryCounts {
     @EmbeddedId
     BatchFeedSummaryCountsFeedId feedId;
 
-    @Column(name="FEED_NAME", insertable = false, updatable = false)
+    @Column(name = "FEED_NAME", insertable = false, updatable = false)
     String feedName;
 
-    @Column(name="ALL_COUNT")
+    @Column(name = "ALL_COUNT")
     Long allCount;
 
-    @Column(name="FAILED_COUNT")
+    @Column(name = "FAILED_COUNT")
     Long failedCount;
 
-    @Column(name="COMPLETED_COUNT")
+    @Column(name = "COMPLETED_COUNT")
     Long completedCount;
 
-    @Column(name="ABANDONED_COUNT")
+    @Column(name = "ABANDONED_COUNT")
     Long abandonedCount;
 
-    public JpaBatchFeedSummaryCounts(){
+    public JpaBatchFeedSummaryCounts() {
 
     }
 

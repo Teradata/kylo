@@ -61,29 +61,21 @@ import javax.jcr.RepositoryException;
 @ComponentScan(basePackages = {"com.thinkbiganalytics.metadata.modeshape.op"})
 public class JcrFeedSlaTest {
 
-    @Inject
-    private ExtensibleTypeProvider typeProvider;
-
-    @Inject
-    private ExtensibleEntityProvider entityProvider;
-
+    private static String FEED_SLA = "feedSla";
     @Inject
     CategoryProvider categoryProvider;
-
     @Inject
     FeedProvider feedProvider;
-
     @Inject
     ServiceLevelAgreementProvider slaProvider;
-
     @Inject
     FeedServiceLevelAgreementProvider feedSlaProvider;
-
+    @Inject
+    private ExtensibleTypeProvider typeProvider;
+    @Inject
+    private ExtensibleEntityProvider entityProvider;
     @Inject
     private JcrMetadataAccess metadata;
-
-    private static String FEED_SLA = "feedSla";
-
 
     public Set<Feed.ID> createFeeds(int number) {
         Set<Feed.ID> feedIds = new HashSet<>();
@@ -110,7 +102,7 @@ public class JcrFeedSlaTest {
         return metadata.commit(new AdminCredentials(), () -> {
             JcrCategory cat = (JcrCategory) categoryProvider.ensureCategory(categorySystemName);
             JcrFeed feed = (JcrFeed) feedProvider.ensureFeed(categorySystemName, feedSystemName, feedSystemName + " desc");
-            
+
             feed.setTitle(feedSystemName);
             return feed.getId();
         });

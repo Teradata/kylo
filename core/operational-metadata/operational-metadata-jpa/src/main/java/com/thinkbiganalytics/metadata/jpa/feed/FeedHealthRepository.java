@@ -33,6 +33,6 @@ public interface FeedHealthRepository extends JpaRepository<JpaOpsManagerFeedHea
 
 
     @Query("select h from JpaOpsManagerFeedHealth as h where h.feedName = :feedName")
-    List<JpaOpsManagerFeedHealth> findByFeedName(@Param("feedName")String feedName);
+    List<JpaOpsManagerFeedHealth> findByFeedName(@Param("feedName") String feedName);
 
 }

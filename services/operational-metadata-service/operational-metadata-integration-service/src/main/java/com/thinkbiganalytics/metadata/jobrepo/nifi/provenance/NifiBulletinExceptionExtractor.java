@@ -44,11 +44,9 @@ import java.util.stream.Collectors;
 public class NifiBulletinExceptionExtractor {
 
     private static final Logger log = LoggerFactory.getLogger(NifiBulletinExceptionExtractor.class);
-
+    private static List<String> bulletinErrorLevels = ImmutableList.of("WARN", "ERROR");
     @Autowired
     private LegacyNifiRestClient nifiRestClient;
-
-    private static List<String> bulletinErrorLevels = ImmutableList.of("WARN", "ERROR");
 
     /**
      * Extracts the identifier for the flow file from a bulletin message
@@ -112,8 +110,6 @@ public class NifiBulletinExceptionExtractor {
         }
         return null;
     }
-
-
 
 
     /**

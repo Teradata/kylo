@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.sla.spi;
 
@@ -37,10 +37,10 @@ public interface ObligationBuilder<B> {
      * @return this builder
      */
     ObligationBuilder<B> description(String descr);
-    
+
     /**
      * @param metric a metric to add to this obligation
-     * @param more optional additional metrics to add
+     * @param more   optional additional metrics to add
      * @return this builder
      */
     ObligationBuilder<B> metric(Metric metric, Metric... more);
@@ -50,11 +50,12 @@ public interface ObligationBuilder<B> {
      * @return this builder
      */
     ObligationBuilder<B> metric(Collection<Metric> metrics);
-    
+
     /**
      * Builds the obligation and adds it to the SLA that is being built
+     *
      * @return the SLA builder that produced this builder
      */
     B build();
-    
+
 }

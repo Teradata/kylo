@@ -34,7 +34,9 @@ import javax.ws.rs.core.Response;
 
 public class SparkShellTransformControllerTest {
 
-    /** Verify requesting a Spark transformation. */
+    /**
+     * Verify requesting a Spark transformation.
+     */
     @Test
     public void create() throws Exception {
         // Mock transform objects
@@ -58,7 +60,9 @@ public class SparkShellTransformControllerTest {
         Assert.assertEquals(transformResponse, response.getEntity());
     }
 
-    /** Verify response if missing parent script. */
+    /**
+     * Verify response if missing parent script.
+     */
     @Test
     public void createWithMissingParentScript() {
         // Create transform request
@@ -76,7 +80,9 @@ public class SparkShellTransformControllerTest {
         Assert.assertEquals(TransformResponse.Status.ERROR, entity.getStatus());
     }
 
-    /** Verify response if missing parent table. */
+    /**
+     * Verify response if missing parent table.
+     */
     @Test
     public void createWithMissingParentTable() {
         // Create transform request
@@ -97,7 +103,9 @@ public class SparkShellTransformControllerTest {
         Assert.assertEquals(TransformResponse.Status.ERROR, entity.getStatus());
     }
 
-    /** Verify response if missing script. */
+    /**
+     * Verify response if missing script.
+     */
     @Test
     public void createWithMissingScript() {
         SparkShellTransformController controller = new SparkShellTransformController();
@@ -109,7 +117,9 @@ public class SparkShellTransformControllerTest {
         Assert.assertEquals(TransformResponse.Status.ERROR, entity.getStatus());
     }
 
-    /** Verify response if a script exception is thrown. */
+    /**
+     * Verify response if a script exception is thrown.
+     */
     @Test
     public void createWithScriptException() throws Exception {
         // Create transform objects
@@ -131,7 +141,9 @@ public class SparkShellTransformControllerTest {
         Assert.assertEquals(TransformResponse.Status.ERROR, entity.getStatus());
     }
 
-    /** Verify requesting a transformation status. */
+    /**
+     * Verify requesting a transformation status.
+     */
     @Test
     public void getTable() throws Exception {
         // Mock transform objects

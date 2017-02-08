@@ -25,31 +25,49 @@ package com.thinkbiganalytics.spark.conf.model;
  */
 public class SparkShellProperties {
 
-    /** Startup timeout in seconds */
+    /**
+     * Startup timeout in seconds
+     */
     private int clientTimeout = 60;
 
-    /** Spark deploy mode */
+    /**
+     * Spark deploy mode
+     */
     private String deployMode = "client";
 
-    /** Request timeout in seconds */
+    /**
+     * Request timeout in seconds
+     */
     private int idleTimeout = 900;
 
-    /** Spark master */
+    /**
+     * Spark master
+     */
     private String master = "local";
 
-    /** Maximum port number */
+    /**
+     * Maximum port number
+     */
     private int portMax = 45999;
 
-    /** Minimum port number */
+    /**
+     * Minimum port number
+     */
     private int portMin = 45000;
 
-    /** Enables user impersonation */
+    /**
+     * Enables user impersonation
+     */
     private boolean proxyUser = false;
 
-    /** Externally managed process */
+    /**
+     * Externally managed process
+     */
     private SparkShellServerProperties server;
 
-    /** Additional command-line options */
+    /**
+     * Additional command-line options
+     */
     private String sparkOptions;
 
     public int getClientTimeout() {

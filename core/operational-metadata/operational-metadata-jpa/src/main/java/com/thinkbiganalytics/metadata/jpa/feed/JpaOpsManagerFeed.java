@@ -51,12 +51,12 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "FEED")
 @NamedStoredProcedureQueries({
-        @NamedStoredProcedureQuery(name = "OpsManagerFeed.deleteFeedJobs", procedureName = "delete_feed_jobs", parameters = {
-                @StoredProcedureParameter(mode = ParameterMode.IN, name = "category", type = String.class),
-                @StoredProcedureParameter(mode = ParameterMode.IN, name = "feed", type = String.class)}),
-        @NamedStoredProcedureQuery(name = "OpsManagerFeed.abandonFeedJobs", procedureName = "abandon_feed_jobs", parameters = {
-                @StoredProcedureParameter(mode = ParameterMode.IN, name = "feed", type = String.class)})
-})
+                                 @NamedStoredProcedureQuery(name = "OpsManagerFeed.deleteFeedJobs", procedureName = "delete_feed_jobs", parameters = {
+                                     @StoredProcedureParameter(mode = ParameterMode.IN, name = "category", type = String.class),
+                                     @StoredProcedureParameter(mode = ParameterMode.IN, name = "feed", type = String.class)}),
+                                 @NamedStoredProcedureQuery(name = "OpsManagerFeed.abandonFeedJobs", procedureName = "abandon_feed_jobs", parameters = {
+                                     @StoredProcedureParameter(mode = ParameterMode.IN, name = "feed", type = String.class)})
+                             })
 public class JpaOpsManagerFeed implements OpsManagerFeed {
 
     @EmbeddedId
@@ -69,7 +69,7 @@ public class JpaOpsManagerFeed implements OpsManagerFeed {
     @Column(name = "FEED_TYPE")
     private FeedType feedType = FeedType.FEED;
 
-    @OneToMany(targetEntity = JpaBatchJobInstance.class, mappedBy = "feed",fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(targetEntity = JpaBatchJobInstance.class, mappedBy = "feed", fetch = FetchType.LAZY, orphanRemoval = true)
     private Set<BatchJobInstance> jobInstances = new HashSet<>();
 
 
@@ -77,12 +77,12 @@ public class JpaOpsManagerFeed implements OpsManagerFeed {
      * The FEED_CHECK_DATA_FEEDS is a many to many table linking a Feed to any other feeds which are registered to check the data of the related feed.
      */
     @ManyToMany(targetEntity = JpaOpsManagerFeed.class, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinTable(name="FEED_CHECK_DATA_FEEDS",
-               joinColumns={@JoinColumn(name="FEED_ID")},
-               inverseJoinColumns={@JoinColumn(name="CHECK_DATA_FEED_ID")})
+    @JoinTable(name = "FEED_CHECK_DATA_FEEDS",
+               joinColumns = {@JoinColumn(name = "FEED_ID")},
+               inverseJoinColumns = {@JoinColumn(name = "CHECK_DATA_FEED_ID")})
     private Set<OpsManagerFeed> checkDataFeeds = new HashSet<OpsManagerFeed>();
 
-    @ManyToMany(targetEntity=JpaOpsManagerFeed.class,mappedBy="checkDataFeeds")
+    @ManyToMany(targetEntity = JpaOpsManagerFeed.class, mappedBy = "checkDataFeeds")
     private Set<OpsManagerFeed> feedsToCheck = new HashSet<OpsManagerFeed>();
 
     public JpaOpsManagerFeed(OpsManagerFeed.ID id, String name) {
@@ -127,7 +127,7 @@ public class JpaOpsManagerFeed implements OpsManagerFeed {
     }
 
     public Set<OpsManagerFeed> getCheckDataFeeds() {
-        if(checkDataFeeds == null){
+        if (checkDataFeeds == null) {
             checkDataFeeds = new HashSet<>();
         }
         return checkDataFeeds;
@@ -138,7 +138,7 @@ public class JpaOpsManagerFeed implements OpsManagerFeed {
     }
 
     public Set<OpsManagerFeed> getFeedsToCheck() {
-        if(feedsToCheck == null){
+        if (feedsToCheck == null) {
             feedsToCheck = new HashSet<>();
         }
         return feedsToCheck;
@@ -147,7 +147,6 @@ public class JpaOpsManagerFeed implements OpsManagerFeed {
     public void setFeedsToCheck(Set<OpsManagerFeed> feedsToCheck) {
         this.feedsToCheck = feedsToCheck;
     }
-
 
 
 }

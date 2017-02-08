@@ -73,6 +73,7 @@ public class NifiFlowConnection {
 
     /**
      * Return the connection name, either the display name {@link ConnectionDTO#getName()}, if available or the relationship name {@link ConnectionDTO#getSelectedRelationships()}
+     *
      * @return the connection name
      */
     public String getName() {
@@ -81,6 +82,7 @@ public class NifiFlowConnection {
 
     /**
      * set the name of the connection
+     *
      * @param name the name of the connection
      */
     public void setName(String name) {
@@ -89,6 +91,7 @@ public class NifiFlowConnection {
 
     /**
      * Return the id for the source item {@link ConnectionDTO#getSource()#getSourceIdentifier()}
+     *
      * @return the id for the source item {@link ConnectionDTO#getSource()#getSourceIdentifier()}
      */
     public String getSourceIdentifier() {
@@ -97,6 +100,7 @@ public class NifiFlowConnection {
 
     /**
      * Return the id for the destination item {@link ConnectionDTO#getDestination()#getDestinationIdentifier()}
+     *
      * @return the id for the destination item {@link ConnectionDTO#getDestination()#getDestinationIdentifier()}
      */
     public String getDestinationIdentifier() {

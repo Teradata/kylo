@@ -45,150 +45,144 @@ import javax.inject.Inject;
 public class InMemoryFeedManagerTemplateService extends AbstractFeedManagerTemplateService implements FeedManagerTemplateService {
 
 
-  @Inject
-  private FeedManagerFeedService feedProvider;
+    @Inject
+    private FeedManagerFeedService feedProvider;
 
-  private Map<String, RegisteredTemplate> registeredTemplates = new HashMap<>();
-
-
-  @PostConstruct
-  private void postConstruct(){
-    Collection<RegisteredTemplate> templates = FileObjectPersistence.getInstance().getTemplatesFromFile();
-    if(templates != null){
-      for(RegisteredTemplate t : templates){
-        String id = t.getId() == null ? t.getNifiTemplateId() : t.getId();
-        registeredTemplates.put(id, t);
-      }
-    }
-  }
+    private Map<String, RegisteredTemplate> registeredTemplates = new HashMap<>();
 
 
-
-
-
-  @Override
-  public RegisteredTemplate registerTemplate(RegisteredTemplate registeredTemplate) {
-    Date updateDate = new Date();
-
-    if (registeredTemplate.getId() == null || !registeredTemplates.containsKey(registeredTemplate.getId())) {
-      registeredTemplate.setCreateDate(updateDate);
-    }
-    registeredTemplate.setUpdateDate(updateDate);
-    if(registeredTemplate.getId() == null){
-      registeredTemplate.setId(UUID.randomUUID().toString());
-
-    }
-    return saveRegisteredTemplate(registeredTemplate);
-  }
-
-  @Override
-  public void ensureRegisteredTemplateInputProcessors(RegisteredTemplate registeredTemplate) {
-
-  }
-
-  protected RegisteredTemplate saveRegisteredTemplate(RegisteredTemplate registeredTemplate){
-    //ensure that the incoming template name doesnt already exist.
-    //if so remove and replace with this one
-    RegisteredTemplate template = getRegisteredTemplateByName(registeredTemplate.getTemplateName());
-    if(template != null && !template.getId().equalsIgnoreCase(registeredTemplate.getId())){
-      //remove the old one with the same name
-      registeredTemplates.remove(template.getId());
-      //update those feeds that were pointing to this old one, to this new one
-
-        List<FeedMetadata> feedsToUpdate = feedProvider.getFeedsWithTemplate(registeredTemplate.getId());
-        if (feedsToUpdate != null && !feedsToUpdate.isEmpty()) {
-            for (FeedMetadata feedMetadata : feedsToUpdate) {
-                feedMetadata.setTemplateId(template.getId());
+    @PostConstruct
+    private void postConstruct() {
+        Collection<RegisteredTemplate> templates = FileObjectPersistence.getInstance().getTemplatesFromFile();
+        if (templates != null) {
+            for (RegisteredTemplate t : templates) {
+                String id = t.getId() == null ? t.getNifiTemplateId() : t.getId();
+                registeredTemplates.put(id, t);
             }
-            //save the feeds
-            FileObjectPersistence.getInstance().writeFeedsToFile(feedProvider.getFeeds());
         }
     }
 
-    registeredTemplates.put(registeredTemplate.getId(), registeredTemplate);
-    if(registeredTemplates.containsKey(registeredTemplate.getNifiTemplateId())){
-      registeredTemplates.remove(registeredTemplate.getNifiTemplateId());
-    }
 
-    FileObjectPersistence.getInstance().writeTemplatesToFile(registeredTemplates.values());
+    @Override
+    public RegisteredTemplate registerTemplate(RegisteredTemplate registeredTemplate) {
+        Date updateDate = new Date();
 
-    return registeredTemplate;
-  }
-
-  public boolean deleteRegisteredTemplate(String templateId) {
-    throw new UnsupportedOperationException("unable to delete the template");
-  }
-
-
-  @Override
-  public RegisteredTemplate getRegisteredTemplate(String templateId) {
-    RegisteredTemplate savedTemplate = registeredTemplates.get(templateId);
-    if(savedTemplate != null) {
-      return new RegisteredTemplate(savedTemplate);
-    }
-    return null;
-  }
-
-  @Override
-  public RegisteredTemplate getRegisteredTemplateByName(final String templateName) {
-
-    return Iterables.tryFind(registeredTemplates.values(), new Predicate<RegisteredTemplate>() {
-      @Override
-      public boolean apply(RegisteredTemplate registeredTemplate) {
-        return registeredTemplate.getTemplateName().equalsIgnoreCase(templateName);
-      }
-    }).orNull();
-  }
-
-
-
-  @Override
-  public RegisteredTemplate getRegisteredTemplateForNifiProperties(final String nifiTemplateId, final String nifiTemplateName) {
-    RegisteredTemplate match = Iterables.tryFind(registeredTemplates.values(), new Predicate<RegisteredTemplate>() {
-      @Override
-      public boolean apply(RegisteredTemplate registeredTemplate) {
-        boolean match = nifiTemplateId.equalsIgnoreCase(registeredTemplate.getNifiTemplateId());
-        if (!match && nifiTemplateName != null) {
-          match = nifiTemplateName.equalsIgnoreCase(registeredTemplate.getTemplateName());
+        if (registeredTemplate.getId() == null || !registeredTemplates.containsKey(registeredTemplate.getId())) {
+            registeredTemplate.setCreateDate(updateDate);
         }
+        registeredTemplate.setUpdateDate(updateDate);
+        if (registeredTemplate.getId() == null) {
+            registeredTemplate.setId(UUID.randomUUID().toString());
+
+        }
+        return saveRegisteredTemplate(registeredTemplate);
+    }
+
+    @Override
+    public void ensureRegisteredTemplateInputProcessors(RegisteredTemplate registeredTemplate) {
+
+    }
+
+    protected RegisteredTemplate saveRegisteredTemplate(RegisteredTemplate registeredTemplate) {
+        //ensure that the incoming template name doesnt already exist.
+        //if so remove and replace with this one
+        RegisteredTemplate template = getRegisteredTemplateByName(registeredTemplate.getTemplateName());
+        if (template != null && !template.getId().equalsIgnoreCase(registeredTemplate.getId())) {
+            //remove the old one with the same name
+            registeredTemplates.remove(template.getId());
+            //update those feeds that were pointing to this old one, to this new one
+
+            List<FeedMetadata> feedsToUpdate = feedProvider.getFeedsWithTemplate(registeredTemplate.getId());
+            if (feedsToUpdate != null && !feedsToUpdate.isEmpty()) {
+                for (FeedMetadata feedMetadata : feedsToUpdate) {
+                    feedMetadata.setTemplateId(template.getId());
+                }
+                //save the feeds
+                FileObjectPersistence.getInstance().writeFeedsToFile(feedProvider.getFeeds());
+            }
+        }
+
+        registeredTemplates.put(registeredTemplate.getId(), registeredTemplate);
+        if (registeredTemplates.containsKey(registeredTemplate.getNifiTemplateId())) {
+            registeredTemplates.remove(registeredTemplate.getNifiTemplateId());
+        }
+
+        FileObjectPersistence.getInstance().writeTemplatesToFile(registeredTemplates.values());
+
+        return registeredTemplate;
+    }
+
+    public boolean deleteRegisteredTemplate(String templateId) {
+        throw new UnsupportedOperationException("unable to delete the template");
+    }
+
+
+    @Override
+    public RegisteredTemplate getRegisteredTemplate(String templateId) {
+        RegisteredTemplate savedTemplate = registeredTemplates.get(templateId);
+        if (savedTemplate != null) {
+            return new RegisteredTemplate(savedTemplate);
+        }
+        return null;
+    }
+
+    @Override
+    public RegisteredTemplate getRegisteredTemplateByName(final String templateName) {
+
+        return Iterables.tryFind(registeredTemplates.values(), new Predicate<RegisteredTemplate>() {
+            @Override
+            public boolean apply(RegisteredTemplate registeredTemplate) {
+                return registeredTemplate.getTemplateName().equalsIgnoreCase(templateName);
+            }
+        }).orNull();
+    }
+
+
+    @Override
+    public RegisteredTemplate getRegisteredTemplateForNifiProperties(final String nifiTemplateId, final String nifiTemplateName) {
+        RegisteredTemplate match = Iterables.tryFind(registeredTemplates.values(), new Predicate<RegisteredTemplate>() {
+            @Override
+            public boolean apply(RegisteredTemplate registeredTemplate) {
+                boolean match = nifiTemplateId.equalsIgnoreCase(registeredTemplate.getNifiTemplateId());
+                if (!match && nifiTemplateName != null) {
+                    match = nifiTemplateName.equalsIgnoreCase(registeredTemplate.getTemplateName());
+                }
+                return match;
+            }
+        }).orNull();
         return match;
-      }
-    }).orNull();
-    return match;
-  }
+    }
 
 
+    public List<String> getRegisteredTemplateIds() {
+        return new ArrayList<>(registeredTemplates.keySet());
+    }
+
+    @Override
+    public List<RegisteredTemplate> getRegisteredTemplates() {
+        return new ArrayList<>(registeredTemplates.values());
+    }
 
 
-  public List<String> getRegisteredTemplateIds() {
-    return new ArrayList<>(registeredTemplates.keySet());
-  }
+    @Override
+    public RegisteredTemplate enableTemplate(String templateId) {
+        return null;
+    }
 
-  @Override
-  public List<RegisteredTemplate> getRegisteredTemplates() {
-    return new ArrayList<>(registeredTemplates.values());
-  }
-
-
-  @Override
-  public RegisteredTemplate enableTemplate(String templateId) {
-    return null;
-  }
-
-  @Override
-  public RegisteredTemplate disableTemplate(String templateId) {
-    return null;
-  }
+    @Override
+    public RegisteredTemplate disableTemplate(String templateId) {
+        return null;
+    }
 
 
-  @Override
-  public List<RegisteredTemplate.Processor> getRegisteredTemplateProcessors(String templateId, boolean includeReusableProcessors) {
-    return null;
-  }
+    @Override
+    public List<RegisteredTemplate.Processor> getRegisteredTemplateProcessors(String templateId, boolean includeReusableProcessors) {
+        return null;
+    }
 
 
-  @Override
-  public void orderTemplates(List<String> orderedTemplateIds, Set<String> exclude) {
+    @Override
+    public void orderTemplates(List<String> orderedTemplateIds, Set<String> exclude) {
 
-  }
+    }
 }

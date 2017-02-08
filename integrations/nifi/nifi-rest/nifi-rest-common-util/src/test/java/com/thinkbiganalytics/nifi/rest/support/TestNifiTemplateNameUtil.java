@@ -33,10 +33,10 @@ public class TestNifiTemplateNameUtil {
      * Test to ensure the group gets the correct version timestamp and that it is able to be parsed
      */
     @Test
-    public void testProcessGroupNameVersioning(){
+    public void testProcessGroupNameVersioning() {
         String processGroupName = "my group";
         Assert.assertFalse(NifiTemplateNameUtil.isVersionedProcessGroup(processGroupName));
-        String versionedName =  NifiTemplateNameUtil.getVersionedProcessGroupName(processGroupName);
+        String versionedName = NifiTemplateNameUtil.getVersionedProcessGroupName(processGroupName);
         Assert.assertTrue(NifiTemplateNameUtil.isVersionedProcessGroup(versionedName));
         Assert.assertEquals(processGroupName, NifiTemplateNameUtil.parseVersionedProcessGroupName(versionedName));
     }

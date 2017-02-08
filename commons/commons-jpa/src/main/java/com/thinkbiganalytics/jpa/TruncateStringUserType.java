@@ -38,7 +38,6 @@ import java.util.Properties;
  * annotate your String column with something like this
  *
  * @Type(type = "com.thinkbiganalytics.jpa.TruncateStringUserType",parameters = {@Parameter(name = "length",value = "250")})
- *
  */
 public class TruncateStringUserType implements UserType, ParameterizedType {
 

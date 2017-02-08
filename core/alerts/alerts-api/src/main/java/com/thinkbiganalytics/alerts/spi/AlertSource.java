@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.alerts.spi;
 
@@ -35,18 +35,18 @@ import java.util.Set;
  *
  */
 public interface AlertSource {
-    
+
     AlertCriteria criteria();
 
     Alert.ID resolve(Serializable value);
 
     Set<AlertDescriptor> getAlertDescriptors();
-    
+
     void addReceiver(AlertNotifyReceiver receiver);
-    
+
     void removeReceiver(AlertNotifyReceiver receiver);
-    
+
     Optional<Alert> getAlert(Alert.ID id);
-    
+
     Iterator<Alert> getAlerts(AlertCriteria criteria);
 }

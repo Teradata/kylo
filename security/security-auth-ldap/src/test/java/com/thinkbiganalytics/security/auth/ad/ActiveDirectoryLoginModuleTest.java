@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.security.auth.ad;
 
@@ -50,71 +50,70 @@ import javax.security.auth.login.LoginException;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Test for the ActiveDirectoryLoginModule.  Note that these tests are disabled by default as it 
+ * Test for the ActiveDirectoryLoginModule.  Note that these tests are disabled by default as it
  * requires an actual Active Directory instance running as configured in the file ad-test.properties.
- * 
  */
-@SpringApplicationConfiguration(classes = { 
-                                            SecurityConfig.class, 
-                                            JaasAuthConfig.class, 
-                                            ActiveDirectoryAuthConfig.class, 
-                                            ActiveDirectoryLoginModuleTestConfig.class, 
-                                            })
+@SpringApplicationConfiguration(classes = {
+    SecurityConfig.class,
+    JaasAuthConfig.class,
+    ActiveDirectoryAuthConfig.class,
+    ActiveDirectoryLoginModuleTestConfig.class,
+})
 @TestPropertySource("classpath:ad-test.properties")
 @ActiveProfiles("auth-ad")
 public class ActiveDirectoryLoginModuleTest extends AbstractTestNGSpringContextTests {
-    
+
     @Inject
     private AbstractLdapAuthenticationProvider authProvider;
 
-    
-//    @Test
+
+    //    @Test
     public void testLoginAdmin() throws Exception {
         Subject subject = login("dladmin", "Th1nkb1g!");
-        
+
         assertThat(subject.getPrincipals()).contains(new UsernamePrincipal("dladmin"), new GroupPrincipal("Admin"));
     }
-    
-//    @Test
+
+    //    @Test
     public void testLoginTest() throws Exception {
         Subject subject = login("test", "Th1nkb1g!");
-        
-        assertThat(subject.getPrincipals()).hasSize(3).contains(new UsernamePrincipal("test"), 
-                                                                new GroupPrincipal("Admin"), 
+
+        assertThat(subject.getPrincipals()).hasSize(3).contains(new UsernamePrincipal("test"),
+                                                                new GroupPrincipal("Admin"),
                                                                 new GroupPrincipal("Developer"));
     }
-    
-//    @Test(expectedExceptions=LoginException.class)
+
+    //    @Test(expectedExceptions=LoginException.class)
     public void testLoginBogus() throws Exception {
         login("bogus", "user");
     }
-  
+
     private Subject login(String user, String password) throws LoginException {
         Map<String, Object> options = new HashMap<>();
         options.put(ActiveDirectoryLoginModule.AUTH_PROVIDER, this.authProvider);
-        
+
         Subject subject = new Subject();
         ActiveDirectoryLoginModule module = new ActiveDirectoryLoginModule();
-        
-        module.initialize(subject, 
-                          createHandler(user, password), 
-                          new HashMap<>(), 
+
+        module.initialize(subject,
+                          createHandler(user, password),
+                          new HashMap<>(),
                           options);
-        
+
         try {
             boolean success = module.login();
-            
+
             if (success) {
                 module.commit();
             }
-            
+
             return subject;
         } catch (LoginException e) {
             module.abort();
             throw e;
         }
     }
-    
+
     private CallbackHandler createHandler(String user, String password) {
         return new CallbackHandler() {
             @Override

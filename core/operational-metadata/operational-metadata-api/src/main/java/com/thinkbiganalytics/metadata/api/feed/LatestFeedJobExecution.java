@@ -41,54 +41,63 @@ public interface LatestFeedJobExecution {
 
     /**
      * Return the feed name
+     *
      * @return the feed name
      */
     String getFeedName();
 
     /**
      * Return the latest job execution.  This can be accessed to get additional information about the feed.
+     *
      * @return the latest job execution
      */
     BatchJobExecution getJobExecution();
 
     /**
      * Return the latest job execution start time
+     *
      * @return the latest job execution start time
      */
     DateTime getStartTime();
 
     /**
      * Return the latest job execution end time
+     *
      * @return the latest job execution end time
      */
     DateTime getEndTime();
 
     /**
      * Return the latest job execution status
+     *
      * @return the latest job execution status
      */
     BatchJobExecution.JobStatus getStatus();
 
     /**
      * Return the latest job execution exitCode
+     *
      * @return the latest job execution exitCode
      */
     ExecutionConstants.ExitCode getExitCode();
 
     /**
      * Return the latest job execution exit message
+     *
      * @return the latest job execution exit message
      */
     String getExitMessage();
 
     /**
      * Return the latest job execution id
+     *
      * @return the latest job execution id
      */
     Long getJobExecutionId();
 
     /**
      * Return the latest job instance id
+     *
      * @return the latest job instance id
      */
     Long getJobInstanceId();

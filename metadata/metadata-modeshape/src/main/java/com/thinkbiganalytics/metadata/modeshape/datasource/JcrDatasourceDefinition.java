@@ -50,7 +50,6 @@ public class JcrDatasourceDefinition extends AbstractJcrAuditableSystemEntity im
     public static final String IDENTITY_STRING = "tba:identityString";
 
 
-
     public static final String NODE_TYPE = "tba:datasourceDefinition";
 
     public JcrDatasourceDefinition(Node node) {
@@ -96,19 +95,6 @@ public class JcrDatasourceDefinition extends AbstractJcrAuditableSystemEntity im
         }
     }
 
-    public static class DatasourceDefinitionId extends JcrEntity.EntityId implements DatasourceDefinition.ID {
-
-        public DatasourceDefinitionId(Serializable ser) {
-            super(ser);
-        }
-    }
-
-
-    @Override
-    public void setIdentityString(String identityString) {
-        JcrPropertyUtil.setProperty(this.node, IDENTITY_STRING, identityString);
-    }
-
     @Override
     public String getIdentityString() {
         String identityString = JcrPropertyUtil.getProperty(this.node, IDENTITY_STRING, true);
@@ -116,6 +102,11 @@ public class JcrDatasourceDefinition extends AbstractJcrAuditableSystemEntity im
             identityString = getDatasourcePropertyKeys().stream().map(key -> "${" + key + "}").collect(Collectors.joining(","));
         }
         return identityString;
+    }
+
+    @Override
+    public void setIdentityString(String identityString) {
+        JcrPropertyUtil.setProperty(this.node, IDENTITY_STRING, identityString);
     }
 
     @Override
@@ -135,5 +126,12 @@ public class JcrDatasourceDefinition extends AbstractJcrAuditableSystemEntity im
 
     public String getTitle() {
         return JcrPropertyUtil.getProperty(this.node, TITLE, true);
+    }
+
+    public static class DatasourceDefinitionId extends JcrEntity.EntityId implements DatasourceDefinition.ID {
+
+        public DatasourceDefinitionId(Serializable ser) {
+            super(ser);
+        }
     }
 }

@@ -31,64 +31,57 @@ import java.util.List;
  */
 public interface FeedManagerTemplate {
 
-    interface ID extends Serializable { }
-
     List<FeedManagerFeed> getFeeds();
 
     boolean addFeed(FeedManagerFeed<?> feed);
 
     boolean removeFeed(FeedManagerFeed<?> feed);
 
-    enum State {
-        ENABLED, DISABLED
-    }
-
     ID getId();
 
     String getName();
 
+    void setName(String name);
+
     String getNifiTemplateId();
+
+    void setNifiTemplateId(String nifiTemplateId);
 
     String getDescription();
 
+    void setDescription(String description);
+
     boolean isDefineTable();
+
+    void setDefineTable(boolean defineTable);
 
     boolean isDataTransformation();
 
+    void setDataTransformation(boolean dataTransformation);
+
     boolean isAllowPreconditions();
+
+    void setAllowPreconditions(boolean allowedPreconditions);
 
     String getIcon();
 
+    void setIcon(String icon);
+
     String getIconColor();
 
+    void setIconColor(String iconColor);
+
     String getJson();
+
+    void setJson(String json);
 
     DateTime getCreatedTime();
 
     DateTime getModifiedTime();
 
-
-    void setNifiTemplateId(String nifiTemplateId);
-
-    void setAllowPreconditions(boolean allowedPreconditions);
-
-    void setDefineTable(boolean defineTable);
-
-    void setDataTransformation(boolean dataTransformation);
-
-    void setName(String name);
-
-    void setIcon(String icon);
-
-    void setIconColor(String iconColor);
-
-    void setDescription(String description);
-
-    void setJson(String json);
+    State getState();
 
     void setState(State state);
-
-    State getState();
 
     Long getOrder();
 
@@ -97,5 +90,13 @@ public interface FeedManagerTemplate {
     boolean isStream();
 
     void setStream(boolean stream);
+
+    enum State {
+        ENABLED, DISABLED
+    }
+
+    interface ID extends Serializable {
+
+    }
 
 }

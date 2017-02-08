@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.modeshape.security.action;
 
@@ -37,12 +37,12 @@ public abstract class JcrAbstractActionsBuilder {
     public JcrAbstractActionsBuilder() {
         this(new ModeShapeAdminPrincipal());
     }
-    
+
     public JcrAbstractActionsBuilder(Principal mgtPrincipal) {
         super();
         this.managementPrincipal = mgtPrincipal;
     }
-    
+
     protected Principal getManagementPrincipal() {
         return this.managementPrincipal;
     }

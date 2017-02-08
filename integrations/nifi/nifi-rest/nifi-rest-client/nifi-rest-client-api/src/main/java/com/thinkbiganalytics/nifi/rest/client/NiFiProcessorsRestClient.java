@@ -36,7 +36,7 @@ public interface NiFiProcessorsRestClient {
      * Gets a processor.
      *
      * @param processGroupId the process group id
-     * @param processorId the processor id
+     * @param processorId    the processor id
      * @return the processor, if found
      */
     @Nonnull

@@ -65,19 +65,19 @@ import javax.ws.rs.core.Response;
 
 /**
  * Generic JerseyRestClient
- *
  */
 public class JerseyRestClient {
 
-    protected static final Logger log = LoggerFactory.getLogger(JerseyRestClient.class);
-
     public static final String HOST_NOT_SET_VALUE = "NOT_SET";
-
+    protected static final Logger log = LoggerFactory.getLogger(JerseyRestClient.class);
+    /**
+     * Flag to indicate if the client is configured correctly and available to be used.
+     */
+    public boolean isHostConfigured;
     /**
      * The Jersey Client
      */
     protected Client client;
-
     /**
      * the base uri to connect to set by the configuration of the REST Client.
      * This constructor will set this value using the  {@link JerseyClientConfig#getUrl()}
@@ -86,22 +86,14 @@ public class JerseyRestClient {
      * @see #JerseyRestClient(JerseyClientConfig)
      */
     protected String uri;
-
     /**
      * The username to use to connect set by configuration of the REST Client
      * The constructor will set this value using {@link JerseyClientConfig#username}
      * Users of this client can then reference the username from this client class.
-     * @see #JerseyRestClient(JerseyClientConfig)
      *
+     * @see #JerseyRestClient(JerseyClientConfig)
      */
     private String username;
-
-    /**
-     * Flag to indicate if the client is configured correctly and available to be used.
-     *
-     */
-    public boolean isHostConfigured;
-
     /**
      * if the supplied endpoint doesnt accept JSON but rather Plain Text, this mapper will be used to resolve the text and turn it into JSON/object
      */
@@ -123,7 +115,7 @@ public class JerseyRestClient {
             byte[] truststoreFile = null;
 
             try {
-                if(StringUtils.isNotBlank(config.getKeystorePath())) {
+                if (StringUtils.isNotBlank(config.getKeystorePath())) {
                     InputStream keystore = JerseyRestClient.class.getResourceAsStream(config.getKeystorePath());
                     if (keystore != null) {
                         keyStoreFile = ByteStreams.toByteArray(keystore);
@@ -133,7 +125,7 @@ public class JerseyRestClient {
             }
 
             try {
-                if(StringUtils.isNotBlank(config.getTruststorePath())) {
+                if (StringUtils.isNotBlank(config.getTruststorePath())) {
                     InputStream truststore = JerseyRestClient.class.getResourceAsStream(config.getTruststorePath());
                     if (truststore != null) {
                         truststoreFile = ByteStreams.toByteArray(truststore);
@@ -247,7 +239,8 @@ public class JerseyRestClient {
 
 
     /**
-     *  Get the username connecting to this REST service
+     * Get the username connecting to this REST service
+     *
      * @return the user connecting
      */
     public String getUsername() {
@@ -259,6 +252,7 @@ public class JerseyRestClient {
      * The base target that will be used upon each request.
      * All rest calls will go through this method.
      * Specific clients that extend this class can override this method to specify a given root path.
+     *
      * @return the target to use to make th REST request
      */
     protected WebTarget getBaseTarget() {
@@ -281,7 +275,8 @@ public class JerseyRestClient {
 
     /**
      * Build a target adding the supplied query parameters to the the request
-     * @param path the path to access
+     *
+     * @param path   the path to access
      * @param params the key,value parameters to add to the request
      * @return the target to use to make the REST request
      */
@@ -297,10 +292,10 @@ public class JerseyRestClient {
 
     /**
      * Perform a asynchronous GET request
-     * @param path the path to access
+     *
+     * @param path   the path to access
      * @param params the key,value parameters to add to the request
-     * @param clazz the returned class type
-     * @param <T>
+     * @param clazz  the returned class type
      * @return a Future of type T
      */
     public <T> Future<T> getAsync(String path, Map<String, Object> params, Class<T> clazz) {
@@ -311,10 +306,10 @@ public class JerseyRestClient {
 
     /**
      * Perform a asynchronous GET request
-     * @param path the path to access
+     *
+     * @param path   the path to access
      * @param params the parameters to add to the request
-     * @param type the returned class type
-     * @param <T>
+     * @param type   the returned class type
      * @return a Future of type T
      */
     public <T> Future<T> getAsync(String path, Map<String, Object> params, GenericType<T> type) {
@@ -325,10 +320,11 @@ public class JerseyRestClient {
 
     /**
      * Perform a GET request
-     * @param path the path to access
-     * @param params  key, value parameters to add to the request
-     * @param clazz the class type to return as the response from the GET request
-     * @param <T> the returned class type
+     *
+     * @param path   the path to access
+     * @param params key, value parameters to add to the request
+     * @param clazz  the class type to return as the response from the GET request
+     * @param <T>    the returned class type
      * @return the returned object of the specified Class
      */
     public <T> T get(String path, Map<String, Object> params, Class<T> clazz) {
@@ -352,9 +348,10 @@ public class JerseyRestClient {
      * This method can be used to call a GET request using the path passed in
      * Allow a client to create the target passing in a full url path with ? and & query params
      * If you have known key,value pairs its recommend you use the {@link this#get(String, Map, Class)}
-     * @param path the path to access, including the root target and the ?key=value&key2=value&key3
+     *
+     * @param path  the path to access, including the root target and the ?key=value&key2=value&key3
      * @param clazz the class type to return as the response from the GET request
-     * @param <T> the returned class type
+     * @param <T>   the returned class type
      * @return the returned object of the specified Class
      */
     public <T> T getFromPathString(String path, Class<T> clazz) {
@@ -377,10 +374,11 @@ public class JerseyRestClient {
 
     /**
      * call a GET request
-     * @param path the path to call.
+     *
+     * @param path   the path to call.
      * @param params key, value parameters to add to the request
-     * @param type the GenericType of Class T
-     * @param <T> the class to return
+     * @param type   the GenericType of Class T
+     * @param <T>    the class to return
      * @return the response of class type T
      */
     public <T> T get(String path, Map<String, Object> params, GenericType<T> type) {
@@ -390,8 +388,9 @@ public class JerseyRestClient {
 
     /**
      * POST an object to a given url
+     *
      * @param path the path to access
-     * @param o the object to post
+     * @param o    the object to post
      * @return the response
      */
     public Response post(String path, Object o) {
@@ -414,11 +413,9 @@ public class JerseyRestClient {
      * multiPart.bodyPart(templatePart);
      * multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
      *
-     *
-     * @param path the path to access
-     * @param object the multiplart object to post
+     * @param path       the path to access
+     * @param object     the multiplart object to post
      * @param returnType the type to return
-     * @param <T>
      * @return returns the response of the type T
      */
     public <T> T postMultiPart(String path, MultiPart object, Class<T> returnType) {
@@ -430,12 +427,12 @@ public class JerseyRestClient {
 
     /**
      * POST a multipart object streaming
-     * @param path the path to access
-     * @param name the name of the param the endpoint is expecting
-     * @param fileName the name of the file
-     * @param stream the stream itself
+     *
+     * @param path       the path to access
+     * @param name       the name of the param the endpoint is expecting
+     * @param fileName   the name of the file
+     * @param stream     the stream itself
      * @param returnType the type to return from the post
-     * @param <T>
      * @return the response of type T
      */
     public <T> T postMultiPartStream(String path, String name, String fileName, InputStream stream, Class<T> returnType) {
@@ -453,10 +450,10 @@ public class JerseyRestClient {
 
     /**
      * POST an object
-     * @param path the path to access
-     * @param object the object to post
+     *
+     * @param path       the path to access
+     * @param object     the object to post
      * @param returnType the class to return
-     * @param <T>
      * @return the response of type T
      */
     public <T> T post(String path, Object object, Class<T> returnType) {
@@ -466,10 +463,10 @@ public class JerseyRestClient {
 
     /**
      * PUT request
-     * @param path the path to access
-     * @param object the object to PUT
+     *
+     * @param path       the path to access
+     * @param object     the object to PUT
      * @param returnType the class to return
-     * @param <T>
      * @return the response of type T
      */
     public <T> T put(String path, Object object, Class<T> returnType) {
@@ -479,10 +476,10 @@ public class JerseyRestClient {
 
     /**
      * DELETE request
-     * @param path the path to access
-     * @param params Any additional Query params to add to the DELETE call
+     *
+     * @param path       the path to access
+     * @param params     Any additional Query params to add to the DELETE call
      * @param returnType the class to return
-     * @param <T>
      * @return the response of type T
      */
     public <T> T delete(String path, Map<String, Object> params, Class<T> returnType) {
@@ -492,10 +489,10 @@ public class JerseyRestClient {
 
     /**
      * POST a request from a {@link Form} object
-     * @param path the path to access
-     * @param form the Form to POST
+     *
+     * @param path       the path to access
+     * @param form       the Form to POST
      * @param returnType the class to return
-     * @param <T>
      * @return the response of type T
      */
     public <T> T postForm(String path, Form form, Class<T> returnType) {
@@ -505,10 +502,10 @@ public class JerseyRestClient {
 
     /**
      * POST a request Async.
-     * @param path the path to access
-     * @param object the object to POST
+     *
+     * @param path       the path to access
+     * @param object     the object to POST
      * @param returnType the class to return
-     * @param <T>
      * @return a Future of type T
      */
     public <T> Future<T> postAsync(String path, Object object, Class<T> returnType) {

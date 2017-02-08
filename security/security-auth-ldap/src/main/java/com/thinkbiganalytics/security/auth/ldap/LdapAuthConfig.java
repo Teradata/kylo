@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.security.auth.ldap;
 
@@ -47,15 +47,14 @@ import java.net.URI;
 
 /**
  * LDAP login configuration.
- * 
  */
 @Configuration
 @Profile("auth-ldap")
 public class LdapAuthConfig {
-    
+
     @Value("${security.auth.ldap.login.ui:required}")
     private String uiLoginFlag;
-    
+
     @Value("${security.auth.ldap.login.services:required}")
     private String servicesLoginFlag;
 
@@ -76,7 +75,7 @@ public class LdapAuthConfig {
 
         // @formatter:on
     }
-    
+
     @Bean(name = "uiLdapLoginConfiguration")
     public LoginConfiguration uiLdapLoginConfiguration(LdapAuthenticator authenticator,
                                                        LdapAuthoritiesPopulator authoritiesPopulator,
@@ -101,30 +100,30 @@ public class LdapAuthConfig {
     public LdapContextSourceFactory ldapContextSource() {
         return new LdapContextSourceFactory();
     }
-    
+
     @Bean
     @ConfigurationProperties("security.auth.ldap.authenticator")
     public LdapAuthenticatorFactory ldapAuthenticator(LdapContextSource context) {
         return new LdapAuthenticatorFactory(context);
     }
-    
+
     @Bean
     @ConfigurationProperties("security.auth.ldap.user")
     public LdapAuthoritiesPopulatorFactory ldapAuthoritiesPopulator(LdapContextSource context) {
         return new LdapAuthoritiesPopulatorFactory(context);
     }
-    
-    
+
+
     public static class LdapContextSourceFactory extends AbstractFactoryBean<LdapContextSource> {
-        
+
         private URI uri;
         private String authDn;
         private char[] password = "".toCharArray();
-        
+
         public void setUri(String uri) {
             this.uri = URI.create(uri);
         }
-        
+
         public void setAuthDn(String userDn) {
             this.authDn = userDn;
         }
@@ -141,24 +140,28 @@ public class LdapAuthConfig {
         @Override
         protected LdapContextSource createInstance() throws Exception {
             DefaultSpringSecurityContextSource cxt = new DefaultSpringSecurityContextSource(this.uri.toASCIIString());
-            if (StringUtils.isNotEmpty(this.authDn)) cxt.setUserDn(this.authDn);
-            if (ArrayUtils.isNotEmpty(this.password)) cxt.setPassword(new String(this.password));
+            if (StringUtils.isNotEmpty(this.authDn)) {
+                cxt.setUserDn(this.authDn);
+            }
+            if (ArrayUtils.isNotEmpty(this.password)) {
+                cxt.setPassword(new String(this.password));
+            }
             cxt.setCacheEnvironmentProperties(false);
             cxt.afterPropertiesSet();
             return cxt;
         }
     }
-    
+
     public static class LdapAuthenticatorFactory extends AbstractFactoryBean<LdapAuthenticator> {
-        
+
         private LdapContextSource contextSource;
         private String[] userDnPatterns;
-        
+
         public LdapAuthenticatorFactory(LdapContextSource contextSource) {
             super();
             this.contextSource = contextSource;
         }
-        
+
         public void setUserDnPatterns(String userDnPatterns) {
             this.userDnPatterns = userDnPatterns.split("\\|");
         }
@@ -182,24 +185,24 @@ public class LdapAuthConfig {
         private String groupsBase;
         private String groupNameAttr;
         private boolean enableGroups = false;
-        
+
         public LdapAuthoritiesPopulatorFactory(LdapContextSource contextSource) {
             super();
             this.contextSource = contextSource;
         }
-        
+
         public void setGroupsBase(String groupsOu) {
             this.groupsBase = groupsOu;
         }
-        
+
         public void setGroupNameAttr(String groupRoleAttribute) {
             this.groupNameAttr = groupRoleAttribute;
         }
-        
+
         public void setEnableGroups(boolean enabled) {
             this.enableGroups = enabled;
         }
-        
+
         @Override
         public Class<?> getObjectType() {
             return LdapAuthoritiesPopulator.class;

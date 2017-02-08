@@ -86,13 +86,13 @@ public class QuartzScheduledJob implements ScheduledJob {
     }
 
     @Override
-    public void setCronExpression(String cronExpression) {
-        this.cronExpression = cronExpression;
+    public String getCronExpression() {
+        return cronExpression;
     }
 
     @Override
-    public String getCronExpression() {
-        return cronExpression;
+    public void setCronExpression(String cronExpression) {
+        this.cronExpression = cronExpression;
     }
 
     @Override

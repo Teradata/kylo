@@ -37,6 +37,8 @@ import java.util.Locale;
  */
 public class DateTimeUtil {
 
+    static PeriodFormatter periodFormatter = new PeriodFormatterBuilder().append(null, new StringPeriodParser()).toFormatter();
+
     public static Date convertToUTC(Date date) {
         DateTime time = new DateTime(date.getTime());
         DateTimeZone dtZone = DateTimeZone.forID("UTC");
@@ -58,59 +60,49 @@ public class DateTimeUtil {
         return convertToUTC(DateTime.now());
     }
 
+    /**
+     * Parse a string period into a Joda time period
+     * i.e. 3Y, 20W
+     */
+    public static Period period(String period) {
 
+        return periodFormatter.parsePeriod(period);
+    }
 
     public static class StringPeriodParser implements PeriodParser {
 
-        enum DATE_PART {
-            YEAR("Y"),MONTH("M"),WEEK("W"),DAY("D"),HOUR("h"),MINUTE("m"),SECOND("s");
-            private String abbreviation;
-
-            DATE_PART(String abbreviation){
-                this.abbreviation = abbreviation;
-            }
-        }
-
-
-        private Integer getValue(String part, String unit){
+        private Integer getValue(String part, String unit) {
             String val = part.substring(0, part.indexOf(unit));
             return val.length() > 0 ? Integer.valueOf(val) : 0;
         }
 
-        private DATE_PART getDatePart(String part){
-            if(part.contains(DATE_PART.YEAR.abbreviation)){
+        private DATE_PART getDatePart(String part) {
+            if (part.contains(DATE_PART.YEAR.abbreviation)) {
                 return DATE_PART.YEAR;
-            }
-            else if(part.contains(DATE_PART.MONTH.abbreviation)){
+            } else if (part.contains(DATE_PART.MONTH.abbreviation)) {
                 return DATE_PART.MONTH;
-            }
-            else if(part.contains(DATE_PART.WEEK.abbreviation)){
+            } else if (part.contains(DATE_PART.WEEK.abbreviation)) {
                 return DATE_PART.WEEK;
-            }
-            else if(part.contains(DATE_PART.DAY.abbreviation)){
+            } else if (part.contains(DATE_PART.DAY.abbreviation)) {
                 return DATE_PART.DAY;
-            }
-            else if(part.contains(DATE_PART.HOUR.abbreviation)){
+            } else if (part.contains(DATE_PART.HOUR.abbreviation)) {
                 return DATE_PART.HOUR;
-            }
-            else if(part.contains(DATE_PART.MINUTE.abbreviation)){
+            } else if (part.contains(DATE_PART.MINUTE.abbreviation)) {
                 return DATE_PART.MINUTE;
-            }
-            else if(part.contains(DATE_PART.SECOND.abbreviation)){
+            } else if (part.contains(DATE_PART.SECOND.abbreviation)) {
                 return DATE_PART.SECOND;
-            }
-            else {
+            } else {
                 return null;
             }
         }
 
-        private void addToPeriod(ReadWritablePeriod period, String part){
+        private void addToPeriod(ReadWritablePeriod period, String part) {
             DATE_PART datePart = getDatePart(part);
-            Integer value = getValue(part,datePart.abbreviation);
+            Integer value = getValue(part, datePart.abbreviation);
 
-            switch(datePart){
+            switch (datePart) {
                 case YEAR:
-                    period.addYears(getValue(part,datePart.abbreviation));
+                    period.addYears(getValue(part, datePart.abbreviation));
                     break;
                 case MONTH:
                     period.addMonths(getValue(part, datePart.abbreviation));
@@ -135,7 +127,6 @@ public class DateTimeUtil {
             }
         }
 
-
         @Override
         public int parseInto(ReadWritablePeriod period, String periodStr,
                              int position, Locale locale) {
@@ -147,21 +138,18 @@ public class DateTimeUtil {
             period.addHours(0);
             period.addMinutes(0);
             period.addSeconds(0);
-            Arrays.asList(parts).stream().forEach(part ->  addToPeriod(period,part));
+            Arrays.asList(parts).stream().forEach(part -> addToPeriod(period, part));
             return periodStr.length();
         }
-    }
 
 
+        enum DATE_PART {
+            YEAR("Y"), MONTH("M"), WEEK("W"), DAY("D"), HOUR("h"), MINUTE("m"), SECOND("s");
+            private String abbreviation;
 
-    static PeriodFormatter periodFormatter  = new PeriodFormatterBuilder().append(null,new StringPeriodParser()).toFormatter();
-
-    /**
-     * Parse a string period into a Joda time period
-     * i.e. 3Y, 20W
-     */
-    public static Period period(String period){
-
-        return periodFormatter.parsePeriod(period);
+            DATE_PART(String abbreviation) {
+                this.abbreviation = abbreviation;
+            }
+        }
     }
 }

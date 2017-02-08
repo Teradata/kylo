@@ -37,6 +37,10 @@ public class SpringApplicationContext implements ApplicationContextAware {
 
     private static ApplicationContext CONTEXT;
 
+    public static ApplicationContext getApplicationContext() {
+        return CONTEXT;
+    }
+
     /**
      * This method is called from within the ApplicationContext once it is done starting up, it will stick a reference to itself into this bean.
      *
@@ -44,10 +48,6 @@ public class SpringApplicationContext implements ApplicationContextAware {
      */
     public void setApplicationContext(ApplicationContext context) throws BeansException {
         CONTEXT = context;
-    }
-
-    public static ApplicationContext getApplicationContext() {
-        return CONTEXT;
     }
 
     /**
@@ -86,10 +86,6 @@ public class SpringApplicationContext implements ApplicationContextAware {
 
     /**
      * Autowire an object Force it to be autowired even if the bean is not registered with the appcontext
-     * @param key
-     * @param obj
-     * @param force
-     * @return
      */
     public static Object autowire(String key, Object obj, boolean force) {
         Object bean = null;

@@ -36,28 +36,6 @@ import java.util.stream.Collectors;
  */
 public class NifiFlowCacheSnapshot {
 
-    private DateTime snapshotDate;
-
-    //items to add
-    private Map<String, String> processorIdToFeedNameMap = new ConcurrentHashMap<>();
-
-    private Map<String, String> processorIdToFeedProcessGroupId = new ConcurrentHashMap<>();
-
-    private Map<String, String> processorIdToProcessorName = new ConcurrentHashMap<>();
-
-    private Map<String, String> connectionIdToConnectionName = new ConcurrentHashMap<>();
-
-    private Map<String, NiFiFlowCacheConnectionData> connectionIdToConnection = new ConcurrentHashMap<>();
-
-
-    private Set<String> allStreamingFeeds = new HashSet<>();
-
-    /**
-     * Set of the category.feed names
-     */
-    private Set<String> allFeeds = new HashSet<>();
-
-
     public static NifiFlowCacheSnapshot EMPTY = new Builder()
         .withProcessorIdToFeedNameMap(ImmutableMap.of())
         .withProcessorIdToFeedProcessGroupId(ImmutableMap.of())
@@ -65,6 +43,18 @@ public class NifiFlowCacheSnapshot {
         .withStreamingFeeds(ImmutableSet.<String>of())
         .withFeeds(ImmutableSet.<String>of())
         .build();
+    private DateTime snapshotDate;
+    //items to add
+    private Map<String, String> processorIdToFeedNameMap = new ConcurrentHashMap<>();
+    private Map<String, String> processorIdToFeedProcessGroupId = new ConcurrentHashMap<>();
+    private Map<String, String> processorIdToProcessorName = new ConcurrentHashMap<>();
+    private Map<String, String> connectionIdToConnectionName = new ConcurrentHashMap<>();
+    private Map<String, NiFiFlowCacheConnectionData> connectionIdToConnection = new ConcurrentHashMap<>();
+    private Set<String> allStreamingFeeds = new HashSet<>();
+    /**
+     * Set of the category.feed names
+     */
+    private Set<String> allFeeds = new HashSet<>();
 
     public NifiFlowCacheSnapshot() {
 
@@ -77,6 +67,93 @@ public class NifiFlowCacheSnapshot {
         this.processorIdToProcessorName = processorIdToProcessorName;
         this.allStreamingFeeds = allStreamingFeeds;
         this.allFeeds = allFeeds;
+    }
+
+    public Map<String, String> getProcessorIdToFeedNameMap() {
+        if (processorIdToFeedNameMap == null) {
+            this.processorIdToFeedNameMap = new HashMap<>();
+        }
+        return processorIdToFeedNameMap;
+    }
+
+    public void setProcessorIdToFeedNameMap(Map<String, String> processorIdToFeedNameMap) {
+        this.processorIdToFeedNameMap = processorIdToFeedNameMap;
+    }
+
+    public Map<String, String> getProcessorIdToFeedProcessGroupId() {
+        if (processorIdToFeedProcessGroupId == null) {
+            this.processorIdToFeedProcessGroupId = new HashMap<>();
+        }
+        return processorIdToFeedProcessGroupId;
+    }
+
+    public void setProcessorIdToFeedProcessGroupId(Map<String, String> processorIdToFeedProcessGroupId) {
+        this.processorIdToFeedProcessGroupId = processorIdToFeedProcessGroupId;
+    }
+
+    public Map<String, String> getProcessorIdToProcessorName() {
+        if (processorIdToProcessorName == null) {
+            this.processorIdToProcessorName = new HashMap<>();
+        }
+        return processorIdToProcessorName;
+    }
+
+    public void setProcessorIdToProcessorName(Map<String, String> processorIdToProcessorName) {
+        this.processorIdToProcessorName = processorIdToProcessorName;
+    }
+
+    public Set<String> getAllStreamingFeeds() {
+        if (allStreamingFeeds == null) {
+            return new HashSet<>();
+        }
+        return allStreamingFeeds;
+    }
+
+    public void setAllStreamingFeeds(Set<String> allStreamingFeeds) {
+        this.allStreamingFeeds = allStreamingFeeds;
+    }
+
+    public DateTime getSnapshotDate() {
+        return snapshotDate;
+    }
+
+    public void setSnapshotDate(DateTime snapshotDate) {
+        this.snapshotDate = snapshotDate;
+    }
+
+    public Set<String> getAllFeeds() {
+        return allFeeds;
+    }
+
+    public void setAllFeeds(Set<String> allFeeds) {
+        this.allFeeds = allFeeds;
+    }
+
+    public Map<String, String> getConnectionIdToConnectionName() {
+        return connectionIdToConnectionName;
+    }
+
+    public void setConnectionIdToConnectionName(Map<String, String> connectionIdToConnectionName) {
+        this.connectionIdToConnectionName = connectionIdToConnectionName;
+    }
+
+    public Map<String, NiFiFlowCacheConnectionData> getConnectionIdToConnection() {
+        return connectionIdToConnection;
+    }
+
+    public void setConnectionIdToConnection(Map<String, NiFiFlowCacheConnectionData> connectionIdToConnection) {
+        this.connectionIdToConnection = connectionIdToConnection;
+    }
+
+    public void update(NifiFlowCacheSnapshot syncSnapshot) {
+        processorIdToFeedNameMap.putAll(syncSnapshot.getProcessorIdToFeedNameMap());
+        processorIdToFeedProcessGroupId.putAll(syncSnapshot.getProcessorIdToFeedProcessGroupId());
+        processorIdToProcessorName.putAll(syncSnapshot.getProcessorIdToProcessorName());
+        allStreamingFeeds = new HashSet<>(syncSnapshot.getAllStreamingFeeds());
+        allFeeds.addAll(syncSnapshot.getAllFeeds());
+        snapshotDate = syncSnapshot.getSnapshotDate();
+        connectionIdToConnection.putAll(syncSnapshot.getConnectionIdToConnection());
+        connectionIdToConnectionName.putAll(syncSnapshot.getConnectionIdToConnectionName());
     }
 
     public static class Builder {
@@ -152,96 +229,6 @@ public class NifiFlowCacheSnapshot {
         }
 
 
-    }
-
-
-    public Map<String, String> getProcessorIdToFeedNameMap() {
-        if (processorIdToFeedNameMap == null) {
-            this.processorIdToFeedNameMap = new HashMap<>();
-        }
-        return processorIdToFeedNameMap;
-    }
-
-    public void setProcessorIdToFeedNameMap(Map<String, String> processorIdToFeedNameMap) {
-        this.processorIdToFeedNameMap = processorIdToFeedNameMap;
-    }
-
-
-    public Map<String, String> getProcessorIdToFeedProcessGroupId() {
-        if (processorIdToFeedProcessGroupId == null) {
-            this.processorIdToFeedProcessGroupId = new HashMap<>();
-        }
-        return processorIdToFeedProcessGroupId;
-    }
-
-    public void setProcessorIdToFeedProcessGroupId(Map<String, String> processorIdToFeedProcessGroupId) {
-        this.processorIdToFeedProcessGroupId = processorIdToFeedProcessGroupId;
-    }
-
-    public Map<String, String> getProcessorIdToProcessorName() {
-        if (processorIdToProcessorName == null) {
-            this.processorIdToProcessorName = new HashMap<>();
-        }
-        return processorIdToProcessorName;
-    }
-
-    public void setProcessorIdToProcessorName(Map<String, String> processorIdToProcessorName) {
-        this.processorIdToProcessorName = processorIdToProcessorName;
-    }
-
-    public Set<String> getAllStreamingFeeds() {
-        if (allStreamingFeeds == null) {
-            return new HashSet<>();
-        }
-        return allStreamingFeeds;
-    }
-
-    public void setAllStreamingFeeds(Set<String> allStreamingFeeds) {
-        this.allStreamingFeeds = allStreamingFeeds;
-    }
-
-    public DateTime getSnapshotDate() {
-        return snapshotDate;
-    }
-
-    public void setSnapshotDate(DateTime snapshotDate) {
-        this.snapshotDate = snapshotDate;
-    }
-
-
-    public Set<String> getAllFeeds() {
-        return allFeeds;
-    }
-
-    public void setAllFeeds(Set<String> allFeeds) {
-        this.allFeeds = allFeeds;
-    }
-
-    public Map<String, String> getConnectionIdToConnectionName() {
-        return connectionIdToConnectionName;
-    }
-
-    public void setConnectionIdToConnectionName(Map<String, String> connectionIdToConnectionName) {
-        this.connectionIdToConnectionName = connectionIdToConnectionName;
-    }
-
-    public Map<String, NiFiFlowCacheConnectionData> getConnectionIdToConnection() {
-        return connectionIdToConnection;
-    }
-
-    public void setConnectionIdToConnection(Map<String, NiFiFlowCacheConnectionData> connectionIdToConnection) {
-        this.connectionIdToConnection = connectionIdToConnection;
-    }
-
-    public void update(NifiFlowCacheSnapshot syncSnapshot) {
-        processorIdToFeedNameMap.putAll(syncSnapshot.getProcessorIdToFeedNameMap());
-        processorIdToFeedProcessGroupId.putAll(syncSnapshot.getProcessorIdToFeedProcessGroupId());
-        processorIdToProcessorName.putAll(syncSnapshot.getProcessorIdToProcessorName());
-        allStreamingFeeds = new HashSet<>(syncSnapshot.getAllStreamingFeeds());
-        allFeeds.addAll(syncSnapshot.getAllFeeds());
-        snapshotDate = syncSnapshot.getSnapshotDate();
-        connectionIdToConnection.putAll(syncSnapshot.getConnectionIdToConnection());
-        connectionIdToConnectionName.putAll(syncSnapshot.getConnectionIdToConnectionName());
     }
 
 

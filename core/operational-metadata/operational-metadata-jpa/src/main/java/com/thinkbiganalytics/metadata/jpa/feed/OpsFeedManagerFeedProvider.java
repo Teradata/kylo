@@ -60,15 +60,11 @@ import javax.inject.Inject;
 public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
 
     private static final Logger log = LoggerFactory.getLogger(OpsFeedManagerFeedProvider.class);
-
+    @Inject
+    BatchJobExecutionProvider batchJobExecutionProvider;
     private OpsManagerFeedRepository repository;
     private FeedHealthRepository feedHealthRepository;
     private LatestFeedJobExectionRepository latestFeedJobExectionRepository;
-
-    @Inject
-    BatchJobExecutionProvider batchJobExecutionProvider;
-
-
     private BatchFeedSummaryCountsRepository batchFeedSummaryCountsRepository;
 
     @Autowired
@@ -78,8 +74,6 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
      * list of delete feed listeners
      **/
     private List<DeleteFeedListener> deleteFeedListeners = new ArrayList<>();
-
-
 
 
     @Autowired
@@ -140,7 +134,7 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
         if (feed != null) {
             log.info("Deleting feed {} ({})  and all job executions. ", feed.getName(), feed.getId());
             //first delete all jobs for this feed
-            deleteFeedJobs(FeedNameUtil.category(feed.getName()),FeedNameUtil.feed(feed.getName()));
+            deleteFeedJobs(FeedNameUtil.category(feed.getName()), FeedNameUtil.feed(feed.getName()));
             repository.delete(feed.getId());
             //notify the listeners
             notifyOnFeedDeleted(feed);
@@ -156,39 +150,38 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
         return false;
     }
 
-    public List<OpsManagerFeed> findAll(String filter){
+    public List<OpsManagerFeed> findAll(String filter) {
         QJpaOpsManagerFeed feed = QJpaOpsManagerFeed.jpaOpsManagerFeed;
         return Lists.newArrayList(repository.findAll(GenericQueryDslFilter.buildFilter(feed, filter)));
     }
 
 
-    public List<String> getFeedNames(){
+    public List<String> getFeedNames() {
         return repository.getFeedNames();
     }
 
-    public List<? extends FeedHealth> getFeedHealth(){
+    public List<? extends FeedHealth> getFeedHealth() {
         return feedHealthRepository.findAll();
     }
 
-    private List<? extends FeedHealth> findFeedHealth(String feedName){
+    private List<? extends FeedHealth> findFeedHealth(String feedName) {
         return feedHealthRepository.findByFeedName(feedName);
     }
 
-    public FeedHealth getFeedHealth(String feedName){
+    public FeedHealth getFeedHealth(String feedName) {
         List<? extends FeedHealth> feedHealthList = findFeedHealth(feedName);
-        if(feedHealthList != null && !feedHealthList.isEmpty()){
+        if (feedHealthList != null && !feedHealthList.isEmpty()) {
             return feedHealthList.get(0);
-        }
-        else {
+        } else {
             return null;
         }
     }
 
-    public List<? extends LatestFeedJobExecution> findLatestCheckDataJobs(){
+    public List<? extends LatestFeedJobExecution> findLatestCheckDataJobs() {
         return latestFeedJobExectionRepository.findCheckDataJobs();
     }
 
-    public List<JobStatusCount> getJobStatusCountByDateFromNow(String feedName,ReadablePeriod period){
+    public List<JobStatusCount> getJobStatusCountByDateFromNow(String feedName, ReadablePeriod period) {
 
         QJpaBatchJobExecution jobExecution = QJpaBatchJobExecution.jpaBatchJobExecution;
 
@@ -203,17 +196,17 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
             Projections.constructor(JpaBatchJobExecutionStatusCounts.class,
                                     jobState.as("status"),
                                     Expressions.constant(feedName),
-            jobExecution.startYear,
-            jobExecution.startMonth,
-            jobExecution.startDay ,
-            jobExecution.count().as("count")))
+                                    jobExecution.startYear,
+                                    jobExecution.startMonth,
+                                    jobExecution.startDay,
+                                    jobExecution.count().as("count")))
             .from(jobExecution)
 
             .where(jobExecution.startTime.goe(DateTime.now().minus(period))
-            .and(jobExecution.jobInstance.feed.name.eq(feedName)))
-        .groupBy(jobState, jobExecution.startYear,
-                 jobExecution.startMonth,
-                 jobExecution.startDay);
+                       .and(jobExecution.jobInstance.feed.name.eq(feedName)))
+            .groupBy(jobState, jobExecution.startYear,
+                     jobExecution.startMonth,
+                     jobExecution.startDay);
 
         return (List<JobStatusCount>) query.fetch();
 
@@ -221,18 +214,15 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
 
     /**
      * This will call the stored procedure delete_feed_jobs and remove all data, jobs, steps for the feed.
-     * @param category
-     * @param feed
      */
-    public void deleteFeedJobs(String category, String feed){
-        repository.deleteFeedJobs(category,feed);
+    public void deleteFeedJobs(String category, String feed) {
+        repository.deleteFeedJobs(category, feed);
     }
 
     /**
      * This will call the stored procedure abandon_feed_jobs
-     * @param feed
      */
-    public void abandonFeedJobs(String feed){
+    public void abandonFeedJobs(String feed) {
         repository.abandonFeedJobs(feed);
     }
 

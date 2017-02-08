@@ -51,7 +51,9 @@ public class TransformServiceTest {
         kerberosTicketConfiguration.setKerberosEnabled(false);
     }
 
-    /** Verify executing a transformation request. */
+    /**
+     * Verify executing a transformation request.
+     */
     @Test
     @SuppressWarnings("unchecked")
     public void execute() throws Exception {
@@ -137,7 +139,9 @@ public class TransformServiceTest {
         Assert.assertEquals(expected, service.toScript(request));
     }
 
-    /** Verify converting a transformation request with a parent to a Scala script. */
+    /**
+     * Verify converting a transformation request with a parent to a Scala script.
+     */
     @Test
     public void toScriptWithParent() throws Exception {
         // Build the request

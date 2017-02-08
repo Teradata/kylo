@@ -79,7 +79,7 @@ public class AlertsController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Lists the current alerts.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "Returns the alerts.", response = AlertRange.class)
+        @ApiResponse(code = 200, message = "Returns the alerts.", response = AlertRange.class)
     )
     public AlertRange getAlerts(@QueryParam("limit") Integer limit,
                                 @QueryParam("state") String state,
@@ -99,15 +99,15 @@ public class AlertsController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the specified alert.")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Returns the alert.", response = com.thinkbiganalytics.alerts.rest.model.Alert.class),
-            @ApiResponse(code = 404, message = "The alert could not be found.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 200, message = "Returns the alert.", response = com.thinkbiganalytics.alerts.rest.model.Alert.class),
+                      @ApiResponse(code = 404, message = "The alert could not be found.", response = RestResponseStatus.class)
+                  })
     public com.thinkbiganalytics.alerts.rest.model.Alert getAlert(@PathParam("id") String idStr) {
         Alert.ID id = provider.resolve(idStr);
 
         return provider.getAlert(id)
-                        .map(this::toModel)
-                        .orElseThrow(() -> new WebApplicationException("An alert with the given ID does not exists: " + idStr, Status.NOT_FOUND));
+            .map(this::toModel)
+            .orElseThrow(() -> new WebApplicationException("An alert with the given ID does not exists: " + idStr, Status.NOT_FOUND));
     }
 
     @POST
@@ -115,7 +115,7 @@ public class AlertsController {
     @Consumes(MediaType.APPLICATION_JSON)
     @ApiOperation("Creates a new alert.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "Returns the alert.", response = com.thinkbiganalytics.alerts.rest.model.Alert.class)
+        @ApiResponse(code = 200, message = "Returns the alert.", response = com.thinkbiganalytics.alerts.rest.model.Alert.class)
     )
     public com.thinkbiganalytics.alerts.rest.model.Alert createAlert(AlertCreateRequest req) {
         Alert.Level level = toDomain(req.getLevel());
@@ -130,15 +130,16 @@ public class AlertsController {
     @Consumes(MediaType.APPLICATION_JSON)
     @ApiOperation("Modifies the specified alert.")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Returns the alert.", response = com.thinkbiganalytics.alerts.rest.model.Alert.class),
-            @ApiResponse(code = 400, message = "The alert could not be found.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 200, message = "Returns the alert.", response = com.thinkbiganalytics.alerts.rest.model.Alert.class),
+                      @ApiResponse(code = 400, message = "The alert could not be found.", response = RestResponseStatus.class)
+                  })
     public com.thinkbiganalytics.alerts.rest.model.Alert updateAlert(@PathParam("id") String idStr,
                                                                      AlertUpdateRequest req) {
         Alert.ID id = provider.resolve(idStr);
         final Alert.State state = toDomain(req.getState());
 
         class UpdateResponder implements AlertResponder {
+
             private Alert result = null;
 
             @Override
@@ -216,12 +217,24 @@ public class AlertsController {
     private AlertCriteria createCriteria(Integer limit, String stateStr, String levelStr, String before, String after, String cleared) {
         AlertCriteria criteria = provider.criteria();
 
-        if (limit != null) criteria.limit(limit);
-        if (stateStr != null) criteria.state(Alert.State.valueOf(stateStr.toUpperCase()));
-        if (levelStr != null) criteria.level(Alert.Level.valueOf(levelStr.toUpperCase()));
-        if (before != null) criteria.before(Formatters.parseDateTime(before));
-        if (after != null) criteria.after(Formatters.parseDateTime(after));
-        if (cleared != null) criteria.includedCleared(Boolean.parseBoolean(cleared));
+        if (limit != null) {
+            criteria.limit(limit);
+        }
+        if (stateStr != null) {
+            criteria.state(Alert.State.valueOf(stateStr.toUpperCase()));
+        }
+        if (levelStr != null) {
+            criteria.level(Alert.Level.valueOf(levelStr.toUpperCase()));
+        }
+        if (before != null) {
+            criteria.before(Formatters.parseDateTime(before));
+        }
+        if (after != null) {
+            criteria.after(Formatters.parseDateTime(after));
+        }
+        if (cleared != null) {
+            criteria.includedCleared(Boolean.parseBoolean(cleared));
+        }
 
         return criteria;
     }

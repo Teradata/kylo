@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.security.rest.model;
 
@@ -32,26 +32,22 @@ import java.util.Set;
 
 /**
  * Represents a request to change permissions for set of user/roles.
- * 
  */
 @JsonInclude(Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PermissionsChange {
-    
-    public enum ChangeType { ADD, REMOVE, REPLACE }
-    
+
     private ChangeType change;
     private ActionGroup actionSet;
     private Set<String> users = new HashSet<>();
     private Set<String> groups = new HashSet<>();
-    
     public PermissionsChange() {
     }
-    
+
     public PermissionsChange(ChangeType change, String name) {
         this(change, new ActionGroup(name));
     }
-    
+
     public PermissionsChange(ChangeType change, ActionGroup actions) {
         super();
         this.change = change;
@@ -89,11 +85,11 @@ public class PermissionsChange {
     public void setGroups(Set<String> groups) {
         this.groups = groups;
     }
-    
+
     public boolean addUser(String name) {
         return this.users.add(name);
     }
-    
+
     public boolean addGroup(String name) {
         return this.groups.add(name);
     }
@@ -101,4 +97,6 @@ public class PermissionsChange {
     public boolean addAction(Action action) {
         return this.actionSet.addAction(action);
     }
+
+    public enum ChangeType {ADD, REMOVE, REPLACE}
 }

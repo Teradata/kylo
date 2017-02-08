@@ -231,6 +231,44 @@ public class JpaServiceLevelAssessor implements ServiceLevelAssessor {
         return builder.build();
     }
 
+    private ServiceLevelAssessment completeAssessment(JpaServiceLevelAssessment slaAssessment, AssessmentResult result) {
+        slaAssessment.setResult(result);
+        String slaName = slaAssessment.getAgreement() != null ? slaAssessment.getAgreement().getName() : "";
+        if (result == AssessmentResult.SUCCESS) {
+
+            slaAssessment.setMessage("SLA assessment requirements were met for '" + slaName + "'");
+        } else {
+            slaAssessment.setMessage("At least one of the SLA obligations for '" + slaName + "' resulted in the status: " + result);
+        }
+
+        //save it
+        assessmentProvider.save(slaAssessment);
+        return slaAssessment;
+    }
+
+    protected ObligationAssessor<? extends Obligation> findAssessor(Obligation obligation) {
+        synchronized (this.obligationAssessors) {
+            for (ObligationAssessor<? extends Obligation> assessor : this.obligationAssessors) {
+                if (assessor.accepts(obligation)) {
+                    return assessor;
+                }
+            }
+        }
+
+        return this.defaultObligationAssessor;
+    }
+
+    @SuppressWarnings("unchecked")
+    protected <M extends Metric> MetricAssessor<M, ?> findAssessor(M metric) {
+        synchronized (this.metricAssessors) {
+            for (MetricAssessor<? extends Metric, ? extends Serializable> accessor : this.metricAssessors) {
+                if (accessor.accepts(metric)) {
+                    return (MetricAssessor<M, ?>) accessor;
+                }
+            }
+        }
+        throw new AssessorNotFoundException(metric);
+    }
 
     private class ObligationAssessmentBuilderImpl implements ObligationAssessmentBuilder {
 
@@ -409,7 +447,6 @@ public class JpaServiceLevelAssessor implements ServiceLevelAssessor {
 
     }
 
-
     protected class DefaultObligationAssessor implements ObligationAssessor<Obligation> {
 
         @Override
@@ -450,45 +487,6 @@ public class JpaServiceLevelAssessor implements ServiceLevelAssessor {
 
         }
 
-    }
-
-    private ServiceLevelAssessment completeAssessment(JpaServiceLevelAssessment slaAssessment, AssessmentResult result) {
-        slaAssessment.setResult(result);
-        String slaName = slaAssessment.getAgreement() != null ? slaAssessment.getAgreement().getName() : "";
-        if (result == AssessmentResult.SUCCESS) {
-
-            slaAssessment.setMessage("SLA assessment requirements were met for '" + slaName + "'");
-        } else {
-            slaAssessment.setMessage("At least one of the SLA obligations for '" + slaName + "' resulted in the status: " + result);
-        }
-
-        //save it
-        assessmentProvider.save(slaAssessment);
-        return slaAssessment;
-    }
-
-    protected ObligationAssessor<? extends Obligation> findAssessor(Obligation obligation) {
-        synchronized (this.obligationAssessors) {
-            for (ObligationAssessor<? extends Obligation> assessor : this.obligationAssessors) {
-                if (assessor.accepts(obligation)) {
-                    return assessor;
-                }
-            }
-        }
-
-        return this.defaultObligationAssessor;
-    }
-
-    @SuppressWarnings("unchecked")
-    protected <M extends Metric> MetricAssessor<M, ?> findAssessor(M metric) {
-        synchronized (this.metricAssessors) {
-            for (MetricAssessor<? extends Metric, ? extends Serializable> accessor : this.metricAssessors) {
-                if (accessor.accepts(metric)) {
-                    return (MetricAssessor<M, ?>) accessor;
-                }
-            }
-        }
-        throw new AssessorNotFoundException(metric);
     }
 
 

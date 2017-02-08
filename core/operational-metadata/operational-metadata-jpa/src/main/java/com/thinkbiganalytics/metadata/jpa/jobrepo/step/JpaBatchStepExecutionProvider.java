@@ -81,6 +81,7 @@ public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider
     /**
      * We get Nifi Events after a step has executed. If a flow takes some time we might not initially get the event that the given step has failed when we write the StepExecution record. This should
      * be called when a Job Completes as it will verify all failures and then update the correct step status to reflect the failure if there is one.
+     *
      * @param jobExecution the job execution
      * @return {@code true} if the steps were evaluated, {@code false} if no work was needed to be done
      */
@@ -130,8 +131,8 @@ public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider
             stepExecution = new JpaBatchStepExecution();
             stepExecution.setJobExecution(jobExecution);
             stepExecution.setStartTime(event.getStartTime() != null ? DateTimeUtil.convertToUTC(event.getStartTime()) :
-                event.getPreviousEventTime() != null ? DateTimeUtil.convertToUTC(event.getPreviousEventTime())
-                                                     : DateTimeUtil.convertToUTC((event.getEventTime().minus(event.getEventDuration()))));
+                                       event.getPreviousEventTime() != null ? DateTimeUtil.convertToUTC(event.getPreviousEventTime())
+                                                                            : DateTimeUtil.convertToUTC((event.getEventTime().minus(event.getEventDuration()))));
             stepExecution.setEndTime(DateTimeUtil.convertToUTC(event.getEventTime()));
             stepExecution.setStepName(event.getComponentName());
             if (StringUtils.isBlank(stepExecution.getStepName())) {
@@ -158,8 +159,8 @@ public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider
             eventStepExecution.setJobFlowFileId(event.getJobFlowFileId());
             stepExecution.setNifiEventStepExecution(eventStepExecution);
             Set<BatchStepExecution> steps = jobExecution.getStepExecutions();
-            if(steps == null){
-                ((JpaBatchJobExecution)jobExecution).setStepExecutions(new HashSet<>());
+            if (steps == null) {
+                ((JpaBatchJobExecution) jobExecution).setStepExecutions(new HashSet<>());
             }
             jobExecution.getStepExecutions().add(stepExecution);
             //saving the StepExecution will cascade and save the nifiEventStep
@@ -209,11 +210,9 @@ public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider
     }
 
 
-    public List<? extends BatchStepExecution> getSteps(Long jobExecutionId){
+    public List<? extends BatchStepExecution> getSteps(Long jobExecutionId) {
         return batchStepExecutionRepository.findSteps(jobExecutionId);
     }
-
-
 
 
 }

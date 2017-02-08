@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.security.action.config;
 
@@ -36,7 +36,7 @@ public interface ActionsModuleBuilder {
      * Starts a new builder to add an action hierarchy to the actions of the module with the given name.
      */
     ActionsTreeBuilder<ActionsModuleBuilder> module(String name);
-    
+
     /**
      * Builds the action hierarchy tree on the module and returns the resulting AllowedActions.
      */

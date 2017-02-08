@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.rest.model.data;
 
@@ -30,7 +30,7 @@ import java.util.Set;
  *
  */
 public class DirectoryDatasource extends Datasource {
-    
+
     private String path;
     private Set<FilePattern> patterns = new HashSet<>();
 
@@ -49,13 +49,13 @@ public class DirectoryDatasource extends Datasource {
     public void setPatterns(Set<FilePattern> patterns) {
         this.patterns = patterns;
     }
-    
+
     public void addGlobPattern(String pattern) {
         FilePattern fp = new FilePattern();
         fp.setGlob(pattern);
         this.patterns.add(fp);
     }
-    
+
     public void addRegexPattern(String pattern) {
         FilePattern fp = new FilePattern();
         fp.setRegex(pattern);

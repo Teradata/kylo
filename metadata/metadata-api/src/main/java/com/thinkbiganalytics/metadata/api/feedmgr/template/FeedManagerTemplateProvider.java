@@ -24,18 +24,18 @@ import com.thinkbiganalytics.metadata.api.BaseProvider;
 
 /**
  */
-public interface FeedManagerTemplateProvider  extends BaseProvider<FeedManagerTemplate,FeedManagerTemplate.ID> {
+public interface FeedManagerTemplateProvider extends BaseProvider<FeedManagerTemplate, FeedManagerTemplate.ID> {
 
-     FeedManagerTemplate findByName(String name);
+    FeedManagerTemplate findByName(String name);
 
-     FeedManagerTemplate findByNifiTemplateId(String nifiTemplateId);
+    FeedManagerTemplate findByNifiTemplateId(String nifiTemplateId);
 
-     FeedManagerTemplate ensureTemplate(String name);
+    FeedManagerTemplate ensureTemplate(String name);
 
-     FeedManagerTemplate enable(FeedManagerTemplate.ID id);
+    FeedManagerTemplate enable(FeedManagerTemplate.ID id);
 
-     FeedManagerTemplate disable(FeedManagerTemplate.ID id);
+    FeedManagerTemplate disable(FeedManagerTemplate.ID id);
 
-     boolean deleteTemplate(FeedManagerTemplate.ID id) throws TemplateDeletionException;
+    boolean deleteTemplate(FeedManagerTemplate.ID id) throws TemplateDeletionException;
 
 }

@@ -61,7 +61,9 @@ import io.swagger.annotations.Tag;
 @SwaggerDefinition(tags = @Tag(name = "Security - Groups", description = "manages groups"))
 public class GroupsController {
 
-    /** Service for accessing Kylo groups */
+    /**
+     * Service for accessing Kylo groups
+     */
     @Inject
     UserService userService;
 
@@ -76,9 +78,9 @@ public class GroupsController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Adds or updates a Kylo group.")
     @ApiResponses({
-        @ApiResponse(code = 204, message = "The group was added or updated."),
-        @ApiResponse(code = 500, message = "There was a problem adding or updating the group.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 204, message = "The group was added or updated."),
+                      @ApiResponse(code = 500, message = "There was a problem adding or updating the group.", response = RestResponseStatus.class)
+                  })
     @Nonnull
     public Response addGroup(@Nonnull final GroupPrincipal group) {
         userService.updateGroup(group);
@@ -96,10 +98,10 @@ public class GroupsController {
     @Path("{groupId}")
     @ApiOperation("Deletes the specified group.")
     @ApiResponses({
-        @ApiResponse(code = 204, message = "The group was deleted."),
-        @ApiResponse(code = 404, message = "The group was not found.", response = RestResponseStatus.class),
-        @ApiResponse(code = 500, message = "There was a problem deleting the group.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 204, message = "The group was deleted."),
+                      @ApiResponse(code = 404, message = "The group was not found.", response = RestResponseStatus.class),
+                      @ApiResponse(code = 500, message = "There was a problem deleting the group.", response = RestResponseStatus.class)
+                  })
     @Nonnull
     public Response deleteGroup(@Nonnull @PathParam("groupId") final String groupId) {
         if (userService.deleteGroup(decodeGroupId(groupId))) {
@@ -121,10 +123,10 @@ public class GroupsController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Returns the specified group.")
     @ApiResponses({
-        @ApiResponse(code = 200, message = "The requested group.", response = GroupPrincipal.class),
-        @ApiResponse(code = 404, message = "The group was not found.", response = RestResponseStatus.class),
-        @ApiResponse(code = 500, message = "There was a problem accessing the group.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 200, message = "The requested group.", response = GroupPrincipal.class),
+                      @ApiResponse(code = 404, message = "The group was not found.", response = RestResponseStatus.class),
+                      @ApiResponse(code = 500, message = "There was a problem accessing the group.", response = RestResponseStatus.class)
+                  })
     @Nonnull
     public Response getGroup(@Nonnull @PathParam("groupId") final String groupId) {
         final GroupPrincipal group = userService.getGroup(decodeGroupId(groupId)).orElseThrow(NotFoundException::new);
@@ -140,9 +142,9 @@ public class GroupsController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Returns a list of all groups.")
     @ApiResponses({
-        @ApiResponse(code = 200, message = "The list of groups.", response = GroupPrincipal.class, responseContainer = "List"),
-        @ApiResponse(code = 500, message = "There was a problem accessing the groups.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 200, message = "The list of groups.", response = GroupPrincipal.class, responseContainer = "List"),
+                      @ApiResponse(code = 500, message = "There was a problem accessing the groups.", response = RestResponseStatus.class)
+                  })
     @Nonnull
     public Response getGroups() {
         final List<GroupPrincipal> groups = userService.getGroups();
@@ -161,10 +163,10 @@ public class GroupsController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Returns a list of all users in the specified group.")
     @ApiResponses({
-        @ApiResponse(code = 200, message = "The list of users.", response = UserPrincipal.class, responseContainer = "List"),
-        @ApiResponse(code = 404, message = "The group was not found.", response = RestResponseStatus.class),
-        @ApiResponse(code = 500, message = "There was a problem accessing the group.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 200, message = "The list of users.", response = UserPrincipal.class, responseContainer = "List"),
+                      @ApiResponse(code = 404, message = "The group was not found.", response = RestResponseStatus.class),
+                      @ApiResponse(code = 500, message = "There was a problem accessing the group.", response = RestResponseStatus.class)
+                  })
     @Nonnull
     public Response getUsers(@Nonnull @PathParam("groupId") final String groupId) {
         final List<UserPrincipal> users = userService.getUsersByGroup(decodeGroupId(groupId)).orElseThrow(NotFoundException::new);

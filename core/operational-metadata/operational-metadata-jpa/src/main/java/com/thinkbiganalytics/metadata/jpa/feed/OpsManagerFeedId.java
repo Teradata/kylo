@@ -40,16 +40,16 @@ public class OpsManagerFeedId extends BaseJpaId implements Serializable, OpsMana
     @Column(name = "id", columnDefinition = "binary(16)")
     private UUID uuid;
 
-    public static OpsManagerFeedId create() {
-        return new OpsManagerFeedId(UUID.randomUUID());
-    }
-
-
     public OpsManagerFeedId() {
     }
 
+
     public OpsManagerFeedId(Serializable ser) {
         super(ser);
+    }
+
+    public static OpsManagerFeedId create() {
+        return new OpsManagerFeedId(UUID.randomUUID());
     }
 
     @Override

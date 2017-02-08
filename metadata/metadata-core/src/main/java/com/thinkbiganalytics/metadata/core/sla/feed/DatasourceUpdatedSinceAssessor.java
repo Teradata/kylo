@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.core.sla.feed;
 
@@ -46,7 +46,7 @@ public class DatasourceUpdatedSinceAssessor extends MetadataMetricAssessor<Datas
             .metric(metric)
             .message("This metric is no longer supported")
             .result(AssessmentResult.FAILURE);
-        
+
 //        List<Date> dates = CronExpressionUtil.getPreviousFireTimes(metric.getCronExpression(), 2);
 //        DateTime schedTime = new DateTime(dates.get(0));
 //        String name = metric.getDatasourceName();
@@ -85,7 +85,7 @@ public class DatasourceUpdatedSinceAssessor extends MetadataMetricAssessor<Datas
 //                .data(result)
 //                .result(AssessmentResult.FAILURE);
 //        }
-        
+
     }
 
 }

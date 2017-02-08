@@ -24,29 +24,25 @@ package com.thinkbiganalytics.metadata.sla.api;
  */
 public class ServiceLevelAgreementActionValidation {
 
-    private String actionClass;
-
-    private boolean valid;
-
-    public String validationMessage;
-
     public static ServiceLevelAgreementActionValidation VALID = new ServiceLevelAgreementActionValidation(true);
-
     public static ServiceLevelAgreementActionValidation INVALID = new ServiceLevelAgreementActionValidation(false);
+    public String validationMessage;
+    private String actionClass;
+    private boolean valid;
 
     public ServiceLevelAgreementActionValidation(boolean valid) {
         this.valid = valid;
+    }
+
+    public ServiceLevelAgreementActionValidation(boolean valid, String validationMessage) {
+        this.valid = valid;
+        this.validationMessage = validationMessage;
     }
 
     public static ServiceLevelAgreementActionValidation valid(Class actionClass) {
         ServiceLevelAgreementActionValidation validation = new ServiceLevelAgreementActionValidation(true);
         validation.setActionClass(actionClass.getName());
         return validation;
-    }
-
-    public ServiceLevelAgreementActionValidation(boolean valid, String validationMessage) {
-        this.valid = valid;
-        this.validationMessage = validationMessage;
     }
 
     public boolean isValid() {

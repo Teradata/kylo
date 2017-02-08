@@ -170,7 +170,7 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
      */
     @Override
     public ServiceLevelAgreement findAgreementByName(String slaName) {
-        String query =  "SELECT * FROM [" + getNodeType(getJcrEntityClass()) + "] as sla WHERE sla.[" + JcrPropertyConstants.TITLE + "] = $slaName";
+        String query = "SELECT * FROM [" + getNodeType(getJcrEntityClass()) + "] as sla WHERE sla.[" + JcrPropertyConstants.TITLE + "] = $slaName";
         return JcrQueryUtil.findFirst(getSession(), query, ImmutableMap.of("slaName", slaName), getEntityClass());
     }
 
@@ -184,7 +184,7 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
             Session session = getSession();
             SlaId slaId = (SlaId) id;
             Node slaNode = session.getNodeByIdentifier(slaId.getIdValue());
-            if(slaNode != null) {
+            if (slaNode != null) {
                 JcrServiceLevelAgreement sla = new JcrServiceLevelAgreement(slaNode);
 
                 //remove any other relationships
@@ -235,9 +235,9 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
      * Returns a builder that constructs an SLA rooted by the given node.  This method is exposed to support
      * other JCR-based providers that may construct object that have embedded SLA's that are not managed by
      * this provider.
+     *
      * @param slaNode the root node of the SLA
      * @return a builder to construct the sla
-     * @throws RepositoryException
      */
     public ServiceLevelAgreementBuilder builder(Node slaNode) throws RepositoryException {
         return new SLABuilderImpl(slaNode);
@@ -253,101 +253,15 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
         }
     }
 
-
-    protected class SLABuilderImpl implements ServiceLevelAgreementBuilder {
-
-        private Node slaNode;
-
-        private String name;
-        private String description;
-        private List<? extends ServiceLevelAgreementActionConfiguration> serviceLevelAgreementActionConfigurations;
-
-        public SLABuilderImpl(Node node) throws RepositoryException {
-            this.slaNode = node;
-        }
-
-
-        @Override
-        public ServiceLevelAgreementBuilder name(String name) {
-            this.name = name;
-            return this;
-        }
-
-        @Override
-        public ServiceLevelAgreementBuilder description(String description) {
-            this.description = description;
-            return this;
-        }
-
-        @Override
-        public ServiceLevelAgreementBuilder obligation(Obligation obligation) {
-            // TODO This isn't going to work in the current JCR implementation.  Perhaps it should not be supported at all in the builder.
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public ObligationBuilder<ServiceLevelAgreementBuilder> obligationBuilder() {
-            try {
-                Node groupNode = null;
-
-                if (this.slaNode.hasProperty(JcrServiceLevelAgreement.DEFAULT_GROUP)) {
-                    groupNode = this.slaNode.getProperty(JcrServiceLevelAgreement.DEFAULT_GROUP).getNode();
-                } else {
-                    groupNode = this.slaNode.addNode(JcrServiceLevelAgreement.GROUPS, JcrServiceLevelAgreement.GROUP_TYPE);
-                    this.slaNode.setProperty(JcrServiceLevelAgreement.DEFAULT_GROUP, groupNode);
-                }
-
-                Node obNode = groupNode.addNode(JcrObligationGroup.OBLIGATIONS, JcrObligationGroup.OBLIGATION_TYPE);
-
-                return new ObligationBuilderImpl<ServiceLevelAgreementBuilder>(obNode, this);
-            } catch (RepositoryException e) {
-                throw new MetadataRepositoryException("Failed to build the obligation node", e);
-            }
-        }
-
-        @Override
-        public ObligationBuilder<ServiceLevelAgreementBuilder> obligationBuilder(Condition condition) {
-            try {
-                Node groupNode = this.slaNode.getProperty(JcrServiceLevelAgreement.DEFAULT_GROUP).getNode();
-                groupNode.setProperty(JcrObligationGroup.CONDITION, condition.name());
-                Node obNode = groupNode.addNode(JcrObligationGroup.OBLIGATIONS, JcrObligationGroup.OBLIGATION_TYPE);
-
-                return new ObligationBuilderImpl<ServiceLevelAgreementBuilder>(obNode, this);
-            } catch (RepositoryException e) {
-                throw new MetadataRepositoryException("Failed to build the obligation group node", e);
-            }
-        }
-
-        @Override
-        public ObligationGroupBuilder obligationGroupBuilder(Condition condition) {
-            try {
-                Node groupNode = this.slaNode.addNode(JcrServiceLevelAgreement.GROUPS, JcrServiceLevelAgreement.GROUP_TYPE);
-
-                return new ObligationGroupBuilderImpl(groupNode, condition, this);
-            } catch (RepositoryException e) {
-                throw new MetadataRepositoryException("Failed to build the obligation group node", e);
-            }
-        }
-
-        public ServiceLevelAgreementBuilder actionConfigurations(List<? extends ServiceLevelAgreementActionConfiguration> actionConfigurations) {
-            this.serviceLevelAgreementActionConfigurations = actionConfigurations;
-            return this;
-        }
-
-        @Override
-        public ServiceLevelAgreement build() {
-            JcrPropertyUtil.setProperty(this.slaNode, JcrServiceLevelAgreement.NAME, this.name);
-            JcrPropertyUtil.setProperty(this.slaNode, JcrServiceLevelAgreement.DESCRIPTION, this.description);
-            JcrServiceLevelAgreement agreement = new JcrServiceLevelAgreement(this.slaNode);
-            //always make it enabled by default
-            agreement.setEnabled(true);
-            return agreement;
+    public ServiceLevelAgreementCheckBuilder slaCheckBuilder(ServiceLevelAgreement.ID slaId) {
+        try {
+            Session session = getSession();
+            Node n = session.getNodeByIdentifier(slaId.toString());
+            return new SLACheckBuilderImpl(n);
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to create slaCheckBuilder. Error attempting to find related SLA by id of " + slaId);
         }
     }
-
-
-
-
 
     private static class ObligationBuilderImpl<B> implements ObligationBuilder<B> {
 
@@ -450,17 +364,6 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
         }
     }
 
-    public ServiceLevelAgreementCheckBuilder slaCheckBuilder(ServiceLevelAgreement.ID slaId) {
-        try {
-            Session session = getSession();
-            Node n = session.getNodeByIdentifier(slaId.toString());
-            return new SLACheckBuilderImpl(n);
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Unable to create slaCheckBuilder. Error attempting to find related SLA by id of " + slaId);
-        }
-    }
-
-
     private static class SLACheckBuilderImpl implements ServiceLevelAgreementCheckBuilder {
 
 
@@ -553,7 +456,96 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
         }
     }
 
+    protected class SLABuilderImpl implements ServiceLevelAgreementBuilder {
 
+        private Node slaNode;
+
+        private String name;
+        private String description;
+        private List<? extends ServiceLevelAgreementActionConfiguration> serviceLevelAgreementActionConfigurations;
+
+        public SLABuilderImpl(Node node) throws RepositoryException {
+            this.slaNode = node;
+        }
+
+
+        @Override
+        public ServiceLevelAgreementBuilder name(String name) {
+            this.name = name;
+            return this;
+        }
+
+        @Override
+        public ServiceLevelAgreementBuilder description(String description) {
+            this.description = description;
+            return this;
+        }
+
+        @Override
+        public ServiceLevelAgreementBuilder obligation(Obligation obligation) {
+            // TODO This isn't going to work in the current JCR implementation.  Perhaps it should not be supported at all in the builder.
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public ObligationBuilder<ServiceLevelAgreementBuilder> obligationBuilder() {
+            try {
+                Node groupNode = null;
+
+                if (this.slaNode.hasProperty(JcrServiceLevelAgreement.DEFAULT_GROUP)) {
+                    groupNode = this.slaNode.getProperty(JcrServiceLevelAgreement.DEFAULT_GROUP).getNode();
+                } else {
+                    groupNode = this.slaNode.addNode(JcrServiceLevelAgreement.GROUPS, JcrServiceLevelAgreement.GROUP_TYPE);
+                    this.slaNode.setProperty(JcrServiceLevelAgreement.DEFAULT_GROUP, groupNode);
+                }
+
+                Node obNode = groupNode.addNode(JcrObligationGroup.OBLIGATIONS, JcrObligationGroup.OBLIGATION_TYPE);
+
+                return new ObligationBuilderImpl<ServiceLevelAgreementBuilder>(obNode, this);
+            } catch (RepositoryException e) {
+                throw new MetadataRepositoryException("Failed to build the obligation node", e);
+            }
+        }
+
+        @Override
+        public ObligationBuilder<ServiceLevelAgreementBuilder> obligationBuilder(Condition condition) {
+            try {
+                Node groupNode = this.slaNode.getProperty(JcrServiceLevelAgreement.DEFAULT_GROUP).getNode();
+                groupNode.setProperty(JcrObligationGroup.CONDITION, condition.name());
+                Node obNode = groupNode.addNode(JcrObligationGroup.OBLIGATIONS, JcrObligationGroup.OBLIGATION_TYPE);
+
+                return new ObligationBuilderImpl<ServiceLevelAgreementBuilder>(obNode, this);
+            } catch (RepositoryException e) {
+                throw new MetadataRepositoryException("Failed to build the obligation group node", e);
+            }
+        }
+
+        @Override
+        public ObligationGroupBuilder obligationGroupBuilder(Condition condition) {
+            try {
+                Node groupNode = this.slaNode.addNode(JcrServiceLevelAgreement.GROUPS, JcrServiceLevelAgreement.GROUP_TYPE);
+
+                return new ObligationGroupBuilderImpl(groupNode, condition, this);
+            } catch (RepositoryException e) {
+                throw new MetadataRepositoryException("Failed to build the obligation group node", e);
+            }
+        }
+
+        public ServiceLevelAgreementBuilder actionConfigurations(List<? extends ServiceLevelAgreementActionConfiguration> actionConfigurations) {
+            this.serviceLevelAgreementActionConfigurations = actionConfigurations;
+            return this;
+        }
+
+        @Override
+        public ServiceLevelAgreement build() {
+            JcrPropertyUtil.setProperty(this.slaNode, JcrServiceLevelAgreement.NAME, this.name);
+            JcrPropertyUtil.setProperty(this.slaNode, JcrServiceLevelAgreement.DESCRIPTION, this.description);
+            JcrServiceLevelAgreement agreement = new JcrServiceLevelAgreement(this.slaNode);
+            //always make it enabled by default
+            agreement.setEnabled(true);
+            return agreement;
+        }
+    }
 
 
 }

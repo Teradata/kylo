@@ -44,13 +44,12 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class NifiProvenanceConfig {
 
+    private static final Logger log = LoggerFactory.getLogger(NifiProvenanceConfig.class);
     /**
      * location of where map db should store the persist cache file to disk
      **/
     @Value("${kylo.provenance.feedflowfile.mapdb.cache.location:/opt/nifi/feed-flowfile-cache.db}")
     private String feedFlowFileMapDbCacheLocation;
-
-    private static final Logger log = LoggerFactory.getLogger(NifiProvenanceConfig.class);
 
     @Bean
     public SpringApplicationContext springApplicationContext() {
@@ -59,6 +58,7 @@ public class NifiProvenanceConfig {
 
     /**
      * The KyloProvenanceEventReportingTask will override these defaults based upon its batch property ("Processing batch size")
+     *
      * @return an object pool for processing ProvenanceEventRecordDTO objects
      */
     @Bean

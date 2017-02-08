@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.jpa;
 
@@ -30,7 +30,7 @@ import javax.persistence.AttributeConverter;
 
 /**
  * Converts a principal to a string in the form: "<principal class name>:<principal name>".
- * By default it assumes the principal class has a single-argument constructor rhat accepts 
+ * By default it assumes the principal class has a single-argument constructor rhat accepts
  * the principal name.  Subclass may override this assumption.
  */
 public class PrincipalConverter implements AttributeConverter<Principal, String> {

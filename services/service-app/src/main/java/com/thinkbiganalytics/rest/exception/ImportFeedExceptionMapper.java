@@ -33,12 +33,12 @@ public class ImportFeedExceptionMapper extends BaseExceptionMapper implements ja
 
     private static final Logger log = LoggerFactory.getLogger(ImportFeedExceptionMapper.class);
 
+    {
+
+    }
+
     @Override
     public Response toResponse(ImportFeedException e) {
         return defaultResponse(e);
-    }
-
-    {
-
     }
 }

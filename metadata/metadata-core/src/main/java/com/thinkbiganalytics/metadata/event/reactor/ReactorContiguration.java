@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.event.reactor;
 
@@ -38,53 +38,59 @@ import reactor.bus.EventBus;
  */
 @Configuration
 public class ReactorContiguration {
-    
-    @Bean(name="reactorEnvironment")
+
+    @Bean(name = "reactorEnvironment")
     public Environment reactorEnvironment() {
         return Environment.initializeIfEmpty();
     }
-    
-    @Bean(name="alertsEventBus")
+
+    @Bean(name = "alertsEventBus")
     public EventBus alertsEventBus() {
         Environment env = reactorEnvironment();
         Logger log = LoggerFactory.getLogger(EventBus.class.getName() + "- Alerts event bus");
-        
+
         return EventBus.config()
-                        .env(env)
-                        .dispatcher(env.getDefaultDispatcher())
-                        .dispatchErrorHandler((t) -> { log.error("Alert event bus dispatch error", t); })
-                        .get();
+            .env(env)
+            .dispatcher(env.getDefaultDispatcher())
+            .dispatchErrorHandler((t) -> {
+                log.error("Alert event bus dispatch error", t);
+            })
+            .get();
     }
-    
-    @Bean(name="respondableAlertsEventBus")
+
+    @Bean(name = "respondableAlertsEventBus")
     public EventBus respondibleAlertsEventBus() {
         Environment env = reactorEnvironment();
         Logger log = LoggerFactory.getLogger(EventBus.class.getName() + "- Respondavle alerts event bus");
-        
+
         return EventBus.config()
-                        .env(env)
-                        .dispatcher(env.getDefaultDispatcher())
-                        .dispatchErrorHandler((t) -> { log.error("Alert event bus dispatch error", t); })
-                        .get();
+            .env(env)
+            .dispatcher(env.getDefaultDispatcher())
+            .dispatchErrorHandler((t) -> {
+                log.error("Alert event bus dispatch error", t);
+            })
+            .get();
     }
 
-    @Bean(name="metadataEventBus")
+    @Bean(name = "metadataEventBus")
     public EventBus metadataEventBus() {
         Environment env = reactorEnvironment();
         Logger log = LoggerFactory.getLogger(EventBus.class.getName() + "- Metadata event bus");
-        
+
         return EventBus.config()
-                        .env(env)
-                        .dispatcher(env.getDefaultDispatcher())
-                        .dispatchErrorHandler((t) -> { log.error("Metadata event bus dispatch error", t); })
-                        .get();
+            .env(env)
+            .dispatcher(env.getDefaultDispatcher())
+            .dispatchErrorHandler((t) -> {
+                log.error("Metadata event bus dispatch error", t);
+            })
+            .get();
     }
-    
+
     @Bean
     public MetadataEventService eventService() {
         return new ReactorMetadataEventService();
     }
-    
+
 //
 //    @Bean(name="metadataEventServer")
 //    public TcpServer<Buffer, Buffer> eventServer() {
@@ -92,5 +98,5 @@ public class ReactorContiguration {
 //        
 //        return svr;
 //    }
-    
+
 }

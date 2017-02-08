@@ -63,6 +63,11 @@ public class StringColumnCase4Test extends ProfilerTest {
     private static String minStringICase;
     private static List<String> maxStringICaseList;
 
+    @AfterClass
+    public static void tearDownClass() {
+        System.out.println("\t*** Completed run for StringColumnCase4Test ***");
+    }
+
     @Before
     public void setUp() {
         super.setUp();
@@ -97,42 +102,35 @@ public class StringColumnCase4Test extends ProfilerTest {
 
     }
 
-
     @Test
     public void testStringNullCount() {
         Assert.assertEquals(nullCount, columnStats.getNullCount());
     }
-
 
     @Test
     public void testStringTotalCount() {
         Assert.assertEquals(totalCount, columnStats.getTotalCount());
     }
 
-
     @Test
     public void testStringUniqueCount() {
         Assert.assertEquals(uniqueCount, columnStats.getUniqueCount());
     }
-
 
     @Test
     public void testStringPercNullValues() {
         assertEquals(percNullValues, columnStats.getPercNullValues(), epsilon);
     }
 
-
     @Test
     public void testStringPercUniqueValues() {
         assertEquals(percUniqueValues, columnStats.getPercUniqueValues(), epsilon);
     }
 
-
     @Test
     public void testStringPercDuplicateValues() {
         assertEquals(percDuplicateValues, columnStats.getPercDuplicateValues(), epsilon);
     }
-
 
     @Test
     public void testStringTopNValues() {
@@ -164,18 +162,15 @@ public class StringColumnCase4Test extends ProfilerTest {
         }
     }
 
-
     @Test
     public void testStringMaxLength() {
         Assert.assertEquals(maxLength, ((StringColumnStatistics) columnStats).getMaxLength());
     }
 
-
     @Test
     public void testStringMinLength() {
         Assert.assertEquals(minLength, ((StringColumnStatistics) columnStats).getMinLength());
     }
-
 
     @Test
     public void testStringLongestString() {
@@ -183,53 +178,40 @@ public class StringColumnCase4Test extends ProfilerTest {
                           Matchers.anyOf(Matchers.is(longestStrings.get(0)), Matchers.is(longestStrings.get(1))));
     }
 
-
     @Test
     public void testStringShortestString() {
         Assert.assertEquals(shortestString, ((StringColumnStatistics) columnStats).getShortestString());
     }
-
 
     @Test
     public void testStringEmptyCount() {
         Assert.assertEquals(emptyCount, ((StringColumnStatistics) columnStats).getEmptyCount());
     }
 
-
     @Test
     public void testStringPercEmptyValues() {
         assertEquals(percEmptyValues, ((StringColumnStatistics) columnStats).getPercEmptyValues(), epsilon);
     }
-
 
     @Test
     public void testStringMinStringCaseSensitive() {
         Assert.assertEquals(minStringCase, ((StringColumnStatistics) columnStats).getMinStringCase());
     }
 
-
     @Test
     public void testStringMaxStringCaseSensitive() {
         Assert.assertEquals(maxStringCase, ((StringColumnStatistics) columnStats).getMaxStringCase());
     }
-
 
     @Test
     public void testStringMinStringCaseInsensitive() {
         Assert.assertEquals(minStringICase, ((StringColumnStatistics) columnStats).getMinStringICase());
     }
 
-
     @Test
     public void testStringMaxStringCaseInsensitive() {
         Assert.assertThat(((StringColumnStatistics) columnStats).getMaxStringICase(),
                           Matchers.anyOf(Matchers.is(maxStringICaseList.get(0)), Matchers.is(maxStringICaseList.get(1))));
-    }
-
-
-    @AfterClass
-    public static void tearDownClass() {
-        System.out.println("\t*** Completed run for StringColumnCase4Test ***");
     }
 }
 

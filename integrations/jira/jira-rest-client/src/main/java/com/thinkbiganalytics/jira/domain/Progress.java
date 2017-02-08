@@ -1,4 +1,3 @@
-
 package com.thinkbiganalytics.jira.domain;
 
 /*-
@@ -36,9 +35,9 @@ import javax.annotation.Generated;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("org.jsonschema2pojo")
 @JsonPropertyOrder({
-    "progress",
-    "total"
-})
+                       "progress",
+                       "total"
+                   })
 public class Progress {
 
     @JsonProperty("progress")
@@ -49,9 +48,7 @@ public class Progress {
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
-     * 
-     * @return
-     *     The progress
+     * @return The progress
      */
     @JsonProperty("progress")
     public Integer getProgress() {
@@ -59,9 +56,7 @@ public class Progress {
     }
 
     /**
-     * 
-     * @param progress
-     *     The progress
+     * @param progress The progress
      */
     @JsonProperty("progress")
     public void setProgress(Integer progress) {
@@ -69,9 +64,7 @@ public class Progress {
     }
 
     /**
-     * 
-     * @return
-     *     The total
+     * @return The total
      */
     @JsonProperty("total")
     public Integer getTotal() {
@@ -79,9 +72,7 @@ public class Progress {
     }
 
     /**
-     * 
-     * @param total
-     *     The total
+     * @param total The total
      */
     @JsonProperty("total")
     public void setTotal(Integer total) {

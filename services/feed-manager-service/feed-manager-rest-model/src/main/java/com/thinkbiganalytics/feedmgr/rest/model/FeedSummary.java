@@ -48,7 +48,8 @@ public class FeedSummary implements UIFeed {
     public FeedSummary() {
 
     }
-    public FeedSummary(FeedMetadata feedMetadata){
+
+    public FeedSummary(FeedMetadata feedMetadata) {
         this.id = feedMetadata.getId();
         this.feedName = feedMetadata.getFeedName();
         this.categoryId = feedMetadata.getCategory().getId();
@@ -120,12 +121,12 @@ public class FeedSummary implements UIFeed {
     }
 
     @Override
-    public String getCategoryAndFeedDisplayName(){
-        return this.categoryName+"."+this.feedName;
+    public String getCategoryAndFeedDisplayName() {
+        return this.categoryName + "." + this.feedName;
     }
 
-    public String getCategoryAndFeedSystemName(){
-        return this.systemCategoryName+"."+this.systemFeedName;
+    public String getCategoryAndFeedSystemName() {
+        return this.systemCategoryName + "." + this.systemFeedName;
     }
 
 

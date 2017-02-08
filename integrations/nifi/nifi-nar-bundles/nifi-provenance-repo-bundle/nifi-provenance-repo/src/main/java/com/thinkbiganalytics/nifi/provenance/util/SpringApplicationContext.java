@@ -38,20 +38,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class SpringApplicationContext {
 
     private static final Logger log = LoggerFactory.getLogger(SpringApplicationContext.class);
-
-    private static class LazyHolder {
-
-        static final SpringApplicationContext INSTANCE = new SpringApplicationContext();
-    }
+    private static ApplicationContext applicationContext;
+    private AtomicBoolean initialized = new AtomicBoolean(false);
 
     public static SpringApplicationContext getInstance() {
         return LazyHolder.INSTANCE;
     }
-
-    private static ApplicationContext applicationContext;
-
-    private AtomicBoolean initialized = new AtomicBoolean(false);
-
 
     public void initializeSpring() {
         initializeSpring("application-context.xml");
@@ -66,7 +58,6 @@ public class SpringApplicationContext {
             ((ClassPathXmlApplicationContext) this.applicationContext).refresh();
         }
     }
-
 
     public ApplicationContext getApplicationContext() {
         return applicationContext;
@@ -93,13 +84,8 @@ public class SpringApplicationContext {
 
     }
 
-
     /**
      * get a Spring bean by the Class type
-     * @param requiredType
-     * @param <T>
-     * @return
-     * @throws BeansException
      */
     public <T> T getBean(Class<T> requiredType) throws BeansException {
         T bean = null;
@@ -114,23 +100,15 @@ public class SpringApplicationContext {
         return bean;
     }
 
-
     /**
      * get a bean by the name and its type
-     * @param name
-     * @param requiredType
-     * @param <T>
-     * @return
-     * @throws BeansException
      */
     public <T> T getBean(String name, Class<T> requiredType) throws BeansException {
         return this.applicationContext.getBean(name, requiredType);
     }
 
-
     /**
      * print out the bean names in Spring
-     * @return
      */
     public String printBeanNames() {
         if (applicationContext == null) {
@@ -148,6 +126,7 @@ public class SpringApplicationContext {
 
     /**
      * Autowire properties in the object
+     *
      * @param key the name of the Spring Bean
      * @param obj the Bean or Object you want to be included into Spring and autowired
      * @return the autowired Spring object
@@ -157,11 +136,11 @@ public class SpringApplicationContext {
         return autowire(key, obj, true);
     }
 
-
     /**
      * Autowire an object
-     * @param key the name of the Spring Bean
-     * @param obj the Bean or Object you want to be included into Spring and autowired
+     *
+     * @param key   the name of the Spring Bean
+     * @param obj   the Bean or Object you want to be included into Spring and autowired
      * @param force Force it to be autowired even if the bean is not registered with the appcontext.  If the key is already registered in spring and this is false it will not autowire.
      * @return the autowired Spring object
      */
@@ -194,5 +173,10 @@ public class SpringApplicationContext {
             return bean;
         }
         return null;
+    }
+
+    private static class LazyHolder {
+
+        static final SpringApplicationContext INSTANCE = new SpringApplicationContext();
     }
 }

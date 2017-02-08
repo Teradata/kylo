@@ -50,15 +50,15 @@ public class SentryConfiguration {
         , @Value("${hdfs.hadoop.configuration}") String hadoopConfiguration
         , @Value("${authorization.sentry.groups}") String sentryGroups
         , @Value("${sentry.kerberos.principal}") String kerberosPrincipal
-        , @Value ("${sentry.kerberos.KeytabLocation}") String kerberosKeytabLocation
-        , @Value ("${sentry.IsKerberosEnabled}") String kerberosEnabled) {
+        , @Value("${sentry.kerberos.KeytabLocation}") String kerberosKeytabLocation
+        , @Value("${sentry.IsKerberosEnabled}") String kerberosEnabled) {
         SentryConnection sentryConnection = new SentryConnection();
         sentryConnection.setDriverName(driverURL);
         sentryConnection.setSentryGroups(sentryGroups);
         sentryConnection.setHadoopConfiguration(hadoopConfiguration);
         sentryConnection.setDataSource(dataSource(connectionURL, driverURL, userName, password));
-        sentryConnection.setKerberosTicketConfiguration(createKerberosTicketConfiguration(kerberosEnabled,hadoopConfiguration,kerberosPrincipal,kerberosKeytabLocation));
-     
+        sentryConnection.setKerberosTicketConfiguration(createKerberosTicketConfiguration(kerberosEnabled, hadoopConfiguration, kerberosPrincipal, kerberosKeytabLocation));
+
         SentryAuthorizationService hadoopAuthorizationService = new SentryAuthorizationService();
         hadoopAuthorizationService.initialize(sentryConnection);
         return hadoopAuthorizationService;
@@ -74,10 +74,10 @@ public class SentryConfiguration {
         dataSourceBuilder.password(password);
         return dataSourceBuilder.build();
     }
-    
-    private KerberosTicketConfiguration createKerberosTicketConfiguration(String kerberosEnabled, String hadoopConfigurationResources, String kerberosPrincipal, String keytabLocation ) {
+
+    private KerberosTicketConfiguration createKerberosTicketConfiguration(String kerberosEnabled, String hadoopConfigurationResources, String kerberosPrincipal, String keytabLocation) {
         KerberosTicketConfiguration config = new KerberosTicketConfiguration();
-        config.setKerberosEnabled("true".equalsIgnoreCase(kerberosEnabled) ? true: false);
+        config.setKerberosEnabled("true".equalsIgnoreCase(kerberosEnabled) ? true : false);
         config.setHadoopConfigurationResources(hadoopConfigurationResources);
         config.setKerberosPrincipal(kerberosPrincipal);
         config.setKeytabLocation(keytabLocation);

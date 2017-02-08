@@ -72,7 +72,7 @@ public class OperationalMetadataConfig {
 
     /**
      * Return the JPA transaction manager
-     * @param dataSource
+     *
      * @return the JPA transaction manager
      */
     @Bean(name = "operationalMetadataTransactionManager")
@@ -86,6 +86,7 @@ public class OperationalMetadataConfig {
 
     /**
      * Return the HibernateJpaVender
+     *
      * @return the Hibernate JPA Vendor
      */
     @Bean
@@ -96,7 +97,7 @@ public class OperationalMetadataConfig {
 
     /**
      * Return the entity manager factory for Hibernate
-     * @param dataSource
+     *
      * @return the Hibernate entity manager factory
      */
     @Bean(name = "operationalMetadataEntityManagerFactory")
@@ -111,7 +112,7 @@ public class OperationalMetadataConfig {
 
     /**
      * Return the QueryDSL JPA factory
-     * @param em
+     *
      * @return the Query DSL JPA factory
      */
     @Bean
@@ -122,6 +123,7 @@ public class OperationalMetadataConfig {
 
     /**
      * Return the Transaction Manager wrapper
+     *
      * @return the access manager
      */
     @Bean(name = "operationalMetadataAccess")
@@ -132,6 +134,7 @@ public class OperationalMetadataConfig {
 
     /**
      * Return the JPA Service Level Assessor uses to assess ServiceLevelAgreements
+     *
      * @return the service level agreement assessor
      */
     @Bean(name = "slaAssessor")

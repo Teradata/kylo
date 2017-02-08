@@ -41,13 +41,19 @@ import javax.ws.rs.NotFoundException;
  */
 public class NiFiConnectionsRestClientV1 extends AbstractNiFiConnectionsRestClient {
 
-    /** Path to a connection entity */
+    /**
+     * Path to a connection entity
+     */
     private static final String CONNECTION_PATH = "/connections/";
 
-    /** Path to a FlowFile queue entity */
+    /**
+     * Path to a FlowFile queue entity
+     */
     private static final String QUEUE_PATH = "/flowfile-queues/";
 
-    /** REST client for communicating with NiFi */
+    /**
+     * REST client for communicating with NiFi
+     */
     private final NiFiRestClientV1 client;
 
     /**
@@ -63,14 +69,14 @@ public class NiFiConnectionsRestClientV1 extends AbstractNiFiConnectionsRestClie
     @Override
     public Optional<ConnectionDTO> delete(@Nonnull final String processGroupId, @Nonnull final String connectionId) {
         return findEntityById(connectionId)
-                .flatMap(connection -> {
-                    final Long version = connection.getRevision().getVersion();
-                    try {
-                        return Optional.of(client.delete(CONNECTION_PATH + connectionId, ImmutableMap.of("version", version), ConnectionEntity.class).getComponent());
-                    } catch (final NotFoundException e) {
-                        return Optional.empty();
-                    }
-                });
+            .flatMap(connection -> {
+                final Long version = connection.getRevision().getVersion();
+                try {
+                    return Optional.of(client.delete(CONNECTION_PATH + connectionId, ImmutableMap.of("version", version), ConnectionEntity.class).getComponent());
+                } catch (final NotFoundException e) {
+                    return Optional.empty();
+                }
+            });
     }
 
     @Nonnull

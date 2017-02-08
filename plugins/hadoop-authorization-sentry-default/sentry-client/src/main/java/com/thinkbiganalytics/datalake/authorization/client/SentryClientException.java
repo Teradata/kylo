@@ -22,7 +22,6 @@ package com.thinkbiganalytics.datalake.authorization.client;
 
 /**
  * SentryClientException : Exception Supporting Class
- *
  */
 
 public class SentryClientException extends Exception {

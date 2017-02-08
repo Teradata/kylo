@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.security.auth.ad;
 
@@ -43,7 +43,7 @@ public class ActiveDirectoryLoginModuleTestConfig {
     public LoginConfiguration servicesLoginConfiguration() {
         return Mockito.mock(LoginConfiguration.class);
     }
-    
+
     @Primary
     @Bean(name = "uiActiveDirectoryLoginConfiguration")
     public LoginConfiguration uiLoginConfiguration() {

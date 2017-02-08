@@ -35,25 +35,21 @@ import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
  * Generic Auth Service Configuration for installing a login module to authenticate using an AuthenticationService.
  * To Override create a new Configuration Class importing this class
  * Example:
+ *
  * @Configuration
- * @Import(SimpleAuthConfig.class)
- * public class MyAuthConfig {
- *     @Bean(name = "authenticationService")
-       public  AuthenticationService authenticationService(){
-        return new MyAuthService();
-        }
- * }
+ * @Import(SimpleAuthConfig.class) public class MyAuthConfig {
+ * @Bean(name = "authenticationService") public  AuthenticationService authenticationService(){ return new MyAuthService(); } }
  */
 @Configuration
 @Profile("auth-simple")
 public class SimpleAuthConfig {
-    
+
     @Bean(name = "authenticationService")
     @ConfigurationProperties("authenticationService")
     public AuthenticationService authenticationService() {
         return new SimpleAuthenticationService();
     }
-    
+
     @Bean(name = "servicesLoginConfiguration")
     public LoginConfiguration servicesLoginConfiguration(LoginConfigurationBuilder builder) {
         // @formatter:off
@@ -68,7 +64,7 @@ public class SimpleAuthConfig {
 
         // @formatter:on
     }
-    
+
     @Bean(name = "uiServiceLoginConfiguration")
     public LoginConfiguration uiServiceLoginConfiguration(LoginConfigurationBuilder builder) {
         // @formatter:off

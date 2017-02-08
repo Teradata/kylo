@@ -60,13 +60,16 @@ public class TopNCase1Test extends ProfilerTest {
 
     }
 
+    @AfterClass
+    public static void tearDownClass() {
+        System.out.println("\t*** Completed run for TopNCase1Test ***");
+    }
 
     @Test
     public void testTopNSummaryCount() {
 
         Assert.assertEquals(5, items.size());
     }
-
 
     @Test
     public void testTopNValues() {
@@ -96,7 +99,6 @@ public class TopNCase1Test extends ProfilerTest {
         }
     }
 
-
     @Test
     public void testTopNValuesToWriteString() {
         String expectedRetVal = "1^AD^A25^B" +
@@ -106,11 +108,5 @@ public class TopNCase1Test extends ProfilerTest {
                                 "5^AC^A15^B";
 
         Assert.assertEquals(expectedRetVal, topNDataItemsString);
-    }
-
-
-    @AfterClass
-    public static void tearDownClass() {
-        System.out.println("\t*** Completed run for TopNCase1Test ***");
     }
 }

@@ -33,12 +33,12 @@ public class UppercaseStandardizer implements StandardizationPolicy {
         super();
     }
 
+    public static UppercaseStandardizer instance() {
+        return instance;
+    }
+
     @Override
     public String convertValue(String value) {
         return value.toUpperCase();
-    }
-
-    public static UppercaseStandardizer instance() {
-        return instance;
     }
 }

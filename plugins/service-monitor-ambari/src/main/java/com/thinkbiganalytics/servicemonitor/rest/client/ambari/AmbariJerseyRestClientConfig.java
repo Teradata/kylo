@@ -24,7 +24,6 @@ import com.thinkbiganalytics.rest.JerseyClientConfig;
 
 /**
  * Configuration for Ambari REST client
- *
  */
 public class AmbariJerseyRestClientConfig extends JerseyClientConfig {
 

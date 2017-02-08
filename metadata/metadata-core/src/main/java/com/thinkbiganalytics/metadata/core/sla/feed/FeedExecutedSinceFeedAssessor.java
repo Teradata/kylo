@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.core.sla.feed;
 
@@ -65,8 +65,8 @@ public class FeedExecutedSinceFeedAssessor extends MetadataMetricAssessor<FeedEx
         LOG.debug("Triggered feeds {}", triggeredFeeds);
 
         builder.metric(metric);
-        
-        if (! mainFeeds.isEmpty() && ! triggeredFeeds.isEmpty()) {
+
+        if (!mainFeeds.isEmpty() && !triggeredFeeds.isEmpty()) {
             Feed mainFeed = mainFeeds.get(0);
             Feed triggeredFeed = triggeredFeeds.get(0);
             List<FeedOperation> mainFeedOps = opsProvider.findLatestCompleted(mainFeed.getId());
@@ -107,7 +107,8 @@ public class FeedExecutedSinceFeedAssessor extends MetadataMetricAssessor<FeedEx
                             LOG.debug("Main feed is still running");
                             builder
                                 .result(AssessmentResult.SUCCESS)
-                                .message("Triggered feed " + triggeredFeed.getName() + " has executed since feed " + mainFeed.getName() + ", but main feed " + mainFeed.getName() + " is still running");
+                                .message(
+                                    "Triggered feed " + triggeredFeed.getName() + " has executed since feed " + mainFeed.getName() + ", but main feed " + mainFeed.getName() + " is still running");
                         } else {
                             LOG.debug("Main is not running");
                             builder

@@ -64,7 +64,9 @@ public class ServiceLevelAgreementActionAlertResponderFactory implements AlertRe
     private AlertProvider provider;
 
 
-    /** (non-Javadoc)
+    /**
+     * (non-Javadoc)
+     *
      * @see com.thinkbiganalytics.alerts.api.AlertResponder#alertChange(com.thinkbiganalytics.alerts.api.Alert, com.thinkbiganalytics.alerts.api.AlertResponse)
      */
     @Override

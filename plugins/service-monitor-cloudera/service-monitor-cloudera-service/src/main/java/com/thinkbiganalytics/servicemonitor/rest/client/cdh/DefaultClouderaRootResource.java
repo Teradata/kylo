@@ -36,7 +36,6 @@ import java.util.List;
 /**
  * Default implementation of ClouderaRootResource which knows how to
  * initialise service health status.
- *
  */
 public class DefaultClouderaRootResource implements ClouderaRootResource {
 

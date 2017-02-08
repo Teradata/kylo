@@ -30,7 +30,6 @@ import java.util.Map;
 
 /**
  * Utility to allow for application.properties to work with Nifi.
- *
  */
 public class NifiEnvironmentProperties {
 
@@ -49,6 +48,7 @@ public class NifiEnvironmentProperties {
 
     /**
      * return the property prefix along with the service name
+     *
      * @param serviceName the name of the service
      * @return the returned key for inspection with the application.properties
      */
@@ -58,8 +58,6 @@ public class NifiEnvironmentProperties {
 
     /**
      * for a given property return the serviceName
-     * @param envProperty
-     * @return
      */
     public static String serviceNameForEnvironmentProperty(String envProperty) {
         String prop = envProperty;
@@ -70,8 +68,6 @@ public class NifiEnvironmentProperties {
 
     /**
      * resolve the Nifi Property from the  env controllerServiceProperty
-     * @param envProperty
-     * @return
      */
     public static String environmentPropertyToControllerServiceProperty(String envProperty) {
         String prop = envProperty;
@@ -97,6 +93,7 @@ public class NifiEnvironmentProperties {
 
     /**
      * Return the property key from NiFi that can work with the application.properties
+     *
      * @param nifiPropertyKey the Nifi property
      * @return the formatted property to work with the application.properties
      */
@@ -109,6 +106,7 @@ public class NifiEnvironmentProperties {
 
     /**
      * Returns a collection of the Service Name along with the Map of nifi Properties stripping the ENVIRONMENT_PROPERTY_SERVICE_PREFIX from the properties
+     *
      * @param envProperties the map of environment (.properties) properties
      * @return the table of nifi ready properties
      */
@@ -128,8 +126,9 @@ public class NifiEnvironmentProperties {
 
     /**
      * Returns a map of properties for a given Nifi service
+     *
      * @param envProperties the .properties
-     * @param serviceName the service name to use/look for as the key
+     * @param serviceName   the service name to use/look for as the key
      * @return the map of properties ready for NiFi use, inspected from the environment properties
      */
     public static Map<String, String> getEnvironmentControllerServiceProperties(Map<String, String> envProperties, String serviceName) {

@@ -219,7 +219,7 @@ public class JcrUserProvider extends BaseJcrProvider<Object, Serializable> imple
      * Creates a new group with the specified name.
      *
      * @param groupName the name of the group
-     * @param ensure {@code true} to return the group if it already exists, or {@code false} to throw an exception
+     * @param ensure    {@code true} to return the group if it already exists, or {@code false} to throw an exception
      * @return the group
      * @throws GroupAlreadyExistsException if the group already exists and {@code ensure} is {@code false}
      * @throws MetadataRepositoryException if the group could not be created
@@ -251,9 +251,9 @@ public class JcrUserProvider extends BaseJcrProvider<Object, Serializable> imple
      * Creates a new user with the specified name.
      *
      * @param username the name of the user
-     * @param ensure {@code true} to return the user if it already exists, or {@code false} to throw an exception
+     * @param ensure   {@code true} to return the user if it already exists, or {@code false} to throw an exception
      * @return the user
-     * @throws UserAlreadyExistsException if the user already exists and {@code ensure} is {@code false}
+     * @throws UserAlreadyExistsException  if the user already exists and {@code ensure} is {@code false}
      * @throws MetadataRepositoryException if the user could not be created
      */
     @Nonnull
@@ -292,13 +292,13 @@ public class JcrUserProvider extends BaseJcrProvider<Object, Serializable> imple
     @Nonnull
     @Override
     public UserGroup updateGroup(@Nonnull final UserGroup group) {
-        return (UserGroup)update(group);
+        return (UserGroup) update(group);
     }
 
     @Nonnull
     @Override
     public User updateUser(@Nonnull final User user) {
-        return (User)update(user);
+        return (User) update(user);
     }
 
     /**

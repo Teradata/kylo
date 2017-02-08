@@ -29,37 +29,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PartitionField {
 
-    public static enum PARTITON_FORMULA {
-        YEAR("int"),MONTH("int"),DAY("int"),HOUR("int"),MIN("int"),SEC("int"),VAL("string",true);
-
-
-        PARTITON_FORMULA(String defaultDataType) {
-            this.formula = this.name();
-            this.defaultDataType = defaultDataType;
-            this.useColumnDataType = false;
-        }
-        PARTITON_FORMULA(String defaultDataType, boolean useColumnDataType) {
-            this.formula = this.name().toLowerCase();
-            this.defaultDataType =defaultDataType;
-            this.useColumnDataType = useColumnDataType;
-        }
-        private boolean useColumnDataType;
-        private String formula;
-        private String defaultDataType;
-        public String dataType(String columnDataType){
-            if(useColumnDataType && columnDataType != null){
-                return columnDataType;
-            }
-            else {
-                return defaultDataType;
-            }
-        }
-
-        public String getFormula() {
-            return formula;
-        }
-    }
-
     private int position;
     private String sourceField;
     private String sourceDataType;
@@ -106,28 +75,57 @@ public class PartitionField {
         this.formula = formula;
     }
 
-
     @JsonIgnore
-    public String asPartitionStructure(){
+    public String asPartitionStructure() {
         PARTITON_FORMULA f = PARTITON_FORMULA.valueOf(getFormula().toUpperCase());
-        if(f != null){
-           return this.field+"|"+f.dataType(this.sourceDataType);
+        if (f != null) {
+            return this.field + "|" + f.dataType(this.sourceDataType);
         }
         return null;
     }
 
     @JsonIgnore
-    public String asPartitionSpec(){
+    public String asPartitionSpec() {
         PARTITON_FORMULA f = PARTITON_FORMULA.valueOf(getFormula().toUpperCase());
-        if(f != null){
-            if(f.equals(PARTITON_FORMULA.VAL)) {
-                return this.field+"|"+f.dataType(this.sourceDataType)+"|"+this.sourceField.toLowerCase();
-            }
-            else {
-                return this.field+"|"+f.dataType(this.sourceDataType)+"|"+f.name().toLowerCase()+"("+this.sourceField+")";
+        if (f != null) {
+            if (f.equals(PARTITON_FORMULA.VAL)) {
+                return this.field + "|" + f.dataType(this.sourceDataType) + "|" + this.sourceField.toLowerCase();
+            } else {
+                return this.field + "|" + f.dataType(this.sourceDataType) + "|" + f.name().toLowerCase() + "(" + this.sourceField + ")";
             }
         }
 
         return null;
+    }
+
+    public static enum PARTITON_FORMULA {
+        YEAR("int"), MONTH("int"), DAY("int"), HOUR("int"), MIN("int"), SEC("int"), VAL("string", true);
+
+
+        private boolean useColumnDataType;
+        private String formula;
+        private String defaultDataType;
+        PARTITON_FORMULA(String defaultDataType) {
+            this.formula = this.name();
+            this.defaultDataType = defaultDataType;
+            this.useColumnDataType = false;
+        }
+        PARTITON_FORMULA(String defaultDataType, boolean useColumnDataType) {
+            this.formula = this.name().toLowerCase();
+            this.defaultDataType = defaultDataType;
+            this.useColumnDataType = useColumnDataType;
+        }
+
+        public String dataType(String columnDataType) {
+            if (useColumnDataType && columnDataType != null) {
+                return columnDataType;
+            } else {
+                return defaultDataType;
+            }
+        }
+
+        public String getFormula() {
+            return formula;
+        }
     }
 }

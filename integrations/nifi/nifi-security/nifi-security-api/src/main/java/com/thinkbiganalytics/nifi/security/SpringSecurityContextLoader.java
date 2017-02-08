@@ -35,6 +35,21 @@ import javax.annotation.Nonnull;
 public class SpringSecurityContextLoader {
 
     /**
+     * Spring application context
+     */
+    @Nonnull
+    private final ApplicationContext context;
+
+    /**
+     * Constructs a {@code SpringSecurityContextLoader} using the specified Spring application context.
+     *
+     * @param context the Spring application context
+     */
+    private SpringSecurityContextLoader(@Nonnull final ApplicationContext context) {
+        this.context = context;
+    }
+
+    /**
      * Creates a new Security Context Loader from the specified application context.
      *
      * @param applicationContext the application context
@@ -76,19 +91,6 @@ public class SpringSecurityContextLoader {
         final GenericApplicationContext context = new GenericApplicationContext(beanFactory);
         context.refresh();
         return create(context);
-    }
-
-    /** Spring application context */
-    @Nonnull
-    private final ApplicationContext context;
-
-    /**
-     * Constructs a {@code SpringSecurityContextLoader} using the specified Spring application context.
-     *
-     * @param context the Spring application context
-     */
-    private SpringSecurityContextLoader(@Nonnull final ApplicationContext context) {
-        this.context = context;
     }
 
     /**

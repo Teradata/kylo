@@ -34,7 +34,6 @@ import javax.inject.Inject;
 
 /**
  * Email the users specified in the incoming Configuration class about the SLA violation
- *
  */
 @ClassNameChange(classNames = {"com.thinkbiganalytics.metadata.sla.alerts.EmailServiceLevelAgreementAction"})
 public class EmailServiceLevelAgreementAction implements ServiceLevelAgreementAction<EmailServiceLevelAgreementActionConfiguration> {
@@ -49,7 +48,7 @@ public class EmailServiceLevelAgreementAction implements ServiceLevelAgreementAc
         String desc = ServiceLevelAssessmentAlertUtil.getDescription(assessment);
         String slaName = assessment.getAgreement().getName();
         String email = actionConfiguration.getEmailAddresses();
-        log.info("Responding to SLA violation.  About to send an email for SLA {} ",slaName);
+        log.info("Responding to SLA violation.  About to send an email for SLA {} ", slaName);
         //mail it
         emailService.sendMail(email, "SLA Violated: " + slaName, desc);
 
@@ -61,9 +60,9 @@ public class EmailServiceLevelAgreementAction implements ServiceLevelAgreementAc
      *
      * @return a validation object containing information if the configuration is valid
      */
-    public ServiceLevelAgreementActionValidation validateConfiguration(){
+    public ServiceLevelAgreementActionValidation validateConfiguration() {
 
-        if(emailService.isConfigured()){
+        if (emailService.isConfigured()) {
             return ServiceLevelAgreementActionValidation.VALID;
         } else {
             return new ServiceLevelAgreementActionValidation(false, "Email connection information is not setup.  Please contact an administrator to set this up.");

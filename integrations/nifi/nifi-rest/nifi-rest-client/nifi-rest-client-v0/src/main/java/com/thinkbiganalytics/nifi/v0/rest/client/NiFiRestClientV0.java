@@ -60,41 +60,61 @@ import javax.ws.rs.core.Form;
  */
 public class NiFiRestClientV0 extends JerseyRestClient implements NiFiRestClient {
 
-    /** Parameter name for the revision client ID */
+    /**
+     * Parameter name for the revision client ID
+     */
     private static final String CLIENT_ID = "clientId";
 
-    /** Parameter name for the revision version */
+    /**
+     * Parameter name for the revision version
+     */
     private static final String VERSION = "version";
 
-    /** NiFi REST client configuration */
+    /**
+     * NiFi REST client configuration
+     */
     @Nonnull
     private final NifiRestClientConfig clientConfig;
 
-    /** NiFi Connections REST client */
+    /**
+     * NiFi Connections REST client
+     */
     @Nullable
     private NiFiConnectionsRestClientV0 connections;
 
-    /** NiFi Controller Services REST client */
+    /**
+     * NiFi Controller Services REST client
+     */
     @Nullable
     private NiFiControllerServicesRestClientV0 controllerServices;
 
-    /** NiFi Ports REST client */
+    /**
+     * NiFi Ports REST client
+     */
     @Nullable
     private NiFiPortsRestClientV0 ports;
 
-    /** NiFi Process Groups REST client */
+    /**
+     * NiFi Process Groups REST client
+     */
     @Nullable
     private NiFiProcessGroupsRestClientV0 processGroups;
 
-    /** NiFi Processors REST client */
+    /**
+     * NiFi Processors REST client
+     */
     @Nullable
     private NiFiProcessorsRestClientV0 processors;
 
-    /** NiFi Templates REST client */
+    /**
+     * NiFi Templates REST client
+     */
     @Nullable
     private NiFiTemplatesRestClientV0 templates;
 
-    /** NiFi Flows REST client */
+    /**
+     * NiFi Flows REST client
+     */
     @Nullable
     private NiFiFlowVisitorClient flows;
 
@@ -164,9 +184,9 @@ public class NiFiRestClientV0 extends JerseyRestClient implements NiFiRestClient
     @Override
     public List<BulletinDTO> getBulletins(@Nonnull final String sourceId) {
         return Optional.ofNullable(get("/controller/bulletin-board", ImmutableMap.of("sourceId", sourceId), BulletinBoardEntity.class))
-                .map(BulletinBoardEntity::getBulletinBoard)
-                .map(BulletinBoardDTO::getBulletins)
-                .orElse(Collections.emptyList());
+            .map(BulletinBoardEntity::getBulletinBoard)
+            .map(BulletinBoardDTO::getBulletins)
+            .orElse(Collections.emptyList());
     }
 
     @Nonnull
@@ -296,7 +316,7 @@ public class NiFiRestClientV0 extends JerseyRestClient implements NiFiRestClient
      */
     private Object updateEntityForSave(@Nullable final Object object) {
         if (object instanceof Entity) {
-            ((Entity)object).setRevision(getRevision());
+            ((Entity) object).setRevision(getRevision());
         }
         return object;
     }

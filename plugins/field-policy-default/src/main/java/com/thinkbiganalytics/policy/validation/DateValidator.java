@@ -34,12 +34,10 @@ import org.slf4j.LoggerFactory;
 @Validator(name = "Date", description = "Validate Hive-friendly date format")
 public class DateValidator implements ValidationPolicy<String> {
 
-    private static Logger log = LoggerFactory.getLogger(DateValidator.class);
-
     private static final DateValidator instance = new DateValidator();
-
     private static final DateTimeFormatter DATE = DateTimeFormat.forPattern("yyyy-MM-dd");
     private static final int LENGTH = 10;
+    private static Logger log = LoggerFactory.getLogger(DateValidator.class);
 
     private DateValidator() {
         super();

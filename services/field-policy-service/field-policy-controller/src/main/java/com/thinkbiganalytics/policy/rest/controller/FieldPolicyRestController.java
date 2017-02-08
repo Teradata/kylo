@@ -57,13 +57,14 @@ public class FieldPolicyRestController {
     @ApiResponses(
         @ApiResponse(code = 200, message = "Returns the standardization policies.", response = FieldStandardizationRule.class, responseContainer = "List")
     )
-    public Response getStandardizationPolicies(){
+    public Response getStandardizationPolicies() {
         List<FieldStandardizationRule> standardizationRules = FieldPolicyCache.getStandardizationPolicies();
         return Response.ok(standardizationRules).build();
     }
 
     /**
      * Return a list of possible Validation rules available for an end user to configure in the feed user interface
+     *
      * @return a list of possible Validation rules available for an end user to configure in the feed user interface
      */
     @GET
@@ -73,7 +74,7 @@ public class FieldPolicyRestController {
     @ApiResponses(
         @ApiResponse(code = 200, message = "Returns the validation policies.", response = FieldValidationRule.class, responseContainer = "List")
     )
-    public Response getValidationPolicies(){
+    public Response getValidationPolicies() {
         List<FieldValidationRule> standardizationRules = FieldPolicyCache.getValidationPolicies();
         return Response.ok(standardizationRules).build();
     }

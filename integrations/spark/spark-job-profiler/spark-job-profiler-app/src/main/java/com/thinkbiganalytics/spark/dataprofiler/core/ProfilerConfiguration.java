@@ -104,6 +104,11 @@ public class ProfilerConfiguration {
     public static String OUTPUT_TABLE_PARTITION_COLUMN_NAME = "processing_dttm";
 
 
+    /* no instantiation */
+    private ProfilerConfiguration() {
+
+    }
+
     /**
      * Helper method for unit testing
      */
@@ -120,11 +125,6 @@ public class ProfilerConfiguration {
         INPUT_AND_OUTPUT_TABLE_PARTITION_KEY = "partitionKey";
         INPUT_TABLE_PARTITION_COLUMN_NAME = "processing_dttm";
         OUTPUT_TABLE_PARTITION_COLUMN_NAME = "processing_dttm";
-    }
-
-    /* no instantiation */
-    private ProfilerConfiguration() {
-
     }
 
 }

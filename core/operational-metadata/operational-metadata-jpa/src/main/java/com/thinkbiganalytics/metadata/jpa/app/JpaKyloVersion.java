@@ -66,8 +66,6 @@ public class JpaKyloVersion extends AbstractAuditedEntity implements KyloVersion
 
     /**
      * create a new version with a supplied major and minor version
-     * @param majorVersion
-     * @param minorVersion
      */
     public JpaKyloVersion(String majorVersion, String minorVersion) {
         this.majorVersion = majorVersion;
@@ -76,6 +74,7 @@ public class JpaKyloVersion extends AbstractAuditedEntity implements KyloVersion
 
     /**
      * return the unique id for this version entry
+     *
      * @return the unique id for this version entry
      */
     public UUID getId() {
@@ -84,7 +83,7 @@ public class JpaKyloVersion extends AbstractAuditedEntity implements KyloVersion
 
     /**
      * update this version to the new passed in version
-     * @param v
+     *
      * @return the newly updated version
      */
     public KyloVersion update(KyloVersion v) {
@@ -106,6 +105,7 @@ public class JpaKyloVersion extends AbstractAuditedEntity implements KyloVersion
 
     /**
      * Return the major version of Kylo
+     *
      * @return the major version
      */
     public String getMajorVersion() {
@@ -125,7 +125,6 @@ public class JpaKyloVersion extends AbstractAuditedEntity implements KyloVersion
     }
 
     /**
-     *
      * @return the major version number
      */
     @Override

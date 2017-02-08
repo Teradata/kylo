@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.audit.rest.model;
 
@@ -33,7 +33,7 @@ import java.io.Serializable;
 public class AuditLogEntry implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    
+
     private String id;
     private DateTime createdTime;
     private String user;
@@ -91,5 +91,5 @@ public class AuditLogEntry implements Serializable {
     public void setEntityId(String entityId) {
         this.entityId = entityId;
     }
-    
+
 }

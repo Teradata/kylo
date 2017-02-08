@@ -25,15 +25,31 @@ package com.thinkbiganalytics.scheduler;
  */
 public class JobSchedulerEvent {
 
-    public enum EVENT {
-        SCHEDULER_STARTED, SCHEDULED_JOB, PAUSE_JOB, RESUME_JOB, PAUSE_ALL_JOBS, RESUME_ALL_JOBS, TRIGGER_JOB, DELETE_JOB;
-    }
-
     private EVENT event;
     private JobIdentifier jobIdentifier;
     private TriggerIdentifier triggerIdentifier;
     private String message;
+    public JobSchedulerEvent(EVENT event) {
+        this.event = event;
+    }
 
+
+    public JobSchedulerEvent(EVENT event, JobIdentifier jobIdentifier, TriggerIdentifier triggerIdentifier, String message) {
+        this.event = event;
+        this.jobIdentifier = jobIdentifier;
+        this.triggerIdentifier = triggerIdentifier;
+        this.message = message;
+    }
+
+    public JobSchedulerEvent(EVENT event, JobIdentifier jobIdentifier) {
+        this.event = event;
+        this.jobIdentifier = jobIdentifier;
+    }
+
+    public JobSchedulerEvent(EVENT event, TriggerIdentifier triggerIdentifier) {
+        this.event = event;
+        this.triggerIdentifier = triggerIdentifier;
+    }
 
     public static JobSchedulerEvent pauseAllJobsEvent() {
         return new JobSchedulerEvent(EVENT.PAUSE_ALL_JOBS);
@@ -63,32 +79,9 @@ public class JobSchedulerEvent {
         return new JobSchedulerEvent(EVENT.TRIGGER_JOB, jobIdentifier);
     }
 
-
-    public JobSchedulerEvent(EVENT event) {
-        this.event = event;
-    }
-
-    public JobSchedulerEvent(EVENT event, JobIdentifier jobIdentifier, TriggerIdentifier triggerIdentifier, String message) {
-        this.event = event;
-        this.jobIdentifier = jobIdentifier;
-        this.triggerIdentifier = triggerIdentifier;
-        this.message = message;
-    }
-
-    public JobSchedulerEvent(EVENT event, JobIdentifier jobIdentifier) {
-        this.event = event;
-        this.jobIdentifier = jobIdentifier;
-    }
-
-    public JobSchedulerEvent(EVENT event, TriggerIdentifier triggerIdentifier) {
-        this.event = event;
-        this.triggerIdentifier = triggerIdentifier;
-    }
-
     public static JobSchedulerEvent schedulerStartedEvent() {
         return new JobSchedulerEvent(EVENT.SCHEDULER_STARTED);
     }
-
 
     public String getMessage() {
         return message;
@@ -131,5 +124,9 @@ public class JobSchedulerEvent {
         sb.append(", message='").append(message).append('\'');
         sb.append('}');
         return sb.toString();
+    }
+
+    public enum EVENT {
+        SCHEDULER_STARTED, SCHEDULED_JOB, PAUSE_JOB, RESUME_JOB, PAUSE_ALL_JOBS, RESUME_ALL_JOBS, TRIGGER_JOB, DELETE_JOB;
     }
 }

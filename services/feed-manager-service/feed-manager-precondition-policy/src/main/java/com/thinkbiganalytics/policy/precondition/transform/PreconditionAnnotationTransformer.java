@@ -41,6 +41,10 @@ public class PreconditionAnnotationTransformer
 
     private static final PreconditionAnnotationTransformer instance = new PreconditionAnnotationTransformer();
 
+    public static PreconditionAnnotationTransformer instance() {
+        return instance;
+    }
+
     @Override
     public PreconditionRule buildUiModel(PreconditionPolicy annotation, Precondition policy,
                                          List<FieldRuleProperty> properties) {
@@ -63,9 +67,5 @@ public class PreconditionAnnotationTransformer
     @Override
     public Class<PreconditionPolicy> getAnnotationClass() {
         return PreconditionPolicy.class;
-    }
-
-    public static PreconditionAnnotationTransformer instance() {
-        return instance;
     }
 }

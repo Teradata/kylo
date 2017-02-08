@@ -70,14 +70,20 @@ public class SparkShellProxyController {
 
     private static final Logger log = LoggerFactory.getLogger(SparkShellProxyController.class);
 
-    /** Resources for error messages */
+    /**
+     * Resources for error messages
+     */
     private static final ResourceBundle STRINGS = ResourceBundle.getBundle("spark-shell");
 
-    /** Manages Spark Shell processes */
+    /**
+     * Manages Spark Shell processes
+     */
     @Inject
     private SparkShellProcessManager processManager;
 
-    /** Communicates with Spark Shell processes */
+    /**
+     * Communicates with Spark Shell processes
+     */
     @Inject
     private SparkShellRestClient restClient;
 
@@ -93,10 +99,10 @@ public class SparkShellProxyController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Fetches the status of a transformation.")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Returns the status of the transformation.", response = TransformResponse.class),
-            @ApiResponse(code = 404, message = "The transformation does not exist.", response = RestResponseStatus.class),
-            @ApiResponse(code = 500, message = "There was a problem accessing the data.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 200, message = "Returns the status of the transformation.", response = TransformResponse.class),
+                      @ApiResponse(code = 404, message = "The transformation does not exist.", response = RestResponseStatus.class),
+                      @ApiResponse(code = 500, message = "There was a problem accessing the data.", response = RestResponseStatus.class)
+                  })
     @Nonnull
     public Response getTable(@Nonnull @PathParam("table") final String id) {
         // Forward to the Spark Shell process
@@ -126,9 +132,9 @@ public class SparkShellProxyController {
     @Path("/start")
     @ApiOperation("Starts a new Spark Shell process for the current user if one is not already running.")
     @ApiResponses({
-            @ApiResponse(code = 202, message = "The Spark Shell process will be started."),
-            @ApiResponse(code = 500, message = "The Spark Shell process could not be started.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 202, message = "The Spark Shell process will be started."),
+                      @ApiResponse(code = 500, message = "The Spark Shell process could not be started.", response = RestResponseStatus.class)
+                  })
     @Nonnull
     public Response start() {
         final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -151,11 +157,11 @@ public class SparkShellProxyController {
     @Consumes(MediaType.APPLICATION_JSON)
     @ApiOperation("Registers a new Spark Shell process with Kylo.")
     @ApiResponses({
-            @ApiResponse(code = 204, message = "The Spark Shell process has been successfully registered with this server."),
-            @ApiResponse(code = 401, message = "The provided credentials are invalid.", response = RestResponseStatus.class),
-            @ApiResponse(code = 403, message = "The Spark Shell process does not have permission to register with this server.", response = RestResponseStatus.class),
-            @ApiResponse(code = 500, message = "The Spark Shell process could not be registered with this server.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 204, message = "The Spark Shell process has been successfully registered with this server."),
+                      @ApiResponse(code = 401, message = "The provided credentials are invalid.", response = RestResponseStatus.class),
+                      @ApiResponse(code = 403, message = "The Spark Shell process does not have permission to register with this server.", response = RestResponseStatus.class),
+                      @ApiResponse(code = 500, message = "The Spark Shell process could not be registered with this server.", response = RestResponseStatus.class)
+                  })
     @Nonnull
     public Response register(@Nonnull final RegistrationRequest registration) {
         final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -179,10 +185,10 @@ public class SparkShellProxyController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Queries a Hive table and applies a series of transformations on the rows.")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Returns the status of the transformation.", response = TransformResponse.class),
-            @ApiResponse(code = 400, message = "The request could not be parsed.", response = RestResponseStatus.class),
-            @ApiResponse(code = 500, message = "There was a problem processing the data.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 200, message = "Returns the status of the transformation.", response = TransformResponse.class),
+                      @ApiResponse(code = 400, message = "The request could not be parsed.", response = RestResponseStatus.class),
+                      @ApiResponse(code = 500, message = "There was a problem processing the data.", response = RestResponseStatus.class)
+                  })
     @Nonnull
     public Response transform(@ApiParam(value = "The request indicates the transformations to apply to the source table and how the user wishes the results to be displayed. Exactly one parent or"
                                                 + " source must be specified.", required = true)

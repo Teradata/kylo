@@ -35,72 +35,72 @@ import java.util.Map;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DefaultJobInfo implements JobInfo {
 
-  private JobIdentifier jobIdentifier;
-  private List<TriggerInfo> triggers;
-  private String description;
-  private Class jobClass;
-  @JsonIgnore
-  private Map<String, Object> jobData;
+    private JobIdentifier jobIdentifier;
+    private List<TriggerInfo> triggers;
+    private String description;
+    private Class jobClass;
+    @JsonIgnore
+    private Map<String, Object> jobData;
 
-  public DefaultJobInfo() {
+    public DefaultJobInfo() {
 
-  }
+    }
 
-  public DefaultJobInfo(JobIdentifier jobIdentifier) {
-    this.jobIdentifier = jobIdentifier;
-  }
+    public DefaultJobInfo(JobIdentifier jobIdentifier) {
+        this.jobIdentifier = jobIdentifier;
+    }
 
-  @Override
-  public JobIdentifier getJobIdentifier() {
-    return jobIdentifier;
-  }
+    @Override
+    public JobIdentifier getJobIdentifier() {
+        return jobIdentifier;
+    }
 
-  @Override
-  public void setJobIdentifier(JobIdentifier jobIdentifier) {
-    this.jobIdentifier = jobIdentifier;
-  }
-
-
-  @Override
-  public List<TriggerInfo> getTriggers() {
-    return triggers;
-  }
-
-  @Override
-  public void setTriggers(List<TriggerInfo> triggers) {
-    this.triggers = triggers;
-  }
+    @Override
+    public void setJobIdentifier(JobIdentifier jobIdentifier) {
+        this.jobIdentifier = jobIdentifier;
+    }
 
 
-  @Override
-  public String getDescription() {
-    return description;
-  }
+    @Override
+    public List<TriggerInfo> getTriggers() {
+        return triggers;
+    }
 
-  @Override
-  public void setDescription(String description) {
-    this.description = description;
-  }
-
-
-  @Override
-  public Class getJobClass() {
-    return jobClass;
-  }
-
-  @Override
-  public void setJobClass(Class jobClass) {
-    this.jobClass = jobClass;
-  }
+    @Override
+    public void setTriggers(List<TriggerInfo> triggers) {
+        this.triggers = triggers;
+    }
 
 
-  @Override
-  public Map<String, Object> getJobData() {
-    return jobData;
-  }
+    @Override
+    public String getDescription() {
+        return description;
+    }
 
-  @Override
-  public void setJobData(Map<String, Object> jobData) {
-    this.jobData = jobData;
-  }
+    @Override
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+
+    @Override
+    public Class getJobClass() {
+        return jobClass;
+    }
+
+    @Override
+    public void setJobClass(Class jobClass) {
+        this.jobClass = jobClass;
+    }
+
+
+    @Override
+    public Map<String, Object> getJobData() {
+        return jobData;
+    }
+
+    @Override
+    public void setJobData(Map<String, Object> jobData) {
+        this.jobData = jobData;
+    }
 }

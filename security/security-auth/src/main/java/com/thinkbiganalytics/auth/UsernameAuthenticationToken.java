@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.auth;
 
@@ -23,11 +23,11 @@ package com.thinkbiganalytics.auth;
  * #L%
  */
 
-import java.util.Collection;
-
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
+
+import java.util.Collection;
 
 /**
  * A type of token representing only a username that must be validated.  This implementation
@@ -36,15 +36,13 @@ import org.springframework.security.core.GrantedAuthority;
 public class UsernameAuthenticationToken extends AbstractAuthenticationToken {
 
     private static final long serialVersionUID = 3803881659484269062L;
-    
+
     private UsernamePasswordAuthenticationToken wrappedToken;
 
     /**
      * This constructor can be safely used by any code that wishes to create a
      * <code>UsernameAuthenticationToken</code>, as the {@link #isAuthenticated()}
      * will return <code>false</code>.
-     * 
-     * @param principal
      */
     public UsernameAuthenticationToken(Object principal) {
         super(null);
@@ -56,9 +54,6 @@ public class UsernameAuthenticationToken extends AbstractAuthenticationToken {
      * <code>AuthenticationProvider</code> implementations that are satisfied with
      * producing a trusted (i.e. {@link #isAuthenticated()} = <code>true</code>)
      * authentication token.
-     *
-     * @param principal 
-     * @param authorities
      */
     public UsernameAuthenticationToken(Object principal, Collection<? extends GrantedAuthority> authorities) {
         super(authorities);
@@ -80,7 +75,7 @@ public class UsernameAuthenticationToken extends AbstractAuthenticationToken {
     public Object getPrincipal() {
         return this.wrappedToken.getPrincipal();
     }
-    
+
     /**
      * @return the wrappedToken the wrapped UsernamePasswordAuthenticationToken
      */

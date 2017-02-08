@@ -32,18 +32,18 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * A security context that is in effect when an operation is being executed with 
+ * A security context that is in effect when an operation is being executed with
  * the credential authenticated via Spring security.
  */
 public class SpringSecurityContext implements SecurityContext {
-    
+
     private final Authentication authentication;
     private final Set<Principal> principals;
 
     public SpringSecurityContext(Authentication auth) {
         this(auth, Collections.emptySet());
     }
-    
+
     public SpringSecurityContext(Authentication auth, Collection<Principal> additionalPrincipals) {
         this.authentication = auth;
         this.principals = Collections.unmodifiableSet(new HashSet<>(additionalPrincipals));
@@ -53,7 +53,7 @@ public class SpringSecurityContext implements SecurityContext {
     public String getUserName() {
         return this.authentication.getName();
     }
-    
+
     @Override
     public boolean isAnonymous() {
         return false;
@@ -74,7 +74,7 @@ public class SpringSecurityContext implements SecurityContext {
                 }
             }
         });
-        
+
         if (matched) {
             return true;
         } else {

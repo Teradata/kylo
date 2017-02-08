@@ -37,17 +37,25 @@ import java.util.stream.Collectors;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FeedDataTransformation {
 
-    /** Model for the flowchart */
+    /**
+     * Model for the flowchart
+     */
     private Map<String, Object> chartViewModel;
 
-    /** Spark script */
+    /**
+     * Spark script
+     */
     @MetadataField(description = "The Data Transformation Spark Script")
     private String dataTransformScript;
 
-    /** SQL query */
+    /**
+     * SQL query
+     */
     private String sql;
 
-    /** List of Spark Shell states */
+    /**
+     * List of Spark Shell states
+     */
     private List<Map<String, Object>> states;
 
     /**
@@ -123,12 +131,12 @@ public class FeedDataTransformation {
     }
 
     @JsonIgnore
-    public Set<String> getTableNamesFromViewModel(){
+    public Set<String> getTableNamesFromViewModel() {
         Set<String> tables = new HashSet<>();
-        if(chartViewModel != null){
-            Collection<Map<String,Object>> nodes = (Collection<Map<String,Object>>)chartViewModel.get("nodes");
-            if(nodes != null){
-                tables = nodes.stream().map(node -> (String)node.get("name")).collect(Collectors.toSet());
+        if (chartViewModel != null) {
+            Collection<Map<String, Object>> nodes = (Collection<Map<String, Object>>) chartViewModel.get("nodes");
+            if (nodes != null) {
+                tables = nodes.stream().map(node -> (String) node.get("name")).collect(Collectors.toSet());
             }
         }
         return tables;

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.api.datasource;
 
@@ -35,20 +35,24 @@ import java.util.Set;
  *
  */
 public interface Datasource extends Serializable {
-    
-    interface ID extends Serializable {};
-    
+
     ID getId();
-    
+
+    ;
+
     String getName();
-    
+
     String getDescription();
-    
+
     DateTime getCreatedTime();
-    
+
     Set<? extends FeedSource> getFeedSources();
-    
+
     Set<? extends FeedDestination> getFeedDestinations();
+
+    interface ID extends Serializable {
+
+    }
 
 
 }

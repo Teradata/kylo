@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.sla.api;
 
@@ -25,9 +25,9 @@ package com.thinkbiganalytics.metadata.sla.api;
 
 /**
  * Thrown when there is a problem when attempting to assess an SLA.
- *  
  */
 public class ServiceLevelAssessmentException extends RuntimeException {
+
     private static final long serialVersionUID = 7236695892099702703L;
 
     public ServiceLevelAssessmentException(String message, Throwable cause) {

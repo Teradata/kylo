@@ -78,6 +78,15 @@ import javax.jcr.Repository;
 public class TestSpringConfiguration {
 
     @Bean
+    public static PropertySourcesPlaceholderConfigurer properties() throws Exception {
+        final PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer = new PropertySourcesPlaceholderConfigurer();
+        Properties properties = new Properties();
+        properties.setProperty("nifi.remove.inactive.versioned.feeds", "true");
+        propertySourcesPlaceholderConfigurer.setProperties(properties);
+        return propertySourcesPlaceholderConfigurer;
+    }
+
+    @Bean
     public AccessController accessController() {
         return Mockito.mock(AccessController.class);
     }
@@ -172,12 +181,12 @@ public class TestSpringConfiguration {
         return Mockito.mock(Repository.class);
     }
 
+    ;
+
     @Bean
     public TransactionManagerLookup txnLookup() {
         return Mockito.mock(TransactionManagerLookup.class);
     }
-
-    ;
 
     @Bean
     public JcrMetadataAccess jcrMetadataAccess() {
@@ -212,12 +221,12 @@ public class TestSpringConfiguration {
 
             @Override
             public <R> R commit(MetadataCommand<R> cmd, MetadataRollbackCommand rollbackCmd, Principal... principals) {
-                return commit(cmd,principals);
+                return commit(cmd, principals);
             }
 
             @Override
             public void commit(MetadataAction action, MetadataRollbackAction rollbackAction, Principal... principals) {
-                commit(action,principals);
+                commit(action, principals);
             }
 
             @Override
@@ -230,7 +239,6 @@ public class TestSpringConfiguration {
             }
         };
     }
-
 
     @Bean
     MetadataAccess metadataAccess() {
@@ -265,12 +273,12 @@ public class TestSpringConfiguration {
 
             @Override
             public <R> R commit(MetadataCommand<R> cmd, MetadataRollbackCommand rollbackCmd, Principal... principals) {
-                return commit(cmd,principals);
+                return commit(cmd, principals);
             }
 
             @Override
             public void commit(MetadataAction action, MetadataRollbackAction rollbackAction, Principal... principals) {
-                commit(action,principals);
+                commit(action, principals);
             }
 
             @Override
@@ -289,7 +297,6 @@ public class TestSpringConfiguration {
         return new InMemoryDatasourceProvider();
     }
 
-
     @Bean
     public FeedManagerFeedService feedManagerFeedService() {
         return new InMemoryFeedManagerFeedService();
@@ -304,7 +311,6 @@ public class TestSpringConfiguration {
     FeedManagerTemplateService feedManagerTemplateService() {
         return new InMemoryFeedManagerTemplateService();
     }
-
 
     @Bean
     NifiRestClientConfig nifiRestClientConfig() {
@@ -334,15 +340,5 @@ public class TestSpringConfiguration {
     @Bean
     NiFiPropertyDescriptorTransform propertyDescriptorTransform() {
         return new NiFiPropertyDescriptorTransformV1();
-    }
-
-
-    @Bean
-    public static PropertySourcesPlaceholderConfigurer properties() throws Exception {
-        final PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer = new PropertySourcesPlaceholderConfigurer();
-        Properties properties = new Properties();
-        properties.setProperty("nifi.remove.inactive.versioned.feeds", "true");
-        propertySourcesPlaceholderConfigurer.setProperties(properties);
-        return propertySourcesPlaceholderConfigurer;
     }
 }

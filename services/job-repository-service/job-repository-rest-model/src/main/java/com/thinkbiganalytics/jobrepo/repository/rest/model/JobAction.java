@@ -22,9 +22,9 @@ package com.thinkbiganalytics.jobrepo.repository.rest.model;
 
 /**
  * Store data for job repository requests to identify what should be returned back in the response
- *
  */
 public class JobAction {
+
     private String action;
     private boolean includeSteps;
 

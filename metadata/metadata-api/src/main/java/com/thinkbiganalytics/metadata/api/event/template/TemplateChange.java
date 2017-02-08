@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.api.event.template;
 
@@ -34,18 +34,18 @@ import java.util.Objects;
  *
  */
 public class TemplateChange extends MetadataChange {
-    
+
     private static final long serialVersionUID = 1L;
-    
+
     private final FeedManagerTemplate.ID templateId;
     private final FeedManagerTemplate.State templateState;
-    
+
     public TemplateChange(ChangeType change, String descr, ID templateId, State state) {
         super(change, descr);
         this.templateId = templateId;
         this.templateState = state;
     }
-    
+
     public TemplateChange(ChangeType change, ID templateId, State state) {
         this(change, "", templateId, state);
     }
@@ -75,16 +75,16 @@ public class TemplateChange extends MetadataChange {
             return false;
         }
     }
-    
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("Template change ");
         return sb
-                        .append("(").append(getChange()).append(") - ")
-                        .append("ID: ").append(this.templateId)
-                        .append(" state: ").append(this.templateState)
-                        .toString();
-            
+            .append("(").append(getChange()).append(") - ")
+            .append("ID: ").append(this.templateId)
+            .append(" state: ").append(this.templateState)
+            .toString();
+
     }
 
 }

@@ -34,10 +34,14 @@ import javax.annotation.Nonnull;
 @ConfigurationProperties("security.jwt")
 public class JwtProperties {
 
-    /** Identifies the signature algorithm */
+    /**
+     * Identifies the signature algorithm
+     */
     private String algorithm = AlgorithmIdentifiers.HMAC_SHA256;
 
-    /** Secret key for signature */
+    /**
+     * Secret key for signature
+     */
     private String key;
 
     @Nonnull

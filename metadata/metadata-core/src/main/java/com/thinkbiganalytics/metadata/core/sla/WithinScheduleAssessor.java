@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.core.sla;
 
@@ -45,13 +45,13 @@ public class WithinScheduleAssessor extends MetadataMetricAssessor<WithinSchedul
     }
 
     @Override
-    public void assess(WithinSchedule metric, 
+    public void assess(WithinSchedule metric,
                        MetricAssessmentBuilder<Serializable> builder) {
         DateTime start = new DateTime(CronExpressionUtil.getPreviousFireTime(metric.getCronExpression()));
         DateTime end = start.withPeriodAdded(metric.getPeriod(), 1);
-        
+
         builder.metric(metric);
-        
+
         if (start.isBeforeNow() && end.isAfterNow()) {
             builder
                 .result(AssessmentResult.SUCCESS)

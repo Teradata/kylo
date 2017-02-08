@@ -41,7 +41,7 @@ import java.util.Set;
  * Precondition to trigger a feed when another feed finishes
  */
 @PreconditionPolicy(name = PreconditionPolicyConstants.FEED_EXECUTED_SINCE_FEEDS_NAME, description = "Policy will trigger the feed when all of the supplied feeds have successfully finished")
-public class FeedExecutedSinceFeeds implements Precondition,DependentFeedPrecondition {
+public class FeedExecutedSinceFeeds implements Precondition, DependentFeedPrecondition {
 
     /**
      * the name of the current "trigger" feed that should get executed when the {@link this#categoryAndFeedList} signal they are complete
@@ -56,7 +56,9 @@ public class FeedExecutedSinceFeeds implements Precondition,DependentFeedPrecond
                     hint = "Select feed(s) that this feed is dependent upon")
     private String categoryAndFeeds;
 
-    /** a derived list created from the {@link this#categoryAndFeeds} string **/
+    /**
+     * a derived list created from the {@link this#categoryAndFeeds} string
+     **/
     private List<String> categoryAndFeedList;
 
     public FeedExecutedSinceFeeds(@PolicyPropertyRef(name = "Since Feed") String sinceCategoryAndFeedName, @PolicyPropertyRef(name = "Dependent Feeds") String categoryAndFeeds) {
@@ -101,9 +103,8 @@ public class FeedExecutedSinceFeeds implements Precondition,DependentFeedPrecond
 
     /**
      * Builds the ObligationGroup that holds the metric that will be used to assess if this precondition is met or not
-     * @return
      */
-    public com.thinkbiganalytics.metadata.rest.model.sla.ObligationGroup buildPreconditionObligation(){
+    public com.thinkbiganalytics.metadata.rest.model.sla.ObligationGroup buildPreconditionObligation() {
         Set<Metric> metrics = new HashSet<>();
         for (String categoryAndFeed : categoryAndFeedList) {
             FeedExecutedSinceFeed metric = new FeedExecutedSinceFeed(sinceCategoryAndFeedName, categoryAndFeed);

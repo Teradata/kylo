@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.security.auth.ldap;
 
@@ -49,26 +49,27 @@ import javax.security.auth.login.CredentialException;
  *
  */
 public class LdapLoginModule extends AbstractLoginModule {
-    
-    private static final Logger log = LoggerFactory.getLogger(LdapLoginModule.class);
-    
-    /** Option for the {@link LdapAuthenticator} used to authenticate via LDAP */
-    public static final String AUTHENTICATOR = "authenticator";
-    
-    /** Option for the {@link LdapAuthoritiesPopulator} used to retrieve any groups associated with the authenticated user */
-    public static final String AUTHORITIES_POPULATOR = "authoritiesPopulator";
 
+    /**
+     * Option for the {@link LdapAuthenticator} used to authenticate via LDAP
+     */
+    public static final String AUTHENTICATOR = "authenticator";
+    /**
+     * Option for the {@link LdapAuthoritiesPopulator} used to retrieve any groups associated with the authenticated user
+     */
+    public static final String AUTHORITIES_POPULATOR = "authoritiesPopulator";
+    private static final Logger log = LoggerFactory.getLogger(LdapLoginModule.class);
     private LdapAuthenticator authenticator;
     private LdapAuthoritiesPopulator authoritiesPopulator;
-    
-    
+
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.auth.jaas.AbstractLoginModule#initialize(javax.security.auth.Subject, javax.security.auth.callback.CallbackHandler, java.util.Map, java.util.Map)
      */
     @Override
     public void initialize(Subject subject, CallbackHandler callbackHandler, Map<String, ?> sharedState, Map<String, ?> options) {
         super.initialize(subject, callbackHandler, sharedState, options);
-        
+
         this.authenticator = (LdapAuthenticator) getOption(AUTHENTICATOR).orElseThrow(() -> new IllegalArgumentException("The \"" + AUTHENTICATOR + "\" option is required"));
         this.authoritiesPopulator = (LdapAuthoritiesPopulator) getOption(AUTHORITIES_POPULATOR).orElse(null);
     }
@@ -82,11 +83,11 @@ public class LdapLoginModule extends AbstractLoginModule {
         final PasswordCallback passwordCallback = new PasswordCallback("Password: ", false);
 
         handle(nameCallback, passwordCallback);
-        
+
         if (nameCallback.getName() == null) {
             throw new AccountException("No username provided for authentication");
         }
-        
+
         Principal userPrincipal = new UsernamePrincipal(nameCallback.getName());
         String password = new String(passwordCallback.getPassword());
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userPrincipal, password);
@@ -95,19 +96,19 @@ public class LdapLoginModule extends AbstractLoginModule {
             log.debug("Authenticating: {}", userPrincipal);
             DirContextOperations dirContext = this.authenticator.authenticate(authentication);
             log.debug("Successfully Authenticated: {}", userPrincipal);
-            
+
             setUserPrincipal(userPrincipal);
 
             for (GrantedAuthority grant : this.authoritiesPopulator.getGrantedAuthorities(dirContext, nameCallback.getName())) {
                 String groupName = grant.getAuthority();
 
                 log.debug("Found group for {}: {}", userPrincipal, groupName);
-                
+
                 if (groupName != null) {
                     addNewGroupPrincipal(groupName);
                 }
             }
-            
+
             return true;
         } catch (BadCredentialsException e) {
             throw new CredentialException(e.getMessage());

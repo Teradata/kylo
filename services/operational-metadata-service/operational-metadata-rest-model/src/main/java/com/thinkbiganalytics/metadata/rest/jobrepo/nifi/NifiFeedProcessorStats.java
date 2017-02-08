@@ -29,6 +29,7 @@ import org.joda.time.DateTime;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class NifiFeedProcessorStats {
+
     protected Long duration = 0L;
     protected DateTime minEventTime;
     protected DateTime maxEventTime;

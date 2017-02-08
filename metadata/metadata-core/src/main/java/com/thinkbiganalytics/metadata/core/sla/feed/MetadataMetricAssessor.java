@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.core.sla.feed;
 
@@ -35,19 +35,19 @@ import javax.inject.Inject;
 /**
  *
  */
-public abstract class MetadataMetricAssessor<M extends Metric> 
-        implements MetricAssessor<M, Serializable> {
+public abstract class MetadataMetricAssessor<M extends Metric>
+    implements MetricAssessor<M, Serializable> {
 
     @Inject
     private FeedProvider feedProvider;
-    
+
     @Inject
     private FeedOperationsProvider operationsProvider;
-    
+
     protected FeedProvider getFeedProvider() {
         return this.feedProvider;
     }
-    
+
     protected FeedOperationsProvider getFeedOperationsProvider() {
         return this.operationsProvider;
     }

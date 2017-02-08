@@ -43,14 +43,13 @@ public class BaseExceptionMapper {
 
 
     public Response defaultResponse(Throwable e) {
-        log.error("toResponse() caught Exception: {}, {} ",e.getClass().getName(),e.getMessage(), e);
+        log.error("toResponse() caught Exception: {}, {} ", e.getClass().getName(), e.getMessage(), e);
         RestResponseStatus.ResponseStatusBuilder builder = new RestResponseStatus.ResponseStatusBuilder();
         builder.url(req.getRequestURI());
         builder.message(e.getMessage());
 
         return Response.accepted(builder.buildError()).status(Response.Status.BAD_REQUEST).build();
     }
-
 
 
 }

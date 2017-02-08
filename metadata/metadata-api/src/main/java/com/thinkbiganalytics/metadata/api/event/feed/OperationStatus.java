@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.api.event.feed;
 
@@ -34,13 +34,13 @@ import java.io.Serializable;
 public class OperationStatus implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    
+
     private final Feed.ID feedId;
     private final String feedName; // {category}.{feedSystemName}
     private final FeedOperation.ID operationId;
     private final FeedOperation.State state;
     private final String status;
-    
+
     public OperationStatus(String feedName, FeedOperation.ID opId, FeedOperation.State state, String status) {
         this.feedId = null;
         this.feedName = feedName;
@@ -48,7 +48,7 @@ public class OperationStatus implements Serializable {
         this.state = state;
         this.status = status;
     }
-    
+
     public OperationStatus(Feed.ID id, FeedOperation.ID opId, FeedOperation.State state, String status) {
         this.feedId = id;
         this.feedName = null;
@@ -60,7 +60,7 @@ public class OperationStatus implements Serializable {
     public Feed.ID getFeedId() {
         return feedId;
     }
-    
+
     public String getFeedName() {
         return feedName;
     }
@@ -68,7 +68,7 @@ public class OperationStatus implements Serializable {
     public FeedOperation.State getState() {
         return state;
     }
-    
+
     public FeedOperation.ID getOperationId() {
         return operationId;
     }

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.sla.spi.core;
 
@@ -45,18 +45,18 @@ import java.util.UUID;
  *
  */
 public class SimpleServiceLevelAssessment implements ServiceLevelAssessment {
-    
+
     private static final long serialVersionUID = 2752726049105871947L;
-    
+
     private DateTime time;
     private ServiceLevelAgreement sla;
     private String message = "";
     private AssessmentResult result = AssessmentResult.SUCCESS;
     private Set<ObligationAssessment> obligationAssessments;
     private ServiceLevelAssessment.ID id;
-    
+
     /**
-     * 
+     *
      */
     protected SimpleServiceLevelAssessment() {
         this.id = new AssessmentId(UUID.randomUUID());
@@ -68,7 +68,7 @@ public class SimpleServiceLevelAssessment implements ServiceLevelAssessment {
         this();
         this.sla = sla;
     }
-    
+
     public SimpleServiceLevelAssessment(ServiceLevelAgreement sla, String message, AssessmentResult result) {
         super();
         this.id = new AssessmentId(UUID.randomUUID());
@@ -85,6 +85,10 @@ public class SimpleServiceLevelAssessment implements ServiceLevelAssessment {
         return this.time;
     }
 
+    protected void setTime(DateTime time) {
+        this.time = time;
+    }
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment#getSLA()
      */
@@ -92,7 +96,6 @@ public class SimpleServiceLevelAssessment implements ServiceLevelAssessment {
     public ServiceLevelAgreement getAgreement() {
         return this.sla;
     }
-
 
     @Override
     public String getServiceLevelAgreementId() {
@@ -107,12 +110,20 @@ public class SimpleServiceLevelAssessment implements ServiceLevelAssessment {
         return this.message;
     }
 
+    protected void setMessage(String message) {
+        this.message = message;
+    }
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment#getResult()
      */
     @Override
     public AssessmentResult getResult() {
         return this.result;
+    }
+
+    protected void setResult(AssessmentResult result) {
+        this.result = result;
     }
 
     /* (non-Javadoc)
@@ -122,57 +133,44 @@ public class SimpleServiceLevelAssessment implements ServiceLevelAssessment {
     public Set<ObligationAssessment> getObligationAssessments() {
         return new HashSet<ObligationAssessment>(this.obligationAssessments);
     }
-    
+
     @Override
     public int compareTo(ServiceLevelAssessment sla) {
         ComparisonChain chain = ComparisonChain
-                .start()
+            .start()
             .compare(this.getResult(), sla.getResult())
             .compare(this.getAgreement().getName(), sla.getAgreement().getName());
-        
+
         if (chain.result() != 0) {
             return chain.result();
         }
-        
+
         List<ObligationAssessment> list1 = new ArrayList<>(this.getObligationAssessments());
         List<ObligationAssessment> list2 = new ArrayList<>(sla.getObligationAssessments());
-        
+
         chain = chain.compare(list1.size(), list2.size());
-    
+
         Collections.sort(list1);
         Collections.sort(list2);
-        
+
         for (int idx = 0; idx < list1.size(); idx++) {
             chain = chain.compare(list1.get(idx), list2.get(idx));
         }
-        
+
         return chain.result();
     }
 
     protected boolean add(ObligationAssessment assessment) {
         return this.obligationAssessments.add(assessment);
     }
-    
+
     protected boolean addAll(Collection<? extends ObligationAssessment> assessments) {
         return this.obligationAssessments.addAll(assessments);
-    }
-
-    protected void setTime(DateTime time) {
-        this.time = time;
     }
 
     protected void setSla(ServiceLevelAgreement sla) {
         this.sla = sla;
     }
-
-    protected void setMessage(String message) {
-        this.message = message;
-    }
-
-    protected void setResult(AssessmentResult result) {
-        this.result = result;
-    }
-
 
     @Override
     public ID getId() {

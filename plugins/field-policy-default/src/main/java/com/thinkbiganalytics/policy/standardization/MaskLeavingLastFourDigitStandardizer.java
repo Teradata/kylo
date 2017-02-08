@@ -37,16 +37,16 @@ public class MaskLeavingLastFourDigitStandardizer extends SimpleRegexReplacer im
         super("\\d", "X");
     }
 
+    public static MaskLeavingLastFourDigitStandardizer instance() {
+        return instance;
+    }
+
     @Override
     public String convertValue(String value) {
         if (value.length() > 4) {
             return super.convertValue(value.substring(0, value.length() - 4)) + value.substring(value.length() - 4);
         }
         return value;
-    }
-
-    public static MaskLeavingLastFourDigitStandardizer instance() {
-        return instance;
     }
 
 }

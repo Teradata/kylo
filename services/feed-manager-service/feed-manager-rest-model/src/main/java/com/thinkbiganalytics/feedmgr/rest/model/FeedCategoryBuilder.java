@@ -31,6 +31,11 @@ public class FeedCategoryBuilder {
     private int relatedFeeds;
 
 
+    public FeedCategoryBuilder(String name) {
+        this.name = name;
+        this.iconColor = "black";
+    }
+
     public FeedCategoryBuilder description(String description) {
         this.description = description;
         return this;
@@ -46,17 +51,12 @@ public class FeedCategoryBuilder {
         return this;
     }
 
-    public FeedCategoryBuilder relatedFeeds(int relatedFeeds){
+    public FeedCategoryBuilder relatedFeeds(int relatedFeeds) {
         this.relatedFeeds = relatedFeeds;
         return this;
     }
 
-    public FeedCategoryBuilder(String name){
-        this.name = name;
-        this.iconColor = "black";
-    }
-
-    public FeedCategory build(){
+    public FeedCategory build() {
         FeedCategory category = new FeedCategory();
         category.setName(this.name);
         category.setDescription(this.description);

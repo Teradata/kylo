@@ -51,6 +51,7 @@ public class ScheduledJobState {
 
     /**
      * Check to see if a list of triggers have at least 1 triggerInfo that is paused
+     *
      * @param triggerInfos a collection of trigger info
      * @return {@code true} if the list of triggerInfos have at least 1 that is paused, {@code false} if none of the triggerInfos are paused
      */
@@ -69,6 +70,7 @@ public class ScheduledJobState {
 
     /**
      * Check to see if a list of triggers have at least 1 triggerInfo that is scheduled
+     *
      * @param triggerInfos a collection of trigger info
      * @return {@code true} if the list of triggerInfos have at least 1 that is scheduled, {@code false} if none of the triggerInfos are scheduled
      */

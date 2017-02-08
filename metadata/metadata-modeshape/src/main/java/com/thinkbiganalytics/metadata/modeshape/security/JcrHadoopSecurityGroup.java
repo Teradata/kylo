@@ -33,6 +33,7 @@ import javax.jcr.RepositoryException;
 /**
  */
 public class JcrHadoopSecurityGroup extends JcrEntity implements HadoopSecurityGroup {
+
     public static final String DESCRIPTION = "jcr:description";
     public static final String NAME = "jcr:title";
     public static final String HADOOP_SECURITY_GROUP_ID = "tba:groupId";

@@ -118,9 +118,6 @@ public class JcrQueryUtil {
     }
 
 
-
-
-
     public static <T extends Object> T findFirst(Session session, String query, Class<T> type) {
         return findFirst(session, query, null, type);
     }

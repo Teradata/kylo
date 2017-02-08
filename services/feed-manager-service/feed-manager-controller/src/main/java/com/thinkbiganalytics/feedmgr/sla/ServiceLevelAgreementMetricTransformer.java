@@ -42,12 +42,15 @@ public class ServiceLevelAgreementMetricTransformer
 
     private static final ServiceLevelAgreementMetricTransformer instance = new ServiceLevelAgreementMetricTransformer();
 
+    public static ServiceLevelAgreementMetricTransformer instance() {
+        return instance;
+    }
+
     @Override
     public ServiceLevelAgreementRule buildUiModel(ServiceLevelAgreementMetric annotation, Metric policy,
                                                   List<FieldRuleProperty> properties) {
         return buildUiModel(annotation, policy.getClass(), properties);
     }
-
 
     private ServiceLevelAgreementRule buildUiModel(ServiceLevelAgreementMetric annotation, Class policyClass,
                                                    List<FieldRuleProperty> properties) {
@@ -67,7 +70,6 @@ public class ServiceLevelAgreementMetricTransformer
         return rule;
     }
 
-
     public List<ServiceLevelAgreementRule> discoverSlaMetrics() {
 
         List<ServiceLevelAgreementRule> rules = new ArrayList<>();
@@ -81,13 +83,8 @@ public class ServiceLevelAgreementMetricTransformer
         return rules;
     }
 
-
     @Override
     public Class<ServiceLevelAgreementMetric> getAnnotationClass() {
         return ServiceLevelAgreementMetric.class;
-    }
-
-    public static ServiceLevelAgreementMetricTransformer instance() {
-        return instance;
     }
 }

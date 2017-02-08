@@ -100,10 +100,6 @@ public class JpaObligationAssessment extends AbstractAuditedEntity implements Ob
     private List<Comparable<? extends Serializable>> comparables = Collections.emptyList();
 
 
-    public static class ComparablesAttributeConverter extends JsonAttributeConverter<List<Comparable<? extends Serializable>>> {
-
-    }
-
     public JpaObligationAssessment() {
 
     }
@@ -141,7 +137,6 @@ public class JpaObligationAssessment extends AbstractAuditedEntity implements Ob
         this.result = result;
     }
 
-
     public String getObligationId() {
         return obligationId;
     }
@@ -168,7 +163,6 @@ public class JpaObligationAssessment extends AbstractAuditedEntity implements Ob
         return this.comparator.compare(this, obAssessment);
     }
 
-
     public void addMetricAssessment(MetricAssessment metricAssessment) {
         getMetricAssessments().add(metricAssessment);
     }
@@ -179,6 +173,10 @@ public class JpaObligationAssessment extends AbstractAuditedEntity implements Ob
 
     public void setServiceLevelAssessment(ServiceLevelAssessment serviceLevelAssessment) {
         this.serviceLevelAssessment = serviceLevelAssessment;
+    }
+
+    public static class ComparablesAttributeConverter extends JsonAttributeConverter<List<Comparable<? extends Serializable>>> {
+
     }
 
     protected static class DefaultComparator implements Comparator<ObligationAssessment> {
@@ -197,7 +195,6 @@ public class JpaObligationAssessment extends AbstractAuditedEntity implements Ob
                     chain = chain.compare(s1.comparables.get(idx), s2.comparables.get(idx));
                 }
             }
-
 
             List<MetricAssessment<Serializable>> list1 = new ArrayList<>(o1.getMetricAssessments());
             List<MetricAssessment<Serializable>> list2 = new ArrayList<>(o2.getMetricAssessments());

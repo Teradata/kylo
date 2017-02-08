@@ -68,13 +68,6 @@ import javax.annotation.Nonnull;
 @CapabilityDescription("Execute a PySpark job.")
 public class ExecutePySpark extends AbstractNiFiProcessor {
 
-    /* Spark configuration */
-    private static final String CONFIG_PROP_SPARK_YARN_KEYTAB = "spark.yarn.keytab";
-    private static final String CONFIG_PROP_SPARK_YARN_PRINCIPAL = "spark.yarn.principal";
-    private static final String CONFIG_PROP_SPARK_NETWORK_TIMEOUT = "spark.network.timeout";
-    private static final String CONFIG_PROP_SPARK_YARN_QUEUE = "spark.yarn.queue";
-    private static final String CONFIG_PROP_SPARK_EXECUTOR_INSTANCES = "spark.executor.instances";
-
     /* Processor properties */
     public static final PropertyDescriptor HADOOP_CONFIGURATION_RESOURCES = new PropertyDescriptor.Builder()
         .name("Hadoop Configuration Resources")
@@ -84,7 +77,6 @@ public class ExecutePySpark extends AbstractNiFiProcessor {
         .required(false)
         .addValidator(multipleFilesExistValidator())
         .build();
-
     public static final PropertyDescriptor PYSPARK_APP_FILE = new PropertyDescriptor.Builder()
         .name("PySpark App File")
         .description("Full path for PySpark application file (having Python code to be executed)")
@@ -92,7 +84,6 @@ public class ExecutePySpark extends AbstractNiFiProcessor {
         .addValidator(new StandardValidators.FileExistsValidator(true))
         .expressionLanguageSupported(true)
         .build();
-
     public static final PropertyDescriptor PYSPARK_APP_ARGS = new PropertyDescriptor.Builder()
         .name("PySpark App Args")
         .description("Comma separated arguments to be passed to the PySpark application. "
@@ -101,7 +92,6 @@ public class ExecutePySpark extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
-
     public static final PropertyDescriptor PYSPARK_APP_NAME = new PropertyDescriptor.Builder()
         .name("PySpark App Name")
         .description("A name for the PySpark application")
@@ -110,7 +100,6 @@ public class ExecutePySpark extends AbstractNiFiProcessor {
         .expressionLanguageSupported(true)
         .defaultValue("PySpark-App")
         .build();
-
     public static final PropertyDescriptor PYSPARK_ADDITIONAL_FILES = new PropertyDescriptor.Builder()
         .name("Additional Python files/zips/eggs")
         .description("(Comma separated) Full path for additional Python files/zips/eggs to be submitted with the application. "
@@ -119,7 +108,6 @@ public class ExecutePySpark extends AbstractNiFiProcessor {
         .addValidator(multipleFilesExistValidator())
         .expressionLanguageSupported(true)
         .build();
-
     public static final PropertyDescriptor SPARK_MASTER = new PropertyDescriptor.Builder()
         .name("Spark Master")
         .description("The Spark master. NOTE: Please ensure that you have not set this in your application.")
@@ -128,7 +116,6 @@ public class ExecutePySpark extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
-
     public static final PropertyDescriptor SPARK_YARN_DEPLOY_MODE = new PropertyDescriptor.Builder()
         .name("Spark YARN Deploy Mode")
         .description("The deploy mode for YARN master (client, cluster). Only applicable for yarn mode. "
@@ -138,7 +125,6 @@ public class ExecutePySpark extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
-
     public static final PropertyDescriptor YARN_QUEUE = new PropertyDescriptor.Builder()
         .name("YARN Queue")
         .description("The name of the YARN queue to which the job is submitted. Only applicable for yarn mode.")
@@ -146,7 +132,6 @@ public class ExecutePySpark extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
-
     public static final PropertyDescriptor SPARK_HOME = new PropertyDescriptor.Builder()
         .name("Spark Home")
         .description("Spark installation location")
@@ -155,7 +140,6 @@ public class ExecutePySpark extends AbstractNiFiProcessor {
         .addValidator(new StandardValidators.DirectoryExistsValidator(true, false))
         .expressionLanguageSupported(true)
         .build();
-
     public static final PropertyDescriptor DRIVER_MEMORY = new PropertyDescriptor.Builder()
         .name("Driver Memory")
         .description("Amount of memory (RAM) to allocate to the driver (e.g. 512m, 2g).  Consider cluster capacity when setting value.")
@@ -164,7 +148,6 @@ public class ExecutePySpark extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
-
     public static final PropertyDescriptor EXECUTOR_MEMORY = new PropertyDescriptor.Builder()
         .name("Executor Memory")
         .description("Amount of memory (RAM) to allocate to an executor (e.g. 512m, 2g).  Consider cluster capacity when setting value.")
@@ -173,7 +156,6 @@ public class ExecutePySpark extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
-
     public static final PropertyDescriptor EXECUTOR_INSTANCES = new PropertyDescriptor.Builder()
         .name("Executor Instances")
         .description("The number of executors to use for job execution. Consider cluster capacity when setting value.")
@@ -182,7 +164,6 @@ public class ExecutePySpark extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.createLongValidator(1L, 1000L, true))
         .expressionLanguageSupported(true)
         .build();
-
     public static final PropertyDescriptor EXECUTOR_CORES = new PropertyDescriptor.Builder()
         .name("Executor Cores")
         .description("The number of CPU cores to be used on each executor. Consider cluster capacity when setting value.")
@@ -191,7 +172,6 @@ public class ExecutePySpark extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.createLongValidator(1L, 100L, true))
         .expressionLanguageSupported(true)
         .build();
-
     public static final PropertyDescriptor NETWORK_TIMEOUT = new PropertyDescriptor.Builder()
         .name("Network Timeout")
         .description("Default timeout for all network interactions. "
@@ -204,7 +184,6 @@ public class ExecutePySpark extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
-
     public static final PropertyDescriptor ADDITIONAL_SPARK_CONFIG_OPTIONS = new PropertyDescriptor.Builder()
         .name("Additional Spark Configuration")
         .description("Additional configuration options to pass to the Spark job. "
@@ -216,24 +195,92 @@ public class ExecutePySpark extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
-
     /* Processor relationships */
     public static final Relationship REL_SUCCESS = new Relationship.Builder()
         .name("success")
         .description("PySpark job execution success")
         .build();
-
     public static final Relationship REL_FAILURE = new Relationship.Builder()
         .name("failure")
         .description("PySpark job execution failure")
         .build();
-
+    /* Spark configuration */
+    private static final String CONFIG_PROP_SPARK_YARN_KEYTAB = "spark.yarn.keytab";
+    private static final String CONFIG_PROP_SPARK_YARN_PRINCIPAL = "spark.yarn.principal";
+    private static final String CONFIG_PROP_SPARK_NETWORK_TIMEOUT = "spark.network.timeout";
+    private static final String CONFIG_PROP_SPARK_YARN_QUEUE = "spark.yarn.queue";
+    private static final String CONFIG_PROP_SPARK_EXECUTOR_INSTANCES = "spark.executor.instances";
     /* Properties for Kerberos service keytab and principal */
     private PropertyDescriptor KERBEROS_KEYTAB;
     private PropertyDescriptor KERBEROS_PRINCIPAL;
 
     private List<PropertyDescriptor> properties;
     private Set<Relationship> relationships;
+
+    /* Validates that one or more files exist, as specified in a single property (comma-separated values) */
+    public static Validator multipleFilesExistValidator() {
+        return new Validator() {
+            @Override
+            public ValidationResult validate(String subject, String input, ValidationContext context) {
+                try {
+                    final String[] files = input.split(",");
+
+                    for (String filename : files) {
+                        try {
+                            final File file = new File(filename.trim());
+                            if (!file.exists()) {
+                                final String message = "file " + filename + " does not exist.";
+                                return new ValidationResult.Builder()
+                                    .subject(this.getClass().getSimpleName())
+                                    .input(input)
+                                    .valid(false)
+                                    .explanation(message)
+                                    .build();
+                            } else if (!file.isFile()) {
+                                final String message = filename + " is not a file.";
+                                return new ValidationResult.Builder()
+                                    .subject(this.getClass().getSimpleName())
+                                    .input(input)
+                                    .valid(false)
+                                    .explanation(message)
+                                    .build();
+                            } else if (!file.canRead()) {
+                                final String message = "could not read " + filename;
+                                return new ValidationResult.Builder()
+                                    .subject(this.getClass().getSimpleName())
+                                    .input(input)
+                                    .valid(false)
+                                    .explanation(message)
+                                    .build();
+                            }
+                        } catch (SecurityException e) {
+                            final String message = "unable to access " + filename + " due to " + e.getMessage();
+                            return new ValidationResult.Builder()
+                                .subject(this.getClass().getSimpleName())
+                                .input(input)
+                                .valid(false)
+                                .explanation(message)
+                                .build();
+                        }
+                    }
+                } catch (Exception e) {
+                    return new ValidationResult.Builder()
+                        .subject(this.getClass().getSimpleName())
+                        .input(input)
+                        .valid(false)
+                        .explanation("error evaluating value. Please sure that value is provided as file1,file2,file3 and so on. "
+                                     + "Also, the files should exist and be readable.")
+                        .build();
+                }
+
+                return new ValidationResult.Builder()
+                    .subject(this.getClass().getSimpleName())
+                    .input(input)
+                    .valid(true)
+                    .build();
+            }
+        };
+    }
 
     @Override
     protected void init(@Nonnull final ProcessorInitializationContext context) {
@@ -539,70 +586,5 @@ public class ExecutePySpark extends AbstractNiFiProcessor {
         }
 
         return results;
-    }
-
-    /* Validates that one or more files exist, as specified in a single property (comma-separated values) */
-    public static Validator multipleFilesExistValidator() {
-        return new Validator() {
-            @Override
-            public ValidationResult validate(String subject, String input, ValidationContext context) {
-                try {
-                    final String[] files = input.split(",");
-
-                    for (String filename : files) {
-                        try {
-                            final File file = new File(filename.trim());
-                            if (!file.exists()) {
-                                final String message = "file " + filename + " does not exist.";
-                                return new ValidationResult.Builder()
-                                    .subject(this.getClass().getSimpleName())
-                                    .input(input)
-                                    .valid(false)
-                                    .explanation(message)
-                                    .build();
-                            } else if (!file.isFile()) {
-                                final String message = filename + " is not a file.";
-                                return new ValidationResult.Builder()
-                                    .subject(this.getClass().getSimpleName())
-                                    .input(input)
-                                    .valid(false)
-                                    .explanation(message)
-                                    .build();
-                            } else if (!file.canRead()) {
-                                final String message = "could not read " + filename;
-                                return new ValidationResult.Builder()
-                                    .subject(this.getClass().getSimpleName())
-                                    .input(input)
-                                    .valid(false)
-                                    .explanation(message)
-                                    .build();
-                            }
-                        } catch (SecurityException e) {
-                            final String message = "unable to access " + filename + " due to " + e.getMessage();
-                            return new ValidationResult.Builder()
-                                .subject(this.getClass().getSimpleName())
-                                .input(input)
-                                .valid(false)
-                                .explanation(message)
-                                .build();
-                        }
-                    }
-                } catch (Exception e) {
-                    return new ValidationResult.Builder()
-                        .subject(this.getClass().getSimpleName())
-                        .input(input)
-                        .valid(false)
-                        .explanation("error evaluating value. Please sure that value is provided as file1,file2,file3 and so on. "
-                                     + "Also, the files should exist and be readable.")
-                        .build();
-                }
-
-                return new ValidationResult.Builder()
-                    .subject(this.getClass().getSimpleName())
-                    .input(input)
-                    .valid(true)
-                    .build();
-            }
-        };
     }
 }

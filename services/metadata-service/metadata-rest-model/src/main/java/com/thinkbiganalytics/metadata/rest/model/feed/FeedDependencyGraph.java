@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.rest.model.feed;
 
@@ -37,13 +37,13 @@ import java.util.List;
  */
 @JsonInclude(Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonPropertyOrder({ "feed", "preconditonResult", "dependencies" })
+@JsonPropertyOrder({"feed", "preconditonResult", "dependencies"})
 public class FeedDependencyGraph {
 
     private Feed feed;
     private ServiceLevelAssessment preconditonResult;
     private List<FeedDependencyGraph> dependencies = new ArrayList<>();
-    
+
     public FeedDependencyGraph() {
     }
 
@@ -76,7 +76,7 @@ public class FeedDependencyGraph {
     public void setDependencies(List<FeedDependencyGraph> dependencies) {
         this.dependencies = dependencies;
     }
-    
+
     public void addDependecy(FeedDependencyGraph dep) {
         this.dependencies.add(dep);
     }

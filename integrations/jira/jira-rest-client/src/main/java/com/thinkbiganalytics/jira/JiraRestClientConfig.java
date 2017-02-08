@@ -21,6 +21,7 @@ package com.thinkbiganalytics.jira;
  */
 
 import com.thinkbiganalytics.rest.JerseyClientConfig;
+
 /**
  */
 public class JiraRestClientConfig extends JerseyClientConfig {
@@ -30,6 +31,7 @@ public class JiraRestClientConfig extends JerseyClientConfig {
     public JiraRestClientConfig(String apiPath) {
         this.apiPath = apiPath;
     }
+
     public JiraRestClientConfig() {
 
     }

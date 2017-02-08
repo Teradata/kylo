@@ -34,20 +34,20 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class AmbariSpringConfiguration {
 
-  @Bean(name = "ambariServicesStatus")
-  public AmbariServicesStatusCheck ambariServicesStatus() {
-    return new AmbariServicesStatusCheck();
-  }
+    @Bean(name = "ambariServicesStatus")
+    public AmbariServicesStatusCheck ambariServicesStatus() {
+        return new AmbariServicesStatusCheck();
+    }
 
 
-  @Bean(name = "ambariJerseyClientConfig")
-  @ConfigurationProperties(prefix = "ambariRestClientConfig")
-  public AmbariJerseyRestClientConfig ambariJerseyRestClientConfig() {
-    return new AmbariJerseyRestClientConfig();
-  }
+    @Bean(name = "ambariJerseyClientConfig")
+    @ConfigurationProperties(prefix = "ambariRestClientConfig")
+    public AmbariJerseyRestClientConfig ambariJerseyRestClientConfig() {
+        return new AmbariJerseyRestClientConfig();
+    }
 
-  @Bean(name = "ambariClient")
-  public AmbariClient ambariClient() {
-    return new AmbariJerseyClient(ambariJerseyRestClientConfig());
-  }
+    @Bean(name = "ambariClient")
+    public AmbariClient ambariClient() {
+        return new AmbariJerseyClient(ambariJerseyRestClientConfig());
+    }
 }

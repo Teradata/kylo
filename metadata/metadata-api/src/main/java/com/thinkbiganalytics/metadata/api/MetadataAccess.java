@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.api;
 
@@ -29,25 +29,31 @@ import com.thinkbiganalytics.security.UsernamePrincipal;
 import java.security.Principal;
 
 /**
- * Simple facade over whatever database/transaction mechanism is deployed in the environment where 
+ * Simple facade over whatever database/transaction mechanism is deployed in the environment where
  * the metadata API is used.  Applications may inject/obtain and use instances of this type to pass commands
  * that read and manipulate metadata entities via the providers.
- * 
  */
 public interface MetadataAccess {
 
-    /** A principal representing an anonymous user */
+    /**
+     * A principal representing an anonymous user
+     */
     public static final Principal ANONYMOUS = new UsernamePrincipal("anonymous");
-    /** A principal representing a service account */
+    /**
+     * A principal representing a service account
+     */
     public static final Principal SERVICE = new UsernamePrincipal("service");
-    /** A principal representing an the admin group */
+    /**
+     * A principal representing an the admin group
+     */
     public static final Principal ADMIN = new GroupPrincipal("admin");
-    
+
     /**
      * Executes the {@link MetadataCommand} and commits any changes using credentials derived by the provided principals.
-     * If no principals are provided then the commmand will execute using credentials derived from the current 
+     * If no principals are provided then the commmand will execute using credentials derived from the current
      * security context.
-     * @param cmd the command to execute
+     *
+     * @param cmd        the command to execute
      * @param principals one or more principals, or none to use the current security context
      * @return the result returned from the command
      */
@@ -63,12 +69,13 @@ public interface MetadataAccess {
      * @return the result returned from the command
      */
     <R> R commit(MetadataCommand<R> cmd, MetadataRollbackCommand rollbackCmd, Principal... principals);
-    
+
     /**
      * Executes the {@link Runnable} and commits any changes using credentials derived by the provided principals.
-     * If no principals are provided then the runnable will execute using credentials derived from the current 
+     * If no principals are provided then the runnable will execute using credentials derived from the current
      * security context.
-     * @param action the command to execute
+     *
+     * @param action     the command to execute
      * @param principals one or more principals, or none to use the current security context
      */
     void commit(MetadataAction action, Principal... principals);
@@ -87,9 +94,10 @@ public interface MetadataAccess {
 
     /**
      * Executes the {@link MetadataCommand} in a read-only context using credentials derived by the provided principals.
-     * If no principals are provided then the commmand will execute using credentials derived from the current 
+     * If no principals are provided then the commmand will execute using credentials derived from the current
      * security context.
-     * @param cmd the command to execute
+     *
+     * @param cmd        the command to execute
      * @param principals one or more principals, or none to use the current security context
      * @return the result returned from the command
      */
@@ -97,9 +105,10 @@ public interface MetadataAccess {
 
     /**
      * Executes the {@link Runnable} in a read-only context using credentials derived by the provided principals.
-     * If no principals are provided then the runnable will execute using credentials derived from the current 
+     * If no principals are provided then the runnable will execute using credentials derived from the current
      * security context.
-     * @param cmd the command to execute
+     *
+     * @param cmd        the command to execute
      * @param principals one or more principals, or none to use the current security context
      */
     void read(MetadataAction cmd, Principal... principals);

@@ -42,8 +42,8 @@ public class WebApplicationExceptionMapper extends BaseExceptionMapper implement
     public Response toResponse(@Nonnull final WebApplicationException exception) {
         if (exception.getResponse().getEntity() == null) {
             final RestResponseStatus.ResponseStatusBuilder builder = new RestResponseStatus.ResponseStatusBuilder()
-                    .message(exception.getMessage())
-                    .url(req.getRequestURI());
+                .message(exception.getMessage())
+                .url(req.getRequestURI());
             if (debugMode && exception.getCause() != null) {
                 builder.setDeveloperMessage(exception.getCause());
             }

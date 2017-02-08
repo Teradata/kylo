@@ -33,7 +33,9 @@ import javax.annotation.Nonnull;
  */
 public class ServerProcessManager implements SparkShellProcessManager {
 
-    /** Spark Shell process */
+    /**
+     * Spark Shell process
+     */
     private final SparkShellProcess process;
 
     /**

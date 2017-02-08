@@ -34,16 +34,24 @@ import org.joda.time.DateTime;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AlertChangeEvent {
 
-    /** Gets the time when the alert transitioned to this state */
+    /**
+     * Gets the time when the alert transitioned to this state
+     */
     private DateTime createdTime;
 
-    /** The new state */
+    /**
+     * The new state
+     */
     private State state;
 
-    /** A description of the change, or {@code null} */
+    /**
+     * A description of the change, or {@code null}
+     */
     private String description;
 
-    /** The principal of the user that created the alert */
+    /**
+     * The principal of the user that created the alert
+     */
     private String user;
 
     public DateTime getCreatedTime() {

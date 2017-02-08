@@ -32,14 +32,14 @@ import javax.jcr.Credentials;
 public class SpringAuthenticationCredentials implements Credentials {
 
     private static final long serialVersionUID = 5674088988369122107L;
-    
+
     private Authentication authentication;
     private Set<Principal> principals;
 
     public SpringAuthenticationCredentials(Authentication auth) {
         this.authentication = auth;
     }
-    
+
     public SpringAuthenticationCredentials(Authentication auth, Principal... principals) {
         this.authentication = auth;
         this.principals = Arrays.stream(principals).collect(Collectors.toSet());

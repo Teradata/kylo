@@ -124,7 +124,7 @@ public class InMemoryFeedManagerFeedService extends AbstractFeedManagerFeedServi
 
 
     @Override
-    public FeedMetadata getFeedByName(final String categoryName,final String feedName) {
+    public FeedMetadata getFeedByName(final String categoryName, final String feedName) {
 
         if (feeds != null && !feeds.isEmpty()) {
             return Iterables.tryFind(feeds.values(), new Predicate<FeedMetadata>() {
@@ -206,7 +206,7 @@ public class InMemoryFeedManagerFeedService extends AbstractFeedManagerFeedServi
 
     @Override
     protected RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId) {
-        return templateProvider.getRegisteredTemplateWithAllProperties(templateId,null);
+        return templateProvider.getRegisteredTemplateWithAllProperties(templateId, null);
     }
 
     @Override
@@ -288,13 +288,13 @@ public class InMemoryFeedManagerFeedService extends AbstractFeedManagerFeedServi
         return Collections.emptySet();
     }
 
+    @Override
+    public void setUserFields(@Nonnull Set<UserField> userFields) {
+    }
+
     @Nonnull
     @Override
     public Optional<Set<UserProperty>> getUserFields(@Nonnull String categoryId) {
         return Optional.of(Collections.emptySet());
-    }
-
-    @Override
-    public void setUserFields(@Nonnull Set<UserField> userFields) {
     }
 }

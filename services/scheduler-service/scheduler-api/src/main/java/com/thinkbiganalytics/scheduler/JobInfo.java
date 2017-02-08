@@ -37,54 +37,63 @@ public interface JobInfo {
 
     /**
      * set the job identifier
+     *
      * @param jobIdentifier the identifier for the scheduled job
      */
     void setJobIdentifier(JobIdentifier jobIdentifier);
 
     /**
      * Return the list of triggers associated with the job
+     *
      * @return the list of triggers associated with the job
      */
     List<TriggerInfo> getTriggers();
 
     /**
      * set the triggers on this job
+     *
      * @param triggers the triggers associated with th job
      */
     void setTriggers(List<TriggerInfo> triggers);
 
     /**
      * Return a description about the job
+     *
      * @return a description about the job
      */
     String getDescription();
 
     /**
      * set a description about the job
+     *
      * @param description a description about the job
      */
     void setDescription(String description);
 
     /**
      * Return the class associated with this job
+     *
      * @return the class associated with this job
      */
     Class getJobClass();
 
     /**
      * set the class associated with this job
+     *
      * @param jobClass the class associated with this job
      */
     void setJobClass(Class jobClass);
 
     /**
      * Return any additional data for this job
+     *
      * @return any additional data for this job
      */
     Map<String, Object> getJobData();
 
     /**
      * set any additional data for this job
+     *
      * @param jobData any additional data for this job
      */
     void setJobData(Map<String, Object> jobData);

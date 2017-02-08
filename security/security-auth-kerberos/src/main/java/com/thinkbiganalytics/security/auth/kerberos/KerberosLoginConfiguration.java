@@ -20,15 +20,15 @@ package com.thinkbiganalytics.security.auth.kerberos;
  * #L%
  */
 
+import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
+import com.thinkbiganalytics.auth.jaas.LoginConfigurationBuilder;
+import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-
-import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
-import com.thinkbiganalytics.auth.jaas.LoginConfigurationBuilder;
-import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
 
 /**
  * This configuration enables the components used in kerberos-based username/password authentication.
@@ -37,7 +37,7 @@ import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
 @EnableWebSecurity
 @Profile("auth-krb-login")
 public class KerberosLoginConfiguration {
-    
+
     @Value("${security.auth.krb.login:required}")
     private String uiLoginFlag;
 

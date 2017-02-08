@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.api.event;
 
@@ -34,8 +34,8 @@ import java.security.Principal;
 public interface MetadataEvent<C extends Serializable> extends Serializable {
 
     DateTime getTimestamp();
-    
+
     Principal getUserPrincipal();
-    
+
     C getData();
 }

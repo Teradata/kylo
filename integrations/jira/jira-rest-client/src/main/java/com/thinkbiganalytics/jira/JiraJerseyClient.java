@@ -52,11 +52,10 @@ import javax.ws.rs.core.GenericType;
 
 /**
  */
-public class JiraJerseyClient extends JerseyRestClient implements JiraClient{
-
-    private String apiPath = "/rest/api/latest/";
+public class JiraJerseyClient extends JerseyRestClient implements JiraClient {
 
     LoadingCache<String, List<String>> issueTypeNameCache;
+    private String apiPath = "/rest/api/latest/";
 
     public JiraJerseyClient(JiraRestClientConfig config) {
         super(config);
@@ -65,20 +64,20 @@ public class JiraJerseyClient extends JerseyRestClient implements JiraClient{
 // cache the Issue Types related to a project since they will not change much.
 // But if they do, expire the cache after a certain amount of time
 
-      this.issueTypeNameCache = CacheBuilder.newBuilder()
-                .expireAfterAccess(20, TimeUnit.MINUTES)
-                .build(
-                        new CacheLoader<String, List<String>>() {
-                            public List<String> load(String key) {
-                                try {
-                                    return loadIssueTypeNamesForProject(key);
-                                } catch (JiraException e) {
-                                    return null;
-                                }
-                            }
-                        });
+        this.issueTypeNameCache = CacheBuilder.newBuilder()
+            .expireAfterAccess(20, TimeUnit.MINUTES)
+            .build(
+                new CacheLoader<String, List<String>>() {
+                    public List<String> load(String key) {
+                        try {
+                            return loadIssueTypeNamesForProject(key);
+                        } catch (JiraException e) {
+                            return null;
+                        }
+                    }
+                });
         //regiser the JoadTime mapper
-        if(client != null){
+        if (client != null) {
             client.register(JodaTimeMapperProvider.class);
         }
     }
@@ -123,10 +122,6 @@ public class JiraJerseyClient extends JerseyRestClient implements JiraClient{
 
     /**
      * Check to see if a user is allowed to be assigned issues for a given project
-     *
-     * @param projectKey
-     * @param username
-     * @return
      */
     public boolean isAssignable(String projectKey, String username) {
         User user = null;
@@ -139,10 +134,6 @@ public class JiraJerseyClient extends JerseyRestClient implements JiraClient{
 
     /**
      * Return the CreateMeta Schema that needs to used to create new Jira Issues
-     *
-     * @param projectKey
-     * @return
-     * @throws JiraException
      */
     public CreateMeta getCreateMetadata(String projectKey) throws JiraException {
 
@@ -159,10 +150,6 @@ public class JiraJerseyClient extends JerseyRestClient implements JiraClient{
 
     /**
      * Return the list of valid IssueTypes for a given Jira Project
-     *
-     * @param projectKey
-     * @return
-     * @throws JiraException
      */
     public List<IssueType> getIssueTypesForProject(String projectKey) throws JiraException {
         CreateMeta createData = getCreateMetadata(projectKey);
@@ -176,57 +163,43 @@ public class JiraJerseyClient extends JerseyRestClient implements JiraClient{
 
     /**
      * Return the List of Issue Type Names for a given Project
-     *
-     * @param projectKey
-     * @return
-     * @throws JiraException
      */
     private List<String> loadIssueTypeNamesForProject(String projectKey) throws JiraException {
-            List<IssueType> issueTypes = null;
-            issueTypes = getIssueTypesForProject(projectKey);
-            List<String> names = new ArrayList<>();
-            if (issueTypes != null) {
-                for (IssueType issueType : issueTypes) {
-                    names.add(issueType.getName());
-                }
+        List<IssueType> issueTypes = null;
+        issueTypes = getIssueTypesForProject(projectKey);
+        List<String> names = new ArrayList<>();
+        if (issueTypes != null) {
+            for (IssueType issueType : issueTypes) {
+                names.add(issueType.getName());
             }
+        }
         return names;
     }
 
 
     /**
      * return the List of String names of the IssueTypes for a given Project
-     * @param projectKey
-     * @return
      */
-    public List<String>getIssueTypeNamesForProject(String projectKey){
+    public List<String> getIssueTypeNamesForProject(String projectKey) {
         return issueTypeNameCache.getUnchecked(projectKey);
     }
 
 
     /**
      * Check to see if a given issue type is valid for a Project
-     *
-     * @param projectKey
-     * @param issueTypeName
-     * @return
-     * @throws JiraException
      */
     public boolean isValidIssueType(String projectKey, final String issueTypeName) {
 
-            List<String> issueTypes  = getIssueTypeNamesForProject(projectKey);
+        List<String> issueTypes = getIssueTypeNamesForProject(projectKey);
 
-       return isValidIssueType(issueTypes, issueTypeName);
+        return isValidIssueType(issueTypes, issueTypeName);
 
     }
 
     /**
      * check gto see if the issueType List has the passed in issueTypeName
-     * @param issueTypes
-     * @param issueTypeName
-     * @return
      */
-    public boolean isValidIssueType(List<String> issueTypes, final String issueTypeName ) {
+    public boolean isValidIssueType(List<String> issueTypes, final String issueTypeName) {
 
         if (issueTypes != null) {
             Predicate<String> matchesProject = new Predicate<String>() {
@@ -245,19 +218,14 @@ public class JiraJerseyClient extends JerseyRestClient implements JiraClient{
 
     /**
      * Create a new Jira Issue
-     * @param issue
-     * @return
-     * @throws JiraException
      */
     public Issue createIssue(Issue issue) throws JiraException {
-
 
         String projectKey = issue.getProject() != null ? issue.getProject().getKey() : null;
         String issueType = issue.getIssueType() != null ? issue.getIssueType().getName() : null;
         String summary = issue.getSummary();
         String description = issue.getDescription();
         String assigneeName = issue.getAssignee() != null ? issue.getAssignee().getName() : null;
-
 
         //Validate the parameters
         List<String> issueTypes = getIssueTypeNamesForProject(projectKey);
@@ -266,14 +234,15 @@ public class JiraJerseyClient extends JerseyRestClient implements JiraClient{
         if (issueTypes == null) {
             throw new JiraException("Unable to Create Issue: Project " + projectKey + " does not exist.  Issue Details are: " + issue);
         }
-        boolean validIssueType = isValidIssueType(issueTypes,issueType);
+        boolean validIssueType = isValidIssueType(issueTypes, issueType);
         if (!validIssueType) {
             //set it to the first one??
-            throw new JiraException("Unable to Create Issue: Issue type " + issueType + " is not allowed for Project " + projectKey + ".  Valid Issue Types are: " + issueTypes + ". Issue Details are:" + issue);
+            throw new JiraException(
+                "Unable to Create Issue: Issue type " + issueType + " is not allowed for Project " + projectKey + ".  Valid Issue Types are: " + issueTypes + ". Issue Details are:" + issue);
         }
 
         //Validate the Assignee
-        if(StringUtils.isBlank(assigneeName)){
+        if (StringUtils.isBlank(assigneeName)) {
             //default it to the current Rest client user name
             assigneeName = super.getUsername();
         }
@@ -284,10 +253,10 @@ public class JiraJerseyClient extends JerseyRestClient implements JiraClient{
         }
 
         //Validate required fields
-        if(StringUtils.isBlank(summary)){
+        if (StringUtils.isBlank(summary)) {
             throw new JiraException("Unable to Create Issue: Summary is required");
         }
-        if(StringUtils.isBlank(description)){
+        if (StringUtils.isBlank(description)) {
             throw new JiraException("Unable to Create Issue: Description is required");
         }
 
@@ -311,18 +280,10 @@ public class JiraJerseyClient extends JerseyRestClient implements JiraClient{
 
     /**
      * Create a new Jira Issue
-     *
-     * @param projectKey
-     * @param summary
-     * @param description
-     * @param issueType
-     * @param assigneeName
-     * @return
-     * @throws JiraException
      */
     public Issue createIssue(String projectKey, String summary, String description, String issueType, String assigneeName) throws JiraException {
         //validate issuetype before creating
-        Issue issue = new IssueBuilder(projectKey,issueType).setSummary(summary).setDescription(description).setAssignee(assigneeName).build();
+        Issue issue = new IssueBuilder(projectKey, issueType).setSummary(summary).setDescription(description).setAssignee(assigneeName).build();
         return createIssue(issue);
 
     }
@@ -330,15 +291,14 @@ public class JiraJerseyClient extends JerseyRestClient implements JiraClient{
     public ServerInfo getServerInfo() throws JiraException {
         ServerInfo serverInfo = null;
         try {
-       serverInfo = get("/serverInfo",null,ServerInfo.class);
+            serverInfo = get("/serverInfo", null, ServerInfo.class);
 
         } catch (Exception e) {
-            String message = "Error getting serverinfo "+e.getMessage();
+            String message = "Error getting serverinfo " + e.getMessage();
             throw new JiraException(message, e);
         }
         return serverInfo;
     }
-
 
 
 }

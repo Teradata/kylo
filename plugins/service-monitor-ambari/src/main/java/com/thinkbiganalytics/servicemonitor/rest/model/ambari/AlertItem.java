@@ -44,35 +44,35 @@ import javax.annotation.Generated;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AlertItem {
 
-  @JsonProperty("Alert")
-  private Alert Alert;
-  @JsonIgnore
-  private Map<String, Object> additionalProperties = new HashMap<String, Object>();
+    @JsonProperty("Alert")
+    private Alert Alert;
+    @JsonIgnore
+    private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
-  /**
-   * @return The Alert
-   */
-  @JsonProperty("Alert")
-  public Alert getAlert() {
-    return Alert;
-  }
+    /**
+     * @return The Alert
+     */
+    @JsonProperty("Alert")
+    public Alert getAlert() {
+        return Alert;
+    }
 
-  /**
-   * @param Alert The Alert
-   */
-  @JsonProperty("Alert")
-  public void setAlert(Alert Alert) {
-    this.Alert = Alert;
-  }
+    /**
+     * @param Alert The Alert
+     */
+    @JsonProperty("Alert")
+    public void setAlert(Alert Alert) {
+        this.Alert = Alert;
+    }
 
-  @JsonAnyGetter
-  public Map<String, Object> getAdditionalProperties() {
-    return this.additionalProperties;
-  }
+    @JsonAnyGetter
+    public Map<String, Object> getAdditionalProperties() {
+        return this.additionalProperties;
+    }
 
-  @JsonAnySetter
-  public void setAdditionalProperty(String name, Object value) {
-    this.additionalProperties.put(name, value);
-  }
+    @JsonAnySetter
+    public void setAdditionalProperty(String name, Object value) {
+        this.additionalProperties.put(name, value);
+    }
 
 }

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.rest.model.data;
 
@@ -30,7 +30,7 @@ public class HiveTableColumn {
 
     private String name;
     private String type;
-    
+
     public HiveTableColumn() {
     }
 

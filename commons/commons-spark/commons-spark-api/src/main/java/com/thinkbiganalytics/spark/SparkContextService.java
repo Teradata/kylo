@@ -37,6 +37,7 @@ public interface SparkContextService extends Serializable {
 
     /**
      * Creates a copy of the specified data set.
+     *
      * @param adaptee an existing data set
      * @return a copy
      */
@@ -44,7 +45,8 @@ public interface SparkContextService extends Serializable {
 
     /**
      * Creates a data set from the specified table.
-     * @param context the Spark SQL context
+     *
+     * @param context   the Spark SQL context
      * @param tableName the name of the table
      * @return the table data
      */
@@ -52,25 +54,28 @@ public interface SparkContextService extends Serializable {
 
     /**
      * Creates a data set from a Spark RDD.
+     *
      * @param context the Spark SQL context
-     * @param rdd the Spark RDD
-     * @param schema the schema for the RDD
+     * @param rdd     the Spark RDD
+     * @param schema  the schema for the RDD
      * @return a data set
      */
     DataSet toDataSet(SQLContext context, JavaRDD<Row> rdd, StructType schema);
 
     /**
      * Creates a data set from the specified Hive query.
+     *
      * @param context the Hive context
-     * @param sql the Hive query
+     * @param sql     the Hive query
      * @return a data set
      */
     DataSet sql(HiveContext context, String sql);
 
     /**
      * Creates a data set from the specified Spark SQL query.
+     *
      * @param context the Spark SQL context
-     * @param sql the Spark SQL query
+     * @param sql     the Spark SQL query
      * @return a data set
      */
     DataSet sql(SQLContext context, String sql);

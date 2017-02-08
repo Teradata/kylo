@@ -32,68 +32,68 @@ import java.util.Map;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class JobInfo {
 
-  private ScheduleIdentifier jobIdentifier;
-  private List<TriggerInfo> triggers;
-  private String description;
-  private Class jobClass;
-  @JsonIgnore
-  private Map<String, Object> jobData;
+    private ScheduleIdentifier jobIdentifier;
+    private List<TriggerInfo> triggers;
+    private String description;
+    private Class jobClass;
+    @JsonIgnore
+    private Map<String, Object> jobData;
 
-  public JobInfo() {
+    public JobInfo() {
 
-  }
+    }
 
-  public JobInfo(ScheduleIdentifier jobIdentifier) {
-    this.jobIdentifier = jobIdentifier;
-  }
-
-
-  public ScheduleIdentifier getJobIdentifier() {
-    return jobIdentifier;
-  }
+    public JobInfo(ScheduleIdentifier jobIdentifier) {
+        this.jobIdentifier = jobIdentifier;
+    }
 
 
-  public void setJobIdentifier(ScheduleIdentifier jobIdentifier) {
-    this.jobIdentifier = jobIdentifier;
-  }
+    public ScheduleIdentifier getJobIdentifier() {
+        return jobIdentifier;
+    }
 
 
-  public List<TriggerInfo> getTriggers() {
-    return triggers;
-  }
+    public void setJobIdentifier(ScheduleIdentifier jobIdentifier) {
+        this.jobIdentifier = jobIdentifier;
+    }
 
 
-  public void setTriggers(List<TriggerInfo> triggers) {
-    this.triggers = triggers;
-  }
+    public List<TriggerInfo> getTriggers() {
+        return triggers;
+    }
 
 
-  public String getDescription() {
-    return description;
-  }
+    public void setTriggers(List<TriggerInfo> triggers) {
+        this.triggers = triggers;
+    }
 
 
-  public void setDescription(String description) {
-    this.description = description;
-  }
+    public String getDescription() {
+        return description;
+    }
 
 
-  public Class getJobClass() {
-    return jobClass;
-  }
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
 
-  public void setJobClass(Class jobClass) {
-    this.jobClass = jobClass;
-  }
+    public Class getJobClass() {
+        return jobClass;
+    }
 
 
-  public Map<String, Object> getJobData() {
-    return jobData;
-  }
+    public void setJobClass(Class jobClass) {
+        this.jobClass = jobClass;
+    }
 
 
-  public void setJobData(Map<String, Object> jobData) {
-    this.jobData = jobData;
-  }
+    public Map<String, Object> getJobData() {
+        return jobData;
+    }
+
+
+    public void setJobData(Map<String, Object> jobData) {
+        this.jobData = jobData;
+    }
 }

@@ -50,21 +50,95 @@ import javax.persistence.Table;
 public class JpaBatchJobExecutionParameter implements Serializable, BatchJobExecutionParameter {
 
 
-    public JpaBatchJobExecutionParameter() {
-
-    }
-
     @EmbeddedId
     private BatchJobExecutionParametersPK jobExecutionParametersPK;
-
     @MapsId("jobExecutionId")
     @ManyToOne(targetEntity = JpaBatchJobExecution.class, optional = false)
     @JoinColumn(name = "JOB_EXECUTION_ID", referencedColumnName = "JOB_EXECUTION_ID")
     private BatchJobExecution jobExecution;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "TYPE_CD", length = 10, nullable = false)
+    private ExecutionConstants.ParamType typeCode = ExecutionConstants.ParamType.STRING;
+    @Type(type = "com.thinkbiganalytics.jpa.TruncateStringUserType", parameters = {@Parameter(name = "length", value = "250")})
+    @Column(name = "STRING_VAL")
+    private String stringVal;
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
+    @Column(name = "DATE_VAL")
+    private DateTime dateVal;
+    @Column(name = "LONG_VAL")
+    private Long longVal;
+    @Column(name = "DOUBLE_VAL")
+    private Double doubleVal;
+
+    public JpaBatchJobExecutionParameter() {
+
+    }
 
     @Override
     public String getKeyName() {
         return getJobExecutionParametersPK().getKeyName();
+    }
+
+    public BatchJobExecutionParametersPK getJobExecutionParametersPK() {
+        return jobExecutionParametersPK;
+    }
+
+    public void setJobExecutionParametersPK(BatchJobExecutionParametersPK jobExecutionParametersPK) {
+        this.jobExecutionParametersPK = jobExecutionParametersPK;
+    }
+
+    @Override
+    public BatchJobExecution getJobExecution() {
+        return jobExecution;
+    }
+
+    public void setJobExecution(BatchJobExecution jobExecution) {
+        this.jobExecution = jobExecution;
+    }
+
+    @Override
+    public ExecutionConstants.ParamType getTypeCode() {
+        return typeCode;
+    }
+
+    public void setTypeCode(ExecutionConstants.ParamType typeCode) {
+        this.typeCode = typeCode;
+    }
+
+    @Override
+    public String getStringVal() {
+        return stringVal;
+    }
+
+    public void setStringVal(String stringVal) {
+        this.stringVal = stringVal;
+    }
+
+    @Override
+    public DateTime getDateVal() {
+        return dateVal;
+    }
+
+    public void setDateVal(DateTime dateVal) {
+        this.dateVal = dateVal;
+    }
+
+    @Override
+    public Long getLongVal() {
+        return longVal;
+    }
+
+    public void setLongVal(Long longVal) {
+        this.longVal = longVal;
+    }
+
+    @Override
+    public Double getDoubleVal() {
+        return doubleVal;
+    }
+
+    public void setDoubleVal(Double doubleVal) {
+        this.doubleVal = doubleVal;
     }
 
     @Embeddable
@@ -126,87 +200,6 @@ public class JpaBatchJobExecutionParameter implements Serializable, BatchJobExec
             result = 31 * result + keyName.hashCode();
             return result;
         }
-    }
-
-
-    public BatchJobExecutionParametersPK getJobExecutionParametersPK() {
-        return jobExecutionParametersPK;
-    }
-
-    public void setJobExecutionParametersPK(BatchJobExecutionParametersPK jobExecutionParametersPK) {
-        this.jobExecutionParametersPK = jobExecutionParametersPK;
-    }
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "TYPE_CD", length = 10, nullable = false)
-    private ExecutionConstants.ParamType typeCode = ExecutionConstants.ParamType.STRING;
-
-
-    @Type(type = "com.thinkbiganalytics.jpa.TruncateStringUserType", parameters = {@Parameter(name = "length", value = "250")})
-    @Column(name = "STRING_VAL")
-    private String stringVal;
-
-    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
-    @Column(name = "DATE_VAL")
-    private DateTime dateVal;
-    @Column(name = "LONG_VAL")
-    private Long longVal;
-    @Column(name = "DOUBLE_VAL")
-    private Double doubleVal;
-
-
-    @Override
-    public BatchJobExecution getJobExecution() {
-        return jobExecution;
-    }
-
-    public void setJobExecution(BatchJobExecution jobExecution) {
-        this.jobExecution = jobExecution;
-    }
-
-    @Override
-    public ExecutionConstants.ParamType getTypeCode() {
-        return typeCode;
-    }
-
-    public void setTypeCode(ExecutionConstants.ParamType typeCode) {
-        this.typeCode = typeCode;
-    }
-
-    @Override
-    public String getStringVal() {
-        return stringVal;
-    }
-
-    public void setStringVal(String stringVal) {
-        this.stringVal = stringVal;
-    }
-
-    @Override
-    public DateTime getDateVal() {
-        return dateVal;
-    }
-
-    public void setDateVal(DateTime dateVal) {
-        this.dateVal = dateVal;
-    }
-
-    @Override
-    public Long getLongVal() {
-        return longVal;
-    }
-
-    public void setLongVal(Long longVal) {
-        this.longVal = longVal;
-    }
-
-    @Override
-    public Double getDoubleVal() {
-        return doubleVal;
-    }
-
-    public void setDoubleVal(Double doubleVal) {
-        this.doubleVal = doubleVal;
     }
 
 

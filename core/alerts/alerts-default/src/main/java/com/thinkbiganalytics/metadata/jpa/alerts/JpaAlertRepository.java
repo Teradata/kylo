@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.jpa.alerts;
 
@@ -38,8 +38,8 @@ public interface JpaAlertRepository extends JpaRepository<JpaAlert, JpaAlert.ID>
 
 
     @Query("select alert from JpaAlert as alert "
-            + "where alert.createdTime > :time")
+           + "where alert.createdTime > :time")
     List<JpaAlert> findAlertsAfter(@Param("time") DateTime time);
 
-    
+
 }

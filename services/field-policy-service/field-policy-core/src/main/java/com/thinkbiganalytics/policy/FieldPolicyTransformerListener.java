@@ -28,8 +28,8 @@ import com.thinkbiganalytics.policy.validation.ValidationPolicy;
  */
 public interface FieldPolicyTransformerListener {
 
-   void onAddValidationPolicy(ValidationPolicy policy);
+    void onAddValidationPolicy(ValidationPolicy policy);
 
-   void onAddStandardizationPolicy(StandardizationPolicy policy);
+    void onAddStandardizationPolicy(StandardizationPolicy policy);
 
 }

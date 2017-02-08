@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.api.event;
 
@@ -32,16 +32,12 @@ import java.util.Objects;
 public class MetadataChange implements Serializable {
 
     private static final long serialVersionUID = 1L;
-
-    public enum ChangeType { CREATE, UPDATE, DELETE }
-
     private final ChangeType change;
     private final String description;
-    
     public MetadataChange(ChangeType change) {
         this(change, "");
     }
-    
+
     public MetadataChange(ChangeType change, String descr) {
         super();
         this.change = change;
@@ -55,7 +51,6 @@ public class MetadataChange implements Serializable {
     public String getDescription() {
         return description;
     }
-    
 
     @Override
     public int hashCode() {
@@ -72,5 +67,7 @@ public class MetadataChange implements Serializable {
             return false;
         }
     }
+
+    public enum ChangeType {CREATE, UPDATE, DELETE}
 
 }

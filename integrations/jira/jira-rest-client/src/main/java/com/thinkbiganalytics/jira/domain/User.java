@@ -1,4 +1,3 @@
-
 package com.thinkbiganalytics.jira.domain;
 
 /*-
@@ -37,15 +36,15 @@ import javax.annotation.Generated;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("org.jsonschema2pojo")
 @JsonPropertyOrder({
-    "self",
-    "name",
-    "key",
-    "emailAddress",
-    "avatarUrls",
-    "displayName",
-    "active",
-    "timeZone"
-})
+                       "self",
+                       "name",
+                       "key",
+                       "emailAddress",
+                       "avatarUrls",
+                       "displayName",
+                       "active",
+                       "timeZone"
+                   })
 public class User {
 
     @JsonProperty("self")
@@ -68,9 +67,7 @@ public class User {
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
-     * 
-     * @return
-     *     The self
+     * @return The self
      */
     @JsonProperty("self")
     public String getSelf() {
@@ -78,9 +75,7 @@ public class User {
     }
 
     /**
-     * 
-     * @param self
-     *     The self
+     * @param self The self
      */
     @JsonProperty("self")
     public void setSelf(String self) {
@@ -88,9 +83,7 @@ public class User {
     }
 
     /**
-     * 
-     * @return
-     *     The name
+     * @return The name
      */
     @JsonProperty("name")
     public String getName() {
@@ -98,9 +91,7 @@ public class User {
     }
 
     /**
-     * 
-     * @param name
-     *     The name
+     * @param name The name
      */
     @JsonProperty("name")
     public void setName(String name) {
@@ -108,9 +99,7 @@ public class User {
     }
 
     /**
-     * 
-     * @return
-     *     The key
+     * @return The key
      */
     @JsonProperty("key")
     public String getKey() {
@@ -118,9 +107,7 @@ public class User {
     }
 
     /**
-     * 
-     * @param key
-     *     The key
+     * @param key The key
      */
     @JsonProperty("key")
     public void setKey(String key) {
@@ -128,9 +115,7 @@ public class User {
     }
 
     /**
-     * 
-     * @return
-     *     The emailAddress
+     * @return The emailAddress
      */
     @JsonProperty("emailAddress")
     public String getEmailAddress() {
@@ -138,9 +123,7 @@ public class User {
     }
 
     /**
-     * 
-     * @param emailAddress
-     *     The emailAddress
+     * @param emailAddress The emailAddress
      */
     @JsonProperty("emailAddress")
     public void setEmailAddress(String emailAddress) {
@@ -148,9 +131,7 @@ public class User {
     }
 
     /**
-     * 
-     * @return
-     *     The avatarUrls
+     * @return The avatarUrls
      */
     @JsonProperty("avatarUrls")
     public AvatarUrls getAvatarUrls() {
@@ -158,9 +139,7 @@ public class User {
     }
 
     /**
-     * 
-     * @param avatarUrls
-     *     The avatarUrls
+     * @param avatarUrls The avatarUrls
      */
     @JsonProperty("avatarUrls")
     public void setAvatarUrls(AvatarUrls avatarUrls) {
@@ -168,9 +147,7 @@ public class User {
     }
 
     /**
-     * 
-     * @return
-     *     The displayName
+     * @return The displayName
      */
     @JsonProperty("displayName")
     public String getDisplayName() {
@@ -178,9 +155,7 @@ public class User {
     }
 
     /**
-     * 
-     * @param displayName
-     *     The displayName
+     * @param displayName The displayName
      */
     @JsonProperty("displayName")
     public void setDisplayName(String displayName) {
@@ -188,9 +163,7 @@ public class User {
     }
 
     /**
-     * 
-     * @return
-     *     The active
+     * @return The active
      */
     @JsonProperty("active")
     public Boolean getActive() {
@@ -198,9 +171,7 @@ public class User {
     }
 
     /**
-     * 
-     * @param active
-     *     The active
+     * @param active The active
      */
     @JsonProperty("active")
     public void setActive(Boolean active) {
@@ -208,9 +179,7 @@ public class User {
     }
 
     /**
-     * 
-     * @return
-     *     The timeZone
+     * @return The timeZone
      */
     @JsonProperty("timeZone")
     public String getTimeZone() {
@@ -218,9 +187,7 @@ public class User {
     }
 
     /**
-     * 
-     * @param timeZone
-     *     The timeZone
+     * @param timeZone The timeZone
      */
     @JsonProperty("timeZone")
     public void setTimeZone(String timeZone) {
@@ -244,6 +211,6 @@ public class User {
 
     protected MoreObjects.ToStringHelper getToStringHelper() {
         return MoreObjects.toStringHelper(this).
-                add("name", name);
+            add("name", name);
     }
 }

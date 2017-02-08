@@ -75,6 +75,22 @@ public class QuartzScheduler implements JobScheduler {
 
     private Set<JobSchedulerListener> listeners = new HashSet<>();
 
+    public static JobIdentifier jobIdentifierForJobKey(JobKey jobKey) {
+        return new DefaultJobIdentifier(jobKey.getName(), jobKey.getGroup());
+    }
+
+    public static JobKey jobKeyForJobIdentifier(JobIdentifier jobIdentifier) {
+        return new JobKey(jobIdentifier.getName(), jobIdentifier.getGroup());
+    }
+
+    public static TriggerKey triggerKeyForTriggerIdentifier(TriggerIdentifier triggerIdentifier) {
+        return new TriggerKey(triggerIdentifier.getName(), triggerIdentifier.getGroup());
+    }
+
+    public static TriggerIdentifier triggerIdentifierForTriggerKey(TriggerKey triggerKey) {
+        return new DefaultTriggerIdentifier(triggerKey.getName(), triggerKey.getGroup());
+    }
+
     public Scheduler getScheduler() {
         return schedulerFactoryBean.getScheduler();
     }
@@ -122,7 +138,6 @@ public class QuartzScheduler implements JobScheduler {
         }
     }
 
-
     @Override
     public void schedule(JobIdentifier jobIdentifier, Runnable task, Date startTime) throws JobSchedulerException {
         schedule(jobIdentifier, task, "run", startTime);
@@ -164,7 +179,6 @@ public class QuartzScheduler implements JobScheduler {
         }
     }
 
-
     @Override
     public void scheduleAtFixedRate(JobIdentifier jobIdentifier, Runnable runnable, Date startTime, long period)
         throws JobSchedulerException {
@@ -205,7 +219,6 @@ public class QuartzScheduler implements JobScheduler {
 
 
     }
-
 
     @Override
     public Date getNextFireTime(String cronExpression) throws ParseException {
@@ -351,23 +364,6 @@ public class QuartzScheduler implements JobScheduler {
         } catch (SchedulerException e) {
             throw new JobSchedulerException("Unable to Delete the Job " + jobIdentifier, e);
         }
-    }
-
-
-    public static JobIdentifier jobIdentifierForJobKey(JobKey jobKey) {
-        return new DefaultJobIdentifier(jobKey.getName(), jobKey.getGroup());
-    }
-
-    public static JobKey jobKeyForJobIdentifier(JobIdentifier jobIdentifier) {
-        return new JobKey(jobIdentifier.getName(), jobIdentifier.getGroup());
-    }
-
-    public static TriggerKey triggerKeyForTriggerIdentifier(TriggerIdentifier triggerIdentifier) {
-        return new TriggerKey(triggerIdentifier.getName(), triggerIdentifier.getGroup());
-    }
-
-    public static TriggerIdentifier triggerIdentifierForTriggerKey(TriggerKey triggerKey) {
-        return new DefaultTriggerIdentifier(triggerKey.getName(), triggerKey.getGroup());
     }
 
     public JobInfo buildJobInfo(JobDetail jobDetail) {

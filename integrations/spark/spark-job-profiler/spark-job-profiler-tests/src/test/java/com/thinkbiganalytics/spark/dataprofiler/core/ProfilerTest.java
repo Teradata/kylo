@@ -60,12 +60,9 @@ public abstract class ProfilerTest {
     public static final String EMPTY_STRING = "";
     public static final double epsilon = 0.0001d;
     public static final double epsilon2 = 3000.0d; //only used for long-variance, since they are extremely large numbers
-
-    private JavaSparkContext sc;
-
     //columnStatsMap is static to be shared between multiple sub-classes
     protected static Map<Integer, ColumnStatistics> columnStatsMap;
-
+    private JavaSparkContext sc;
     @Autowired
     private Profiler profiler;
 

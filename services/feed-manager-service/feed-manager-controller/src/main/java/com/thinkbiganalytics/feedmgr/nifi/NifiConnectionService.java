@@ -44,12 +44,9 @@ import javax.inject.Inject;
 public class NifiConnectionService {
 
     private static final Logger log = LoggerFactory.getLogger(NifiConnectionService.class);
-
+    public Set<NifiConnectionListener> connectionListeners = new HashSet<>();
     @Inject
     LegacyNifiRestClient nifiRestClient;
-
-    public Set<NifiConnectionListener> connectionListeners = new HashSet<>();
-
     private AtomicBoolean isConnected = new AtomicBoolean(false);
 
     @PostConstruct

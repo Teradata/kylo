@@ -130,6 +130,41 @@ public class BaseCategory implements Category {
         hadoopSecurityGroups = securityGroups;
     }
 
+    @Override
+    public DateTime getCreatedTime() {
+        return createdTime;
+    }
+
+    public void setCreatedTime(DateTime createdTime) {
+        this.createdTime = createdTime;
+    }
+
+    @Override
+    public DateTime getModifiedTime() {
+        return modifiedTime;
+    }
+
+    public void setModifiedTime(DateTime modifiedTime) {
+        this.modifiedTime = modifiedTime;
+    }
+
+    @Nonnull
+    @Override
+    public Map<String, String> getUserProperties() {
+        return userProperties;
+    }
+
+    @Override
+    public void setUserProperties(@Nonnull Map<String, String> userProperties, @Nonnull Set<UserFieldDescriptor> userFields) {
+        this.userProperties = userProperties;
+    }
+
+    @Override
+    public AllowedActions getAllowedActions() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
     private static class BaseId {
 
         private final UUID uuid;
@@ -178,40 +213,5 @@ public class BaseCategory implements Category {
         public CategoryId(Serializable ser) {
             super(ser);
         }
-    }
-
-    @Override
-    public DateTime getCreatedTime() {
-        return createdTime;
-    }
-
-    public void setCreatedTime(DateTime createdTime) {
-        this.createdTime = createdTime;
-    }
-
-    @Override
-    public DateTime getModifiedTime() {
-        return modifiedTime;
-    }
-
-    public void setModifiedTime(DateTime modifiedTime) {
-        this.modifiedTime = modifiedTime;
-    }
-
-    @Nonnull
-    @Override
-    public Map<String, String> getUserProperties() {
-        return userProperties;
-    }
-
-    @Override
-    public void setUserProperties(@Nonnull Map<String, String> userProperties, @Nonnull Set<UserFieldDescriptor> userFields) {
-        this.userProperties = userProperties;
-    }
-
-    @Override
-    public AllowedActions getAllowedActions() {
-        // TODO Auto-generated method stub
-        return null;
     }
 }

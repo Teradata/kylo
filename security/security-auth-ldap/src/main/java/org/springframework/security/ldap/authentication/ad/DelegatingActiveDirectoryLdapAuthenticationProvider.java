@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.springframework.security.ldap.authentication.ad;
 
@@ -34,17 +34,16 @@ import java.util.Collections;
 /**
  * A decorator provider around a ActiveDirectoryLdapAuthenticationProvider because the latter hads been declared
  * final.  Allows disabling/enabling the loading of user group membership info after successful authentication.
- * 
  */
 public class DelegatingActiveDirectoryLdapAuthenticationProvider extends AbstractLdapAuthenticationProvider {
-    
+
     private final ActiveDirectoryLdapAuthenticationProvider delegate;
     private final boolean groupsEnabled;
-    
+
     public DelegatingActiveDirectoryLdapAuthenticationProvider(ActiveDirectoryLdapAuthenticationProvider delegate) {
         this(delegate, false);
     }
-    
+
     public DelegatingActiveDirectoryLdapAuthenticationProvider(ActiveDirectoryLdapAuthenticationProvider delegate, boolean groupsEnabled) {
         super();
         this.delegate = delegate;

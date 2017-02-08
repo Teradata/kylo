@@ -39,10 +39,14 @@ import javax.ws.rs.NotFoundException;
  */
 public class NiFiTemplatesRestClientV0 extends AbstractNiFiTemplatesRestClient {
 
-    /** Base path for template requests */
+    /**
+     * Base path for template requests
+     */
     private static final String BASE_PATH = "/controller/templates";
 
-    /** REST client for communicating with NiFi */
+    /**
+     * REST client for communicating with NiFi
+     */
     private final NiFiRestClientV0 client;
 
     /**
@@ -78,7 +82,7 @@ public class NiFiTemplatesRestClientV0 extends AbstractNiFiTemplatesRestClient {
     @Override
     public Set<TemplateDTO> findAll() {
         return client.get(BASE_PATH, null, TemplatesEntity.class)
-                .getTemplates();
+            .getTemplates();
     }
 
     @Nonnull
@@ -97,6 +101,6 @@ public class NiFiTemplatesRestClientV0 extends AbstractNiFiTemplatesRestClient {
     @Override
     protected TemplateDTO upload(@Nonnull final MultiPart template) {
         return client.postMultiPart(BASE_PATH, template, TemplateEntity.class)
-                .getTemplate();
+            .getTemplate();
     }
 }

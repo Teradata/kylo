@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.sla.api;
 
@@ -29,16 +29,16 @@ package com.thinkbiganalytics.metadata.sla.api;
 public class AgreementNotFoundException extends ServiceLevelAgreementException {
 
     private static final long serialVersionUID = 3471025919178590016L;
-    
+
     private final ServiceLevelAgreement.ID id;
-    
+
     /**
      * @param message
      */
     public AgreementNotFoundException(ServiceLevelAgreement.ID id) {
         this("No service level agreement was found with the specified ID", id);
     }
-    
+
     /**
      * @param message
      */

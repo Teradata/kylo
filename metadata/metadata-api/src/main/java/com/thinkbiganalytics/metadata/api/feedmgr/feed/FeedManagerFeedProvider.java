@@ -43,6 +43,4 @@ public interface FeedManagerFeedProvider extends BaseProvider<FeedManagerFeed, F
     FeedManagerFeed ensureFeed(Category.ID categoryId, String feedSystemName);
 
 
-
-
 }

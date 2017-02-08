@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.core.sla.feed;
 
@@ -55,14 +55,14 @@ public class FeedExecutedSinceScheduleAssessor extends MetadataMetricAssessor<Fe
         String feedName = metric.getFeedName();
         FeedCriteria crit = getFeedProvider().feedCriteria().name(feedName);
         List<Feed> feeds = getFeedProvider().getFeeds(crit);
-        
+
         if (feeds.size() > 0) {
             Feed<?> feed = feeds.get(0);
             List<FeedOperation> list = this.getFeedOperationsProvider().findLatestCompleted(feed.getId());
-            
-            if (! list.isEmpty()) {
+
+            if (!list.isEmpty()) {
                 FeedOperation latest = list.get(0);
-                
+
                 if (latest.getStopTime().isAfter(schedTime)) {
                     builder
                         .result(AssessmentResult.SUCCESS)

@@ -47,17 +47,14 @@ import javax.jcr.RepositoryException;
 public class JcrServiceLevelAgreementCheck extends AbstractJcrAuditableSystemEntity implements ServiceLevelAgreementCheck, Serializable {
 
 
-    private static final long serialVersionUID = 2611479261936214396L;
-
     public static final String SLA_NODE_NAME = "tba:slaChecks";
-
     public static final String NODE_TYPE = "tba:slaCheck";
     public static final String DESCRIPTION = "jcr:description";
     public static final String NAME = "jcr:title";
     public static final String CRON_SCHEDULE = "tba:cronSchedule";
-
     public static final String ACTION_CONFIGURATIONS = "tba:slaActionConfigurations";
     public static final String ACTION_CONFIGURATION_TYPE = "tba:slaActionConfiguration";
+    private static final long serialVersionUID = 2611479261936214396L;
 
     /**
      *
@@ -100,14 +97,6 @@ public class JcrServiceLevelAgreementCheck extends AbstractJcrAuditableSystemEnt
         return JcrPropertyUtil.getString(this.node, CRON_SCHEDULE);
     }
 
-    public static class SlaCheckId extends EntityId implements ServiceLevelAgreementCheck.ID {
-
-        public SlaCheckId(Serializable ser) {
-            super(ser);
-        }
-    }
-
-
     public ServiceLevelAgreement getServiceLevelAgreement() {
         try {
             return new JcrServiceLevelAgreement(this.node.getParent());
@@ -118,23 +107,6 @@ public class JcrServiceLevelAgreementCheck extends AbstractJcrAuditableSystemEnt
 
     public List<? extends ServiceLevelAgreementActionConfiguration> getActionConfigurations() {
         return getActionConfigurations(false);
-    }
-
-    public List<? extends ServiceLevelAgreementActionConfiguration> getActionConfigurations(boolean allowClassNotFound) {
-        try {
-            @SuppressWarnings("unchecked")
-            Iterator<Node> itr = (Iterator<Node>) this.node.getNodes(ACTION_CONFIGURATIONS);
-
-            List<Node> list = new ArrayList<>();
-            itr.forEachRemaining((e) -> list.add(e));
-            return list.stream().map((actionConfigNode) -> {
-                return (ServiceLevelAgreementActionConfiguration) JcrUtil.getGenericJson(actionConfigNode, JcrPropertyConstants.JSON, allowClassNotFound);
-            }).filter(configuration -> configuration != null).collect(Collectors.toList());
-
-
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Failed to retrieve the metric nodes", e);
-        }
     }
 
     public void setActionConfigurations(List<? extends ServiceLevelAgreementActionConfiguration> actionConfigurations) {
@@ -159,6 +131,30 @@ public class JcrServiceLevelAgreementCheck extends AbstractJcrAuditableSystemEnt
             }
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the metric nodes", e);
+        }
+    }
+
+    public List<? extends ServiceLevelAgreementActionConfiguration> getActionConfigurations(boolean allowClassNotFound) {
+        try {
+            @SuppressWarnings("unchecked")
+            Iterator<Node> itr = (Iterator<Node>) this.node.getNodes(ACTION_CONFIGURATIONS);
+
+            List<Node> list = new ArrayList<>();
+            itr.forEachRemaining((e) -> list.add(e));
+            return list.stream().map((actionConfigNode) -> {
+                return (ServiceLevelAgreementActionConfiguration) JcrUtil.getGenericJson(actionConfigNode, JcrPropertyConstants.JSON, allowClassNotFound);
+            }).filter(configuration -> configuration != null).collect(Collectors.toList());
+
+
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to retrieve the metric nodes", e);
+        }
+    }
+
+    public static class SlaCheckId extends EntityId implements ServiceLevelAgreementCheck.ID {
+
+        public SlaCheckId(Serializable ser) {
+            super(ser);
         }
     }
 

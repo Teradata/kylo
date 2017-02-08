@@ -24,7 +24,6 @@ import com.cloudera.api.model.ApiClusterList;
 
 /**
  * Cloudera resource with service health status.
- *
  */
 public interface ClouderaRootResource {
 

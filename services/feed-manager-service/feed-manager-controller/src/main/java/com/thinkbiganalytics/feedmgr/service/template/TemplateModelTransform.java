@@ -41,14 +41,57 @@ import javax.inject.Inject;
  */
 public class TemplateModelTransform {
 
+    public final Function<FeedManagerTemplate, RegisteredTemplate>
+        DOMAIN_TO_REGISTERED_TEMPLATE = DOMAIN_TO_REGISTERED_TEMPLATE(true);
     @Inject
     FeedManagerTemplateProvider templateProvider;
+    public final Function<RegisteredTemplate, FeedManagerTemplate>
+        REGISTERED_TEMPLATE_TO_DOMAIN =
+        new Function<RegisteredTemplate, FeedManagerTemplate>() {
+            @Override
+            public FeedManagerTemplate apply(RegisteredTemplate registeredTemplate) {
+                //resolve the id
+                FeedManagerTemplate.ID domainId = registeredTemplate.getId() != null ? templateProvider.resolveId(registeredTemplate.getId()) : null;
+                FeedManagerTemplate domain = null;
+                if (domainId != null) {
+                    domain = templateProvider.findById(domainId);
+                }
+                if (domain == null) {
+                    domain = templateProvider.ensureTemplate(registeredTemplate.getTemplateName());
+                }
+                domainId = domain.getId();
+                //clean the order from the template
+                registeredTemplate.setTemplateOrder(null);
+                String json = ObjectMapperSerializer.serialize(registeredTemplate);
+                domain.setNifiTemplateId(registeredTemplate.getNifiTemplateId());
+                domain.setAllowPreconditions(registeredTemplate.isAllowPreconditions());
+                domain.setName(registeredTemplate.getTemplateName());
+                domain.setDataTransformation(registeredTemplate.isDataTransformation());
+                domain.setDefineTable(registeredTemplate.isDefineTable());
+                domain.setIcon(registeredTemplate.getIcon());
+                domain.setIconColor(registeredTemplate.getIconColor());
+                domain.setDescription(registeredTemplate.getDescription());
+                domain.setOrder(registeredTemplate.getOrder());
+                domain.setStream(registeredTemplate.isStream());
+                domain.setJson(json);
+                FeedManagerTemplate.State state = FeedManagerTemplate.State.ENABLED;
+                try {
+                    if (registeredTemplate.getState() != null) {
+                        state = FeedManagerTemplate.State.valueOf(registeredTemplate.getState());
+                    }
+                } catch (IllegalArgumentException e) {
+                    // make enabled by default
+                }
+                domain.setState(state);
+
+                //assign the id back to the ui model
+                registeredTemplate.setId(domainId.toString());
+                return domain;
+            }
+        };
 
     public final Function<FeedManagerTemplate, RegisteredTemplate>
-    DOMAIN_TO_REGISTERED_TEMPLATE = DOMAIN_TO_REGISTERED_TEMPLATE(true);
-
-    public final Function<FeedManagerTemplate, RegisteredTemplate>
-        DOMAIN_TO_REGISTERED_TEMPLATE(boolean includeFeedNames) {
+    DOMAIN_TO_REGISTERED_TEMPLATE(boolean includeFeedNames) {
 
         return new Function<FeedManagerTemplate, RegisteredTemplate>() {
             @Override
@@ -61,14 +104,14 @@ public class TemplateModelTransform {
                 List<FeedManagerFeed> feeds = domain.getFeeds();
                 template.setFeedsCount(feeds == null ? 0 : feeds.size());
                 template.setStream(domain.isStream());
-                if(includeFeedNames && feeds != null){
-                    template.setFeedNames( feeds.stream().map(feedManagerFeed -> FeedNameUtil.fullName(feedManagerFeed.getCategory().getName(),feedManagerFeed.getName())).collect(
+                if (includeFeedNames && feeds != null) {
+                    template.setFeedNames(feeds.stream().map(feedManagerFeed -> FeedNameUtil.fullName(feedManagerFeed.getCategory().getName(), feedManagerFeed.getName())).collect(
                         Collectors.toSet()));
                 }
-                if(domain.getCreatedTime() != null) {
+                if (domain.getCreatedTime() != null) {
                     template.setCreateDate(domain.getCreatedTime().toDate());
                 }
-                if(domain.getModifiedTime() != null) {
+                if (domain.getModifiedTime() != null) {
                     template.setUpdateDate(domain.getModifiedTime().toDate());
                 }
                 template.setOrder(domain.getOrder());
@@ -77,52 +120,6 @@ public class TemplateModelTransform {
         };
 
     }
-
-
-    public final Function<RegisteredTemplate, FeedManagerTemplate>
-            REGISTERED_TEMPLATE_TO_DOMAIN =
-            new Function<RegisteredTemplate,FeedManagerTemplate>() {
-                @Override
-                public FeedManagerTemplate apply(RegisteredTemplate registeredTemplate) {
-                    //resolve the id
-                    FeedManagerTemplate.ID domainId = registeredTemplate.getId() != null ? templateProvider.resolveId(registeredTemplate.getId()) : null;
-                    FeedManagerTemplate domain = null;
-                    if (domainId != null) {
-                        domain = templateProvider.findById(domainId);
-                    }
-                    if (domain == null) {
-                        domain = templateProvider.ensureTemplate(registeredTemplate.getTemplateName());
-                    }
-                    domainId = domain.getId();
-                    //clean the order from the template
-                    registeredTemplate.setTemplateOrder(null);
-                    String json = ObjectMapperSerializer.serialize(registeredTemplate);
-                    domain.setNifiTemplateId(registeredTemplate.getNifiTemplateId());
-                    domain.setAllowPreconditions(registeredTemplate.isAllowPreconditions());
-                    domain.setName(registeredTemplate.getTemplateName());
-                    domain.setDataTransformation(registeredTemplate.isDataTransformation());
-                    domain.setDefineTable(registeredTemplate.isDefineTable());
-                    domain.setIcon(registeredTemplate.getIcon());
-                    domain.setIconColor(registeredTemplate.getIconColor());
-                    domain.setDescription(registeredTemplate.getDescription());
-                    domain.setOrder(registeredTemplate.getOrder());
-                    domain.setStream(registeredTemplate.isStream());
-                    domain.setJson(json);
-                    FeedManagerTemplate.State state = FeedManagerTemplate.State.ENABLED;
-                    try {
-                        if (registeredTemplate.getState() != null) {
-                            state = FeedManagerTemplate.State.valueOf(registeredTemplate.getState());
-                        }
-                    } catch (IllegalArgumentException e) {
-                        // make enabled by default
-                    }
-                    domain.setState(state);
-
-                    //assign the id back to the ui model
-                    registeredTemplate.setId(domainId.toString());
-                    return domain;
-                }
-            };
 
     public List<RegisteredTemplate> domainToRegisteredTemplateWithFeedNames(Collection<FeedManagerTemplate> domain) {
         return new ArrayList<>(Collections2.transform(domain, DOMAIN_TO_REGISTERED_TEMPLATE(true)));

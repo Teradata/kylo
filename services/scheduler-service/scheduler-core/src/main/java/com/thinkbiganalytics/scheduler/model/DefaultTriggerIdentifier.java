@@ -30,11 +30,11 @@ import com.thinkbiganalytics.scheduler.TriggerIdentifier;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DefaultTriggerIdentifier extends DefaultScheduleIdentifier implements TriggerIdentifier {
 
-  public DefaultTriggerIdentifier() {
-    super();
-  }
+    public DefaultTriggerIdentifier() {
+        super();
+    }
 
-  public DefaultTriggerIdentifier(@JsonProperty("name") String name, @JsonProperty("group") String group) {
-    super(name, group);
-  }
+    public DefaultTriggerIdentifier(@JsonProperty("name") String name, @JsonProperty("group") String group) {
+        super(name, group);
+    }
 }

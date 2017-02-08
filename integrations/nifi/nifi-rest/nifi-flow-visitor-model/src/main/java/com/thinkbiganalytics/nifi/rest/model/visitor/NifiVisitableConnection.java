@@ -56,6 +56,7 @@ public class NifiVisitableConnection implements NifiVisitable {
 
     /**
      * Return the Process group that was visited to obtain this connection
+     *
      * @return the Process group that was visited to obtain this connection
      */
     public NifiVisitableProcessGroup getGroup() {

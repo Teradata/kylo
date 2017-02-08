@@ -57,31 +57,45 @@ import javax.ws.rs.client.WebTarget;
 
 public class NiFiRestClientV1 extends JerseyRestClient implements NiFiRestClient {
 
-    /** NiFi Connections REST client */
+    /**
+     * NiFi Connections REST client
+     */
     @Nullable
     private NiFiConnectionsRestClientV1 connections;
 
-    /** NiFi Controller Services REST client */
+    /**
+     * NiFi Controller Services REST client
+     */
     @Nullable
     private NiFiControllerServicesRestClientV1 controllerServices;
 
-    /** NiFi Ports REST client */
+    /**
+     * NiFi Ports REST client
+     */
     @Nullable
     private NiFiPortsRestClientV1 ports;
 
-    /** NiFi Process Groups REST client */
+    /**
+     * NiFi Process Groups REST client
+     */
     @Nullable
     private NiFiProcessGroupsRestClientV1 processGroups;
 
-    /** NiFi Processors REST client */
+    /**
+     * NiFi Processors REST client
+     */
     @Nullable
     private NiFiProcessorsRestClientV1 processors;
 
-    /** NiFi Templates REST client */
+    /**
+     * NiFi Templates REST client
+     */
     @Nullable
     private NiFiTemplatesRestClientV1 templates;
 
-    /** NiFi Flows REST client */
+    /**
+     * NiFi Flows REST client
+     */
     @Nullable
     private NiFiFlowVisitorClient flows;
 
@@ -141,10 +155,10 @@ public class NiFiRestClientV1 extends JerseyRestClient implements NiFiRestClient
     @Override
     public List<BulletinDTO> getBulletins(@Nonnull final String sourceId) {
         return Optional.ofNullable(get("/flow/bulletin-board", ImmutableMap.of("sourceId", sourceId), BulletinBoardEntity.class))
-                .map(BulletinBoardEntity::getBulletinBoard)
-                .map(BulletinBoardDTO::getBulletins)
-                .map(bulletins -> bulletins.stream().map(BulletinEntity::getBulletin).collect(Collectors.toList()))
-                .orElse(Collections.emptyList());
+            .map(BulletinBoardEntity::getBulletinBoard)
+            .map(BulletinBoardDTO::getBulletins)
+            .map(bulletins -> bulletins.stream().map(BulletinEntity::getBulletin).collect(Collectors.toList()))
+            .orElse(Collections.emptyList());
     }
 
     @Nonnull

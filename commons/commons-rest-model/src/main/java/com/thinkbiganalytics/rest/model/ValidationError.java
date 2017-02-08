@@ -23,6 +23,7 @@ package com.thinkbiganalytics.rest.model;
 /**
  */
 public class ValidationError {
+
     private String fieldValue;
     private String errorMessage;
 

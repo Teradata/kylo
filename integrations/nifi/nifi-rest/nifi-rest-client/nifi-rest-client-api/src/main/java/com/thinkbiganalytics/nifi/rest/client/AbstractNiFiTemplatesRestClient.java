@@ -64,27 +64,27 @@ public abstract class AbstractNiFiTemplatesRestClient implements NiFiTemplatesRe
     @Override
     public Set<TemplateDTO> findByInputPortName(@Nonnull final String inputPortName) {
         return findAll().stream()
-                .map(template -> findById(template.getId()))
-                .filter(template -> {
-                    final Set<PortDTO> ports = template
-                            .map(TemplateDTO::getSnippet)
-                            .map(FlowSnippetDTO::getInputPorts)
-                            .orElse(Collections.emptySet());
-                    return ports.stream()
-                            .filter(port -> port.getName().equalsIgnoreCase(inputPortName))
-                            .findFirst()
-                            .isPresent();
-                })
-                .map(Optional::get)
-                .collect(Collectors.toSet());
+            .map(template -> findById(template.getId()))
+            .filter(template -> {
+                final Set<PortDTO> ports = template
+                    .map(TemplateDTO::getSnippet)
+                    .map(FlowSnippetDTO::getInputPorts)
+                    .orElse(Collections.emptySet());
+                return ports.stream()
+                    .filter(port -> port.getName().equalsIgnoreCase(inputPortName))
+                    .findFirst()
+                    .isPresent();
+            })
+            .map(Optional::get)
+            .collect(Collectors.toSet());
     }
 
     @Nonnull
     @Override
     public Optional<TemplateDTO> findByName(@Nonnull final String name) {
         return findAll().stream()
-                .filter(template -> template.getName().equalsIgnoreCase(name))
-                .findFirst();
+            .filter(template -> template.getName().equalsIgnoreCase(name))
+            .findFirst();
     }
 
     /**

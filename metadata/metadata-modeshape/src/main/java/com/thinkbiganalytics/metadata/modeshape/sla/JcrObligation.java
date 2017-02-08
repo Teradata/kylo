@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.modeshape.sla;
 
@@ -51,20 +51,21 @@ import javax.jcr.RepositoryException;
  */
 public class JcrObligation extends JcrObject implements Obligation, Serializable {
 
-    private static final Logger log = LoggerFactory.getLogger(JcrObligation.class);
-
-
     public static final String DESCRIPTION = "jcr:description";
     public static final String NAME = "jcr:title";
     public static final String JSON = "tba:json";
     public static final String METRICS = "tba:metrics";
-    
     public static final String METRIC_TYPE = "tba:metric";
-
+    private static final Logger log = LoggerFactory.getLogger(JcrObligation.class);
     private static final long serialVersionUID = -6415493614683081403L;
-    
+
     private final JcrObligationGroup group;
 
+
+    public JcrObligation(Node node, JcrObligationGroup group) {
+        super(node);
+        this.group = group;
+    }
 
     @Override
     public ObligationId getId() {
@@ -75,17 +76,13 @@ public class JcrObligation extends JcrObject implements Obligation, Serializable
         }
     }
 
-
-
-    public JcrObligation(Node node, JcrObligationGroup group) {
-        super(node);
-        this.group = group;
-    }
-    
-    
     @Override
     public String getDescription() {
         return JcrPropertyUtil.getString(this.node, "tba:description");
+    }
+
+    public void setDescription(String description) {
+        JcrPropertyUtil.setProperty(this.node, "tba:description", description);
     }
 
     @Override
@@ -103,7 +100,7 @@ public class JcrObligation extends JcrObject implements Obligation, Serializable
         try {
             @SuppressWarnings("unchecked")
             Iterator<Node> itr = (Iterator<Node>) this.node.getNodes(METRICS);
-            
+
             return Sets.newHashSet(Iterators.transform(itr, (metricNode) -> {
                 return JcrUtil.getGenericJson(metricNode, JSON);
             }));
@@ -119,10 +116,10 @@ public class JcrObligation extends JcrObject implements Obligation, Serializable
                 Node metricNode = (Node) nodes.next();
                 metricNode.remove();
             }
-            
+
             for (Metric metric : metrics) {
                 Node metricNode = this.node.addNode(METRICS, METRIC_TYPE);
-                
+
                 JcrPropertyUtil.setProperty(metricNode, NAME, metric.getClass().getSimpleName());
                 JcrPropertyUtil.setProperty(metricNode, DESCRIPTION, metric.getDescription());
                 JcrUtil.addGenericJson(metricNode, JSON, metric);
@@ -132,16 +129,11 @@ public class JcrObligation extends JcrObject implements Obligation, Serializable
         }
     }
 
-    public void setDescription(String description) {
-        JcrPropertyUtil.setProperty(this.node, "tba:description", description);
-    }
-
-
     public static class ObligationId extends JcrEntity.EntityId implements Obligation.ID {
 
         public ObligationId(Serializable ser) {
             super(ser);
         }
     }
-    
+
 }

@@ -34,6 +34,7 @@ public class ScheduleIdentifierTest {
     ScheduleIdentifier identifier;
     ScheduleIdentifier identifier2;
     ScheduleIdentifier identifier3;
+
     @Before
     public void setUp() throws Exception {
         identifier = new DefaultScheduleIdentifier();
@@ -45,10 +46,10 @@ public class ScheduleIdentifierTest {
     @Test
     public void testIdentifier() throws Exception {
 
-        assertTrue(identifier.compareTo(identifier)==0);
-        assertTrue(identifier.compareTo(identifier2)==0);
-        assertTrue(identifier.compareTo(identifier3)==-2);
-        assertTrue(identifier3.compareTo(identifier)==2);
+        assertTrue(identifier.compareTo(identifier) == 0);
+        assertTrue(identifier.compareTo(identifier2) == 0);
+        assertTrue(identifier.compareTo(identifier3) == -2);
+        assertTrue(identifier3.compareTo(identifier) == 2);
         assertTrue(identifier.hashCode() == identifier2.hashCode());
         assertTrue(identifier.equals(identifier2));
         assertTrue(identifier.getGroup().equals("group"));

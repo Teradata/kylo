@@ -33,12 +33,10 @@ import java.util.TreeMap;
  * Utility that helps parse the services defined in the .properties file for what services/components a service should check.
  * This can be parsed in a property file with the following notation:
  * {SERVICE_NAME}/[{COMPONENT_NAME},{COMPONENT_NAME}],{SERVICE_NAME}... COMPONENT_NAMES
- *
- *
  */
 public class ServiceMonitorCheckUtil {
 
-  public static String ALL_COMPONENTS = "ALL";
+    public static String ALL_COMPONENTS = "ALL";
 
     /**
      * get all the services names as a list

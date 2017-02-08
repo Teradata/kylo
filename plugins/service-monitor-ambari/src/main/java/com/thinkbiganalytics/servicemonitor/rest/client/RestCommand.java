@@ -29,35 +29,35 @@ import java.util.Map;
  */
 public abstract class RestCommand<T> {
 
-  public String getPathString() {
-    return null;
-  }
+    private Class<T> responseType;
 
-  /**
-   * called just before making the request to allow for class to setup data
-   */
-  public void beforeRestRequest() {
+    public RestCommand() {
+        this.responseType = (Class<T>) GenericTypeResolver.resolveTypeArgument(getClass(), RestCommand.class);
+    }
 
-  }
+    public String getPathString() {
+        return null;
+    }
 
-  public abstract String payload();
+    /**
+     * called just before making the request to allow for class to setup data
+     */
+    public void beforeRestRequest() {
 
-  private Class<T> responseType;
+    }
 
-  public RestCommand() {
-    this.responseType = (Class<T>) GenericTypeResolver.resolveTypeArgument(getClass(), RestCommand.class);
-  }
+    public abstract String payload();
 
-  public Class<T> getResponseType() {
-    return this.responseType;
-  }
+    public Class<T> getResponseType() {
+        return this.responseType;
+    }
 
 
-  public String getUrl() {
-    return null;
-  }
+    public String getUrl() {
+        return null;
+    }
 
-  public Map<String, Object> getParameters() {
-    return null;
-  }
+    public Map<String, Object> getParameters() {
+        return null;
+    }
 }

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.sla.alerts;
 
@@ -35,24 +35,24 @@ import javax.inject.Inject;
  *
  */
 public class AssessmentAlertGenerator {
-    
+
     @Inject
     private AlertManager alertManager;
 
     /**
-     * 
+     *
      */
     public AssessmentAlertGenerator() {
     }
-    
+
     @PostConstruct
     public void initAlertTypes() {
         this.alertManager.addDescriptor(AssessmentAlerts.VIOLATION_ALERT);
     }
-    
+
     public Alert generateViolationAlert(Alert.Level level, ServiceLevelAssessment assessment) {
         String description = "";
-        
+
         return this.alertManager.create(AssessmentAlerts.VIOLATION_ALERT_TYPE, level, description, assessment);
     }
 

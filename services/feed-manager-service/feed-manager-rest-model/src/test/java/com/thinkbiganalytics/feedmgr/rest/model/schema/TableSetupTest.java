@@ -34,7 +34,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class TableSetupTest {
 
-   @Test
+    @Test
     public void test() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
 
@@ -45,10 +45,10 @@ public class TableSetupTest {
         feedMetadata.getTable().getTableSchema().setName("test");
         DefaultField f1 = new DefaultField();
         f1.setName("field1");
-       feedMetadata.getTable().getTableSchema().getFields().add(f1);
+        feedMetadata.getTable().getTableSchema().getFields().add(f1);
 
         String json = mapper.writeValueAsString(feedMetadata);
-        FeedMetadata feedMetadata2 = mapper.readValue(json,FeedMetadata.class);
+        FeedMetadata feedMetadata2 = mapper.readValue(json, FeedMetadata.class);
         assertEquals(feedMetadata2.getTable().getTableSchema().getName(), feedMetadata.getTable().getTableSchema().getName());
 
     }

@@ -42,54 +42,51 @@ public class FileObjectPersistence {
     private static String FEED_CATEGORIES_FILENAME = "feed-categories2.json";
     private static String TEMPLATE_METADATA_FILENAME = "registered-templates2.json";
 
-    private static class LazyHolder {
-        static final FileObjectPersistence INSTANCE = new FileObjectPersistence();
-    }
-
     public static FileObjectPersistence getInstance() {
         return LazyHolder.INSTANCE;
     }
 
-    public void writeCategoriesToFile(Collection<FeedCategory> categories){
+    public void writeCategoriesToFile(Collection<FeedCategory> categories) {
 
         ObjectMapper mapper = new ObjectMapper();
-        File file = new File(filePath+"/"+FEED_CATEGORIES_FILENAME);
+        File file = new File(filePath + "/" + FEED_CATEGORIES_FILENAME);
         try {
-            mapper.writeValue(file,categories);
+            mapper.writeValue(file, categories);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void writeFeedsToFile(Collection<FeedMetadata> feeds){
+    public void writeFeedsToFile(Collection<FeedMetadata> feeds) {
 
         ObjectMapper mapper = new ObjectMapper();
-        File file = new File(filePath+"/"+FEED_METADATA_FILENAME);
+        File file = new File(filePath + "/" + FEED_METADATA_FILENAME);
         try {
-            mapper.writeValue(file,feeds);
+            mapper.writeValue(file, feeds);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void writeTemplatesToFile(Collection<RegisteredTemplate> templates){
+    public void writeTemplatesToFile(Collection<RegisteredTemplate> templates) {
 
         ObjectMapper mapper = new ObjectMapper();
-        File file = new File(filePath+"/"+TEMPLATE_METADATA_FILENAME);
+        File file = new File(filePath + "/" + TEMPLATE_METADATA_FILENAME);
         try {
-            mapper.writeValue(file,templates);
+            mapper.writeValue(file, templates);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public Collection<FeedCategory> getCategoriesFromFile(){
+    public Collection<FeedCategory> getCategoriesFromFile() {
         ObjectMapper mapper = new ObjectMapper();
-        File file = new File(filePath+"/"+FEED_CATEGORIES_FILENAME);
+        File file = new File(filePath + "/" + FEED_CATEGORIES_FILENAME);
         Collection<FeedCategory> categories = null;
-        if(file.exists()) {
+        if (file.exists()) {
             try {
-                categories = mapper.readValue(file,new TypeReference<List<FeedCategory>>() {});
+                categories = mapper.readValue(file, new TypeReference<List<FeedCategory>>() {
+                });
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -97,13 +94,14 @@ public class FileObjectPersistence {
         return categories;
     }
 
-    public Collection<FeedMetadata> getFeedsFromFile(){
+    public Collection<FeedMetadata> getFeedsFromFile() {
         ObjectMapper mapper = new ObjectMapper();
-        File file = new File(filePath+"/"+FEED_METADATA_FILENAME);
+        File file = new File(filePath + "/" + FEED_METADATA_FILENAME);
         Collection<FeedMetadata> feeds = null;
-        if(file.exists()) {
+        if (file.exists()) {
             try {
-                feeds = mapper.readValue(file,  new TypeReference<List<FeedMetadata>>() {});
+                feeds = mapper.readValue(file, new TypeReference<List<FeedMetadata>>() {
+                });
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -111,17 +109,23 @@ public class FileObjectPersistence {
         return feeds;
     }
 
-    public Collection<RegisteredTemplate> getTemplatesFromFile(){
+    public Collection<RegisteredTemplate> getTemplatesFromFile() {
         ObjectMapper mapper = new ObjectMapper();
-        File file = new File(filePath+"/"+TEMPLATE_METADATA_FILENAME);
+        File file = new File(filePath + "/" + TEMPLATE_METADATA_FILENAME);
         Collection<RegisteredTemplate> templates = null;
-        if(file.exists()) {
+        if (file.exists()) {
             try {
-                templates = mapper.readValue(file, new TypeReference<List<RegisteredTemplate>>() {});
+                templates = mapper.readValue(file, new TypeReference<List<RegisteredTemplate>>() {
+                });
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
         return templates;
+    }
+
+    private static class LazyHolder {
+
+        static final FileObjectPersistence INSTANCE = new FileObjectPersistence();
     }
 }

@@ -27,18 +27,9 @@ import java.util.Set;
  */
 public interface DatasourceDefinition {
 
-    interface ID extends Serializable {
-
-    }
-
-    ;
-
     ID getId();
 
-
-    public enum ConnectionType {
-        SOURCE, DESTINATION;
-    }
+    ;
 
     ConnectionType getConnectionType();
 
@@ -48,7 +39,6 @@ public interface DatasourceDefinition {
 
     void setDatasourceType(String dsType);
 
-
     String getProcessorType();
 
     void setProcessorType(String processorType);
@@ -57,9 +47,9 @@ public interface DatasourceDefinition {
 
     void setDatasourcePropertyKeys(Set<String> properties);
 
-    void setIdentityString(String identityString);
-
     String getIdentityString();
+
+    void setIdentityString(String identityString);
 
     String getDescription();
 
@@ -68,6 +58,14 @@ public interface DatasourceDefinition {
     String getTitle();
 
     void setTile(String title);
+
+    public enum ConnectionType {
+        SOURCE, DESTINATION;
+    }
+
+    interface ID extends Serializable {
+
+    }
 
 
 }

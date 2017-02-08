@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.security.auth.ad;
 
@@ -43,18 +43,17 @@ import java.net.URI;
 
 /**
  * Active Directory login configuration.
- * 
  */
 @Configuration
 @Profile("auth-ad")
 public class ActiveDirectoryAuthConfig {
-    
+
     @Value("${security.auth.ad.login.ui:required}")
     private String uiLoginFlag;
-    
+
     @Value("${security.auth.ad.login.services:required}")
     private String servicesLoginFlag;
-    
+
     @Bean(name = "servicesActiveDirectoryLoginConfiguration")
     public LoginConfiguration servicesAdLoginConfiguration(DelegatingActiveDirectoryLdapAuthenticationProvider authProvider,
                                                            UserDetailsContextMapper userMapper,
@@ -71,7 +70,7 @@ public class ActiveDirectoryAuthConfig {
 
         // @formatter:on
     }
-    
+
     @Bean(name = "uiActiveDirectoryLoginConfiguration")
     public LoginConfiguration uiAdLoginConfiguration(DelegatingActiveDirectoryLdapAuthenticationProvider authProvider,
                                                      UserDetailsContextMapper userMapper,
@@ -92,10 +91,10 @@ public class ActiveDirectoryAuthConfig {
 
     @Bean
     @ConfigurationProperties("security.auth.ad.user")
-    protected UserDetailsMapperFactory userDetailsContextMapper()  {
+    protected UserDetailsMapperFactory userDetailsContextMapper() {
         return new UserDetailsMapperFactory();
     }
-    
+
     @Bean
     @ConfigurationProperties("security.auth.ad.server")
     protected ActiveDirectoryProviderFactory activeDirectoryAuthenticationProvider(UserDetailsContextMapper mapper) {
@@ -104,15 +103,15 @@ public class ActiveDirectoryAuthConfig {
         factory.setMapper(mapper);
         return factory;
     }
-    
-    
+
+
     public static class ActiveDirectoryProviderFactory extends AbstractFactoryBean<DelegatingActiveDirectoryLdapAuthenticationProvider> {
-        
+
         private URI uri;
         private String domain;
         private boolean enableGroups = false;
         private UserDetailsContextMapper mapper;
-        
+
         public void setEnableGroups(boolean groupsEnabled) {
             this.enableGroups = groupsEnabled;
         }
@@ -124,11 +123,11 @@ public class ActiveDirectoryAuthConfig {
         public void setDomain(String domain) {
             this.domain = domain;
         }
-        
+
         public void setMapper(UserDetailsContextMapper mapper) {
             this.mapper = mapper;
         }
-        
+
         @Override
         public Class<?> getObjectType() {
             return DelegatingActiveDirectoryLdapAuthenticationProvider.class;
@@ -139,20 +138,20 @@ public class ActiveDirectoryAuthConfig {
             ActiveDirectoryLdapAuthenticationProvider provider = new ActiveDirectoryLdapAuthenticationProvider(this.domain, this.uri.toASCIIString());
             provider.setConvertSubErrorCodesToExceptions(true);
             provider.setUserDetailsContextMapper(this.mapper);
-            
+
             return new DelegatingActiveDirectoryLdapAuthenticationProvider(provider, this.enableGroups);
         }
     }
-    
+
     public static class UserDetailsMapperFactory extends AbstractFactoryBean<UserDetailsContextMapper> {
-        
+
         private boolean enableGroups = false;
         private String[] groupAttributes = null;
-        
+
         public boolean isEnableGroups() {
             return enableGroups;
         }
-        
+
         public void setEnableGroups(boolean enabled) {
             this.enableGroups = enabled;
         }
@@ -160,7 +159,7 @@ public class ActiveDirectoryAuthConfig {
         public void setGroupAttribures(String groupAttribures) {
             this.groupAttributes = groupAttribures.split("\\|");
         }
-        
+
         @Override
         public boolean isSingleton() {
             return true;
@@ -170,14 +169,16 @@ public class ActiveDirectoryAuthConfig {
         public Class<?> getObjectType() {
             return UserDetailsContextMapper.class;
         }
-        
+
         @Override
         protected UserDetailsContextMapper createInstance() throws Exception {
             LdapUserDetailsMapper mapper = new LdapUserDetailsMapper();
             mapper.setConvertToUpperCase(false);
             mapper.setRolePrefix("");
-            if (ArrayUtils.isNotEmpty(this.groupAttributes)) mapper.setRoleAttributes(groupAttributes);
-            
+            if (ArrayUtils.isNotEmpty(this.groupAttributes)) {
+                mapper.setRoleAttributes(groupAttributes);
+            }
+
             return mapper;
         }
     }

@@ -37,7 +37,8 @@ public class MetadataFieldAnnotationFieldNameResolver extends AnnotationFieldNam
 
     public static String metadataPropertyPrefix = "metadata.";
 
-    private Map<String,String> matchingPropertyMap = new HashMap<>();
+    private Map<String, String> matchingPropertyMap = new HashMap<>();
+
     public MetadataFieldAnnotationFieldNameResolver() {
         super(metadataPropertyPrefix, MetadataField.class);
         //add in known matching properties
@@ -49,10 +50,10 @@ public class MetadataFieldAnnotationFieldNameResolver extends AnnotationFieldNam
     }
 
     @Override
-    public void afterFieldNameAdded(Class clazz,String classBeanPrefix,List<AnnotatedFieldProperty> names, Field field) {
+    public void afterFieldNameAdded(Class clazz, String classBeanPrefix, List<AnnotatedFieldProperty> names, Field field) {
         MetadataField annotation = field.getAnnotation(MetadataField.class);
-        if(annotation.matchingFields().length >0){
-            for(String matchingField: annotation.matchingFields()) {
+        if (annotation.matchingFields().length > 0) {
+            for (String matchingField : annotation.matchingFields()) {
                 matchingPropertyMap.put(classBeanPrefix + field.getName(), classBeanPrefix + matchingField);
             }
         }
@@ -62,13 +63,13 @@ public class MetadataFieldAnnotationFieldNameResolver extends AnnotationFieldNam
     @Override
     public String getFieldPropertyDescription(Field field) {
         MetadataField metadataField = field.getAnnotation(MetadataField.class);
-        if(metadataField != null){
+        if (metadataField != null) {
             return metadataField.description();
         }
         return null;
     }
 
-    public String getMatchingPropertyDescriptor(String propertyDescriptor){
+    public String getMatchingPropertyDescriptor(String propertyDescriptor) {
         return matchingPropertyMap.get(propertyDescriptor);
     }
 

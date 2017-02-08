@@ -49,7 +49,7 @@ import javax.inject.Inject;
 /**
  * Provides access to the {@link DatasourceDefinition} and {@link com.thinkbiganalytics.metadata.rest.model.feed.FeedLineage}
  */
-public class DatasourceService  {
+public class DatasourceService {
 
     private static final Logger log = LoggerFactory.getLogger(DatasourceService.class);
 
@@ -58,16 +58,12 @@ public class DatasourceService  {
 
     @Inject
     ModeShapeAvailability modeShapeAvailability;
-
-    @Inject
-    private DatasourceDefinitionProvider datasourceDefinitionProvider;
-
     @Inject
     FileResourceService fileResourceService;
-
     @Inject
     MetadataAccess metadataAccess;
-
+    @Inject
+    private DatasourceDefinitionProvider datasourceDefinitionProvider;
     private Map<String, FeedLineageStyle> feedLineageStyleMap;
 
     @PostConstruct
@@ -119,11 +115,10 @@ public class DatasourceService  {
      */
     public void loadDefinitionsFromFile() {
 
-
-            String json = fileResourceService.getResourceAsString("classpath:/datasource-definitions.json");
-            List<DatasourceDefinition> definitions = null;
+        String json = fileResourceService.getResourceAsString("classpath:/datasource-definitions.json");
+        List<DatasourceDefinition> definitions = null;
         if (StringUtils.isNotBlank(json)) {
-                definitions = Arrays.asList(ObjectMapperSerializer.deserialize(json, DatasourceDefinition[].class));
+            definitions = Arrays.asList(ObjectMapperSerializer.deserialize(json, DatasourceDefinition[].class));
         }
         updateDatasourceDefinitions(definitions);
     }
@@ -159,12 +154,13 @@ public class DatasourceService  {
 
     /**
      * Return the saved datasource definitions
+     *
      * @return a list of the configured datasource definitions
      */
-    public Set<DatasourceDefinition> getDatasourceDefinitions(){
-       return  metadataAccess.read(() -> {
-          Set<com.thinkbiganalytics.metadata.api.datasource.DatasourceDefinition> datasourceDefinitions =  datasourceDefinitionProvider.getDatasourceDefinitions();
-            if(datasourceDefinitions != null){
+    public Set<DatasourceDefinition> getDatasourceDefinitions() {
+        return metadataAccess.read(() -> {
+            Set<com.thinkbiganalytics.metadata.api.datasource.DatasourceDefinition> datasourceDefinitions = datasourceDefinitionProvider.getDatasourceDefinitions();
+            if (datasourceDefinitions != null) {
                 return new HashSet<>(Collections2.transform(datasourceDefinitions, Model.DOMAIN_TO_DS_DEFINITION));
             }
             return null;

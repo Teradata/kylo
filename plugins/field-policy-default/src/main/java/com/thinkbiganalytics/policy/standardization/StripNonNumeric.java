@@ -33,12 +33,12 @@ public class StripNonNumeric extends SimpleRegexReplacer {
         super("[^\\d.]", "");
     }
 
+    public static StripNonNumeric instance() {
+        return instance;
+    }
+
     @Override
     public String convertValue(String value) {
         return super.convertValue(value);
-    }
-
-    public static StripNonNumeric instance() {
-        return instance;
     }
 }

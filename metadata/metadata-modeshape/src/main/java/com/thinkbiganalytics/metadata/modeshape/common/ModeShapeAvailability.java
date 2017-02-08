@@ -44,7 +44,7 @@ public class ModeShapeAvailability implements ApplicationListener<ContextRefresh
 
     @Inject
     private ModeShapeEngine modeShapeEngine;
-    
+
     @Inject
     private MetadataJcrConfigurator configurator;
 

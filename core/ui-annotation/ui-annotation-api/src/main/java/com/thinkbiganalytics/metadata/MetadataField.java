@@ -32,8 +32,12 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface MetadataField {
+
     boolean enabled() default true;
+
     String description() default "";
+
     String[] matchingFields() default {};
+
     String dataType() default "string";
 }

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.alerts.spi;
 
@@ -35,22 +35,22 @@ import java.util.Objects;
  *
  */
 public class AlertDescriptor {
-    
+
     private final URI alertType;
     private final String contentType;
     private final String description;
     private final boolean respondable;
     private final Map<Alert.State, String> stateContentTypes;
-    
+
     /**
-     * 
+     *
      */
     public AlertDescriptor(URI type, String content, String descr, boolean respondable) {
         this(type, content, descr, respondable, Collections.<Alert.State, String>emptyMap());
     }
-    
+
     /**
-     * 
+     *
      */
     public AlertDescriptor(URI type, String content, String descr, boolean respondable, Map<Alert.State, String> states) {
         this.alertType = type;
@@ -67,11 +67,11 @@ public class AlertDescriptor {
     public String getContentType() {
         return contentType;
     }
-    
+
     public String getDescription() {
         return description;
     }
-    
+
     public boolean isRespondable() {
         return respondable;
     }
@@ -79,25 +79,28 @@ public class AlertDescriptor {
     public Map<Alert.State, String> getStateContentTypes() {
         return stateContentTypes;
     }
-    
+
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (! this.getClass().equals(obj.getClass()))
+        }
+        if (!this.getClass().equals(obj.getClass())) {
             return false;
-        
+        }
+
         AlertDescriptor that = (AlertDescriptor) obj;
-        
+
         return Objects.equals(this.alertType, that.alertType) &&
-                Objects.equals(this.contentType, that.contentType) &&
-                Objects.equals(this.description, that.description) &&
-                Objects.equals(this.respondable, that.respondable) &&
-                Objects.equals(this.stateContentTypes, that.stateContentTypes);
-     }
-    
+               Objects.equals(this.contentType, that.contentType) &&
+               Objects.equals(this.description, that.description) &&
+               Objects.equals(this.respondable, that.respondable) &&
+               Objects.equals(this.stateContentTypes, that.stateContentTypes);
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(this.alertType, this.contentType, this.description, this.respondable, this.stateContentTypes);

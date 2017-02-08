@@ -36,8 +36,6 @@ import java.util.NavigableMap;
 import java.util.TreeMap;
 
 /**
- *
- *
  * Helper class to get Environment Properties
  * reference for RefreshScope: http://cloud.spring.io/spring-cloud-static/docs/1.0.x/spring-cloud.html#_refresh_scope
  */
@@ -48,32 +46,26 @@ public class SpringEnvironmentProperties {
 
     private Map<String, Object> properties = new HashMap<>();
 
-    private Map<String,Map<String,Object>> propertiesStartingWith = new HashMap<>();
-
-
+    private Map<String, Map<String, Object>> propertiesStartingWith = new HashMap<>();
+    @Autowired
+    private Environment env;
 
     public SpringEnvironmentProperties() {
 
     }
 
-    @Autowired
-    private Environment env;
-
     /**
      * Get All Properties that start with a prefix
-     * @param key
-     * @return
      */
-    public Map<String,Object> getPropertiesStartingWith(String key){
+    public Map<String, Object> getPropertiesStartingWith(String key) {
 
-        if(propertiesStartingWith.containsKey(key)){
+        if (propertiesStartingWith.containsKey(key)) {
             return propertiesStartingWith.get(key);
-        }
-        else {
+        } else {
             Map<String, Object> props = getAllProperties();
             if (props != null) {
                 NavigableMap m = new TreeMap(props);
-                Map<String,Object> properties = m.subMap(key, key + Character.MAX_VALUE);
+                Map<String, Object> properties = m.subMap(key, key + Character.MAX_VALUE);
                 Map<String, Object> decryptedProperties = new HashMap<>();
                 if (properties != null && !properties.isEmpty()) {
                     properties.keySet().stream().forEach(k -> {
@@ -89,14 +81,14 @@ public class SpringEnvironmentProperties {
         }
     }
 
-    public Object getPropertyValue(String key){
+    public Object getPropertyValue(String key) {
         return getAllProperties().get(key);
     }
 
 
-    public String getPropertyValueAsString(String key){
-        Object obj =  getPropertyValue(key);
-        if(obj != null){
+    public String getPropertyValueAsString(String key) {
+        Object obj = getPropertyValue(key);
+        if (obj != null) {
             return obj.toString();
         }
         return null;
@@ -110,13 +102,11 @@ public class SpringEnvironmentProperties {
 
     /**
      * get All properties
-     * @return
      */
-    public  Map<String,Object> getAllProperties(  )
-    {
+    public Map<String, Object> getAllProperties() {
         if (properties == null || properties.isEmpty()) {
             Map<String, Object> map = new HashMap();
-            for(Iterator it = ((AbstractEnvironment) env).getPropertySources().iterator(); it.hasNext(); ) {
+            for (Iterator it = ((AbstractEnvironment) env).getPropertySources().iterator(); it.hasNext(); ) {
                 PropertySource propertySource = (PropertySource) it.next();
                 if (propertySource instanceof MapPropertySource) {
                     map.putAll(((MapPropertySource) propertySource).getSource());

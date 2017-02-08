@@ -84,35 +84,35 @@ public class NifiIntegrationRestController {
 
     private static final Logger log = LoggerFactory.getLogger(NifiIntegrationRestController.class);
 
-    /** Messages for the default locale */
+    /**
+     * Messages for the default locale
+     */
     private static final ResourceBundle STRINGS = ResourceBundle.getBundle("com.thinkbiganalytics.feedmgr.rest.controller.NiFiIntegrationMessages");
-
-    /** Legacy NiFi REST client */
-    @Inject
-    private LegacyNifiRestClient legacyNifiRestClient;
-
-    /** New NiFi REST client */
-    @Inject
-    private NiFiRestClient nifiRestClient;
-
-    @Inject
-    private SpringEnvironmentProperties environmentProperties;
-
     @Inject
     DBCPConnectionPoolTableInfo dbcpConnectionPoolTableInfo;
-
     @Inject
     FeedManagerTemplateService feedManagerTemplateService;
-
     @Inject
     NiFiPropertyDescriptorTransform propertyDescriptorTransform;
+    /**
+     * Legacy NiFi REST client
+     */
+    @Inject
+    private LegacyNifiRestClient legacyNifiRestClient;
+    /**
+     * New NiFi REST client
+     */
+    @Inject
+    private NiFiRestClient nifiRestClient;
+    @Inject
+    private SpringEnvironmentProperties environmentProperties;
 
     @GET
     @Path("/auto-align/{processGroupId}")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Organizes the components of the specified process group.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "The result of the operation.", response = RestResponseStatus.class)
+        @ApiResponse(code = 200, message = "The result of the operation.", response = RestResponseStatus.class)
     )
     public Response autoAlign(@PathParam("processGroupId") String processGroupId) {
         RestResponseStatus status;
@@ -150,14 +150,14 @@ public class NifiIntegrationRestController {
     @ApiOperation(value = "Performs a cleanup of the specified process group.",
                   notes = "This method will list all of the child process groups and delete the ones where the name matches the regular expression: .* - \\d{13}")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Returns the number of process groups deleted.", response = RestResponseStatus.class),
-            @ApiResponse(code = 500, message = "The process group is unavailable.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 200, message = "Returns the number of process groups deleted.", response = RestResponseStatus.class),
+                      @ApiResponse(code = 500, message = "The process group is unavailable.", response = RestResponseStatus.class)
+                  })
     public Response cleanupVersionedProcessGroups(@PathParam("processGroupId") String processGroupId) {
         RestResponseStatus status;
-        CleanupStaleFeedRevisions cleanupStaleFeedRevisions = new CleanupStaleFeedRevisions(legacyNifiRestClient,processGroupId, propertyDescriptorTransform);
+        CleanupStaleFeedRevisions cleanupStaleFeedRevisions = new CleanupStaleFeedRevisions(legacyNifiRestClient, processGroupId, propertyDescriptorTransform);
         cleanupStaleFeedRevisions.cleanup();
-        String msg = "Cleaned up "+cleanupStaleFeedRevisions.getDeletedProcessGroups().size()+" Process Groups";
+        String msg = "Cleaned up " + cleanupStaleFeedRevisions.getDeletedProcessGroups().size() + " Process Groups";
         status = new RestResponseStatus.ResponseStatusBuilder().message(msg).buildSuccess();
 
         return Response.ok(status).build();
@@ -168,9 +168,9 @@ public class NifiIntegrationRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the flow of the specified process group.")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Returns the flow.", response = NifiFlowProcessGroup.class),
-            @ApiResponse(code = 500, message = "The process group is unavailable.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 200, message = "Returns the flow.", response = NifiFlowProcessGroup.class),
+                      @ApiResponse(code = 500, message = "The process group is unavailable.", response = RestResponseStatus.class)
+                  })
     public Response getFlow(@PathParam("processGroupId") String processGroupId) {
         NifiFlowProcessGroup flow = legacyNifiRestClient.getFeedFlow(processGroupId);
         NifiFlowDeserializer.prepareForSerialization(flow);
@@ -182,9 +182,9 @@ public class NifiIntegrationRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the flow of the specified feed.")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Returns the flow.", response = NifiFlowProcessGroup.class),
-            @ApiResponse(code = 500, message = "The process group is unavailable.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 200, message = "Returns the flow.", response = NifiFlowProcessGroup.class),
+                      @ApiResponse(code = 500, message = "The process group is unavailable.", response = RestResponseStatus.class)
+                  })
     public Response getFlowForCategoryAndFeed(@PathParam("categoryAndFeedName") String categoryAndFeedName) {
         NifiFlowProcessGroup flow = legacyNifiRestClient.getFeedFlowForCategoryAndFeed(categoryAndFeedName);
         NifiFlowDeserializer.prepareForSerialization(flow);
@@ -198,9 +198,9 @@ public class NifiIntegrationRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets a list of all flows.")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Returns the flows.", response = NifiFlowProcessGroup.class, responseContainer = "List"),
-            @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 200, message = "Returns the flows.", response = NifiFlowProcessGroup.class, responseContainer = "List"),
+                      @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
+                  })
     public Response getFlows() {
         List<NifiFlowProcessGroup> feedFlows = legacyNifiRestClient.getFeedFlows();
         if (feedFlows != null) {
@@ -216,7 +216,7 @@ public class NifiIntegrationRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Gets user properties for NiFi.", notes = "These are the properties beginning with 'config.' in the application.properties file.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "Returns the user properties.", response = Map.class)
+        @ApiResponse(code = 200, message = "Returns the user properties.", response = Map.class)
     )
     public Response getFeeds() {
         Map<String, Object> properties = environmentProperties.getPropertiesStartingWith(PropertyExpressionResolver.configPropertyPrefix);
@@ -231,9 +231,9 @@ public class NifiIntegrationRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the input ports to reusable templates.")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Returns the input ports.", response = PortDTO.class, responseContainer = "Set"),
-            @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 200, message = "Returns the input ports.", response = PortDTO.class, responseContainer = "Set"),
+                      @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
+                  })
     public Response getReusableFeedInputPorts() {
         Set<PortDTO> ports = feedManagerTemplateService.getReusableFeedInputPorts();
         return Response.ok(ports).build();
@@ -243,7 +243,7 @@ public class NifiIntegrationRestController {
      * Finds controller services of the specified type.
      *
      * @param processGroupId the process group id
-     * @param type the type to match
+     * @param type           the type to match
      * @return the list of matching controller services
      */
     @GET
@@ -251,11 +251,11 @@ public class NifiIntegrationRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Finds controller services of the specified type.")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Returns the matching controller services.", response = ControllerServiceDTO.class, responseContainer = "Set"),
-            @ApiResponse(code = 400, message = "The type cannot be empty.", response = RestResponseStatus.class),
-            @ApiResponse(code = 404, message = "The process group cannot be found.", response = RestResponseStatus.class),
-            @ApiResponse(code = 500, message = "The process group is unavailable.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 200, message = "Returns the matching controller services.", response = ControllerServiceDTO.class, responseContainer = "Set"),
+                      @ApiResponse(code = 400, message = "The type cannot be empty.", response = RestResponseStatus.class),
+                      @ApiResponse(code = 404, message = "The process group cannot be found.", response = RestResponseStatus.class),
+                      @ApiResponse(code = 500, message = "The process group is unavailable.", response = RestResponseStatus.class)
+                  })
     public Response getControllerServices(@Nonnull @PathParam("processGroupId") final String processGroupId, @Nullable @QueryParam("type") final String type) {
         // Verify parameters
         if (StringUtils.isBlank(processGroupId)) {
@@ -271,11 +271,11 @@ public class NifiIntegrationRestController {
 
         // Filter controller services
         final Set<ControllerServiceDTO> controllerServices = ("all".equalsIgnoreCase(processGroupId) || "root".equalsIgnoreCase(processGroupId))
-                                                           ? nifiRestClient.processGroups().getControllerServices("root")
-                                                           : nifiRestClient.processGroups().getControllerServices(processGroupId);
+                                                             ? nifiRestClient.processGroups().getControllerServices("root")
+                                                             : nifiRestClient.processGroups().getControllerServices(processGroupId);
         final Set<ControllerServiceDTO> matchingControllerServices = controllerServices.stream()
-                .filter(controllerService -> allowedTypes.contains(controllerService.getType()))
-                .collect(Collectors.toSet());
+            .filter(controllerService -> allowedTypes.contains(controllerService.getType()))
+            .collect(Collectors.toSet());
         return Response.ok(matchingControllerServices).build();
     }
 
@@ -284,9 +284,9 @@ public class NifiIntegrationRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets a list of available controller services.")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Returns the controller services.", response = ControllerServiceDTO.class, responseContainer = "Set"),
-            @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 200, message = "Returns the controller services.", response = ControllerServiceDTO.class, responseContainer = "Set"),
+                      @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
+                  })
     public Response getServices() {
         final Set<ControllerServiceDTO> controllerServices = legacyNifiRestClient.getControllerServices();
         return Response.ok(ImmutableMap.of("controllerServices", controllerServices)).build();
@@ -298,9 +298,9 @@ public class NifiIntegrationRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets a list of the available controller service types.")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Returns the controller service types.", response = ControllerServiceTypesEntity.class),
-            @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 200, message = "Returns the controller service types.", response = ControllerServiceTypesEntity.class),
+                      @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
+                  })
     public Response getServiceTypes() {
         final ControllerServiceTypesEntity entity = new ControllerServiceTypesEntity();
         entity.setControllerServiceTypes(legacyNifiRestClient.getControllerServiceTypes());
@@ -313,9 +313,9 @@ public class NifiIntegrationRestController {
     @ApiOperation(value = "Gets a list of table names from the specified database.",
                   notes = "Connects to the database specified by the controller service using the password defined in Kylo's application.properties file.")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Returns the table names.", response = String.class, responseContainer = "List"),
-            @ApiResponse(code = 500, message = "Nifi or the database are unavailable.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 200, message = "Returns the table names.", response = String.class, responseContainer = "List"),
+                      @ApiResponse(code = 500, message = "Nifi or the database are unavailable.", response = RestResponseStatus.class)
+                  })
     public Response getTableNames(@PathParam("serviceId") String serviceId, @QueryParam("serviceName") @DefaultValue("") String serviceName, @QueryParam("schema") String schema,
                                   @QueryParam("tableName") String tableName) {
         log.info("Query for Table Names against service: {}({})", serviceName, serviceId);
@@ -330,9 +330,9 @@ public class NifiIntegrationRestController {
     @ApiOperation(value = "Gets the schema of the specified table.",
                   notes = "Connects to the database specified by the controller service using the password defined in Kylo's application.properties file.")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Returns the table schema.", response = TableSchema.class),
-            @ApiResponse(code = 500, message = "Nifi or the database are unavailable.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 200, message = "Returns the table schema.", response = TableSchema.class),
+                      @ApiResponse(code = 500, message = "Nifi or the database are unavailable.", response = RestResponseStatus.class)
+                  })
     public Response describeTable(@PathParam("serviceId") String serviceId, @PathParam("tableName") String tableName, @QueryParam("serviceName") @DefaultValue("") String serviceName,
                                   @QueryParam("schema") String schema) {
         log.info("Describe Table {} against service: {}({})", tableName, serviceName, serviceId);
@@ -350,9 +350,9 @@ public class NifiIntegrationRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the status of the NiFi cluster.")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Returns the cluster status.", response = NiFiClusterSummary.class),
-            @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 200, message = "Returns the cluster status.", response = NiFiClusterSummary.class),
+                      @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
+                  })
     public Response getClusterSummary() {
         final NiFiClusterSummary clusterSummary = nifiRestClient.clusterSummary();
         return Response.ok(clusterSummary).build();

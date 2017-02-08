@@ -52,11 +52,15 @@ import javax.jcr.RepositoryException;
  */
 public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> implements CategoryProvider<Category> {
 
-    /** JCR node type manager */
+    /**
+     * JCR node type manager
+     */
     @Inject
     ExtensibleTypeProvider extensibleTypeProvider;
 
-    /** Transaction support */
+    /**
+     * Transaction support
+     */
     @Inject
     MetadataAccess metadataAccess;
 
@@ -138,7 +142,7 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
     @Override
     public Optional<Set<UserFieldDescriptor>> getFeedUserFields(@Nonnull final Category.ID categoryId) {
         return Optional.ofNullable(findById(categoryId))
-                .map(category -> JcrPropertyUtil.getUserFields(ExtensionsConstants.getUserCategoryFeed(category.getName()), extensibleTypeProvider));
+            .map(category -> JcrPropertyUtil.getUserFields(ExtensionsConstants.getUserCategoryFeed(category.getName()), extensibleTypeProvider));
     }
 
     @Override

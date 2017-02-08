@@ -49,6 +49,7 @@ public class GroupedStats extends BaseStatistics implements Serializable {
      * Max time for the events in this group
      */
     private DateTime maxTime;
+
     public GroupedStats() {
 
     }
@@ -102,13 +103,6 @@ public class GroupedStats extends BaseStatistics implements Serializable {
         this.totalCount++;
     }
 
-
-
-
-    public void setGroupKey(String groupKey) {
-        this.groupKey = groupKey;
-    }
-
     public DateTime getMinTime() {
         return minTime;
     }
@@ -121,6 +115,9 @@ public class GroupedStats extends BaseStatistics implements Serializable {
         return groupKey;
     }
 
+    public void setGroupKey(String groupKey) {
+        this.groupKey = groupKey;
+    }
 
     public void clear() {
         super.clear();

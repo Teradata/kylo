@@ -1,4 +1,3 @@
-
 package com.thinkbiganalytics.jira.domain;
 
 /*-
@@ -36,11 +35,11 @@ import javax.annotation.Generated;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("org.jsonschema2pojo")
 @JsonPropertyOrder({
-    "self",
-    "iconUrl",
-    "name",
-    "id"
-})
+                       "self",
+                       "iconUrl",
+                       "name",
+                       "id"
+                   })
 public class Priority {
 
     @JsonProperty("self")
@@ -55,9 +54,7 @@ public class Priority {
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
-     * 
-     * @return
-     *     The self
+     * @return The self
      */
     @JsonProperty("self")
     public String getSelf() {
@@ -65,9 +62,7 @@ public class Priority {
     }
 
     /**
-     * 
-     * @param self
-     *     The self
+     * @param self The self
      */
     @JsonProperty("self")
     public void setSelf(String self) {
@@ -75,9 +70,7 @@ public class Priority {
     }
 
     /**
-     * 
-     * @return
-     *     The iconUrl
+     * @return The iconUrl
      */
     @JsonProperty("iconUrl")
     public String getIconUrl() {
@@ -85,9 +78,7 @@ public class Priority {
     }
 
     /**
-     * 
-     * @param iconUrl
-     *     The iconUrl
+     * @param iconUrl The iconUrl
      */
     @JsonProperty("iconUrl")
     public void setIconUrl(String iconUrl) {
@@ -95,9 +86,7 @@ public class Priority {
     }
 
     /**
-     * 
-     * @return
-     *     The name
+     * @return The name
      */
     @JsonProperty("name")
     public String getName() {
@@ -105,9 +94,7 @@ public class Priority {
     }
 
     /**
-     * 
-     * @param name
-     *     The name
+     * @param name The name
      */
     @JsonProperty("name")
     public void setName(String name) {
@@ -115,9 +102,7 @@ public class Priority {
     }
 
     /**
-     * 
-     * @return
-     *     The id
+     * @return The id
      */
     @JsonProperty("id")
     public String getId() {
@@ -125,9 +110,7 @@ public class Priority {
     }
 
     /**
-     * 
-     * @param id
-     *     The id
+     * @param id The id
      */
     @JsonProperty("id")
     public void setId(String id) {

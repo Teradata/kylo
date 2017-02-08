@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.rest.model.sla;
 
@@ -40,27 +40,24 @@ import java.util.List;
 @JsonInclude(Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ServiceLevelAssessment {
-    
-    public enum Result { SUCCESS, WARNING, FAILURE }
-    
-    @JsonSerialize(using=DateTimeSerializer.class)
+
+    List<ObligationAssessment> obligationAssessments;
+    @JsonSerialize(using = DateTimeSerializer.class)
     private DateTime time;
-    
+
     private ServiceLevelAgreement agreement;
     private String message;
     private Result result;
-    List<ObligationAssessment> obligationAssessments;
-    
     public ServiceLevelAssessment() {
         this.obligationAssessments = new ArrayList<>();
     }
-    
+
     public ServiceLevelAssessment(ServiceLevelAgreement agreement, DateTime time, String message, Result result) {
         this(agreement, time, message, result, new ArrayList<ObligationAssessment>());
     }
 
     public ServiceLevelAssessment(ServiceLevelAgreement agreement, DateTime time, String message, Result result,
-            List<ObligationAssessment> obligationAssessments) {
+                                  List<ObligationAssessment> obligationAssessments) {
         super();
         this.agreement = agreement;
         this.time = time;
@@ -108,8 +105,10 @@ public class ServiceLevelAssessment {
     public void setObligationAssessments(List<ObligationAssessment> obligationAssessments) {
         this.obligationAssessments = obligationAssessments;
     }
-    
+
     public void addObligationAssessment(ObligationAssessment oa) {
         this.obligationAssessments.add(oa);
     }
+
+    public enum Result {SUCCESS, WARNING, FAILURE}
 }

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.rest.model.data;
 
@@ -38,9 +38,14 @@ public interface DatasourceCriteria {
     static final String TYPE = "type";
 
     DatasourceCriteria name(String name);
+
     DatasourceCriteria createdOn(DateTime time);
+
     DatasourceCriteria createdAfter(DateTime time);
+
     DatasourceCriteria createdBefore(DateTime time);
+
     DatasourceCriteria owner(String owner);
+
     DatasourceCriteria type(Class<? extends Datasource> type, Class<? extends Datasource>... others);
 }

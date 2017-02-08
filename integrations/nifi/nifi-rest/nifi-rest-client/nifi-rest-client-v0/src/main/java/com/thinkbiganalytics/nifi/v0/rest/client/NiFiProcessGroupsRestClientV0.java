@@ -89,8 +89,8 @@ public class NiFiProcessGroupsRestClientV0 extends AbstractNiFiProcessGroupsRest
         try {
             entity.setProcessGroup(group);
             ProcessGroupEntity
-                    returnedGroup =
-                    client.post(BASE_PATH + "/" + parentGroupId + "/process-group-references", entity, ProcessGroupEntity.class);
+                returnedGroup =
+                client.post(BASE_PATH + "/" + parentGroupId + "/process-group-references", entity, ProcessGroupEntity.class);
             return returnedGroup.getProcessGroup();
         } catch (NotFoundException e) {
             throw new NifiComponentNotFoundException(parentGroupId, NifiConstants.NIFI_COMPONENT_TYPE.PROCESS_GROUP, e);
@@ -173,7 +173,7 @@ public class NiFiProcessGroupsRestClientV0 extends AbstractNiFiProcessGroupsRest
     public Optional<ProcessGroupStatusDTO> getStatus(String processGroupId) {
         try {
             return Optional.ofNullable(client.get(BASE_PATH + "/" + processGroupId + "/status", null, ProcessGroupStatusEntity.class).getProcessGroupStatus());
-        }catch (final NotFoundException e) {
+        } catch (final NotFoundException e) {
             return Optional.empty();
         }
     }

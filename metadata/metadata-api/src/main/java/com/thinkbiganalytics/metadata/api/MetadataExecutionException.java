@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.api;
 
@@ -25,7 +25,6 @@ package com.thinkbiganalytics.metadata.api;
 
 /**
  * Wraps any unhandled exception that is thrown within a MetadataCommand or MetadataAction.
- * 
  */
 public class MetadataExecutionException extends MetadataException {
 

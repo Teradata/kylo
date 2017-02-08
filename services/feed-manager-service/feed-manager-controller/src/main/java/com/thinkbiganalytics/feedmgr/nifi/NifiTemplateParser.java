@@ -48,7 +48,7 @@ public class NifiTemplateParser {
         XPath xpath = xpathFactory.newXPath();
 
         InputSource source = new InputSource(new StringReader(nifiTemplate));
-        String name = (String) xpath.evaluate("/template/name", source,XPathConstants.STRING);
+        String name = (String) xpath.evaluate("/template/name", source, XPathConstants.STRING);
         return name;
     }
 }

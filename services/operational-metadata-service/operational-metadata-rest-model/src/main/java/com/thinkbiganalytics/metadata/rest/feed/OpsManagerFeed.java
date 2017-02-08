@@ -24,6 +24,7 @@ package com.thinkbiganalytics.metadata.rest.feed;
  * A model class for ops manager feeds
  */
 public class OpsManagerFeed {
+
     private String id;
     private String name;
 

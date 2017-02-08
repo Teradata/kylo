@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.rest.model.op;
 
@@ -51,6 +51,6 @@ public class HiveTablePartitions extends ChangeSet {
     public void addPartition(HiveTablePartition hiveTablePartition) {
         this.partitions.add(hiveTablePartition);
     }
-    
-    
+
+
 }

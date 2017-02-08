@@ -51,11 +51,7 @@ import java.util.stream.Collectors;
  */
 public class Model {
 
-    private Model() { }
-    
-    // @formatter:off
-    
-    public static final Function<com.thinkbiganalytics.metadata.api.feed.InitializationStatus, InitializationStatus> DOMAIN_TO_INIT_STATUS 
+    public static final Function<com.thinkbiganalytics.metadata.api.feed.InitializationStatus, InitializationStatus> DOMAIN_TO_INIT_STATUS
         = new Function<com.thinkbiganalytics.metadata.api.feed.InitializationStatus, InitializationStatus>() {
         @Override
         public InitializationStatus apply(com.thinkbiganalytics.metadata.api.feed.InitializationStatus domain) {
@@ -65,7 +61,8 @@ public class Model {
             return status;
         }
     };
-    
+
+    // @formatter:off
     public static final Function<com.thinkbiganalytics.metadata.api.feed.FeedPrecondition, FeedPrecondition> DOMAIN_TO_FEED_PRECOND
         = new Function<com.thinkbiganalytics.metadata.api.feed.FeedPrecondition, FeedPrecondition>() {
         @Override
@@ -74,7 +71,6 @@ public class Model {
             return precond;
         }
     };
-    
     /**
      * Convert a Domin DatasourceDefinition to the Rest Model
      */
@@ -95,7 +91,6 @@ public class Model {
             return dsDef;
         }
     };
-    
     public static final Function<DerivedDatasource, com.thinkbiganalytics.metadata.rest.model.data.DerivedDatasource> DOMAIN_TO_DERIVED_DS
         = new Function<DerivedDatasource, com.thinkbiganalytics.metadata.rest.model.data.DerivedDatasource>() {
         @Override
@@ -109,9 +104,7 @@ public class Model {
             return ds;
         }
     };
-    
     public static final Function<com.thinkbiganalytics.metadata.api.datasource.Datasource, Datasource> DOMAIN_TO_DS = DOMAIN_TO_DS(true);
-    
     public static final Function<com.thinkbiganalytics.metadata.api.feed.FeedSource, FeedSource> DOMAIN_TO_FEED_SOURCE
         = new Function<com.thinkbiganalytics.metadata.api.feed.FeedSource, FeedSource>() {
         @Override
@@ -121,7 +114,6 @@ public class Model {
             return src;
         }
     };
-    
     public static final Function<com.thinkbiganalytics.metadata.api.feed.FeedDestination, FeedDestination> DOMAIN_TO_FEED_DESTINATION
         = new Function<com.thinkbiganalytics.metadata.api.feed.FeedDestination, FeedDestination>() {
         @Override
@@ -131,7 +123,6 @@ public class Model {
             return dest;
         }
     };
-    
     public static final Function<com.thinkbiganalytics.metadata.api.op.FeedOperation, FeedOperation> DOMAIN_TO_FEED_OP
         = new Function<com.thinkbiganalytics.metadata.api.op.FeedOperation, FeedOperation>() {
         @Override
@@ -149,7 +140,6 @@ public class Model {
             return op;
         }
     };
-    
     public static final Function<Category, FeedCategory> DOMAIN_TO_FEED_CATEGORY = new Function<Category, FeedCategory>() {
         @Override
         public FeedCategory apply(Category category) {
@@ -161,8 +151,10 @@ public class Model {
             return feedCategory;
         }
     };
-
     public static final Function<com.thinkbiganalytics.metadata.api.feed.Feed, Feed> DOMAIN_TO_FEED = DOMAIN_TO_FEED(true);
+
+    private Model() {
+    }
 
     public static final Function<com.thinkbiganalytics.metadata.api.feed.Feed, Feed> DOMAIN_TO_FEED(boolean addSources) {
         return new Function<com.thinkbiganalytics.metadata.api.feed.Feed, Feed>() {

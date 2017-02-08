@@ -64,49 +64,47 @@ public class JpaBatchJobExecutionTest {
     @Inject
     private MetadataAccess operationalMetadataAccess;
 
+    public static Map<String, Field> getFields(Class<?> cl) {
+        return Arrays.asList(cl.getDeclaredFields()).stream().collect(Collectors.toMap(f -> f.getName(), f -> f));
+    }
+
     @Test
-    public void testPaging(){
+    public void testPaging() {
         operationalMetadataAccess.read(() -> {
             String filter = "jobInstance.feed.feedType==FEED,jobInstance.feed.name==movies.new_releases";
             //String feed = "movies.new_releases";
-          Page<? extends BatchJobExecution> page = jobExecutionProvider.findAll(filter, new PageRequest(0, 10, Sort.Direction.DESC,"jobExecutionId"));
-          return page;
+            Page<? extends BatchJobExecution> page = jobExecutionProvider.findAll(filter, new PageRequest(0, 10, Sort.Direction.DESC, "jobExecutionId"));
+            return page;
         });
     }
 
     @Test
-    public void testJobStatusCount(){
+    public void testJobStatusCount() {
         operationalMetadataAccess.read(() -> {
-          List<JobStatusCount> counts = jobExecutionProvider.getJobStatusCountByDate();
+            List<JobStatusCount> counts = jobExecutionProvider.getJobStatusCountByDate();
             return counts;
         });
 
     }
 
     @Test
-    public void testJobStatusCountFromNow(){
+    public void testJobStatusCountFromNow() {
         operationalMetadataAccess.read(() -> {
             Period period = DateTimeUtil.period("3Y");
-            List<JobStatusCount> counts = jobExecutionProvider.getJobStatusCountByDateFromNow(period,null);
+            List<JobStatusCount> counts = jobExecutionProvider.getJobStatusCountByDateFromNow(period, null);
             return counts;
         });
 
     }
 
     @Test
-    public void testFilters(){
+    public void testFilters() {
         operationalMetadataAccess.read(() -> {
             QJpaBatchJobExecution jobExecution = QJpaBatchJobExecution.jpaBatchJobExecution;
-            BooleanBuilder builder = GenericQueryDslFilter.buildFilter(jobExecution,"status==\"COMPLETED,FAILED\"");
+            BooleanBuilder builder = GenericQueryDslFilter.buildFilter(jobExecution, "status==\"COMPLETED,FAILED\"");
             int i = 0;
-        return null;
+            return null;
         });
 
-    }
-
-
-
-    public static Map<String,Field> getFields(Class<?> cl) {
-         return Arrays.asList(cl.getDeclaredFields()).stream().collect(Collectors.toMap(f -> f.getName(), f -> f));
     }
 }

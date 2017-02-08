@@ -31,7 +31,6 @@ import java.util.Set;
 import javax.jcr.Node;
 
 /**
- *
  * @see JcrFeedServiceLevelAgreementProvider#relate(ServiceLevelAgreement, Set)
  */
 public class JcrFeedServiceLevelAgreementRelationship extends JcrExtensibleEntity implements FeedServiceLevelAgreementRelationship {
@@ -68,8 +67,8 @@ public class JcrFeedServiceLevelAgreementRelationship extends JcrExtensibleEntit
         final Set<JcrFeed> feeds = (Set<JcrFeed>) getFeeds();
         if (feeds != null && !feeds.isEmpty()) {
             feeds.stream()
-                    .filter(feed -> feed != null)
-                    .forEach(feed -> feed.removeServiceLevelAgreement(id));
+                .filter(feed -> feed != null)
+                .forEach(feed -> feed.removeServiceLevelAgreement(id));
         }
         setProperty(FEEDS, null);
         return true;

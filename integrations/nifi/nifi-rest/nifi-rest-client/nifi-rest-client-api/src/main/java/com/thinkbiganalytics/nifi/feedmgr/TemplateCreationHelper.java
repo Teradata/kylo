@@ -67,20 +67,16 @@ import javax.ws.rs.WebApplicationException;
  */
 public class TemplateCreationHelper {
 
-    private static final Logger log = LoggerFactory.getLogger(TemplateCreationHelper.class);
-
-    public static String REUSABLE_TEMPLATES_PROCESS_GROUP_NAME = "reusable_templates";
-
     public static final String REUSABLE_TEMPLATES_CATEGORY_NAME = "Reusable Templates";
-
-    private List<NifiError> errors = new ArrayList<>();
-
-    LegacyNifiRestClient restClient;
-
-    /** REST client for NiFi API */
+    private static final Logger log = LoggerFactory.getLogger(TemplateCreationHelper.class);
+    public static String REUSABLE_TEMPLATES_PROCESS_GROUP_NAME = "reusable_templates";
+    /**
+     * REST client for NiFi API
+     */
     @Nonnull
     private final NiFiRestClient nifiRestClient;
-
+    LegacyNifiRestClient restClient;
+    private List<NifiError> errors = new ArrayList<>();
     private Set<ControllerServiceDTO> snapshotControllerServices;
 
     private Set<ControllerServiceDTO> snapshottedEnabledControllerServices = new HashSet<>();
@@ -94,13 +90,21 @@ public class TemplateCreationHelper {
         this.nifiRestClient = restClient.getNiFiRestClient();
     }
 
+    public static String getVersionedProcessGroupName(String name) {
+        return NifiTemplateNameUtil.getVersionedProcessGroupName(name);
+    }
+
+    public static String parseVersionedProcessGroupName(String name) {
+        return NifiTemplateNameUtil.parseVersionedProcessGroupName(name);
+    }
+
     /**
      * Instantiates the specified template in the specified process group.
      *
      * <p>Controller services that are created under the specified process group will be moved to the root process group. This side-effect may be removed in the future.</p>
      *
      * @param processGroupId the process group id
-     * @param templateId the template id
+     * @param templateId     the template id
      * @return the instantiated flow
      * @throws NifiComponentNotFoundException if the process group or template does not exist
      */
@@ -198,12 +202,12 @@ public class TemplateCreationHelper {
      * Tries to enable the specified controller service.
      *
      * @param controllerService the controller service to enable
-     * @param properties property overrides for the controller service
-     * @param enabledServices map of enabled controller service ids and names to DTOs
-     * @param allServices map of all controller service ids to
+     * @param properties        property overrides for the controller service
+     * @param enabledServices   map of enabled controller service ids and names to DTOs
+     * @param allServices       map of all controller service ids to
      * @return the enabled controller service
      * @throws NifiComponentNotFoundException if the controller service does not exist
-     * @throws WebApplicationException if the controller service cannot be enabled
+     * @throws WebApplicationException        if the controller service cannot be enabled
      */
     @Nonnull
     private ControllerServiceDTO tryToEnableControllerService(@Nonnull final ControllerServiceDTO controllerService, @Nullable final Map<String, String> properties,
@@ -321,9 +325,9 @@ public class TemplateCreationHelper {
      * Enables the controller services for the specified properties or changes the property value to an enabled service.
      *
      * @param controllerServiceProperties property overrides for controller services
-     * @param enabledServices map of enabled controller service ids and names to DTOs
-     * @param allServices map of all controller service ids to DTOs
-     * @param properties the processor properties to update
+     * @param enabledServices             map of enabled controller service ids and names to DTOs
+     * @param allServices                 map of all controller service ids to DTOs
+     * @param properties                  the processor properties to update
      * @return the list of properties that were modified
      */
     @Nonnull
@@ -358,9 +362,9 @@ public class TemplateCreationHelper {
      * Finds and enables a controller service for the specified processor property.
      *
      * @param controllerServiceProperties property overrides for controller services
-     * @param enabledServices map of enabled controller service ids and names to DTOs
-     * @param allServices map of all controller service ids to DTOs
-     * @param property the processor properties to update
+     * @param enabledServices             map of enabled controller service ids and names to DTOs
+     * @param allServices                 map of all controller service ids to DTOs
+     * @param property                    the processor properties to update
      * @return the matching controller service
      */
     private Optional<ControllerServiceDTO> findControllerServiceForProperty(@Nullable final Map<String, String> controllerServiceProperties,
@@ -487,19 +491,11 @@ public class TemplateCreationHelper {
         }
     }
 
-    public static String getVersionedProcessGroupName(String name) {
-        return NifiTemplateNameUtil.getVersionedProcessGroupName(name);
-    }
-
-    public static String parseVersionedProcessGroupName(String name) {
-        return NifiTemplateNameUtil.parseVersionedProcessGroupName(name);
-    }
-
-
     /**
      * Version a ProcessGroup renaming it with the name - {timestamp millis}.
      * If {@code removeIfInactive} is true it will not version but just delete it
-     * @param processGroup the group to verision
+     *
+     * @param processGroup     the group to verision
      * @param removeIfInactive flag if true it will try to just delete rather than version
      */
     public ProcessGroupDTO versionProcessGroup(ProcessGroupDTO processGroup) {

@@ -34,18 +34,21 @@ public interface KyloVersion {
 
     /**
      * Return the {@link this#getMajorVersion()} as a numeric value
+     *
      * @return the numeric value of the major version
      */
     Float getMajorVersionNumber();
 
     /**
      * Return the minor version of Kylo
+     *
      * @return the minor version of Kylo
      */
     String getMinorVersion();
 
     /**
      * Return the major versoin of Kylo
+     *
      * @return the major version string
      */
     String getMajorVersion();
@@ -53,12 +56,14 @@ public interface KyloVersion {
 
     /**
      * Return a description of the Kylo version deployed
+     *
      * @return a description of the Kylo version deployed
      */
     String getDescription();
 
     /**
      * Update the current Kylo version to the passed in version
+     *
      * @param v the version to update to
      * @return the updated version
      */

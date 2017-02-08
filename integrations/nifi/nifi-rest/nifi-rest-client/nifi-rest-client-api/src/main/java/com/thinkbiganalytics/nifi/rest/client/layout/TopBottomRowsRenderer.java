@@ -25,30 +25,13 @@ import org.apache.nifi.web.api.dto.PositionDTO;
 /**
  * Render items both above and below a centered component(i.e. a process group) like:
  *
- *  -  -  -  -  -
- *       -
- *  -  -  -  -  -
+ * -  -  -  -  -
+ * -
+ * -  -  -  -  -
  */
 public class TopBottomRowsRenderer extends AbstractRenderer {
 
-    enum Location {
-        TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT;
-        private Location next;
-
-        static {
-            TOP_LEFT.next = TOP_RIGHT;
-            TOP_RIGHT.next = BOTTOM_LEFT;
-            BOTTOM_LEFT.next = BOTTOM_RIGHT;
-            BOTTOM_RIGHT.next = TOP_LEFT;
-        }
-
-        public Location getNext() {
-            return next;
-        }
-    }
-
     Double centerX;
-
 
     public TopBottomRowsRenderer(LayoutGroup layoutGroup, AlignComponentsConfig alignmentConfig) {
         super(layoutGroup, alignmentConfig);
@@ -159,6 +142,22 @@ public class TopBottomRowsRenderer extends AbstractRenderer {
         }
         storePosition(currentLocation, newPosition);
         return newPosition;
+    }
+
+    enum Location {
+        TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT;
+        static {
+            TOP_LEFT.next = TOP_RIGHT;
+            TOP_RIGHT.next = BOTTOM_LEFT;
+            BOTTOM_LEFT.next = BOTTOM_RIGHT;
+            BOTTOM_RIGHT.next = TOP_LEFT;
+        }
+
+        private Location next;
+
+        public Location getNext() {
+            return next;
+        }
     }
 
 }

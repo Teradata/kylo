@@ -38,8 +38,6 @@ public class FeedNameUtil {
 
     /**
      * parse the feed name from a full feed name (category.feed)
-     * @param name
-     * @return
      */
     public static String feed(String name) {
         return StringUtils.trim(StringUtils.substringAfterLast(name, "."));
@@ -47,8 +45,7 @@ public class FeedNameUtil {
 
     /**
      * return the full feed name from a category and feed.
-     * @param category
-     * @param feed
+     *
      * @return returns the (category.feed) name
      */
     public static String fullName(String category, String feed) {

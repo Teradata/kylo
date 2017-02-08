@@ -24,7 +24,7 @@ package com.thinkbiganalytics.feedmgr.rest.model;
  */
 public class VisualQuery {
 
- private String sql;
+    private String sql;
     private String selectedTablesAndColumnsJson;
     private String chartViewModelJson;
 

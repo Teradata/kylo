@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.modeshape.security.action;
 
@@ -45,21 +45,21 @@ import javax.jcr.nodetype.NodeType;
  *
  */
 public class JcrAllowableAction extends JcrObject implements AllowableAction {
-    
+
     public static final String NODE_TYPE = "tba:allowableAction";
 
     private volatile int hash = 0;
-    
+
     public JcrAllowableAction(Node node) {
         super(node);
     }
-    
+
     @Override
     public Stream<AllowableAction> stream() {
-        return Stream.concat(Stream.of(this), 
+        return Stream.concat(Stream.of(this),
                              getSubActions().stream().flatMap(AllowableAction::stream));
     }
-    
+
     @Override
     public int hashCode() {
         // Hierarchy is fixed so hash code need only be calculated once.
@@ -73,31 +73,31 @@ public class JcrAllowableAction extends JcrObject implements AllowableAction {
                     current = current.getParent();
                 }
 
-                this.hash =  hierList.hashCode();
+                this.hash = hierList.hashCode();
             } catch (RepositoryException e) {
                 throw new MetadataRepositoryException("Failed to access action hierarchy of node: " + this.getNode(), e);
-            } 
+            }
         }
-        
+
         return this.hash;
     }
-    
+
     @Override
     public boolean equals(Object obj) {
         return obj instanceof Action && obj.hashCode() == hashCode();
     }
-    
+
     @Override
     public List<Action> getHierarchy() {
         try {
             List<Action> list = new ArrayList<>();
             Node current = getNode();
-            
+
             while (current.getPrimaryNodeType().isNodeType(NODE_TYPE)) {
                 list.add(0, JcrUtil.createJcrObject(current, JcrAllowableAction.class));
                 current = current.getParent();
             }
-            
+
             return list;
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to derive the perentage of action node: " + getNode(), e);
@@ -136,7 +136,7 @@ public class JcrAllowableAction extends JcrObject implements AllowableAction {
         NodeType type = JcrUtil.getNodeType(JcrMetadataAccess.getActiveSession(), NODE_TYPE);
         return JcrUtil.getJcrObjects(this.node, type, JcrAllowableAction.class).stream().collect(Collectors.toList());
     }
-    
+
     @Override
     public String toString() {
         return getSystemName();

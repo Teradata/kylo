@@ -39,6 +39,11 @@ public class TopNCase3Test extends ProfilerTest {
         System.out.println("\t*** Starting run for TopNCase3Test ***");
     }
 
+    @AfterClass
+    public static void tearDownClass() {
+        System.out.println("\t*** Completed run for TopNCase3Test ***");
+    }
+
     @Test
     public void testTopNValuesToWriteString01() {
         TopNDataList topNList = new TopNDataList(3);
@@ -68,7 +73,6 @@ public class TopNCase3Test extends ProfilerTest {
         String expectedRetVal = "1^A160.7^A2^B2^A170.5^A2^B3^A40.2^A1^B";
         Assert.assertEquals(expectedRetVal, topNList.printTopNItems());
     }
-
 
     @Test
     public void testTopNValuesToWriteString04() {
@@ -109,7 +113,6 @@ public class TopNCase3Test extends ProfilerTest {
         Assert.assertEquals(expectedRetVal, topNList.printTopNItems());
     }
 
-
     @Test
     public void testTopNValuesToWriteString07() {
         TopNDataList topNList = new TopNDataList(3);
@@ -123,10 +126,5 @@ public class TopNCase3Test extends ProfilerTest {
         Assert.assertEquals(topNList.getTopNDataItemsForColumn().size(), 3);
         String expectedRetVal = "1^A10.6^A4^B2^A15.0^A3^B3^Anull^A3^B";
         Assert.assertEquals(expectedRetVal, topNList.printTopNItems());
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-        System.out.println("\t*** Completed run for TopNCase3Test ***");
     }
 }

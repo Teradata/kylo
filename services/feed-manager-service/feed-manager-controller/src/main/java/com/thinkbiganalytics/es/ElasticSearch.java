@@ -48,22 +48,20 @@ import java.util.Set;
 public class ElasticSearch {
 
     private ElasticSearchClientConfig clientConfig;
-
-    public ElasticSearch(ElasticSearchClientConfig clientConfig){
-        this.clientConfig = clientConfig;
-    }
-
     /**
      * the elastic search client
      **/
     private Client client;
 
+    public ElasticSearch(ElasticSearchClientConfig clientConfig) {
+        this.clientConfig = clientConfig;
+    }
+
     /**
      * Return the client.  If the client has not been setup yet, it will create and configure it
-     * @return
      */
-    public Client getClient(){
-        if(this.client == null) {
+    public Client getClient() {
+        if (this.client == null) {
             Client client = null;
             try {
                 String hostName = clientConfig.getHost();
@@ -82,22 +80,21 @@ public class ElasticSearch {
     }
 
 
-
-    public SearchResult search(String query, int size, int start){
+    public SearchResult search(String query, int size, int start) {
         SearchRequestBuilder srb1 = getClient()
-                .prepareSearch().setQuery(QueryBuilders.queryStringQuery(query)).setFrom(start).setSize(size);
+            .prepareSearch().setQuery(QueryBuilders.queryStringQuery(query)).setFrom(start).setSize(size);
         SearchResponse response = srb1.execute().actionGet();
         SearchResult searchResult = new SearchResult();
         searchResult.setTotalHits(response.getHits().getTotalHits());
 
-        searchResult.setFrom(new Long(start+1));
+        searchResult.setFrom(new Long(start + 1));
         searchResult.setTo(new Long(start + size));
 
-        if(searchResult.getTotalHits() < (start + size)) {
+        if (searchResult.getTotalHits() < (start + size)) {
             searchResult.setTo(searchResult.getTotalHits());
         }
 
-        if(searchResult.getTotalHits() == 0){
+        if (searchResult.getTotalHits() == 0) {
             searchResult.setFrom(0L);
         }
 
@@ -108,9 +105,8 @@ public class ElasticSearch {
 
     /**
      * get a list of indexes, list of types  -> list of fields for each type
-     * @return
      */
-    public  List<IndexMappingDTO> getIndexMapping(){
+    public List<IndexMappingDTO> getIndexMapping() {
         List<IndexMappingDTO> list = new ArrayList<>();
         ImmutableOpenMap<String, ImmutableOpenMap<String, MappingMetaData>> mappings = getClient().admin().indices().getMappings(new GetMappingsRequest()).actionGet().getMappings();
         Object[] indexList = mappings.keys().toArray();
@@ -125,7 +121,7 @@ public class ElasticSearch {
                 typeMappingDTO.setType(c.key);
                 dto.addType(typeMappingDTO);
                 try {
-                    Map m =    c.value.getSourceAsMap();
+                    Map m = c.value.getSourceAsMap();
                     typeMappingDTO.setFields(getFieldList("", m));
                 } catch (IOException e) {
                     throw new RuntimeException(e);
@@ -136,8 +132,7 @@ public class ElasticSearch {
     }
 
 
-
-    private  List<String> getFieldList(String fieldName, Map<String, Object> mapProperties) {
+    private List<String> getFieldList(String fieldName, Map<String, Object> mapProperties) {
         List<String> fieldList = new ArrayList<String>();
         Map<String, Object> map = (Map<String, Object>) mapProperties.get("properties");
         Set<String> keys = map.keySet();

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.api.sla;
 
@@ -35,7 +35,7 @@ public class DatasourceUpdatedSinceSchedule extends DependentDatasource {
 
     private transient CronExpression cronExpression;
     private String cronString;
-    
+
     public DatasourceUpdatedSinceSchedule() {
     }
 
@@ -44,32 +44,32 @@ public class DatasourceUpdatedSinceSchedule extends DependentDatasource {
         this.cronExpression = new CronExpression(cronStr);
         this.cronString = cronStr;
     }
-    
+
     public DatasourceUpdatedSinceSchedule(String datasetName, CronExpression cronExpression) throws ParseException {
         super(datasetName);
         this.cronExpression = cronExpression;
         this.cronString = cronExpression.toString();
     }
-    
+
     public CronExpression getCronExpression() {
         return cronExpression;
     }
-    
+
     public void setCronExpression(CronExpression cronExpression) {
         this.cronExpression = cronExpression;
         this.cronString = cronExpression.toString();
     }
-    
+
     @Override
     @Transient
     public String getDescription() {
         return "Datasource " + getDatasourceName() + " has been updated since " + getCronExpression();
     }
-    
+
     protected String getCronString() {
         return cronString;
     }
-    
+
     protected void setCronString(String cronString) {
         this.cronString = cronString;
         try {

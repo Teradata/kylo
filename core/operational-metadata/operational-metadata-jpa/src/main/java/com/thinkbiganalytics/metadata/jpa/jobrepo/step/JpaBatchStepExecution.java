@@ -197,8 +197,8 @@ public class JpaBatchStepExecution implements Serializable, BatchStepExecution {
     }
 
     public void setStepExecutionContext(Set<BatchStepExecutionContextValue> stepExecutionContext) {
-        if(this.stepExecutionContext == null ){
-           this.stepExecutionContext = stepExecutionContext != null ? stepExecutionContext :  new HashSet<>();
+        if (this.stepExecutionContext == null) {
+            this.stepExecutionContext = stepExecutionContext != null ? stepExecutionContext : new HashSet<>();
         }
         this.stepExecutionContext.clear();
         if (stepExecutionContext != null && !stepExecutionContext.isEmpty()) {
@@ -207,7 +207,7 @@ public class JpaBatchStepExecution implements Serializable, BatchStepExecution {
     }
 
     public void addStepExecutionContext(BatchStepExecutionContextValue context) {
-        if(getStepExecutionContext() == null){
+        if (getStepExecutionContext() == null) {
             setStepExecutionContext(new HashSet<>());
         }
         if (getStepExecutionContext().contains(context)) {
@@ -258,7 +258,7 @@ public class JpaBatchStepExecution implements Serializable, BatchStepExecution {
     public void failStep() {
         setStatus(StepStatus.FAILED);
         setExitCode(ExecutionConstants.ExitCode.FAILED);
-        if(endTime == null){
+        if (endTime == null) {
             endTime = DateTimeUtil.getNowUTCTime();
         }
     }
@@ -266,7 +266,7 @@ public class JpaBatchStepExecution implements Serializable, BatchStepExecution {
     public void completeStep() {
         setStatus(StepStatus.COMPLETED);
         setExitCode(ExecutionConstants.ExitCode.COMPLETED);
-        if(endTime == null){
+        if (endTime == null) {
             endTime = DateTimeUtil.getNowUTCTime();
         }
     }

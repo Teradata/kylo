@@ -53,6 +53,11 @@ public class TopNCase2Test extends ProfilerTest {
         topNDataItemsString = topNList.printTopNItems();
     }
 
+    @AfterClass
+    public static void tearDownClass() {
+        System.out.println("\t*** Completed run for TopNCase2Test ***");
+    }
+
     @Test
     public void testTopNSummaryCount() {
         Assert.assertEquals(4, items.size());
@@ -66,11 +71,6 @@ public class TopNCase2Test extends ProfilerTest {
                                 + "4^AItem9999998^A4999998^B";
 
         Assert.assertEquals(expectedRetVal, topNDataItemsString);
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-        System.out.println("\t*** Completed run for TopNCase2Test ***");
     }
 
 }

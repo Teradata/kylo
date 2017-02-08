@@ -94,10 +94,9 @@ public class FeedModelTransform {
      *
      * @param feedMetadata
      */
-    private void simplifyFeedMetadataForSerialization(FeedMetadata feedMetadata){
+    private void simplifyFeedMetadataForSerialization(FeedMetadata feedMetadata) {
 
-
-        if(feedMetadata.getTable() != null){
+        if (feedMetadata.getTable() != null) {
             feedMetadata.getTable().simplifyFieldPoliciesForSerialization();
         }
         feedMetadata.setRegisteredTemplate(null);
@@ -266,9 +265,9 @@ public class FeedModelTransform {
 
         // Convert JCR securitygroup to DTO
         List<com.thinkbiganalytics.feedmgr.rest.model.HadoopSecurityGroup> restSecurityGroups = new ArrayList<>();
-        if(domain.getSecurityGroups() != null && domain.getSecurityGroups().size() > 0) {
-            for(Object group : domain.getSecurityGroups()) {
-                HadoopSecurityGroup hadoopSecurityGroup = (HadoopSecurityGroup)group;
+        if (domain.getSecurityGroups() != null && domain.getSecurityGroups().size() > 0) {
+            for (Object group : domain.getSecurityGroups()) {
+                HadoopSecurityGroup hadoopSecurityGroup = (HadoopSecurityGroup) group;
                 com.thinkbiganalytics.feedmgr.rest.model.HadoopSecurityGroup restSecurityGroup = new com.thinkbiganalytics.feedmgr.rest.model.HadoopSecurityGroup();
                 restSecurityGroup.setDescription(hadoopSecurityGroup.getDescription());
                 restSecurityGroup.setId(hadoopSecurityGroup.getGroupId());
@@ -280,8 +279,8 @@ public class FeedModelTransform {
 
         if (domain.getUsedByFeeds() != null) {
             final List<FeedSummary> usedByFeeds = domain.getUsedByFeeds().stream()
-                    .map(this::domainToFeedSummary)
-                    .collect(Collectors.toList());
+                .map(this::domainToFeedSummary)
+                .collect(Collectors.toList());
             feed.setUsedByFeeds(usedByFeeds);
         }
 

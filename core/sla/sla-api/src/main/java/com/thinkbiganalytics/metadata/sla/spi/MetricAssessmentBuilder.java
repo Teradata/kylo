@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.sla.spi;
 
@@ -46,27 +46,28 @@ public interface MetricAssessmentBuilder<D extends Serializable> {
      * @return this builder
      */
     MetricAssessmentBuilder<D> message(String descr);
-    
+
     /**
      * @param comp the comparator for this assessment
      * @return this builder
      */
     MetricAssessmentBuilder<D> comparitor(Comparator<MetricAssessment<D>> comp);
-    
+
     /**
      * Generates a comparator for this assessment that uses each comparable in its comparison.
-     * @param value a comparable value to use in comparisons
+     *
+     * @param value       a comparable value to use in comparisons
      * @param otherValeus any additional comparables
      * @return this builder
      */
     @SuppressWarnings("unchecked")
     MetricAssessmentBuilder<D> compareWith(Comparable<? extends Serializable> value, Comparable<? extends Serializable>... otherValues);
-    
+
     /**
      * Allows attaching arbitrary, undefined data to this assessment.  The consumer of the assessment must
      * know what kind of data is expected.
+     *
      * @param data arbitrary data associated with this assessment.
-     * @return
      */
     MetricAssessmentBuilder<D> data(D data);
 

@@ -20,8 +20,9 @@ package com.thinkbiganalytics.server;
  * #L%
  */
 
-import javax.inject.Inject;
-import javax.inject.Named;
+import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
+import com.thinkbiganalytics.auth.jwt.JwtRememberMeServices;
+import com.thinkbiganalytics.security.auth.kerberos.SpnegoValidationUserAuthenticationFilter;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -39,9 +40,8 @@ import org.springframework.security.kerberos.web.authentication.SpnegoEntryPoint
 import org.springframework.security.web.authentication.rememberme.RememberMeAuthenticationFilter;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
-import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
-import com.thinkbiganalytics.auth.jwt.JwtRememberMeServices;
-import com.thinkbiganalytics.security.auth.kerberos.SpnegoValidationUserAuthenticationFilter;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  *
@@ -51,17 +51,17 @@ import com.thinkbiganalytics.security.auth.kerberos.SpnegoValidationUserAuthenti
 @Order(DefaultWebSecurityConfigurer.ORDER)
 @Profile("auth-krb-spnego")
 public class KerberosWebSecurityConfigurer extends WebSecurityConfigurerAdapter {
-    
-    @Inject 
+
+    @Inject
     private SpnegoEntryPoint spnegoEntryPoint;
-    
+
     @Inject
     private KerberosServiceAuthenticationProvider kerberosServiceAuthProvider;
-    
+
     @Inject
     @Named(JaasAuthConfig.SERVICES_AUTH_PROVIDER)
     private AuthenticationProvider userPasswordAuthProvider;
-    
+
     @Inject
     @Named(JaasAuthConfig.SERVICES_TOKEN_AUTH_PROVIDER)
     private AuthenticationProvider userAuthProvider;
@@ -75,16 +75,16 @@ public class KerberosWebSecurityConfigurer extends WebSecurityConfigurerAdapter 
         http
             .csrf().disable()
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
+            .and()
             .exceptionHandling()
-                .authenticationEntryPoint(spnegoEntryPoint)
-                .and()
+            .authenticationEntryPoint(spnegoEntryPoint)
+            .and()
             .authorizeRequests()
-                .antMatchers("/**").authenticated()
-                .and()
+            .antMatchers("/**").authenticated()
+            .and()
             .rememberMe()
-                .rememberMeServices(rememberMeServices)
-                .and()
+            .rememberMeServices(rememberMeServices)
+            .and()
             .addFilterBefore(new RememberMeAuthenticationFilter(auth -> auth, rememberMeServices), BasicAuthenticationFilter.class)
             .addFilterAfter(spnegoFilter(), RememberMeAuthenticationFilter.class)
             .httpBasic();
@@ -97,7 +97,7 @@ public class KerberosWebSecurityConfigurer extends WebSecurityConfigurerAdapter 
             .authenticationProvider(userAuthProvider)
             .authenticationProvider(userPasswordAuthProvider);
     }
-    
+
     @Bean
     public SpnegoValidationUserAuthenticationFilter spnegoFilter() throws Exception {
         SpnegoValidationUserAuthenticationFilter filter = new SpnegoValidationUserAuthenticationFilter();

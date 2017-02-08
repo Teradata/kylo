@@ -47,20 +47,18 @@ import java.util.stream.Collectors;
 public class ProvenanceEventCollector {
 
     private static final Logger log = LoggerFactory.getLogger(ProvenanceEventCollector.class);
-
-
-    @Autowired
-    private ProvenanceEventActiveMqWriter provenanceEventActiveMqWriter;
-
     @Autowired
     ProvenanceFeedLookup provenanceFeedLookup;
-
     @Autowired
     ProvenanceStatsCalculator statsCalculator;
-
     @Autowired
     FeedFlowFileCacheUtil cacheUtil;
-
+    /**
+     * The Map of Objects that will be grouped and sent over to Kylo as Batch Jobs/Steps for Operations Manager
+     */
+    Map<String, BatchFeedProcessorEvents> groupedBatchEventsByFeed = new ConcurrentHashMap<>();
+    @Autowired
+    private ProvenanceEventActiveMqWriter provenanceEventActiveMqWriter;
     /**
      * Safeguard against the system sending too many batch feed events through to Kylo
      * This is the  max events per second allowed for a feed/processor combo
@@ -68,16 +66,10 @@ public class ProvenanceEventCollector {
      * All jobs will calculate statistics about the feeds
      */
     private Integer maxBatchFeedJobEventsPerSecond = 10;
-
     /**
      * Size of the group of events that will be batched and sent to Kylo
      */
     private Integer jmsEventGroupSize = 50;
-
-    /**
-     * The Map of Objects that will be grouped and sent over to Kylo as Batch Jobs/Steps for Operations Manager
-     */
-    Map<String, BatchFeedProcessorEvents> groupedBatchEventsByFeed = new ConcurrentHashMap<>();
 
 
     @Autowired

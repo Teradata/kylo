@@ -53,14 +53,22 @@ import javax.jcr.query.QueryResult;
 /**
  */
 public abstract class BaseJcrProvider<T, PK extends Serializable> implements BaseProvider<T, PK> {
+
     private static final Logger log = LoggerFactory.getLogger(BaseJcrProvider.class);
 
     private static final Pattern INVALID_SYSTEM_NAME_PATTERN = Pattern.compile("[^(A-Z)(a-z)(0-9)_-]");
+    protected Class<T> entityClass;
+    protected Class<? extends JcrEntity> jcrEntityClass;
+
+    public BaseJcrProvider() {
+        this.entityClass = (Class<T>) getEntityClass();
+        this.jcrEntityClass = getJcrEntityClass();
+    }
 
     protected Session getSession() {
         return JcrMetadataAccess.getActiveSession();
     }
-    
+
     public void save() {
         try {
             getSession().save();
@@ -69,10 +77,6 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
             throw new MetadataRepositoryException("Failed to save the current session state.", e);
         }
     }
-
-    protected Class<T> entityClass;
-
-    protected Class<? extends JcrEntity> jcrEntityClass;
 
     public abstract Class<? extends T> getEntityClass();
 
@@ -83,25 +87,24 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
      */
     public abstract String getNodeType(Class<? extends JcrEntity> jcrEntityType);
 
-    public BaseJcrProvider() {
-        this.entityClass = (Class<T>) getEntityClass();
-        this.jcrEntityClass = getJcrEntityClass();
-    }
-
-    /**\
+    /**
+     * \
      * Gets the entity class appropriate for the given node type if polymophic types are
      * supported by the provider implementation.  By default if simply returns the result
      * of getJcrEntityClass().
+     *
      * @return the appropriate entity class
      */
     public Class<? extends JcrEntity> getJcrEntityClass(String jcrNodeType) {
         return getJcrEntityClass();
     }
 
-    /**\
+    /**
+     * \
      * Gets the entity class appropriate for the given node polymophic types are
      * supported by the provider implementation.  By default if simply returns the result
      * of getJcrEntityClass(String nodeType) by calling getPrimaryNodeType().name() on the node.
+     *
      * @return the appropriate entity class
      */
     public Class getJcrEntityClass(Node node) {
@@ -136,11 +139,11 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
     public T findOrCreateEntity(String path, String relPath, Map<String, Object> props, Object... constructorArgs) {
         return findOrCreateEntity(path, relPath, getJcrEntityClass(), props, constructorArgs);
     }
-    
+
     public T findOrCreateEntity(String path, String relPath, Class<? extends JcrEntity> entClass) {
         return findOrCreateEntity(path, relPath, entClass, null);
     }
-    
+
     public T findOrCreateEntity(String path, String relPath, Class<? extends JcrEntity> entClass, Map<String, Object> props, Object... constructorArgs) {
         Session session = getSession();
         Node entNode = findOrCreateEntityNode(path, relPath, entClass);
@@ -183,7 +186,7 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
         T entity = (T) constructEntity(node, getJcrEntityClass(node));
         return entity;
     }
-    
+
     protected <T extends JcrObject> T constructEntity(Node node, Class<T> entityClass) {
         return JcrUtil.createJcrObject(node, entityClass);
     }
@@ -191,11 +194,11 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
     public List<T> findWithExplainPlan(String queryExpression) {
 
         try {
-            org.modeshape.jcr.api.query.Query query = (org.modeshape.jcr.api.query.Query)getSession().getWorkspace().getQueryManager().createQuery(queryExpression, "JCR-SQL2");
-            org.modeshape.jcr.api.query.QueryResult result =query.explain();
+            org.modeshape.jcr.api.query.Query query = (org.modeshape.jcr.api.query.Query) getSession().getWorkspace().getQueryManager().createQuery(queryExpression, "JCR-SQL2");
+            org.modeshape.jcr.api.query.QueryResult result = query.explain();
             String plan = result.getPlan();
             log.info(plan);
-          return  find(queryExpression);
+            return find(queryExpression);
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failure while finding entity ", e);
         }
@@ -223,20 +226,20 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
             throw new MetadataRepositoryException("Unable to findAll for Type : " + getNodeType(getJcrEntityClass()), e);
         }
     }
-    
+
     public <D, R> Iterable<D> findIterable(String query, Class<D> domainClass, Class<R> resultClass) {
         return () -> {
             return StreamSupport.stream(findIterableNodes(query).spliterator(), false)
-                            .map(node -> { 
-                                try {
-                                    @SuppressWarnings("unchecked")
-                                    D entity = (D) ConstructorUtils.invokeConstructor(resultClass, node);
-                                    return entity;
-                                } catch (Exception e) {
-                                    throw new MetadataRepositoryException("Failed to create entity: " + resultClass, e);
-                                }
-                            })
-                            .iterator();
+                .map(node -> {
+                    try {
+                        @SuppressWarnings("unchecked")
+                        D entity = (D) ConstructorUtils.invokeConstructor(resultClass, node);
+                        return entity;
+                    } catch (Exception e) {
+                        throw new MetadataRepositoryException("Failed to create entity: " + resultClass, e);
+                    }
+                })
+                .iterator();
         };
     }
 
@@ -256,7 +259,7 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
             throw new MetadataRepositoryException("Unable to findAll for Type : " + getNodeType(getJcrEntityClass()), e);
         }
     }
-    
+
     public <T extends JcrObject> T findFirst(String query, Class<T> resultClass) {
         try {
             QueryResult result = JcrQueryUtil.query(getSession(), query);

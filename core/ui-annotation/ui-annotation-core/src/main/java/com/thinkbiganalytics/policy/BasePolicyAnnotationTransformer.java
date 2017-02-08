@@ -127,7 +127,8 @@ public abstract class BasePolicyAnnotationTransformer<U extends BaseUiPolicyRule
 
 
     /**
-     *  For a given domain policy class extract the user interface {@link FieldRuleProperty} classes parsing the fields annotated with the {@link PolicyProperty}
+     * For a given domain policy class extract the user interface {@link FieldRuleProperty} classes parsing the fields annotated with the {@link PolicyProperty}
+     *
      * @param policyClass the domain policy class to parse
      * @return a list of user interface fields annotated with the {@link PolicyProperty}
      */
@@ -184,9 +185,6 @@ public abstract class BasePolicyAnnotationTransformer<U extends BaseUiPolicyRule
 
     /**
      * Find all the user interface properies for a given render type
-     * @param properties
-     * @param type
-     * @return
      */
     public List<FieldRuleProperty> findPropertiesMatchingRenderType(List<FieldRuleProperty> properties, final String type) {
         if (StringUtils.isNotBlank(type)) {
@@ -256,7 +254,6 @@ public abstract class BasePolicyAnnotationTransformer<U extends BaseUiPolicyRule
     public abstract Class<A> getAnnotationClass();
 
 
-
     /**
      * override to do anything special to the resulting obj from the UI
      */
@@ -280,9 +277,9 @@ public abstract class BasePolicyAnnotationTransformer<U extends BaseUiPolicyRule
 
     /**
      * Trasform a user interface object back to the domain policy class
+     *
      * @param rule the ui object
      * @return the domain policy transformed
-     * @throws PolicyTransformException
      */
     @Override
     public P fromUiModel(U rule)

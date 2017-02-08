@@ -52,11 +52,15 @@ public class SparkScriptEngine extends ScriptEngine {
 
     private static final Logger log = LoggerFactory.getLogger(SparkScriptEngine.class);
 
-    /** Spark configuration */
+    /**
+     * Spark configuration
+     */
     @Autowired
     private SparkConf conf;
 
-    /** Spark REPL interface */
+    /**
+     * Spark REPL interface
+     */
     @Nullable
     private IMain interpreter;
 
@@ -133,7 +137,6 @@ public class SparkScriptEngine extends ScriptEngine {
                 throw new IllegalStateException("Failed to initialize interpreter");
             }
 
-
             this.interpreter = interpreter;
         }
         return this.interpreter;
@@ -144,7 +147,7 @@ public class SparkScriptEngine extends ScriptEngine {
 
         if (settings.classpath().isDefault()) {
             String classPath = Joiner.on(':').join(((URLClassLoader) getClass().getClassLoader()).getURLs()) + ":" + System
-                    .getProperty("java.class.path");
+                .getProperty("java.class.path");
             settings.classpath().value_$eq(classPath);
         }
         return settings;

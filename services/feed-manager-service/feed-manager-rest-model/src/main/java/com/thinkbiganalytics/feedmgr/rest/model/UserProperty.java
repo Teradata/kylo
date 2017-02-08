@@ -36,10 +36,14 @@ import java.util.Objects;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class UserProperty extends UserField {
 
-    /** Indicates that only the value may be changed */
+    /**
+     * Indicates that only the value may be changed
+     */
     private Boolean locked;
 
-    /** The value assigned to the property */
+    /**
+     * The value assigned to the property
+     */
     private String value;
 
     /**
@@ -90,8 +94,8 @@ public class UserProperty extends UserField {
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
-                .add("name", getSystemName())
-                .add("value", value)
-                .toString();
+            .add("name", getSystemName())
+            .add("value", value)
+            .toString();
     }
 }

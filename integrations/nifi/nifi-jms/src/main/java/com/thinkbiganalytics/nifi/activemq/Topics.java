@@ -24,7 +24,7 @@ package com.thinkbiganalytics.nifi.activemq;
  */
 public interface Topics {
 
-   String  THINKBIG_NIFI_EVENT_TOPIC = "thinkbig.nifi.event.topic";
+    String THINKBIG_NIFI_EVENT_TOPIC = "thinkbig.nifi.event.topic";
 
-   String NIFI_EVENT_TOPIC_BEAN = "thinkbigNifiEventTopic";
+    String NIFI_EVENT_TOPIC_BEAN = "thinkbigNifiEventTopic";
 }

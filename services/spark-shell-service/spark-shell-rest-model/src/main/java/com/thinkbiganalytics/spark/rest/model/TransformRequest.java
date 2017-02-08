@@ -27,10 +27,14 @@ import javax.annotation.Nonnull;
  */
 public class TransformRequest {
 
-    /** Previous transformation result */
+    /**
+     * Previous transformation result
+     */
     private Parent parent;
 
-    /** Scala script with transformation */
+    /**
+     * Scala script with transformation
+     */
     private String script;
 
     /**
@@ -74,10 +78,14 @@ public class TransformRequest {
      */
     public static class Parent {
 
-        /** Scala script with the transformation */
+        /**
+         * Scala script with the transformation
+         */
         private String script;
 
-        /** Table containing the results */
+        /**
+         * Table containing the results
+         */
         private String table;
 
         /**

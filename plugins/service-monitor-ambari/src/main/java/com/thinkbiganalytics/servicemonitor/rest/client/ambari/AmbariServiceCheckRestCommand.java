@@ -23,40 +23,37 @@ package com.thinkbiganalytics.servicemonitor.rest.client.ambari;
 
 import com.thinkbiganalytics.servicemonitor.rest.client.RestCommand;
 
-import org.apache.commons.lang3.StringUtils;
-
 /**
  * Superclass for checking status of Ambari services.
- *
  */
 public class AmbariServiceCheckRestCommand<T> extends RestCommand<T> {
 
-  private String clusterName;
-  private String services;
+    private String clusterName;
+    private String services;
 
-  AmbariServiceCheckRestCommand(String clusterName, String services) {
-    super();
-    this.clusterName = clusterName;
-    this.services = services;
-  }
-
-
-  @Override
-  public String payload() {
-    return null;
-  }
-
-  public String getServices() {
-    return services;
-  }
-
-  public void setServices(String services) {
-    this.services = services;
-  }
+    AmbariServiceCheckRestCommand(String clusterName, String services) {
+        super();
+        this.clusterName = clusterName;
+        this.services = services;
+    }
 
 
-  String getClusterName() {
-    return clusterName;
-  }
+    @Override
+    public String payload() {
+        return null;
+    }
+
+    public String getServices() {
+        return services;
+    }
+
+    public void setServices(String services) {
+        this.services = services;
+    }
+
+
+    String getClusterName() {
+        return clusterName;
+    }
 
 }

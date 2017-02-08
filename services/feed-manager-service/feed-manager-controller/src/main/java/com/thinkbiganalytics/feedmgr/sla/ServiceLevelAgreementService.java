@@ -56,21 +56,15 @@ import javax.inject.Inject;
 public class ServiceLevelAgreementService implements ServicesApplicationStartupListener {
 
     @Inject
-    private FeedManagerFeedService feedManagerFeedService;
-
-    @Inject
     ServiceLevelAgreementProvider slaProvider;
-
     @Inject
     FeedServiceLevelAgreementProvider feedSlaProvider;
-
     @Inject
     JcrMetadataAccess metadataAccess;
-
     @Inject
     ServiceLevelAgreementScheduler serviceLevelAgreementScheduler;
-
-
+    @Inject
+    private FeedManagerFeedService feedManagerFeedService;
     @Inject
     private FeedProvider feedProvider;
 

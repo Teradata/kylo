@@ -44,26 +44,11 @@ import java.util.TimeZone;
 public class DateTimeStandardizer implements StandardizationPolicy {
 
     private static final Logger log = LoggerFactory.getLogger(DateTimeStandardizer.class);
-
-    public enum OutputFormats {DATE_ONLY, DATETIME, DATETIME_NOMILLIS}
-
     @PolicyProperty(name = "Date Format", hint = "Format Example: MM/dd/YYYY", required = true)
     private String inputDateFormat;
-
     @PolicyProperty(name = "Output Format", hint = "Choose an output format", type = PolicyPropertyTypes.PROPERTY_TYPE.select,
                     selectableValues = {"DATE_ONLY", "DATETIME", "DATETIME_NOMILLIS"}, required = true)
     private OutputFormats outputFormat = OutputFormats.DATE_ONLY;
-
-
-    /**
-     * Unix timestamp is in seconds.. not ms.  detect if the string has only 10 chars being its in seconds, not ms
-     * @param value
-     * @return
-     */
-    private boolean isInputUnixTimestamp(String value){
-        return StringUtils.isNotBlank(value) && StringUtils.isNumeric(value) && value.length() == 10;
-    }
-
     /**
      * Whether the reference timezone is encoded in the ISO8601 date or specified as configuration
      */
@@ -98,7 +83,6 @@ public class DateTimeStandardizer implements StandardizationPolicy {
                                         "MST",
                                         "HST"}, value = "")
     private String inputTimezone;
-
     /**
      * Whether the reference timezone is encoded in the ISO8601 date or specified as configuration
      */
@@ -133,11 +117,8 @@ public class DateTimeStandardizer implements StandardizationPolicy {
                                         "MST",
                                         "HST"}, value = "")
     private String outputTimezone;
-
     private transient DateTimeFormatter outputFormatter;
-
     private transient DateTimeFormatter inputFormatter;
-
     private boolean valid;
 
     public DateTimeStandardizer(OutputFormats outputFormat) {
@@ -161,23 +142,28 @@ public class DateTimeStandardizer implements StandardizationPolicy {
         initializeFormatters();
     }
 
+    /**
+     * Unix timestamp is in seconds.. not ms.  detect if the string has only 10 chars being its in seconds, not ms
+     */
+    private boolean isInputUnixTimestamp(String value) {
+        return StringUtils.isNotBlank(value) && StringUtils.isNumeric(value) && value.length() == 10;
+    }
+
     @Override
     public String convertValue(String value) {
         if (valid) {
             try {
                 if (inputFormatter == null) {
-                    if(isInputUnixTimestamp(value)) {
+                    if (isInputUnixTimestamp(value)) {
                         //unix timestamp are in seconds
                         long lValue = Long.parseLong(value);
                         lValue *= 1000;
                         return outputFormatter.print(lValue);
-                    }
-                    else {
+                    } else {
                         long lValue = Long.parseLong(value);
                         return outputFormatter.print(lValue);
                     }
                 }
-
 
                 DateTime dt = inputFormatter.parseDateTime(value);
 
@@ -235,7 +221,7 @@ public class DateTimeStandardizer implements StandardizationPolicy {
             valid = true;
         } catch (IllegalArgumentException e) {
             log.warn("Illegal configuration input format [{}], tz [{}] Output format  [{}], tz [{}]"
-                      + "]. Standardizer will be skipped.", inputDateFormat, inputTimezone, outputFormat, outputTimezone);
+                     + "]. Standardizer will be skipped.", inputDateFormat, inputTimezone, outputFormat, outputTimezone);
         }
     }
 
@@ -252,5 +238,7 @@ public class DateTimeStandardizer implements StandardizationPolicy {
     public OutputFormats getOutputFormat() {
         return outputFormat;
     }
+
+    public enum OutputFormats {DATE_ONLY, DATETIME, DATETIME_NOMILLIS}
 
 }

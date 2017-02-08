@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.modeshape.support;
 
@@ -28,9 +28,8 @@ import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import javax.jcr.Node;
 
 /**
- * Resolves which type of JcrObject should be used for the given node.  Used for 
+ * Resolves which type of JcrObject should be used for the given node.  Used for
  * polymorphic instantiation.
- * 
  */
 public interface JcrObjectTypeResolver<T extends JcrObject> {
 

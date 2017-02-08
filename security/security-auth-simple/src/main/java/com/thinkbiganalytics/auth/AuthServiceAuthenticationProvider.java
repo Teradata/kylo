@@ -39,36 +39,36 @@ import java.util.List;
  */
 public class AuthServiceAuthenticationProvider implements AuthenticationProvider {
 
-    public AuthServiceAuthenticationProvider() {
-    }
-    
     @Autowired
     @Qualifier("authenticationService")
     private AuthenticationService authenticationService;
 
-        @Override
-        public Authentication authenticate(Authentication authentication)
-                throws AuthenticationException {
-            String name = authentication.getName();
-            String password = authentication.getCredentials().toString();
+    public AuthServiceAuthenticationProvider() {
+    }
 
-            if (authenticationService.authenticate(name,password)) {
-                List<GrantedAuthority> grantedAuths = new ArrayList<>();
-                grantedAuths.add(new SimpleGrantedAuthority("ROLE_USER"));
-                return new UsernamePasswordAuthenticationToken(name, password, grantedAuths);
-            } else {
-                return null;
-            }
+    @Override
+    public Authentication authenticate(Authentication authentication)
+        throws AuthenticationException {
+        String name = authentication.getName();
+        String password = authentication.getCredentials().toString();
+
+        if (authenticationService.authenticate(name, password)) {
+            List<GrantedAuthority> grantedAuths = new ArrayList<>();
+            grantedAuths.add(new SimpleGrantedAuthority("ROLE_USER"));
+            return new UsernamePasswordAuthenticationToken(name, password, grantedAuths);
+        } else {
+            return null;
         }
+    }
 
     public void setAuthenticationService(AuthenticationService authenticationService) {
         this.authenticationService = authenticationService;
     }
 
     @Override
-        public boolean supports(Class<?> authentication) {
-            return authentication.equals(UsernamePasswordAuthenticationToken.class);
-        }
+    public boolean supports(Class<?> authentication) {
+        return authentication.equals(UsernamePasswordAuthenticationToken.class);
+    }
 
 
 }

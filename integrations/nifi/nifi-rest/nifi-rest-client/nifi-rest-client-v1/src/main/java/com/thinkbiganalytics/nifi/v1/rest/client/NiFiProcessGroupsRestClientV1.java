@@ -68,10 +68,14 @@ import javax.ws.rs.NotFoundException;
  */
 public class NiFiProcessGroupsRestClientV1 extends AbstractNiFiProcessGroupsRestClient {
 
-    /** Base path for process group requests */
+    /**
+     * Base path for process group requests
+     */
     private static final String BASE_PATH = "/process-groups/";
 
-    /** REST client for communicating with NiFi */
+    /**
+     * REST client for communicating with NiFi
+     */
     private final NiFiRestClientV1 client;
 
     /**
@@ -181,9 +185,9 @@ public class NiFiProcessGroupsRestClientV1 extends AbstractNiFiProcessGroupsRest
     public Set<ProcessGroupDTO> findAll(@Nonnull final String parentGroupId) {
         try {
             return client.get(BASE_PATH + parentGroupId + "/process-groups", null, ProcessGroupsEntity.class)
-                    .getProcessGroups().stream()
-                    .map(ProcessGroupEntity::getComponent)
-                    .collect(Collectors.toSet());
+                .getProcessGroups().stream()
+                .map(ProcessGroupEntity::getComponent)
+                .collect(Collectors.toSet());
         } catch (final NotFoundException e) {
             throw new NifiComponentNotFoundException(parentGroupId, NifiConstants.NIFI_COMPONENT_TYPE.PROCESS_GROUP, e);
         }
@@ -193,13 +197,13 @@ public class NiFiProcessGroupsRestClientV1 extends AbstractNiFiProcessGroupsRest
     @Override
     public Optional<ProcessGroupDTO> findById(@Nonnull final String processGroupId, final boolean recursive, final boolean verbose) {
         return findEntityById(processGroupId).filter(processGroupEntity -> processGroupEntity != null)
-                .map(ProcessGroupEntity::getComponent)
-                .map(processGroup -> {
-                    if (verbose) {
-                        processGroup.setContents(getFlowSnippet(processGroupId, recursive));
-                    }
-                    return processGroup;
-                });
+            .map(ProcessGroupEntity::getComponent)
+            .map(processGroup -> {
+                if (verbose) {
+                    processGroup.setContents(getFlowSnippet(processGroupId, recursive));
+                }
+                return processGroup;
+            });
     }
 
     /**
@@ -218,11 +222,9 @@ public class NiFiProcessGroupsRestClientV1 extends AbstractNiFiProcessGroupsRest
     }
 
 
-
     public Optional<ProcessGroupStatusDTO> getStatus(String processGroupId) {
-        return  Optional.ofNullable(findEntityById(processGroupId).map(processGroupEntity -> processGroupEntity.getStatus()).orElse(null));
+        return Optional.ofNullable(findEntityById(processGroupId).map(processGroupEntity -> processGroupEntity.getStatus()).orElse(null));
     }
-
 
 
     @Nonnull
@@ -230,9 +232,9 @@ public class NiFiProcessGroupsRestClientV1 extends AbstractNiFiProcessGroupsRest
     public Set<ConnectionDTO> getConnections(@Nonnull final String processGroupId) {
         try {
             return client.get(BASE_PATH + processGroupId + "/connections", null, ConnectionsEntity.class)
-                    .getConnections().stream()
-                    .map(ConnectionEntity::getComponent)
-                    .collect(Collectors.toSet());
+                .getConnections().stream()
+                .map(ConnectionEntity::getComponent)
+                .collect(Collectors.toSet());
         } catch (final NotFoundException e) {
             throw new NifiComponentNotFoundException(processGroupId, NifiConstants.NIFI_COMPONENT_TYPE.PROCESS_GROUP, e);
         }
@@ -243,9 +245,9 @@ public class NiFiProcessGroupsRestClientV1 extends AbstractNiFiProcessGroupsRest
     public Set<ControllerServiceDTO> getControllerServices(@Nonnull final String processGroupId) {
         try {
             return client.get("/flow/process-groups/" + processGroupId + "/controller-services", null, ControllerServicesEntity.class)
-                    .getControllerServices().stream()
-                    .map(ControllerServiceEntity::getComponent)
-                    .collect(Collectors.toSet());
+                .getControllerServices().stream()
+                .map(ControllerServiceEntity::getComponent)
+                .collect(Collectors.toSet());
         } catch (final NotFoundException e) {
             throw new NifiComponentNotFoundException(processGroupId, NifiConstants.NIFI_COMPONENT_TYPE.PROCESS_GROUP, e);
         }
@@ -256,9 +258,9 @@ public class NiFiProcessGroupsRestClientV1 extends AbstractNiFiProcessGroupsRest
     public Set<PortDTO> getInputPorts(@Nonnull final String processGroupId) {
         try {
             return client.get(BASE_PATH + processGroupId + "/input-ports", null, InputPortsEntity.class)
-                    .getInputPorts().stream()
-                    .map(PortEntity::getComponent)
-                    .collect(Collectors.toSet());
+                .getInputPorts().stream()
+                .map(PortEntity::getComponent)
+                .collect(Collectors.toSet());
         } catch (final NotFoundException e) {
             throw new NifiComponentNotFoundException(processGroupId, NifiConstants.NIFI_COMPONENT_TYPE.PROCESS_GROUP, e);
         }
@@ -269,9 +271,9 @@ public class NiFiProcessGroupsRestClientV1 extends AbstractNiFiProcessGroupsRest
     public Set<PortDTO> getOutputPorts(@Nonnull final String processGroupId) {
         try {
             return client.get(BASE_PATH + processGroupId + "/output-ports", null, OutputPortsEntity.class)
-                    .getOutputPorts().stream()
-                    .map(PortEntity::getComponent)
-                    .collect(Collectors.toSet());
+                .getOutputPorts().stream()
+                .map(PortEntity::getComponent)
+                .collect(Collectors.toSet());
         } catch (final NotFoundException e) {
             throw new NifiComponentNotFoundException(processGroupId, NifiConstants.NIFI_COMPONENT_TYPE.PROCESS_GROUP, e);
         }
@@ -313,44 +315,43 @@ public class NiFiProcessGroupsRestClientV1 extends AbstractNiFiProcessGroupsRest
     @Override
     public ProcessGroupDTO update(@Nonnull final ProcessGroupDTO processGroup) {
         return findEntityById(processGroup.getId())
-                .flatMap(current -> {
-                    final ProcessGroupEntity entity = new ProcessGroupEntity();
-                    entity.setComponent(processGroup);
+            .flatMap(current -> {
+                final ProcessGroupEntity entity = new ProcessGroupEntity();
+                entity.setComponent(processGroup);
 
-                    final RevisionDTO revision = new RevisionDTO();
-                    revision.setVersion(current.getRevision().getVersion());
-                    entity.setRevision(revision);
+                final RevisionDTO revision = new RevisionDTO();
+                revision.setVersion(current.getRevision().getVersion());
+                entity.setRevision(revision);
 
-                    try {
-                        return Optional.of(client.put(BASE_PATH + processGroup.getId(), entity, ProcessGroupEntity.class).getComponent());
-                    } catch (final NotFoundException e) {
-                        return Optional.empty();
-                    }
-                })
-                .orElseThrow(() -> new NifiComponentNotFoundException(processGroup.getId(), NifiConstants.NIFI_COMPONENT_TYPE.PROCESS_GROUP, null));
+                try {
+                    return Optional.of(client.put(BASE_PATH + processGroup.getId(), entity, ProcessGroupEntity.class).getComponent());
+                } catch (final NotFoundException e) {
+                    return Optional.empty();
+                }
+            })
+            .orElseThrow(() -> new NifiComponentNotFoundException(processGroup.getId(), NifiConstants.NIFI_COMPONENT_TYPE.PROCESS_GROUP, null));
     }
 
     @Nonnull
     @Override
     protected Optional<ProcessGroupDTO> doDelete(@Nonnull final ProcessGroupDTO processGroup) {
         return findEntityById(processGroup.getId())
-                .flatMap(entity -> {
-                    final Long version = entity.getRevision().getVersion();
-                    try {
-                        return Optional.of(client.delete(BASE_PATH + processGroup.getId(), ImmutableMap.of("version", version), ProcessGroupEntity.class).getComponent());
-                    } catch (final NotFoundException e) {
-                        return Optional.empty();
-                    }
-                });
+            .flatMap(entity -> {
+                final Long version = entity.getRevision().getVersion();
+                try {
+                    return Optional.of(client.delete(BASE_PATH + processGroup.getId(), ImmutableMap.of("version", version), ProcessGroupEntity.class).getComponent());
+                } catch (final NotFoundException e) {
+                    return Optional.empty();
+                }
+            });
     }
-
 
 
     /**
      * Fetches the flow snippet for the specified process group.
      *
      * @param processGroupId the process group id
-     * @param recursive {@code true} to include flows for child process groups, or {@code false} to leave child process group flows empty
+     * @param recursive      {@code true} to include flows for child process groups, or {@code false} to leave child process group flows empty
      * @return the flow for the process group
      */
     @Nonnull

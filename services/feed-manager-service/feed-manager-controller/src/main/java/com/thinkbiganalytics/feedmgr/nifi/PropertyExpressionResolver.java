@@ -51,9 +51,9 @@ import javax.annotation.Nullable;
 /**
  * Resolves the values for NiFi processor properties using the following logic:
  * <ol>
- *     <li>Resolves {@code ${config.<NAME>}} to a property of the same name in the {@code application.properties} file.</li>
- *     <li>Looks for a property in {@code application.properties} that matches {@code nifi.<PROCESSOR TYPE>.<PROPERTY KEY>} or {@code nifi.all_processors.<PROPERTY_KEY>}.</li>
- *     <li>Resolves {@code ${metadata.<NAME>}} to a {@link MetadataField} property of the {@link FeedMetadata} class.</li>
+ * <li>Resolves {@code ${config.<NAME>}} to a property of the same name in the {@code application.properties} file.</li>
+ * <li>Looks for a property in {@code application.properties} that matches {@code nifi.<PROCESSOR TYPE>.<PROPERTY KEY>} or {@code nifi.all_processors.<PROPERTY_KEY>}.</li>
+ * <li>Resolves {@code ${metadata.<NAME>}} to a {@link MetadataField} property of the {@link FeedMetadata} class.</li>
  * </ol>
  *
  * <p>The {@code <PROCESSOR TYPE>} is the class name of the NiFi processor converted to lowercase. The {@code <PROPERTY KEY>} is the NiFi processor property key converted to lowercase and spaces
@@ -62,18 +62,24 @@ import javax.annotation.Nullable;
  */
 public class PropertyExpressionResolver {
 
-    private static final Logger log = LoggerFactory.getLogger(PropertyExpressionResolver.class);
-
-    /** Matches a variable in a property value */
+    /**
+     * Matches a variable in a property value
+     */
     public static final Pattern VARIABLE_PATTERN = Pattern.compile("\\$\\{(.+?)\\}");
-
-    /** Prefix for variable-type property replacement */
+    private static final Logger log = LoggerFactory.getLogger(PropertyExpressionResolver.class);
+    /**
+     * Prefix for variable-type property replacement
+     */
     public static String configPropertyPrefix = "config.";
 
-    /** Prefix for {@link FeedMetadata} property replacement */
+    /**
+     * Prefix for {@link FeedMetadata} property replacement
+     */
     public static String metadataPropertyPrefix = MetadataFieldAnnotationFieldNameResolver.metadataPropertyPrefix;
 
-    /** Properties from the {@code application.properties} file */
+    /**
+     * Properties from the {@code application.properties} file
+     */
     @Autowired
     private SpringEnvironmentProperties environmentProperties;
 
@@ -116,11 +122,6 @@ public class PropertyExpressionResolver {
     }
 
 
-
-
-
-
-
     /**
      * Resolves the value of the specified property of the specified feed.
      *
@@ -157,7 +158,7 @@ public class PropertyExpressionResolver {
 
     public Map<String, Object> getStaticConfigProperties() {
         Map<String, Object> props = environmentProperties.getPropertiesStartingWith(configPropertyPrefix);
-        if(props == null){
+        if (props == null) {
             props = new HashMap<>();
         }
         Map<String, Object> nifiProps = environmentProperties.getPropertiesStartingWith("nifi.");
@@ -209,7 +210,6 @@ public class PropertyExpressionResolver {
         }
         return new ResolveResult(false, false);
     }
-
 
 
     /**
@@ -268,64 +268,10 @@ public class PropertyExpressionResolver {
         return new ResolveResult(hasConfig, isModified);
     }
 
-    /**
-     * The result of resolving a NiFi property value.
-     */
-    private static class ResolveResult {
-        /** Indicates that the value should not be resolved further */
-        final boolean isFinal;
-
-        /** Indicates that the value was modified */
-        final boolean isModified;
-
-        /**
-         * Constructs a {@code ResultResult} with the specified attributes.
-         *
-         * @param isFinal {@code true} if the value should not be resolved further, or {@code false} otherwise
-         * @param isModified {@code true} if the value was modified, or {@code false} otherwise
-         */
-        ResolveResult(final boolean isFinal, final boolean isModified) {
-            this.isFinal = isFinal;
-            this.isModified = isModified;
-        }
-    }
-
     public boolean containsVariablesPatterns(String str) {
         final Matcher matcher = VARIABLE_PATTERN.matcher(str);
         return (matcher.find());
     }
-
-    public static class ResolvedVariables {
-
-        private Map<String, String> resolvedVariables;
-
-        private String str;
-
-        private String resolvedString;
-
-        public ResolvedVariables(String str) {
-            this.str = str;
-            this.resolvedString = str;
-            this.resolvedVariables = new HashMap<>();
-        }
-
-        public Map<String, String> getResolvedVariables() {
-            return resolvedVariables;
-        }
-
-        public void setResolvedVariables(Map<String, String> resolvedVariables) {
-            this.resolvedVariables = resolvedVariables;
-        }
-
-        public String getResolvedString() {
-            return resolvedString;
-        }
-
-        public void setResolvedString(String resolvedString) {
-            this.resolvedString = resolvedString;
-        }
-    }
-
 
     /**
      * Replace any property in the str  ${var} with the respective value in the map of vars
@@ -420,10 +366,63 @@ public class PropertyExpressionResolver {
         }
     }
 
+    /**
+     * The result of resolving a NiFi property value.
+     */
+    private static class ResolveResult {
 
+        /**
+         * Indicates that the value should not be resolved further
+         */
+        final boolean isFinal;
 
+        /**
+         * Indicates that the value was modified
+         */
+        final boolean isModified;
 
+        /**
+         * Constructs a {@code ResultResult} with the specified attributes.
+         *
+         * @param isFinal    {@code true} if the value should not be resolved further, or {@code false} otherwise
+         * @param isModified {@code true} if the value was modified, or {@code false} otherwise
+         */
+        ResolveResult(final boolean isFinal, final boolean isModified) {
+            this.isFinal = isFinal;
+            this.isModified = isModified;
+        }
+    }
 
+    public static class ResolvedVariables {
+
+        private Map<String, String> resolvedVariables;
+
+        private String str;
+
+        private String resolvedString;
+
+        public ResolvedVariables(String str) {
+            this.str = str;
+            this.resolvedString = str;
+            this.resolvedVariables = new HashMap<>();
+        }
+
+        public Map<String, String> getResolvedVariables() {
+            return resolvedVariables;
+        }
+
+        public void setResolvedVariables(Map<String, String> resolvedVariables) {
+            this.resolvedVariables = resolvedVariables;
+        }
+
+        public String getResolvedString() {
+            return resolvedString;
+        }
+
+        public void setResolvedString(String resolvedString) {
+            this.resolvedString = resolvedString;
+        }
+    }
 
 
 }

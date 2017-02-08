@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.api;
 
@@ -24,8 +24,7 @@ package com.thinkbiganalytics.metadata.api;
  */
 
 /**
- * Thrown when there was a framework problem accessing metadata. 
- * 
+ * Thrown when there was a framework problem accessing metadata.
  */
 public class MetadataAccessException extends MetadataException {
 

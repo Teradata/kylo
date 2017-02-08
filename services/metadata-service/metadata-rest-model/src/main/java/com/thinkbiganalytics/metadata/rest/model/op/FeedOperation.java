@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.rest.model.op;
 
@@ -38,10 +38,6 @@ import java.util.Map;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FeedOperation {
 
-    public enum State {
-        STARTED, SUCCESS, FAILURE, CANCELED
-    }
-
     private String operationId;
     private String feedId;
     private State state;
@@ -49,11 +45,10 @@ public class FeedOperation {
     private DateTime startTime;
     private DateTime stopTiime;
     private Map<String, String> results;
-    
     public FeedOperation() {
         super();
     }
-    
+
     public FeedOperation(String operationId, String feedId, State state, String status, DateTime startTime, DateTime stopTiime) {
         super();
         this.operationId = operationId;
@@ -67,7 +62,7 @@ public class FeedOperation {
     public Map<String, String> getResults() {
         return results;
     }
-    
+
     public void setResults(Map<String, String> results) {
         this.results = results;
     }
@@ -79,11 +74,11 @@ public class FeedOperation {
     public void setOperationId(String id) {
         this.operationId = id;
     }
-    
+
     public String getFeedId() {
         return feedId;
     }
-    
+
     public void setFeedId(String feedId) {
         this.feedId = feedId;
     }
@@ -118,6 +113,10 @@ public class FeedOperation {
 
     public void setStopTime(DateTime stopTiime) {
         this.stopTiime = stopTiime;
+    }
+
+    public enum State {
+        STARTED, SUCCESS, FAILURE, CANCELED
     }
 
 }

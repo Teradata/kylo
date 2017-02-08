@@ -72,12 +72,12 @@ public class JcrDerivedDatasource extends JcrDatasource implements DerivedDataso
         JcrPropertyUtil.addToSetProperty(this.node, DATASOURCE_DEFINITION, node, true);
     }
 
-    public void setDatasourceType(String type) {
-        JcrPropertyUtil.setProperty(this.node, TYPE_NAME, type);
-    }
-
     public String getDatasourceType() {
         return JcrPropertyUtil.getProperty(this.node, TYPE_NAME);
+    }
+
+    public void setDatasourceType(String type) {
+        JcrPropertyUtil.setProperty(this.node, TYPE_NAME, type);
     }
 
 }

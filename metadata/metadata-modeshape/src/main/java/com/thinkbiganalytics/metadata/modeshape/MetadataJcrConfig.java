@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.modeshape;
 
@@ -62,19 +62,19 @@ import java.util.List;
  */
 @Configuration
 public class MetadataJcrConfig {
-    
+
     @Bean
     public UserProvider userProvider() {
         // TODO consider moving this to its own configuration, and perhaps the whole user management 
         // to a separate module than the metadata one.
         return new JcrUserProvider();
     }
-    
+
     @Bean
     public ExtensibleTypeProvider extensibleTypeProvider() {
         return new JcrExtensibleTypeProvider();
     }
-    
+
     @Bean
     public ExtensibleEntityProvider extensibleEntityProvider() {
         return new JcrExtensibleEntityProvider();
@@ -89,7 +89,7 @@ public class MetadataJcrConfig {
     public FeedProvider feedProvider() {
         return new JcrFeedProvider();
     }
-    
+
     @Bean
     public FeedOperationsProvider feedOperationsProvider() {
         return new JobRepoFeedOperationsProvider();
@@ -111,12 +111,12 @@ public class MetadataJcrConfig {
     }
 
     @Bean
-    public FeedManagerFeedProvider feedManagerFeedProvider(){
+    public FeedManagerFeedProvider feedManagerFeedProvider() {
         return new JcrFeedManagerFeedProvider();
     }
 
     @Bean
-    public FeedManagerTemplateProvider feedManagerTemplateProvider(){
+    public FeedManagerTemplateProvider feedManagerTemplateProvider() {
         return new JcrFeedTemplateProvider();
     }
 
@@ -124,7 +124,6 @@ public class MetadataJcrConfig {
     public DatasourceDefinitionProvider datasourceDefinitionProvider() {
         return new JcrDatasourceDefinitionProvider();
     }
-
 
 //    @Bean
 //    public FeedProvider feedProvider() {
@@ -142,25 +141,23 @@ public class MetadataJcrConfig {
     }
 
     @Bean
-    public FeedServiceLevelAgreementProvider jcrFeedSlaProvider(){
+    public FeedServiceLevelAgreementProvider jcrFeedSlaProvider() {
         return new JcrFeedServiceLevelAgreementProvider();
     }
 
 
-
     @Bean
-    public ModeShapeAvailability modeShapeAvailability(){
+    public ModeShapeAvailability modeShapeAvailability() {
         return new ModeShapeAvailability();
     }
-
 
 
     @Bean
     public JcrMetadataAccess metadataAccess() {
         return new JcrMetadataAccess();
     }
-    
-    @Bean(initMethod="configure")
+
+    @Bean(initMethod = "configure")
     public MetadataJcrConfigurator jcrConfigurator(List<PostMetadataConfigAction> postConfigActions) {
         return new MetadataJcrConfigurator(postConfigActions);
     }

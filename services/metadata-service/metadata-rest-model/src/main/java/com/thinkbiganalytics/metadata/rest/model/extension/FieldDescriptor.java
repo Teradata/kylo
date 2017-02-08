@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.rest.model.extension;
 
@@ -34,10 +34,6 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FieldDescriptor {
 
-    public enum Type {
-        STRING, BOOLEAN, INTEGER, LONG, DOUBLE, DATE, ENTITY
-    }
-
     private Type type;
     private String name;
     private String displayName;
@@ -45,7 +41,6 @@ public class FieldDescriptor {
     private boolean collection = false;
     private boolean required = false;
     private String defaultValue;
-    
     public FieldDescriptor() {
     }
 
@@ -54,7 +49,6 @@ public class FieldDescriptor {
         this.type = type;
         this.name = name;
     }
-
 
     public Type getType() {
         return type;
@@ -110,6 +104,10 @@ public class FieldDescriptor {
 
     public void setDefaultValue(String defaultValue) {
         this.defaultValue = defaultValue;
+    }
+
+    public enum Type {
+        STRING, BOOLEAN, INTEGER, LONG, DOUBLE, DATE, ENTITY
     }
 
 }

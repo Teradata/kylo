@@ -29,7 +29,9 @@ public class MissingUserPropertyException extends RuntimeException {
 
     private static final long serialVersionUID = -8809671023051214040L;
 
-    /** Property this is missing a value */
+    /**
+     * Property this is missing a value
+     */
     @Nonnull
     private String propertyName;
 

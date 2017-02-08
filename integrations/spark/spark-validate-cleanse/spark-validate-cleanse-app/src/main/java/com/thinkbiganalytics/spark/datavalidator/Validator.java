@@ -72,22 +72,18 @@ import java.util.Vector;
 public class Validator implements Serializable {
 
     private static final Logger log = LoggerFactory.getLogger(Validator.class);
-
-    private static String REJECT_REASON_COL = "dlp_reject_reason";
-    private static String VALID_INVALID_COL = "dlp_valid";
-    private static String PROCESSING_DTTM_COL = "processing_dttm";
-
     /*
     Valid validation result
      */
     protected static ValidationResult VALID_RESULT = new ValidationResult();
-
+    private static String REJECT_REASON_COL = "dlp_reject_reason";
+    private static String VALID_INVALID_COL = "dlp_valid";
+    private static String PROCESSING_DTTM_COL = "processing_dttm";
+    private final Vector<Accumulator<Integer>> accumList = new Vector<>();
     /* Initialize Spark */
     private HiveContext hiveContext;
-
     // Optimization to write directly from dataframe to the table vs. temporary table (not tested with < 1.6.x)
     private boolean useDirectInsert = true;
-
     /*
     Valid target schema
      */
@@ -99,30 +95,50 @@ public class Validator implements Serializable {
     private String qualifiedProfileName;
     private String targetDatabase;
     private String partition;
-
     private FieldPolicy[] policies;
     private HCatDataType[] schema;
     private Map<String, FieldPolicy> policyMap = new HashMap<>();
-
     /*
     Cache for performance. Validators accept different parameters (numeric,string, etc) so we need to resolve the type using reflection
      */
     private Map<Class, Class> validatorParamType = new HashMap<>();
-
     @Autowired
     private SparkContextService scs;
-
     @Autowired
     private FieldPolicyLoader loader;
-
     /**
      * Path to the file containing the JSON for the Field Policies. If called from NIFI it will pass it in as a command argument in the Validate processor The JSON should conform to the array of
      * FieldPolicy objects found in the thinkbig-field-policy-rest-model module
      */
     private String fieldPolicyJsonPath;
-
-    private final Vector<Accumulator<Integer>> accumList = new Vector<>();
     private CommandLineParams params;
+
+    static CommandLineParams parseRemainingParameters(String[] args, int from) {
+        CommandLineParams params = new CommandLineParams();
+        new JCommander(params, Arrays.copyOfRange(args, from, args.length));
+        return params;
+    }
+
+    public static void main(String[] args) {
+        log.info("Running Spark Validator with the following command line args (comma separated):" + StringUtils.join(args, ","));
+
+        // Check how many arguments were passed in
+        if (args.length < 4) {
+            System.out.println("Proper Usage is: <targetDatabase> <entity> <partition> <path-to-policy-file>");
+            System.out.println("You can optionally add: --hiveConf hive.setting=value --hiveConf hive.other.setting=value");
+            System.out.println("You provided " + args.length + " args which are (comma separated): " + StringUtils.join(args, ","));
+            System.exit(1);
+        }
+        try {
+            ApplicationContext ctx = new AnnotationConfigApplicationContext("com.thinkbiganalytics.spark");
+            Validator app = ctx.getBean(Validator.class);
+            app.setArguments(args[0], args[1], args[2], args[3]);
+            app.addParameters(parseRemainingParameters(args, 4));
+            app.doValidate();
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
 
     public void setArguments(String targetDatabase, String entity, String partition, String fieldPolicyJsonPath) {
         this.validTableName = entity + "_valid";
@@ -319,7 +335,6 @@ public class Validator implements Serializable {
 
         return new StructType(fieldsList.toArray(new StructField[0]));
     }
-
 
     private void writeToTargetTable(DataSet sourceDF, String targetTable) throws Exception {
         final String qualifiedTable = HiveUtils.quoteIdentifier(targetDatabase, targetTable);
@@ -559,33 +574,6 @@ public class Validator implements Serializable {
 
     private void addParameters(CommandLineParams params) {
         this.params = params;
-    }
-
-    static CommandLineParams parseRemainingParameters(String[] args, int from) {
-        CommandLineParams params = new CommandLineParams();
-        new JCommander(params, Arrays.copyOfRange(args, from, args.length));
-        return params;
-    }
-
-    public static void main(String[] args) {
-        log.info("Running Spark Validator with the following command line args (comma separated):" + StringUtils.join(args, ","));
-
-        // Check how many arguments were passed in
-        if (args.length < 4) {
-            System.out.println("Proper Usage is: <targetDatabase> <entity> <partition> <path-to-policy-file>");
-            System.out.println("You can optionally add: --hiveConf hive.setting=value --hiveConf hive.other.setting=value");
-            System.out.println("You provided " + args.length + " args which are (comma separated): " + StringUtils.join(args, ","));
-            System.exit(1);
-        }
-        try {
-            ApplicationContext ctx = new AnnotationConfigApplicationContext("com.thinkbiganalytics.spark");
-            Validator app = ctx.getBean(Validator.class);
-            app.setArguments(args[0], args[1], args[2], args[3]);
-            app.addParameters(parseRemainingParameters(args, 4));
-            app.doValidate();
-        } catch (Exception e) {
-            System.out.println(e);
-        }
     }
 
 }

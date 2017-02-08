@@ -85,6 +85,10 @@ public class JpaBatchStepExecutionContextValue extends AbstractBatchExecutionCon
         return keyName;
     }
 
+    public void setKeyName(String keyName) {
+        this.keyName = keyName;
+    }
+
     @Override
     public String getId() {
         return id;
@@ -101,10 +105,6 @@ public class JpaBatchStepExecutionContextValue extends AbstractBatchExecutionCon
 
     public void setJobExecutionId(Long jobExecutionId) {
         this.jobExecutionId = jobExecutionId;
-    }
-
-    public void setKeyName(String keyName) {
-        this.keyName = keyName;
     }
 
     @Override

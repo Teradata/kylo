@@ -50,58 +50,6 @@ public class FeedExecutedSinceFeedAssessorTest {
     private FeedExecutedSinceFeed metric;
     private TestMetricAssessmentBuilder builder;
 
-    class TestMetricAssessmentBuilder implements MetricAssessmentBuilder<Serializable> {
-        AssessmentResult result;
-        String message;
-        Metric metric;
-
-        public AssessmentResult getResult() {
-            return result;
-        }
-
-        public String getMessage() {
-            return message;
-        }
-
-        public Metric getMetric() {
-            return metric;
-        }
-
-        @Override
-        public MetricAssessmentBuilder<Serializable> metric(Metric metric) {
-            this.metric = metric;
-            return this;
-        }
-
-        @Override
-        public MetricAssessmentBuilder<Serializable> message(String descr) {
-            this.message = descr;
-            return this;
-        }
-
-        @Override
-        public MetricAssessmentBuilder<Serializable> comparitor(Comparator<MetricAssessment<Serializable>> comp) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public MetricAssessmentBuilder<Serializable> compareWith(Comparable<? extends Serializable> value, Comparable<? extends Serializable>[] otherValues) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public MetricAssessmentBuilder<Serializable> data(Serializable data) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public MetricAssessmentBuilder<Serializable> result(AssessmentResult result) {
-            this.result = result;
-            return this;
-        }
-    }
-
-
     @Before
     public void setUp() {
         metric = new FeedExecutedSinceFeed("mainCategory.mainFeed", "triggeredCategory.triggeredFeed");
@@ -125,12 +73,12 @@ public class FeedExecutedSinceFeedAssessorTest {
 
     /**
      * Use case: <br>
-     - feed c depends on both a and b <br>
-     - feed c never ran <br>
-     - feed b never ran <br>
-     - feed a completes <br>
-     - assessment for both feed "a" and "b" will be done on feed "a" completion <br>
-     - this is the assessment scenario for feed b <br>
+     * - feed c depends on both a and b <br>
+     * - feed c never ran <br>
+     * - feed b never ran <br>
+     * - feed a completes <br>
+     * - assessment for both feed "a" and "b" will be done on feed "a" completion <br>
+     * - this is the assessment scenario for feed b <br>
      */
     @Test
     public void testMainNeverRan() throws Exception {
@@ -144,8 +92,8 @@ public class FeedExecutedSinceFeedAssessorTest {
 
     /**
      * Use case:  <br>
-      - feed a1 triggers feed b1 and feed b1 completes  <br>
-      - feed a2 completes <br>
+     * - feed a1 triggers feed b1 and feed b1 completes  <br>
+     * - feed a2 completes <br>
      */
     @Test
     public void testTriggeredStartedBeforeMainStopped() throws Exception {
@@ -159,12 +107,12 @@ public class FeedExecutedSinceFeedAssessorTest {
 
     /**
      * Use case:  <br>
-     - feed c depends on both a and b  <br>
-     - feed a completes <br>
-     - feed b completes <br>
-     - feed c is triggered and completes <br>
-     - feed a completes <br>
-     - this is the case for feed b assessment on feed a's completion <br>
+     * - feed c depends on both a and b  <br>
+     * - feed a completes <br>
+     * - feed b completes <br>
+     * - feed c is triggered and completes <br>
+     * - feed a completes <br>
+     * - this is the case for feed b assessment on feed a's completion <br>
      */
     @Test
     public void testTriggeredStartedAfterMainStopped() throws Exception {
@@ -178,15 +126,15 @@ public class FeedExecutedSinceFeedAssessorTest {
 
     /**
      * Use case: <br>
-     - feed c depends on a and b <br>
-     - feed a1 completes <br>
-     - feed b1 completes <br>
-     - feed c1 is triggered and completes <br>
-     - feed a2 is started and is still running <br>
-     - feed b2 completes <br>
-     - feed b2 is started and is still running <br>
-     - feed a2 completes <br>
-     - we are now assessing feed b - c feed would have started before feed b stopped and feed b is still running <br>
+     * - feed c depends on a and b <br>
+     * - feed a1 completes <br>
+     * - feed b1 completes <br>
+     * - feed c1 is triggered and completes <br>
+     * - feed a2 is started and is still running <br>
+     * - feed b2 completes <br>
+     * - feed b2 is started and is still running <br>
+     * - feed a2 completes <br>
+     * - we are now assessing feed b - c feed would have started before feed b stopped and feed b is still running <br>
      */
     @Test
     public void testTriggeredStartedBeforeMainStoppedAndMainIsRunning() throws Exception {
@@ -201,13 +149,13 @@ public class FeedExecutedSinceFeedAssessorTest {
 
     /**
      * Use Case:  <br>
-     - feed c depends on both a and b <br>
-     - feed a1 completes <br>
-     - feed b1 completes <br>
-     - feed c1 triggered <br>
-     - feed a2 started and is still running <br>
-     - feed b2 completes <br>
-     - we are now assessing feed a <br>
+     * - feed c depends on both a and b <br>
+     * - feed a1 completes <br>
+     * - feed b1 completes <br>
+     * - feed c1 triggered <br>
+     * - feed a2 started and is still running <br>
+     * - feed b2 completes <br>
+     * - we are now assessing feed a <br>
      */
     @Test
     public void testTriggeredStartedAfterMainStoppedAndMainIsRunning() throws Exception {
@@ -221,9 +169,9 @@ public class FeedExecutedSinceFeedAssessorTest {
 
     /**
      * Use Case;  <br>
-     - feed a1 triggered feed b1 and b1 completes <br>
-     - feed a2 triggered feed b2 and b2 is still running <br>
-     - feed a3 triggered feed b3 <br>
+     * - feed a1 triggered feed b1 and b1 completes <br>
+     * - feed a2 triggered feed b2 and b2 is still running <br>
+     * - feed a3 triggered feed b3 <br>
      */
     @Test
     public void testTriggeredStartedBeforeMainStoppedAndTriggeredIsRunning() throws Exception {
@@ -237,12 +185,12 @@ public class FeedExecutedSinceFeedAssessorTest {
 
     /**
      * Use Case:  <br>
-     - feed c depends on both a and b <br>
-     - feed a1 completes <br>
-     - feed b1 completes <br>
-     - feed c1 is triggered and is still running <br>
-     - feed b2 completes and c1 is still running <br>
-     - we are now assessing a's preconditions <br>
+     * - feed c depends on both a and b <br>
+     * - feed a1 completes <br>
+     * - feed b1 completes <br>
+     * - feed c1 is triggered and is still running <br>
+     * - feed b2 completes and c1 is still running <br>
+     * - we are now assessing a's preconditions <br>
      */
     @Test
     public void testTriggeredStartedAfterMainStoppedAndTriggeredIsRunning() throws Exception {
@@ -257,9 +205,9 @@ public class FeedExecutedSinceFeedAssessorTest {
 
     /**
      * Use Case:  <br>
-     - feed a1 triggers feed b1 and b1 is still running <br>
-     - feed a2 starts and is still running <br>
-     - feed a3 completes <br>
+     * - feed a1 triggers feed b1 and b1 is still running <br>
+     * - feed a2 starts and is still running <br>
+     * - feed a3 completes <br>
      */
     @Test
     public void testTriggeredStartedBeforeMainStoppedAndBothTriggeredAndMainAreRunning() throws Exception {
@@ -274,13 +222,13 @@ public class FeedExecutedSinceFeedAssessorTest {
 
     /**
      * Use Case:  <br>
-     - its possible!  <br>
-     - feed c depends on both a and b <br>
-     - feed a1 completes, feed b1 completes, triggered feed c1 completes <br>
-     - feed a2 starts and is running <br>
-     - feed a3 completes, feed b2 completes, triggered feed c2 started and is still running <br>
-     - feed b3 completes <br>
-     - we are now assessing feed a where feed a2 is still running and c2 is still running and c2 started after last a3 <br>
+     * - its possible!  <br>
+     * - feed c depends on both a and b <br>
+     * - feed a1 completes, feed b1 completes, triggered feed c1 completes <br>
+     * - feed a2 starts and is running <br>
+     * - feed a3 completes, feed b2 completes, triggered feed c2 started and is still running <br>
+     * - feed b3 completes <br>
+     * - we are now assessing feed a where feed a2 is still running and c2 is still running and c2 started after last a3 <br>
      */
     @Test
     public void testTriggeredStartedAfterMainStoppedAndBothTriggeredAndMainAreRunning() throws Exception {
@@ -298,12 +246,9 @@ public class FeedExecutedSinceFeedAssessorTest {
         Assert.assertEquals(expected, builder.getResult());
     }
 
-
     /**
      * @param triggeredFeedStartTime pass negative value for empty operations list
-     * @param isTriggeredFeedRunning
-     * @param mainFeedStopTime pass negative for empty operations list
-     * @param isMainFeedRunning
+     * @param mainFeedStopTime       pass negative for empty operations list
      */
     private FeedExecutedSinceFeedAssessor setUpAssessor(int triggeredFeedStartTime, boolean isTriggeredFeedRunning,
                                                         int mainFeedStopTime, boolean isMainFeedRunning) {
@@ -360,6 +305,58 @@ public class FeedExecutedSinceFeedAssessorTest {
                 return opsProvider;
             }
         };
+    }
+
+    class TestMetricAssessmentBuilder implements MetricAssessmentBuilder<Serializable> {
+
+        AssessmentResult result;
+        String message;
+        Metric metric;
+
+        public AssessmentResult getResult() {
+            return result;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public Metric getMetric() {
+            return metric;
+        }
+
+        @Override
+        public MetricAssessmentBuilder<Serializable> metric(Metric metric) {
+            this.metric = metric;
+            return this;
+        }
+
+        @Override
+        public MetricAssessmentBuilder<Serializable> message(String descr) {
+            this.message = descr;
+            return this;
+        }
+
+        @Override
+        public MetricAssessmentBuilder<Serializable> comparitor(Comparator<MetricAssessment<Serializable>> comp) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public MetricAssessmentBuilder<Serializable> compareWith(Comparable<? extends Serializable> value, Comparable<? extends Serializable>[] otherValues) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public MetricAssessmentBuilder<Serializable> data(Serializable data) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public MetricAssessmentBuilder<Serializable> result(AssessmentResult result) {
+            this.result = result;
+            return this;
+        }
     }
 
 }

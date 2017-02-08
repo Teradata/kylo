@@ -30,7 +30,6 @@ import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -69,7 +68,9 @@ public class AdminController {
     @Inject
     ExportImportFeedService exportImportFeedService;
 
-    /** Feed manager metadata service */
+    /**
+     * Feed manager metadata service
+     */
     @Inject
     MetadataService metadataService;
 
@@ -78,10 +79,10 @@ public class AdminController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Exports the template with the specified ID.")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Returns the template as an attachment."),
-            @ApiResponse(code = 400, message = "the templateId is invalid.", response = RestResponseStatus.class),
-            @ApiResponse(code = 500, message = "The template is not available.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 200, message = "Returns the template as an attachment."),
+                      @ApiResponse(code = 400, message = "the templateId is invalid.", response = RestResponseStatus.class),
+                      @ApiResponse(code = 500, message = "The template is not available.", response = RestResponseStatus.class)
+                  })
     public Response exportTemplate(@NotNull @Size(min = 36, max = 36, message = "Invalid templateId size")
                                    @PathParam("templateId") String templateId) {
         ExportImportTemplateService.ExportTemplate zipFile = exportImportTemplateService.exportTemplate(templateId);
@@ -95,19 +96,19 @@ public class AdminController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Exports the feed with the specified ID.")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Returns the feed as an attachment."),
-            @ApiResponse(code = 400, message = "The feedId is invalid.", response = RestResponseStatus.class),
-            @ApiResponse(code = 500, message = "The feed is not available.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 200, message = "Returns the feed as an attachment."),
+                      @ApiResponse(code = 400, message = "The feedId is invalid.", response = RestResponseStatus.class),
+                      @ApiResponse(code = 500, message = "The feed is not available.", response = RestResponseStatus.class)
+                  })
     public Response exportFeed(@NotNull @Size(min = 36, max = 36, message = "Invalid feedId size")
-                                   @PathParam("feedId") String feedId) {
+                               @PathParam("feedId") String feedId) {
         try {
             ExportImportFeedService.ExportFeed zipFile = exportImportFeedService.exportFeed(feedId);
             return Response.ok(zipFile.getFile(), MediaType.APPLICATION_OCTET_STREAM)
                 .header("Content-Disposition", "attachments; filename=\"" + zipFile.getFileName() + "\"") //optional
                 .build();
-        }catch (IOException e){
-            throw new RuntimeException("Unable to export Feed "+e.getMessage());
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to export Feed " + e.getMessage());
         }
     }
 
@@ -117,13 +118,13 @@ public class AdminController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Imports a feed zip file.")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Returns the feed metadata.", response = ExportImportFeedService.ImportFeed.class),
-            @ApiResponse(code = 500, message = "There was a problem importing the feed.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 200, message = "Returns the feed metadata.", response = ExportImportFeedService.ImportFeed.class),
+                      @ApiResponse(code = 500, message = "There was a problem importing the feed.", response = RestResponseStatus.class)
+                  })
     public Response uploadFeed(@NotNull @FormDataParam("file") InputStream fileInputStream,
-                                   @NotNull @FormDataParam("file") FormDataContentDisposition fileMetaData,
-                                   @FormDataParam("overwrite") @DefaultValue("false") boolean overwrite,
-                                   @FormDataParam("categorySystemName") String categorySystemName,
+                               @NotNull @FormDataParam("file") FormDataContentDisposition fileMetaData,
+                               @FormDataParam("overwrite") @DefaultValue("false") boolean overwrite,
+                               @FormDataParam("categorySystemName") String categorySystemName,
                                @FormDataParam("importConnectingReusableFlow") @DefaultValue("NOT_SET") ImportOptions.IMPORT_CONNECTING_FLOW importConnectingFlow)
         throws Exception {
         ImportOptions options = new ImportOptions();
@@ -141,14 +142,14 @@ public class AdminController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Imports a template xml or zip file.")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Returns the template metadata.", response = ExportImportTemplateService.ImportTemplate.class),
-            @ApiResponse(code = 500, message = "There was a problem importing the template.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 200, message = "Returns the template metadata.", response = ExportImportTemplateService.ImportTemplate.class),
+                      @ApiResponse(code = 500, message = "There was a problem importing the template.", response = RestResponseStatus.class)
+                  })
     public Response uploadTemplate(@NotNull @FormDataParam("file") InputStream fileInputStream,
-                                  @NotNull @FormDataParam("file") FormDataContentDisposition fileMetaData,
-                                  @FormDataParam("overwrite") @DefaultValue("false") boolean overwrite,
+                                   @NotNull @FormDataParam("file") FormDataContentDisposition fileMetaData,
+                                   @FormDataParam("overwrite") @DefaultValue("false") boolean overwrite,
                                    @FormDataParam("importConnectingReusableFlow") @DefaultValue("NOT_SET") ImportOptions.IMPORT_CONNECTING_FLOW importConnectingFlow,
-                                  @FormDataParam("createReusableFlow") @DefaultValue("false") boolean createReusableFlow)
+                                   @FormDataParam("createReusableFlow") @DefaultValue("false") boolean createReusableFlow)
         throws Exception {
         ImportOptions options = new ImportOptions();
         options.setCreateReusableFlow(createReusableFlow);
@@ -170,7 +171,7 @@ public class AdminController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the user-defined fields for categories and feeds.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "Returns the user-defined fields.", response = UserFieldCollection.class)
+        @ApiResponse(code = 200, message = "Returns the user-defined fields.", response = UserFieldCollection.class)
     )
     @Nonnull
     public Object getUserFields() {
@@ -188,7 +189,7 @@ public class AdminController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Sets the user-defined fields for categories and feeds.")
     @ApiResponses(
-            @ApiResponse(code = 204, message = "The user-defined fields have been updated.")
+        @ApiResponse(code = 204, message = "The user-defined fields have been updated.")
     )
     public void setUserFields(@Nonnull final UserFieldCollection userFields) {
         metadataService.setUserFields(userFields);

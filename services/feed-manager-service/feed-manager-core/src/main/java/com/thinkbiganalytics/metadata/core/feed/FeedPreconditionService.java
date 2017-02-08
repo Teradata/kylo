@@ -92,11 +92,11 @@ public class FeedPreconditionService {
 
             ServiceLevelAgreement sla = precond.getAgreement();
             boolean isAssess = sla.getObligationGroups().stream()
-                    .flatMap(obligationGroup -> obligationGroup.getObligations().stream())
-                    .flatMap(obligation -> obligation.getMetrics().stream())
-                    .anyMatch(metric -> isMetricDependentOnStatus(metric, operationStatus));
+                .flatMap(obligationGroup -> obligationGroup.getObligations().stream())
+                .flatMap(obligation -> obligation.getMetrics().stream())
+                .anyMatch(metric -> isMetricDependentOnStatus(metric, operationStatus));
 
-            if(isAssess) {
+            if (isAssess) {
                 ServiceLevelAssessment assessment = this.assessor.assess(sla);
 
                 if (assessment.getResult() == AssessmentResult.SUCCESS) {
@@ -109,7 +109,9 @@ public class FeedPreconditionService {
         }
     }
 
-    /** To avoid feeds being triggered by feeds they do not depend on    */
+    /**
+     * To avoid feeds being triggered by feeds they do not depend on
+     */
     private boolean isMetricDependentOnStatus(Metric metric, OperationStatus operationStatus) {
         return !(metric instanceof FeedExecutedSinceFeed) || operationStatus.getFeedName().equalsIgnoreCase(((FeedExecutedSinceFeed) metric).getCategoryAndFeed());
     }
@@ -128,7 +130,7 @@ public class FeedPreconditionService {
                         // Don't check the precondition of the feed that that generated this change event.
                         // TODO: this might not be the correct behavior but none of our current metrics
                         // need to be assessed when the feed itself containing the precondition has changed state.
-                        if (! feed.getQualifiedName().equals(event.getData().getFeedName())) {
+                        if (!feed.getQualifiedName().equals(event.getData().getFeedName())) {
                             checkPrecondition(feed, event.getData());
                         }
                     }

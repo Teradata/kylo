@@ -53,38 +53,53 @@ import scala.tools.nsc.interpreter.NamedParam;
  */
 public abstract class ScriptEngine {
 
-    /** End of line character */
-    private static final byte[] END_LINE = new byte[] {'\n'};
+    /**
+     * End of line character
+     */
+    private static final byte[] END_LINE = new byte[]{'\n'};
 
-    /** Label used by the compiler to indicate a compile error */
+    /**
+     * Label used by the compiler to indicate a compile error
+     */
     private static final byte[] LABEL = "<console>".getBytes(Charsets.UTF_8);
 
-    /** Separator between label, line number, and error message */
-    private static final byte[] SEPARATOR = new byte[] {':'};
+    /**
+     * Separator between label, line number, and error message
+     */
+    private static final byte[] SEPARATOR = new byte[]{':'};
 
-    /** Exception thrown by the last script */
+    /**
+     * Exception thrown by the last script
+     */
     @Nonnull
     private final AtomicReference<Throwable> exception = new AtomicReference<>();
 
-    /** Compiler output stream for capturing compile errors */
+    /**
+     * Compiler output stream for capturing compile errors
+     */
     @Nonnull
     private final ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-    /** Result of the last script */
+    /**
+     * Result of the last script
+     */
     @Nonnull
     private final AtomicReference<Object> result = new AtomicReference<>();
-
-    /** Spark context */
-    @Nullable
-    private SparkContext sparkContext;
-
-    /** Spark SQL context */
-    @Nullable
-    private SQLContext sqlContext;
-
-    /** Map of variable names to values for bindings */
+    /**
+     * Map of variable names to values for bindings
+     */
     @Nonnull
     private final Map<String, Object> values = Maps.newHashMap();
+    /**
+     * Spark context
+     */
+    @Nullable
+    private SparkContext sparkContext;
+    /**
+     * Spark SQL context
+     */
+    @Nullable
+    private SQLContext sqlContext;
 
     /**
      * Executes the specified script.
@@ -109,7 +124,7 @@ public abstract class ScriptEngine {
      */
     @Nullable
     public synchronized Object eval(@Nonnull final String script, @Nonnull final List<NamedParam> bindings)
-            throws ScriptException {
+        throws ScriptException {
         // Define class containing script
         final StringBuilder cls = new StringBuilder();
         cls.append("class Script (engine: com.thinkbiganalytics.spark.repl.ScriptEngine)");
@@ -291,7 +306,7 @@ public abstract class ScriptEngine {
             Throwables.propagateIfPossible(exception, ScriptException.class);
 
             if (exception instanceof Exception) {
-                throw new ScriptException((Exception)exception);
+                throw new ScriptException((Exception) exception);
             } else {
                 throw new ScriptException(exception.getMessage());
             }

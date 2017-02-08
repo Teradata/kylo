@@ -1,4 +1,3 @@
-
 package com.thinkbiganalytics.jira.domain;
 
 /*-
@@ -36,12 +35,12 @@ import javax.annotation.Generated;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("org.jsonschema2pojo")
 @JsonPropertyOrder({
-    "id",
-    "self",
-    "type",
-    "inwardIssue",
-    "outwardIssue"
-})
+                       "id",
+                       "self",
+                       "type",
+                       "inwardIssue",
+                       "outwardIssue"
+                   })
 public class IssueLink {
 
     @JsonProperty("id")
@@ -58,9 +57,7 @@ public class IssueLink {
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
-     * 
-     * @return
-     *     The id
+     * @return The id
      */
     @JsonProperty("id")
     public String getId() {
@@ -68,9 +65,7 @@ public class IssueLink {
     }
 
     /**
-     * 
-     * @param id
-     *     The id
+     * @param id The id
      */
     @JsonProperty("id")
     public void setId(String id) {
@@ -78,9 +73,7 @@ public class IssueLink {
     }
 
     /**
-     * 
-     * @return
-     *     The self
+     * @return The self
      */
     @JsonProperty("self")
     public String getSelf() {
@@ -88,9 +81,7 @@ public class IssueLink {
     }
 
     /**
-     * 
-     * @param self
-     *     The self
+     * @param self The self
      */
     @JsonProperty("self")
     public void setSelf(String self) {
@@ -98,9 +89,7 @@ public class IssueLink {
     }
 
     /**
-     * 
-     * @return
-     *     The type
+     * @return The type
      */
     @JsonProperty("type")
     public Type getType() {
@@ -108,9 +97,7 @@ public class IssueLink {
     }
 
     /**
-     * 
-     * @param type
-     *     The type
+     * @param type The type
      */
     @JsonProperty("type")
     public void setType(Type type) {
@@ -118,9 +105,7 @@ public class IssueLink {
     }
 
     /**
-     * 
-     * @return
-     *     The inwardIssue
+     * @return The inwardIssue
      */
     @JsonProperty("inwardIssue")
     public InwardIssue getInwardIssue() {
@@ -128,9 +113,7 @@ public class IssueLink {
     }
 
     /**
-     * 
-     * @param inwardIssue
-     *     The inwardIssue
+     * @param inwardIssue The inwardIssue
      */
     @JsonProperty("inwardIssue")
     public void setInwardIssue(InwardIssue inwardIssue) {
@@ -138,9 +121,7 @@ public class IssueLink {
     }
 
     /**
-     * 
-     * @return
-     *     The outwardIssue
+     * @return The outwardIssue
      */
     @JsonProperty("outwardIssue")
     public OutwardIssue getOutwardIssue() {
@@ -148,9 +129,7 @@ public class IssueLink {
     }
 
     /**
-     * 
-     * @param outwardIssue
-     *     The outwardIssue
+     * @param outwardIssue The outwardIssue
      */
     @JsonProperty("outwardIssue")
     public void setOutwardIssue(OutwardIssue outwardIssue) {

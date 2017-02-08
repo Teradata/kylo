@@ -28,9 +28,7 @@ import org.joda.time.DateTime;
 
 /**
  */
-public interface FeedManagerFeed<C extends FeedManagerCategory> extends Feed<C>{
-
-    void setTemplate(FeedManagerTemplate template);
+public interface FeedManagerFeed<C extends FeedManagerCategory> extends Feed<C> {
 
     String getJson();
 
@@ -38,16 +36,18 @@ public interface FeedManagerFeed<C extends FeedManagerCategory> extends Feed<C>{
 
     FeedManagerTemplate getTemplate();
 
+    void setTemplate(FeedManagerTemplate template);
+
     DateTime getCreatedTime();
 
     DateTime getModifiedTime();
 
     String getNifiProcessGroupId();
 
+    void setNifiProcessGroupId(String nifiProcessGroupId);
+
     @Override
     C getCategory();
-
-    void setNifiProcessGroupId(String nifiProcessGroupId);
 
     void setVersionName(String version);
 

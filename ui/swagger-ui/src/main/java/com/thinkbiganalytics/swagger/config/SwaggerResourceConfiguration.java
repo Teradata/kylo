@@ -28,14 +28,13 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
  * Redirect to swagger using the url: /api-docs/index.html
  * Api docs are documented with Swagger.
  * code under /resources/swagger-ui is pulled from: https://github.com/swagger-api/swagger-ui
- *
  */
 @Configuration
 public class SwaggerResourceConfiguration extends WebMvcConfigurerAdapter {
 
-  @Override
-  public void addResourceHandlers(ResourceHandlerRegistry registry) {
-    registry.addResourceHandler("/api-docs/**").addResourceLocations("classpath:/swagger-ui/");
-  }
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/api-docs/**").addResourceLocations("classpath:/swagger-ui/");
+    }
 
 }

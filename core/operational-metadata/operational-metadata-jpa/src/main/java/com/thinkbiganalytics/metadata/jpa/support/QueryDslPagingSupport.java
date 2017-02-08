@@ -54,28 +54,28 @@ public class QueryDslPagingSupport<E> extends QueryDslRepositorySupport {
         return new PageImpl<>(content, pageable, total);
     }
 
-    public Page<E> findAllWithFetch(EntityPathBase<E> path,Predicate predicate, Pageable pageable, QueryDslFetchJoin... joins) {
+    public Page<E> findAllWithFetch(EntityPathBase<E> path, Predicate predicate, Pageable pageable, QueryDslFetchJoin... joins) {
         if (pageable == null) {
             pageable = new QPageRequest(0, Integer.MAX_VALUE);
         }
         long total = createFetchCountQuery(path, predicate).fetchCount();
 
-        JPQLQuery pagedQuery = getQuerydsl().applyPagination(pageable, createFetchQuery(path,predicate, joins));
+        JPQLQuery pagedQuery = getQuerydsl().applyPagination(pageable, createFetchQuery(path, predicate, joins));
 
         List<E> content = total > pageable.getOffset() ? pagedQuery.fetch() : Collections.<E>emptyList();
         return new PageImpl<>(content, pageable, total);
     }
 
 
-    private JPQLQuery createFetchCountQuery(EntityPathBase<E> path,Predicate predicate) {
+    private JPQLQuery createFetchCountQuery(EntityPathBase<E> path, Predicate predicate) {
         JPQLQuery query = from(path);
         query.where(predicate);
         return query;
     }
 
-    private JPQLQuery createFetchQuery(EntityPathBase<E> path,Predicate predicate, QueryDslFetchJoin... joins) {
+    private JPQLQuery createFetchQuery(EntityPathBase<E> path, Predicate predicate, QueryDslFetchJoin... joins) {
         JPQLQuery query = from(path);
-        for(QueryDslFetchJoin joinDescriptor: joins) {
+        for (QueryDslFetchJoin joinDescriptor : joins) {
             join(joinDescriptor, query);
         }
         query.where(predicate);
@@ -83,7 +83,7 @@ public class QueryDslPagingSupport<E> extends QueryDslRepositorySupport {
     }
 
     private JPQLQuery join(QueryDslFetchJoin join, JPQLQuery query) {
-        switch(join.type) {
+        switch (join.type) {
             case INNER:
                 query.innerJoin(join.joinPath).fetchJoin();
                 break;
@@ -97,16 +97,16 @@ public class QueryDslPagingSupport<E> extends QueryDslRepositorySupport {
                 query.rightJoin(join.joinPath).fetchJoin();
                 break;
             case INNER_ALIAS:
-                query.innerJoin(join.joinPath,join.alias).fetchJoin();
+                query.innerJoin(join.joinPath, join.alias).fetchJoin();
                 break;
             case JOIN_ALIAS:
-                query.join(join.joinPath,join.alias).fetchJoin();
+                query.join(join.joinPath, join.alias).fetchJoin();
                 break;
             case LEFT_ALIAS:
-                query.leftJoin(join.joinPath,join.alias).fetchJoin();
+                query.leftJoin(join.joinPath, join.alias).fetchJoin();
                 break;
             case RIGHT_ALIAS:
-                query.rightJoin(join.joinPath,join.alias).fetchJoin();
+                query.rightJoin(join.joinPath, join.alias).fetchJoin();
                 break;
         }
         return query;

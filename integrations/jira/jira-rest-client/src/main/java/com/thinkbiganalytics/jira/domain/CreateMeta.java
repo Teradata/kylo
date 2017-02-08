@@ -39,9 +39,9 @@ import javax.annotation.Generated;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("org.jsonschema2pojo")
 @JsonPropertyOrder({
-        "expand",
-        "projects"
-})
+                       "expand",
+                       "projects"
+                   })
 public class CreateMeta {
 
     @JsonProperty("expand")
@@ -52,9 +52,7 @@ public class CreateMeta {
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
-     *
-     * @return
-     * The expand
+     * @return The expand
      */
     @JsonProperty("expand")
     public String getExpand() {
@@ -62,9 +60,7 @@ public class CreateMeta {
     }
 
     /**
-     *
-     * @param expand
-     * The expand
+     * @param expand The expand
      */
     @JsonProperty("expand")
     public void setExpand(String expand) {
@@ -72,9 +68,7 @@ public class CreateMeta {
     }
 
     /**
-     *
-     * @return
-     * The projects
+     * @return The projects
      */
     @JsonProperty("projects")
     public List<Project> getProjects() {
@@ -82,9 +76,7 @@ public class CreateMeta {
     }
 
     /**
-     *
-     * @param projects
-     * The projects
+     * @param projects The projects
      */
     @JsonProperty("projects")
     public void setProjects(List<Project> projects) {
@@ -101,8 +93,8 @@ public class CreateMeta {
         this.additionalProperties.put(name, value);
     }
 
-    public Project getProject(){
-        if(projects != null && !projects.isEmpty()) {
+    public Project getProject() {
+        if (projects != null && !projects.isEmpty()) {
             return projects.get(0);
         }
         return null;

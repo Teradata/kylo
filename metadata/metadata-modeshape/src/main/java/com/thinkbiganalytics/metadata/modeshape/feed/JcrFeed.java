@@ -82,7 +82,7 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
     public static final String CATEGORY = "tba:category";
     public static final String HIGH_WATER_MARKS = "tba:highWaterMarks";
     public static final String WATER_MARKS_TYPE = "tba:waterMarks";
-    
+
     public static final String INITIALIZATION_TYPE = "tba:initialization";
     public static final String INIT_STATUS_TYPE = "tba:initStatus";
     public static final String INITIALIZATION = "tba:initialization";
@@ -102,24 +102,24 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
     public static final String USR_PREFIX = "usr:";
 
 
-    public static void addSecurity(Node feedNode) {
-        try {
-            Node allowedNode = feedNode.getNode(ALLOWED_ACTIONS);
-            
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Failed to setup security", e);
-        }
-        
-    }
-
-    
     public JcrFeed(Node node) {
         super(node);
     }
 
+
     public JcrFeed(Node node, JcrCategory category) {
         super(node);
         setProperty(CATEGORY, category);
+    }
+
+    public static void addSecurity(Node feedNode) {
+        try {
+            Node allowedNode = feedNode.getNode(ALLOWED_ACTIONS);
+
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to setup security", e);
+        }
+
     }
 
     @Override
@@ -128,13 +128,6 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
             return new JcrFeed.FeedId(getObjectId());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the entity id", e);
-        }
-    }
-
-    public static class FeedId extends JcrEntity.EntityId implements Feed.ID {
-
-        public FeedId(Serializable ser) {
-            super(ser);
         }
     }
 
@@ -193,15 +186,25 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
     }
 
     @Override
+    public void setDisplayName(String name) {
+        setTitle(name);
+    }
+
+    @Override
     public State getState() {
         return getProperty(STATE, Feed.State.ENABLED);
+    }
+
+    @Override
+    public void setState(State state) {
+        setProperty(STATE, state);
     }
 
     @Override
     public boolean isInitialized() {
         return false;
     }
-    
+
     @Override
     public InitializationStatus getCurrentInitStatus() {
         if (JcrUtil.hasNode(getNode(), INITIALIZATION)) {
@@ -220,7 +223,7 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
             Node statusNode = initNode.addNode(INIT_HISTORY, INIT_STATUS_TYPE);
             statusNode.setProperty(INIT_STATE, status.getState().toString());
             initNode.setProperty(CURRENT_INIT_STATUS, statusNode);
-            
+
             // Trim the history if necessary
             NodeIterator itr = initNode.getNodes(INIT_HISTORY);
             if (itr.getSize() > MAX_INIT_HISTORY) {
@@ -238,18 +241,17 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
     @Override
     public List<InitializationStatus> getInitHistory() {
         Node initNode = JcrUtil.getNode(getNode(), INITIALIZATION);
-        
+
         if (initNode != null) {
             return JcrUtil.getNodeList(initNode, INIT_HISTORY).stream()
-                            .map(n -> createInitializationStatus(n))
-                            .sorted(Comparator.comparing(InitializationStatus::getTimestamp).reversed())
-                            .limit(MAX_INIT_HISTORY)
-                            .collect(Collectors.toList());
+                .map(n -> createInitializationStatus(n))
+                .sorted(Comparator.comparing(InitializationStatus::getTimestamp).reversed())
+                .limit(MAX_INIT_HISTORY)
+                .collect(Collectors.toList());
         } else {
             return Collections.emptyList();
         }
     }
-
 
     @Override
     public FeedPrecondition getPrecondition() {
@@ -263,7 +265,11 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
             throw new MetadataRepositoryException("Failed to retrieve the feed precondition", e);
         }
     }
-    
+
+    public void setPrecondition(JcrServiceLevelAgreement sla) {
+//        Node precondNode
+    }
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.feed.Feed#getWaterMarkNames()
      */
@@ -280,7 +286,7 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
             return Collections.emptySet();
         }
     }
-    
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.feed.Feed#getWaterMarkValue(java.lang.String)
      */
@@ -293,14 +299,15 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
             return Optional.empty();
         }
     }
-    
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.feed.Feed#setWaterMarkValue(java.lang.String, java.lang.String)
      */
     @Override
     public void setWaterMarkValue(String waterMarkName, String value) {
         Node wmNode = JcrUtil.getOrCreateNode(getNode(), HIGH_WATER_MARKS, WATER_MARKS_TYPE);
-        JcrPropertyUtil.setProperty(wmNode, USR_PREFIX + waterMarkName, value);;
+        JcrPropertyUtil.setProperty(wmNode, USR_PREFIX + waterMarkName, value);
+        ;
     }
 
     @Override
@@ -332,7 +339,6 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
         return JcrPropertyUtil.removeFromSetProperty(this.node, DEPENDENTS, depNode);
     }
 
-
     @Override
     public List<Feed<C>> getUsedByFeeds() {
         List<Feed<C>> deps = new ArrayList<>();
@@ -351,31 +357,6 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
         Node depNode = dependent.getNode();
 
         return JcrPropertyUtil.addToSetProperty(this.node, USED_BY_FEEDS, depNode);
-    }
-
-    @Override
-    public boolean removeUsedByFeed(Feed<?> feed) {
-        JcrFeed<?> dependent = (JcrFeed<?>) feed;
-        Node depNode = dependent.getNode();
-
-        return JcrPropertyUtil.removeFromSetProperty(this.node, USED_BY_FEEDS, depNode);
-    }
-
-    @Override
-    public FeedSource getSource(final Datasource.ID id) {
-        List<? extends FeedSource> sources = getSources();
-        if (sources != null) {
-            return sources.stream().filter(feedSource -> feedSource.getDatasource().getId().equals(id)).findFirst().orElse(null);
-        }
-        return null;
-
-        /*
-        return JcrUtil.getNodeList(this.node, SOURCE_NAME).stream()
-                .filter(node -> JcrPropertyUtil.isReferencing(node, JcrFeedConnection.DATASOURCE, id.toString()))
-                .findAny()
-                .map(node -> new JcrFeedSource(node))
-                .orElse(null);
-                */
     }
 
 //
@@ -397,23 +378,12 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
 //
 //    }
 
-
     @Override
-    public FeedDestination getDestination(final Datasource.ID id) {
-        List<? extends FeedDestination> destinations = getDestinations();
-        if (destinations != null) {
-            return destinations.stream().filter(feedDestination -> feedDestination.getDatasource().getId().equals(id)).findFirst().orElse(null);
-        }
-        return null;
+    public boolean removeUsedByFeed(Feed<?> feed) {
+        JcrFeed<?> dependent = (JcrFeed<?>) feed;
+        Node depNode = dependent.getNode();
 
-        /*
-
-        return JcrPropertyUtil.getReferencedNodeSet(this.node, DESTINATION_NAME).stream()
-                .filter(node -> JcrPropertyUtil.isReferencing(this.node, JcrFeedConnection.DATASOURCE, id.toString()))
-                .findAny()
-                .map(node -> new JcrFeedDestination(node))
-                .orElse(null);
-                */
+        return JcrPropertyUtil.removeFromSetProperty(this.node, USED_BY_FEEDS, depNode);
     }
 //
 //    @Override
@@ -434,13 +404,38 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
 //    }
 
     @Override
-    public void setDisplayName(String name) {
-        setTitle(name);
+    public FeedSource getSource(final Datasource.ID id) {
+        List<? extends FeedSource> sources = getSources();
+        if (sources != null) {
+            return sources.stream().filter(feedSource -> feedSource.getDatasource().getId().equals(id)).findFirst().orElse(null);
+        }
+        return null;
+
+        /*
+        return JcrUtil.getNodeList(this.node, SOURCE_NAME).stream()
+                .filter(node -> JcrPropertyUtil.isReferencing(node, JcrFeedConnection.DATASOURCE, id.toString()))
+                .findAny()
+                .map(node -> new JcrFeedSource(node))
+                .orElse(null);
+                */
     }
 
     @Override
-    public void setState(State state) {
-        setProperty(STATE, state);
+    public FeedDestination getDestination(final Datasource.ID id) {
+        List<? extends FeedDestination> destinations = getDestinations();
+        if (destinations != null) {
+            return destinations.stream().filter(feedDestination -> feedDestination.getDatasource().getId().equals(id)).findFirst().orElse(null);
+        }
+        return null;
+
+        /*
+
+        return JcrPropertyUtil.getReferencedNodeSet(this.node, DESTINATION_NAME).stream()
+                .filter(node -> JcrPropertyUtil.isReferencing(this.node, JcrFeedConnection.DATASOURCE, id.toString()))
+                .findAny()
+                .map(node -> new JcrFeedDestination(node))
+                .orElse(null);
+                */
     }
 
     public String getSchedulePeriod() {
@@ -459,10 +454,6 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
         setProperty(SCHEDULE_STRATEGY, scheduleStrategy);
     }
 
-    public void setPrecondition(JcrServiceLevelAgreement sla) {
-//        Node precondNode
-    }
-
     public List<? extends ServiceLevelAgreement> getServiceLevelAgreements() {
         Set<Node> list = JcrPropertyUtil.getReferencedNodeSet(this.node, SLA);
         List<JcrServiceLevelAgreement> serviceLevelAgreements = new ArrayList<>();
@@ -472,6 +463,10 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
             }
         }
         return serviceLevelAgreements;
+    }
+
+    public void setServiceLevelAgreements(List<? extends ServiceLevelAgreement> serviceLevelAgreements) {
+        setProperty(SLA, serviceLevelAgreements);
     }
 
     public List<? extends HadoopSecurityGroup> getSecurityGroups() {
@@ -485,6 +480,15 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
         return hadoopSecurityGroups;
     }
 
+    public void setSecurityGroups(List<? extends HadoopSecurityGroup> hadoopSecurityGroups) {
+        JcrPropertyUtil.setProperty(this.node, HADOOP_SECURITY_GROUPS, null);
+
+        for (HadoopSecurityGroup securityGroup : hadoopSecurityGroups) {
+            Node securityGroupNode = ((JcrHadoopSecurityGroup) securityGroup).getNode();
+            JcrPropertyUtil.addToSetProperty(this.node, HADOOP_SECURITY_GROUPS, securityGroupNode, true);
+        }
+    }
+
     public void removeServiceLevelAgreement(ServiceLevelAgreement.ID id) {
         try {
             Set<Node> nodes = JcrPropertyUtil.getSetProperty(this.node, SLA);
@@ -496,24 +500,10 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
                 }
             }
             node.setProperty(SLA, (Value[]) updatedSet.stream().toArray(size -> new Value[size]));
-        }catch (RepositoryException e){
-            throw new MetadataRepositoryException("Unable to remove reference to SLA "+id+ "from feed "+this.getId());
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to remove reference to SLA " + id + "from feed " + this.getId());
         }
 
-    }
-
-
-    public void setServiceLevelAgreements(List<? extends ServiceLevelAgreement> serviceLevelAgreements) {
-        setProperty(SLA, serviceLevelAgreements);
-    }
-
-    public void setSecurityGroups(List<? extends HadoopSecurityGroup> hadoopSecurityGroups) {
-        JcrPropertyUtil.setProperty(this.node, HADOOP_SECURITY_GROUPS, null);
-
-        for (HadoopSecurityGroup securityGroup : hadoopSecurityGroups) {
-            Node securityGroupNode = ((JcrHadoopSecurityGroup) securityGroup).getNode();
-            JcrPropertyUtil.addToSetProperty(this.node, HADOOP_SECURITY_GROUPS, securityGroupNode, true);
-        }
     }
 
     public boolean addServiceLevelAgreement(ServiceLevelAgreement sla) {
@@ -540,10 +530,16 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
         return JcrUtil.createJcrObject(allowedNode, JcrAllowedActions.class);
     }
 
-
     private InitializationStatus createInitializationStatus(Node statusNode) {
         InitializationStatus.State state = InitializationStatus.State.valueOf(JcrPropertyUtil.getString(statusNode, INIT_STATE));
         DateTime timestamp = JcrPropertyUtil.getProperty(statusNode, "jcr:created");
         return new InitializationStatus(state, timestamp);
+    }
+
+    public static class FeedId extends JcrEntity.EntityId implements Feed.ID {
+
+        public FeedId(Serializable ser) {
+            super(ser);
+        }
     }
 }

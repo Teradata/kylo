@@ -49,46 +49,46 @@ public class JiraClientComponentTest {
     JiraClient jiraClient;
 
 
-   @Test
+    @Test
     public void testJiraClient() {
 
-try {
-    ExecutorService executorService = Executors.newFixedThreadPool(1);
-    Set<Callable<Issue>> callables = new HashSet<Callable<Issue>>();
+        try {
+            ExecutorService executorService = Executors.newFixedThreadPool(1);
+            Set<Callable<Issue>> callables = new HashSet<Callable<Issue>>();
 
-    for (int i = 0; i < 1; i++) {
-        callables.add(new Callable<Issue>() {
-            public Issue call() throws Exception {
-                return jiraClient.getIssue("JRTT-927");
+            for (int i = 0; i < 1; i++) {
+                callables.add(new Callable<Issue>() {
+                    public Issue call() throws Exception {
+                        return jiraClient.getIssue("JRTT-927");
+                    }
+                });
             }
-        });
-    }
 
-    List<Future<Issue>> futures = executorService.invokeAll(callables);
+            List<Future<Issue>> futures = executorService.invokeAll(callables);
 
-    for (Future<Issue> future : futures) {
-        System.out.println("future.get = " + future.get().getKey() + " - " + future.get().getSummary());
-    }
+            for (Future<Issue> future : futures) {
+                System.out.println("future.get = " + future.get().getKey() + " - " + future.get().getSummary());
+            }
 
-    executorService.shutdown();
+            executorService.shutdown();
 
-}catch(Exception e) {
-    e.printStackTrace();
-}
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
 
     @Test
-    public void testCreateIssue(){
-        String summary = "Test Jira Issue Summary on "+System.currentTimeMillis();
+    public void testCreateIssue() {
+        String summary = "Test Jira Issue Summary on " + System.currentTimeMillis();
         try {
-          Issue issue =  jiraClient.createIssue("JRTT",summary,"Desc","Task","scott.reisdorf");
-           Assert.assertNotNull(issue);
-            summary = "Test2 Jira Issue Summary on "+System.currentTimeMillis();
-          issue =  jiraClient.createIssue("JRTT",summary,"Desc2","Task","scott.reisdorf");
+            Issue issue = jiraClient.createIssue("JRTT", summary, "Desc", "Task", "scott.reisdorf");
             Assert.assertNotNull(issue);
-            summary = "Test3 Jira Issue Summary on "+System.currentTimeMillis();
-            issue =  jiraClient.createIssue("JRTT",summary,"Desc3","Task","scott.reisdorf");
+            summary = "Test2 Jira Issue Summary on " + System.currentTimeMillis();
+            issue = jiraClient.createIssue("JRTT", summary, "Desc2", "Task", "scott.reisdorf");
+            Assert.assertNotNull(issue);
+            summary = "Test3 Jira Issue Summary on " + System.currentTimeMillis();
+            issue = jiraClient.createIssue("JRTT", summary, "Desc3", "Task", "scott.reisdorf");
             Assert.assertNotNull(issue);
         } catch (JiraException e) {
             e.printStackTrace();

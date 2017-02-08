@@ -57,6 +57,11 @@ public class DoubleColumnCase1Test extends ProfilerTest {
     private static double stddev;
     private static double variance;
 
+    @AfterClass
+    public static void tearDownClass() {
+        System.out.println("\t*** Completed run for DoubleColumnCase1Test ***");
+    }
+
     @Before
     public void setUp() {
         super.setUp();
@@ -82,36 +87,30 @@ public class DoubleColumnCase1Test extends ProfilerTest {
         Assert.assertEquals(nullCount, columnStats.getNullCount());
     }
 
-
     @Test
     public void testDoubleTotalCount() {
         Assert.assertEquals(totalCount, columnStats.getTotalCount());
     }
-
 
     @Test
     public void testDoubleUniqueCount() {
         Assert.assertEquals(uniqueCount, columnStats.getUniqueCount());
     }
 
-
     @Test
     public void testDoublePercNullValues() {
         assertEquals(percNullValues, columnStats.getPercNullValues(), epsilon);
     }
-
 
     @Test
     public void testDoublePercUniqueValues() {
         assertEquals(percUniqueValues, columnStats.getPercUniqueValues(), epsilon);
     }
 
-
     @Test
     public void testDoublePercDuplicateValues() {
         assertEquals(percDuplicateValues, columnStats.getPercDuplicateValues(), epsilon);
     }
-
 
     @Test
     public void testDoubleTopNValues() {
@@ -148,39 +147,28 @@ public class DoubleColumnCase1Test extends ProfilerTest {
         assertEquals(max, ((DoubleColumnStatistics) columnStats).getMax(), epsilon);
     }
 
-
     @Test
     public void testDoubleMin() {
         assertEquals(min, ((DoubleColumnStatistics) columnStats).getMin(), epsilon);
     }
-
 
     @Test
     public void testDoubleSum() {
         assertEquals(sum, ((DoubleColumnStatistics) columnStats).getSum(), epsilon);
     }
 
-
     @Test
     public void testDoubleMean() {
         assertEquals(mean, ((DoubleColumnStatistics) columnStats).getMean(), epsilon);
     }
-
 
     @Test
     public void testDoubleStddev() {
         assertEquals(stddev, ((DoubleColumnStatistics) columnStats).getStddev(), epsilon);
     }
 
-
     @Test
     public void testDoubleVariance() {
         assertEquals(variance, ((DoubleColumnStatistics) columnStats).getVariance(), epsilon);
-    }
-
-
-    @AfterClass
-    public static void tearDownClass() {
-        System.out.println("\t*** Completed run for DoubleColumnCase1Test ***");
     }
 }   

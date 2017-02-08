@@ -68,19 +68,18 @@ import javax.transaction.TransactionManager;
  */
 public class JcrMetadataAccess implements MetadataAccess {
 
-    private static final Logger log = LoggerFactory.getLogger(JcrMetadataAccess.class);
-
     public static final String TBA_PREFIX = "tba";
-
-    /** Namespace for user-defined items */
+    /**
+     * Namespace for user-defined items
+     */
     public static final String USR_PREFIX = "usr";
-
+    private static final Logger log = LoggerFactory.getLogger(JcrMetadataAccess.class);
     private static final ThreadLocal<Session> activeSession = new ThreadLocal<Session>() {
         protected Session initialValue() {
             return null;
         }
     };
-    
+
     private static final ThreadLocal<Set<Consumer<Boolean>>> postTransactionActions = new ThreadLocal<Set<Consumer<Boolean>>>() {
         protected Set<Consumer<Boolean>> initialValue() {
             return new HashSet<Consumer<Boolean>>();
@@ -90,10 +89,12 @@ public class JcrMetadataAccess implements MetadataAccess {
     private static final ThreadLocal<Set<Node>> checkedOutNodes = new ThreadLocal<Set<Node>>() {
         protected java.util.Set<Node> initialValue() {
             return new HashSet<>();
-        };
+        }
+
+        ;
     };
 
-    private static MetadataRollbackAction nullRollbackAction  = (e) -> {
+    private static MetadataRollbackAction nullRollbackAction = (e) -> {
 
     };
 
@@ -101,23 +102,23 @@ public class JcrMetadataAccess implements MetadataAccess {
     private static MetadataRollbackCommand nullRollbackCommand = (e) -> {
         nullRollbackAction.execute(e);
     };
-    
-    
+
+
     @Inject
     @Named("metadataJcrRepository")
     private Repository repository;
 
     @Inject
     private TransactionManagerLookup txnLookup;
-    
-    
+
+
     public static boolean hasActiveSession() {
         return activeSession.get() != null;
     }
 
     public static Session getActiveSession() {
         Session active = activeSession.get();
-        
+
         if (active != null) {
             return active;
         } else {
@@ -136,8 +137,6 @@ public class JcrMetadataAccess implements MetadataAccess {
 
     /**
      * Check out the node and add it to the Set of checked out nodes
-     *
-     *
      */
     public static void ensureCheckoutNode(Node n) throws RepositoryException {
         if (n.getSession().getRootNode().equals(n.getParent())) {
@@ -163,11 +162,11 @@ public class JcrMetadataAccess implements MetadataAccess {
             itr.remove();
         }
     }
-    
+
     public static void addPostTransactionAction(Consumer<Boolean> action) {
         postTransactionActions.get().add(action);
     }
-    
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.MetadataAccess#commit(com.thinkbiganalytics.metadata.api.MetadataCommand, java.security.Principal[])
      */
@@ -180,7 +179,7 @@ public class JcrMetadataAccess implements MetadataAccess {
 
         return commit(createCredentials(principals), cmd, rollbackCmd);
     }
-    
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.MetadataAccess#commit(java.lang.Runnable, java.security.Principal[])
      */
@@ -191,15 +190,15 @@ public class JcrMetadataAccess implements MetadataAccess {
         }, principals);
     }
 
-    public void commit(MetadataAction action,  MetadataRollbackAction rollbackAction, Principal... principals) {
+    public void commit(MetadataAction action, MetadataRollbackAction rollbackAction, Principal... principals) {
         commit(() -> {
             action.execute();
             return null;
         }, (e) -> {
             rollbackAction.execute(e);
-        },principals);
+        }, principals);
     }
-    
+
     public void commit(Credentials creds, MetadataAction action) {
         commit(creds, () -> {
             action.execute();
@@ -208,13 +207,13 @@ public class JcrMetadataAccess implements MetadataAccess {
     }
 
     public <R> R commit(Credentials creds, MetadataCommand<R> cmd) {
-        return commit(creds,cmd,nullRollbackCommand);
+        return commit(creds, cmd, nullRollbackCommand);
     }
 
 
     public <R> R commit(Credentials creds, MetadataCommand<R> cmd, MetadataRollbackCommand rollbackCmd) {
         Session session = activeSession.get();
-        
+
         if (session == null) {
             try {
                 activeSession.set(this.repository.login(creds));
@@ -241,8 +240,8 @@ public class JcrMetadataAccess implements MetadataAccess {
                     } catch (SystemException se) {
                         log.error("Failed to rollback transaction as a result of other transactional errors", se);
                     }
-                    
-                    if (rollbackCmd != null){
+
+                    if (rollbackCmd != null) {
                         try {
                             rollbackCmd.execute(e);
                         } catch (Exception rbe) {
@@ -295,7 +294,7 @@ public class JcrMetadataAccess implements MetadataAccess {
             return null;
         }, principals);
     }
-    
+
     public void read(Credentials creds, MetadataAction action) {
         read(creds, () -> {
             action.execute();
@@ -305,16 +304,16 @@ public class JcrMetadataAccess implements MetadataAccess {
 
     public <R> R read(Credentials creds, MetadataCommand<R> cmd) {
         Session session = activeSession.get();
-        
+
         if (session == null) {
             try {
                 activeSession.set(this.repository.login(creds));
-                
+
                 TransactionManager txnMgr = this.txnLookup.getTransactionManager();
-                
+
                 try {
                     txnMgr.begin();
-                    
+
                     return cmd.execute();
                 } finally {
                     try {
@@ -322,7 +321,7 @@ public class JcrMetadataAccess implements MetadataAccess {
                     } catch (SystemException e) {
                         log.error("Failed to rollback transaction", e);
                     }
-                    
+
                     activeSession.get().refresh(false);
                     activeSession.get().logout();
                     activeSession.remove();
@@ -348,6 +347,7 @@ public class JcrMetadataAccess implements MetadataAccess {
 
     /**
      * Invokes all of the post-commit consumers; passing the transaction success flag to each.
+     *
      * @param success true if the transaction committed successfully, otherwise false
      */
     private void performPostTransactionActions(boolean success) {
@@ -357,16 +357,16 @@ public class JcrMetadataAccess implements MetadataAccess {
 
     private Credentials createCredentials(Principal... principals) {
         Credentials creds = null;
-        
+
         if (principals.length == 0) {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             creds = new SpringAuthenticationCredentials(auth, ModeShapeReadOnlyPrincipal.INSTANCE);
         } else {
-            creds = OverrideCredentials.create(Stream.concat(Stream.of(ModeShapeReadOnlyPrincipal.INSTANCE), 
+            creds = OverrideCredentials.create(Stream.concat(Stream.of(ModeShapeReadOnlyPrincipal.INSTANCE),
                                                              Arrays.stream(principals))
-                                               .collect(Collectors.toSet()));
+                                                   .collect(Collectors.toSet()));
         }
-        
+
         return creds;
     }
 }

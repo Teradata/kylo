@@ -69,15 +69,15 @@ public class ConfigurationController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the current Kylo configuration.")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Returns the configuration parameters.", response = Map.class)
-    })
+                      @ApiResponse(code = 200, message = "Returns the configuration parameters.", response = Map.class)
+                  })
     public Response getConfiguration() {
         final Map<String, Object> properties;
 
         if ((request.getRemoteAddr().equals("127.0.0.1") || request.getRemoteAddr().equals("0:0:0:0:0:0:0:1")) && env instanceof AbstractEnvironment) {
             properties = StreamSupport.stream(((AbstractEnvironment) env).getPropertySources().spliterator(), false)
-                    .filter(source -> source instanceof PropertiesPropertySource)
-                    .flatMap(source -> ((PropertiesPropertySource) source).getSource().entrySet().stream())
+                .filter(source -> source instanceof PropertiesPropertySource)
+                .flatMap(source -> ((PropertiesPropertySource) source).getSource().entrySet().stream())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (value1, value2) -> value1));
         } else {
             properties = Collections.emptyMap();
@@ -91,8 +91,8 @@ public class ConfigurationController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the paths to the UI modules.")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Returns a mapping between the module name and the URL path.", response = Map.class)
-    })
+                      @ApiResponse(code = 200, message = "Returns a mapping between the module name and the URL path.", response = Map.class)
+                  })
     public Response moduleUrls() {
         final String contextPath = env.getProperty("server.contextPath");
         final String url = StringUtils.isNoneBlank(contextPath) ? contextPath : "";
@@ -108,8 +108,8 @@ public class ConfigurationController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the current system time.")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Returns the current time in milliseconds.", response = Long.class)
-    })
+                      @ApiResponse(code = 200, message = "Returns the current time in milliseconds.", response = Long.class)
+                  })
     public Response generateSystemName() {
         return Response.ok(DateTimeUtil.getNowUTCTime()).build();
     }

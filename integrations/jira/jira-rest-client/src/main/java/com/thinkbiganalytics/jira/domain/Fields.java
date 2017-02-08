@@ -1,4 +1,3 @@
-
 package com.thinkbiganalytics.jira.domain;
 
 /*-
@@ -42,36 +41,36 @@ import javax.annotation.Generated;
 @JsonSerialize(include = JsonSerialize.Inclusion.NON_EMPTY)
 @Generated("org.jsonschema2pojo")
 @JsonPropertyOrder({
-    "fixVersions",
-    "affectedVersions",
-    "resolution",
-    "lastViewed",
-    "priority",
-    "labels",
-    "timeestimate",
-    "versions",
-    "issuelinks",
-    "assignee",
-    "status",
-    "components",
-    "creator",
-    "subtasks",
-    "reporter",
-    "progress",
-    "votes",
-    "worklog",
-    "issuetype",
-    "project",
-    "watches",
-    "created",
-    "updated",
-    "description",
-    "timetracking",
-    "attachment",
-    "summary",
-    "duedate",
-    "comment"
-})
+                       "fixVersions",
+                       "affectedVersions",
+                       "resolution",
+                       "lastViewed",
+                       "priority",
+                       "labels",
+                       "timeestimate",
+                       "versions",
+                       "issuelinks",
+                       "assignee",
+                       "status",
+                       "components",
+                       "creator",
+                       "subtasks",
+                       "reporter",
+                       "progress",
+                       "votes",
+                       "worklog",
+                       "issuetype",
+                       "project",
+                       "watches",
+                       "created",
+                       "updated",
+                       "description",
+                       "timetracking",
+                       "attachment",
+                       "summary",
+                       "duedate",
+                       "comment"
+                   })
 public class Fields {
 
 
@@ -136,9 +135,7 @@ public class Fields {
 
 
     /**
-     * 
-     * @return
-     *     The fixVersions
+     * @return The fixVersions
      */
     @JsonProperty("fixVersions")
     public List<Version> getFixVersions() {
@@ -146,9 +143,7 @@ public class Fields {
     }
 
     /**
-     * 
-     * @param fixVersions
-     *     The fixVersions
+     * @param fixVersions The fixVersions
      */
     @JsonProperty("fixVersions")
     public void setFixVersions(List<Version> fixVersions) {
@@ -157,9 +152,7 @@ public class Fields {
 
 
     /**
-     *
-     * @return
-     *     The affectedVersions
+     * @return The affectedVersions
      */
     @JsonProperty("affectedVersions")
     public List<Version> getAffectedVersions() {
@@ -167,9 +160,7 @@ public class Fields {
     }
 
     /**
-     *
-     * @param affectedVersions
-     *     The affectedVersions
+     * @param affectedVersions The affectedVersions
      */
     @JsonProperty("affectedVersions")
     public void setAffectedVersions(List<Version> affectedVersions) {
@@ -177,9 +168,7 @@ public class Fields {
     }
 
     /**
-     * 
-     * @return
-     *     The resolution
+     * @return The resolution
      */
     @JsonProperty("resolution")
     public Resolution getResolution() {
@@ -187,9 +176,7 @@ public class Fields {
     }
 
     /**
-     * 
-     * @param resolution
-     *     The resolution
+     * @param resolution The resolution
      */
     @JsonProperty("resolution")
     public void setResolution(Resolution resolution) {
@@ -197,9 +184,7 @@ public class Fields {
     }
 
     /**
-     * 
-     * @return
-     *     The lastViewed
+     * @return The lastViewed
      */
     @JsonProperty("lastViewed")
     public String getLastViewed() {
@@ -207,9 +192,7 @@ public class Fields {
     }
 
     /**
-     * 
-     * @param lastViewed
-     *     The lastViewed
+     * @param lastViewed The lastViewed
      */
     @JsonProperty("lastViewed")
     public void setLastViewed(String lastViewed) {
@@ -217,9 +200,7 @@ public class Fields {
     }
 
     /**
-     * 
-     * @return
-     *     The priority
+     * @return The priority
      */
     @JsonProperty("priority")
     public Priority getPriority() {
@@ -227,9 +208,7 @@ public class Fields {
     }
 
     /**
-     * 
-     * @param priority
-     *     The priority
+     * @param priority The priority
      */
     @JsonProperty("priority")
     public void setPriority(Priority priority) {
@@ -238,9 +217,7 @@ public class Fields {
 
 
     /**
-     * 
-     * @return
-     *     The labels
+     * @return The labels
      */
     @JsonProperty("labels")
     public List<String> getLabels() {
@@ -248,9 +225,7 @@ public class Fields {
     }
 
     /**
-     * 
-     * @param labels
-     *     The labels
+     * @param labels The labels
      */
     @JsonProperty("labels")
     public void setLabels(List<String> labels) {
@@ -258,9 +233,7 @@ public class Fields {
     }
 
     /**
-     * 
-     * @return
-     *     The versions
+     * @return The versions
      */
     @JsonProperty("versions")
     public List<Version> getVersions() {
@@ -268,9 +241,7 @@ public class Fields {
     }
 
     /**
-     * 
-     * @param versions
-     *     The versions
+     * @param versions The versions
      */
     @JsonProperty("versions")
     public void setVersions(List<Version> versions) {
@@ -278,9 +249,7 @@ public class Fields {
     }
 
     /**
-     * 
-     * @return
-     *     The issuelinks
+     * @return The issuelinks
      */
     @JsonProperty("issuelinks")
     public List<IssueLink> getIssuelinks() {
@@ -288,9 +257,7 @@ public class Fields {
     }
 
     /**
-     * 
-     * @param issuelinks
-     *     The issuelinks
+     * @param issuelinks The issuelinks
      */
     @JsonProperty("issuelinks")
     public void setIssueLinks(List<IssueLink> issuelinks) {
@@ -298,9 +265,7 @@ public class Fields {
     }
 
     /**
-     * 
-     * @return
-     *     The assignee
+     * @return The assignee
      */
     @JsonProperty("assignee")
     public User getAssignee() {
@@ -308,9 +273,7 @@ public class Fields {
     }
 
     /**
-     * 
-     * @param assignee
-     *     The assignee
+     * @param assignee The assignee
      */
     @JsonProperty("assignee")
     public void setAssignee(User assignee) {
@@ -318,9 +281,7 @@ public class Fields {
     }
 
     /**
-     * 
-     * @return
-     *     The status
+     * @return The status
      */
     @JsonProperty("status")
     public Status getStatus() {
@@ -328,9 +289,7 @@ public class Fields {
     }
 
     /**
-     * 
-     * @param status
-     *     The status
+     * @param status The status
      */
     @JsonProperty("status")
     public void setStatus(Status status) {
@@ -338,9 +297,7 @@ public class Fields {
     }
 
     /**
-     * 
-     * @return
-     *     The components
+     * @return The components
      */
     @JsonProperty("components")
     public List<Component> getComponents() {
@@ -348,9 +305,7 @@ public class Fields {
     }
 
     /**
-     * 
-     * @param components
-     *     The components
+     * @param components The components
      */
     @JsonProperty("components")
     public void setComponents(List<Component> components) {
@@ -358,11 +313,8 @@ public class Fields {
     }
 
 
-
     /**
-     * 
-     * @return
-     *     The creator
+     * @return The creator
      */
     @JsonProperty("creator")
     public User getCreator() {
@@ -370,9 +322,7 @@ public class Fields {
     }
 
     /**
-     * 
-     * @param creator
-     *     The creator
+     * @param creator The creator
      */
     @JsonProperty("creator")
     public void setCreator(User creator) {
@@ -381,9 +331,7 @@ public class Fields {
 
 
     /**
-     * 
-     * @return
-     *     The subtasks
+     * @return The subtasks
      */
     @JsonProperty("subtasks")
     public List<Object> getSubtasks() {
@@ -391,9 +339,7 @@ public class Fields {
     }
 
     /**
-     * 
-     * @param subtasks
-     *     The subtasks
+     * @param subtasks The subtasks
      */
     @JsonProperty("subtasks")
     public void setSubtasks(List<Object> subtasks) {
@@ -401,9 +347,7 @@ public class Fields {
     }
 
     /**
-     * 
-     * @return
-     *     The reporter
+     * @return The reporter
      */
     @JsonProperty("reporter")
     public User getReporter() {
@@ -411,9 +355,7 @@ public class Fields {
     }
 
     /**
-     * 
-     * @param reporter
-     *     The reporter
+     * @param reporter The reporter
      */
     @JsonProperty("reporter")
     public void setReporter(User reporter) {
@@ -422,9 +364,7 @@ public class Fields {
 
 
     /**
-     * 
-     * @return
-     *     The progress
+     * @return The progress
      */
     @JsonProperty("progress")
     public Progress getProgress() {
@@ -432,9 +372,7 @@ public class Fields {
     }
 
     /**
-     * 
-     * @param progress
-     *     The progress
+     * @param progress The progress
      */
     @JsonProperty("progress")
     public void setProgress(Progress progress) {
@@ -442,9 +380,7 @@ public class Fields {
     }
 
     /**
-     * 
-     * @return
-     *     The votes
+     * @return The votes
      */
     @JsonProperty("votes")
     public Votes getVotes() {
@@ -452,9 +388,7 @@ public class Fields {
     }
 
     /**
-     * 
-     * @param votes
-     *     The votes
+     * @param votes The votes
      */
     @JsonProperty("votes")
     public void setVotes(Votes votes) {
@@ -462,9 +396,7 @@ public class Fields {
     }
 
     /**
-     * 
-     * @return
-     *     The worklog
+     * @return The worklog
      */
     @JsonProperty("worklog")
     public Worklog getWorklog() {
@@ -472,9 +404,7 @@ public class Fields {
     }
 
     /**
-     * 
-     * @param worklog
-     *     The worklog
+     * @param worklog The worklog
      */
     @JsonProperty("worklog")
     public void setWorklog(Worklog worklog) {
@@ -482,9 +412,7 @@ public class Fields {
     }
 
     /**
-     * 
-     * @return
-     *     The issueType
+     * @return The issueType
      */
     @JsonProperty("issuetype")
     public IssueType getIssueType() {
@@ -492,9 +420,7 @@ public class Fields {
     }
 
     /**
-     * 
-     * @param issueType
-     *     The issueType
+     * @param issueType The issueType
      */
     @JsonProperty("issuetype")
     public void setIssueType(IssueType issueType) {
@@ -502,9 +428,7 @@ public class Fields {
     }
 
     /**
-     * 
-     * @return
-     *     The project
+     * @return The project
      */
     @JsonProperty("project")
     public Project getProject() {
@@ -512,9 +436,7 @@ public class Fields {
     }
 
     /**
-     * 
-     * @param project
-     *     The project
+     * @param project The project
      */
     @JsonProperty("project")
     public void setProject(Project project) {
@@ -523,9 +445,7 @@ public class Fields {
 
 
     /**
-     * 
-     * @return
-     *     The watches
+     * @return The watches
      */
     @JsonProperty("watches")
     public Watches getWatches() {
@@ -533,9 +453,7 @@ public class Fields {
     }
 
     /**
-     * 
-     * @param watches
-     *     The watches
+     * @param watches The watches
      */
     @JsonProperty("watches")
     public void setWatches(Watches watches) {
@@ -544,9 +462,7 @@ public class Fields {
 
 
     /**
-     * 
-     * @return
-     *     The created
+     * @return The created
      */
     @JsonProperty("created")
     public DateTime getCreated() {
@@ -554,9 +470,7 @@ public class Fields {
     }
 
     /**
-     * 
-     * @param created
-     *     The created
+     * @param created The created
      */
     @JsonProperty("created")
     public void setCreated(DateTime created) {
@@ -565,9 +479,7 @@ public class Fields {
 
 
     /**
-     * 
-     * @return
-     *     The updated
+     * @return The updated
      */
     @JsonProperty("updated")
     public DateTime getUpdated() {
@@ -575,9 +487,7 @@ public class Fields {
     }
 
     /**
-     * 
-     * @param updated
-     *     The updated
+     * @param updated The updated
      */
     @JsonProperty("updated")
     public void setUpdated(DateTime updated) {
@@ -586,9 +496,7 @@ public class Fields {
 
 
     /**
-     * 
-     * @return
-     *     The description
+     * @return The description
      */
     @JsonProperty("description")
     public String getDescription() {
@@ -596,9 +504,7 @@ public class Fields {
     }
 
     /**
-     * 
-     * @param description
-     *     The description
+     * @param description The description
      */
     @JsonProperty("description")
     public void setDescription(String description) {
@@ -607,9 +513,7 @@ public class Fields {
 
 
     /**
-     * 
-     * @return
-     *     The timetracking
+     * @return The timetracking
      */
     @JsonProperty("timetracking")
     public TimeTracking getTimetracking() {
@@ -617,9 +521,7 @@ public class Fields {
     }
 
     /**
-     * 
-     * @param timetracking
-     *     The timetracking
+     * @param timetracking The timetracking
      */
     @JsonProperty("timetracking")
     public void setTimetracking(TimeTracking timetracking) {
@@ -627,9 +529,7 @@ public class Fields {
     }
 
     /**
-     * 
-     * @return
-     *     The attachment
+     * @return The attachment
      */
     @JsonProperty("attachment")
     public List<Object> getAttachment() {
@@ -637,9 +537,7 @@ public class Fields {
     }
 
     /**
-     * 
-     * @param attachment
-     *     The attachment
+     * @param attachment The attachment
      */
     @JsonProperty("attachment")
     public void setAttachment(List<Object> attachment) {
@@ -647,9 +545,7 @@ public class Fields {
     }
 
     /**
-     * 
-     * @return
-     *     The summary
+     * @return The summary
      */
     @JsonProperty("summary")
     public String getSummary() {
@@ -657,9 +553,7 @@ public class Fields {
     }
 
     /**
-     * 
-     * @param summary
-     *     The summary
+     * @param summary The summary
      */
     @JsonProperty("summary")
     public void setSummary(String summary) {
@@ -667,9 +561,7 @@ public class Fields {
     }
 
     /**
-     * 
-     * @return
-     *     The duedate
+     * @return The duedate
      */
     @JsonProperty("duedate")
     public DateTime getDuedate() {
@@ -677,9 +569,7 @@ public class Fields {
     }
 
     /**
-     * 
-     * @param duedate
-     *     The duedate
+     * @param duedate The duedate
      */
     @JsonProperty("duedate")
     public void setDuedate(DateTime duedate) {
@@ -687,9 +577,7 @@ public class Fields {
     }
 
     /**
-     * 
-     * @return
-     *     The comment
+     * @return The comment
      */
     @JsonProperty("comment")
     public Comments getComments() {
@@ -697,9 +585,7 @@ public class Fields {
     }
 
     /**
-     * 
-     * @param comment
-     *     The comment
+     * @param comment The comment
      */
     @JsonProperty("comment")
     public void setComments(Comments comment) {

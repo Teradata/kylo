@@ -39,16 +39,14 @@ import java.util.List;
 
 /**
  * Class to write profile statistics result to Hive table
- *
  */
 @SuppressWarnings("serial")
 public class OutputWriter implements Serializable {
 
-    private JavaSparkContext sc = null;
-    private HiveContext hiveContext = null;
-
     private static final List<OutputRow> outputRows = new ArrayList<>();
     private static OutputWriter outputWriter = null;
+    private JavaSparkContext sc = null;
+    private HiveContext hiveContext = null;
 
 
     /* no direct instantiation */
@@ -98,9 +96,9 @@ public class OutputWriter implements Serializable {
     private boolean checkOutputConfigSettings() {
 
         return !((ProfilerConfiguration.OUTPUT_DB_NAME == null)
-                || (ProfilerConfiguration.OUTPUT_TABLE_NAME == null)
-                || (ProfilerConfiguration.OUTPUT_TABLE_PARTITION_COLUMN_NAME == null)
-                || (ProfilerConfiguration.INPUT_AND_OUTPUT_TABLE_PARTITION_KEY == null));
+                 || (ProfilerConfiguration.OUTPUT_TABLE_NAME == null)
+                 || (ProfilerConfiguration.OUTPUT_TABLE_PARTITION_COLUMN_NAME == null)
+                 || (ProfilerConfiguration.INPUT_AND_OUTPUT_TABLE_PARTITION_KEY == null));
     }
 
 
@@ -152,21 +150,18 @@ public class OutputWriter implements Serializable {
      * @return boolean indicating result of write
      */
     public boolean writeResultToTable(JavaSparkContext p_sc, HiveContext p_hiveContext, ProfilerSparkContextService scs) {
-        
-    	sc = p_sc;
+
+        sc = p_sc;
         hiveContext = p_hiveContext;
         boolean retVal = false;
 
         if (!checkOutputConfigSettings()) {
             System.out.println("Error writing result: Output database/table/partition column/partition key not set.");
-        }
-        else if (sc == null) {
+        } else if (sc == null) {
             System.out.println("Error writing result: Spark context is not available.");
-        }
-        else if (hiveContext == null) {
+        } else if (hiveContext == null) {
             System.out.println("Error writing result: Hive context is not available.");
-        }
-        else {
+        } else {
 
             JavaRDD<OutputRow> outputRowsRDD = sc.parallelize(outputRows);
             DataSet outputRowsDF = scs.toDataSet(hiveContext, outputRowsRDD, OutputRow.class);
@@ -175,7 +170,7 @@ public class OutputWriter implements Serializable {
             // Since Spark doesn't support partitions, write to temp table, then write to partitioned table
             String tempTable = ProfilerConfiguration.OUTPUT_TABLE_NAME + "_" + System.currentTimeMillis();
             outputRowsDF.registerTempTable(tempTable);
-                      
+
             createOutputTableIfNotExists(scs);
             writeResultToOutputTable(scs, tempTable);
             retVal = true;
@@ -188,11 +183,11 @@ public class OutputWriter implements Serializable {
     /* Create output table if does not exist */
     private void createOutputTableIfNotExists(SparkContextService scs) {
         String createTableSQL = "CREATE TABLE IF NOT EXISTS " + HiveUtils.quoteIdentifier(ProfilerConfiguration.OUTPUT_DB_NAME, ProfilerConfiguration.OUTPUT_TABLE_NAME) + "\n"
-        		+ "(columnname STRING, metricname STRING, metricvalue STRING)\n"
-        		+ "PARTITIONED BY (" + ProfilerConfiguration.OUTPUT_TABLE_PARTITION_COLUMN_NAME + " STRING)\n"
-        		+ "ROW FORMAT DELIMITED\n"
-        		+ "FIELDS TERMINATED BY ','\n"
-        		+ "STORED AS TEXTFILE";
+                                + "(columnname STRING, metricname STRING, metricvalue STRING)\n"
+                                + "PARTITIONED BY (" + ProfilerConfiguration.OUTPUT_TABLE_PARTITION_COLUMN_NAME + " STRING)\n"
+                                + "ROW FORMAT DELIMITED\n"
+                                + "FIELDS TERMINATED BY ','\n"
+                                + "STORED AS TEXTFILE";
 
         scs.sql(hiveContext, createTableSQL);
     }
@@ -200,17 +195,17 @@ public class OutputWriter implements Serializable {
 
     /* Write to output table */
     private void writeResultToOutputTable(SparkContextService scs, String tempTable) {
-    	String insertTableSQL = "INSERT INTO TABLE " + HiveUtils.quoteIdentifier(ProfilerConfiguration.OUTPUT_DB_NAME, ProfilerConfiguration.OUTPUT_TABLE_NAME)
+        String insertTableSQL = "INSERT INTO TABLE " + HiveUtils.quoteIdentifier(ProfilerConfiguration.OUTPUT_DB_NAME, ProfilerConfiguration.OUTPUT_TABLE_NAME)
                                 + " PARTITION (" + HiveUtils.quoteIdentifier(ProfilerConfiguration.OUTPUT_TABLE_PARTITION_COLUMN_NAME) + "="
                                 + HiveUtils.quoteString(ProfilerConfiguration.INPUT_AND_OUTPUT_TABLE_PARTITION_KEY) + ")"
                                 + " SELECT columnname,metrictype,metricvalue FROM " + HiveUtils.quoteIdentifier(tempTable);
 
         scs.sql(hiveContext, insertTableSQL);
 
-    	System.out.println("[PROFILER-INFO] Metrics written to Hive table: "
-				+ ProfilerConfiguration.OUTPUT_DB_NAME + "." + ProfilerConfiguration.OUTPUT_TABLE_NAME
-				+ " Partition: (" + ProfilerConfiguration.OUTPUT_TABLE_PARTITION_COLUMN_NAME + "='" + ProfilerConfiguration.INPUT_AND_OUTPUT_TABLE_PARTITION_KEY + "')"
-				+ " [" + outputRows.size() + " rows]");
+        System.out.println("[PROFILER-INFO] Metrics written to Hive table: "
+                           + ProfilerConfiguration.OUTPUT_DB_NAME + "." + ProfilerConfiguration.OUTPUT_TABLE_NAME
+                           + " Partition: (" + ProfilerConfiguration.OUTPUT_TABLE_PARTITION_COLUMN_NAME + "='" + ProfilerConfiguration.INPUT_AND_OUTPUT_TABLE_PARTITION_KEY + "')"
+                           + " [" + outputRows.size() + " rows]");
     }
 
 }

@@ -52,7 +52,9 @@ import javax.annotation.Nonnull;
 
 public class TemplateCreationHelperTest {
 
-    /** Verify preferring enabled controller services over disabled controller services when updating processor properties. */
+    /**
+     * Verify preferring enabled controller services over disabled controller services when updating processor properties.
+     */
     @Test
     public void updateControllerServiceReferencesWithEnabled() {
         final AtomicReference<NifiProperty> updateProperty = new AtomicReference<>();
@@ -100,7 +102,9 @@ public class TemplateCreationHelperTest {
         Assert.assertEquals("S2", updateProperty.get().getValue());
     }
 
-    /** Verify recursively enabling controller services when updating processor properties. */
+    /**
+     * Verify recursively enabling controller services when updating processor properties.
+     */
     @Test
     public void updateControllerServiceReferencesWithRecursive() {
         final List<ControllerServiceDTO> updatedControllerServices = new ArrayList<>();
@@ -182,26 +186,26 @@ public class TemplateCreationHelperTest {
     /**
      * Creates a new {@link PropertyDescriptorDTO} that identifies the specified controller service.
      *
-     * @param name the name of the property
-     * @param type the type of controller service
+     * @param name            the name of the property
+     * @param type            the type of controller service
      * @param allowableValues the allowable controller service ids
      * @return the new property descriptor
      */
     @Nonnull
-    private PropertyDescriptorDTO newPropertyDescriptor(@Nonnull final String name, @Nonnull final String type, @Nonnull final String ... allowableValues) {
+    private PropertyDescriptorDTO newPropertyDescriptor(@Nonnull final String name, @Nonnull final String type, @Nonnull final String... allowableValues) {
         // Create the list of allowable values
         final List<AllowableValueEntity> allowableValueEntities = Stream.of(allowableValues)
-                .map(value -> {
-                    final AllowableValueDTO dto = new AllowableValueDTO();
-                    dto.setValue(value);
-                    return dto;
-                })
-                .map(dto -> {
-                    final AllowableValueEntity entity = new AllowableValueEntity();
-                    entity.setAllowableValue(dto);
-                    return entity;
-                })
-                .collect(Collectors.toList());
+            .map(value -> {
+                final AllowableValueDTO dto = new AllowableValueDTO();
+                dto.setValue(value);
+                return dto;
+            })
+            .map(dto -> {
+                final AllowableValueEntity entity = new AllowableValueEntity();
+                entity.setAllowableValue(dto);
+                return entity;
+            })
+            .collect(Collectors.toList());
 
         // Create the property descriptor
         final PropertyDescriptorDTO property = new PropertyDescriptorDTO();
@@ -232,13 +236,13 @@ public class TemplateCreationHelperTest {
 
             if (dto.getAllowableValues() != null) {
                 final List<NiFiAllowableValue> allowableValues = dto.getAllowableValues().stream()
-                        .map(AllowableValueEntity::getAllowableValue)
-                        .map(allowableValueDTO -> {
-                            final NiFiAllowableValue nifiAllowableValue = new NiFiAllowableValue();
-                            nifiAllowableValue.setValue(allowableValueDTO.getValue());
-                            return nifiAllowableValue;
-                        })
-                        .collect(Collectors.toList());
+                    .map(AllowableValueEntity::getAllowableValue)
+                    .map(allowableValueDTO -> {
+                        final NiFiAllowableValue nifiAllowableValue = new NiFiAllowableValue();
+                        nifiAllowableValue.setValue(allowableValueDTO.getValue());
+                        return nifiAllowableValue;
+                    })
+                    .collect(Collectors.toList());
                 nifi.setAllowableValues(allowableValues);
             }
 

@@ -54,6 +54,11 @@ public class DateColumnCase1Test extends ProfilerTest {
     private static Date maxDate;
     private static Date minDate;
 
+    @AfterClass
+    public static void tearDownClass() {
+        System.out.println("\t*** Completed run for DateColumnCase1Test ***");
+    }
+
     @Before
     public void setUp() {
         super.setUp();
@@ -70,42 +75,35 @@ public class DateColumnCase1Test extends ProfilerTest {
         minDate = Date.valueOf("1956-11-12");
     }
 
-
     @Test
     public void testDateNullCount() {
         Assert.assertEquals(nullCount, columnStats.getNullCount());
     }
-
 
     @Test
     public void testDateTotalCount() {
         Assert.assertEquals(totalCount, columnStats.getTotalCount());
     }
 
-
     @Test
     public void testDateUniqueCount() {
         Assert.assertEquals(uniqueCount, columnStats.getUniqueCount());
     }
-
 
     @Test
     public void testDatePercNullValues() {
         assertEquals(percNullValues, columnStats.getPercNullValues(), epsilon);
     }
 
-
     @Test
     public void testDatePercUniqueValues() {
         assertEquals(percUniqueValues, columnStats.getPercUniqueValues(), epsilon);
     }
 
-
     @Test
     public void testDatePercDuplicateValues() {
         assertEquals(percDuplicateValues, columnStats.getPercDuplicateValues(), epsilon);
     }
-
 
     @Test
     public void testDateTopNValues() {
@@ -137,21 +135,13 @@ public class DateColumnCase1Test extends ProfilerTest {
         }
     }
 
-
     @Test
     public void testDateMaxDate() {
         Assert.assertEquals(maxDate, ((DateColumnStatistics) columnStats).getMaxDate());
     }
 
-
     @Test
     public void testDateMinDate() {
         Assert.assertEquals(minDate, ((DateColumnStatistics) columnStats).getMinDate());
-    }
-
-
-    @AfterClass
-    public static void tearDownClass() {
-        System.out.println("\t*** Completed run for DateColumnCase1Test ***");
     }
 }

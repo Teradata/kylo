@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.security;
 
@@ -28,27 +28,31 @@ import com.thinkbiganalytics.security.action.Action;
 import java.util.Set;
 
 /**
- * Defines the component responsible for making access control checks.  Access checks  
+ * Defines the component responsible for making access control checks.  Access checks
  * should be inserted into places before attempting a particular action.  Each access check
  * is made against the context of the current authenticated user executing the code.
  */
 public interface AccessController {
-    
-    /** The default services module name */
+
+    /**
+     * The default services module name
+     */
     static final String SERVICES = "services";
 
     /**
      * Checks whether permission is granted to perform the given action(s) defined in the named module.
+     *
      * @param moduleName the module name
-     * @param action the action being checked
-     * @param others additional actions that are being checked
+     * @param action     the action being checked
+     * @param others     additional actions that are being checked
      */
     void checkPermission(String moduleName, Action action, Action... others);
-    
+
     /**
      * Checks whether permission is granted to perform the given actions defined in the named module.
+     *
      * @param moduleName the module name
-     * @param actions the actions being checked
+     * @param actions    the actions being checked
      */
     void checkPermission(String moduleName, Set<Action> actions);
 }

@@ -42,22 +42,30 @@ import javax.jcr.nodetype.PropertyDefinition;
  */
 public class JcrUserFieldDescriptor implements UserFieldDescriptor {
 
-    /** JCR node property for the {@code code} value */
+    /**
+     * JCR node property for the {@code code} value
+     */
     public static final String ORDER = JcrMetadataAccess.USR_PREFIX + ":order";
 
-    /** JCR node property for the {@code required} value */
+    /**
+     * JCR node property for the {@code required} value
+     */
     public static final String REQUIRED = JcrMetadataAccess.USR_PREFIX + ":mandatory";
 
-    /** JCR property definition */
+    /**
+     * JCR property definition
+     */
     private PropertyDefinition definition;
 
-    /** JCR property node */
+    /**
+     * JCR property node
+     */
     private Node node;
 
     /**
      * Constructs a {@code JcrUserFieldDescriptor} for the specified node and definition.
      *
-     * @param node the property node
+     * @param node       the property node
      * @param definition the property definition
      */
     public JcrUserFieldDescriptor(final Node node, final PropertyDefinition definition) {
@@ -131,7 +139,7 @@ public class JcrUserFieldDescriptor implements UserFieldDescriptor {
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(UserFieldDescriptor.class)
-                .add("name", getSystemName())
-                .toString();
+            .add("name", getSystemName())
+            .toString();
     }
 }

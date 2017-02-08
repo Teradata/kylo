@@ -67,14 +67,14 @@ public class NifiFeedProcessorStatisticsRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the provenance statistics for all feeds.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "Returns the provenance stats.", response = com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStats.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Returns the provenance stats.", response = com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStats.class, responseContainer = "List")
     )
     public Response findStats() {
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
         return metadataAccess.read(() -> {
-        List<? extends NifiFeedProcessorStats> list = statsProvider.findWithinTimeWindow(DateTime.now().minusDays(1), DateTime.now());
-        List<com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStats> model = NifiFeedProcessorStatsTransform.toModel(list);
-        return Response.ok(model).build();
+            List<? extends NifiFeedProcessorStats> list = statsProvider.findWithinTimeWindow(DateTime.now().minusDays(1), DateTime.now());
+            List<com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStats> model = NifiFeedProcessorStatsTransform.toModel(list);
+            return Response.ok(model).build();
         });
     }
 
@@ -83,7 +83,7 @@ public class NifiFeedProcessorStatisticsRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the job duration for the specified feed.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "Returns the job duration.", response = com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStats.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Returns the job duration.", response = com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStats.class, responseContainer = "List")
     )
     public Response findStats(@PathParam("feedName") String feedName, @PathParam("timeframe") @DefaultValue("HOUR") NifiFeedProcessorStatisticsProvider.TimeFrame timeframe) {
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
@@ -99,7 +99,7 @@ public class NifiFeedProcessorStatisticsRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the statistics for the specified feed.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "Returns the feed statistics.", response = com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStats.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Returns the feed statistics.", response = com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStats.class, responseContainer = "List")
     )
     public Response findFeedStats(@PathParam("feedName") String feedName, @PathParam("timeframe") @DefaultValue("HOUR") NifiFeedProcessorStatisticsProvider.TimeFrame timeframe) {
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
@@ -115,12 +115,12 @@ public class NifiFeedProcessorStatisticsRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the default time frame options.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "Returns the time frame options.", response = LabelValue.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Returns the time frame options.", response = LabelValue.class, responseContainer = "List")
     )
     public Response getTimeFrameOptions() {
         List<LabelValue> vals = Arrays.stream(NifiFeedProcessorStatisticsProvider.TimeFrame.values())
-                .map(timeFrame -> new LabelValue(timeFrame.getDisplayName(), timeFrame.name()))
-                .collect(Collectors.toList());
+            .map(timeFrame -> new LabelValue(timeFrame.getDisplayName(), timeFrame.name()))
+            .collect(Collectors.toList());
         return Response.ok(vals).build();
     }
 }

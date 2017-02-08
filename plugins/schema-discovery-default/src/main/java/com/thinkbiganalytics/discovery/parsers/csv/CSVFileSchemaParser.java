@@ -260,18 +260,6 @@ public class CSVFileSchemaParser implements FileSchemaParser {
         this.headerRow = headerRow;
     }
 
-    public void setSeparatorChar(String separatorChar) {
-        this.separatorChar = separatorChar;
-    }
-
-    public void setQuoteChar(String quoteChar) {
-        this.quoteChar = quoteChar;
-    }
-
-    public void setEscapeChar(String escapeChar) {
-        this.escapeChar = escapeChar;
-    }
-
     public void setNumRowsToSample(int numRowsToSample) {
         this.numRowsToSample = numRowsToSample;
     }
@@ -280,12 +268,24 @@ public class CSVFileSchemaParser implements FileSchemaParser {
         return separatorChar;
     }
 
+    public void setSeparatorChar(String separatorChar) {
+        this.separatorChar = separatorChar;
+    }
+
     public String getQuoteChar() {
         return quoteChar;
     }
 
+    public void setQuoteChar(String quoteChar) {
+        this.quoteChar = quoteChar;
+    }
+
     public String getEscapeChar() {
         return escapeChar;
+    }
+
+    public void setEscapeChar(String escapeChar) {
+        this.escapeChar = escapeChar;
     }
 
     /**

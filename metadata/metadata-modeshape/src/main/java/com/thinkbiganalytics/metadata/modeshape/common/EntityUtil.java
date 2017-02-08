@@ -31,6 +31,15 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class EntityUtil {
 
+    /**
+     * Instances of {@code EntityUtil} should not be constructed.
+     *
+     * @throws UnsupportedOperationException always
+     */
+    private EntityUtil() {
+        throw new UnsupportedOperationException();
+    }
+
     public static String pathForCategory() {
         return JcrUtil.path("/metadata", "feeds").toString();
     }
@@ -71,7 +80,6 @@ public class EntityUtil {
         return JcrUtil.path("/metadata", "hadoopSecurityGroups").toString();
     }
 
-
     public static String pathForAccessibleFunctions() {
         return JcrUtil.path("/metadata", "accessibleFunctions").toString();
     }
@@ -90,15 +98,6 @@ public class EntityUtil {
 
     public static String asQueryProperty(String prop) {
         return "[" + prop + "]";
-    }
-
-    /**
-     * Instances of {@code EntityUtil} should not be constructed.
-     *
-     * @throws UnsupportedOperationException always
-     */
-    private EntityUtil() {
-        throw new UnsupportedOperationException();
     }
 }
 

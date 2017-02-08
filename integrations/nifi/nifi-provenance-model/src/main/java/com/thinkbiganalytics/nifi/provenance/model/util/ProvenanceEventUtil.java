@@ -35,7 +35,7 @@ public class ProvenanceEventUtil {
 
     public static final String FLOWFILE_QUEUE_EMPTIED = "flowfile queue emptied";
 
-    public static final String[] STARTING_EVENT_TYPES = {"RECEIVE","CREATE"};
+    public static final String[] STARTING_EVENT_TYPES = {"RECEIVE", "CREATE"};
 
     public static final String[] ENDING_EVENT_TYPES = {"DROP", "EXPIRE",};
 
@@ -45,8 +45,6 @@ public class ProvenanceEventUtil {
 
     /**
      * Check if the event is one that kicks off the flow
-     * @param event
-     * @return
      */
     public static boolean isFirstEvent(ProvenanceEventRecordDTO event) {
         return contains(STARTING_EVENT_TYPES, event.getEventType());
@@ -60,8 +58,6 @@ public class ProvenanceEventUtil {
     /**
      * Certain Events in NiFi will create new Flow files and others will indicate the processor is complete
      * This will return true if the event is one that indicates the processor is complete
-     * @param event
-     * @return
      */
     public static boolean isCompletionEvent(ProvenanceEventRecordDTO event) {
         return true; // !contains(NON_COMPLETION_EVENTS, event.getEventType());

@@ -45,6 +45,10 @@ public class TimestampColumnCase2Test extends ProfilerTest {
         System.out.println("\t*** Starting run for TimestampColumnCase2Test ***");
     }
 
+    @AfterClass
+    public static void tearDownClass() {
+        System.out.println("\t*** Completed run for TimestampColumnCase2Test ***");
+    }
 
     /**
      * Verify accommodating column values.
@@ -193,11 +197,5 @@ public class TimestampColumnCase2Test extends ProfilerTest {
         Assert.assertEquals("OutputRow [columnName=ts, metricType=TOP_N_VALUES, metricValue=1^A^A1^B2^A2016-06-27 14:04:29^A1^B3^A2016-06-27 14:04:30^A1^B]", rows.get(9).toString());
         Assert.assertEquals("OutputRow [columnName=ts, metricType=MAX_TIMESTAMP, metricValue=2016-06-27 14:04:31.0]", rows.get(10).toString());
         Assert.assertEquals("OutputRow [columnName=ts, metricType=MIN_TIMESTAMP, metricValue=2016-06-27 14:04:29.0]", rows.get(11).toString());
-    }
-
-
-    @AfterClass
-    public static void tearDownClass() {
-        System.out.println("\t*** Completed run for TimestampColumnCase2Test ***");
     }
 }

@@ -51,16 +51,24 @@ import javax.jcr.RepositoryException;
  */
 public class JcrUserGroup extends AbstractJcrAuditableSystemEntity implements UserGroup {
 
-    /** JCR node type for users */
+    /**
+     * JCR node type for users
+     */
     public static final String NODE_TYPE = "tba:userGroup";
 
-    /** The groups property from the mixin tba:userGroupable */
+    /**
+     * The groups property from the mixin tba:userGroupable
+     */
     public static final String GROUPS = "tba:groups";
 
-    /** Encoding for properties */
+    /**
+     * Encoding for properties
+     */
     static final String ENCODING = "UTF-8";
 
-    /** Name of the {@code enabled} property */
+    /**
+     * Name of the {@code enabled} property
+     */
     private static final String ENABLED = "tba:enabled";
 
     /**
@@ -151,8 +159,8 @@ public class JcrUserGroup extends AbstractJcrAuditableSystemEntity implements Us
     @Override
     public Set<UserGroup> getContainingGroups() {
         return streamContainingGroupNodes(this.node)
-                        .map(node -> (UserGroup) JcrUtil.toJcrObject(node, JcrUserGroup.NODE_TYPE, JcrUserGroup.class))
-                        .collect(Collectors.toSet());
+            .map(node -> (UserGroup) JcrUtil.toJcrObject(node, JcrUserGroup.NODE_TYPE, JcrUserGroup.class))
+            .collect(Collectors.toSet());
     }
 
     /* (non-Javadoc)
@@ -161,8 +169,8 @@ public class JcrUserGroup extends AbstractJcrAuditableSystemEntity implements Us
     @Override
     public Set<UserGroup> getAllContainingGroups() {
         return streamAllContainingGroupNodes(this.node)
-                        .map(node -> JcrUtil.toJcrObject(node, JcrUserGroup.NODE_TYPE, JcrUserGroup.class))
-                        .collect(Collectors.toSet());
+            .map(node -> JcrUtil.toJcrObject(node, JcrUserGroup.NODE_TYPE, JcrUserGroup.class))
+            .collect(Collectors.toSet());
     }
 
     /* (non-Javadoc)
@@ -206,8 +214,8 @@ public class JcrUserGroup extends AbstractJcrAuditableSystemEntity implements Us
     @Override
     public GroupPrincipal getPrincial() {
         Set<Principal> members = StreamSupport.stream(getGroups().spliterator(), false)
-                        .map(g -> g.getPrincial())
-                        .collect(Collectors.toSet());
+            .map(g -> g.getPrincial())
+            .collect(Collectors.toSet());
 
         return new GroupPrincipal(getSystemName(), members);
     }
@@ -232,18 +240,18 @@ public class JcrUserGroup extends AbstractJcrAuditableSystemEntity implements Us
             };
 
             return StreamSupport.stream(propItr.spliterator(), false)
-                            .map(p -> JcrPropertyUtil.getParent(p))
-                            .filter(n -> JcrUtil.isNodeType(n, nodeType))
-                            .map(n -> {
-                                try {
-                                    @SuppressWarnings("unchecked")
-                                    C entity = (C) ConstructorUtils.invokeConstructor(jcrClass, n);
-                                    return entity;
-                                } catch (Exception e) {
-                                    throw new MetadataRepositoryException("Failed to retrieve create entity: " + jcrClass, e);
-                                }
-                            })
-                            .iterator();
+                .map(p -> JcrPropertyUtil.getParent(p))
+                .filter(n -> JcrUtil.isNodeType(n, nodeType))
+                .map(n -> {
+                    try {
+                        @SuppressWarnings("unchecked")
+                        C entity = (C) ConstructorUtils.invokeConstructor(jcrClass, n);
+                        return entity;
+                    } catch (Exception e) {
+                        throw new MetadataRepositoryException("Failed to retrieve create entity: " + jcrClass, e);
+                    }
+                })
+                .iterator();
         };
     }
 

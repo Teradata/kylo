@@ -39,7 +39,9 @@ import javax.jcr.PropertyIterator;
 
 public class JcrPropertyUtilTest {
 
-    /** Verify getting user properties. */
+    /**
+     * Verify getting user properties.
+     */
     @Test
     public void getUserProperties() throws Exception {
         // Mock properties
@@ -69,7 +71,9 @@ public class JcrPropertyUtilTest {
         Assert.assertEquals("two", userProps.get("碼標準萬國碼/1.1/?name=%20"));
     }
 
-    /** Verify setting user properties. */
+    /**
+     * Verify setting user properties.
+     */
     @Test
     public void setUserProperties() throws Exception {
         // Mock node
@@ -99,7 +103,9 @@ public class JcrPropertyUtilTest {
         Mockito.verifyNoMoreInteractions(node);
     }
 
-    /** Verify exception if a required property is not set. */
+    /**
+     * Verify exception if a required property is not set.
+     */
     @Test(expected = MissingUserPropertyException.class)
     public void setUserPropertiesWithMissing() {
         // Mock field

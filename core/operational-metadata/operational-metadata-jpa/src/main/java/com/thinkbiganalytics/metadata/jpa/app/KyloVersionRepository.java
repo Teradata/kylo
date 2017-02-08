@@ -30,5 +30,4 @@ import java.util.UUID;
 public interface KyloVersionRepository extends JpaRepository<JpaKyloVersion, UUID> {
 
 
-
 }

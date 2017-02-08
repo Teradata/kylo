@@ -88,12 +88,14 @@ public interface FeedManagerTemplateService {
 
     /**
      * Deletes a template
+     *
      * @param templateId a registered template id
      */
     boolean deleteRegisteredTemplate(String templateId);
 
     /**
      * change the state of the template to be {@link com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate.State#ENABLED}
+     *
      * @param templateId the template id
      * @return the updated template
      */
@@ -101,6 +103,7 @@ public interface FeedManagerTemplateService {
 
     /**
      * change the state of the template to be {@link com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate.State#DISABLED}
+     *
      * @param templateId the template id
      * @return the updated template
      */
@@ -115,13 +118,15 @@ public interface FeedManagerTemplateService {
     List<RegisteredTemplate> getRegisteredTemplates();
 
     /**
-     *  Ensures the {@link RegisteredTemplate#inputProcessors} contains processors contains all properties, both that have been exposed for the end user input and those that don't
+     * Ensures the {@link RegisteredTemplate#inputProcessors} contains processors contains all properties, both that have been exposed for the end user input and those that don't
+     *
      * @param registeredTemplate the template to inspect
      */
     public void ensureRegisteredTemplateInputProcessors(RegisteredTemplate registeredTemplate);
 
     /**
-     *  Synchronize the Nifi template Ids to make sure its in sync with the id stored in our metadata store for the RegisteredTemplate
+     * Synchronize the Nifi template Ids to make sure its in sync with the id stored in our metadata store for the RegisteredTemplate
+     *
      * @param template the template to sync
      * @return the updated template
      */
@@ -146,7 +151,8 @@ public interface FeedManagerTemplateService {
 
     /**
      * Return processors for a template and optionally walk the graph and obtain those connected to the reusable flows, if any
-     * @param templateId the template id to inspect
+     *
+     * @param templateId                the template id to inspect
      * @param includeReusableProcessors true if it shouls walk the connections to reusable process groups, false if not
      * @return the list of processors
      */
@@ -160,7 +166,7 @@ public interface FeedManagerTemplateService {
      * @param connectionInfo the connections required to connect
      * @return a list of all the processors for a template and possible connections
      */
-    List<RegisteredTemplate.FlowProcessor>  getNiFiTemplateFlowProcessors(String templateId, List<ReusableTemplateConnectionInfo> connectionInfo);
+    List<RegisteredTemplate.FlowProcessor> getNiFiTemplateFlowProcessors(String templateId, List<ReusableTemplateConnectionInfo> connectionInfo);
 
     /**
      * Return a list of Processors and their properties for the incoming template
@@ -173,8 +179,9 @@ public interface FeedManagerTemplateService {
 
     /**
      * saves the order as indicated via index in the supplied {@code orderedTemplateIds}
+     *
      * @param orderedTemplateIds a list of the template ids in order
-     * @param exclude a list of ids it should skip and not save
+     * @param exclude            a list of ids it should skip and not save
      */
     void orderTemplates(List<String> orderedTemplateIds, Set<String> exclude);
 

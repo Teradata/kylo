@@ -35,162 +35,157 @@ import java.util.List;
  * The default response and builder for {@link ServiceStatusResponse} objects.
  * This class includes a builder to help build the response object.
  * This is used by the Kylo user interface
- *
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DefaultServiceStatusResponse implements ServiceStatusResponse {
 
-  private String serviceName;
-  List<ServiceComponent> components;
-  private Date checkDate;
-  private Date latestAlertTimestamp;
-  private Date earliestAlertTimestamp;
-  private List<ServiceAlert> alerts;
-  private STATE state;
+    List<ServiceComponent> components;
+    List<ServiceComponent> healthyComponents;
+    List<ServiceComponent> unhealthyComponents;
+    private String serviceName;
+    private Date checkDate;
+    private Date latestAlertTimestamp;
+    private Date earliestAlertTimestamp;
+    private List<ServiceAlert> alerts;
+    private STATE state;
+    private List<ServiceAlert> alertsWithoutComponent;
 
-  private List<ServiceAlert> alertsWithoutComponent;
+    public DefaultServiceStatusResponse(String serviceName, List<ServiceComponent> components) {
+        this.serviceName = serviceName;
+        this.components = components;
+        this.healthyComponents = new ArrayList<>();
+        this.unhealthyComponents = new ArrayList<>();
+        this.build();
+    }
 
-  List<ServiceComponent> healthyComponents;
-  List<ServiceComponent> unhealthyComponents;
-
-  public DefaultServiceStatusResponse(String serviceName, List<ServiceComponent> components) {
-    this.serviceName = serviceName;
-    this.components = components;
-    this.healthyComponents = new ArrayList<>();
-    this.unhealthyComponents = new ArrayList<>();
-    this.build();
-  }
-
-  public DefaultServiceStatusResponse(String serviceName, List<ServiceComponent> components, List<ServiceAlert> alerts) {
-    this.serviceName = serviceName;
-    this.components = components;
-    this.healthyComponents = new ArrayList<>();
-    this.unhealthyComponents = new ArrayList<>();
-    this.alerts = alerts;
-    this.build();
-  }
+    public DefaultServiceStatusResponse(String serviceName, List<ServiceComponent> components, List<ServiceAlert> alerts) {
+        this.serviceName = serviceName;
+        this.components = components;
+        this.healthyComponents = new ArrayList<>();
+        this.unhealthyComponents = new ArrayList<>();
+        this.alerts = alerts;
+        this.build();
+    }
 
 
-  private void updateServiceState() {
-    List<ServiceComponent.STATE> states = new ArrayList<ServiceComponent.STATE>();
-    boolean hasErrorAlerts = false;
-    Date latestAlertTimestamp = null;
-    Date earliestAlertTimestamp = null;
-    if (components != null && !components.isEmpty()) {
-      for (ServiceComponent component : this.getComponents()) {
+    private void updateServiceState() {
+        List<ServiceComponent.STATE> states = new ArrayList<ServiceComponent.STATE>();
+        boolean hasErrorAlerts = false;
+        Date latestAlertTimestamp = null;
+        Date earliestAlertTimestamp = null;
+        if (components != null && !components.isEmpty()) {
+            for (ServiceComponent component : this.getComponents()) {
 
-        if (StringUtils.isBlank(component.getServiceName())) {
-          component.setServiceName(serviceName);
+                if (StringUtils.isBlank(component.getServiceName())) {
+                    component.setServiceName(serviceName);
+                }
+
+                states.add(component.getState());
+                if (component.isContainsErrorAlerts()) {
+                    hasErrorAlerts = true;
+                }
+                if (!component.isHealthy()) {
+                    this.unhealthyComponents.add(component);
+                } else {
+                    this.healthyComponents.add(component);
+                }
+                Date latest = component.getLatestAlertTimestamp();
+                Date earliest = component.getEarliestAlertTimestamp();
+                if (latestAlertTimestamp == null || (latestAlertTimestamp != null && latest != null && latest.after(latestAlertTimestamp))) {
+                    latestAlertTimestamp = component.getLatestAlertTimestamp();
+                }
+                if (earliestAlertTimestamp == null || (earliestAlertTimestamp != null && earliest != null && earliest.after(earliestAlertTimestamp))) {
+                    earliestAlertTimestamp = component.getEarliestAlertTimestamp();
+                }
+            }
         }
-
-        states.add(component.getState());
-        if (component.isContainsErrorAlerts()) {
-          hasErrorAlerts = true;
+        if (latestAlertTimestamp == null) {
+            latestAlertTimestamp = new Date();
         }
-        if (!component.isHealthy()) {
-          this.unhealthyComponents.add(component);
+        if (earliestAlertTimestamp == null) {
+            earliestAlertTimestamp = new Date();
+        }
+        this.latestAlertTimestamp = latestAlertTimestamp;
+        this.earliestAlertTimestamp = earliestAlertTimestamp;
+        if (states.contains(ServiceComponent.STATE.DOWN)) {
+            this.state = STATE.DOWN;
+        } else if ((states.contains(ServiceComponent.STATE.UP) && hasErrorAlerts) || states.contains(ServiceComponent.STATE.UNKNOWN)) {
+            this.state = STATE.WARNING;
         } else {
-          this.healthyComponents.add(component);
+            this.state = STATE.UP;
         }
-        Date latest = component.getLatestAlertTimestamp();
-        Date earliest = component.getEarliestAlertTimestamp();
-          if (latestAlertTimestamp == null || (latestAlertTimestamp != null && latest != null && latest.after(latestAlertTimestamp))) {
-          latestAlertTimestamp = component.getLatestAlertTimestamp();
-        }
-          if (earliestAlertTimestamp == null || (earliestAlertTimestamp != null && earliest != null && earliest.after(earliestAlertTimestamp))) {
-          earliestAlertTimestamp = component.getEarliestAlertTimestamp();
-        }
-      }
-    }
-    if (latestAlertTimestamp == null) {
-      latestAlertTimestamp = new Date();
-    }
-    if (earliestAlertTimestamp == null) {
-      earliestAlertTimestamp = new Date();
-    }
-    this.latestAlertTimestamp = latestAlertTimestamp;
-    this.earliestAlertTimestamp = earliestAlertTimestamp;
-    if (states.contains(ServiceComponent.STATE.DOWN)) {
-      this.state = STATE.DOWN;
-    } else if ((states.contains(ServiceComponent.STATE.UP) && hasErrorAlerts) || states.contains(ServiceComponent.STATE.UNKNOWN)) {
-      this.state = STATE.WARNING;
-    } else {
-      this.state = STATE.UP;
+
     }
 
-  }
-
-  public void build() {
-    //Change the State of the overall Service
-    updateServiceState();
-    this.checkDate = new Date();
-    this.alertsWithoutComponent = getAlertsWithoutComponent(this.alerts);
+    public void build() {
+        //Change the State of the overall Service
+        updateServiceState();
+        this.checkDate = new Date();
+        this.alertsWithoutComponent = getAlertsWithoutComponent(this.alerts);
 
 
-  }
+    }
 
 
-  /**
-   * return a matching List of ServiceAlerts based upon the incoming component name
-   * @param alerts
-   * @return
-   */
-  private List<ServiceAlert> getAlertsWithoutComponent(List<ServiceAlert> alerts) {
-    if (alerts != null) {
-      Predicate<ServiceAlert> predicate = new Predicate<ServiceAlert>() {
-        @Override
-        public boolean apply(ServiceAlert alert) {
-          return StringUtils.isBlank(alert.getComponentName()) && alert.getState().isError();
+    /**
+     * return a matching List of ServiceAlerts based upon the incoming component name
+     */
+    private List<ServiceAlert> getAlertsWithoutComponent(List<ServiceAlert> alerts) {
+        if (alerts != null) {
+            Predicate<ServiceAlert> predicate = new Predicate<ServiceAlert>() {
+                @Override
+                public boolean apply(ServiceAlert alert) {
+                    return StringUtils.isBlank(alert.getComponentName()) && alert.getState().isError();
+                }
+            };
+            Collection<ServiceAlert> matchingAlerts = Collections2.filter(alerts, predicate);
+            if (matchingAlerts != null && !matchingAlerts.isEmpty()) {
+                return new ArrayList<ServiceAlert>(matchingAlerts);
+            } else {
+                return null;
+            }
         }
-      };
-      Collection<ServiceAlert> matchingAlerts = Collections2.filter(alerts, predicate);
-      if (matchingAlerts != null && !matchingAlerts.isEmpty()) {
-        return new ArrayList<ServiceAlert>(matchingAlerts);
-      } else {
         return null;
-      }
     }
-    return null;
-  }
 
-  public String getServiceName() {
-    return serviceName;
-  }
+    public String getServiceName() {
+        return serviceName;
+    }
 
-  public List<ServiceComponent> getComponents() {
-    return components;
-  }
+    public List<ServiceComponent> getComponents() {
+        return components;
+    }
 
-  public List<ServiceComponent> getHealthyComponents() {
-    return healthyComponents;
-  }
+    public List<ServiceComponent> getHealthyComponents() {
+        return healthyComponents;
+    }
 
-  public List<ServiceComponent> getUnhealthyComponents() {
-    return unhealthyComponents;
-  }
+    public List<ServiceComponent> getUnhealthyComponents() {
+        return unhealthyComponents;
+    }
 
-  public Date getCheckDate() {
-    return checkDate;
-  }
+    public Date getCheckDate() {
+        return checkDate;
+    }
 
-  public List<ServiceAlert> getAlerts() {
-    return alerts;
-  }
+    public List<ServiceAlert> getAlerts() {
+        return alerts;
+    }
 
-  public List<ServiceAlert> getAlertsWithoutComponent() {
-    return alertsWithoutComponent;
-  }
+    public List<ServiceAlert> getAlertsWithoutComponent() {
+        return alertsWithoutComponent;
+    }
 
 
-  public STATE getState() {
-    return state;
-  }
+    public STATE getState() {
+        return state;
+    }
 
-  public Date getLatestAlertTimestamp() {
-    return latestAlertTimestamp;
-  }
+    public Date getLatestAlertTimestamp() {
+        return latestAlertTimestamp;
+    }
 
-  public Date getEarliestAlertTimestamp() {
-    return earliestAlertTimestamp;
-  }
+    public Date getEarliestAlertTimestamp() {
+        return earliestAlertTimestamp;
+    }
 }

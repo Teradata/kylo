@@ -69,16 +69,14 @@ public class JcrFeedTemplate extends AbstractJcrAuditableSystemEntity implements
         }
     }
 
-    public static class FeedTemplateId extends JcrEntity.EntityId implements FeedManagerTemplate.ID {
-
-        public FeedTemplateId(Serializable ser) {
-            super(ser);
-        }
-    }
-
     @Override
     public String getName() {
         return getTitle();
+    }
+
+    @Override
+    public void setName(String name) {
+        setTitle(name);
     }
 
     @Override
@@ -88,44 +86,13 @@ public class JcrFeedTemplate extends AbstractJcrAuditableSystemEntity implements
     }
 
     @Override
-    public boolean isDefineTable() {
-        return getProperty(DEFINE_TABLE, Boolean.class);
-    }
-
-    @Override
-    public boolean isDataTransformation() {
-        return getProperty(DATA_TRANSFORMATION, Boolean.class);
-    }
-
-    @Override
-    public boolean isAllowPreconditions() {
-        return getProperty(ALLOW_PRECONDITIONS, Boolean.class);
-    }
-
-    @Override
-    public String getIcon() {
-        return getProperty(ICON, String.class);
-    }
-
-    @Override
-    public String getIconColor() {
-        return getProperty(ICON_COLOR, String.class);
-    }
-
-    @Override
-    public String getJson() {
-        return getProperty(JSON, String.class);
-    }
-
-
-    @Override
     public void setNifiTemplateId(String nifiTemplateId) {
         setProperty(NIFI_TEMPLATE_ID, nifiTemplateId);
     }
 
     @Override
-    public void setAllowPreconditions(boolean allowedPreconditions) {
-        setProperty(ALLOW_PRECONDITIONS, allowedPreconditions);
+    public boolean isDefineTable() {
+        return getProperty(DEFINE_TABLE, Boolean.class);
     }
 
     @Override
@@ -134,13 +101,28 @@ public class JcrFeedTemplate extends AbstractJcrAuditableSystemEntity implements
     }
 
     @Override
+    public boolean isDataTransformation() {
+        return getProperty(DATA_TRANSFORMATION, Boolean.class);
+    }
+
+    @Override
     public void setDataTransformation(boolean dataTransformation) {
         setProperty(DATA_TRANSFORMATION, dataTransformation);
     }
 
     @Override
-    public void setName(String name) {
-        setTitle(name);
+    public boolean isAllowPreconditions() {
+        return getProperty(ALLOW_PRECONDITIONS, Boolean.class);
+    }
+
+    @Override
+    public void setAllowPreconditions(boolean allowedPreconditions) {
+        setProperty(ALLOW_PRECONDITIONS, allowedPreconditions);
+    }
+
+    @Override
+    public String getIcon() {
+        return getProperty(ICON, String.class);
     }
 
     @Override
@@ -149,8 +131,18 @@ public class JcrFeedTemplate extends AbstractJcrAuditableSystemEntity implements
     }
 
     @Override
+    public String getIconColor() {
+        return getProperty(ICON_COLOR, String.class);
+    }
+
+    @Override
     public void setIconColor(String iconColor) {
         setProperty(ICON_COLOR, iconColor);
+    }
+
+    @Override
+    public String getJson() {
+        return getProperty(JSON, String.class);
     }
 
     @Override
@@ -212,7 +204,6 @@ public class JcrFeedTemplate extends AbstractJcrAuditableSystemEntity implements
         setProperty(ORDER, order);
     }
 
-
     @Override
     public boolean isStream() {
         if (!hasProperty(IS_STREAM)) {
@@ -221,10 +212,16 @@ public class JcrFeedTemplate extends AbstractJcrAuditableSystemEntity implements
         return getProperty(IS_STREAM, Boolean.class, true);
     }
 
-
     @Override
     public void setStream(boolean isStream) {
         setProperty(IS_STREAM, isStream);
+    }
+
+    public static class FeedTemplateId extends JcrEntity.EntityId implements FeedManagerTemplate.ID {
+
+        public FeedTemplateId(Serializable ser) {
+            super(ser);
+        }
     }
 
 }

@@ -81,15 +81,15 @@ public class AccessControlController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the list of available actions.")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Returns the actions.", response = ActionGroup.class),
-            @ApiResponse(code = 404, message = "The given name was not found.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 200, message = "Returns the actions.", response = ActionGroup.class),
+                      @ApiResponse(code = 404, message = "The given name was not found.", response = RestResponseStatus.class)
+                  })
     public ActionGroup getAvailableActions(@PathParam("name") String moduleName) {
         return metadata.read(() -> {
             return actionsProvider.getAvailableActions(moduleName)
-                            .map(this.actionsTransform.availableActionsToActionSet("services"))
-                            .orElseThrow(() -> new WebApplicationException("The available service actions were not found",
-                                                                           Status.NOT_FOUND));
+                .map(this.actionsTransform.availableActionsToActionSet("services"))
+                .orElseThrow(() -> new WebApplicationException("The available service actions were not found",
+                                                               Status.NOT_FOUND));
         });
     }
 
@@ -98,21 +98,21 @@ public class AccessControlController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the list of allowed actions for a principal.")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Returns the actions.", response = ActionGroup.class),
-            @ApiResponse(code = 404, message = "The given name was not found.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 200, message = "Returns the actions.", response = ActionGroup.class),
+                      @ApiResponse(code = 404, message = "The given name was not found.", response = RestResponseStatus.class)
+                  })
     public ActionGroup getAllowedActions(@PathParam("name") String moduleName,
-                                       @QueryParam("user") Set<String> userNames,
-                                       @QueryParam("group") Set<String> groupNames) {
+                                         @QueryParam("user") Set<String> userNames,
+                                         @QueryParam("group") Set<String> groupNames) {
         Set<Principal> users = this.actionsTransform.toUserPrincipals(userNames);
         Set<Principal> groups = this.actionsTransform.toGroupPrincipals(groupNames);
         Principal[] principals = Stream.concat(users.stream(), groups.stream()).toArray(Principal[]::new);
 
         return metadata.read(() -> {
             return actionsProvider.getAllowedActions(moduleName)
-                            .map(this.actionsTransform.availableActionsToActionSet("services"))
-                            .orElseThrow(() -> new WebApplicationException("The available service actions were not found",
-                                                                           Status.NOT_FOUND));
+                .map(this.actionsTransform.availableActionsToActionSet("services"))
+                .orElseThrow(() -> new WebApplicationException("The available service actions were not found",
+                                                               Status.NOT_FOUND));
         }, principals);
     }
 
@@ -122,16 +122,16 @@ public class AccessControlController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Modifies the permissions of a principal.")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Returns the updated permissions.", response = ActionGroup.class),
-            @ApiResponse(code = 500, message = "The permissions could not be changed.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 200, message = "Returns the updated permissions.", response = ActionGroup.class),
+                      @ApiResponse(code = 500, message = "The permissions could not be changed.", response = RestResponseStatus.class)
+                  })
     public ActionGroup postPermissionsChange(@PathParam("name") String moduleName,
-                                           PermissionsChange changes) {
+                                             PermissionsChange changes) {
         Set<Action> actionSet = collectActions(changes);
         Set<Principal> principals = collectPrincipals(changes);
         final Consumer<Principal> permChange;
 
-        switch(changes.getChange()) {
+        switch (changes.getChange()) {
             case ADD:
                 permChange = (principal -> {
                     actionsProvider.getAllowedActions(moduleName).ifPresent(allowed -> allowed.enable(principal, actionSet));
@@ -162,10 +162,10 @@ public class AccessControlController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the permissions that may be changed.")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Returns the permissions.", response = PermissionsChange.class),
-            @ApiResponse(code = 400, message = "The type is not valid.", response = RestResponseStatus.class),
-            @ApiResponse(code = 404, message = "The given name was not found.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 200, message = "Returns the permissions.", response = PermissionsChange.class),
+                      @ApiResponse(code = 400, message = "The type is not valid.", response = RestResponseStatus.class),
+                      @ApiResponse(code = 404, message = "The given name was not found.", response = RestResponseStatus.class)
+                  })
     public PermissionsChange getAllowedPermissionsChange(@PathParam("name") String moduleName,
                                                          @QueryParam("type") String changeType,
                                                          @QueryParam("user") Set<String> users,
@@ -176,9 +176,9 @@ public class AccessControlController {
 
         return metadata.read(() -> {
             return actionsProvider.getAvailableActions(moduleName)
-                            .map(this.actionsTransform.availableActionsToPermissionsChange(ChangeType.valueOf(changeType.toUpperCase()), moduleName, users, groups))
-                            .orElseThrow(() -> new WebApplicationException("The available service actions were not found",
-                                                                           Status.NOT_FOUND));
+                .map(this.actionsTransform.availableActionsToPermissionsChange(ChangeType.valueOf(changeType.toUpperCase()), moduleName, users, groups))
+                .orElseThrow(() -> new WebApplicationException("The available service actions were not found",
+                                                               Status.NOT_FOUND));
         });
     }
 

@@ -34,24 +34,24 @@ import java.util.List;
  */
 public class AvailablePoliciesTest {
 
-  private static final Logger log = LoggerFactory.getLogger(AvailablePoliciesTest.class);
+    private static final Logger log = LoggerFactory.getLogger(AvailablePoliciesTest.class);
 
-  @Test
-  public void testAvailablePolicies(){
+    @Test
+    public void testAvailablePolicies() {
 
-    List<FieldStandardizationRule> standardizationRules = AvailablePolicies.discoverStandardizationRules();
-    List<FieldValidationRule> validationRules = AvailablePolicies.discoverValidationRules();
+        List<FieldStandardizationRule> standardizationRules = AvailablePolicies.discoverStandardizationRules();
+        List<FieldValidationRule> validationRules = AvailablePolicies.discoverValidationRules();
 
-    log.info("Available Standardizers: {}, Validators: {} ", standardizationRules.size(), validationRules.size());
+        log.info("Available Standardizers: {}, Validators: {} ", standardizationRules.size(), validationRules.size());
 
-    Assert.assertTrue(standardizationRules.size() > 0);
-    Assert.assertTrue(validationRules.size() > 0);
+        Assert.assertTrue(standardizationRules.size() > 0);
+        Assert.assertTrue(validationRules.size() > 0);
 
-    FieldStandardizationRule rule = standardizationRules.get(0);
-    log.info("First Standardizer is {}",rule);
-    Assert.assertNotNull(rule.getObjectClassType());
+        FieldStandardizationRule rule = standardizationRules.get(0);
+        log.info("First Standardizer is {}", rule);
+        Assert.assertNotNull(rule.getObjectClassType());
 
-  }
+    }
 
 
 }

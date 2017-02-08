@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.core.sla.feed;
 
@@ -47,7 +47,7 @@ public class DatasourceUpdatedSinceFeedExecutedAssessor extends MetadataMetricAs
             .metric(metric)
             .message("This metric is no longer supported")
             .result(AssessmentResult.FAILURE);
-            
+
 //        FeedProvider fPvdr = getFeedProvider();
 //        DatasourceProvider dsPvdr = getDatasetProvider();
 //        DataOperationsProvider opPvdr = getDataOperationsProvider();

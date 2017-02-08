@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.rest.model.extension;
 
@@ -47,10 +47,10 @@ public class ExtensibleTypeDescriptor {
     private DateTime createdTime;
     private DateTime modifiedTime;
     private Set<FieldDescriptor> fields = new HashSet<>();
-    
+
     public ExtensibleTypeDescriptor() {
     }
-    
+
     public ExtensibleTypeDescriptor(String name) {
         super();
         this.name = name;
@@ -66,16 +66,16 @@ public class ExtensibleTypeDescriptor {
     public FieldDescriptor addField(String name, FieldDescriptor.Type type) {
         return addField(new FieldDescriptor(name, type));
     }
-    
+
     public FieldDescriptor addField(FieldDescriptor field) {
         this.fields.add(field);
         return field;
     }
-    
+
     public String getId() {
         return id;
     }
-    
+
     public void setId(String id) {
         this.id = id;
     }
@@ -83,53 +83,53 @@ public class ExtensibleTypeDescriptor {
     public String getName() {
         return name;
     }
-    
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public String getSupertype() {
         return supertype;
+    }
+
+    public void setSupertype(String supertype) {
+        this.supertype = supertype;
     }
 
     public String getDisplayName() {
         return displayName;
     }
 
-    public String getDescription() {
-        return description;
-    }
-
-    public DateTime getCreatedTime() {
-        return createdTime;
-    }
-
-    public DateTime getModifiedTime() {
-        return modifiedTime;
-    }
-
-    public Set<FieldDescriptor> getFields() {
-        return fields;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-    
-    public void setSupertype(String supertype) {
-        this.supertype = supertype;
-    }
-
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
+    }
+
+    public String getDescription() {
+        return description;
     }
 
     public void setDescription(String description) {
         this.description = description;
     }
 
+    public DateTime getCreatedTime() {
+        return createdTime;
+    }
+
     public void setCreatedTime(DateTime createdTime) {
         this.createdTime = createdTime;
     }
 
+    public DateTime getModifiedTime() {
+        return modifiedTime;
+    }
+
     public void setModifiedTime(DateTime modifiedTime) {
         this.modifiedTime = modifiedTime;
+    }
+
+    public Set<FieldDescriptor> getFields() {
+        return fields;
     }
 
 }

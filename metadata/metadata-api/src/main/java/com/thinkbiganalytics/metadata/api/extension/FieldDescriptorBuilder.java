@@ -42,7 +42,7 @@ public interface FieldDescriptorBuilder {
     /**
      * Adds the specified metadata property to this field.
      *
-     * @param name the property name
+     * @param name  the property name
      * @param value the property value
      * @return this field
      */

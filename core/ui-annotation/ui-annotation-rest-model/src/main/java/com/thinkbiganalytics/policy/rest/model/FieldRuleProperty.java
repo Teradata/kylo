@@ -54,7 +54,7 @@ public class FieldRuleProperty {
     private String patternInvalidMessage;
 
 
-    public FieldRuleProperty(){
+    public FieldRuleProperty() {
 
     }
 
@@ -63,7 +63,7 @@ public class FieldRuleProperty {
      * Strip out anything not needed for serialization
      */
     @JsonIgnore
-    public void simplifyForSerialization(){
+    public void simplifyForSerialization() {
         this.displayName = null;
         this.placeholder = null;
         this.hint = null;
@@ -126,7 +126,7 @@ public class FieldRuleProperty {
 
     public List<LabelValue> getSelectableValues() {
 
-        if(selectableValues == null){
+        if (selectableValues == null) {
             selectableValues = new ArrayList<>();
         }
         return selectableValues;
@@ -136,12 +136,12 @@ public class FieldRuleProperty {
         this.selectableValues = selectableValues;
     }
 
-    public void addSelectableValue(LabelValue labelValue){
+    public void addSelectableValue(LabelValue labelValue) {
         getSelectableValues().add(labelValue);
     }
 
-    public void addSelectableValue(String label, String value){
-        getSelectableValues().add(new LabelValue(label,value));
+    public void addSelectableValue(String label, String value) {
+        getSelectableValues().add(new LabelValue(label, value));
     }
 
     public String getObjectProperty() {

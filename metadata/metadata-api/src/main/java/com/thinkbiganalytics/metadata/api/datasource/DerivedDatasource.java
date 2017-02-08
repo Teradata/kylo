@@ -27,13 +27,13 @@ import java.util.Set;
  */
 public interface DerivedDatasource extends Datasource {
 
-    void setTitle(String title);
-
     String getTitle();
 
-    void setProperties(Map<String, Object> properties);
+    void setTitle(String title);
 
     Map<String, Object> getProperties();
+
+    void setProperties(Map<String, Object> properties);
 
     Set<DatasourceDefinition> getDatasourceDefinitions();
 

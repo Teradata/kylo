@@ -49,7 +49,7 @@ public class ConfigurationPropertyReplacer {
      * @param property the nifi property
      * @return the property key prepended with the "nifi.<processor type>."
      */
-    public static String getProcessorPropertyConfigName(NifiProperty property ) {
+    public static String getProcessorPropertyConfigName(NifiProperty property) {
         String processorTypeName = "nifi." + (StringUtils.substringAfterLast(property.getProcessorType(), ".") + "." + property.getKey()).toLowerCase().trim().replaceAll(" +", "_");
         return processorTypeName;
     }
@@ -66,9 +66,10 @@ public class ConfigurationPropertyReplacer {
     }
 
     /**
-     *  This will replace the Map of Properties in the DTO but not persist back to Nifi.  You need to call the rest client to persist the change
-     * @param controllerServiceDTO the controller service
-     * @param properties the properties to set
+     * This will replace the Map of Properties in the DTO but not persist back to Nifi.  You need to call the rest client to persist the change
+     *
+     * @param controllerServiceDTO        the controller service
+     * @param properties                  the properties to set
      * @param propertyDescriptorTransform transformer
      * @return {@code true} if the properties were updated, {@code false} if not
      */
@@ -78,7 +79,6 @@ public class ConfigurationPropertyReplacer {
             //check both Nifis Internal Key name as well as the Displayname to match the properties
             CaseInsensitiveMap propertyMap = new CaseInsensitiveMap(properties);
             Map<String, String> controllerServiceProperties = controllerServiceDTO.getProperties();
-
 
             controllerServiceProperties.entrySet().stream().filter(
                 entry -> (propertyMap.containsKey(entry.getKey()) || (controllerServiceDTO.getDescriptors().get(entry.getKey()) != null && propertyMap
@@ -101,17 +101,14 @@ public class ConfigurationPropertyReplacer {
 
 
     /**
-     *
-     * @param property the NifiProperty to replace
+     * @param property         the NifiProperty to replace
      * @param configProperties a Map of properties which will be looked to to match against thie property key
-     * @return
      */
-    public static boolean resolveStaticConfigurationProperty(NifiProperty property, Map<String,Object> configProperties){
+    public static boolean resolveStaticConfigurationProperty(NifiProperty property, Map<String, Object> configProperties) {
         String value = property.getValue();
         StringBuffer sb = null;
 
-        if(configProperties != null && !configProperties.isEmpty()) {
-
+        if (configProperties != null && !configProperties.isEmpty()) {
 
             if (StringUtils.isNotBlank(value)) {
                 Pattern variablePattern = Pattern.compile("\\$\\{(.*?)\\}");
@@ -139,24 +136,23 @@ public class ConfigurationPropertyReplacer {
             }
         }
 
-                if(sb == null) {
-                    String key = getProcessorPropertyConfigName(property);
+        if (sb == null) {
+            String key = getProcessorPropertyConfigName(property);
 
-                    Object resolvedValue =  configProperties != null ? configProperties.get(key) : null;
-                    if (resolvedValue == null) {
-                        String allKey = getGlobalAllProcessorsPropertyConfigName(property);
-                        resolvedValue = configProperties != null ? configProperties.get(allKey) : null;
-                    }
-                    if (resolvedValue != null) {
-                        sb = new StringBuffer();
-                        sb.append(resolvedValue.toString());
-                    }
+            Object resolvedValue = configProperties != null ? configProperties.get(key) : null;
+            if (resolvedValue == null) {
+                String allKey = getGlobalAllProcessorsPropertyConfigName(property);
+                resolvedValue = configProperties != null ? configProperties.get(allKey) : null;
+            }
+            if (resolvedValue != null) {
+                sb = new StringBuffer();
+                sb.append(resolvedValue.toString());
+            }
 
-                }
-                if(sb != null){
-                    property.setValue(StringUtils.trim(sb.toString()));
-                }
-
+        }
+        if (sb != null) {
+            property.setValue(StringUtils.trim(sb.toString()));
+        }
 
         return sb != null;
     }

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.event.reactor;
 
@@ -44,89 +44,96 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = { ReactorContiguration.class })
+@ContextConfiguration(classes = {ReactorContiguration.class})
 public class ReactorMetadataEventServiceTest {
 
     @Inject
     private MetadataEventService service;
-    
+
     @Test
     public void testMatchingDataType() throws Exception {
         final CompletableFuture<Integer> future = new CompletableFuture<>();
-        
+
         class TestEvent extends AbstractMetadataEvent<Integer> {
+
             public TestEvent(Integer data) {
                 super(data);
             }
         }
 
         class TestEventListener implements MetadataEventListener<TestEvent> {
+
             @Override
             public void notify(TestEvent event) {
                 future.complete(event.getData());
             }
         }
-        
+
         service.addListener(new TestEventListener());
         service.notify(new TestEvent(1));
-        
+
         Integer result = future.get();
-        
+
         assertThat(result).isInstanceOf(Integer.class);
     }
-    
+
     @Test
     public void testMatchingDataSubtype() throws Exception {
         final CompletableFuture<Number> future = new CompletableFuture<>();
-        
+
         class TestEvent extends AbstractMetadataEvent<Number> {
+
             public TestEvent(Number data) {
                 super(data);
             }
         }
-        
+
         class TestEventListener implements MetadataEventListener<TestEvent> {
+
             @Override
             public void notify(TestEvent event) {
                 future.complete(event.getData());
             }
         }
-        
+
         service.addListener(new TestEventListener());
         service.notify(new TestEvent(new Integer(1)));
-        
+
         Number result = future.get();
-        
+
         assertThat(result).isInstanceOf(Integer.class);
     }
-    
-    
-    @Test(expected=TimeoutException.class)
+
+
+    @Test(expected = TimeoutException.class)
     public void testNotMatchingEventType() throws Exception {
         final CompletableFuture<Integer> future = new CompletableFuture<>();
-        
+
         class TestEvent extends AbstractMetadataEvent<Integer> {
+
             public TestEvent(Integer data) {
                 super(data);
             }
         }
-        
+
         class OtherEvent extends AbstractMetadataEvent<Boolean> {
+
             public OtherEvent(Boolean data) {
                 super(data);
             }
         }
-        
+
         class TestEventListener implements MetadataEventListener<TestEvent> {
+
             @Override
             public void notify(TestEvent event) {
                 future.complete(event.getData());
             }
         }
-        
+
         service.addListener(new TestEventListener());
         service.notify(new OtherEvent(true));
-        
+
         future.get(1, TimeUnit.SECONDS);
     }
 }

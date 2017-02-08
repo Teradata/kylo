@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.rest.model.op;
 
@@ -45,19 +45,19 @@ import java.io.Serializable;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonTypeInfo(use = Id.NAME, include = As.PROPERTY)
 @JsonSubTypes({
-    @JsonSubTypes.Type(value = HiveTablePartitions.class),
-    @JsonSubTypes.Type(value = FileList.class),
-    }
+                  @JsonSubTypes.Type(value = HiveTablePartitions.class),
+                  @JsonSubTypes.Type(value = FileList.class),
+              }
 )
 public class ChangeSet implements Serializable {
-    
-    @JsonSerialize(using=DateTimeSerializer.class)
+
+    @JsonSerialize(using = DateTimeSerializer.class)
     private DateTime intrinsicTime;
-    
+
     private String intrinsicPeriod;
     private double incompletenessFactor;
 
-    
+
     public DateTime getIntrinsicTime() {
         return intrinsicTime;
     }

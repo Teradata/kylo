@@ -20,8 +20,10 @@ package com.thinkbiganalytics.ui.config;
  * #L%
  */
 
-import javax.inject.Inject;
-import javax.inject.Named;
+import com.thinkbiganalytics.auth.AuthServiceAuthenticationProvider;
+import com.thinkbiganalytics.auth.AuthenticationService;
+import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
+import com.thinkbiganalytics.auth.jwt.JwtRememberMeServices;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,15 +41,13 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.rememberme.RememberMeAuthenticationFilter;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
-import com.thinkbiganalytics.auth.AuthServiceAuthenticationProvider;
-import com.thinkbiganalytics.auth.AuthenticationService;
-import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
-import com.thinkbiganalytics.auth.jwt.JwtRememberMeServices;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  * Form Based Auth with Spring Security. Plugin a different AuthService by adding a new
  * AuthenticationProvider bean or a different AuthenticationService bean
- * 
+ *
  * @see AuthenticationService
  * @see AuthServiceAuthenticationProvider
  */
@@ -57,14 +57,12 @@ import com.thinkbiganalytics.auth.jwt.JwtRememberMeServices;
 @Profile("!auth-krb-spnego")  // TODO find a better way than just disabling due to the presence of SPNEGO config (adjust order?)
 public class DefaultWebSecurityConfigurer extends WebSecurityConfigurerAdapter {
 
-    protected static final Logger LOG = LoggerFactory.getLogger(DefaultWebSecurityConfigurer.class);
-    
     public static final int ORDER = SecurityProperties.ACCESS_OVERRIDE_ORDER;
-
+    protected static final Logger LOG = LoggerFactory.getLogger(DefaultWebSecurityConfigurer.class);
     @Inject
     @Named(JaasAuthConfig.UI_AUTH_PROVIDER)
     private AuthenticationProvider uiAuthenticationProvider;
-    
+
     @Inject
     private JwtRememberMeServices rememberMeServices;
 

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.jpa;
 
@@ -36,14 +36,18 @@ import javax.persistence.MappedSuperclass;
 @MappedSuperclass
 @EntityListeners(AuditTimestampListener.class)
 public class AbstractAuditedEntity implements AuditedEntity {
-    
-    @Type(type="org.jadira.usertype.dateandtime.joda.PersistentDateTime")
-    @Column(name="created_time")
+
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
+    @Column(name = "created_time")
     private DateTime createdTime;
-    
-    @Type(type="org.jadira.usertype.dateandtime.joda.PersistentDateTime")
-    @Column(name="modified_time")
+
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
+    @Column(name = "modified_time")
     private DateTime modifiedTime;
+
+    public DateTime getCreatedTime() {
+        return createdTime;
+    }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.jpa.AuditedEntity#setCreatedTime(org.joda.time.DateTime)
@@ -53,20 +57,16 @@ public class AbstractAuditedEntity implements AuditedEntity {
         this.createdTime = time;
     }
 
+    public DateTime getModifiedTime() {
+        return modifiedTime;
+    }
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.jpa.AuditedEntity#setModifiedTime(org.joda.time.DateTime)
      */
     @Override
     public void setModifiedTime(DateTime time) {
         this.modifiedTime = time;
-    }
-    
-    public DateTime getCreatedTime() {
-        return createdTime;
-    }
-    
-    public DateTime getModifiedTime() {
-        return modifiedTime;
     }
 
 }

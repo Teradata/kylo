@@ -37,8 +37,6 @@ import java.util.stream.Collectors;
 
 /**
  * Align Nifi Components under a supplied ProcessGroupId
- *
- *
  */
 public class AlignProcessGroupComponents {
 
@@ -88,7 +86,7 @@ public class AlignProcessGroupComponents {
     /**
      * Map of the processGroupId to object with connections
      */
-    private Map<String,ProcessGroupAndConnections> processGroupWithConnectionsMap = new HashMap<>();
+    private Map<String, ProcessGroupAndConnections> processGroupWithConnectionsMap = new HashMap<>();
 
 
     /**
@@ -129,9 +127,8 @@ public class AlignProcessGroupComponents {
 
     /**
      * Group the items together into different {@code LayoutGroup} based upon connections from the ProcessGroup to its various ports.
-     * @return
      */
-    public Map<String, LayoutGroup> groupItems(){
+    public Map<String, LayoutGroup> groupItems() {
         layoutGroups = new HashMap<>();
         //find the parent and children
         if (parentProcessGroupId == "root") {
@@ -335,15 +332,15 @@ public class AlignProcessGroupComponents {
                     ProcessGroupDTO processGroup = destinationGroup == null ? sourceGroup : destinationGroup;
                     outputPortIdToGroup.computeIfAbsent(outputPort.getId(), (key) -> new HashSet<ProcessGroupDTO>()).add(processGroup);
                     groupIdToOutputPorts.computeIfAbsent(processGroup.getId(), (key) -> new HashSet<PortDTO>()).add(outputPort);
-                   if(processGroupWithConnectionsMap.containsKey(processGroup.getId())){
-                       processGroupWithConnectionsMap.get(processGroup.getId()).addConnection(connectionDTO).addPort(outputPort);
-                   }
+                    if (processGroupWithConnectionsMap.containsKey(processGroup.getId())) {
+                        processGroupWithConnectionsMap.get(processGroup.getId()).addConnection(connectionDTO).addPort(outputPort);
+                    }
                 }
                 if (inputPort != null) {
                     ProcessGroupDTO processGroup = destinationGroup == null ? sourceGroup : destinationGroup;
                     inputPortIdToGroup.computeIfAbsent(inputPort.getId(), (key) -> new HashSet<ProcessGroupDTO>()).add(processGroup);
                     groupIdToInputPorts.computeIfAbsent(processGroup.getId(), (key) -> new HashSet<PortDTO>()).add(inputPort);
-                    if(processGroupWithConnectionsMap.containsKey(processGroup.getId())){
+                    if (processGroupWithConnectionsMap.containsKey(processGroup.getId())) {
                         processGroupWithConnectionsMap.get(processGroup.getId()).addConnection(connectionDTO).addPort(outputPort);
                     }
                 } else if (destinationGroup != null && sourceGroup != null) {

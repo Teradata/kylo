@@ -31,7 +31,7 @@ import org.quartz.CronExpression;
 import java.text.ParseException;
 
 /**
- *Converts a simple timer string such as  5 sec, 200 min, 50 days and converts it to a valid cron Expression
+ * Converts a simple timer string such as  5 sec, 200 min, 50 days and converts it to a valid cron Expression
  */
 public class TimerToCronExpression {
 
@@ -69,8 +69,6 @@ public class TimerToCronExpression {
 
     /**
      * Parse a timer string to a Joda time period
-     * @param timer
-     * @return
      */
     public static Period timerStringToPeriod(String timer) {
         return timerStringToPeriod(timer, PeriodType.dayTime());

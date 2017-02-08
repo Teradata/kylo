@@ -55,20 +55,14 @@ public interface NiFiFlowVisitorClient {
 
     /**
      * Walks a Template and returns the graph of connected processors
-     * @param template
-     * @return
      */
     NifiFlowProcessGroup getTemplateFeedFlow(TemplateDTO template);
 
 
     /**
      * Walks a Template and returns the graph of connected processors
-     * @param templateId
-     * @return
      */
     NifiFlowProcessGroup getTemplateFeedFlow(String templateId);
-
-
 
 
 }

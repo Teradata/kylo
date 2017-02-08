@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.jpa;
 
@@ -29,7 +29,6 @@ import javax.persistence.AttributeConverter;
 
 /**
  * Converts URIs to/from strings.
- * 
  */
 public class UriConverter implements AttributeConverter<URI, String> {
 

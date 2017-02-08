@@ -39,53 +39,53 @@ import java.util.Map;
                    })
 public class Cluster {
 
-  @JsonProperty("cluster_name")
-  private String clusterName;
-  @JsonProperty("version")
-  private String version;
-  @JsonIgnore
-  private Map<String, Object> additionalProperties = new HashMap<String, Object>();
+    @JsonProperty("cluster_name")
+    private String clusterName;
+    @JsonProperty("version")
+    private String version;
+    @JsonIgnore
+    private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
-  /**
-   * @return The clusterName
-   */
-  @JsonProperty("cluster_name")
-  public String getClusterName() {
-    return clusterName;
-  }
+    /**
+     * @return The clusterName
+     */
+    @JsonProperty("cluster_name")
+    public String getClusterName() {
+        return clusterName;
+    }
 
-  /**
-   * @param clusterName The cluster_name
-   */
-  @JsonProperty("cluster_name")
-  public void setClusterName(String clusterName) {
-    this.clusterName = clusterName;
-  }
+    /**
+     * @param clusterName The cluster_name
+     */
+    @JsonProperty("cluster_name")
+    public void setClusterName(String clusterName) {
+        this.clusterName = clusterName;
+    }
 
-  /**
-   * @return The version
-   */
-  @JsonProperty("version")
-  public String getVersion() {
-    return version;
-  }
+    /**
+     * @return The version
+     */
+    @JsonProperty("version")
+    public String getVersion() {
+        return version;
+    }
 
-  /**
-   * @param version The version
-   */
-  @JsonProperty("version")
-  public void setVersion(String version) {
-    this.version = version;
-  }
+    /**
+     * @param version The version
+     */
+    @JsonProperty("version")
+    public void setVersion(String version) {
+        this.version = version;
+    }
 
-  @JsonAnyGetter
-  public Map<String, Object> getAdditionalProperties() {
-    return this.additionalProperties;
-  }
+    @JsonAnyGetter
+    public Map<String, Object> getAdditionalProperties() {
+        return this.additionalProperties;
+    }
 
-  @JsonAnySetter
-  public void setAdditionalProperty(String name, Object value) {
-    this.additionalProperties.put(name, value);
-  }
+    @JsonAnySetter
+    public void setAdditionalProperty(String name, Object value) {
+        this.additionalProperties.put(name, value);
+    }
 
 }

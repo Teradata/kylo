@@ -39,35 +39,35 @@ import javax.annotation.Generated;
                    })
 public class HostComponent {
 
-  @JsonProperty("HostRoles")
-  private HostRoles HostRoles;
-  @JsonIgnore
-  private Map<String, Object> additionalProperties = new HashMap<String, Object>();
+    @JsonProperty("HostRoles")
+    private HostRoles HostRoles;
+    @JsonIgnore
+    private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
-  /**
-   * @return The HostRoles
-   */
-  @JsonProperty("HostRoles")
-  public HostRoles getHostRoles() {
-    return HostRoles;
-  }
+    /**
+     * @return The HostRoles
+     */
+    @JsonProperty("HostRoles")
+    public HostRoles getHostRoles() {
+        return HostRoles;
+    }
 
-  /**
-   * @param HostRoles The HostRoles
-   */
-  @JsonProperty("HostRoles")
-  public void setHostRoles(HostRoles HostRoles) {
-    this.HostRoles = HostRoles;
-  }
+    /**
+     * @param HostRoles The HostRoles
+     */
+    @JsonProperty("HostRoles")
+    public void setHostRoles(HostRoles HostRoles) {
+        this.HostRoles = HostRoles;
+    }
 
-  @JsonAnyGetter
-  public Map<String, Object> getAdditionalProperties() {
-    return this.additionalProperties;
-  }
+    @JsonAnyGetter
+    public Map<String, Object> getAdditionalProperties() {
+        return this.additionalProperties;
+    }
 
-  @JsonAnySetter
-  public void setAdditionalProperty(String name, Object value) {
-    this.additionalProperties.put(name, value);
-  }
+    @JsonAnySetter
+    public void setAdditionalProperty(String name, Object value) {
+        this.additionalProperties.put(name, value);
+    }
 
 }

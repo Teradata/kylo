@@ -25,8 +25,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.List;
 
 /**
- * Represents a set of both {@link FieldStandardizationRule} and {@link FieldValidationRule} captured from the User Interface that will ultimately be converted into domain level policies for ingesting data
- * Refer to the {@link FieldPolicyBuilder} for the builder in helping create these objects
+ * Represents a set of both {@link FieldStandardizationRule} and {@link FieldValidationRule} captured from the User Interface that will ultimately be converted into domain level policies for ingesting
+ * data Refer to the {@link FieldPolicyBuilder} for the builder in helping create these objects
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FieldPolicy {

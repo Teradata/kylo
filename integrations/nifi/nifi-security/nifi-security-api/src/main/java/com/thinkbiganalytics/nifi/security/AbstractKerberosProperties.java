@@ -40,23 +40,23 @@ public abstract class AbstractKerberosProperties implements KerberosProperties {
     @Override
     public PropertyDescriptor createKerberosKeytabProperty() {
         return new PropertyDescriptor.Builder()
-                .name("Kerberos Keytab")
-                .required(false)
-                .description("Kerberos keytab associated with the principal. Requires nifi.kerberos.krb5.file to be set in your nifi.properties.")
-                .addValidator(StandardValidators.FILE_EXISTS_VALIDATOR)
-                .addValidator(new KerberosConfigurationValidator(getKerberosConfigurationFile()))
-                .build();
+            .name("Kerberos Keytab")
+            .required(false)
+            .description("Kerberos keytab associated with the principal. Requires nifi.kerberos.krb5.file to be set in your nifi.properties.")
+            .addValidator(StandardValidators.FILE_EXISTS_VALIDATOR)
+            .addValidator(new KerberosConfigurationValidator(getKerberosConfigurationFile()))
+            .build();
     }
 
     @Nonnull
     @Override
     public PropertyDescriptor createKerberosPrincipalProperty() {
         return new PropertyDescriptor.Builder()
-                .name("Kerberos Principal")
-                .required(false)
-                .description("Kerberos principal to authenticate as. Requires nifi.kerberos.krb5.file to be set in your nifi.properties.")
-                .addValidator(new KerberosConfigurationValidator(getKerberosConfigurationFile()))
-                .build();
+            .name("Kerberos Principal")
+            .required(false)
+            .description("Kerberos principal to authenticate as. Requires nifi.kerberos.krb5.file to be set in your nifi.properties.")
+            .addValidator(new KerberosConfigurationValidator(getKerberosConfigurationFile()))
+            .build();
     }
 
     /**
@@ -72,7 +72,9 @@ public abstract class AbstractKerberosProperties implements KerberosProperties {
      */
     private static class KerberosConfigurationValidator implements Validator {
 
-        /** Kerberos configuration file */
+        /**
+         * Kerberos configuration file
+         */
         private final File configuration;
 
         /**
@@ -89,18 +91,18 @@ public abstract class AbstractKerberosProperties implements KerberosProperties {
             // Check that the Kerberos configuration is set
             if (configuration == null) {
                 return new ValidationResult.Builder()
-                        .subject(subject).input(input).valid(false)
-                        .explanation("you are missing the nifi.kerberos.krb5.file property which "
-                                     + "must be set in order to use Kerberos")
-                        .build();
+                    .subject(subject).input(input).valid(false)
+                    .explanation("you are missing the nifi.kerberos.krb5.file property which "
+                                 + "must be set in order to use Kerberos")
+                    .build();
             }
 
             // Check that the Kerberos configuration is readable
             if (!configuration.canRead()) {
                 return new ValidationResult.Builder().subject(subject).input(input).valid(false)
-                        .explanation(String.format("unable to read Kerberos config [%s], please make sure the path is valid "
-                                                   + "and nifi has adequate permissions", configuration.getAbsoluteFile()))
-                        .build();
+                    .explanation(String.format("unable to read Kerberos config [%s], please make sure the path is valid "
+                                               + "and nifi has adequate permissions", configuration.getAbsoluteFile()))
+                    .build();
             }
 
             return new ValidationResult.Builder().subject(subject).input(input).valid(true).build();

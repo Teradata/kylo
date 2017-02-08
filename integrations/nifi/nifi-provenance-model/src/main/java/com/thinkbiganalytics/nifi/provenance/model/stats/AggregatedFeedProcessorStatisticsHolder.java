@@ -38,7 +38,7 @@ public class AggregatedFeedProcessorStatisticsHolder implements Serializable {
     DateTime maxTime;
     String collectionId;
     AtomicLong eventCount = new AtomicLong(0L);
-
+    Map<String, AggregatedFeedProcessorStatistics> feedStatistics = new ConcurrentHashMap<>();
     private Long minEventId = 0L;
     private Long maxEventId = 0L;
 
@@ -46,8 +46,6 @@ public class AggregatedFeedProcessorStatisticsHolder implements Serializable {
 
         this.collectionId = UUID.randomUUID().toString();
     }
-
-    Map<String, AggregatedFeedProcessorStatistics> feedStatistics = new ConcurrentHashMap<>();
 
     /**
      * Add an event to generate statistics
@@ -71,7 +69,6 @@ public class AggregatedFeedProcessorStatisticsHolder implements Serializable {
 
         eventCount.incrementAndGet();
     }
-
 
 
     public AtomicLong getEventCount() {

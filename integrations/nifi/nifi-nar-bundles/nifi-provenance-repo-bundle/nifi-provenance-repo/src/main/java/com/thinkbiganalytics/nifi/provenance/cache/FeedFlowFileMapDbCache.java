@@ -112,7 +112,6 @@ public class FeedFlowFileMapDbCache implements FeedFlowFileCacheListener {
     }
 
 
-
     @PostConstruct
     private void init() {
         cache.subscribe(this);

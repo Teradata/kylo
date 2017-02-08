@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.modeshape.extension;
 
@@ -60,26 +60,24 @@ public class JcrExtensibleEntityProvider implements ExtensibleEntityProvider {
     public ExtensibleEntity createEntity(ExtensibleType type, Map<String, Object> props) {
         JcrExtensibleType typeImpl = (JcrExtensibleType) type;
         Session session = getSession();
-        
+
         try {
             String path = EntityUtil.pathForExtensibleEntity();
             Node entitiesNode = session.getNode(path);
             Node typesNode = null;
-            
+
             if (entitiesNode.hasNode(typeImpl.getJcrName())) {
                 typesNode = entitiesNode.getNode(typeImpl.getJcrName());
             } else {
                 typesNode = entitiesNode.addNode(typeImpl.getJcrName(), "nt:folder");
             }
-            
+
             Node entNode = typesNode.addNode(typeImpl.getName() + "-" + UUID.randomUUID().toString(), typeImpl.getJcrName());
 
-
-            Map<String,Object> reassignedProps = mapCollectionProperties(typeImpl,props);
-
+            Map<String, Object> reassignedProps = mapCollectionProperties(typeImpl, props);
 
             entNode = JcrPropertyUtil.setProperties(session, entNode, reassignedProps);
-            
+
             return new JcrExtensibleEntity(entNode);
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to create new extensible entity of type: " + typeImpl.getJcrName(), e);
@@ -89,34 +87,31 @@ public class JcrExtensibleEntityProvider implements ExtensibleEntityProvider {
 
     /**
      * If the incoming set of props contains a collection it needs to be converted into an object that knows the correct JCRType for that collection
-     * @param props
-     * @return
      */
-    private Map<String,Object> mapCollectionProperties(JcrExtensibleType typeImpl,Map<String,Object> props){
+    private Map<String, Object> mapCollectionProperties(JcrExtensibleType typeImpl, Map<String, Object> props) {
         //remap any Collections into JcrExtensiblePropertyCollection
-        Map<String,Object> reassignedProps = new HashMap<>();
-        if(props != null){
+        Map<String, Object> reassignedProps = new HashMap<>();
+        if (props != null) {
 
-            for(Map.Entry<String,Object> prop: props.entrySet()){
+            for (Map.Entry<String, Object> prop : props.entrySet()) {
                 String key = prop.getKey();
                 Object v = prop.getValue();
-                if(v instanceof Collection){
-                    int typeCode =  ((JcrExtensibleTypeProvider)typeProvider).asCode(typeImpl.getFieldDescriptor(key).getType());
-                    JcrExtensiblePropertyCollection collection = new JcrExtensiblePropertyCollection(typeCode,(Collection)v);
-                    reassignedProps.put(key,collection);
-                }
-                else {
-                    reassignedProps.put(key,v);
+                if (v instanceof Collection) {
+                    int typeCode = ((JcrExtensibleTypeProvider) typeProvider).asCode(typeImpl.getFieldDescriptor(key).getType());
+                    JcrExtensiblePropertyCollection collection = new JcrExtensiblePropertyCollection(typeCode, (Collection) v);
+                    reassignedProps.put(key, collection);
+                } else {
+                    reassignedProps.put(key, v);
                 }
             }
         }
         return reassignedProps;
     }
 
-    public ExtensibleEntity updateEntity(ExtensibleEntity extensibleEntity, Map<String,Object> props){
+    public ExtensibleEntity updateEntity(ExtensibleEntity extensibleEntity, Map<String, Object> props) {
         JcrExtensibleEntity jcrExtensibleEntity = (JcrExtensibleEntity) extensibleEntity;
-        JcrExtensibleType typeImpl = (JcrExtensibleType)typeProvider.getType(jcrExtensibleEntity.getTypeName());
-        Map<String,Object> reassignedProps = mapCollectionProperties(typeImpl,props);
+        JcrExtensibleType typeImpl = (JcrExtensibleType) typeProvider.getType(jcrExtensibleEntity.getTypeName());
+        Map<String, Object> reassignedProps = mapCollectionProperties(typeImpl, props);
         JcrPropertyUtil.setProperties(getSession(), jcrExtensibleEntity.getNode(), reassignedProps);
         return extensibleEntity;
     }
@@ -150,16 +145,16 @@ public class JcrExtensibleEntityProvider implements ExtensibleEntityProvider {
     public List<ExtensibleEntity> getEntities(String typeName) {
         List<ExtensibleEntity> list = new ArrayList<>();
         Session session = getSession();
-        
+
         try {
             String path = EntityUtil.pathForExtensibleEntity(typeName);
             Node typeNameNode = session.getNode(path);
             NodeIterator entityItr = typeNameNode.getNodes();
-                while (entityItr.hasNext()) {
-                    Node entNode = (Node) entityItr.next();
-                    list.add(new JcrExtensibleEntity(entNode));
-                }
-            
+            while (entityItr.hasNext()) {
+                Node entNode = (Node) entityItr.next();
+                list.add(new JcrExtensibleEntity(entNode));
+            }
+
             return list;
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve list of extensible entities", e);
@@ -169,19 +164,12 @@ public class JcrExtensibleEntityProvider implements ExtensibleEntityProvider {
     /**
      * Return a list of the ExtensibleEntity objects that match a given ExtensibleEntity property and value
      * restricting to a specific jcr extension type
-     *
-     * @param typeName
-     * @param propName
-     * @param value
-     * @return
      */
-    public List<? extends ExtensibleEntity> findEntitiesMatchingProperty(String typeName, String propName, Object value){
+    public List<? extends ExtensibleEntity> findEntitiesMatchingProperty(String typeName, String propName, Object value) {
         String path = EntityUtil.pathForExtensibleEntity(typeName);
-       HashMap<String, String> params = new HashMap<>();
-        String query =  "SELECT * FROM ["+typeName+"] as t WHERE t.["+ propName+"] = $v";
-        params.put("v",value.toString());
-
-
+        HashMap<String, String> params = new HashMap<>();
+        String query = "SELECT * FROM [" + typeName + "] as t WHERE t.[" + propName + "] = $v";
+        params.put("v", value.toString());
 
         QueryResult result = null;
         try {
@@ -197,11 +185,11 @@ public class JcrExtensibleEntityProvider implements ExtensibleEntityProvider {
     @Override
     public ExtensibleEntity getEntity(ID id) {
         JcrExtensibleEntity.EntityId idImpl = (JcrExtensibleEntity.EntityId) id;
-        
+
         try {
             Session session = getSession();
             Node node = session.getNodeByIdentifier(idImpl.getIdValue());
-            
+
             if (node != null) {
                 return new JcrExtensibleEntity(node);
             } else {

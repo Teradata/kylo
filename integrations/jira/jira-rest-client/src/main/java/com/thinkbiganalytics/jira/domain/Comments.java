@@ -1,4 +1,3 @@
-
 package com.thinkbiganalytics.jira.domain;
 
 /*-
@@ -38,11 +37,11 @@ import javax.annotation.Generated;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("org.jsonschema2pojo")
 @JsonPropertyOrder({
-    "startAt",
-    "maxResults",
-    "total",
-    "comments"
-})
+                       "startAt",
+                       "maxResults",
+                       "total",
+                       "comments"
+                   })
 public class Comments {
 
     @JsonProperty("startAt")
@@ -57,9 +56,7 @@ public class Comments {
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
-     * 
-     * @return
-     *     The startAt
+     * @return The startAt
      */
     @JsonProperty("startAt")
     public Integer getStartAt() {
@@ -67,9 +64,7 @@ public class Comments {
     }
 
     /**
-     * 
-     * @param startAt
-     *     The startAt
+     * @param startAt The startAt
      */
     @JsonProperty("startAt")
     public void setStartAt(Integer startAt) {
@@ -77,9 +72,7 @@ public class Comments {
     }
 
     /**
-     * 
-     * @return
-     *     The maxResults
+     * @return The maxResults
      */
     @JsonProperty("maxResults")
     public Integer getMaxResults() {
@@ -87,9 +80,7 @@ public class Comments {
     }
 
     /**
-     * 
-     * @param maxResults
-     *     The maxResults
+     * @param maxResults The maxResults
      */
     @JsonProperty("maxResults")
     public void setMaxResults(Integer maxResults) {
@@ -97,9 +88,7 @@ public class Comments {
     }
 
     /**
-     * 
-     * @return
-     *     The total
+     * @return The total
      */
     @JsonProperty("total")
     public Integer getTotal() {
@@ -107,9 +96,7 @@ public class Comments {
     }
 
     /**
-     * 
-     * @param total
-     *     The total
+     * @param total The total
      */
     @JsonProperty("total")
     public void setTotal(Integer total) {
@@ -117,9 +104,7 @@ public class Comments {
     }
 
     /**
-     * 
-     * @return
-     *     The comments
+     * @return The comments
      */
     @JsonProperty("comments")
     public List<Comment> getComments() {
@@ -127,9 +112,7 @@ public class Comments {
     }
 
     /**
-     * 
-     * @param comments
-     *     The comments
+     * @param comments The comments
      */
     @JsonProperty("comments")
     public void setComments(List<Comment> comments) {

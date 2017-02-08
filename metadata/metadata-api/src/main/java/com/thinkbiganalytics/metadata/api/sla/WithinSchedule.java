@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.api.sla;
 
@@ -40,7 +40,7 @@ public class WithinSchedule implements Metric {
     private transient Period period;
     private String cronString;
     private String periodString;
-    
+
     public WithinSchedule() {
     }
 
@@ -50,22 +50,22 @@ public class WithinSchedule implements Metric {
         this.cronString = cronExpression;
         this.periodString = period;
     }
-    
+
     public WithinSchedule(CronExpression cronExpression, Period period) throws ParseException {
         this.cronExpression = cronExpression;
         this.period = period;
         this.cronString = cronExpression.toString();
         this.periodString = period.toString();
     }
-    
+
     public CronExpression getCronExpression() {
         return cronExpression;
     }
-    
+
     public Period getPeriod() {
         return period;
     }
-    
+
     @Override
     @Transient
     public String getDescription() {
@@ -88,5 +88,5 @@ public class WithinSchedule implements Metric {
         this.periodString = periodString;
     }
 
-    
+
 }

@@ -40,6 +40,7 @@ import javax.jms.TextMessage;
  */
 @Component
 public class SendJmsMessage {
+
     private static final Logger log = LoggerFactory.getLogger(SendJmsMessage.class);
 
     private static final String TEST_MESSAGE_QUEUE_NAME = "thinkbig.nifi.test-queue";
@@ -52,7 +53,7 @@ public class SendJmsMessage {
     @Qualifier("jmsTemplate")
     private JmsMessagingTemplate jmsMessagingTemplate;
 
-    public void sendObjectToQueue(String queueName, final Object obj){
+    public void sendObjectToQueue(String queueName, final Object obj) {
         sendObjectToQueue(queueName, obj, obj.getClass().getName());
     }
 
@@ -64,11 +65,11 @@ public class SendJmsMessage {
     }
 
 
-
-    public void sendObjectToQueue(String queueName, final Object obj, final String objectClassType) throws JmsException{
-        log.info("Sending ActiveMQ message ["+obj+"] to queue ["+queueName+"]");
+    public void sendObjectToQueue(String queueName, final Object obj, final String objectClassType) throws JmsException {
+        log.info("Sending ActiveMQ message [" + obj + "] to queue [" + queueName + "]");
         MessageCreator creator = new MessageCreator() {
             TextMessage message = null;
+
             @Override
             public javax.jms.Message createMessage(Session session) throws JMSException {
                 message = session.createTextMessage();
@@ -87,11 +88,11 @@ public class SendJmsMessage {
             log.info("sending message to the topic");
             Message jmsMessage = jmsMessagingTemplate.receive(TEST_MESSAGE_QUEUE_NAME);
             log.info("received the JMS message back");
-            String payload = (String)jmsMessage.getPayload();
-            if(("\"" + TEST_MESSAGE + "\"").equals(payload)) {
+            String payload = (String) jmsMessage.getPayload();
+            if (("\"" + TEST_MESSAGE + "\"").equals(payload)) {
                 return true;
             }
-        } catch(Throwable t) {
+        } catch (Throwable t) {
             log.info("Error testing JMS connection. This is most likely because it's down", t);
         }
         return false;

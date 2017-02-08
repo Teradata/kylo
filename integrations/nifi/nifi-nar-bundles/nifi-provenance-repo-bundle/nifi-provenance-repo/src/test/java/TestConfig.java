@@ -17,6 +17,7 @@
  * limitations under the License.
  * #L%
  */
+
 import org.junit.Ignore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;

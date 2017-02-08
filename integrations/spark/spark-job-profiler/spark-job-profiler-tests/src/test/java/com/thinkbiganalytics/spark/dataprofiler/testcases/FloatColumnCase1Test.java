@@ -57,6 +57,10 @@ public class FloatColumnCase1Test extends ProfilerTest {
     private static double stddev;
     private static double variance;
 
+    @AfterClass
+    public static void tearDownClass() {
+        System.out.println("\t*** Completed run for FloatColumnCase1Test ***");
+    }
 
     @Before
     public void setUp() {
@@ -84,36 +88,30 @@ public class FloatColumnCase1Test extends ProfilerTest {
         Assert.assertEquals(nullCount, columnStats.getNullCount());
     }
 
-
     @Test
     public void testFloatTotalCount() {
         Assert.assertEquals(totalCount, columnStats.getTotalCount());
     }
-
 
     @Test
     public void testFloatUniqueCount() {
         Assert.assertEquals(uniqueCount, columnStats.getUniqueCount());
     }
 
-
     @Test
     public void testFloatPercNullValues() {
         assertEquals(percNullValues, columnStats.getPercNullValues(), epsilon);
     }
-
 
     @Test
     public void testFloatPercUniqueValues() {
         assertEquals(percUniqueValues, columnStats.getPercUniqueValues(), epsilon);
     }
 
-
     @Test
     public void testFloatPercDuplicateValues() {
         assertEquals(percDuplicateValues, columnStats.getPercDuplicateValues(), epsilon);
     }
-
 
     @Test
     public void testFloatTopNValues() {
@@ -146,45 +144,33 @@ public class FloatColumnCase1Test extends ProfilerTest {
         }
     }
 
-
     @Test
     public void testFloatMax() {
         assertEquals(max, ((FloatColumnStatistics) columnStats).getMax(), epsilon);
     }
-
 
     @Test
     public void testFloatMin() {
         assertEquals(min, ((FloatColumnStatistics) columnStats).getMin(), epsilon);
     }
 
-
     @Test
     public void testFloatSum() {
         assertEquals(sum, ((FloatColumnStatistics) columnStats).getSum(), epsilon);
     }
-
 
     @Test
     public void testFloatMean() {
         assertEquals(mean, ((FloatColumnStatistics) columnStats).getMean(), epsilon);
     }
 
-
     @Test
     public void testFloatStddev() {
         assertEquals(stddev, ((FloatColumnStatistics) columnStats).getStddev(), epsilon);
     }
 
-
     @Test
     public void testFloatVariance() {
         assertEquals(variance, ((FloatColumnStatistics) columnStats).getVariance(), epsilon);
-    }
-
-
-    @AfterClass
-    public static void tearDownClass() {
-        System.out.println("\t*** Completed run for FloatColumnCase1Test ***");
     }
 }   

@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <template encoding-version="1.0">
   <description>A starter template for executing PySpark jobs.
-</description>
+  </description>
   <groupId>38097692-3cba-4316-b20b-747bf78d0aee</groupId>
   <name>template-starter-pyspark</name>
   <snippet>

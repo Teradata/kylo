@@ -37,7 +37,4 @@ public interface ServiceLevelAgreementScheduler {
     void disableServiceLevelAgreement(ServiceLevelAgreement sla);
 
 
-
-
-
 }

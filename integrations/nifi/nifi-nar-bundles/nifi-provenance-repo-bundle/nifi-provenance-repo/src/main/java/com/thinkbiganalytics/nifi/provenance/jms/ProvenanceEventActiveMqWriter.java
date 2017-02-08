@@ -42,7 +42,6 @@ import javax.annotation.PostConstruct;
  * 2 Queues are used.  The Queue names are constants shared with Kylo Operations Manager found in the {@link Queues} class.
  * Queues.PROVENANCE_EVENT_STATS_QUEUE  is the Statistics Queue name for creating the Summary statistics
  * Queues.FEED_MANAGER_QUEUE is the Batch Provenance Events Queue for creating the Jobs/Steps in Kylo
- *
  */
 public class ProvenanceEventActiveMqWriter {
 
@@ -55,13 +54,12 @@ public class ProvenanceEventActiveMqWriter {
 
     private Map<String, Set<JmsSendListener>> listeners = new HashMap<>();
 
-    public void subscribe(JmsSendListener listener) {
-        this.listeners.computeIfAbsent(listener.getDestination(), (d) -> new HashSet<JmsSendListener>()).add(listener);
-    }
-
-
     public ProvenanceEventActiveMqWriter() {
 
+    }
+
+    public void subscribe(JmsSendListener listener) {
+        this.listeners.computeIfAbsent(listener.getDestination(), (d) -> new HashSet<JmsSendListener>()).add(listener);
     }
 
     @PostConstruct

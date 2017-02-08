@@ -26,7 +26,6 @@ import java.util.UUID;
 
 /**
  * Group all the Batch ProvenanceEvent objects together and send this parent object over to JMS
- *
  */
 public class ProvenanceEventRecordDTOHolder implements Serializable {
 
@@ -59,6 +58,7 @@ public class ProvenanceEventRecordDTOHolder implements Serializable {
 
     /**
      * Calculate the min event Id
+     *
      * @return the min event id in the collection
      */
     public Long getMinEventId() {
@@ -70,7 +70,6 @@ public class ProvenanceEventRecordDTOHolder implements Serializable {
 
     /**
      * get all the events in the collection
-     * @return
      */
     public List<ProvenanceEventRecordDTO> getEvents() {
         return events;
@@ -78,6 +77,7 @@ public class ProvenanceEventRecordDTOHolder implements Serializable {
 
     /**
      * sets the events to be processed
+     *
      * @param events the events to collect
      */
     public void setEvents(List<ProvenanceEventRecordDTO> events) {
@@ -93,8 +93,7 @@ public class ProvenanceEventRecordDTOHolder implements Serializable {
     }
 
     /**
-     *get the Unique Id for this collection of events
-     * @return
+     * get the Unique Id for this collection of events
      */
     public String getBatchId() {
         return batchId;

@@ -40,17 +40,13 @@ import org.slf4j.LoggerFactory;
 @Validator(name = "Timestamp", description = "Validate Hive-friendly timstamp format")
 public class TimestampValidator implements ValidationPolicy<String> {
 
-    private static Logger log = LoggerFactory.getLogger(TimestampValidator.class);
-
     private static final DateTimeFormatter DATETIME_NANOS = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSSSSSSSS");
     private static final DateTimeFormatter DATETIME_MILLIS = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSS");
     private static final DateTimeFormatter DATETIME_NOMILLIS = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
     private static final DateTimeFormatter DATETIME_ISO8601 = ISODateTimeFormat.dateTimeParser();
-
     private static final int MIN_LENGTH = 19;
     private static final int MAX_LENGTH = 29;
-
-
+    private static Logger log = LoggerFactory.getLogger(TimestampValidator.class);
     @PolicyProperty(name = "allowNull", value = "false", displayName = "Allow Null Values",
                     hint = "Null values are considered to be valid", type = PolicyPropertyTypes.PROPERTY_TYPE.select,
                     labelValues = {@PropertyLabelValue(label = "Yes", value = "true"),

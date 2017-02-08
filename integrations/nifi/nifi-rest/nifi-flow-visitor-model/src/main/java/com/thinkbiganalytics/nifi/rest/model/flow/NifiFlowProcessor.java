@@ -38,7 +38,7 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- *  Object in a NifiFlow that has pointers to all its sources (parents)  and children (destinations)
+ * Object in a NifiFlow that has pointers to all its sources (parents)  and children (destinations)
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class NifiFlowProcessor implements Serializable {
@@ -102,6 +102,7 @@ public class NifiFlowProcessor implements Serializable {
 
     /**
      * set the processor id
+     *
      * @param id the processor id
      */
     public void setId(String id) {
@@ -110,6 +111,7 @@ public class NifiFlowProcessor implements Serializable {
 
     /**
      * Return the processor name
+     *
      * @return the processor name
      */
     public String getName() {
@@ -118,6 +120,7 @@ public class NifiFlowProcessor implements Serializable {
 
     /**
      * set the processor name
+     *
      * @param name the processor name
      */
     public void setName(String name) {
@@ -126,6 +129,7 @@ public class NifiFlowProcessor implements Serializable {
 
     /**
      * Return the set of destinations coming from this processor
+     *
      * @return the set of destination processors
      */
     public Set<NifiFlowProcessor> getDestinations() {
@@ -137,6 +141,7 @@ public class NifiFlowProcessor implements Serializable {
 
     /**
      * set the destination processors
+     *
      * @param destinations the destination processors
      */
     public void setDestinations(Set<NifiFlowProcessor> destinations) {
@@ -145,6 +150,7 @@ public class NifiFlowProcessor implements Serializable {
 
     /**
      * Return the source processors
+     *
      * @return the source processors
      */
     public Set<NifiFlowProcessor> getSources() {
@@ -156,6 +162,7 @@ public class NifiFlowProcessor implements Serializable {
 
     /**
      * set the source processors
+     *
      * @param sources the source processors
      */
     public void setSources(Set<NifiFlowProcessor> sources) {
@@ -164,6 +171,7 @@ public class NifiFlowProcessor implements Serializable {
 
     /**
      * Return the group associated with this processor
+     *
      * @return the group
      */
     public NifiFlowProcessGroup getProcessGroup() {
@@ -172,6 +180,7 @@ public class NifiFlowProcessor implements Serializable {
 
     /**
      * Set the group associated with this processor
+     *
      * @param processGroup the group
      */
     public void setProcessGroup(NifiFlowProcessGroup processGroup) {
@@ -181,6 +190,7 @@ public class NifiFlowProcessor implements Serializable {
 
     /**
      * Return the set of ids that are incoming source processors
+     *
      * @return the set of ids that are incoming source processors
      */
     public Set<String> getSourceIds() {
@@ -192,6 +202,7 @@ public class NifiFlowProcessor implements Serializable {
 
     /**
      * set the set of ids that are incoming source processors
+     *
      * @param sourceIds the set of ids that are incoming source processors
      */
     public void setSourceIds(Set<String> sourceIds) {
@@ -200,6 +211,7 @@ public class NifiFlowProcessor implements Serializable {
 
     /**
      * Return the set of ids that are destination processors
+     *
      * @return the set of ids that are destination processors
      */
     public Set<String> getDestinationIds() {
@@ -211,7 +223,8 @@ public class NifiFlowProcessor implements Serializable {
 
     /**
      * set  the set of ids that are destination processors
-     * @param destinationIds  the set of ids that are destination processors
+     *
+     * @param destinationIds the set of ids that are destination processors
      */
     public void setDestinationIds(Set<String> destinationIds) {
         this.destinationIds = destinationIds;
@@ -219,6 +232,7 @@ public class NifiFlowProcessor implements Serializable {
 
     /**
      * Return the set of this processors destination ids, and all of its children destination ids
+     *
      * @return the set of this processors destination ids, and all of its children destination ids
      */
     public Set<String> getAllDestinationIds() {
@@ -233,6 +247,7 @@ public class NifiFlowProcessor implements Serializable {
 
     /**
      * Return the set of connection identifiers for the incoming  connections
+     *
      * @return the set of connection identifiers for the incoming  connections
      */
     public Set<NiFiFlowProcessorConnection> getSourceConnectionIds() {
@@ -244,6 +259,7 @@ public class NifiFlowProcessor implements Serializable {
 
     /**
      * set the set of connection identifiers for the incoming  connections
+     *
      * @param sourceConnectionIds the set of connection identifiers for the incoming  connections
      */
     public void setSourceConnectionIds(Set<NiFiFlowProcessorConnection> sourceConnectionIds) {
@@ -252,6 +268,7 @@ public class NifiFlowProcessor implements Serializable {
 
     /**
      * Return the set of outgoing destination connection ids
+     *
      * @return the set of outgoing destination connection ids
      */
     public Set<NiFiFlowProcessorConnection> getDestinationConnectionIds() {
@@ -263,6 +280,7 @@ public class NifiFlowProcessor implements Serializable {
 
     /**
      * set the set of outgoing destination connection ids
+     *
      * @param destinationConnectionIds the set of outgoing destination connection ids
      */
     public void setDestinationConnectionIds(Set<NiFiFlowProcessorConnection> destinationConnectionIds) {
@@ -279,7 +297,6 @@ public class NifiFlowProcessor implements Serializable {
 
     /**
      * prints the flow id for the processor and its destinations
-     * @param level
      */
     public void print(Integer level) {
 
@@ -299,6 +316,7 @@ public class NifiFlowProcessor implements Serializable {
 
     /**
      * Sort the destination processors so the flow id generation will be the same each time a similar flow of the same template is walked
+     *
      * @return the sorted destinations
      */
     public List<NifiFlowProcessor> getSortedDestinations() {
@@ -311,8 +329,9 @@ public class NifiFlowProcessor implements Serializable {
     }
 
     /**
-     * Assign a flow identifier to the processor.
-     * Flow ids are an attempt to assign a id relative the the location of the processor in the graph as it is walked so different instances of the same flow/template can relate given processors to each other
+     * Assign a flow identifier to the processor. Flow ids are an attempt to assign a id relative the the location of the processor in the graph as it is walked so different instances of the same
+     * flow/template can relate given processors to each other
+     *
      * @param flowId the id representing its placement in the graph
      * @return the assigned numeric id
      */
@@ -333,6 +352,7 @@ public class NifiFlowProcessor implements Serializable {
 
     /**
      * Count the number of distinct destination processor nodes
+     *
      * @return the number of distinct destination processor nodes
      */
     public Integer countNodes() {
@@ -350,6 +370,7 @@ public class NifiFlowProcessor implements Serializable {
 
     /**
      * Check to see if the supplied processor is part of this processors graph
+     *
      * @param parent a processor
      * @return {@code true} if the processor is already part of this destination set, {@code false} if the processor is not part of the destination set
      */
@@ -363,6 +384,7 @@ public class NifiFlowProcessor implements Serializable {
 
     /**
      * Return the unique flow id for this processor
+     *
      * @return the flow if
      */
     public String getFlowId() {
@@ -371,6 +393,7 @@ public class NifiFlowProcessor implements Serializable {
 
     /**
      * set the flow id for the processor
+     *
      * @param flowId the flow id
      */
     public void setFlowId(String flowId) {
@@ -380,6 +403,7 @@ public class NifiFlowProcessor implements Serializable {
 
     /**
      * Return the type of processor
+     *
      * @return the type of processor
      */
     public String getType() {
@@ -388,6 +412,7 @@ public class NifiFlowProcessor implements Serializable {
 
     /**
      * set the type of processor
+     *
      * @param type the type of processor
      */
     public void setType(String type) {
@@ -397,9 +422,10 @@ public class NifiFlowProcessor implements Serializable {
 
     /**
      * check if there are any destinations
+     *
      * @return {@code true} if this is a ending processor with no more connections, {@code false} if there are other processors connected to this
      */
-    public boolean isLeaf(){
+    public boolean isLeaf() {
         return getDestinationIds().isEmpty();
     }
 
@@ -408,7 +434,7 @@ public class NifiFlowProcessor implements Serializable {
      *
      * @return {@code true} if this is a starting processor with no incoming connections, {@code false} if it is connected to other incoming processors
      */
-    public boolean isStart(){
+    public boolean isStart() {
         return getSourceIds().isEmpty();
     }
 
@@ -430,6 +456,7 @@ public class NifiFlowProcessor implements Serializable {
 
     /**
      * return the process group id for this processor
+     *
      * @return the process group id
      */
     public String getParentGroupId() {
@@ -438,6 +465,7 @@ public class NifiFlowProcessor implements Serializable {
 
     /**
      * set the process group id
+     *
      * @param parentGroupId the process group id
      */
     public void setParentGroupId(String parentGroupId) {
@@ -473,8 +501,6 @@ public class NifiFlowProcessor implements Serializable {
     }
 
 
-
-
     public static class FlowIdComparator implements Comparator<NifiFlowProcessor> {
 
         @Override
@@ -497,8 +523,6 @@ public class NifiFlowProcessor implements Serializable {
             return compare;
         }
     }
-
-
 
 
 }

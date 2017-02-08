@@ -36,36 +36,29 @@ import java.util.Set;
 /**
  * Represents the NiFi Process Group that can be visited and linked building a graph of connecting parents and children {@link NifiVisitableProcessor}
  * These are built from the {@link NifiFlowVisitor}
- *
  */
 public class NifiVisitableProcessGroup implements NifiVisitable {
-
-    /**
-     * the Nifi process group
-     */
-    private ProcessGroupDTO dto;
-
-    /**
-     * The parent process group for which this process group resides
-     */
-    private ProcessGroupDTO parentProcessGroup;
-
-    /**
-     * the starting processors in this group which dont have any source connections in front of them
-     */
-    private Set<NifiVisitableProcessor> startingProcessors;
-
-    /**
-     * the ending processors in this group that dont have any destination connections from them
-     */
-    private Set<NifiVisitableProcessor> endingProcessors;
 
     /**
      * all the processors visited in this group
      */
     public Set<NifiVisitableProcessor> processors;
-
-
+    /**
+     * the Nifi process group
+     */
+    private ProcessGroupDTO dto;
+    /**
+     * The parent process group for which this process group resides
+     */
+    private ProcessGroupDTO parentProcessGroup;
+    /**
+     * the starting processors in this group which dont have any source connections in front of them
+     */
+    private Set<NifiVisitableProcessor> startingProcessors;
+    /**
+     * the ending processors in this group that dont have any destination connections from them
+     */
+    private Set<NifiVisitableProcessor> endingProcessors;
     /**
      * Map of the output port id to set of connecting processor ids
      */
@@ -79,6 +72,7 @@ public class NifiVisitableProcessGroup implements NifiVisitable {
 
     /**
      * Create a new visitable group from a given NiFi process group
+     *
      * @param dto a NiFi process group
      */
     public NifiVisitableProcessGroup(ProcessGroupDTO dto) {
@@ -114,7 +108,8 @@ public class NifiVisitableProcessGroup implements NifiVisitable {
 
     /**
      * Return a visitable process group first looking at those that have been visited already by this parent process group, if not it will create a new one.
-     * @param nifiVisitor the visitor
+     *
+     * @param nifiVisitor     the visitor
      * @param processGroupDTO the group to find
      * @return the visitable process group wrapping the incoming processgroup
      */
@@ -128,6 +123,7 @@ public class NifiVisitableProcessGroup implements NifiVisitable {
 
     /**
      * Return the parent process group for this group
+     *
      * @return the parent process group for this group
      */
     public ProcessGroupDTO getParentProcessGroup() {
@@ -136,6 +132,7 @@ public class NifiVisitableProcessGroup implements NifiVisitable {
 
     /**
      * set the parent process group
+     *
      * @param parentProcessGroup the group that is the parent group to this group
      */
     public void setParentProcessGroup(ProcessGroupDTO parentProcessGroup) {
@@ -144,6 +141,7 @@ public class NifiVisitableProcessGroup implements NifiVisitable {
 
     /**
      * Visit this process group using the supplied visitor
+     *
      * @param nifiVisitor the visitor
      */
     @Override
@@ -179,6 +177,7 @@ public class NifiVisitableProcessGroup implements NifiVisitable {
 
     /**
      * Return the  NiFi ProcessGroup that this class wraps
+     *
      * @return the NiFi process group item
      */
     public ProcessGroupDTO getDto() {
@@ -188,6 +187,7 @@ public class NifiVisitableProcessGroup implements NifiVisitable {
 
     /**
      * After visiting a processor, add it to the cache of processors referenced by this process group
+     *
      * @param processor the processor that has been visited
      */
     public void addProcessor(NifiVisitableProcessor processor) {
@@ -196,6 +196,7 @@ public class NifiVisitableProcessGroup implements NifiVisitable {
 
     /**
      * Return a set of all the processors that dont have any incoming source connections
+     *
      * @return a set of all the processors that dont have any incoming source connections
      */
     public Set<NifiVisitableProcessor> getStartingProcessors() {
@@ -204,6 +205,7 @@ public class NifiVisitableProcessGroup implements NifiVisitable {
 
     /**
      * Return a set of all the ending/leaf processors that dont have destination connections coming from them
+     *
      * @return a set of all the ending/leaf processors that dont have destination connections coming from them
      */
     public Set<NifiVisitableProcessor> getEndingProcessors() {
@@ -297,7 +299,7 @@ public class NifiVisitableProcessGroup implements NifiVisitable {
 
     /**
      * Return the processor connected to the supplied output port
-     * @param connectionSourceId
+     *
      * @return the processor
      */
     public NifiVisitableProcessor getOutputPortProcessor(String connectionSourceId) {
@@ -309,7 +311,8 @@ public class NifiVisitableProcessGroup implements NifiVisitable {
 
     /**
      * Add a processor connected to the supplied output port id
-     * @param id the output port id
+     *
+     * @param id                  the output port id
      * @param outputPortProcessor the processor attached to this output port
      */
     public void addOutputPortProcessor(String id, NifiVisitableProcessor outputPortProcessor) {
@@ -321,6 +324,7 @@ public class NifiVisitableProcessGroup implements NifiVisitable {
 
     /**
      * Return the map of input port id to processors
+     *
      * @return the map of input port id to processors
      */
     public Map<String, Set<NifiVisitableProcessor>> getInputPortProcessors() {
@@ -329,6 +333,7 @@ public class NifiVisitableProcessGroup implements NifiVisitable {
 
     /**
      * Return the map of output port id to processors
+     *
      * @return the map of output port id to processors
      */
     public Map<String, Set<NifiVisitableProcessor>> getOutputPortProcessors() {
@@ -338,6 +343,7 @@ public class NifiVisitableProcessGroup implements NifiVisitable {
 
     /**
      * Return all the visited processors
+     *
      * @return all the visited processors
      */
     public Set<NifiVisitableProcessor> getProcessors() {
@@ -346,6 +352,7 @@ public class NifiVisitableProcessGroup implements NifiVisitable {
 
     /**
      * Return all the all connections under this process group
+     *
      * @return all the all connections under this process group
      */
     public Set<ConnectionDTO> getConnections() {

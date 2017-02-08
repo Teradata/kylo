@@ -44,6 +44,15 @@ import javax.annotation.Nullable;
 public final class UserPropertyTransform {
 
     /**
+     * Instances of {@code UserPropertyTransform} should not be constructed.
+     *
+     * @throws UnsupportedOperationException always
+     */
+    private UserPropertyTransform() {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
      * Transforms the specified Metadata user-defined properties to Feed Manager user-defined properties.
      *
      * @param properties map of property names to values
@@ -52,7 +61,7 @@ public final class UserPropertyTransform {
      */
     @Nonnull
     @SafeVarargs
-    public static Set<UserProperty> toUserProperties(@Nonnull final Map<String, String> properties, @Nonnull final Set<UserFieldDescriptor> ... userFields) {
+    public static Set<UserProperty> toUserProperties(@Nonnull final Map<String, String> properties, @Nonnull final Set<UserFieldDescriptor>... userFields) {
         // Map field names and order
         int order = 0;
         int size = Arrays.stream(userFields).collect(Collectors.summingInt(Set::size));
@@ -72,39 +81,39 @@ public final class UserPropertyTransform {
 
         // Convert from Metadata to Feed Manager format
         final Stream<UserProperty> newProperties = userFieldMap.values().stream()
-                .filter(field -> !properties.containsKey(field.getSystemName()))
-                .map(field -> {
-                    final UserProperty property = new UserProperty();
+            .filter(field -> !properties.containsKey(field.getSystemName()))
+            .map(field -> {
+                final UserProperty property = new UserProperty();
+                property.setDescription(field.getDescription());
+                property.setDisplayName(field.getDisplayName());
+                property.setLocked(true);
+                property.setOrder(userFieldOrder.get(field.getSystemName()));
+                property.setRequired(field.isRequired());
+                property.setSystemName(field.getSystemName());
+                return property;
+            });
+
+        final Stream<UserProperty> existingProperties = properties.entrySet().stream()
+            .map(entry -> {
+                // Create the Feed Manager property
+                final UserProperty property = new UserProperty();
+                property.setLocked(false);
+                property.setSystemName(entry.getKey());
+                property.setValue(entry.getValue());
+
+                // Set additional Metadata attributes
+                final UserFieldDescriptor field = userFieldMap.get(entry.getKey());
+                if (field != null) {
                     property.setDescription(field.getDescription());
                     property.setDisplayName(field.getDisplayName());
                     property.setLocked(true);
-                    property.setOrder(userFieldOrder.get(field.getSystemName()));
+                    property.setOrder(userFieldOrder.get(entry.getKey()));
                     property.setRequired(field.isRequired());
-                    property.setSystemName(field.getSystemName());
-                    return property;
-                });
+                }
 
-        final Stream<UserProperty> existingProperties = properties.entrySet().stream()
-                .map(entry -> {
-                    // Create the Feed Manager property
-                    final UserProperty property = new UserProperty();
-                    property.setLocked(false);
-                    property.setSystemName(entry.getKey());
-                    property.setValue(entry.getValue());
-
-                    // Set additional Metadata attributes
-                    final UserFieldDescriptor field = userFieldMap.get(entry.getKey());
-                    if (field != null) {
-                        property.setDescription(field.getDescription());
-                        property.setDisplayName(field.getDisplayName());
-                        property.setLocked(true);
-                        property.setOrder(userFieldOrder.get(entry.getKey()));
-                        property.setRequired(field.isRequired());
-                    }
-
-                    // Return the Feed Manager property
-                    return property;
-                });
+                // Return the Feed Manager property
+                return property;
+            });
 
         return Stream.concat(newProperties, existingProperties).collect(Collectors.toCollection(LinkedHashSet::new));
     }
@@ -118,8 +127,8 @@ public final class UserPropertyTransform {
     @Nonnull
     public static Map<String, String> toMetadataProperties(@Nonnull final Set<UserProperty> userProperties) {
         return userProperties.stream()
-                .filter(property -> property.getValue() != null)
-                .collect(Collectors.toMap(UserProperty::getSystemName, UserProperty::getValue));
+            .filter(property -> property.getValue() != null)
+            .collect(Collectors.toMap(UserProperty::getSystemName, UserProperty::getValue));
     }
 
     /**
@@ -153,20 +162,13 @@ public final class UserPropertyTransform {
     }
 
     /**
-     * Instances of {@code UserPropertyTransform} should not be constructed.
-     *
-     * @throws UnsupportedOperationException always
-     */
-    private UserPropertyTransform() {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
      * A {@link UserFieldDescriptor} backed by a {@link UserField}.
      */
     private static class FeedManagerUserFieldDescriptor implements UserFieldDescriptor {
 
-        /** Delegate user-defined field */
+        /**
+         * Delegate user-defined field
+         */
         @Nonnull
         private final UserField userField;
 
@@ -215,8 +217,8 @@ public final class UserPropertyTransform {
         @Override
         public String toString() {
             return MoreObjects.toStringHelper(UserFieldDescriptor.class)
-                    .add("name", getSystemName())
-                    .toString();
+                .add("name", getSystemName())
+                .toString();
         }
     }
 }

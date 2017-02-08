@@ -35,156 +35,156 @@ import java.util.Date;
 public class DefaultTriggerInfo implements TriggerInfo {
 
 
-  private TriggerIdentifier triggerIdentifier;
-  private JobIdentifier jobIdentifier;
-  private Date nextFireTime;
-  private Date previousFireTime;
-  private Date startTime;
-  private Date endTime;
-  private String cronExpression;
-  private String description;
-  public TriggerState state;
-  private Class triggerClass;
-  private String cronExpressionSummary;
-  boolean simpleTrigger;
-  boolean scheduled;
+    public TriggerState state;
+    boolean simpleTrigger;
+    boolean scheduled;
+    private TriggerIdentifier triggerIdentifier;
+    private JobIdentifier jobIdentifier;
+    private Date nextFireTime;
+    private Date previousFireTime;
+    private Date startTime;
+    private Date endTime;
+    private String cronExpression;
+    private String description;
+    private Class triggerClass;
+    private String cronExpressionSummary;
 
-  public DefaultTriggerInfo() {
+    public DefaultTriggerInfo() {
 
-  }
+    }
 
-  public DefaultTriggerInfo(@JsonProperty("jobIdentifier") JobIdentifier jobIdentifier,
-                            @JsonProperty("triggerIdentifier") TriggerIdentifier triggerIdentifier) {
-    this.jobIdentifier = jobIdentifier;
-    this.triggerIdentifier = triggerIdentifier;
-  }
+    public DefaultTriggerInfo(@JsonProperty("jobIdentifier") JobIdentifier jobIdentifier,
+                              @JsonProperty("triggerIdentifier") TriggerIdentifier triggerIdentifier) {
+        this.jobIdentifier = jobIdentifier;
+        this.triggerIdentifier = triggerIdentifier;
+    }
 
-  @Override
-  public TriggerIdentifier getTriggerIdentifier() {
-    return triggerIdentifier;
-  }
+    @Override
+    public TriggerIdentifier getTriggerIdentifier() {
+        return triggerIdentifier;
+    }
 
-  public JobIdentifier getJobIdentifier() {
-    return jobIdentifier;
-  }
+    @Override
+    public void setTriggerIdentifier(TriggerIdentifier triggerIdentifier) {
+        this.triggerIdentifier = triggerIdentifier;
+    }
 
-  @Override
-  public Date getNextFireTime() {
-    return nextFireTime;
-  }
+    public JobIdentifier getJobIdentifier() {
+        return jobIdentifier;
+    }
 
-  @Override
-  public Date getPreviousFireTime() {
-    return previousFireTime;
-  }
+    @Override
+    public void setJobIdentifier(JobIdentifier jobIdentifier) {
+        this.jobIdentifier = jobIdentifier;
+    }
 
-  @Override
-  public Date getStartTime() {
-    return startTime;
-  }
+    @Override
+    public Date getNextFireTime() {
+        return nextFireTime;
+    }
 
-  @Override
-  public Date getEndTime() {
-    return endTime;
-  }
+    @Override
+    public void setNextFireTime(Date nextFireTime) {
+        this.nextFireTime = nextFireTime;
+    }
 
-  @Override
-  public String getCronExpression() {
-    return cronExpression;
-  }
+    @Override
+    public Date getPreviousFireTime() {
+        return previousFireTime;
+    }
 
-  @Override
-  public String getDescription() {
-    return description;
-  }
+    @Override
+    public void setPreviousFireTime(Date previousFireTime) {
+        this.previousFireTime = previousFireTime;
+    }
 
-  @Override
-  public TriggerState getState() {
-    return state;
-  }
+    @Override
+    public Date getStartTime() {
+        return startTime;
+    }
 
-  @Override
-  public void setTriggerIdentifier(TriggerIdentifier triggerIdentifier) {
-    this.triggerIdentifier = triggerIdentifier;
-  }
+    @Override
+    public void setStartTime(Date startTime) {
+        this.startTime = startTime;
+    }
 
-  @Override
-  public void setJobIdentifier(JobIdentifier jobIdentifier) {
-    this.jobIdentifier = jobIdentifier;
-  }
+    @Override
+    public Date getEndTime() {
+        return endTime;
+    }
 
-  @Override
-  public void setNextFireTime(Date nextFireTime) {
-    this.nextFireTime = nextFireTime;
-  }
+    @Override
+    public void setEndTime(Date endTime) {
+        this.endTime = endTime;
+    }
 
-  @Override
-  public void setPreviousFireTime(Date previousFireTime) {
-    this.previousFireTime = previousFireTime;
-  }
+    @Override
+    public String getCronExpression() {
+        return cronExpression;
+    }
 
-  @Override
-  public void setStartTime(Date startTime) {
-    this.startTime = startTime;
-  }
+    @Override
+    public void setCronExpression(String cronExpression) {
+        this.cronExpression = cronExpression;
+    }
 
-  @Override
-  public void setEndTime(Date endTime) {
-    this.endTime = endTime;
-  }
+    @Override
+    public String getDescription() {
+        return description;
+    }
 
-  @Override
-  public void setCronExpression(String cronExpression) {
-    this.cronExpression = cronExpression;
-  }
+    @Override
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-  @Override
-  public void setDescription(String description) {
-    this.description = description;
-  }
+    @Override
+    public TriggerState getState() {
+        return state;
+    }
 
-  @Override
-  public void setState(TriggerState state) {
-    this.state = state;
-  }
+    @Override
+    public void setState(TriggerState state) {
+        this.state = state;
+    }
 
-  @Override
-  public Class getTriggerClass() {
-    return triggerClass;
-  }
+    @Override
+    public Class getTriggerClass() {
+        return triggerClass;
+    }
 
-  @Override
-  public void setTriggerClass(Class triggerClass) {
-    this.triggerClass = triggerClass;
-  }
+    @Override
+    public void setTriggerClass(Class triggerClass) {
+        this.triggerClass = triggerClass;
+    }
 
-  @Override
-  public String getCronExpressionSummary() {
-    return cronExpressionSummary;
-  }
+    @Override
+    public String getCronExpressionSummary() {
+        return cronExpressionSummary;
+    }
 
-  @Override
-  public void setCronExpressionSummary(String cronExpressionSummary) {
-    this.cronExpressionSummary = cronExpressionSummary;
-  }
+    @Override
+    public void setCronExpressionSummary(String cronExpressionSummary) {
+        this.cronExpressionSummary = cronExpressionSummary;
+    }
 
-  @Override
-  public boolean isSimpleTrigger() {
-    return simpleTrigger;
-  }
+    @Override
+    public boolean isSimpleTrigger() {
+        return simpleTrigger;
+    }
 
-  @Override
-  public void setSimpleTrigger(boolean isSimpleTrigger) {
-    this.simpleTrigger = isSimpleTrigger;
-  }
+    @Override
+    public void setSimpleTrigger(boolean isSimpleTrigger) {
+        this.simpleTrigger = isSimpleTrigger;
+    }
 
-  @Override
-  public boolean isScheduled() {
-    return scheduled;
-  }
+    @Override
+    public boolean isScheduled() {
+        return scheduled;
+    }
 
-  @Override
-  public void setScheduled(boolean scheduled) {
-    this.scheduled = scheduled;
-  }
+    @Override
+    public void setScheduled(boolean scheduled) {
+        this.scheduled = scheduled;
+    }
 }

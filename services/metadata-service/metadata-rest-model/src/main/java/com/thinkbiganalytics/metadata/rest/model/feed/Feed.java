@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.rest.model.feed;
 
@@ -42,8 +42,6 @@ import java.util.Set;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Feed implements Serializable {
 
-    public enum State { ENABLED, DISABLED, DELETED }
-
     private String id;
     private String systemName;
     private String displayName;
@@ -58,22 +56,16 @@ public class Feed implements Serializable {
     private Properties properties = new Properties();
     private FeedCategory category;
     private InitializationStatus currentInitStatus;
-
     /**
      * Feeds that this feed is dependent upon  (parents)
      */
     private Set<Feed> dependentFeeds;
-
     private Set<String> dependentFeedIds;
-
     /**
      * Feeds that depend upon this feed (children)
      */
     private Set<Feed> usedByFeeds;
-
     private Set<String> usedByFeedIds;
-
-
 
     public Feed() {
         super();
@@ -86,11 +78,11 @@ public class Feed implements Serializable {
     public void setId(String id) {
         this.id = id;
     }
-    
+
     public Properties getProperties() {
         return properties;
     }
-    
+
     public void setProperties(Properties properties) {
         this.properties = properties;
     }
@@ -126,11 +118,11 @@ public class Feed implements Serializable {
     public void setOwner(String owner) {
         this.owner = owner;
     }
-    
+
     public DateTime getCreatedTime() {
         return createdTime;
     }
-    
+
     public void setCreatedTime(DateTime createdTime) {
         this.createdTime = createdTime;
     }
@@ -169,15 +161,14 @@ public class Feed implements Serializable {
 
     public FeedDestination getDestination(String datasourceId) {
         for (FeedDestination dest : this.destinations) {
-            if (datasourceId.equals(dest.getDatasourceId()) || 
-                    dest.getDatasource() != null && datasourceId.equals(dest.getDatasource().getId())) {
+            if (datasourceId.equals(dest.getDatasourceId()) ||
+                dest.getDatasource() != null && datasourceId.equals(dest.getDatasource().getId())) {
                 return dest;
             }
         }
-        
+
         return null;
     }
-
 
     public FeedCategory getCategory() {
         return category;
@@ -194,7 +185,6 @@ public class Feed implements Serializable {
     public void setCurrentInitStatus(InitializationStatus currentInitStatus) {
         this.currentInitStatus = currentInitStatus;
     }
-
 
     public Set<Feed> getDependentFeeds() {
         if (dependentFeeds == null) {
@@ -260,6 +250,8 @@ public class Feed implements Serializable {
         result = 31 * result + (systemName != null ? systemName.hashCode() : 0);
         return result;
     }
+
+    public enum State {ENABLED, DISABLED, DELETED}
 
 
 }

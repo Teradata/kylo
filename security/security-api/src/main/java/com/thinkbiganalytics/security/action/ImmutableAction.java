@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.security.action;
 
@@ -39,13 +39,32 @@ public class ImmutableAction implements Action {
     private final String description;
     private final List<Action> hierarchy;
     private final int hash;
-    
-    
+
+
+    protected ImmutableAction(String systemName, String title, String descr, List<Action> parents) {
+        super();
+
+        List<Action> list = new ArrayList<>(parents);
+        list.add(this);
+
+        this.systemName = systemName;
+        this.title = title;
+        this.description = descr;
+        this.hierarchy = Collections.unmodifiableList(new ArrayList<>(list));
+        // The hash only needs to be generated once since this object is immutable.
+        // This action's hash value is a hash of its and all its parents system names.
+        this.hash = this.hierarchy.stream()
+            .map(a -> a.getSystemName())
+            .collect(Collectors.toList())
+            .hashCode();
+    }
+
     /**
      * Constructs a new action as a child of the given hierarchy chain of parent actions, if any.
-     * @param name the name
-     * @param title the title
-     * @param descr the description
+     *
+     * @param name    the name
+     * @param title   the title
+     * @param descr   the description
      * @param parents an order list of parent actions (if any) starting from the top
      * @return a new immutable action
      */
@@ -63,7 +82,7 @@ public class ImmutableAction implements Action {
     public String getSystemName() {
         return systemName;
     }
-    
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.security.action.Action#getTitle()
      */
@@ -71,7 +90,7 @@ public class ImmutableAction implements Action {
     public String getTitle() {
         return this.title;
     }
-    
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.security.action.Action#getDescription()
      */
@@ -79,14 +98,14 @@ public class ImmutableAction implements Action {
     public String getDescription() {
         return description;
     }
-    
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.security.action.Action#getHierarchy()
      */
     public List<Action> getHierarchy() {
         return hierarchy;
     }
-    
+
     /* (non-Javadoc)
      * @see java.lang.Object#toString()
      */
@@ -94,7 +113,7 @@ public class ImmutableAction implements Action {
     public String toString() {
         return this.systemName;
     }
-    
+
     /* (non-Javadoc)
      * @see java.lang.Object#hashCode()
      */
@@ -102,30 +121,12 @@ public class ImmutableAction implements Action {
     public int hashCode() {
         return this.hash;
     }
-    
+
     /* (non-Javadoc)
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override
     public boolean equals(Object obj) {
         return obj instanceof Action && obj.hashCode() == this.hash;
-    }
-
-    protected ImmutableAction(String systemName, String title, String descr, List<Action> parents) {
-        super();
-        
-        List<Action> list = new ArrayList<>(parents);
-        list.add(this);
-        
-        this.systemName = systemName;
-        this.title = title;
-        this.description = descr;
-        this.hierarchy = Collections.unmodifiableList(new ArrayList<>(list));
-        // The hash only needs to be generated once since this object is immutable.
-        // This action's hash value is a hash of its and all its parents system names.
-        this.hash = this.hierarchy.stream() 
-                        .map(a -> a.getSystemName())
-                        .collect(Collectors.toList())
-                        .hashCode();
     }
 }

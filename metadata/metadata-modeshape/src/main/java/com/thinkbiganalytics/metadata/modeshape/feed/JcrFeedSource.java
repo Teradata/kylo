@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.modeshape.feed;
 
@@ -39,13 +39,12 @@ public class JcrFeedSource extends JcrFeedConnection implements FeedSource {
     public JcrFeedSource(Node node) {
         super(node);
     }
-    
+
     public JcrFeedSource(Node node, JcrDatasource datasource) {
         super(node, datasource);
         datasource.addSourceNode(this.node);
     }
-    
-    
+
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.feed.FeedSource#getAgreement()

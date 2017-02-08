@@ -52,36 +52,22 @@ import java.util.stream.Collectors;
 public class FeedFlowFileGuavaCache {
 
     private static final Logger log = LoggerFactory.getLogger(FeedFlowFileGuavaCache.class);
-
-    /**
-     * The amount of time the expire thread should run to check and expire the feed flow files
-     */
-    private Integer expireTimerCheckSeconds = 10;
-
     /**
      * The cache of FeedFlowFiles
      */
     private final Cache<String, FeedFlowFile> cache;
-
+    /**
+     * The amount of time the expire thread should run to check and expire the feed flow files
+     */
+    private Integer expireTimerCheckSeconds = 10;
     /**
      * Listeners that can get notified with a FeedFlowFile is invalidated and removed from the cache
      */
     private List<FeedFlowFileCacheListener> listeners = new ArrayList<>();
-
-
-    /**
-     * A listener can subscribe to the invalidate calls on the cache.
-     * the {@link FeedFlowFileMapDbCache} subscribes to this cache to get messages and invalidate the files persisted on disk when they are completed.
-     */
-    public void subscribe(FeedFlowFileCacheListener listener) {
-        listeners.add(listener);
-    }
-
     /**
      * The last time the summary was printed
      */
     private DateTime lastPrintLogTime = null;
-
     /**
      * How often should the summary of whats in the cache be logged
      * Every 5 minutes
@@ -92,6 +78,14 @@ public class FeedFlowFileGuavaCache {
         cache = CacheBuilder.newBuilder().build();
         log.info("Created new FlowFileGuavaCache running timer every {} seconds to check and expire finished flow files", expireTimerCheckSeconds);
         initTimerThread();
+    }
+
+    /**
+     * A listener can subscribe to the invalidate calls on the cache.
+     * the {@link FeedFlowFileMapDbCache} subscribes to this cache to get messages and invalidate the files persisted on disk when they are completed.
+     */
+    public void subscribe(FeedFlowFileCacheListener listener) {
+        listeners.add(listener);
     }
 
     /**

@@ -35,6 +35,7 @@ public interface SparkInterpreterBuilder {
 
     /**
      * Sets the settings for the Spark interpreter.
+     *
      * @param param the settings
      * @return this builder
      */
@@ -42,6 +43,7 @@ public interface SparkInterpreterBuilder {
 
     /**
      * Sets the print writer for the Spark interpreter.
+     *
      * @param param the print writer
      * @return this builder
      */
@@ -49,6 +51,7 @@ public interface SparkInterpreterBuilder {
 
     /**
      * Sets the class loader for the Spark interpreter.
+     *
      * @param param the class loader
      * @return this builder
      */
@@ -56,6 +59,7 @@ public interface SparkInterpreterBuilder {
 
     /**
      * Builds a new Spark interpreter.
+     *
      * @return a Spark interpreter
      */
     IMain newInstance();

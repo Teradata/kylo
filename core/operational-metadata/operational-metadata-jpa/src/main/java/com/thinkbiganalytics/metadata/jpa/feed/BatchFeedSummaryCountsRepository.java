@@ -28,5 +28,4 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface BatchFeedSummaryCountsRepository extends JpaRepository<JpaBatchFeedSummaryCounts, JpaOpsManagerFeed.ID> {
 
 
-
 }

@@ -32,6 +32,7 @@ import javax.ws.rs.ext.Provider;
 @Provider
 @Configuration
 public class IllegalArgumentExceptionMapper extends BaseExceptionMapper implements javax.ws.rs.ext.ExceptionMapper<IllegalArgumentException> {
+
     private static final Logger log = LoggerFactory.getLogger(IllegalArgumentExceptionMapper.class);
 
     @Override

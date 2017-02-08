@@ -57,6 +57,10 @@ public class LongColumnCase1Test extends ProfilerTest {
     private static double stddev;
     private static double variance;
 
+    @AfterClass
+    public static void tearDownClass() {
+        System.out.println("\t*** Completed run for LongColumnCase1Test ***");
+    }
 
     @Before
     public void setUp() {
@@ -79,42 +83,35 @@ public class LongColumnCase1Test extends ProfilerTest {
 
     }
 
-
     @Test
     public void testLongNullCount() {
         Assert.assertEquals(nullCount, columnStats.getNullCount());
     }
-
 
     @Test
     public void testLongTotalCount() {
         Assert.assertEquals(totalCount, columnStats.getTotalCount());
     }
 
-
     @Test
     public void testLongUniqueCount() {
         Assert.assertEquals(uniqueCount, columnStats.getUniqueCount());
     }
-
 
     @Test
     public void testLongPercNullValues() {
         assertEquals(percNullValues, columnStats.getPercNullValues(), epsilon);
     }
 
-
     @Test
     public void testLongPercUniqueValues() {
         assertEquals(percUniqueValues, columnStats.getPercUniqueValues(), epsilon);
     }
 
-
     @Test
     public void testLongPercDuplicateValues() {
         assertEquals(percDuplicateValues, columnStats.getPercDuplicateValues(), epsilon);
     }
-
 
     @Test
     public void testLongTopNValues() {
@@ -146,46 +143,34 @@ public class LongColumnCase1Test extends ProfilerTest {
         }
     }
 
-
     @Test
     public void testLongMax() {
         Assert.assertEquals(max, ((LongColumnStatistics) columnStats).getMax());
     }
-
 
     @Test
     public void testLongMin() {
         Assert.assertEquals(min, ((LongColumnStatistics) columnStats).getMin());
     }
 
-
     @Test
     public void testLongSum() {
         Assert.assertEquals(sum, ((LongColumnStatistics) columnStats).getSum());
     }
-
 
     @Test
     public void testLongMean() {
         assertEquals(mean, ((LongColumnStatistics) columnStats).getMean(), epsilon);
     }
 
-
     @Test
     public void testLongStddev() {
         assertEquals(stddev, ((LongColumnStatistics) columnStats).getStddev(), epsilon);
     }
 
-
     @Test
     public void testLongVariance() {
         //Due to the results being extremely large numbers, epsilon2 is used.
         assertEquals(variance, ((LongColumnStatistics) columnStats).getVariance(), epsilon2);
-    }
-
-
-    @AfterClass
-    public static void tearDownClass() {
-        System.out.println("\t*** Completed run for LongColumnCase1Test ***");
     }
 }

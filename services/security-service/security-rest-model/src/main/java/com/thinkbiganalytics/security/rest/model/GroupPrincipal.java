@@ -22,16 +22,24 @@ package com.thinkbiganalytics.security.rest.model;
 
 public class GroupPrincipal {
 
-    /** A human-readable summary */
+    /**
+     * A human-readable summary
+     */
     private String description;
 
-    /** Number of users and groups within this group */
+    /**
+     * Number of users and groups within this group
+     */
     private int memberCount;
 
-    /** Unique name */
+    /**
+     * Unique name
+     */
     private String systemName;
 
-    /** Human-readable name */
+    /**
+     * Human-readable name
+     */
     private String title;
 
     /**

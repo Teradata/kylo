@@ -36,6 +36,7 @@ public class NifiTemplateNameUtil {
 
     /**
      * Return the new name of the versioned process group
+     *
      * @param name the process group name with out the version timestamp
      * @return the new name that has the new version timestamp
      */
@@ -45,6 +46,7 @@ public class NifiTemplateNameUtil {
 
     /**
      * Return the process group name, removing the versioned timestamp if one exists
+     *
      * @param name a process group name
      * @return the process group name, removing the versioned timestamp if one exists
      */
@@ -57,6 +59,7 @@ public class NifiTemplateNameUtil {
 
     /**
      * Check to see if the incoming name includes a versioned timestamp
+     *
      * @param name the process group name
      * @return {@code true} if the incoming name contains the version timestamp, {@code false} if the name is not versioned.
      */

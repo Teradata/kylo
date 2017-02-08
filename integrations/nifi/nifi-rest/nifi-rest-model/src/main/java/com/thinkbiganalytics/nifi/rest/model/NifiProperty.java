@@ -59,15 +59,23 @@ public class NifiProperty {
     private boolean userEditable;
 
 
-    /** how should the property be rendered **/
+    /**
+     * how should the property be rendered
+     **/
     private String renderType; // checkbox, input, editor-hive, editor-sql, editor-pig, etc
 
-    /** Additional options for rendering  such as selectable values **/
+    /**
+     * Additional options for rendering  such as selectable values
+     **/
     private Map<String, String> renderOptions;
 
-    /** flag indicating the property is selected for modification in the kylo ui **/
+    /**
+     * flag indicating the property is selected for modification in the kylo ui
+     **/
     private boolean selected;
-    /** flag indicating this property is part of a processor who is an 'input' or processor without any incoming connections **/
+    /**
+     * flag indicating this property is part of a processor who is an 'input' or processor without any incoming connections
+     **/
     private boolean inputProperty;
 
     /**
@@ -76,7 +84,6 @@ public class NifiProperty {
     private NifiProperty templateProperty;
 
     public NifiProperty() {
-
 
     }
 
@@ -97,14 +104,14 @@ public class NifiProperty {
         this.processorName = property.getProcessorType();
     }
 
-    public NifiProperty(String processGroupId,String processorId, String key, String value) {
+    public NifiProperty(String processGroupId, String processorId, String key, String value) {
         this.processGroupId = processGroupId;
         this.processorId = processorId;
         this.key = key;
         this.value = value;
     }
 
-    public NifiProperty(String processGroupId,String processorId, String key, String value, NiFiPropertyDescriptor propertyDescriptor) {
+    public NifiProperty(String processGroupId, String processorId, String key, String value, NiFiPropertyDescriptor propertyDescriptor) {
         this.processGroupId = processGroupId;
         this.processorId = processorId;
         this.key = key;
@@ -170,14 +177,15 @@ public class NifiProperty {
 
     /**
      * return a key string joining this properties processGroupId with the processorId and the property key
+     *
      * @return a key string joining this properties processGroupId with the processorId and the property key
      */
     public String getIdKey() {
-        return this.getProcessGroupId()+"-"+this.getProcessorId()+"-"+this.getKey();
+        return this.getProcessGroupId() + "-" + this.getProcessorId() + "-" + this.getKey();
     }
 
     public String getNameKey() {
-        return this.getProcessGroupName()+"-"+this.getProcessorName()+"-"+this.getKey();
+        return this.getProcessGroupName() + "-" + this.getProcessorName() + "-" + this.getKey();
     }
 
     public List<String> getExpressionProperties() {
@@ -204,7 +212,7 @@ public class NifiProperty {
         this.userEditable = userEditable;
     }
 
-    public boolean matchesIdKey(NifiProperty property){
+    public boolean matchesIdKey(NifiProperty property) {
         return this.getIdKey().equalsIgnoreCase(property.getIdKey());
     }
 

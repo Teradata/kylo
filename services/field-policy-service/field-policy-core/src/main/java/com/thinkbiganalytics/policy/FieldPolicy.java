@@ -71,6 +71,10 @@ public class FieldPolicy implements Serializable {
         this.piiScan = piiScan;
     }
 
+    public static void main(String[] args) {
+
+    }
+
     public List<ValidationPolicy> getValidators() {
         return validators;
     }
@@ -151,9 +155,5 @@ public class FieldPolicy implements Serializable {
                                                                                                                   ? "NULL"
                                                                                                                   : policies.size())
                + "]";
-    }
-
-    public static void main(String[] args) {
-
     }
 }

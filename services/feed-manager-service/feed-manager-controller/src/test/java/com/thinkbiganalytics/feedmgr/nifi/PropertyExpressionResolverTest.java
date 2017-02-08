@@ -39,23 +39,35 @@ import javax.inject.Inject;
 @RunWith(SpringJUnit4ClassRunner.class)
 public class PropertyExpressionResolverTest {
 
-    /** Default processor group id or name */
+    /**
+     * Default processor group id or name
+     */
     private static final String DEFAULT_GROUP = "group";
 
-    /** Default property key name */
+    /**
+     * Default property key name
+     */
     private static final String DEFAULT_KEY = "key";
 
-    /** Default processor type */
+    /**
+     * Default processor type
+     */
     private static final String DEFAULT_TYPE = "com.example.UpdateAttributes";
 
-    /** Property key name for static configuration */
+    /**
+     * Property key name for static configuration
+     */
     private static final String STATIC_KEY = "App Key";
 
-    /** Resolves expressions in property values */
+    /**
+     * Resolves expressions in property values
+     */
     @Inject
     private PropertyExpressionResolver resolver;
 
-    /** Verifies resolving expressions in property values. */
+    /**
+     * Verifies resolving expressions in property values.
+     */
     @Test
     public void resolveExpression() {
         final FeedMetadata metadata = new FeedMetadata();
@@ -95,7 +107,9 @@ public class PropertyExpressionResolverTest {
         Assert.assertEquals("config.test.value", prop7.getValue());
     }
 
-    /** Verifies invalid expressions are resolved properly. */
+    /**
+     * Verifies invalid expressions are resolved properly.
+     */
     @Test
     public void resolveExpressionInvalid() {
         final FeedMetadata metadata = new FeedMetadata();
@@ -130,7 +144,7 @@ public class PropertyExpressionResolverTest {
     /**
      * Creates a new property with the specified key and value.
      *
-     * @param key the key name
+     * @param key   the key name
      * @param value the value
      * @return the new property
      */
@@ -142,27 +156,22 @@ public class PropertyExpressionResolverTest {
     }
 
 
-
-
-
-
     @Test
-    public void testResolveValues(){
+    public void testResolveValues() {
 
         List<NifiProperty> props = new ArrayList<>();
-        props.add(newProperty("test.property","${a}/${b} "));
-        props.add(newProperty("test.property2","${a2}/${c} "));
-        props.add(newProperty("d","fred"));
-        props.add(newProperty("a","${b} "));
-        props.add(newProperty("b","${c}"));
-        props.add(newProperty("c","${d}"));
-
+        props.add(newProperty("test.property", "${a}/${b} "));
+        props.add(newProperty("test.property2", "${a2}/${c} "));
+        props.add(newProperty("d", "fred"));
+        props.add(newProperty("a", "${b} "));
+        props.add(newProperty("b", "${c}"));
+        props.add(newProperty("c", "${d}"));
 
         PropertyExpressionResolver.ResolvedVariables variables = resolver.resolveVariables("${a} - ${b} - ${test.property2}", props);
         int i = 0;
     }
 
-    private NifiProperty newProperty(String key, String value){
+    private NifiProperty newProperty(String key, String value) {
         NifiProperty p = new NifiProperty();
         p.setKey(key);
         p.setValue(value);

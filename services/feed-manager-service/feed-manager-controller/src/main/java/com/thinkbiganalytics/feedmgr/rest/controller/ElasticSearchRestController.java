@@ -55,9 +55,9 @@ public class ElasticSearchRestController {
     @Produces({MediaType.APPLICATION_JSON})
     @ApiOperation("Queries a search engine.")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "The search results.", response = SearchResult.class),
-            @ApiResponse(code = 500, message = "The search engine is unavailable.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 200, message = "The search results.", response = SearchResult.class),
+                      @ApiResponse(code = 500, message = "The search engine is unavailable.", response = RestResponseStatus.class)
+                  })
     public Response search(@QueryParam("q") String query, @QueryParam("rows") @DefaultValue("20") Integer rows, @QueryParam("start") @DefaultValue("0") Integer start) {
         SearchResult result = elasticSearch.search(query, rows, start);
         return Response.ok(result).build();

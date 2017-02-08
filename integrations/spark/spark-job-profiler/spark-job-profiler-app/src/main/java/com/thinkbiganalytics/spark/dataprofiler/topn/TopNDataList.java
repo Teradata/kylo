@@ -32,8 +32,8 @@ import java.util.TreeSet;
 @SuppressWarnings("serial")
 public class TopNDataList implements Serializable {
 
-    private int maxSize = ProfilerConfiguration.NUMBER_OF_TOP_N_VALUES;
     private final TreeSet<TopNDataItem> topNDataItemsForColumn;
+    private int maxSize = ProfilerConfiguration.NUMBER_OF_TOP_N_VALUES;
     private Long lowestCountSoFar = Long.MAX_VALUE;
 
 

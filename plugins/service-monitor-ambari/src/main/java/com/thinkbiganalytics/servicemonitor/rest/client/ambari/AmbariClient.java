@@ -38,19 +38,13 @@ public interface AmbariClient {
     List<String> getAmbariClusterNames();
 
     /**
-     * @param clusterNames
-     * @param services
      * @return Summary for all services
-     * @throws RestClientException
      */
     ServiceComponentInfoSummary getServiceComponentInfo(List<String> clusterNames, String services)
         throws RestClientException;
 
     /**
-     * @param clusterNames
-     * @param services
      * @return Summary for all alerts
-     * @throws RestClientException
      */
     AlertSummary getAlerts(List<String> clusterNames, String services) throws RestClientException;
 }

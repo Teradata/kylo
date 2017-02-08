@@ -38,11 +38,15 @@ import javax.ws.rs.client.WebTarget;
 
 /**
  * Ambari REST client.
- *
  */
 public class AmbariJerseyClient extends JerseyRestClient implements AmbariClient {
 
     private String apiPath = "/api/v1";
+
+    public AmbariJerseyClient(AmbariJerseyRestClientConfig config) {
+        super(config);
+        this.apiPath = config.getApiPath();
+    }
 
     protected WebTarget getBaseTarget() {
         WebTarget target = super.getBaseTarget();
@@ -53,12 +57,6 @@ public class AmbariJerseyClient extends JerseyRestClient implements AmbariClient
         return client.target(uri + apiPath + path);
 
     }
-
-    public AmbariJerseyClient(AmbariJerseyRestClientConfig config) {
-        super(config);
-        this.apiPath = config.getApiPath();
-    }
-
 
     private <T> T get(RestCommand<T> restCommand) {
         restCommand.beforeRestRequest();

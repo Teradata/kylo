@@ -32,12 +32,12 @@ import javax.jcr.Credentials;
 public class SpringAuthenticationProvider implements AuthenticationProvider {
 
     @Override
-    public ExecutionContext authenticate(Credentials credentials, 
-                                         String repositoryName, 
-                                         String workspaceName, 
-                                         ExecutionContext repositoryContext, 
+    public ExecutionContext authenticate(Credentials credentials,
+                                         String repositoryName,
+                                         String workspaceName,
+                                         ExecutionContext repositoryContext,
                                          Map<String, Object> sessionAttributes) {
-        
+
         if (credentials instanceof SpringAuthenticationCredentials) {
             SpringAuthenticationCredentials cred = (SpringAuthenticationCredentials) credentials;
             Authentication auth = cred.getAuthentication();
@@ -46,7 +46,7 @@ public class SpringAuthenticationProvider implements AuthenticationProvider {
                 return repositoryContext.with(new SpringSecurityContext(auth, cred.getPrincipals()));
             }
         }
-        
+
         return null;
     }
 }

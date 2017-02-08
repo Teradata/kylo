@@ -45,9 +45,10 @@ public class SlaEmailService {
 
     /**
      * Send an email
-     * @param to the user(s) to send the email to
+     *
+     * @param to      the user(s) to send the email to
      * @param subject the subject of the email
-     * @param body the email body
+     * @param body    the email body
      */
     public void sendMail(String to, String subject, String body) {
         SimpleMailMessage message = new SimpleMailMessage();
@@ -63,17 +64,16 @@ public class SlaEmailService {
      *
      * @return {@code true} if valid, {@code false} if not valid
      */
-    public boolean testConnection() throws MessagingException{
-        Properties props =  ((JavaMailSenderImpl)mailSender).getSession().getProperties();
-        ((JavaMailSenderImpl)mailSender).testConnection();
+    public boolean testConnection() throws MessagingException {
+        Properties props = ((JavaMailSenderImpl) mailSender).getSession().getProperties();
+        ((JavaMailSenderImpl) mailSender).testConnection();
         return true;
     }
 
     /**
-     *
      * @return {@code true} if the configuration is setup, {@code false} if not configured
      */
-    public boolean isConfigured(){
+    public boolean isConfigured() {
         return emailConfiguration.isConfigured();
     }
 

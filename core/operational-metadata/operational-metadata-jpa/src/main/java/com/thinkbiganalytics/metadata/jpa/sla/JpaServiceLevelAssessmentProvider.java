@@ -84,6 +84,7 @@ public class JpaServiceLevelAssessmentProvider implements ServiceLevelAssessment
 
     /**
      * Find all SLA assessments
+     *
      * @return find all the SLA assessments
      */
     @Override
@@ -94,6 +95,7 @@ public class JpaServiceLevelAssessmentProvider implements ServiceLevelAssessment
 
     /**
      * find the latest assessment
+     *
      * @param slaId the service level agreement id
      * @return the latest assessment for the sla
      */
@@ -110,7 +112,8 @@ public class JpaServiceLevelAssessmentProvider implements ServiceLevelAssessment
 
     /**
      * Find the latest SLA that doesn't match the incoming {@code assessmentId}
-     * @param slaId the id to reference
+     *
+     * @param slaId        the id to reference
      * @param assessmentId the assessment id to cehck
      * @return the latest SLA that doesn't match the incoming {@code assessmentId}
      */
@@ -130,6 +133,7 @@ public class JpaServiceLevelAssessmentProvider implements ServiceLevelAssessment
 
     /**
      * Find a ServiceLevelAssessment by its id
+     *
      * @param id the id of the sla assessment
      * @return the matching ServiceLevelAssement
      */
@@ -142,6 +146,7 @@ public class JpaServiceLevelAssessmentProvider implements ServiceLevelAssessment
 
     /**
      * Makes sure the Service Level Assessment object has its respective SLA attached to it for reference lookups
+     *
      * @param assessment the assessment to check and ensure it has its SLA attached
      * @return {@code true} if it was able to attach the SLA to the assessment, {@code false} if it was not about to attach and find the SLA
      */

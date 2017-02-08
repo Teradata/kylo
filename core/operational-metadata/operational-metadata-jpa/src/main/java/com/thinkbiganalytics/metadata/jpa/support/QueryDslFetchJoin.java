@@ -26,58 +26,57 @@ import com.querydsl.core.types.EntityPath;
  * Helper class to add joins to a QueryDsl query
  */
 public class QueryDslFetchJoin {
-        public final EntityPath joinPath;
-        public final EntityPath alias;
-        public final Join type;
-        public static enum Join{
-            INNER,LEFT,RIGHT,JOIN,INNER_ALIAS,LEFT_ALIAS,RIGHT_ALIAS,JOIN_ALIAS
-        }
 
-        private QueryDslFetchJoin(EntityPath joinPath, Join type) {
-            this.joinPath = joinPath;
-            this.alias = null;
-            this.type = type;
-        }
+    public final EntityPath joinPath;
+    public final EntityPath alias;
+    public final Join type;
 
-        private QueryDslFetchJoin(EntityPath joinPath, EntityPath alias,Join type) {
-            this.joinPath = joinPath;
-            this.alias = alias;
-            this.type = type;
-        }
+    private QueryDslFetchJoin(EntityPath joinPath, Join type) {
+        this.joinPath = joinPath;
+        this.alias = null;
+        this.type = type;
+    }
 
-        public static QueryDslFetchJoin innerJoin(EntityPath path) {
-            return new QueryDslFetchJoin(path, Join.INNER);
-        }
+    private QueryDslFetchJoin(EntityPath joinPath, EntityPath alias, Join type) {
+        this.joinPath = joinPath;
+        this.alias = alias;
+        this.type = type;
+    }
 
-        public static QueryDslFetchJoin join(EntityPath path) {
-            return new QueryDslFetchJoin(path, Join.JOIN);
-        }
+    public static QueryDslFetchJoin innerJoin(EntityPath path) {
+        return new QueryDslFetchJoin(path, Join.INNER);
+    }
 
-        public static QueryDslFetchJoin leftJoin(EntityPath path) {
-            return new QueryDslFetchJoin(path, Join.LEFT);
-        }
+    public static QueryDslFetchJoin join(EntityPath path) {
+        return new QueryDslFetchJoin(path, Join.JOIN);
+    }
 
-        public static QueryDslFetchJoin rightJoin(EntityPath path) {
-            return new QueryDslFetchJoin(path, Join.RIGHT);
-        }
+    public static QueryDslFetchJoin leftJoin(EntityPath path) {
+        return new QueryDslFetchJoin(path, Join.LEFT);
+    }
 
-
-
+    public static QueryDslFetchJoin rightJoin(EntityPath path) {
+        return new QueryDslFetchJoin(path, Join.RIGHT);
+    }
 
     public static QueryDslFetchJoin innerJoin(EntityPath path, EntityPath alias) {
         return new QueryDslFetchJoin(path, alias, Join.INNER_ALIAS);
     }
 
     public static QueryDslFetchJoin join(EntityPath path, EntityPath alias) {
-        return new QueryDslFetchJoin(path,alias, Join.JOIN_ALIAS);
+        return new QueryDslFetchJoin(path, alias, Join.JOIN_ALIAS);
     }
 
     public static QueryDslFetchJoin leftJoin(EntityPath path, EntityPath alias) {
-        return new QueryDslFetchJoin(path,alias, Join.LEFT_ALIAS);
+        return new QueryDslFetchJoin(path, alias, Join.LEFT_ALIAS);
     }
 
     public static QueryDslFetchJoin rightJoin(EntityPath path, EntityPath alias) {
-        return new QueryDslFetchJoin(path,alias, Join.RIGHT_ALIAS);
+        return new QueryDslFetchJoin(path, alias, Join.RIGHT_ALIAS);
+    }
+
+    public static enum Join {
+        INNER, LEFT, RIGHT, JOIN, INNER_ALIAS, LEFT_ALIAS, RIGHT_ALIAS, JOIN_ALIAS
     }
 
 

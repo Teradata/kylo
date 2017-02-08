@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.rest.model.event;
 
@@ -43,11 +43,11 @@ public class DatasourceChangeEvent implements Serializable {
 
     private Feed feed;
     private List<Dataset> datasets = new ArrayList<>();
-    
+
     public DatasourceChangeEvent() {
         super();
     }
-    
+
     public DatasourceChangeEvent(Feed feed) {
         super();
         this.feed = feed;

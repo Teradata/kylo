@@ -27,13 +27,13 @@ import java.security.acl.Group;
 import java.util.Collections;
 
 /**
- * A security context that is in effect when an administrative operation is being executed under 
+ * A security context that is in effect when an administrative operation is being executed under
  * the ModeShaepAdminPrincipal credential
  */
 public class OverrideSecurityContext implements SecurityContext {
-    
+
     private final OverrideCredentials credentials;
-    
+
     public OverrideSecurityContext(OverrideCredentials credentials) {
         super();
         this.credentials = credentials;
@@ -43,7 +43,7 @@ public class OverrideSecurityContext implements SecurityContext {
     public String getUserName() {
         return credentials.getUserPrincipal().getName();
     }
-    
+
     @Override
     public boolean isAnonymous() {
         return false;
@@ -53,7 +53,7 @@ public class OverrideSecurityContext implements SecurityContext {
     public boolean hasRole(String roleName) {
         return this.credentials.getRolePrincipals().stream().anyMatch((p) -> matches(roleName, p));
     }
-    
+
     @Override
     public void logout() {
         // Ignored

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.api.sla;
 
@@ -30,7 +30,8 @@ import java.beans.Transient;
  */
 public class DatasourceUpdatedSinceFeedExecuted extends DependentDatasource {
 
-    public DatasourceUpdatedSinceFeedExecuted(){}
+    public DatasourceUpdatedSinceFeedExecuted() {
+    }
 
     public DatasourceUpdatedSinceFeedExecuted(String datasourceName, String feedName) {
         super(feedName, datasourceName);

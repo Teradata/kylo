@@ -35,7 +35,6 @@ public interface JobStatusCount {
 
     /**
      * set the total record count
-     * @param count
      */
     void setCount(Long count);
 
@@ -47,43 +46,42 @@ public interface JobStatusCount {
 
     /**
      * set the feed name
-     * @param feedName
      */
     void setFeedName(String feedName);
 
     /**
      * return the name of the job
+     *
      * @return the name of the job
      */
     String getJobName();
 
     /**
      * set the name of the job
-     * @param jobName
      */
     void setJobName(String jobName);
 
     /**
      * Return the status for this grouping
+     *
      * @return the job status
      */
     String getStatus();
 
     /**
      * set the status
-     * @param status
      */
     void setStatus(String status);
 
     /**
      * Return the DateTime for this grouping
+     *
      * @return the date time
      */
     DateTime getDate();
 
     /**
      * set the datetime
-     * @param date
      */
     void setDate(DateTime date);
 

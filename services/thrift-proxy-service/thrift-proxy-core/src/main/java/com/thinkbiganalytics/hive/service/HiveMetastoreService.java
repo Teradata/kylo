@@ -129,7 +129,7 @@ public class HiveMetastoreService {
         if (DatabaseType.POSTGRES.equals(getMetastoreDatabaseType())) {
             query = "SELECT d.\"NAME\" as \"DATABASE_NAME\", t.\"TBL_NAME\" FROM \"TBLS\" t JOIN \"DBS\" d on d.\"DB_ID\" = t.\"DB_ID\" ORDER BY d.\"NAME\", t.\"TBL_NAME\"";
         }
-        List<String>  allTables = hiveMetatoreJdbcTemplate.query(query, new RowMapper<String>() {
+        List<String> allTables = hiveMetatoreJdbcTemplate.query(query, new RowMapper<String>() {
             @Override
             public String mapRow(ResultSet rs, int i) throws SQLException {
                 String dbName = rs.getString("DATABASE_NAME");

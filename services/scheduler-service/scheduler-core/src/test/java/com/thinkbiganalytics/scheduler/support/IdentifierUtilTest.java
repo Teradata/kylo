@@ -29,7 +29,7 @@ import org.junit.Test;
 public class IdentifierUtilTest {
 
     @Test
-    public void testId(){
+    public void testId() {
         String name1 = IdentifierUtil.createUniqueName("test", 10);
         String name2 = IdentifierUtil.createUniqueName("test", 10);
 

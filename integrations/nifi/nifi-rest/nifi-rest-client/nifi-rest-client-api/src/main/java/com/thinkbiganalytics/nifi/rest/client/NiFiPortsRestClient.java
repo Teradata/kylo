@@ -33,7 +33,7 @@ public interface NiFiPortsRestClient {
      * Updates an input port.
      *
      * @param processGroupId the process group id
-     * @param inputPort the input port
+     * @param inputPort      the input port
      * @return the updated input port
      * @throws NifiComponentNotFoundException if the process group does not exist
      */
@@ -44,7 +44,7 @@ public interface NiFiPortsRestClient {
      * Updates an output port.
      *
      * @param processGroupId the process group id
-     * @param outputPort the output port
+     * @param outputPort     the output port
      * @return the updated output port
      * @throws NifiComponentNotFoundException if the process group does not exist
      */

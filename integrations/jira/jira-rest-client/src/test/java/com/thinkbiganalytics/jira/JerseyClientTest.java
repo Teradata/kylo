@@ -42,7 +42,7 @@ public class JerseyClientTest {
 
 
     @Test
-    public void testJerseyClient(){
+    public void testJerseyClient() {
         JiraRestClientConfig config = new JiraRestClientConfig("/rest/api/latest/");
         config.setUsername("USERNAME");
         config.setPassword("PASSWORD");
@@ -52,20 +52,19 @@ public class JerseyClientTest {
         config.setKeystorePassword("changeit");
         config.setHost("bugs.thinkbiganalytics.com");
         final JiraJerseyClient client = new JiraJerseyClient(config);
-        Map<String,String> params = new HashMap<String,String>();
-        params.put("projectKeys","JRTT");
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("projectKeys", "JRTT");
         params.put("expand", "projects.issuetypes.fields");
 
-
         try {
-         //  final Issue  issue1 = client.createIssue("JRTT","Jira Client Pooling Test 1 ","Test Description","Task","scott.reisdorf");
+            //  final Issue  issue1 = client.createIssue("JRTT","Jira Client Pooling Test 1 ","Test Description","Task","scott.reisdorf");
 
-         //  final Issue  issue2 = client.createIssue("JRTT","Jira Client Pooling Test 2","Test Description","Task","scott.reisdorf");
+            //  final Issue  issue2 = client.createIssue("JRTT","Jira Client Pooling Test 2","Test Description","Task","scott.reisdorf");
 
             ExecutorService executorService = Executors.newFixedThreadPool(10);
             Set<Callable<Issue>> callables = new HashSet<Callable<Issue>>();
 
-            for(int i= 0; i<10; i++) {
+            for (int i = 0; i < 10; i++) {
                 callables.add(new Callable<Issue>() {
                     public Issue call() throws Exception {
                         return client.getIssue("JRTT-927");
@@ -97,13 +96,11 @@ public class JerseyClientTest {
 */
             List<Future<Issue>> futures = executorService.invokeAll(callables);
 
-            for(Future<Issue> future : futures){
-                System.out.println("future.get = " + future.get().getKey()+" - "+future.get().getSummary());
+            for (Future<Issue> future : futures) {
+                System.out.println("future.get = " + future.get().getKey() + " - " + future.get().getSummary());
             }
 
             executorService.shutdown();
-
-
 
 
         } catch (Exception e) {

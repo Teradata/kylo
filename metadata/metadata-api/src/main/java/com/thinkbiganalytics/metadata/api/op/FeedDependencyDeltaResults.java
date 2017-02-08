@@ -34,37 +34,32 @@ import java.util.stream.Collectors;
  */
 public class FeedDependencyDeltaResults {
 
-    private String feedName;
-    private String feedId;
-
-    public FeedDependencyDeltaResults() {
-
-    }
-
-    public FeedDependencyDeltaResults(String feedId, String feedName) {
-        this.feedId = feedId;
-        this.feedName = feedName;
-    }
-
-    /**
-     * An array of the dependentFeed system Names
-     */
-    private List<String> dependentFeedNames = new ArrayList<>();
-
     Map<String, List<FeedJobExecutionData>> feedJobExecutionContexts = new HashMap<>();
-
     /**
      * Map storing the dependent feedName and the latest completed Execution Context
      */
     Map<String, FeedJobExecutionData> latestFeedJobExecutionContext = new HashMap<>();
-
-
     /**
      * internal map to store jobexecution data
      */
     @JsonIgnore
     Map<Long, FeedJobExecutionData> jobExecutionDataMap = new HashMap<>();
+    private String feedName;
+    private String feedId;
+    /**
+     * An array of the dependentFeed system Names
+     */
+    private List<String> dependentFeedNames = new ArrayList<>();
 
+    public FeedDependencyDeltaResults() {
+
+    }
+
+
+    public FeedDependencyDeltaResults(String feedId, String feedName) {
+        this.feedId = feedId;
+        this.feedName = feedName;
+    }
 
     public void addFeedExecutionContext(String depFeedSystemName, Long jobExecutionId, DateTime startTime, DateTime endTime, Map<String, Object> executionContext) {
         if (!dependentFeedNames.contains(depFeedSystemName)) {

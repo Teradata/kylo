@@ -22,14 +22,13 @@ package com.thinkbiganalytics.policy;
 
 /**
  * Describing the type of the field and how it should be rendered
- *
  */
 public interface PolicyPropertyTypes {
 
 
+    String CURRENT_FEED_VALUE = "#currentFeed";
+
     enum PROPERTY_TYPE {
         number, string, select, regex, date, chips, feedChips, currentFeed, currentFeedCronSchedule, feedSelect, email, cron
     }
-
-    String CURRENT_FEED_VALUE = "#currentFeed";
 }

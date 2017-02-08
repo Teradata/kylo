@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.alerts.spi.defaults;
 
@@ -70,7 +70,7 @@ import javax.inject.Inject;
  *
  */
 public class DefaultAlertManager extends QueryDslRepositorySupport implements AlertManager {
-    
+
     @Inject
     private JPAQueryFactory queryFactory;
 
@@ -79,7 +79,7 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
 
     private Set<AlertNotifyReceiver> alertReceivers = Collections.synchronizedSet(new HashSet<>());
     private JpaAlertRepository repository;
-    
+
 
     /**
      * @param repo
@@ -117,7 +117,7 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
     public void addReceiver(AlertNotifyReceiver receiver) {
         this.alertReceivers.add(receiver);
     }
-    
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.alerts.spi.AlertSource#removeReceiver(com.thinkbiganalytics.alerts.spi.AlertNotifyReceiver)
      */
@@ -152,9 +152,9 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
         return this.metadataAccess.read(() -> {
             Criteria critImpl = (Criteria) (criteria == null ? criteria() : criteria);
             return critImpl.createQuery().fetch().stream()
-                          .map(a -> asValue(a))
-                          .collect(Collectors.toList()) // Need to terminate the stream while still in a transaction
-                          .iterator();
+                .map(a -> asValue(a))
+                .collect(Collectors.toList()) // Need to terminate the stream while still in a transaction
+                .iterator();
         }, MetadataAccess.SERVICE);
     }
 //
@@ -197,16 +197,16 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
      */
     @Override
     public <C extends Serializable> Alert create(URI type, Level level, String description, C content) {
-        final Principal user = SecurityContextHolder.getContext().getAuthentication() != null 
-                        ? SecurityContextHolder.getContext().getAuthentication() 
-                        : null;
-                        
+        final Principal user = SecurityContextHolder.getContext().getAuthentication() != null
+                               ? SecurityContextHolder.getContext().getAuthentication()
+                               : null;
+
         Alert created = this.metadataAccess.commit(() -> {
             JpaAlert alert = new JpaAlert(type, level, user, description, content);
             this.repository.save(alert);
             return asValue(alert);
         }, MetadataAccess.SERVICE);
-        
+
         notifyReceivers(1);
         return created;
     }
@@ -226,14 +226,14 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
     @Override
     public Alert remove(ID id) {
         JpaAlert.AlertId idImpl = (JpaAlert.AlertId) resolve(id);
-        
+
         return this.metadataAccess.commit(() -> {
             JpaAlert alert = repository.findOne(idImpl);
             this.repository.delete(id);
             return alert;
         }, MetadataAccess.SERVICE);
     }
-    
+
     protected Optional<JpaAlert> findAlert(Alert.ID id) {
         JpaAlert.AlertId idImpl = (AlertId) resolve(id);
         return Optional.ofNullable(repository.findOne(idImpl));
@@ -242,7 +242,7 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
     protected Alert asValue(Alert alert) {
         return new ImmutableAlert(alert, this);
     }
-    
+
     protected JpaAlert clearAlert(JpaAlert.AlertId id) {
         return this.metadataAccess.commit(() -> {
             JpaAlert alert = repository.findOne(id);
@@ -253,17 +253,17 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
 
     protected <C extends Serializable> Alert changeAlert(JpaAlert.AlertId id, State state, String descr, C content) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        final Principal user = auth != null 
-                        ? new UsernamePrincipal(auth.getPrincipal().toString())
-                        : null;
-                        
+        final Principal user = auth != null
+                               ? new UsernamePrincipal(auth.getPrincipal().toString())
+                               : null;
+
         Alert changed = this.metadataAccess.commit(() -> {
             JpaAlert alert = findAlert(id).orElseThrow(() -> new AlertNotfoundException(id));
             JpaAlertChangeEvent event = new JpaAlertChangeEvent(state, user, descr, content);
             alert.addEvent(event);
             return asValue(alert);
         }, MetadataAccess.SERVICE);
-        
+
         notifyReceivers(1);
         return changed;
     }
@@ -276,10 +276,132 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
         receivers.forEach(a -> a.alertsAvailable(count));
     }
 
+    private static class ImmutableAlert implements Alert {
+
+        private final AlertManager source;
+        private final Alert.ID id;
+        private final String description;
+        private final Level level;
+        private final URI type;
+        private final DateTime createdTime;
+        private final Serializable content;
+        private final boolean cleared;
+        private final List<AlertChangeEvent> events;
+
+        public ImmutableAlert(Alert alert, AlertManager mgr) {
+            this.source = mgr;
+            this.id = alert.getId();
+            this.content = alert.getContent();
+            this.description = alert.getDescription();
+            this.level = alert.getLevel();
+            this.type = alert.getType();
+            this.cleared = alert.isCleared();
+            this.createdTime = alert.getCreatedTime();
+            this.events = Collections.unmodifiableList(alert.getEvents().stream()
+                                                           .map(a -> new ImmutableAlertChangeEvent(a))
+                                                           .collect(Collectors.toList()));
+        }
+
+        @Override
+        public AlertManager getSource() {
+            return source;
+        }
+
+        @Override
+        public Alert.ID getId() {
+            return id;
+        }
+
+        @Override
+        public String getDescription() {
+            return description;
+        }
+
+        @Override
+        public Level getLevel() {
+            return level;
+        }
+
+        @Override
+        public URI getType() {
+            return type;
+        }
+
+        @Override
+        public State getState() {
+            return this.events.get(0).getState();
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public Serializable getContent() {
+            return content;
+        }
+
+        @Override
+        public List<AlertChangeEvent> getEvents() {
+            return events;
+        }
+
+        @Override
+        public DateTime getCreatedTime() {
+            return this.createdTime;
+        }
+
+        @Override
+        public boolean isCleared() {
+            return this.cleared;
+        }
+
+        @Override
+        public boolean isActionable() {
+            return true;
+        }
+    }
+
+    private static class ImmutableAlertChangeEvent implements AlertChangeEvent {
+
+        private final DateTime changeTime;
+        private final State state;
+        private final Principal user;
+        private final String description;
+        private final Serializable content;
+
+        public ImmutableAlertChangeEvent(AlertChangeEvent event) {
+            this.changeTime = event.getChangeTime();
+            this.state = event.getState();
+            this.user = event.getUser();
+            this.description = event.getDescription();
+            this.content = event.getContent();
+        }
+
+        public DateTime getChangeTime() {
+            return changeTime;
+        }
+
+        public State getState() {
+            return state;
+        }
+
+        @Override
+        public Principal getUser() {
+            return user;
+        }
+
+        @Override
+        public String getDescription() {
+            return this.description;
+        }
+
+        public Serializable getContent() {
+            return this.content;
+        }
+    }
+
     private class TransactionalResponse implements AlertResponse {
-        
+
         private final JpaAlert.AlertId id;
-        
+
         public TransactionalResponse(JpaAlert.AlertId id) {
             super();
             this.id = id;
@@ -341,140 +463,18 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
             clearAlert(this.id);
         }
     }
-    
-    private static class ImmutableAlert implements Alert {
-        
-        private final AlertManager source;
-        private final Alert.ID id;
-        private final String description;
-        private final Level level;
-        private final URI type;
-        private final DateTime createdTime;
-        private final Serializable content;
-        private final boolean cleared;
-        private final List<AlertChangeEvent> events;
-        
-        public ImmutableAlert(Alert alert, AlertManager mgr) {
-            this.source = mgr;
-            this.id = alert.getId();
-            this.content = alert.getContent();
-            this.description = alert.getDescription();
-            this.level = alert.getLevel();
-            this.type = alert.getType();
-            this.cleared = alert.isCleared();
-            this.createdTime = alert.getCreatedTime();
-            this.events = Collections.unmodifiableList(alert.getEvents().stream()
-                                                       .map(a -> new ImmutableAlertChangeEvent(a))
-                                                       .collect(Collectors.toList()));
-        }
 
-        @Override
-        public AlertManager getSource() {
-            return source;
-        }
-
-        @Override
-        public Alert.ID getId() {
-            return id;
-        }
-
-        @Override
-        public String getDescription() {
-            return description;
-        }
-
-        @Override
-        public Level getLevel() {
-            return level;
-        }
-
-        @Override
-        public URI getType() {
-            return type;
-        }
-        
-        @Override
-        public State getState() {
-            return this.events.get(0).getState();
-        }
-
-        @Override
-        @SuppressWarnings("unchecked")
-        public Serializable getContent() {
-            return content;
-        }
-
-        @Override
-        public List<AlertChangeEvent> getEvents() {
-            return events;
-        }
-
-        @Override
-        public DateTime getCreatedTime() {
-            return this.createdTime;
-        }
-        
-        @Override
-        public boolean isCleared() {
-            return this.cleared;
-        }
-
-        @Override
-        public boolean isActionable() {
-            return true;
-        }
-    }
-    
-    private static class ImmutableAlertChangeEvent implements AlertChangeEvent {
-        
-        private final DateTime changeTime;
-        private final State state;
-        private final Principal user;
-        private final String description;
-        private final Serializable content;
-        
-        public ImmutableAlertChangeEvent(AlertChangeEvent event) {
-            this.changeTime = event.getChangeTime();
-            this.state = event.getState();
-            this.user = event.getUser();
-            this.description = event.getDescription();
-            this.content = event.getContent();
-        }
-
-        public DateTime getChangeTime() {
-            return changeTime;
-        }
-
-        public State getState() {
-            return state;
-        }
-        
-        @Override
-        public Principal getUser() {
-            return user;
-        }
-
-        @Override
-        public String getDescription() {
-            return this.description;
-        }
-        
-        public Serializable getContent() {
-            return this.content;
-        }
-    }
-    
     private class Criteria extends BaseAlertCriteria {
-        
+
         public JPAQuery<JpaAlert> createQuery() {
             List<Predicate> preds = new ArrayList<>();
             QJpaAlert alert = QJpaAlert.jpaAlert;
-            
+
             JPAQuery<JpaAlert> query = queryFactory
-                            .select(alert)
-                            .from(alert)
-                            .limit(getLimit());
-            
+                .select(alert)
+                .from(alert)
+                .limit(getLimit());
+
             // The "state" criteria now means filter by an alert's current state.
             // To support filtering by any state the alert has transitioned through
             // we can add the commented out code below (the old state behavior)
@@ -484,11 +484,21 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
 //                preds.add(event.state.in(getTransitions()));
 //            }
 
-            if (getStates().size() > 0) preds.add(alert.state.in(getStates()));
-            if (getLevels().size() > 0) preds.add(alert.level.in(getLevels()));
-            if (getAfterTime() != null) preds.add(alert.createdTime.gt(getAfterTime()));
-            if (getBeforeTime() != null) preds.add(alert.createdTime.lt(getBeforeTime()));
-            if (! isIncludeCleared()) preds.add(alert.cleared.isFalse());
+            if (getStates().size() > 0) {
+                preds.add(alert.state.in(getStates()));
+            }
+            if (getLevels().size() > 0) {
+                preds.add(alert.level.in(getLevels()));
+            }
+            if (getAfterTime() != null) {
+                preds.add(alert.createdTime.gt(getAfterTime()));
+            }
+            if (getBeforeTime() != null) {
+                preds.add(alert.createdTime.lt(getBeforeTime()));
+            }
+            if (!isIncludeCleared()) {
+                preds.add(alert.cleared.isFalse());
+            }
 
             if (getTypes().size() > 0) {
                 BooleanBuilder likes = new BooleanBuilder();
@@ -497,7 +507,7 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
                     .forEach(pred -> likes.or(pred));
                 preds.add(likes);
             }
-            
+
             // When limiting and using "after" criteria only, we need to sort ascending to get the next n values after the given id/time.
             // In all other cases sort descending. The results will be ordered correctly when aggregated by the provider.
             if (getLimit() != Integer.MAX_VALUE && getAfterTime() != null && getBeforeTime() == null) {
@@ -513,5 +523,5 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
             }
         }
     }
-    
+
 }

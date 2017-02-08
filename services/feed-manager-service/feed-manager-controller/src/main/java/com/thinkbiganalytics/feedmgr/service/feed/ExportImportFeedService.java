@@ -70,26 +70,7 @@ public class ExportImportFeedService {
     @Inject
     private AccessController accessController;
 
-    public class ExportFeed {
-
-        private String fileName;
-        private byte[] file;
-
-        public ExportFeed(String fileName, byte[] file) {
-            this.fileName = fileName;
-            this.file = file;
-        }
-
-        public String getFileName() {
-            return fileName;
-        }
-
-        public byte[] getFile() {
-            return file;
-        }
-    }
-
-    private Set<String> getValidZipFileEntries(){
+    private Set<String> getValidZipFileEntries() {
         // do not include nifiConnectingReusableTemplate.xml - it may or may not be there or there can be many of them if flow connects to multiple reusable templates
         String[] entries = {
             "feed.json",
@@ -98,78 +79,6 @@ public class ExportImportFeedService {
         };
         return Sets.newHashSet(entries);
     }
-
-
-    public class ImportFeed {
-
-        private boolean success;
-        private String fileName;
-        private String feedName;
-        private ExportImportTemplateService.ImportTemplate template;
-        private NifiFeed nifiFeed;
-
-        public ImportFeed(String fileName) {
-            this.fileName = fileName;
-        }
-
-        private String feedJson;
-
-        public String getFeedJson() {
-            return feedJson;
-        }
-
-        public void setFeedJson(String feedJson) {
-            this.feedJson = feedJson;
-        }
-
-        public String getFileName() {
-            return fileName;
-        }
-
-        public void setFileName(String fileName) {
-            this.fileName = fileName;
-        }
-
-        public ExportImportTemplateService.ImportTemplate getTemplate() {
-            return template;
-        }
-
-        public void setTemplate(ExportImportTemplateService.ImportTemplate template) {
-            this.template = template;
-        }
-
-        public String getFeedName() {
-            return feedName;
-        }
-
-        public void setFeedName(String feedName) {
-            this.feedName = feedName;
-        }
-
-        public NifiFeed getNifiFeed() {
-            return nifiFeed;
-        }
-
-        public void setNifiFeed(NifiFeed nifiFeed) {
-            this.nifiFeed = nifiFeed;
-        }
-
-        public boolean isSuccess() {
-            return success;
-        }
-
-        public void setSuccess(boolean success) {
-            this.success = success;
-        }
-
-        public void addErrorMessage(FeedMetadata feedMetadata, String errorMessage) {
-            if (nifiFeed == null) {
-                nifiFeed = new NifiFeed(feedMetadata, null);
-            }
-            nifiFeed.addErrorMessage(errorMessage);
-        }
-    }
-
 
     private ImportFeed readFeedJson(String fileName, byte[] content) throws IOException {
 
@@ -208,11 +117,12 @@ public class ExportImportFeedService {
         ExportImportTemplateService.ExportTemplate exportTemplate = exportImportTemplateService.exportTemplate(feed.getTemplateId());
         //merge zip files
         String feedJson = ObjectMapperSerializer.serialize(feed);
-        byte[] zipFile = ZipFileUtil.addToZip(exportTemplate.getFile(),feedJson, FEED_JSON_FILE);
+        byte[] zipFile = ZipFileUtil.addToZip(exportTemplate.getFile(), feedJson, FEED_JSON_FILE);
         return new ExportFeed(feed.getSystemFeedName() + ".feed.zip", zipFile);
 
     }
-    private byte[] streamToByteArray(InputStream inputStream)  throws IOException{
+
+    private byte[] streamToByteArray(InputStream inputStream) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         byte[] buf = new byte[1024];
         int n;
@@ -228,12 +138,10 @@ public class ExportImportFeedService {
 
         byte[] content = streamToByteArray(inputStream);
 
-        boolean isValid = ZipFileUtil.validateZipEntriesWithRequiredEntries(content,getValidZipFileEntries(),Sets.newHashSet(FEED_JSON_FILE));
-        if(!isValid){
+        boolean isValid = ZipFileUtil.validateZipEntriesWithRequiredEntries(content, getValidZipFileEntries(), Sets.newHashSet(FEED_JSON_FILE));
+        if (!isValid) {
             throw new ImportFeedException("The zip file you uploaded is not valid feed export.");
         }
-
-
 
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(content);
 
@@ -308,6 +216,93 @@ public class ExportImportFeedService {
 
     }
 
+    public class ExportFeed {
+
+        private String fileName;
+        private byte[] file;
+
+        public ExportFeed(String fileName, byte[] file) {
+            this.fileName = fileName;
+            this.file = file;
+        }
+
+        public String getFileName() {
+            return fileName;
+        }
+
+        public byte[] getFile() {
+            return file;
+        }
+    }
+
+    public class ImportFeed {
+
+        private boolean success;
+        private String fileName;
+        private String feedName;
+        private ExportImportTemplateService.ImportTemplate template;
+        private NifiFeed nifiFeed;
+        private String feedJson;
+
+        public ImportFeed(String fileName) {
+            this.fileName = fileName;
+        }
+
+        public String getFeedJson() {
+            return feedJson;
+        }
+
+        public void setFeedJson(String feedJson) {
+            this.feedJson = feedJson;
+        }
+
+        public String getFileName() {
+            return fileName;
+        }
+
+        public void setFileName(String fileName) {
+            this.fileName = fileName;
+        }
+
+        public ExportImportTemplateService.ImportTemplate getTemplate() {
+            return template;
+        }
+
+        public void setTemplate(ExportImportTemplateService.ImportTemplate template) {
+            this.template = template;
+        }
+
+        public String getFeedName() {
+            return feedName;
+        }
+
+        public void setFeedName(String feedName) {
+            this.feedName = feedName;
+        }
+
+        public NifiFeed getNifiFeed() {
+            return nifiFeed;
+        }
+
+        public void setNifiFeed(NifiFeed nifiFeed) {
+            this.nifiFeed = nifiFeed;
+        }
+
+        public boolean isSuccess() {
+            return success;
+        }
+
+        public void setSuccess(boolean success) {
+            this.success = success;
+        }
+
+        public void addErrorMessage(FeedMetadata feedMetadata, String errorMessage) {
+            if (nifiFeed == null) {
+                nifiFeed = new NifiFeed(feedMetadata, null);
+            }
+            nifiFeed.addErrorMessage(errorMessage);
+        }
+    }
 
 
 }

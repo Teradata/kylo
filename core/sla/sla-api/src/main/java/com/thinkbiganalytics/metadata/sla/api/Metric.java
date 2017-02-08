@@ -23,11 +23,10 @@ package com.thinkbiganalytics.metadata.sla.api;
 import java.io.Serializable;
 
 /**
- * Defines a base type of any metric that must be satisfied as part of an obligation in an SLA. 
- * 
+ * Defines a base type of any metric that must be satisfied as part of an obligation in an SLA.
  */
 public interface Metric extends Serializable {
-    
+
     /**
      * @return a description of the metric
      */

@@ -61,7 +61,7 @@ public class PreconditionPolicyTransformer {
         }
     }
 
-    public List<Precondition> getPreconditionPolicies(){
+    public List<Precondition> getPreconditionPolicies() {
         List<Precondition> policies = new ArrayList<>();
         if (preconditionRules != null) {
             for (PreconditionRule rule : preconditionRules) {

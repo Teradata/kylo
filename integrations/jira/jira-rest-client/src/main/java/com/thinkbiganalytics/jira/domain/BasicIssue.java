@@ -29,16 +29,17 @@ import java.net.URISyntaxException;
 /**
  */
 public class BasicIssue {
-    private  URI self;
-    private  String key;
-    private  Long id;
+
+    private URI self;
+    private String key;
+    private Long id;
 
     public BasicIssue(GetIssue getIssue) {
         try {
             this.self = new URI(getIssue.getSelf());
             this.key = getIssue.getKey();
             this.id = new Long(getIssue.getId());
-        }catch( URISyntaxException e){
+        } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
     }
@@ -49,7 +50,7 @@ public class BasicIssue {
         this.id = id;
     }
 
-    public BasicIssue(){
+    public BasicIssue() {
 
     }
 
@@ -76,9 +77,9 @@ public class BasicIssue {
 
     protected MoreObjects.ToStringHelper getToStringHelper() {
         return MoreObjects.toStringHelper(this).
-                add("self", self).
-                add("key", key).
-                add("id", id);
+            add("self", self).
+            add("key", key).
+            add("id", id);
     }
 
     @Override
@@ -86,8 +87,8 @@ public class BasicIssue {
         if (obj instanceof BasicIssue) {
             BasicIssue that = (BasicIssue) obj;
             return Objects.equal(this.self, that.self)
-                    && Objects.equal(this.key, that.key)
-                    && Objects.equal(this.id, that.id);
+                   && Objects.equal(this.key, that.key)
+                   && Objects.equal(this.id, that.id);
         }
         return false;
     }

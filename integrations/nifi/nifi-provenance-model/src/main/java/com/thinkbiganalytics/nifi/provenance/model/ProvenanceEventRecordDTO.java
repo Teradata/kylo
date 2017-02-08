@@ -166,8 +166,6 @@ public class ProvenanceEventRecordDTO implements Serializable {
     private String feedProcessGroupId;
 
 
-
-
     private String batchId;
 
 
@@ -186,15 +184,11 @@ public class ProvenanceEventRecordDTO implements Serializable {
 
     @JsonProperty("attributes")
     private Map<String, String> attributeMap;
-
-
-
+    private FeedFlowFile feedFlowFile;
 
     public ProvenanceEventRecordDTO() {
 
     }
-
-    private FeedFlowFile feedFlowFile;
 
     public FeedFlowFile getFeedFlowFile() {
         return feedFlowFile;
@@ -235,13 +229,13 @@ public class ProvenanceEventRecordDTO implements Serializable {
         return this.additionalProperties;
     }
 
+    public void setAdditionalProperties(Map<String, Object> additionalProperties) {
+        this.additionalProperties = additionalProperties;
+    }
+
     @JsonAnySetter
     public void setAdditionalProperty(String name, Object value) {
         this.additionalProperties.put(name, value);
-    }
-
-    public void setAdditionalProperties(Map<String, Object> additionalProperties) {
-        this.additionalProperties = additionalProperties;
     }
 
     @JsonProperty("attributes")

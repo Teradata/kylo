@@ -99,71 +99,51 @@ import javax.inject.Inject;
 
 public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedService implements FeedManagerFeedService {
 
-    @Inject
-    private FeedProvider feedProvider;
-
-    @Inject
-    private DatasourceProvider datasourceProvider;
-
-    @Inject
-    private FeedManagerFeedProvider feedManagerFeedProvider;
-
-    @Inject
-    FeedManagerCategoryProvider categoryProvider;
-
-    @Inject
-    FeedManagerTemplateProvider templateProvider;
-
-    @Inject
-    FeedManagerTemplateService templateRestProvider;
-
-    @Inject
-    FeedManagerPreconditionService feedPreconditionModelTransform;
-
-    @Inject
-    FeedModelTransform feedModelTransform;
-
-    @Inject
-    ServiceLevelAgreementProvider slaProvider;
-
-    @Inject
-    ServiceLevelAgreementService serviceLevelAgreementService;
-
-
-
-
-    @Inject
-    OpsManagerFeedProvider opsManagerFeedProvider;
-
-    @Inject
-    MetadataAccess metadataAccess;
-
-    /** Metadata event service */
-    @Inject
-    private MetadataEventService eventService;
-
-    @Inject
-    private AccessController accessController;
-
-    @Inject
-    private MetadataEventService metadataEventService;
-
-    @Inject
-    private NiFiPropertyDescriptorTransform propertyDescriptorTransform;
-
-    @Inject
-    private DerivedDatasourceFactory derivedDatasourceFactory;
-
-
-    // use autowired instead of Inject to allow null values.
-    @Autowired(required = false)
-    @Qualifier("hadoopAuthorizationService")
-    private HadoopAuthorizationService hadoopAuthorizationService;
-
     /**
      * Event listener for precondition events
      */
     private final MetadataEventListener<FeedPropertyChangeEvent> feedPropertyChangeListener = new FeedPropertyChangeDispatcher();
+    @Inject
+    FeedManagerCategoryProvider categoryProvider;
+    @Inject
+    FeedManagerTemplateProvider templateProvider;
+    @Inject
+    FeedManagerTemplateService templateRestProvider;
+    @Inject
+    FeedManagerPreconditionService feedPreconditionModelTransform;
+    @Inject
+    FeedModelTransform feedModelTransform;
+    @Inject
+    ServiceLevelAgreementProvider slaProvider;
+    @Inject
+    ServiceLevelAgreementService serviceLevelAgreementService;
+    @Inject
+    OpsManagerFeedProvider opsManagerFeedProvider;
+    @Inject
+    MetadataAccess metadataAccess;
+    @Inject
+    private FeedProvider feedProvider;
+    @Inject
+    private DatasourceProvider datasourceProvider;
+    @Inject
+    private FeedManagerFeedProvider feedManagerFeedProvider;
+    /**
+     * Metadata event service
+     */
+    @Inject
+    private MetadataEventService eventService;
+    @Inject
+    private AccessController accessController;
+    @Inject
+    private MetadataEventService metadataEventService;
+    @Inject
+    private NiFiPropertyDescriptorTransform propertyDescriptorTransform;
+    @Inject
+    private DerivedDatasourceFactory derivedDatasourceFactory;
+    // use autowired instead of Inject to allow null values.
+    @Autowired(required = false)
+    @Qualifier("hadoopAuthorizationService")
+    private HadoopAuthorizationService hadoopAuthorizationService;
 
     /**
      * Adds listeners for transferring events.
@@ -621,7 +601,8 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
             List<LabelValue> feedSelection = new ArrayList<>();
             for (FeedSummary feedSummary : feedSummaries) {
                 boolean isDisabled = feedSummary.getState() == Feed.State.DISABLED.name();
-                feedSelection.add(new LabelValue(feedSummary.getCategoryAndFeedDisplayName() + (isDisabled ? " (DISABLED) ": ""), feedSummary.getCategoryAndFeedSystemName(), isDisabled ? "This feed is currently disabled" : ""));
+                feedSelection.add(new LabelValue(feedSummary.getCategoryAndFeedDisplayName() + (isDisabled ? " (DISABLED) " : ""), feedSummary.getCategoryAndFeedSystemName(),
+                                                 isDisabled ? "This feed is currently disabled" : ""));
             }
             for (FieldRuleProperty property : properties) {
                 property.setSelectableValues(feedSelection);
@@ -642,6 +623,13 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
         });
     }
 
+    @Override
+    public void setUserFields(@Nonnull final Set<UserField> userFields) {
+        this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ADMIN_FEEDS);
+
+        feedProvider.setUserFields(UserPropertyTransform.toUserFieldDescriptors(userFields));
+    }
+
     @Nonnull
     @Override
     public Optional<Set<UserProperty>> getUserFields(@Nonnull final String categoryId) {
@@ -658,13 +646,6 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
         });
     }
 
-    @Override
-    public void setUserFields(@Nonnull final Set<UserField> userFields) {
-        this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ADMIN_FEEDS);
-
-        feedProvider.setUserFields(UserPropertyTransform.toUserFieldDescriptors(userFields));
-    }
-
     private class FeedPropertyChangeDispatcher implements MetadataEventListener<FeedPropertyChangeEvent> {
 
 
@@ -673,10 +654,10 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
             Properties oldProperties = metadataEvent.getData().getNifiPropertiesToDelete();
             metadataAccess.commit(() -> {
                 Feed feed = feedProvider.getFeed(feedProvider.resolveFeed(metadataEvent.getData().getFeedId()));
-                oldProperties.forEach((k,v) -> {
-                    feed.removeProperty((String)k);
+                oldProperties.forEach((k, v) -> {
+                    feed.removeProperty((String) k);
                 });
-            }, MetadataAccess.SERVICE) ;
+            }, MetadataAccess.SERVICE);
         }
 
     }

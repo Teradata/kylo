@@ -47,161 +47,161 @@ import javax.annotation.Generated;
                    })
 public class ServiceComponentInfo {
 
-  @JsonProperty("category")
-  private String category;
-  @JsonProperty("cluster_name")
-  private String clusterName;
-  @JsonProperty("component_name")
-  private String componentName;
-  @JsonProperty("installed_count")
-  private Integer installedCount;
-  @JsonProperty("service_name")
-  private String serviceName;
-  @JsonProperty("started_count")
-  private Integer startedCount;
-  @JsonProperty("state")
-  private String state;
-  @JsonProperty("total_count")
-  private Integer totalCount;
+    @JsonProperty("category")
+    private String category;
+    @JsonProperty("cluster_name")
+    private String clusterName;
+    @JsonProperty("component_name")
+    private String componentName;
+    @JsonProperty("installed_count")
+    private Integer installedCount;
+    @JsonProperty("service_name")
+    private String serviceName;
+    @JsonProperty("started_count")
+    private Integer startedCount;
+    @JsonProperty("state")
+    private String state;
+    @JsonProperty("total_count")
+    private Integer totalCount;
 
-  @JsonIgnore
-  private Map<String, Object> additionalProperties = new HashMap<String, Object>();
+    @JsonIgnore
+    private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
-  /**
-   * @return The category
-   */
-  @JsonProperty("category")
-  public String getCategory() {
-    return category;
-  }
+    /**
+     * @return The category
+     */
+    @JsonProperty("category")
+    public String getCategory() {
+        return category;
+    }
 
-  /**
-   * @param category The category
-   */
-  @JsonProperty("category")
-  public void setCategory(String category) {
-    this.category = category;
-  }
+    /**
+     * @param category The category
+     */
+    @JsonProperty("category")
+    public void setCategory(String category) {
+        this.category = category;
+    }
 
-  /**
-   * @return The clusterName
-   */
-  @JsonProperty("cluster_name")
-  public String getClusterName() {
-    return clusterName;
-  }
+    /**
+     * @return The clusterName
+     */
+    @JsonProperty("cluster_name")
+    public String getClusterName() {
+        return clusterName;
+    }
 
-  /**
-   * @param clusterName The cluster_name
-   */
-  @JsonProperty("cluster_name")
-  public void setClusterName(String clusterName) {
-    this.clusterName = clusterName;
-  }
+    /**
+     * @param clusterName The cluster_name
+     */
+    @JsonProperty("cluster_name")
+    public void setClusterName(String clusterName) {
+        this.clusterName = clusterName;
+    }
 
-  /**
-   * @return The componentName
-   */
-  @JsonProperty("component_name")
-  public String getComponentName() {
-    return componentName;
-  }
+    /**
+     * @return The componentName
+     */
+    @JsonProperty("component_name")
+    public String getComponentName() {
+        return componentName;
+    }
 
-  /**
-   * @param componentName The component_name
-   */
-  @JsonProperty("component_name")
-  public void setComponentName(String componentName) {
-    this.componentName = componentName;
-  }
+    /**
+     * @param componentName The component_name
+     */
+    @JsonProperty("component_name")
+    public void setComponentName(String componentName) {
+        this.componentName = componentName;
+    }
 
-  /**
-   * @return The installedCount
-   */
-  @JsonProperty("installed_count")
-  public Integer getInstalledCount() {
-    return installedCount;
-  }
+    /**
+     * @return The installedCount
+     */
+    @JsonProperty("installed_count")
+    public Integer getInstalledCount() {
+        return installedCount;
+    }
 
-  /**
-   * @param installedCount The installed_count
-   */
-  @JsonProperty("installed_count")
-  public void setInstalledCount(Integer installedCount) {
-    this.installedCount = installedCount;
-  }
+    /**
+     * @param installedCount The installed_count
+     */
+    @JsonProperty("installed_count")
+    public void setInstalledCount(Integer installedCount) {
+        this.installedCount = installedCount;
+    }
 
-  /**
-   * @return The serviceName
-   */
-  @JsonProperty("service_name")
-  public String getServiceName() {
-    return serviceName;
-  }
+    /**
+     * @return The serviceName
+     */
+    @JsonProperty("service_name")
+    public String getServiceName() {
+        return serviceName;
+    }
 
-  /**
-   * @param serviceName The service_name
-   */
-  @JsonProperty("service_name")
-  public void setServiceName(String serviceName) {
-    this.serviceName = serviceName;
-  }
+    /**
+     * @param serviceName The service_name
+     */
+    @JsonProperty("service_name")
+    public void setServiceName(String serviceName) {
+        this.serviceName = serviceName;
+    }
 
-  /**
-   * @return The startedCount
-   */
-  @JsonProperty("started_count")
-  public Integer getStartedCount() {
-    return startedCount;
-  }
+    /**
+     * @return The startedCount
+     */
+    @JsonProperty("started_count")
+    public Integer getStartedCount() {
+        return startedCount;
+    }
 
-  /**
-   * @param startedCount The started_count
-   */
-  @JsonProperty("started_count")
-  public void setStartedCount(Integer startedCount) {
-    this.startedCount = startedCount;
-  }
+    /**
+     * @param startedCount The started_count
+     */
+    @JsonProperty("started_count")
+    public void setStartedCount(Integer startedCount) {
+        this.startedCount = startedCount;
+    }
 
-  @JsonProperty("state")
-  public void setState(String state) {
-    this.state = state;
-  }
+    /**
+     * @return The state.. TODO Revisit if clustered with component on Multiple Hosts...
+     */
+    @JsonProperty("state")
+    public String getState() {
+        return this.state;
+    }
 
-  /**
-   * @return The state.. TODO Revisit if clustered with component on Multiple Hosts...
-   */
-  @JsonProperty("state")
-  public String getState() {
-    return this.state;
-  }
+    @JsonProperty("state")
+    public void setState(String state) {
+        this.state = state;
+    }
 
-  /**
-   * @return The totalCount
-   */
-  @JsonProperty("total_count")
-  public Integer getTotalCount() {
-    return totalCount;
-  }
+    /**
+     * @return The totalCount
+     */
+    @JsonProperty("total_count")
+    public Integer getTotalCount() {
+        return totalCount;
+    }
 
-  /**
-   * @param totalCount The total_count
-   */
-  @JsonProperty("total_count")
-  public void setTotalCount(Integer totalCount) {
-    this.totalCount = totalCount;
-  }
+    /**
+     * @param totalCount The total_count
+     */
+    @JsonProperty("total_count")
+    public void setTotalCount(Integer totalCount) {
+        this.totalCount = totalCount;
+    }
 
 
-  @JsonAnyGetter
-  public Map<String, Object> getAdditionalProperties() {
-    return this.additionalProperties;
-  }
+    @JsonAnyGetter
+    public Map<String, Object> getAdditionalProperties() {
+        return this.additionalProperties;
+    }
 
-  @JsonAnySetter
-  public void setAdditionalProperty(String name, Object value) {
-    this.additionalProperties.put(name, value);
-  }
+    @JsonAnySetter
+    public void setAdditionalProperty(String name, Object value) {
+        this.additionalProperties.put(name, value);
+    }
 
 
 }

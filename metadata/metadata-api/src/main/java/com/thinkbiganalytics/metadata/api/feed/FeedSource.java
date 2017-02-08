@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.api.feed;
 
@@ -33,6 +33,6 @@ public interface FeedSource extends FeedConnection {
 //    interface ID extends Serializable { }
 //
 //    ID getId();
-    
+
     ServiceLevelAgreement getAgreement();
 }

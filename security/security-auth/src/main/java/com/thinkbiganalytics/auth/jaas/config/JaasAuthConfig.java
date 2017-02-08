@@ -1,14 +1,14 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.auth.jaas.config;
 
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import javax.inject.Named;
-import javax.security.auth.login.AppConfigurationEntry;
+import com.thinkbiganalytics.auth.DefaultPrincipalAuthorityGranter;
+import com.thinkbiganalytics.auth.RolePrincipalAuthorityGranter;
+import com.thinkbiganalytics.auth.UserRoleAuthorityGranter;
+import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
+import com.thinkbiganalytics.auth.jaas.LoginConfigurationBuilder;
+import com.thinkbiganalytics.auth.jaas.UsernameJaasAuthenticationProvider;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.context.annotation.Bean;
@@ -20,6 +20,13 @@ import org.springframework.security.authentication.jaas.AuthorityGranter;
 import org.springframework.security.authentication.jaas.DefaultJaasAuthenticationProvider;
 import org.springframework.security.authentication.jaas.memory.InMemoryConfiguration;
 
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import javax.inject.Named;
+import javax.security.auth.login.AppConfigurationEntry;
+
 /*-
  * #%L
  * thinkbig-security-auth
@@ -29,9 +36,9 @@ import org.springframework.security.authentication.jaas.memory.InMemoryConfigura
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -39,13 +46,6 @@ import org.springframework.security.authentication.jaas.memory.InMemoryConfigura
  * limitations under the License.
  * #L%
  */
-
-import com.thinkbiganalytics.auth.DefaultPrincipalAuthorityGranter;
-import com.thinkbiganalytics.auth.RolePrincipalAuthorityGranter;
-import com.thinkbiganalytics.auth.UserRoleAuthorityGranter;
-import com.thinkbiganalytics.auth.jaas.UsernameJaasAuthenticationProvider;
-import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
-import com.thinkbiganalytics.auth.jaas.LoginConfigurationBuilder;
 
 /**
  *
@@ -57,14 +57,14 @@ public class JaasAuthConfig {
     public static final String JAAS_UI_TOKEN = "UI-Token";
     public static final String JAAS_SERVICES = "Services";
     public static final String JAAS_SERVICES_TOKEN = "Services-Token";
-    
+
     public static final String SERVICES_AUTH_PROVIDER = "servicesAuthenticationProvider";
     public static final String SERVICES_TOKEN_AUTH_PROVIDER = "servicesTokenAuthenticationProvider";
     public static final String UI_AUTH_PROVIDER = "uiAuthenticationProvider";
     public static final String UI_TOKEN_AUTH_PROVIDER = "uiTokenAuthenticationProvider";
-    
+
     public static final int DEFAULT_GRANTER_ORDER = Integer.MAX_VALUE - 100;
-    
+
 
     @Bean(name = UI_AUTH_PROVIDER)
     public AuthenticationProvider uiAuthenticationProvider(@Named("jaasConfiguration") javax.security.auth.login.Configuration config,
@@ -75,7 +75,7 @@ public class JaasAuthConfig {
         provider.setLoginContextName(JAAS_UI);
         return provider;
     }
-    
+
     @Bean(name = SERVICES_AUTH_PROVIDER)
     public AuthenticationProvider servicesAuthenticationProvider(@Named("jaasConfiguration") javax.security.auth.login.Configuration config,
                                                                  List<AuthorityGranter> authorityGranters) {
@@ -85,7 +85,7 @@ public class JaasAuthConfig {
         provider.setLoginContextName(JAAS_SERVICES);
         return provider;
     }
-    
+
     @Bean(name = UI_TOKEN_AUTH_PROVIDER)
     public AuthenticationProvider uiTokenAuthenticationProvider(@Named("jaasConfiguration") javax.security.auth.login.Configuration config,
                                                                 List<AuthorityGranter> authorityGranters) {
@@ -95,7 +95,7 @@ public class JaasAuthConfig {
         provider.setLoginContextName(JAAS_UI_TOKEN);
         return provider;
     }
-    
+
     @Bean(name = SERVICES_TOKEN_AUTH_PROVIDER)
     public AuthenticationProvider servicesTokenAuthenticationProvider(@Named("jaasConfiguration") javax.security.auth.login.Configuration config,
                                                                       List<AuthorityGranter> authorityGranters) {
@@ -106,36 +106,36 @@ public class JaasAuthConfig {
         return provider;
     }
 
-    @Bean(name="jaasConfiguration")
+    @Bean(name = "jaasConfiguration")
     public javax.security.auth.login.Configuration jaasConfiguration(List<LoginConfiguration> loginModuleEntries) {
         Map<String, AppConfigurationEntry[]> merged = loginModuleEntries.stream()
             .map(c -> c.getAllApplicationEntries().entrySet())
             .flatMap(s -> s.stream())
-            .collect(Collectors.toMap(e -> e.getKey(), 
+            .collect(Collectors.toMap(e -> e.getKey(),
                                       e -> e.getValue(),
                                       ArrayUtils::addAll));
 
         return new InMemoryConfiguration(merged);
     }
-    
+
     @Bean(name = "rolePrincipalAuthorityGranter")
     @Order(DEFAULT_GRANTER_ORDER - 100)
     public AuthorityGranter rolePrincipalAuthorityGranter() {
         return new RolePrincipalAuthorityGranter();
     }
-    
+
     @Bean(name = "userRoleAuthorityGranter")
     @Order(DEFAULT_GRANTER_ORDER - 100)
     public AuthorityGranter userRoleAuthorityGranter() {
         return new UserRoleAuthorityGranter();
     }
-    
+
     @Bean(name = "defaultAuthorityGranter")
     @Order(DEFAULT_GRANTER_ORDER)
     public AuthorityGranter defaultAuthorityGranter() {
         return new DefaultPrincipalAuthorityGranter();
     }
-    
+
     @Bean
     @Scope("prototype")
     public LoginConfigurationBuilder loginConfigurationBuilder() {

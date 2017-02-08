@@ -45,20 +45,18 @@ import javax.persistence.Enumerated;
 import javax.persistence.Table;
 
 @Entity
-@Table(name="FEED_HEALTH_VW")
+@Table(name = "FEED_HEALTH_VW")
 public class JpaOpsManagerFeedHealth implements FeedHealth {
 
 
+    @Column(name = "FEED_NAME", insertable = false, updatable = false)
+    String feedName;
     @EmbeddedId
     private OpsManagerFeedHealthFeedId feedId;
-
-    @Column(name="FEED_NAME", insertable = false,updatable = false)
-    String feedName;
-
-    @Column(name="JOB_EXECUTION_ID", insertable = false,updatable =false)
+    @Column(name = "JOB_EXECUTION_ID", insertable = false, updatable = false)
     private Long jobExecutionId;
 
-    @Column(name="JOB_INSTANCE_ID", insertable = false,updatable =false)
+    @Column(name = "JOB_INSTANCE_ID", insertable = false, updatable = false)
     private Long jobInstanceId;
 
 
@@ -85,20 +83,20 @@ public class JpaOpsManagerFeedHealth implements FeedHealth {
     private String exitMessage;
 
 
-    @Column(name="ALL_COUNT")
+    @Column(name = "ALL_COUNT")
     private Long allCount;
 
-    @Column(name="FAILED_COUNT")
-    private  Long failedCount;
+    @Column(name = "FAILED_COUNT")
+    private Long failedCount;
 
-    @Column(name="COMPLETED_COUNT")
-    private  Long completedCount;
+    @Column(name = "COMPLETED_COUNT")
+    private Long completedCount;
 
-    @Column(name="ABANDONED_COUNT")
-    private  Long abandonedCount;
+    @Column(name = "ABANDONED_COUNT")
+    private Long abandonedCount;
 
-    @Column(name="RUNNING_COUNT")
-    private  Long runningCount;
+    @Column(name = "RUNNING_COUNT")
+    private Long runningCount;
 
     public JpaOpsManagerFeedHealth() {
     }
@@ -109,8 +107,9 @@ public class JpaOpsManagerFeedHealth implements FeedHealth {
     }
 
     public void setFeedId(OpsManagerFeed.ID feedId) {
-        this.feedId = (OpsManagerFeedHealthFeedId)feedId;
+        this.feedId = (OpsManagerFeedHealthFeedId) feedId;
     }
+
     @Override
     public String getFeedName() {
         return feedName;

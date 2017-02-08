@@ -35,7 +35,7 @@ import java.util.Map;
 /**
  */
 @Service
-public class JcrHadoopSecurityGroupProvider  extends BaseJcrProvider<HadoopSecurityGroup, HadoopSecurityGroup.ID> implements HadoopSecurityGroupProvider {
+public class JcrHadoopSecurityGroupProvider extends BaseJcrProvider<HadoopSecurityGroup, HadoopSecurityGroup.ID> implements HadoopSecurityGroupProvider {
 
     @Override
     public HadoopSecurityGroup ensureSecurityGroup(String name) {

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.security.rest.model;
 
@@ -40,12 +40,12 @@ import java.util.Optional;
 public class Action implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    
+
     private String systemName;
     private String title;
     private String description;
     private List<Action> actions = new ArrayList<>();
-    
+
     public Action() {
     }
 
@@ -83,7 +83,7 @@ public class Action implements Serializable {
     public void setDescription(String description) {
         this.description = description;
     }
-    
+
     public List<Action> getActions() {
         return actions;
     }
@@ -95,10 +95,10 @@ public class Action implements Serializable {
     public boolean addAction(Action action) {
         return this.actions.add(action);
     }
-   
+
     public Optional<Action> getAction(String name) {
         return this.actions.stream()
-                        .filter(a -> a.getSystemName().equals(name))
-                        .findFirst();
+            .filter(a -> a.getSystemName().equals(name))
+            .findFirst();
     }
 }

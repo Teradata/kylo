@@ -52,6 +52,10 @@ public class BooleanColumnCase1Test extends ProfilerTest {
     private static long trueCount;
     private static long falseCount;
 
+    @AfterClass
+    public static void tearDownClass() {
+        System.out.println("\t*** Completed run for BooleanColumnCase1Test ***");
+    }
 
     @Before
     public void setUp() {
@@ -69,42 +73,35 @@ public class BooleanColumnCase1Test extends ProfilerTest {
         falseCount = 3L;
     }
 
-
     @Test
     public void testBooleanNullCount() {
         Assert.assertEquals(nullCount, columnStats.getNullCount());
     }
-
 
     @Test
     public void testBooleanTotalCount() {
         Assert.assertEquals(totalCount, columnStats.getTotalCount());
     }
 
-
     @Test
     public void testBooleanUniqueCount() {
         Assert.assertEquals(uniqueCount, columnStats.getUniqueCount());
     }
-
 
     @Test
     public void testBooleanPercNullValues() {
         assertEquals(percNullValues, columnStats.getPercNullValues(), epsilon);
     }
 
-
     @Test
     public void testBooleanPercUniqueValues() {
         assertEquals(percUniqueValues, columnStats.getPercUniqueValues(), epsilon);
     }
 
-
     @Test
     public void testBooleanPercDuplicateValues() {
         assertEquals(percDuplicateValues, columnStats.getPercDuplicateValues(), epsilon);
     }
-
 
     @Test
     public void testBooleanTopNValues() {
@@ -133,20 +130,13 @@ public class BooleanColumnCase1Test extends ProfilerTest {
         }
     }
 
-
     @Test
     public void testBooleanTrueCount() {
         Assert.assertEquals(trueCount, ((BooleanColumnStatistics) columnStats).getTrueCount());
     }
 
-
     @Test
     public void testBooleanFalseCount() {
         Assert.assertEquals(falseCount, ((BooleanColumnStatistics) columnStats).getFalseCount());
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-        System.out.println("\t*** Completed run for BooleanColumnCase1Test ***");
     }
 }

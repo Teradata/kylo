@@ -34,7 +34,6 @@ public interface NifiRelatedRootFlowFiles {
 
     /**
      * the NiFi event
-     * @return
      */
     NifiEvent getEvent();
 }

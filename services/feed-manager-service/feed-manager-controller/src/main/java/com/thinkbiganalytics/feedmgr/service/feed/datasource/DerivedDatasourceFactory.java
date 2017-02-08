@@ -231,12 +231,12 @@ public class DerivedDatasourceFactory {
     }
 
 
-    private List<String> getFeedInputProcessorTypes(FeedMetadata feedMetadata){
+    private List<String> getFeedInputProcessorTypes(FeedMetadata feedMetadata) {
         List<String> types = new ArrayList<>();
         types.add(feedMetadata.getInputProcessorType());
-        if(feedMetadata.getInputProcessorType().equals("com.thinkbiganalytics.nifi.v2.core.watermark.LoadHighWaterMark")){
-           types.add("com.thinkbiganalytics.nifi.v2.sqoop.core.ImportSqoop");
-           types.add("com.thinkbiganalytics.nifi.v2.ingest.GetTableData");
+        if (feedMetadata.getInputProcessorType().equals("com.thinkbiganalytics.nifi.v2.core.watermark.LoadHighWaterMark")) {
+            types.add("com.thinkbiganalytics.nifi.v2.sqoop.core.ImportSqoop");
+            types.add("com.thinkbiganalytics.nifi.v2.ingest.GetTableData");
         }
         return types;
     }
@@ -247,7 +247,7 @@ public class DerivedDatasourceFactory {
     private boolean isCreateDatasource(DatasourceDefinition datasourceDefinition, FeedMetadata feedMetadata) {
         return DatasourceDefinition.ConnectionType.DESTINATION.equals(datasourceDefinition.getConnectionType()) ||
                (DatasourceDefinition.ConnectionType.SOURCE.equals(datasourceDefinition.getConnectionType()) && (
-                   getFeedInputProcessorTypes(feedMetadata).contains( datasourceDefinition.getProcessorType())));
+                   getFeedInputProcessorTypes(feedMetadata).contains(datasourceDefinition.getProcessorType())));
     }
 
 

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.auth.jaas;
 
@@ -52,7 +52,7 @@ import javax.security.auth.spi.LoginModule;
 public abstract class AbstractLoginModule implements LoginModule {
 
     private static final Logger log = LoggerFactory.getLogger(AbstractLoginModule.class);
-    
+
     private Subject subject;
     private CallbackHandler callbackHandler;
     private Map<String, ?> sharedState;
@@ -68,7 +68,7 @@ public abstract class AbstractLoginModule implements LoginModule {
     @Override
     public void initialize(Subject subject, CallbackHandler callbackHandler, Map<String, ?> sharedState, Map<String, ?> options) {
         log.debug("Initialize - subject: {}, callback handler: {}, options: {}", subject, callbackHandler, options);
-        
+
         this.subject = subject;
         this.callbackHandler = callbackHandler;
         this.sharedState = sharedState;
@@ -82,7 +82,7 @@ public abstract class AbstractLoginModule implements LoginModule {
     public boolean login() throws LoginException {
         try {
             boolean active = doLogin();
-            
+
             setLoginSucceeded(true);
             return active && isLoginSucceeded();
         } catch (LoginException e) {
@@ -104,14 +104,14 @@ public abstract class AbstractLoginModule implements LoginModule {
         if (isLoginSucceeded()) {
             try {
                 boolean active = doCommit();
-                
+
                 setCommitSucceeded(true);
                 return active && isCommitSucceeded();
             } catch (LoginException e) {
                 log.debug("Login commit exception", e);
                 setCommitSucceeded(false);
                 throw e;
-            }catch (Exception e) {
+            } catch (Exception e) {
                 log.debug("Login commit exception", e);
                 setCommitSucceeded(false);
                 throw new LoginException("Login commit failure: " + e.getMessage());
@@ -126,18 +126,18 @@ public abstract class AbstractLoginModule implements LoginModule {
      */
     @Override
     public boolean abort() throws LoginException {
-        if (! isLoginSucceeded()) {
+        if (!isLoginSucceeded()) {
             return false;
         } else if (isCommitSucceeded()) {
             try {
                 boolean active = doAbort();
-                
+
                 return active && isCommitSucceeded();
             } catch (LoginException e) {
                 log.debug("Login abort exception", e);
                 setLoginSucceeded(false);
                 throw e;
-            }catch (Exception e) {
+            } catch (Exception e) {
                 log.debug("Login abort exception", e);
                 setLoginSucceeded(false);
                 throw new LoginException("Login abort failure: " + e.getMessage());
@@ -154,7 +154,7 @@ public abstract class AbstractLoginModule implements LoginModule {
     public boolean logout() throws LoginException {
         try {
             boolean active = doLogout();
-            
+
             return active;
         } catch (LoginException e) {
             log.debug("Logout exception", e);
@@ -171,20 +171,20 @@ public abstract class AbstractLoginModule implements LoginModule {
             this.options = null;
         }
     }
-    
+
     protected abstract boolean doLogin() throws Exception;
-    
+
     protected abstract boolean doCommit() throws Exception;
-    
+
     protected abstract boolean doAbort() throws Exception;
-    
+
     protected abstract boolean doLogout() throws Exception;
 
-    
+
     public Map<String, ?> getSharedState() {
         return sharedState;
     }
-    
+
     public Map<String, ?> getOptions() {
         return options;
     }
@@ -208,60 +208,60 @@ public abstract class AbstractLoginModule implements LoginModule {
     protected Set<Principal> getPrincipals() {
         return principals;
     }
-    
+
     /**
      * @return the user principal (if any) and all ather princials in a combined set.
      */
     protected Set<Principal> getAllPrincipals() {
-        return getUserPrincipal() == null ? getPrincipals() : Stream.concat(Stream.of(getUserPrincipal()), 
+        return getUserPrincipal() == null ? getPrincipals() : Stream.concat(Stream.of(getUserPrincipal()),
                                                                             getPrincipals().stream()).collect(Collectors.toSet());
     }
-    
+
     protected Principal getUserPrincipal() {
         return userPrincipal;
     }
-    
+
     protected void setUserPrincipal(Principal userPrincipal) {
         this.userPrincipal = userPrincipal;
         addPrincipal(this.userPrincipal);
     }
-    
+
     protected UsernamePrincipal addNewUserPrincipal(String username) {
         UsernamePrincipal user = new UsernamePrincipal(username);
         this.userPrincipal = user;
         addPrincipal(user);
         return user;
     }
-    
+
     protected boolean clearUserPrincipal() {
         Principal principal = this.userPrincipal;
         this.userPrincipal = null;
         return principal != null ? removePrincipal(principal) : false;
     }
-    
+
     protected GroupPrincipal addNewGroupPrincipal(String name) {
         GroupPrincipal group = new GroupPrincipal(name);
         addPrincipal(group);
         return group;
     }
-    
+
     protected boolean addPrincipal(Principal principal) {
         return this.principals.add(principal);
     }
-    
+
     protected boolean addAllPrincipals(Collection<? extends Principal> principals) {
         return this.principals.addAll(principals);
     }
-    
+
     protected boolean removePrincipal(Principal principal) {
         return this.principals.remove(principal);
     }
-    
+
     protected void clearAllPrincipals() {
         this.userPrincipal = null;
         this.principals.clear();
     }
-    
+
     protected Subject getSubject() {
         return subject;
     }
@@ -281,9 +281,9 @@ public abstract class AbstractLoginModule implements LoginModule {
             throw new LoginException("Login failure attempting to retrieve required login information: " + e.getMessage());
         }
     }
-    
+
     @SuppressWarnings("unchecked")
     protected Optional<Object> getOption(String name) {
-            return Optional.ofNullable(this.options.get(name));
+        return Optional.ofNullable(this.options.get(name));
     }
 }

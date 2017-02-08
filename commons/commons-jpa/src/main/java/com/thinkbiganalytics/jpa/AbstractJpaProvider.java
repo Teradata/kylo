@@ -32,18 +32,18 @@ public abstract class AbstractJpaProvider<T, PK extends Serializable> implements
 
     protected Class<T> entityClass;
 
-    public abstract Class<? extends T> getEntityClass();
+    public AbstractJpaProvider() {
+        this.entityClass = (Class<T>) getEntityClass();
+    }
 
     //@PersistenceContext
     //@Inject
     //@Qualifier("metadataEntityManager")
     //protected EntityManager entityManager;
 
-    public abstract EntityManager getEntityManager();
+    public abstract Class<? extends T> getEntityClass();
 
-    public AbstractJpaProvider() {
-        this.entityClass = (Class<T>) getEntityClass();
-    }
+    public abstract EntityManager getEntityManager();
 
     @Override
     public T create(T t) {

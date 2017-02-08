@@ -65,12 +65,11 @@ import javax.inject.Inject;
 @ComponentScan(basePackages = {"com.thinkbiganalytics"})
 public class FeedManagerConfiguration {
 
-    public FeedManagerConfiguration() {
-    }
-
     @Inject
     private Environment env;
 
+    public FeedManagerConfiguration() {
+    }
 
     @Bean
     public FeedManagerFeedService feedManagerFeedService() {

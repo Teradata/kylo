@@ -40,9 +40,9 @@ public class FeedLineage {
 
     private Map<String, Datasource> datasourceMap = new HashMap<>();
 
-    private Map<String,FeedLineageStyle> styles;
+    private Map<String, FeedLineageStyle> styles;
 
-    public FeedLineage(Feed feed, Map<String,FeedLineageStyle> styles) {
+    public FeedLineage(Feed feed, Map<String, FeedLineageStyle> styles) {
         this.feed = feed;
         this.feedMap = new HashMap<>();
         this.styles = styles;

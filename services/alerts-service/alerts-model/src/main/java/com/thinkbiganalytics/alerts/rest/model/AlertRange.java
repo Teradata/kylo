@@ -37,16 +37,24 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AlertRange {
 
-    /** Time of the newest alert in the results */
+    /**
+     * Time of the newest alert in the results
+     */
     private DateTime newestTime;
 
-    /** Time of the oldest alert in the results */
+    /**
+     * Time of the oldest alert in the results
+     */
     private DateTime oldestTime;
 
-    /** Number of alerts in the results */
+    /**
+     * Number of alerts in the results
+     */
     private int size;
 
-    /** The list of alerts */
+    /**
+     * The list of alerts
+     */
     private List<Alert> alerts;
 
     public AlertRange() {

@@ -1,4 +1,3 @@
-
 package com.thinkbiganalytics.jira.domain;
 
 /*-
@@ -36,12 +35,12 @@ import javax.annotation.Generated;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("org.jsonschema2pojo")
 @JsonPropertyOrder({
-    "self",
-    "id",
-    "key",
-    "colorName",
-    "name"
-})
+                       "self",
+                       "id",
+                       "key",
+                       "colorName",
+                       "name"
+                   })
 public class StatusCategory {
 
     @JsonProperty("self")
@@ -58,9 +57,7 @@ public class StatusCategory {
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
-     * 
-     * @return
-     *     The self
+     * @return The self
      */
     @JsonProperty("self")
     public String getSelf() {
@@ -68,9 +65,7 @@ public class StatusCategory {
     }
 
     /**
-     * 
-     * @param self
-     *     The self
+     * @param self The self
      */
     @JsonProperty("self")
     public void setSelf(String self) {
@@ -78,9 +73,7 @@ public class StatusCategory {
     }
 
     /**
-     * 
-     * @return
-     *     The id
+     * @return The id
      */
     @JsonProperty("id")
     public Integer getId() {
@@ -88,9 +81,7 @@ public class StatusCategory {
     }
 
     /**
-     * 
-     * @param id
-     *     The id
+     * @param id The id
      */
     @JsonProperty("id")
     public void setId(Integer id) {
@@ -98,9 +89,7 @@ public class StatusCategory {
     }
 
     /**
-     * 
-     * @return
-     *     The key
+     * @return The key
      */
     @JsonProperty("key")
     public String getKey() {
@@ -108,9 +97,7 @@ public class StatusCategory {
     }
 
     /**
-     * 
-     * @param key
-     *     The key
+     * @param key The key
      */
     @JsonProperty("key")
     public void setKey(String key) {
@@ -118,9 +105,7 @@ public class StatusCategory {
     }
 
     /**
-     * 
-     * @return
-     *     The colorName
+     * @return The colorName
      */
     @JsonProperty("colorName")
     public String getColorName() {
@@ -128,9 +113,7 @@ public class StatusCategory {
     }
 
     /**
-     * 
-     * @param colorName
-     *     The colorName
+     * @param colorName The colorName
      */
     @JsonProperty("colorName")
     public void setColorName(String colorName) {
@@ -138,9 +121,7 @@ public class StatusCategory {
     }
 
     /**
-     * 
-     * @return
-     *     The name
+     * @return The name
      */
     @JsonProperty("name")
     public String getName() {
@@ -148,9 +129,7 @@ public class StatusCategory {
     }
 
     /**
-     * 
-     * @param name
-     *     The name
+     * @param name The name
      */
     @JsonProperty("name")
     public void setName(String name) {

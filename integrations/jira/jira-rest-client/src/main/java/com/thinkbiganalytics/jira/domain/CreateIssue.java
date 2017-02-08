@@ -28,18 +28,20 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import javax.annotation.Generated;
 
 /**
- */@JsonInclude(JsonInclude.Include.NON_NULL)
-   @Generated("org.jsonschema2pojo")
-   @JsonPropertyOrder({
-           "fields"
-   })
-   @JsonIgnoreProperties(ignoreUnknown = true)
+ */
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@Generated("org.jsonschema2pojo")
+@JsonPropertyOrder({
+                       "fields"
+                   })
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class CreateIssue {
+
     @JsonProperty("fields")
     private Fields fields;
 
 
-    public CreateIssue(Issue issue){
+    public CreateIssue(Issue issue) {
         this.fields = new Fields();
         fields.setSummary(issue.getSummary());
         fields.setIssueType(issue.getIssueType());
@@ -49,9 +51,7 @@ public class CreateIssue {
     }
 
     /**
-     *
-     * @return
-     *     The fields
+     * @return The fields
      */
     @JsonProperty("fields")
     public Fields getFields() {
@@ -59,9 +59,7 @@ public class CreateIssue {
     }
 
     /**
-     *
-     * @param fields
-     *     The fields
+     * @param fields The fields
      */
     @JsonProperty("fields")
     public void setFields(Fields fields) {

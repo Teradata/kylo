@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.auth.jaas;
 
@@ -23,11 +23,11 @@ package com.thinkbiganalytics.auth.jaas;
  * #L%
  */
 
+import com.thinkbiganalytics.auth.UsernameAuthenticationToken;
+
 import org.springframework.security.authentication.jaas.DefaultJaasAuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-
-import com.thinkbiganalytics.auth.UsernameAuthenticationToken;
 
 /**
  * A type of {@link DefaultJaasAuthenticationProvider} that only accepts a UsernameAuthenticationToken.

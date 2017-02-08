@@ -97,7 +97,7 @@ public class UpgradeKyloService implements ModeShapeAvailabilityListener {
      */
     public void upgradeCheck() {
         KyloVersion version = kyloVersionProvider.getKyloVersion();
-        if (version == null || version.getMajorVersionNumber() == null || (version.getMajorVersionNumber() != null && version.getMajorVersionNumber()< 0.4f)) {
+        if (version == null || version.getMajorVersionNumber() == null || (version.getMajorVersionNumber() != null && version.getMajorVersionNumber() < 0.4f)) {
             version = upgradeTo0_4_0();
         }
         ensureFeedTemplateFeedRelationships();
@@ -177,7 +177,7 @@ public class UpgradeKyloService implements ModeShapeAvailabilityListener {
     /**
      * Performs the necessary actions to ensure that Kylo versions &lt; 0.4.0 are upgraded
      *
-     * @return  the Kylo version after upgrade attempt
+     * @return the Kylo version after upgrade attempt
      */
     public KyloVersion upgradeTo0_4_0() {
 

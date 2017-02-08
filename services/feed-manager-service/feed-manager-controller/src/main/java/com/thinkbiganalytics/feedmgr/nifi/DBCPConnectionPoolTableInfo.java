@@ -47,14 +47,11 @@ import javax.sql.DataSource;
 @Service
 public class DBCPConnectionPoolTableInfo {
 
-    @Autowired
-    private NifiControllerServiceProperties nifiControllerServiceProperties;
-
     private static final Logger log = LoggerFactory.getLogger(DBCPConnectionPoolTableInfo.class);
-
     @Autowired
     LegacyNifiRestClient nifiRestClient;
-
+    @Autowired
+    private NifiControllerServiceProperties nifiControllerServiceProperties;
     @Inject
     @Qualifier("kerberosHiveConfiguration")
     private KerberosTicketConfiguration kerberosHiveConfiguration;
@@ -84,10 +81,11 @@ public class DBCPConnectionPoolTableInfo {
 
     /**
      * Describe the database table and fields available for a given NiFi controller service
-     * @param serviceId a NiFi controller service id
+     *
+     * @param serviceId   a NiFi controller service id
      * @param serviceName a NiFi controller service name
-     * @param schema A schema  to look for
-     * @param tableName A table  to look for
+     * @param schema      A schema  to look for
+     * @param tableName   A table  to look for
      * @return the database table and fields
      */
     public TableSchema describeTableForControllerService(String serviceId, String serviceName, String schema, String tableName) {
@@ -106,6 +104,7 @@ public class DBCPConnectionPoolTableInfo {
 
     /**
      * Return a list of schema.table_name
+     *
      * @param serviceProperties properties describing where and what to look for
      * @return a list of schema.table_name
      */

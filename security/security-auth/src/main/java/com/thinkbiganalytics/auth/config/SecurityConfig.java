@@ -60,8 +60,6 @@ public class SecurityConfig {
 
     protected static class PasswordEncoderFactory extends AbstractFactoryBean<PasswordEncoder> {
 
-        enum Encoding {PLAIN, BCRYPT}
-
         private Encoding encoding = Encoding.BCRYPT;
 
         public void setEncoding(String encodingStr) {
@@ -90,5 +88,7 @@ public class SecurityConfig {
                     return new BCryptPasswordEncoder(10);
             }
         }
+
+        enum Encoding {PLAIN, BCRYPT}
     }
 }

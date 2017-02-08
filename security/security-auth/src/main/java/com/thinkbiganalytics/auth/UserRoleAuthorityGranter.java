@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.auth;
 
@@ -44,7 +44,7 @@ public class UserRoleAuthorityGranter implements AuthorityGranter {
         if (principal instanceof UsernamePrincipal) {
             String name = principal.getName();
             String springRole = name.toUpperCase().startsWith("ROLE_") ? name.toUpperCase() : "ROLE_" + name.toUpperCase();
-            
+
             return Sets.newHashSet(name, springRole);
         } else {
             return null;

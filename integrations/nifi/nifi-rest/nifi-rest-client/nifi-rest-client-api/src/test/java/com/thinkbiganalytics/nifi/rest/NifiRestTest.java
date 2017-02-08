@@ -86,7 +86,6 @@ public class NifiRestTest {
     }
 
 
-
     //@Test
     public void testUpdateProperties() {
         try {
@@ -169,7 +168,6 @@ public class NifiRestTest {
         restClient.connectFeedToGlobalTemplate(feedGroupId, feedOutputPortName, feedCategoryId, reusableTemplateCategoryGroupId, inputPortName);
 
     }
-
 
 
     //@Test

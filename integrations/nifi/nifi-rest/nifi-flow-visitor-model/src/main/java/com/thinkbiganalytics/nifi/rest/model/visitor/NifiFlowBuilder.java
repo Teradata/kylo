@@ -44,33 +44,6 @@ import javax.annotation.Nullable;
 public class NifiFlowBuilder {
 
     private static final Logger log = LoggerFactory.getLogger(NifiFlowBuilder.class);
-
-    Map<String, NifiFlowProcessor> cache = new ConcurrentHashMap<>();
-
-
-    /**
-     * Build the {@link NifiFlowProcessGroup} from the visited {@link NifiVisitableProcessGroup} returning the simplified graph of objects that make up the flow
-     *
-     * @param group the visited process group and its flow connecting processors together
-     * @return the simplified graph representing the flow starting with the supplied visited process group
-     */
-    public NifiFlowProcessGroup build(NifiVisitableProcessGroup group) {
-        NifiFlowProcessGroup flowProcessGroup = toFlowProcessGroup(group);
-        flowProcessGroup.setProcessorMap(cache);
-        flowProcessGroup.addConnections(group.getConnections());
-
-        ProcessGroupDTO groupDTO = group.getParentProcessGroup();
-        if (groupDTO != null) {
-            flowProcessGroup.setParentGroupId(groupDTO.getId());
-            flowProcessGroup.setParentGroupName(groupDTO.getName());
-        }
-
-        flowProcessGroup.assignFlowIds();
-
-        return flowProcessGroup;
-    }
-
-
     /**
      * Convert a NiFi {@link ProcessorDTO} to a {@link NifiFlowProcessor}
      */
@@ -80,7 +53,6 @@ public class NifiFlowBuilder {
             return new NifiFlowProcessor(processor.getId(), processor.getName(), processor.getType());
         }
     };
-
     /**
      * Convert a NiFi {@link ProcessGroupDTO} to a {@link NifiFlowProcessGroup}
      */
@@ -90,7 +62,17 @@ public class NifiFlowBuilder {
             return new NifiFlowProcessGroup(group.getId(), group.getName());
         }
     };
+    /**
+     * Convert a {@link NifiVisitableProcessGroup} to a  simplified {@link NifiFlowProcessGroup}
+     */
+    private final Function<NifiVisitableProcessGroup, NifiFlowProcessGroup> NIFI_DTO_GROUP_TO_FLOW_GROUP = group -> {
 
+        NifiFlowProcessGroup flowProcessGroup = PROCESS_GROUP_DTO_TO_FLOW_GROUP.apply(group.getDto());
+        Set<NifiFlowProcessor> starting = new HashSet<>(Collections2.transform(group.getStartingProcessors(), NIFI_PROCESSOR_DTO_TO_FLOW_PROCESSOR));
+        flowProcessGroup.setStartingProcessors(starting);
+        return flowProcessGroup;
+    };
+    Map<String, NifiFlowProcessor> cache = new ConcurrentHashMap<>();
     /**
      * Convert a {@link NifiVisitableProcessor} to a  simplified {@link NifiFlowProcessor}
      */
@@ -120,18 +102,27 @@ public class NifiFlowBuilder {
 
     };
 
-
     /**
-     * Convert a {@link NifiVisitableProcessGroup} to a  simplified {@link NifiFlowProcessGroup}
+     * Build the {@link NifiFlowProcessGroup} from the visited {@link NifiVisitableProcessGroup} returning the simplified graph of objects that make up the flow
+     *
+     * @param group the visited process group and its flow connecting processors together
+     * @return the simplified graph representing the flow starting with the supplied visited process group
      */
-    private final Function<NifiVisitableProcessGroup, NifiFlowProcessGroup> NIFI_DTO_GROUP_TO_FLOW_GROUP = group -> {
+    public NifiFlowProcessGroup build(NifiVisitableProcessGroup group) {
+        NifiFlowProcessGroup flowProcessGroup = toFlowProcessGroup(group);
+        flowProcessGroup.setProcessorMap(cache);
+        flowProcessGroup.addConnections(group.getConnections());
 
-        NifiFlowProcessGroup flowProcessGroup = PROCESS_GROUP_DTO_TO_FLOW_GROUP.apply(group.getDto());
-        Set<NifiFlowProcessor> starting = new HashSet<>(Collections2.transform(group.getStartingProcessors(), NIFI_PROCESSOR_DTO_TO_FLOW_PROCESSOR));
-        flowProcessGroup.setStartingProcessors(starting);
+        ProcessGroupDTO groupDTO = group.getParentProcessGroup();
+        if (groupDTO != null) {
+            flowProcessGroup.setParentGroupId(groupDTO.getId());
+            flowProcessGroup.setParentGroupName(groupDTO.getName());
+        }
+
+        flowProcessGroup.assignFlowIds();
+
         return flowProcessGroup;
-    };
-
+    }
 
     /**
      * Transform  a {@link NifiVisitableProcessGroup} to a  simplified {@link NifiFlowProcessGroup}

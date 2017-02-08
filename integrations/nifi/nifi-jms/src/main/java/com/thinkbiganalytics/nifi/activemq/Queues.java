@@ -23,6 +23,7 @@ package com.thinkbiganalytics.nifi.activemq;
 /**
  */
 public interface Queues {
+
     public static final String FEED_MANAGER_QUEUE = "thinkbig.feed-manager";
 
     public static final String PROVENANCE_EVENT_STATS_QUEUE = "thinkbig.provenance-event-stats";

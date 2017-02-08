@@ -39,22 +39,24 @@ import java.util.Stack;
 public class AnnotationFieldNameResolver {
 
     private Set<Class> processedClasses = new HashSet<>();
-    private Map<Class,Set<AnnotatedFieldProperty>> classPropertyFields = new HashMap<>();
+    private Map<Class, Set<AnnotatedFieldProperty>> classPropertyFields = new HashMap<>();
     private Stack<String> stack = new Stack<>();
     private String parentPrefix = "";
-    private Class<? extends Annotation>annotation;
-    public AnnotationFieldNameResolver(String parentPrefix, Class<? extends Annotation> annotation){
+    private Class<? extends Annotation> annotation;
+
+    public AnnotationFieldNameResolver(String parentPrefix, Class<? extends Annotation> annotation) {
         this.parentPrefix = parentPrefix;
-        if(StringUtils.isNotBlank(this.parentPrefix) && this.parentPrefix.endsWith(".")){
-            this.parentPrefix = StringUtils.substringBeforeLast(this.parentPrefix,".");
+        if (StringUtils.isNotBlank(this.parentPrefix) && this.parentPrefix.endsWith(".")) {
+            this.parentPrefix = StringUtils.substringBeforeLast(this.parentPrefix, ".");
         }
         this.annotation = annotation;
     }
-    public AnnotationFieldNameResolver(Class<? extends Annotation> annotation){
+
+    public AnnotationFieldNameResolver(Class<? extends Annotation> annotation) {
         this.annotation = annotation;
     }
 
-    public void afterFieldNameAdded(Class clazz,String classBeanPrefix,List<AnnotatedFieldProperty> names, Field field) {
+    public void afterFieldNameAdded(Class clazz, String classBeanPrefix, List<AnnotatedFieldProperty> names, Field field) {
 
     }
 
@@ -63,19 +65,20 @@ public class AnnotationFieldNameResolver {
      *
      * @return the description of the field or null.
      */
-    public String getFieldPropertyDescription(Field field ){
+    public String getFieldPropertyDescription(Field field) {
         return null;
     }
 
     /**
      * create the object describing the Field annotation setting the name based upon the class hierarchy
-     * @see this#stackAsString() for the naming strategy on hierachy names
+     *
      * @param clazz the class to inspect
      * @param names the list of names already parsed.  this will be the list the newly parsed field is added to
-     * @param field  the field to parse for the annotation matching the {@link this#annotation} supplied
+     * @param field the field to parse for the annotation matching the {@link this#annotation} supplied
      * @return the object describing the annotation
+     * @see this#stackAsString() for the naming strategy on hierachy names
      */
-    public AnnotatedFieldProperty addFieldProperty( Class clazz,List<AnnotatedFieldProperty> names, Field field){
+    public AnnotatedFieldProperty addFieldProperty(Class clazz, List<AnnotatedFieldProperty> names, Field field) {
         AnnotatedFieldProperty annotatedFieldProperty = new AnnotatedFieldProperty();
         annotatedFieldProperty.setAnnotation(field.getAnnotation(annotation));
 
@@ -90,35 +93,35 @@ public class AnnotationFieldNameResolver {
 
     /**
      * Walk a class and obtain {@link AnnotatedFieldProperty} objects matching any fields with the {@link this#annotation} supplied
+     *
      * @param clazz the class to inspect and parse annotations
      * @return a list of objects describing the annotated fields
      */
-    public List<AnnotatedFieldProperty> getProperties(Class clazz){
+    public List<AnnotatedFieldProperty> getProperties(Class clazz) {
         processedClasses.add(clazz);
         classPropertyFields.put(clazz, new HashSet<AnnotatedFieldProperty>());
         List<AnnotatedFieldProperty> names = new ArrayList<>();
-        List<Field> fields =  FieldUtils.getFieldsListWithAnnotation(clazz, annotation);
+        List<Field> fields = FieldUtils.getFieldsListWithAnnotation(clazz, annotation);
         List<Field> allFields = FieldUtils.getAllFieldsList(clazz);
-        for (Field field: fields){
-            AnnotatedFieldProperty p = addFieldProperty(clazz,names,field);
+        for (Field field : fields) {
+            AnnotatedFieldProperty p = addFieldProperty(clazz, names, field);
             classPropertyFields.get(clazz).add(p);
             Class fieldType = field.getType();
 
-            if(!processedClasses.contains(fieldType)){
+            if (!processedClasses.contains(fieldType)) {
                 names.addAll(getProperties(fieldType));
             }
         }
-        for(Field field: allFields){
+        for (Field field : allFields) {
             Class fieldType = field.getType();
-            if(!processedClasses.contains(fieldType)){
+            if (!processedClasses.contains(fieldType)) {
                 stack.push(field.getName());
                 names.addAll(getProperties(fieldType));
                 stack.pop();
-            }
-            else if(classPropertyFields.containsKey(fieldType)) {
+            } else if (classPropertyFields.containsKey(fieldType)) {
                 stack.push(field.getName());
-                for(AnnotatedFieldProperty prop: classPropertyFields.get(fieldType)){
-                    addFieldProperty(clazz,names,prop.getField());
+                for (AnnotatedFieldProperty prop : classPropertyFields.get(fieldType)) {
+                    addFieldProperty(clazz, names, prop.getField());
                 }
                 stack.pop();
             }
@@ -128,22 +131,21 @@ public class AnnotationFieldNameResolver {
 
     /**
      * create a name separated by "." based on a fields class hierarchy
-     * @return
      */
-    private String stackAsString(){
+    private String stackAsString() {
         String str = "";
-        if(StringUtils.isNotBlank(parentPrefix)){
-            str +=parentPrefix+(stack.isEmpty()?".":"");
+        if (StringUtils.isNotBlank(parentPrefix)) {
+            str += parentPrefix + (stack.isEmpty() ? "." : "");
         }
-        if(stack != null && !stack.isEmpty()){
-            for(String item:stack){
-                if(StringUtils.isNotBlank(str)){
-                    str +=".";
+        if (stack != null && !stack.isEmpty()) {
+            for (String item : stack) {
+                if (StringUtils.isNotBlank(str)) {
+                    str += ".";
                 }
-                str +=item;
+                str += item;
             }
-            if(StringUtils.isNotBlank(str)){
-                str +=".";
+            if (StringUtils.isNotBlank(str)) {
+                str += ".";
             }
         }
 

@@ -25,7 +25,9 @@ package com.thinkbiganalytics.metadata.api.feed;
  */
 public class FeedProperties {
 
-    /** Property key for enabling feed cleanup */
+    /**
+     * Property key for enabling feed cleanup
+     */
     public static final String CLEANUP_ENABLED = "tba:cleanupEnabled";
 
     /**

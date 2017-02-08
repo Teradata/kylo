@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.api.extension;
 
@@ -32,7 +32,7 @@ import java.util.Map;
 public interface ExtensibleEntityProvider {
 
     //    List<ExtensibleType> getTypes(ExtensibleType type);
-    
+
     ExtensibleEntity createEntity(ExtensibleType type, Map<String, Object> props);
 
     ExtensibleEntity updateEntity(ExtensibleEntity extensibleEntity, Map<String, Object> props);

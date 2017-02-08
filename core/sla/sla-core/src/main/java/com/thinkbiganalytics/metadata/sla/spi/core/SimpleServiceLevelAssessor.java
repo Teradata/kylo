@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.sla.spi.core;
 
@@ -63,10 +63,10 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
     private Set<MetricAssessor<? extends Metric, ? extends Serializable>> metricAssessors;
     private ObligationAssessor<? extends Obligation> defaultObligationAssessor;
 
-    private Map<ServiceLevelAgreement.ID,ServiceLevelAssessment> lastAssessments = new HashMap<>();
+    private Map<ServiceLevelAgreement.ID, ServiceLevelAssessment> lastAssessments = new HashMap<>();
 
     /**
-     * 
+     *
      */
     public SimpleServiceLevelAssessor() {
         this.obligationAssessors = Collections.synchronizedSet(new HashSet<ObligationAssessor<? extends Obligation>>());
@@ -84,43 +84,43 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
     @Override
     public ServiceLevelAssessment assess(ServiceLevelAgreement sla) {
         Log.info("Assessing SLA: {}", sla.getName());
-        
+
         AssessmentResult combinedResult = AssessmentResult.FAILURE;
-       
+
         try {
             SimpleServiceLevelAssessment slaAssessment = new SimpleServiceLevelAssessment(sla);
             List<ObligationGroup> groups = sla.getObligationGroups();
-            
+
             for (ObligationGroup group : groups) {
                 ObligationGroup.Condition condition = group.getCondition();
                 AssessmentResult groupResult = AssessmentResult.SUCCESS;
-                
+
                 for (Obligation ob : group.getObligations()) {
                     ObligationAssessment obAssessment = assess(ob);
                     slaAssessment.add(obAssessment);
                     groupResult = groupResult.max(obAssessment.getResult());
                 }
-                
+
                 // Short-circuit required or sufficient if necessary.
                 switch (condition) {
-                case REQUIRED:
-                    if (groupResult == AssessmentResult.FAILURE) {
-                        return completeAssessment(slaAssessment, groupResult);
-                    }
-                    break;
-                case SUFFICIENT:
-                    if (groupResult != AssessmentResult.FAILURE) {
-                        return completeAssessment(slaAssessment, groupResult);
-                    }
-                    break;
-                default:
+                    case REQUIRED:
+                        if (groupResult == AssessmentResult.FAILURE) {
+                            return completeAssessment(slaAssessment, groupResult);
+                        }
+                        break;
+                    case SUFFICIENT:
+                        if (groupResult != AssessmentResult.FAILURE) {
+                            return completeAssessment(slaAssessment, groupResult);
+                        }
+                        break;
+                    default:
                 }
-                
+
                 // Required condition but non-failure, sufficient condition but non-success, or optional condition:
                 // continue assessing groups and retain the best of the group results.
                 combinedResult = combinedResult.min(groupResult);
             }
-            
+
             return completeAssessment(slaAssessment, combinedResult);
         } finally {
             Log.debug("Completed assessment of SLA {}: {}", sla.getName(), combinedResult);
@@ -157,7 +157,7 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
         return new DefaultObligationAssessor();
     }
 
-    
+
     protected ObligationAssessor<? extends Obligation> findAssessor(Obligation obligation) {
         synchronized (this.obligationAssessors) {
             for (ObligationAssessor<? extends Obligation> assessor : this.obligationAssessors) {
@@ -166,10 +166,10 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
                 }
             }
         }
-        
+
         return this.defaultObligationAssessor;
     }
-    
+
     @SuppressWarnings("unchecked")
     protected <M extends Metric> MetricAssessor<M, ?> findAssessor(M metric) {
         synchronized (this.metricAssessors) {
@@ -194,7 +194,7 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
         } else {
             slaAssessment.setMessage("At least one of the SLA obligations resulted in the status: " + result);
         }
-        lastAssessments.put(slaAssessment.getAgreement().getId(),slaAssessment);
+        lastAssessments.put(slaAssessment.getAgreement().getId(), slaAssessment);
         return slaAssessment;
     }
 
@@ -202,11 +202,11 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
         ObligationAssessmentBuilderImpl builder = new ObligationAssessmentBuilderImpl(ob);
         @SuppressWarnings("unchecked")
         ObligationAssessor<Obligation> assessor = (ObligationAssessor<Obligation>) findAssessor(ob);
-        
+
         Log.debug("Assessing obligation \"{}\" with assessor: {}", assessor);
-        
+
         assessor.assess(ob, builder);
-        
+
         return builder.build();
     }
 
@@ -220,12 +220,12 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
         private List<Comparable<? extends Serializable>> comparables;
 
         private SimpleObligationAssessment assessment;
-        
+
         public ObligationAssessmentBuilderImpl(Obligation obligation) {
             this.obligation = obligation;
             this.assessment = new SimpleObligationAssessment(obligation);
         }
-        
+
         @Override
         public ObligationAssessmentBuilder obligation(Obligation ob) {
             this.obligation = ob;
@@ -243,17 +243,17 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
             this.message = descr;
             return this;
         }
-        
+
         @Override
         public ObligationAssessmentBuilder comparator(Comparator<ObligationAssessment> comp) {
             this.comparator = comp;
             return this;
         }
-        
+
         @Override
         @SuppressWarnings("unchecked")
-        public ObligationAssessmentBuilder compareWith(final Comparable<? extends Serializable> value, 
-                                                       @SuppressWarnings("unchecked") 
+        public ObligationAssessmentBuilder compareWith(final Comparable<? extends Serializable> value,
+                                                       @SuppressWarnings("unchecked")
                                                        final Comparable<? extends Serializable>... otherValeus) {
             ;
             this.comparables = new ArrayList<Comparable<? extends Serializable>>(Arrays.asList(value));
@@ -271,33 +271,33 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
             this.assessment.add(metricAssmt);
             return metricAssmt;
         }
-        
+
         protected ObligationAssessment build() {
             this.assessment.setObligation(this.obligation);
             this.assessment.setMessage(this.message);
             this.assessment.setResult(this.result);
-            
+
             if (this.comparator != null) {
                 this.assessment.setComparator(this.comparator);
             }
-            
+
             if (this.comparables != null) {
                 this.assessment.setComparables(this.comparables);
             }
-            
+
             return this.assessment;
         }
     }
-    
+
     private class MetricAssessmentBuilderImpl<D extends Serializable> implements MetricAssessmentBuilder<D> {
-        
+
         private Metric metric;
         private String message = "";
         private AssessmentResult result = AssessmentResult.SUCCESS;
         private D data;
         private Comparator<MetricAssessment<D>> comparator;
         private List<Comparable<? extends Serializable>> comparables;
-        
+
         public MetricAssessmentBuilderImpl(Metric metric) {
             this.metric = metric;
         }
@@ -325,7 +325,7 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
             this.data = data;
             return this;
         }
-        
+
         @Override
         public MetricAssessmentBuilder<D> comparitor(Comparator<MetricAssessment<D>> comp) {
             this.comparator = comp;
@@ -334,8 +334,8 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
 
         @Override
         @SuppressWarnings("unchecked")
-        public MetricAssessmentBuilder<D> compareWith(Comparable<? extends Serializable> value, 
-                                                   Comparable<? extends Serializable>... otherValues) {
+        public MetricAssessmentBuilder<D> compareWith(Comparable<? extends Serializable> value,
+                                                      Comparable<? extends Serializable>... otherValues) {
             this.comparables = new ArrayList<Comparable<? extends Serializable>>(Arrays.asList(value));
             this.comparables.addAll(Arrays.asList(value));
             return this;
@@ -346,22 +346,22 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
             assessment.setMessage(this.message);
             assessment.setResult(this.result);
             assessment.setData(this.data);
-            
+
             if (this.comparator != null) {
                 assessment.setComparator(this.comparator);
             }
-            
+
             if (this.comparables != null) {
                 assessment.setComparables(this.comparables);
             }
-            
+
             return assessment;
         }
     }
 
-    
+
     protected class DefaultObligationAssessor implements ObligationAssessor<Obligation> {
-        
+
         @Override
         public boolean accepts(Obligation obligation) {
             // Accepts any obligations
@@ -372,30 +372,30 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
         public void assess(Obligation obligation, ObligationAssessmentBuilder builder) {
             Set<MetricAssessment> metricAssessments = new HashSet<MetricAssessment>();
             AssessmentResult result = AssessmentResult.SUCCESS;
-            
+
             // Iterate through and assess each metric.
             // Obligation is considered successful if all metrics are successful
             for (Metric metric : obligation.getMetrics()) {
                 Log.debug("Assessing metric: {}", metric);
-                
+
                 MetricAssessment assessment = builder.assess(metric);
                 metricAssessments.add(assessment);
             }
-            
+
             for (MetricAssessment ma : metricAssessments) {
                 result = result.max(ma.getResult());
             }
-            
+
             String message = "The obligation requirements were met";
             if (result != AssessmentResult.SUCCESS) {
                 message = "At least one metric assessment resulted in the status: " + result;
             }
-            
+
             builder
                 .result(result)
                 .message(message)
                 .obligation(obligation);
         }
-        
+
     }
 }

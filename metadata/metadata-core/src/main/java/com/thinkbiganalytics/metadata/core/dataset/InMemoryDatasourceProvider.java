@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.core.dataset;
 
@@ -51,13 +51,13 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  */
 public class InMemoryDatasourceProvider implements DatasourceProvider {
-    
+
     private Map<Datasource.ID, Datasource> datasets = new ConcurrentHashMap<>();
 
     public DatasourceCriteria datasetCriteria() {
         return new DatasetCriteriaImpl();
     }
-    
+
     @Override
     public ID resolve(Serializable id) {
         if (id instanceof BaseDatasource.DatasourceId) {
@@ -69,7 +69,7 @@ public class InMemoryDatasourceProvider implements DatasourceProvider {
 
 
     @Override
-    public DerivedDatasource ensureDerivedDatasource(String datasourceType, String identityString, String title,String desc, Map<String, Object> properties) {
+    public DerivedDatasource ensureDerivedDatasource(String datasourceType, String identityString, String title, String desc, Map<String, Object> properties) {
         return null;
     }
 
@@ -107,7 +107,7 @@ public class InMemoryDatasourceProvider implements DatasourceProvider {
     }
 
     //
-   // @Override
+    // @Override
     public Datasource ensureDatasource(String name, String descr) {
         synchronized (this.datasets) {
             BaseDatasource ds = getExistingDataset(name);
@@ -115,10 +115,10 @@ public class InMemoryDatasourceProvider implements DatasourceProvider {
             if (ds == null) {
                 ds = new BaseDatasource(name, descr);
                 this.datasets.put(ds.getId(), ds);
-}
+            }
 
             return ds;
-       }
+        }
     }
 
     @Override
@@ -175,12 +175,12 @@ public class InMemoryDatasourceProvider implements DatasourceProvider {
         Iterator<Datasource> filtered = Iterators.filter(this.datasets.values().iterator(), critImpl);
         Iterator<Datasource> limited = Iterators.limit(filtered, critImpl.getLimit());
         List<Datasource> list = Lists.newArrayList(limited);
-        
+
         Collections.sort(list, critImpl);
         return list;
     }
 
-    
+
     private BaseDatasource getExistingDataset(String name) {
         synchronized (this.datasets) {
             for (Datasource ds : this.datasets.values()) {
@@ -193,9 +193,9 @@ public class InMemoryDatasourceProvider implements DatasourceProvider {
     }
 
 
-    private static class DatasetCriteriaImpl extends AbstractMetadataCriteria<DatasourceCriteria> 
+    private static class DatasetCriteriaImpl extends AbstractMetadataCriteria<DatasourceCriteria>
         implements DatasourceCriteria, Predicate<Datasource>, Comparator<Datasource> {
-        
+
         private String name;
         private DateTime createdOn;
         private DateTime createdAfter;
@@ -204,14 +204,24 @@ public class InMemoryDatasourceProvider implements DatasourceProvider {
 
         @Override
         public boolean apply(Datasource input) {
-            if (this.type != null && ! this.type.isAssignableFrom(input.getClass())) return false;
-            if (this.name != null && ! name.equals(input.getName())) return false;
-            if (this.createdOn != null && ! this.createdOn.equals(input.getCreatedTime())) return false;
-            if (this.createdAfter != null && ! this.createdAfter.isBefore(input.getCreatedTime())) return false;
-            if (this.createdBefore != null && ! this.createdBefore.isBefore(input.getCreatedTime())) return false;
+            if (this.type != null && !this.type.isAssignableFrom(input.getClass())) {
+                return false;
+            }
+            if (this.name != null && !name.equals(input.getName())) {
+                return false;
+            }
+            if (this.createdOn != null && !this.createdOn.equals(input.getCreatedTime())) {
+                return false;
+            }
+            if (this.createdAfter != null && !this.createdAfter.isBefore(input.getCreatedTime())) {
+                return false;
+            }
+            if (this.createdBefore != null && !this.createdBefore.isBefore(input.getCreatedTime())) {
+                return false;
+            }
             return true;
         }
-        
+
         @Override
         public int compare(Datasource o1, Datasource o2) {
             return o2.getCreatedTime().compareTo(o1.getCreatedTime());
@@ -246,6 +256,6 @@ public class InMemoryDatasourceProvider implements DatasourceProvider {
             this.type = type;
             return this;
         }
-        
+
     }
 }

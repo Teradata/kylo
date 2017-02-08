@@ -61,13 +61,13 @@ public class TestJpaConfiguration {
     public ServiceLevelAgreementProvider slaProvider() {
         return new InMemorySLAProvider();
     }
-    
+
     @Bean(name = "alertsEventBus")
     @Primary
     public EventBus alertsEventBus() {
         return Mockito.mock(EventBus.class);
     }
-    
+
     @Bean(name = "respondableAlertsEventBus")
     @Primary
     public EventBus respondableAlertsEventBus() {

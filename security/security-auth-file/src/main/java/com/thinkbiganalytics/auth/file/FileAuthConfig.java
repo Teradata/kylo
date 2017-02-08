@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.auth.file;
 
@@ -39,14 +39,14 @@ import org.springframework.context.annotation.Profile;
 @Configuration
 @Profile("auth-file")
 public class FileAuthConfig {
-    
+
     @Value("${security.auth.file.login.ui:required}")
     private String uiLoginFlag;
-    
+
     @Value("${security.auth.file.login.services:required}")
     private String servicesLoginFlag;
 
-    @Bean(name = "servicesFileLoginConfiguration" )
+    @Bean(name = "servicesFileLoginConfiguration")
     public LoginConfiguration servicesFileLoginConfiguration(LoginConfigurationBuilder builder) {
         // @formatter:off
 
@@ -63,7 +63,7 @@ public class FileAuthConfig {
 
         // @formatter:on
     }
-    
+
     @Bean(name = "uiFileLoginConfiguration")
     public LoginConfiguration uiFileLoginConfiguration(LoginConfigurationBuilder builder) {
         // @formatter:off

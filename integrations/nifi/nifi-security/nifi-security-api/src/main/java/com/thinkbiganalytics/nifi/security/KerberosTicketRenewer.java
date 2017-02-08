@@ -31,7 +31,6 @@ import java.io.IOException;
  * This class will attempt to call ugi.checkTGTAndReloginFromKeytab() which
  * will re-login the user if the ticket expired or is close to expiry. Between
  * relogin attempts this thread will sleep for the provided amount of time.
- *
  */
 public class KerberosTicketRenewer implements Runnable {
 
@@ -42,12 +41,9 @@ public class KerberosTicketRenewer implements Runnable {
     private volatile boolean stopped = false;
 
     /**
-     * @param ugi
-     *          the user to renew the ticket for
-     * @param renewalPeriod
-     *          the amount of time in milliseconds to wait between renewal attempts
-     * @param logger
-     *          the logger from the component that started the renewer
+     * @param ugi           the user to renew the ticket for
+     * @param renewalPeriod the amount of time in milliseconds to wait between renewal attempts
+     * @param logger        the logger from the component that started the renewer
      */
     public KerberosTicketRenewer(final UserGroupInformation ugi, final long renewalPeriod, final ComponentLog logger) {
         this.ugi = ugi;

@@ -47,6 +47,7 @@ import io.swagger.annotations.ApiResponses;
 @Api(tags = "Security - Groups", produces = "application/json")
 @Path("/v1/feedmgr/hadoop-authorization")
 public class HadoopAuthorizationController {
+
     private static final Logger log = LoggerFactory.getLogger(HadoopAuthorizationController.class);
 
     // I had to use autowired instead of Inject to allow null values.
@@ -59,23 +60,22 @@ public class HadoopAuthorizationController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets a list of Hadoop security groups.")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Returns the security groups.", response = HadoopAuthorizationGroup.class, responseContainer = "List"),
-            @ApiResponse(code = 500, message = "The security groups are unavailable.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 200, message = "Returns the security groups.", response = HadoopAuthorizationGroup.class, responseContainer = "List"),
+                      @ApiResponse(code = 500, message = "The security groups are unavailable.", response = RestResponseStatus.class)
+                  })
     public Response getGroups() {
         try {
 
             List<HadoopAuthorizationGroup> groups = null;
-            if(hadoopAuthorizationService != null) {
+            if (hadoopAuthorizationService != null) {
                 groups = hadoopAuthorizationService.getAllGroups();
-            }
-            else {
+            } else {
                 groups = new ArrayList<>();
                 log.debug("No plugin for hadoop authorization was loaded. Returning empty results");
             }
 
             return Response.ok(groups).build();
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new RuntimeException("Unable to get the external security groups ", e);
         }
     }
@@ -85,18 +85,18 @@ public class HadoopAuthorizationController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Indicates if security groups are enabled.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "Returns the enabled status.", response = Map.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Returns the enabled status.", response = Map.class, responseContainer = "List")
     )
     public Response groupEnabled() {
         try {
             boolean isEnabled = false;
 
-            if(hadoopAuthorizationService != null) {
+            if (hadoopAuthorizationService != null) {
                 isEnabled = true;
             }
 
             return Response.ok("[{\"enabled\":" + isEnabled + "}]").build();
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new RuntimeException("Unable to get the external security groups ", e);
         }
     }

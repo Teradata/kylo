@@ -28,7 +28,6 @@ import com.thinkbiganalytics.security.action.Action;
 /**
  * Describes the permissible actions related to operational services (feed processing management,
  * job execution history, etc.)
- *
  */
 public interface OperationsAccessControl {
 

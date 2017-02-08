@@ -37,7 +37,7 @@ public class NifiTemplateUtil {
      * @param template a nifi template
      * @return a list of processors in the template that dont have any incoming connections
      */
-    public static List<ProcessorDTO>getInputProcessorsForTemplate(TemplateDTO template ){
+    public static List<ProcessorDTO> getInputProcessorsForTemplate(TemplateDTO template) {
         if (template != null && template.getSnippet() != null) {
             List<String> sourceIds = NifiConnectionUtil.getInputProcessorIds(template.getSnippet().getConnections());
             return NifiProcessUtil.findProcessorsByIds(template.getSnippet().getProcessors(), sourceIds);

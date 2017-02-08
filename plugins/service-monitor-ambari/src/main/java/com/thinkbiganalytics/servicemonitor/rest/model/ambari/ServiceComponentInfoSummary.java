@@ -41,36 +41,36 @@ import javax.annotation.Generated;
                    })
 public class ServiceComponentInfoSummary {
 
-  @JsonProperty("items")
-  private List<ServiceComponentInfoItem> items = new ArrayList<ServiceComponentInfoItem>();
-  @JsonIgnore
-  private Map<String, Object> additionalProperties = new HashMap<String, Object>();
+    @JsonProperty("items")
+    private List<ServiceComponentInfoItem> items = new ArrayList<ServiceComponentInfoItem>();
+    @JsonIgnore
+    private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
-  /**
-   * @return The items
-   */
-  @JsonProperty("items")
-  public List<ServiceComponentInfoItem> getItems() {
-    return items;
-  }
+    /**
+     * @return The items
+     */
+    @JsonProperty("items")
+    public List<ServiceComponentInfoItem> getItems() {
+        return items;
+    }
 
-  /**
-   * @param items The items
-   */
-  @JsonProperty("items")
-  public void setItems(List<ServiceComponentInfoItem> items) {
-    this.items = items;
-  }
+    /**
+     * @param items The items
+     */
+    @JsonProperty("items")
+    public void setItems(List<ServiceComponentInfoItem> items) {
+        this.items = items;
+    }
 
-  @JsonAnyGetter
-  public Map<String, Object> getAdditionalProperties() {
-    return this.additionalProperties;
-  }
+    @JsonAnyGetter
+    public Map<String, Object> getAdditionalProperties() {
+        return this.additionalProperties;
+    }
 
-  @JsonAnySetter
-  public void setAdditionalProperty(String name, Object value) {
-    this.additionalProperties.put(name, value);
-  }
+    @JsonAnySetter
+    public void setAdditionalProperty(String name, Object value) {
+        this.additionalProperties.put(name, value);
+    }
 
 
 }

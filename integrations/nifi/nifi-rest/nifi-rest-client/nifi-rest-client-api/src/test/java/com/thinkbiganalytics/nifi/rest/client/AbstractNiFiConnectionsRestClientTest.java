@@ -28,11 +28,11 @@ import org.mockito.Mockito;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.*;
-
 public class AbstractNiFiConnectionsRestClientTest {
 
-    /** Verify deleting a queue. */
+    /**
+     * Verify deleting a queue.
+     */
     @Test
     public void deleteQueueWithRetries() {
         // Mock drop requests
@@ -54,7 +54,9 @@ public class AbstractNiFiConnectionsRestClientTest {
         Assert.assertEquals(request2, client.deleteQueueWithRetries("group", "connection", 1, 0, TimeUnit.NANOSECONDS));
     }
 
-    /** Verify failure to delete due to timeout error. */
+    /**
+     * Verify failure to delete due to timeout error.
+     */
     @Test(expected = NifiClientRuntimeException.class)
     public void deleteQueueWithTimeout() {
         // Mock drop request

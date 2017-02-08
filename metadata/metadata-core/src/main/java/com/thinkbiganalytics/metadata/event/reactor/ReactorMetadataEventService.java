@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.event.reactor;
 
@@ -50,17 +50,15 @@ import reactor.fn.Consumer;
  *
  */
 public class ReactorMetadataEventService implements MetadataEventService {
-    
+
     private static final Logger log = LoggerFactory.getLogger(ReactorMetadataEventService.class);
-    
+    private final Map<MetadataEventListener<?>, Registration<?, ?>> registrations;
     @Inject
     @Named("metadataEventBus")
     private EventBus eventBus;
 
-    private final Map<MetadataEventListener<?>, Registration<?, ?>> registrations;
-    
     /**
-     * 
+     *
      */
     public ReactorMetadataEventService() {
         this.registrations = new ConcurrentHashMap<>();
@@ -73,7 +71,7 @@ public class ReactorMetadataEventService implements MetadataEventService {
     @Override
     public <E extends MetadataEvent<? extends Serializable>> void notify(E event) {
         log.debug("Notify event: {}", event);
-        
+
         this.eventBus.notify(event, Event.wrap(event));
     }
 
@@ -84,27 +82,27 @@ public class ReactorMetadataEventService implements MetadataEventService {
     public <E extends MetadataEvent<? extends Serializable>> void addListener(MetadataEventListener<E> listener) {
         log.debug("Adding event listener: {}", listener);
 
-        Registration<?,?> reg = this.eventBus.on(asSelector(listener), asConsumer(listener));
+        Registration<?, ?> reg = this.eventBus.on(asSelector(listener), asConsumer(listener));
         this.registrations.put(listener, reg);
     }
-    
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.event.MetadataEventService#addListener(com.thinkbiganalytics.metadata.api.event.MetadataEventListener, com.thinkbiganalytics.metadata.api.event.EventMatcher)
      */
     @Override
     public <E extends MetadataEvent<? extends Serializable>> void addListener(MetadataEventListener<E> listener, EventMatcher<E> matcher) {
-       log.debug("Adding event listener: {}", listener);
-        
-       Registration<?,?> reg = this.eventBus.on(asSelector(matcher), asConsumer(listener));
-       this.registrations.put(listener, reg);
+        log.debug("Adding event listener: {}", listener);
+
+        Registration<?, ?> reg = this.eventBus.on(asSelector(matcher), asConsumer(listener));
+        this.registrations.put(listener, reg);
     }
 
     @Override
     public void removeListener(MetadataEventListener<?> listener) {
         log.debug("Removing event listener: {}", listener);
-        
+
         Registration<?, ?> reg = this.registrations.remove(listener);
-        
+
         if (reg != null) {
             reg.cancel();
         }
@@ -113,7 +111,7 @@ public class ReactorMetadataEventService implements MetadataEventService {
     private <E extends MetadataEvent<? extends Serializable>> Selector<E> asSelector(MetadataEventListener<E> listener) {
         return new EventTypeMatcher<>(listener);
     }
-    
+
     private <E extends MetadataEvent<? extends Serializable>> Selector<E> asSelector(EventMatcher<E> matcher) {
         // TODO Auto-generated method stub
         return null;
@@ -122,10 +120,10 @@ public class ReactorMetadataEventService implements MetadataEventService {
     private <E extends MetadataEvent<? extends Serializable>> Consumer<Event<E>> asConsumer(MetadataEventListener<E> listener) {
         return new ListenerConsumer<>(listener);
     }
-    
-    
+
+
     private static class ListenerConsumer<E extends MetadataEvent<? extends Serializable>> implements Consumer<Event<E>> {
-        
+
         private final MetadataEventListener<E> listener;
 
         public ListenerConsumer(MetadataEventListener<E> listener) {
@@ -139,28 +137,27 @@ public class ReactorMetadataEventService implements MetadataEventService {
         }
     }
 
-    
-    
+
     private static class EventTypeMatcher<E extends MetadataEvent<? extends Serializable>> implements EventMatcher<E>, Selector<E> {
-        
+
         private final Class<? extends MetadataEvent<?>> eventClass;
         private final Class<? extends Serializable> dataClass;
-        
+
         public EventTypeMatcher(MetadataEventListener<E> listener) {
             ResolvableType listenerType = ResolvableType.forClass(MetadataEventListener.class, listener.getClass());
-            
+
             @SuppressWarnings("unchecked")
             Class<? extends MetadataEvent<?>> evClass = (Class<? extends MetadataEvent<?>>) listenerType.resolveGeneric(0);
-            
+
             ResolvableType evType = ResolvableType.forClass(MetadataEvent.class, evClass);
-            
+
             @SuppressWarnings("unchecked")
             Class<? extends Serializable> serClass = (Class<? extends Serializable>) evType.resolveGeneric(0);
-            
+
             this.eventClass = evClass;
             this.dataClass = serClass;
         }
-        
+
         @Override
         public boolean test(E event) {
             if (this.eventClass.isAssignableFrom(event.getClass())) {
@@ -169,7 +166,7 @@ public class ReactorMetadataEventService implements MetadataEventService {
                 return false;
             }
         }
-        
+
         @Override
         public boolean matches(E event) {
             return test(event);

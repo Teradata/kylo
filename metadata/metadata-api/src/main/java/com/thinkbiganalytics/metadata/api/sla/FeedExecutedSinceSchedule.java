@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.api.sla;
 
@@ -36,7 +36,7 @@ public class FeedExecutedSinceSchedule extends DependentFeed {
 
     private transient CronExpression cronExpression;
     private String cronString;
-    
+
     public FeedExecutedSinceSchedule() {
     }
 
@@ -57,21 +57,21 @@ public class FeedExecutedSinceSchedule extends DependentFeed {
         this.cronExpression = cronExpression;
         this.cronString = cronExpression.toString();
     }
-    
+
     public CronExpression getCronExpression() {
         return cronExpression;
     }
-    
+
     @Override
     @Transient
     public String getDescription() {
         return "feed " + getFeedName() + " has executed since " + getCronExpression();
     }
-    
+
     protected String getCronString() {
         return cronString;
     }
-    
+
     protected void setCronString(String cronString) {
         this.cronString = cronString;
         try {

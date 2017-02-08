@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *  Return the Elastic Search Index Mapping data
+ * Return the Elastic Search Index Mapping data
  */
 public class IndexMappingDTO {
 
@@ -42,7 +42,7 @@ public class IndexMappingDTO {
     }
 
     public List<TypeMappingDTO> getTypes() {
-        if(types == null) {
+        if (types == null) {
             types = new ArrayList();
         }
         return types;
@@ -52,7 +52,7 @@ public class IndexMappingDTO {
         this.types = types;
     }
 
-    public void addType(TypeMappingDTO type){
+    public void addType(TypeMappingDTO type) {
         getTypes().add(type);
     }
 
@@ -60,8 +60,8 @@ public class IndexMappingDTO {
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
-                .add("index", index)
-                .add("types", types)
-                .toString();
+            .add("index", index)
+            .add("types", types)
+            .toString();
     }
 }

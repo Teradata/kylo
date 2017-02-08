@@ -75,7 +75,7 @@ public class FeedCategoryRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the list of categories.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "Returns the list of categories.", response = FeedCategory.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Returns the list of categories.", response = FeedCategory.class, responseContainer = "List")
     )
     public Response getCategories() {
         Collection<FeedCategory> categories = getMetadataService().getCategories();
@@ -87,10 +87,10 @@ public class FeedCategoryRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Creates or updates a category.")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "The category was saved successfully.", response = FeedCategory.class),
-            @ApiResponse(code = 400, message = "The category name is invalid.", response = RestResponseStatus.class),
-            @ApiResponse(code = 500, message = "The category could not be saved.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 200, message = "The category was saved successfully.", response = FeedCategory.class),
+                      @ApiResponse(code = 400, message = "The category name is invalid.", response = RestResponseStatus.class),
+                      @ApiResponse(code = 500, message = "The category could not be saved.", response = RestResponseStatus.class)
+                  })
     public Response saveCategory(@NewFeedCategory FeedCategory feedCategory) {
         getMetadataService().saveCategory(feedCategory);
         return Response.ok(feedCategory).build();
@@ -101,10 +101,10 @@ public class FeedCategoryRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Deletes the specified category.")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "The category was deleted."),
-            @ApiResponse(code = 400, message = "The categoryId is invalid.", response = RestResponseStatus.class),
-            @ApiResponse(code = 500, message = "The category could not be deleted.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 200, message = "The category was deleted."),
+                      @ApiResponse(code = 400, message = "The categoryId is invalid.", response = RestResponseStatus.class),
+                      @ApiResponse(code = 500, message = "The category could not be deleted.", response = RestResponseStatus.class)
+                  })
     public Response deleteCategory(@UUID @PathParam("categoryId") String categoryId) throws InvalidOperationException {
         getMetadataService().deleteCategory(categoryId);
         return Response.ok().build();
@@ -115,9 +115,9 @@ public class FeedCategoryRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the feeds for the specified category.")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "The list of related feeds."),
-            @ApiResponse(code = 400, message = "The categoryId is invalid.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 200, message = "The list of related feeds."),
+                      @ApiResponse(code = 400, message = "The categoryId is invalid.", response = RestResponseStatus.class)
+                  })
     public Response getCategory(@UUID @PathParam("categoryId") String categoryId) {
         List<FeedSummary> summaryList = getMetadataService().getFeedSummaryForCategory(categoryId);
         return Response.ok(summaryList).build();
@@ -153,9 +153,9 @@ public class FeedCategoryRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Returns the user fields for feeds within the specified category.")
     @ApiResponses({
-        @ApiResponse(code = 200, message = "Returns the user fields.", response = UserProperty.class, responseContainer = "List"),
-        @ApiResponse(code = 400, message = "The categoryId is invalid.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 200, message = "Returns the user fields.", response = UserProperty.class, responseContainer = "List"),
+                      @ApiResponse(code = 400, message = "The categoryId is invalid.", response = RestResponseStatus.class)
+                  })
     @Nonnull
     public Response getFeedUserFields(@Nonnull @PathParam("categoryId") @UUID final String categoryId) {
         final Set<UserProperty> userFields = getMetadataService().getFeedUserFields(categoryId).orElseThrow(NotFoundException::new);

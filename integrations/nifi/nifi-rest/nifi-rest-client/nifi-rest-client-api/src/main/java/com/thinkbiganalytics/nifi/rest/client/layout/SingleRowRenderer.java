@@ -24,16 +24,10 @@ import org.apache.nifi.web.api.dto.PositionDTO;
 
 /**
  * Render items in a row horizontally
- *
  */
 public class SingleRowRenderer extends AbstractRenderer {
 
-    enum Location {
-        CENTER, LEFT, RIGHT;
-    }
-
     private Double yValue;
-
 
     public SingleRowRenderer(LayoutGroup layoutGroup, AlignComponentsConfig alignmentConfig, Double yValue) {
         super(layoutGroup, alignmentConfig);
@@ -86,6 +80,10 @@ public class SingleRowRenderer extends AbstractRenderer {
 
         }
         return newPosition;
+    }
+
+    enum Location {
+        CENTER, LEFT, RIGHT;
     }
 
 }

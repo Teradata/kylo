@@ -140,6 +140,13 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
         });
     }
 
+    @Override
+    public void setUserFields(@Nonnull Set<UserField> userFields) {
+        this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ADMIN_CATEGORIES);
+
+        categoryProvider.setUserFields(UserPropertyTransform.toUserFieldDescriptors(userFields));
+    }
+
     @Nonnull
     @Override
     public Set<UserProperty> getUserProperties() {
@@ -148,12 +155,5 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
 
             return UserPropertyTransform.toUserProperties(Collections.emptyMap(), categoryProvider.getUserFields());
         });
-    }
-
-    @Override
-    public void setUserFields(@Nonnull Set<UserField> userFields) {
-        this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ADMIN_CATEGORIES);
-
-        categoryProvider.setUserFields(UserPropertyTransform.toUserFieldDescriptors(userFields));
     }
 }

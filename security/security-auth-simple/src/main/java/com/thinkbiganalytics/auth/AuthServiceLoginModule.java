@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.auth;
 
@@ -43,9 +43,9 @@ import javax.security.auth.callback.PasswordCallback;
 public class AuthServiceLoginModule extends AbstractLoginModule {
 
     private static final Logger log = LoggerFactory.getLogger(AuthServiceLoginModule.class);
-    
+
     private static final String AUTH_SERVICE_OPTION = "authService";
-    
+
     private AuthenticationService authService;
     private UsernamePrincipal user;
 
@@ -55,7 +55,7 @@ public class AuthServiceLoginModule extends AbstractLoginModule {
     @Override
     public void initialize(Subject subject, CallbackHandler callbackHandler, Map<String, ?> sharedState, Map<String, ?> options) {
         super.initialize(subject, callbackHandler, sharedState, options);
-        
+
         if (options.containsKey(AUTH_SERVICE_OPTION)) {
             this.authService = (AuthenticationService) options.get(AUTH_SERVICE_OPTION);
         } else {
@@ -68,17 +68,17 @@ public class AuthServiceLoginModule extends AbstractLoginModule {
     public boolean doLogin() throws Exception {
         NameCallback nameCb = new NameCallback("username");
         PasswordCallback passwordCb = new PasswordCallback("password", false);
-        
+
         handle(nameCb, passwordCb);
-        
+
         if (this.authService.authenticate(nameCb.getName(), new String(passwordCb.getPassword()))) {
             log.debug("Login success for: {}", nameCb.getName());
-            
+
             this.user = new UsernamePrincipal(nameCb.getName());
         } else {
             log.debug("Login failure for: {}", nameCb.getName());
         }
-        
+
         return true;
     }
 

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.core.dataset;
 
@@ -82,11 +82,12 @@ public class BaseDatasource implements Datasource {
 
 
     protected static class DatasourceId implements ID {
+
         private UUID uuid = UUID.randomUUID();
-        
+
         public DatasourceId() {
         }
-        
+
         public DatasourceId(Serializable ser) {
             if (ser instanceof String) {
                 this.uuid = UUID.fromString((String) ser);
@@ -96,7 +97,7 @@ public class BaseDatasource implements Datasource {
                 throw new IllegalArgumentException("Unknown ID value: " + ser);
             }
         }
-        
+
         @Override
         public boolean equals(Object obj) {
             if (obj instanceof DatasourceId) {
@@ -106,12 +107,12 @@ public class BaseDatasource implements Datasource {
                 return false;
             }
         }
-        
+
         @Override
         public int hashCode() {
             return Objects.hash(getClass(), this.uuid);
         }
-        
+
         @Override
         public String toString() {
             return this.uuid.toString();

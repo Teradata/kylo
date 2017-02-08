@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.modeshape;
 
@@ -50,38 +50,38 @@ import javax.jcr.Repository;
  *
  */
 @Configuration
-@Import({ MetadataJcrConfig.class, ModeShapeAuthConfig.class })
+@Import({MetadataJcrConfig.class, ModeShapeAuthConfig.class})
 public class ModeShapeEngineConfig {
-    
+
     private static final Logger log = LoggerFactory.getLogger(ModeShapeEngineConfig.class);
-    
+
     private static final String[] CONFIG_PROPS = {"modeshape.datasource.driverClassName",
                                                   "modeshape.datasource.url",
                                                   "modeshape.datasource.username",
                                                   "modeshape.datasource.password"
     };
-    
+
     @Inject
     private Environment environment;
-    
-    
+
+
     @PreDestroy
     public void stopEngine() throws InterruptedException, ExecutionException {
         log.info("Stopping ModeShape engine...");
         Future<Boolean> future = modeShapeEngine().shutdown();
-        
-        if ( future.get() ) {
+
+        if (future.get()) {
             log.info("ModeShape engine stopped");
         } else {
             log.info("ModeShape engine not reported as stopped");
         }
     }
-    
+
     @Bean
     public TransactionManagerLookup transactionManagerLookup() throws IOException {
         return metadataRepoConfig().getTransactionManagerLookup();
     }
-    
+
     @Bean
     public RepositoryConfiguration metadataRepoConfig() throws IOException {
         // Expose the values of the config properties as system properties so that they can be used
@@ -91,18 +91,18 @@ public class ModeShapeEngineConfig {
                 System.setProperty(prop, this.environment.getProperty(prop));
             }
         }
-        
+
         ClassPathResource res = new ClassPathResource("/metadata-repository.json");
         RepositoryConfiguration config = RepositoryConfiguration.read(res.getURL());
-        
+
         Problems problems = config.validate();
         if (problems.hasErrors()) {
             log.error("Problems with the ModeShape repository configuration: \n{}", problems);
             throw new RuntimeException("Problems with the ModeShape repository configuration: " + problems);
         }
-        
+
 //        config.getSecurity();
-        
+
         return config;
     }
 
@@ -114,17 +114,17 @@ public class ModeShapeEngineConfig {
         log.info("ModeShape engine started");
         return engine;
     }
-    
-    @Bean(name="metadataJcrRepository")
+
+    @Bean(name = "metadataJcrRepository")
     public Repository metadataJcrRepository() throws Exception {
         JcrRepository repo = modeShapeEngine().deploy(metadataRepoConfig());
-        
+
         Problems problems = repo.getStartupProblems();
         if (problems.hasErrors()) {
             log.error("Problems starting the metadata ModeShape repository: {}  \n{}", repo.getName(), problems);
             throw new RuntimeException("Problems starting the ModeShape metadata repository: " + problems);
         }
-        
+
         return repo;
     }
 }

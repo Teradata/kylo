@@ -44,83 +44,55 @@ import java.util.List;
 public class TableSetup {
 
     private static final Logger log = LoggerFactory.getLogger(TableSetup.class);
-
-    @JsonSerialize(as = DefaultTableSchema.class)
-    @JsonDeserialize(as = DefaultTableSchema.class)
-    private TableSchema tableSchema;
-
-    @JsonSerialize(as = DefaultTableSchema.class)
-    @JsonDeserialize(as = DefaultTableSchema.class)
-    private TableSchema sourceTableSchema;
-
-    @JsonSerialize(as = DefaultTableSchema.class)
-    @JsonDeserialize(as = DefaultTableSchema.class)
-    private TableSchema feedTableSchema;
-
-
-    private String method;
-
-    private String description = "";
-
-    private List<FieldPolicy> fieldPolicies;
-
-    private List<PartitionField> partitions;
-
-    private String tableType;
-
-    @MetadataField
-    private String incrementalDateField;
-
-    @MetadataField(description = "Source Field to be used when incrementally querying Table Data ")
-    private String sourceTableIncrementalDateField;
-
-    private TableOptions options;
-
-    @MetadataField(description = "Hive Row Format String for the Feed Table (example: ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' LINES TERMINATED BY '\\n' STORED AS\n  TEXTFILE ")
-    private String feedFormat;
-
-    @MetadataField(description = "Format of the Destination Table storage. Supported Values are: [STORED AS PARQUET, STORED AS ORC]")
-    private String targetFormat;
-
-    @MetadataField(description = "Destination Hive Table Properties string (i.e.  tblproperties(\"orc.compress\"=\"SNAPPY\") ")
-    private String targetTblProperties;
-
-    @MetadataField(description = "Strategy for merging data into the destination.  Supported Values are [Sync, Merge, Dedupe and Merge]")
-    private String targetMergeStrategy;
-
-    @MetadataField(description = "JSON array of FieldPolicy objects")
-    private String fieldPoliciesJson;
-
-    @MetadataField(description = "Nifi propety name 'elasticsearch.columns'")
-    private String fieldIndexString;
-
-    @MetadataField(description = "Nifi property name 'table_partition_specs'")
-    private String partitionStructure;
-
-    @MetadataField(description = "Nifi property name 'partition_specs'")
-    private String partitionSpecs;
-
     @MetadataField(description = "Nifi property name 'table_column_specs'")
     public String fieldStructure;
-
-    @MetadataField(description = "List of destination (feed table) field names separated by a new line")
-    private String fieldsString;
-
-    @MetadataField(description = "List of source table field names separated by a new line")
-    private String sourceFields;
-
-    @MetadataField(description = "List of source table field names separated by a comma")
-    private String sourceFieldsCommaString;
-
-    @MetadataField(description = "Structure of the feed table")
-    private String feedFieldStructure;
-
     @Deprecated
     //this is now referenced in the sourceTableSchema.name
     //${metadata.table.existingTableName} will still work, but it is advised to switch it to ${metadata.table.sourceTableSchema.name}
     public String existingTableName;
-
-
+    @JsonSerialize(as = DefaultTableSchema.class)
+    @JsonDeserialize(as = DefaultTableSchema.class)
+    private TableSchema tableSchema;
+    @JsonSerialize(as = DefaultTableSchema.class)
+    @JsonDeserialize(as = DefaultTableSchema.class)
+    private TableSchema sourceTableSchema;
+    @JsonSerialize(as = DefaultTableSchema.class)
+    @JsonDeserialize(as = DefaultTableSchema.class)
+    private TableSchema feedTableSchema;
+    private String method;
+    private String description = "";
+    private List<FieldPolicy> fieldPolicies;
+    private List<PartitionField> partitions;
+    private String tableType;
+    @MetadataField
+    private String incrementalDateField;
+    @MetadataField(description = "Source Field to be used when incrementally querying Table Data ")
+    private String sourceTableIncrementalDateField;
+    private TableOptions options;
+    @MetadataField(description = "Hive Row Format String for the Feed Table (example: ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' LINES TERMINATED BY '\\n' STORED AS\n  TEXTFILE ")
+    private String feedFormat;
+    @MetadataField(description = "Format of the Destination Table storage. Supported Values are: [STORED AS PARQUET, STORED AS ORC]")
+    private String targetFormat;
+    @MetadataField(description = "Destination Hive Table Properties string (i.e.  tblproperties(\"orc.compress\"=\"SNAPPY\") ")
+    private String targetTblProperties;
+    @MetadataField(description = "Strategy for merging data into the destination.  Supported Values are [Sync, Merge, Dedupe and Merge]")
+    private String targetMergeStrategy;
+    @MetadataField(description = "JSON array of FieldPolicy objects")
+    private String fieldPoliciesJson;
+    @MetadataField(description = "Nifi propety name 'elasticsearch.columns'")
+    private String fieldIndexString;
+    @MetadataField(description = "Nifi property name 'table_partition_specs'")
+    private String partitionStructure;
+    @MetadataField(description = "Nifi property name 'partition_specs'")
+    private String partitionSpecs;
+    @MetadataField(description = "List of destination (feed table) field names separated by a new line")
+    private String fieldsString;
+    @MetadataField(description = "List of source table field names separated by a new line")
+    private String sourceFields;
+    @MetadataField(description = "List of source table field names separated by a comma")
+    private String sourceFieldsCommaString;
+    @MetadataField(description = "Structure of the feed table")
+    private String feedFieldStructure;
     @MetadataField(description = "List of fields that can be null separated by a comma")
     private String nullableFields;
 
@@ -159,12 +131,12 @@ public class TableSetup {
         this.partitionStructure = partitionStructure;
     }
 
-    public void setFieldStructure(String fieldStructure) {
-        this.fieldStructure = fieldStructure;
-    }
-
     public String getFieldStructure() {
         return fieldStructure;
+    }
+
+    public void setFieldStructure(String fieldStructure) {
+        this.fieldStructure = fieldStructure;
     }
 
     public String getFieldsString() {
@@ -482,16 +454,16 @@ public class TableSetup {
         return sourceTableSchema;
     }
 
+    public void setSourceTableSchema(TableSchema sourceTableSchema) {
+        this.sourceTableSchema = sourceTableSchema;
+    }
+
     public TableSchema getFeedTableSchema() {
         return feedTableSchema;
     }
 
     public void setFeedTableSchema(TableSchema feedTableSchema) {
         this.feedTableSchema = feedTableSchema;
-    }
-
-    public void setSourceTableSchema(TableSchema sourceTableSchema) {
-        this.sourceTableSchema = sourceTableSchema;
     }
 
     public String getSourceFields() {

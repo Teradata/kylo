@@ -27,7 +27,6 @@ import org.apache.nifi.web.api.dto.FlowSnippetDTO;
 import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.status.ProcessGroupStatusDTO;
-import org.apache.nifi.web.api.entity.ProcessGroupEntity;
 
 import java.util.Optional;
 import java.util.Set;
@@ -43,7 +42,7 @@ public interface NiFiProcessGroupsRestClient {
      * Creates a process group.
      *
      * @param parentProcessGroupId the parent process group id
-     * @param name the name for the new process group
+     * @param name                 the name for the new process group
      * @return the new process group
      * @throws NifiComponentNotFoundException if the parent process group does not exist
      */
@@ -54,8 +53,8 @@ public interface NiFiProcessGroupsRestClient {
      * Creates a connection.
      *
      * @param processGroupId the process group id
-     * @param source the connection source
-     * @param dest the connection destination
+     * @param source         the connection source
+     * @param dest           the connection destination
      * @return the connection
      * @throws NifiComponentNotFoundException if the process group does not exist
      */
@@ -65,11 +64,11 @@ public interface NiFiProcessGroupsRestClient {
     /**
      * Creates a controller service.
      *
-     * @param processGroupId the process group id
+     * @param processGroupId    the process group id
      * @param controllerService the controller service
      * @return the controller service
      * @throws NifiComponentNotFoundException if the process group does not exist
-     * @throws UnsupportedOperationException if the NiFi version is pre-1.0
+     * @throws UnsupportedOperationException  if the NiFi version is pre-1.0
      */
     @Nonnull
     ControllerServiceDTO createControllerService(@Nonnull String processGroupId, @Nonnull ControllerServiceDTO controllerService);
@@ -78,7 +77,7 @@ public interface NiFiProcessGroupsRestClient {
      * Creates an input port.
      *
      * @param processGroupId the process group id
-     * @param inputPort the input port to create
+     * @param inputPort      the input port to create
      * @return the new input port
      * @throws NifiComponentNotFoundException if the process group does not exist
      */
@@ -89,7 +88,7 @@ public interface NiFiProcessGroupsRestClient {
      * Creates an output port.
      *
      * @param processGroupId the process group id
-     * @param outputPort the output port to create
+     * @param outputPort     the output port to create
      * @return the new output port
      * @throws NifiComponentNotFoundException if the process group does not exist
      */
@@ -120,8 +119,8 @@ public interface NiFiProcessGroupsRestClient {
      * Gets a process group.
      *
      * @param processGroupId the process group id
-     * @param recursive {@code true} to include all encapsulated components, or {@code false} for just the immediate children
-     * @param verbose {@code true} to include any encapsulated components, or {@code false} for just details about the process group
+     * @param recursive      {@code true} to include all encapsulated components, or {@code false} for just the immediate children
+     * @param verbose        {@code true} to include any encapsulated components, or {@code false} for just details about the process group
      * @return the process group, if found
      */
     @Nonnull
@@ -131,9 +130,9 @@ public interface NiFiProcessGroupsRestClient {
      * Gets the child process group with the specified name, optionally including all sub-components.
      *
      * @param parentGroupId the id of the parent process group
-     * @param groupName the name of the process group to find
-     * @param recursive {@code true} to include all encapsulated components, or {@code false} for just the immediate children
-     * @param verbose {@code true} to include any encapsulated components, or {@code false} for just details about the process group
+     * @param groupName     the name of the process group to find
+     * @param recursive     {@code true} to include all encapsulated components, or {@code false} for just the immediate children
+     * @param verbose       {@code true} to include any encapsulated components, or {@code false} for just details about the process group
      * @return the child process group, or {@code null} if not found
      * @throws NifiComponentNotFoundException if the parent process group does not exist
      */
@@ -143,8 +142,6 @@ public interface NiFiProcessGroupsRestClient {
 
     /**
      * Get the Status for a processGroup
-     * @param processGroupId
-     * @return
      */
     Optional<ProcessGroupStatusDTO> getStatus(String processGroupId);
 
@@ -200,7 +197,7 @@ public interface NiFiProcessGroupsRestClient {
      * Instantiates a template.
      *
      * @param processGroupId the process group id
-     * @param templateId the template id
+     * @param templateId     the template id
      * @return the created flow
      * @throws NifiComponentNotFoundException if the process group or template does not exist
      */
@@ -211,8 +208,8 @@ public interface NiFiProcessGroupsRestClient {
      * Schedule or unschedule components in the specified Process Group.
      *
      * @param processGroupId the process group id
-     * @param parentGroupId the parent process group id
-     * @param state the desired state of the descendant components
+     * @param parentGroupId  the parent process group id
+     * @param state          the desired state of the descendant components
      * @throws NifiComponentNotFoundException if the process group does not exist
      */
     void schedule(@Nonnull String processGroupId, @Nonnull String parentGroupId, @Nonnull NiFiComponentState state);

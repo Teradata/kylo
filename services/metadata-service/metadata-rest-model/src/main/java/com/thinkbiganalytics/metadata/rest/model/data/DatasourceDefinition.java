@@ -33,26 +33,13 @@ import java.util.stream.Collectors;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DatasourceDefinition {
 
-    public enum ConnectionType {
-        SOURCE, DESTINATION;
-    }
-
     private String processorType;
-
     private ConnectionType connectionType;
-
-
     private Set<String> datasourcePropertyKeys;
-
     private String datasourceType;
-
     private String identityString;
-
     private String description;
-
     private String title;
-
-
 
     public String getProcessorType() {
         return processorType;
@@ -118,5 +105,9 @@ public class DatasourceDefinition {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public enum ConnectionType {
+        SOURCE, DESTINATION;
     }
 }

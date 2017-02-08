@@ -46,8 +46,8 @@ public class JpaJcrServiceLevelAgreementChecker extends DefaultServiceLevelAgree
     /**
      * Runs the assessment provider on the provided agreement and acts accordingly.
      *
-     * @param agreement     The agreement to assess
-     * @param assessment    The strategy of assessment
+     * @param agreement  The agreement to assess
+     * @param assessment The strategy of assessment
      * @return true if the assessment succeeds or is not found
      */
     @Override

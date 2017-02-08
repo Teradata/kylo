@@ -27,19 +27,29 @@ import java.util.Set;
  */
 public class UserPrincipal {
 
-    /** Display name for this user */
+    /**
+     * Display name for this user
+     */
     private String displayName;
 
-    /** Email address for this user */
+    /**
+     * Email address for this user
+     */
     private String email;
 
-    /** Indicates if user is active or disabled */
+    /**
+     * Indicates if user is active or disabled
+     */
     private boolean enabled;
 
-    /** System names of groups the user belongs to */
+    /**
+     * System names of groups the user belongs to
+     */
     private Set<String> groups;
 
-    /** Username for this user */
+    /**
+     * Username for this user
+     */
     private String systemName;
 
     /**
@@ -71,7 +81,6 @@ public class UserPrincipal {
 
     /**
      * Sets the email address for this user.
-     * @param email
      */
     public void setEmail(final String email) {
         this.email = email;

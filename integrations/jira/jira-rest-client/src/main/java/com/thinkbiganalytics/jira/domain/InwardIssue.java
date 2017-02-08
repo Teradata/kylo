@@ -1,4 +1,3 @@
-
 package com.thinkbiganalytics.jira.domain;
 
 /*-
@@ -36,11 +35,11 @@ import javax.annotation.Generated;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("org.jsonschema2pojo")
 @JsonPropertyOrder({
-    "id",
-    "key",
-    "self",
-    "fields"
-})
+                       "id",
+                       "key",
+                       "self",
+                       "fields"
+                   })
 public class InwardIssue {
 
     @JsonProperty("id")
@@ -55,9 +54,7 @@ public class InwardIssue {
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
-     * 
-     * @return
-     *     The id
+     * @return The id
      */
     @JsonProperty("id")
     public String getId() {
@@ -65,9 +62,7 @@ public class InwardIssue {
     }
 
     /**
-     * 
-     * @param id
-     *     The id
+     * @param id The id
      */
     @JsonProperty("id")
     public void setId(String id) {
@@ -75,9 +70,7 @@ public class InwardIssue {
     }
 
     /**
-     * 
-     * @return
-     *     The key
+     * @return The key
      */
     @JsonProperty("key")
     public String getKey() {
@@ -85,9 +78,7 @@ public class InwardIssue {
     }
 
     /**
-     * 
-     * @param key
-     *     The key
+     * @param key The key
      */
     @JsonProperty("key")
     public void setKey(String key) {
@@ -95,9 +86,7 @@ public class InwardIssue {
     }
 
     /**
-     * 
-     * @return
-     *     The self
+     * @return The self
      */
     @JsonProperty("self")
     public String getSelf() {
@@ -105,9 +94,7 @@ public class InwardIssue {
     }
 
     /**
-     * 
-     * @param self
-     *     The self
+     * @param self The self
      */
     @JsonProperty("self")
     public void setSelf(String self) {
@@ -115,9 +102,7 @@ public class InwardIssue {
     }
 
     /**
-     * 
-     * @return
-     *     The fields
+     * @return The fields
      */
     @JsonProperty("fields")
     public Fields getFields() {
@@ -125,9 +110,7 @@ public class InwardIssue {
     }
 
     /**
-     * 
-     * @param fields
-     *     The fields
+     * @param fields The fields
      */
     @JsonProperty("fields")
     public void setFields(Fields fields) {

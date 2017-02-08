@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.modeshape.security;
 
@@ -44,9 +44,9 @@ import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
  */
 @Configuration
 public class ModeShapeAuthConfig {
-    
+
     @Bean
-    public AuthorityGranter modeShapeAuthorityGranter()  {
+    public AuthorityGranter modeShapeAuthorityGranter() {
         return new ModeShapeAuthorityGranter();
     }
 
@@ -63,18 +63,18 @@ public class ModeShapeAuthConfig {
 
         // @formatter:on
     }
-    
+
     // TODO: Move this to somewhere else more appropriate
     @Bean
     public AccessController accessController() {
         return new DefaultAccessController();
     }
-    
+
     @Bean
     public JcrAllowedActionsGroupProvider allowedModuleActionsProvider() {
         return new JcrAllowedActionsGroupProvider();
     }
-    
+
     @Bean(name = "prototypesActionGroupsBuilder")
     @Scope("prototype")
     public ActionsModuleBuilder prototypesActionGroupsBuilder() {

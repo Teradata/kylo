@@ -47,7 +47,7 @@ import javax.inject.Inject;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @TestPropertySource(locations = "classpath:test-application.properties")
-@SpringApplicationConfiguration(classes = {CommonsSpringConfiguration.class, OperationalMetadataConfig.class, TestJpaConfiguration.class })
+@SpringApplicationConfiguration(classes = {CommonsSpringConfiguration.class, OperationalMetadataConfig.class, TestJpaConfiguration.class})
 public class JpaFeedProviderTest {
 
     @Inject
@@ -66,7 +66,7 @@ public class JpaFeedProviderTest {
         });
 
         metadataAccess.read(() -> {
-            List<OpsManagerFeed> feeds = feedProvider.findAll("name:"+name);
+            List<OpsManagerFeed> feeds = feedProvider.findAll("name:" + name);
             Assert.assertTrue(feeds != null && !feeds.isEmpty());
 
             List<String> feedNames = feedProvider.getFeedNames();
@@ -79,9 +79,9 @@ public class JpaFeedProviderTest {
     }
 
     @Test
-    public void testFeedHealth(){
+    public void testFeedHealth() {
         metadataAccess.read(() -> {
-          List<? extends com.thinkbiganalytics.metadata.api.feed.FeedHealth> health =  feedProvider.getFeedHealth();
+            List<? extends com.thinkbiganalytics.metadata.api.feed.FeedHealth> health = feedProvider.getFeedHealth();
 
             return null;
         });
@@ -89,14 +89,14 @@ public class JpaFeedProviderTest {
 
 
     @Test
-    public void testJobStatusCountFromNow(){
+    public void testJobStatusCountFromNow() {
         String feedName = "movies.new_releases";
         metadataAccess.read(() -> {
             Period period = DateTimeUtil.period("10W");
-            List<JobStatusCount> counts = feedProvider.getJobStatusCountByDateFromNow(feedName,period);
+            List<JobStatusCount> counts = feedProvider.getJobStatusCountByDateFromNow(feedName, period);
             return counts;
         });
 
     }
-    
+
 }

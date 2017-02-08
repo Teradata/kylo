@@ -49,24 +49,32 @@ import javax.ws.rs.WebApplicationException;
  */
 public class KyloRestLoginModule extends AbstractLoginModule implements LoginModule {
 
-    private static final Logger log = LoggerFactory.getLogger(KyloRestLoginModule.class);
-
-    /** Option for the URL of the REST API endpoint */
+    /**
+     * Option for the URL of the REST API endpoint
+     */
     public static final String LOGIN_URL = "loginUrl";
-    
-    /** Option for the URL of the REST API endpoint */
+    /**
+     * Option for the URL of the REST API endpoint
+     */
     public static final String LOGIN_USER = "loginUser";
-    
-    /** Option for the URL of the REST API endpoint */
+    /**
+     * Option for the URL of the REST API endpoint
+     */
     public static final String LOGIN_PASSWORD = "loginPassword";
-
-    /** REST API client configuration */
+    private static final Logger log = LoggerFactory.getLogger(KyloRestLoginModule.class);
+    /**
+     * REST API client configuration
+     */
     private LoginJerseyClientConfig config;
-    
-    /** Alternate username (such as service account) to use when making the REST call */
+
+    /**
+     * Alternate username (such as service account) to use when making the REST call
+     */
     private String loginUser = null;
-    
-    /** The password to use when a loginUser property is set */
+
+    /**
+     * The password to use when a loginUser property is set
+     */
     private String loginPassword = null;
 
     @Override
@@ -78,7 +86,7 @@ public class KyloRestLoginModule extends AbstractLoginModule implements LoginMod
             config = new LoginJerseyClientConfig(uri);
             loginUser = (String) getOption(LOGIN_USER).orElse(null);
             loginPassword = loginUser == null ? null : (String) getOption(LOGIN_PASSWORD)
-                                .orElseThrow(() -> new IllegalArgumentException("A REST login password is required if a login username was provided"));
+                .orElseThrow(() -> new IllegalArgumentException("A REST login password is required if a login username was provided"));
         } catch (RuntimeException e) {
             log.error("Unhandled exception during initialization", e);
             throw e;
@@ -92,7 +100,7 @@ public class KyloRestLoginModule extends AbstractLoginModule implements LoginMod
         final PasswordCallback passwordCallback = new PasswordCallback("Password: ", false);
         final String username;
         final String password;
-        
+
         if (loginUser == null) {
             // Use user's own username and password to access the REST API if a loginUser was not provided.
             handle(nameCallback, passwordCallback);

@@ -30,8 +30,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class NifiServiceCheckSpringConfiguration {
 
-  @Bean(name = "nifiServiceStatus")
-  public NifiServiceStatusCheck nifiServiceStatusCheck() {
-    return new NifiServiceStatusCheck();
-  }
+    @Bean(name = "nifiServiceStatus")
+    public NifiServiceStatusCheck nifiServiceStatusCheck() {
+        return new NifiServiceStatusCheck();
+    }
 }

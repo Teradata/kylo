@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.alerts.spi.mem;
 
@@ -68,13 +68,11 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  *
  */
 public class InMemoryAlertManager implements AlertManager {
-    
-    private static final Logger LOG = LoggerFactory.getLogger(InMemoryAlertManager.class);
-    
+
     public static final int MAX_ALERTS = 2000;
-    
+    private static final Logger LOG = LoggerFactory.getLogger(InMemoryAlertManager.class);
     private static AtomicReference<GenericAlert> NULL_REF = new AtomicReference<GenericAlert>(null);
-    
+
     private final Set<AlertDescriptor> descriptors;
     private final Set<AlertNotifyReceiver> alertReceivers;
     private final Map<Alert.ID, AtomicReference<GenericAlert>> alertsById;
@@ -83,10 +81,10 @@ public class InMemoryAlertManager implements AlertManager {
 
     private volatile Executor receiversExecutor;
     private AtomicInteger changeCount = new AtomicInteger(0);
-    
-    
+
+
     /**
-     * 
+     *
      */
     public InMemoryAlertManager() {
         this.descriptors = Collections.synchronizedSet(new HashSet<AlertDescriptor>());
@@ -94,7 +92,7 @@ public class InMemoryAlertManager implements AlertManager {
         this.alertsById = new ConcurrentHashMap<>();
         this.alertsByTime = new ConcurrentSkipListMap<>();
     }
-    
+
     public void setReceiversExecutor(Executor receiversExecutor) {
         synchronized (this) {
             this.receiversExecutor = receiversExecutor;
@@ -109,7 +107,7 @@ public class InMemoryAlertManager implements AlertManager {
                 }
             }
         }
-        
+
         return receiversExecutor;
     }
 
@@ -119,12 +117,7 @@ public class InMemoryAlertManager implements AlertManager {
             return new HashSet<>(this.descriptors);
         }
     }
-    
-    @Override
-    public boolean addDescriptor(AlertDescriptor descriptor) {
-        return this.descriptors.add(descriptor);
-    }
-    
+
     public void setAlertDescriptors(Collection<AlertDescriptor> types) {
         synchronized (this.descriptors) {
             this.descriptors.addAll(types);
@@ -132,10 +125,15 @@ public class InMemoryAlertManager implements AlertManager {
     }
 
     @Override
+    public boolean addDescriptor(AlertDescriptor descriptor) {
+        return this.descriptors.add(descriptor);
+    }
+
+    @Override
     public void addReceiver(AlertNotifyReceiver receiver) {
         this.alertReceivers.add(receiver);
     }
-    
+
     @Override
     public void removeReceiver(AlertNotifyReceiver receiver) {
         this.alertReceivers.remove(receiver);
@@ -145,19 +143,19 @@ public class InMemoryAlertManager implements AlertManager {
     public Optional<Alert> getAlert(ID id) {
         return Optional.ofNullable(this.alertsById.getOrDefault(id, NULL_REF).get());
     }
-    
+
     @Override
     public AlertCriteria criteria() {
         return new BaseAlertCriteria();
     }
-    
+
     @Override
     public ID resolve(Serializable ser) {
         if (ser instanceof String) {
             return new AlertID((String) ser);
         } else if (ser instanceof UUID) {
             return new AlertID((UUID) ser);
-        } else if (ser instanceof AlertID) { 
+        } else if (ser instanceof AlertID) {
             return (AlertID) ser;
         } else {
             throw new IllegalArgumentException("Invalid ID source format: " + ser.getClass());
@@ -169,9 +167,9 @@ public class InMemoryAlertManager implements AlertManager {
         BaseAlertCriteria predicate = (BaseAlertCriteria) (criteria == null ? criteria() : criteria);
         // TODO Grab a partition of the map first based on before/after times of criteria
         return this.alertsByTime.values().stream()
-                        .map(ref -> (Alert) ref.get())
-                        .filter(predicate)
-                        .iterator();
+            .map(ref -> (Alert) ref.get())
+            .filter(predicate)
+            .iterator();
     }
 //
 //    @Override
@@ -210,16 +208,19 @@ public class InMemoryAlertManager implements AlertManager {
     public <C extends Serializable> Alert create(URI type, Alert.Level level, String description, C content) {
         GenericAlert alert = new GenericAlert(type, level, description, content);
         DateTime createdTime = alert.getEvents().get(0).getChangeTime();
-        
+
         addAlert(alert, createdTime);
         return alert;
     }
-    
+
     private void updated(GenericAlert alert) {
-        this.alertsById.computeIfPresent(alert.getId(), 
-                                         (id, ref) -> { ref.set(alert); return ref; });
+        this.alertsById.computeIfPresent(alert.getId(),
+                                         (id, ref) -> {
+                                             ref.set(alert);
+                                             return ref;
+                                         });
     }
-    
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.alerts.spi.AlertManager#getUpdator(com.thinkbiganalytics.alerts.api.Alert)
      */
@@ -233,7 +234,7 @@ public class InMemoryAlertManager implements AlertManager {
         this.alertsLock.writeLock().lock();
         try {
             AtomicReference<GenericAlert> ref = this.alertsById.remove(id);
-            
+
             if (ref != null) {
                 this.alertsByTime.values().remove(ref);
                 return ref.get();
@@ -249,7 +250,7 @@ public class InMemoryAlertManager implements AlertManager {
     protected void addAlert(GenericAlert alert, DateTime createdTime) {
         AtomicReference<GenericAlert> ref = new AtomicReference<>(alert);
         int count = 0;
-        
+
         this.alertsLock.writeLock().lock();
         try {
             this.alertsByTime.put(createdTime, ref);
@@ -258,40 +259,136 @@ public class InMemoryAlertManager implements AlertManager {
         } finally {
             this.alertsLock.writeLock().unlock();
         }
-        
+
         LOG.info("Alert added - pending notifications: {}", count);
-        
+
         if (count > 0) {
             signalReceivers();
         }
     }
-    
-    
+
+
     private void signalReceivers() {
         Executor exec = getRespondersExecutor();
         final Set<AlertNotifyReceiver> receivers;
-        
+
         synchronized (this.alertReceivers) {
             receivers = new HashSet<>(this.alertReceivers);
         }
-        
+
         exec.execute(() -> {
             int count = InMemoryAlertManager.this.changeCount.get();
-            
+
             LOG.info("Notifying receivers: {} about events: {}", receivers.size(), count);
-            
+
             for (AlertNotifyReceiver receiver : receivers) {
                 receiver.alertsAvailable(count);
             }
-            
+
             InMemoryAlertManager.this.changeCount.getAndAdd(-count);
         });
     }
 
+    private static class AlertID implements Alert.ID {
+
+        private final UUID uuid;
+
+        public AlertID() {
+            this(UUID.randomUUID());
+        }
+
+        public AlertID(String str) {
+            this(UUID.fromString(str));
+        }
+
+        public AlertID(UUID id) {
+            this.uuid = id;
+        }
+
+        @Override
+        public String toString() {
+            return this.uuid.toString();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (!this.getClass().equals(obj.getClass())) {
+                return false;
+            }
+
+            return Objects.equals(this.uuid, ((AlertID) obj).uuid);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(getClass(), this.uuid);
+        }
+    }
+
+    private static class GenericChangeEvent implements AlertChangeEvent {
+
+        private final AlertID alertId;
+        private final DateTime changeTime;
+        private final State state;
+        private final Principal user;
+        private final String description;
+        private final Object content;
+
+
+        public GenericChangeEvent(AlertID id, State state) {
+            this(id, state, null, null, null);
+        }
+
+        public GenericChangeEvent(AlertID alertId, State state, Principal user, String descr, Object content) {
+            super();
+            this.alertId = alertId;
+            this.state = state;
+            this.user = user;
+            this.description = descr;
+            this.content = content;
+            this.changeTime = DateTime.now();
+        }
+
+        @Override
+        public DateTime getChangeTime() {
+            return changeTime;
+        }
+
+        @Override
+        public State getState() {
+            return state;
+        }
+
+        public AlertID getAlertId() {
+            return alertId;
+        }
+
+        public Principal getUser() {
+            return user;
+        }
+
+        @Override
+        public String getDescription() {
+            return this.description;
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public <C extends Serializable> C getContent() {
+            return (C) this.content;
+        }
+    }
+
     private class InternalAlertResponse implements AlertResponse {
-        
+
         private GenericAlert current;
-        
+
         public InternalAlertResponse(GenericAlert alert) {
             this.current = alert;
         }
@@ -362,7 +459,7 @@ public class InMemoryAlertManager implements AlertManager {
             this.current = new GenericAlert(this.current, true);
             this.current = null;
         }
-        
+
         private void checkCleared() {
             if (this.current == null) {
                 throw new IllegalStateException("The alert cannot be updated as it has been already cleared.");
@@ -371,6 +468,7 @@ public class InMemoryAlertManager implements AlertManager {
     }
 
     private class AlertByIdMap extends LinkedHashMap<Alert.ID, AtomicReference<Alert>> {
+
         @Override
         protected boolean removeEldestEntry(java.util.Map.Entry<ID, AtomicReference<Alert>> eldest) {
             if (this.size() > MAX_ALERTS) {
@@ -381,50 +479,12 @@ public class InMemoryAlertManager implements AlertManager {
             }
         }
     }
-    
-    private static class AlertID implements Alert.ID {
-        private final UUID uuid;
-        
-        public AlertID() {
-            this(UUID.randomUUID());
-        }
-        
-        public AlertID(String str) {
-            this(UUID.fromString(str));
-        }
-        
-        public AlertID(UUID id) {
-            this.uuid = id;
-        }
-        
-        @Override
-        public String toString() {
-            return this.uuid.toString();
-        }
-        
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj)
-                return true;
-            if (obj == null)
-                return false;
-            if (! this.getClass().equals(obj.getClass()))
-                return false;
-            
-            return Objects.equals(this.uuid, ((AlertID) obj).uuid);
-         }
-        
-        @Override
-        public int hashCode() {
-            return Objects.hash(getClass(), this.uuid);
-        }
-    }
-    
+
     /**
      * Immutable implementation of an Alert.
      */
     protected class GenericAlert implements Alert {
-        
+
         private final AlertID id;
         private final URI type;
         private final Level level;
@@ -442,7 +502,7 @@ public class InMemoryAlertManager implements AlertManager {
             this.description = description;
             this.content = content;
             this.source = InMemoryAlertManager.this;
-            
+
             if (content != null) {
                 this.events = Collections.unmodifiableList(Collections.singletonList(new GenericChangeEvent(this.id, State.UNHANDLED, null, null, content)));
             } else {
@@ -453,7 +513,7 @@ public class InMemoryAlertManager implements AlertManager {
         public GenericAlert(URI type, Level level, Object content) {
             this(type, level, "", content);
         }
-        
+
         public GenericAlert(GenericAlert alert, State newState, Object eventContent) {
             this.id = alert.id;
             this.type = alert.type;
@@ -462,12 +522,12 @@ public class InMemoryAlertManager implements AlertManager {
             this.source = alert.source;
             this.content = alert.content;
             this.cleared = false;
-            
+
             ArrayList<AlertChangeEvent> evList = new ArrayList<>(alert.events);
             evList.add(0, new GenericChangeEvent(this.id, newState, null, null, eventContent));
             this.events = Collections.unmodifiableList(evList);
         }
-        
+
         public GenericAlert(GenericAlert alert, boolean cleared) {
             this.id = alert.id;
             this.type = alert.type;
@@ -498,12 +558,12 @@ public class InMemoryAlertManager implements AlertManager {
         public Level getLevel() {
             return this.level;
         }
-        
+
         @Override
         public State getState() {
             return this.events.get(0).getState();
         }
-        
+
         @Override
         public DateTime getCreatedTime() {
             return this.events.get(this.events.size() - 1).getChangeTime();
@@ -535,59 +595,5 @@ public class InMemoryAlertManager implements AlertManager {
             return (C) this.content;
         }
     }
-    
-    private static class GenericChangeEvent implements AlertChangeEvent {
-        
-        private final AlertID alertId;
-        private final DateTime changeTime;
-        private final State state;
-        private final Principal user;
-        private final String description;
-        private final Object content;
 
-        
-        public GenericChangeEvent(AlertID id, State state) {
-            this(id, state, null, null, null);
-        }
-
-        public GenericChangeEvent(AlertID alertId, State state, Principal user, String descr, Object content) {
-            super();
-            this.alertId = alertId;
-            this.state = state;
-            this.user = user;
-            this.description = descr;
-            this.content = content;
-            this.changeTime = DateTime.now();
-        }
-
-        @Override
-        public DateTime getChangeTime() {
-            return changeTime;
-        }
-
-        @Override
-        public State getState() {
-            return state;
-        }
-        
-        public AlertID getAlertId() {
-            return alertId;
-        }
-
-        public Principal getUser() {
-            return user;
-        }
-
-        @Override
-        public String getDescription() {
-            return this.description;
-        }
-
-        @Override
-        @SuppressWarnings("unchecked")
-        public <C extends Serializable> C getContent() {
-            return (C) this.content;
-        }
-    }
-    
 }

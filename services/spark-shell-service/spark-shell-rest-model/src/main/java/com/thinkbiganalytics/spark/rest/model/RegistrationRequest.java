@@ -25,10 +25,14 @@ package com.thinkbiganalytics.spark.rest.model;
  */
 public class RegistrationRequest {
 
-    /** Remote hostname */
+    /**
+     * Remote hostname
+     */
     private String host;
 
-    /** Remote port number */
+    /**
+     * Remote port number
+     */
     private int port;
 
     /**

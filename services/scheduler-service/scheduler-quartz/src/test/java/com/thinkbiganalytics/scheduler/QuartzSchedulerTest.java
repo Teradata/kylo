@@ -85,7 +85,7 @@ public class QuartzSchedulerTest {
 
         toTest = new QuartzScheduler();
         toTest.schedulerFactoryBean = schedulerFactoryBean;
-        mockJobIdentifier("job-name","group");
+        mockJobIdentifier("job-name", "group");
     }
 
     @Test
@@ -93,7 +93,7 @@ public class QuartzSchedulerTest {
         mockJobIdentifier("job-name", "group");
 
         toTest.scheduleWithCronExpressionInTimeZone(jobIdentifier, task, "0 0 12 * * ?",
-                TimeZone.getTimeZone("UTC"));
+                                                    TimeZone.getTimeZone("UTC"));
 
         verify(jobIdentifier).getName();
         verify(jobIdentifier, times(2)).getGroup();
@@ -217,15 +217,15 @@ public class QuartzSchedulerTest {
     public void updateTriggerTest() throws Exception {
 
         toTest.updateTrigger(new DefaultTriggerIdentifier("trigger-key-name", "trigger-key-name"),
-                "0 0 12 * * ?");
+                             "0 0 12 * * ?");
         verify(scheduler).rescheduleJob(eq(new TriggerKey("trigger-key-name", "trigger-key-name")),
-                (Trigger) any());
+                                        (Trigger) any());
 
         doThrow(new SchedulerException()).when(scheduler).rescheduleJob((TriggerKey) any(),
-                (Trigger) any());
+                                                                        (Trigger) any());
         try {
             toTest.updateTrigger(new DefaultTriggerIdentifier("trigger-key-name", "trigger-key-name"),
-                    "0 0 12 * * ?");
+                                 "0 0 12 * * ?");
         } catch (final JobSchedulerException e) {
             return;
         }
@@ -266,11 +266,11 @@ public class QuartzSchedulerTest {
         Set<JobKey> set = new HashSet<>();
         set.add(new JobKey("name", "group"));
         Mockito.when(scheduler.getJobKeys((GroupMatcher) anyObject())).thenReturn(set);
-        Mockito.when(scheduler.getJobDetail((JobKey)anyObject())).thenReturn(new JobDetailImpl("name", "group", MockJob.class));
+        Mockito.when(scheduler.getJobDetail((JobKey) anyObject())).thenReturn(new JobDetailImpl("name", "group", MockJob.class));
         List v = new Vector<>();
         addMockTrigger(v, "name", "group");
 
-        Mockito.when(scheduler.getTriggerState((TriggerKey)Mockito.anyObject())).thenReturn(Trigger.TriggerState.BLOCKED);
+        Mockito.when(scheduler.getTriggerState((TriggerKey) Mockito.anyObject())).thenReturn(Trigger.TriggerState.BLOCKED);
         Mockito.when(scheduler.getTriggersOfJob((JobKey) anyObject())).thenReturn(v);
         assertTrue(toTest.getJobs().size() == 1);
     }

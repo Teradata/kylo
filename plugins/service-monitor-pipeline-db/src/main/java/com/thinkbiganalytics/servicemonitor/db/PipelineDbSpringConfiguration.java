@@ -30,8 +30,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class PipelineDbSpringConfiguration {
 
-  @Bean(name = "pipelineDatabaseServiceStatus")
-  public PipelineDatabaseServiceStatusCheck pipelineDatabaseServiceHealth() {
-    return new PipelineDatabaseServiceStatusCheck();
-  }
+    @Bean(name = "pipelineDatabaseServiceStatus")
+    public PipelineDatabaseServiceStatusCheck pipelineDatabaseServiceHealth() {
+        return new PipelineDatabaseServiceStatusCheck();
+    }
 }

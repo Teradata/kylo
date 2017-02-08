@@ -23,21 +23,20 @@ package com.thinkbiganalytics.scheduler;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
- *  A base identifier for a scheduled item
+ * A base identifier for a scheduled item
  */
-public interface ScheduleIdentifier extends Comparable<ScheduleIdentifier>{
+public interface ScheduleIdentifier extends Comparable<ScheduleIdentifier> {
 
     /**
      * A name identifying the schedule item
      */
     String getName();
 
-  /**
-   * A group describing/categorizing this item
-   * @return
-   */
-  String getGroup();
+    /**
+     * A group describing/categorizing this item
+     */
+    String getGroup();
 
-  @JsonIgnore
-  String getUniqueName();
+    @JsonIgnore
+    String getUniqueName();
 }

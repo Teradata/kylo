@@ -32,10 +32,6 @@ import java.util.List;
  */
 public interface ServiceLevelAgreementCheck {
 
-    interface ID extends Serializable {
-
-    }
-
     /**
      * @return the unique ID of this SLACheck
      */
@@ -56,11 +52,14 @@ public interface ServiceLevelAgreementCheck {
      */
     String getDescription();
 
-
     ServiceLevelAgreement getServiceLevelAgreement();
 
     List<? extends ServiceLevelAgreementActionConfiguration> getActionConfigurations();
 
     String getCronSchedule();
+
+    interface ID extends Serializable {
+
+    }
 
 }

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.api;
 
@@ -27,6 +27,6 @@ package com.thinkbiganalytics.metadata.api;
  * A command to execute in the context of a transaction.
  */
 public interface MetadataCommand<R> {
-    
+
     R execute() throws Exception;
 }

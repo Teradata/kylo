@@ -23,7 +23,7 @@ package com.thinkbiganalytics.nifi.feedmgr;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 
 /**
- *  A callback that can be wired in to perform an action prior to a Reusable template being marked as Running
+ * A callback that can be wired in to perform an action prior to a Reusable template being marked as Running
  */
 public interface ReusableTemplateCreationCallback {
 

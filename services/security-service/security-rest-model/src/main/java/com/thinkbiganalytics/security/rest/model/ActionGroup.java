@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.security.rest.model;
 
@@ -44,7 +44,8 @@ public class ActionGroup implements Serializable {
     private String name;
     private List<Action> actions = new ArrayList<>();
 
-    public ActionGroup() {}
+    public ActionGroup() {
+    }
 
     public ActionGroup(String name) {
         super();
@@ -70,10 +71,10 @@ public class ActionGroup implements Serializable {
     public boolean addAction(Action action) {
         return this.actions.add(action);
     }
-    
+
     public Optional<Action> getAction(String name) {
         return this.actions.stream()
-                        .filter(a -> a.getSystemName().equals(name))
-                        .findFirst();
+            .filter(a -> a.getSystemName().equals(name))
+            .findFirst();
     }
 }

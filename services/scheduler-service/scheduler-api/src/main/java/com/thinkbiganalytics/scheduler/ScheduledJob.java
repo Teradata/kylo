@@ -28,49 +28,49 @@ import java.util.List;
  */
 public interface ScheduledJob {
 
-  String getJobStatus();
+    String getJobStatus();
 
-  void setJobStatus(String jobStatus);
+    void setJobStatus(String jobStatus);
 
-  String getJobGroup();
+    String getJobGroup();
 
-  void setJobGroup(String jobGroup);
+    void setJobGroup(String jobGroup);
 
-  String getNextFireTimeString();
+    String getNextFireTimeString();
 
-  void setNextFireTimeString(String nextFireTimeString);
+    void setNextFireTimeString(String nextFireTimeString);
 
-  Date getNextFireTime();
+    Date getNextFireTime();
 
-  void setNextFireTime(Date nextFireTime);
+    void setNextFireTime(Date nextFireTime);
 
-  void setCronExpression(String cronExpression);
+    String getCronExpression();
 
-  String getCronExpression();
+    void setCronExpression(String cronExpression);
 
-  String getJobName();
+    String getJobName();
 
-  void setJobName(String jobName);
+    void setJobName(String jobName);
 
-  List<TriggerInfo> getTriggers();
+    List<TriggerInfo> getTriggers();
 
-  void setTriggers(List<TriggerInfo> triggers);
+    void setTriggers(List<TriggerInfo> triggers);
 
-  JobIdentifier getJobIdentifier();
+    JobIdentifier getJobIdentifier();
 
-  void setJobIdentifier(JobIdentifier jobIdentifier);
+    void setJobIdentifier(JobIdentifier jobIdentifier);
 
-  void setState();
+    void setState();
 
-  String getState();
+    String getState();
 
-  String getCronExpressionSummary();
+    String getCronExpressionSummary();
 
-  void setCronExpressionData();
+    void setCronExpressionData();
 
-  boolean isRunning();
+    boolean isRunning();
 
-  boolean isPaused();
+    boolean isPaused();
 
-  boolean isScheduled();
+    boolean isScheduled();
 }

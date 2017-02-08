@@ -19,17 +19,17 @@
   #L%
   -->
 
-<beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns="http://www.springframework.org/schema/beans"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
                         http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <!-- Note that prior to Kylo 0.6 this file's name is the required file name of a 
-         plugin context XML file.
-         
-         This file name has been deprecated (although it still works) in favor of the
-         name "plugin-context.xml" to make it clear what its purpose is.  This file
-         is purposely left empty.  But if your plugin is to be deployed to a Kylo version
-         earlier than 0.6 then you should use this file name instead of plugin-context.xml -->
+  <!-- Note that prior to Kylo 0.6 this file's name is the required file name of a
+       plugin context XML file.
+
+       This file name has been deprecated (although it still works) in favor of the
+       name "plugin-context.xml" to make it clear what its purpose is.  This file
+       is purposely left empty.  But if your plugin is to be deployed to a Kylo version
+       earlier than 0.6 then you should use this file name instead of plugin-context.xml -->
 
 </beans>

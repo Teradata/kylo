@@ -112,7 +112,7 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
     @Deprecated
     public String getTemplateXml(String templateId) throws NifiComponentNotFoundException {
         return client.templates().download(templateId)
-                .orElseThrow(() -> new NifiComponentNotFoundException(templateId, NifiConstants.NIFI_COMPONENT_TYPE.TEMPLATE, null));
+            .orElseThrow(() -> new NifiComponentNotFoundException(templateId, NifiConstants.NIFI_COMPONENT_TYPE.TEMPLATE, null));
     }
 
 
@@ -122,21 +122,19 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
     @Deprecated
     public TemplateDTO getTemplateById(String templateId) throws NifiComponentNotFoundException {
         return client.templates().findById(templateId)
-                .orElseThrow(() -> new NifiComponentNotFoundException(templateId, NifiConstants.NIFI_COMPONENT_TYPE.TEMPLATE, null));
+            .orElseThrow(() -> new NifiComponentNotFoundException(templateId, NifiConstants.NIFI_COMPONENT_TYPE.TEMPLATE, null));
     }
 
     /**
      * Returns a Map of the Template Name and the Template XML that has a matching Input Port in the template.
-     * @param inputPortName
-     * @return
      */
     @Deprecated
-    public Map<String,String> getTemplatesAsXmlMatchingInputPortName(final String inputPortName) {
+    public Map<String, String> getTemplatesAsXmlMatchingInputPortName(final String inputPortName) {
         final Set<TemplateDTO> templates = client.templates().findByInputPortName(inputPortName);
         final Map<String, String> result = new HashMap<>(templates.size());
         for (TemplateDTO template : templates) {
             client.templates().download(template.getId())
-                    .ifPresent(xml -> result.put(template.getId(), xml));
+                .ifPresent(xml -> result.put(template.getId(), xml));
         }
         return result;
     }
@@ -203,7 +201,7 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
      */
     public List<NifiProperty> getPropertiesForTemplate(String templateId) {
         TemplateDTO dto = getTemplateById(templateId);
-       return getPropertiesForTemplate(dto);
+        return getPropertiesForTemplate(dto);
     }
 
     /**
@@ -227,7 +225,7 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
 
     public Set<PortDTO> getPortsForTemplate(TemplateDTO templateDTO) throws NifiComponentNotFoundException {
         Set<PortDTO> ports = new HashSet<>();
-        if(templateDTO != null && templateDTO.getSnippet() != null) {
+        if (templateDTO != null && templateDTO.getSnippet() != null) {
             Set<PortDTO> inputPorts = templateDTO.getSnippet().getInputPorts();
             if (inputPorts != null) {
                 ports.addAll(inputPorts);
@@ -386,7 +384,7 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
     @Deprecated
     public ProcessGroupDTO deleteProcessGroup(ProcessGroupDTO groupDTO) throws NifiClientRuntimeException {
         return client.processGroups().delete(groupDTO)
-                .orElseThrow(() -> new NifiClientRuntimeException("Unable to delete Process Group " + groupDTO.getName()));
+            .orElseThrow(() -> new NifiClientRuntimeException("Unable to delete Process Group " + groupDTO.getName()));
     }
 
     public List<ProcessGroupDTO> deleteChildProcessGroups(String processGroupId) throws NifiClientRuntimeException {
@@ -405,9 +403,9 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
      * Deletes the specified process group and any matching connections.
      *
      * @param processGroup the process group to be deleted
-     * @param connections the list of all connections from the parent process group
+     * @param connections  the list of all connections from the parent process group
      * @return the deleted process group
-     * @throws NifiClientRuntimeException if the process group could not be deleted
+     * @throws NifiClientRuntimeException     if the process group could not be deleted
      * @throws NifiComponentNotFoundException if the process group does not exist
      */
     public ProcessGroupDTO deleteProcessGroupAndConnections(@Nonnull final ProcessGroupDTO processGroup, @Nonnull final Set<ConnectionDTO> connections) {
@@ -512,7 +510,7 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
     @Deprecated
     public void deleteControllerService(String controllerServiceId) throws NifiClientRuntimeException {
         client.controllerServices().delete(controllerServiceId)
-                .orElseThrow(() -> new NifiComponentNotFoundException(controllerServiceId, NifiConstants.NIFI_COMPONENT_TYPE.CONTROLLER_SERVICE, null));
+            .orElseThrow(() -> new NifiComponentNotFoundException(controllerServiceId, NifiConstants.NIFI_COMPONENT_TYPE.CONTROLLER_SERVICE, null));
     }
 
     public void deleteControllerServices(Collection<ControllerServiceDTO> services) throws NifiClientRuntimeException {
@@ -522,7 +520,7 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
             try {
                 deleteControllerService(dto.getId());
             } catch (Exception e) {
-                if(!(e instanceof NifiComponentNotFoundException)) {
+                if (!(e instanceof NifiComponentNotFoundException)) {
                     unableToDelete.add(dto.getId());
                 }
             }
@@ -560,7 +558,7 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
     @Deprecated
     public ProcessGroupDTO getProcessGroup(String processGroupId, boolean recursive, boolean verbose) throws NifiComponentNotFoundException {
         return client.processGroups().findById(processGroupId, recursive, verbose)
-                .orElseThrow(() -> new NifiComponentNotFoundException(processGroupId, NifiConstants.NIFI_COMPONENT_TYPE.PROCESS_GROUP, null));
+            .orElseThrow(() -> new NifiComponentNotFoundException(processGroupId, NifiConstants.NIFI_COMPONENT_TYPE.PROCESS_GROUP, null));
     }
 
     /**
@@ -575,9 +573,9 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
      * Gets the child process group with the specified name, optionally including all sub-components.
      *
      * @param parentGroupId the id of the parent process group
-     * @param groupName the name of the process group to find
-     * @param recursive {@code true} to include all encapsulated components, or {@code false} for just the immediate children
-     * @param verbose {@code true} to include any encapsulated components, or {@code false} for just details about the process group
+     * @param groupName     the name of the process group to find
+     * @param recursive     {@code true} to include all encapsulated components, or {@code false} for just the immediate children
+     * @param verbose       {@code true} to include any encapsulated components, or {@code false} for just details about the process group
      * @return the child process group, or {@code null} if not found
      * @throws NifiComponentNotFoundException if the parent process group does not exist
      */
@@ -635,23 +633,24 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
      * Finds an input processor of the specified type within the specified process group and sets it to {@code RUNNING}. Other input processors are set to {@code DISABLED}.
      *
      * @param processGroupId the id of the NiFi process group to be searched
-     * @param type the type (or Java class) of processor to set to {@code RUNNING}, or {@code null} to use the first processor
+     * @param type           the type (or Java class) of processor to set to {@code RUNNING}, or {@code null} to use the first processor
      * @return {@code true} if the processor was found, or {@code null} otherwise
      * @throws NifiComponentNotFoundException if the process group id is not valid
      */
     public boolean setInputAsRunningByProcessorMatchingType(@Nonnull final String processGroupId, @Nullable final String type) {
         // Get the processor list and the processor to be run
-       return setInputProcessorState(processGroupId, type, NifiProcessUtil.PROCESS_STATE.RUNNING);
+        return setInputProcessorState(processGroupId, type, NifiProcessUtil.PROCESS_STATE.RUNNING);
     }
 
     /**
      * Finds an input processor of the specified type within the specified process group and sets it to the passed in {@code state}. Other input processors are set to {@code DISABLED}.
+     *
      * @param processGroupId the id of the NiFi process group to be searched
-     * @param type the type (or Java class) of processor to set to {@code state}, or {@code null} to use the first processor
-     * @param state the state to set the matched input processor
+     * @param type           the type (or Java class) of processor to set to {@code state}, or {@code null} to use the first processor
+     * @param state          the state to set the matched input processor
      * @return {@code true} if the processor was found, or {@code false} otherwise
      */
-    public boolean setInputProcessorState(@Nonnull final String processGroupId, @Nullable final String type,NifiProcessUtil.PROCESS_STATE state ) {
+    public boolean setInputProcessorState(@Nonnull final String processGroupId, @Nullable final String type, NifiProcessUtil.PROCESS_STATE state) {
         // Get the processor list and the processor to be run
         final List<ProcessorDTO> processors = getInputProcessors(processGroupId);
         if (processors.isEmpty()) {
@@ -668,8 +667,7 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
             // Verify state of processor
             if (processor.equals(selected)) {
                 updateProcessorState(processor, state);
-            }
-            else {
+            } else {
                 updateProcessorState(processor, NifiProcessUtil.PROCESS_STATE.DISABLED);
             }
         }
@@ -680,11 +678,8 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
 
     /**
      * Update the Processor state
-     * @param processor
-     * @param state
      */
-    private ProcessorDTO setProcessorState(ProcessorDTO processor, NifiProcessUtil.PROCESS_STATE state)
-    {
+    private ProcessorDTO setProcessorState(ProcessorDTO processor, NifiProcessUtil.PROCESS_STATE state) {
         ProcessorDTO updateDto = new ProcessorDTO();
         updateDto.setId(processor.getId());
         updateDto.setParentGroupId(processor.getParentGroupId());
@@ -694,44 +689,43 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
 
     /**
      * Transitions the Processor into the correct state:  {@code DISABLED, RUNNING, STOPPED}
+     *
      * @param processorDTO the processor to update
-     * @param state the State which the processor should be set to
-     * @return
+     * @param state        the State which the processor should be set to
      */
-    private ProcessorDTO updateProcessorState(ProcessorDTO processorDTO, NifiProcessUtil.PROCESS_STATE state){
+    private ProcessorDTO updateProcessorState(ProcessorDTO processorDTO, NifiProcessUtil.PROCESS_STATE state) {
         NifiProcessUtil.PROCESS_STATE currentState = NifiProcessUtil.PROCESS_STATE.valueOf(processorDTO.getState());
-        if(NifiProcessUtil.PROCESS_STATE.DISABLED.equals(state) && !NifiProcessUtil.PROCESS_STATE.DISABLED.equals(currentState)){
+        if (NifiProcessUtil.PROCESS_STATE.DISABLED.equals(state) && !NifiProcessUtil.PROCESS_STATE.DISABLED.equals(currentState)) {
             //disable it
             //first stop it
-           ProcessorDTO updatedProcessor = updateProcessorState(processorDTO, NifiProcessUtil.PROCESS_STATE.STOPPED);
+            ProcessorDTO updatedProcessor = updateProcessorState(processorDTO, NifiProcessUtil.PROCESS_STATE.STOPPED);
             // then disable it
-          return  setProcessorState(updatedProcessor, NifiProcessUtil.PROCESS_STATE.DISABLED);
+            return setProcessorState(updatedProcessor, NifiProcessUtil.PROCESS_STATE.DISABLED);
         }
-        if(NifiProcessUtil.PROCESS_STATE.RUNNING.equals(state) && !NifiProcessUtil.PROCESS_STATE.RUNNING.equals(currentState)){
+        if (NifiProcessUtil.PROCESS_STATE.RUNNING.equals(state) && !NifiProcessUtil.PROCESS_STATE.RUNNING.equals(currentState)) {
             //run it
-           //first make sure its enabled
+            //first make sure its enabled
             ProcessorDTO updatedProcessor = updateProcessorState(processorDTO, NifiProcessUtil.PROCESS_STATE.ENABLED);
-           return setProcessorState(updatedProcessor, NifiProcessUtil.PROCESS_STATE.RUNNING);
+            return setProcessorState(updatedProcessor, NifiProcessUtil.PROCESS_STATE.RUNNING);
 
         }
-        if(NifiProcessUtil.PROCESS_STATE.STOPPED.equals(state) && !NifiProcessUtil.PROCESS_STATE.STOPPED.equals(currentState)){
+        if (NifiProcessUtil.PROCESS_STATE.STOPPED.equals(state) && !NifiProcessUtil.PROCESS_STATE.STOPPED.equals(currentState)) {
             //stop it
             //first make sure its enabled
             ProcessorDTO updatedProcessor = updateProcessorState(processorDTO, NifiProcessUtil.PROCESS_STATE.ENABLED);
             setProcessorState(updatedProcessor, NifiProcessUtil.PROCESS_STATE.STOPPED);
         }
-        if(NifiProcessUtil.PROCESS_STATE.ENABLED.equals(state) && !NifiProcessUtil.PROCESS_STATE.ENABLED.equals(currentState)){
+        if (NifiProcessUtil.PROCESS_STATE.ENABLED.equals(state) && !NifiProcessUtil.PROCESS_STATE.ENABLED.equals(currentState)) {
             //enable it
             //if disabled, enable it
-            if(NifiProcessUtil.PROCESS_STATE.DISABLED.equals(currentState)){
-               return setProcessorState(processorDTO, NifiProcessUtil.PROCESS_STATE.STOPPED);
+            if (NifiProcessUtil.PROCESS_STATE.DISABLED.equals(currentState)) {
+                return setProcessorState(processorDTO, NifiProcessUtil.PROCESS_STATE.STOPPED);
             }
             return processorDTO;
         }
         return processorDTO;
 
     }
-
 
 
     public boolean disableInputProcessors(@Nonnull final String processGroupId) {
@@ -778,10 +772,9 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
      */
     public Set<ProcessorDTO> getProcessorsForTemplate(String templateId) throws NifiComponentNotFoundException {
         TemplateDTO dto = getTemplateById(templateId);
-        if(dto != null) {
+        if (dto != null) {
             return NifiProcessUtil.getProcessors(dto);
-        }
-        else {
+        } else {
             return Collections.emptySet();
         }
     }
@@ -800,7 +793,7 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
     @Deprecated
     public ProcessorDTO getProcessor(String processGroupId, String processorId) throws NifiComponentNotFoundException {
         return client.processors().findById(processGroupId, processorId)
-                .orElseThrow(() -> new NifiComponentNotFoundException(processorId, NifiConstants.NIFI_COMPONENT_TYPE.PROCESSOR, null));
+            .orElseThrow(() -> new NifiComponentNotFoundException(processorId, NifiConstants.NIFI_COMPONENT_TYPE.PROCESSOR, null));
     }
 
     @Deprecated
@@ -866,7 +859,7 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
     @Deprecated
     public ControllerServiceDTO getControllerService(String type, String id) throws NifiComponentNotFoundException {
         return client.controllerServices().findById(id)
-                .orElseThrow(() -> new NifiComponentNotFoundException(id, NifiConstants.NIFI_COMPONENT_TYPE.CONTROLLER_SERVICE, null));
+            .orElseThrow(() -> new NifiComponentNotFoundException(id, NifiConstants.NIFI_COMPONENT_TYPE.CONTROLLER_SERVICE, null));
     }
 
     /**
@@ -904,7 +897,7 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
      * Enables the ControllerService and also replaces the properties if they match their keys
      */
     public ControllerServiceDTO enableControllerServiceAndSetProperties(String id, Map<String, String> properties)
-            throws NifiClientRuntimeException {
+        throws NifiClientRuntimeException {
         ControllerServiceDTO entity = getControllerService(null, id);
         ControllerServiceDTO dto = entity;
         //only need to do this if it is not enabled
@@ -965,7 +958,7 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
     }
 
 
-    public boolean isConnected(){
+    public boolean isConnected() {
         AboutDTO aboutEntity = getNifiVersion();
         return aboutEntity != null;
     }
@@ -977,7 +970,6 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
     public List<BulletinDTO> getBulletinsMatchingMessage(String regexPattern) {
         return client.getBulletinsMatchingMessage(regexPattern);
     }
-
 
 
     @Deprecated
@@ -1148,29 +1140,26 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
     }
 
 
-
-
     @Deprecated
     public SearchResultsDTO search(String query) {
         return client.search(query);
     }
 
-    public ProcessorDTO findProcessorById(String processorId){
+    public ProcessorDTO findProcessorById(String processorId) {
         SearchResultsDTO results = search(processorId);
         //log this
-        if(results != null && results.getProcessorResults() != null && !results.getProcessorResults().isEmpty()){
-            log.info("Attempt to find processor by id {}. Processors Found: {} ",processorId,results.getProcessorResults().size());
-            ComponentSearchResultDTO processorResult =  results.getProcessorResults().get(0);
+        if (results != null && results.getProcessorResults() != null && !results.getProcessorResults().isEmpty()) {
+            log.info("Attempt to find processor by id {}. Processors Found: {} ", processorId, results.getProcessorResults().size());
+            ComponentSearchResultDTO processorResult = results.getProcessorResults().get(0);
             String id = processorResult.getId();
             String groupId = processorResult.getGroupId();
-            ProcessorDTO processorEntity = getProcessor(groupId,id);
+            ProcessorDTO processorEntity = getProcessor(groupId, id);
 
-            if(processorEntity != null){
+            if (processorEntity != null) {
                 return processorEntity;
             }
-        }
-        else {
-            log.info("Unable to find Processor in Nifi for id: {}",processorId);
+        } else {
+            log.info("Unable to find Processor in Nifi for id: {}", processorId);
         }
         return null;
     }
@@ -1185,15 +1174,15 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
 
 
     public NifiFlowProcessGroup getFeedFlow(String processGroupId) throws NifiComponentNotFoundException {
-       return client.flows().getFeedFlow(processGroupId);
+        return client.flows().getFeedFlow(processGroupId);
     }
 
     public Set<ProcessorDTO> getProcessorsForFlow(String processGroupId) throws NifiComponentNotFoundException {
-       return client.flows().getProcessorsForFlow(processGroupId);
+        return client.flows().getProcessorsForFlow(processGroupId);
     }
 
     public NifiFlowProcessGroup getTemplateFeedFlow(String templateId) {
-       return client.flows().getTemplateFeedFlow(templateId);
+        return client.flows().getTemplateFeedFlow(templateId);
     }
 
     public NifiFlowProcessGroup getTemplateFeedFlow(TemplateDTO template) {
@@ -1202,20 +1191,18 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
 
 
     public NifiFlowProcessGroup getFeedFlowForCategoryAndFeed(String categoryAndFeedName) {
-      return client.flows().getFeedFlowForCategoryAndFeed(categoryAndFeedName);
+        return client.flows().getFeedFlowForCategoryAndFeed(categoryAndFeedName);
     }
 
 
     //walk entire graph
     public List<NifiFlowProcessGroup> getFeedFlows() {
-       return client.flows().getFeedFlows();
+        return client.flows().getFeedFlows();
     }
 
     public List<NifiFlowProcessGroup> getFeedFlows(Collection<String> feedNames) {
         return client.flows().getFeedFlows(feedNames);
     }
-
-
 
 
     /**

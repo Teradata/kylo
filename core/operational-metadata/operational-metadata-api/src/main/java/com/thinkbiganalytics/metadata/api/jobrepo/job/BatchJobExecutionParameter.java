@@ -38,25 +38,27 @@ public interface BatchJobExecutionParameter {
 
     /**
      * The data type for this parameter.
+     *
      * @return data type for this parameter.
      */
     ExecutionConstants.ParamType getTypeCode();
 
     /**
      * Return the parameter name
+     *
      * @return the parameter name
      */
     String getKeyName();
 
     /**
      * Return the value of the parameter as a string
+     *
      * @return the value of the parameter as a string
      */
     String getStringVal();
 
     /**
      * set the parameter value
-     * @param val
      */
     void setStringVal(String val);
 

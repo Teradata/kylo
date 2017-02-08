@@ -59,11 +59,15 @@ import javax.jcr.query.QueryResult;
 
 public class JcrFeedManagerFeedProvider extends BaseJcrProvider<FeedManagerFeed, Feed.ID> implements FeedManagerFeedProvider {
 
+    @Inject
+    private FeedProvider feedProvider;
+    @Inject
+    private MetadataEventService metadataEventService;
+
     @Override
     public String getNodeType(Class<? extends JcrEntity> jcrEntityType) {
         return JcrFeed.NODE_TYPE;
     }
-
 
     @Override
     public Class<JcrFeedManagerFeed> getEntityClass() {
@@ -75,35 +79,28 @@ public class JcrFeedManagerFeedProvider extends BaseJcrProvider<FeedManagerFeed,
         return JcrFeedManagerFeed.class;
     }
 
-    @Inject
-    private FeedProvider feedProvider;
-
-    @Inject
-    private MetadataEventService metadataEventService;
-
-    
     @Override
     public FeedManagerFeed findBySystemName(String categorySystemName, String systemName) {
 
-            JcrFeed feed = (JcrFeed) feedProvider.findBySystemName(categorySystemName, systemName);
-            if (feed != null) {
-                if (feed instanceof FeedManagerFeed) {
-                    return (FeedManagerFeed) feed;
-                } else {
-                    return new JcrFeedManagerFeed<>(feed.getNode());
-                }
+        JcrFeed feed = (JcrFeed) feedProvider.findBySystemName(categorySystemName, systemName);
+        if (feed != null) {
+            if (feed instanceof FeedManagerFeed) {
+                return (FeedManagerFeed) feed;
+            } else {
+                return new JcrFeedManagerFeed<>(feed.getNode());
             }
-            return null;
+        }
+        return null;
 
     }
 
     public FeedManagerFeed ensureFeed(Feed feed) {
-            FeedManagerFeed fmFeed = findById(feed.getId());
-            if (fmFeed == null) {
-                JcrFeed jcrFeed = (JcrFeed) feed;
-                fmFeed = new JcrFeedManagerFeed(jcrFeed.getNode());
-            }
-            return fmFeed;
+        FeedManagerFeed fmFeed = findById(feed.getId());
+        if (fmFeed == null) {
+            JcrFeed jcrFeed = (JcrFeed) feed;
+            fmFeed = new JcrFeedManagerFeed(jcrFeed.getNode());
+        }
+        return fmFeed;
 
     }
 
@@ -111,7 +108,6 @@ public class JcrFeedManagerFeedProvider extends BaseJcrProvider<FeedManagerFeed,
         Feed feed = feedProvider.ensureFeed(categoryId, feedSystemName);
         return ensureFeed(feed);
     }
-
 
 
     @Override
@@ -132,10 +128,10 @@ public class JcrFeedManagerFeedProvider extends BaseJcrProvider<FeedManagerFeed,
         bindParams.put("id", categoryId.toString());
 
         try {
-            QueryResult result = JcrQueryUtil.query(getSession(),query,bindParams);
+            QueryResult result = JcrQueryUtil.query(getSession(), query, bindParams);
             return JcrQueryUtil.queryResultToList(result, JcrFeedManagerFeed.class);
         } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Unable to getFeeds for Category ",e);
+            throw new MetadataRepositoryException("Unable to getFeeds for Category ", e);
         }
 
     }
@@ -157,13 +153,13 @@ public class JcrFeedManagerFeedProvider extends BaseJcrProvider<FeedManagerFeed,
         feedManagerFeed.getTemplate().removeFeed(feedManagerFeed);
         super.delete(feedManagerFeed);
     }
-    
+
     private void addPostFeedChangeAction(FeedManagerFeed feed, ChangeType changeType) {
         Feed.State state = feed.getState();
         Feed.ID id = feed.getId();
-        final Principal principal = SecurityContextHolder.getContext().getAuthentication() != null 
-                        ? SecurityContextHolder.getContext().getAuthentication() 
-                        : null;
+        final Principal principal = SecurityContextHolder.getContext().getAuthentication() != null
+                                    ? SecurityContextHolder.getContext().getAuthentication()
+                                    : null;
 
         Consumer<Boolean> action = (success) -> {
             if (success) {
@@ -172,7 +168,7 @@ public class JcrFeedManagerFeedProvider extends BaseJcrProvider<FeedManagerFeed,
                 metadataEventService.notify(event);
             }
         };
-        
+
         JcrMetadataAccess.addPostTransactionAction(action);
     }
 }

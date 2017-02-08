@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.api.feed;
 
@@ -31,13 +31,8 @@ import org.joda.time.DateTimeZone;
  */
 public class InitializationStatus {
 
-    public enum State {
-        PENDING, IN_PROGRESS, SUCCESS, FAILED
-    }
-
     private final State state;
     private final DateTime timestamp;
-
     public InitializationStatus(State state) {
         this(state, DateTime.now(DateTimeZone.UTC));
     }
@@ -54,6 +49,10 @@ public class InitializationStatus {
 
     public DateTime getTimestamp() {
         return timestamp;
+    }
+
+    public enum State {
+        PENDING, IN_PROGRESS, SUCCESS, FAILED
     }
 
 

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.api.feed;
 
@@ -33,6 +33,6 @@ import java.io.Serializable;
 public interface FeedConnection extends Serializable {
 
     Feed getFeed();
-    
+
     Datasource getDatasource();
 }

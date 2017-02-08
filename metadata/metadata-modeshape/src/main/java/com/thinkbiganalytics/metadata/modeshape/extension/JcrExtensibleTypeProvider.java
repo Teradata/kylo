@@ -114,7 +114,7 @@ public class JcrExtensibleTypeProvider implements ExtensibleTypeProvider {
             session.getWorkspace().getNodeTypeManager().unregisterNodeType(typeNode.getName());
             session.getRootNode().getNode(ExtensionsConstants.TYPES + "/" + typeNode.getName()).remove();
             return true;
-        } catch (ItemNotFoundException|NoSuchNodeTypeException e) {
+        } catch (ItemNotFoundException | NoSuchNodeTypeException e) {
             return true;
         } catch (UnsupportedRepositoryOperationException e) {
             return false;
@@ -161,7 +161,7 @@ public class JcrExtensibleTypeProvider implements ExtensibleTypeProvider {
             while (typeItr.hasNext()) {
                 final NodeType nodeType = (NodeType) typeItr.next();
 
-                if (nodeType.isNodeType(extensibleType.getName()) && ! nodeType.equals(extensibleType)) {
+                if (nodeType.isNodeType(extensibleType.getName()) && !nodeType.equals(extensibleType)) {
                     final Node typeNode = session.getRootNode().getNode(ExtensionsConstants.TYPES + "/" + nodeType.getName());
                     list.add(new JcrExtensibleType(typeNode, nodeType));
                 }
@@ -204,7 +204,7 @@ public class JcrExtensibleTypeProvider implements ExtensibleTypeProvider {
      * @param builder the builder for the type
      * @return the type
      * @throws MetadataRepositoryException if the repository is unavailable
-     * @throws TypeAlreadyExistsException if a type with the same name already exists
+     * @throws TypeAlreadyExistsException  if a type with the same name already exists
      */
     @Nonnull
     private ExtensibleType buildType(@Nonnull final TypeBuilder builder) {
@@ -240,9 +240,9 @@ public class JcrExtensibleTypeProvider implements ExtensibleTypeProvider {
             if (builder.supertype != null) {
                 final JcrExtensibleType superImpl = (JcrExtensibleType) builder.supertype;
                 final String supername = superImpl.getJcrName();
-                nodeTemplate.setDeclaredSuperTypeNames(new String[] { ExtensionsConstants.EXTENSIBLE_ENTITY_TYPE, supername });
+                nodeTemplate.setDeclaredSuperTypeNames(new String[]{ExtensionsConstants.EXTENSIBLE_ENTITY_TYPE, supername});
             } else {
-                nodeTemplate.setDeclaredSuperTypeNames(new String[] { ExtensionsConstants.EXTENSIBLE_ENTITY_TYPE });
+                nodeTemplate.setDeclaredSuperTypeNames(new String[]{ExtensionsConstants.EXTENSIBLE_ENTITY_TYPE});
             }
 
             // Update field definitions
@@ -295,27 +295,34 @@ public class JcrExtensibleTypeProvider implements ExtensibleTypeProvider {
      */
     private class TypeBuilder implements ExtensibleTypeBuilder {
 
-        /** Human-readable specification */
-        @Nullable
-        private String description;
-
-        /** Human-readable title */
-        @Nullable
-        private String displayName;
-
-        /** Field definitions */
+        /**
+         * Field definitions
+         */
         @Nonnull
         private final Set<FieldBuilder> fieldBuilders = new HashSet<>();
-
-        /** Name of the node type */
+        /**
+         * Name of the node type
+         */
         @Nonnull
         private final String name;
-
-        /** Node containing type definition */
+        /**
+         * Node containing type definition
+         */
         @Nullable
         private final Node node;
-
-        /** Parent type */
+        /**
+         * Human-readable specification
+         */
+        @Nullable
+        private String description;
+        /**
+         * Human-readable title
+         */
+        @Nullable
+        private String displayName;
+        /**
+         * Parent type
+         */
         @Nullable
         private ExtensibleType supertype;
 
@@ -370,25 +377,32 @@ public class JcrExtensibleTypeProvider implements ExtensibleTypeProvider {
      */
     private class FieldBuilder implements FieldDescriptorBuilder {
 
-        /** Indicates that multiple values are allowed */
-        private boolean collection;
-
-        /** Metadata for this field */
+        /**
+         * Metadata for this field
+         */
         @Nonnull
         private final Map<String, String> metadata = new HashMap<>();
-
-        /** Name of this field */
-        @Nullable
-        private String name;
-
-        /** Indicates that a value is required */
-        private boolean required;
-
-        /** Parent type builder */
+        /**
+         * Parent type builder
+         */
         @Nonnull
         private final TypeBuilder typeBuilder;
-
-        /** Value type */
+        /**
+         * Indicates that multiple values are allowed
+         */
+        private boolean collection;
+        /**
+         * Name of this field
+         */
+        @Nullable
+        private String name;
+        /**
+         * Indicates that a value is required
+         */
+        private boolean required;
+        /**
+         * Value type
+         */
         private Type type;
 
         /**

@@ -45,6 +45,14 @@ import scala.tools.nsc.interpreter.IMain;
 @ContextConfiguration(classes = {SparkScriptEngine.class, SparkScriptEngineTest.class})
 public class SparkScriptEngineTest {
 
+    /**
+     * Expected thrown exception
+     */
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
+    @Autowired
+    private SparkScriptEngine engine;
+
     @Bean
     public SparkConf sparkConf() {
         SparkConf sparkConf = new SparkConf();
@@ -94,20 +102,17 @@ public class SparkScriptEngineTest {
         };
     }
 
-    @Autowired
-    private SparkScriptEngine engine;
-
-    /** Expected thrown exception */
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
-
-    /** Verify evaluating a script and returning a value. */
+    /**
+     * Verify evaluating a script and returning a value.
+     */
     @Test
     public void test() throws Exception {
         Assert.assertEquals(3, engine.eval("new Integer(1 + 2)"));
     }
 
-    /** Verify evaluating a script with a compile error. */
+    /**
+     * Verify evaluating a script with a compile error.
+     */
     @Test
     public void testWithCompileError() throws Exception {
         // Configure expected exception
@@ -118,7 +123,9 @@ public class SparkScriptEngineTest {
         engine.eval("Method invalid");
     }
 
-    /** Verify evaluating a script with an exception. */
+    /**
+     * Verify evaluating a script with an exception.
+     */
     @Test(expected = UnsupportedOperationException.class)
     public void testWithException() throws Exception {
         engine.eval("throw new UnsupportedOperationException()");

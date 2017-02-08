@@ -53,6 +53,7 @@ public class NifiComponentNotFoundException extends NifiClientRuntimeException {
 
     /**
      * Gets the id of the component that was requested.
+     *
      * @return the component id
      */
     public String getComponentId() {

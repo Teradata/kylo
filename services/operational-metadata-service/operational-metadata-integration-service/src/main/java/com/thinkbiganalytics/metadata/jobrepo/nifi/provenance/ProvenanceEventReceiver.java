@@ -69,9 +69,6 @@ import javax.inject.Inject;
 public class ProvenanceEventReceiver implements FailedStepExecutionListener, DeleteFeedListener {
 
     private static final Logger log = LoggerFactory.getLogger(ProvenanceEventReceiver.class);
-
-    @Value("${kylo.ops.mgr.query.nifi.bulletins:false}")
-    private boolean queryForNiFiBulletins;
     /**
      * Empty feed object for Loading Cache
      */
@@ -101,12 +98,10 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener, Del
             return null;
         }
     };
-
     @Inject
     OpsManagerFeedProvider opsManagerFeedProvider;
     @Inject
     NifiBulletinExceptionExtractor nifiBulletinExceptionExtractor;
-
     /**
      * Temporary cache of completed events in to check against to ensure we trigger the same event twice
      */
@@ -115,7 +110,8 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener, Del
      * Cache of the Ops Manager Feed Object to ensure that we only process and create Job Executions for feeds that have been registered in Feed Manager
      */
     LoadingCache<String, OpsManagerFeed> opsManagerFeedCache = null;
-
+    @Value("${kylo.ops.mgr.query.nifi.bulletins:false}")
+    private boolean queryForNiFiBulletins;
     @Inject
     private NifiEventProvider nifiEventProvider;
     @Inject
@@ -167,6 +163,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener, Del
 
     /**
      * Unique key for the Event in relation to the Job
+     *
      * @param event a provenance event
      * @return a unique key representing the event
      */
@@ -238,8 +235,9 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener, Del
 
     /**
      * Process this record and record the Job and steps
+     *
      * @param jobExecution the job execution
-     * @param event a provenance event
+     * @param event        a provenance event
      * @return a persisted nifi event object
      */
     private NifiEvent receiveBatchEvent(BatchJobExecution jobExecution, ProvenanceEventRecordDTO event) {
@@ -247,19 +245,20 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener, Del
         log.debug("Received ProvenanceEvent {}.  is end of Job: {}.  is ending flowfile:{}, isBatch: {}", event, event.isEndOfJob(), event.isEndingFlowFileEvent(), event.isBatchJob());
         nifiEvent = nifiEventProvider.create(event);
         //query it again
-            jobExecution = batchJobExecutionProvider.findByJobExecutionId(jobExecution.getJobExecutionId());
-            BatchJobExecution job = batchJobExecutionProvider.save(jobExecution, event, nifiEvent);
-            if (job == null) {
-                log.error(" Detected a Batch event, but could not find related Job record. for event: {}  is end of Job: {}.  is ending flowfile:{}, isBatch: {}", event, event.isEndOfJob(),
-                          event.isEndingFlowFileEvent(), event.isBatchJob());
-            }
+        jobExecution = batchJobExecutionProvider.findByJobExecutionId(jobExecution.getJobExecutionId());
+        BatchJobExecution job = batchJobExecutionProvider.save(jobExecution, event, nifiEvent);
+        if (job == null) {
+            log.error(" Detected a Batch event, but could not find related Job record. for event: {}  is end of Job: {}.  is ending flowfile:{}, isBatch: {}", event, event.isEndOfJob(),
+                      event.isEndingFlowFileEvent(), event.isBatchJob());
+        }
 
         return nifiEvent;
     }
 
     /**
-     *  Check to see if the event has a relationship to Feed Manager
+     * Check to see if the event has a relationship to Feed Manager
      * In cases where a user is experimenting in NiFi and not using Feed Manager the event would not be registered
+     *
      * @param event a provenance event
      * @return {@code true} if the event has a feed associaetd with it {@code false} if there is no feed associated with it
      */
@@ -282,6 +281,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener, Del
 
     /**
      * Notify that the Job is complete either as a successful job or failed Job
+     *
      * @param event a provenance event
      */
     private void notifyJobFinished(ProvenanceEventRecordDTO event) {
@@ -301,10 +301,11 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener, Del
     }
 
     /**
-     *  Triggered for both Batch and Streaming Feed Jobs when the Job and any related Jobs (as a result of a Merge of other Jobs are complete but have a failure in the flow<br/> Example: <br/> Job
+     * Triggered for both Batch and Streaming Feed Jobs when the Job and any related Jobs (as a result of a Merge of other Jobs are complete but have a failure in the flow<br/> Example: <br/> Job
      * (FlowFile) 1,2,3 are all running<br/> Job 1,2,3 get Merged<br/> Job 1,2 finish<br/> Job 3 finishes <br/>
      *
      * This will fire when Job3 finishes indicating this entire flow is complete<br/>
+     *
      * @param event a provenance event
      */
     private void failedJob(ProvenanceEventRecordDTO event) {
@@ -322,6 +323,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener, Del
      * running<br/> Job 1,2,3 get Merged<br/> Job 1,2 finish<br/> Job 3 finishes <br/>
      *
      * This will fire when Job3 finishes indicating this entire flow is complete<br/>
+     *
      * @param event a provenance event
      */
     private void successfulJob(ProvenanceEventRecordDTO event) {

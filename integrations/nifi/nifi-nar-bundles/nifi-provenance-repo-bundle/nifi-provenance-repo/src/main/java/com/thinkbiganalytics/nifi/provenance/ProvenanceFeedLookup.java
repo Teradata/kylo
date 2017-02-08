@@ -77,6 +77,7 @@ public class ProvenanceFeedLookup {
 
     /**
      * Returns the Cache object.  if the cache is null it will return an Empty object NifiFlowCacheSnapshot.EMPTY
+     *
      * @return the Cache in use or an NifiFlowCacheSnapshot.EMPTY cache object
      */
     private NifiFlowCacheSnapshot getFlowCache() {
@@ -88,7 +89,8 @@ public class ProvenanceFeedLookup {
     }
 
     /**
-     *  Get the FeedName for a given processorId
+     * Get the FeedName for a given processorId
+     *
      * @param processorId the processorId to check
      * @return the name associated with the processor
      */
@@ -98,6 +100,7 @@ public class ProvenanceFeedLookup {
 
     /**
      * Get the Feed ProcessorGroup for a given processorId
+     *
      * @param processorId the processorId to check
      * @return the feed process group id
      */
@@ -107,6 +110,7 @@ public class ProvenanceFeedLookup {
 
     /**
      * Get the Processor Display name for a given processorId
+     *
      * @param processorId the processorId to check
      * @return the display name for the processor
      */
@@ -130,7 +134,6 @@ public class ProvenanceFeedLookup {
 
 
     /**
-     *
      * For the given event, look at the connectionName to determine if the event should be treated as a Failure in Kylo.
      * If the connection name has the word "failure" in it, this event will be marked as a Failure.
      * If the connection name has the word "warn" in it, this event will be marked as a Warning.
@@ -171,10 +174,10 @@ public class ProvenanceFeedLookup {
 
 
     /**
-     *  Check to see if this event is a Failure event.
+     * Check to see if this event is a Failure event.
+     *
      * @param eventRecordDTO the event to check
      * @return true if it is a failed event, false if not
-     *
      * @see this#setProcessorFlowType(ProvenanceEventRecordDTO)
      */
     public boolean isFailureEvent(ProvenanceEventRecordDTO eventRecordDTO) {
@@ -209,7 +212,8 @@ public class ProvenanceFeedLookup {
 
 
     /**
-     *  Check to see if this event is registered to a Template that is marked as being a Stream
+     * Check to see if this event is registered to a Template that is marked as being a Stream
+     *
      * @param eventRecordDTO the event to check
      * @return true if the event is part of a feed/template from Kylo indicated as a stream, false if not
      */

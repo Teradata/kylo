@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.api.extension;
 
@@ -32,17 +32,19 @@ import java.util.Set;
  */
 public interface ExtensibleEntity {
 
-    interface ID extends Serializable { }
-    
     ID getId();
-    
+
     String getTypeName();
-    
+
     Map<String, Object> getProperties();
-    
+
     Object getProperty(String name);
 
     <T> Set<T> getPropertyAsSet(String name, Class<T> objectType);
-    
+
     void setProperty(String name, Object value);
+
+    interface ID extends Serializable {
+
+    }
 }

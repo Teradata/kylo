@@ -30,13 +30,19 @@ import java.net.URI;
  */
 public class AlertCreateRequest {
 
-    /** A unique URI defining the type of this alert */
+    /**
+     * A unique URI defining the type of this alert
+     */
     private URI type;
 
-    /** A description of this alert */
+    /**
+     * A description of this alert
+     */
     private String description;
 
-    /** The level of this alert */
+    /**
+     * The level of this alert
+     */
     private Level level;
 
     public AlertCreateRequest() {

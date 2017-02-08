@@ -42,20 +42,18 @@ public abstract class ColumnStatistics implements Serializable {
 
     /* Schema information for column */
     final StructField columnField;
-
+    /* Other variables */
+    final DecimalFormat df;
+    final OutputWriter outputWriter;
+    private final TopNDataList topNValues;
     /* Common metrics for all data types */
     long nullCount;
     long totalCount;
+    List<OutputRow> rows;
     private long uniqueCount;
     private double percNullValues;
     private double percUniqueValues;
     private double percDuplicateValues;
-    private final TopNDataList topNValues;
-
-    /* Other variables */
-    final DecimalFormat df;
-    final OutputWriter outputWriter;
-    List<OutputRow> rows;
 
 
     /**

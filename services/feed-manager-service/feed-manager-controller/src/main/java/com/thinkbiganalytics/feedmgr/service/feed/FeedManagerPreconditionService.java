@@ -33,6 +33,7 @@ import javax.inject.Inject;
  *
  */
 public class FeedManagerPreconditionService {
+
     @Inject
     FeedManagerFeedService feedManagerFeedService;
 

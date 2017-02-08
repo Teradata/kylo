@@ -106,14 +106,18 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     @Inject
     private DatasourceProvider datasourceProvider;
 
-    /** JCR node type manager */
+    /**
+     * JCR node type manager
+     */
     @Inject
     private ExtensibleTypeProvider extensibleTypeProvider;
 
-    /** Transaction support */
+    /**
+     * Transaction support
+     */
     @Inject
     private MetadataAccess metadataAccess;
-    
+
     @Inject
     private AccessController accessController;
 
@@ -226,7 +230,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             if (datasource != null) {
                 Node feedSrcNode = JcrUtil.addNode(feed.getNode(), JcrFeed.SOURCE_NAME, JcrFeedSource.NODE_TYPE);
                 JcrFeedSource jcrSrc = new JcrFeedSource(feedSrcNode, datasource);
-                
+
                 save();
                 return jcrSrc;
             } else {
@@ -254,7 +258,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             if (datasource != null) {
                 Node feedDestNode = JcrUtil.addNode(feed.getNode(), JcrFeed.DESTINATION_NAME, JcrFeedDestination.NODE_TYPE);
                 JcrFeedDestination jcrDest = new JcrFeedDestination(feedDestNode, datasource);
-                
+
                 save();
                 return jcrDest;
             } else {
@@ -289,33 +293,34 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             throw new CategoryNotFoundException("Unable to find Category for " + categorySystemName, null);
         }
 
-        boolean newFeed = ! JcrUtil.hasNode(category.getNode(), feedSystemName);
+        boolean newFeed = !JcrUtil.hasNode(category.getNode(), feedSystemName);
         Node feedNode = findOrCreateEntityNode(categoryPath, feedSystemName, getJcrEntityClass());
         boolean versionable = JcrUtil.isVersionable(feedNode);
-        
+
         JcrFeed.addSecurity(feedNode);
-        
+
         JcrFeed<?> feed = new JcrFeed(feedNode, category);
 
         feed.setSystemName(feedSystemName);
-        
+
         if (newFeed) {
             addPostFeedChangeAction(feed, ChangeType.CREATE);
         }
-        
+
         return feed;
     }
 
     /**
      * Registers an action that produces a feed change event upon a successful transaction commit.
+     *
      * @param feed the feed to being created
      */
     private void addPostFeedChangeAction(Feed<?> feed, ChangeType changeType) {
         Feed.State state = feed.getState();
         Feed.ID id = feed.getId();
-        final Principal principal = SecurityContextHolder.getContext().getAuthentication() != null 
-                        ? SecurityContextHolder.getContext().getAuthentication() 
-                        : null;
+        final Principal principal = SecurityContextHolder.getContext().getAuthentication() != null
+                                    ? SecurityContextHolder.getContext().getAuthentication()
+                                    : null;
 
         Consumer<Boolean> action = (success) -> {
             if (success) {
@@ -324,7 +329,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
                 metadataEventService.notify(event);
             }
         };
-        
+
         JcrMetadataAccess.addPostTransactionAction(action);
     }
 
@@ -356,14 +361,14 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         JcrFeed<?> feed = (JcrFeed<?>) findById(feedId);
 
         ServiceLevelAgreementBuilder slaBldr = buildPrecondition(feed)
-                .name("Precondition for feed " + feedId)
-                .description(descr);
+            .name("Precondition for feed " + feedId)
+            .description(descr);
 
         slaBldr.obligationGroupBuilder(Condition.REQUIRED)
-                .obligationBuilder()
-                .metric(metrics)
-                .build()
-                .build();
+            .obligationBuilder()
+            .metric(metrics)
+            .build()
+            .build();
 
         return feed;
     }
@@ -568,11 +573,86 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     @Override
     public void deleteFeed(ID feedId) {
         JcrFeed<?> feed = (JcrFeed<?>) getFeed(feedId);
-        
+
         if (feed != null) {
             addPostFeedChangeAction(feed, ChangeType.DELETE);
             deleteById(feedId);
         }
+    }
+
+    public Feed.ID resolveId(Serializable fid) {
+        return new JcrFeed.FeedId(fid);
+    }
+
+    protected JcrFeed<?> setupPrecondition(JcrFeed<?> feed, ServiceLevelAgreement sla) {
+//        this.preconditionService.watchFeed(feed);
+        feed.setPrecondition((JcrServiceLevelAgreement) sla);
+        return feed;
+    }
+
+    public Feed updateFeedServiceLevelAgreement(Feed.ID feedId, ServiceLevelAgreement sla) {
+        JcrFeed feed = (JcrFeed) getFeed(feedId);
+        feed.addServiceLevelAgreement(sla);
+        return feed;
+    }
+
+    @Override
+    public Map<String, Object> mergeFeedProperties(ID feedId, Map<String, Object> properties) {
+        try {
+            JcrFeed feed = (JcrFeed) getFeed(feedId);
+            JcrMetadataAccess.ensureCheckoutNode(feed.getNode());
+
+            List<String> securityGroupNames = new ArrayList<>();
+            for (Object o : feed.getSecurityGroups()) {
+                HadoopSecurityGroup securityGroup = (HadoopSecurityGroup) o;
+                securityGroupNames.add(securityGroup.getName());
+            }
+            PropertyChange change = new PropertyChange(feed.getId().getIdValue(), feed.getCategory().getName(), feed.getSystemName(), securityGroupNames, feed.getProperties(), properties);
+            this.metadataEventService.notify(new FeedPropertyChangeEvent(change));
+
+            return feed.mergeProperties(properties);
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to merge Feed Properties for Feed " + feedId, e);
+        }
+    }
+
+    public Map<String, Object> replaceProperties(ID feedId, Map<String, Object> properties) {
+        try {
+            JcrFeed feed = (JcrFeed) getFeed(feedId);
+            JcrMetadataAccess.ensureCheckoutNode(feed.getNode());
+            return feed.replaceProperties(properties);
+
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to replace Feed Properties for Feed " + feedId, e);
+        }
+    }
+
+    @Nonnull
+    @Override
+    public Set<UserFieldDescriptor> getUserFields() {
+        return JcrPropertyUtil.getUserFields(ExtensionsConstants.USER_FEED, extensibleTypeProvider);
+    }
+
+    @Override
+    public void setUserFields(@Nonnull final Set<UserFieldDescriptor> userFields) {
+        // TODO service?
+        metadataAccess.commit(() -> {
+            JcrPropertyUtil.setUserFields(ExtensionsConstants.USER_FEED, userFields, extensibleTypeProvider);
+            return userFields;
+        }, MetadataAccess.SERVICE);
+    }
+
+    public void populateInverseFeedDependencies() {
+        Map<Feed.ID, Feed> map = new HashMap<Feed.ID, Feed>();
+        List<Feed> feeds = getFeeds();
+        if (feeds != null) {
+            feeds.stream().forEach(feed -> map.put(feed.getId(), feed));
+        }
+        feeds.stream().filter(feed -> feed.getDependentFeeds() != null && !feed.getDependentFeeds().isEmpty()).forEach(feed1 -> {
+            List<Feed> dependentFeeds = feed1.getDependentFeeds();
+            dependentFeeds.stream().filter(depFeed -> depFeed.getUsedByFeeds() == null || !depFeed.getUsedByFeeds().contains(feed1))
+                .forEach(depFeed -> depFeed.addUsedByFeed(feed1));
+        });
     }
 
     private static class Criteria extends AbstractMetadataCriteria<FeedCriteria> implements FeedCriteria, Predicate<Feed> {
@@ -638,9 +718,9 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             if (this.category != null) {
                 //TODO FIX SQL
                 join.append(
-                        " join [" + JcrCategory.NODE_TYPE + "] as c on e." + EntityUtil.asQueryProperty(JcrFeed.CATEGORY) + "." + EntityUtil.asQueryProperty(JcrCategory.SYSTEM_NAME) + " = c."
-                        + EntityUtil
-                                .asQueryProperty(JcrCategory.SYSTEM_NAME));
+                    " join [" + JcrCategory.NODE_TYPE + "] as c on e." + EntityUtil.asQueryProperty(JcrFeed.CATEGORY) + "." + EntityUtil.asQueryProperty(JcrCategory.SYSTEM_NAME) + " = c."
+                    + EntityUtil
+                        .asQueryProperty(JcrCategory.SYSTEM_NAME));
                 cond.append(" c." + EntityUtil.asQueryProperty(JcrCategory.SYSTEM_NAME) + " = $category ");
                 params.put("category", this.category);
             }
@@ -733,23 +813,6 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         }
     }
 
-    public Feed.ID resolveId(Serializable fid) {
-        return new JcrFeed.FeedId(fid);
-    }
-
-    protected JcrFeed<?> setupPrecondition(JcrFeed<?> feed, ServiceLevelAgreement sla) {
-//        this.preconditionService.watchFeed(feed);
-        feed.setPrecondition((JcrServiceLevelAgreement) sla);
-        return feed;
-    }
-
-    public Feed updateFeedServiceLevelAgreement(Feed.ID feedId, ServiceLevelAgreement sla) {
-        JcrFeed feed = (JcrFeed) getFeed(feedId);
-        feed.addServiceLevelAgreement(sla);
-        return feed;
-    }
-
-
     private class JcrPreconditionbuilder implements PreconditionBuilder {
 
         private final ServiceLevelAgreementBuilder slaBuilder;
@@ -796,66 +859,5 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         public ServiceLevelAgreementBuilder actionConfigurations(List<? extends ServiceLevelAgreementActionConfiguration> actionConfigurations) {
             return null;
         }
-    }
-
-
-    @Override
-    public Map<String, Object> mergeFeedProperties(ID feedId, Map<String, Object> properties) {
-        try {
-            JcrFeed feed = (JcrFeed) getFeed(feedId);
-            JcrMetadataAccess.ensureCheckoutNode(feed.getNode());
-
-            List<String> securityGroupNames = new ArrayList<>();
-            for(Object o: feed.getSecurityGroups()) {
-                HadoopSecurityGroup securityGroup = (HadoopSecurityGroup)o;
-                securityGroupNames.add(securityGroup.getName());
-            }
-            PropertyChange change = new PropertyChange(feed.getId().getIdValue(), feed.getCategory().getName(), feed.getSystemName(), securityGroupNames , feed.getProperties(), properties);
-            this.metadataEventService.notify(new FeedPropertyChangeEvent(change));
-
-            return feed.mergeProperties(properties);
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Unable to merge Feed Properties for Feed " + feedId, e);
-        }
-    }
-
-    public Map<String, Object> replaceProperties(ID feedId, Map<String, Object> properties) {
-        try {
-            JcrFeed feed = (JcrFeed) getFeed(feedId);
-            JcrMetadataAccess.ensureCheckoutNode(feed.getNode());
-            return feed.replaceProperties(properties);
-
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Unable to replace Feed Properties for Feed " + feedId, e);
-        }
-    }
-
-    @Nonnull
-    @Override
-    public Set<UserFieldDescriptor> getUserFields() {
-        return JcrPropertyUtil.getUserFields(ExtensionsConstants.USER_FEED, extensibleTypeProvider);
-    }
-
-    @Override
-    public void setUserFields(@Nonnull final Set<UserFieldDescriptor> userFields) {
-        // TODO service?
-        metadataAccess.commit(() -> {
-            JcrPropertyUtil.setUserFields(ExtensionsConstants.USER_FEED, userFields, extensibleTypeProvider);
-            return userFields;
-        }, MetadataAccess.SERVICE);
-    }
-
-
-    public void populateInverseFeedDependencies() {
-        Map<Feed.ID, Feed> map = new HashMap<Feed.ID, Feed>();
-        List<Feed> feeds = getFeeds();
-        if (feeds != null) {
-            feeds.stream().forEach(feed -> map.put(feed.getId(), feed));
-        }
-        feeds.stream().filter(feed -> feed.getDependentFeeds() != null && !feed.getDependentFeeds().isEmpty()).forEach(feed1 -> {
-            List<Feed> dependentFeeds = feed1.getDependentFeeds();
-            dependentFeeds.stream().filter(depFeed -> depFeed.getUsedByFeeds() == null || !depFeed.getUsedByFeeds().contains(feed1))
-                .forEach(depFeed -> depFeed.addUsedByFeed(feed1));
-        });
     }
 }

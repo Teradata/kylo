@@ -157,7 +157,7 @@ public class JcrVersionUtil {
 
     public static Version getBaseVersion(Node node) {
         String nodeName = null;
-        if(!JcrUtil.isVersionable(node)) {
+        if (!JcrUtil.isVersionable(node)) {
             return null;
         }
         try {
@@ -171,7 +171,7 @@ public class JcrVersionUtil {
 
     public static List<Version> getVersions(Node node) {
         String nodeName = null;
-        if(!JcrUtil.isVersionable(node)) {
+        if (!JcrUtil.isVersionable(node)) {
             return null;
         }
         try {
@@ -211,7 +211,7 @@ public class JcrVersionUtil {
     }
 
     public static Version findVersion(Node node, final String versionName) {
-        if(!JcrUtil.isVersionable(node)) {
+        if (!JcrUtil.isVersionable(node)) {
             return null;
         }
         Version version = Iterables.tryFind(getVersions(node), new Predicate<Version>() {
@@ -242,8 +242,6 @@ public class JcrVersionUtil {
         }
         throw new MetadataRepositoryException("Unable to find Version " + versionNumber + " for Node " + node.getNodeName());
     }
-
-
 
 
 }

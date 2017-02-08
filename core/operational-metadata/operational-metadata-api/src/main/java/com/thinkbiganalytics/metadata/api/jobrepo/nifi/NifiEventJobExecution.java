@@ -33,19 +33,20 @@ public interface NifiEventJobExecution {
     BatchJobExecution getJobExecution();
 
     /**
-     * set the nifi event id
-     * @param eventId
-     */
-    void setEventId(Long eventId);
-
-    /**
      * Return the nifi event id
+     *
      * @return the event id
      */
     Long getEventId();
 
     /**
+     * set the nifi event id
+     */
+    void setEventId(Long eventId);
+
+    /**
      * Return the nifi flowfile id
+     *
      * @return the nifi flowfile id
      */
     String getFlowFileId();

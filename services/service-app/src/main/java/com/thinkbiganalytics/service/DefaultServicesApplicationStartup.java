@@ -38,11 +38,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class DefaultServicesApplicationStartup implements ServicesApplicationStartup, ApplicationListener<ContextRefreshedEvent> {
 
-    private DateTime startTime = null;
-    private List<ServicesApplicationStartupListener> startupListeners = new ArrayList<>();
-
     int maxThreads = 10;
-
     ExecutorService executorService =
         new ThreadPoolExecutor(
             maxThreads, // core thread pool size
@@ -51,6 +47,8 @@ public class DefaultServicesApplicationStartup implements ServicesApplicationSta
             TimeUnit.SECONDS,
             new ArrayBlockingQueue<Runnable>(maxThreads, true),
             new ThreadPoolExecutor.CallerRunsPolicy());
+    private DateTime startTime = null;
+    private List<ServicesApplicationStartupListener> startupListeners = new ArrayList<>();
 
     public void subscribe(ServicesApplicationStartupListener o) {
         startupListeners.add(o);

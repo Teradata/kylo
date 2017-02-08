@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.alerts.api;
 
@@ -40,7 +40,7 @@ public class AlertNotfoundException extends RuntimeException {
         super(message);
         this.alertId = id;
     }
-    
+
     /**
      * @return the alertId
      */

@@ -19,14 +19,14 @@
   #L%
   -->
 
-<beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns="http://www.springframework.org/schema/beans"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
                         http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <!-- This Spring configuration file is required to bootstrap the configuration of this plugin -->
-    <!-- Since the actual configuration of the plugin is handle via a java config class we only need to expose 
-         that class as a Spring bean to have it processed -->
-    <bean class="com.example.kylo.plugin.ExampleLoginConfig"></bean>
+  <!-- This Spring configuration file is required to bootstrap the configuration of this plugin -->
+  <!-- Since the actual configuration of the plugin is handle via a java config class we only need to expose
+       that class as a Spring bean to have it processed -->
+  <bean class="com.example.kylo.plugin.ExampleLoginConfig"></bean>
 
 </beans>

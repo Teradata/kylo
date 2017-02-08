@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.rest.model.op;
 
@@ -37,10 +37,6 @@ import org.joda.time.DateTime;
 @JsonInclude(Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DataOperation {
-
-    public enum State {
-        IN_PROGRESS, SUCCESS, FAILURE, CANCELED
-    }
 
     private String id;
     private State state;
@@ -94,26 +90,30 @@ public class DataOperation {
         return startTime;
     }
 
-    public void setStartTime(String startTime) {
-        this.startTime = startTime;
-    }
-    
     @JsonIgnore
     public void setStartTime(DateTime startTime) {
         this.startTime = Formatters.print(startTime);
+    }
+
+    public void setStartTime(String startTime) {
+        this.startTime = startTime;
     }
 
     public String getStopTiime() {
         return stopTiime;
     }
 
-    public void setStopTiime(String stopTiime) {
-        this.stopTiime = stopTiime;
-    }
-    
     @JsonIgnore
     public void setStopTiime(DateTime stopTime) {
         this.stopTiime = Formatters.print(stopTime);
+    }
+
+    public void setStopTiime(String stopTiime) {
+        this.stopTiime = stopTiime;
+    }
+
+    public enum State {
+        IN_PROGRESS, SUCCESS, FAILURE, CANCELED
     }
 
 }

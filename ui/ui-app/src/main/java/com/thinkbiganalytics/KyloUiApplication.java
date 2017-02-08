@@ -39,28 +39,25 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 @Configuration
-@SpringBootApplication(exclude = {VelocityAutoConfiguration.class, DataSourceAutoConfiguration.class,HibernateJpaAutoConfiguration.class,
-                                  DataSourceTransactionManagerAutoConfiguration.class })
+@SpringBootApplication(exclude = {VelocityAutoConfiguration.class, DataSourceAutoConfiguration.class, HibernateJpaAutoConfiguration.class,
+                                  DataSourceTransactionManagerAutoConfiguration.class})
 @EnableConfigurationProperties
 @ComponentScan("com.thinkbiganalytics")
 @EnableZuulProxy
 public class KyloUiApplication implements SchedulingConfigurer {
 
 
-  @Bean(destroyMethod = "shutdown")
-  public Executor scheduledTaskExecutor() {
-    return Executors.newScheduledThreadPool(25);
-  }
+    public static void main(String[] args) {
+        SpringApplication.run("classpath:application-context.xml", args);
+    }
 
-  @Override
-  public void configureTasks(ScheduledTaskRegistrar scheduledTaskRegistrar) {
-    scheduledTaskRegistrar.setScheduler(scheduledTaskExecutor());
-  }
+    @Bean(destroyMethod = "shutdown")
+    public Executor scheduledTaskExecutor() {
+        return Executors.newScheduledThreadPool(25);
+    }
 
-
-
-
-  public static void main(String[] args) {
-    SpringApplication.run("classpath:application-context.xml", args);
-  }
+    @Override
+    public void configureTasks(ScheduledTaskRegistrar scheduledTaskRegistrar) {
+        scheduledTaskRegistrar.setScheduler(scheduledTaskExecutor());
+    }
 }

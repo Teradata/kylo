@@ -28,20 +28,14 @@ import java.util.Vector;
 
 public class TestField implements Field {
 
+    public List<String> sampleValues = new Vector<>();
     private String name;
-
     private String description = "";
-
     private String nativeDataType;
-
     private String derivedDataType;
-
     private Boolean primaryKey = false;
-
     private Boolean nullable = true;
-
     private Boolean modifiable = false;
-
     private DataTypeDescriptor dataTypeDescriptor;
 
     @Override
@@ -54,17 +48,14 @@ public class TestField implements Field {
         this.dataTypeDescriptor = dataTypeDescriptor;
     }
 
-    public List<String> sampleValues = new Vector<>();
-
-
-    public void setNativeDataType(String nativeDataType) {
-        this.nativeDataType = nativeDataType;
-    }
-
     public String getDerivedDataType() {
         return derivedDataType;
     }
 
+    @Override
+    public void setDerivedDataType(String type) {
+        this.derivedDataType = type;
+    }
 
     @Override
     public Boolean isPrimaryKey() {
@@ -116,11 +107,6 @@ public class TestField implements Field {
         this.sampleValues = sampleValues;
     }
 
-    @Override
-    public void setDerivedDataType(String type) {
-        this.derivedDataType = type;
-    }
-
     public String asFieldStructure() {
         return name + "|" + derivedDataType;
     }
@@ -128,6 +114,10 @@ public class TestField implements Field {
     @Override
     public String getNativeDataType() {
         return this.nativeDataType;
+    }
+
+    public void setNativeDataType(String nativeDataType) {
+        this.nativeDataType = nativeDataType;
     }
 
     @Override

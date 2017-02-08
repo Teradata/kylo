@@ -65,17 +65,17 @@ import javax.persistence.Version;
  * Entity to store batch job executions
  */
 @Entity
-@NamedNativeQuery(name="BatchJobExecution.findLatestByFeed", query="SELECT e.* "
-                                                        + "FROM   BATCH_JOB_EXECUTION e "
-                                                        + "INNER JOIN BATCH_JOB_INSTANCE i on i.JOB_INSTANCE_ID = e.JOB_INSTANCE_ID "
-                                                        + "INNER JOIN FEED f on f.ID = i.FEED_ID "
-                                                        + "inner JOIN (SELECT f2.ID as FEED_ID,MAX(END_TIME) END_TIME "
-                                                        + "                             FROM BATCH_JOB_EXECUTION e2 "
-                                                        + "                             INNER JOIN BATCH_JOB_INSTANCE i2 on i2.JOB_INSTANCE_ID = e2.JOB_INSTANCE_ID "
-                                                        + " INNER JOIN FEED f2 on f2.ID = i2.FEED_ID "
-                                                        + "  group by f2.ID) maxJobs "
-                                                        + "                             on maxJobs.FEED_ID = f.ID "
-                                                        + "                             and maxJobs.END_TIME =e.END_TIME ")
+@NamedNativeQuery(name = "BatchJobExecution.findLatestByFeed", query = "SELECT e.* "
+                                                                       + "FROM   BATCH_JOB_EXECUTION e "
+                                                                       + "INNER JOIN BATCH_JOB_INSTANCE i on i.JOB_INSTANCE_ID = e.JOB_INSTANCE_ID "
+                                                                       + "INNER JOIN FEED f on f.ID = i.FEED_ID "
+                                                                       + "inner JOIN (SELECT f2.ID as FEED_ID,MAX(END_TIME) END_TIME "
+                                                                       + "                             FROM BATCH_JOB_EXECUTION e2 "
+                                                                       + "                             INNER JOIN BATCH_JOB_INSTANCE i2 on i2.JOB_INSTANCE_ID = e2.JOB_INSTANCE_ID "
+                                                                       + " INNER JOIN FEED f2 on f2.ID = i2.FEED_ID "
+                                                                       + "  group by f2.ID) maxJobs "
+                                                                       + "                             on maxJobs.FEED_ID = f.ID "
+                                                                       + "                             and maxJobs.END_TIME =e.END_TIME ")
 @Table(name = "BATCH_JOB_EXECUTION")
 public class JpaBatchJobExecution implements BatchJobExecution {
 
@@ -159,8 +159,8 @@ public class JpaBatchJobExecution implements BatchJobExecution {
     @JoinColumn(name = "JOB_INSTANCE_ID", nullable = false, insertable = true, updatable = true)
     private BatchJobInstance jobInstance;
 
-    @OneToMany(targetEntity = JpaBatchJobExecutionParameter.class, mappedBy = "jobExecution",fetch = FetchType.LAZY, orphanRemoval = true)
-    private Set<BatchJobExecutionParameter> jobParameters =null;
+    @OneToMany(targetEntity = JpaBatchJobExecutionParameter.class, mappedBy = "jobExecution", fetch = FetchType.LAZY, orphanRemoval = true)
+    private Set<BatchJobExecutionParameter> jobParameters = null;
 
 
     @OneToMany(targetEntity = JpaBatchStepExecution.class, mappedBy = "jobExecution", fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.DETACH}, orphanRemoval = true)
@@ -171,20 +171,12 @@ public class JpaBatchJobExecution implements BatchJobExecution {
     private Set<BatchJobExecutionContextValue> jobExecutionContext = null;
 
 
-    @OneToOne(targetEntity = JpaNifiEventJobExecution.class, mappedBy = "jobExecution", cascade = CascadeType.ALL, fetch = FetchType.LAZY,optional = false)
+    @OneToOne(targetEntity = JpaNifiEventJobExecution.class, mappedBy = "jobExecution", cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = false)
     private NifiEventJobExecution nifiEventJobExecution;
-
-
-
 
 
     public JpaBatchJobExecution() {
 
-    }
-
-
-    public void setJobExecutionId(Long jobExecutionId) {
-        this.jobExecutionId = jobExecutionId;
     }
 
     @Override
@@ -201,6 +193,9 @@ public class JpaBatchJobExecution implements BatchJobExecution {
         return jobExecutionId;
     }
 
+    public void setJobExecutionId(Long jobExecutionId) {
+        this.jobExecutionId = jobExecutionId;
+    }
 
     @Override
     public Long getVersion() {
@@ -230,7 +225,7 @@ public class JpaBatchJobExecution implements BatchJobExecution {
     @Override
     public void setStartTime(DateTime startTime) {
         this.startTime = startTime;
-        if(startTime != null) {
+        if (startTime != null) {
             this.startYear = startTime.getYear();
             this.startMonth = startTime.getMonthOfYear();
             this.startDay = startTime.getDayOfMonth();
@@ -245,7 +240,7 @@ public class JpaBatchJobExecution implements BatchJobExecution {
     @Override
     public void setEndTime(DateTime endTime) {
         this.endTime = endTime;
-        if(endTime != null) {
+        if (endTime != null) {
             this.endYear = endTime.getYear();
             this.endMonth = endTime.getMonthOfYear();
             this.endDay = endTime.getDayOfMonth();
@@ -315,8 +310,8 @@ public class JpaBatchJobExecution implements BatchJobExecution {
     }
 
     public void setJobExecutionContext(Set<BatchJobExecutionContextValue> jobExecutionContext) {
-        if(this.jobExecutionContext == null ){
-            this.jobExecutionContext = jobExecutionContext != null ? jobExecutionContext :  new HashSet<>();
+        if (this.jobExecutionContext == null) {
+            this.jobExecutionContext = jobExecutionContext != null ? jobExecutionContext : new HashSet<>();
         }
         this.jobExecutionContext.clear();
         if (jobExecutionContext != null && !jobExecutionContext.isEmpty()) {
@@ -325,7 +320,7 @@ public class JpaBatchJobExecution implements BatchJobExecution {
     }
 
     public void addJobExecutionContext(BatchJobExecutionContextValue context) {
-        if(getJobExecutionContext() == null){
+        if (getJobExecutionContext() == null) {
             setJobExecutionContext(new HashSet<>());
         }
         if (!getJobExecutionContext().contains(context)) {
@@ -351,7 +346,7 @@ public class JpaBatchJobExecution implements BatchJobExecution {
     }
 
 
-    public Map<String, String> getJobParametersAsMap(){
+    public Map<String, String> getJobParametersAsMap() {
         if (getJobParameters() != null && !getJobParameters().isEmpty()) {
             return getJobParameters().stream().collect(Collectors.toMap(param -> param.getKeyName(), param -> param.getStringVal()));
         }
@@ -403,15 +398,15 @@ public class JpaBatchJobExecution implements BatchJobExecution {
     /**
      * Complete a job and mark it as failed setting its status to {@link com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution.JobStatus#FAILED}
      */
-    public void failJob(){
+    public void failJob() {
         StringBuffer stringBuffer = null;
         setStatus(JpaBatchJobExecution.JobStatus.FAILED);
         setExitCode(ExecutionConstants.ExitCode.FAILED);
-        if(endTime == null){
+        if (endTime == null) {
             endTime = DateTimeUtil.getNowUTCTime();
         }
         Set<BatchStepExecution> steps = getStepExecutions();
-        if(steps != null) {
+        if (steps != null) {
             for (BatchStepExecution se : steps) {
                 if (BatchStepExecution.StepStatus.FAILED.equals(se.getStatus())) {
                     if (stringBuffer == null) {
@@ -435,12 +430,12 @@ public class JpaBatchJobExecution implements BatchJobExecution {
     /**
      * Complete a job and mark it as successful setting its status to {@link com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution.JobStatus#COMPLETED}
      **/
-    public void completeJob(){
+    public void completeJob() {
         setStatus(JpaBatchJobExecution.JobStatus.COMPLETED);
         if (this.exitCode == null || this.exitCode.equals(ExecutionConstants.ExitCode.EXECUTING)) {
             setExitCode(ExecutionConstants.ExitCode.COMPLETED);
         }
-        if(endTime == null){
+        if (endTime == null) {
             endTime = DateTimeUtil.getNowUTCTime();
         }
     }
@@ -451,7 +446,7 @@ public class JpaBatchJobExecution implements BatchJobExecution {
     public void completeOrFailJob() {
         boolean failedJob = false;
         Set<BatchStepExecution> steps = getStepExecutions();
-        if(steps != null) {
+        if (steps != null) {
             for (BatchStepExecution se : steps) {
                 if (BatchStepExecution.StepStatus.FAILED.equals(se.getStatus())) {
                     failedJob = true;
@@ -460,16 +455,17 @@ public class JpaBatchJobExecution implements BatchJobExecution {
             }
         }
         if (failedJob) {
-           failJob();
+            failJob();
 
         } else {
-           completeJob();
+            completeJob();
         }
 
     }
 
     /**
      * Check to see if the {@link this#status} indicates a failed job completion
+     *
      * @return {@code true} if this is a failed job, {@code false} if it has not failed
      */
     @Override
@@ -479,6 +475,7 @@ public class JpaBatchJobExecution implements BatchJobExecution {
 
     /**
      * Check to see if the {@link this#status} indicates a successful job completion
+     *
      * @return {@code true} if this is a successful job, {@code false} if it's not successful
      */
     @Override
@@ -488,8 +485,9 @@ public class JpaBatchJobExecution implements BatchJobExecution {
 
     /**
      * Add a job parameter to this job execution
+     *
      * @param keyName the parameter key
-     * @param value the parameter value
+     * @param value   the parameter value
      * @return the resulting job parameter object with the passed in {@code keyName} and {@code value}
      */
     public JpaBatchJobExecutionParameter addParameter(String keyName, Object value) {
@@ -502,6 +500,7 @@ public class JpaBatchJobExecution implements BatchJobExecution {
 
     /**
      * Check to see if this job is finished
+     *
      * @return {@code true} if this job has finished, {@code false} if its still running
      */
     @Override
@@ -512,6 +511,7 @@ public class JpaBatchJobExecution implements BatchJobExecution {
 
     /**
      * Mark this job execution as a data confidence check that references/checks the supplied feedNameReference
+     *
      * @param feedNameReference the feed this job is checking
      * @return the job parameter with the key of {@link FeedConstants#PARAM__JOB_TYPE} and the value of {@link FeedConstants#PARAM_VALUE__JOB_TYPE_CHECK}
      */
@@ -556,6 +556,7 @@ public class JpaBatchJobExecution implements BatchJobExecution {
 
     /**
      * A job execution equals another job execution based upon its primary key of the {@link this#jobExecutionId}
+     *
      * @param o a job execution to check equality
      * @return {@code true} if this job equals the incoming object, {@code false} if its not equal
      */

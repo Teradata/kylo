@@ -63,13 +63,10 @@ import javax.inject.Inject;
 public abstract class AbstractFeedManagerTemplateService implements FeedManagerTemplateService {
 
     private static final Logger log = LoggerFactory.getLogger(AbstractFeedManagerTemplateService.class);
-
-    @Inject
-    private AccessController accessController;
-
     @Autowired
     protected LegacyNifiRestClient nifiRestClient;
-
+    @Inject
+    private AccessController accessController;
     @Inject
     private NiFiPropertyDescriptorTransform propertyDescriptorTransform;
 

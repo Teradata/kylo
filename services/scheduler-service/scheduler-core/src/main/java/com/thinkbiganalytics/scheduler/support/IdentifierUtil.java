@@ -27,18 +27,18 @@ import java.util.UUID;
  */
 public class IdentifierUtil {
 
-  public static String createUniqueName(String item) {
+    public static String createUniqueName(String item) {
 
-    String n1 = UUID.randomUUID().toString();
-    String n2 = UUID.nameUUIDFromBytes(item.getBytes()).toString();
-    return String.format("%s-%s", new Object[]{n2.substring(24), n1});
-  }
+        String n1 = UUID.randomUUID().toString();
+        String n2 = UUID.nameUUIDFromBytes(item.getBytes()).toString();
+        return String.format("%s-%s", new Object[]{n2.substring(24), n1});
+    }
 
-  public static String createUniqueName(String item, int length) {
+    public static String createUniqueName(String item, int length) {
 
-    String n1 = UUID.randomUUID().toString();
-    String n2 = UUID.nameUUIDFromBytes(item.getBytes()).toString();
-      return String.format("%s-%s", new Object[]{n2.substring(length), n1});
-  }
+        String n1 = UUID.randomUUID().toString();
+        String n2 = UUID.nameUUIDFromBytes(item.getBytes()).toString();
+        return String.format("%s-%s", new Object[]{n2.substring(length), n1});
+    }
 }
 

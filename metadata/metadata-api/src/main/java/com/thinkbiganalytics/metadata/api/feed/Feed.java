@@ -47,10 +47,6 @@ import javax.annotation.Nullable;
  */
 public interface Feed<C extends Category> extends Propertied, AccessControlled, Serializable {
 
-    interface ID extends Serializable { }
-
-    enum State {ENABLED, DISABLED, DELETED }
-
     ID getId();
 
     String getName();
@@ -59,9 +55,15 @@ public interface Feed<C extends Category> extends Propertied, AccessControlled, 
 
     String getDisplayName();
 
+    void setDisplayName(String name);
+
     String getDescription();
 
+    void setDescription(String descr);
+
     State getState();
+
+    void setState(State state);
 
     boolean isInitialized();
 
@@ -84,12 +86,6 @@ public interface Feed<C extends Category> extends Propertied, AccessControlled, 
     boolean addUsedByFeed(Feed<?> feed);
 
     boolean removeUsedByFeed(Feed<?> feed);
-
-    void setDisplayName(String name);
-
-    void setDescription(String descr);
-
-    void setState(State state);
 
     C getCategory();
 
@@ -117,14 +113,13 @@ public interface Feed<C extends Category> extends Propertied, AccessControlled, 
      * {@link FeedProvider#getUserFields()} and {@link com.thinkbiganalytics.metadata.api.category.CategoryProvider#getFeedUserFields(Category.ID)} with precedence given to the first.</p>
      *
      * @param userProperties the new user-defined properties
-     * @param userFields the user-defined fields
+     * @param userFields     the user-defined fields
      * @throws MissingUserPropertyException if a required property is empty or missing
      * @see FeedProvider#getUserFields() for the user-defined field descriptors for all feeds
      * @see com.thinkbiganalytics.metadata.api.category.CategoryProvider#getFeedUserFields(Category.ID) for the user-defined field descriptors for all feeds within a given category
      * @since 0.4.0
      */
     void setUserProperties(@Nonnull Map<String, String> userProperties, @Nonnull Set<UserFieldDescriptor> userFields);
-
 
     List<? extends FeedSource> getSources();
 
@@ -151,7 +146,7 @@ public interface Feed<C extends Category> extends Propertied, AccessControlled, 
 
     /**
      * @param waterMarkName the name of the high water mark
-     * @param value the current value of the water mark
+     * @param value         the current value of the water mark
      */
     void setWaterMarkValue(String waterMarkName, String value);
 
@@ -161,4 +156,10 @@ public interface Feed<C extends Category> extends Propertied, AccessControlled, 
      * @param tags set of tags
      */
     void setTags(@Nullable Set<String> tags);
+
+    enum State {ENABLED, DISABLED, DELETED}
+
+    interface ID extends Serializable {
+
+    }
 }

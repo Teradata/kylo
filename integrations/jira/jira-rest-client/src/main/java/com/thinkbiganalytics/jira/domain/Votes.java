@@ -1,4 +1,3 @@
-
 package com.thinkbiganalytics.jira.domain;
 
 /*-
@@ -36,10 +35,10 @@ import javax.annotation.Generated;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("org.jsonschema2pojo")
 @JsonPropertyOrder({
-    "self",
-    "votes",
-    "hasVoted"
-})
+                       "self",
+                       "votes",
+                       "hasVoted"
+                   })
 public class Votes {
 
     @JsonProperty("self")
@@ -52,9 +51,7 @@ public class Votes {
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
-     * 
-     * @return
-     *     The self
+     * @return The self
      */
     @JsonProperty("self")
     public String getSelf() {
@@ -62,9 +59,7 @@ public class Votes {
     }
 
     /**
-     * 
-     * @param self
-     *     The self
+     * @param self The self
      */
     @JsonProperty("self")
     public void setSelf(String self) {
@@ -72,9 +67,7 @@ public class Votes {
     }
 
     /**
-     * 
-     * @return
-     *     The votes
+     * @return The votes
      */
     @JsonProperty("votes")
     public Integer getVotes() {
@@ -82,9 +75,7 @@ public class Votes {
     }
 
     /**
-     * 
-     * @param votes
-     *     The votes
+     * @param votes The votes
      */
     @JsonProperty("votes")
     public void setVotes(Integer votes) {
@@ -92,9 +83,7 @@ public class Votes {
     }
 
     /**
-     * 
-     * @return
-     *     The hasVoted
+     * @return The hasVoted
      */
     @JsonProperty("hasVoted")
     public Boolean getHasVoted() {
@@ -102,9 +91,7 @@ public class Votes {
     }
 
     /**
-     * 
-     * @param hasVoted
-     *     The hasVoted
+     * @param hasVoted The hasVoted
      */
     @JsonProperty("hasVoted")
     public void setHasVoted(Boolean hasVoted) {

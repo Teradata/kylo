@@ -61,7 +61,7 @@ public class SchedulerRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the scheduler status.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "Returns the metadata.", response = Map.class)
+        @ApiResponse(code = 200, message = "Returns the metadata.", response = Map.class)
     )
     public Map<String, Object> getMetaData() throws JobSchedulerException {
         return quartzScheduler.getMetaData();
@@ -73,7 +73,7 @@ public class SchedulerRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Pauses the scheduler.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "The scheduler is paused.", response = RestResponseStatus.class)
+        @ApiResponse(code = 200, message = "The scheduler is paused.", response = RestResponseStatus.class)
     )
     public RestResponseStatus standByScheduler() throws JobSchedulerException {
         quartzScheduler.pauseScheduler();
@@ -86,7 +86,7 @@ public class SchedulerRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Starts the scheduler.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "The scheduler is started.", response = RestResponseStatus.class)
+        @ApiResponse(code = 200, message = "The scheduler is started.", response = RestResponseStatus.class)
     )
     public RestResponseStatus startScheduler() throws JobSchedulerException {
         quartzScheduler.startScheduler();
@@ -102,14 +102,14 @@ public class SchedulerRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Updates the trigger for a job.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "The trigger is updated.", response = RestResponseStatus.class)
+        @ApiResponse(code = 200, message = "The trigger is updated.", response = RestResponseStatus.class)
     )
     public RestResponseStatus rescheduleTrigger(TriggerInfo trigger) throws JobSchedulerException {
 
         //convert to Domain Code
 
         quartzScheduler
-                .updateTrigger(Model.TRIGGER_IDENTIFIER_TO_DOMAIN.apply(trigger.getTriggerIdentifier()), trigger.getCronExpression());
+            .updateTrigger(Model.TRIGGER_IDENTIFIER_TO_DOMAIN.apply(trigger.getTriggerIdentifier()), trigger.getCronExpression());
         return RestResponseStatus.SUCCESS;
     }
 
@@ -120,7 +120,7 @@ public class SchedulerRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Pauses the trigger for a job.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "The trigger is paused.", response = RestResponseStatus.class)
+        @ApiResponse(code = 200, message = "The trigger is paused.", response = RestResponseStatus.class)
     )
     public RestResponseStatus pauseTrigger(ScheduleIdentifier triggerIdentifier) throws JobSchedulerException {
 
@@ -135,7 +135,7 @@ public class SchedulerRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Starts the trigger for a job.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "The trigger is started.", response = RestResponseStatus.class)
+        @ApiResponse(code = 200, message = "The trigger is started.", response = RestResponseStatus.class)
     )
     public RestResponseStatus resumeTrigger(ScheduleIdentifier triggerIdentifier) throws JobSchedulerException {
 
@@ -150,7 +150,7 @@ public class SchedulerRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Executes the specified job.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "The job is started.", response = RestResponseStatus.class)
+        @ApiResponse(code = 200, message = "The job is started.", response = RestResponseStatus.class)
     )
     public RestResponseStatus triggerJob(ScheduleIdentifier jobIdentifier) throws JobSchedulerException {
         quartzScheduler.triggerJob(Model.JOB_IDENTIFIER_TO_DOMAIN.apply(jobIdentifier));
@@ -163,7 +163,7 @@ public class SchedulerRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Pauses all triggers for the specified job.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "The triggers are paused.", response = RestResponseStatus.class)
+        @ApiResponse(code = 200, message = "The triggers are paused.", response = RestResponseStatus.class)
     )
     public RestResponseStatus pauseJob(ScheduleIdentifier jobIdentifier) throws JobSchedulerException {
         quartzScheduler.pauseTriggersOnJob(Model.JOB_IDENTIFIER_TO_DOMAIN.apply(jobIdentifier));
@@ -176,7 +176,7 @@ public class SchedulerRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Starts all triggers for the specified job.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "The triggers are started.", response = RestResponseStatus.class)
+        @ApiResponse(code = 200, message = "The triggers are started.", response = RestResponseStatus.class)
     )
     public RestResponseStatus resumeJob(ScheduleIdentifier jobIdentifier) throws JobSchedulerException {
         quartzScheduler.resumeTriggersOnJob(Model.JOB_IDENTIFIER_TO_DOMAIN.apply(jobIdentifier));
@@ -188,7 +188,7 @@ public class SchedulerRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the list of all jobs")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "Returns the list of jobs.", response = RestResponseStatus.class)
+        @ApiResponse(code = 200, message = "Returns the list of jobs.", response = RestResponseStatus.class)
     )
     public List<ScheduledJob> getJobs() throws JobSchedulerException {
         List<ScheduledJob> quartzScheduledJobs = new ArrayList<ScheduledJob>();

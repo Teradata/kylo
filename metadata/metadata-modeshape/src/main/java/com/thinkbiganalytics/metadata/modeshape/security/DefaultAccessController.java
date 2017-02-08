@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.modeshape.security;
 
@@ -40,10 +40,10 @@ import javax.inject.Inject;
  *
  */
 public class DefaultAccessController implements AccessController {
-    
+
     @Inject
     private MetadataAccess metadata;
-    
+
     @Inject
     private AllowedModuleActionsProvider actionsProvider;
 
@@ -52,10 +52,10 @@ public class DefaultAccessController implements AccessController {
      */
     @Override
     public void checkPermission(String moduleName, Action action, Action... others) {
-        checkPermission(moduleName, Stream.concat(Stream.of(action), 
+        checkPermission(moduleName, Stream.concat(Stream.of(action),
                                                   Arrays.stream(others)).collect(Collectors.toSet()));
     }
-    
+
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.security.AccessController#checkPermission(java.lang.String, java.util.Set)
@@ -65,9 +65,9 @@ public class DefaultAccessController implements AccessController {
         this.metadata.read(() -> {
             return this.actionsProvider.getAllowedActions(moduleName)
                 .map((allowed) -> {
-                        allowed.checkPermission(actions);
-                        return moduleName;
-                    })
+                    allowed.checkPermission(actions);
+                    return moduleName;
+                })
                 .<AccessControlException>orElseThrow(() -> new AccessControlException("No actions are defined for the module named: " + moduleName));
         });
     }

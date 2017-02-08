@@ -33,10 +33,11 @@ import java.io.IOException;
  * Jackson2 JSON parser
  */
 public class ObjectMapperSerializer {
+
     private static final Logger log = LoggerFactory.getLogger(ObjectMapperSerializer.class);
 
 
-    private  static ObjectMapper mapper;
+    private static ObjectMapper mapper;
 
     public ObjectMapperSerializer() {
 
@@ -47,8 +48,8 @@ public class ObjectMapperSerializer {
      *
      * @return the ObjectMapper used to serialize/deserialize
      */
-    private static ObjectMapper getMapper(){
-        if(mapper == null){
+    private static ObjectMapper getMapper() {
+        if (mapper == null) {
             mapper = new ObjectMapper();
             mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         }
@@ -58,10 +59,11 @@ public class ObjectMapperSerializer {
 
     /**
      * serialize an Object to a String using Jackson2
+     *
      * @param obj the object to serialize
      * @return the JSON string representing the object
      */
-    public static  String serialize(Object obj) {
+    public static String serialize(Object obj) {
         String json = null;
         try {
             json = getMapper().writeValueAsString(obj);
@@ -73,12 +75,13 @@ public class ObjectMapperSerializer {
 
     /**
      * deserialize an string as JSON converting it to an object of the supplied class type
-     * @param json the JSON sgtring representing the object
+     *
+     * @param json  the JSON sgtring representing the object
      * @param clazz the class describing the type of object to return
-     * @param <T>  the type of object that should be returned
+     * @param <T>   the type of object that should be returned
      * @return the deserialized object converted from JSON
      */
-    public static <T> T deserialize(String json, Class<T> clazz){
+    public static <T> T deserialize(String json, Class<T> clazz) {
         try {
             return getMapper().readValue(json, clazz);
         } catch (IOException e) {

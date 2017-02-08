@@ -36,7 +36,6 @@ public interface NifiEvent {
     /**
      * Return the flowfile id for this event
      * the {@link this#getEventId()} + this flowFileId determine uniqueness of this record
-     * @return
      */
     String getFlowFileId();
 
@@ -49,19 +48,20 @@ public interface NifiEvent {
 
     /**
      * Return the NiFi processor/component id
+     *
      * @return the nifi processor/component id
      */
     String getProcessorId();
 
     /**
      * Return the display name of the processor
+     *
      * @return the display name of the processor
      */
     String getProcessorName();
 
     /**
      * Return the process group id for the feed that this event partakes in
-     * @return
      */
     String getFeedProcessGroupId();
 

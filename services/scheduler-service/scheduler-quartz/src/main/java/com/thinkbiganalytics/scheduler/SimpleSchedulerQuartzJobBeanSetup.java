@@ -43,14 +43,13 @@ import javax.annotation.PostConstruct;
 
 public class SimpleSchedulerQuartzJobBeanSetup {
 
+    private static final Logger log = LoggerFactory.getLogger(SimpleSchedulerQuartzJobBeanSetup.class);
     private String cronExpresson;
     private String groupName;
     private String jobName;
     private String quartzJobBean;
     private Map<String, Object> dataMap;
     private boolean fireImmediately;
-    private static final Logger log = LoggerFactory.getLogger(SimpleSchedulerQuartzJobBeanSetup.class);
-
     @Autowired
     @Qualifier("quartzScheduler")
     private QuartzScheduler quartzScheduler;

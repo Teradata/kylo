@@ -33,7 +33,6 @@ import java.io.InputStream;
 
 /**
  * A class that provides an escaped line reader from an input stream.
- *
  */
 public class EscapedLineReader {
 

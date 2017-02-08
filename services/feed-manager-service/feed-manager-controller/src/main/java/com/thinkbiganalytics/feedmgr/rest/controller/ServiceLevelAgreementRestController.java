@@ -75,28 +75,23 @@ public class ServiceLevelAgreementRestController {
 
     @Inject
     ServiceLevelAgreementService serviceLevelAgreementService;
-
-    @Inject
-    private ServiceLevelAgreementProvider provider;
-
-    @Inject
-    private FeedServiceLevelAgreementProvider feedSlaProvider;
-
-    @Inject
-    private JcrMetadataAccess metadata;
-
-    @Inject
-    private MetadataAccess metadataAccess;
-
     @Inject
     ServiceLevelAssessor assessor;
+    @Inject
+    private ServiceLevelAgreementProvider provider;
+    @Inject
+    private FeedServiceLevelAgreementProvider feedSlaProvider;
+    @Inject
+    private JcrMetadataAccess metadata;
+    @Inject
+    private MetadataAccess metadataAccess;
 
     @GET
     @Path("/available-metrics")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the list of available metrics.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "Returns the metrics.", response = ServiceLevelAgreementRule.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Returns the metrics.", response = ServiceLevelAgreementRule.class, responseContainer = "List")
     )
     public Response getAvailableSLAMetrics() {
         return Response.ok(serviceLevelAgreementService.discoverSlaMetrics()).build();
@@ -107,7 +102,7 @@ public class ServiceLevelAgreementRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the list of available responders.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "Returns the responders.", response = ServiceLevelAgreementActionUiConfigurationItem.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Returns the responders.", response = ServiceLevelAgreementActionUiConfigurationItem.class, responseContainer = "List")
     )
     public Response getAvailableSLAResponders() {
         return Response.ok(serviceLevelAgreementService.discoverActionConfigurations()).build();
@@ -120,9 +115,9 @@ public class ServiceLevelAgreementRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Saves the specified SLA.")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Returns the SLA.", response = ServiceLevelAgreementGroup.class),
-            @ApiResponse(code = 500, message = "The SLA could not be saved.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 200, message = "Returns the SLA.", response = ServiceLevelAgreementGroup.class),
+                      @ApiResponse(code = 500, message = "The SLA could not be saved.", response = RestResponseStatus.class)
+                  })
     public Response saveSla(ServiceLevelAgreementGroup sla) {
         ServiceLevelAgreement serviceLevelAgreement = serviceLevelAgreementService.saveAndScheduleSla(sla);
         ServiceLevelAgreementMetricTransformerHelper helper = new ServiceLevelAgreementMetricTransformerHelper();
@@ -138,10 +133,10 @@ public class ServiceLevelAgreementRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Saves the SLA and attaches it to the specified feed.")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Returns the SLA.", response = ServiceLevelAgreementGroup.class),
-            @ApiResponse(code = 400, message = "The feedId is not a valid UUID.", response = RestResponseStatus.class),
-            @ApiResponse(code = 500, message = "The SLA could not be saved.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 200, message = "Returns the SLA.", response = ServiceLevelAgreementGroup.class),
+                      @ApiResponse(code = 400, message = "The feedId is not a valid UUID.", response = RestResponseStatus.class),
+                      @ApiResponse(code = 500, message = "The SLA could not be saved.", response = RestResponseStatus.class)
+                  })
     public Response saveAndScheduleFeedSla(@UUID @PathParam("feedId") String feedId, ServiceLevelAgreementGroup sla) {
         ServiceLevelAgreement serviceLevelAgreement = serviceLevelAgreementService.saveAndScheduleFeedSla(sla, feedId);
         ServiceLevelAgreementMetricTransformerHelper helper = new ServiceLevelAgreementMetricTransformerHelper();
@@ -158,10 +153,10 @@ public class ServiceLevelAgreementRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Deletes the specified SLA.")
     @ApiResponses({
-            @ApiResponse(code = 204, message = "The SLA has been deleted."),
-            @ApiResponse(code = 400, message = "The slaId is not a valid UUID.", response = RestResponseStatus.class),
-            @ApiResponse(code = 500, message = "The SLA could not be deleted.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 204, message = "The SLA has been deleted."),
+                      @ApiResponse(code = 400, message = "The slaId is not a valid UUID.", response = RestResponseStatus.class),
+                      @ApiResponse(code = 500, message = "The SLA could not be deleted.", response = RestResponseStatus.class)
+                  })
     public Response deleteSla(@UUID @PathParam("slaId") String slaId) throws InvalidOperationException {
         serviceLevelAgreementService.removeAndUnscheduleAgreement(slaId);
 
@@ -174,7 +169,7 @@ public class ServiceLevelAgreementRestController {
     @Produces({MediaType.APPLICATION_JSON})
     @ApiOperation("Gets all SLAs related to any feed.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "Returns the SLAs.", response = FeedServiceLevelAgreement.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Returns the SLAs.", response = FeedServiceLevelAgreement.class, responseContainer = "List")
     )
     public Response getAllSlas() {
         List<FeedServiceLevelAgreement> agreementList = serviceLevelAgreementService.getServiceLevelAgreements();
@@ -189,9 +184,9 @@ public class ServiceLevelAgreementRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the form for editing the specified SLA.")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Returns the SLA form.", response = ServiceLevelAgreementGroup.class),
-            @ApiResponse(code = 400, message = "The slaId is not a valid UUID.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 200, message = "Returns the SLA form.", response = ServiceLevelAgreementGroup.class),
+                      @ApiResponse(code = 400, message = "The slaId is not a valid UUID.", response = RestResponseStatus.class)
+                  })
     public Response getSlaAsForm(@UUID @PathParam("slaId") String slaId) {
         ServiceLevelAgreementGroup agreement = serviceLevelAgreementService.getServiceLevelAgreementAsFormObject(slaId);
 
@@ -204,7 +199,7 @@ public class ServiceLevelAgreementRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Validates the specified action configuration.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "Returns the validation.", response = ServiceLevelAgreementActionValidation.class)
+        @ApiResponse(code = 200, message = "Returns the validation.", response = ServiceLevelAgreementActionValidation.class)
     )
     public Response validateAction(@QueryParam("actionConfigClass") String actionConfigClass) {
 
@@ -231,7 +226,7 @@ public class ServiceLevelAgreementRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets all SLAs.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "Returns the SLAs.", response = FeedServiceLevelAgreement.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Returns the SLAs.", response = FeedServiceLevelAgreement.class, responseContainer = "List")
     )
     public List<FeedServiceLevelAgreement> getAgreements() {
         log.debug("GET all SLA's");
@@ -251,9 +246,9 @@ public class ServiceLevelAgreementRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the specified SLA.")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Returns the SLA.", response = ServiceLevelAgreement.class),
-            @ApiResponse(code = 404, message = "The SLA could not be found.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 200, message = "Returns the SLA.", response = ServiceLevelAgreement.class),
+                      @ApiResponse(code = 404, message = "The SLA could not be found.", response = RestResponseStatus.class)
+                  })
     public ServiceLevelAgreement getAgreement(@PathParam("id") String idValue) {
         log.debug("GET SLA by ID: {}", idValue);
 
@@ -274,9 +269,9 @@ public class ServiceLevelAgreementRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the specified assessment.")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Returns the assessment.", response = ServiceLevelAgreement.class),
-            @ApiResponse(code = 400, message = "The assessment could not be found.", response = RestResponseStatus.class)
-    })
+                      @ApiResponse(code = 200, message = "Returns the assessment.", response = ServiceLevelAgreement.class),
+                      @ApiResponse(code = 400, message = "The assessment could not be found.", response = RestResponseStatus.class)
+                  })
     public ServiceLevelAssessment assessAgreement(@PathParam("id") String idValue) {
         log.debug("GET SLA by ID: {}", idValue);
 

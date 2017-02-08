@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.rest.model.sla;
 
@@ -49,7 +49,7 @@ public class Obligation {
 
     public Obligation() {
     }
-    
+
     public Obligation(String description, Metric... metrics) {
         this(description, Arrays.asList(metrics));
     }

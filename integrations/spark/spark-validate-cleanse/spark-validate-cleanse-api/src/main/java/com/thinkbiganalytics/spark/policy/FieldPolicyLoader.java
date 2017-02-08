@@ -40,6 +40,7 @@ public class FieldPolicyLoader implements Serializable {
 
     /**
      * read the JSON file path and return the JSON string
+     *
      * @param path path to field policy JSON file
      */
     public Map<String, FieldPolicy> loadFieldPolicy(String path) {

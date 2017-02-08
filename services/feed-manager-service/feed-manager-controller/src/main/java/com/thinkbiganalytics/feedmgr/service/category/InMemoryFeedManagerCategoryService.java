@@ -67,25 +67,25 @@ public class InMemoryFeedManagerCategoryService implements FeedManagerCategorySe
 
         List<FeedCategory> feedCategoryList = new ArrayList<>();
         feedCategoryList.add(
-                new FeedCategoryBuilder("Employees").description("Employee profile data and records").icon("people").iconColor("#F06292")
-                        .build());
+            new FeedCategoryBuilder("Employees").description("Employee profile data and records").icon("people").iconColor("#F06292")
+                .build());
         feedCategoryList.add(
-                new FeedCategoryBuilder("Sales").description("Sales data including opportunities and leads").icon("phone_android")
-                        .iconColor("#90A4AE").build());
+            new FeedCategoryBuilder("Sales").description("Sales data including opportunities and leads").icon("phone_android")
+                .iconColor("#90A4AE").build());
         feedCategoryList.add(
-                new FeedCategoryBuilder("Online").description("Web traffic data and reports of online activity").icon("web")
-                        .iconColor("#66BB6A").build());
+            new FeedCategoryBuilder("Online").description("Web traffic data and reports of online activity").icon("web")
+                .iconColor("#66BB6A").build());
         feedCategoryList.add(
-                new FeedCategoryBuilder("Payroll").description("Payroll records for employees").icon("attach_money").iconColor("#FFCA28")
-                        .build());
+            new FeedCategoryBuilder("Payroll").description("Payroll records for employees").icon("attach_money").iconColor("#FFCA28")
+                .build());
         feedCategoryList.add(new FeedCategoryBuilder("Travel").description("Employee travel records including all expense reports")
-                                     .icon("local_airport").iconColor("#FFF176").build());
+                                 .icon("local_airport").iconColor("#FFF176").build());
         feedCategoryList.add(new FeedCategoryBuilder("Data").description("General Data ").icon("cloud").iconColor("#AB47BC").build());
         feedCategoryList.add(
-                new FeedCategoryBuilder("Emails").description("All email traffic data archived for the last 5 years").icon("email")
-                        .iconColor("#FF5252").build());
+            new FeedCategoryBuilder("Emails").description("All email traffic data archived for the last 5 years").icon("email")
+                .iconColor("#FF5252").build());
         feedCategoryList.add(new FeedCategoryBuilder("Customers").description("All customer data for various companies").icon("face")
-                                     .iconColor("#FF5252").build());
+                                 .iconColor("#FF5252").build());
 
         for (FeedCategory category : feedCategoryList) {
             category.setId(UUID.randomUUID().toString());
@@ -151,8 +151,8 @@ public class InMemoryFeedManagerCategoryService implements FeedManagerCategorySe
             //dont allow if category has feeds on it
             if (category.getRelatedFeeds() > 0) {
                 throw new InvalidOperationException(
-                        "Unable to delete Category " + category.getName() + ".  This category has " + category.getRelatedFeeds()
-                        + " feeds associated to it.");
+                    "Unable to delete Category " + category.getName() + ".  This category has " + category.getRelatedFeeds()
+                    + " feeds associated to it.");
             } else {
                 categories.remove(categoryId);
                 FileObjectPersistence.getInstance().writeCategoriesToFile(categories.values());
@@ -169,14 +169,14 @@ public class InMemoryFeedManagerCategoryService implements FeedManagerCategorySe
         return Collections.emptySet();
     }
 
+    @Override
+    public void setUserFields(@Nonnull final Set<UserField> userFields) {
+        // do nothing
+    }
+
     @Nonnull
     @Override
     public Set<UserProperty> getUserProperties() {
         return Collections.emptySet();
-    }
-
-    @Override
-    public void setUserFields(@Nonnull final Set<UserField> userFields) {
-        // do nothing
     }
 }

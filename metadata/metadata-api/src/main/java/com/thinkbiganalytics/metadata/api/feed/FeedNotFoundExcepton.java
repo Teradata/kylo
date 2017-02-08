@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.api.feed;
 
@@ -38,7 +38,7 @@ public class FeedNotFoundExcepton extends MetadataException {
         super();
         this.id = id;
     }
-    
+
     public FeedNotFoundExcepton(String message, Feed.ID id) {
         super(message);
         this.id = id;

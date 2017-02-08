@@ -27,13 +27,14 @@ import java.lang.annotation.Target;
 
 /**
  * Annotation to describe label,value items for the ui display such as those that are in select lists
+ *
  * @see PolicyProperty
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface PropertyLabelValue {
 
-  String label();
+    String label();
 
-  String value();
+    String value();
 }

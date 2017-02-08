@@ -50,10 +50,14 @@ public class FeedCategory {
 
     private List<HadoopSecurityGroup> securityGroups;
 
-    /** User-defined fields for feeds within this category */
+    /**
+     * User-defined fields for feeds within this category
+     */
     private Set<UserField> userFields;
 
-    /** User-defined business metadata */
+    /**
+     * User-defined business metadata
+     */
     private Set<UserProperty> userProperties;
 
     @JsonIgnore
@@ -85,6 +89,10 @@ public class FeedCategory {
             generateSystemName();
         }
         return systemName;
+    }
+
+    public void setSystemName(String systemName) {
+        this.systemName = systemName;
     }
 
     public String getIcon() {
@@ -226,11 +234,6 @@ public class FeedCategory {
 
     public void setCreateDate(Date createDate) {
         this.createDate = createDate;
-    }
-
-
-    public void setSystemName(String systemName) {
-        this.systemName = systemName;
     }
 
     public List<HadoopSecurityGroup> getSecurityGroups() {

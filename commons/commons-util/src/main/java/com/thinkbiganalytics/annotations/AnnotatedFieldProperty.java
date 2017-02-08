@@ -34,6 +34,7 @@ import java.lang.reflect.Field;
  * @see AnnotationFieldNameResolver
  */
 public class AnnotatedFieldProperty<T extends Annotation> {
+
     private String name;
     private String description;
     @JsonIgnore
@@ -64,7 +65,8 @@ public class AnnotatedFieldProperty<T extends Annotation> {
     }
 
     /**
-     *  Return an optional description about the field
+     * Return an optional description about the field
+     *
      * @return the description for the field.  This is optional and can be null
      */
     public String getDescription() {
@@ -73,7 +75,6 @@ public class AnnotatedFieldProperty<T extends Annotation> {
 
     /**
      * set the description for the field
-     * @param description
      */
     public void setDescription(String description) {
         this.description = description;
@@ -81,6 +82,7 @@ public class AnnotatedFieldProperty<T extends Annotation> {
 
     /**
      * Return the Java Field reference
+     *
      * @return the Java Field reference to the annotated field
      */
     public Field getField() {
@@ -89,7 +91,6 @@ public class AnnotatedFieldProperty<T extends Annotation> {
 
     /**
      * set the field containing the annotation
-     * @param field
      */
     public void setField(Field field) {
         this.field = field;
@@ -97,7 +98,6 @@ public class AnnotatedFieldProperty<T extends Annotation> {
 
     /**
      * Return the Java datatype of the field
-     * @return
      */
     public String getDataType() {
         return dataType;
@@ -105,7 +105,6 @@ public class AnnotatedFieldProperty<T extends Annotation> {
 
     /**
      * set the Java datatype
-     * @param dataType
      */
     public void setDataType(String dataType) {
         this.dataType = dataType;
@@ -113,7 +112,6 @@ public class AnnotatedFieldProperty<T extends Annotation> {
 
     /**
      * Return the Annotation used when parsing this field
-     * @return
      */
     public T getAnnotation() {
         return annotation;
@@ -121,7 +119,6 @@ public class AnnotatedFieldProperty<T extends Annotation> {
 
     /**
      * set the annotation reference
-     * @param annotation
      */
     public void setAnnotation(T annotation) {
         this.annotation = annotation;
@@ -130,7 +127,7 @@ public class AnnotatedFieldProperty<T extends Annotation> {
     @Override
     public String toString() {
         return new ToStringBuilder(this)
-             .append("name", name)
+            .append("name", name)
             .append("description", description)
             .toString();
     }

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.jpa.audit;
 
@@ -33,7 +33,6 @@ import java.security.Principal;
 import java.util.List;
 
 /**
- *
  * Spring data repository for {@link JpaAuditLogEntry}
  */
 public interface AuditLogRepository extends JpaRepository<JpaAuditLogEntry, AuditLogEntry.ID> {

@@ -266,7 +266,7 @@ public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreem
     /**
      * Called be the framework when the job is scheduled this is where we manage the life cycle of the SLAs
      *
-     * @param event  the job event.
+     * @param event the job event.
      */
     public void onJobSchedulerEvent(JobSchedulerEvent event) {
         try {

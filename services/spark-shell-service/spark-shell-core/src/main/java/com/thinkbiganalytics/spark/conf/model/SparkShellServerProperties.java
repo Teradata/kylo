@@ -25,16 +25,24 @@ package com.thinkbiganalytics.spark.conf.model;
  */
 public class SparkShellServerProperties {
 
-    /** Host where Spark Shell is running */
+    /**
+     * Host where Spark Shell is running
+     */
     private String host;
 
-    /** Port where Spark Shell is listening */
+    /**
+     * Port where Spark Shell is listening
+     */
     private int port = 8450;
 
-    /** Username for basic authentication */
+    /**
+     * Username for basic authentication
+     */
     private String username;
 
-    /** Password for basic authentication */
+    /**
+     * Password for basic authentication
+     */
     private String password;
 
     public String getHost() {

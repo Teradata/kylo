@@ -71,7 +71,7 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 /**
- *  Cache processor definitions in a flow for use by the KyloProvenanceReportingTask
+ * Cache processor definitions in a flow for use by the KyloProvenanceReportingTask
  *
  * Each Processor has an internal {@code flowId} generated why Kylo walks the flow This internal id is used to associate the Feed flow as a template with the Feed flow created when the feed is
  * saved/updated
@@ -88,22 +88,16 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
 
     @Inject
     LegacyNifiRestClient nifiRestClient;
-
-    @Inject
-    private NifiConnectionService nifiConnectionService;
-
     @Inject
     MetadataService metadataService;
-
     @Inject
     FeedManagerFeedProvider feedManagerFeedProvider;
-
     @Inject
     MetadataAccess metadataAccess;
-
     @Inject
     PropertyExpressionResolver propertyExpressionResolver;
-
+    @Inject
+    private NifiConnectionService nifiConnectionService;
     private Map<String, String> feedNameToTemplateNameMap = new ConcurrentHashMap<>();
 
     private Map<String, Map<String, List<NifiFlowProcessor>>> feedFlowIdProcessorMap = new ConcurrentHashMap<>();
@@ -222,6 +216,7 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
 
     /**
      * Check to see if the cache is loaded
+     *
      * @return {@code true} if the cache is populated, {@code false} if the cache is not populated
      */
     public boolean isAvailable() {
@@ -230,6 +225,7 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
 
     /**
      * Return only the records that were updated since the last sync
+     *
      * @param syncId a cache id
      * @return updates that have been applied to the cache.
      */
@@ -243,6 +239,7 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
 
     /**
      * Return the data in the cache for a given cache id
+     *
      * @param syncId a cache id
      * @return the data in the cache for a given cache id
      */
@@ -253,6 +250,7 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
 
     /**
      * Preview any new updates that will be applied to a given cache
+     *
      * @param syncId a cache id
      * @return any new updates that will be applied to a given cache
      */
@@ -334,8 +332,6 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
     }
 
 
-
-
     private NiFiFlowCacheSync previewUpdates(NiFiFlowCacheSync sync) {
         return syncAndReturnUpdates(sync, true);
     }
@@ -367,7 +363,6 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
             return NiFiFlowCacheSync.UNAVAILABLE;
         }
     }
-
 
 
     private NiFiFlowCacheSync syncAndReturnUpdates(NiFiFlowCacheSync sync, boolean preview) {
@@ -428,7 +423,9 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
     }
 
 
-    /** clears the current cache ***/
+    /**
+     * clears the current cache
+     ***/
     private void clearAll() {
         processorIdToFeedProcessGroupId.clear();
         processorIdToFeedProcessGroupId.clear();
@@ -532,14 +529,15 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
     /**
      * Called after someone updates/Registers a template in the UI using the template stepper
      * This is used to update the feed marker for streaming/batch feeds
-     * @param template
      */
     public synchronized void updateRegisteredTemplate(RegisteredTemplate template) {
 
         populateTemplateMappingCache(template, null);
 
         //update the processortype cachefeedNameToTemplateNameMap
-        List<String> feedNames = feedNameToTemplateNameMap.entrySet().stream().filter(entry -> entry.getValue().equalsIgnoreCase(template.getTemplateName())).map(entry -> entry.getKey()).collect(Collectors.toList());
+        List<String>
+            feedNames =
+            feedNameToTemplateNameMap.entrySet().stream().filter(entry -> entry.getValue().equalsIgnoreCase(template.getTemplateName())).map(entry -> entry.getKey()).collect(Collectors.toList());
 
         log.info("Updated Template: {}, found {} associated feeds ", template.getTemplateName(), feedNames.size());
         if (template.isStream()) {
@@ -554,8 +552,9 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
 
     /**
      * add processors to the cache
+     *
      * @param templateName a template name
-     * @param processors processors to add to the cache
+     * @param processors   processors to add to the cache
      */
     public void updateProcessorIdNames(String templateName, Collection<ProcessorDTO> processors) {
 
@@ -569,8 +568,9 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
 
     /**
      * Add connections to the cache
+     *
      * @param templateName a template name
-     * @param connections connections to add to the cache
+     * @param connections  connections to add to the cache
      */
     public void updateConnectionMap(String templateName, Collection<ConnectionDTO> connections) {
         Map<String, NifiFlowConnection> connectionIdToConnectionMap = new HashMap<>();
@@ -590,7 +590,8 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
     /**
      * Update cache for a feeds flow
      * Used by CreateFeed builder
-     * @param feed a feed
+     *
+     * @param feed             a feed
      * @param feedProcessGroup the process group created with this feed
      */
     public void updateFlow(FeedMetadata feed, NifiFlowProcessGroup feedProcessGroup) {
@@ -601,8 +602,9 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
 
     /**
      * Update  cache for a feed
-     * @param feedName the name of the feed
-     * @param isStream {@code true} if its a streaming feed, {@code false} if its a batch feed
+     *
+     * @param feedName         the name of the feed
+     * @param isStream         {@code true} if its a streaming feed, {@code false} if its a batch feed
      * @param feedProcessGroup the process group created with this feed
      */
     public void updateFlow(String feedName, boolean isStream, NifiFlowProcessGroup feedProcessGroup) {
@@ -614,7 +616,6 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
     private void updateFlow(String feedName, boolean isStream, String feedProcessGroupId, Collection<NifiFlowProcessor> processors, Collection<NifiFlowConnection> connections) {
         feedFlowIdProcessorMap.put(feedName, toFlowIdProcessorMap(processors));
         feedProcessorIdProcessorMap.put(feedName, toProcessorIdProcessorMap(processors));
-
 
         updateProcessorIdMaps(feedProcessGroupId, processors);
         Map<String, String> processorIdToProcessGroupId = new HashMap<>();
@@ -694,47 +695,6 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
         return CacheSummary.build(syncMap);
     }
 
-
-    public static class CacheSummary {
-
-        private Map<String, Integer> summary = new HashMap<>();
-        private Integer cachedSyncIds;
-
-        public static CacheSummary build(Map<String, NiFiFlowCacheSync> syncMap) {
-            Map<String, Integer>
-                cacheIds =
-                syncMap.entrySet().stream().collect(Collectors.toMap(stringNiFiFlowCacheSyncEntry -> stringNiFiFlowCacheSyncEntry.getKey(),
-                                                                     stringNiFiFlowCacheSyncEntry1 -> stringNiFiFlowCacheSyncEntry1.getValue().getSnapshot().getProcessorIdToFeedNameMap().size()));
-            return new CacheSummary(cacheIds);
-        }
-
-        public CacheSummary() {
-
-        }
-
-        private CacheSummary(Map<String, Integer> cacheIds) {
-            this.summary = cacheIds;
-            this.cachedSyncIds = cacheIds.keySet().size();
-        }
-
-        public Map<String, Integer> getSummary() {
-            return summary;
-        }
-
-        public void setSummary(Map<String, Integer> summary) {
-            this.summary = summary;
-        }
-
-        public Integer getCachedSyncIds() {
-            return cachedSyncIds;
-        }
-
-        public void setCachedSyncIds(Integer cachedSyncIds) {
-            this.cachedSyncIds = cachedSyncIds;
-        }
-    }
-
-
     private void initExpireTimerThread() {
         long timer = 30; // run ever 30 sec to check and expire
         ScheduledExecutorService service = Executors
@@ -765,6 +725,45 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
 
         } catch (Exception e) {
             log.error("Error attempting to invalidate flow cache for items not touched in {} or more minutes", minutes, e);
+        }
+    }
+
+    public static class CacheSummary {
+
+        private Map<String, Integer> summary = new HashMap<>();
+        private Integer cachedSyncIds;
+
+        public CacheSummary() {
+
+        }
+
+        private CacheSummary(Map<String, Integer> cacheIds) {
+            this.summary = cacheIds;
+            this.cachedSyncIds = cacheIds.keySet().size();
+        }
+
+        public static CacheSummary build(Map<String, NiFiFlowCacheSync> syncMap) {
+            Map<String, Integer>
+                cacheIds =
+                syncMap.entrySet().stream().collect(Collectors.toMap(stringNiFiFlowCacheSyncEntry -> stringNiFiFlowCacheSyncEntry.getKey(),
+                                                                     stringNiFiFlowCacheSyncEntry1 -> stringNiFiFlowCacheSyncEntry1.getValue().getSnapshot().getProcessorIdToFeedNameMap().size()));
+            return new CacheSummary(cacheIds);
+        }
+
+        public Map<String, Integer> getSummary() {
+            return summary;
+        }
+
+        public void setSummary(Map<String, Integer> summary) {
+            this.summary = summary;
+        }
+
+        public Integer getCachedSyncIds() {
+            return cachedSyncIds;
+        }
+
+        public void setCachedSyncIds(Integer cachedSyncIds) {
+            this.cachedSyncIds = cachedSyncIds;
         }
     }
 }

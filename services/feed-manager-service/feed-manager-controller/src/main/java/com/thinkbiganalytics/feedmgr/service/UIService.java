@@ -28,20 +28,10 @@ import java.util.Map;
  */
 public class UIService {
 
-    private static class LazyHolder {
-
-        static final UIService INSTANCE = new UIService();
-    }
-
-    public static UIService getInstance() {
-        return LazyHolder.INSTANCE;
-    }
-
     /**
      * common CodeMirror types supported by the user interface
      **/
     private Map<String, String> supportedCodeMirrorTypes = new HashMap<>();
-
 
     private UIService() {
         registerCodeMirrorType("text/x-pig", "Pig");
@@ -56,13 +46,21 @@ public class UIService {
 
     }
 
+    public static UIService getInstance() {
+        return LazyHolder.INSTANCE;
+    }
+
     public Map<String, String> getCodeMirrorTypes() {
         return supportedCodeMirrorTypes;
     }
 
-
     public void registerCodeMirrorType(String type, String name) {
         supportedCodeMirrorTypes.put(type, name);
+    }
+
+    private static class LazyHolder {
+
+        static final UIService INSTANCE = new UIService();
     }
 
 }

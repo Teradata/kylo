@@ -23,21 +23,21 @@ package com.thinkbiganalytics.policy.rest.model;
 /**
  * Builder for the {@link FieldValidationRule}
  */
-public class FieldValidationRuleBuilder extends BasePolicyRuleBuilder<FieldValidationRule,FieldValidationRuleBuilder> {
+public class FieldValidationRuleBuilder extends BasePolicyRuleBuilder<FieldValidationRule, FieldValidationRuleBuilder> {
 
-  public FieldValidationRuleBuilder(String name) {
-    super(name);
-  }
+    public FieldValidationRuleBuilder(String name) {
+        super(name);
+    }
 
-  @Override
-  public FieldValidationRule build(){
-    FieldValidationRule rule = new FieldValidationRule();
-    rule.setName(this.name);
-    rule.setDescription(this.description);
-    rule.setDisplayName(this.displayName);
-    rule.setProperties(this.properties);
-    rule.setObjectClassType(this.objectClassType);
-    return rule;
-  }
+    @Override
+    public FieldValidationRule build() {
+        FieldValidationRule rule = new FieldValidationRule();
+        rule.setName(this.name);
+        rule.setDescription(this.description);
+        rule.setDisplayName(this.displayName);
+        rule.setProperties(this.properties);
+        rule.setObjectClassType(this.objectClassType);
+        return rule;
+    }
 
 }

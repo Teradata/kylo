@@ -49,14 +49,13 @@ public class JcrFeedManagerCategory extends JcrCategory implements FeedManagerCa
         return getProperty(ICON, String.class, true);
     }
 
+    public void setIcon(String icon) {
+        setProperty(ICON, icon);
+    }
+
     @Override
     public String getIconColor() {
         return getProperty(ICON_COLOR, String.class, true);
-    }
-
-
-    public void setIcon(String icon) {
-        setProperty(ICON, icon);
     }
 
     public void setIconColor(String iconColor) {

@@ -38,6 +38,7 @@ import javax.persistence.Table;
 /**
  * Entity to store any Feed Flow files that are related to each other.
  * Job executions can become related if the started off as individual jobs but later get merged together to a single flow file
+ *
  * @see com.thinkbiganalytics.metadata.jpa.jobrepo.job.JpaBatchJobExecutionProvider#checkAndRelateJobs(ProvenanceEventRecordDTO, NifiEvent)
  */
 @Entity
@@ -76,6 +77,23 @@ public class JpaNifiRelatedRootFlowFiles implements NifiRelatedRootFlowFiles {
         this.event = event;
     }
 
+    public NifiRelatedFlowFilesPK getRelatedFlowFilesPK() {
+        return relatedFlowFilesPK;
+    }
+
+    @Override
+    public JpaNifiEventJobExecution getEventJobExecution() {
+        return eventJobExecution;
+    }
+
+    @Override
+    public NifiEvent getEvent() {
+        return event;
+    }
+
+    public void setEvent(NifiEvent event) {
+        this.event = event;
+    }
 
     @Embeddable
     public static class NifiRelatedFlowFilesPK implements Serializable {
@@ -135,24 +153,5 @@ public class JpaNifiRelatedRootFlowFiles implements NifiRelatedRootFlowFiles {
             result = 31 * result + relationId.hashCode();
             return result;
         }
-    }
-
-
-    public NifiRelatedFlowFilesPK getRelatedFlowFilesPK() {
-        return relatedFlowFilesPK;
-    }
-
-    @Override
-    public JpaNifiEventJobExecution getEventJobExecution() {
-        return eventJobExecution;
-    }
-
-    @Override
-    public NifiEvent getEvent() {
-        return event;
-    }
-
-    public void setEvent(NifiEvent event) {
-        this.event = event;
     }
 }

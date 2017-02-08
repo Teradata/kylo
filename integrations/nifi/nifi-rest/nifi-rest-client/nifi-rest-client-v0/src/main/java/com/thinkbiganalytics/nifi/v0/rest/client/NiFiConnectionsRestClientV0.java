@@ -41,7 +41,9 @@ import javax.ws.rs.NotFoundException;
  */
 public class NiFiConnectionsRestClientV0 extends AbstractNiFiConnectionsRestClient {
 
-    /** REST client for communicating with NiFi */
+    /**
+     * REST client for communicating with NiFi
+     */
     private final NiFiRestClientV0 client;
 
     /**

@@ -67,7 +67,7 @@ public class NiFiAllowableValue {
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof NiFiAllowableValue) {
-            return Objects.equals(value, ((NiFiAllowableValue)obj).value);
+            return Objects.equals(value, ((NiFiAllowableValue) obj).value);
         }
         return false;
     }

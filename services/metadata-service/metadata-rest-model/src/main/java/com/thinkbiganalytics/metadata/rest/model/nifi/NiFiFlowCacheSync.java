@@ -38,20 +38,12 @@ import java.util.UUID;
  */
 public class NiFiFlowCacheSync {
 
+    public static NiFiFlowCacheSync UNAVAILABLE = new NiFiFlowCacheSync("NiFi Flow Cache is unavailable. Try again in a few seconds");
     private String syncId;
     private NifiFlowCacheSnapshot snapshot;
     private DateTime lastSync;
     private String message;
     private boolean updated = false;
-
-
-    public static NiFiFlowCacheSync UNAVAILABLE = new NiFiFlowCacheSync("NiFi Flow Cache is unavailable. Try again in a few seconds");
-
-    public static NiFiFlowCacheSync EMPTY(String syncId) {
-        NiFiFlowCacheSync empty = new NiFiFlowCacheSync();
-        empty.setSyncId(syncId);
-        return empty;
-    }
 
     public NiFiFlowCacheSync() {
         this((NifiFlowCacheSnapshot) null);
@@ -62,7 +54,6 @@ public class NiFiFlowCacheSync {
         this.message = message;
     }
 
-
     public NiFiFlowCacheSync(NifiFlowCacheSnapshot snapshot) {
         this.snapshot = snapshot;
         if (this.snapshot == null) {
@@ -71,12 +62,19 @@ public class NiFiFlowCacheSync {
         this.syncId = UUID.randomUUID().toString();
     }
 
+
     public NiFiFlowCacheSync(String syncId, NifiFlowCacheSnapshot snapshot) {
         this.snapshot = snapshot;
         if (this.snapshot == null) {
             this.snapshot = new NifiFlowCacheSnapshot();
         }
         this.syncId = syncId != null ? syncId : UUID.randomUUID().toString();
+    }
+
+    public static NiFiFlowCacheSync EMPTY(String syncId) {
+        NiFiFlowCacheSync empty = new NiFiFlowCacheSync();
+        empty.setSyncId(syncId);
+        return empty;
     }
 
     @JsonIgnore
@@ -149,6 +147,10 @@ public class NiFiFlowCacheSync {
         return snapshot;
     }
 
+    public void setSnapshot(NifiFlowCacheSnapshot snapshot) {
+        this.snapshot = snapshot;
+    }
+
     public DateTime getLastSync() {
         return lastSync;
     }
@@ -157,21 +159,17 @@ public class NiFiFlowCacheSync {
         this.lastSync = lastSync;
     }
 
-    public void setSnapshot(NifiFlowCacheSnapshot snapshot) {
-        this.snapshot = snapshot;
-    }
-
     public void reset() {
         this.snapshot = null;
         this.lastSync = null;
     }
 
-    public void setSyncId(String syncId) {
-        this.syncId = syncId;
-    }
-
     public String getSyncId() {
         return syncId;
+    }
+
+    public void setSyncId(String syncId) {
+        this.syncId = syncId;
     }
 
     public boolean needsUpdate() {

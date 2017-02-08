@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.security;
 
@@ -38,14 +38,14 @@ import java.util.Set;
 public class GroupPrincipal extends BasePrincipal implements Group {
 
     private static final long serialVersionUID = 1L;
-    
+
     private final Set<Principal> members;
     private final int hash; // Since this is immutable it only has to be calculated once.
 
     public GroupPrincipal(String name, Principal... members) {
         this(name, new HashSet<>(Arrays.asList(members)));
     }
-    
+
     public GroupPrincipal(String name, Set<Principal> members) {
         super(name);
         this.members = Collections.unmodifiableSet(new HashSet<>(members));
@@ -83,7 +83,7 @@ public class GroupPrincipal extends BasePrincipal implements Group {
     public Enumeration<? extends Principal> members() {
         return Collections.enumeration(this.members);
     }
-    
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.security.BasePrincipal#hashCode()
      */
@@ -91,7 +91,7 @@ public class GroupPrincipal extends BasePrincipal implements Group {
     public int hashCode() {
         return this.hash;
     }
-    
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.security.BasePrincipal#equals(java.lang.Object)
      */

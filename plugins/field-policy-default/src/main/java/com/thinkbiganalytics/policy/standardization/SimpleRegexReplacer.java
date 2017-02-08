@@ -35,15 +35,14 @@ import java.util.regex.PatternSyntaxException;
  */
 @Standardizer(name = "Regex Replacement", description = "Replace text based upon a regex pattern")
 public class SimpleRegexReplacer implements StandardizationPolicy {
-    private static final Logger log = LoggerFactory.getLogger(SimpleRegexReplacer.class);
 
+    private static final Logger log = LoggerFactory.getLogger(SimpleRegexReplacer.class);
+    boolean valid;
     @PolicyProperty(name = "Regex Pattern", required = true)
     private String inputPattern;
-
     private Pattern pattern;
     @PolicyProperty(name = "Replacement", hint = "Text to replace the regex match", placeholder = "")
     private String replacement = "";
-    boolean valid;
 
     public SimpleRegexReplacer(@PolicyPropertyRef(name = "Regex Pattern") String regex,
                                @PolicyPropertyRef(name = "Replacement") String replace) {

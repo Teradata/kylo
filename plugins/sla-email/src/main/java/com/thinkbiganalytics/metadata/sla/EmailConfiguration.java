@@ -25,6 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 /**
  * Configuration that stores email setup.
  * This object should be returned as a new instance of a spring bean.
+ *
  * @see com.thinkbiganalytics.metadata.sla.config.EmailServiceLevelAgreementSpringConfiguration
  */
 public class EmailConfiguration {
@@ -122,7 +123,7 @@ public class EmailConfiguration {
         this.sslEnable = sslEnable;
     }
 
-    public boolean isConfigured(){
+    public boolean isConfigured() {
         return StringUtils.isNotBlank(getHost()) && StringUtils.isNotBlank(getProtocol());
     }
 

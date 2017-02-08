@@ -26,105 +26,89 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- *
  * Annotation that is used to display input form elements
  * the angular directive 'policy-input-form' along with the angular service 'PolicyInputFormService' are used to render these elements
- *
- *
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD, ElementType.PARAMETER})
 public @interface PolicyProperty {
 
 
-  /**
-   * internal name for the property
-   */
-  String name();
+    /**
+     * internal name for the property
+     */
+    String name();
 
-  /**
-   * The label for the form item
-   * @return
-   */
-  String displayName() default "";
+    /**
+     * The label for the form item
+     */
+    String displayName() default "";
 
-  /**
-   * The value of the input.  The form will default to this value if it is supplied
-   * @return
-   */
-  String value() default "";
+    /**
+     * The value of the input.  The form will default to this value if it is supplied
+     */
+    String value() default "";
 
-  /**
-   * Input placeholder with text indicating what should be entered
-   * @return
-   */
-  String placeholder() default "";
+    /**
+     * Input placeholder with text indicating what should be entered
+     */
+    String placeholder() default "";
 
-  /**
-   * Determines how the property should be rendered:
-   * number, string, select, regex, date, chips, feedChips, currentFeed, currentFeedCronSchedule, feedSelect, email, cron
-   * type of {@link PolicyPropertyTypes.PROPERTY_TYPE#string} will be rendered as a standard input box.
-   * You can enforce specific text expressions using the {@link this#pattern} property passing in the valid Regexp
-   * @return
-   */
-  PolicyPropertyTypes.PROPERTY_TYPE type() default PolicyPropertyTypes.PROPERTY_TYPE.string;
+    /**
+     * Determines how the property should be rendered:
+     * number, string, select, regex, date, chips, feedChips, currentFeed, currentFeedCronSchedule, feedSelect, email, cron
+     * type of {@link PolicyPropertyTypes.PROPERTY_TYPE#string} will be rendered as a standard input box.
+     * You can enforce specific text expressions using the {@link this#pattern} property passing in the valid Regexp
+     */
+    PolicyPropertyTypes.PROPERTY_TYPE type() default PolicyPropertyTypes.PROPERTY_TYPE.string;
 
-  /**
-   * Helpful text that will be rendered below the input entry
-   * @return
-   */
-  String hint() default "";
+    /**
+     * Helpful text that will be rendered below the input entry
+     */
+    String hint() default "";
 
-  /**
-   * For Select inputs this is a list of the options that will be available.  This cannot be used with the {@code selectableValues()}
-   * @return
-   */
-  PropertyLabelValue[] labelValues() default {};
+    /**
+     * For Select inputs this is a list of the options that will be available.  This cannot be used with the {@code selectableValues()}
+     */
+    PropertyLabelValue[] labelValues() default {};
 
 
-  /**
-   * For a select input this is the list of optoins that will be available.  This cannot be used with the {@code labelValues()}
-   * @return
-   */
-  String[] selectableValues() default {};
+    /**
+     * For a select input this is the list of optoins that will be available.  This cannot be used with the {@code labelValues()}
+     */
+    String[] selectableValues() default {};
 
-  /**
-   * Used for rendering {@link PolicyPropertyTypes.PROPERTY_TYPE#chips} where the input has multiple values
-   * @return
-   */
-  PropertyLabelValue[] values() default {};
+    /**
+     * Used for rendering {@link PolicyPropertyTypes.PROPERTY_TYPE#chips} where the input has multiple values
+     */
+    PropertyLabelValue[] values() default {};
 
-  /**
-   * requires input from the user.
-   *
-   * @return
-   */
-  boolean required() default false;
+    /**
+     * requires input from the user.
+     */
+    boolean required() default false;
 
-  /**
-   * Indicates the input will be hidde
-   * @return
-   */
-  boolean hidden() default false;
+    /**
+     * Indicates the input will be hidde
+     */
+    boolean hidden() default false;
 
-  /**
-   * A arbitrary string used to group inputs together.
-   * Items with the same group name will be displayed together in the same row
-   * @return
-   */
-  String group() default "";
+    /**
+     * A arbitrary string used to group inputs together.
+     * Items with the same group name will be displayed together in the same row
+     */
+    String group() default "";
 
-  /**
-   * Regexp used to evaluate the input.
-   * This should not include the beginning and ending slashes
-   * Example. To validate a Numeric input one should use: ^\d+$  instead of this: /^\d+$/
-   * @return
-   */
-  String pattern() default "";
+    /**
+     * Regexp used to evaluate the input.
+     * This should not include the beginning and ending slashes
+     * Example. To validate a Numeric input one should use: ^\d+$  instead of this: /^\d+$/
+     */
+    String pattern() default "";
 
-  /**
-   * The message to be displayed if the pattern is supplied and the user enters something invalid
-   */
-  String patternInvalidMessage() default "Invalid Input";
+    /**
+     * The message to be displayed if the pattern is supplied and the user enters something invalid
+     */
+    String patternInvalidMessage() default "Invalid Input";
 }
 

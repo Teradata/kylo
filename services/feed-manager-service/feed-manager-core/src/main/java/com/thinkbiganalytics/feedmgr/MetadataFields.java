@@ -35,33 +35,34 @@ public class MetadataFields {
     private List<AnnotatedFieldProperty> properties = null;
 
     private MetadataFieldAnnotationFieldNameResolver resolver;
-    private static class LazyHolder {
-        static final MetadataFields INSTANCE = new MetadataFields();
+
+    private MetadataFields() {
+        resolver = new MetadataFieldAnnotationFieldNameResolver();
     }
 
     public static MetadataFields getInstance() {
         return LazyHolder.INSTANCE;
     }
 
-    private MetadataFields(){
-        resolver = new MetadataFieldAnnotationFieldNameResolver();
-    }
-
-    public List<AnnotatedFieldProperty> getProperties(Class clazz){
-        if(properties == null) {
+    public List<AnnotatedFieldProperty> getProperties(Class clazz) {
+        if (properties == null) {
             properties = resolver.getProperties(clazz);
         }
         return properties;
 
     }
 
-    public String getMatchingPropertyDescriptor(FeedMetadata feedMetadata, String propertyDescriptor){
-        if(properties == null){
+    public String getMatchingPropertyDescriptor(FeedMetadata feedMetadata, String propertyDescriptor) {
+        if (properties == null) {
             getProperties(FeedMetadata.class);
         }
         return resolver.getMatchingPropertyDescriptor(propertyDescriptor);
     }
 
+    private static class LazyHolder {
+
+        static final MetadataFields INSTANCE = new MetadataFields();
+    }
 
 
 }

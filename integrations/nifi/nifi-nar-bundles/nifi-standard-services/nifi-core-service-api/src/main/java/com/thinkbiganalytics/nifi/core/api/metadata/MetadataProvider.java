@@ -112,7 +112,6 @@ public interface MetadataProvider {
      *
      * @param feedId the feed id
      * @param props  the datasource id
-     *               
      * @return the updated properties
      */
     Properties updateFeedProperties(String feedId, Properties props);
@@ -168,8 +167,8 @@ public interface MetadataProvider {
     /**
      * Begin tracking the run time of the operation on the feedDestination
      *
-     * @param feedDestination   the feed destination
-     * @param opStart the time it starts
+     * @param feedDestination the feed destination
+     * @param opStart         the time it starts
      * @return a data operation
      */
     DataOperation beginOperation(FeedDestination feedDestination, DateTime opStart);

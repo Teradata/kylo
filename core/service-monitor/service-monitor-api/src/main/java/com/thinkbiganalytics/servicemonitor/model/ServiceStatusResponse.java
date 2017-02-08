@@ -31,27 +31,27 @@ import java.util.List;
  */
 public interface ServiceStatusResponse {
 
-  String getServiceName();
+    String getServiceName();
 
-  List<ServiceComponent> getComponents();
+    List<ServiceComponent> getComponents();
 
-  List<ServiceComponent> getHealthyComponents();
+    List<ServiceComponent> getHealthyComponents();
 
-  List<ServiceComponent> getUnhealthyComponents();
+    List<ServiceComponent> getUnhealthyComponents();
 
-  Date getCheckDate();
+    Date getCheckDate();
 
-  List<ServiceAlert> getAlerts();
+    List<ServiceAlert> getAlerts();
 
-  List<ServiceAlert> getAlertsWithoutComponent();
+    List<ServiceAlert> getAlertsWithoutComponent();
 
-  STATE getState();
+    STATE getState();
 
-  Date getLatestAlertTimestamp();
+    Date getLatestAlertTimestamp();
 
-  Date getEarliestAlertTimestamp();
+    Date getEarliestAlertTimestamp();
 
-  public enum STATE {
-    UP, DOWN, WARNING;
-  }
+    public enum STATE {
+        UP, DOWN, WARNING;
+    }
 }

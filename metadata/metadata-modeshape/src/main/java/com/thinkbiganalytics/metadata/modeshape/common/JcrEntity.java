@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.modeshape.common;
 
@@ -42,11 +42,14 @@ public class JcrEntity extends JcrObject implements ExtensibleEntity {
 
     public static String TAGGABLE_NAME = JcrPropertyConstants.TAGGABLE;
 
-    public void setTags(Set<String> tags){
-        setProperty(TAGGABLE_NAME, tags);
+    /**
+     *
+     */
+    public JcrEntity(Node node) {
+        super(node);
     }
 
-    public Set<String> addTag(String tag){
+    public Set<String> addTag(String tag) {
         Set<String> tags = getTags();
         if (!hasTag(tag)) {
             tags.add(tag);
@@ -55,20 +58,17 @@ public class JcrEntity extends JcrObject implements ExtensibleEntity {
         return tags;
     }
 
-    public boolean hasTag(String tag){
+    public boolean hasTag(String tag) {
         Set<String> tags = getPropertyAsSet(TAGGABLE_NAME, String.class);
         return tags.contains(tag);
     }
 
-    public Set<String> getTags(){
-        return getPropertyAsSet(TAGGABLE_NAME,String.class);
+    public Set<String> getTags() {
+        return getPropertyAsSet(TAGGABLE_NAME, String.class);
     }
 
-    /**
-     *
-     */
-    public JcrEntity(Node node) {
-     super(node);
+    public void setTags(Set<String> tags) {
+        setProperty(TAGGABLE_NAME, tags);
     }
 
     /* (non-Javadoc)
@@ -84,7 +84,6 @@ public class JcrEntity extends JcrObject implements ExtensibleEntity {
     }
 
 
-
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.category.CustomEntity#getTypeName()
      */
@@ -98,11 +97,10 @@ public class JcrEntity extends JcrObject implements ExtensibleEntity {
     }
 
 
-
-    
     public static class EntityId extends BaseId implements ID {
+
         private static final long serialVersionUID = -9084653006891727475L;
-        
+
         private String idValue;
 
 
@@ -124,7 +122,7 @@ public class JcrEntity extends JcrObject implements ExtensibleEntity {
 
         @Override
         public UUID getUuid() {
-           return UUID.fromString(idValue);
+            return UUID.fromString(idValue);
         }
 
         @Override

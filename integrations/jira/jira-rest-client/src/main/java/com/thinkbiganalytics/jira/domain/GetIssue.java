@@ -38,12 +38,12 @@ import javax.annotation.Generated;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("org.jsonschema2pojo")
 @JsonPropertyOrder({
-        "expand",
-        "id",
-        "self",
-        "key",
-        "fields"
-})
+                       "expand",
+                       "id",
+                       "self",
+                       "key",
+                       "fields"
+                   })
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class GetIssue {
 
@@ -61,12 +61,8 @@ public class GetIssue {
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
 
-
-
     /**
-     *
-     * @return
-     *     The expand
+     * @return The expand
      */
     @JsonProperty("expand")
     public String getExpand() {
@@ -74,9 +70,7 @@ public class GetIssue {
     }
 
     /**
-     *
-     * @param expand
-     *     The expand
+     * @param expand The expand
      */
     @JsonProperty("expand")
     public void setExpand(String expand) {
@@ -84,9 +78,7 @@ public class GetIssue {
     }
 
     /**
-     *
-     * @return
-     *     The id
+     * @return The id
      */
     @JsonProperty("id")
     public String getId() {
@@ -94,9 +86,7 @@ public class GetIssue {
     }
 
     /**
-     *
-     * @param id
-     *     The id
+     * @param id The id
      */
     @JsonProperty("id")
     public void setId(String id) {
@@ -104,9 +94,7 @@ public class GetIssue {
     }
 
     /**
-     *
-     * @return
-     *     The self
+     * @return The self
      */
     @JsonProperty("self")
     public String getSelf() {
@@ -114,9 +102,7 @@ public class GetIssue {
     }
 
     /**
-     *
-     * @param self
-     *     The self
+     * @param self The self
      */
     @JsonProperty("self")
     public void setSelf(String self) {
@@ -124,9 +110,7 @@ public class GetIssue {
     }
 
     /**
-     *
-     * @return
-     *     The key
+     * @return The key
      */
     @JsonProperty("key")
     public String getKey() {
@@ -134,9 +118,7 @@ public class GetIssue {
     }
 
     /**
-     *
-     * @param key
-     *     The key
+     * @param key The key
      */
     @JsonProperty("key")
     public void setKey(String key) {
@@ -144,9 +126,7 @@ public class GetIssue {
     }
 
     /**
-     *
-     * @return
-     *     The fields
+     * @return The fields
      */
     @JsonProperty("fields")
     public Fields getFields() {
@@ -154,9 +134,7 @@ public class GetIssue {
     }
 
     /**
-     *
-     * @param fields
-     *     The fields
+     * @param fields The fields
      */
     @JsonProperty("fields")
     public void setFields(Fields fields) {

@@ -37,11 +37,11 @@ public class DateTimeStandardizerTest {
     }
 
     @Test
-    public void testUnixTimestamp(){
+    public void testUnixTimestamp() {
         String unixTime = "1466627584"; // time in seconds (no millis)
         DateTimeStandardizer unixTimestampStandardizer = new DateTimeStandardizer(null, OutputFormats.DATETIME, null, "PST");
         String convertedValue = unixTimestampStandardizer.convertValue(unixTime);
-        assertEquals("2016-06-22 13:33:04.000",convertedValue);
+        assertEquals("2016-06-22 13:33:04.000", convertedValue);
         int i = 0;
     }
 

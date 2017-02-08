@@ -30,11 +30,11 @@ import com.thinkbiganalytics.scheduler.JobIdentifier;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DefaultJobIdentifier extends DefaultScheduleIdentifier implements JobIdentifier {
 
-  public DefaultJobIdentifier() {
-    super();
-  }
+    public DefaultJobIdentifier() {
+        super();
+    }
 
-  public DefaultJobIdentifier(@JsonProperty("name") String name, @JsonProperty("group") String group) {
-    super(name, group);
-  }
+    public DefaultJobIdentifier(@JsonProperty("name") String name, @JsonProperty("group") String group) {
+        super(name, group);
+    }
 }

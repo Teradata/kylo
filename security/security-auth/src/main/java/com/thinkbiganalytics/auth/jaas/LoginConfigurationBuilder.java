@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.auth.jaas;
 
@@ -34,18 +34,22 @@ import javax.security.auth.spi.LoginModule;
 public interface LoginConfigurationBuilder {
 
     ModuleBuilder loginModule(String appName);
-    
+
     LoginConfiguration build();
-    
-    
+
+
     interface ModuleBuilder {
-        
+
         ModuleBuilder moduleClass(Class<? extends LoginModule> moduleClass);
+
         ModuleBuilder controlFlag(String flag);
+
         ModuleBuilder controlFlag(LoginModuleControlFlag flag);
+
         ModuleBuilder option(String name, Object value);
+
         ModuleBuilder options(Map<String, Object> options);
-        
+
         LoginConfigurationBuilder add();
     }
 }

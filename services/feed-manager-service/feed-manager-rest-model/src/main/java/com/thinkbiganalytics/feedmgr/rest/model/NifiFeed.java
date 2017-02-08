@@ -83,11 +83,12 @@ public class NifiFeed {
     }
 
     @JsonIgnore
-    public void addErrorMessage(Exception e){
-      addErrorMessage(e.getMessage());
+    public void addErrorMessage(Exception e) {
+        addErrorMessage(e.getMessage());
     }
-    public void addErrorMessage(String msg){
-        if(errorMessages == null){
+
+    public void addErrorMessage(String msg) {
+        if (errorMessages == null) {
             errorMessages = new ArrayList<>();
         }
         errorMessages.add(msg);

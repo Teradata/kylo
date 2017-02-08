@@ -44,7 +44,6 @@ import java.util.stream.Collectors;
 
 /**
  * Sentry Authorization Service
- *
  */
 public class SentryAuthorizationService extends BaseHadoopAuthorizationService {
 

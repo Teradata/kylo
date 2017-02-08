@@ -35,12 +35,16 @@ import javax.annotation.Nullable;
  */
 public class KerberosPropertiesV1 extends AbstractKerberosProperties {
 
-    /** Context for the controller service using these Kerberos properties */
+    /**
+     * Context for the controller service using these Kerberos properties
+     */
     @Autowired(required = false)
     @Nullable
     private ControllerServiceInitializationContext controllerServiceContext;
 
-    /** Context for the processor using these Kerberos properties */
+    /**
+     * Context for the processor using these Kerberos properties
+     */
     @Autowired(required = false)
     @Nullable
     private ProcessorInitializationContext processorContext;

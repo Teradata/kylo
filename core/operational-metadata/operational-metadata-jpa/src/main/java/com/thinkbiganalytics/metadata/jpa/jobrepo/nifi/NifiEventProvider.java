@@ -45,19 +45,6 @@ public class NifiEventProvider {
         this.repository = repository;
     }
 
-
-    public NifiEvent create(NifiEvent t) {
-        return repository.save((JpaNifiEvent) t);
-    }
-
-    public NifiEvent create(ProvenanceEventRecordDTO t) {
-        return this.create(toNifiEvent(t));
-    }
-
-    public boolean exists(ProvenanceEventRecordDTO eventRecordDTO) {
-        return repository.exists(new JpaNifiEvent.NiFiEventPK(eventRecordDTO.getEventId(),eventRecordDTO.getFlowFileUuid()));
-    }
-
     public static NifiEvent toNifiEvent(ProvenanceEventRecordDTO eventRecordDTO) {
         JpaNifiEvent nifiEvent = new JpaNifiEvent(new JpaNifiEvent.NiFiEventPK(eventRecordDTO.getEventId(), eventRecordDTO.getFlowFileUuid()));
         nifiEvent.setFeedName(eventRecordDTO.getFeedName());
@@ -85,6 +72,18 @@ public class NifiEventProvider {
         nifiEvent.setClusterNodeAddress(eventRecordDTO.getClusterNodeAddress());
         nifiEvent.setClusterNodeId(eventRecordDTO.getClusterNodeId());
         return nifiEvent;
+    }
+
+    public NifiEvent create(NifiEvent t) {
+        return repository.save((JpaNifiEvent) t);
+    }
+
+    public NifiEvent create(ProvenanceEventRecordDTO t) {
+        return this.create(toNifiEvent(t));
+    }
+
+    public boolean exists(ProvenanceEventRecordDTO eventRecordDTO) {
+        return repository.exists(new JpaNifiEvent.NiFiEventPK(eventRecordDTO.getEventId(), eventRecordDTO.getFlowFileUuid()));
     }
 
 }

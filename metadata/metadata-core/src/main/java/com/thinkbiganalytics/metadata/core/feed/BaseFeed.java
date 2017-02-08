@@ -183,13 +183,13 @@ public class BaseFeed<C extends Category> implements Feed<C> {
         return this.displayName;
     }
 
-    public String getDescription() {
-        return description;
-    }
-
     @Override
     public void setDisplayName(String name) {
         this.displayName = name;
+    }
+
+    public String getDescription() {
+        return description;
     }
 
     @Override
@@ -343,6 +343,57 @@ public class BaseFeed<C extends Category> implements Feed<C> {
         // ignored
     }
 
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.feed.Feed#getCurrentInitStatus()
+     */
+    @Override
+    public InitializationStatus getCurrentInitStatus() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.feed.Feed#updateInitStatus(com.thinkbiganalytics.metadata.api.feed.InitializationStatus)
+     */
+    @Override
+    public void updateInitStatus(InitializationStatus status) {
+        // TODO Auto-generated method stub
+
+    }
+//
+//    protected static class SourceId extends BaseId implements FeedSource.ID {
+//        public SourceId() {
+//            super();
+//        }
+//
+//        public SourceId(Serializable ser) {
+//            super(ser);
+//        }
+//    }
+//
+//    protected static class DestinationId extends BaseId implements FeedDestination.ID {
+//        public DestinationId() {
+//            super();
+//        }
+//
+//        public DestinationId(Serializable ser) {
+//            super(ser);
+//        }
+//    }
+//    @Override
+//    public String getVersionName() {
+//        return null;
+//    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.feed.Feed#getInitHistory()
+     */
+    @Override
+    public List<InitializationStatus> getInitHistory() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
     private static class BaseId {
 
         private final UUID uuid;
@@ -382,7 +433,6 @@ public class BaseFeed<C extends Category> implements Feed<C> {
         }
     }
 
-
     protected static class FeedId extends BaseId implements Feed.ID {
 
         public FeedId() {
@@ -393,30 +443,38 @@ public class BaseFeed<C extends Category> implements Feed<C> {
             super(ser);
         }
     }
-//
-//    protected static class SourceId extends BaseId implements FeedSource.ID {
-//        public SourceId() {
-//            super();
-//        }
-//
-//        public SourceId(Serializable ser) {
-//            super(ser);
-//        }
-//    }
-//
-//    protected static class DestinationId extends BaseId implements FeedDestination.ID {
-//        public DestinationId() {
-//            super();
-//        }
-//
-//        public DestinationId(Serializable ser) {
-//            super(ser);
-//        }
-//    }
-//    @Override
-//    public String getVersionName() {
-//        return null;
-//    }
+
+    protected static class FeedPreconditionImpl implements FeedPrecondition {
+
+        private ServiceLevelAgreement sla;
+        private BaseFeed feed;
+        private ServiceLevelAssessment lastAssessment;
+
+        public FeedPreconditionImpl(BaseFeed feed, ServiceLevelAgreement sla) {
+            this.sla = sla;
+            this.feed = feed;
+        }
+
+        @Override
+        public Feed<?> getFeed() {
+            return this.feed;
+        }
+
+        @Override
+        public ServiceLevelAgreement getAgreement() {
+            return sla;
+        }
+
+        @Override
+        public ServiceLevelAssessment getLastAssessment() {
+            return lastAssessment;
+        }
+
+        @Override
+        public void setLastAssessment(ServiceLevelAssessment assmnt) {
+            this.lastAssessment = assmnt;
+        }
+    }
 
     private abstract class Data implements FeedConnection {
 
@@ -476,64 +534,5 @@ public class BaseFeed<C extends Category> implements Feed<C> {
 //        public ID getId() {
 //            return this.id;
 //        }
-    }
-
-    protected static class FeedPreconditionImpl implements FeedPrecondition {
-
-        private ServiceLevelAgreement sla;
-        private BaseFeed feed;
-        private ServiceLevelAssessment lastAssessment;
-
-        public FeedPreconditionImpl(BaseFeed feed, ServiceLevelAgreement sla) {
-            this.sla = sla;
-            this.feed = feed;
-        }
-
-        @Override
-        public Feed<?> getFeed() {
-            return this.feed;
-        }
-
-        @Override
-        public ServiceLevelAgreement getAgreement() {
-            return sla;
-        }
-
-        @Override
-        public ServiceLevelAssessment getLastAssessment() {
-            return lastAssessment;
-        }
-
-        @Override
-        public void setLastAssessment(ServiceLevelAssessment assmnt) {
-            this.lastAssessment = assmnt;
-        }
-    }
-
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.feed.Feed#getCurrentInitStatus()
-     */
-    @Override
-    public InitializationStatus getCurrentInitStatus() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.feed.Feed#updateInitStatus(com.thinkbiganalytics.metadata.api.feed.InitializationStatus)
-     */
-    @Override
-    public void updateInitStatus(InitializationStatus status) {
-        // TODO Auto-generated method stub
-
-    }
-
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.feed.Feed#getInitHistory()
-     */
-    @Override
-    public List<InitializationStatus> getInitHistory() {
-        // TODO Auto-generated method stub
-        return null;
     }
 }

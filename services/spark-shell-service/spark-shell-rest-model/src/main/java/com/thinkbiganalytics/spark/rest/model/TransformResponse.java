@@ -34,38 +34,25 @@ import com.thinkbiganalytics.discovery.schema.QueryResult;
 public class TransformResponse {
 
     /**
-     * Success status of a transformation.
+     * Error message
      */
-    public enum Status {
-        /** Transformation resulted in an error */
-        ERROR,
-
-        /** Transformation is in-progress */
-        PENDING,
-
-        /** Transformation was successful */
-        SUCCESS;
-
-        @Override
-        public String toString() {
-            return super.toString().toLowerCase();
-        }
-    }
-
-    /** Error message */
     private String message;
-
-    /** Progress of the transformation */
+    /**
+     * Progress of the transformation
+     */
     private Double progress;
-
-    /** Result of a transformation */
+    /**
+     * Result of a transformation
+     */
     @JsonDeserialize(as = DefaultQueryResult.class)
     private QueryResult results;
-
-    /** Success status of a transformation */
+    /**
+     * Success status of a transformation
+     */
     private Status status;
-
-    /** Table name with the results */
+    /**
+     * Table name with the results
+     */
     private String table;
 
     /**
@@ -156,5 +143,30 @@ public class TransformResponse {
      */
     public void setTable(String table) {
         this.table = table;
+    }
+
+    /**
+     * Success status of a transformation.
+     */
+    public enum Status {
+        /**
+         * Transformation resulted in an error
+         */
+        ERROR,
+
+        /**
+         * Transformation is in-progress
+         */
+        PENDING,
+
+        /**
+         * Transformation was successful
+         */
+        SUCCESS;
+
+        @Override
+        public String toString() {
+            return super.toString().toLowerCase();
+        }
     }
 }

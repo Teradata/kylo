@@ -21,7 +21,7 @@ package com.thinkbiganalytics.policy.rest.model;
  */
 
 /**
- *  Help build a user interface precondition rule
+ * Help build a user interface precondition rule
  */
 public class PreconditionRuleBuilder extends BasePolicyRuleBuilder<PreconditionRule, PreconditionRuleBuilder> {
 

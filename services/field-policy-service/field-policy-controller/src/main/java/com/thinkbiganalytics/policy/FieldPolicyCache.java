@@ -45,14 +45,9 @@ import javax.inject.Inject;
 @Service
 public class FieldPolicyCache {
 
+    private static LoadingCache<FieldPolicyType, List<? extends BaseUiPolicyRule>> cache;
     @Inject
     ServicesApplicationStartup startup;
-
-    enum FieldPolicyType {
-        STANDARDIZATION, VALIDATION;
-    }
-
-    private static LoadingCache<FieldPolicyType, List<? extends BaseUiPolicyRule>> cache;
 
     public FieldPolicyCache() {
         cache = CacheBuilder.newBuilder().recordStats().build(new CacheLoader<FieldPolicyType, List<? extends BaseUiPolicyRule>>() {
@@ -63,6 +58,13 @@ public class FieldPolicyCache {
         });
     }
 
+    public static List<FieldStandardizationRule> getStandardizationPolicies() {
+        return (List<FieldStandardizationRule>) cache.getUnchecked(FieldPolicyType.STANDARDIZATION);
+    }
+
+    public static List<FieldValidationRule> getValidationPolicies() {
+        return (List<FieldValidationRule>) cache.getUnchecked(FieldPolicyType.VALIDATION);
+    }
 
     private List<? extends BaseUiPolicyRule> availablePolicies(FieldPolicyType key) {
         if (FieldPolicyType.STANDARDIZATION.equals(key)) {
@@ -80,15 +82,9 @@ public class FieldPolicyCache {
         startup.subscribe(new StandardizationStartupListener());
     }
 
-
-    public static List<FieldStandardizationRule> getStandardizationPolicies() {
-        return (List<FieldStandardizationRule>) cache.getUnchecked(FieldPolicyType.STANDARDIZATION);
+    enum FieldPolicyType {
+        STANDARDIZATION, VALIDATION;
     }
-
-    public static List<FieldValidationRule> getValidationPolicies() {
-        return (List<FieldValidationRule>) cache.getUnchecked(FieldPolicyType.VALIDATION);
-    }
-
 
     public class ValidationStartupListener implements ServicesApplicationStartupListener {
 

@@ -54,7 +54,7 @@ import javax.inject.Inject;
 /**
  * Ambari Service bean autowired in via the ServiceStatusManager looking for this ServicesStatusCheck interface
  *
- *Users can define what services/components to track in the kylo properties file using the following format
+ * Users can define what services/components to track in the kylo properties file using the following format
  *
  * {SERVICE_NAME}/[{COMPONENT_NAME},{COMPONENT_NAME}],{SERVICE_NAME}... COMPONENT_NAMES are optional <p> Example
  * application.properties ambari.services.status=HIVE/[HIVE_CLIENT],HDFS - this will track the HIVE Service and just the
@@ -146,9 +146,6 @@ public class AmbariServicesStatusCheck implements ServicesStatusCheck {
 
     /**
      * Convert Ambari ServiceComponentInfo into  ServiceComponent objects
-     * @param ambariServiceComponents
-     * @param serviceAlerts
-     * @param definedServiceComponentMap
      */
     private List<ServiceStatusResponse> transformAmbariServiceComponents(ServiceComponentInfoSummary ambariServiceComponents,
                                                                          List<ServiceAlert> serviceAlerts,
@@ -200,8 +197,6 @@ public class AmbariServicesStatusCheck implements ServicesStatusCheck {
 
     /**
      * add ambari Service errors to the supplied list
-     * @param list
-     * @param definedServiceComponentMap
      */
     private void addAmbariServiceErrors(String exceptionMessage, List<ServiceStatusResponse> list,
                                         Map<String, List<String>> definedServiceComponentMap) {
@@ -238,8 +233,8 @@ public class AmbariServicesStatusCheck implements ServicesStatusCheck {
     }
 
     /**
-     *  for a given Ambari component and state return the respective Component state
-     * @param serviceComponentInfoItem
+     * for a given Ambari component and state return the respective Component state
+     *
      * @return the state of the component
      */
     private ServiceComponent.STATE getServiceComponentState(ServiceComponentInfoItem serviceComponentInfoItem) {
@@ -264,8 +259,6 @@ public class AmbariServicesStatusCheck implements ServicesStatusCheck {
 
     /**
      * return a matching List of ServiceAlerts based upon the incoming component name
-     * @param alerts
-     * @param component
      */
     private List<ServiceAlert> alertsForComponent(List<ServiceAlert> alerts, final String component) {
         Predicate<ServiceAlert> predicate = alert -> alert.getComponentName() != null && alert.getComponentName().equals(component);
@@ -291,7 +284,6 @@ public class AmbariServicesStatusCheck implements ServicesStatusCheck {
 
     /**
      * Transform the ambari alerts to Kylo service alerts
-     * @param alertSummary
      */
     private List<ServiceAlert> transformAmbariAlert(AlertSummary alertSummary) {
         List<ServiceAlert> serviceAlerts = new ArrayList<>();

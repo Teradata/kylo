@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.security;
 
@@ -27,18 +27,18 @@ import java.io.Serializable;
 import java.security.Principal;
 
 /**
- * Base principal type that is serializable and provides default implementations of equals and 
+ * Base principal type that is serializable and provides default implementations of equals and
  * hashCode that should cover most subclass requirements.
  */
 public abstract class BasePrincipal implements Principal, Serializable {
-    
+
     private static final long serialVersionUID = 1L;
-    
+
     private String name;
 
     public BasePrincipal() {
     }
-    
+
     public BasePrincipal(String name) {
         this.name = name;
     }
@@ -50,7 +50,7 @@ public abstract class BasePrincipal implements Principal, Serializable {
     public String getName() {
         return this.name;
     }
-    
+
     @Override
     public boolean equals(Object obj) {
         if (obj != null && this.getClass().isInstance(obj)) {
@@ -60,7 +60,7 @@ public abstract class BasePrincipal implements Principal, Serializable {
             return false;
         }
     }
-    
+
     @Override
     public int hashCode() {
         return getClass().hashCode() ^ this.name.hashCode();

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.alerts.api;
 
@@ -36,12 +36,12 @@ import java.security.Principal;
  * former event, and non-actionable alerts with the latter.
  */
 public interface AlertChangeEvent {
-    
+
     /**
      * @return the time when the alert transitioned to this state
      */
     DateTime getChangeTime();
-    
+
     /**
      * @return the principal of the user that created the alert
      */
@@ -51,7 +51,7 @@ public interface AlertChangeEvent {
      * @return the new state
      */
     State getState();
-    
+
     /**
      * @return a description of the change (may be null)
      */
@@ -60,6 +60,7 @@ public interface AlertChangeEvent {
     /**
      * Any state change may have a piece of information associated with it.  The type of object
      * returned by this method is specific to the type of alert that was changed.
+     *
      * @return an alert-specific piece of data that may be associated with this state
      */
     <C extends Serializable> C getContent();

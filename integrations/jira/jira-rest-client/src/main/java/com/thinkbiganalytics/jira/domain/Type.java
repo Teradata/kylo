@@ -1,4 +1,3 @@
-
 package com.thinkbiganalytics.jira.domain;
 
 /*-
@@ -36,12 +35,12 @@ import javax.annotation.Generated;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("org.jsonschema2pojo")
 @JsonPropertyOrder({
-    "id",
-    "name",
-    "inward",
-    "outward",
-    "self"
-})
+                       "id",
+                       "name",
+                       "inward",
+                       "outward",
+                       "self"
+                   })
 public class Type {
 
     @JsonProperty("id")
@@ -58,9 +57,7 @@ public class Type {
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
-     * 
-     * @return
-     *     The id
+     * @return The id
      */
     @JsonProperty("id")
     public String getId() {
@@ -68,9 +65,7 @@ public class Type {
     }
 
     /**
-     * 
-     * @param id
-     *     The id
+     * @param id The id
      */
     @JsonProperty("id")
     public void setId(String id) {
@@ -78,9 +73,7 @@ public class Type {
     }
 
     /**
-     * 
-     * @return
-     *     The name
+     * @return The name
      */
     @JsonProperty("name")
     public String getName() {
@@ -88,9 +81,7 @@ public class Type {
     }
 
     /**
-     * 
-     * @param name
-     *     The name
+     * @param name The name
      */
     @JsonProperty("name")
     public void setName(String name) {
@@ -98,9 +89,7 @@ public class Type {
     }
 
     /**
-     * 
-     * @return
-     *     The inward
+     * @return The inward
      */
     @JsonProperty("inward")
     public String getInward() {
@@ -108,9 +97,7 @@ public class Type {
     }
 
     /**
-     * 
-     * @param inward
-     *     The inward
+     * @param inward The inward
      */
     @JsonProperty("inward")
     public void setInward(String inward) {
@@ -118,9 +105,7 @@ public class Type {
     }
 
     /**
-     * 
-     * @return
-     *     The outward
+     * @return The outward
      */
     @JsonProperty("outward")
     public String getOutward() {
@@ -128,9 +113,7 @@ public class Type {
     }
 
     /**
-     * 
-     * @param outward
-     *     The outward
+     * @param outward The outward
      */
     @JsonProperty("outward")
     public void setOutward(String outward) {
@@ -138,9 +121,7 @@ public class Type {
     }
 
     /**
-     * 
-     * @return
-     *     The self
+     * @return The self
      */
     @JsonProperty("self")
     public String getSelf() {
@@ -148,9 +129,7 @@ public class Type {
     }
 
     /**
-     * 
-     * @param self
-     *     The self
+     * @param self The self
      */
     @JsonProperty("self")
     public void setSelf(String self) {

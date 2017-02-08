@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.modeshape.support;
 
@@ -43,45 +43,44 @@ import java.util.stream.Collectors;
 
 /**
  * Really just a generic path implementation but currently being used in the JCR utilities.
- * 
  */
 public class JcrPath implements Path {
-    
+
     private final List<String> elements;
     private final boolean absolute;
-    
+
+    public JcrPath(boolean absolute, List<String> elements) {
+        this.elements = Collections.unmodifiableList(elements);
+        this.absolute = absolute;
+    }
+
+    public JcrPath(boolean absolute, String element) {
+        this.elements = Collections.singletonList(element);
+        this.absolute = absolute;
+    }
+
     public static Path get(String first, String... more) {
         ArrayList<String> list = new ArrayList<>();
         boolean absolute = first.trim().startsWith("/");
         String[] firstElems = first.split("/");
-        
+
         for (int idx = (absolute ? 1 : 0); idx < firstElems.length; idx++) {
             if (StringUtils.isNotBlank(firstElems[idx])) {
                 list.add(firstElems[idx]);
             }
         }
-        
+
         for (String another : more) {
             String[] anotherElems = another.split("/");
-            
+
             for (String elem : anotherElems) {
                 if (StringUtils.isNotBlank(elem)) {
                     list.add(elem);
                 }
             }
         }
-        
+
         return new JcrPath(absolute, list);
-    }
-    
-    public JcrPath(boolean absolute, List<String> elements) {
-        this.elements = Collections.unmodifiableList(elements);
-        this.absolute = absolute;
-    }
-    
-    public JcrPath(boolean absolute, String element) {
-        this.elements = Collections.singletonList(element);
-        this.absolute = absolute;
     }
 
     /* (non-Javadoc)
@@ -174,12 +173,12 @@ public class JcrPath implements Path {
         } else {
             for (int idx = 0; idx < other.getNameCount(); idx++) {
                 Path otherElem = other.getName(idx);
-                
+
                 if (otherElem.getFileName().equals(this.elements.get(idx))) {
                     return false;
                 }
             }
-            
+
             return true;
         }
     }
@@ -199,18 +198,18 @@ public class JcrPath implements Path {
     @Override
     public boolean endsWith(Path other) {
         int offset = getNameCount() - other.getNameCount();
-        
+
         if (offset < 0) {
             return false;
         } else {
             for (int idx = getNameCount() - 1; idx - offset >= 0; idx--) {
                 Path otherElem = other.getName(idx - offset);
-                
+
                 if (otherElem.getFileName().equals(this.elements.get(idx))) {
                     return false;
                 }
             }
-            
+
             return true;
         }
     }
@@ -294,7 +293,7 @@ public class JcrPath implements Path {
         } else {
             int idx = 0;
             for (; idx < getNameCount(); idx++) {
-                if (! other.getName(idx).equals(getName(idx))) {
+                if (!other.getName(idx).equals(getName(idx))) {
                     return other;
                 }
             }
@@ -365,17 +364,17 @@ public class JcrPath implements Path {
     @Override
     public int compareTo(Path other) {
         int len = Math.min(other.getNameCount(), getNameCount());
-        
+
         for (int idx = 0; idx < len; idx++) {
             int value = other.getName(idx).toString().compareTo(getName(idx).toString());
             if (value != 0) {
                 return value;
             }
         }
-        
+
         return Integer.compare(other.getNameCount(), getNameCount());
     }
-    
+
     /* (non-Javadoc)
      * @see java.lang.Object#equals(java.lang.Object)
      */
@@ -392,17 +391,17 @@ public class JcrPath implements Path {
             return false;
         }
     }
-    
+
     /* (non-Javadoc)
      * @see java.lang.Object#hashCode()
      */
     @Override
     public int hashCode() {
-        return Boolean.hashCode(this.absolute) 
-                        + this.elements.stream()
-                            .mapToInt(String::hashCode)
-                            .reduce((h, e) -> h + e)
-                            .orElse(0);
+        return Boolean.hashCode(this.absolute)
+               + this.elements.stream()
+                   .mapToInt(String::hashCode)
+                   .reduce((h, e) -> h + e)
+                   .orElse(0);
     }
 
     /* (non-Javadoc)
@@ -411,13 +410,17 @@ public class JcrPath implements Path {
     @Override
     public String toString() {
         StringBuilder bldr = new StringBuilder();
-        if (this.absolute) bldr.append("/");
-        if (this.elements.size() > 0) bldr.append(this.elements.get(0));
-        
+        if (this.absolute) {
+            bldr.append("/");
+        }
+        if (this.elements.size() > 0) {
+            bldr.append(this.elements.get(0));
+        }
+
         for (int idx = 1; idx < this.elements.size(); idx++) {
             bldr.append("/").append(this.elements.get(idx));
         }
-        
+
         return bldr.toString();
     }
 }

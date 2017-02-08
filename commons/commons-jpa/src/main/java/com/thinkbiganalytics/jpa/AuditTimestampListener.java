@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.jpa;
 
@@ -44,5 +44,5 @@ public class AuditTimestampListener {
     public void setModifiedTime(AuditedEntity entity) {
         entity.setModifiedTime(DateTime.now());
     }
-    
+
 }

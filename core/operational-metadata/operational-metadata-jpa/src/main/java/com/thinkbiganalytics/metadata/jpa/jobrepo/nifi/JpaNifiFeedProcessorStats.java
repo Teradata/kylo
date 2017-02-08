@@ -39,49 +39,18 @@ import javax.persistence.Table;
 @Table(name = "NIFI_FEED_PROCESSOR_STATS")
 public class JpaNifiFeedProcessorStats implements NifiFeedProcessorStats {
 
-    @Id
-    @GeneratedValue(generator = "uuid2")
-    @GenericGenerator(name = "uuid2", strategy = "uuid2")
-    @Column(name = "id", unique = true)
-    private String id;
-
-    @Column(name = "FM_FEED_NAME")
-    private String feedName;
-
-    @Column(name = "NIFI_PROCESSOR_ID")
-    private String processorId;
-
-    @Column(name = "PROCESSOR_NAME")
-    private String processorName;
-
-    @Column(name = "NIFI_FEED_PROCESS_GROUP_ID")
-    private String feedProcessGroupId;
-
-    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
-    @Column(name = "COLLECTION_TIME")
-    private DateTime collectionTime;
-
-    @Column(name = "COLLECTION_ID")
-    private String collectionId;
-
     @Column(name = "DURATION_MILLIS")
     protected Long duration = 0L;
-
     @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     @Column(name = "MIN_EVENT_TIME")
     protected DateTime minEventTime;
-
-
     @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     @Column(name = "MAX_EVENT_TIME")
     protected DateTime maxEventTime;
-
     @Column(name = "BYTES_IN")
     protected Long bytesIn = 0L;
-
     @Column(name = "BYTES_OUT")
     protected Long bytesOut = 0L;
-
     @Column(name = "TOTAL_EVENTS")
     protected Long totalCount = 1L;
     @Column(name = "JOBS_STARTED")
@@ -100,15 +69,30 @@ public class JpaNifiFeedProcessorStats implements NifiFeedProcessorStats {
     protected Long flowFilesStarted = 0L;
     @Column(name = "FLOW_FILES_FINISHED")
     protected Long flowFilesFinished = 0L;
-
     @Column(name = "MAX_EVENT_ID")
     protected Long maxEventId = 0L;
-
     @Column(name = "CLUSTER_NODE_ID")
     protected String clusterNodeId;
-
     @Column(name = "CLUSTER_NODE_ADDRESS")
     protected String clusterNodeAddress;
+    @Id
+    @GeneratedValue(generator = "uuid2")
+    @GenericGenerator(name = "uuid2", strategy = "uuid2")
+    @Column(name = "id", unique = true)
+    private String id;
+    @Column(name = "FM_FEED_NAME")
+    private String feedName;
+    @Column(name = "NIFI_PROCESSOR_ID")
+    private String processorId;
+    @Column(name = "PROCESSOR_NAME")
+    private String processorName;
+    @Column(name = "NIFI_FEED_PROCESS_GROUP_ID")
+    private String feedProcessGroupId;
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
+    @Column(name = "COLLECTION_TIME")
+    private DateTime collectionTime;
+    @Column(name = "COLLECTION_ID")
+    private String collectionId;
 
 
     public JpaNifiFeedProcessorStats(String feedName, String processorId) {

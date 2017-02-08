@@ -1,4 +1,3 @@
-
 package com.thinkbiganalytics.jira.domain;
 
 /*-
@@ -36,12 +35,12 @@ import javax.annotation.Generated;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("org.jsonschema2pojo")
 @JsonPropertyOrder({
-    "self",
-    "id",
-    "name",
-    "archived",
-    "released"
-})
+                       "self",
+                       "id",
+                       "name",
+                       "archived",
+                       "released"
+                   })
 public class Version {
 
     @JsonProperty("self")
@@ -58,9 +57,7 @@ public class Version {
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
-     * 
-     * @return
-     *     The self
+     * @return The self
      */
     @JsonProperty("self")
     public String getSelf() {
@@ -68,9 +65,7 @@ public class Version {
     }
 
     /**
-     * 
-     * @param self
-     *     The self
+     * @param self The self
      */
     @JsonProperty("self")
     public void setSelf(String self) {
@@ -78,9 +73,7 @@ public class Version {
     }
 
     /**
-     * 
-     * @return
-     *     The id
+     * @return The id
      */
     @JsonProperty("id")
     public String getId() {
@@ -88,9 +81,7 @@ public class Version {
     }
 
     /**
-     * 
-     * @param id
-     *     The id
+     * @param id The id
      */
     @JsonProperty("id")
     public void setId(String id) {
@@ -98,9 +89,7 @@ public class Version {
     }
 
     /**
-     * 
-     * @return
-     *     The name
+     * @return The name
      */
     @JsonProperty("name")
     public String getName() {
@@ -108,9 +97,7 @@ public class Version {
     }
 
     /**
-     * 
-     * @param name
-     *     The name
+     * @param name The name
      */
     @JsonProperty("name")
     public void setName(String name) {
@@ -118,9 +105,7 @@ public class Version {
     }
 
     /**
-     * 
-     * @return
-     *     The archived
+     * @return The archived
      */
     @JsonProperty("archived")
     public Boolean getArchived() {
@@ -128,9 +113,7 @@ public class Version {
     }
 
     /**
-     * 
-     * @param archived
-     *     The archived
+     * @param archived The archived
      */
     @JsonProperty("archived")
     public void setArchived(Boolean archived) {
@@ -138,9 +121,7 @@ public class Version {
     }
 
     /**
-     * 
-     * @return
-     *     The released
+     * @return The released
      */
     @JsonProperty("released")
     public Boolean getReleased() {
@@ -148,9 +129,7 @@ public class Version {
     }
 
     /**
-     * 
-     * @param released
-     *     The released
+     * @param released The released
      */
     @JsonProperty("released")
     public void setReleased(Boolean released) {

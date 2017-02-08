@@ -43,10 +43,14 @@ import javax.ws.rs.NotFoundException;
  */
 public class NiFiControllerServicesRestClientV0 implements NiFiControllerServicesRestClient {
 
-    /** Base path for controller service requests */
+    /**
+     * Base path for controller service requests
+     */
     private static final String BASE_PATH = "/controller/controller-services";
 
-    /** REST client for communicating with NiFi */
+    /**
+     * REST client for communicating with NiFi
+     */
     private final NiFiRestClientV0 client;
 
     /**

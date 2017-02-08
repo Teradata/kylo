@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.persistence;
 
@@ -39,10 +39,10 @@ import javax.inject.Inject;
  *
  */
 public class AggregateMetadataAccess implements MetadataAccess {
-    
+
     @Inject
     private OperationalMetadataTransactionTemplateMetadataAccess jpaMetadataAccess;
-    
+
     @Inject
     private JcrMetadataAccess jcrMetadataAccess;
 
@@ -94,7 +94,7 @@ public class AggregateMetadataAccess implements MetadataAccess {
         jcrMetadataAccess.read(wrap(cmd, true), principals);
     }
 
-    
+
     private MetadataAction wrap(final MetadataAction action, final boolean readOnly) {
         if (JcrMetadataAccess.hasActiveSession()) {
             return action;
@@ -114,7 +114,7 @@ public class AggregateMetadataAccess implements MetadataAccess {
             };
         }
     }
-    
+
     private <R> MetadataCommand<R> wrap(final MetadataCommand<R> cmd, final boolean readOnly) {
         if (JcrMetadataAccess.hasActiveSession()) {
             return cmd;

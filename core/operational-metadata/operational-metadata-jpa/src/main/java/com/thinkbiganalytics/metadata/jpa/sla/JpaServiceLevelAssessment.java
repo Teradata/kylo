@@ -133,36 +133,6 @@ public class JpaServiceLevelAssessment extends AbstractAuditedEntity implements 
         this.result = result;
     }
 
-    @Embeddable
-    public static class SlaAssessmentId extends BaseJpaId implements ServiceLevelAssessment.ID, Serializable {
-
-        private static final long serialVersionUID = 6965221468619613881L;
-
-        @Column(name = "id", columnDefinition = "binary(16)")
-        private UUID uuid;
-
-        public static SlaAssessmentId create() {
-            return new SlaAssessmentId(UUID.randomUUID());
-        }
-
-        public SlaAssessmentId() {
-        }
-
-        public SlaAssessmentId(Serializable ser) {
-            super(ser);
-        }
-
-        @Override
-        public UUID getUuid() {
-            return this.uuid;
-        }
-
-        @Override
-        public void setUuid(UUID uuid) {
-            this.uuid = uuid;
-        }
-    }
-
     @Override
     public DateTime getTime() {
         return super.getCreatedTime();
@@ -185,7 +155,6 @@ public class JpaServiceLevelAssessment extends AbstractAuditedEntity implements 
             .compare(this.getResult(), sla.getResult())
             .compare(this.getAgreement().getName(), sla.getAgreement().getName());
 
-
         if (chain.result() != 0) {
             return chain.result();
         }
@@ -203,6 +172,36 @@ public class JpaServiceLevelAssessment extends AbstractAuditedEntity implements 
         }
 
         return chain.result();
+    }
+
+    @Embeddable
+    public static class SlaAssessmentId extends BaseJpaId implements ServiceLevelAssessment.ID, Serializable {
+
+        private static final long serialVersionUID = 6965221468619613881L;
+
+        @Column(name = "id", columnDefinition = "binary(16)")
+        private UUID uuid;
+
+        public SlaAssessmentId() {
+        }
+
+        public SlaAssessmentId(Serializable ser) {
+            super(ser);
+        }
+
+        public static SlaAssessmentId create() {
+            return new SlaAssessmentId(UUID.randomUUID());
+        }
+
+        @Override
+        public UUID getUuid() {
+            return this.uuid;
+        }
+
+        @Override
+        public void setUuid(UUID uuid) {
+            this.uuid = uuid;
+        }
     }
 
 }

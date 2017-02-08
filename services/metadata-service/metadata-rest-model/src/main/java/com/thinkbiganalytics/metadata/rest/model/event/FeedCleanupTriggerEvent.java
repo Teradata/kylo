@@ -34,19 +34,26 @@ public class FeedCleanupTriggerEvent implements Serializable {
 
     private static final long serialVersionUID = 1012854550068482906L;
 
-    /** Category system name */
+    /**
+     * Category system name
+     */
     private String categoryName;
 
-    /** Feed id */
+    /**
+     * Feed id
+     */
     private String feedId;
 
-    /** Feed system name */
+    /**
+     * Feed system name
+     */
     private String feedName;
 
     /**
      * Constructs a {@code FeedCleanupTriggerEvent}.
      */
-    public FeedCleanupTriggerEvent() {}
+    public FeedCleanupTriggerEvent() {
+    }
 
     /**
      * Constructs a {@code FeedCleanupTriggerEvent} with the specified feed id.

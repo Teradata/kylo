@@ -75,34 +75,49 @@ public class TransformService extends AbstractScheduledService {
 
     private static final Logger log = LoggerFactory.getLogger(TransformService.class);
 
-    /** Name of the database */
+    /**
+     * Name of the database
+     */
     private static final String DATABASE = "spark_shell_temp";
 
-    /** Time in seconds after last use for a table to expire */
+    /**
+     * Time in seconds after last use for a table to expire
+     */
     private static final long EXPIRE_TIME = 3600L;
 
-    /** Minimum table size in bytes, to ensure there aren't too many tables */
+    /**
+     * Minimum table size in bytes, to ensure there aren't too many tables
+     */
     private static final int MIN_BYTES = 1048576;
 
-    /** Maximum database size in bytes (soft limit) */
+    /**
+     * Maximum database size in bytes (soft limit)
+     */
     private static final long MAX_BYTES = 10737418240L;
-
-    /** Kerberos authentication configuration */
-    private KerberosTicketConfiguration kerberosTicketConfiguration;
-
-    /** Tables with cached results */
+    /**
+     * Tables with cached results
+     */
     @Nonnull
     private final TableCache cache = new TableCache();
-
-    /** Script execution engine */
+    /**
+     * Kerberos authentication configuration
+     */
+    private KerberosTicketConfiguration kerberosTicketConfiguration;
+    /**
+     * Script execution engine
+     */
     @Autowired
     private SparkScriptEngine engine;
 
-    /** Job tracker for transformations */
+    /**
+     * Job tracker for transformations
+     */
     @Autowired
     private TransformJobTracker tracker;
 
-    /** Provides access to the Spark context */
+    /**
+     * Provides access to the Spark context
+     */
     @Autowired
     private SparkContextService scs;
 
@@ -113,9 +128,9 @@ public class TransformService extends AbstractScheduledService {
     /**
      * Constructs a {@code TransformService} using the specified engine to execute scripts.
      *
-     * @param engine the script engine
+     * @param engine                      the script engine
      * @param kerberosTicketConfiguration Kerberos authentication configuration
-     * @param tracker job tracker
+     * @param tracker                     job tracker
      */
     public TransformService(@Nonnull final SparkScriptEngine engine, @Nonnull final KerberosTicketConfiguration kerberosTicketConfiguration, @Nonnull final TransformJobTracker tracker) {
         this();
@@ -464,11 +479,11 @@ public class TransformService extends AbstractScheduledService {
          */
         TableCache() {
             this.active = CacheBuilder.newBuilder()
-                    .expireAfterAccess(EXPIRE_TIME, TimeUnit.SECONDS)
-                    .maximumWeight(MAX_BYTES)
-                    .removalListener(this)
-                    .weigher(this)
-                    .build();
+                .expireAfterAccess(EXPIRE_TIME, TimeUnit.SECONDS)
+                .maximumWeight(MAX_BYTES)
+                .removalListener(this)
+                .weigher(this)
+                .build();
         }
 
         /**

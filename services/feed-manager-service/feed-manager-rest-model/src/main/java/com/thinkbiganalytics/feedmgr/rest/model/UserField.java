@@ -36,19 +36,29 @@ import java.util.Objects;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class UserField {
 
-    /** A human-readable specification */
+    /**
+     * A human-readable specification
+     */
     private String description;
 
-    /** A human-readable title */
+    /**
+     * A human-readable title
+     */
     private String displayName;
 
-    /** Index for the display order from 0 and up */
+    /**
+     * Index for the display order from 0 and up
+     */
     private Integer order;
 
-    /** Indicates that the value cannot be empty */
+    /**
+     * Indicates that the value cannot be empty
+     */
     private Boolean required;
 
-    /** An internal identifier */
+    /**
+     * An internal identifier
+     */
     private String systemName;
 
     /**
@@ -163,7 +173,7 @@ public class UserField {
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
-                .add("name", systemName)
-                .toString();
+            .add("name", systemName)
+            .toString();
     }
 }

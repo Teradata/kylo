@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.modeshape.sla;
 
@@ -49,27 +49,20 @@ import javax.jcr.RepositoryException;
 public class JcrServiceLevelAgreement extends AbstractJcrAuditableSystemEntity implements ServiceLevelAgreement, Serializable {
 
 
-    private static final long serialVersionUID = 2611479261936214396L;
-
     public static final String NODE_TYPE = "tba:sla";
     public static final String DESCRIPTION = "jcr:description";
     public static final String NAME = "jcr:title";
     public static final String DEFAULT_GROUP = "tba:defaultGroup";
     public static final String GROUPS = "tba:groups";
-    
     public static final String GROUP_TYPE = "tba:obligationGroup";
-
     public static final String JSON = "tba:json";
-
     public static final String ENABLED = "tba:enabled";
-
     public static final String SLA_CHECKS = "tba:slaChecks";
-
-
+    private static final long serialVersionUID = 2611479261936214396L;
 
 
     /**
-     * 
+     *
      */
     public JcrServiceLevelAgreement(Node node) {
         super(node);
@@ -130,7 +123,7 @@ public class JcrServiceLevelAgreement extends AbstractJcrAuditableSystemEntity i
             Iterator<Node> defItr = (Iterator<Node>) this.node.getNodes(DEFAULT_GROUP);
             @SuppressWarnings("unchecked")
             Iterator<Node> grpItr = (Iterator<Node>) this.node.getNodes(GROUPS);
-            
+
             return Lists.newArrayList(Iterators.concat(
                 Iterators.transform(defItr, (groupNode) -> {
                     return JcrUtil.createJcrObject(groupNode, JcrObligationGroup.class, JcrServiceLevelAgreement.this);
@@ -141,7 +134,7 @@ public class JcrServiceLevelAgreement extends AbstractJcrAuditableSystemEntity i
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the obligation nodes", e);
         }
-        
+
     }
 
     /* (non-Javadoc)
@@ -150,14 +143,14 @@ public class JcrServiceLevelAgreement extends AbstractJcrAuditableSystemEntity i
     @Override
     public List<Obligation> getObligations() {
         List<Obligation> list = new ArrayList<>();
-        
+
         for (ObligationGroup group : getObligationGroups()) {
             list.addAll(group.getObligations());
         }
-        
+
         return list;
     }
-    
+
     public JcrObligationGroup getDefaultGroup() {
         return JcrUtil.getOrCreateNode(this.node, DEFAULT_GROUP, GROUP_TYPE, JcrObligationGroup.class, JcrServiceLevelAgreement.this);
     }
@@ -171,15 +164,15 @@ public class JcrServiceLevelAgreement extends AbstractJcrAuditableSystemEntity i
     }
 
 
-    public void clear(){
+    public void clear() {
         try {
-        Iterator<Node> grpItr = (Iterator<Node>) this.node.getNodes(GROUPS);
-            while(grpItr.hasNext()){
+            Iterator<Node> grpItr = (Iterator<Node>) this.node.getNodes(GROUPS);
+            while (grpItr.hasNext()) {
                 Node group = grpItr.next();
                 group.remove();
             }
             grpItr = (Iterator<Node>) this.node.getNodes(DEFAULT_GROUP);
-            while(grpItr.hasNext()){
+            while (grpItr.hasNext()) {
                 Node group = grpItr.next();
                 group.remove();
             }
@@ -187,15 +180,6 @@ public class JcrServiceLevelAgreement extends AbstractJcrAuditableSystemEntity i
             throw new MetadataRepositoryException("Failed to clear the SLA obligation group nodes", e);
         }
     }
-
-
-    public static class SlaId extends JcrEntity.EntityId implements ServiceLevelAgreement.ID {
-
-        public SlaId(Serializable ser) {
-            super(ser);
-        }
-    }
-
 
     public List<ServiceLevelAgreementCheck> getSlaChecks() {
 
@@ -214,6 +198,13 @@ public class JcrServiceLevelAgreement extends AbstractJcrAuditableSystemEntity i
         }
 
 
+    }
+
+    public static class SlaId extends JcrEntity.EntityId implements ServiceLevelAgreement.ID {
+
+        public SlaId(Serializable ser) {
+            super(ser);
+        }
     }
 
 

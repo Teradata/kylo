@@ -28,6 +28,15 @@ import javax.annotation.Nonnull;
 public class ArrayUtils {
 
     /**
+     * Instances of {@code ArrayUtils} should not be constructed.
+     *
+     * @throws UnsupportedOperationException always
+     */
+    private ArrayUtils() {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
      * Returns the index of the first occurrence of the specified array. The returned index is relative to the offset in the
      * source array, and will be -1 if the target is not found.
      *
@@ -75,14 +84,5 @@ public class ArrayUtils {
 
         // Not found
         return -1;
-    }
-
-    /**
-     * Instances of {@code ArrayUtils} should not be constructed.
-     *
-     * @throws UnsupportedOperationException always
-     */
-    private ArrayUtils() {
-        throw new UnsupportedOperationException();
     }
 }

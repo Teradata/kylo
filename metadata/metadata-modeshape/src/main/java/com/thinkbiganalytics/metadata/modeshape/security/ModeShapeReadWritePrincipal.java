@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.modeshape.security;
 
@@ -27,14 +27,14 @@ package com.thinkbiganalytics.metadata.modeshape.security;
  *
  */
 public class ModeShapeReadWritePrincipal extends ModeShapePrincipal {
-    
+
     public static final ModeShapeReadWritePrincipal INSTANCE = new ModeShapeReadWritePrincipal();
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 1L;
-    
+
     public ModeShapeReadWritePrincipal() {
         super("readwrite");
     }

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.modeshape.security.action;
 
@@ -57,7 +57,7 @@ public class TestSecurityConfig {
 
     @Inject
     private MetadataAccess metadata;
-    
+
     @Inject
     private ActionsModuleBuilder builder;
 

@@ -47,6 +47,18 @@ class CSVAutoDetect {
 
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(CSVFileSchemaParser.class);
 
+    private static <K, V extends Comparable<? super V>> Map<K, V> sortMapByValue(Map<K, V> map) {
+        return map.entrySet()
+            .stream()
+            .sorted(Map.Entry.comparingByValue(Collections.reverseOrder()))
+            .collect(Collectors.toMap(
+                Map.Entry::getKey,
+                Map.Entry::getValue,
+                (e1, e2) -> e1,
+                LinkedHashMap::new
+            ));
+    }
+
     /**
      * Parses a sample file to allow schema specification when creating a new feed.
      *
@@ -158,18 +170,6 @@ class CSVAutoDetect {
             }
         }
         return null;
-    }
-
-    private static <K, V extends Comparable<? super V>> Map<K, V> sortMapByValue(Map<K, V> map) {
-        return map.entrySet()
-            .stream()
-            .sorted(Map.Entry.comparingByValue(Collections.reverseOrder()))
-            .collect(Collectors.toMap(
-                Map.Entry::getKey,
-                Map.Entry::getValue,
-                (e1, e2) -> e1,
-                LinkedHashMap::new
-            ));
     }
 
     static class LineStats {

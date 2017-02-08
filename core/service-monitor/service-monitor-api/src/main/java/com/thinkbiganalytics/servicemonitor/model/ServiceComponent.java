@@ -30,7 +30,7 @@ import java.util.Map;
  */
 public interface ServiceComponent {
 
-  String DEFAULT_CLUSTER = "Default";
+    String DEFAULT_CLUSTER = "Default";
 
     /**
      * Returns the Highest/Most severe alert state for alerts found on this component
@@ -42,112 +42,111 @@ public interface ServiceComponent {
      */
     Map<String, Object> getProperties();
 
-  /**
-   *
-   * @return the associated service name for this component
-   */
-  String getServiceName();
+    /**
+     * @return the associated service name for this component
+     */
+    String getServiceName();
 
-  /**
-   *
-   * @return the name for this component
-   */
-  String getName();
+    void setServiceName(String serviceName);
 
-  /**
-   *
-   * @return true if healthy, false if unhealthy
-   */
-  boolean isHealthy();
+    /**
+     * @return the name for this component
+     */
+    String getName();
 
-  /**
-   *
-   * @return the date last checked
-   */
-  Date getCheckDate();
+    /**
+     * @return true if healthy, false if unhealthy
+     */
+    boolean isHealthy();
 
-  /**
-   *
-   * @return a message indicating some description of this component and alert status
-   */
-  String getMessage();
+    /**
+     * @return the date last checked
+     */
+    Date getCheckDate();
 
-  /**
-   * Get the state of this component
-   * @return the state of the component
-   */
-  STATE getState();
+    /**
+     * @return a message indicating some description of this component and alert status
+     */
+    String getMessage();
 
-  /**
-   * Get associated alerts for this component
-   * @return a list of alert objects
-   */
-  List<ServiceAlert> getAlerts();
+    /**
+     * Get the state of this component
+     *
+     * @return the state of the component
+     */
+    STATE getState();
 
-  /**
-   * if there are any error alerts
-   * @return
-   */
-  boolean isContainsErrorAlerts();
+    /**
+     * Get associated alerts for this component
+     *
+     * @return a list of alert objects
+     */
+    List<ServiceAlert> getAlerts();
 
-  /**
-   * if associated with a cluster, provide the cluster name the component is on
-   * @return the name of the cluster
-   */
-  String getClusterName();
+    /**
+     * if there are any error alerts
+     */
+    boolean isContainsErrorAlerts();
 
-  /**
-   * find any error alerts
-   * @return a list of alerts marked as errors
-   */
-  List<ServiceAlert> getErrorAlerts();
+    /**
+     * if associated with a cluster, provide the cluster name the component is on
+     *
+     * @return the name of the cluster
+     */
+    String getClusterName();
 
-  /**
-   * find the latest alert time for this component
-   * @return the latest timestamp for this alert
-   */
-  Date getLatestAlertTimestamp();
+    /**
+     * find any error alerts
+     *
+     * @return a list of alerts marked as errors
+     */
+    List<ServiceAlert> getErrorAlerts();
 
-  /**
-   * find the earliest alert time for the list of alerts on this component
-   * @return the earliest date for the alerts on this component
-   */
-  Date getEarliestAlertTimestamp();
+    /**
+     * find the latest alert time for this component
+     *
+     * @return the latest timestamp for this alert
+     */
+    Date getLatestAlertTimestamp();
 
-  void setServiceName(String serviceName);
+    /**
+     * find the earliest alert time for the list of alerts on this component
+     *
+     * @return the earliest date for the alerts on this component
+     */
+    Date getEarliestAlertTimestamp();
 
-  /**
-   * Return the most severe alert state
-   * @return
-   */
-  ServiceAlert.STATE getMaxAlertState();
+    /**
+     * Return the most severe alert state
+     */
+    ServiceAlert.STATE getMaxAlertState();
 
 
-  /**
-   * The state of a given Component
-   */
-  public enum STATE {
-    UP(1), STARTING(2), DOWN(3), UNKNOWN(4);
-    private int severity;
+    /**
+     * The state of a given Component
+     */
+    public enum STATE {
+        UP(1), STARTING(2), DOWN(3), UNKNOWN(4);
+        private int severity;
 
-    STATE(int severity) {
-      this.severity = severity;
+        STATE(int severity) {
+            this.severity = severity;
+        }
+
+        public int getSeverity() {
+            return this.severity;
+        }
+
+        public boolean isError() {
+            return this.severity > 2;
+        }
+
+        public boolean isHealthy() {
+            return this.severity <= 2;
+        }
     }
 
-    public int getSeverity() {
-      return this.severity;
+    public enum TIMESTAMP_TYPE {
+        EARLIEST, LATEST
     }
-
-    public boolean isError() {
-      return this.severity > 2;
-    }
-
-    public boolean isHealthy() {
-      return this.severity <= 2;
-    }
-  }
-
-  public enum TIMESTAMP_TYPE {
-    EARLIEST, LATEST
-  }
 }

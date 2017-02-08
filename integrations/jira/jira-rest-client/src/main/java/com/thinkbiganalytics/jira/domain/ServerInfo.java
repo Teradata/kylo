@@ -40,15 +40,15 @@ import javax.annotation.Generated;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("org.jsonschema2pojo")
 @JsonPropertyOrder({
-        "baseUrl",
-        "version",
-        "versionNumbers",
-        "buildNumber",
-        "buildDate",
-        "serverTime",
-        "scmInfo",
-        "serverTitle"
-})
+                       "baseUrl",
+                       "version",
+                       "versionNumbers",
+                       "buildNumber",
+                       "buildDate",
+                       "serverTime",
+                       "scmInfo",
+                       "serverTitle"
+                   })
 public class ServerInfo {
 
     @JsonProperty("baseUrl")
@@ -71,9 +71,7 @@ public class ServerInfo {
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
-     *
-     * @return
-     * The baseUrl
+     * @return The baseUrl
      */
     @JsonProperty("baseUrl")
     public String getBaseUrl() {
@@ -81,9 +79,7 @@ public class ServerInfo {
     }
 
     /**
-     *
-     * @param baseUrl
-     * The baseUrl
+     * @param baseUrl The baseUrl
      */
     @JsonProperty("baseUrl")
     public void setBaseUrl(String baseUrl) {
@@ -91,9 +87,7 @@ public class ServerInfo {
     }
 
     /**
-     *
-     * @return
-     * The version
+     * @return The version
      */
     @JsonProperty("version")
     public String getVersion() {
@@ -101,9 +95,7 @@ public class ServerInfo {
     }
 
     /**
-     *
-     * @param version
-     * The version
+     * @param version The version
      */
     @JsonProperty("version")
     public void setVersion(String version) {
@@ -111,9 +103,7 @@ public class ServerInfo {
     }
 
     /**
-     *
-     * @return
-     * The versionNumbers
+     * @return The versionNumbers
      */
     @JsonProperty("versionNumbers")
     public List<Integer> getVersionNumbers() {
@@ -121,9 +111,7 @@ public class ServerInfo {
     }
 
     /**
-     *
-     * @param versionNumbers
-     * The versionNumbers
+     * @param versionNumbers The versionNumbers
      */
     @JsonProperty("versionNumbers")
     public void setVersionNumbers(List<Integer> versionNumbers) {
@@ -131,9 +119,7 @@ public class ServerInfo {
     }
 
     /**
-     *
-     * @return
-     * The buildNumber
+     * @return The buildNumber
      */
     @JsonProperty("buildNumber")
     public Integer getBuildNumber() {
@@ -141,9 +127,7 @@ public class ServerInfo {
     }
 
     /**
-     *
-     * @param buildNumber
-     * The buildNumber
+     * @param buildNumber The buildNumber
      */
     @JsonProperty("buildNumber")
     public void setBuildNumber(Integer buildNumber) {
@@ -151,9 +135,7 @@ public class ServerInfo {
     }
 
     /**
-     *
-     * @return
-     * The buildDate
+     * @return The buildDate
      */
     @JsonProperty("buildDate")
     public String getBuildDate() {
@@ -161,9 +143,7 @@ public class ServerInfo {
     }
 
     /**
-     *
-     * @param buildDate
-     * The buildDate
+     * @param buildDate The buildDate
      */
     @JsonProperty("buildDate")
     public void setBuildDate(String buildDate) {
@@ -171,9 +151,7 @@ public class ServerInfo {
     }
 
     /**
-     *
-     * @return
-     * The serverTime
+     * @return The serverTime
      */
     @JsonProperty("serverTime")
     public String getServerTime() {
@@ -181,9 +159,7 @@ public class ServerInfo {
     }
 
     /**
-     *
-     * @param serverTime
-     * The serverTime
+     * @param serverTime The serverTime
      */
     @JsonProperty("serverTime")
     public void setServerTime(String serverTime) {
@@ -191,9 +167,7 @@ public class ServerInfo {
     }
 
     /**
-     *
-     * @return
-     * The scmInfo
+     * @return The scmInfo
      */
     @JsonProperty("scmInfo")
     public String getScmInfo() {
@@ -201,9 +175,7 @@ public class ServerInfo {
     }
 
     /**
-     *
-     * @param scmInfo
-     * The scmInfo
+     * @param scmInfo The scmInfo
      */
     @JsonProperty("scmInfo")
     public void setScmInfo(String scmInfo) {
@@ -211,9 +183,7 @@ public class ServerInfo {
     }
 
     /**
-     *
-     * @return
-     * The serverTitle
+     * @return The serverTitle
      */
     @JsonProperty("serverTitle")
     public String getServerTitle() {
@@ -221,9 +191,7 @@ public class ServerInfo {
     }
 
     /**
-     *
-     * @param serverTitle
-     * The serverTitle
+     * @param serverTitle The serverTitle
      */
     @JsonProperty("serverTitle")
     public void setServerTitle(String serverTitle) {

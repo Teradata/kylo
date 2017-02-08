@@ -59,8 +59,6 @@ public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTim
     private MetadataAccess metadataAccess;
 
 
-
-
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.sla.spi.MetricAssessor#accepts(com.thinkbiganalytics.metadata.sla.api.Metric)
      */

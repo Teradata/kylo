@@ -42,7 +42,7 @@ import javax.persistence.Table;
 @Table(name = "BATCH_NIFI_JOB")
 public class JpaNifiEventJobExecution implements Serializable, NifiEventJobExecution {
 
-    @OneToOne(targetEntity = JpaBatchJobExecution.class, cascade = CascadeType.ALL, fetch = FetchType.LAZY,optional = false)
+    @OneToOne(targetEntity = JpaBatchJobExecution.class, cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "JOB_EXECUTION_ID", nullable = false, insertable = true, updatable = true)
     private BatchJobExecution jobExecution;
 
@@ -64,10 +64,55 @@ public class JpaNifiEventJobExecution implements Serializable, NifiEventJobExecu
         this.eventId = eventId;
     }
 
-    public JpaNifiEventJobExecution(BatchJobExecution jobExecution,Long eventId, String flowFileId) {
+    public JpaNifiEventJobExecution(BatchJobExecution jobExecution, Long eventId, String flowFileId) {
         this.flowFileId = flowFileId;
         this.eventId = eventId;
         this.jobExecution = jobExecution;
+    }
+
+    public Long getEventId() {
+        return eventId;
+    }
+
+    public void setEventId(Long eventId) {
+        this.eventId = eventId;
+    }
+
+    @Override
+    public BatchJobExecution getJobExecution() {
+        return jobExecution;
+    }
+
+    public void setJobExecution(BatchJobExecution jobExecution) {
+        this.jobExecution = jobExecution;
+    }
+
+    public String getFlowFileId() {
+        return flowFileId;
+    }
+
+    public void setFlowFileId(String flowFileId) {
+        this.flowFileId = flowFileId;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        JpaNifiEventJobExecution that = (JpaNifiEventJobExecution) o;
+
+        return !(flowFileId != null ? !flowFileId.equals(that.flowFileId) : that.flowFileId != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        return flowFileId != null ? flowFileId.hashCode() : 0;
     }
 
     public static class NifiEventJobExecutionPK implements Serializable {
@@ -79,7 +124,7 @@ public class JpaNifiEventJobExecution implements Serializable, NifiEventJobExecu
         }
 
         public NifiEventJobExecutionPK(String flowFileId) {
-             this.flowFileId = flowFileId;
+            this.flowFileId = flowFileId;
         }
 
 
@@ -110,51 +155,5 @@ public class JpaNifiEventJobExecution implements Serializable, NifiEventJobExecu
         public int hashCode() {
             return flowFileId != null ? flowFileId.hashCode() : 0;
         }
-    }
-
-    public Long getEventId() {
-        return eventId;
-    }
-
-    public void setEventId(Long eventId) {
-        this.eventId = eventId;
-    }
-
-    @Override
-    public BatchJobExecution getJobExecution() {
-        return jobExecution;
-    }
-
-    public void setJobExecution(BatchJobExecution jobExecution) {
-        this.jobExecution = jobExecution;
-    }
-
-    public String getFlowFileId() {
-        return flowFileId;
-    }
-
-    public void setFlowFileId(String flowFileId) {
-        this.flowFileId = flowFileId;
-    }
-
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-
-        JpaNifiEventJobExecution that = (JpaNifiEventJobExecution) o;
-
-        return !(flowFileId != null ? !flowFileId.equals(that.flowFileId) : that.flowFileId != null);
-
-    }
-
-    @Override
-    public int hashCode() {
-        return flowFileId != null ? flowFileId.hashCode() : 0;
     }
 }

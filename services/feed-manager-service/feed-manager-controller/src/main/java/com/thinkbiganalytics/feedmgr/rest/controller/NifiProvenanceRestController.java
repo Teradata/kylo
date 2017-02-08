@@ -56,27 +56,22 @@ import io.swagger.annotations.Tag;
 @SwaggerDefinition(tags = @Tag(name = "NiFi - Provenance", description = "event reporting"))
 public class NifiProvenanceRestController {
 
-    @Inject
-    private MetadataAccess metadataAccess;
-
-    @Inject
-    private AccessController accessController;
-
-    @Autowired
-    private NifiFeedProcessorStatisticsProvider statsProvider;
-
-
     private static final Logger log = LoggerFactory.getLogger(NifiProvenanceRestController.class);
-
     @Inject
     NifiFlowCache nifiFlowCache;
+    @Inject
+    private MetadataAccess metadataAccess;
+    @Inject
+    private AccessController accessController;
+    @Autowired
+    private NifiFeedProcessorStatisticsProvider statsProvider;
 
     @GET
     @Path("/nifi-flow-cache/get-flow-updates")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets flow updates since the last sync.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "Returns the flow updates.", response = NiFiFlowCacheSync.class)
+        @ApiResponse(code = 200, message = "Returns the flow updates.", response = NiFiFlowCacheSync.class)
     )
     public Response getFlowUpdates(@QueryParam("syncId") String syncId) {
         NiFiFlowCacheSync updates = nifiFlowCache.syncAndReturnUpdates(syncId);
@@ -88,7 +83,7 @@ public class NifiProvenanceRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the flows.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "Returns the flows.", response = NiFiFlowCacheSync.class)
+        @ApiResponse(code = 200, message = "Returns the flows.", response = NiFiFlowCacheSync.class)
     )
     public Response getCache(@QueryParam("syncId") String syncId) {
         NiFiFlowCacheSync cache = nifiFlowCache.getCache(syncId);
@@ -100,7 +95,7 @@ public class NifiProvenanceRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets flow updates without syncing.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "Returns the flow updates.", response = NiFiFlowCacheSync.class)
+        @ApiResponse(code = 200, message = "Returns the flow updates.", response = NiFiFlowCacheSync.class)
     )
     public Response previewFlowUpdates(@QueryParam("syncId") String syncId) {
         NiFiFlowCacheSync updates = nifiFlowCache.previewUpdates(syncId);
@@ -112,7 +107,7 @@ public class NifiProvenanceRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the flow cache status.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "Returns the cache status.", response = NifiFlowCache.CacheSummary.class)
+        @ApiResponse(code = 200, message = "Returns the cache status.", response = NifiFlowCache.CacheSummary.class)
     )
     public Response previewFlowUpdates() {
         NifiFlowCache.CacheSummary summary = nifiFlowCache.cacheSummary();
@@ -124,7 +119,7 @@ public class NifiProvenanceRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Resets the updates to the flow cache since the last sync.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "Returns the updated flow cache.", response = NiFiFlowCacheSync.class)
+        @ApiResponse(code = 200, message = "Returns the updated flow cache.", response = NiFiFlowCacheSync.class)
     )
     public Response getSyncUpdates(@QueryParam("syncId") String syncId) {
         NiFiFlowCacheSync updates = nifiFlowCache.refreshAll(syncId);
@@ -136,7 +131,7 @@ public class NifiProvenanceRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Resets the flow cache.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "The cache was reset.", response = String.class)
+        @ApiResponse(code = 200, message = "The cache was reset.", response = String.class)
     )
     public Response resetCache() {
         nifiFlowCache.rebuildAll();
@@ -149,7 +144,7 @@ public class NifiProvenanceRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Indicates if the cache is available.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "Returns the cache status.", response = Boolean.class)
+        @ApiResponse(code = 200, message = "Returns the cache status.", response = Boolean.class)
     )
     public Response isAvailable() {
         return Response.ok(nifiFlowCache.isAvailable()).build();
@@ -161,7 +156,7 @@ public class NifiProvenanceRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the maximum event id received from the specified node.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "Returns the maximum event id.", response = Long.class)
+        @ApiResponse(code = 200, message = "Returns the maximum event id.", response = Long.class)
     )
     public Response findMaxEventId(@QueryParam("clusterNodeId") String clusterNodeId) {
         return metadataAccess.read(() -> {

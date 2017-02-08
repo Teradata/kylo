@@ -57,6 +57,11 @@ public class IntegerColumnCase2Test extends ProfilerTest {
     private static double stddev;
     private static double variance;
 
+    @AfterClass
+    public static void tearDownClass() {
+        System.out.println("\t*** Completed run for IntegerColumnCase2Test ***");
+    }
+
     @Before
     public void setUp() {
         super.setUp();
@@ -83,36 +88,30 @@ public class IntegerColumnCase2Test extends ProfilerTest {
         Assert.assertEquals(nullCount, columnStats.getNullCount());
     }
 
-
     @Test
     public void testIntegerTotalCount() {
         Assert.assertEquals(totalCount, columnStats.getTotalCount());
     }
-
 
     @Test
     public void testIntegerUniqueCount() {
         Assert.assertEquals(uniqueCount, columnStats.getUniqueCount());
     }
 
-
     @Test
     public void testIntegerPercNullValues() {
         assertEquals(percNullValues, columnStats.getPercNullValues(), epsilon);
     }
-
 
     @Test
     public void testIntegerPercUniqueValues() {
         assertEquals(percUniqueValues, columnStats.getPercUniqueValues(), epsilon);
     }
 
-
     @Test
     public void testIntegerPercDuplicateValues() {
         assertEquals(percDuplicateValues, columnStats.getPercDuplicateValues(), epsilon);
     }
-
 
     @Test
     public void testIntegerTopNValues() {
@@ -144,46 +143,34 @@ public class IntegerColumnCase2Test extends ProfilerTest {
         }
     }
 
-
     @Test
     public void testIntegerMax() {
         Assert.assertEquals(max, ((IntegerColumnStatistics) columnStats).getMax());
     }
-
 
     @Test
     public void testIntegerMin() {
         Assert.assertEquals(min, ((IntegerColumnStatistics) columnStats).getMin());
     }
 
-
     @Test
     public void testIntegerSum() {
         Assert.assertEquals(sum, ((IntegerColumnStatistics) columnStats).getSum());
     }
-
 
     @Test
     public void testIntegerMean() {
         assertEquals(mean, ((IntegerColumnStatistics) columnStats).getMean(), epsilon);
     }
 
-
     @Test
     public void testIntegerStddev() {
         assertEquals(stddev, ((IntegerColumnStatistics) columnStats).getStddev(), epsilon);
     }
 
-
     @Test
     public void testIntegerVariance() {
         assertEquals(variance, ((IntegerColumnStatistics) columnStats).getVariance(), epsilon);
-    }
-
-
-    @AfterClass
-    public static void tearDownClass() {
-        System.out.println("\t*** Completed run for IntegerColumnCase2Test ***");
     }
 
 }

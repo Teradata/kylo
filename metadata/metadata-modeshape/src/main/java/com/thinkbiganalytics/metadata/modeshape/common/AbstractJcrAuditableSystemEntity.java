@@ -37,8 +37,16 @@ public class AbstractJcrAuditableSystemEntity extends AbstractJcrSystemEntity {
         return getProperty(JcrPropertyConstants.CREATED_TIME, DateTime.class);
     }
 
+    public void setCreatedTime(DateTime createdTime) {
+        // setProperty(JcrPropertyConstants.CREATED_TIME, createdTime);
+    }
+
     public DateTime getModifiedTime() {
         return getProperty(JcrPropertyConstants.MODIFIED_TIME, DateTime.class);
+    }
+
+    public void setModifiedTime(DateTime modifiedTime) {
+        // setProperty(JcrPropertyConstants.CREATED_TIME, modifiedTime);
     }
 
     public String getCreatedBy() {
@@ -47,14 +55,6 @@ public class AbstractJcrAuditableSystemEntity extends AbstractJcrSystemEntity {
 
     public String getModifiedBy() {
         return getProperty(JcrPropertyConstants.MODIFIED_BY, String.class);
-    }
-
-    public void setCreatedTime(DateTime createdTime) {
-       // setProperty(JcrPropertyConstants.CREATED_TIME, createdTime);
-    }
-
-    public void setModifiedTime(DateTime modifiedTime) {
-       // setProperty(JcrPropertyConstants.CREATED_TIME, modifiedTime);
     }
 
 }

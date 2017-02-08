@@ -125,10 +125,10 @@ public class SparkShellApp {
     /**
      * Gets the Kerberos configuration.
      *
-     * @param kerberosEnabled {@code true} if Kerberos authentication is enabled, or {@code false} otherwise
+     * @param kerberosEnabled              {@code true} if Kerberos authentication is enabled, or {@code false} otherwise
      * @param hadoopConfigurationResources the paths to the Hadoop configuration files
-     * @param kerberosPrincipal the Kerberos principal for authentication
-     * @param keytabLocation the path to the keytab file
+     * @param kerberosPrincipal            the Kerberos principal for authentication
+     * @param keytabLocation               the path to the keytab file
      * @return the Kerberos configuration
      */
     private KerberosTicketConfiguration createKerberosTicketConfiguration(@Nonnull final String kerberosEnabled, @Nonnull final String hadoopConfigurationResources,

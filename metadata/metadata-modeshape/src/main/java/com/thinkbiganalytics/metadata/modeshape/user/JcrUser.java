@@ -51,25 +51,39 @@ import javax.jcr.RepositoryException;
  */
 public class JcrUser extends AbstractJcrAuditableSystemEntity implements User {
 
-    /** Encoding for properties */
+    /**
+     * Encoding for properties
+     */
     static final String ENCODING = "UTF-8";
 
-    /** JCR node type for users */
+    /**
+     * JCR node type for users
+     */
     static final String NODE_TYPE = "tba:user";
 
-    /** Name of the {@code displayName} property */
+    /**
+     * Name of the {@code displayName} property
+     */
     private static final String DISPLAY_NAME = "tba:displayName";
 
-    /** Name of the {@code email} property */
+    /**
+     * Name of the {@code email} property
+     */
     private static final String EMAIL = "tba:email";
 
-    /** Name of the {@code enabled} property */
+    /**
+     * Name of the {@code enabled} property
+     */
     private static final String ENABLED = "tba:enabled";
 
-    /** Name of the {@code groups} property */
+    /**
+     * Name of the {@code groups} property
+     */
     private static final String GROUPS = "tba:groups";
 
-    /** Name of the {@code password} property */
+    /**
+     * Name of the {@code password} property
+     */
     private static final String PASSWORD = "tba:password";
 
     /**
@@ -158,9 +172,9 @@ public class JcrUser extends AbstractJcrAuditableSystemEntity implements User {
     @Override
     public Set<UserGroup> getContainingGroups() {
         return JcrPropertyUtil.<Node>getSetProperty(this.node, JcrUserGroup.GROUPS).stream()
-                .filter(node -> node != null)
-                .map(node -> (UserGroup) JcrUtil.toJcrObject(node, JcrUserGroup.NODE_TYPE, JcrUserGroup.class))
-                .collect(Collectors.toSet());
+            .filter(node -> node != null)
+            .map(node -> (UserGroup) JcrUtil.toJcrObject(node, JcrUserGroup.NODE_TYPE, JcrUserGroup.class))
+            .collect(Collectors.toSet());
     }
 
     /* (non-Javadoc)
@@ -178,8 +192,8 @@ public class JcrUser extends AbstractJcrAuditableSystemEntity implements User {
     @Override
     public Set<GroupPrincipal> getAllGroupPrincipals() {
         return streamAllContainingGroups()
-                        .map(group -> group.getRootPrincial())
-                        .collect(Collectors.toSet());
+            .map(group -> group.getRootPrincial())
+            .collect(Collectors.toSet());
     }
 
     private Stream<UserGroup> streamAllContainingGroups() {

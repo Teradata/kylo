@@ -32,8 +32,6 @@ import javax.annotation.Nonnull;
  */
 public interface ExtensibleType {
 
-    interface ID extends Serializable {}
-
     ID getId();
 
     ExtensibleType getSupertype();
@@ -60,4 +58,8 @@ public interface ExtensibleType {
      */
     @Nonnull
     Set<UserFieldDescriptor> getUserFieldDescriptors();
+
+    interface ID extends Serializable {
+
+    }
 }

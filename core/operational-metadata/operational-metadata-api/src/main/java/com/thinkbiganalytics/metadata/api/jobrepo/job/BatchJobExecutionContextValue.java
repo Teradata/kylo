@@ -34,19 +34,22 @@ public interface BatchJobExecutionContextValue {
 
     /**
      * Return the property key name to capture
+     *
      * @return The property key name to capture
      */
     String getKeyName();
 
     /**
      * Return the reference back to the job execution id
-     * @see BatchJobExecution
+     *
      * @return the reference back to the job execution id
+     * @see BatchJobExecution
      */
     Long getJobExecutionId();
 
     /**
      * Return the value of this context item
+     *
      * @return the value of this  context item
      */
     String getStringVal();

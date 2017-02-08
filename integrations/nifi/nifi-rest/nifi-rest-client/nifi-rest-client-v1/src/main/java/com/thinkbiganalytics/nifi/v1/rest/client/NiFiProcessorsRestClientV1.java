@@ -41,10 +41,14 @@ import javax.ws.rs.NotFoundException;
  */
 public class NiFiProcessorsRestClientV1 implements NiFiProcessorsRestClient {
 
-    /** Base path for processor requests */
+    /**
+     * Base path for processor requests
+     */
     private static final String BASE_PATH = "/processors/";
 
-    /** REST client for communicating with NiFi */
+    /**
+     * REST client for communicating with NiFi
+     */
     private final NiFiRestClientV1 client;
 
     /**
@@ -66,21 +70,21 @@ public class NiFiProcessorsRestClientV1 implements NiFiProcessorsRestClient {
     @Override
     public ProcessorDTO update(@Nonnull final ProcessorDTO processor) {
         return findEntityById(processor.getId())
-                .flatMap(current -> {
-                    final ProcessorEntity entity = new ProcessorEntity();
-                    entity.setComponent(processor);
+            .flatMap(current -> {
+                final ProcessorEntity entity = new ProcessorEntity();
+                entity.setComponent(processor);
 
-                    final RevisionDTO revision = new RevisionDTO();
-                    revision.setVersion(current.getRevision().getVersion());
-                    entity.setRevision(revision);
+                final RevisionDTO revision = new RevisionDTO();
+                revision.setVersion(current.getRevision().getVersion());
+                entity.setRevision(revision);
 
-                    try {
-                        return Optional.of(client.put(BASE_PATH + processor.getId(), entity, ProcessorEntity.class).getComponent());
-                    } catch (final NotFoundException e) {
-                        return Optional.empty();
-                    }
-                })
-                .orElseThrow(() -> new NifiComponentNotFoundException(processor.getId(), NifiConstants.NIFI_COMPONENT_TYPE.PROCESSOR, null));
+                try {
+                    return Optional.of(client.put(BASE_PATH + processor.getId(), entity, ProcessorEntity.class).getComponent());
+                } catch (final NotFoundException e) {
+                    return Optional.empty();
+                }
+            })
+            .orElseThrow(() -> new NifiComponentNotFoundException(processor.getId(), NifiConstants.NIFI_COMPONENT_TYPE.PROCESSOR, null));
     }
 
     /**

@@ -45,7 +45,7 @@ public class SchedulerObjectSerializatoinTest {
             json = objectMapper.writeValueAsString(info);
             System.out.println(json);
 
-            TriggerInfo info2 = objectMapper.readValue(json,TriggerInfo.class);
+            TriggerInfo info2 = objectMapper.readValue(json, TriggerInfo.class);
             System.out.println(info2);
 
         } catch (JsonProcessingException e) {

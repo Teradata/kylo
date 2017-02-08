@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.sla.spi.core;
 
@@ -61,7 +61,7 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
     private Map<String, ID> nameToSlas;
 
     /**
-     * 
+     *
      */
     public InMemorySLAProvider() {
         this.slas = Collections.synchronizedMap(new HashMap<SLAID, ServiceLevelAgreement>());
@@ -164,72 +164,9 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
         }
     }
 
-    private class SLABuilderImpl implements ServiceLevelAgreementBuilder {
-
-        private SLAID id;
-        private String name;
-        private String descrtion;
-        private SLAImpl sla = new SLAImpl();
-
-        public SLABuilderImpl() {
-            this(null);
-        }
-
-        public SLABuilderImpl(SLAID id) {
-            this.id = id;
-        }
-
-        @Override
-        public ServiceLevelAgreementBuilder name(String name) {
-            this.name = name;
-            return this;
-        }
-
-        @Override
-        public ServiceLevelAgreementBuilder description(String description) {
-            this.descrtion = description;
-            return this;
-        }
-
-        @Override
-        public ServiceLevelAgreementBuilder obligation(Obligation obligation) {
-            this.sla.getObligations().add(obligation);
-            return this;
-        }
-
-        @Override
-        public ObligationBuilder<ServiceLevelAgreementBuilder> obligationBuilder() {
-            return new ObligationBuilderImpl<ServiceLevelAgreementBuilder>(this.sla.defaultGroup, this);
-        }
-        
-        @Override
-        public ObligationBuilder<ServiceLevelAgreementBuilder> obligationBuilder(Condition condition) {
-            ObligationGroupImpl group = new ObligationGroupImpl(this.sla, condition);
-            this.sla.obligationGroups.add(group);
-            return new ObligationBuilderImpl<ServiceLevelAgreementBuilder>(group, this);
-        }
-
-        @Override
-        public ObligationGroupBuilder obligationGroupBuilder(Condition condition) {
-            return new ObligationGroupBuilderImpl(this, condition);
-        }
-
-        @Override
-        public ServiceLevelAgreement build() {
-            this.sla.setName(this.name);
-            this.sla.setDescription(this.descrtion);
-
-            if (this.id == null) {
-                return addSLA(sla);
-            } else {
-                return replaceSLA(this.id, sla);
-            }
-        }
-
-        @Override
-        public ServiceLevelAgreementBuilder actionConfigurations(List<? extends ServiceLevelAgreementActionConfiguration> actionConfigurations) {
-            return null;
-        }
+    @Override
+    public ServiceLevelAgreementCheckBuilder slaCheckBuilder(ID slaId) {
+        return null;
     }
 
     private static class ObligationBuilderImpl<B> implements ObligationBuilder<B> {
@@ -244,7 +181,7 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
             this.slaBuilder = bldr;
             this.group = group;
         }
-        
+
         public ObligationBuilderImpl(ObligationGroupImpl group, ObligationGroupBuilderImpl bldr) {
             this.groupBuilder = bldr;
             this.group = group;
@@ -279,7 +216,7 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
             ob.metrics = this.metrics;
             ob.group = this.group;
             this.group.getObligations().add(ob);
-            
+
             if (this.groupBuilder != null) {
                 return (B) this.groupBuilder;
             } else {
@@ -292,7 +229,7 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
 
         private SLABuilderImpl slaBuilder;
         private ObligationGroupImpl group;
-        
+
         public ObligationGroupBuilderImpl(SLABuilderImpl slaBuilder, Condition cond) {
             this.slaBuilder = slaBuilder;
             this.group = new ObligationGroupImpl(this.slaBuilder.sla, cond);
@@ -341,12 +278,15 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
 
         @Override
         public boolean equals(Object obj) {
-            if (this == obj)
+            if (this == obj) {
                 return true;
-            if (obj == null)
+            }
+            if (obj == null) {
                 return false;
-            if (!this.getClass().equals(obj.getClass()))
+            }
+            if (!this.getClass().equals(obj.getClass())) {
                 return false;
+            }
 
             return Objects.equals(this.uuid, ((SLAID) obj).uuid);
         }
@@ -360,13 +300,13 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
 
     private static class SLAImpl implements ServiceLevelAgreement {
 
+        boolean enabled = true;
         private ServiceLevelAgreement.ID id;
         private String name;
         private DateTime creationTime = DateTime.now();
         private String description;
         private ObligationGroupImpl defaultGroup;
         private List<ObligationGroup> obligationGroups;
-        boolean enabled = true;
 
         public SLAImpl() {
             this.defaultGroup = new ObligationGroupImpl(this, Condition.REQUIRED);
@@ -400,13 +340,13 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
             return description;
         }
 
+        protected void setDescription(String description) {
+            this.description = description;
+        }
+
         @Override
         public boolean isEnabled() {
             return enabled;
-        }
-
-        protected void setDescription(String description) {
-            this.description = description;
         }
 
         @Override
@@ -424,12 +364,12 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
         @Override
         public List<Obligation> getObligations() {
             List<Obligation> list = new ArrayList<>();
-            
+
             list.addAll(this.defaultGroup.getObligations());
             for (ObligationGroup group : this.obligationGroups) {
                 list.addAll(group.getObligations());
             }
-            
+
             return list;
         }
 
@@ -465,12 +405,15 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
 
         @Override
         public boolean equals(Object obj) {
-            if (this == obj)
+            if (this == obj) {
                 return true;
-            if (obj == null)
+            }
+            if (obj == null) {
                 return false;
-            if (!this.getClass().equals(obj.getClass()))
+            }
+            if (!this.getClass().equals(obj.getClass())) {
                 return false;
+            }
 
             return Objects.equals(this.uuid, ((SLAID) obj).uuid);
         }
@@ -489,7 +432,7 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
         private Set<Metric> metrics = new HashSet<Metric>();
         private Obligation.ID id;
 
-        public ObligationImpl(){
+        public ObligationImpl() {
             this.id = new ObligationId();
         }
 
@@ -508,7 +451,7 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
         public ServiceLevelAgreement getAgreement() {
             return this.group.getAgreement();
         }
-        
+
         @Override
         public ObligationGroup getGroup() {
             return this.group;
@@ -521,16 +464,16 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
     }
 
     private static class ObligationGroupImpl implements ObligationGroup {
-    
+
         private SLAImpl sla;
         private Condition condition;
         private List<Obligation> obligations = new ArrayList<>();
-        
+
         public ObligationGroupImpl(SLAImpl sla, Condition condition) {
             this.sla = sla;
             this.condition = condition;
         }
-    
+
         @Override
         public ServiceLevelAgreement getAgreement() {
             return this.sla;
@@ -540,16 +483,78 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
         public Condition getCondition() {
             return this.condition;
         }
-    
+
         @Override
         public List<Obligation> getObligations() {
             return this.obligations;
         }
     }
 
+    private class SLABuilderImpl implements ServiceLevelAgreementBuilder {
 
-    @Override
-    public ServiceLevelAgreementCheckBuilder slaCheckBuilder(ID slaId) {
-        return null;
+        private SLAID id;
+        private String name;
+        private String descrtion;
+        private SLAImpl sla = new SLAImpl();
+
+        public SLABuilderImpl() {
+            this(null);
+        }
+
+        public SLABuilderImpl(SLAID id) {
+            this.id = id;
+        }
+
+        @Override
+        public ServiceLevelAgreementBuilder name(String name) {
+            this.name = name;
+            return this;
+        }
+
+        @Override
+        public ServiceLevelAgreementBuilder description(String description) {
+            this.descrtion = description;
+            return this;
+        }
+
+        @Override
+        public ServiceLevelAgreementBuilder obligation(Obligation obligation) {
+            this.sla.getObligations().add(obligation);
+            return this;
+        }
+
+        @Override
+        public ObligationBuilder<ServiceLevelAgreementBuilder> obligationBuilder() {
+            return new ObligationBuilderImpl<ServiceLevelAgreementBuilder>(this.sla.defaultGroup, this);
+        }
+
+        @Override
+        public ObligationBuilder<ServiceLevelAgreementBuilder> obligationBuilder(Condition condition) {
+            ObligationGroupImpl group = new ObligationGroupImpl(this.sla, condition);
+            this.sla.obligationGroups.add(group);
+            return new ObligationBuilderImpl<ServiceLevelAgreementBuilder>(group, this);
+        }
+
+        @Override
+        public ObligationGroupBuilder obligationGroupBuilder(Condition condition) {
+            return new ObligationGroupBuilderImpl(this, condition);
+        }
+
+        @Override
+        public ServiceLevelAgreement build() {
+            this.sla.setName(this.name);
+            this.sla.setDescription(this.descrtion);
+
+            if (this.id == null) {
+                return addSLA(sla);
+            } else {
+                return replaceSLA(this.id, sla);
+            }
+        }
+
+        @Override
+        public ServiceLevelAgreementBuilder actionConfigurations(List<? extends ServiceLevelAgreementActionConfiguration> actionConfigurations) {
+            return null;
+        }
     }
 }

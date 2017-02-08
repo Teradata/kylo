@@ -43,15 +43,12 @@ import javax.inject.Inject;
 public class FeedFailureService {
 
 
-    @Inject
-    private MetadataEventService eventService;
-
     /**
      * Event listener for failure events
      */
     private final MetadataEventListener<FeedOperationStatusEvent> failedFeedEventListener = new FailedFeedEventDispatcher();
-
-
+    @Inject
+    private MetadataEventService eventService;
     /**
      * Map with the Latest recorded Feed Failure
      */
@@ -76,20 +73,6 @@ public class FeedFailureService {
     @PreDestroy
     public void removeEventListener() {
         eventService.removeListener(failedFeedEventListener);
-    }
-
-    /**
-     * populate latest failure events
-     */
-    private class FailedFeedEventDispatcher implements MetadataEventListener<FeedOperationStatusEvent> {
-
-        @Override
-        public void notify(@Nonnull final FeedOperationStatusEvent event) {
-            if (FeedOperation.State.FAILURE.equals(event.getData().getState())) {
-                event.getData().getFeedName();
-                lastFeedFailureMap.put(event.getData().getFeedName(), new LastFeedFailure(event.getData().getFeedName()));
-            }
-        }
     }
 
     /**
@@ -141,6 +124,20 @@ public class FeedFailureService {
 
         public boolean isAfter(DateTime time) {
             return dateTime != null && dateTime.isAfter(time);
+        }
+    }
+
+    /**
+     * populate latest failure events
+     */
+    private class FailedFeedEventDispatcher implements MetadataEventListener<FeedOperationStatusEvent> {
+
+        @Override
+        public void notify(@Nonnull final FeedOperationStatusEvent event) {
+            if (FeedOperation.State.FAILURE.equals(event.getData().getState())) {
+                event.getData().getFeedName();
+                lastFeedFailureMap.put(event.getData().getFeedName(), new LastFeedFailure(event.getData().getFeedName()));
+            }
         }
     }
 

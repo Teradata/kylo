@@ -35,14 +35,16 @@ public class SearchCriteria {
     private SearchCriteria previousSearchCriteria;
 
 
-    public SearchCriteria(){
+    public SearchCriteria() {
 
     }
+
     public SearchCriteria(String key, String operation, Object value) {
         this.key = key;
         this.operation = operation;
         this.value = value;
     }
+
     public SearchCriteria(String key, SearchCriteria previousSearchCriteria) {
         this.key = key;
         this.operation = previousSearchCriteria.getOperation();
@@ -61,7 +63,6 @@ public class SearchCriteria {
 
     /**
      * set the key or field to search
-     * @param key
      */
     public void setKey(String key) {
         this.key = key;
@@ -69,6 +70,7 @@ public class SearchCriteria {
 
     /**
      * Return the operation to perform
+     *
      * @return the operation to perform
      */
     public String getOperation() {
@@ -77,7 +79,6 @@ public class SearchCriteria {
 
     /**
      * set the operation
-     * @param operation
      */
     public void setOperation(String operation) {
         this.operation = operation;
@@ -85,6 +86,7 @@ public class SearchCriteria {
 
     /**
      * Return the value to search for
+     *
      * @return the value to search for
      */
     public Object getValue() {
@@ -93,7 +95,6 @@ public class SearchCriteria {
 
     /**
      * set the value to search for
-     * @param value
      */
     public void setValue(Object value) {
         this.value = value;
@@ -102,10 +103,10 @@ public class SearchCriteria {
     /**
      * create a new search criteria using a new key
      * this allows you to update/change the key while maintaining the value to search on
-     * @param key
+     *
      * @return a new search criteria
      */
-    public SearchCriteria withKey(String key){
+    public SearchCriteria withKey(String key) {
         return new SearchCriteria(key, this);
     }
 
@@ -118,6 +119,7 @@ public class SearchCriteria {
 
     /**
      * Return the last search criteria object.
+     *
      * @return the last search criteria object.
      */
     public SearchCriteria getPreviousSearchCriteria() {

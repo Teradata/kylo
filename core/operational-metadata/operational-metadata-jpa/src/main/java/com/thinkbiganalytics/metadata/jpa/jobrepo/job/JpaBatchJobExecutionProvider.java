@@ -91,7 +91,6 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
     private static String PARAM_TB_JOB_TYPE = "tb.jobType";
 
 
-
     @Autowired
     private JPAQueryFactory factory;
 
@@ -179,8 +178,9 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
     /**
      * Create a new Job Execution record from a given Provenance Event
+     *
      * @param jobInstance the job instance to relate this job execution to
-     * @param event the event that started this job execution
+     * @param event       the event that started this job execution
      * @return the job execution
      */
     private JpaBatchJobExecution createJobExecution(BatchJobInstance jobInstance, ProvenanceEventRecordDTO event) {
@@ -216,7 +216,8 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
     /**
      * add parameters to a job execution
-     * @param jobExecution the job execution
+     *
+     * @param jobExecution  the job execution
      * @param jobParameters the parameters to add to the {@code jobExecution}
      * @return the newly created job parameters
      */
@@ -233,7 +234,8 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
     /**
      * if a event is a Merge (JOIN event) that merges other Root flow files (other JobExecutions) it will contain this relationship. These files need to be related together to determine when the final
      * job is complete.
-     * @param event the event that indicates it is related to other job executions
+     *
+     * @param event     the event that indicates it is related to other job executions
      * @param nifiEvent the persisted event
      */
     private void checkAndRelateJobs(ProvenanceEventRecordDTO event, NifiEvent nifiEvent) {
@@ -407,8 +409,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
     /**
      * Save the job execution in the database
-     * @param event
-     * @param nifiEvent
+     *
      * @return the saved job execution
      */
     @Override
@@ -420,7 +421,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
     /**
      * Save a job execution to the database
-     * @param jobExecution
+     *
      * @return the saved job execution
      */
     @Override
@@ -443,10 +444,9 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
     }
 
     /**
-     *    When a Job Finishes this will check if it has any relatedJobExecutions and allow you to get notified when the set of Jobs are complete Currently this is not needed as the
+     * When a Job Finishes this will check if it has any relatedJobExecutions and allow you to get notified when the set of Jobs are complete Currently this is not needed as the
      * ProvenanceEventReceiver already handles this event for both Batch and Streaming Jobs com.thinkbiganalytics.jobrepo.nifi.provenance.ProvenanceEventReceiver#failedJob(ProvenanceEventRecordDTO)
      * com.thinkbiganalytics.jobrepo.nifi.provenance.ProvenanceEventReceiver#successfulJob(ProvenanceEventRecordDTO)
-     * @param jobExecution
      */
     private void checkIfJobAndRelatedJobsAreFinished(BatchJobExecution jobExecution) {
         //Check related jobs
@@ -491,7 +491,8 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
     /**
      * Find all the job executions for a feed that have been completed since a given date
-     * @param feedName the feed to check
+     *
+     * @param feedName  the feed to check
      * @param sinceDate the min end date for the jobs on the {@code feedName}
      * @return the job executions for a feed that have been completed since a given date
      */
@@ -527,9 +528,8 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
 
     /**
-     *  Find all BatchJobExecution objects with the provided filter. the filter needs to match
-     * @param filter
-     * @param pageable
+     * Find all BatchJobExecution objects with the provided filter. the filter needs to match
+     *
      * @return a paged result set of all the job executions matching the incoming filter
      */
     @Override
@@ -547,7 +547,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
             pageable = CommonFilterTranslations.resolveSortFilters(jobExecution, pageable);
             QJpaBatchJobInstance jobInstancePath = new QJpaBatchJobInstance("jobInstance");
             return findAllWithFetch(jobExecution, GenericQueryDslFilter.buildFilter(jobExecution, filter), pageable, QueryDslFetchJoin.innerJoin(jobExecution.nifiEventJobExecution),
-                                    QueryDslFetchJoin.innerJoin(jobExecution.jobInstance,jobInstancePath ), QueryDslFetchJoin.innerJoin(jobInstancePath.feed));
+                                    QueryDslFetchJoin.innerJoin(jobExecution.jobInstance, jobInstancePath), QueryDslFetchJoin.innerJoin(jobInstancePath.feed));
         }
 
     }
@@ -636,7 +636,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
                                     jobExecution.startDay,
                                     jobExecution.count().as("count")))
             .from(jobExecution)
-            .groupBy(jobState, jobExecution.startYear,jobExecution.startMonth,jobExecution.startDay);
+            .groupBy(jobState, jobExecution.startYear, jobExecution.startMonth, jobExecution.startDay);
 
         return (List<JobStatusCount>) query.fetch();
 
@@ -674,7 +674,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
                                     jobExecution.count().as("count")))
             .from(jobExecution)
             .where(whereBuilder)
-            .groupBy(jobState,  jobExecution.startYear,jobExecution.startMonth,jobExecution.startDay);
+            .groupBy(jobState, jobExecution.startYear, jobExecution.startMonth, jobExecution.startDay);
 
         return (List<JobStatusCount>) query.fetch();
 

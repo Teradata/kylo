@@ -25,6 +25,7 @@ import java.util.List;
 
 /**
  * A Builder for creating {@link FieldPolicy} objects.
+ *
  * @see FieldPolicy
  */
 public class FieldPolicyBuilder {
@@ -78,6 +79,7 @@ public class FieldPolicyBuilder {
 
     /**
      * Build a new {@link FieldPolicy}
+     *
      * @return a new {@link FieldPolicy} object
      */
     public FieldPolicy build() {

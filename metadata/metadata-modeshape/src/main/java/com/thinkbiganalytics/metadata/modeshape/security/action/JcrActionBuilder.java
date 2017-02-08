@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.modeshape.security.action;
 
@@ -39,10 +39,10 @@ import javax.jcr.security.Privilege;
  *
  */
 public class JcrActionBuilder<P> extends JcrAbstractActionsBuilder implements ActionBuilder<P> {
-    
+
     private Node actionNode;
     private P parentBuilder;
-    
+
     public JcrActionBuilder(Node node, P parent) {
         this.actionNode = node;
         this.parentBuilder = parent;
@@ -65,7 +65,7 @@ public class JcrActionBuilder<P> extends JcrAbstractActionsBuilder implements Ac
         JcrPropertyUtil.setProperty(this.actionNode, JcrPropertyConstants.DESCRIPTION, descr);
         return this;
     }
-    
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.security.action.config.ActionBuilder#subAction(com.thinkbiganalytics.security.action.Action)
      */

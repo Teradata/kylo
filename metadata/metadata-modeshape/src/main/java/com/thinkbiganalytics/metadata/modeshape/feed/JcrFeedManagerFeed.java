@@ -46,12 +46,6 @@ public class JcrFeedManagerFeed<C extends JcrFeedManagerCategory> extends JcrFee
     }
 
     @Override
-    public void setTemplate(FeedManagerTemplate template) {
-        setProperty(FEED_TEMPLATE, template);
-        template.addFeed(this);
-    }
-
-    @Override
     public String getJson() {
         return getProperty(FEED_JSON, String.class);
     }
@@ -64,6 +58,12 @@ public class JcrFeedManagerFeed<C extends JcrFeedManagerCategory> extends JcrFee
     @Override
     public FeedManagerTemplate getTemplate() {
         return getProperty(FEED_TEMPLATE, JcrFeedTemplate.class, true);
+    }
+
+    @Override
+    public void setTemplate(FeedManagerTemplate template) {
+        setProperty(FEED_TEMPLATE, template);
+        template.addFeed(this);
     }
 
     @Override

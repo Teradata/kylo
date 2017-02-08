@@ -33,6 +33,7 @@ import java.util.regex.PatternSyntaxException;
 
 @Validator(name = "Regex", description = "Validate Regex Pattern")
 public class RegexValidator implements ValidationPolicy<String> {
+
     private static final Logger log = LoggerFactory.getLogger(RegexValidator.class);
 
     @PolicyProperty(name = "Regex expression")

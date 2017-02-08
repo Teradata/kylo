@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.modeshape.op;
 
@@ -42,7 +42,7 @@ public class FeedOperationExecutedJobWrapper implements FeedOperation {
 
     private final OpId id;
     private final ExecutedJob executed;
-    
+
 
     public FeedOperationExecutedJobWrapper(ExecutedJob job) {
         this.id = new OpId(job.getExecutionId());
@@ -96,18 +96,19 @@ public class FeedOperationExecutedJobWrapper implements FeedOperation {
     public Map<String, Object> getResults() {
         return Stream.of(this.executed.getExecutionContext(), this.executed.getJobParameters())
             .flatMap(s -> s.entrySet().stream())
-            .collect(Collectors.toMap(e -> e.getKey(), 
+            .collect(Collectors.toMap(e -> e.getKey(),
                                       e -> e.getValue(),
                                       (v1, v2) -> v1));
     }
-    
+
     protected static class OpId implements FeedOperation.ID {
+
         private final String idValue;
-        
+
         public OpId(Serializable value) {
             this.idValue = value.toString();
         }
-        
+
         @Override
         public boolean equals(Object obj) {
             if (getClass().isAssignableFrom(obj.getClass())) {
@@ -117,7 +118,7 @@ public class FeedOperationExecutedJobWrapper implements FeedOperation {
                 return false;
             }
         }
-        
+
         @Override
         public int hashCode() {
             return Objects.hash(getClass(), this.idValue);

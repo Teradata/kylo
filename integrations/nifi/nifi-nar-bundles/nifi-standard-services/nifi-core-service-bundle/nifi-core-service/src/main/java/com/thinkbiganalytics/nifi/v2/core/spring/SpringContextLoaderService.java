@@ -68,7 +68,7 @@ public class SpringContextLoaderService extends AbstractControllerService implem
      * Called by the framework to load controller configurations, this method
      * will create a spring context
      *
-     * @param context  not used in this case
+     * @param context not used in this case
      * @throws InitializationException an except thrown if there are any errors
      */
     @OnEnabled

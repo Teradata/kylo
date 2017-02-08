@@ -30,6 +30,7 @@ public class DefaultCheckDataJob extends DefaultExecutedJob implements CheckData
 
     private boolean isValid;
     private String validationMessage;
+
     public DefaultCheckDataJob(ExecutedJob job) {
         super(job);
     }

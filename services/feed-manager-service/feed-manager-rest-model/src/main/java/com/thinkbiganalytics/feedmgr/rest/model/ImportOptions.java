@@ -24,21 +24,17 @@ package com.thinkbiganalytics.feedmgr.rest.model;
  */
 public class ImportOptions {
 
-    public enum IMPORT_CONNECTING_FLOW {
-        YES, NO, NOT_SET
-    }
-
     private String categorySystemName;
     private boolean createReusableFlow;
     private boolean overwrite;
     private IMPORT_CONNECTING_FLOW importConnectingFlow;
 
-    public void setCategorySystemName(String categorySystemName) {
-        this.categorySystemName = categorySystemName;
-    }
-
     public String getCategorySystemName() {
         return categorySystemName;
+    }
+
+    public void setCategorySystemName(String categorySystemName) {
+        this.categorySystemName = categorySystemName;
     }
 
     public boolean isCreateReusableFlow() {
@@ -63,5 +59,9 @@ public class ImportOptions {
 
     public void setImportConnectingFlow(IMPORT_CONNECTING_FLOW importConnectingFlow) {
         this.importConnectingFlow = importConnectingFlow;
+    }
+
+    public enum IMPORT_CONNECTING_FLOW {
+        YES, NO, NOT_SET
     }
 }

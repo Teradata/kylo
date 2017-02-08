@@ -230,7 +230,7 @@ public class TemplateInstanceCreator {
             }
         } catch (final Exception e) {
             if (log.isDebugEnabled() && e instanceof WebApplicationException) {
-                final Response response = ((WebApplicationException)e).getResponse();
+                final Response response = ((WebApplicationException) e).getResponse();
                 log.debug("NiFi server returned error: {}", response.readEntity(String.class), e);
             }
             throw new TemplateCreationException("Unable to create the template for the Id of [" + templateId + "]. " + e.getMessage(), e);

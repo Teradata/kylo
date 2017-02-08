@@ -99,7 +99,9 @@ public class FeedManagerMetadataService implements MetadataService {
     @Qualifier("hadoopAuthorizationService")
     private HadoopAuthorizationService hadoopAuthorizationService;
 
-    /** NiFi REST client */
+    /**
+     * NiFi REST client
+     */
     @Inject
     private NiFiRestClient nifiClient;
 
@@ -182,10 +184,10 @@ public class FeedManagerMetadataService implements MetadataService {
         }
 
         // Step 3: Delete hadoop authorization security policies if they exists
-        if(hadoopAuthorizationService != null) {
+        if (hadoopAuthorizationService != null) {
             metadataAccess.read(() -> {
                 FeedManagerFeed domainFeed = feedModelTransform.feedToDomain(feed);
-                String hdfsPaths = (String)domainFeed.getProperties().get(HadoopAuthorizationService.REGISTRATION_HDFS_FOLDERS);
+                String hdfsPaths = (String) domainFeed.getProperties().get(HadoopAuthorizationService.REGISTRATION_HDFS_FOLDERS);
 
                 hadoopAuthorizationService.deleteHivePolicy(feed.getSystemCategoryName(), feed.getSystemFeedName());
                 hadoopAuthorizationService.deleteHdfsPolicy(feed.getSystemCategoryName(), feed.getSystemFeedName(), HadoopAuthorizationService.convertNewlineDelimetedTextToList(hdfsPaths));
@@ -225,7 +227,6 @@ public class FeedManagerMetadataService implements MetadataService {
             }
         }
 
-
         // Step 7: Delete database entries
         feedProvider.deleteFeed(feedId);
 
@@ -235,7 +236,7 @@ public class FeedManagerMetadataService implements MetadataService {
      * Changes the state of the specified feed.
      *
      * @param feedSummary the feed
-     * @param state the new state
+     * @param state       the new state
      * @return {@code true} if the feed is in the new state, or {@code false} otherwise
      */
     private boolean updateNifiFeedRunningStatus(FeedSummary feedSummary, Feed.State state) {
@@ -425,17 +426,21 @@ public class FeedManagerMetadataService implements MetadataService {
      */
     private static class FeedCompletionListener implements MetadataEventListener<FeedOperationStatusEvent> {
 
-        /** Name of the feed to watch for */
+        /**
+         * Name of the feed to watch for
+         */
         @Nonnull
         private final String feedName;
-
-        /** Current state of the feed */
-        @Nullable
-        private FeedOperation.State state;
-
-        /** Thread to interrupt */
+        /**
+         * Thread to interrupt
+         */
         @Nonnull
         private final Thread target;
+        /**
+         * Current state of the feed
+         */
+        @Nullable
+        private FeedOperation.State state;
 
         /**
          * Constructs a {@code FeedCompletionListener} that listens for events for the specified feed then interrupts the specified thread.

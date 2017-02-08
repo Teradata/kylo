@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.api.op;
 
@@ -32,22 +32,25 @@ import java.util.Map;
  * Defines the state of an operation performed by a feed.
  */
 public interface FeedOperation extends Serializable {
-    
-    interface ID extends Serializable {};
-    
-    enum State { STARTED, SUCCESS, FAILURE, CANCELED }
-    
-    
+
     ID getId();
-    
+
+    ;
+
     DateTime getStartTime();
-    
+
     DateTime getStopTime();
-    
+
     State getState();
-    
+
     String getStatus();
-    
+
     Map<String, Object> getResults();
+
+    enum State {STARTED, SUCCESS, FAILURE, CANCELED}
+
+    interface ID extends Serializable {
+
+    }
 
 }

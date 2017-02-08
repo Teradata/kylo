@@ -20,9 +20,6 @@ package com.thinkbiganalytics.security.auth.kerberos;
  * #L%
  */
 
-import java.io.IOException;
-import java.util.Collections;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,6 +30,9 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.kerberos.authentication.KerberosServiceAuthenticationProvider;
 import org.springframework.security.kerberos.authentication.sun.SunJaasKerberosTicketValidator;
 import org.springframework.security.kerberos.web.authentication.SpnegoEntryPoint;
+
+import java.io.IOException;
+import java.util.Collections;
 
 /**
  *

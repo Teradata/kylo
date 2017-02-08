@@ -62,12 +62,19 @@ public class DatabaseConfiguration {
      * @param dataSource The datasource  from the {@see this#jdbcDataSource()}
      * @return The jdbc template
      */
-     @Bean
-     @Primary public JdbcTemplate jdbcTemplate(@Qualifier("dataSource") final DataSource dataSource) {
-     return new JdbcTemplate(dataSource);
-     }
+    @Bean
+    @Primary
+    public JdbcTemplate jdbcTemplate(@Qualifier("dataSource") final DataSource dataSource) {
+        return new JdbcTemplate(dataSource);
+    }
 
-
+    @Bean
+    public FilterRegistrationBean openEntityManagerInViewFilter() {
+        FilterRegistrationBean reg = new FilterRegistrationBean();
+        reg.setName("OpenEntityManagerInViewFilter");
+        reg.setFilter(new OpenEntityManagerInViewFilter());
+        return reg;
+    }
 
     /**
      * This the datasource used by the jdbcTemplate NOTE:  This datasource will be removed along with the {@see this#jdbcTemplate(Datasource)}
@@ -104,15 +111,6 @@ public class DatabaseConfiguration {
 
         }
 
-    }
-
-
-    @Bean
-    public FilterRegistrationBean openEntityManagerInViewFilter() {
-        FilterRegistrationBean reg = new FilterRegistrationBean();
-        reg.setName("OpenEntityManagerInViewFilter");
-        reg.setFilter(new OpenEntityManagerInViewFilter());
-        return reg;
     }
 
 

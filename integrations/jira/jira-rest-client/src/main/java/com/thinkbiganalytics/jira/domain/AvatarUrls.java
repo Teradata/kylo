@@ -1,4 +1,3 @@
-
 package com.thinkbiganalytics.jira.domain;
 
 /*-
@@ -36,11 +35,11 @@ import javax.annotation.Generated;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("org.jsonschema2pojo")
 @JsonPropertyOrder({
-    "48x48",
-    "24x24",
-    "16x16",
-    "32x32"
-})
+                       "48x48",
+                       "24x24",
+                       "16x16",
+                       "32x32"
+                   })
 public class AvatarUrls {
 
     @JsonProperty("48x48")
@@ -55,9 +54,7 @@ public class AvatarUrls {
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
-     * 
-     * @return
-     *     The _48x48
+     * @return The _48x48
      */
     @JsonProperty("48x48")
     public String get48x48() {
@@ -65,9 +62,7 @@ public class AvatarUrls {
     }
 
     /**
-     * 
-     * @param _48x48
-     *     The 48x48
+     * @param _48x48 The 48x48
      */
     @JsonProperty("48x48")
     public void set48x48(String _48x48) {
@@ -75,9 +70,7 @@ public class AvatarUrls {
     }
 
     /**
-     * 
-     * @return
-     *     The _24x24
+     * @return The _24x24
      */
     @JsonProperty("24x24")
     public String get24x24() {
@@ -85,9 +78,7 @@ public class AvatarUrls {
     }
 
     /**
-     * 
-     * @param _24x24
-     *     The 24x24
+     * @param _24x24 The 24x24
      */
     @JsonProperty("24x24")
     public void set24x24(String _24x24) {
@@ -95,9 +86,7 @@ public class AvatarUrls {
     }
 
     /**
-     * 
-     * @return
-     *     The _16x16
+     * @return The _16x16
      */
     @JsonProperty("16x16")
     public String get16x16() {
@@ -105,9 +94,7 @@ public class AvatarUrls {
     }
 
     /**
-     * 
-     * @param _16x16
-     *     The 16x16
+     * @param _16x16 The 16x16
      */
     @JsonProperty("16x16")
     public void set16x16(String _16x16) {
@@ -115,9 +102,7 @@ public class AvatarUrls {
     }
 
     /**
-     * 
-     * @return
-     *     The _32x32
+     * @return The _32x32
      */
     @JsonProperty("32x32")
     public String get32x32() {
@@ -125,9 +110,7 @@ public class AvatarUrls {
     }
 
     /**
-     * 
-     * @param _32x32
-     *     The 32x32
+     * @param _32x32 The 32x32
      */
     @JsonProperty("32x32")
     public void set32x32(String _32x32) {

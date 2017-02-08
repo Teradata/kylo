@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.modeshape.feed;
 
@@ -48,15 +48,15 @@ public class JcrFeedPrecondition extends JcrObject implements FeedPrecondition {
     public static final String SLA_TYPE = "tba:sla";
 
     private JcrFeed feed;
-    
+
     /**
-     * 
+     *
      */
     public JcrFeedPrecondition(Node node, JcrFeed feed) {
         super(node);
         this.feed = feed;
     }
-    
+
     public void clear() {
         try {
             if (this.node.hasProperty(SLA_REF)) {

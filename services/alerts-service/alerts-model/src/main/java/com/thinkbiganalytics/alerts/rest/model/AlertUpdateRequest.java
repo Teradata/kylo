@@ -25,13 +25,19 @@ package com.thinkbiganalytics.alerts.rest.model;
  */
 public class AlertUpdateRequest {
 
-    /** New state for the alert */
+    /**
+     * New state for the alert
+     */
     private Alert.State state;
 
-    /** A description of the change */
+    /**
+     * A description of the change
+     */
     private String description;
 
-    /** Indicates that the alert should not appear in search results */
+    /**
+     * Indicates that the alert should not appear in search results
+     */
     private boolean clear = false;
 
     public Alert.State getState() {

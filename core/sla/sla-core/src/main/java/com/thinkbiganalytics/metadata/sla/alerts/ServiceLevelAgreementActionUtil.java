@@ -43,9 +43,12 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ServiceLevelAgreementActionUtil {
 
 
+    public static Map<Class<? extends ServiceLevelAgreementAction>, Boolean> validActionCache = new ConcurrentHashMap<>();
     Timer invalidActionConfigurationCacheTimer = new Timer();
 
-    public static Map<Class<? extends ServiceLevelAgreementAction>, Boolean> validActionCache = new ConcurrentHashMap<>();
+    public ServiceLevelAgreementActionUtil() {
+        scheduleCacheCheck();
+    }
 
     public static boolean isValidConfiguration(List<Class<? extends ServiceLevelAgreementAction>> actionClasses) {
 
@@ -74,10 +77,6 @@ public class ServiceLevelAgreementActionUtil {
 
     }
 
-    public ServiceLevelAgreementActionUtil() {
-        scheduleCacheCheck();
-    }
-
     public static List<ServiceLevelAgreementActionValidation> validateActionConfiguration(List<Class<? extends ServiceLevelAgreementAction>> actionClasses) {
 
         List<ServiceLevelAgreementActionValidation> validation = new ArrayList<>();
@@ -99,27 +98,6 @@ public class ServiceLevelAgreementActionUtil {
     }
     //re-evaluate invalid actions ever 1 hr
 
-    private class EvaluateInvalidActionsTimer extends TimerTask {
-
-        @Override
-        public void run() {
-
-            Iterator<Map.Entry<Class<? extends ServiceLevelAgreementAction>, Boolean>> iter = validActionCache.entrySet().iterator();
-            while (iter.hasNext()) {
-                Map.Entry<Class<? extends ServiceLevelAgreementAction>, Boolean> entry = iter.next();
-                if (entry.getValue() != null && entry.getValue().booleanValue() == false) {
-                    iter.remove();
-                }
-            }
-
-        }
-    }
-
-    private void scheduleCacheCheck() {
-        invalidActionConfigurationCacheTimer.schedule(new EvaluateInvalidActionsTimer(), (60 * 1000 * 5), (60 * 1000) * 60); // delay 5 min, 1 hr eval
-    }
-
-
     public static ServiceLevelAgreementAction instantiate(Class<? extends ServiceLevelAgreementAction> clazz) {
         ServiceLevelAgreementAction action = null;
         try {
@@ -139,6 +117,26 @@ public class ServiceLevelAgreementActionUtil {
             }
         }
         return action;
+    }
+
+    private void scheduleCacheCheck() {
+        invalidActionConfigurationCacheTimer.schedule(new EvaluateInvalidActionsTimer(), (60 * 1000 * 5), (60 * 1000) * 60); // delay 5 min, 1 hr eval
+    }
+
+    private class EvaluateInvalidActionsTimer extends TimerTask {
+
+        @Override
+        public void run() {
+
+            Iterator<Map.Entry<Class<? extends ServiceLevelAgreementAction>, Boolean>> iter = validActionCache.entrySet().iterator();
+            while (iter.hasNext()) {
+                Map.Entry<Class<? extends ServiceLevelAgreementAction>, Boolean> entry = iter.next();
+                if (entry.getValue() != null && entry.getValue().booleanValue() == false) {
+                    iter.remove();
+                }
+            }
+
+        }
     }
 
 }

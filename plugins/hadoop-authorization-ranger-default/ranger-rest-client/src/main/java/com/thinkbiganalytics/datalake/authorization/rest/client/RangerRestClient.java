@@ -37,7 +37,6 @@ import javax.ws.rs.client.WebTarget;
 
 /**
  * This class has all the functions for implementing REST calls like createPolicy, getPolicy, updatePolicy etc.
- *
  */
 
 public class RangerRestClient extends JerseyRestClient {

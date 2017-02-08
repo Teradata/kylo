@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.modeshape.common;
 
@@ -44,11 +44,12 @@ import javax.jcr.nodetype.ConstraintViolationException;
 public class JcrPropertiesEntity extends JcrEntity implements Propertied {
 
     public static final String PROPERTIES_NAME = "tba:properties";
+
     /**
      *
      */
     public JcrPropertiesEntity(Node node) {
-     super(node);
+        super(node);
     }
 
     public JcrProperties getPropertiesObject() {
@@ -76,13 +77,22 @@ public class JcrPropertiesEntity extends JcrEntity implements Propertied {
      * All primary properties should be defined as getter/setter on the base object
      * You can call the getAllProperties to return the complete set of properties as a map
      */
-    public Map<String,Object> getProperties(){
+    public Map<String, Object> getProperties() {
 
         JcrProperties props = getPropertiesObject();
-        if(props != null) {
+        if (props != null) {
             return props.getProperties();
         }
         return null;
+    }
+
+    public void setProperties(Map<String, Object> properties) {
+
+        //add the properties as attrs
+        for (Map.Entry<String, Object> entry : properties.entrySet()) {
+            setProperty(entry.getKey(), entry.getValue());
+        }
+
     }
 
     /**
@@ -105,16 +115,6 @@ public class JcrPropertiesEntity extends JcrEntity implements Propertied {
         return properties;
     }
 
-
-    public void setProperties(Map<String,Object> properties){
-
-        //add the properties as attrs
-        for(Map.Entry<String,Object> entry: properties.entrySet()){
-            setProperty(entry.getKey(), entry.getValue());
-        }
-
-    }
-
     public <T> T getProperty(String name, T defValue) {
         if (hasProperty(name)) {
             return getProperty(name, (Class<T>) defValue.getClass(), false);
@@ -122,7 +122,7 @@ public class JcrPropertiesEntity extends JcrEntity implements Propertied {
             return defValue;
         }
     }
-    
+
     public boolean hasProperty(String name) {
         try {
             if (this.node.hasProperty(name)) {
@@ -131,14 +131,13 @@ public class JcrPropertiesEntity extends JcrEntity implements Propertied {
                 return getPropertiesObject().getNode().hasProperty(name);
             }
         } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Unable to check Property " + name );
+            throw new MetadataRepositoryException("Unable to check Property " + name);
         }
     }
 
     public <T> T getProperty(String name, Class<T> type) {
         return getProperty(name, type, true);
     }
-
 
 
     @Override
@@ -158,17 +157,14 @@ public class JcrPropertiesEntity extends JcrEntity implements Propertied {
                 }
             }
         } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Unable to get Property " + name );
+            throw new MetadataRepositoryException("Unable to get Property " + name);
         }
-    
+
     }
-    
+
     /**
      * Override
      * if the incoming name matches that of a primary property on this Node then set it, otherwise add it the mixin bag of properties
-     *
-     * @param name
-     * @param value
      */
     public void setProperty(String name, Object value) {
         try {
@@ -187,7 +183,7 @@ public class JcrPropertiesEntity extends JcrEntity implements Propertied {
      */
     @Override
     public Map<String, Object> mergeProperties(Map<String, Object> props) {
-      Map<String,Object> newProps = new HashMap<>();
+        Map<String, Object> newProps = new HashMap<>();
         Map<String, Object> origProps = getProperties();
         if (origProps != null) {
             newProps.putAll(origProps);

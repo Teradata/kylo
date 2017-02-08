@@ -36,18 +36,18 @@ public interface QueryResult {
     List<QueryResultColumn> getColumns();
 
     /**
-     * Whether query result is empty
-     *
-     * @return true/false indicating if query result is empty
-     */
-    boolean isEmpty();
-
-    /**
      * Set columns in query result
      *
      * @param columns list of {@link QueryResultColumn}
      */
     void setColumns(List<QueryResultColumn> columns);
+
+    /**
+     * Whether query result is empty
+     *
+     * @return true/false indicating if query result is empty
+     */
+    boolean isEmpty();
 
     /**
      * Get rows in query result

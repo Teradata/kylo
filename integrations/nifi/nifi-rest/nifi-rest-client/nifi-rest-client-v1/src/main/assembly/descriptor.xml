@@ -18,17 +18,17 @@
   #L%
   -->
 <assembly>
-    <id>distribution</id>
-    <formats>
-        <format>tar.gz</format>
-    </formats>
-    <includeBaseDirectory>true</includeBaseDirectory>
-    <dependencySets>
-        <dependencySet>
-            <includes>
-                <include>org.apache.nifi:*</include>
-            </includes>
-            <outputDirectory>lib/nifi-v1</outputDirectory>
-        </dependencySet>
-    </dependencySets>
+  <id>distribution</id>
+  <formats>
+    <format>tar.gz</format>
+  </formats>
+  <includeBaseDirectory>true</includeBaseDirectory>
+  <dependencySets>
+    <dependencySet>
+      <includes>
+        <include>org.apache.nifi:*</include>
+      </includes>
+      <outputDirectory>lib/nifi-v1</outputDirectory>
+    </dependencySet>
+  </dependencySets>
 </assembly>

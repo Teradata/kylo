@@ -35,7 +35,6 @@ import static org.junit.Assert.fail;
 
 /**
  * This helper class can be used to unit test the get/set methods of JavaBean-style Value Objects.
- *
  */
 public class JavaBeanTester {
 
@@ -47,8 +46,7 @@ public class JavaBeanTester {
      * @param <T>       the type parameter associated with the class under test
      * @param clazz     the Class under test
      * @param skipThese the names of any properties that should not be tested
-     * @throws IntrospectionException thrown if the Introspector.getBeanInfo() method throws this exception
-     *                                for the class under test
+     * @throws IntrospectionException thrown if the Introspector.getBeanInfo() method throws this exception for the class under test
      */
     public static <T> void test(final Class<T> clazz, final String... skipThese) throws IntrospectionException {
         final PropertyDescriptor[] props = Introspector.getBeanInfo(clazz).getPropertyDescriptors();
@@ -103,7 +101,8 @@ public class JavaBeanTester {
         }
     }
 
-    private static Object buildValue(PropertyDescriptor prop, Class<?> clazz) throws InstantiationException, IllegalAccessException, IllegalArgumentException, SecurityException, InvocationTargetException {
+    private static Object buildValue(PropertyDescriptor prop, Class<?> clazz)
+        throws InstantiationException, IllegalAccessException, IllegalArgumentException, SecurityException, InvocationTargetException {
         // If we are using a Mocking framework try that first...
         final Object mockedObject = buildMockValue(clazz);
         if (mockedObject != null) {
@@ -151,8 +150,8 @@ public class JavaBeanTester {
             // Add your own rules here
 
         } else {
-            fail("Unable to build an instance of class " + clazz.getName() + "  prop ["+prop.getDisplayName()+"], please add some code to the "
-                    + JavaBeanTester.class.getName() + " class to do this.");
+            fail("Unable to build an instance of class " + clazz.getName() + "  prop [" + prop.getDisplayName() + "], please add some code to the "
+                 + JavaBeanTester.class.getName() + " class to do this.");
             return null; // for the compiler
         }
     }

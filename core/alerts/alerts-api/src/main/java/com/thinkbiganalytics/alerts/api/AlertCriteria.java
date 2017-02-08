@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.alerts.api;
 
@@ -38,27 +38,28 @@ public interface AlertCriteria {
     /**
      * Sets the maximum size of the list alerts retrieved.  The default, if no
      * limit is given, is AlertSource dependent.
+     *
      * @param size the maximum number of alerts to return
      * @return the updated criteria
      */
     AlertCriteria limit(int size);
 
     /**
-     * @param type a type upon which to filter
+     * @param type   a type upon which to filter
      * @param others TODO
      * @return the updated criteria
      */
     AlertCriteria type(URI type, URI... others);
 
     /**
-     * @param state a state upon which to filter
+     * @param state  a state upon which to filter
      * @param others TODO
      * @return the updated criteria
      */
     AlertCriteria state(State state, State... others);
 
     /**
-     * @param level a level upon which to filter
+     * @param level  a level upon which to filter
      * @param others TODO
      * @return the updated criteria
      */
@@ -66,6 +67,7 @@ public interface AlertCriteria {
 
     /**
      * Filters alerts to retrieve only those newer than the specified time.
+     *
      * @param time the maximum time
      * @return the updated criteria
      */
@@ -73,11 +75,12 @@ public interface AlertCriteria {
 
     /**
      * Filters alerts to retrieve only those older than the specified time.
+     *
      * @param time the minimum time
      * @return the updated criteria
      */
     AlertCriteria before(DateTime time);
-    
+
     /**
      * @param flag set to true if cleared alerts should be retrieved (default false)
      * @return the updated criteria

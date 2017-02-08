@@ -65,9 +65,9 @@ public abstract class AbstractNiFiProcessGroupsRestClient implements NiFiProcess
      * Stops and deletes the specified process group after a configurable timeout.
      *
      * @param processGroup the process group to delete
-     * @param retries number of retries, at least 0; will try {@code retries} + 1 times
-     * @param timeout duration to wait between retries
-     * @param timeUnit unit of time for {@code timeout}
+     * @param retries      number of retries, at least 0; will try {@code retries} + 1 times
+     * @param timeout      duration to wait between retries
+     * @param timeUnit     unit of time for {@code timeout}
      * @return the deleted process group, if found
      */
     @Nonnull
@@ -78,7 +78,7 @@ public abstract class AbstractNiFiProcessGroupsRestClient implements NiFiProcess
         // Try to delete the process group
         Exception lastError = null;
 
-        for (int count=0; count <= retries; ++count) {
+        for (int count = 0; count <= retries; ++count) {
             try {
                 return doDelete(processGroup);
             } catch (final WebApplicationException e) {

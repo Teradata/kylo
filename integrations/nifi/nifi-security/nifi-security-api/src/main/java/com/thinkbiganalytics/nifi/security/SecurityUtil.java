@@ -38,12 +38,10 @@ public class SecurityUtil {
      * and keytab. All logins should happen through this class to ensure other threads are not concurrently modifying
      * UserGroupInformation.
      *
-     * @param config the configuration instance
+     * @param config    the configuration instance
      * @param principal the principal to authenticate as
-     * @param keyTab the keytab to authenticate with
-     *
+     * @param keyTab    the keytab to authenticate with
      * @return the UGI for the given principal
-     *
      * @throws IOException if login failed
      */
     public static synchronized UserGroupInformation loginKerberos(final Configuration config, final String principal, final String keyTab)
@@ -63,9 +61,7 @@ public class SecurityUtil {
      * UserGroupInformation.
      *
      * @param config the configuration instance
-     *
      * @return the UGI for the given principal
-     *
      * @throws IOException if login failed
      */
     public static synchronized UserGroupInformation loginSimple(final Configuration config) throws IOException {
@@ -80,9 +76,7 @@ public class SecurityUtil {
      * All checks for isSecurityEnabled() should happen through this method.
      *
      * @param config the given configuration
-     *
      * @return true if kerberos is enabled on the given configuration, false otherwise
-     *
      */
     public static boolean isSecurityEnabled(final Configuration config) {
         Validate.notNull(config);
@@ -94,16 +88,10 @@ public class SecurityUtil {
      *
      * Callers of this method should store the reference to the KerberosTicketRenewer and call stop() to stop the thread.
      *
-     * @param id
-     *          The unique identifier to use for the thread, can be the class name that started the thread
-     *              (i.e. PutHDFS, etc)
-     * @param ugi
-     *          The current Kerberos user.
-     * @param renewalPeriod
-     *          The amount of time between attempting renewals.
-     * @param logger
-     *          The logger to use with in the renewer
-     *
+     * @param id            The unique identifier to use for the thread, can be the class name that started the thread (i.e. PutHDFS, etc)
+     * @param ugi           The current Kerberos user.
+     * @param renewalPeriod The amount of time between attempting renewals.
+     * @param logger        The logger to use with in the renewer
      * @return the KerberosTicketRenewer Runnable
      */
     public static KerberosTicketRenewer startTicketRenewalThread(final String id, final UserGroupInformation ugi, final long renewalPeriod, final ComponentLog logger) {

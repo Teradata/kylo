@@ -74,32 +74,22 @@ import javax.jcr.version.Version;
 public class JcrPropertyTest {
 
     private static final Logger log = LoggerFactory.getLogger(JcrPropertyTest.class);
-
-
-    @Inject
-    private ExtensibleTypeProvider provider;
-
     @Inject
     CategoryProvider categoryProvider;
-
     @Inject
     DatasourceProvider datasourceProvider;
-
     @Inject
     FeedProvider feedProvider;
-
     @Inject
     FeedManagerFeedProvider feedManagerFeedProvider;
-
     @Inject
     FeedManagerTemplateProvider feedManagerTemplateProvider;
-
     @Inject
     FeedManagerCategoryProvider feedManagerCategoryProvider;
-
     @Inject
     TagProvider tagProvider;
-
+    @Inject
+    private ExtensibleTypeProvider provider;
     @Inject
     private JcrMetadataAccess metadata;
 
@@ -145,22 +135,24 @@ public class JcrPropertyTest {
             cat.setTitle("my category");
             categoryProvider.update(cat);
 
-            JcrDerivedDatasource datasource1 = (JcrDerivedDatasource) datasourceProvider.ensureDerivedDatasource("HiveDatasource","mysql.table1","mysql.table1","mysql table source 1", null);
-            JcrDerivedDatasource datasource2 = (JcrDerivedDatasource) datasourceProvider.ensureDerivedDatasource("HiveDatasource","mysql.table2","mysql.table2","mysql table source 2", null);
+            JcrDerivedDatasource datasource1 = (JcrDerivedDatasource) datasourceProvider.ensureDerivedDatasource("HiveDatasource", "mysql.table1", "mysql.table1", "mysql table source 1", null);
+            JcrDerivedDatasource datasource2 = (JcrDerivedDatasource) datasourceProvider.ensureDerivedDatasource("HiveDatasource", "mysql.table2", "mysql.table2", "mysql table source 2", null);
 
-            JcrDerivedDatasource emptySource1 = (JcrDerivedDatasource) datasourceProvider.ensureDerivedDatasource("HDFSDatasource","","","empty hdfs source", null);
-            JcrDerivedDatasource emptySource2 = (JcrDerivedDatasource) datasourceProvider.ensureDerivedDatasource("HDFSDatasource","","","empty hdfs source", null);
-            Assert.assertEquals(emptySource1.getId(),emptySource2.getId());
-            JcrDerivedDatasource emptySource3 = (JcrDerivedDatasource) datasourceProvider.ensureDerivedDatasource("HDFSDatasource",null,null,"empty hdfs source", null);
-            JcrDerivedDatasource emptySource4 = (JcrDerivedDatasource) datasourceProvider.ensureDerivedDatasource("HDFSDatasource",null,null,"empty hdfs source", null);
-            Assert.assertEquals(emptySource3.getId(),emptySource4.getId());
-            JcrDerivedDatasource datasource3 = (JcrDerivedDatasource) datasourceProvider.ensureDerivedDatasource("HDFSDatasource","/etl/customers/swert/012320342","/etl/customers/swert/012320342","mysql hdfs source", null);
-            JcrDerivedDatasource datasource4 = (JcrDerivedDatasource) datasourceProvider.ensureDerivedDatasource("HDFSDatasource","/etl/customers/swert/012320342","/etl/customers/swert/012320342","mysql hdfs source", null);
-            Assert.assertEquals(datasource3.getId(),datasource4.getId());
+            JcrDerivedDatasource emptySource1 = (JcrDerivedDatasource) datasourceProvider.ensureDerivedDatasource("HDFSDatasource", "", "", "empty hdfs source", null);
+            JcrDerivedDatasource emptySource2 = (JcrDerivedDatasource) datasourceProvider.ensureDerivedDatasource("HDFSDatasource", "", "", "empty hdfs source", null);
+            Assert.assertEquals(emptySource1.getId(), emptySource2.getId());
+            JcrDerivedDatasource emptySource3 = (JcrDerivedDatasource) datasourceProvider.ensureDerivedDatasource("HDFSDatasource", null, null, "empty hdfs source", null);
+            JcrDerivedDatasource emptySource4 = (JcrDerivedDatasource) datasourceProvider.ensureDerivedDatasource("HDFSDatasource", null, null, "empty hdfs source", null);
+            Assert.assertEquals(emptySource3.getId(), emptySource4.getId());
+            JcrDerivedDatasource
+                datasource3 =
+                (JcrDerivedDatasource) datasourceProvider.ensureDerivedDatasource("HDFSDatasource", "/etl/customers/swert/012320342", "/etl/customers/swert/012320342", "mysql hdfs source", null);
+            JcrDerivedDatasource
+                datasource4 =
+                (JcrDerivedDatasource) datasourceProvider.ensureDerivedDatasource("HDFSDatasource", "/etl/customers/swert/012320342", "/etl/customers/swert/012320342", "mysql hdfs source", null);
+            Assert.assertEquals(datasource3.getId(), datasource4.getId());
 
-
-
-            String feedSystemName = "my_feed_"+ UUID.randomUUID();
+            String feedSystemName = "my_feed_" + UUID.randomUUID();
 //                JcrFeed feed = (JcrFeed) feedProvider.ensureFeed(categorySystemName, feedSystemName, "my feed desc", datasource1.getId(), null);
             JcrFeed feed = (JcrFeed) feedProvider.ensureFeed(sysName, feedSystemName, "my feed desc");
             feedProvider.ensureFeedSource(feed.getId(), datasource1.getId());
@@ -201,7 +193,7 @@ public class JcrPropertyTest {
             }
             List<JcrObject> taggedObjects = tagProvider.findByTag("my tag");
             //assert we got 1 feed back
-            Assert.assertTrue(taggedObjects.size() >=1);
+            Assert.assertTrue(taggedObjects.size() >= 1);
             return f.getId();
         });
 
@@ -339,14 +331,14 @@ public class JcrPropertyTest {
         //Now Replace
         props.remove("address");
         props2 = metadata.commit(new AdminCredentials(), () -> {
-                List<? extends Feed> feeds = feedProvider.getFeeds();
-                Feed feed = null;
-                //grab the first feed
-                if (feeds != null) {
-                    feed = feeds.get(0);
-                }
-                feedProvider.replaceProperties(feed.getId(), props);
-                return feed.getProperties();
+            List<? extends Feed> feeds = feedProvider.getFeeds();
+            Feed feed = null;
+            //grab the first feed
+            if (feeds != null) {
+                feed = feeds.get(0);
+            }
+            feedProvider.replaceProperties(feed.getId(), props);
+            return feed.getProperties();
         });
         Assert.assertNull(props2.get("address"));
 

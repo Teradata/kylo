@@ -47,26 +47,26 @@ import javax.persistence.Table;
 public class JpaLatestFeedJobExecution implements LatestFeedJobExecution {
 
     @ManyToOne(targetEntity = JpaOpsManagerFeed.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "FEED_ID",insertable = false,updatable = false)
+    @JoinColumn(name = "FEED_ID", insertable = false, updatable = false)
     OpsManagerFeed feed;
 
 
-    @Column(name="FEED_NAME", insertable = false,updatable = false)
+    @Column(name = "FEED_NAME", insertable = false, updatable = false)
     String feedName;
 
-    @Column(name="FEED_TYPE", insertable = false,updatable = false)
+    @Column(name = "FEED_TYPE", insertable = false, updatable = false)
     String feedType;
 
     @Id
-    @Column(name="JOB_EXECUTION_ID", insertable = false,updatable =false)
+    @Column(name = "JOB_EXECUTION_ID", insertable = false, updatable = false)
     private Long jobExecutionId;
 
-    @Column(name="JOB_INSTANCE_ID", insertable = false,updatable =false)
+    @Column(name = "JOB_INSTANCE_ID", insertable = false, updatable = false)
     private Long jobInstanceId;
 
 
     @ManyToOne(targetEntity = JpaBatchJobExecution.class, fetch = FetchType.LAZY)
-    @JoinColumn(name="JOB_EXECUTION_ID", insertable = false,updatable =false)
+    @JoinColumn(name = "JOB_EXECUTION_ID", insertable = false, updatable = false)
     private BatchJobExecution jobExecution;
 
 
@@ -105,6 +105,7 @@ public class JpaLatestFeedJobExecution implements LatestFeedJobExecution {
     public void setFeed(OpsManagerFeed feed) {
         this.feed = feed;
     }
+
     @Override
     public String getFeedName() {
         return feedName;

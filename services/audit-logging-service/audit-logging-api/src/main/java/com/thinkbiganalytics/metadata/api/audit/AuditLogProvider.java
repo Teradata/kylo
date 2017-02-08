@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.api.audit;
 
@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- *
  * Provider managing {@link AuditLogEntry} items
  */
 public interface AuditLogProvider {
@@ -45,6 +44,7 @@ public interface AuditLogProvider {
 
     /**
      * Return a list of the latest audit entries limited by an amount
+     *
      * @param limit the number of entries to return
      * @return a list of the latest log entries limited by an amount
      */
@@ -52,33 +52,37 @@ public interface AuditLogProvider {
 
     /**
      * Return an audit entry by its id
+     *
      * @param id an audit log id
      * @return an audit log entry matching the id
      */
     Optional<AuditLogEntry> findById(AuditLogEntry.ID id);
 
     /**
-     *  Return the log entries associated with a given user
+     * Return the log entries associated with a given user
+     *
      * @param user a user
      * @return the log entries associated with a given user
      */
     List<AuditLogEntry> findByUser(Principal user);
 
     /**
-     *  Create a new audit log entry
-     * @param user a user attached to this audit entry
-     * @param type the type of entry
+     * Create a new audit log entry
+     *
+     * @param user        a user attached to this audit entry
+     * @param type        the type of entry
      * @param description a description about what happened
      * @return an audit log entry
      */
     AuditLogEntry createEntry(Principal user, String type, String description);
 
     /**
-     *  Create a new audit log entry
-     * @param user a user attached to this audit entry
-     * @param type the type of entry
+     * Create a new audit log entry
+     *
+     * @param user        a user attached to this audit entry
+     * @param type        the type of entry
      * @param description a description about what happened
-     * @param entityId an entity id associated with this audit entry
+     * @param entityId    an entity id associated with this audit entry
      * @return an audit log entry
      */
     AuditLogEntry createEntry(Principal user, String type, String description, String entityId);

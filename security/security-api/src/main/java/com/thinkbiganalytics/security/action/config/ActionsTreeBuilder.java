@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.security.action.config;
 
@@ -31,17 +31,17 @@ import com.thinkbiganalytics.security.action.Action;
 public interface ActionsTreeBuilder<P> {
 
     /**
-     * Adds a new action hierarchy constructed using the fields and 
+     * Adds a new action hierarchy constructed using the fields and
      * action hierarchy provided by the specified action.  This will
-     * add new parent actions for every action in the hierarchy of 
-     * the action argument that does not already exist.  
+     * add new parent actions for every action in the hierarchy of
+     * the action argument that does not already exist.
      * <p>
      * Note that this method is equivalent to using the builder
-     * returned from action(String) on each of the argument action's 
+     * returned from action(String) on each of the argument action's
      * parents and filling in the fields from those actions's properties.
      */
     ActionsTreeBuilder<P> action(Action action);
-    
+
     /**
      * Creates a builder used to construct a new action with the given system name.
      */

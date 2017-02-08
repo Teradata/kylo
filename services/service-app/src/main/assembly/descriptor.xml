@@ -18,17 +18,17 @@
   #L%
   -->
 <assembly>
-    <id>distribution</id>
-    <formats>
-        <format>tar.gz</format>
-    </formats>
-    <includeBaseDirectory>true</includeBaseDirectory>
-    <dependencySets>
-        <dependencySet>
-            <excludes>
-                <exclude>org.apache.nifi:*</exclude>
-            </excludes>
-            <outputDirectory>lib</outputDirectory>
-        </dependencySet>
-    </dependencySets>
+  <id>distribution</id>
+  <formats>
+    <format>tar.gz</format>
+  </formats>
+  <includeBaseDirectory>true</includeBaseDirectory>
+  <dependencySets>
+    <dependencySet>
+      <excludes>
+        <exclude>org.apache.nifi:*</exclude>
+      </excludes>
+      <outputDirectory>lib</outputDirectory>
+    </dependencySet>
+  </dependencySets>
 </assembly>

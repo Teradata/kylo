@@ -41,7 +41,9 @@ import javax.security.auth.callback.PasswordCallback;
 
 public class KyloRestLoginModuleTest {
 
-    /** Verify logging in by querying a REST API. */
+    /**
+     * Verify logging in by querying a REST API.
+     */
     @Test
     public void test() throws Exception {
         // Mock REST client

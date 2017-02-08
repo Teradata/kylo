@@ -33,10 +33,11 @@ import io.swagger.annotations.ApiModelProperty;
 /**
  */
 public class TemplateDtoWrapper extends TemplateDTO {
+
     private TemplateDTO templateDto;
     private String registeredTemplateId;
 
-    public TemplateDtoWrapper(TemplateDTO dto){
+    public TemplateDtoWrapper(TemplateDTO dto) {
         this.templateDto = dto;
     }
 
@@ -61,13 +62,17 @@ public class TemplateDtoWrapper extends TemplateDTO {
         return templateDto.getId();
     }
 
+    public void setId(String id) {
+        templateDto.setId(id);
+    }
+
     @ApiModelProperty("The name of the template.")
     public String getName() {
         return templateDto.getName();
     }
 
-    public void setUri(String uri) {
-        templateDto.setUri(uri);
+    public void setName(String name) {
+        templateDto.setName(name);
     }
 
     @XmlJavaTypeAdapter(DateTimeAdapter.class)
@@ -76,30 +81,22 @@ public class TemplateDtoWrapper extends TemplateDTO {
         return templateDto.getTimestamp();
     }
 
+    public void setTimestamp(Date timestamp) {
+        templateDto.setTimestamp(timestamp);
+    }
+
     @ApiModelProperty("The URI for the template.")
     public String getUri() {
         return templateDto.getUri();
     }
 
+    public void setUri(String uri) {
+        templateDto.setUri(uri);
+    }
+
     @ApiModelProperty("The contents of the template.")
     public FlowSnippetDTO getSnippet() {
         return templateDto.getSnippet();
-    }
-
-    public void setId(String id) {
-        templateDto.setId(id);
-    }
-
-    public void setName(String name) {
-        templateDto.setName(name);
-    }
-
-    public void setTimestamp(Date timestamp) {
-        templateDto.setTimestamp(timestamp);
-    }
-
-    public void setDescription(String description) {
-        templateDto.setDescription(description);
     }
 
     public void setSnippet(FlowSnippetDTO snippet) {
@@ -109,5 +106,9 @@ public class TemplateDtoWrapper extends TemplateDTO {
     @ApiModelProperty("The description of the template.")
     public String getDescription() {
         return templateDto.getDescription();
+    }
+
+    public void setDescription(String description) {
+        templateDto.setDescription(description);
     }
 }

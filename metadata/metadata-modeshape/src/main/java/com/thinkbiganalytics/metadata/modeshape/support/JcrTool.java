@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.modeshape.support;
 
@@ -39,7 +39,7 @@ import javax.jcr.Session;
 public class JcrTool extends JcrTools {
 
     private final PrintWriter out;
-    
+
     public JcrTool() {
         this(false);
     }
@@ -47,11 +47,11 @@ public class JcrTool extends JcrTools {
     public JcrTool(boolean debug) {
         this(debug, System.out);
     }
-    
+
     public JcrTool(boolean debug, PrintStream out) {
         this(debug, new PrintWriter(out));
     }
-    
+
     public JcrTool(boolean debug, PrintWriter out) {
         super(debug);
         this.out = out;
@@ -63,7 +63,7 @@ public class JcrTool extends JcrTools {
             out.println(msg.toString());
         }
     }
-    
+
     public void printNode(Session session, String absPath) {
         try {
             Node node = session.getNode(absPath);
@@ -72,7 +72,7 @@ public class JcrTool extends JcrTools {
             e.printStackTrace(this.out);
         }
     }
-    
+
     public void printSubgraph(Session session, String absPath) {
         try {
             Node node = session.getNode(absPath);

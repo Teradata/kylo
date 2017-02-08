@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.rest.model.op;
 
@@ -39,10 +39,10 @@ import java.util.List;
 public class FileList extends ChangeSet {
 
     private List<String> paths = new ArrayList<>();
-    
+
     public FileList() {
     }
-    
+
     public FileList(ArrayList<Path> paths) {
         for (Path path : paths) {
             this.paths.add(path.toString());
@@ -60,6 +60,6 @@ public class FileList extends ChangeSet {
     public void addPath(String path) {
         this.paths.add(path);
     }
-    
-    
+
+
 }

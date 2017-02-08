@@ -1,4 +1,3 @@
-
 package com.thinkbiganalytics.jira.domain;
 
 /*-
@@ -37,14 +36,14 @@ import javax.annotation.Generated;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("org.jsonschema2pojo")
 @JsonPropertyOrder({
-    "self",
-    "id",
-    "description",
-    "iconUrl",
-    "name",
-    "subtask",
-    "avatarId"
-})
+                       "self",
+                       "id",
+                       "description",
+                       "iconUrl",
+                       "name",
+                       "subtask",
+                       "avatarId"
+                   })
 public class IssueType {
 
     @JsonProperty("self")
@@ -65,9 +64,7 @@ public class IssueType {
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
-     * 
-     * @return
-     *     The self
+     * @return The self
      */
     @JsonProperty("self")
     public String getSelf() {
@@ -75,9 +72,7 @@ public class IssueType {
     }
 
     /**
-     * 
-     * @param self
-     *     The self
+     * @param self The self
      */
     @JsonProperty("self")
     public void setSelf(String self) {
@@ -85,9 +80,7 @@ public class IssueType {
     }
 
     /**
-     * 
-     * @return
-     *     The id
+     * @return The id
      */
     @JsonProperty("id")
     public String getId() {
@@ -95,9 +88,7 @@ public class IssueType {
     }
 
     /**
-     * 
-     * @param id
-     *     The id
+     * @param id The id
      */
     @JsonProperty("id")
     public void setId(String id) {
@@ -105,9 +96,7 @@ public class IssueType {
     }
 
     /**
-     * 
-     * @return
-     *     The description
+     * @return The description
      */
     @JsonProperty("description")
     public String getDescription() {
@@ -115,9 +104,7 @@ public class IssueType {
     }
 
     /**
-     * 
-     * @param description
-     *     The description
+     * @param description The description
      */
     @JsonProperty("description")
     public void setDescription(String description) {
@@ -125,9 +112,7 @@ public class IssueType {
     }
 
     /**
-     * 
-     * @return
-     *     The iconUrl
+     * @return The iconUrl
      */
     @JsonProperty("iconUrl")
     public String getIconUrl() {
@@ -135,9 +120,7 @@ public class IssueType {
     }
 
     /**
-     * 
-     * @param iconUrl
-     *     The iconUrl
+     * @param iconUrl The iconUrl
      */
     @JsonProperty("iconUrl")
     public void setIconUrl(String iconUrl) {
@@ -145,9 +128,7 @@ public class IssueType {
     }
 
     /**
-     * 
-     * @return
-     *     The name
+     * @return The name
      */
     @JsonProperty("name")
     public String getName() {
@@ -155,9 +136,7 @@ public class IssueType {
     }
 
     /**
-     * 
-     * @param name
-     *     The name
+     * @param name The name
      */
     @JsonProperty("name")
     public void setName(String name) {
@@ -165,9 +144,7 @@ public class IssueType {
     }
 
     /**
-     * 
-     * @return
-     *     The subtask
+     * @return The subtask
      */
     @JsonProperty("subtask")
     public Boolean getSubtask() {
@@ -175,9 +152,7 @@ public class IssueType {
     }
 
     /**
-     * 
-     * @param subtask
-     *     The subtask
+     * @param subtask The subtask
      */
     @JsonProperty("subtask")
     public void setSubtask(Boolean subtask) {
@@ -185,9 +160,7 @@ public class IssueType {
     }
 
     /**
-     * 
-     * @return
-     *     The avatarId
+     * @return The avatarId
      */
     @JsonProperty("avatarId")
     public Integer getAvatarId() {
@@ -195,9 +168,7 @@ public class IssueType {
     }
 
     /**
-     * 
-     * @param avatarId
-     *     The avatarId
+     * @param avatarId The avatarId
      */
     @JsonProperty("avatarId")
     public void setAvatarId(Integer avatarId) {
@@ -222,7 +193,7 @@ public class IssueType {
 
     protected MoreObjects.ToStringHelper getToStringHelper() {
         return MoreObjects.toStringHelper(this).
-                add("name", name)
-                .add("id",id);
+            add("name", name)
+            .add("id", id);
     }
 }

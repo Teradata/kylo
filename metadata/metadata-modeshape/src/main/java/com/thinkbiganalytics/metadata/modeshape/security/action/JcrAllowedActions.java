@@ -145,7 +145,7 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
         for (Action action : actions) {
             Node current = getNode();
             for (Action parent : action.getHierarchy()) {
-                if (! JcrUtil.hasNode(current, parent.getSystemName())) {
+                if (!JcrUtil.hasNode(current, parent.getSystemName())) {
                     throw new AccessControlException("Not authorized to perform the action: " + action.getTitle());
                 }
 
@@ -191,14 +191,14 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
 
     private boolean togglePermission(Action action, Principal principal, boolean add) {
         return findActionNode(action)
-                    .map(node -> {
-                            if (add) {
-                                return JcrAccessControlUtil.addHierarchyPermissions(node, principal, this.node, Privilege.JCR_READ);
-                            } else {
-                                return JcrAccessControlUtil.removeRecursivePermissions(node, JcrAllowableAction.NODE_TYPE, principal, Privilege.JCR_READ);
-                            }
-                        })
-                    .orElseThrow(() -> new AccessControlException("Not authorized to " + (add ? "endable" : "disable") + " the action: " + action));
+            .map(node -> {
+                if (add) {
+                    return JcrAccessControlUtil.addHierarchyPermissions(node, principal, this.node, Privilege.JCR_READ);
+                } else {
+                    return JcrAccessControlUtil.removeRecursivePermissions(node, JcrAllowableAction.NODE_TYPE, principal, Privilege.JCR_READ);
+                }
+            })
+            .orElseThrow(() -> new AccessControlException("Not authorized to " + (add ? "endable" : "disable") + " the action: " + action));
     }
 
     private Optional<Node> findActionNode(Action action) {

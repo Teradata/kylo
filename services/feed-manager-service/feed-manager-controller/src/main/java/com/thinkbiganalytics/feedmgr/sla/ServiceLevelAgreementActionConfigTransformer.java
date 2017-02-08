@@ -47,11 +47,14 @@ public class ServiceLevelAgreementActionConfigTransformer
 
     private static final ServiceLevelAgreementActionConfigTransformer instance = new ServiceLevelAgreementActionConfigTransformer();
 
+    public static ServiceLevelAgreementActionConfigTransformer instance() {
+        return instance;
+    }
+
     public ServiceLevelAgreementActionUiConfigurationItem buildUiModel(ServiceLevelAgreementActionConfig annotation, ServiceLevelAgreementActionConfiguration policy,
                                                                        List<FieldRuleProperty> properties) {
         return buildUiModel(annotation, policy.getClass(), properties);
     }
-
 
     private ServiceLevelAgreementActionUiConfigurationItem buildUiModel(ServiceLevelAgreementActionConfig annotation, Class policyClass,
                                                                         List<FieldRuleProperty> properties) {
@@ -95,7 +98,6 @@ public class ServiceLevelAgreementActionConfigTransformer
 
     }
 
-
     public List<ServiceLevelAgreementActionUiConfigurationItem> discoverActionConfigurations() {
 
         List<ServiceLevelAgreementActionUiConfigurationItem> rules = new ArrayList<>();
@@ -113,7 +115,6 @@ public class ServiceLevelAgreementActionConfigTransformer
         return rules;
     }
 
-
     @Override
     public void afterFromUiModel(ServiceLevelAgreementActionConfiguration policy, ServiceLevelAgreementActionUiConfigurationItem uiModel) {
         super.afterFromUiModel(policy, uiModel);
@@ -123,9 +124,5 @@ public class ServiceLevelAgreementActionConfigTransformer
     @Override
     public Class<ServiceLevelAgreementActionConfig> getAnnotationClass() {
         return ServiceLevelAgreementActionConfig.class;
-    }
-
-    public static ServiceLevelAgreementActionConfigTransformer instance() {
-        return instance;
     }
 }

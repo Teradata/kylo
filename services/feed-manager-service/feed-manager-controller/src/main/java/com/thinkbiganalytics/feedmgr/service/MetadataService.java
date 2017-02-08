@@ -92,7 +92,7 @@ public interface MetadataService {
      * Return a template matching just on the NiFi templateId .
      * This will only call out to NiFi and match on the Nifi template id.
      *
-     * @param nifiTemplateId the NiFi template id
+     * @param nifiTemplateId   the NiFi template id
      * @param nifiTemplateName the name of the template
      * @return a template matching the NiFi templateId .
      */
@@ -100,18 +100,21 @@ public interface MetadataService {
 
     /**
      * Deletes a template
+     *
      * @param templateId a registered template id
      */
     void deleteRegisteredTemplate(String templateId);
 
     /**
      * Return all registered templates
+     *
      * @return a list of all registered templates
      */
     List<RegisteredTemplate> getRegisteredTemplates();
 
     /**
      * Create a new Feed in NiFi
+     *
      * @param feedMetadata metadata about the feed
      * @return an object with status information about the newly created feed, or error information if unsuccessful
      */
@@ -119,6 +122,7 @@ public interface MetadataService {
 
     /**
      * Save the feed metadata to Kylo
+     *
      * @param feed metadata about the feed
      */
     void saveFeed(FeedMetadata feed);
@@ -127,12 +131,12 @@ public interface MetadataService {
      * Deletes the specified feed.
      *
      * @param feedId the feed id
-     * @throws FeedCleanupFailedException if the cleanup flow was started but failed to complete successfully
+     * @throws FeedCleanupFailedException  if the cleanup flow was started but failed to complete successfully
      * @throws FeedCleanupTimeoutException if the cleanup flow was started but failed to complete in the allotted time
-     * @throws IllegalArgumentException if the feed does not exist
-     * @throws IllegalStateException if there are dependent feeds
-     * @throws NifiClientRuntimeException if the feed cannot be deleted from NiFi
-     * @throws RuntimeException if the feed could not be deleted for any other reason
+     * @throws IllegalArgumentException    if the feed does not exist
+     * @throws IllegalStateException       if there are dependent feeds
+     * @throws NifiClientRuntimeException  if the feed cannot be deleted from NiFi
+     * @throws RuntimeException            if the feed could not be deleted for any other reason
      */
     void deleteFeed(@Nonnull String feedId);
 
@@ -153,7 +157,6 @@ public interface MetadataService {
     FeedSummary disableFeed(String feedId);
 
     /**
-     *
      * @return a list of all the feeds in the system
      */
     Collection<FeedMetadata> getFeeds();
@@ -161,13 +164,13 @@ public interface MetadataService {
     /**
      * Return a list of feeds, optionally returning a more verbose object populating all the templates and properties.
      * Verbose will return {@link FeedMetadata} objects, false will return {@link FeedSummary} objects
-     * @param verbose  true will return {@link FeedMetadata} objects, false will return {@link FeedSummary} objects
+     *
+     * @param verbose true will return {@link FeedMetadata} objects, false will return {@link FeedSummary} objects
      * @return a list of feed objects
      */
     Collection<? extends UIFeed> getFeeds(boolean verbose);
 
     /**
-     *
      * @return a list of feeds
      */
     List<FeedSummary> getFeedSummaryData();
@@ -184,13 +187,14 @@ public interface MetadataService {
      * Return a feed matching on its system category name and  system feed name
      *
      * @param categoryName the system name for a category
-     * @param feedName the system feed name
+     * @param feedName     the system feed name
      * @return a feed matching on its system category name and  system feed name
      */
     FeedMetadata getFeedByName(String categoryName, String feedName);
 
     /**
      * Return a feed matching the feedId
+     *
      * @param feedId the feed id
      * @return a feed matching the feedId, null if not found
      */
@@ -199,7 +203,7 @@ public interface MetadataService {
     /**
      * Return a feed matching the feedId.
      *
-     * @param feedId the feed id
+     * @param feedId                   the feed id
      * @param refreshTargetTableSchema if true it will attempt to update the metadata of the destination table {@link FeedMetadata#table} with the real the destination
      * @return a feed matching the feedId
      */
@@ -208,6 +212,7 @@ public interface MetadataService {
 
     /**
      * Return the categories
+     *
      * @return the categories
      */
     Collection<FeedCategory> getCategories();
@@ -222,13 +227,14 @@ public interface MetadataService {
 
     /**
      * save a category
+     *
      * @param category a category to save
      */
     void saveCategory(FeedCategory category);
 
     /**
      * Delete a category
-     * @param categoryId
+     *
      * @return true if deleted, false if not
      * @throws InvalidOperationException if unable to delete (categories cannot be deleted if there are feeds assigned to them)
      */

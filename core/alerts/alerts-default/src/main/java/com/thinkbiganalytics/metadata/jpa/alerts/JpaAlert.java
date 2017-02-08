@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.jpa.alerts;
 
@@ -56,53 +56,52 @@ import javax.persistence.Transient;
 
 /**
  * Implements the JPA-based alert type managed in the Kylo alert store.
- * 
  */
 @Entity
 @Table(name = "KYLO_ALERT")
 public class JpaAlert implements Alert {
-    
+
     @EmbeddedId
     private AlertId id;
-    
+
     @Column(name = "TYPE", length = 128, nullable = false)
     private String typeString;
-    
+
     @Type(type = "com.thinkbiganalytics.jpa.PersistentDateTimeAsMillisLong")
     @Column(name = "CREATE_TIME")
     private DateTime createdTime;
-    
+
     @Column(name = "DESCRIPTION", length = 255)
     private String description;
-    
+
     @Enumerated(EnumType.STRING)
     @Column(name = "LEVEL", nullable = false)
     private Level level;
-    
+
     @Enumerated(EnumType.STRING)
     @Column(name = "STATE", nullable = false)
     private Alert.State state;
-    
+
     @Column(name = "CONTENT")
     @Convert(converter = AlertContentConverter.class)
     private Serializable content;
-    
-    @Column(name="CLEARED", length=1)
+
+    @Column(name = "CLEARED", length = 1)
     @org.hibernate.annotations.Type(type = "yes_no")
     private boolean cleared = false;
-    
-    @ElementCollection(targetClass=JpaAlertChangeEvent.class)
-    @CollectionTable(name="KYLO_ALERT_CHANGE", joinColumns=@JoinColumn(name="ALERT_ID"))
+
+    @ElementCollection(targetClass = JpaAlertChangeEvent.class)
+    @CollectionTable(name = "KYLO_ALERT_CHANGE", joinColumns = @JoinColumn(name = "ALERT_ID"))
     @OrderBy("changeTime DESC, state ASC")
     private List<AlertChangeEvent> events = new ArrayList<>();
-    
+
     @Transient
     private AlertSource source;
-    
+
     public JpaAlert() {
         super();
     }
-    
+
     public JpaAlert(URI type, Level level, Principal user, String description, Serializable content) {
         this(type, level, user, description, State.UNHANDLED, content);
     }
@@ -115,7 +114,7 @@ public class JpaAlert implements Alert {
         this.createdTime = DateTime.now();
         this.state = state;
         setDescription(description);
-        
+
         JpaAlertChangeEvent event = new JpaAlertChangeEvent(state, user);
         this.events.add(event);
     }
@@ -128,12 +127,20 @@ public class JpaAlert implements Alert {
         return this.id;
     }
 
+    public void setId(AlertId id) {
+        this.id = id;
+    }
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.alerts.api.Alert#getType()
      */
     @Override
     public URI getType() {
         return URI.create(this.typeString);
+    }
+
+    public void setType(URI type) {
+        this.typeString = type.toASCIIString();
     }
 
     /* (non-Javadoc)
@@ -144,6 +151,10 @@ public class JpaAlert implements Alert {
         return this.description;
     }
 
+    public void setDescription(String descr) {
+        this.description = descr == null || descr.length() <= 255 ? descr : descr.substring(0, 252) + "...";
+    }
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.alerts.api.Alert#getLevel()
      */
@@ -151,7 +162,11 @@ public class JpaAlert implements Alert {
     public Level getLevel() {
         return this.level;
     }
-    
+
+    public void setLevel(Level level) {
+        this.level = level;
+    }
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.alerts.api.Alert#getCurrentState()
      */
@@ -176,13 +191,21 @@ public class JpaAlert implements Alert {
     public AlertSource getSource() {
         return this.source;
     }
-    
+
+    public void setSource(AlertSource source) {
+        this.source = source;
+    }
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.alerts.api.Alert#isCleared()
      */
     @Override
     public boolean isCleared() {
         return this.cleared;
+    }
+
+    public void setCleared(boolean cleared) {
+        this.cleared = cleared;
     }
 
     /* (non-Javadoc)
@@ -201,6 +224,10 @@ public class JpaAlert implements Alert {
         return Collections.unmodifiableList(this.events);
     }
 
+    public void setEvents(List<AlertChangeEvent> events) {
+        this.events = events;
+    }
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.alerts.api.Alert#getContent()
      */
@@ -209,45 +236,17 @@ public class JpaAlert implements Alert {
     public <C extends Serializable> C getContent() {
         return (C) this.content;
     }
-    
-    public String getTypeString() {
-        return typeString;
-    }
-    
-    public void setTypeString(String typeString) {
-        this.typeString = typeString;
-    }
-    
-    public void setType(URI type) {
-        this.typeString = type.toASCIIString();
-    }
 
-    public void setId(AlertId id) {
-        this.id = id;
-    }
-
-    public void setDescription(String descr) {
-        this.description = descr == null || descr.length() <= 255 ? descr : descr.substring(0, 252) + "...";
-    }
-
-    public void setLevel(Level level) {
-        this.level = level;
-    }
-
-    public void setEvents(List<AlertChangeEvent> events) {
-        this.events = events;
-    }
-    
     public void setContent(Serializable content) {
         this.content = content;
     }
-    
-    public void setCleared(boolean cleared) {
-        this.cleared = cleared;
+
+    public String getTypeString() {
+        return typeString;
     }
 
-    public void setSource(AlertSource source) {
-        this.source = source;
+    public void setTypeString(String typeString) {
+        this.typeString = typeString;
     }
 
     public void addEvent(JpaAlertChangeEvent event) {
@@ -263,15 +262,16 @@ public class JpaAlert implements Alert {
         @Column(name = "id", columnDefinition = "binary(16)")
         private UUID value;
 
-        public static AlertId create() {
-            return new AlertId(UUID.randomUUID());
+        public AlertId() {
         }
 
 
-        public AlertId() {}
-
         public AlertId(Serializable ser) {
             super(ser);
+        }
+
+        public static AlertId create() {
+            return new AlertId(UUID.randomUUID());
         }
 
         @Override
@@ -281,11 +281,13 @@ public class JpaAlert implements Alert {
 
         @Override
         public void setUuid(UUID uuid) {
-           this.value = uuid;
+            this.value = uuid;
         }
 
     }
 
-    public static class AlertContentConverter extends JsonAttributeConverter<Serializable> { }
+    public static class AlertContentConverter extends JsonAttributeConverter<Serializable> {
+
+    }
 
 }

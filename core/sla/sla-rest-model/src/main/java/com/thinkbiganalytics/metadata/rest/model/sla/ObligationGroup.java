@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.rest.model.sla;
 
@@ -44,16 +44,16 @@ public class ObligationGroup {
     public ObligationGroup() {
         super();
     }
-    
+
     public ObligationGroup(String condition) {
         this();
         this.condition = condition;
     }
-    
+
     public ObligationGroup(Obligation... obligations) {
         this("REQUIRED", Arrays.asList(obligations));
     }
-    
+
     public ObligationGroup(String condition, Obligation... obligations) {
         this(condition, Arrays.asList(obligations));
     }
@@ -78,7 +78,7 @@ public class ObligationGroup {
     public void setObligations(List<Obligation> obligations) {
         this.obligations = obligations;
     }
-    
+
     public void addObligation(Obligation ob) {
         this.obligations.add(ob);
     }

@@ -31,13 +31,13 @@ import java.io.Serializable;
  */
 public interface ValidationPolicy<T> extends Serializable {
 
-  /**
-   * Perform custom validation logic return a {@code true} if the passed in {@code value} is valid, {@code false} if it is invalid.
-   *
-   * @param value the value to validate
-   * @return {@code true} if the passed in {@code value} is valid, {@code false} if it is invalid
-   */
-  boolean validate(T value);
+    /**
+     * Perform custom validation logic return a {@code true} if the passed in {@code value} is valid, {@code false} if it is invalid.
+     *
+     * @param value the value to validate
+     * @return {@code true} if the passed in {@code value} is valid, {@code false} if it is invalid
+     */
+    boolean validate(T value);
 
 
 }

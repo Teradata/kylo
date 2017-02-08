@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.rest.exception;
 
@@ -43,12 +43,12 @@ import javax.ws.rs.ext.Provider;
 @Provider
 @Component
 public class AccessControlExceptionMapper implements ExceptionMapper<AccessControlException> {
-    
+
     private static final Logger log = LoggerFactory.getLogger(AccessControlExceptionMapper.class);
-    
+
     @Context
     protected HttpServletRequest req;
-    
+
     public AccessControlExceptionMapper() {
         super();
     }
@@ -56,7 +56,7 @@ public class AccessControlExceptionMapper implements ExceptionMapper<AccessContr
     @Override
     public Response toResponse(AccessControlException e) {
         log.debug("Access control violation", e);
-        
+
         RestResponseStatus.ResponseStatusBuilder builder = new RestResponseStatus.ResponseStatusBuilder();
         builder.url(req.getRequestURI());
         builder.message("Access control violation: " + e.getMessage());

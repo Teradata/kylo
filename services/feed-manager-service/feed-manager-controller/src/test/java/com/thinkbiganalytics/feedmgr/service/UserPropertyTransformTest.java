@@ -34,7 +34,9 @@ import java.util.Set;
 
 public class UserPropertyTransformTest {
 
-    /** Verify transforming property map to user properties. */
+    /**
+     * Verify transforming property map to user properties.
+     */
     @Test
     public void toUserProperties() {
         // Mock user field descriptors

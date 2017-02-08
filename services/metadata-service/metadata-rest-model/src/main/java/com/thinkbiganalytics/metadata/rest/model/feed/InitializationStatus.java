@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.rest.model.feed;
 
@@ -40,13 +40,8 @@ import java.io.Serializable;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class InitializationStatus implements Serializable {
 
-    public enum State {
-        PENDING, IN_PROGRESS, SUCCESS, FAILED
-    }
-
     private State state;
     private DateTime timestamp;
-    
     public InitializationStatus() {
         super();
     }
@@ -69,13 +64,17 @@ public class InitializationStatus implements Serializable {
         this.state = state;
     }
 
-//    @JsonIgnore
+    //    @JsonIgnore
     public DateTime getTimestamp() {
         return timestamp;
     }
 
     public void setTimestamp(DateTime timestamp) {
         this.timestamp = timestamp;
+    }
+
+    public enum State {
+        PENDING, IN_PROGRESS, SUCCESS, FAILED
     }
 
 }

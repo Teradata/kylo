@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.jpa;
 
@@ -46,14 +46,14 @@ import javax.persistence.AttributeConverter;
  * to the @Converter annotation on the field .
  */
 public class JsonAttributeConverter<O> implements AttributeConverter<O, String> {
-    
+
     static final Logger LOG = LoggerFactory.getLogger(JsonAttributeConverter.class);
-    
+
     private final ObjectWriter writer;
     private final ObjectReader reader;
-    
+
 //    private Class<? extends Object> type;
-    
+
     public JsonAttributeConverter() {
 //        ResolvableType resType = ResolvableType.forClass(AttributeConverter.class, getClass());
 //        Class<? extends Object> objType = (Class<? extends Object>) resType.resolveGeneric(0);
@@ -62,12 +62,12 @@ public class JsonAttributeConverter<O> implements AttributeConverter<O, String> 
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JodaModule());
         mapper.setSerializationInclusion(Include.NON_NULL);
-        
+
         mapper.setVisibility(mapper.getSerializationConfig().getDefaultVisibilityChecker()
-                 .withFieldVisibility(JsonAutoDetect.Visibility.ANY)
-                 .withGetterVisibility(JsonAutoDetect.Visibility.NONE)
-                 .withIsGetterVisibility(JsonAutoDetect.Visibility.NONE) );
-        
+                                 .withFieldVisibility(JsonAutoDetect.Visibility.ANY)
+                                 .withGetterVisibility(JsonAutoDetect.Visibility.NONE)
+                                 .withIsGetterVisibility(JsonAutoDetect.Visibility.NONE));
+
         reader = mapper.reader().forType(JsonWrapper.class);
         writer = mapper.writer().forType(JsonWrapper.class);
     }
@@ -111,19 +111,19 @@ public class JsonAttributeConverter<O> implements AttributeConverter<O, String> 
             return null;
         }
     }
-    
+
 
     public static class JsonWrapper<V> {
-        
+
         private String type;
         private String value;
-        
+
         public JsonWrapper() {
         }
-        
+
         public JsonWrapper(V obj, ObjectWriter writer) {
             Class<V> type = (Class<V>) obj.getClass();
-            
+
             this.type = obj.getClass().getName();
             try {
                 this.value = writer.forType(type).writeValueAsString(obj);
@@ -132,7 +132,7 @@ public class JsonAttributeConverter<O> implements AttributeConverter<O, String> 
                 JsonAttributeConverter.LOG.error("Failed to serialize as object into JSON: {}", obj, e);
             }
         }
-        
+
         public V readValue(ObjectReader reader) {
             try {
                 Class<?> cls = Class.forName(this.type);
@@ -160,6 +160,6 @@ public class JsonAttributeConverter<O> implements AttributeConverter<O, String> 
         public void setValue(String value) {
             this.value = value;
         }
-        
+
     }
 }

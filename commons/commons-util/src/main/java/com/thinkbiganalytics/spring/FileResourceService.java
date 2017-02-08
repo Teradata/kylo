@@ -57,6 +57,7 @@ public class FileResourceService implements ApplicationContextAware {
 
     /**
      * Return a resourcs/file as a string
+     *
      * @param resourceLocation a file location string
      * @return the contents of the file/resource as a string
      */

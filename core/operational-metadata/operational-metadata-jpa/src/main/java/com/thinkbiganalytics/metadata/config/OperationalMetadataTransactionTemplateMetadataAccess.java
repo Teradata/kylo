@@ -59,9 +59,9 @@ public class OperationalMetadataTransactionTemplateMetadataAccess implements Met
 
     /**
      * Perform a command and commit the transaction
-     * @param cmd the command to execute
+     *
+     * @param cmd        the command to execute
      * @param principals one or more principals, or none to use the current security context
-     * @param <R>
      * @return an object resulting from the commit
      */
     @Override
@@ -70,13 +70,12 @@ public class OperationalMetadataTransactionTemplateMetadataAccess implements Met
     }
 
     /**
-     *Perform a command and commit the transaction
+     * Perform a command and commit the transaction
      * Rollback is not supported here
+     *
      * @param cmd         the command to execute
      * @param rollbackCmd the command to execute if an exception occurs and the transaction is rolled back
      * @param principals  one or more principals, or none to use the current security context
-     * @param <R>
-     * @return
      */
     @Override
     public <R> R commit(MetadataCommand<R> cmd, MetadataRollbackCommand rollbackCmd, Principal... principals) {
@@ -86,7 +85,8 @@ public class OperationalMetadataTransactionTemplateMetadataAccess implements Met
 
     /**
      * Perform a command and commit the transaction
-     * @param action the command to execute
+     *
+     * @param action     the command to execute
      * @param principals one or more principals, or none to use the current security context
      */
     @Override
@@ -95,9 +95,9 @@ public class OperationalMetadataTransactionTemplateMetadataAccess implements Met
     }
 
     /**
-     *  Perform a command and commit the transaction
+     * Perform a command and commit the transaction
+     *
      * @param action     the command to execute
-     * @param rollbackAction
      * @param principals one or more principals, or none to use the current security context
      */
     @Override
@@ -109,10 +109,9 @@ public class OperationalMetadataTransactionTemplateMetadataAccess implements Met
 
     /**
      * Perform a read only action
-     * @param cmd the command to execute
+     *
+     * @param cmd        the command to execute
      * @param principals one or more principals, or none to use the current security context
-     * @param <R>
-     * @return
      */
     @Override
     public <R> R read(MetadataCommand<R> cmd, Principal... principals) {
@@ -122,7 +121,8 @@ public class OperationalMetadataTransactionTemplateMetadataAccess implements Met
 
     /**
      * Perform a read only action
-     * @param cmd the command to execute
+     *
+     * @param cmd        the command to execute
      * @param principals one or more principals, or none to use the current security context
      */
     @Override
@@ -132,9 +132,6 @@ public class OperationalMetadataTransactionTemplateMetadataAccess implements Met
 
     /**
      * Perform a command and commit the transaction
-     * @param cmd
-     * @param <R>
-     * @return
      */
     protected <R> R commit(MetadataCommand<R> cmd) {
         return template.execute(createCallback(cmd, false));
@@ -142,9 +139,6 @@ public class OperationalMetadataTransactionTemplateMetadataAccess implements Met
 
     /**
      * Perform a read only command
-     * @param cmd
-     * @param <R>
-     * @return
      */
     protected <R> R read(MetadataCommand<R> cmd) {
         return template.execute(createCallback(cmd, true));
@@ -152,7 +146,6 @@ public class OperationalMetadataTransactionTemplateMetadataAccess implements Met
 
     /**
      * Perform a command and commit the transaction
-     * @param action
      */
     protected void commit(MetadataAction action) {
         template.execute(createCallback(action, false));
@@ -160,7 +153,6 @@ public class OperationalMetadataTransactionTemplateMetadataAccess implements Met
 
     /**
      * Perform a read only command
-     * @param action
      */
     protected void read(MetadataAction action) {
         template.execute(createCallback(action, true));
@@ -168,9 +160,6 @@ public class OperationalMetadataTransactionTemplateMetadataAccess implements Met
 
     /**
      * Return the callback after executing the passed in action.
-     * @param action
-     * @param readOnly
-     * @return
      */
     private TransactionCallback<Object> createCallback(final MetadataAction action, final boolean readOnly) {
         return createCallback(new MetadataCommand<Object>() {
@@ -179,16 +168,12 @@ public class OperationalMetadataTransactionTemplateMetadataAccess implements Met
                                       action.execute();
                                       return null;
                                   }
-                              }, 
+                              },
                               readOnly);
     }
 
     /**
      * Return the callback after executing the passed in command.
-     * @param cmd
-     * @param readOnly
-     * @param <R>
-     * @return
      */
     private <R> TransactionCallback<R> createCallback(final MetadataCommand<R> cmd, final boolean readOnly) {
         return new TransactionCallback<R>() {

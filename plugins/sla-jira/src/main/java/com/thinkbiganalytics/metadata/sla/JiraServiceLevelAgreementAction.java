@@ -38,7 +38,6 @@ import javax.inject.Inject;
 
 /**
  * create the JIRA issue when  SLA is violated
- *
  */
 @ClassNameChange(classNames = {"com.thinkbiganalytics.metadata.sla.alerts.JiraServiceLevelAgreementAction"})
 public class JiraServiceLevelAgreementAction implements ServiceLevelAgreementAction<JiraServiceLevelAgreementActionConfiguration> {

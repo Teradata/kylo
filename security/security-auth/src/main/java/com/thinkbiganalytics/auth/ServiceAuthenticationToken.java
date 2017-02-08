@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.auth;
 
@@ -37,9 +37,9 @@ import java.util.Arrays;
 public class ServiceAuthenticationToken extends AbstractAuthenticationToken {
 
     private static final long serialVersionUID = 1L;
-    
+
     private static final UsernamePrincipal USER = new UsernamePrincipal("service");
-    
+
     public ServiceAuthenticationToken() {
         super(Arrays.asList(new JaasGrantedAuthority("ROLE_SERVICE", new ServiceGroupPrincipal()),
                             new JaasGrantedAuthority("admin", new ServiceGroupPrincipal()))); // ModeShape role

@@ -33,7 +33,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface Validator {
 
-  String name();
+    String name();
 
-  String description();
+    String description();
 }

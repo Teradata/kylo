@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.rest.model.sla;
 
@@ -46,13 +46,13 @@ public class ObligationAssessment {
     public ObligationAssessment() {
         this.metricAssessments = new ArrayList<>();
     }
-    
+
     public ObligationAssessment(Obligation obligation, Result result, String message) {
         this(obligation, result, message, new ArrayList<MetricAssessment>());
     }
 
     public ObligationAssessment(Obligation obligation, Result result, String message,
-            List<MetricAssessment> metricAssessments) {
+                                List<MetricAssessment> metricAssessments) {
         super();
         this.obligation = obligation;
         this.result = result;
@@ -91,7 +91,7 @@ public class ObligationAssessment {
     public void setMetricAssessments(List<MetricAssessment> metricAssessments) {
         this.metricAssessments = metricAssessments;
     }
-    
+
     public void addMetricAssessment(MetricAssessment am) {
         this.metricAssessments.add(am);
     }

@@ -49,9 +49,9 @@ import javax.jcr.RepositoryException;
  */
 public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Category {
 
+    public static final String HADOOP_SECURITY_GROUPS = "tba:securityGroups";
     public static String CATEGORY_NAME = "tba:category";
     public static String NODE_TYPE = "tba:category";
-    public static final String HADOOP_SECURITY_GROUPS = "tba:securityGroups";
 
     public JcrCategory(Node node) {
         super(node);
@@ -71,26 +71,9 @@ public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Cat
         }
     }
 
-    public static class CategoryId extends JcrEntity.EntityId implements Category.ID {
-
-        public CategoryId(Serializable ser) {
-            super(ser);
-        }
-    }
-
     @Override
     public String getDisplayName() {
         return getTitle();
-    }
-
-    @Override
-    public String getName() {
-        return getSystemName();
-    }
-
-    @Override
-    public Integer getVersion() {
-        return null;
     }
 
     @Override
@@ -99,10 +82,20 @@ public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Cat
     }
 
     @Override
+    public String getName() {
+        return getSystemName();
+    }
+
+    @Override
     public void setName(String name) {
         if (!getName().equals(name)) {
             throw new UnsupportedOperationException();
         }
+    }
+
+    @Override
+    public Integer getVersion() {
+        return null;
     }
 
     @Nonnull
@@ -138,6 +131,13 @@ public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Cat
         for (HadoopSecurityGroup securityGroup : hadoopSecurityGroups) {
             Node securityGroupNode = ((JcrHadoopSecurityGroup) securityGroup).getNode();
             JcrPropertyUtil.addToSetProperty(this.node, HADOOP_SECURITY_GROUPS, securityGroupNode, true);
+        }
+    }
+
+    public static class CategoryId extends JcrEntity.EntityId implements Category.ID {
+
+        public CategoryId(Serializable ser) {
+            super(ser);
         }
     }
 }

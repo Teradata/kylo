@@ -101,11 +101,11 @@ public class ZipFileUtil {
 
     /**
      * Adds an entry to a zip file
-     * @param zip the zip file which will have the content added
-     * @param file the string to add to the zip
+     *
+     * @param zip      the zip file which will have the content added
+     * @param file     the string to add to the zip
      * @param fileName the zip file name
      * @return the zip file with the newly added content
-     * @throws IOException
      */
     public static byte[] addToZip(byte[] zip, String file, String fileName) throws IOException {
         InputStream zipInputStream = new ByteArrayInputStream(zip);

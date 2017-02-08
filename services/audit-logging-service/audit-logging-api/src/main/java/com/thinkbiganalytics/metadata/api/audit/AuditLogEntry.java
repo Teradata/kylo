@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.api.audit;
 
@@ -33,8 +33,6 @@ import java.security.Principal;
  */
 public interface AuditLogEntry {
 
-    interface ID extends Serializable { }
-
     /**
      * Return the unique id associated with the audit entry
      *
@@ -44,31 +42,40 @@ public interface AuditLogEntry {
 
     /**
      * Return the time of the audit event
+     *
      * @return the time of the audit event
      */
     DateTime getCreatedTime();
 
     /**
      * Return the user associated with the audit event
+     *
      * @return the user associated with the audit event
      */
     Principal getUser();
 
     /**
      * Return a discriminator defining the type of audit log entry
+     *
      * @return a string defining the type of audit log entry
      */
     String getType();
 
     /**
      * Return a description about the audit event
+     *
      * @return a description about the audit event
      */
     String getDescription();
 
     /**
      * Return a entity id this audit event is realted to
+     *
      * @return a entity id this audit event is realted to
      */
     String getEntityId();
+
+    interface ID extends Serializable {
+
+    }
 }

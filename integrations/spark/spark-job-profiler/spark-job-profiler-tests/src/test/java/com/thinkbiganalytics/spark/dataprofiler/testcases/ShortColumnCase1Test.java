@@ -58,6 +58,11 @@ public class ShortColumnCase1Test extends ProfilerTest {
     private static double stddev;
     private static double variance;
 
+    @AfterClass
+    public static void tearDownClass() {
+        System.out.println("\t*** Completed run for ShortColumnCase1Test ***");
+    }
+
     @Before
     public void setUp() {
         super.setUp();
@@ -84,30 +89,25 @@ public class ShortColumnCase1Test extends ProfilerTest {
         Assert.assertEquals(nullCount, columnStats.getNullCount());
     }
 
-
     @Test
     public void testShortTotalCount() {
         Assert.assertEquals(totalCount, columnStats.getTotalCount());
     }
-
 
     @Test
     public void testShortUniqueCount() {
         Assert.assertEquals(uniqueCount, columnStats.getUniqueCount());
     }
 
-
     @Test
     public void testShortPercNullValues() {
         assertEquals(percNullValues, columnStats.getPercNullValues(), epsilon);
     }
 
-
     @Test
     public void testShortPercUniqueValues() {
         assertEquals(percUniqueValues, columnStats.getPercUniqueValues(), epsilon);
     }
-
 
     @Test
     public void testShortPercDuplicateValues() {
@@ -145,45 +145,33 @@ public class ShortColumnCase1Test extends ProfilerTest {
         }
     }
 
-
     @Test
     public void testShortMax() {
         Assert.assertEquals(max, ((ShortColumnStatistics) columnStats).getMax());
     }
-
 
     @Test
     public void testShortMin() {
         Assert.assertEquals(min, ((ShortColumnStatistics) columnStats).getMin());
     }
 
-
     @Test
     public void testShortSum() {
         Assert.assertEquals(sum, ((ShortColumnStatistics) columnStats).getSum());
     }
-
 
     @Test
     public void testShortMean() {
         assertEquals(mean, ((ShortColumnStatistics) columnStats).getMean(), epsilon);
     }
 
-
     @Test
     public void testShortStddev() {
         assertEquals(stddev, ((ShortColumnStatistics) columnStats).getStddev(), epsilon);
     }
 
-
     @Test
     public void testShortVariance() {
         assertEquals(variance, ((ShortColumnStatistics) columnStats).getVariance(), epsilon);
-    }
-
-
-    @AfterClass
-    public static void tearDownClass() {
-        System.out.println("\t*** Completed run for ShortColumnCase1Test ***");
     }
 }   

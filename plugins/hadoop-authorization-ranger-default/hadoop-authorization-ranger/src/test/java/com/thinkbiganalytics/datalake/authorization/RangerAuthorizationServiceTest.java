@@ -34,7 +34,6 @@ import java.util.List;
 import static org.junit.Assert.assertNotNull;
 
 /**
- *
  * Integration Tests for interacting with Ranger
  */
 public class RangerAuthorizationServiceTest {

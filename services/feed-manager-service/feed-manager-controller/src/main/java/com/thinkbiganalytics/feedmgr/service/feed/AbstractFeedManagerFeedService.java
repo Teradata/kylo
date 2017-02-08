@@ -55,16 +55,12 @@ import javax.inject.Inject;
 public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedService {
 
     private static final Logger log = LoggerFactory.getLogger(AbstractFeedManagerFeedService.class);
-
-    @Inject
-    private LegacyNifiRestClient nifiRestClient;
-
     @Inject
     PropertyExpressionResolver propertyExpressionResolver;
-
     @Inject
     NifiFlowCache nifiFlowCache;
-
+    @Inject
+    private LegacyNifiRestClient nifiRestClient;
     @Inject
     private AccessController accessController;
 
@@ -73,7 +69,6 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
 
     @Value("${nifi.remove.inactive.versioned.feeds:true}")
     private boolean removeInactiveNifiVersionedFeedFlows;
-
 
 
     protected abstract RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId);
@@ -108,7 +103,7 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
             registeredTemplate = getRegisteredTemplateWithAllProperties(feedMetadata.getTemplateId());
 
         List<NifiProperty> matchedProperties = NifiPropertyUtil
-            .matchAndSetPropertyByIdKey(registeredTemplate.getProperties(), feedMetadata.getProperties(),NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_ALL_PROPERTIES);
+            .matchAndSetPropertyByIdKey(registeredTemplate.getProperties(), feedMetadata.getProperties(), NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_ALL_PROPERTIES);
         if (matchedProperties.size() == 0) {
             matchedProperties =
                 NifiPropertyUtil
@@ -139,7 +134,7 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
         FeedMetadata.STATE state = FeedMetadata.STATE.NEW;
         try {
             state = FeedMetadata.STATE.valueOf(feedMetadata.getState());
-        }catch (Exception e) {
+        } catch (Exception e) {
             //if the string isnt valid, disregard as it will end up disabling the feed.
         }
 
@@ -155,8 +150,9 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
         }
 
         CreateFeedBuilder
-            feedBuilder = CreateFeedBuilder.newFeed(nifiRestClient,nifiFlowCache, feedMetadata, registeredTemplate.getNifiTemplateId(), propertyExpressionResolver, propertyDescriptorTransform).enabled(enabled)
-            .removeInactiveVersionedProcessGroup(removeInactiveNifiVersionedFeedFlows);
+            feedBuilder =
+            CreateFeedBuilder.newFeed(nifiRestClient, nifiFlowCache, feedMetadata, registeredTemplate.getNifiTemplateId(), propertyExpressionResolver, propertyDescriptorTransform).enabled(enabled)
+                .removeInactiveVersionedProcessGroup(removeInactiveNifiVersionedFeedFlows);
 
         if (registeredTemplate.isReusableTemplate()) {
             feedBuilder.setReusableTemplate(true);

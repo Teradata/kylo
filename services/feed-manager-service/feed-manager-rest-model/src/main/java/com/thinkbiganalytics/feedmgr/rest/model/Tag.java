@@ -29,7 +29,7 @@ public class Tag {
 
     private String name;
 
-    public Tag(){
+    public Tag() {
 
     }
 

@@ -92,14 +92,10 @@ public class JpaMetricAssessment<D extends Serializable> extends AbstractAudited
     @Type(type = "com.thinkbiganalytics.jpa.TruncateStringUserType", parameters = {@Parameter(name = "length", value = "255")})
     private String metricType;
 
-    @Column(name="METRIC_DESCRIPTION")
+    @Column(name = "METRIC_DESCRIPTION")
     @Type(type = "com.thinkbiganalytics.jpa.TruncateStringUserType", parameters = {@Parameter(name = "length", value = "255")})
     private String metricDescription;
 
-
-    public static class ComparablesAttributeConverter extends JsonAttributeConverter<List<Comparable<? extends Serializable>>> {
-
-    }
 
     public JpaMetricAssessment() {
 
@@ -152,16 +148,6 @@ public class JpaMetricAssessment<D extends Serializable> extends AbstractAudited
         return serializedData;
     }
 
-    public void setData(D data) {
-        if (data != null) {
-            JsonAttributeConverter c = new JsonAttributeConverter();
-            String stringData = c.convertToDatabaseColumn(data);
-            this.serializedData = stringData;
-        } else {
-            this.serializedData = null;
-        }
-    }
-
     @Override
     public D getData() {
         if (this.serializedData != null) {
@@ -172,6 +158,15 @@ public class JpaMetricAssessment<D extends Serializable> extends AbstractAudited
         }
     }
 
+    public void setData(D data) {
+        if (data != null) {
+            JsonAttributeConverter c = new JsonAttributeConverter();
+            String stringData = c.convertToDatabaseColumn(data);
+            this.serializedData = stringData;
+        } else {
+            this.serializedData = null;
+        }
+    }
 
     protected void setComparator(Comparator<MetricAssessment<D>> comparator) {
         this.comparator = comparator;
@@ -192,6 +187,10 @@ public class JpaMetricAssessment<D extends Serializable> extends AbstractAudited
     @Override
     public int compareTo(MetricAssessment<D> metric) {
         return this.comparator.compare(this, metric);
+    }
+
+    public static class ComparablesAttributeConverter extends JsonAttributeConverter<List<Comparable<? extends Serializable>>> {
+
     }
 
     protected class DefaultComparator implements Comparator<MetricAssessment<D>> {

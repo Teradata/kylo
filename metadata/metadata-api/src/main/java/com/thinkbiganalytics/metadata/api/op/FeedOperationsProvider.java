@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.api.op;
 
@@ -32,7 +32,7 @@ import java.util.Set;
  *
  */
 public interface FeedOperationsProvider {
-    
+
     FeedOperationCriteria criteria();
 
     /**
@@ -58,9 +58,9 @@ public interface FeedOperationsProvider {
 
     /**
      * Get a listing of all the Dependent Job Executions and their associated executionContext data Map for the supplied {@code feedId}
+     *
      * @param feedId the feed that has dependents
      * @param props  filter to include only these property names from the respective job execution context.  null or empty set will return all data in the execution context
-     * @return
      */
     FeedDependencyDeltaResults getDependentDeltaResults(Feed.ID feedId, Set<String> props);
 

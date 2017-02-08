@@ -40,33 +40,33 @@ import java.util.Set;
 public class AvailablePolicies {
 
 
-  public static List<FieldStandardizationRule> discoverStandardizationRules(){
+    public static List<FieldStandardizationRule> discoverStandardizationRules() {
 
-    List<FieldStandardizationRule> rules = new ArrayList <>();
-    Set<Class<?>>
-        standardizers = ReflectionPolicyAnnotationDiscoverer.getTypesAnnotatedWith(Standardizer.class);
-    for(Class c: standardizers){
-      Standardizer standardizer = (Standardizer) c.getAnnotation(Standardizer.class);
-      List<FieldRuleProperty> properties = StandardizationAnnotationTransformer.instance().getUiProperties(c);
-      rules.add(new FieldStandardizationRuleBuilder(standardizer.name()).description(standardizer.description())
-                    .addProperties(properties).objectClassType(c).build());
+        List<FieldStandardizationRule> rules = new ArrayList<>();
+        Set<Class<?>>
+            standardizers = ReflectionPolicyAnnotationDiscoverer.getTypesAnnotatedWith(Standardizer.class);
+        for (Class c : standardizers) {
+            Standardizer standardizer = (Standardizer) c.getAnnotation(Standardizer.class);
+            List<FieldRuleProperty> properties = StandardizationAnnotationTransformer.instance().getUiProperties(c);
+            rules.add(new FieldStandardizationRuleBuilder(standardizer.name()).description(standardizer.description())
+                          .addProperties(properties).objectClassType(c).build());
+        }
+        return rules;
     }
-    return rules;
-  }
 
-  public static List<FieldValidationRule> discoverValidationRules(){
+    public static List<FieldValidationRule> discoverValidationRules() {
 
-    List<FieldValidationRule> rules = new ArrayList <>();
-    Set<Class<?>>
-        validators = ReflectionPolicyAnnotationDiscoverer.getTypesAnnotatedWith(Validator.class);
-    for(Class c: validators){
-      Validator validator = (Validator) c.getAnnotation(Validator.class);
-      List<FieldRuleProperty> properties = ValidatorAnnotationTransformer.instance().getUiProperties(c);
-      rules.add(new FieldValidationRuleBuilder(validator.name()).description(validator.description())
-                    .addProperties(properties).objectClassType(c).build());
+        List<FieldValidationRule> rules = new ArrayList<>();
+        Set<Class<?>>
+            validators = ReflectionPolicyAnnotationDiscoverer.getTypesAnnotatedWith(Validator.class);
+        for (Class c : validators) {
+            Validator validator = (Validator) c.getAnnotation(Validator.class);
+            List<FieldRuleProperty> properties = ValidatorAnnotationTransformer.instance().getUiProperties(c);
+            rules.add(new FieldValidationRuleBuilder(validator.name()).description(validator.description())
+                          .addProperties(properties).objectClassType(c).build());
+        }
+        return rules;
     }
-    return rules;
-  }
 
 
 }

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.rest.model.event;
 
@@ -37,18 +37,18 @@ import java.io.Serializable;
 public class FeedPreconditionTriggerEvent implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    
+
     private String feedId;
     private String feedName;
     private String category;
-    
+
     public FeedPreconditionTriggerEvent() {
     }
-    
+
     public FeedPreconditionTriggerEvent(String id) {
         this.feedId = id;
     }
-    
+
     public String getFeedId() {
         return feedId;
     }
@@ -64,11 +64,11 @@ public class FeedPreconditionTriggerEvent implements Serializable {
     public void setFeedName(String feedName) {
         this.feedName = feedName;
     }
-    
+
     public String getCategory() {
         return category;
     }
-    
+
     public void setCategory(String category) {
         this.category = category;
     }

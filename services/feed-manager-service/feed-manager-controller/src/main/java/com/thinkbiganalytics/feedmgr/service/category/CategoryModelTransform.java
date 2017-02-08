@@ -51,11 +51,15 @@ import javax.inject.Inject;
  */
 public class CategoryModelTransform {
 
-    /** Provider for categories */
+    /**
+     * Provider for categories
+     */
     @Inject
     FeedManagerCategoryProvider categoryProvider;
 
-    /** Transform functions for feeds */
+    /**
+     * Transform functions for feeds
+     */
     @Inject
     FeedModelTransform feedModelTransform;
 
@@ -89,7 +93,7 @@ public class CategoryModelTransform {
      * Transforms the specified Metadata category into a Feed Manager category.
      *
      * @param domainCategory the Metadata category
-     * @param userFields the user-defined fields
+     * @param userFields     the user-defined fields
      * @return the Feed Manager category
      */
     @Nullable
@@ -116,9 +120,9 @@ public class CategoryModelTransform {
 
             // Convert JCR securitygroup to DTO
             List<com.thinkbiganalytics.feedmgr.rest.model.HadoopSecurityGroup> restSecurityGroups = new ArrayList<>();
-            if(domainCategory.getSecurityGroups() != null && domainCategory.getSecurityGroups().size() > 0) {
-                for(Object group : domainCategory.getSecurityGroups()) {
-                    HadoopSecurityGroup hadoopSecurityGroup = (HadoopSecurityGroup)group;
+            if (domainCategory.getSecurityGroups() != null && domainCategory.getSecurityGroups().size() > 0) {
+                for (Object group : domainCategory.getSecurityGroups()) {
+                    HadoopSecurityGroup hadoopSecurityGroup = (HadoopSecurityGroup) group;
                     com.thinkbiganalytics.feedmgr.rest.model.HadoopSecurityGroup restSecurityGroup = new com.thinkbiganalytics.feedmgr.rest.model.HadoopSecurityGroup();
                     restSecurityGroup.setDescription(hadoopSecurityGroup.getDescription());
                     restSecurityGroup.setId(hadoopSecurityGroup.getGroupId());
@@ -196,7 +200,7 @@ public class CategoryModelTransform {
      * Transforms the specified Feed Manager category to a Metadata category.
      *
      * @param feedCategory the Feed Manager category
-     * @param userFields the user-defined fields
+     * @param userFields   the user-defined fields
      * @return the Metadata category
      */
     @Nonnull

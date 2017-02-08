@@ -56,6 +56,11 @@ public class BigDecimalColumnCase1Test extends ProfilerTest {
     private static BigDecimal topFirstValue;
     private static BigDecimal topSecondValue;
 
+    @AfterClass
+    public static void tearDownClass() {
+        System.out.println("\t*** Completed run for BigDecimalColumnCase1Test ***");
+    }
+
     @Before
     public void setUp() {
         super.setUp();
@@ -82,36 +87,30 @@ public class BigDecimalColumnCase1Test extends ProfilerTest {
         Assert.assertEquals(nullCount, columnStats.getNullCount());
     }
 
-
     @Test
     public void testBigDecimalTotalCount() {
         Assert.assertEquals(totalCount, columnStats.getTotalCount());
     }
-
 
     @Test
     public void testBigDecimalUniqueCount() {
         Assert.assertEquals(uniqueCount, columnStats.getUniqueCount());
     }
 
-
     @Test
     public void testBigDecimalPercNullValues() {
         assertEquals(percNullValues, columnStats.getPercNullValues(), epsilon);
     }
-
 
     @Test
     public void testBigDecimalPercUniqueValues() {
         assertEquals(percUniqueValues, columnStats.getPercUniqueValues(), epsilon);
     }
 
-
     @Test
     public void testBigDecimalPercDuplicateValues() {
         assertEquals(percDuplicateValues, columnStats.getPercDuplicateValues(), epsilon);
     }
-
 
     @Test
     public void testBigDecimalTopNValues() {
@@ -139,26 +138,18 @@ public class BigDecimalColumnCase1Test extends ProfilerTest {
         }
     }
 
-
     @Test
     public void testBigDecimalMax() {
         Assert.assertEquals(max, ((BigDecimalColumnStatistics) columnStats).getMax().setScale(5, BigDecimal.ROUND_HALF_UP));
     }
-
 
     @Test
     public void testBigDecimalMin() {
         Assert.assertEquals(min, ((BigDecimalColumnStatistics) columnStats).getMin().setScale(5, BigDecimal.ROUND_HALF_UP));
     }
 
-
     @Test
     public void testBigDecimalSum() {
         Assert.assertEquals(sum, ((BigDecimalColumnStatistics) columnStats).getSum().setScale(5, BigDecimal.ROUND_HALF_UP));
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-        System.out.println("\t*** Completed run for BigDecimalColumnCase1Test ***");
     }
 }

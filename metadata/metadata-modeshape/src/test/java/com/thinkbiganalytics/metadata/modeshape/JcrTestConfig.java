@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.modeshape;
 
@@ -44,13 +44,13 @@ import java.io.IOException;
  */
 @Configuration
 public class JcrTestConfig {
-    
+
     @Bean
     public RepositoryConfiguration metadataRepoConfig() throws IOException {
         ClassPathResource res = new ClassPathResource("/test-metadata-repository.json");
         return RepositoryConfiguration.read(res.getURL());
     }
-    
+
     @Bean
     public FeedOperationsProvider feedOperationsProvider() {
         return Mockito.mock(FeedOperationsProvider.class);
@@ -75,7 +75,7 @@ public class JcrTestConfig {
     public MetadataEventService metadataEventService() {
         return Mockito.mock(MetadataEventService.class);
     }
-    
+
 
     @Bean(name = "servicesModeShapeLoginConfiguration")
     @Primary

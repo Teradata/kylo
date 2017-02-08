@@ -44,6 +44,34 @@ public class ApplySecurityPolicy {
     private static final Object RESOURCES_LOCK = new Object();
     private long lastKerberosReloginTime;
 
+    public static Configuration getConfigurationFromResources(String configResources) throws IOException {
+        boolean foundResources = false;
+        final Configuration config = new Configuration();
+        if (null != configResources) {
+            String[] resources = configResources.split(",");
+            for (String resource : resources) {
+                config.addResource(new Path(resource.trim()));
+                foundResources = true;
+            }
+        }
+
+        if (!foundResources) {
+            // check that at least 1 non-default resource is available on the classpath
+            String configStr = config.toString();
+            for (String resource : configStr.substring(configStr.indexOf(":") + 1).split(",")) {
+                if (!resource.contains("default") && config.getResource(resource.trim()) != null) {
+                    foundResources = true;
+                    break;
+                }
+            }
+        }
+
+        if (!foundResources) {
+            throw new IOException("Could not find any of the " + "hadoop conf" + " on the classpath");
+        }
+        return config;
+    }
+
     public boolean validateUserWithKerberos(ComponentLog loggerInstance, String HadoopConfigurationResources, String Principal, String KeyTab) throws Exception {
 
         ClassLoader savedClassLoader = Thread.currentThread().getContextClassLoader();
@@ -95,34 +123,6 @@ public class ApplySecurityPolicy {
             Thread.currentThread().setContextClassLoader(savedClassLoader);
         }
 
-    }
-
-    public static Configuration getConfigurationFromResources(String configResources) throws IOException {
-        boolean foundResources = false;
-        final Configuration config = new Configuration();
-        if (null != configResources) {
-            String[] resources = configResources.split(",");
-            for (String resource : resources) {
-                config.addResource(new Path(resource.trim()));
-                foundResources = true;
-            }
-        }
-
-        if (!foundResources) {
-            // check that at least 1 non-default resource is available on the classpath
-            String configStr = config.toString();
-            for (String resource : configStr.substring(configStr.indexOf(":") + 1).split(",")) {
-                if (!resource.contains("default") && config.getResource(resource.trim()) != null) {
-                    foundResources = true;
-                    break;
-                }
-            }
-        }
-
-        if (!foundResources) {
-            throw new IOException("Could not find any of the " + "hadoop conf" + " on the classpath");
-        }
-        return config;
     }
 
     /*

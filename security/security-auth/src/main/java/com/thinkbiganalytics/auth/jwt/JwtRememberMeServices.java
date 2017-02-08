@@ -59,14 +59,20 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class JwtRememberMeServices extends AbstractRememberMeServices {
 
-    /** Key of the string list containing group names */
+    /**
+     * Key of the string list containing group names
+     */
     private static final String GROUPS = "groups";
 
-    /** Identifies the signature algorithm */
+    /**
+     * Identifies the signature algorithm
+     */
     @Nonnull
     private final String algorithmIdentifier;
 
-    /** Secret key for signature */
+    /**
+     * Secret key for signature
+     */
     @Nullable
     private Key secretKey;
 
@@ -87,7 +93,7 @@ public class JwtRememberMeServices extends AbstractRememberMeServices {
      *
      * @param cookie the JWT cookie
      * @return an array with the username and group names
-     * @throws IllegalStateException if the secret key is invalid
+     * @throws IllegalStateException  if the secret key is invalid
      * @throws InvalidCookieException if the cookie cannot be decoded
      */
     @Nonnull
@@ -95,9 +101,9 @@ public class JwtRememberMeServices extends AbstractRememberMeServices {
     protected String[] decodeCookie(@Nonnull final String cookie) throws InvalidCookieException {
         // Build the JWT parser
         final JwtConsumer consumer = new JwtConsumerBuilder()
-                .setEvaluationTime(NumericDate.fromMilliseconds(DateTimeUtils.currentTimeMillis()))
-                .setVerificationKey(getSecretKey())
-                .build();
+            .setEvaluationTime(NumericDate.fromMilliseconds(DateTimeUtils.currentTimeMillis()))
+            .setVerificationKey(getSecretKey())
+            .build();
 
         // Parse the cookie
         final String user;
@@ -163,8 +169,8 @@ public class JwtRememberMeServices extends AbstractRememberMeServices {
     /**
      * Sets a JWT cookie when the user has successfully logged in.
      *
-     * @param request the HTTP request
-     * @param response the HTTP response
+     * @param request        the HTTP request
+     * @param response       the HTTP response
      * @param authentication the user
      */
     @Override
@@ -179,8 +185,8 @@ public class JwtRememberMeServices extends AbstractRememberMeServices {
     /**
      * Reconstructs the user from the specified tokens.
      *
-     * @param tokens the tokens from the JWT cookie
-     * @param request the HTTP request
+     * @param tokens   the tokens from the JWT cookie
+     * @param request  the HTTP request
      * @param response the HTTP response
      * @return the user
      */

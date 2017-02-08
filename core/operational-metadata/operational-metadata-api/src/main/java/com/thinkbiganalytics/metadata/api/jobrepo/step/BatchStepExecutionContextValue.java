@@ -36,25 +36,27 @@ public interface BatchStepExecutionContextValue {
 
     /**
      * Return the name of this attribute
+     *
      * @return the name of this attribute
      */
     String getKeyName();
 
     /**
      * Return a unique id representing this value
+     *
      * @return a unique id representing this value
      */
     String getId();
 
     /**
      * Return the job execution id {@link BatchJobExecution#getJobExecutionId()}
+     *
      * @return the job execution id
      */
     Long getJobExecutionId();
 
     /**
      * return the actual value of this key
-     * @return
      */
     String getStringVal();
 }

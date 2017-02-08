@@ -1,4 +1,3 @@
-
 package com.thinkbiganalytics.jira.domain;
 
 /*-
@@ -37,13 +36,13 @@ import javax.annotation.Generated;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("org.jsonschema2pojo")
 @JsonPropertyOrder({
-    "self",
-    "description",
-    "iconUrl",
-    "name",
-    "id",
-    "statusCategory"
-})
+                       "self",
+                       "description",
+                       "iconUrl",
+                       "name",
+                       "id",
+                       "statusCategory"
+                   })
 public class Status {
 
     @JsonProperty("self")
@@ -62,9 +61,7 @@ public class Status {
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
-     * 
-     * @return
-     *     The self
+     * @return The self
      */
     @JsonProperty("self")
     public String getSelf() {
@@ -72,9 +69,7 @@ public class Status {
     }
 
     /**
-     * 
-     * @param self
-     *     The self
+     * @param self The self
      */
     @JsonProperty("self")
     public void setSelf(String self) {
@@ -82,9 +77,7 @@ public class Status {
     }
 
     /**
-     * 
-     * @return
-     *     The description
+     * @return The description
      */
     @JsonProperty("description")
     public String getDescription() {
@@ -92,9 +85,7 @@ public class Status {
     }
 
     /**
-     * 
-     * @param description
-     *     The description
+     * @param description The description
      */
     @JsonProperty("description")
     public void setDescription(String description) {
@@ -102,9 +93,7 @@ public class Status {
     }
 
     /**
-     * 
-     * @return
-     *     The iconUrl
+     * @return The iconUrl
      */
     @JsonProperty("iconUrl")
     public String getIconUrl() {
@@ -112,9 +101,7 @@ public class Status {
     }
 
     /**
-     * 
-     * @param iconUrl
-     *     The iconUrl
+     * @param iconUrl The iconUrl
      */
     @JsonProperty("iconUrl")
     public void setIconUrl(String iconUrl) {
@@ -122,9 +109,7 @@ public class Status {
     }
 
     /**
-     * 
-     * @return
-     *     The name
+     * @return The name
      */
     @JsonProperty("name")
     public String getName() {
@@ -132,9 +117,7 @@ public class Status {
     }
 
     /**
-     * 
-     * @param name
-     *     The name
+     * @param name The name
      */
     @JsonProperty("name")
     public void setName(String name) {
@@ -142,9 +125,7 @@ public class Status {
     }
 
     /**
-     * 
-     * @return
-     *     The id
+     * @return The id
      */
     @JsonProperty("id")
     public String getId() {
@@ -152,9 +133,7 @@ public class Status {
     }
 
     /**
-     * 
-     * @param id
-     *     The id
+     * @param id The id
      */
     @JsonProperty("id")
     public void setId(String id) {
@@ -162,9 +141,7 @@ public class Status {
     }
 
     /**
-     * 
-     * @return
-     *     The statusCategory
+     * @return The statusCategory
      */
     @JsonProperty("statusCategory")
     public StatusCategory getStatusCategory() {
@@ -172,9 +149,7 @@ public class Status {
     }
 
     /**
-     * 
-     * @param statusCategory
-     *     The statusCategory
+     * @param statusCategory The statusCategory
      */
     @JsonProperty("statusCategory")
     public void setStatusCategory(StatusCategory statusCategory) {
@@ -190,6 +165,7 @@ public class Status {
     public void setAdditionalProperty(String name, Object value) {
         this.additionalProperties.put(name, value);
     }
+
     @Override
     public String toString() {
         return getToStringHelper().toString();
@@ -197,6 +173,6 @@ public class Status {
 
     protected MoreObjects.ToStringHelper getToStringHelper() {
         return MoreObjects.toStringHelper(this).
-                add("name", name);
+            add("name", name);
     }
 }

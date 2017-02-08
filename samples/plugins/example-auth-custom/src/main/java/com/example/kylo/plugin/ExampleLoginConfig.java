@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.example.kylo.plugin;
 
@@ -33,10 +33,9 @@ import org.springframework.context.annotation.Configuration;
 import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
 
 /**
- * This is an example configuration that sets up a custom JAAS LoginModule as part of 
+ * This is an example configuration that sets up a custom JAAS LoginModule as part of
  * a Kylo plugin.  Its purpose is to define a bean representing a login module configuration
  * using the builder provided by the Kylo authentication framework.
- * 
  */
 @Configuration
 public class ExampleLoginConfig {

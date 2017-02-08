@@ -36,7 +36,7 @@ public class NodeIdStrategyV1 implements NodeIdStrategy {
         final String nodeId = isClustered ? context.getClusterNodeIdentifier() : "non-clustered-node-id";
         if (nodeId == null) {
             log.info("This instance of NiFi is configured for clustering, but the Cluster Node Identifier is not yet available. "
-                    + "Will wait for Node Identifier to be established.");
+                     + "Will wait for Node Identifier to be established.");
         }
         return nodeId;
     }

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.rest.model.sla;
 
@@ -59,30 +59,30 @@ public class ServiceLevelAgreement {
      * List to hold any transformation errors found when converting Domain to this model
      */
     private List<String> slaCheckErrors;
-    
+
     public ServiceLevelAgreement() {
         this.defaultGroup = new ObligationGroup("REQUIRED");
         this.groups = Lists.newArrayList(this.defaultGroup);
     }
-    
+
     public ServiceLevelAgreement(String id, String name, String description) {
         this();
         this.id = id;
         this.name = name;
         this.description = description;
     }
-    
+
     public ServiceLevelAgreement(String name, Metric... metrics) {
         this(null, name, "", metrics);
     }
-    
+
     public ServiceLevelAgreement(String id, String name, String description, Metric... metrics) {
         this(id, name, description, new Obligation("", metrics));
     }
 
     public ServiceLevelAgreement(String id, String name, String description, Obligation... obligations) {
         this(id, name, description);
-        
+
         for (Obligation ob : obligations) {
             this.defaultGroup.addObligation(ob);
         }
@@ -121,23 +121,23 @@ public class ServiceLevelAgreement {
     @JsonIgnore
     public List<Obligation> getObligations() {
         return this.groups.stream()
-                        .flatMap((grp) -> grp.getObligations().stream())
-                        .collect(Collectors.toList());
+            .flatMap((grp) -> grp.getObligations().stream())
+            .collect(Collectors.toList());
     }
-    
+
     public void addObligation(Obligation ob) {
         this.defaultGroup.addObligation(ob);
     }
 
     public List<ObligationGroup> getGroups() {
-        return this.groups.stream().filter(grp -> ! grp.getObligations().isEmpty()).collect(Collectors.toList());
+        return this.groups.stream().filter(grp -> !grp.getObligations().isEmpty()).collect(Collectors.toList());
     }
 
     public void setGroups(List<ObligationGroup> groups) {
         this.defaultGroup.getObligations().clear();
         this.groups = Lists.asList(this.defaultGroup, groups.toArray(new ObligationGroup[groups.size()]));
     }
-    
+
     public void addGroup(ObligationGroup group) {
         this.groups.add(group);
     }

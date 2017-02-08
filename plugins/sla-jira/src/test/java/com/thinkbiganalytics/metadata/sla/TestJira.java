@@ -55,6 +55,9 @@ import javax.inject.Inject;
 public class TestJira {
 
 
+    @Inject
+    JiraServiceLevelAgreementAction agreementAction;
+
     private ServiceLevelAssessment serviceLevelAssessment() {
         return new ServiceLevelAssessment() {
             @Override
@@ -138,10 +141,6 @@ public class TestJira {
             }
         };
     }
-
-
-    @Inject
-    JiraServiceLevelAgreementAction agreementAction;
 
     @Test
     public void testJira() {

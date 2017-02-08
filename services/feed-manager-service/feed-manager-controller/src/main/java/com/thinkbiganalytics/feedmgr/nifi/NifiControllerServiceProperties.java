@@ -50,15 +50,12 @@ public class NifiControllerServiceProperties {
     LegacyNifiRestClient nifiRestClient;
 
 
-
     /**
      * Call out to Nifi and get all the Properties for a service by Service Name
-     * @param serviceName
-     * @return
      */
-    public Map<String,String> getPropertiesForServiceName(String serviceName){
+    public Map<String, String> getPropertiesForServiceName(String serviceName) {
         ControllerServiceDTO controllerService = getControllerServiceByName(serviceName);
-        if(controllerService != null){
+        if (controllerService != null) {
             return controllerService.getProperties();
         }
         return null;
@@ -66,12 +63,10 @@ public class NifiControllerServiceProperties {
 
     /**
      * Call out to Nifi and get all the Properties for a service by Service Id
-     * @param serviceId
-     * @return
      */
-    public Map<String,String> getPropertiesForServiceId(String serviceId){
+    public Map<String, String> getPropertiesForServiceId(String serviceId) {
         ControllerServiceDTO controllerService = getControllerServiceById(serviceId);
-        if(controllerService != null){
+        if (controllerService != null) {
             return controllerService.getProperties();
         }
         return null;
@@ -80,37 +75,35 @@ public class NifiControllerServiceProperties {
     /**
      * Call out to Nifi and get the Controller Service Properties and then merge it with any properties in our environment properties file.
      * Env service properties need to start with the ENVIRONMENT_PROPERTY_SERVICE_PREFIX  ("nifi.service.")
-     * @param serviceId
-     * @return
      */
-    public  Map<String,String> getPropertiesForServiceIdMergedWithEnvironmentProperties(String serviceId) {
+    public Map<String, String> getPropertiesForServiceIdMergedWithEnvironmentProperties(String serviceId) {
         ControllerServiceDTO controllerService = getControllerServiceById(serviceId);
-        if(controllerService != null){
+        if (controllerService != null) {
             String serviceName = controllerService.getName();
-            Map<String,String>  properties = controllerService.getProperties();
-            properties =  mergeNifiAndEnvProperties(properties,serviceName);
+            Map<String, String> properties = controllerService.getProperties();
+            properties = mergeNifiAndEnvProperties(properties, serviceName);
             return properties;
         }
         return null;
     }
 
 
-    public  Map<String,String> getPropertiesForServiceNameMergedWithEnvironmentProperties(String serviceName) {
-        Map<String,String> properties = getPropertiesForServiceName(serviceName);
-        properties =   mergeNifiAndEnvProperties(properties,serviceName);
+    public Map<String, String> getPropertiesForServiceNameMergedWithEnvironmentProperties(String serviceName) {
+        Map<String, String> properties = getPropertiesForServiceName(serviceName);
+        properties = mergeNifiAndEnvProperties(properties, serviceName);
         return properties;
     }
 
-    public Map<String,String> mergeNifiAndEnvProperties(Map<String,String> nifiProperties, String serviceName){
-        if(nifiProperties != null){
+    public Map<String, String> mergeNifiAndEnvProperties(Map<String, String> nifiProperties, String serviceName) {
+        if (nifiProperties != null) {
             CaseInsensitiveMap propertyMap = new CaseInsensitiveMap(nifiProperties);
             String servicePrefix = NifiEnvironmentProperties.getEnvironmentControllerServicePropertyPrefix(serviceName);
-            Map<String,Object> map = environmentProperties.getPropertiesStartingWith(servicePrefix);
-            if(map != null && !map.isEmpty()) {
-                for(Map.Entry<String,Object> entry: map.entrySet()) {
+            Map<String, Object> map = environmentProperties.getPropertiesStartingWith(servicePrefix);
+            if (map != null && !map.isEmpty()) {
+                for (Map.Entry<String, Object> entry : map.entrySet()) {
                     String key = NifiEnvironmentProperties.environmentPropertyToControllerServiceProperty(entry.getKey());
-                    if(propertyMap.containsKey(key) && entry.getValue() != null){
-                        propertyMap.put(key,entry.getValue());
+                    if (propertyMap.containsKey(key) && entry.getValue() != null) {
+                        propertyMap.put(key, entry.getValue());
                     }
                 }
             }
@@ -124,23 +117,19 @@ public class NifiControllerServiceProperties {
      * example
      * mysql, password
      * will return the value from the property  nifi.service.mysql.password
-     * @param serviceName
-     * @param envPropertyKeySuffix
-     * @return
      */
-    public String getEnvironmentPropertyValueForControllerService(String serviceName, String envPropertyKeySuffix){
+    public String getEnvironmentPropertyValueForControllerService(String serviceName, String envPropertyKeySuffix) {
 
-            String servicePrefix = NifiEnvironmentProperties.getEnvironmentControllerServicePropertyPrefix(serviceName);
-            return environmentProperties.getPropertyValueAsString(servicePrefix+"."+envPropertyKeySuffix);
+        String servicePrefix = NifiEnvironmentProperties.getEnvironmentControllerServicePropertyPrefix(serviceName);
+        return environmentProperties.getPropertyValueAsString(servicePrefix + "." + envPropertyKeySuffix);
 
     }
 
     /**
      * returns all properties configured with the prefix
-     * @return
      */
-    public Map<String,Object> getAllServiceProperties(){
-       return environmentProperties.getPropertiesStartingWith(NifiEnvironmentProperties.getPrefix());
+    public Map<String, Object> getAllServiceProperties() {
+        return environmentProperties.getPropertiesStartingWith(NifiEnvironmentProperties.getPrefix());
     }
 
 
@@ -163,6 +152,7 @@ public class NifiControllerServiceProperties {
 
     /**
      * Find a controller service with a given NiFi id or null if not found
+     *
      * @param serviceId a controller service id
      * @return a controller service with a given NiFi id or null if not found
      */
@@ -182,10 +172,11 @@ public class NifiControllerServiceProperties {
     /**
      * return the property prepended with the prefix used in the .properties file to denote nifi controller service settings.
      * the default prefix is 'nifi.'
+     *
      * @param serviceName a service name
      * @return the property prepended with the prefix used in the .properties file to denote nifi controller service settings.
      */
-    public String getEnvironmentControllerServicePropertyPrefix(String serviceName){
+    public String getEnvironmentControllerServicePropertyPrefix(String serviceName) {
         return NifiEnvironmentProperties.getEnvironmentControllerServicePropertyPrefix(serviceName);
     }
 

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.api.event.sla;
 
@@ -34,10 +34,10 @@ import java.util.Objects;
 public class ServiceLevelAgreementChange extends MetadataChange {
 
     private static final long serialVersionUID = 1L;
-    
+
     private final ServiceLevelAgreement.ID id;
     private final String name;
-    
+
     public ServiceLevelAgreementChange(ChangeType change, ServiceLevelAgreement.ID id, String name) {
         this(change, "", id, name);
     }
@@ -73,15 +73,15 @@ public class ServiceLevelAgreementChange extends MetadataChange {
             return false;
         }
     }
-    
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("SLA change ");
         return sb
-                        .append("(").append(getChange()).append(") - ")
-                        .append("ID: ").append(this.id)
-                        .append(" name: ").append(this.name)
-                        .toString();
+            .append("(").append(getChange()).append(") - ")
+            .append("ID: ").append(this.id)
+            .append(" name: ").append(this.name)
+            .toString();
     }
 
 }

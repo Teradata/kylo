@@ -86,9 +86,6 @@ public class TestFeedManagerFeed {
     private FeedTestUtil feedTestUtil;
 
 
-
-
-
     private boolean deleteTemplate(String templateName) {
         //try to delete the template.  This should fail since there are feeds attached to it
         return metadata.commit(new AdminCredentials(), () -> {
@@ -175,7 +172,6 @@ public class TestFeedManagerFeed {
         String feedName = "my_feed";
         String templateName = "my_template";
         setupFeedAndTemplate(categorySystemName, feedName, templateName);
-
 
         //try to delete the template.  This should fail since there are feeds attached to it
         Boolean deleteStatus = null;

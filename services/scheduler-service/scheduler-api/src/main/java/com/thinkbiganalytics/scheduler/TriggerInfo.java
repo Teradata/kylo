@@ -30,17 +30,31 @@ public interface TriggerInfo {
 
     Date getNextFireTime();
 
+    void setNextFireTime(Date nextFireTime);
+
     Date getPreviousFireTime();
+
+    void setPreviousFireTime(Date previousFireTime);
 
     Date getStartTime();
 
+    void setStartTime(Date startTime);
+
     Date getEndTime();
+
+    void setEndTime(Date endTime);
 
     String getCronExpression();
 
+    void setCronExpression(String cronExpression);
+
     String getCronExpressionSummary();
 
+    void setCronExpressionSummary(String summary);
+
     String getDescription();
+
+    void setDescription(String description);
 
     boolean isSimpleTrigger();
 
@@ -52,33 +66,19 @@ public interface TriggerInfo {
 
     TriggerInfo.TriggerState getState();
 
-    TriggerIdentifier getTriggerIdentifier();
+    void setState(TriggerInfo.TriggerState state);
 
-    JobIdentifier getJobIdentifier();
+    TriggerIdentifier getTriggerIdentifier();
 
     void setTriggerIdentifier(TriggerIdentifier triggerIdentifier);
 
+    JobIdentifier getJobIdentifier();
+
     void setJobIdentifier(JobIdentifier jobIdentifier);
 
-    void setNextFireTime(Date nextFireTime);
-
-    void setPreviousFireTime(Date previousFireTime);
-
-    void setStartTime(Date startTime);
-
-    void setEndTime(Date endTime);
-
-    void setCronExpression(String cronExpression);
-
-    void setCronExpressionSummary(String summary);
-
-    void setDescription(String description);
-
-    void setState(TriggerInfo.TriggerState state);
+    Class getTriggerClass();
 
     void setTriggerClass(Class triggerClass);
-
-    Class getTriggerClass();
 
     public static enum TriggerState {
         NONE,

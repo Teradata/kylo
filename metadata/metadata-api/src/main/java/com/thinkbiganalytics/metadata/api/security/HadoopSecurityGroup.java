@@ -26,8 +26,6 @@ import java.io.Serializable;
  */
 public interface HadoopSecurityGroup {
 
-    interface ID extends Serializable { }
-
     ID getId();
 
     String getGroupId();
@@ -35,4 +33,8 @@ public interface HadoopSecurityGroup {
     String getName();
 
     String getDescription();
+
+    interface ID extends Serializable {
+
+    }
 }

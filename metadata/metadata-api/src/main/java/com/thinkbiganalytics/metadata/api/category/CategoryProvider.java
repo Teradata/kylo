@@ -79,7 +79,7 @@ public interface CategoryProvider<T extends Category> extends BaseProvider<T, Ca
      * Renames the specified category.
      *
      * @param categoryId the category id
-     * @param newName the new name
+     * @param newName    the new name
      */
     void rename(@Nonnull Category.ID categoryId, @Nonnull String newName);
 }

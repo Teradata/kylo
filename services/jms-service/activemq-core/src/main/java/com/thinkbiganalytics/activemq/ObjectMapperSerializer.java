@@ -33,10 +33,11 @@ import java.io.IOException;
 /**
  */
 public class ObjectMapperSerializer {
+
     private static final Logger log = LoggerFactory.getLogger(ObjectMapperSerializer.class);
 
 
-    private  ObjectMapper mapper;
+    private ObjectMapper mapper;
 
     public ObjectMapperSerializer() {
         mapper = new ObjectMapper();
@@ -48,7 +49,7 @@ public class ObjectMapperSerializer {
         return mapper;
     }
 
-    public  String serialize(Object obj) {
+    public String serialize(Object obj) {
         String json = null;
         try {
             json = mapper.writeValueAsString(obj);
@@ -58,9 +59,9 @@ public class ObjectMapperSerializer {
         return json;
     }
 
-    public  <T> T deserialize(String json, Class<T> clazz){
+    public <T> T deserialize(String json, Class<T> clazz) {
         try {
-            return mapper.readValue(json,clazz);
+            return mapper.readValue(json, clazz);
         } catch (IOException e) {
             throw new RuntimeException("Error de-serializing object", e);
         }

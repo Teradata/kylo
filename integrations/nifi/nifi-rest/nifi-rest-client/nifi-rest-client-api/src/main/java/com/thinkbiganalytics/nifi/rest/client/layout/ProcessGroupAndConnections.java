@@ -48,18 +48,18 @@ public class ProcessGroupAndConnections {
     }
 
     public Set<ConnectionDTO> getConnections() {
-        if(connections == null){
+        if (connections == null) {
             connections = new HashSet<>();
         }
         return connections;
     }
 
-    public ProcessGroupAndConnections addConnection(ConnectionDTO connection){
+    public ProcessGroupAndConnections addConnection(ConnectionDTO connection) {
         getConnections().add(connection);
         return this;
     }
 
-    public ProcessGroupAndConnections addPort(PortDTO portDTO){
+    public ProcessGroupAndConnections addPort(PortDTO portDTO) {
         getPorts().add(portDTO);
         return this;
     }
@@ -70,7 +70,7 @@ public class ProcessGroupAndConnections {
     }
 
     public Set<PortDTO> getPorts() {
-        if(ports == null){
+        if (ports == null) {
             ports = new HashSet<>();
         }
         return ports;

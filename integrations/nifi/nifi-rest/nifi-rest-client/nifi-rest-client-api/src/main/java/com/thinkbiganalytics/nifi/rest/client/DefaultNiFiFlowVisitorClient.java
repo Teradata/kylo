@@ -194,7 +194,7 @@ public class DefaultNiFiFlowVisitorClient implements NiFiFlowVisitorClient {
         parentProcessGroup.setParentGroupId(UUID.randomUUID().toString());
         parentProcessGroup.setName(template.getName());
         parentProcessGroup.setContents(template.getSnippet());
-        NifiVisitableProcessGroup visitableGroup =  getFlowOrder(parentProcessGroup,new NifiConnectionOrderVisitorCache());
+        NifiVisitableProcessGroup visitableGroup = getFlowOrder(parentProcessGroup, new NifiConnectionOrderVisitorCache());
         NifiFlowProcessGroup flow = new NifiFlowBuilder().build(visitableGroup);
         return flow;
     }
@@ -203,7 +203,6 @@ public class DefaultNiFiFlowVisitorClient implements NiFiFlowVisitorClient {
         TemplateDTO template = restClient.templates().findById(templateId).orElseThrow(() -> new NifiComponentNotFoundException(templateId, NifiConstants.NIFI_COMPONENT_TYPE.TEMPLATE, null));
         return getTemplateFeedFlow(template);
     }
-
 
 
 }

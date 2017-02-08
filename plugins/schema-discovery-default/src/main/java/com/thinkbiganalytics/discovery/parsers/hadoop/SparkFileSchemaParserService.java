@@ -60,20 +60,13 @@ import javax.inject.Inject;
 public class SparkFileSchemaParserService {
 
     private static final Logger log = LoggerFactory.getLogger(SparkFileSchemaParserService.class);
-
-    public enum SparkFileType {
-        PARQUET, AVRO, JSON, ORC
-    }
-
     @Inject
     private SparkShellProcessManager shellProcessManager;
-
     /**
      * Communicates with Spark Shell processes
      */
     @Inject
     private SparkShellRestClient restClient;
-    // Port: 8450
 
     /**
      * Delegate to spark shell service to load the file into a temporary table and loading it
@@ -106,6 +99,7 @@ public class SparkFileSchemaParserService {
         }
 
     }
+    // Port: 8450
 
     private TransformRequest createTransformRequest(File localFile, SparkFileType fileType) {
         TransformRequest transformRequest = new TransformRequest();
@@ -186,6 +180,10 @@ public class SparkFileSchemaParserService {
         }
         log.info("Created temporary file {} success?", tempFile.getAbsoluteFile().toURI(), tempFile.exists());
         return tempFile;
+    }
+
+    public enum SparkFileType {
+        PARQUET, AVRO, JSON, ORC
     }
 
 

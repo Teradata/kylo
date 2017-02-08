@@ -25,22 +25,34 @@ package com.thinkbiganalytics.spark.conf.model;
  */
 public class KerberosSparkProperties {
 
-    /** Enables or disables Kerberos authentication */
+    /**
+     * Enables or disables Kerberos authentication
+     */
     private boolean kerberosEnabled = false;
 
-    /** Name of the principal for acquiring a Kerberos ticket */
+    /**
+     * Name of the principal for acquiring a Kerberos ticket
+     */
     private String kerberosPrincipal;
 
-    /** Local path to the keytab for acquiring a Kerberos ticket */
+    /**
+     * Local path to the keytab for acquiring a Kerberos ticket
+     */
     private String keytabLocation;
 
-    /** Name of the Kerberos realm to append to usernames */
+    /**
+     * Name of the Kerberos realm to append to usernames
+     */
     private String realm;
 
-    /** Seconds to cache a Kerberos ticket */
+    /**
+     * Seconds to cache a Kerberos ticket
+     */
     private int renewInterval;
 
-    /** Seconds to wait for acquring a Kerberos ticket */
+    /**
+     * Seconds to wait for acquring a Kerberos ticket
+     */
     private int retryInterval;
 
     public boolean isKerberosEnabled() {

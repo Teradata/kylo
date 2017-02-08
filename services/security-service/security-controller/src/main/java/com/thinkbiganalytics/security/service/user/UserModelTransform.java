@@ -37,6 +37,15 @@ import javax.annotation.Nonnull;
 public class UserModelTransform {
 
     /**
+     * Instances of {@code UserModelTransform} should not be constructed.
+     *
+     * @throws UnsupportedOperationException always
+     */
+    private UserModelTransform() {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
      * Transforms Metadata groups to Security groups.
      *
      * @return the Security groups
@@ -66,19 +75,10 @@ public class UserModelTransform {
             principal.setEmail(user.getEmail());
             principal.setEnabled(user.isEnabled());
             principal.setGroups(user.getGroups().stream()
-                                        .map(UserGroup::getSystemName)
-                                        .collect(Collectors.toSet()));
+                                    .map(UserGroup::getSystemName)
+                                    .collect(Collectors.toSet()));
             principal.setSystemName(user.getSystemName());
             return principal;
         };
-    }
-
-    /**
-     * Instances of {@code UserModelTransform} should not be constructed.
-     *
-     * @throws UnsupportedOperationException always
-     */
-    private UserModelTransform() {
-        throw new UnsupportedOperationException();
     }
 }

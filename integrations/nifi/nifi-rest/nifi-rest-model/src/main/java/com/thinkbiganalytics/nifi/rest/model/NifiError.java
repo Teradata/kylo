@@ -30,26 +30,19 @@ import com.google.common.base.MoreObjects;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class NifiError {
 
-    public enum SEVERITY {
-        INFO(0),WARN(1),FATAL(2);
-        SEVERITY(int level){
-            this.level  = level;
-        }
-        private int level;
-    }
-
     /**
      * the error message
      **/
     private String message;
-    /** a string allowing for grouping of errors together **/
+    /**
+     * a string allowing for grouping of errors together
+     **/
     private String category;
     private SEVERITY severity;
-
-
-    public NifiError(){
+    public NifiError() {
 
     }
+
 
     public NifiError(SEVERITY severity, String message) {
         this.severity = SEVERITY.WARN;
@@ -62,16 +55,17 @@ public class NifiError {
         this.message = message;
     }
 
-    public NifiError(SEVERITY severity,String message, String category) {
+    public NifiError(SEVERITY severity, String message, String category) {
         this.severity = severity;
         this.message = message;
         this.category = category;
     }
 
     @JsonIgnore
-    public boolean isFatal(){
+    public boolean isFatal() {
         return SEVERITY.FATAL.equals(this.severity);
     }
+
     public String getMessage() {
         return message;
     }
@@ -82,6 +76,7 @@ public class NifiError {
 
     /**
      * Return a string used to group errors together
+     *
      * @return a string used to group errors together
      */
     public String getCategory() {
@@ -90,7 +85,6 @@ public class NifiError {
 
     /**
      * set
-     * @param category
      */
     public void setCategory(String category) {
         this.category = category;
@@ -107,9 +101,19 @@ public class NifiError {
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
-                .add("severity", severity)
-                .add("category", category)
-                .add("message", message)
-                .toString();
+            .add("severity", severity)
+            .add("category", category)
+            .add("message", message)
+            .toString();
+    }
+
+    public enum SEVERITY {
+        INFO(0), WARN(1), FATAL(2);
+
+        private int level;
+
+        SEVERITY(int level) {
+            this.level = level;
+        }
     }
 }

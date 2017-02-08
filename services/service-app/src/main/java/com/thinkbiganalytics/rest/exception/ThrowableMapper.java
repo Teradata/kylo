@@ -45,7 +45,7 @@ public class ThrowableMapper extends BaseExceptionMapper implements javax.ws.rs.
         builder.url(req.getRequestURI());
         builder.message("An unknown error has occurred. This is very likely due to invalid input");
 
-        if(debugMode) {
+        if (debugMode) {
             builder.setDeveloperMessage(exception);
         }
         return Response.accepted(builder.buildError()).status(Response.Status.INTERNAL_SERVER_ERROR).build();

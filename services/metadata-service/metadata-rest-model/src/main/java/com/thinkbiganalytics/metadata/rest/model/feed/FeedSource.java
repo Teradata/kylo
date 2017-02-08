@@ -38,8 +38,8 @@ import java.io.Serializable;
 @JsonInclude(Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FeedSource implements Serializable {
-    
-    @JsonSerialize(using=DateTimeSerializer.class)
+
+    @JsonSerialize(using = DateTimeSerializer.class)
     private DateTime lastLoadTime;
 
     private String id;

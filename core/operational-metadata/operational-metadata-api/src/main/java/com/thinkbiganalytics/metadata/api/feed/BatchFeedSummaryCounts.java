@@ -35,36 +35,42 @@ public interface BatchFeedSummaryCounts {
 
     /**
      * Return the feed id0
+     *
      * @return the feedid
      */
     OpsManagerFeed.ID getFeedId();
 
     /**
      * Return the feed name
+     *
      * @return the feed name
      */
     String getFeedName();
 
     /**
      * Return a count of all the batch jobs executed for this feed
+     *
      * @return a count of all the batch jobs executed for this feed
      */
     Long getAllCount();
 
     /**
      * Return a count of all the batch jobs that have failed for this feed
+     *
      * @return a count of all the batch jobs that have failed for this feed
      */
     Long getFailedCount();
 
     /**
      * Return a count of all the batch jobs that have completed for this feed
+     *
      * @return a count of all the batch jobs that have completed for this feed
      */
     Long getCompletedCount();
 
     /**
      * Return a count of all the batch jobs that have been abandoned for this feed
+     *
      * @return a count of all the batch jobs that have been abandoned for this feed
      */
     Long getAbandonedCount();

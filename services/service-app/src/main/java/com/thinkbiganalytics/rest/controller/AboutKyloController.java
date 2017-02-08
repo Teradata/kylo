@@ -65,7 +65,7 @@ public class AboutKyloController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets information about the current user.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "Returns the user.", response = UserPrincipal.class)
+        @ApiResponse(code = 200, message = "Returns the user.", response = UserPrincipal.class)
     )
     public Response getCurrentUser() {
         // Create principal from current user
@@ -76,16 +76,16 @@ public class AboutKyloController {
         if (auth.getPrincipal() instanceof UserDetails) {
             final UserDetails details = (UserDetails) auth.getPrincipal();
             user.setGroups(details.getAuthorities().stream()
-                                   .map(GrantedAuthority::getAuthority)
-                                   .collect(Collectors.toSet()));
+                               .map(GrantedAuthority::getAuthority)
+                               .collect(Collectors.toSet()));
             user.setSystemName(details.getUsername());
         } else {
             user.setGroups(auth.getAuthorities().stream()
-                                   .filter(JaasGrantedAuthority.class::isInstance)
-                                   .map(JaasGrantedAuthority.class::cast)
-                                   .filter(authority -> authority.getPrincipal() instanceof GroupPrincipal)
-                                   .map(JaasGrantedAuthority::getAuthority)
-                                   .collect(Collectors.toSet()));
+                               .filter(JaasGrantedAuthority.class::isInstance)
+                               .map(JaasGrantedAuthority.class::cast)
+                               .filter(authority -> authority.getPrincipal() instanceof GroupPrincipal)
+                               .map(JaasGrantedAuthority::getAuthority)
+                               .collect(Collectors.toSet()));
             user.setSystemName(auth.getPrincipal().toString());
         }
 
@@ -101,7 +101,7 @@ public class AboutKyloController {
     @Produces(MediaType.TEXT_PLAIN)
     @ApiOperation("Gets the version number of Kylo.")
     @ApiResponses(
-            @ApiResponse(code = 200, message = "Returns the version number.", response = String.class)
+        @ApiResponse(code = 200, message = "Returns the version number.", response = String.class)
     )
     public Response getKyloVersion() {
 
@@ -110,8 +110,7 @@ public class AboutKyloController {
 
         if (kyloVersion != null) {
             return Response.ok(kyloVersion.getVersion()).build();
-        }
-        else {
+        } else {
             return Response.ok(VERSION_NOT_AVAILABLE).build();
         }
     }

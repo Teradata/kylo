@@ -68,17 +68,6 @@ public class ServiceLevelAgreementModelTransform {
             return toModel(domain, false);
         }
     };
-
-    public static final List<com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement> transformFeedServiceLevelAgreements(
-        List<com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreement> slaList) {
-        Collection<com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement> list = null;
-        if (slaList != null) {
-            list = Collections2.transform(slaList, DOMAIN_TO_FEED_SLA_SHALLOW);
-            return new ArrayList<>(list);
-        }
-        return null;
-    }
-
     public static final Function<ServiceLevelAgreement, com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement> DOMAIN_TO_SLA
         = new Function<ServiceLevelAgreement, com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement>() {
         @Override
@@ -86,8 +75,6 @@ public class ServiceLevelAgreementModelTransform {
             return toModel(domain, true);
         }
     };
-
-
     public static final Function<ServiceLevelAssessment, com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment> DOMAIN_TO_SLA_ASSMT
         = new Function<ServiceLevelAssessment, com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment>() {
         @Override
@@ -123,6 +110,15 @@ public class ServiceLevelAgreementModelTransform {
         }
     };
 
+    public static final List<com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement> transformFeedServiceLevelAgreements(
+        List<com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreement> slaList) {
+        Collection<com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement> list = null;
+        if (slaList != null) {
+            list = Collections2.transform(slaList, DOMAIN_TO_FEED_SLA_SHALLOW);
+            return new ArrayList<>(list);
+        }
+        return null;
+    }
 
     public static ServiceLevelAgreement generateDomain(com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement model,
                                                        ServiceLevelAgreementProvider provider) {

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.modeshape.op;
 
@@ -64,22 +64,18 @@ import javax.inject.Inject;
 public class JobRepoFeedOperationsProvider implements FeedOperationsProvider {
 
     private static final Logger LOG = LoggerFactory.getLogger(JobRepoFeedOperationsProvider.class);
-
     @Inject
-    private JcrFeedProvider feedProvider;
+    OpsManagerFeedProvider opsManagerFeedProvider;
 
     // @Inject
     // private FeedRepository feedRepo;
 
     //  @Inject
     //  private JobRepository jobRepo;
-
+    @Inject
+    private JcrFeedProvider feedProvider;
     @Inject
     private BatchJobExecutionProvider jobExecutionProvider;
-
-    @Inject
-    OpsManagerFeedProvider opsManagerFeedProvider;
-    
     @Inject
     private MetadataAccess metadata;
 
@@ -130,7 +126,7 @@ public class JobRepoFeedOperationsProvider implements FeedOperationsProvider {
         }
     }
 
-    
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.op.FeedOperationsProvider#criteria()
      */
@@ -177,7 +173,7 @@ public class JobRepoFeedOperationsProvider implements FeedOperationsProvider {
             return operations;
         });
     }
-    
+
     @Override
     public List<FeedOperation> findLatest(Feed.ID feedId) {
         return metadata.read(() -> {
@@ -198,17 +194,16 @@ public class JobRepoFeedOperationsProvider implements FeedOperationsProvider {
     @Override
     public FeedDependencyDeltaResults getDependentDeltaResults(Feed.ID feedId, Set<String> props) {
         Feed feed = this.feedProvider.getFeed(feedId);
-        
+
         if (feed != null) {
             String systemFeedName = FeedNameUtil.fullName(feed.getCategory().getName(), feed.getName());
-            FeedDependencyDeltaResults results = new FeedDependencyDeltaResults(feed.getId().toString(),systemFeedName);
+            FeedDependencyDeltaResults results = new FeedDependencyDeltaResults(feed.getId().toString(), systemFeedName);
 
             //find this feeds latest completion
             BatchJobExecution latest = jobExecutionProvider.findLatestCompletedJobForFeed(systemFeedName);
 
-
-                //get the dependent feeds
-                List<Feed<?>> dependents =  feed.getDependentFeeds();
+            //get the dependent feeds
+            List<Feed<?>> dependents = feed.getDependentFeeds();
             if (dependents != null) {
                 for (Feed depFeed : dependents) {
 
@@ -296,7 +291,6 @@ public class JobRepoFeedOperationsProvider implements FeedOperationsProvider {
     }
 
 
-
     private class Criteria extends AbstractMetadataCriteria<FeedOperationCriteria> implements FeedOperationCriteria, Predicate<ExecutedJob> {
 
         private Set<State> states = new HashSet<>();
@@ -305,20 +299,20 @@ public class JobRepoFeedOperationsProvider implements FeedOperationsProvider {
         private DateTime startedSince;
         private DateTime stoppedBefore;
         private DateTime stoppedSince;
-        
+
         // TODO This is a temporary filtering solution.  Replace with an implementation that uses
         // the criteria to create SQL.
         @Override
         public boolean test(ExecutedJob job) {
             Feed.ID id = null;
-            
-            if (! feedIds.isEmpty()) {
+
+            if (!feedIds.isEmpty()) {
                 String[] jobName = job.getJobName().split("\\.");
                 Feed feed = feedProvider.findBySystemName(jobName[0], jobName[1]);
                 id = feed != null ? feed.getId() : null;
             }
-            
-            return 
+
+            return
                 (states.isEmpty() || states.contains(asOperationState(job.getStatus()))) &&
                 (feedIds.isEmpty() || (id != null && feedIds.contains(id))) &&
                 (this.startedBefore == null || this.startedBefore.isAfter(job.getStartTime())) &&

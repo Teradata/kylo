@@ -43,7 +43,6 @@ import static com.thinkbiganalytics.nifi.v2.common.CommonProperties.FEED_NAME;
 /**
  * An abstract processor that can be configured with the feed canteory and name and
  * which will look up the feed's ID.
- *
  */
 public abstract class FeedProcessor extends BaseProcessor {
 

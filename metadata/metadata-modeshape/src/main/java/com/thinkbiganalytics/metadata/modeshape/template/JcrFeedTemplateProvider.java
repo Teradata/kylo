@@ -78,13 +78,13 @@ public class JcrFeedTemplateProvider extends BaseJcrProvider<FeedManagerTemplate
         String path = EntityUtil.pathForTemplates();
         Map<String, Object> props = new HashMap<>();
         props.put(JcrFeedTemplate.TITLE, sanitiezedName);
-        boolean newTemplate = ! JcrUtil.hasNode(getSession(), path, sanitiezedName);
+        boolean newTemplate = !JcrUtil.hasNode(getSession(), path, sanitiezedName);
         JcrFeedTemplate template = (JcrFeedTemplate) findOrCreateEntity(path, sanitiezedName, props);
-        
+
         if (newTemplate) {
             addPostFeedChangeAction(template, ChangeType.CREATE);
         }
-        
+
         return template;
     }
 
@@ -173,16 +173,17 @@ public class JcrFeedTemplateProvider extends BaseJcrProvider<FeedManagerTemplate
 
     /**
      * Registers an action that produces a template change event upon a successful transaction commit.
+     *
      * @param template the feed to being created
      */
     private void addPostFeedChangeAction(FeedManagerTemplate template, ChangeType changeType) {
         FeedManagerTemplate.State state = template.getState();
         FeedManagerTemplate.ID id = template.getId();
         DateTime createTime = template.getCreatedTime();
-        final Principal principal = SecurityContextHolder.getContext().getAuthentication() != null 
-                        ? SecurityContextHolder.getContext().getAuthentication() 
-                        : null;
-                        
+        final Principal principal = SecurityContextHolder.getContext().getAuthentication() != null
+                                    ? SecurityContextHolder.getContext().getAuthentication()
+                                    : null;
+
         Consumer<Boolean> action = (success) -> {
             if (success) {
                 TemplateChange change = new TemplateChange(changeType, id, state);
@@ -190,7 +191,7 @@ public class JcrFeedTemplateProvider extends BaseJcrProvider<FeedManagerTemplate
                 metadataEventService.notify(event);
             }
         };
-        
+
         JcrMetadataAccess.addPostTransactionAction(action);
     }
 

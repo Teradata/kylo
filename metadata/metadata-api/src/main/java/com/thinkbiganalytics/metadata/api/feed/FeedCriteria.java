@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.api.feed;
 
@@ -32,7 +32,10 @@ import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 public interface FeedCriteria extends MetadataCriteria<FeedCriteria> {
 
     FeedCriteria sourceDatasource(Datasource.ID id, Datasource.ID... others);
+
     FeedCriteria destinationDatasource(Datasource.ID id, Datasource.ID... others);
+
     FeedCriteria name(String name);
+
     FeedCriteria category(String category);
 }

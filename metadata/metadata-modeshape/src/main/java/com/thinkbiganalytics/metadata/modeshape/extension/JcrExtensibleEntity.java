@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.modeshape.extension;
 
@@ -31,11 +31,11 @@ import javax.jcr.Node;
 /**
  *
  */
-public class JcrExtensibleEntity  extends JcrEntity implements ExtensibleEntity {
+public class JcrExtensibleEntity extends JcrEntity implements ExtensibleEntity {
 
 
     /**
-     * 
+     *
      */
     public JcrExtensibleEntity(Node node) {
 

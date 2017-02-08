@@ -28,10 +28,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- *
- *
- *
- *
  * JSON doesnt like circular dependencies. NifiFlowProcessor has a graph of objects that point up and down the tree. All attempts to deserialize the object with Jackson annotations on the
  * NifiFlowProcessor failed For Example (@JsonIdentityInfo(generator=ObjectIdGenerators.PropertyGenerator.class, property="id")) Reference https://github.com/FasterXML/jackson-databind/issues/687 To
  * get around this ids are stored instead of the entire object in the graph. This class will reattach the real objects back so you can then traverse the graph.
@@ -42,6 +38,7 @@ public class NifiFlowDeserializer {
 
     /**
      * Construct the graph by reattaching the source/dest by looking at the ids
+     *
      * @param group the graph of the flow to deserialize and connect and convert the id references to objects
      */
     public static void constructGraph(NifiFlowProcessGroup group) {

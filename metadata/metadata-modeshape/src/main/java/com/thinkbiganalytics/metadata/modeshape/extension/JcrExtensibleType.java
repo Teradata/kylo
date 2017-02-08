@@ -51,13 +51,12 @@ public class JcrExtensibleType implements ExtensibleType {
     public static final String CREATED_TIME = "jcr:created";
     public static final String DESCRIPTION = "jcr:description";
     public static final String NAME = "jcr:title";
-
+    private final NodeType nodeType;
     private TypeId id;
     private Node typeNode;
-    private final NodeType nodeType;
 
     /**
-     * 
+     *
      */
     public JcrExtensibleType(Node typeNode, NodeType nodeDef) {
         this.typeNode = typeNode;
@@ -101,8 +100,8 @@ public class JcrExtensibleType implements ExtensibleType {
     public ExtensibleType getSupertype() {
         try {
             for (NodeType parent : this.nodeType.getDeclaredSupertypes()) {
-                if (parent.isNodeType(ExtensionsConstants.EXTENSIBLE_ENTITY_TYPE) && 
-                                ! parent.getName().equals(ExtensionsConstants.EXTENSIBLE_ENTITY_TYPE)) {
+                if (parent.isNodeType(ExtensionsConstants.EXTENSIBLE_ENTITY_TYPE) &&
+                    !parent.getName().equals(ExtensionsConstants.EXTENSIBLE_ENTITY_TYPE)) {
                     Node supertypeNode = this.typeNode.getParent().getNode(parent.getName());
                     return new JcrExtensibleType(supertypeNode, parent);
                 }
@@ -193,16 +192,16 @@ public class JcrExtensibleType implements ExtensibleType {
     public Set<UserFieldDescriptor> getUserFieldDescriptors() {
         final String prefix = JcrMetadataAccess.USR_PREFIX + ":";
         return Arrays.stream(nodeType.getPropertyDefinitions())
-                .filter(property -> property.getName().startsWith(prefix))
-                .map(property -> {
-                    try {
-                        final Node descNode = typeNode.getNode(property.getName());
-                        return new JcrUserFieldDescriptor(descNode, property);
-                    } catch (RepositoryException e) {
-                        throw new MetadataRepositoryException("Unable to access property: " + property, e);
-                    }
-                })
-                .collect(Collectors.toSet());
+            .filter(property -> property.getName().startsWith(prefix))
+            .map(property -> {
+                try {
+                    final Node descNode = typeNode.getNode(property.getName());
+                    return new JcrUserFieldDescriptor(descNode, property);
+                } catch (RepositoryException e) {
+                    throw new MetadataRepositoryException("Unable to access property: " + property, e);
+                }
+            })
+            .collect(Collectors.toSet());
     }
 
     public static class TypeId extends BaseId implements ID {
@@ -229,7 +228,7 @@ public class JcrExtensibleType implements ExtensibleType {
 
         @Override
         public UUID getUuid() {
-           return UUID.fromString(idValue);
+            return UUID.fromString(idValue);
         }
 
         @Override

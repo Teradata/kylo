@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.modeshape.security.action;
 
@@ -50,7 +50,7 @@ public class JcrAllowedActionsGroupProvider implements AllowedModuleActionsProvi
     @Override
     public Optional<AllowedActions> getAvailableActions(String moduleName) {
         Path modulePath = SecurityPaths.prototypeActionsPath(moduleName);
-        
+
         return getActions(moduleName, modulePath);
     }
 
@@ -60,7 +60,7 @@ public class JcrAllowedActionsGroupProvider implements AllowedModuleActionsProvi
     @Override
     public Optional<AllowedActions> getAllowedActions(String groupName) {
         Path modulePath = SecurityPaths.moduleActionPath(groupName);
-        
+
         return getActions(groupName, modulePath);
     }
 
@@ -70,7 +70,7 @@ public class JcrAllowedActionsGroupProvider implements AllowedModuleActionsProvi
     @Override
     public void checkPermission(String moduleName, Action action) {
         getAllowedActions(moduleName)
-            .map((allowed) -> { 
+            .map((allowed) -> {
                 allowed.checkPermission(action);
                 return null;
             })
@@ -80,7 +80,7 @@ public class JcrAllowedActionsGroupProvider implements AllowedModuleActionsProvi
     protected Optional<AllowedActions> getActions(String groupName, Path groupPath) {
         try {
             Session session = JcrMetadataAccess.getActiveSession();
-            
+
             if (session.getRootNode().hasNode(groupPath.toString())) {
                 Node node = session.getRootNode().getNode(groupPath.toString());
                 JcrAllowedActions actions = new JcrAllowedActions(node);
@@ -88,7 +88,7 @@ public class JcrAllowedActionsGroupProvider implements AllowedModuleActionsProvi
             } else {
                 return Optional.empty();
             }
-        } catch (AccessDeniedException e) { 
+        } catch (AccessDeniedException e) {
             return Optional.empty();
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to access allowable actions for module: " + groupName, e);

@@ -26,6 +26,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TableOptions {
+
     private boolean compress; ///format
     private boolean auditLogging;
     private boolean encrypt; // encrypt zone

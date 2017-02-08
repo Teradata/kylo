@@ -24,7 +24,6 @@ package com.thinkbiganalytics.rest;
 /**
  * Configuration class used by the {@link JerseyRestClient}
  * Parameters here allow you to setup a client and optionally pass in information to connect using Https
- *
  */
 public class JerseyClientConfig {
 
@@ -56,7 +55,6 @@ public class JerseyClientConfig {
     private boolean useConnectionPooling = false;
 
 
-
     public JerseyClientConfig() {
 
     }
@@ -70,6 +68,7 @@ public class JerseyClientConfig {
         this.keystorePath = null;
         this.keystorePassword = null;
     }
+
     public JerseyClientConfig(String host, String username, String password, boolean https, boolean keystoreOnClasspath, String keystorePath, String keystorePassword) {
         this.host = host;
         this.username = username;
@@ -80,7 +79,8 @@ public class JerseyClientConfig {
         this.keystorePassword = keystorePassword;
     }
 
-    public JerseyClientConfig(String host, String username, String password, boolean https, boolean keystoreOnClasspath, String keystorePath, String keystorePassword, Integer readTimeout, Integer connectTimeout) {
+    public JerseyClientConfig(String host, String username, String password, boolean https, boolean keystoreOnClasspath, String keystorePath, String keystorePassword, Integer readTimeout,
+                              Integer connectTimeout) {
         this.host = host;
         this.username = username;
         this.password = password;
@@ -113,12 +113,24 @@ public class JerseyClientConfig {
 
     }
 
+    public void setHost(String host) {
+        this.host = host;
+    }
+
     public String getUsername() {
         return username;
     }
 
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
     public String getPassword() {
         return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public boolean isHttps() {
@@ -129,28 +141,15 @@ public class JerseyClientConfig {
         this.https = https;
     }
 
-    public void setHost(String host) {
-        this.host = host;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getUrl(){
+    public String getUrl() {
         String url = host;
-        if(https){
-            url = "https://"+url;
+        if (https) {
+            url = "https://" + url;
+        } else {
+            url = "http://" + url;
         }
-        else {
-            url ="http://"+url;
-        }
-        if(port != null){
-            url +=":"+port;
+        if (port != null) {
+            url += ":" + port;
         }
         return url;
     }

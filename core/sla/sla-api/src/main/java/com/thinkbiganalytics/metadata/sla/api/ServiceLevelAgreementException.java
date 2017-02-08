@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.sla.api;
 
@@ -52,7 +52,7 @@ public class ServiceLevelAgreementException extends RuntimeException {
      * @param writableStackTrace
      */
     public ServiceLevelAgreementException(String message, Throwable cause, boolean enableSuppression,
-            boolean writableStackTrace) {
+                                          boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 

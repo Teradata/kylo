@@ -32,6 +32,86 @@ import java.util.List;
 public interface NifiFeedProcessorStatisticsProvider {
 
     /**
+     * Save a new stats record
+     *
+     * @return save the stats record
+     */
+    NifiFeedProcessorStats create(NifiFeedProcessorStats t);
+
+    /**
+     * find statistics within a given start and end time
+     *
+     * @return stats within a start and end time
+     */
+    List<? extends NifiFeedProcessorStats> findWithinTimeWindow(DateTime start, DateTime end);
+
+    /**
+     * Find a list of stats for a given feed within a time window grouped by feed and processor
+     *
+     * @param feedName a feed name
+     * @param start    a start date
+     * @param end      an end date
+     * @return a list of feed processor statistics
+     */
+    List<? extends NifiFeedProcessorStats> findFeedProcessorStatisticsByProcessorId(String feedName, DateTime start, DateTime end);
+
+    /**
+     * Find a list of stats for a given feed within a time window grouped by feed and processor
+     *
+     * @param feedName a feed name
+     * @param start    a start date
+     * @param end      an end date
+     * @return a list of feed processor statistics
+     */
+    List<? extends NifiFeedProcessorStats> findFeedProcessorStatisticsByProcessorName(String feedName, DateTime start, DateTime end);
+
+    /**
+     * Find stats for a given feed within a given timeframe grouped by processor id related to the feed
+     *
+     * @param feedName  the feed name
+     * @param timeFrame a timeframe to look back
+     * @return a list of feed processor statistics
+     */
+    List<? extends NifiFeedProcessorStats> findFeedProcessorStatisticsByProcessorId(String feedName, TimeFrame timeFrame);
+
+    /**
+     * Find stats for a given feed within a given timeframe grouped by processor name related to the feed
+     *
+     * @param feedName  the feed name
+     * @param timeFrame a timeframe to look back
+     * @return a list of feed processor statistics
+     */
+    List<? extends NifiFeedProcessorStats> findFeedProcessorStatisticsByProcessorName(String feedName, TimeFrame timeFrame);
+
+    /**
+     * Find stats for a given feed and time frame grouped by the stats eventTime
+     *
+     * @return a list of feed processor statistics
+     */
+    List<? extends NifiFeedProcessorStats> findForFeedStatisticsGroupedByTime(String feedName, DateTime start, DateTime end);
+
+    /**
+     * Find stats for a given feed and time frame grouped by the stats eventTime
+     *
+     * @return a list of feed processor statistics
+     */
+    List<? extends NifiFeedProcessorStats> findForFeedStatisticsGroupedByTime(String feedName, TimeFrame timeFrame);
+
+    /**
+     * find the max event id processed by kylo
+     *
+     * @return the max event id processed by kylo
+     */
+    Long findMaxEventId();
+
+    /**
+     * find the max event id processed by kylo for the given cluster id
+     *
+     * @return the max event id processed by kylo for the given cluster id
+     */
+    Long findMaxEventId(String clusterNodeId);
+
+    /**
      * allow for specifying a time to look back from when querying for statistical information
      */
     public static enum TimeFrame {
@@ -63,87 +143,6 @@ public interface NifiFeedProcessorStatisticsProvider {
             return dt.minus(millis);
         }
     }
-
-    /**
-     * Save a new stats record
-     *
-     * @return save the stats record
-     */
-    NifiFeedProcessorStats create(NifiFeedProcessorStats t);
-
-    /**
-     * find statistics within a given start and end time
-     * @param start
-     * @param end
-     * @return stats within a start and end time
-     */
-    List<? extends NifiFeedProcessorStats> findWithinTimeWindow(DateTime start, DateTime end);
-
-    /**
-     * Find a list of stats for a given feed within a time window grouped by feed and processor
-     * @param feedName a feed name
-     * @param start a start date
-     * @param end an end date
-     * @return a list of feed processor statistics
-     */
-    List<? extends NifiFeedProcessorStats> findFeedProcessorStatisticsByProcessorId(String feedName, DateTime start, DateTime end);
-
-    /**
-     * Find a list of stats for a given feed within a time window grouped by feed and processor
-     * @param feedName a feed name
-     * @param start a start date
-     * @param end an end date
-     * @return a list of feed processor statistics
-     */
-    List<? extends NifiFeedProcessorStats> findFeedProcessorStatisticsByProcessorName(String feedName, DateTime start, DateTime end);
-
-    /**
-     * Find stats for a given feed within a given timeframe grouped by processor id related to the feed
-     *
-     * @param feedName  the feed name
-     * @param timeFrame a timeframe to look back
-     * @return a list of feed processor statistics
-     */
-    List<? extends NifiFeedProcessorStats> findFeedProcessorStatisticsByProcessorId(String feedName, TimeFrame timeFrame);
-
-    /**
-     * Find stats for a given feed within a given timeframe grouped by processor name related to the feed
-     *
-     * @param feedName  the feed name
-     * @param timeFrame a timeframe to look back
-     * @return a list of feed processor statistics
-     */
-    List<? extends NifiFeedProcessorStats> findFeedProcessorStatisticsByProcessorName(String feedName, TimeFrame timeFrame);
-
-    /**
-     * Find stats for a given feed and time frame grouped by the stats eventTime
-     * @param feedName
-     * @param start
-     * @param end
-     * @return a list of feed processor statistics
-     */
-    List<? extends NifiFeedProcessorStats> findForFeedStatisticsGroupedByTime(String feedName, DateTime start, DateTime end);
-
-    /**
-     *   Find stats for a given feed and time frame grouped by the stats eventTime
-     * @param feedName
-     * @param timeFrame
-     * @return a list of feed processor statistics
-     */
-    List<? extends NifiFeedProcessorStats> findForFeedStatisticsGroupedByTime(String feedName, TimeFrame timeFrame);
-
-    /**
-     * find the max event id processed by kylo
-     * @return the max event id processed by kylo
-     */
-    Long findMaxEventId();
-
-    /**
-     * find the max event id processed by kylo for the given cluster id
-     * @param clusterNodeId
-     * @return the max event id processed by kylo for the given cluster id
-     */
-    Long findMaxEventId(String clusterNodeId);
 
 
 }
