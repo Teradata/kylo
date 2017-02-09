@@ -212,7 +212,8 @@ public class ExportImportTemplateService {
         if (importTemplate.hasConnectingReusableTemplate() && ImportOptions.IMPORT_CONNECTING_FLOW.YES.equals(importOptions.getImportConnectingFlow())) {
             log.info("Importing Zip file template {}. first importing reusable flow from zip");
             for (String reusableTemplateXml : importTemplate.getNifiConnectingReusableTemplateXmls()) {
-                ImportTemplate connectingTemplate = importNifiTemplateWithTemplateString(importTemplate.getFileName(), reusableTemplateXml, true, true, false);
+                ImportTemplate connectingTemplate = importNifiTemplateWithTemplateString(importTemplate.getFileName(), reusableTemplateXml, importOptions.isOverwrite(), true,
+                                                                                         false);
                 if (!connectingTemplate.isSuccess()) {
                     //return with exception
                     return connectingTemplate;
