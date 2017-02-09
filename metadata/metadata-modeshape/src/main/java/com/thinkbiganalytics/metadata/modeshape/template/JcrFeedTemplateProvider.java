@@ -181,6 +181,7 @@ public class JcrFeedTemplateProvider extends BaseJcrProvider<FeedManagerTemplate
     private void addPostFeedChangeAction(FeedManagerTemplate template, ChangeType changeType) {
         FeedManagerTemplate.State state = template.getState();
         FeedManagerTemplate.ID id = template.getId();
+        String desc = template.getName();
         DateTime createTime = template.getCreatedTime();
         final Principal principal = SecurityContextHolder.getContext().getAuthentication() != null
                                     ? SecurityContextHolder.getContext().getAuthentication()
@@ -188,7 +189,6 @@ public class JcrFeedTemplateProvider extends BaseJcrProvider<FeedManagerTemplate
 
         Consumer<Boolean> action = (success) -> {
             if (success) {
-                String desc = template.getName();
                 TemplateChange change = new TemplateChange(changeType, desc, id, state);
                 TemplateChangeEvent event = new TemplateChangeEvent(change, createTime, principal);
                 metadataEventService.notify(event);

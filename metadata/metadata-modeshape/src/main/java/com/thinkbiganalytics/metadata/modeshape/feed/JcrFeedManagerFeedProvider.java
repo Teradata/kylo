@@ -157,13 +157,13 @@ public class JcrFeedManagerFeedProvider extends BaseJcrProvider<FeedManagerFeed,
     private void addPostFeedChangeAction(FeedManagerFeed feed, ChangeType changeType) {
         Feed.State state = feed.getState();
         Feed.ID id = feed.getId();
+        String desc = feed.getQualifiedName();
         final Principal principal = SecurityContextHolder.getContext().getAuthentication() != null
                                     ? SecurityContextHolder.getContext().getAuthentication()
                                     : null;
 
         Consumer<Boolean> action = (success) -> {
             if (success) {
-                String desc = feed.getQualifiedName();
                 FeedChange change = new FeedChange(changeType, desc,id, state);
                 FeedChangeEvent event = new FeedChangeEvent(change, DateTime.now(), principal);
                 metadataEventService.notify(event);
