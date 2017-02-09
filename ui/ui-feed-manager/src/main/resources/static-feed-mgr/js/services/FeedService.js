@@ -527,8 +527,10 @@ angular.module(MODULE_FEED_MGR).factory('FeedService',
                     if (model.table.sourceTableSchema == undefined) {
                         model.table.sourceTableSchema = {name: null, tableSchema: null, fields: []};
                     }
-
-                    model.table.sourceTableSchema.fields = sourceFields;
+                    //only set the sourceFields if its the first time creating this feed
+                    if(model.id == null) {
+                        model.table.sourceTableSchema.fields = sourceFields;
+                    }
                     if (model.table.feedTableSchema == undefined) {
                         model.table.feedTableSchema = {name: null, fields: []};
                     }

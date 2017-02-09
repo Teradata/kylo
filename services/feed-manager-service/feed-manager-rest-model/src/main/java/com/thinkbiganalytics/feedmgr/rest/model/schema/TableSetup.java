@@ -26,6 +26,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.thinkbiganalytics.discovery.model.DefaultField;
 import com.thinkbiganalytics.discovery.model.DefaultTableSchema;
 import com.thinkbiganalytics.discovery.schema.Field;
 import com.thinkbiganalytics.discovery.schema.TableSchema;
@@ -37,6 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  */
@@ -212,6 +214,25 @@ public class TableSetup {
         setPrimaryKeyFields(primaryKeyFieldsString.toString());
     }
 
+    /**
+     * ensure the source names are set to some value
+     */
+    private void ensureSourceTableSchemaFieldNames() {
+        if (sourceTableSchema != null & sourceTableSchema.getFields() != null) {
+            long nullFields = sourceTableSchema.getFields().stream().filter(field -> StringUtils.isBlank(field.getName())).count();
+            //if the source fields are all null and the counts match that from the dest table, reset the source to the dest names
+            if (nullFields == sourceTableSchema.getFields().size() && tableSchema.getFields() != null && tableSchema.getFields().size() == sourceTableSchema.getFields().size()) {
+                //reset the names to be that of the dest table?
+                List<String> names = tableSchema.getFields().stream().map(f -> f.getName()).collect(Collectors.toList());
+                for (int i = 0; i < tableSchema.getFields().size(); i++) {
+                    Field f = sourceTableSchema.getFields().get(i);
+                    if (f instanceof DefaultField) {
+                        ((DefaultField) f).setName(names.get(i));
+                    }
+                }
+            }
+        }
+    }
 
     @JsonIgnore
     public void updateSourceFieldsString() {
@@ -374,6 +395,7 @@ public class TableSetup {
         updateFieldStructure();
         updateFeedStructure();
         updateFieldStringData();
+        ensureSourceTableSchemaFieldNames();
         updateSourceFieldsString();
         updateSourceFieldsCommaString();
         updateFieldIndexString();
