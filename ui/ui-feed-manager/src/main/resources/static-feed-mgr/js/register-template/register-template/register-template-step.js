@@ -146,6 +146,7 @@
         function buildTemplateFlowData() {
             self.loadingFlowData = true;
             var assignedPortIds = [];
+
             _.each(self.model.reusableTemplateConnections, function (conn) {
                 var inputPort = conn.inputPortDisplayName;
                 var port = self.connectionMap[inputPort];
@@ -157,45 +158,50 @@
             if (assignedPortIds.length > 0) {
                 selectedPortIds = assignedPortIds.join(",");
             }
+            //only attempt to query if we have connections set
+            var hasPortConnections = (self.model.reusableTemplateConnections == null || self.model.reusableTemplateConnections.length ==0 )|| (self.model.reusableTemplateConnections != null && self.model.reusableTemplateConnections.length >0 && assignedPortIds.length ==self.model.reusableTemplateConnections.length);
+             if(hasPortConnections) {
+                 RegisterTemplateService.getNiFiTemplateFlowInformation(self.model.nifiTemplateId, self.model.reusableTemplateConnections).then(function (response) {
+                     var map = {};
 
-            RegisterTemplateService.getNiFiTemplateFlowInformation(self.model.nifiTemplateId, self.model.reusableTemplateConnections).then(function (response) {
-                var map = {};
+                     if (response && response.data) {
 
-                if (response && response.data) {
+                         var datasourceDefinitions = response.data.templateProcessorDatasourceDefinitions;
+                         self.allowUserDefinedFailureProcessors = response.data.userDefinedFailureProcessors;
 
-                    var datasourceDefinitions = response.data.templateProcessorDatasourceDefinitions;
-                    self.allowUserDefinedFailureProcessors = response.data.userDefinedFailureProcessors;
+                         //merge in those already selected/saved on this template
+                         _.each(datasourceDefinitions, function (def) {
+                             def.selectedDatasource = false;
+                             if (self.model.registeredDatasourceDefinitions.length == 0) {
+                                 def.selectedDatasource = true;
+                             }
+                             else {
 
-                    //merge in those already selected/saved on this template
-                    _.each(datasourceDefinitions, function (def) {
-                        def.selectedDatasource = false;
-                        if (self.model.registeredDatasourceDefinitions.length == 0) {
-                            def.selectedDatasource = true;
-                        }
-                        else {
+                                 var matchingTypes = _.filter(self.model.registeredDatasourceDefinitions, function (ds) {
+                                     return (def.processorType == ds.processorType && ( ds.processorId == def.processorId || ds.processorName == def.processorName));
+                                 });
+                                 if (matchingTypes.length > 0) {
+                                     def.selectedDatasource = true;
+                                 }
+                             }
+                         });
+                         //sort with SOURCE's first
+                         self.processorDatasourceDefinitions = _.sortBy(datasourceDefinitions, function (def) {
+                             if (def.datasourceDefinition.connectionType == 'SOURCE') {
+                                 return 1;
+                             }
+                             else {
+                                 return 2;
+                             }
+                         });
 
-                            var matchingTypes = _.filter(self.model.registeredDatasourceDefinitions, function (ds) {
-                                return (def.processorType == ds.processorType && ( ds.processorId == def.processorId || ds.processorName == def.processorName));
-                            });
-                            if (matchingTypes.length > 0) {
-                                def.selectedDatasource = true;
-                            }
-                        }
-                    });
-                    //sort with SOURCE's first
-                    self.processorDatasourceDefinitions = _.sortBy(datasourceDefinitions, function (def) {
-                        if (def.datasourceDefinition.connectionType == 'SOURCE') {
-                            return 1;
-                        }
-                        else {
-                            return 2;
-                        }
-                    });
-
-
-                }
-                self.loadingFlowData = false;
-            });
+                     }
+                     self.loadingFlowData = false;
+                 });
+             }
+             else {
+                 self.loadingFlowData = false;
+             }
 
         };
 
