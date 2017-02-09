@@ -16,7 +16,6 @@
 
   <modules>
     <module>nifi-elasticsearch-processors</module>
-    <module>nifi-elasticsearch-v0-nar</module>
     <module>nifi-elasticsearch-v1-nar</module>
   </modules>
 </project>

@@ -18,7 +18,6 @@
 
   <modules>
     <module>nifi-core-processors</module>
-    <module>nifi-core-v0-nar</module>
     <module>nifi-core-v1-nar</module>
   </modules>
 
