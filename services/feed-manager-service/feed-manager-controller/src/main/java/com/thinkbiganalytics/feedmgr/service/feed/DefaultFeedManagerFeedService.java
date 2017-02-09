@@ -307,15 +307,9 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
         NifiFeed feed = super.createFeed(feedMetadata);
         //register the audit for the update event
         if (feed.isSuccess() && !feedMetadata.isNew()) {
-
             Feed.State state = Feed.State.valueOf(feedMetadata.getState());
             Feed.ID id = feedManagerFeedProvider.resolveId(feedMetadata.getId());
-            final Principal principal = SecurityContextHolder.getContext().getAuthentication() != null
-                                        ? SecurityContextHolder.getContext().getAuthentication()
-                                        : null;
-            FeedChange change = new FeedChange(MetadataChange.ChangeType.UPDATE, id, state);
-            FeedChangeEvent event = new FeedChangeEvent(change, DateTime.now(), principal);
-            metadataEventService.notify(event);
+            notifyFeedStateChange(feedMetadata, id, state, MetadataChange.ChangeType.UPDATE);
         }
         return feed;
 
@@ -514,17 +508,22 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ADMIN_FEEDS);
             boolean enabled = feedProvider.enableFeed(feedId);
             FeedManagerFeed domainFeed = feedManagerFeedProvider.findById(feedId);
+            FeedMetadata feedMetadata = null;
             if (domainFeed != null) {
-                FeedMetadata feedMetadata = feedModelTransform.deserializeFeedMetadata(domainFeed);
+                feedMetadata = feedModelTransform.deserializeFeedMetadata(domainFeed);
                 feedMetadata.setState(FeedMetadata.STATE.ENABLED.name());
                 domainFeed.setJson(ObjectMapperSerializer.serialize(feedMetadata));
                 feedManagerFeedProvider.update(domainFeed);
+            }
+            if (enabled) {
+                notifyFeedStateChange(feedMetadata, feedId, Feed.State.ENABLED, MetadataChange.ChangeType.UPDATE);
             }
 
             return enabled;
         });
 
     }
+
 
     // @Transactional(transactionManager = "metadataTransactionManager")
     private boolean disableFeed(final Feed.ID feedId) {
@@ -533,11 +532,15 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
 
             boolean disabled = feedProvider.disableFeed(feedId);
             FeedManagerFeed domainFeed = feedManagerFeedProvider.findById(feedId);
+            FeedMetadata feedMetadata = null;
             if (domainFeed != null) {
-                FeedMetadata feedMetadata = feedModelTransform.deserializeFeedMetadata(domainFeed);
+                feedMetadata = feedModelTransform.deserializeFeedMetadata(domainFeed);
                 feedMetadata.setState(FeedMetadata.STATE.DISABLED.name());
                 domainFeed.setJson(ObjectMapperSerializer.serialize(feedMetadata));
                 feedManagerFeedProvider.update(domainFeed);
+            }
+            if (disabled) {
+                notifyFeedStateChange(feedMetadata, feedId, Feed.State.DISABLED, MetadataChange.ChangeType.UPDATE);
             }
 
             return disabled;
@@ -660,5 +663,22 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
             }, MetadataAccess.SERVICE);
         }
 
+    }
+
+
+    /**
+     * update the audit information for feed state changes
+     *
+     * @param feedId     the feed id
+     * @param state      the new state
+     * @param changeType the event type
+     */
+    private void notifyFeedStateChange(FeedMetadata feedMetadata, Feed.ID feedId, Feed.State state, MetadataChange.ChangeType changeType) {
+        final Principal principal = SecurityContextHolder.getContext().getAuthentication() != null
+                                    ? SecurityContextHolder.getContext().getAuthentication()
+                                    : null;
+        FeedChange change = new FeedChange(changeType, feedMetadata != null ? feedMetadata.getCategoryAndFeedName() : "", feedId, state);
+        FeedChangeEvent event = new FeedChangeEvent(change, DateTime.now(), principal);
+        metadataEventService.notify(event);
     }
 }

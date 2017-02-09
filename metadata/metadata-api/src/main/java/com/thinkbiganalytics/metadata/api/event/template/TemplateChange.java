@@ -83,6 +83,7 @@ public class TemplateChange extends MetadataChange {
             .append("(").append(getChange()).append(") - ")
             .append("ID: ").append(this.templateId)
             .append(" state: ").append(this.templateState)
+            .append(" desc: ").append(this.getDescription())
             .toString();
 
     }

@@ -123,6 +123,7 @@ public class JcrFeedTemplateProvider extends BaseJcrProvider<FeedManagerTemplate
         if (template != null) {
             if (!template.isEnabled()) {
                 template.enable();
+                addPostFeedChangeAction(template, ChangeType.UPDATE);
                 return update(template);
             }
             return template;
@@ -137,6 +138,7 @@ public class JcrFeedTemplateProvider extends BaseJcrProvider<FeedManagerTemplate
         if (template != null) {
             if (template.isEnabled()) {
                 template.disable();
+                addPostFeedChangeAction(template, ChangeType.UPDATE);
                 return update(template);
             }
             return template;
@@ -186,7 +188,8 @@ public class JcrFeedTemplateProvider extends BaseJcrProvider<FeedManagerTemplate
 
         Consumer<Boolean> action = (success) -> {
             if (success) {
-                TemplateChange change = new TemplateChange(changeType, id, state);
+                String desc = template.getName();
+                TemplateChange change = new TemplateChange(changeType, desc, id, state);
                 TemplateChangeEvent event = new TemplateChangeEvent(change, createTime, principal);
                 metadataEventService.notify(event);
             }

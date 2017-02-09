@@ -27,6 +27,7 @@ import com.thinkbiganalytics.jpa.BaseJpaId;
 import com.thinkbiganalytics.metadata.api.audit.AuditLogEntry;
 import com.thinkbiganalytics.security.UsernamePrincipal;
 
+import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 
@@ -64,6 +65,7 @@ public class JpaAuditLogEntry implements AuditLogEntry {
     private String type;
 
     @Column(name = "DESCRIPTION", length = 255)
+    @Type(type = "com.thinkbiganalytics.jpa.TruncateStringUserType", parameters = {@Parameter(name = "length", value = "255")})
     private String description;
 
     @Column(name = "ENTITY_ID", length = 45)

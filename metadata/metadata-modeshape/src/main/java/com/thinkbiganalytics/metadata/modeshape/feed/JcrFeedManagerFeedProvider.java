@@ -163,7 +163,8 @@ public class JcrFeedManagerFeedProvider extends BaseJcrProvider<FeedManagerFeed,
 
         Consumer<Boolean> action = (success) -> {
             if (success) {
-                FeedChange change = new FeedChange(changeType, id, state);
+                String desc = feed.getQualifiedName();
+                FeedChange change = new FeedChange(changeType, desc,id, state);
                 FeedChangeEvent event = new FeedChangeEvent(change, DateTime.now(), principal);
                 metadataEventService.notify(event);
             }
