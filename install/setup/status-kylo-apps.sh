@@ -4,7 +4,7 @@ echo "kylo-ui status"
 service kylo-ui status
 
 echo ""
-echo "kylo-serviceds status"
+echo "kylo-services status"
 service kylo-services status
 
 echo ""
