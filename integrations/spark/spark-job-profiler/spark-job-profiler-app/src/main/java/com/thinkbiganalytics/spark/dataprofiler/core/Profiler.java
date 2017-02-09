@@ -129,7 +129,14 @@ public class Profiler {
         bSchemaMap = populateAndBroadcastSchemaMap(resultDF, sc);
 
         /* Get profile statistics and write to table */
-        profileStatistics(resultDF, bSchemaMap).writeModel(sc, hiveContext, sparkContextService);
+        StatisticsModel statisticsModel = profileStatistics(resultDF, bSchemaMap);
+
+        if (statisticsModel != null) {
+            statisticsModel.writeModel(sc, hiveContext, sparkContextService);
+        }
+        else {
+            log.info("[PROFILER-INFO] No data to process. Hence, no profile statistics generated.");
+        }
 
         /* Wrap up */
         log.info("[PROFILER-INFO] Profiling finished.");

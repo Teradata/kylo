@@ -28,6 +28,7 @@ import com.thinkbiganalytics.spark.dataprofiler.functions.TotalColumnValueCounts
 import com.thinkbiganalytics.spark.dataprofiler.model.StatisticsModel;
 
 import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.sql.types.StructField;
 import org.springframework.stereotype.Component;
@@ -45,7 +46,7 @@ public class ProfilerStrategyV2 implements ProfilerStrategy {
     @Override
     public StatisticsModel profileStatistics(DataSet set, Broadcast<Map<Integer, StructField>> bSchemaMap) {
         JavaPairRDD<Tuple2<Integer, Object>, Integer> columnValueCounts;
-        StatisticsModel profileStatisticsModel;
+        StatisticsModel profileStatisticsModel = null;
 
         /* Get ((column index, column value), count) */
         columnValueCounts = set
@@ -53,10 +54,12 @@ public class ProfilerStrategyV2 implements ProfilerStrategy {
             .flatMapToPair(new IndividualColumnValueCounts())
             .reduceByKey(new TotalColumnValueCounts());
 
-	/* Generate the profile model */
-        profileStatisticsModel = columnValueCounts
-            .mapPartitions(new PartitionLevelModels(bSchemaMap))
-            .reduce(new CombineModels());
+        /* Generate the profile model */
+        JavaRDD<StatisticsModel> partitionLevelModels = columnValueCounts.mapPartitions(new PartitionLevelModels(bSchemaMap));
+
+        if (!partitionLevelModels.isEmpty()) {
+            profileStatisticsModel = partitionLevelModels.reduce(new CombineModels());
+        }
 
         return profileStatisticsModel;
     }
