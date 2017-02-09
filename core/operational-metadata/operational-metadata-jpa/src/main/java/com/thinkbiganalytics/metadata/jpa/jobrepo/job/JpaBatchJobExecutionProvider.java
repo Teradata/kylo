@@ -256,7 +256,10 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
      */
     private boolean isCheckDataJob(ProvenanceEventRecordDTO event) {
         if (event.getAttributeMap() != null) {
-            String jobType = event.getAttributeMap().get(PARAM_TB_JOB_TYPE);
+            String jobType = event.getAttributeMap().get(NIFI_JOB_TYPE_PROPERTY);
+            if (StringUtils.isBlank(jobType)) {
+                jobType = event.getAttributeMap().get(NIFI_KYLO_JOB_TYPE_PROPERTY);
+            }
             return StringUtils.isNotBlank(jobType) && FeedConstants.PARAM_VALUE__JOB_TYPE_CHECK.equalsIgnoreCase(jobType);
         }
         return false;
