@@ -212,17 +212,6 @@
               <groupname>${rpm.user}</groupname>
               <sources>
                 <source>
-                  <location>../integrations/nifi/nifi-rest/nifi-rest-client/nifi-rest-client-v0/target/kylo-nifi-rest-client-v0-${project.version}-distribution.tar.gz</location>
-                </source>
-              </sources>
-            </mapping>
-            <mapping>
-              <directory>${rpm.install.dir}/kylo-services</directory>
-              <filemode>${file.permissions}</filemode>
-              <username>${rpm.user}</username>
-              <groupname>${rpm.user}</groupname>
-              <sources>
-                <source>
                   <location>../integrations/nifi/nifi-rest/nifi-rest-client/nifi-rest-client-v1/target/kylo-nifi-rest-client-v1-${project.version}-distribution.tar.gz</location>
                 </source>
               </sources>
@@ -389,21 +378,9 @@
                   </includes>
                 </source>
                 <source>
-                  <location>../integrations/nifi/nifi-nar-bundles/nifi-core-bundle/nifi-core-v0-nar/target</location>
-                  <includes>
-                    <include>kylo-nifi-core-v0-nar-${project.version}.nar</include>
-                  </includes>
-                </source>
-                <source>
                   <location>../integrations/nifi/nifi-nar-bundles/nifi-core-bundle/nifi-core-v1-nar/target</location>
                   <includes>
                     <include>kylo-nifi-core-v1-nar-${project.version}.nar</include>
-                  </includes>
-                </source>
-                <source>
-                  <location>../integrations/nifi/nifi-nar-bundles/nifi-elasticsearch-bundle/nifi-elasticsearch-v0-nar/target</location>
-                  <includes>
-                    <include>kylo-nifi-elasticsearch-v0-nar-${project.version}.nar</include>
                   </includes>
                 </source>
                 <source>
@@ -413,33 +390,15 @@
                   </includes>
                 </source>
                 <source>
-                  <location>../integrations/nifi/nifi-nar-bundles/nifi-hadoop-bundle/nifi-hadoop-bundle-v0-nar/target</location>
-                  <includes>
-                    <include>kylo-nifi-hadoop-v0-nar-${project.version}.nar</include>
-                  </includes>
-                </source>
-                <source>
                   <location>../integrations/nifi/nifi-nar-bundles/nifi-hadoop-bundle/nifi-hadoop-bundle-v1-nar/target</location>
                   <includes>
                     <include>kylo-nifi-hadoop-v1-nar-${project.version}.nar</include>
                   </includes>
                 </source>
                 <source>
-                  <location>../integrations/nifi/nifi-nar-bundles/nifi-provenance-repo-bundle/nifi-provenance-repo-v0-nar/target</location>
-                  <includes>
-                    <include>kylo-nifi-provenance-repo-v0-nar-${project.version}.nar</include>
-                  </includes>
-                </source>
-                <source>
                   <location>../integrations/nifi/nifi-nar-bundles/nifi-provenance-repo-bundle/nifi-provenance-repo-v1-nar/target</location>
                   <includes>
                     <include>kylo-nifi-provenance-repo-v1-nar-${project.version}.nar</include>
-                  </includes>
-                </source>
-                <source>
-                  <location>../integrations/nifi/nifi-nar-bundles/nifi-spark-bundle/nifi-spark-v0-nar/target</location>
-                  <includes>
-                    <include>kylo-nifi-spark-v0-nar-${project.version}.nar</include>
                   </includes>
                 </source>
                 <source>
@@ -452,12 +411,6 @@
                   <location>../integrations/nifi/nifi-nar-bundles/nifi-standard-services/nifi-core-service-bundle/nifi-core-service-nar/target</location>
                   <includes>
                     <include>kylo-nifi-core-service-nar-${project.version}.nar</include>
-                  </includes>
-                </source>
-                <source>
-                  <location>../integrations/nifi/nifi-nar-bundles/nifi-standard-services/nifi-hadoop-service-bundle/nifi-hadoop-service-v0-nar/target</location>
-                  <includes>
-                    <include>kylo-nifi-hadoop-service-v0-nar-${project.version}.nar</include>
                   </includes>
                 </source>
                 <source>
