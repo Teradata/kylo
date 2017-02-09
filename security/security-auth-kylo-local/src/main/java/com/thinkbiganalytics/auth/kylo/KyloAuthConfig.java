@@ -58,7 +58,7 @@ public class KyloAuthConfig {
     @Inject
     private UserProvider userProvider;
 
-    @Value("${auth.kylo.password.required:false}")
+    @Value("${security.auth.kylo.password.required:false}")
     private boolean authPassword;
 
     /**

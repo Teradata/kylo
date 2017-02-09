@@ -119,7 +119,7 @@ public class KyloLoginModule extends AbstractLoginModule implements LoginModule 
             if (user.isPresent()) {
                 if (!user.get().isEnabled()) {
                     throw new AccountLockedException("The account \"" + nameCallback.getName() + "\" is currently disabled");
-                } else if (requirePassword && passwordEncoder.matches(new String(passwordCallback.getPassword()), user.get().getPassword())) {
+                } else if (requirePassword && ! passwordEncoder.matches(new String(passwordCallback.getPassword()), user.get().getPassword())) {
                     throw new CredentialException("The username and/or password combination do not match");
                 }
 
