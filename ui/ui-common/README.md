@@ -12,8 +12,8 @@ Referencing Static Content
 ```xml
   <dependency>
     <groupId>com.thinkbiganalytics.datalake</groupId>
-    <artifactId>thinkbig-data-lake-ui-common</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <artifactId>kylo-data-lake-ui-common</artifactId>
+    <version>0.7.0-SNAPSHOT</version>
    </dependency>
 ```
 2. Once included all the common static content is available at the path **/ui-common/**.  

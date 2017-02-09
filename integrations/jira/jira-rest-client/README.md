@@ -132,9 +132,9 @@ To generate the keystore for the Jira Server you need to do the following:
 ```
 
 **Below is a full example**
-1.   Download cert file called **thinkbig-jira-cert.pem**
+1.   Download cert file called **kylo-jira-cert.pem**
 2.   Generate Keystore from that cert file resulting in the *thinkbig_jira.jks* output file.
 ```
- keytool -import -trustcacerts -alias thinkbig-jira -file thinkbig-jira-cert.pem -keystore thinkbig_jira.jks -keypass changeit -storepass changeit
+ keytool -import -trustcacerts -alias kylo-jira -file kylo-jira-cert.pem -keystore kylo_jira.jks -keypass changeit -storepass changeit
 
  ```

@@ -2,7 +2,7 @@ Kerberos Test Client
 ====
 
 ## How to Use
-java -jar thinkbig-kerberos-test-client-<version>.jar
+java -jar kylo-kerberos-test-client-<version>.jar
 
 ## Example
 

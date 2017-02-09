@@ -1,6 +1,6 @@
 Think Big Services Application
 ===
-This is a Spring Boot application that will run a Tomcat server running as the service 'thinkbig-services'
+This is a Spring Boot application that will run a Tomcat server running as the service 'kylo-services'
 This is the main backend application used by Kylo to communicate to the metadata database and NiFi.
 
 NiFi Property Injection

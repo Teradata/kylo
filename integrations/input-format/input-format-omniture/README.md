@@ -33,7 +33,7 @@ https://github.com/msukmanowsky/OmnitureDataFileInputFormat/blob/master/LICENSE
 
 ### Add to HiveServer2
 * `mkdir /usr/hdp/current/hive-server2/auxlib`
-* `cp thinkbig-input-format-omniture.jar /usr/hdp/current/hive-server2/auxlib/`
+* `cp kylo-input-format-omniture.jar /usr/hdp/current/hive-server2/auxlib/`
 * Restart hive server
 
 
@@ -41,7 +41,7 @@ https://github.com/msukmanowsky/OmnitureDataFileInputFormat/blob/master/LICENSE
 
 #### On local file system
 * Location must be readable by `nifi` user
-* `cp thinkbig-input-format-omniture.jar /opt/nifi/data/lib/`
+* `cp kylo-input-format-omniture.jar /opt/nifi/data/lib/`
 * Ensure readable by nifi user `chown nifi:users /opt/nifi/data/lib/kylo-input-format-omniture.jar`
 * Ensure executable by nifi user `chmod u+x /opt/nifi/data/lib/kylo-input-format-omniture.jar`
 * Restart Nifi

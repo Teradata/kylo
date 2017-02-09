@@ -23,13 +23,13 @@ How To Use
 ```xml
         <dependency>
             <groupId>com.thinkbiganalytics</groupId>
-            <artifactId>thinkbig-service-monitor-api</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
+            <artifactId>kylo-service-monitor-api</artifactId>
+            <version>0.7.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.thinkbiganalytics</groupId>
-            <artifactId>thinkbig-service-monitor-core</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
+            <artifactId>kylo-service-monitor-core</artifactId>
+            <version>0.7.0-SNAPSHOT</version>
         </dependency>
 ```  
 

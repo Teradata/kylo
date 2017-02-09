@@ -52,7 +52,7 @@ hiveTableNames: <list of hive tables seperated by newline>
 
 Development
 ===
-To test the plugin in your IDE you need to add the below two maven modules to the thinkbig-services app
+To test the plugin in your IDE you need to add the below two maven modules to the kylo-services app
 
 * hadoop-authorization-sentry
 * sentry-client
