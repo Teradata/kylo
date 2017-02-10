@@ -125,6 +125,10 @@ public class FeedFlowFileMapDbCache implements FeedFlowFileCacheListener {
         if (flowFile.isBuiltFromMapDb()) {
             log.debug("Removing completed flowfile {} from mapDbCache ", flowFile.getId());
             memFeedFlowFileCache.remove(flowFile.getId());
+            //remove any other references to this feed flowfile
+            if (flowFile.getChildFlowFiles() != null) {
+                flowFile.getChildFlowFiles().stream().forEach(flowFileId -> memFeedFlowFileCache.remove(flowFileId));
+            }
         }
     }
 

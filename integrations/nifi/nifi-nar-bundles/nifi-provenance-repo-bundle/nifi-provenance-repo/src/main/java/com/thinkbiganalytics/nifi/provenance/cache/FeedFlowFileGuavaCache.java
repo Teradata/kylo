@@ -144,12 +144,19 @@ public class FeedFlowFileGuavaCache {
      */
     public void invalidate(FeedFlowFile flowFile) {
         if (flowFile != null && flowFile.isFeedComplete()) {
-            cache.invalidate(flowFile.getId());
-            if (flowFile.getActiveChildFlowFiles() != null) {
-                flowFile.getActiveChildFlowFiles().stream().forEach(flowFileId -> cache.invalidate(flowFileId));
+            invalidate(flowFile.getId());
+            if (flowFile.getChildFlowFiles() != null) {
+                flowFile.getChildFlowFiles().stream().forEach(flowFileId -> invalidate(flowFileId));
             }
             listeners.stream().forEach(flowFileCacheListener -> flowFileCacheListener.onInvalidate(flowFile));
         }
+    }
+
+    /**
+     * Invalidate and remove the flowfile from the cache
+     */
+    public void invalidate(String flowFileId) {
+        cache.invalidate(flowFileId);
     }
 
 
@@ -166,7 +173,7 @@ public class FeedFlowFileGuavaCache {
                 }
                 long stop = System.currentTimeMillis();
                 if (rootFiles.size() > 0) {
-                    log.info("Time to expire {} flowfiles {} ms. Root Flow Files left in cache: {} ", rootFiles.size(), (stop - start), getFlowFiles().size());
+                    log.info("Time to expire {} flowfile and all references {} ms. FeedFlowFile and references left in cache: {} ", rootFiles.size(), (stop - start), getFlowFiles().size());
                 }
             }
             if (lastPrintLogTime == null || (lastPrintLogTime != null && DateTime.now().getMillis() - lastPrintLogTime.getMillis() > (PRINT_LOG_MILLIS))) {

@@ -64,6 +64,12 @@ public class FeedFlowFile implements Serializable {
      */
     private Set<String> activeChildFlowFiles;
 
+    /**
+     * reference to all child flow file ids for this feed flow file
+     * This is used when clearing the cache
+     */
+    private Set<String> childFlowFiles;
+
 
     /**
      * The First Event in this flow file
@@ -163,6 +169,9 @@ public class FeedFlowFile implements Serializable {
         return activeChildFlowFiles;
     }
 
+    public Set<String> getChildFlowFiles() {
+        return childFlowFiles;
+    }
 
     public Long getLastEventId() {
         return lastEventId;
@@ -262,7 +271,11 @@ public class FeedFlowFile implements Serializable {
         if (activeChildFlowFiles == null) {
             activeChildFlowFiles = new HashSet<>();
         }
+        if (childFlowFiles == null) {
+            childFlowFiles = new HashSet<>();
+        }
         activeChildFlowFiles.add(childFlowFileId);
+        childFlowFiles.add(childFlowFileId);
     }
 
     /**
