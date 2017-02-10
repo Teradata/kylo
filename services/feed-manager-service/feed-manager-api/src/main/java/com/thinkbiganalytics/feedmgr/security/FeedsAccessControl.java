@@ -39,7 +39,7 @@ public interface FeedsAccessControl {
                                                          "Allows creating and editing new categories");
     Action ADMIN_CATEGORIES = ACCESS_CATEGORIES.subAction("adminCategories",
                                                           "Administer Categories",
-                                                          "Allows the administration of any category; even those created by others");
+                                                          "Allows the administration of a category");
 
     Action ACCESS_FEEDS = FEEDS_SUPPORT.subAction("accessFeeds",
                                                   "Access Feeds",
@@ -55,7 +55,7 @@ public interface FeedsAccessControl {
                                                  "Allows exporting feeds definitions");
     Action ADMIN_FEEDS = ACCESS_FEEDS.subAction("adminFeeds",
                                                 "Administer Feeds",
-                                                "Allows the administration of any feed; even those created by others");
+                                                "Allows the administration of a feed");
 
     Action ACCESS_TEMPLATES = FEEDS_SUPPORT.subAction("accessTemplates",
                                                       "Access Templates",
@@ -71,6 +71,6 @@ public interface FeedsAccessControl {
                                                          "Allows exporting template definitions");
     Action ADMIN_TEMPLATES = ACCESS_TEMPLATES.subAction("adminTemplates",
                                                         "Administer Templates",
-                                                        "Allows the administration of any feed template; even those created by others");
+                                                        "Allows the administration of a feed template");
 
 }
