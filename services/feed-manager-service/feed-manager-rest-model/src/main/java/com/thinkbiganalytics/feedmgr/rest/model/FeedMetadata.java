@@ -43,7 +43,6 @@ import java.util.stream.Collectors;
  * The specification for a feed and how it should interact with various components.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class FeedMetadata implements UIFeed {
 
     boolean isNew = false;
