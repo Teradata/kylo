@@ -496,7 +496,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     @Override
     public void enableFeedCleanup(@Nonnull String feedId) {
         metadataAccess.commit(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ADMIN_FEEDS);
+            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_FEEDS);
 
             final Feed.ID id = feedProvider.resolveFeed(feedId);
             return feedProvider.mergeFeedProperties(id, ImmutableMap.of(FeedProperties.CLEANUP_ENABLED, "true"));
@@ -505,7 +505,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
 
     private boolean enableFeed(final Feed.ID feedId) {
         return metadataAccess.commit(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ADMIN_FEEDS);
+            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_FEEDS);
             boolean enabled = feedProvider.enableFeed(feedId);
             FeedManagerFeed domainFeed = feedManagerFeedProvider.findById(feedId);
             FeedMetadata feedMetadata = null;
@@ -528,7 +528,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     // @Transactional(transactionManager = "metadataTransactionManager")
     private boolean disableFeed(final Feed.ID feedId) {
         return metadataAccess.commit(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ADMIN_FEEDS);
+            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_FEEDS);
 
             boolean disabled = feedProvider.disableFeed(feedId);
             FeedManagerFeed domainFeed = feedManagerFeedProvider.findById(feedId);
@@ -550,7 +550,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
 
     public FeedSummary enableFeed(final String feedId) {
         return metadataAccess.commit(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ADMIN_FEEDS);
+            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_FEEDS);
 
             if (StringUtils.isNotBlank(feedId)) {
                 FeedMetadata feedMetadata = getFeedById(feedId);
@@ -575,7 +575,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
 
     public FeedSummary disableFeed(final String feedId) {
         return metadataAccess.commit(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ADMIN_FEEDS);
+            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_FEEDS);
 
             if (StringUtils.isNotBlank(feedId)) {
                 FeedMetadata feedMetadata = getFeedById(feedId);
