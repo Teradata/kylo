@@ -1,16 +1,16 @@
 <?xml version="1.0" ?>
 <template encoding-version="1.0">
   <description>A starter template for executing Sqoop import jobs.</description>
-  <groupId>fae61cd4-0158-1000-53ac-41bde7de2141</groupId>
+  <groupId>22a0dd8f-015a-1000-a50b-4de2eadd54ee</groupId>
   <name>template-starter-sqoop-import</name>
   <snippet>
     <connections>
       <id>01a84158-0b38-14f2-0000-000000000000</id>
-      <parentGroupId>fae61cd4-0158-1000-0000-000000000000</parentGroupId>
+      <parentGroupId>22a0dd8f-015a-1000-0000-000000000000</parentGroupId>
       <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
       <backPressureObjectThreshold>10000</backPressureObjectThreshold>
       <destination>
-        <groupId>fae61cd4-0158-1000-0000-000000000000</groupId>
+        <groupId>22a0dd8f-015a-1000-0000-000000000000</groupId>
         <id>fd10bee6-0158-1000-0000-000000000000</id>
         <type>PROCESSOR</type>
       </destination>
@@ -19,7 +19,7 @@
       <name></name>
       <selectedRelationships>success</selectedRelationships>
       <source>
-        <groupId>fae61cd4-0158-1000-0000-000000000000</groupId>
+        <groupId>22a0dd8f-015a-1000-0000-000000000000</groupId>
         <id>01a84157-0b38-14f2-0000-000000000000</id>
         <type>PROCESSOR</type>
       </source>
@@ -27,11 +27,11 @@
     </connections>
     <connections>
       <id>01a8415b-0b38-14f2-0000-000000000000</id>
-      <parentGroupId>fae61cd4-0158-1000-0000-000000000000</parentGroupId>
+      <parentGroupId>22a0dd8f-015a-1000-0000-000000000000</parentGroupId>
       <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
       <backPressureObjectThreshold>10000</backPressureObjectThreshold>
       <destination>
-        <groupId>fae61cd4-0158-1000-0000-000000000000</groupId>
+        <groupId>22a0dd8f-015a-1000-0000-000000000000</groupId>
         <id>01a8415a-0b38-14f2-0000-000000000000</id>
         <type>PROCESSOR</type>
       </destination>
@@ -41,7 +41,7 @@
       <selectedRelationships>activeFailure</selectedRelationships>
       <selectedRelationships>failure</selectedRelationships>
       <source>
-        <groupId>fae61cd4-0158-1000-0000-000000000000</groupId>
+        <groupId>22a0dd8f-015a-1000-0000-000000000000</groupId>
         <id>01a84157-0b38-14f2-0000-000000000000</id>
         <type>PROCESSOR</type>
       </source>
@@ -49,11 +49,11 @@
     </connections>
     <connections>
       <id>01a8415e-0b38-14f2-0000-000000000000</id>
-      <parentGroupId>fae61cd4-0158-1000-0000-000000000000</parentGroupId>
+      <parentGroupId>22a0dd8f-015a-1000-0000-000000000000</parentGroupId>
       <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
       <backPressureObjectThreshold>10000</backPressureObjectThreshold>
       <destination>
-        <groupId>fae61cd4-0158-1000-0000-000000000000</groupId>
+        <groupId>22a0dd8f-015a-1000-0000-000000000000</groupId>
         <id>01a8415d-0b38-14f2-0000-000000000000</id>
         <type>PROCESSOR</type>
       </destination>
@@ -62,7 +62,7 @@
       <name></name>
       <selectedRelationships>failure</selectedRelationships>
       <source>
-        <groupId>fae61cd4-0158-1000-0000-000000000000</groupId>
+        <groupId>22a0dd8f-015a-1000-0000-000000000000</groupId>
         <id>fd10bee6-0158-1000-0000-000000000000</id>
         <type>PROCESSOR</type>
       </source>
@@ -70,11 +70,11 @@
     </connections>
     <connections>
       <id>01a84161-0b38-14f2-0000-000000000000</id>
-      <parentGroupId>fae61cd4-0158-1000-0000-000000000000</parentGroupId>
+      <parentGroupId>22a0dd8f-015a-1000-0000-000000000000</parentGroupId>
       <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
       <backPressureObjectThreshold>10000</backPressureObjectThreshold>
       <destination>
-        <groupId>fae61cd4-0158-1000-0000-000000000000</groupId>
+        <groupId>22a0dd8f-015a-1000-0000-000000000000</groupId>
         <id>01a84160-0b38-14f2-0000-000000000000</id>
         <type>PROCESSOR</type>
       </destination>
@@ -83,7 +83,7 @@
       <name></name>
       <selectedRelationships>success</selectedRelationships>
       <source>
-        <groupId>fae61cd4-0158-1000-0000-000000000000</groupId>
+        <groupId>22a0dd8f-015a-1000-0000-000000000000</groupId>
         <id>fd10bee6-0158-1000-0000-000000000000</id>
         <type>PROCESSOR</type>
       </source>
@@ -91,11 +91,11 @@
     </connections>
     <connections>
       <id>01a84167-0b38-14f2-0000-000000000000</id>
-      <parentGroupId>fae61cd4-0158-1000-0000-000000000000</parentGroupId>
+      <parentGroupId>22a0dd8f-015a-1000-0000-000000000000</parentGroupId>
       <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
       <backPressureObjectThreshold>10000</backPressureObjectThreshold>
       <destination>
-        <groupId>fae61cd4-0158-1000-0000-000000000000</groupId>
+        <groupId>22a0dd8f-015a-1000-0000-000000000000</groupId>
         <id>01a84165-0b38-14f2-0000-000000000000</id>
         <type>PROCESSOR</type>
       </destination>
@@ -104,7 +104,7 @@
       <name></name>
       <selectedRelationships>success</selectedRelationships>
       <source>
-        <groupId>fae61cd4-0158-1000-0000-000000000000</groupId>
+        <groupId>22a0dd8f-015a-1000-0000-000000000000</groupId>
         <id>01a8415d-0b38-14f2-0000-000000000000</id>
         <type>PROCESSOR</type>
       </source>
@@ -112,11 +112,11 @@
     </connections>
     <connections>
       <id>01a84168-0b38-14f2-0000-000000000000</id>
-      <parentGroupId>fae61cd4-0158-1000-0000-000000000000</parentGroupId>
+      <parentGroupId>22a0dd8f-015a-1000-0000-000000000000</parentGroupId>
       <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
       <backPressureObjectThreshold>10000</backPressureObjectThreshold>
       <destination>
-        <groupId>fae61cd4-0158-1000-0000-000000000000</groupId>
+        <groupId>22a0dd8f-015a-1000-0000-000000000000</groupId>
         <id>01a84166-0b38-14f2-0000-000000000000</id>
         <type>PROCESSOR</type>
       </destination>
@@ -125,7 +125,7 @@
       <name></name>
       <selectedRelationships>failure</selectedRelationships>
       <source>
-        <groupId>fae61cd4-0158-1000-0000-000000000000</groupId>
+        <groupId>22a0dd8f-015a-1000-0000-000000000000</groupId>
         <id>01a8415d-0b38-14f2-0000-000000000000</id>
         <type>PROCESSOR</type>
       </source>
@@ -133,11 +133,11 @@
     </connections>
     <connections>
       <id>01a8416b-0b38-14f2-0000-000000000000</id>
-      <parentGroupId>fae61cd4-0158-1000-0000-000000000000</parentGroupId>
+      <parentGroupId>22a0dd8f-015a-1000-0000-000000000000</parentGroupId>
       <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
       <backPressureObjectThreshold>10000</backPressureObjectThreshold>
       <destination>
-        <groupId>fae61cd4-0158-1000-0000-000000000000</groupId>
+        <groupId>22a0dd8f-015a-1000-0000-000000000000</groupId>
         <id>01a8416a-0b38-14f2-0000-000000000000</id>
         <type>PROCESSOR</type>
       </destination>
@@ -146,7 +146,7 @@
       <name></name>
       <selectedRelationships>success</selectedRelationships>
       <source>
-        <groupId>fae61cd4-0158-1000-0000-000000000000</groupId>
+        <groupId>22a0dd8f-015a-1000-0000-000000000000</groupId>
         <id>01a84160-0b38-14f2-0000-000000000000</id>
         <type>PROCESSOR</type>
       </source>
@@ -154,11 +154,11 @@
     </connections>
     <connections>
       <id>01a8416e-0b38-14f2-0000-000000000000</id>
-      <parentGroupId>fae61cd4-0158-1000-0000-000000000000</parentGroupId>
+      <parentGroupId>22a0dd8f-015a-1000-0000-000000000000</parentGroupId>
       <backPressureDataSizeThreshold>1 GB</backPressureDataSizeThreshold>
       <backPressureObjectThreshold>10000</backPressureObjectThreshold>
       <destination>
-        <groupId>fae61cd4-0158-1000-0000-000000000000</groupId>
+        <groupId>22a0dd8f-015a-1000-0000-000000000000</groupId>
         <id>01a8416d-0b38-14f2-0000-000000000000</id>
         <type>PROCESSOR</type>
       </destination>
@@ -167,7 +167,7 @@
       <name></name>
       <selectedRelationships>failure</selectedRelationships>
       <source>
-        <groupId>fae61cd4-0158-1000-0000-000000000000</groupId>
+        <groupId>22a0dd8f-015a-1000-0000-000000000000</groupId>
         <id>01a84160-0b38-14f2-0000-000000000000</id>
         <type>PROCESSOR</type>
       </source>
@@ -175,7 +175,7 @@
     </connections>
     <controllerServices>
       <id>fa763cd8-0158-1000-0000-000000000000</id>
-      <parentGroupId>d0abd5ca-0158-1000-0000-000000000000</parentGroupId>
+      <parentGroupId>22a0dd8f-015a-1000-0000-000000000000</parentGroupId>
       <comments></comments>
       <descriptors>
         <entry>
@@ -236,15 +236,9 @@
     </controllerServices>
     <controllerServices>
       <id>fb3767b1-0158-1000-0000-000000000000</id>
-      <parentGroupId>fae61cd4-0158-1000-0000-000000000000</parentGroupId>
+      <parentGroupId>22a0dd8f-015a-1000-0000-000000000000</parentGroupId>
       <comments></comments>
       <descriptors>
-        <entry>
-          <key>Source Driver</key>
-          <value>
-            <name>Source Driver</name>
-          </value>
-        </entry>
         <entry>
           <key>Source Connection String</key>
           <value>
@@ -281,13 +275,21 @@
             <name>Source Password (Encrypted Base64/Clear Text)</name>
           </value>
         </entry>
+        <entry>
+          <key>Source Connection Manager</key>
+          <value>
+            <name>Source Connection Manager</name>
+          </value>
+        </entry>
+        <entry>
+          <key>Source Driver (Avoid providing value)</key>
+          <value>
+            <name>Source Driver (Avoid providing value)</name>
+          </value>
+        </entry>
       </descriptors>
       <name>Sqoop-MySQL-Connection</name>
       <properties>
-        <entry>
-          <key>Source Driver</key>
-          <value>com.mysql.jdbc.Driver</value>
-        </entry>
         <entry>
           <key>Source Connection String</key>
           <value>jdbc:mysql://localhost/default</value>
@@ -309,13 +311,19 @@
         <entry>
           <key>Source Password (Encrypted Base64/Clear Text)</key>
         </entry>
+        <entry>
+          <key>Source Connection Manager</key>
+        </entry>
+        <entry>
+          <key>Source Driver (Avoid providing value)</key>
+        </entry>
       </properties>
       <state>ENABLED</state>
       <type>com.thinkbiganalytics.nifi.v2.sqoop.StandardSqoopConnectionService</type>
     </controllerServices>
     <processors>
       <id>fd10bee6-0158-1000-0000-000000000000</id>
-      <parentGroupId>fae61cd4-0158-1000-0000-000000000000</parentGroupId>
+      <parentGroupId>22a0dd8f-015a-1000-0000-000000000000</parentGroupId>
       <position>
         <x>619.4819655631211</x>
         <y>1.4457933616620267</y>
@@ -429,9 +437,15 @@
             </value>
           </entry>
           <entry>
-            <key>Target HDFS File Delimiter</key>
+            <key>Target HDFS File Field Delimiter</key>
             <value>
-              <name>Target HDFS File Delimiter</name>
+              <name>Target HDFS File Field Delimiter</name>
+            </value>
+          </entry>
+          <entry>
+            <key>Target HDFS File Record Delimiter</key>
+            <value>
+              <name>Target HDFS File Record Delimiter</name>
             </value>
           </entry>
           <entry>
@@ -462,6 +476,12 @@
             <key>Sqoop Code Generation Directory</key>
             <value>
               <name>Sqoop Code Generation Directory</name>
+            </value>
+          </entry>
+          <entry>
+            <key>[SQL Server Only] Source Schema</key>
+            <value>
+              <name>[SQL Server Only] Source Schema</name>
             </value>
           </entry>
         </descriptors>
@@ -530,8 +550,12 @@
             <value>TEXT</value>
           </entry>
           <entry>
-            <key>Target HDFS File Delimiter</key>
+            <key>Target HDFS File Field Delimiter</key>
             <value>,</value>
+          </entry>
+          <entry>
+            <key>Target HDFS File Record Delimiter</key>
+            <value>\n</value>
           </entry>
           <entry>
             <key>Target Hive Delimiter Strategy</key>
@@ -549,6 +573,9 @@
           </entry>
           <entry>
             <key>Sqoop Code Generation Directory</key>
+          </entry>
+          <entry>
+            <key>[SQL Server Only] Source Schema</key>
           </entry>
         </properties>
         <runDurationMillis>0</runDurationMillis>
@@ -575,7 +602,7 @@
     </processors>
     <processors>
       <id>01a84157-0b38-14f2-0000-000000000000</id>
-      <parentGroupId>fae61cd4-0158-1000-0000-000000000000</parentGroupId>
+      <parentGroupId>22a0dd8f-015a-1000-0000-000000000000</parentGroupId>
       <position>
         <x>2.87560526507923</x>
         <y>0.0</y>
@@ -699,7 +726,7 @@
     </processors>
     <processors>
       <id>01a8415a-0b38-14f2-0000-000000000000</id>
-      <parentGroupId>fae61cd4-0158-1000-0000-000000000000</parentGroupId>
+      <parentGroupId>22a0dd8f-015a-1000-0000-000000000000</parentGroupId>
       <position>
         <x>0.0</x>
         <y>271.1851933505244</y>
@@ -781,7 +808,7 @@
     </processors>
     <processors>
       <id>01a8415d-0b38-14f2-0000-000000000000</id>
-      <parentGroupId>fae61cd4-0158-1000-0000-000000000000</parentGroupId>
+      <parentGroupId>22a0dd8f-015a-1000-0000-000000000000</parentGroupId>
       <position>
         <x>1327.22638374218</x>
         <y>0.6162933230464205</y>
@@ -891,7 +918,7 @@
     </processors>
     <processors>
       <id>01a84160-0b38-14f2-0000-000000000000</id>
-      <parentGroupId>fae61cd4-0158-1000-0000-000000000000</parentGroupId>
+      <parentGroupId>22a0dd8f-015a-1000-0000-000000000000</parentGroupId>
       <position>
         <x>616.8054853046799</x>
         <y>281.8131317019528</y>
@@ -1001,7 +1028,7 @@
     </processors>
     <processors>
       <id>01a84165-0b38-14f2-0000-000000000000</id>
-      <parentGroupId>fae61cd4-0158-1000-0000-000000000000</parentGroupId>
+      <parentGroupId>22a0dd8f-015a-1000-0000-000000000000</parentGroupId>
       <position>
         <x>1583.6062657526784</x>
         <y>286.66532832914197</y>
@@ -1083,7 +1110,7 @@
     </processors>
     <processors>
       <id>01a84166-0b38-14f2-0000-000000000000</id>
-      <parentGroupId>fae61cd4-0158-1000-0000-000000000000</parentGroupId>
+      <parentGroupId>22a0dd8f-015a-1000-0000-000000000000</parentGroupId>
       <position>
         <x>1142.5020747071615</x>
         <y>279.995624871632</y>
@@ -1165,10 +1192,10 @@
     </processors>
     <processors>
       <id>01a8416a-0b38-14f2-0000-000000000000</id>
-      <parentGroupId>fae61cd4-0158-1000-0000-000000000000</parentGroupId>
+      <parentGroupId>22a0dd8f-015a-1000-0000-000000000000</parentGroupId>
       <position>
         <x>999.5376622370534</x>
-        <y>512.2787316494545</y>
+        <y>512.2787316494546</y>
       </position>
       <config>
         <bulletinLevel>WARN</bulletinLevel>
@@ -1247,10 +1274,10 @@
     </processors>
     <processors>
       <id>01a8416d-0b38-14f2-0000-000000000000</id>
-      <parentGroupId>fae61cd4-0158-1000-0000-000000000000</parentGroupId>
+      <parentGroupId>22a0dd8f-015a-1000-0000-000000000000</parentGroupId>
       <position>
         <x>256.10131787122396</x>
-        <y>511.904316277882</y>
+        <y>511.90431627788206</y>
       </position>
       <config>
         <bulletinLevel>WARN</bulletinLevel>
@@ -1328,5 +1355,5 @@
       <type>org.apache.nifi.processors.standard.LogAttribute</type>
     </processors>
   </snippet>
-  <timestamp>12/14/2016 14:25:41 UTC</timestamp>
+  <timestamp>02/09/2017 11:53:08 UTC</timestamp>
 </template>
