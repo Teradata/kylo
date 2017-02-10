@@ -18,7 +18,6 @@
 
   <modules>
     <module>nifi-framework-api</module>
-    <module>nifi-framework-v0</module>
     <module>nifi-framework-v1</module>
   </modules>
 

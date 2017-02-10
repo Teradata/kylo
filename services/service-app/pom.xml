@@ -246,11 +246,6 @@
     <!-- NiFi REST clients -->
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>kylo-nifi-rest-client-v0</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>kylo-nifi-rest-client-v1</artifactId>
       <version>${project.version}</version>
     </dependency>

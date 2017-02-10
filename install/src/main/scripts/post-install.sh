@@ -149,10 +149,8 @@ echo "    - Completed kylo-ui install"
 echo "    - Install kylo-services application"
 
 tar -xf $rpmInstallDir/kylo-services/kylo-service-app-*.tar.gz -C $rpmInstallDir/kylo-services --strip-components=1
-tar -xf $rpmInstallDir/kylo-services/kylo-nifi-rest-client-v0-*.tar.gz -C $rpmInstallDir/kylo-services --strip-components=1
 tar -xf $rpmInstallDir/kylo-services/kylo-nifi-rest-client-v1-*.tar.gz -C $rpmInstallDir/kylo-services --strip-components=1
 rm -rf $rpmInstallDir/kylo-services/kylo-service-app-*.tar.gz
-rm -rf $rpmInstallDir/kylo-services/kylo-nifi-rest-client-v0-*.tar.gz
 rm -rf $rpmInstallDir/kylo-services/kylo-nifi-rest-client-v1-*.tar.gz
 rm -f $rpmInstallDir/kylo-services/lib/jetty*
 rm -f $rpmInstallDir/kylo-services/lib/servlet-api*

@@ -17,7 +17,6 @@
 
   <modules>
     <module>nifi-security-api</module>
-    <module>nifi-security-v0</module>
     <module>nifi-security-v1</module>
   </modules>
 
