@@ -301,8 +301,8 @@ public class CreateFeedBuilder {
                     //if this is a new feedProcessGroup (i.e. new category), align the root level items also
                     //fetch the parent to get that id to align
                     if (previousFeedProcessGroup == null) {
-                        //  log.info("This is the first feed created in the category {}.  Aligning the categories. ", feedMetadata.getCategory().getSystemName());
-                        //  new AlignProcessGroupComponents(restClient.getNiFiRestClient(), this.categoryGroup.getParentGroupId()).autoLayout();
+                        log.info("This is the first feed created in the category {}.  Aligning the categories. ", feedMetadata.getCategory().getSystemName());
+                        new AlignProcessGroupComponents(restClient.getNiFiRestClient(), this.categoryGroup.getParentGroupId()).autoLayout();
                     }
 
                 }
