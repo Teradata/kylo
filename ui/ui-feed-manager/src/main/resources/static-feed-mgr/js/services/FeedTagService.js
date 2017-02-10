@@ -40,21 +40,7 @@ angular.module(MODULE_FEED_MGR).factory('FeedTagService', function () {
     },
     loadAvailableTags: function () {
 
-        var data = [
-            {
-                'name': 'Data Ingest'
-            },
-            {
-                'name': 'People'
-            },
-            {
-                'name': 'HR'
-            },
-            {
-                'name': 'Enterprise'
-            }
-
-        ];
+        var data = [  ];
         return data.map(function(tag){
             tag._lowername = tag.name.toLowerCase();
             return tag;
