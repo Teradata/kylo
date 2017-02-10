@@ -24,6 +24,7 @@ import com.google.common.collect.ImmutableMap;
 import com.thinkbiganalytics.discovery.schema.TableSchema;
 import com.thinkbiganalytics.feedmgr.nifi.CleanupStaleFeedRevisions;
 import com.thinkbiganalytics.feedmgr.nifi.DBCPConnectionPoolTableInfo;
+import com.thinkbiganalytics.feedmgr.nifi.NifiConnectionService;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.SpringEnvironmentProperties;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
@@ -94,6 +95,9 @@ public class NifiIntegrationRestController {
     FeedManagerTemplateService feedManagerTemplateService;
     @Inject
     NiFiPropertyDescriptorTransform propertyDescriptorTransform;
+
+    @Inject
+    NifiConnectionService nifiConnectionService;
     /**
      * Legacy NiFi REST client
      */
@@ -357,4 +361,25 @@ public class NifiIntegrationRestController {
         final NiFiClusterSummary clusterSummary = nifiRestClient.clusterSummary();
         return Response.ok(clusterSummary).build();
     }
+
+
+    /**
+     * Checks to see if NiFi is up and running
+     *
+     * @return true if running, false if not
+     */
+    @GET
+    @Path("/running")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the status of the NiFi cluster.")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the cluster status.", response = NiFiClusterSummary.class),
+                      @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
+                  })
+    public Response getRunning() {
+        boolean isRunning = nifiConnectionService.isNiFiRunning();
+        return Response.ok(isRunning).build();
+    }
+
+
 }

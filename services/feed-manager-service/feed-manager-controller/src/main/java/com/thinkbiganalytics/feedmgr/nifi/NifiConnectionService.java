@@ -84,6 +84,12 @@ public class NifiConnectionService {
 
     }
 
+    /**
+     * @return true if NiFi is connected, false if not
+     */
+    public boolean isNiFiRunning() {
+        return isConnected.get();
+    }
 
     private boolean isConnected() {
         return isConnected(false);

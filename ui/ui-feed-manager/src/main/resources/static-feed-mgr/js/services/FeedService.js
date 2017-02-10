@@ -346,8 +346,8 @@ angular.module(MODULE_FEED_MGR).factory('FeedService',
             },
             /**
              * return true/false if there is a PK defined for the incoming set of {@code feedModel.table.tableSchema.fields
-         * @param fields
-         * @returns {boolean}
+             * @param fields
+             * @returns {boolean}
              */
             hasPrimaryKeyDefined: function (feedModel) {
                 var firstPk = _.find(feedModel.table.tableSchema.fields, function (field) {

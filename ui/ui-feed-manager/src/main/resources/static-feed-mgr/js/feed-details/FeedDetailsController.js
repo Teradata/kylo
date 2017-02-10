@@ -72,6 +72,9 @@
         this.uploading = false;
         this.uploadAllowed = false;
 
+        /** flag to indicate if we get a valid connection back from NiFi.  Initially to true. it will be rechecked on load **/
+        this.isNiFiRunning = true;
+
         var requestedTabIndex = $stateParams.tabIndex;
 
 
@@ -104,6 +107,7 @@
             self.feedId = $stateParams.feedId;
 
             loadFeed(requestedTabIndex);
+            nifiRunningCheck();
 
             AccessControlService.getAllowedActions()
                     .then(function(actionSet) {
@@ -381,6 +385,15 @@
             var promise = $http.get(RestUrlService.GET_FEEDS_URL + "/" + self.feedId);
             promise.then(successFn, errorFn);
             return promise;
+        }
+
+         function nifiRunningCheck(){
+            var promise = $http.get(RestUrlService.IS_NIFI_RUNNING_URL);
+            promise.then(function(response) {
+                self.isNiFiRunning =response.data;
+            }, function(err) {
+                self.isNiFiRunning = false;
+            });
         }
 
         this.gotoFeedStats = function (ev) {

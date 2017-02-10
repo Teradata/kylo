@@ -249,4 +249,10 @@ angular.module(MODULE_FEED_MGR).service('RestUrlService', function () {
      * @type {string}
      */
     this.NIFI_CLUSTER_SUMMARY_URL = this.ROOT + "/proxy/v1/feedmgr/nifi/cluster/summary";
+
+    /**
+     * the endpoint for determining if NiFi is up or not
+     * @type {string}
+     */
+    this.IS_NIFI_RUNNING_URL = this.ROOT +"/proxy/v1/feedmgr/nifi/running";
 });
