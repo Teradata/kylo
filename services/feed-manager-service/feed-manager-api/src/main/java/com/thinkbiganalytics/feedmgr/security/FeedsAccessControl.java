@@ -37,9 +37,10 @@ public interface FeedsAccessControl {
     Action EDIT_CATEGORIES = ACCESS_CATEGORIES.subAction("editCategories",
                                                          "Edit Categories",
                                                          "Allows creating and editing new categories");
-    Action ADMIN_CATEGORIES = ACCESS_CATEGORIES.subAction("adminCategories",
-                                                          "Administer Categories",
-                                                          "Allows the administration of any category; even those created by others");
+// TODO: This action is applicable only after entity-level access control is introduced
+//    Action ADMIN_CATEGORIES = ACCESS_CATEGORIES.subAction("adminCategories",
+//                                                          "Administer Categories",
+//                                                          "Allows the administration of any category; even those created by others");
 
     Action ACCESS_FEEDS = FEEDS_SUPPORT.subAction("accessFeeds",
                                                   "Access Feeds",
@@ -53,9 +54,10 @@ public interface FeedsAccessControl {
     Action EXPORT_FEEDS = ACCESS_FEEDS.subAction("exportFeeds",
                                                  "Export Feeds",
                                                  "Allows exporting feeds definitions");
-    Action ADMIN_FEEDS = ACCESS_FEEDS.subAction("adminFeeds",
-                                                "Administer Feeds",
-                                                "Allows the administration of any feed; even those created by others");
+// TODO: This action is applicable only after entity-level access control is introduced
+//    Action ADMIN_FEEDS = ACCESS_FEEDS.subAction("adminFeeds",
+//                                                "Administer Feeds",
+//                                                "Allows the administration of any feed; even those created by others");
 
     Action ACCESS_TEMPLATES = FEEDS_SUPPORT.subAction("accessTemplates",
                                                       "Access Templates",
@@ -69,8 +71,9 @@ public interface FeedsAccessControl {
     Action EXPORT_TEMPLATES = ACCESS_TEMPLATES.subAction("exportTemplates",
                                                          "Export Templates",
                                                          "Allows exporting template definitions");
-    Action ADMIN_TEMPLATES = ACCESS_TEMPLATES.subAction("adminTemplates",
-                                                        "Administer Templates",
-                                                        "Allows the administration of any feed template; even those created by others");
+// TODO: This action is applicable only after entity-level access control is introduced
+//    Action ADMIN_TEMPLATES = ACCESS_TEMPLATES.subAction("adminTemplates",
+//                                                        "Administer Templates",
+//                                                        "Allows the administration of any feed template; even those created by others");
 
 }

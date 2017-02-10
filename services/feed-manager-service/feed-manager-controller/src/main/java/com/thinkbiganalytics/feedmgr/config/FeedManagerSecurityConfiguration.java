@@ -57,15 +57,15 @@ public class FeedManagerSecurityConfiguration {
                                 .action(FeedsAccessControl.EDIT_FEEDS)
                                 .action(FeedsAccessControl.IMPORT_FEEDS)
                                 .action(FeedsAccessControl.EXPORT_FEEDS)
-                                .action(FeedsAccessControl.ADMIN_FEEDS)
+//                                .action(FeedsAccessControl.ADMIN_FEEDS)
                                 .action(FeedsAccessControl.ACCESS_CATEGORIES)
                                 .action(FeedsAccessControl.EDIT_CATEGORIES)
-                                .action(FeedsAccessControl.ADMIN_CATEGORIES)
+//                                .action(FeedsAccessControl.ADMIN_CATEGORIES)
                                 .action(FeedsAccessControl.ACCESS_TEMPLATES)
                                 .action(FeedsAccessControl.EDIT_TEMPLATES)
                                 .action(FeedsAccessControl.IMPORT_TEMPLATES)
                                 .action(FeedsAccessControl.EXPORT_TEMPLATES)
-                                .action(FeedsAccessControl.ADMIN_TEMPLATES)
+//                                .action(FeedsAccessControl.ADMIN_TEMPLATES)
                                 .add()
                             .build();
             }, MetadataAccess.SERVICE);

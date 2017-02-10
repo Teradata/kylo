@@ -433,7 +433,7 @@ public class FeedsController {
         com.thinkbiganalytics.metadata.api.feed.Feed.ID depId = this.feedProvider.resolveFeed(depIdStr);
 
         this.metadata.commit(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ADMIN_FEEDS);
+            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_FEEDS);
 
             this.feedProvider.addDependent(feedId, depId);
             return null;
@@ -456,7 +456,7 @@ public class FeedsController {
         com.thinkbiganalytics.metadata.api.feed.Feed.ID depId = this.feedProvider.resolveFeed(depIdStr);
 
         this.metadata.commit(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ADMIN_FEEDS);
+            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_FEEDS);
 
             this.feedProvider.removeDependent(feedId, depId);
             return null;
@@ -950,7 +950,7 @@ public class FeedsController {
         LOG.debug("Add feed precondition, feed ID: {}, precondition: {}", feedId, precond);
 
         return this.metadata.commit(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ADMIN_FEEDS);
+            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_FEEDS);
 
             com.thinkbiganalytics.metadata.api.feed.Feed.ID domainFeedId = feedProvider.resolveFeed(feedId);
             List<com.thinkbiganalytics.metadata.sla.api.Metric> domainMetrics
