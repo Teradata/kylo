@@ -53,6 +53,10 @@ mkdir $NIFI_INSTALL_HOME/ext-config
 cp $NIFI_SETUP_DIR/config.properties $NIFI_INSTALL_HOME/ext-config
 chown -R nifi:users $NIFI_INSTALL_HOME
 
+echo "Creating flow file cache directory"
+mkdir /opt/nifi/feed_flowfile_cache/
+chown nifi:nifi /opt/nifi/feed_flowfile_cache/
+
 mkdir /var/log/nifi
 chown nifi:users /var/log/nifi
 
