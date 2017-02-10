@@ -1,7 +1,3 @@
-/*
- * Copyright (c) 2015.
- */
-
 (function() {
     'use strict';
 
