@@ -84,7 +84,7 @@ public class SparkShellProxyController {
 
         // Return response
         if (response.isPresent()) {
-            return Response.ok(response).build();
+            return Response.ok(response.get()).build();
         } else {
             throw error(Response.Status.NOT_FOUND, "getTable.unknownTable", null);
         }

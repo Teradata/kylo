@@ -247,7 +247,7 @@ echo "    - Install thinkbig-spark-shell application"
 cat << EOF > $rpmInstallDir/thinkbig-services/bin/run-thinkbig-spark-shell.sh
 #!/bin/bash
 SPARK_PROFILE="v"\$(spark-submit --version 2>&1 | grep -o "version [0-9]" | grep -o "[0-9]")
-spark-submit --conf spark.driver.userClassPathFirst=true --class com.thinkbiganalytics.spark.SparkShellApp --driver-class-path /opt/thinkbig/thinkbig-services/conf --driver-java-options -Dlog4j.configuration=$rpmInstallDir/thinkbig-services/conf/log4j-spark.properties $rpmInstallDir/thinkbig-services/lib/app/thinkbig-spark-shell-client-\${SPARK_PROFILE}-*.jar --pgrep-marker=$pgrepMarkerThinkbigSparkShell
+spark-submit --conf spark.driver.userClassPathFirst=true --class com.thinkbiganalytics.spark.SparkShellApp --driver-class-path /opt/thinkbig/thinkbig-services/conf --driver-java-options -Dlog4j.configuration=log4j-spark.properties $rpmInstallDir/thinkbig-services/lib/app/thinkbig-spark-shell-client-\${SPARK_PROFILE}-*.jar --pgrep-marker=$pgrepMarkerThinkbigSparkShell
 EOF
 chmod +x $rpmInstallDir/thinkbig-services/bin/run-thinkbig-spark-shell.sh
 echo "   - Created thinkbig-spark-shell script '$rpmInstallDir/thinkbig-services/bin/run-thinkbig-spark-shell.sh'"

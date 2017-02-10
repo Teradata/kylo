@@ -32,7 +32,7 @@ public class JerseySparkShellRestClient implements SparkShellRestClient {
 
         // Query Spark Shell process
         try {
-            return Optional.of(getClient(process).get("/api/v1/spark/shell/table/" + table, ImmutableMap.of(), TransformResponse.class));
+            return Optional.of(getClient(process).get("/api/v1/spark/shell/transform/" + table, ImmutableMap.of(), TransformResponse.class));
         } catch (final NotFoundException e) {
             return Optional.empty();
         }

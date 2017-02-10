@@ -5,6 +5,7 @@
 package com.thinkbiganalytics.discovery.parsers.hadoop;
 
 
+import com.google.common.util.concurrent.Uninterruptibles;
 import com.thinkbiganalytics.db.model.query.QueryResult;
 import com.thinkbiganalytics.db.model.query.QueryResultColumn;
 import com.thinkbiganalytics.discovery.model.DefaultField;
@@ -30,6 +31,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 
@@ -67,11 +72,12 @@ public class SparkFileSchemaParserService {
             while (response.getStatus() != TransformResponse.Status.SUCCESS) {
                 if (response.getStatus() == TransformResponse.Status.ERROR) {
                     throw new IOException("Failed to process data [" + response.getMessage() + "]");
-                }
-                Optional<TransformResponse> optionalResponse = restClient.getTable(shellProcess, response.getTable());
-                if (!optionalResponse.isPresent()) {
-                    Thread.sleep(500L);
                 } else {
+                    Uninterruptibles.sleepUninterruptibly(100L, TimeUnit.MILLISECONDS);
+                }
+
+                final Optional<TransformResponse> optionalResponse = restClient.getTable(shellProcess, response.getTable());
+                if (optionalResponse.isPresent()) {
                     response = optionalResponse.get();
                 }
             }
@@ -79,7 +85,7 @@ public class SparkFileSchemaParserService {
 
         } catch (Exception e) {
             log.warn("Error parsing file {}", fileType);
-            throw new IOException("Unexpected exception. Verify file is the proper format");
+            throw new IOException("Unexpected exception. Verify file is the proper format", e);
         } finally {
             tempFile.delete();
         }
