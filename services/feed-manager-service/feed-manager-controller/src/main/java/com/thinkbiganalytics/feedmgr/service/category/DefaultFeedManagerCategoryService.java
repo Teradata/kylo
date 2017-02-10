@@ -142,7 +142,7 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
 
     @Override
     public void setUserFields(@Nonnull Set<UserField> userFields) {
-        this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_CATEGORIES);
+        this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ADMIN_CATEGORIES);
 
         categoryProvider.setUserFields(UserPropertyTransform.toUserFieldDescriptors(userFields));
     }
