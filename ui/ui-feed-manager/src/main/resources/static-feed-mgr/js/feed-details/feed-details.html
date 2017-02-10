@@ -89,13 +89,13 @@
               <md-menu-content width="4">
 
                 <md-menu-item ng-if="vm.model.state == 'ENABLED'" ng-click="vm.disableFeed()">
-                  <md-button ng-disabled="(vm.disabling || !vm.allowAdmin)">
+                  <md-button ng-disabled="(vm.disabling || !vm.allowEdit)">
                     <ng-md-icon icon="not_interested" class="orange"></ng-md-icon>
                     Disable
                   </md-button>
                 </md-menu-item>
                 <md-menu-item ng-if="vm.model.state != 'ENABLED'"  ng-click="vm.enableFeed()" >
-                  <md-button ng-disabled="(vm.enabling || !vm.allowAdmin)">
+                  <md-button ng-disabled="(vm.enabling || !vm.allowEdit)">
                     <ng-md-icon icon="check_circle" class="orange" md-menu-align-target=""></ng-md-icon>
                     Enable
                   </md-button>
@@ -129,17 +129,7 @@
             </div>
 
             <div layout="column" class="layout-padding-top" ng-if="!vm.loadingFeedData">
-<!--
-                <md-button ng-if="vm.model.state == 'ENABLED' && vm.allowAdmin" ng-disabled="vm.disabling" ng-click="vm.disableFeed()" class="border-btn">
-                    DISABLE FEED
-                </md-button>
-                <md-button ng-if="vm.model.state != 'ENABLED' && vm.allowAdmin" ng-disabled="vm.enabling" ng-click="vm.enableFeed()" class="border-btn">
-                    ENABLE FEED
-                </md-button>
-                <md-button ng-if="vm.model.state != 'ENABLED' && vm.allowAdmin" ng-click="vm.confirmDeleteFeed()" class="border-btn-warn">
-                    DELETE FEED
-                </md-button>
--->
+
                 <md-progress-linear md-mode="indeterminate" ng-if="vm.enabling || vm.disabling"></md-progress-linear>
                 <div layout="column" class="layout-padding-top-bottom">
                     <span ng-class="{'enabled':vm.model.state == 'ENABLED','disabled':vm.model.state == 'DISABLED'}"> {{vm.model.state}}

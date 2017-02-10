@@ -63,6 +63,19 @@
         this.errorMessage = null;
 
 
+        /**
+         * Indicates if admin operations are allowed.
+         * @type {boolean}
+         */
+        self.allowAdmin = false;
+
+        /**
+         * Indicates if edit operations are allowed.
+         * @type {boolean}
+         */
+        self.allowEdit = false;
+
+
         function showProgress(){
             if(self.stepperController) {
                 self.stepperController.showProgress = true;
@@ -189,18 +202,11 @@
 
 
 
-
-
-
-
-      //  if(this.isValid) {
-     //       this.changeTemplate();
-       // }
-
         this.getTemplates();
 
         AccessControlService.getAllowedActions()
             .then(function(actionSet) {
+                self.allowEdit = AccessControlService.hasAction(AccessControlService.TEMPLATES_EDIT, actionSet.actions);
                 self.allowAdmin = AccessControlService.hasAction(AccessControlService.TEMPLATES_ADMIN, actionSet.actions);
                 self.allowExport = AccessControlService.hasAction(AccessControlService.TEMPLATES_EXPORT, actionSet.actions);
             });

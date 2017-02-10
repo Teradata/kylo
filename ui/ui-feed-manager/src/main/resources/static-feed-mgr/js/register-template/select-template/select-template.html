@@ -60,13 +60,13 @@
                 Loading Template ...
             </div>
             <div layout="column" class="layout-padding-top" ng-if="!vm.model.loading">
-                <md-button ng-if="vm.model.state == 'ENABLED' && vm.allowAdmin" ng-disabled="vm.disabling" ng-click="vm.disableTemplate()" class="border-btn">
+                <md-button ng-if="vm.model.state == 'ENABLED' && vm.allowEdit" ng-disabled="vm.disabling" ng-click="vm.disableTemplate()" class="border-btn">
                     DISABLE TEMPLATE
                 </md-button>
-                <md-button ng-if="vm.model.state == 'DISABLED' && vm.allowAdmin" ng-disabled="vm.enabling" ng-click="vm.enableTemplate()" class="border-btn">
+                <md-button ng-if="vm.model.state == 'DISABLED' && vm.allowEdit" ng-disabled="vm.enabling" ng-click="vm.enableTemplate()" class="border-btn">
                     ENABLE TEMPLATE
                 </md-button>
-                <md-button ng-if="vm.model.state == 'DISABLED' && vm.allowAdmin && vm.model.feedsCount ==0" ng-click="vm.confirmDeleteTemplate()" class="border-btn-warn">
+                <md-button ng-if="vm.model.state == 'DISABLED' && vm.allowEdit && vm.model.feedsCount ==0" ng-click="vm.confirmDeleteTemplate()" class="border-btn-warn">
                     DELETE TEMPLATE
                 </md-button>
                 <md-progress-linear md-mode="indeterminate" ng-if="vm.enabling || vm.disabling"></md-progress-linear>
