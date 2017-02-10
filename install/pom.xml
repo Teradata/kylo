@@ -266,19 +266,6 @@
                   </location>
                 </source>
                 <source>
-                  <location>../plugins/sla-email/src/main/resources/conf</location>
-                  <includes>
-                    <include>sla.email.properties</include>
-                  </includes>
-                </source>
-                <source>
-                  <location>../plugins/sla-jira/src/main/resources/conf</location>
-                  <includes>
-                    <include>kylo_jira.jks</include>
-                    <include>jira.properties</include>
-                  </includes>
-                </source>
-                <source>
                   <location>
                     ../services/spark-shell-service/spark-shell-core/src/main/resources/spark.properties
                   </location>
@@ -303,18 +290,6 @@
               <groupname>${rpm.user}</groupname>
               <sources>
                 <source>
-                  <location>../plugins/sla-email/target</location>
-                  <includes>
-                    <include>kylo-sla-email-${project.version}.jar</include>
-                  </includes>
-                </source>
-                <source>
-                  <location>../plugins/sla-jira/target</location>
-                  <includes>
-                    <include>kylo-sla-jira-${project.version}.jar</include>
-                  </includes>
-                </source>
-                <source>
                   <location>../plugins/precondition-default/target</location>
                   <includes>
                     <include>kylo-precondition-default-${project.version}.jar</include>
@@ -328,17 +303,7 @@
                 </source>
               </sources>
             </mapping>
-            <mapping>
-              <directory>${rpm.install.dir}/kylo-services/plugin</directory>
-              <filemode>${file.permissions}</filemode>
-              <username>${rpm.user}</username>
-              <groupname>${rpm.user}</groupname>
-              <dependency>
-                <includes>
-                  <include>com.thinkbiganalytics.datalake:kylo-jira-rest-client</include>
-                </includes>
-              </dependency>
-            </mapping>
+
 
             <!-- Conf/Setup -->
             <mapping>
