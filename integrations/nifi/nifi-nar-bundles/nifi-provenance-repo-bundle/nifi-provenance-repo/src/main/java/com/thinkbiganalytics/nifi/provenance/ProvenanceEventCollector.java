@@ -24,6 +24,7 @@ import com.google.common.collect.Lists;
 import com.thinkbiganalytics.nifi.provenance.cache.FeedFlowFileCacheUtil;
 import com.thinkbiganalytics.nifi.provenance.jms.ProvenanceEventActiveMqWriter;
 import com.thinkbiganalytics.nifi.provenance.model.BatchFeedProcessorEvents;
+import com.thinkbiganalytics.nifi.provenance.model.FeedFlowFile;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTOHolder;
 import com.thinkbiganalytics.nifi.provenance.model.util.ProvenanceEventUtil;
@@ -121,6 +122,10 @@ public class ProvenanceEventCollector {
                         event.setComponentName("FlowFile Queue emptied");
                         event.setIsFailure(true);
                         event.setHasFailedEvents(true);
+                        FeedFlowFile feedFlowFile = event.getFeedFlowFile();
+                        if (feedFlowFile != null) {
+                            feedFlowFile.checkAndMarkComplete(event);
+                        }
                         event.getFeedFlowFile().incrementFailedEvents();
                     }
                     //only process if we can get the feed name, otherwise its no use
