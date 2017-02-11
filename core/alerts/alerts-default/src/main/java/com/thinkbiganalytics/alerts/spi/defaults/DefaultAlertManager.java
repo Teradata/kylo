@@ -45,11 +45,9 @@ import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlert.AlertId;
 import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlertChangeEvent;
 import com.thinkbiganalytics.metadata.jpa.alerts.JpaAlertRepository;
 import com.thinkbiganalytics.metadata.jpa.alerts.QJpaAlert;
-import com.thinkbiganalytics.security.UsernamePrincipal;
 
 import org.joda.time.DateTime;
 import org.springframework.data.jpa.repository.support.QueryDslRepositorySupport;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.Serializable;
@@ -252,9 +250,8 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
     }
 
     protected <C extends Serializable> Alert changeAlert(JpaAlert.AlertId id, State state, String descr, C content) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        final Principal user = auth != null
-                               ? new UsernamePrincipal(auth.getPrincipal().toString())
+        final Principal user = SecurityContextHolder.getContext().getAuthentication() != null
+                               ? SecurityContextHolder.getContext().getAuthentication()
                                : null;
 
         Alert changed = this.metadataAccess.commit(() -> {
