@@ -354,7 +354,7 @@ public class NifiIntegrationRestController {
                       @ApiResponse(code = 500, message = "Unable to find the controller service", response = RestResponseStatus.class)
                   })
     public Response getControllerService(@PathParam("serviceId") String serviceId) {
-        final ControllerServiceDTO controllerService = legacyNifiRestClient.getControllerService(null,serviceId);
+        final ControllerServiceDTO controllerService = legacyNifiRestClient.getControllerService(null, serviceId);
 
         return Response.ok(controllerService).build();
     }
