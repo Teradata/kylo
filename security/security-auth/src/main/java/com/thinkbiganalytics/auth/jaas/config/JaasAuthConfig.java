@@ -20,8 +20,10 @@ import org.springframework.security.authentication.jaas.AuthorityGranter;
 import org.springframework.security.authentication.jaas.DefaultJaasAuthenticationProvider;
 import org.springframework.security.authentication.jaas.memory.InMemoryConfiguration;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.inject.Named;
@@ -107,15 +109,19 @@ public class JaasAuthConfig {
     }
 
     @Bean(name = "jaasConfiguration")
-    public javax.security.auth.login.Configuration jaasConfiguration(List<LoginConfiguration> loginModuleEntries) {
-        Map<String, AppConfigurationEntry[]> merged = loginModuleEntries.stream()
-            .map(c -> c.getAllApplicationEntries().entrySet())
-            .flatMap(s -> s.stream())
-            .collect(Collectors.toMap(e -> e.getKey(),
-                                      e -> e.getValue(),
-                                      ArrayUtils::addAll));
-
-        return new InMemoryConfiguration(merged);
+    public javax.security.auth.login.Configuration jaasConfiguration(Optional<List<LoginConfiguration>> loginModuleEntries) {
+        // Generally the entries will be null only in situations like unit/integration tests.
+        if (loginModuleEntries.isPresent()) {
+            Map<String, AppConfigurationEntry[]> merged = loginModuleEntries.get().stream()
+                            .map(c -> c.getAllApplicationEntries().entrySet())
+                            .flatMap(s -> s.stream())
+                            .collect(Collectors.toMap(e -> e.getKey(),
+                                                      e -> e.getValue(),
+                                                      ArrayUtils::addAll));
+            return new InMemoryConfiguration(merged);
+        } else {
+            return new InMemoryConfiguration(Collections.emptyMap());
+        }
     }
 
     @Bean(name = "rolePrincipalAuthorityGranter")
