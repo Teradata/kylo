@@ -654,8 +654,7 @@
          * @param dest
          */
         this.onEditConnectionCallback = function(connectionViewModel, connectionDataModel, dest, source) {
-            self.showConnectionDialog(false, connectionViewModel, connectionDataModel, source, dest)
-            validate();
+            self.showConnectionDialog(false, connectionViewModel, connectionDataModel, source, dest);
         };
 
         /**
@@ -726,6 +725,7 @@
                     connectionViewModel.select();
                     self.chartViewModel.deleteSelected();
                 }
+                validate();
             });
         };
 
