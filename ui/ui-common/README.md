@@ -1,10 +1,10 @@
-data-lake-ui-common
+ui-common
 ===================
 
 Purpose
 ------------
-The **data-lake-ui-common** module has common javascript and java code that pertains to the **data-lake-ui** project.  
-This allows for common javascript css to be coded in 1 place and then referenced across other projects.  Modules can include this project as a maven dependency and then reference the components.
+The **ui-common** module has common javascript and java code that pertains to the user interface projects.  
+This allows for common javascript css to be coded in one place and then referenced across other projects.  Modules can include this project as a maven dependency and then reference the components.
 
 Referencing Static Content
 ----------
@@ -17,7 +17,7 @@ Referencing Static Content
    </dependency>
 ```
 2. Once included all the common static content is available at the path **/ui-common/**.  
-	1. This path is configured in the **StaticCommonContentConfiguration** class.
+	1. This path is configured in the **StaticCommonContentConfiguration.java** class.
 
 Static External Code
 -------------

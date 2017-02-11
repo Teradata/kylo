@@ -3,7 +3,7 @@ Apache NiFi NAR bundles
 
 ### Overview
 
-This subtree provides Think Big extensions to NiFi.  Each significant subproject has its own readme.
+This subtree provides extensions to NiFi.  Each significant subproject has its own readme.
 
 Apache NiFi extensions are packaged in NARs (NiFi archives). A NAR allows several components and their dependencies to be
 packaged together into a single package. The NAR package is then provided ClassLoader isolation from other NAR packages. 

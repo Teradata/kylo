@@ -1,7 +1,7 @@
-Think Big Service Monitor Module
+Kylo Service Monitor
 ==============
 
-This module allows for the data-lake-ui/operations-manager-app to monitor any number of services and verify if they are up/down/healthy, etc.
+This module allows for the ui-operations-manager to monitor any number of services and verify if they are up/down/healthy, etc.
 
 Setup
 -------------

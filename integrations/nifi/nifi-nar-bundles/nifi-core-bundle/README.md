@@ -3,7 +3,7 @@ nifi-core-bundle
 
 ### Overview
 
-The NiFi core bundle is a Think Big NiFi extension providing standard ingest components and integrations with the metadata server
+The NiFi core bundle is a NiFi extension providing standard ingest components and integrations with the metadata server
 
 ### Component Descriptions
 

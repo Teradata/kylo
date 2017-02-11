@@ -1,10 +1,7 @@
 feed-manager
 ==========
-This module uses the following **data-lake-service** components
- - nifi/nifi-feed-manager
- - nifi/nifi-rest
- - thrift-proxy
-
+This is the user interface that manage users, register templates, create feeds, and wrangle data.
+ 
 ### Usage
 The module is accessible via the path **/feed-mgr/index.html**.  
 To use this module in the kylo-ui-app, ensure this module is a maven dependency

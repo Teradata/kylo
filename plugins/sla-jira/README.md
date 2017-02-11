@@ -8,10 +8,10 @@ Email Properties
 ===
 The system will look for properties starting with the prefix jira.
 Below is an example properties file:
-
+For more information on how to configure this refer to the git README in the [integrations/jira/jira-rest-client] project
 ```
 ### NOTE the java key store file (jira.keystorePath property) needs to be included using java keytool and on the classpath as defined below
-### For more information on how to configure this refer to the git README in the /datalake-accelerator/integrations/jira/jira-rest-client project
+
 #jira.host=your.jira.host.com
 #jira.apiPath=/rest/api/latest/
 #jira.username=USERNAME

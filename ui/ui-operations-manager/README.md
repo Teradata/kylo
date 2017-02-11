@@ -1,9 +1,6 @@
 operations-manager
 ==========
-This module provides a user interface into the following **data-lake-service** components
- - job-repostiory
- - scheduler
- - service-monitor
+This is the user interface that monitors operations, tracks feed status, job and step executions
 
 ### Usage
 The module is accessible via the path **/ops-mgr/index.html**.  

@@ -1,12 +1,11 @@
 # Jira Rest Client
-Thinkbig Analytics
-October 2015
+
 ## About
-tba-jira is a restful client that connects to the JIRA REST api (https://docs.atlassian.com/jira/REST/latest/)
+A Restful client that connects to the JIRA REST api (https://docs.atlassian.com/jira/REST/latest/)
 
 This project was created because the Atlassian Rest client uses many outdated jars which conflict with newer Java development(https://www.versioneye.com/java/com.atlassian.jira:jira-rest-java-client-core/3.0.0)
 
-This project uses Jersey 2.x and Joda-time and can easily plugin pipeline-controller
+This project uses Jersey 2.x and Joda-time and can easily plugin kylo
 
 ## How to use
 To use the client you need to pass in a `JiraRestClientConfig` object that defines your connection criteria and optional usage of any SSL certs.

@@ -3,11 +3,11 @@ Spark Validate-Cleanse Job
 
 ### Overview
 
-A Spark job capable of performing data validation and cleansing/standardization of data. This is a key component of the Think Big standard ingest pipeline.  
+A Spark job capable of performing data validation and cleansing/standardization of data. This is a key component of the standard ingest pipeline.  
 
 ### How it works
 
-This Spark job assumes Hive table naming conventions following Think Big ingest processing standards.  
+This Spark job assumes Hive table naming conventions following standard-ingest processing standards.  
 
 1. Data is read from a source table <entity>-feed and partition
 2. Standardization policies are applied to the data
