@@ -1,5 +1,0 @@
-== Hortonworks Sandbox Configuration
-ifdef::env-github,env-browser[:outfilesuffix: .adoc]
-
-Refer to the Kylo documentation found here: http://kylo.readthedocs.io
-
