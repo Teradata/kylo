@@ -613,6 +613,7 @@
                                 ++i;
                                 alias = attr.name + "_" + i;
                             } while (aliasCount[alias] > 0);
+                            aliasCount[alias] = 1;
                         }
 
                         // Add column to clause
