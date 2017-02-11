@@ -1,4 +1,4 @@
-## Data Lake Accelerator Architecture
+## Kylo Architecture
 ifdef::env-github,env-browser[:outfilesuffix: .adoc]
 
-image:images/data-lake-accelerator-architecture-diagram.png[Data Lake Accelerator Architecture]
+image:images/data-lake-accelerator-architecture-diagram.png[Kylo Architecture]
