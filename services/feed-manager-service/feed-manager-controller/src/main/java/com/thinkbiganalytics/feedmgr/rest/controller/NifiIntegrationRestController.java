@@ -251,7 +251,7 @@ public class NifiIntegrationRestController {
      * @return the list of matching controller services
      */
     @GET
-    @Path("/controller-services/{processGroupId}")
+    @Path("/controller-services/process-group/{processGroupId}")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Finds controller services of the specified type.")
     @ApiResponses({
@@ -344,6 +344,21 @@ public class NifiIntegrationRestController {
         return Response.ok(tableSchema).build();
     }
 
+    @GET
+    @Path("/controller-services/{serviceId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Gets a controller service.",
+                  notes = "returns a Nifi controller service object by the supplied identifier")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the controller service.", response = ControllerServiceDTO.class),
+                      @ApiResponse(code = 500, message = "Unable to find the controller service", response = RestResponseStatus.class)
+                  })
+    public Response getControllerService(@PathParam("serviceId") String serviceId) {
+        final ControllerServiceDTO controllerService = legacyNifiRestClient.getControllerService(null,serviceId);
+
+        return Response.ok(controllerService).build();
+    }
+
     /**
      * Gets the NiFi cluster status.
      *
@@ -373,8 +388,8 @@ public class NifiIntegrationRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the status of the NiFi cluster.")
     @ApiResponses({
-                      @ApiResponse(code = 200, message = "Returns the cluster status.", response = NiFiClusterSummary.class),
-                      @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
+                      @ApiResponse(code = 200, message = "Returns the status of NiFi if its running or not"),
+                      @ApiResponse(code = 500, message = "An error occurred accessing the NiFi status.", response = RestResponseStatus.class)
                   })
     public Response getRunning() {
         boolean isRunning = nifiConnectionService.isNiFiRunning();

@@ -157,6 +157,11 @@ angular.module(MODULE_FEED_MGR).service('RestUrlService', function () {
 
     this.GET_CONTROLLER_SERVICES_URL = self.CONTROLLER_SERVICES_BASE_URL;
 
+
+    this.GET_CONTROLLER_SERVICE_URL = function(serviceId) {
+        return self.CONTROLLER_SERVICES_BASE_URL+"/"+serviceId;
+    }
+
     this.FEED_PROFILE_STATS_URL = function (feedId) {
         return self.GET_FEEDS_URL + "/" + feedId + "/profile-stats";
     }
@@ -234,7 +239,7 @@ angular.module(MODULE_FEED_MGR).service('RestUrlService', function () {
      * @returns {string} the URL for listing controller services
      */
     this.LIST_SERVICES_URL = function(processGroupId) {
-        return this.ROOT + "/proxy/v1/feedmgr/nifi/controller-services/" + processGroupId;
+        return this.ROOT + "/proxy/v1/feedmgr/nifi/controller-services/process-group/" + processGroupId;
     };
 
     /**

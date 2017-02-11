@@ -47,7 +47,7 @@
         };
     }
 
-    var controller =  function($scope, $q,$http,$mdToast,RestUrlService, FeedService,EditFeedNifiPropertiesService,DBCPTableSchemaService) {
+    var controller =  function($scope, $q,$http,$mdToast,RestUrlService, FeedService,EditFeedNifiPropertiesService,DBCPTableSchemaService, BroadcastService) {
 
         var self = this;
         /**
@@ -168,9 +168,6 @@
             self.incrementalFieldProperty = findProperty(self.INCREMENTALPROPERTY_KEY);
         }
 
-        //   if(self.model.table.method == 'EXISTING_TABLE'){
-        //       self.selectedTable = self.model.table.existingTableName;
-        //   }
 
         /**
          * Check to see if the property is in the list of custom ones.
@@ -204,10 +201,13 @@
          * @param dbConnectionProperty
          */
         this.onDbConnectionPropertyChanged = function (dbConnectionProperty) {
+            if (self.mode != 'edit') {
+
             //clear out rest of the model
             self.selectedTable = undefined;
             self.model.table.sourceTableIncrementalDateField = null;
             self.databaseConnectionError = false;
+        }
 
         }
 
@@ -286,7 +286,7 @@
                    var tables = $http.get(DBCPTableSchemaService.LIST_TABLES_URL(serviceId), {params: {serviceName: serviceName, tableName: tableNameQuery}}).then(function (response) {
                        self.databaseConnectionError = false;
                        var tables = parseTableResponse(response.data);
-                       // Dont cache
+                       // Dont cache .. uncomment to cache results
                        // self.allTables[serviceId] = parseTableResponse(response.data);
                        var results = query ? tables.filter(createFilterForTable(query)) : tables;
                        deferred.resolve(results);
@@ -356,7 +356,7 @@
             this.tablesAutocomplete.selectedTable = this.model.table.existingTableName;
             if(processorTableName != null) {
                 var schemaName = processorTableName.substring(0, processorTableName.indexOf("."));
-                var tableName = processorTableName.substring(processorTableName.indexOf("."));
+                var tableName = processorTableName.substring(processorTableName.indexOf(".")+1);
                 var fullNameLower = processorTableName.toLowerCase();
                 this.selectedTable = this.tablesAutocomplete.selectedTable = {
                     schema: schemaName,
@@ -365,9 +365,43 @@
                     fullNameLower: fullNameLower
                 };
             }
+            if(self.isIncrementalLoadStrategy()){
+                editIncrementalLoadDescribeTable();
+            }
         }
 
-        /** END TABLE AUTO COMPLETE **/
+        /**
+         * Callback from saving/edit feed
+         */
+        function onSaveSuccessEditNifiProperties(model) {
+            //update the model with the properties
+            console.log('model ',model)
+        }
+        /**
+         * on edit describe the table for incremental load to populate the tableField options
+         */
+        function editIncrementalLoadDescribeTable() {
+            //get the property that stores the DBCPController Service
+            var dbcpProperty = self.dbConnectionProperty;
+            if (dbcpProperty != null && dbcpProperty.value != null && self.selectedTable != null) {
+                var successFn = function (response) {
+                    self.databaseConnectionError = false;
+                    self.tableSchema = response.data;
+                    self.tableFields = self.tableSchema.fields;
+                };
+
+                var serviceId = dbcpProperty.value;
+                var serviceNameValue = _.find(dbcpProperty.propertyDescriptor.allowableValues,function(allowableValue) {
+                    return allowableValue.value == serviceId;
+                });
+                var serviceName = serviceNameValue != null && serviceNameValue != undefined ?serviceNameValue.displayName : '';
+                var promise = $http.get(DBCPTableSchemaService.DESCRIBE_TABLE_URL(serviceId,self.selectedTable.tableName),{params:{schema:self.selectedTable.schema, serviceName:serviceName}})
+                promise.then(successFn, function (err) {
+                    self.databaseConnectionError = true;
+                });
+                return promise;
+            }
+        }
 
         /**
          * Describe the table
@@ -459,6 +493,7 @@
             var prop = self.incrementalFieldProperty;
             if(prop != null) {
                 prop.value =  self.model.table.sourceTableIncrementalDateField;
+                prop.displayValue = prop.value;
             }
         }
 
@@ -514,7 +549,8 @@
         if(self.loadStrategyProperty){
             $scope.$watch(function () {
                 return self.loadStrategyProperty.value
-            }, function (newVal) {
+            }, function (newVal,oldValue) {
+                self.loadStrategyProperty.displayValue = newVal
               if(newVal == 'FULL_LOAD'){
                   self.model.table.tableType = 'SNAPSHOT';
                   self.restrictIncrementalToDateOnly = false;
@@ -522,12 +558,17 @@
               else if (self.isIncrementalLoadStrategy(newVal)) {
                   self.model.table.tableType = 'DELTA';
                   //reset the date field
-                  self.model.table.sourceTableIncrementalDateField = '';
+                  if(oldValue != undefined && oldValue != null && newVal != oldValue) {
+                      self.model.table.sourceTableIncrementalDateField = '';
+                  }
                   var option = _.find(self.loadStrategyOptions, function (opt) {
                       return opt.strategy == newVal
                   });
                   if (option) {
                       self.restrictIncrementalToDateOnly = option.restrictDates != undefined ? option.restrictDates : false;
+                  }
+                  if(newVal !== oldValue){
+                          editIncrementalLoadDescribeTable();
                   }
               }
 

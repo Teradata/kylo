@@ -34,9 +34,12 @@
         };
     }
 
-    var controller = function ($scope, AccessControlService, FeedService, EditFeedNifiPropertiesService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper) {
+    var controller = function ($scope, $http,RestUrlService,AccessControlService, FeedService, EditFeedNifiPropertiesService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper, BroadcastService) {
 
         var self = this;
+
+
+
 
         /**
          * Indicates if the feed NiFi properties may be edited.
@@ -60,6 +63,7 @@
             //tell the ui what properties to show/hide
             var renderGetTableData = FeedDetailsProcessorRenderingHelper.updateGetTableDataRendering(self.model.inputProcessor, self.model.nonInputProcessors);
             //   var renderSqoop = FeedDetailsProcessorRenderingHelper.updateSqoopProcessorRendering(self.model.inputProcessor, self.model.nonInputProcessors);
+            updateControllerServiceProperties();
         })
 
         var inputProcessorIdWatch = $scope.$watch(function () {
@@ -100,8 +104,77 @@
             return findProperty(self.INCREMENTAL_DATE_PROPERTY_KEY);
         }
 
+        /**
+         * add the select options to controller services
+         */
+        function updateControllerServiceProperties(){
+
+               _.filter(self.model.nonInputProcessors, function (processor) {
+                if(processor && processor.properties){
+                    var props = _.filter(processor.properties,function(property){
+                        if(isControllerServiceProperty(property)){
+                            setControllerServicePropertyDisplayName(property);
+                        }
+                    });
+                }
+            });
+
+            _.filter(self.model.inputProcessor, function (processor) {
+                if(processor && processor.properties){
+                    var props = _.filter(processor.properties,function(property){
+                        if(isControllerServiceProperty(property)){
+                            setControllerServicePropertyDisplayName(property);
+                        }
+                    });
+                }
+            });
+
+
+        }
+
+        /**
+         * determine if a property is a controller service
+         * @param property
+         * @returns {boolean}
+         */
+        function isControllerServiceProperty(property){
+            var controllerService = property.propertyDescriptor.identifiesControllerService;
+            if(controllerService != null && controllerService != undefined && controllerService != ''){
+                return true;
+            }
+            return false;
+        }
+
+        /**
+         * add the proper select values to controller services
+         * @param property
+         */
+        function setControllerServicePropertyDisplayName(property){
+         var controllerService = property.propertyDescriptor.identifiesControllerService;
+         if(controllerService != null && controllerService != undefined && controllerService != ''){
+             //fetch the name
+             var promise = $http.get(RestUrlService.GET_CONTROLLER_SERVICE_URL(property.value));
+             promise.then(function(response) {
+                 if(response && response.data ){
+                     property.displayValue = response.data.name;
+                     //set the allowable values on the property
+                     if(property.propertyDescriptor.allowableValues == null){
+                         property.propertyDescriptor.allowableValues = [];
+                         property.propertyDescriptor.allowableValues.push({value:property.value,displayName:property.displayValue});
+                     }
+                 }
+             }, function(err){
+                 //unable to fetch controller service... the id will display
+             });
+
+
+         }
+        }
+
+
+
         function findProperty(key) {
-            return _.find(self.model.inputProcessor.properties, function (property) {
+            return _.find(self.model.allProperties, function (property) {
                 //return property.key = 'Source Database Connection';
                 return property.key == key;
             });
@@ -139,6 +212,7 @@
         }
         this.onSave = function (ev) {
             FeedService.showFeedSavingDialog(ev, "Saving...", self.model.feedName);
+
             var copy = angular.copy(FeedService.editFeedModel);
 
             copy.inputProcessors = self.editModel.inputProcessors;
@@ -148,11 +222,14 @@
             copy.inputProcessorType = self.editModel.inputProcessorType;
             copy.userProperties = null;
 
-            //table type is edited here so need tup update that prop as well
+            //table type is edited here so need to update that prop as well
             copy.table.tableType = self.editModel.table.tableType
 
             if (copy.table.incrementalDateField) {
-                findIncrementalDateFieldProperty().value = self.editModel.table.incrementalDateField;
+                var dateProperty = findIncrementalDateFieldProperty();
+                if(dateProperty) {
+                    dateProperty.value = self.editModel.table.incrementalDateField;
+                }
                 copy.table.incrementalDateField = self.editModel.table.incrementalDateField;
             }
 
@@ -160,7 +237,9 @@
 
             FeedService.saveFeedModel(copy).then(function (response) {
                 FeedService.hideFeedSavingDialog();
+
                 self.editableSection = false;
+
 
                 self.model.inputProcessors = self.editModel.inputProcessors;
                 self.model.nonInputProcessors = self.editModel.nonInputProcessors;
