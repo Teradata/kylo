@@ -20,7 +20,10 @@ package com.thinkbiganalytics.feedmgr.nifi;
  * #L%
  */
 
+import com.thinkbiganalytics.discovery.model.DefaultTableSchema;
+import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
+import com.thinkbiganalytics.feedmgr.rest.model.schema.TableSetup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 
 import org.junit.Assert;
@@ -155,6 +158,24 @@ public class PropertyExpressionResolverTest {
         return property;
     }
 
+
+    @Test
+    public void testFeedMetadataProperties() {
+        FeedMetadata metadata = new FeedMetadata();
+        metadata.setSystemFeedName("feedSystemName");
+        metadata.setCategory(new FeedCategory());
+        metadata.setTable(new TableSetup());
+        metadata.getTable().setSourceTableSchema(new DefaultTableSchema());
+        metadata.getTable().setTableSchema(new DefaultTableSchema());
+        metadata.getTable().getSourceTableSchema().setName("sourceTableName");
+        metadata.getTable().getTableSchema().setName("tableSchemaName");
+
+        final NifiProperty prop1 = createProperty("${metadata.table.sourceTableSchema.name}");
+        Assert.assertTrue(resolver.resolveExpression(metadata, prop1));
+        Assert.assertEquals("sourceTableName", prop1.getValue());
+
+
+    }
 
     @Test
     public void testResolveValues() {

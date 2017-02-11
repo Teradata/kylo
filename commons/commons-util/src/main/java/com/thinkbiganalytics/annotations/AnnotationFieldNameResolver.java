@@ -20,6 +20,8 @@ package com.thinkbiganalytics.annotations;
  * #L%
  */
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 
@@ -112,17 +114,38 @@ public class AnnotationFieldNameResolver {
                 names.addAll(getProperties(fieldType));
             }
         }
+
         for (Field field : allFields) {
             Class fieldType = field.getType();
             if (!processedClasses.contains(fieldType)) {
                 stack.push(field.getName());
                 names.addAll(getProperties(fieldType));
+                //check to see if field is annotated with deserialize
+                JsonDeserialize deserialize = field.getAnnotation(JsonDeserialize.class);
+                if (deserialize != null) {
+                    Class<?> deserializeClass = deserialize.as();
+                    if (!processedClasses.contains(deserializeClass)) {
+                        names.addAll(getProperties(deserializeClass));
+                    }
+                }
+
                 stack.pop();
             } else if (classPropertyFields.containsKey(fieldType)) {
                 stack.push(field.getName());
                 for (AnnotatedFieldProperty prop : classPropertyFields.get(fieldType)) {
                     addFieldProperty(clazz, names, prop.getField());
                 }
+                //check to see if field is annotated with deserialize
+                JsonDeserialize deserialize = field.getAnnotation(JsonDeserialize.class);
+                if (deserialize != null) {
+                    Class<?> deserializeClass = deserialize.as();
+                    if (classPropertyFields.containsKey(deserializeClass)) {
+                        for (AnnotatedFieldProperty prop : classPropertyFields.get(deserializeClass)) {
+                            addFieldProperty(clazz, names, prop.getField());
+                        }
+                    }
+                }
+
                 stack.pop();
             }
         }
