@@ -829,6 +829,30 @@
             <exclude>**/vendor/**/*</exclude>
             <exclude>**/*.json</exclude>
           </excludes>
+          <excludedScopes>provided,system,test</excludedScopes>
+          <includedLicenses>
+            <includedLicense>Apache License, Version 2.0</includedLicense>
+            <includedLicense>BSD License</includedLicense>
+            <includedLicense>Common Development and Distribution License Version 1.1</includedLicense>
+            <includedLicense>Creative Commons CC0 1.0 Universal</includedLicense>
+            <includedLicense>Day Specification License</includedLicense>
+            <includedLicense>Eclipse Public License - v 1.0</includedLicense>
+            <includedLicense>GNU Lesser General Public License, Version 2.1</includedLicense>
+            <includedLicense>MIT License</includedLicense>
+            <includedLicense>Mozilla Public License Version 1.1</includedLicense>
+            <includedLicense>Public Domain</includedLicense>
+            <includedLicense>WTFPL</includedLicense>
+          </includedLicenses>
+          <licenseMerges>
+            <licenseMerge>Apache License, Version 2.0|Apache 2|Apache 2.0|Apache 2.0 License|Apache v2|Apache License|Apache License 2.0|Apache License, version 2.0|Apache Software License 2.0|Apache Software License - Version 2.0|Apache Software License - Version 2.0, Eclipse Public License - Version 1.0|Apache Software Licenses|The Apache License, Version 2.0|The Apache Software License, Version 2.0</licenseMerge>
+            <licenseMerge>BSD License|BSD|BSD licence|Eclipse Distribution License (New BSD License)|New BSD license|The BSD 3-Clause License|The BSD License|The New BSD License</licenseMerge>
+            <licenseMerge>Common Development and Distribution License Version 1.1|CDDL + GPLv2 with classpath exception|CDDL 1.1|CDDL+GPL License|CDDL/GPLv2+CE|Common Development and Distribution License|Common Development and Distribution License (CDDL) v1.0|COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0|Dual license consisting of the CDDL v1.1 and GPL v2|GNU General Public License, Version 2 with the Classpath Exception|GPL2 w/ CPE</licenseMerge>
+            <licenseMerge>Creative Commons CC0 1.0 Universal|CC0|CC0 1.0 Universal|Public Domain, per Creative Commons CC0</licenseMerge>
+            <licenseMerge>Eclipse Public License - v 1.0|Eclipse Public License v1.0|Eclipse Public License (EPL), Version 1.0|Eclipse Public License - Version 1.0</licenseMerge>
+            <licenseMerge>GNU Lesser General Public License, Version 2.1|GNU LESSER GENERAL PUBLIC LICENSE|GNU Lesser General Public License|GNU General Lesser Public License (LGPL) version 2.1|lgpl|LGPL 2.1|LGPL-2.1|LGPL, version 2.1</licenseMerge>
+            <licenseMerge>MIT License|Bouncy Castle Licence</licenseMerge>
+            <licenseMerge>Mozilla Public License Version 1.1|MPL 1.1</licenseMerge>
+          </licenseMerges>
         </configuration>
         <executions>
           <execution>
@@ -868,6 +892,11 @@
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>license-maven-plugin</artifactId>
           <version>${plugin.license.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-antrun-plugin</artifactId>
+          <version>1.7</version>
         </plugin>
       </plugins>
     </pluginManagement>

@@ -23,6 +23,121 @@
 
   <dependencies>
 
+    <!-- Kylo dependencies for third-party file -->
+    <dependency>
+      <groupId>com.thinkbiganalytics.nifi.core</groupId>
+      <artifactId>kylo-nifi-core-v1-nar</artifactId>
+      <version>0.7.0-SNAPSHOT</version>
+      <type>nar</type>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.nifi.elasticsearch</groupId>
+      <artifactId>kylo-nifi-elasticsearch-v1-nar</artifactId>
+      <version>0.7.0-SNAPSHOT</version>
+      <type>nar</type>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.nifi.hadoop</groupId>
+      <artifactId>kylo-nifi-hadoop-processors</artifactId>
+      <version>0.7.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.nifi.hadoop</groupId>
+      <artifactId>kylo-nifi-hadoop-v1-nar</artifactId>
+      <version>0.7.0-SNAPSHOT</version>
+      <type>nar</type>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.nifi.provenance</groupId>
+      <artifactId>kylo-nifi-provenance-repo-v1-nar</artifactId>
+      <version>0.7.0-SNAPSHOT</version>
+      <type>nar</type>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.nifi.spark</groupId>
+      <artifactId>kylo-nifi-spark-v1-nar</artifactId>
+      <version>0.7.0-SNAPSHOT</version>
+      <type>nar</type>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.nifi.services</groupId>
+      <artifactId>kylo-nifi-core-service-nar</artifactId>
+      <version>0.7.0-SNAPSHOT</version>
+      <type>nar</type>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.nifi.services</groupId>
+      <artifactId>kylo-nifi-hadoop-service-v1-nar</artifactId>
+      <version>0.7.0-SNAPSHOT</version>
+      <type>nar</type>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.nifi.services</groupId>
+      <artifactId>kylo-nifi-standard-services-nar</artifactId>
+      <version>0.7.0-SNAPSHOT</version>
+      <type>nar</type>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-spark-shell-client-v1</artifactId>
+      <version>0.7.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-spark-shell-client-v2</artifactId>
+      <version>0.7.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-spark-job-profiler-spark-v1</artifactId>
+      <version>0.7.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-spark-interpreter-spark-v1</artifactId>
+      <version>0.7.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-spark-interpreter-spark-v2</artifactId>
+      <version>0.7.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-spark-job-profiler-spark-v2</artifactId>
+      <version>0.7.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-spark-validate-cleanse-spark-v1</artifactId>
+      <version>0.7.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-spark-validate-cleanse-spark-v2</artifactId>
+      <version>0.7.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-precondition-default</artifactId>
+      <version>0.7.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-schema-discovery-default</artifactId>
+      <version>0.7.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-service-app</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-ui-app</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
     <!-- used to copy in the default dependencies to the plugin folder -->
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
@@ -54,6 +169,46 @@
 
   <build>
     <plugins>
+      <!-- Generate THIRD-PARTY license file -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <configuration>
+          <target>
+            <copy file="src/main/license/THIRD-PARTY.ftl" todir="target/generated-sources/license"/>
+            <copy file="../license.ftl" todir="target/generated-sources/license"/>
+          </target>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>license-maven-plugin</artifactId>
+        <configuration>
+          <excludedGroups>(?x)
+            # Kylo
+            ^com\.thinkbiganalytics\.
+          </excludedGroups>
+          <fileTemplate>${project.build.directory}/generated-sources/license/THIRD-PARTY.ftl</fileTemplate>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>add-third-party</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Build RPM -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>rpm-maven-plugin</artifactId>
@@ -535,6 +690,20 @@
                   <location>..</location>
                   <includes>
                     <include>LICENSE</include>
+                  </includes>
+                </source>
+              </sources>
+            </mapping>
+            <mapping>
+              <directory>${rpm.install.dir}</directory>
+              <filemode>644</filemode>
+              <username>${rpm.user}</username>
+              <groupname>${rpm.user}</groupname>
+              <sources>
+                <source>
+                  <location>target/generated-sources/license</location>
+                  <includes>
+                    <include>THIRD-PARTY.txt</include>
                   </includes>
                 </source>
               </sources>
