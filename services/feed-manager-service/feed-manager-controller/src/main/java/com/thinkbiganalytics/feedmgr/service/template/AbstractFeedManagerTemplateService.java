@@ -281,8 +281,6 @@ public abstract class AbstractFeedManagerTemplateService implements FeedManagerT
      */
     public RegisteredTemplate mergeRegisteredTemplateProperties(RegisteredTemplate registeredTemplate) {
         if (registeredTemplate != null) {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_TEMPLATES);
-
             log.info("Merging properties for template {} ({})", registeredTemplate.getTemplateName(), registeredTemplate.getId());
             List<NifiProperty> properties = null;
             int matchCount = 0;
