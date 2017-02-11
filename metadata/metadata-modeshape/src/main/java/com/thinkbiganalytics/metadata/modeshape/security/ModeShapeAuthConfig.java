@@ -23,9 +23,6 @@ package com.thinkbiganalytics.metadata.modeshape.security;
  * #L%
  */
 
-import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
-import com.thinkbiganalytics.auth.jaas.LoginConfigurationBuilder;
-import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
 import com.thinkbiganalytics.metadata.modeshape.common.SecurityPaths;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrActionsGroupBuilder;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActionsGroupProvider;
@@ -35,36 +32,14 @@ import com.thinkbiganalytics.security.action.config.ActionsModuleBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
-import org.springframework.security.authentication.jaas.AuthorityGranter;
-
-import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
 
 /**
- *
+ * Defines ModeShape-managed implementations of security infrastructure components.
  */
 @Configuration
 public class ModeShapeAuthConfig {
 
-    @Bean
-    public AuthorityGranter modeShapeAuthorityGranter() {
-        return new ModeShapeAuthorityGranter();
-    }
-
-    @Bean(name = "servicesModeShapeLoginConfiguration")
-    public LoginConfiguration servicesModeShapeLoginConfiguration(LoginConfigurationBuilder builder) {
-        // @formatter:off
-
-        return builder
-                        .loginModule(JaasAuthConfig.JAAS_SERVICES)
-                            .moduleClass(ModeShapeLoginModule.class)
-                            .controlFlag(LoginModuleControlFlag.REQUIRED)
-                            .add()
-                        .build();
-
-        // @formatter:on
-    }
-
-    // TODO: Move this to somewhere else more appropriate
+    // TODO: Perhaps move this to somewhere else more appropriate?
     @Bean
     public AccessController accessController() {
         return new DefaultAccessController();

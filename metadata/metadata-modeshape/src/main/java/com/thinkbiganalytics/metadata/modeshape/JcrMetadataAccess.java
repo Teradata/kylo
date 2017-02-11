@@ -30,7 +30,9 @@ import com.thinkbiganalytics.metadata.api.MetadataCommand;
 import com.thinkbiganalytics.metadata.api.MetadataExecutionException;
 import com.thinkbiganalytics.metadata.api.MetadataRollbackAction;
 import com.thinkbiganalytics.metadata.api.MetadataRollbackCommand;
+import com.thinkbiganalytics.metadata.modeshape.security.ModeShapePrincipal;
 import com.thinkbiganalytics.metadata.modeshape.security.ModeShapeReadOnlyPrincipal;
+import com.thinkbiganalytics.metadata.modeshape.security.ModeShapeReadWritePrincipal;
 import com.thinkbiganalytics.metadata.modeshape.security.OverrideCredentials;
 import com.thinkbiganalytics.metadata.modeshape.security.SpringAuthenticationCredentials;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
@@ -172,12 +174,12 @@ public class JcrMetadataAccess implements MetadataAccess {
      */
     @Override
     public <R> R commit(MetadataCommand<R> cmd, Principal... principals) {
-        return commit(createCredentials(principals), cmd);
+        return commit(createCredentials(false, principals), cmd);
     }
 
     public <R> R commit(MetadataCommand<R> cmd, MetadataRollbackCommand rollbackCmd, Principal... principals) {
 
-        return commit(createCredentials(principals), cmd, rollbackCmd);
+        return commit(createCredentials(false, principals), cmd, rollbackCmd);
     }
 
     /* (non-Javadoc)
@@ -282,7 +284,7 @@ public class JcrMetadataAccess implements MetadataAccess {
      */
     @Override
     public <R> R read(MetadataCommand<R> cmd, Principal... principals) {
-        return read(createCredentials(principals), cmd);
+        return read(createCredentials(true, principals), cmd);
     }
 
     /* (non-Javadoc)
@@ -355,14 +357,16 @@ public class JcrMetadataAccess implements MetadataAccess {
     }
 
 
-    private Credentials createCredentials(Principal... principals) {
+    private Credentials createCredentials(boolean readOnly, Principal... principals) {
         Credentials creds = null;
+        // Using a default principal that is read-only or read-write since we will use ACLs when we implement entity-level access control.
+        ModeShapePrincipal defaultPrincipal = readOnly ? ModeShapeReadOnlyPrincipal.INSTANCE : ModeShapeReadWritePrincipal.INSTANCE;
 
         if (principals.length == 0) {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            creds = new SpringAuthenticationCredentials(auth, ModeShapeReadOnlyPrincipal.INSTANCE);
+            creds = new SpringAuthenticationCredentials(auth, defaultPrincipal);
         } else {
-            creds = OverrideCredentials.create(Stream.concat(Stream.of(ModeShapeReadOnlyPrincipal.INSTANCE),
+            creds = OverrideCredentials.create(Stream.concat(Stream.of(defaultPrincipal),
                                                              Arrays.stream(principals))
                                                    .collect(Collectors.toSet()));
         }
