@@ -157,13 +157,15 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
                                                FeedsAccessControl.IMPORT_FEEDS,
                                                FeedsAccessControl.EXPORT_FEEDS,
                                                FeedsAccessControl.EDIT_CATEGORIES,
-                                               FeedsAccessControl.EDIT_TEMPLATES);
+                                               FeedsAccessControl.EDIT_TEMPLATES,
+                                               FeedsAccessControl.IMPORT_TEMPLATES,
+                                               FeedsAccessControl.EXPORT_TEMPLATES);
                                 allowed.enable(analystsGroup.getRootPrincial(), 
                                                OperationsAccessControl.ACCESS_OPS,
                                                FeedsAccessControl.EDIT_FEEDS,
-                                               FeedsAccessControl.ACCESS_CATEGORIES,
-                                               FeedsAccessControl.IMPORT_TEMPLATES,
-                                               FeedsAccessControl.EXPORT_TEMPLATES,
+                                               FeedsAccessControl.IMPORT_FEEDS,
+                                               FeedsAccessControl.EXPORT_FEEDS,
+                                               FeedsAccessControl.EDIT_CATEGORIES,
                                                FeedsAccessControl.ACCESS_TEMPLATES);
                             });
         }, MetadataAccess.SERVICE);
