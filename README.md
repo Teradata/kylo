@@ -1,11 +1,9 @@
-# Kylo
-
-![kylo-logo-orange](https://cloud.githubusercontent.com/assets/5693584/22863033/4976d7d2-f0ee-11e6-95ec-3a30e2162a3c.png)
+![alt Kylo](https://cloud.githubusercontent.com/assets/5693584/22863033/4976d7d2-f0ee-11e6-95ec-3a30e2162a3c.png)
 
 
 ## Deployment Guide
 
-To get started, please follow the [deployment guide](docs/latest/deployment-guide.adoc)
+To get started, please follow the [deployment guide](http://kylo.readthedocs.io/en/latest/installation/KyloDeploymentChecklist.html)
 
 ## Code Structure
 
