@@ -124,6 +124,7 @@
                       $timeout(function() {
                           hideProgress();
                       },10);
+                      RegisterTemplateService.warnInvalidProcessorNames();
                       self.isValid = self.model.valid;
                   });
         }

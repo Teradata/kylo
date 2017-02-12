@@ -48,14 +48,13 @@
         }
 
 
-
-
         function init(){
             self.loading = true;
-                //Wait for the properties to come back before allowing hte user to go to the next step
+                //Wait for the properties to come back before allowing the user to go to the next step
                 RegisterTemplateService.loadTemplateWithProperties(self.registeredTemplateId, self.nifiTemplateId).then(function(response) {
 
                     self.loading = false;
+                    RegisterTemplateService.warnInvalidProcessorNames();
                 });
         }
         init();

@@ -63,10 +63,11 @@ angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($ht
       reusableTemplateConnections:[],  //[{reusableTemplateFeedName:'', feedOutputPortName: '', reusableTemplateInputPortName: ''}]
       icon: {title: null, color: null},
       state:'NOT REGISTERED',
-        updateDate:null,
-        feedsCount:0,
-        registeredDatasources: [],
-        isStream: false
+      updateDate:null,
+      feedsCount:0,
+      registeredDatasources: [],
+      isStream: false,
+      validTemplateProcessorNames:true
     },
     newModel: function () {
       this.model = angular.copy(this.emptyModel);
@@ -96,8 +97,8 @@ angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($ht
         reusableTemplate: this.model.reusableTemplate,
         needsReusableTemplate: this.model.needsReusableTemplate,
         reusableTemplateConnections: this.model.reusableTemplateConnections,
-          state: this.model.state,
-          isStream: this.model.isStream
+        state: this.model.state,
+        isStream: this.model.isStream
       }
     },
     newReusableConnectionInfo: function() {
@@ -120,6 +121,9 @@ angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($ht
           if (property.processor && property.processor.topIndex != undefined) {
             delete property.processor.topIndex;
           }
+          if(property.processorOrigName != undefined && property.processorOrigName != null){
+            property.processorName = property.processorOrigName;
+          }
         }
       });
 
@@ -130,12 +134,18 @@ angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($ht
           if (property.processor && property.processor.topIndex != undefined) {
             delete property.processor.topIndex;
           }
+            if(property.processorOrigName != undefined && property.processorOrigName != null){
+                property.processorName = property.processorOrigName;
+            }
         }
       });
-      return selectedProperties;
+
+        return selectedProperties;
     },
     sortPropertiesForDisplay: function (properties) {
       var propertiesAndProcessors = {properties: [], processors: []};
+
+
 
       //sort them by processor name and property key
       var arr = _.chain(properties).sortBy('key').sortBy('processorName').value();
@@ -526,6 +536,23 @@ angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($ht
 
     },
 
+    /**
+     * Warn if the model has multiple processors with the same name
+     */
+    warnInvalidProcessorNames : function(){
+        if(!this.model.validTemplateProcessorNames) {
+            $mdDialog.hide();
+            $mdDialog.show(
+                $mdDialog.alert()
+                    .ariaLabel("Template processor name warning")
+                    .clickOutsideToClose(true)
+                    .htmlContent("Warning the template contains multiple processors with the same name.  It is advised you fix this template in NiFi before registering")
+                    .ok("Got it!")
+                    .parent(document.body)
+                    .title("Template processor name warning"));
+        }
+    },
+
 
     /**
      * Assigns the model properties and render types
@@ -565,7 +592,6 @@ angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($ht
 
       /**
        * groups properties into processor groups
-       * TODO fix to reference Java collections instead of in Javascript
        * @param properties
        */
       function transformPropertiesToArray(properties) {
@@ -600,10 +626,6 @@ angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($ht
             }
           }
 
-          // if(property.propertyDescriptor.required == true && ( property.value =='' || property.value ==undefined)) {
-          //     property.selected = true;
-          //  }
-
           assignPropertyRenderType(property)
 
           property.templateValue = property.value;
@@ -616,7 +638,6 @@ angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($ht
             property.mentioId='processorProperty_'+property.processorName+'_'+i;
           }
 
-          //       copyProperty.processor = {id: property.processor.id, name: property.processor.name};
           if(property.inputProperty) {
             inputProperties.push(property);
           }
@@ -624,7 +645,9 @@ angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($ht
             additionalProperties.push(property);
           }
         });
-
+          validateTemplateProcessorNames(inputProperties,additionalProperties);
+          fixDuplicateProcessorNames(inputProperties);
+          fixDuplicateProcessorNames(additionalProperties);
         //sort them by processor name and property key
         var inputPropertiesAndProcessors = self.sortPropertiesForDisplay(inputProperties);
         inputProperties = inputPropertiesAndProcessors.properties;
@@ -634,11 +657,60 @@ angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($ht
         additionalProperties = additionalPropertiesAndProcessors.properties;
         additionalProcessors = additionalPropertiesAndProcessors.processors;
 
+
+
         self.model.inputProperties = inputProperties;
         self.model.additionalProperties = additionalProperties;
         self.model.inputProcessors = inputProcessors;
         self.model.additionalProcessors = additionalProcessors;
 
+      }
+
+        /**
+         * Change the processor names for those that are duplicates
+         * @param properties
+         */
+      function fixDuplicateProcessorNames(properties){
+          var processorGroups =_.groupBy(properties,'processorName')
+          _.each(processorGroups,function(processorProps,processorName){
+            var processorMap = _.groupBy(processorProps,'processorId');
+            if(Object.keys(processorMap).length >1){
+              //update the names
+                var lastId = null;
+                var idx = 0;
+                _.each(processorMap,function(props,processorId){
+                  if(lastId == null || lastId != processorId){
+                    idx++;
+                    _.each(props,function(prop){
+                      prop.processorOrigName = prop.processorName;
+                      prop.processorName += " "+idx
+                    });
+                  }
+                  lastId = processorId;
+                })
+            }
+          });
+      }
+
+        /**
+         * Validates the processor names in the template are unique.
+         * If not it will set the validTemplate property on self.model to false
+         */
+      function validateTemplateProcessorNames(inputProperties,additionalProperties){
+            self.model.validTemplateProcessorNames = true;
+            //validate the processor names are unique in the flow, if not warn the user
+            var groups = _.groupBy(inputProperties,'nameKey');
+            var multiple = _.find(groups,function(arr,key){ return arr.length >1});
+            if(multiple != undefined){
+            self.model.validTemplateProcessorNames = false;
+            }
+
+            //validate the processor names are unique in the flow, if not warn the user
+            var groups = _.groupBy(additionalProperties,'nameKey');
+            var multiple = _.find(groups,function(arr,key){ return arr.length >1});
+            if(multiple != undefined){
+                self.model.validTemplateProcessorNames = false;
+            }
       }
 
       function validate() {
