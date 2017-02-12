@@ -49,6 +49,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -281,11 +282,18 @@ public class TemplateCreationHelper {
         mergedControllerServices = map;
     }
 
-    public void updateControllerServiceReferences(List<ProcessorDTO> processors) {
-        updateControllerServiceReferences(processors, null);
+    public List<NifiProperty> updateControllerServiceReferences(List<ProcessorDTO> processors) {
+        return updateControllerServiceReferences(processors, null);
     }
 
-    public void updateControllerServiceReferences(List<ProcessorDTO> processors, Map<String, String> controllerServiceProperties) {
+    /**
+     * Fix references to the controller services on the processor properties
+     *
+     * @param processors                  processors to inspect
+     * @param controllerServiceProperties property overrides for controller services
+     * @return the list of properties that were modified
+     */
+    public List<NifiProperty> updateControllerServiceReferences(List<ProcessorDTO> processors, Map<String, String> controllerServiceProperties) {
 
         try {
             //merge the snapshotted services with the newly created ones and update respective processors in the newly created flow
@@ -312,13 +320,16 @@ public class TemplateCreationHelper {
                 properties.addAll(NifiPropertyUtil.getPropertiesForProcessor(groupDTO, dto, restClient.getPropertyDescriptorTransform()));
             }
 
-            fixControllerServiceReferences(controllerServiceProperties, enabledServices, allServices, properties)
+            List<NifiProperty> updatedProperties = fixControllerServiceReferences(controllerServiceProperties, enabledServices, allServices, properties);
+            updatedProperties
                 .forEach(property -> restClient.updateProcessorProperty(property.getProcessGroupId(), property.getProcessorId(), property));
+            return updatedProperties;
 
         } catch (NifiClientRuntimeException e) {
             errors.add(new NifiError(NifiError.SEVERITY.FATAL, "Error trying to identify Controller Services. " + e.getMessage(),
                                      NifiProcessGroup.CONTROLLER_SERVICE_CATEGORY));
         }
+        return Collections.emptyList();
     }
 
     /**
@@ -495,8 +506,7 @@ public class TemplateCreationHelper {
      * Version a ProcessGroup renaming it with the name - {timestamp millis}.
      * If {@code removeIfInactive} is true it will not version but just delete it
      *
-     * @param processGroup     the group to verision
-     * @param removeIfInactive flag if true it will try to just delete rather than version
+     * @param processGroup the group to version
      */
     public ProcessGroupDTO versionProcessGroup(ProcessGroupDTO processGroup) {
         log.info("Versioning Process Group {} ", processGroup.getName());

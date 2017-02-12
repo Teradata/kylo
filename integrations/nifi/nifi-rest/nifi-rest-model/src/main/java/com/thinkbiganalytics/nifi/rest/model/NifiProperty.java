@@ -192,6 +192,11 @@ public class NifiProperty {
         return expressionProperties;
     }
 
+    public String getProcessorNameTypeKey() {
+        return this.getProcessorName() + "-" + this.getProcessorType() + "-" + this.getKey();
+    }
+
+
     public void setExpressionProperties(List<String> expressionProperties) {
         this.expressionProperties = expressionProperties;
     }

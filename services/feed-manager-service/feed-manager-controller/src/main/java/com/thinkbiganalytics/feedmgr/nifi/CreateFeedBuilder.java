@@ -56,6 +56,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -213,14 +214,15 @@ public class CreateFeedBuilder {
                                                                                               "com.thinkbiganalytics.nifi.v2.metadata.TriggerCleanup");
                     List<ProcessorDTO> nonInputProcessors = NifiProcessUtil.getNonInputProcessors(entity);
 
+                    List<NifiProperty> updatedControllerServiceProperties = new ArrayList<>();
                     //update any references to the controller services and try to assign the value to an enabled service if it is not already
                     if (input != null) {
-                        templateCreationHelper.updateControllerServiceReferences(Lists.newArrayList(input));
+                        updatedControllerServiceProperties.addAll(templateCreationHelper.updateControllerServiceReferences(Lists.newArrayList(input)));
                     }
                     if (cleanupProcessor != null) {
-                        templateCreationHelper.updateControllerServiceReferences(Collections.singletonList(cleanupProcessor));
+                        updatedControllerServiceProperties.addAll(templateCreationHelper.updateControllerServiceReferences(Collections.singletonList(cleanupProcessor)));
                     }
-                    templateCreationHelper.updateControllerServiceReferences(nonInputProcessors);
+                    updatedControllerServiceProperties.addAll(templateCreationHelper.updateControllerServiceReferences(nonInputProcessors));
                     //refetch processors for updated errors
                     entity = restClient.getProcessGroup(processGroupId, true, true);
                     input = fetchInputProcessorForProcessGroup(entity);
@@ -293,6 +295,9 @@ public class CreateFeedBuilder {
                         }
                     }
                     templateCreationHelper.cleanupControllerServices();
+                    //fix the feed metadata controller service references
+                    updateFeedMetadataControllerServiceReferences(updatedControllerServiceProperties);
+
                     //align items
                     log.info("Aligning Feed flows in NiFi ");
                     AlignProcessGroupComponents alignProcessGroupComponents = new AlignProcessGroupComponents(restClient.getNiFiRestClient(), entity.getParentGroupId());
@@ -313,6 +318,19 @@ public class CreateFeedBuilder {
         }
     }
 
+
+    /**
+     * update feed metadata to point to the valid controller services
+     * @param updatedControllerServiceProperties
+     */
+    private void updateFeedMetadataControllerServiceReferences(List<NifiProperty>updatedControllerServiceProperties){
+        //map of the previous to new service values
+        Map<String,String> controllerServiceChangeMap =updatedControllerServiceProperties.stream().collect(Collectors.toMap(p-> p.getProcessorNameTypeKey(), p->p.getValue(), (service1, service2) -> service1));
+        if(!updatedControllerServiceProperties.isEmpty()){
+            feedMetadata.getProperties().stream().filter(property -> controllerServiceChangeMap.containsKey(property.getProcessorNameTypeKey())).forEach(
+                (NifiProperty p) -> p.setValue(controllerServiceChangeMap.get(p.getProcessorNameTypeKey())));
+        }
+    }
 
     public ProcessGroupDTO rollback() throws FeedRollbackException {
         if (newProcessGroup != null) {
