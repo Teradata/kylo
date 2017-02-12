@@ -269,6 +269,9 @@ public class FeedRestController {
         try {
             getMetadataService().deleteFeed(feedId);
             return Response.noContent().build();
+        } catch (AccessControlException e) {
+            log.debug("Access controll failure attempting to delete a feed", e);
+            throw e;
         } catch (FeedCleanupFailedException e) {
             log.error("Error deleting feed: Cleanup error", e);
             throw new InternalServerErrorException(STRINGS.getString("deleteFeed.cleanupError"), e);
