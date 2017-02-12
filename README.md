@@ -1,9 +1,16 @@
-![alt Kylo](https://cloud.githubusercontent.com/assets/5693584/22863033/4976d7d2-f0ee-11e6-95ec-3a30e2162a3c.png)
+![alt Kylo](https://cloud.githubusercontent.com/assets/5693584/22863033/4976d7d2-f0ee-11e6-95ec-3a30e2162a3c.png)(http://kylo.io/)
 
+Kylo offers a turn-key, enterprise-ready data lake solution on Hadoop and Spark that integrates best practices around metadata management, governance, and security gleaned from over Think Big's 150+ successful big data projects.
 
-## Deployment Guide
+Visit [http://kylo.io](http://kylo.io) and unlock the power of Kylo today!
 
-To get started, please follow the [deployment guide](http://kylo.readthedocs.io/en/latest/installation/KyloDeploymentChecklist.html)
+## Quick Start
+The Kylo Sandbox is a personal virtual environment so you can quickly get started with Kylo. The sandbox is a pre-configured Kylo instance with Apache Hadoop, Spark, and NiFi. The tutorials below will teach you how to create your first ingest feed and wrangle data.
+
+To get started visit the [Quick Start](http://kylo.io/quickstart.html) page.
+
+## Documentation
+Please visit Kylo [documentation](http://kylo.readthedocs.io/) to learn more.  
 
 ## Code Structure
 
