@@ -49,9 +49,12 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 public class SchemaDiscoveryRestControllerTest extends JerseyTest {
+    
+    private static final int PORT = 19998;
 
     @Override
     protected Application configure() {
+        set(TestProperties.CONTAINER_PORT, PORT);
         enable(TestProperties.LOG_TRAFFIC);
         enable(TestProperties.DUMP_ENTITY);
         ResourceConfig config = new ResourceConfig(SchemaDiscoveryRestController.class);
