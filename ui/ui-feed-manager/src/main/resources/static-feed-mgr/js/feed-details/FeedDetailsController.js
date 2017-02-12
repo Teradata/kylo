@@ -120,37 +120,40 @@
          * Displays a confirmation dialog for deleting the feed.
          */
         this.confirmDeleteFeed = function() {
-            // Verify there are no dependent feeds
-            if (angular.isArray(self.model.usedByFeeds) && self.model.usedByFeeds.length > 0) {
-                var list = "<ul>";
-                list += _.map(self.model.usedByFeeds, function(feed) {
-                    return "<li>" + _.escape(feed.feedName) + "</li>";
-                });
-                list += "</ul>";
+            if(self.allowAdmin) {
+                // Verify there are no dependent feeds
+                if (angular.isArray(self.model.usedByFeeds) && self.model.usedByFeeds.length > 0) {
+                    var list = "<ul>";
+                    list += _.map(self.model.usedByFeeds, function (feed) {
+                        return "<li>" + _.escape(feed.feedName) + "</li>";
+                    });
+                    list += "</ul>";
 
-                var alert = $mdDialog.alert()
+                    var alert = $mdDialog.alert()
                         .parent($("body"))
                         .clickOutsideToClose(true)
                         .title("Feed is referenced")
                         .htmlContent("This feed is referenced by other feeds and cannot be deleted. The following feeds should be deleted first: " + list)
                         .ariaLabel("feed is referenced")
                         .ok("Got it!");
-                $mdDialog.show(alert);
-                return;
+                    $mdDialog.show(alert);
+
+                    return;
+                }
+
+                // Display delete dialog
+                var $dialogScope = $scope.$new();
+                $dialogScope.dialog = $mdDialog;
+                $dialogScope.vm = self;
+
+                $mdDialog.show({
+                    escapeToClose: false,
+                    fullscreen: true,
+                    parent: angular.element(document.body),
+                    scope: $dialogScope,
+                    templateUrl: "js/feed-details/feed-details-delete-dialog.html"
+                });
             }
-
-            // Display delete dialog
-            var $dialogScope = $scope.$new();
-            $dialogScope.dialog = $mdDialog;
-            $dialogScope.vm = self;
-
-            $mdDialog.show({
-                escapeToClose: false,
-                fullscreen: true,
-                parent: angular.element(document.body),
-                scope: $dialogScope,
-                templateUrl: "js/feed-details/feed-details-delete-dialog.html"
-            });
         };
 
         /**
@@ -216,44 +219,48 @@
          * Enables this feed.
          */
         this.enableFeed = function() {
-            self.enabling = true;
-            $http.post(RestUrlService.ENABLE_FEED_URL(self.feedId)).then(function(response) {
-                self.model.state = response.data.state;
-                FeedService.updateEditModelStateIcon();
-                self.enabling = false;
-            }, function() {
-                $mdDialog.show(
+            if(!self.enabling && self.allowEdit) {
+                self.enabling = true;
+                $http.post(RestUrlService.ENABLE_FEED_URL(self.feedId)).then(function (response) {
+                    self.model.state = response.data.state;
+                    FeedService.updateEditModelStateIcon();
+                    self.enabling = false;
+                }, function () {
+                    $mdDialog.show(
                         $mdDialog.alert()
-                                .clickOutsideToClose(true)
-                                .title("NiFi Error")
-                                .textContent("The feed could not be enabled.")
-                                .ariaLabel("Cannot enable feed.")
-                                .ok("OK")
-                );
-                self.enabling = false;
-            });
+                            .clickOutsideToClose(true)
+                            .title("NiFi Error")
+                            .textContent("The feed could not be enabled.")
+                            .ariaLabel("Cannot enable feed.")
+                            .ok("OK")
+                    );
+                    self.enabling = false;
+                });
+            }
         };
 
         /**
          * Disables this feed.
          */
         this.disableFeed = function() {
-            self.disabling = true;
-            $http.post(RestUrlService.DISABLE_FEED_URL(self.feedId)).then(function(response) {
-                self.model.state = response.data.state;
-                FeedService.updateEditModelStateIcon();
-                self.disabling = false;
-            }, function() {
-                $mdDialog.show(
+            if(!self.disabling && self.allowEdit) {
+                self.disabling = true;
+                $http.post(RestUrlService.DISABLE_FEED_URL(self.feedId)).then(function (response) {
+                    self.model.state = response.data.state;
+                    FeedService.updateEditModelStateIcon();
+                    self.disabling = false;
+                }, function () {
+                    $mdDialog.show(
                         $mdDialog.alert()
-                                .clickOutsideToClose(true)
-                                .title("NiFi Error")
-                                .textContent("The feed could not be disabled.")
-                                .ariaLabel("Cannot disable feed.")
-                                .ok("OK")
-                );
-                self.disabling = false;
-            });
+                            .clickOutsideToClose(true)
+                            .title("NiFi Error")
+                            .textContent("The feed could not be disabled.")
+                            .ariaLabel("Cannot disable feed.")
+                            .ok("OK")
+                    );
+                    self.disabling = false;
+                });
+            }
         };
 
         function mergeTemplateProperties(feed) {
