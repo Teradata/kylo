@@ -64,9 +64,13 @@
 
         $scope.selectedColorTile = null;
         $scope.colorTiles = [];
+        $scope.loadingIcons = false;
+        $scope.loadingColors = false;
 
         function fetchIcons() {
+            $scope.loadingIcons = true;
             $http.get(RestUrlService.ICONS_URL).then(function (response) {
+
                 var icons = response.data;
                 angular.forEach(icons, function (icon) {
                     var tile = {title: icon};
@@ -74,19 +78,23 @@
                     if (iconModel.icon != null && iconModel.icon == icon) {
                         $scope.selectedIconTile = tile;
                     }
+                    $scope.loadingIcons = false;
                 });
             });
         }
 
         function fetchColors() {
+            $scope.loadingColors = true;
             $http.get(RestUrlService.ICON_COLORS_URL).then(function (response) {
                 var colors = response.data;
                 angular.forEach(colors, function (color) {
+
                     var tile = {title: color.name, background: color.color};
                     $scope.colorTiles.push(tile);
                     if (iconModel.iconColor != null && iconModel.iconColor == color.color) {
                         $scope.selectedColorTile = tile;
                     }
+                    $scope.loadingColors = false;
                 });
 
                 if ($scope.selectedColorTile == null) {

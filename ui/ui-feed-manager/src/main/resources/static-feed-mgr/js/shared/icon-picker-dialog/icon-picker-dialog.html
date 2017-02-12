@@ -26,6 +26,9 @@
             <div layout="row" flex layout-fill>
                 <div layout="column"  style="width:250px;">
                     <span class="md-subhead" style="text-align: center;padding-bottom:10px;;">Select your icon</span>
+                    <div ng-if="loadingIcons" layout-fill layout="row" layout-align="center center">
+                        <md-progress-circular md-mode="indeterminate" md-diameter="96"></md-progress-circular>
+                    </div>
                     <div style="overflow-y:auto;overflow-x:hidden">
                     <md-grid-list
                             md-cols="3"
@@ -43,6 +46,9 @@
                 </div>
                 <div layout="column"  style="width:250px;padding-left:20px;">
                     <span  class="md-subhead" style="text-align: center;padding-bottom:10px;">Select your color</span>
+                    <div ng-if="loadingColors" layout-fill layout="row" layout-align="center center">
+                        <md-progress-circular md-mode="indeterminate" md-diameter="96"></md-progress-circular>
+                    </div>
                     <div style="overflow-y:hidden">
                     <md-grid-list
                             md-cols="3"
