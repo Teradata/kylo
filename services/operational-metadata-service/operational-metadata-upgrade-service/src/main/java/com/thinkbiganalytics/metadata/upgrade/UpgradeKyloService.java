@@ -150,7 +150,8 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
                                 allowed.enable(opsGroup.getRootPrincial(), 
                                                OperationsAccessControl.ADMIN_OPS,
                                                FeedsAccessControl.ACCESS_CATEGORIES,
-                                               FeedsAccessControl.ACCESS_FEEDS);
+                                               FeedsAccessControl.ACCESS_FEEDS,
+                                               FeedsAccessControl.ACCESS_TEMPLATES);
                                 allowed.enable(designersGroup.getRootPrincial(), 
                                                OperationsAccessControl.ACCESS_OPS,
                                                FeedsAccessControl.EDIT_FEEDS,
@@ -159,7 +160,8 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
                                                FeedsAccessControl.EDIT_CATEGORIES,
                                                FeedsAccessControl.EDIT_TEMPLATES,
                                                FeedsAccessControl.IMPORT_TEMPLATES,
-                                               FeedsAccessControl.EXPORT_TEMPLATES);
+                                               FeedsAccessControl.EXPORT_TEMPLATES,
+                                               FeedsAccessControl.ADMIN_TEMPLATES);
                                 allowed.enable(analystsGroup.getRootPrincial(), 
                                                OperationsAccessControl.ACCESS_OPS,
                                                FeedsAccessControl.EDIT_FEEDS,

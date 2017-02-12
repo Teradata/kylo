@@ -307,7 +307,7 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
     @Override
     public RegisteredTemplate enableTemplate(String templateId) {
         return metadataAccess.commit(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_TEMPLATES);
+            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ADMIN_TEMPLATES);
             FeedManagerTemplate.ID domainId = templateProvider.resolveId(templateId);
             if (domainId != null) {
                 FeedManagerTemplate template = templateProvider.enable(domainId);
@@ -322,7 +322,7 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
     @Override
     public RegisteredTemplate disableTemplate(String templateId) {
         return metadataAccess.commit(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_TEMPLATES);
+            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ADMIN_TEMPLATES);
             FeedManagerTemplate.ID domainId = templateProvider.resolveId(templateId);
             if (domainId != null) {
                 FeedManagerTemplate template = templateProvider.disable(domainId);
