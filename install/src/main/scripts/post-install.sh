@@ -20,6 +20,19 @@
 # #L%
 ###
 
+# function for determining way to handle startup scripts
+function get_linux_type {
+# redhat
+which chkconfig > /dev/null && echo "chkonfig" && return 0
+# ubuntu sysv
+which update-rc.d > /dev/null && echo "update-rc.d" && return 0
+echo "Couldn't recognize linux version, exiting..."
+exit 1
+}
+
+linux_type=$(get_linux_type)
+echo "Type of init scripts management tool determined as $linux_type"
+
 chown -R kylo:users /opt/kylo
 
 rpmInstallDir=/opt/kylo
@@ -64,11 +77,29 @@ chmod +x $rpmInstallDir/kylo-ui/bin/run-kylo-ui.sh
 chmod +x $rpmInstallDir/kylo-ui/bin/run-kylo-ui-with-debug.sh
 echo "   - Created kylo-ui script '$rpmInstallDir/kylo-ui/bin/run-kylo-ui.sh'"
 
-cat << EOF > /etc/init.d/kylo-ui
+# header of the service file depends on system used
+if [ "$linux_type" == "chkonfig" ]; then
+cat << EOF > /etc/init.d/kylo-spark-shell
 #! /bin/sh
 # chkconfig: 345 98 22
 # description: kylo-ui
 # processname: kylo-ui
+EOF
+elif [ "$linux_type" == "update-rc.d" ]; then
+cat << EOF > /etc/init.d/kylo-ui
+#! /bin/sh
+### BEGIN INIT INFO
+# Provides:          kylo-ui
+# Required-Start:    $local_fs $network $named $time $syslog
+# Required-Stop:     $local_fs $network $named $time $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Description:       kylo-ui
+### END INIT INFO
+EOF
+fi
+
+cat << EOF >> /etc/init.d/kylo-ui
 RUN_AS_USER=kylo
 
 debug() {
@@ -141,8 +172,12 @@ echo "   - Created kylo-ui script '/etc/init.d/kylo-ui'"
 mkdir -p $rpmLogDir/kylo-ui/
 echo "   - Created Log folder $rpmLogDir/kylo-ui/"
 
-chkconfig --add kylo-ui
-chkconfig kylo-ui on
+if [ "$linux_type" == "chkonfig" ]; then
+    chkconfig --add kylo-ui
+    chkconfig kylo-ui on
+elif [ "$linux_type" == "update-rc.d" ]; then
+    update-rc.d kylo-ui defaults
+fi
 echo "   - Added service 'kylo-ui'"
 echo "    - Completed kylo-ui install"
 
@@ -180,11 +215,29 @@ chmod +x $rpmInstallDir/kylo-services/bin/run-kylo-services.sh
 chmod +x $rpmInstallDir/kylo-services/bin/run-kylo-services-with-debug.sh
 echo "   - Created kylo-services script '$rpmInstallDir/kylo-services/bin/run-kylo-services.sh'"
 
-cat << EOF > /etc/init.d/kylo-services
+# header of the service file depends on system used
+if [ "$linux_type" == "chkonfig" ]; then
+cat << EOF > /etc/init.d/kylo-spark-shell
 #! /bin/sh
 # chkconfig: 345 98 21
 # description: kylo-services
 # processname: kylo-services
+EOF
+elif [ "$linux_type" == "update-rc.d" ]; then
+cat << EOF > /etc/init.d/kylo-services
+#! /bin/sh
+### BEGIN INIT INFO
+# Provides:          kylo-services
+# Required-Start:    $local_fs $network $named $time $syslog
+# Required-Stop:     $local_fs $network $named $time $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Description:       kylo-services
+### END INIT INFO
+EOF
+fi
+
+cat << EOF >> /etc/init.d/kylo-services
 RUN_AS_USER=kylo
 
 debug() {
@@ -257,8 +310,12 @@ echo "   - Created kylo-services script '/etc/init.d/kylo-services'"
 mkdir -p $rpmLogDir/kylo-services/
 echo "   - Created Log folder $rpmLogDir/kylo-services/"
 
-chkconfig --add kylo-services
-chkconfig kylo-services on
+if [ "$linux_type" == "chkonfig" ]; then
+    chkconfig --add kylo-services
+    chkconfig kylo-services on
+elif [ "$linux_type" == "update-rc.d" ]; then
+    update-rc.d kylo-services defaults
+fi
 echo "   - Added service 'kylo-services'"
 
 
@@ -274,11 +331,29 @@ EOF
 chmod +x $rpmInstallDir/kylo-services/bin/run-kylo-spark-shell.sh
 echo "   - Created kylo-spark-shell script '$rpmInstallDir/kylo-services/bin/run-kylo-spark-shell.sh'"
 
+# header of the service file depends on system used
+if [ "$linux_type" == "chkonfig" ]; then
 cat << EOF > /etc/init.d/kylo-spark-shell
 #! /bin/sh
 # chkconfig: 345 98 20
 # description: kylo-spark-shell
 # processname: kylo-spark-shell
+EOF
+elif [ "$linux_type" == "update-rc.d" ]; then
+cat << EOF > /etc/init.d/kylo-spark-shell
+#! /bin/sh
+### BEGIN INIT INFO
+# Provides:          kylo-spark-shell
+# Required-Start:    $local_fs $network $named $time $syslog
+# Required-Stop:     $local_fs $network $named $time $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Description:       kylo-spark-shell
+### END INIT INFO
+EOF
+fi
+
+cat << EOF >> /etc/init.d/kylo-spark-shell
 stdout_log="/var/log/kylo-services/kylo-spark-shell.log"
 stderr_log="/var/log/kylo-services/kylo-spark-shell.err"
 RUN_AS_USER=kylo
@@ -336,8 +411,12 @@ EOF
 chmod +x /etc/init.d/kylo-spark-shell
 echo "   - Created kylo-spark-shell script '/etc/init.d/kylo-spark-shell'"
 
-chkconfig --add kylo-spark-shell
-chkconfig kylo-spark-shell on
+if [ "$linux_type" == "chkonfig" ]; then
+    chkconfig --add kylo-spark-shell
+    chkconfig kylo-spark-shell on
+elif [ "$linux_type" == "update-rc.d" ]; then
+    update-rc.d kylo-spark-shell defaults
+fi
 echo "   - Added service 'kylo-spark-shell'"
 
 
@@ -345,9 +424,13 @@ echo "    - Completed kylo-spark-shell install"
 
 {
 echo "    - Create an RPM Removal script at: $rpmInstallDir/remove-kylo.sh"
-lastRpm=$(rpm -qa | grep kylo)
 touch $rpmInstallDir/remove-kylo.sh
-echo "rpm -e $lastRpm " > $rpmInstallDir/remove-kylo.sh
+if [ "$linux_type" == "chkonfig" ]; then
+    lastRpm=$(rpm -qa | grep kylo)
+    echo "rpm -e $lastRpm " > $rpmInstallDir/remove-kylo.sh
+elif [ "$linux_type" == "update-rc.d" ]; then
+    echo "apt-get remove kylo" > $rpmInstallDir/remove-kylo.sh
+fi
 chmod +x $rpmInstallDir/remove-kylo.sh
 
 }

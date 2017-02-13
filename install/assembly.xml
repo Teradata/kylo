@@ -1,0 +1,24 @@
+<assembly>
+  <id>dependencies</id>
+  <formats>
+    <format>dir</format>
+  </formats>
+  <includeBaseDirectory>false</includeBaseDirectory>
+  <baseDirectory>install/target</baseDirectory>
+  <dependencySets>
+    <dependencySet>
+      <outputDirectory>active-mq-lib</outputDirectory>
+      <includes>
+        <include>org.apache.activemq:activemq-client:jar:${activemq.version}</include>
+        <include>org.apache.geronimo.specs:geronimo-j2ee-management_1.1_spec:jar:1.0.1</include>
+        <include>org.fusesource.hawtbuf:hawtbuf:jar:1.11</include>
+      </includes>
+    </dependencySet>
+    <dependencySet>
+      <outputDirectory>kylo-services-lib</outputDirectory>
+      <includes>
+        <include>com.thinkbiganalytics.datalake:kylo-jira-rest-client</include>
+      </includes>
+    </dependencySet>
+  </dependencySets>
+</assembly>

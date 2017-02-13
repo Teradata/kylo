@@ -1,0 +1,7 @@
+Package: Kylo
+Version: 0.7
+Section: misc
+Priority: low
+Architecture: all
+Description: Kylo
+Maintainer: thinkbig
