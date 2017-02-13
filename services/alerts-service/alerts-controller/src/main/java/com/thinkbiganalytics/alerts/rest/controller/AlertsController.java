@@ -1,5 +1,28 @@
 package com.thinkbiganalytics.alerts.rest.controller;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.UriInfo;
+
+import org.springframework.stereotype.Component;
+
 /*-
  * #%L
  * thinkbig-alerts-controller
@@ -33,30 +56,9 @@ import com.thinkbiganalytics.alerts.rest.model.AlertCreateRequest;
 import com.thinkbiganalytics.alerts.rest.model.AlertRange;
 import com.thinkbiganalytics.alerts.rest.model.AlertUpdateRequest;
 import com.thinkbiganalytics.alerts.spi.AlertManager;
+import com.thinkbiganalytics.jobrepo.security.OperationsAccessControl;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
-
-import org.springframework.stereotype.Component;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.UriInfo;
+import com.thinkbiganalytics.security.AccessController;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -75,6 +77,10 @@ public class AlertsController {
     @Named("kyloAlertManager")
     private AlertManager alertManager;
 
+    @Inject
+    private AccessController accessController;
+
+    
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Lists the current alerts.")
@@ -118,6 +124,8 @@ public class AlertsController {
         @ApiResponse(code = 200, message = "Returns the alert.", response = com.thinkbiganalytics.alerts.rest.model.Alert.class)
     )
     public com.thinkbiganalytics.alerts.rest.model.Alert createAlert(AlertCreateRequest req) {
+        this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ADMIN_OPS);
+        
         Alert.Level level = toDomain(req.getLevel());
         Alert alert = alertManager.create(req.getType(), level, req.getDescription(), null);
         return toModel(alert);
@@ -135,6 +143,9 @@ public class AlertsController {
                   })
     public com.thinkbiganalytics.alerts.rest.model.Alert updateAlert(@PathParam("id") String idStr,
                                                                      AlertUpdateRequest req) {
+
+        this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ADMIN_OPS);
+        
         Alert.ID id = provider.resolve(idStr);
         final Alert.State state = toDomain(req.getState());
 

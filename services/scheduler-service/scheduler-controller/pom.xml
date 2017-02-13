@@ -26,6 +26,16 @@
       <artifactId>kylo-scheduler-rest-model</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-security-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>kylo-job-repository-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>

@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.scheduler.rest.controller;
 
+import com.thinkbiganalytics.jobrepo.security.OperationsAccessControl;
+
 /*-
  * #%L
  * thinkbig-scheduler-controller
@@ -28,6 +30,7 @@ import com.thinkbiganalytics.scheduler.rest.Model;
 import com.thinkbiganalytics.scheduler.rest.model.ScheduleIdentifier;
 import com.thinkbiganalytics.scheduler.rest.model.ScheduledJob;
 import com.thinkbiganalytics.scheduler.rest.model.TriggerInfo;
+import com.thinkbiganalytics.security.AccessController;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,6 +59,10 @@ public class SchedulerRestController {
     @Inject
     private JobScheduler quartzScheduler;
 
+    @Inject
+    private AccessController accessController;
+
+    
     @GET
     @Path("/metadata")
     @Produces(MediaType.APPLICATION_JSON)
@@ -64,8 +71,9 @@ public class SchedulerRestController {
         @ApiResponse(code = 200, message = "Returns the metadata.", response = Map.class)
     )
     public Map<String, Object> getMetaData() throws JobSchedulerException {
+        this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+        
         return quartzScheduler.getMetaData();
-
     }
 
     @POST
@@ -76,9 +84,10 @@ public class SchedulerRestController {
         @ApiResponse(code = 200, message = "The scheduler is paused.", response = RestResponseStatus.class)
     )
     public RestResponseStatus standByScheduler() throws JobSchedulerException {
+        this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ADMIN_OPS);
+        
         quartzScheduler.pauseScheduler();
         return RestResponseStatus.SUCCESS;
-
     }
 
     @POST
@@ -89,10 +98,10 @@ public class SchedulerRestController {
         @ApiResponse(code = 200, message = "The scheduler is started.", response = RestResponseStatus.class)
     )
     public RestResponseStatus startScheduler() throws JobSchedulerException {
+        this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ADMIN_OPS);
+        
         quartzScheduler.startScheduler();
         return RestResponseStatus.SUCCESS;
-
-
     }
 
 
@@ -105,9 +114,9 @@ public class SchedulerRestController {
         @ApiResponse(code = 200, message = "The trigger is updated.", response = RestResponseStatus.class)
     )
     public RestResponseStatus rescheduleTrigger(TriggerInfo trigger) throws JobSchedulerException {
-
+        this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ADMIN_OPS);
+        
         //convert to Domain Code
-
         quartzScheduler
             .updateTrigger(Model.TRIGGER_IDENTIFIER_TO_DOMAIN.apply(trigger.getTriggerIdentifier()), trigger.getCronExpression());
         return RestResponseStatus.SUCCESS;
@@ -123,7 +132,8 @@ public class SchedulerRestController {
         @ApiResponse(code = 200, message = "The trigger is paused.", response = RestResponseStatus.class)
     )
     public RestResponseStatus pauseTrigger(ScheduleIdentifier triggerIdentifier) throws JobSchedulerException {
-
+        this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ADMIN_OPS);
+        
         quartzScheduler.pauseTrigger(Model.TRIGGER_IDENTIFIER_TO_DOMAIN.apply(triggerIdentifier));
         return RestResponseStatus.SUCCESS;
 
@@ -138,7 +148,8 @@ public class SchedulerRestController {
         @ApiResponse(code = 200, message = "The trigger is started.", response = RestResponseStatus.class)
     )
     public RestResponseStatus resumeTrigger(ScheduleIdentifier triggerIdentifier) throws JobSchedulerException {
-
+        this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ADMIN_OPS);
+        
         quartzScheduler.resumeTrigger(Model.TRIGGER_IDENTIFIER_TO_DOMAIN.apply(triggerIdentifier));
         return RestResponseStatus.SUCCESS;
 
@@ -153,6 +164,8 @@ public class SchedulerRestController {
         @ApiResponse(code = 200, message = "The job is started.", response = RestResponseStatus.class)
     )
     public RestResponseStatus triggerJob(ScheduleIdentifier jobIdentifier) throws JobSchedulerException {
+        this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ADMIN_OPS);
+        
         quartzScheduler.triggerJob(Model.JOB_IDENTIFIER_TO_DOMAIN.apply(jobIdentifier));
         return RestResponseStatus.SUCCESS;
     }
@@ -166,6 +179,8 @@ public class SchedulerRestController {
         @ApiResponse(code = 200, message = "The triggers are paused.", response = RestResponseStatus.class)
     )
     public RestResponseStatus pauseJob(ScheduleIdentifier jobIdentifier) throws JobSchedulerException {
+        this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ADMIN_OPS);
+        
         quartzScheduler.pauseTriggersOnJob(Model.JOB_IDENTIFIER_TO_DOMAIN.apply(jobIdentifier));
         return RestResponseStatus.SUCCESS;
     }
@@ -179,6 +194,8 @@ public class SchedulerRestController {
         @ApiResponse(code = 200, message = "The triggers are started.", response = RestResponseStatus.class)
     )
     public RestResponseStatus resumeJob(ScheduleIdentifier jobIdentifier) throws JobSchedulerException {
+        this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ADMIN_OPS);
+        
         quartzScheduler.resumeTriggersOnJob(Model.JOB_IDENTIFIER_TO_DOMAIN.apply(jobIdentifier));
         return RestResponseStatus.SUCCESS;
     }
@@ -191,6 +208,8 @@ public class SchedulerRestController {
         @ApiResponse(code = 200, message = "Returns the list of jobs.", response = RestResponseStatus.class)
     )
     public List<ScheduledJob> getJobs() throws JobSchedulerException {
+        this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+        
         List<ScheduledJob> quartzScheduledJobs = new ArrayList<ScheduledJob>();
         List<JobInfo> jobs = quartzScheduler.getJobs();
         if (jobs != null && !jobs.isEmpty()) {
