@@ -64,7 +64,7 @@ public class JpaJcrServiceLevelAgreementChecker extends DefaultServiceLevelAgree
 
                     return (!assessment.getResult().equals(AssessmentResult.SUCCESS) && assessment.compareTo(previous) != 0);
                 } else {
-                    return true;
+                    return !assessment.getResult().equals(AssessmentResult.SUCCESS);
                 }
             });
         } catch (Exception e) {
