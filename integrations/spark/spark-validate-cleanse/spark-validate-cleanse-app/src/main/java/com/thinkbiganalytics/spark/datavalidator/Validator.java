@@ -35,14 +35,12 @@ import com.thinkbiganalytics.spark.util.InvalidFormatException;
 import com.thinkbiganalytics.spark.validation.HCatDataType;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.spark.Accumulator;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.Function2;
-import org.apache.spark.api.java.function.MapPartitionsFunction;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.RowFactory;
 import org.apache.spark.sql.hive.HiveContext;
@@ -62,6 +60,7 @@ import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.util.*;
 
+
 /**
  * Cleanses and validates a table of strings according to defined field-level policies. Records are split into good and bad.
  * <p> blog.cloudera.com/blog/2015/07/how-to-do-data-quality-checks-using-apache-spark-dataframes/
@@ -77,7 +76,7 @@ public class Validator implements Serializable {
     private static String REJECT_REASON_COL = "dlp_reject_reason";
     private static String VALID_INVALID_COL = "dlp_valid";
     private static String PROCESSING_DTTM_COL = "processing_dttm";
-    private final Vector<Accumulator<Integer>> accumList = new Vector<>();
+
     /* Initialize Spark */
     private HiveContext hiveContext;
     // Optimization to write directly from dataframe to the table vs. temporary table (not tested with < 1.6.x)
@@ -188,33 +187,18 @@ public class Validator implements Serializable {
                 public CleansedRowResult call(Row row) throws Exception {
                     return cleanseAndValidateRow(row);
                 }
-            }).persist(StorageLevel.fromString(params.getStorageLevel()));;
+            }).persist(StorageLevel.fromString(params.getStorageLevel()));
 
             // Return a new dataframe based on whether values are valid or invalid
             JavaRDD<Row> newResults = cleansedRowResultRDD.map(new Function<CleansedRowResult, Row>() {
                 @Override
                 public Row call(CleansedRowResult cleansedRowResult) throws Exception {
-                    return cleansedRowResult.Row;
+                    return cleansedRowResult.row;
                 }
             });
 
             // Counts of invalid columns, total valid rows and total invalid rows
-            long[] fieldInvalidCounts = cleansedRowResultRDD.mapPartitions(new FlatMapFunction<Iterator<CleansedRowResult>, long[]>() {
-                @Override
-                public Iterable<long[]> call(Iterator<CleansedRowResult> cleansedRowResultIterator) {
-                    return mapToPartitionValidationCounts(cleansedRowResultIterator);
-                }
-            }).reduce(new Function2<long[], long[], long[]>() {
-                @Override
-                public long[] call(long[] countsA, long[] countsB) throws Exception {
-
-                    for(int idx = 0; idx > countsA.length; idx++)
-                    {
-                        countsA[idx] = countsA[idx] + countsB[idx];
-                    }
-                    return countsA;
-                }
-            });
+            long[] fieldInvalidCounts = CleansedRowResultsValidationCounts(cleansedRowResultRDD, schema.length);
 
             final DataSet validatedDF = scs.toDataSet(getHiveContext(), newResults, sourceSchema);
 
@@ -299,19 +283,19 @@ public class Validator implements Serializable {
 
             JavaSparkContext jsc = new JavaSparkContext(SparkContext.getOrCreate());
             JavaRDD<Row> statsRDD = jsc.parallelize(csvRows)
-                    .map(new Function<String, Row>() {
-                        @Override
-                        public Row call(String s) throws Exception {
-                            return RowFactory.create(s.split("\\,"));
-                        }
-                    });
+                .map(new Function<String, Row>() {
+                    @Override
+                    public Row call(String s) throws Exception {
+                        return RowFactory.create(s.split("\\,"));
+                    }
+                });
 
             DataSet df = scs.toDataSet(getHiveContext(), statsRDD, statsSchema);
             df.registerTempTable(tempTable);
 
             String insertSQL = "INSERT OVERWRITE TABLE " + qualifiedProfileName
-                    + " PARTITION (processing_dttm='" + partition + "')"
-                    + " SELECT columnname, metrictype, metricvalue FROM " + HiveUtils.quoteIdentifier(tempTable);
+                               + " PARTITION (processing_dttm='" + partition + "')"
+                               + " SELECT columnname, metrictype, metricvalue FROM " + HiveUtils.quoteIdentifier(tempTable);
 
             log.info("Writing profile stats {}", insertSQL);
             scs.sql(getHiveContext(), insertSQL);
@@ -372,7 +356,6 @@ public class Validator implements Serializable {
     /**
      * Spark function to perform both cleansing and validation of a data row based on data policies and the target datatype
      */
-
     public CleansedRowResult cleanseAndValidateRow(Row row) {
         int nulls = 1;
 
@@ -437,43 +420,64 @@ public class Validator implements Serializable {
         newValues[schema.length - 1] = (rowValid ? "1" : "0");
 
         CleansedRowResult cleansedRowResult = new CleansedRowResult();
-        cleansedRowResult.Row = RowFactory.create(newValues);
-        cleansedRowResult.ColumnsValid = columnsValid;
-        cleansedRowResult.RowIsValid = rowValid;
+        cleansedRowResult.row = RowFactory.create(newValues);
+        cleansedRowResult.columnsValid = columnsValid;
+        cleansedRowResult.rowIsValid = rowValid;
         return cleansedRowResult;
     }
 
-    // Maps partitions of CleansedRowResults to a count of invalid columns, total valid, total invalid
-    private Iterable<long[]> mapToPartitionValidationCounts(Iterator<CleansedRowResult> cleansedRowResultIterator){
+    /**
+     * Performs counts of invalid columns, total valid and total invalid on a JavaRDD<CleansedRowResults>
+     */
+    public long[] CleansedRowResultsValidationCounts(JavaRDD<CleansedRowResult> cleansedRowResultJavaRDD, int schemaLength) {
 
-        long[] validationCounts = new long[schema.length + 2];
+        final int schemaLen = schemaLength;
 
-        while (cleansedRowResultIterator.hasNext()) {
+        // Maps each partition in the JavaRDD<CleansedRowResults> to a long[] of invalid column counts and total valid/invalid counts
+        JavaRDD<long[]> partitionCounts = cleansedRowResultJavaRDD.mapPartitions(new FlatMapFunction<Iterator<CleansedRowResult>, long[]>() {
 
-            CleansedRowResult cleansedRowResult = cleansedRowResultIterator.next();
+            @Override
+            public Iterable<long[]> call(Iterator<CleansedRowResult> cleansedRowResultIterator) {
 
-            for (int idx = 0; idx < schema.length; idx++) {
+                long[] validationCounts = new long[schemaLen + 2];
 
-                if (!cleansedRowResult.ColumnsValid[idx])
-                {
-                    validationCounts[idx] = validationCounts[idx] + 1l;
+                while (cleansedRowResultIterator.hasNext()) {
+
+                    CleansedRowResult cleansedRowResult = cleansedRowResultIterator.next();
+
+                    for (int idx = 0; idx < schemaLen; idx++) {
+                        if (!cleansedRowResult.columnsValid[idx]) {
+                            validationCounts[idx] = validationCounts[idx] + 1l;
+                        }
+                    }
+                    if (cleansedRowResult.rowIsValid) {
+                        validationCounts[schemaLen] = validationCounts[schemaLen] + 1l;
+                    } else {
+                        validationCounts[schemaLen + 1] = validationCounts[schemaLen + 1] + 1l;
+                    }
                 }
-            }
 
-            if (cleansedRowResult.RowIsValid)
-            {
-                validationCounts[schema.length] = validationCounts[schema.length] + 1l;
+                List<long[]> results = new LinkedList<long[]>();
+                results.add(validationCounts);
+                return results;
             }
+        });
 
-            else
-            {
-                validationCounts[schema.length + 1] = validationCounts[schema.length + 1] + 1l;
+        // Sums up all partitions validation counts into one long[]
+        long[] finalCounts = partitionCounts.reduce(new Function2<long[], long[], long[]>() {
+            @Override
+            public long[] call(long[] countsA, long[] countsB) throws Exception {
+
+                long[] countsResult = new long[countsA.length];
+
+                for (int idx = 0; idx < countsA.length; idx++) {
+                    countsResult[idx] = countsA[idx] + countsB[idx];
+                }
+                return countsResult;
             }
-        }
+        });
 
-        List<long[]> results = new LinkedList<long[]>();
-        results.add(validationCounts);
-        return results;
+        return finalCounts;
     }
 
     private String toJSONArray(List<ValidationResult> results) {
@@ -510,8 +514,8 @@ public class Validator implements Serializable {
             if (!fieldPolicy.shouldSkipSchemaValidation()) {
                 if (!fieldDataType.isValueConvertibleToType(fieldValue)) {
                     return ValidationResult
-                            .failField("incompatible", fieldDataType.getName(),
-                                    "Not convertible to " + fieldDataType.getNativeType());
+                        .failField("incompatible", fieldDataType.getName(),
+                                   "Not convertible to " + fieldDataType.getNativeType());
                 }
             }
 
@@ -539,14 +543,14 @@ public class Validator implements Serializable {
             }
             if (!validator.validate(nativeValue)) {
                 return ValidationResult
-                        .failFieldRule("rule", fieldDataType.getName(), validator.getClass().getSimpleName(),
-                                "Rule violation");
+                    .failFieldRule("rule", fieldDataType.getName(), validator.getClass().getSimpleName(),
+                                   "Rule violation");
             }
             return VALID_RESULT;
         } catch (InvalidFormatException | ClassCastException e) {
             return ValidationResult
-                    .failField("incompatible", fieldDataType.getName(),
-                            "Not convertible to " + fieldDataType.getNativeType());
+                .failField("incompatible", fieldDataType.getName(),
+                           "Not convertible to " + fieldDataType.getNativeType());
         }
 
     }
@@ -626,14 +630,4 @@ public class Validator implements Serializable {
     private void addParameters(CommandLineParams params) {
         this.params = params;
     }
-
-    private class CleansedRowResult implements Serializable {
-
-        public Row Row;
-        public boolean[] ColumnsValid;
-        public boolean RowIsValid;
-
-    }
-
 }
-
