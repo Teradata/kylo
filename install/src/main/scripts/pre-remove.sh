@@ -26,8 +26,7 @@ function get_linux_type {
 which chkconfig > /dev/null && echo "chkonfig" && return 0
 # ubuntu sysv
 which update-rc.d > /dev/null && echo "update-rc.d" && return 0
-echo "Couldn't recognize linux version, exiting..."
-exit 1
+echo "Couldn't recognize linux version, not saving version of installed Kylo package"
 }
 
 linux_type=$(get_linux_type)

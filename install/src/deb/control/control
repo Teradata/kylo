@@ -1,7 +1,7 @@
 Package: Kylo
-Version: 0.7
+Version: ${project.version}
 Section: misc
 Priority: low
 Architecture: all
 Description: Kylo
-Maintainer: thinkbig
+Maintainer: Think Big

@@ -736,6 +736,7 @@
             </goals>
             <configuration>
               <deb>${build.directory}/deb/kylo-${version}.deb</deb>
+              <controlDir>${build.directory}/install-${version}-dependencies/deb-control</controlDir>
               <dataSet>
                 <data>
                   <src>../LICENSE</src>
@@ -1034,7 +1035,7 @@
         </executions>
         <configuration>
           <descriptors>
-            <descriptor>assembly.xml</descriptor>
+            <descriptor>src/main/assembly/descriptor.xml</descriptor>
           </descriptors>
         </configuration>
       </plugin>
