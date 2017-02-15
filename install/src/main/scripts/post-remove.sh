@@ -26,8 +26,8 @@ function get_linux_type {
 which chkconfig > /dev/null && echo "chkonfig" && return 0
 # ubuntu sysv
 which update-rc.d > /dev/null && echo "update-rc.d" && return 0
-echo "Couldn't recognize linux version, exiting..."
-exit 1
+echo "Couldn't recognize linux version, after removal you need to turn off autostart of kylo services
+(kylo-ui, kylo-services and kylo-spark-shell)"
 }
 
 linux_type=$(get_linux_type)
