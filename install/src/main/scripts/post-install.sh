@@ -47,7 +47,7 @@ cat << EOF > $rpmInstallDir/kylo-ui/bin/run-kylo-ui.sh
 #!/bin/bash
 export JAVA_HOME=/opt/java/current
 export PATH=\$JAVA_HOME/bin:\$PATH
-export KYLO_UI_OPTS=
+: ${KYLO_UI_OPTS=-Xmx512m}
 [ -f $rpmInstallDir/encrypt.key ] && export ENCRYPT_KEY="\$(cat $rpmInstallDir/encrypt.key)"
 java \$KYLO_UI_OPTS -cp $rpmInstallDir/kylo-ui/conf:$rpmInstallDir/kylo-ui/lib/*:$rpmInstallDir/kylo-ui/plugin/* com.thinkbiganalytics.KyloUiApplication --pgrep-marker=$pgrepMarkerKyloUi > /var/log/kylo-ui/kylo-ui.log 2>&1 &
 EOF
@@ -55,7 +55,7 @@ cat << EOF > $rpmInstallDir/kylo-ui/bin/run-kylo-ui-with-debug.sh
   #!/bin/bash
 export JAVA_HOME=/opt/java/current
 export PATH=\$JAVA_HOME/bin:\$PATH
-export KYLO_UI_OPTS=
+: ${KYLO_UI_OPTS=-Xmx512m}
 [ -f $rpmInstallDir/encrypt.key ] && export ENCRYPT_KEY="\$(cat $rpmInstallDir/encrypt.key)"
 JAVA_DEBUG_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=9997
 java \$KYLO_UI_OPTS \$JAVA_DEBUG_OPTS -cp $rpmInstallDir/kylo-ui/conf:$rpmInstallDir/kylo-ui/lib/*:$rpmInstallDir/kylo-ui/plugin/* com.thinkbiganalytics.KyloUiApplication --pgrep-marker=$pgrepMarkerKyloUi > /var/log/kylo-ui/kylo-ui.log 2>&1 &
@@ -161,7 +161,7 @@ cat << EOF > $rpmInstallDir/kylo-services/bin/run-kylo-services.sh
 #!/bin/bash
 export JAVA_HOME=/opt/java/current
 export PATH=\$JAVA_HOME/bin:\$PATH
-export KYLO_SERVICES_OPTS=
+: ${KYLO_SERVICES_OPTS=-Xmx768m}
 [ -f $rpmInstallDir/encrypt.key ] && export ENCRYPT_KEY="\$(cat $rpmInstallDir/encrypt.key)"
 KYLO_NIFI_PROFILE=\$(grep ^spring.profiles. $rpmInstallDir/kylo-services/conf/application.properties | grep -o nifi-v.)
 java \$KYLO_SERVICES_OPTS -cp $rpmInstallDir/kylo-services/conf:$rpmInstallDir/kylo-services/lib/*:$rpmInstallDir/kylo-services/lib/\${KYLO_NIFI_PROFILE}/*:$rpmInstallDir/kylo-services/plugin/* com.thinkbiganalytics.server.KyloServerApplication --pgrep-marker=$pgrepMarkerKyloServices > /var/log/kylo-services/kylo-services.log 2>&1 &
@@ -170,7 +170,7 @@ cat << EOF > $rpmInstallDir/kylo-services/bin/run-kylo-services-with-debug.sh
 #!/bin/bash
 export JAVA_HOME=/opt/java/current
 export PATH=\$JAVA_HOME/bin:\$PATH
-export KYLO_SERVICES_OPTS=
+: ${KYLO_SERVICES_OPTS=-Xmx768m}
 [ -f $rpmInstallDir/encrypt.key ] && export ENCRYPT_KEY="\$(cat $rpmInstallDir/encrypt.key)"
 JAVA_DEBUG_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=9998
 KYLO_NIFI_PROFILE=\$(grep ^spring.profiles. $rpmInstallDir/kylo-services/conf/application.properties | grep -o nifi-v.)
