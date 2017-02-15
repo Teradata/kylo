@@ -205,7 +205,7 @@ public class Validator implements Serializable {
             });
 
             // Counts of invalid columns, total valid rows and total invalid rows
-            long[] fieldInvalidCounts = CleansedRowResultsValidationCounts(cleansedRowResultRDD, schema.length);
+            long[] fieldInvalidCounts = cleansedRowResultsValidationCounts(cleansedRowResultRDD, schema.length);
 
             final DataSet validatedDF = scs.toDataSet(getHiveContext(), newResults, sourceSchema);
 
@@ -436,7 +436,7 @@ public class Validator implements Serializable {
     /**
      * Performs counts of invalid columns, total valid and total invalid on a JavaRDD<CleansedRowResults>
      */
-    public long[] CleansedRowResultsValidationCounts(JavaRDD<CleansedRowResult> cleansedRowResultJavaRDD, int schemaLength) {
+    public long[] cleansedRowResultsValidationCounts(JavaRDD<CleansedRowResult> cleansedRowResultJavaRDD, int schemaLength) {
 
         final int schemaLen = schemaLength;
 

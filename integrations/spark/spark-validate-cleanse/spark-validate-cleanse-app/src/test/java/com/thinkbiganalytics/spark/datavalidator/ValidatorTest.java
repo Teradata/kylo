@@ -171,7 +171,7 @@ public class ValidatorTest extends SharedJavaSparkContext implements Serializabl
                                                                        cleansedRowResult1, cleansedRowResult1, cleansedRowResult1,
                                                                        cleansedRowResult1, cleansedRowResult2, cleansedRowResult3);
         JavaRDD<CleansedRowResult> inputRDD = jsc().parallelize(cleansedRowResultsList, 1);
-        long[] output = validator.CleansedRowResultsValidationCounts(inputRDD, 5);
+        long[] output = validator.cleansedRowResultsValidationCounts(inputRDD, 5);
 
         // Create the expected output
         long[] expectedOutput = {1l, 2l, 0l, 0l, 2l, 7l, 2l};

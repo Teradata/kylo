@@ -23,10 +23,9 @@ package com.thinkbiganalytics.spark.datavalidator;
 import org.apache.spark.sql.Row;
 import java.io.Serializable;
 
-/**
- * Created by cp186050 on 14/2/17.
+/*
+ * Wrapper class to contain our cleansed row and its column validation results
  */
-// Wrapper class to contain our cleansed row and its column validation results
 public class CleansedRowResult implements Serializable {
 
     public Row row;
