@@ -32,8 +32,6 @@ import com.thinkbiganalytics.policy.validation.ValidationResult;
 import com.thinkbiganalytics.spark.validation.HCatDataType;
 
 import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.RowFactory;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -170,7 +168,7 @@ public class ValidatorTest extends SharedJavaSparkContext implements Serializabl
         List<CleansedRowResult> cleansedRowResultsList = Arrays.asList(cleansedRowResult1, cleansedRowResult1, cleansedRowResult1,
                                                                        cleansedRowResult1, cleansedRowResult1, cleansedRowResult1,
                                                                        cleansedRowResult1, cleansedRowResult2, cleansedRowResult3);
-        JavaRDD<CleansedRowResult> inputRDD = jsc().parallelize(cleansedRowResultsList, 1);
+        JavaRDD<CleansedRowResult> inputRDD = jsc().parallelize(cleansedRowResultsList);
         long[] output = validator.cleansedRowResultsValidationCounts(inputRDD, 5);
 
         // Create the expected output

@@ -196,8 +196,8 @@ public class Validator implements Serializable {
                 }
             }).persist(StorageLevel.fromString(params.getStorageLevel()));
 
-            // Return a new dataframe based on whether values are valid or invalid
-            JavaRDD<Row> newResults = cleansedRowResultRDD.map(new Function<CleansedRowResult, Row>() {
+            // Return a new rdd based on whether values are valid or invalid
+            JavaRDD<Row> newResultsRDD = cleansedRowResultRDD.map(new Function<CleansedRowResult, Row>() {
                 @Override
                 public Row call(CleansedRowResult cleansedRowResult) throws Exception {
                     return cleansedRowResult.row;
@@ -207,7 +207,7 @@ public class Validator implements Serializable {
             // Counts of invalid columns, total valid rows and total invalid rows
             long[] fieldInvalidCounts = cleansedRowResultsValidationCounts(cleansedRowResultRDD, schema.length);
 
-            final DataSet validatedDF = scs.toDataSet(getHiveContext(), newResults, sourceSchema);
+            final DataSet validatedDF = scs.toDataSet(getHiveContext(), newResultsRDD, sourceSchema);
 
             // Pull out just the valid or invalid records
             DataSet invalidDF = null;
@@ -230,7 +230,7 @@ public class Validator implements Serializable {
             long validCount = fieldInvalidCounts[schema.length];
             long invalidCount = fieldInvalidCounts[schema.length + 1];
 
-            newResults.unpersist();
+            cleansedRowResultRDD.unpersist();
 
             log.info("Valid count {} invalid count {}", validCount, invalidCount);
 
