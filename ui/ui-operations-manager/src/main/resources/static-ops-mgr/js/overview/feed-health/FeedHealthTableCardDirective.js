@@ -212,11 +212,11 @@
         }
 
         function setRefreshInterval() {
-            // self.clearRefreshInterval();
-            // if (self.refreshIntervalTime) {
-            //     self.refreshInterval = $interval(loadTabData, self.refreshIntervalTime);
-            //
-            // }
+            self.clearRefreshInterval();
+            if (self.refreshIntervalTime) {
+                self.refreshInterval = $interval(loadTabData, self.refreshIntervalTime);
+
+            }
         }
         //Util Functions
         function capitalize(string) {
