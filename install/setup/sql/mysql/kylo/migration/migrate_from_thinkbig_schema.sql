@@ -8,8 +8,6 @@ insert into kylo.BATCH_EXECUTION_CONTEXT_VALUES select * from thinkbig.BATCH_EXE
 
 insert into kylo.BATCH_JOB_EXECUTION select * from thinkbig.BATCH_JOB_EXECUTION;
 
-insert into kylo.BATCH_JOB_EXECUTION_CONTEXT select * from thinkbig.BATCH_JOB_EXECUTION_CONTEXT;
-
 insert into kylo.BATCH_JOB_EXECUTION_CTX_VALS select * from thinkbig.BATCH_JOB_EXECUTION_CTX_VALS;
 
 insert into kylo.BATCH_JOB_EXECUTION_PARAMS select * from thinkbig.BATCH_JOB_EXECUTION_PARAMS;
@@ -25,8 +23,6 @@ insert into kylo.BATCH_NIFI_JOB select * from thinkbig.BATCH_NIFI_JOB;
 insert into kylo.BATCH_NIFI_STEP select * from thinkbig.BATCH_NIFI_STEP;
 
 insert into kylo.BATCH_STEP_EXECUTION select * from thinkbig.BATCH_STEP_EXECUTION;
-
-insert into kylo.BATCH_STEP_EXECUTION_CONTEXT select * from thinkbig.BATCH_STEP_EXECUTION_CONTEXT;
 
 insert into kylo.BATCH_STEP_EXECUTION_CTX_VALS select * from thinkbig.BATCH_STEP_EXECUTION_CTX_VALS;
 
