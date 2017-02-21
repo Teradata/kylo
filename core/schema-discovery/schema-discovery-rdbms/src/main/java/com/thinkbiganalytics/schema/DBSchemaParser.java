@@ -62,8 +62,7 @@ public class DBSchemaParser {
 
     public List<String> listSchemas() {
         Vector<String> schemas = new Vector<>();
-        try (Connection conn = ds.getConnection()) {
-            ResultSet rs = conn.getMetaData().getSchemas();
+        try (Connection conn = ds.getConnection(); ResultSet rs = conn.getMetaData().getSchemas()) {
             while (rs.next()) {
                 String schema = rs.getString("TABLE_SCHEM");
                 schemas.add(schema);
@@ -74,10 +73,9 @@ public class DBSchemaParser {
         }
     }
 
-    public List<String> listCatalogs() {
+    private List<String> listCatalogs() {
         Vector<String> catalogs = new Vector<>();
-        try (Connection conn = ds.getConnection()) {
-            ResultSet rs = conn.getMetaData().getCatalogs();
+        try (Connection conn = ds.getConnection(); ResultSet rs = conn.getMetaData().getCatalogs()) {
             while (rs.next()) {
                 String cat = rs.getString("TABLE_CAT");
                 catalogs.add(cat);
@@ -237,40 +235,39 @@ public class DBSchemaParser {
         return null;
     }
 
-    protected Set<String> listPrimaryKeys(Connection conn, String schema, String tableName) throws SQLException {
+    private Set<String> listPrimaryKeys(Connection conn, String schema, String tableName) throws SQLException {
         HashSet<String> primaryKeys = new HashSet<>();
-        try {
-            ResultSet rs = conn.getMetaData().getPrimaryKeys(null, schema, tableName);
+        try (ResultSet rs = conn.getMetaData().getPrimaryKeys(null, schema, tableName)) {
             while (rs.next()) {
                 String columnName = rs.getString("COLUMN_NAME");
                 primaryKeys.add(columnName);
             }
         } catch (SQLException e) {
             //attempt to use the catalog instead of the schema
-            try {
-                ResultSet rs = conn.getMetaData().getPrimaryKeys(schema, null, tableName);
+            try (ResultSet rs = conn.getMetaData().getPrimaryKeys(schema, null, tableName)) {
                 while (rs.next()) {
                     String columnName = rs.getString("COLUMN_NAME");
                     primaryKeys.add(columnName);
                 }
             } catch (SQLException e2) {
-
+                log.info("Failed to list primary keys of {}.{}", schema, tableName);
             }
         }
         return primaryKeys;
     }
 
-    protected List<Field> listColumns(Connection conn, String schema, String tableName) throws SQLException {
-        List<Field> fields = new Vector<>();
+    private List<Field> listColumns(Connection conn, String schema, String tableName) throws SQLException {
+        List<Field> fields;
         Set<String> pkSet = listPrimaryKeys(conn, schema, tableName);
-        ResultSet columns = conn.getMetaData().getColumns(null, schema, tableName, null);
-        fields = columnsResultSetToField(columns, pkSet);
-        if (fields.isEmpty()) {
-            //if empty try the schema as the catalog (for MySQL db)
-            columns = conn.getMetaData().getColumns(schema, null, tableName, null);
+        try (ResultSet columns = conn.getMetaData().getColumns(null, schema, tableName, null)) {
             fields = columnsResultSetToField(columns, pkSet);
         }
-
+        if (fields.isEmpty()) {
+            //if empty try the schema as the catalog (for MySQL db)
+            try (ResultSet columns = conn.getMetaData().getColumns(schema, null, tableName, null)) {
+                fields = columnsResultSetToField(columns, pkSet);
+            }
+        }
         return fields;
     }
 
