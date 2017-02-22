@@ -116,6 +116,17 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
     }
 
     /* (non-Javadoc)
+     * @see com.thinkbiganalytics.security.action.AllowedActions#enableOnly(java.security.Principal, com.thinkbiganalytics.security.action.AllowedActions)
+     */
+    @Override
+    public boolean enableOnly(Principal principal, AllowedActions actions) {
+        return enableOnly(principal, 
+                          actions.getAvailableActions().stream()
+                              .flatMap(avail -> avail.stream())
+                              .collect(Collectors.toSet()));
+    }
+
+    /* (non-Javadoc)
      * @see com.thinkbiganalytics.security.action.AllowedActions#disableAccess(com.thinkbiganalytics.security.action.Action, java.security.Principal[])
      */
     @Override
@@ -131,6 +142,17 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
     @Override
     public boolean disable(Principal principal, Set<Action> actions) {
         return togglePermission(actions, principal, false);
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.security.action.AllowedActions#disable(java.security.Principal, com.thinkbiganalytics.security.action.AllowedActions)
+     */
+    @Override
+    public boolean disable(Principal principal, AllowedActions actions) {
+        return disable(principal, 
+                       actions.getAvailableActions().stream()
+                            .flatMap(avail -> avail.stream())
+                            .collect(Collectors.toSet()));
     }
 
     @Override

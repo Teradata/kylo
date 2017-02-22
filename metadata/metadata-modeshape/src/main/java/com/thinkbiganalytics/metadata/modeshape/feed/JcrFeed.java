@@ -31,6 +31,8 @@ import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.api.feed.InitializationStatus;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
+import com.thinkbiganalytics.metadata.api.security.RoleAssignments;
+import com.thinkbiganalytics.metadata.modeshape.JcrAccessControlledSupport;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
@@ -101,14 +103,17 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
 
     public static final String USR_PREFIX = "usr:";
 
+    
+    private JcrAccessControlledSupport accessControlled;
 
     public JcrFeed(Node node) {
         super(node);
+        this.accessControlled = new JcrAccessControlledSupport(node);
     }
 
 
     public JcrFeed(Node node, JcrCategory category) {
-        super(node);
+        this(node);
         setProperty(CATEGORY, category);
     }
 
@@ -526,9 +531,17 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
 
     @Override
     public AllowedActions getAllowedActions() {
-        Node allowedNode = JcrUtil.getOrCreateNode(this.node, JcrAllowedActions.NODE_NAME, JcrAllowedActions.NODE_TYPE, true);
-        return JcrUtil.createJcrObject(allowedNode, JcrAllowedActions.class);
+        return this.accessControlled.getAllowedActions();
     }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.security.AccessControlled#getRoleAssignments()
+     */
+    @Override
+    public RoleAssignments getRoleAssignments() {
+        return this.accessControlled.getRoleAssignments();
+    }
+
 
     private InitializationStatus createInitializationStatus(Node statusNode) {
         InitializationStatus.State state = InitializationStatus.State.valueOf(JcrPropertyUtil.getString(statusNode, INIT_STATE));

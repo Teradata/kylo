@@ -3,6 +3,8 @@
  */
 package com.thinkbiganalytics.metadata.api.security;
 
+import java.util.Set;
+
 /*-
  * #%L
  * thinkbig-metadata-api
@@ -30,6 +32,8 @@ import com.thinkbiganalytics.security.action.AllowedActions;
  * the possible permission that may be applied to it and to apply those permissions.
  */
 public interface AccessControlled {
+    
+    RoleAssignments getRoleAssignments();
 
     AllowedActions getAllowedActions();
 }

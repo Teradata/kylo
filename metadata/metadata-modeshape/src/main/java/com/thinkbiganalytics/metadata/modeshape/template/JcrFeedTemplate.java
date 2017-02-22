@@ -22,11 +22,14 @@ package com.thinkbiganalytics.metadata.modeshape.template;
 
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
+import com.thinkbiganalytics.metadata.api.security.RoleAssignments;
+import com.thinkbiganalytics.metadata.modeshape.JcrAccessControlledSupport;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedManagerFeed;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
+import com.thinkbiganalytics.security.action.AllowedActions;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -56,8 +59,11 @@ public class JcrFeedTemplate extends AbstractJcrAuditableSystemEntity implements
 
     public static String IS_STREAM = "tba:isStream";
 
+    private JcrAccessControlledSupport accessControlled;
+
     public JcrFeedTemplate(Node node) {
         super(node);
+        this.accessControlled = new JcrAccessControlledSupport(node);
     }
 
     @Override
@@ -215,6 +221,16 @@ public class JcrFeedTemplate extends AbstractJcrAuditableSystemEntity implements
     @Override
     public void setStream(boolean isStream) {
         setProperty(IS_STREAM, isStream);
+    }
+
+    @Override
+    public AllowedActions getAllowedActions() {
+        return this.accessControlled.getAllowedActions();
+    }
+
+    @Override
+    public RoleAssignments getRoleAssignments() {
+        return this.accessControlled.getRoleAssignments();
     }
 
     public static class FeedTemplateId extends JcrEntity.EntityId implements FeedManagerTemplate.ID {

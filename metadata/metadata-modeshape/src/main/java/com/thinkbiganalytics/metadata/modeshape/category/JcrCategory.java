@@ -24,12 +24,13 @@ import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
+import com.thinkbiganalytics.metadata.api.security.RoleAssignments;
+import com.thinkbiganalytics.metadata.modeshape.JcrAccessControlledSupport;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.security.JcrHadoopSecurityGroup;
-import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.action.AllowedActions;
@@ -53,8 +54,11 @@ public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Cat
     public static String CATEGORY_NAME = "tba:category";
     public static String NODE_TYPE = "tba:category";
 
+    private JcrAccessControlledSupport accessControlled;
+
     public JcrCategory(Node node) {
         super(node);
+        this.accessControlled = new JcrAccessControlledSupport(node);
     }
 
     public List<? extends Feed> getFeeds() {
@@ -109,9 +113,15 @@ public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Cat
         JcrPropertyUtil.setUserProperties(node, userFields, userProperties);
     }
 
+
     @Override
     public AllowedActions getAllowedActions() {
-        return JcrUtil.getOrCreateNode(this.node, JcrAllowedActions.NODE_NAME, JcrAllowedActions.NODE_TYPE, JcrAllowedActions.class);
+        return this.accessControlled.getAllowedActions();
+    }
+
+    @Override
+    public RoleAssignments getRoleAssignments() {
+        return this.accessControlled.getRoleAssignments();
     }
 
     public List<? extends HadoopSecurityGroup> getSecurityGroups() {

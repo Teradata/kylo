@@ -21,6 +21,7 @@ package com.thinkbiganalytics.metadata.api.feedmgr.template;
  */
 
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
+import com.thinkbiganalytics.metadata.api.security.AccessControlled;
 
 import org.joda.time.DateTime;
 
@@ -29,7 +30,7 @@ import java.util.List;
 
 /**
  */
-public interface FeedManagerTemplate {
+public interface FeedManagerTemplate extends AccessControlled {
 
     List<FeedManagerFeed> getFeeds();
 

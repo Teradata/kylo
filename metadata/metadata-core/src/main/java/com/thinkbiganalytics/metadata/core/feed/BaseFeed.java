@@ -30,6 +30,7 @@ import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.api.feed.InitializationStatus;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
+import com.thinkbiganalytics.metadata.api.security.RoleAssignments;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 import com.thinkbiganalytics.security.action.AllowedActions;
@@ -308,12 +309,6 @@ public class BaseFeed<C extends Category> implements Feed<C> {
         this.userProperties = userProperties;
     }
 
-    @Override
-    public AllowedActions getAllowedActions() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.feed.Feed#getWaterMarkValue(java.lang.String)
      */
@@ -390,6 +385,21 @@ public class BaseFeed<C extends Category> implements Feed<C> {
      */
     @Override
     public List<InitializationStatus> getInitHistory() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public AllowedActions getAllowedActions() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.security.AccessControlled#getRoleAssignments()
+     */
+    @Override
+    public RoleAssignments getRoleAssignments() {
         // TODO Auto-generated method stub
         return null;
     }

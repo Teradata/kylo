@@ -24,14 +24,17 @@ package com.thinkbiganalytics.security;
  */
 
 /**
- * A principal representing membership in the general "user" group.  Generally,
- * all authenticated users will be assigned this principal when logged in.
+ * Basic principal representing a role.
  */
-public class UserGroupPrincipal extends GroupPrincipal {
+public class RolePrincipal extends BasePrincipal {
 
     private static final long serialVersionUID = 1L;
 
-    public UserGroupPrincipal() {
-        super("user");
+    public RolePrincipal() {
     }
+
+    public RolePrincipal(String name) {
+        super(name);
+    }
+
 }

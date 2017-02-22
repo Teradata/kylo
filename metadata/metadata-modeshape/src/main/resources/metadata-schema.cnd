@@ -28,15 +28,33 @@
  *          "security"
  *              "prototypes"
  *                  "services"
- *                      allowableAction*
+ *                      allowedActions
  *                  "feed"
- *                      allowableAction*
+ *                      allowedActions
  *                  "template"
- *                      allowableAction*
+ *                      allowedActions
  *                  "category"
- *                      allowableAction*
+ *                      allowedActions
  *              "services"
- *                  allowableAction*
+ *                  allowedActions
+ *
+ *              "roles"
+ *                  "services"
+ *                      "roles"
+ *                          role*
+ *                      allowedActions
+ *                  "feed"
+ *                     "roles"
+ *                          role*
+ *                      allowedActions
+ *                  "template"
+ *                     "roles"
+ *                          role*
+ *                      allowedActions
+ *                  "category"
+ *                     "roles"
+ *                          role*
+ *                      allowedActions
  */
 <jcr = 'http://www.jcp.org/jcr/1.0'>
 <nt='http://www.jcp.org/jcr/nt/1.0'>
@@ -102,14 +120,37 @@
     + template (tba:allowedActions) = tba:allowedActions autocreated mandatory
     + category (tba:allowedActions) = tba:allowedActions autocreated mandatory
 
-[tba:accessControlled] mixin
-    + tba:allowedActions (tba:allowedActions) = tba:allowedActions autocreated mandatory
-
 [tba:allowedActions] > nt:hierarchyNode
     + * (tba:allowableAction)
 
 [tba:allowableAction] > nt:hierarchyNode, mix:title
     + * (tba:allowableAction)
+
+[tba:accessControlled] mixin
+    + tba:allowedActions (tba:allowedActions) = tba:allowedActions autocreated mandatory
+    + tba:roleMemberships (tba:roleMembership) sns
+
+
+[tba:entityRolesFolder] > nt:folder
+    + services (tba:roleDefinitionsFolder) = tba:roleDefinitionsFolder autocreated mandatory
+    + feed (tba:roleDefinitionsFolder) = tba:roleDefinitionsFolder autocreated mandatory
+    + template (tba:roleDefinitionsFolder) = tba:roleDefinitionsFolder autocreated mandatory
+    + category (tba:roleDefinitionsFolder) = tba:roleDefinitionsFolder autocreated mandatory
+
+[tba:roleDefinitionsFolder] > nt:folder
+    + roles (tba:rolesFolder) = tba:rolesFolder autocreated mandatory
+    + allowedActions (tba:allowedActions) = tba:allowedActions autocreated mandatory
+
+[tba:rolesFolder] > nt:folder
+    + * (tba:role)
+
+[tba:securityRole] > mix:title, mix:lastModified
+    - tba:systemName (STRING) mandatory
+
+[tba:roleMembership]
+    - tba:role (REFERENCE)
+    - tba:groups (STRING) multiple
+    - tba:users (STRING) multiple
 
 /* -=-=-=-=-=--=-=-  Predefined types  -=-=-=-=-=-=-=-=- */
 
@@ -153,7 +194,7 @@
 [tba:extensibleEntity] > tba:entity
     - * (UNDEFINED) COPY
 
-[tba:feedTemplate] > tba:entity, mix:title, tba:propertied
+[tba:feedTemplate] > tba:entity, mix:title, tba:propertied, tba:accessControlled
     - tba:defineTable (BOOLEAN) = 'false'
     - tba:dataTransformation (BOOLEAN) = 'false'
     - tba:allowPreconditions (BOOLEAN) = 'false'
@@ -173,24 +214,32 @@
 	- tba:initialized (BOOLEAN) = 'false'
 	+ * (tba:feed) sns
 
-[tba:feed] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied, tba:accessControlled, mix:versionable
-	+ tba:sources (tba:feedSource) sns
-	+ tba:destinations (tba:feedDestination) sns
-    + tba:precondition (tba:feedPrecondition)
-    + tba:highWaterMarks (tba:waterMarks)
-	+ tba:initialization (tba:initialization)
-	- tba:systemName (STRING) mandatory
-	- tba:state (STRING) = 'ENABLED'
-	- tba:category (REFERENCE) mandatory
-	- tba:feedTemplate (REFERENCE)
-	- tba:json (STRING)
-	- tba:schedulingPeriod (STRING)
-	- tba:schedulingStrategy (STRING)
-    - tba:dependentFeeds (REFERENCE) multiple
-    - tba:usedByFeeds (REFERENCE) multiple
-    - tba:slas (WEAKREFERENCE) multiple
-    - tba:securityGroups (WEAKREFERENCE) multiple
+[tba:feed] > tba:extensibleEntity, mix:referenceable, tba:accessControlled
+    + tba:summary (tba:feedSummary)
+    + tba:data (tba:feedData)
 
+[tba:feedSummary] > mix:title   //, mix:versionable
+    - tba:systemName (STRING) mandatory
+    - tba:category (REFERENCE) mandatory
+    + tba:details (tba:feedDetails)
+
+[tba:feedDetails] > mix:title, tba:propertied
+    - tba:feedTemplate (REFERENCE)
+    - tba:slas (WEAKREFERENCE) multiple
+    - tba:dependentFeeds (WEAKREFERENCE) multiple
+    - tba:usedByFeeds (WEAKREFERENCE) multiple
+    + tba:sources (tba:feedSource) sns
+    + tba:destinations (tba:feedDestination) sns
+    + tba:precondition (tba:feedPrecondition)
+
+[tba:feedData] > tba:propertied
+    + tba:highWaterMarks (tba:waterMarks)
+    + tba:initialization (tba:initialization)
+    - tba:state (STRING) = 'ENABLED'
+    - tba:json (STRING)
+    - tba:schedulingPeriod (STRING)
+    - tba:schedulingStrategy (STRING)
+    - tba:securityGroups (WEAKREFERENCE) multiple
 
 [tba:feedPrecondition] > nt:hierarchyNode, mix:lastModified
     - tba:slaRef (REFERENCE)

@@ -100,6 +100,15 @@ public interface AllowedActions {
     boolean enableOnly(Principal principal, Set<Action> actions);
 
     /**
+     * Updates this object to match the given AllowedActions for the principal.
+     *
+     * @param principal the principal to which the action(s) are granted
+     * @param actions   the set of actions to grant
+     * @return true if actions had not already been granted to that principal, otherwise false.
+     */
+    boolean enableOnly(Principal principal, AllowedActions actions);
+
+    /**
      * Updates this object to disable the given action(s) for the specified principal.
      *
      * @param principal the principal to which the action(s) are granted
@@ -117,4 +126,13 @@ public interface AllowedActions {
      * @return true if actions at least 1 action has been revoked for that principal, otherwise false.
      */
     boolean disable(Principal principal, Set<Action> actions);
+
+    /**
+     * Updates this object disable all actions for the principal contained in the given AllowedActions.
+     * 
+     * @param principal the principal to which the action(s) are granted
+     * @param actions   the set of actions to revoke
+     * @return true if actions at least 1 action has been revoked for that principal, otherwise false.
+     */
+    boolean disable(Principal principal, AllowedActions actions);
 }

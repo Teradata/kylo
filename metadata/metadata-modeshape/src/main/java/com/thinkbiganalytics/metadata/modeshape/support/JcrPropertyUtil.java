@@ -793,7 +793,7 @@ public class JcrPropertyUtil {
      */
     public static boolean isReferencing(Node node, String refProp, Node targetNode) {
         try {
-            return isReferencing(node, refProp, targetNode.getIdentifier());
+            return node.getProperty(refProp).getNode().isSame(targetNode);
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to check reference property against node: " + node, e);
         }
