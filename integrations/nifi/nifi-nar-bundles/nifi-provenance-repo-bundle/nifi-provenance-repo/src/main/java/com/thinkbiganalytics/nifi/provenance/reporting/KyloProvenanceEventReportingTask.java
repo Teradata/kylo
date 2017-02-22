@@ -622,7 +622,9 @@ public class KyloProvenanceEventReportingTask extends AbstractReportingTask {
         try {
             avalable = getKyloNiFiFlowProvider().isNiFiFlowDataAvailable();
         } catch (Exception e) {
-            getLogger().error("Error checking to see if Kylo is available. Please ensure Kylo is up and running. ");
+            String msg = "Error checking to see if Kylo is available. Please ensure Kylo is up and running. ";
+            getLogger().error(msg);
+            getLogger().debug(msg, e);
         }
         return avalable;
     }
