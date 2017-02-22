@@ -32,6 +32,8 @@ import java.security.Principal;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.annotation.Nonnull;
 import javax.security.auth.Subject;
@@ -76,7 +78,9 @@ public class KyloRestLoginModuleTest {
         // Test login
         final Subject subject = new Subject();
 
-        module.initialize(subject, callbackHandler, Collections.emptyMap(), Collections.singletonMap(KyloRestLoginModule.LOGIN_URL, "http://localhost:8400/proxy"));
+        Map<String, Object> options = new HashMap<>();
+        options.put(KyloRestLoginModule.REST_CLIENT_CONFIG, new LoginJerseyClientConfig());
+        module.initialize(subject, callbackHandler, Collections.emptyMap(), options);
         Assert.assertTrue(module.login());
         Assert.assertTrue(module.commit());
 

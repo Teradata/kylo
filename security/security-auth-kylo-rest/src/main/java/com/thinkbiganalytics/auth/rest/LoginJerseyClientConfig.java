@@ -22,8 +22,6 @@ package com.thinkbiganalytics.auth.rest;
 
 import com.thinkbiganalytics.rest.JerseyClientConfig;
 
-import java.net.URI;
-
 import javax.annotation.Nonnull;
 
 /**
@@ -37,32 +35,37 @@ public class LoginJerseyClientConfig extends JerseyClientConfig {
     private String path;
 
     /**
+     * Default constructor, does nothing
+     */
+    LoginJerseyClientConfig() {
+    }
+
+    /**
      * Constructs a {@code LoginJerseyClientConfig} by copying another.
      *
      * @param other the configuration to copy
      */
-    public LoginJerseyClientConfig(@Nonnull final LoginJerseyClientConfig other) {
-        path = other.path;
-
+    LoginJerseyClientConfig(@Nonnull final LoginJerseyClientConfig other) {
+        setHttps(other.isHttps());
         setHost(other.getHost());
         setPort(other.getPort());
+        setPath(other.path);
+        setKeystorePath(other.getKeystorePath());
+        setKeystorePassword(other.getKeystorePassword());
+        setKeystoreType(other.getKeystoreType());
+        setKeystoreOnClasspath(other.isKeystoreOnClasspath());
     }
 
     /**
-     * Constructs a {@code LoginJerseyClientConfig} from the specified URI.
-     *
-     * @param uri the URI to the REST API
+     * Sets base path
      */
-    public LoginJerseyClientConfig(@Nonnull final URI uri) {
-        path = uri.getPath();
-
-        setHost(uri.getHost());
-        setPort(uri.getPort());
+    public void setPath(String path) {
+        this.path = path;
     }
 
     @Override
     public String getUrl() {
         final String url = super.getUrl();
-        return (path != null) ? url + path : url;
+        return path != null ? url + path : url;
     }
 }

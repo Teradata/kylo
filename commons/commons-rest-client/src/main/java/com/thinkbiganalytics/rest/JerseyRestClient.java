@@ -336,6 +336,8 @@ public class JerseyRestClient {
         } catch (Exception e) {
             if (e instanceof NotAcceptableException) {
                 obj = handleNotAcceptableGetRequestJsonException(target, clazz);
+            } else {
+                log.error("Failed to process request " + path, e);
             }
 
         }
@@ -365,8 +367,9 @@ public class JerseyRestClient {
         } catch (Exception e) {
             if (e instanceof NotAcceptableException) {
                 obj = handleNotAcceptableGetRequestJsonException(target, clazz);
+            } else {
+                log.error("Failed to process request " + path, e);
             }
-
         }
         return obj;
     }
