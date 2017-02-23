@@ -20,6 +20,7 @@ package com.thinkbiganalytics.spark.datavalidator;
  * #L%
  */
 
+import com.holdenkarau.spark.testing.SharedJavaSparkContext;
 import com.thinkbiganalytics.policy.FieldPoliciesJsonTransformer;
 import com.thinkbiganalytics.policy.FieldPolicy;
 import com.thinkbiganalytics.policy.standardization.SimpleRegexReplacer;
@@ -30,22 +31,28 @@ import com.thinkbiganalytics.policy.validation.ValidationPolicy;
 import com.thinkbiganalytics.policy.validation.ValidationResult;
 import com.thinkbiganalytics.spark.validation.HCatDataType;
 
+import org.apache.spark.api.java.JavaRDD;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.Serializable;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-public class ValidatorTest {
+public class ValidatorTest extends SharedJavaSparkContext implements Serializable {
+
+    private static final long serialVersionUID = -5681683598336701496L;
 
     private Validator validator;
 
@@ -137,5 +144,37 @@ public class ValidatorTest {
         Map<String, FieldPolicy> policyMap = new FieldPoliciesJsonTransformer(fieldPolicyJson).buildPolicies();
         assertEquals(policyMap.size(), 10);
 
+    }
+
+    @Test
+    public void testCleansedRowResultsValidationCounts() {
+
+        // Create and run the test
+        CleansedRowResult cleansedRowResult1 = new CleansedRowResult();
+        cleansedRowResult1.rowIsValid = true;
+        boolean[] columnsValid1 = {true, true, true, true, true};
+        cleansedRowResult1.columnsValid = columnsValid1;
+
+        CleansedRowResult cleansedRowResult2 = new CleansedRowResult();
+        cleansedRowResult2.rowIsValid = false;
+        boolean[] columnsValid2 = {true, false, true, true, false};
+        cleansedRowResult2.columnsValid = columnsValid2;
+
+        CleansedRowResult cleansedRowResult3 = new CleansedRowResult();
+        cleansedRowResult3.rowIsValid = false;
+        boolean[] columnsValid3 = {false, false, true, true, false};
+        cleansedRowResult3.columnsValid = columnsValid3;
+
+        List<CleansedRowResult> cleansedRowResultsList = Arrays.asList(cleansedRowResult1, cleansedRowResult1, cleansedRowResult1,
+                                                                       cleansedRowResult1, cleansedRowResult1, cleansedRowResult1,
+                                                                       cleansedRowResult1, cleansedRowResult2, cleansedRowResult3);
+        JavaRDD<CleansedRowResult> inputRDD = jsc().parallelize(cleansedRowResultsList, 4);
+        long[] output = validator.cleansedRowResultsValidationCounts(inputRDD, 5);
+
+        // Create the expected output
+        long[] expectedOutput = {1l, 2l, 0l, 0l, 2l, 7l, 2l};
+
+        // Run assertions on output and expected output
+        assertArrayEquals(expectedOutput, output);
     }
 }

@@ -50,7 +50,7 @@ public class ModeShapeAvailability implements ApplicationListener<ContextRefresh
 
     private Timer modeshapeAvailableTimer;
 
-    private AtomicBoolean applicationStarted = new AtomicBoolean(true);
+    private AtomicBoolean applicationStarted = new AtomicBoolean(false);
 
     private List<ModeShapeAvailabilityListener> listeners = new ArrayList<>();
 
@@ -74,13 +74,13 @@ public class ModeShapeAvailability implements ApplicationListener<ContextRefresh
 
 
     public boolean isRunning() {
-        return (ModeShapeEngine.State.RUNNING.equals(modeShapeEngine.getState()) && applicationStarted.get());
+        return (ModeShapeEngine.State.RUNNING.equals(modeShapeEngine.getState()) && applicationStarted.get() && configurator != null && configurator.isConfigured() );
     }
 
     class CheckModeShapeAvailability extends TimerTask {
 
         private final ServiceSecurityContextRunnable secRunnable = new ServiceSecurityContextRunnable(() -> {
-            if (ModeShapeEngine.State.RUNNING.equals(modeShapeEngine.getState()) && configurator.isConfigured() && applicationStarted.get()) {
+            if (isRunning()) {
                 modeshapeAvailableTimer.cancel();
                 List<ModeShapeAvailabilityListener> currentListeners = Collections.unmodifiableList(listeners);
                 for (ModeShapeAvailabilityListener listener : currentListeners) {

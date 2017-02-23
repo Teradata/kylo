@@ -49,19 +49,21 @@ import javax.ws.rs.WebApplicationException;
  */
 public class KyloRestLoginModule extends AbstractLoginModule implements LoginModule {
 
-    /**
-     * Option for the URL of the REST API endpoint
-     */
-    public static final String LOGIN_URL = "loginUrl";
-    /**
-     * Option for the URL of the REST API endpoint
-     */
-    public static final String LOGIN_USER = "loginUser";
-    /**
-     * Option for the URL of the REST API endpoint
-     */
-    public static final String LOGIN_PASSWORD = "loginPassword";
     private static final Logger log = LoggerFactory.getLogger(KyloRestLoginModule.class);
+    /**
+     * Option for the URL of the REST API endpoint
+     */
+    static final String LOGIN_USER = "loginUser";
+    /**
+     * Option for the URL of the REST API endpoint
+     */
+    static final String LOGIN_PASSWORD = "loginPassword";
+
+    /**
+     * Option for REST client configuration
+     */
+    static final String REST_CLIENT_CONFIG = "restClientConfig";
+
     /**
      * REST API client configuration
      */
@@ -82,8 +84,7 @@ public class KyloRestLoginModule extends AbstractLoginModule implements LoginMod
         super.initialize(subject, callbackHandler, sharedState, options);
 
         try {
-            final URI uri = URI.create(options.get(LOGIN_URL).toString());
-            config = new LoginJerseyClientConfig(uri);
+            config = (LoginJerseyClientConfig) options.get(REST_CLIENT_CONFIG);
             loginUser = (String) getOption(LOGIN_USER).orElse(null);
             loginPassword = loginUser == null ? null : (String) getOption(LOGIN_PASSWORD)
                 .orElseThrow(() -> new IllegalArgumentException("A REST login password is required if a login username was provided"));
@@ -145,7 +146,7 @@ public class KyloRestLoginModule extends AbstractLoginModule implements LoginMod
         return true;
     }
 
-    protected UserPrincipal retrieveUser(String user, final LoginJerseyClientConfig userConfig) {
+    private UserPrincipal retrieveUser(String user, final LoginJerseyClientConfig userConfig) {
         String endpoint = loginUser == null ? "/v1/about/me" : "/v1/security/users/" + user;
         return getClient(userConfig).get(endpoint, null, UserPrincipal.class);
     }
