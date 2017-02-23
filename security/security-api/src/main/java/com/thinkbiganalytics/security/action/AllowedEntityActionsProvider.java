@@ -26,35 +26,38 @@ package com.thinkbiganalytics.security.action;
 import java.util.Optional;
 
 /**
- * Provides a means to lookup the allowed actions of a particular module.  Lookup can be for all
+ * Provides a means to lookup the allowed actions of a particular entity.  Lookup can be for all
  * existing actions or for only those that have been granted to the current user; i.e. the
  * principals of the current security context.
- * <p> This
+ * <p> 
+ * Note getAvailableActions(entityName) usually returns the default action permission for the
+ * specified type of entity.  In cases of a singleton entity, such as "services", this returns
+ * the actual permissions used for access control check of those actions.  
  */
-public interface AllowedModuleActionsProvider {
+public interface AllowedEntityActionsProvider {
 
     /**
-     * Retrieves all of the available actions organized under the given module name.
+     * Retrieves all of the available actions organized under the given entity type name.
      *
-     * @param moduleName the name of the module
+     * @param entityName the name of the entity type
      * @return an optional of allowed actions if they exist for the given group name
      */
-    Optional<AllowedActions> getAvailableActions(String moduleName);
+    Optional<AllowedActions> getAvailableActions(String entityName);
 
     /**
-     * Retrieves all of the actions allowed by the current user organized under the given module name.
+     * Retrieves all of the actions allowed by the current user organized under the given entity type name.
      *
-     * @param moduleName the name of the module
+     * @param entityName the name of the entity type
      * @return an optional of allowed actions if they exist for the given group name
      */
-    Optional<AllowedActions> getAllowedActions(String moduleName);
+    Optional<AllowedActions> getAllowedActions(String entityName);
 
     /**
      * This is a convenience method to check whether the current user has permission to perform
-     * the specified action for the module name.  It is equivalent to retrieving the allowed
-     * actions for the module and then performing a permission check on the given action.
+     * the specified action for the entity type name.  It is equivalent to retrieving the allowed
+     * actions for the entity type and then performing a permission check on the given action.
      *
-     * @param moduleName the name of the module
+     * @param entityName the name of the entity type
      */
-    void checkPermission(String moduleName, Action action);
+    void checkPermission(String entityName, Action action);
 }

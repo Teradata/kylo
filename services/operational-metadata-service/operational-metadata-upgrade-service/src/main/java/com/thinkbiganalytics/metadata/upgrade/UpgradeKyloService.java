@@ -64,10 +64,10 @@ import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedManagerFeed;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplate;
-import com.thinkbiganalytics.security.action.AllowedModuleActionsProvider;
+import com.thinkbiganalytics.security.action.AllowedEntityActionsProvider;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
-@Order(PostMetadataConfigAction.DEFAULT_ORDER + 100)
+@Order(PostMetadataConfigAction.LATE_ORDER + 100)
 public class UpgradeKyloService implements PostMetadataConfigAction {
 
     private static final Logger log = LoggerFactory.getLogger(UpgradeKyloService.class);
@@ -90,7 +90,7 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
     @Inject
     private PasswordEncoder passwordEncoder;
     @Inject
-    private AllowedModuleActionsProvider actionsProvider;
+    private AllowedEntityActionsProvider actionsProvider;
 
     
     public void run() {

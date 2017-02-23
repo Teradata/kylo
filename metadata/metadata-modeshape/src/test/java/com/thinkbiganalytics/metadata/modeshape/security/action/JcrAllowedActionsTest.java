@@ -30,7 +30,7 @@ import com.thinkbiganalytics.metadata.modeshape.TestCredentials;
 import com.thinkbiganalytics.metadata.modeshape.TestUserPrincipal;
 import com.thinkbiganalytics.metadata.modeshape.security.AdminCredentials;
 import com.thinkbiganalytics.security.action.AllowedActions;
-import com.thinkbiganalytics.security.action.AllowedModuleActionsProvider;
+import com.thinkbiganalytics.security.action.AllowedEntityActionsProvider;
 
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
@@ -54,7 +54,7 @@ public class JcrAllowedActionsTest extends AbstractTestNGSpringContextTests {
     private JcrMetadataAccess metadata;
 
     @Inject
-    private AllowedModuleActionsProvider provider;
+    private AllowedEntityActionsProvider provider;
 
 //    @BeforeClass
 //    public void print() {

@@ -55,6 +55,8 @@ import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
 import com.thinkbiganalytics.metadata.modeshape.extension.ExtensionsConstants;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedEntityActionsProvider;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
@@ -120,6 +122,9 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
     @Inject
     private AccessController accessController;
+    
+    @Inject
+    private JcrAllowedEntityActionsProvider actionsProvider;
 
     @Inject
     private MetadataEventService metadataEventService;
@@ -296,17 +301,17 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             throw new CategoryNotFoundException("Unable to find Category for " + categorySystemName, null);
         }
 
-        boolean newFeed = !JcrUtil.hasNode(category.getNode(), feedSystemName);
+        boolean newFeed = hasEntityNode(categoryPath, feedSystemName);
         Node feedNode = findOrCreateEntityNode(categoryPath, feedSystemName, getJcrEntityClass());
         boolean versionable = JcrUtil.isVersionable(feedNode);
-
-        JcrFeed.addSecurity(feedNode);
 
         JcrFeed<?> feed = new JcrFeed(feedNode, category);
 
         feed.setSystemName(feedSystemName);
 
         if (newFeed) {
+            this.actionsProvider.getAllowedActions("feed")
+                .ifPresent(actions -> feed.getAccessControlSupport().initializeActions((JcrAllowedActions) actions));
             jcrFeedUtil.addPostFeedChangeAction(feed, ChangeType.CREATE);
         }
 

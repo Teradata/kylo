@@ -6,12 +6,17 @@ package com.thinkbiganalytics.metadata.modeshape;
 import java.nio.file.attribute.UserPrincipal;
 
 import javax.jcr.Node;
+import javax.jcr.security.Privilege;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.thinkbiganalytics.metadata.api.security.AccessControlled;
 import com.thinkbiganalytics.metadata.api.security.RoleAssignments;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.security.UsernamePrincipal;
 import com.thinkbiganalytics.security.action.AllowedActions;
 
 /**
@@ -47,7 +52,9 @@ public class JcrAccessControlledSupport extends JcrObject implements AccessContr
     }
 
     
-    public void initializeAction(JcrAllowedActions prototype, UserPrincipal user) {
-        
+    public void initializeActions(JcrAllowedActions prototype) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        JcrAllowedActions allowed = (JcrAllowedActions) getAllowedActions();
+        prototype.copy(allowed.getNode(), new UsernamePrincipal(auth.getName()), Privilege.JCR_ALL);
     }
 }

@@ -3,8 +3,6 @@
  */
 package com.thinkbiganalytics.metadata.api.security;
 
-import java.util.Set;
-
 /*-
  * #%L
  * thinkbig-metadata-api

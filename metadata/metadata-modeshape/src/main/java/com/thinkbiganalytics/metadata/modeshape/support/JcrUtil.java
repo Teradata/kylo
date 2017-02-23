@@ -27,6 +27,7 @@ import com.thinkbiganalytics.classnameregistry.ClassNameChangeRegistry;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -145,6 +146,14 @@ public class JcrUtil {
             return parentNode.hasNode(name);
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to check for the existence of the node named " + name, e);
+        }
+    }
+
+    public static Node getNode(Session session, String path) {
+        try {
+            return session.getRootNode().getNode(path);
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to retrieve the Node at the path: " + path, e);
         }
     }
 
@@ -593,6 +602,34 @@ public class JcrUtil {
             throw new MetadataRepositoryException("No node type exits named: " + typeName, e);
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve node type named: " + typeName, e);
+        }
+    }
+
+
+    public static Node copy(Session session, String srcPath, String destPath) {
+        try {
+            session.getWorkspace().copy(srcPath, destPath);
+            return session.getNode(destPath);
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to copy source path: " + srcPath + " to destination path: " + destPath, e);
+        }
+    }
+
+    public static Node copy(Node srcNode, Node destNode) {
+        try {
+            Session sess = srcNode.getSession();
+            return copy(sess, srcNode.getPath(), destNode.getPath());
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to copy source node: " + srcNode + " to destination node: " + destNode, e);
+        }
+    }
+
+    public static Node copy(Node srcNode, String destPath) {
+        try {
+            Session sess = srcNode.getSession();
+            return copy(sess, srcNode.getPath(), destPath);
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to copy source node: " + srcNode + " to destination path: " + destPath, e);
         }
     }
 

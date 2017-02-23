@@ -142,7 +142,7 @@
     + allowedActions (tba:allowedActions) = tba:allowedActions autocreated mandatory
 
 [tba:rolesFolder] > nt:folder
-    + * (tba:role)
+    + * (tba:securityRole)
 
 [tba:securityRole] > mix:title, mix:lastModified
     - tba:systemName (STRING) mandatory

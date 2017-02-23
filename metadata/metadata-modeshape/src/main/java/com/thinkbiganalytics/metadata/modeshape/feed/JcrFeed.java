@@ -38,7 +38,6 @@ import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.security.JcrHadoopSecurityGroup;
-import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
@@ -74,7 +73,6 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
 
     public static final String PRECONDITION_TYPE = "tba:feedPrecondition";
 
-    public static final String ALLOWED_ACTIONS = "tba:allowedActions";
     public static final String PRECONDITION = "tba:precondition";
     public static final String DEPENDENTS = "tba:dependentFeeds";
     public static final String USED_BY_FEEDS = "tba:usedByFeeds";
@@ -104,29 +102,19 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
     public static final String USR_PREFIX = "usr:";
 
     
-    private JcrAccessControlledSupport accessControlled;
+    private JcrAccessControlledSupport accessControlSupport;
 
     public JcrFeed(Node node) {
         super(node);
-        this.accessControlled = new JcrAccessControlledSupport(node);
+        this.accessControlSupport = new JcrAccessControlledSupport(node);
     }
-
 
     public JcrFeed(Node node, JcrCategory category) {
         this(node);
         setProperty(CATEGORY, category);
     }
 
-    public static void addSecurity(Node feedNode) {
-        try {
-            Node allowedNode = feedNode.getNode(ALLOWED_ACTIONS);
-
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Failed to setup security", e);
-        }
-
-    }
-
+    
     @Override
     public FeedId getId() {
         try {
@@ -531,17 +519,17 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
 
     @Override
     public AllowedActions getAllowedActions() {
-        return this.accessControlled.getAllowedActions();
+        return this.accessControlSupport.getAllowedActions();
     }
 
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.security.AccessControlled#getRoleAssignments()
-     */
     @Override
     public RoleAssignments getRoleAssignments() {
-        return this.accessControlled.getRoleAssignments();
+        return this.accessControlSupport.getRoleAssignments();
     }
 
+    public JcrAccessControlledSupport getAccessControlSupport() {
+        return accessControlSupport;
+    }
 
     private InitializationStatus createInitializationStatus(Node statusNode) {
         InitializationStatus.State state = InitializationStatus.State.valueOf(JcrPropertyUtil.getString(statusNode, INIT_STATE));

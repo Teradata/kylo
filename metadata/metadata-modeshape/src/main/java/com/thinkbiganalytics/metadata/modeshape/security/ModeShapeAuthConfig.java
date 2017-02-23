@@ -3,6 +3,23 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.security;
 
+import java.security.Principal;
+
+import javax.inject.Inject;
+import javax.jcr.Node;
+import javax.jcr.Session;
+import javax.jcr.security.Privilege;
+
+import org.modeshape.jcr.security.SimplePrincipal;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
+import org.springframework.core.annotation.Order;
+
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+
 /*-
  * #%L
  * thinkbig-metadata-modeshape
@@ -25,19 +42,20 @@ package com.thinkbiganalytics.metadata.modeshape.security;
 
 import com.thinkbiganalytics.metadata.modeshape.common.SecurityPaths;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrActionsGroupBuilder;
-import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActionsGroupProvider;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedEntityActionsProvider;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.action.config.ActionsModuleBuilder;
-
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Scope;
 
 /**
  * Defines ModeShape-managed implementations of security infrastructure components.
  */
 @Configuration
 public class ModeShapeAuthConfig {
+    
+    @Inject
+    private MetadataAccess metadata;
 
     // TODO: Perhaps move this to somewhere else more appropriate?
     @Bean
@@ -46,8 +64,8 @@ public class ModeShapeAuthConfig {
     }
 
     @Bean
-    public JcrAllowedActionsGroupProvider allowedModuleActionsProvider() {
-        return new JcrAllowedActionsGroupProvider();
+    public JcrAllowedEntityActionsProvider allowedModuleActionsProvider() {
+        return new JcrAllowedEntityActionsProvider();
     }
 
     @Bean(name = "prototypesActionGroupsBuilder")
@@ -56,4 +74,32 @@ public class ModeShapeAuthConfig {
         return new JcrActionsGroupBuilder(SecurityPaths.PROTOTYPES.toString());
     }
 
+    @Bean
+    @Order(PostMetadataConfigAction.LATE_ORDER - 10)
+    public PostMetadataConfigAction servicesAllowedActionsSetup() {
+        // This action copies the prototype services actions to the single instance set of actions for all services access control. 
+        return () -> metadata.commit(() -> { 
+            Node securityNode = JcrUtil.getNode(JcrMetadataAccess.getActiveSession(), SecurityPaths.SECURITY.toString());
+            Node svcAllowedNode = JcrUtil.getOrCreateNode(securityNode, "services", JcrAllowedActions.NODE_TYPE);
+
+            allowedModuleActionsProvider().createEntityAllowedActions("services", svcAllowedNode);
+        }, MetadataAccess.SERVICE);
+    }
+
+//    @Order(PostMetadataConfigAction.LATE_ORDER)
+//    public static class SetupServicesAction implements PostMetadataConfigAction {
+//
+//        @Inject
+//        private MetadataAccess metadata;
+//
+//        @Override
+//        public void run() {
+//            metadata.commit(() -> { 
+//                Node securityNode = JcrUtil.getNode(JcrMetadataAccess.getActiveSession(), SecurityPaths.SECURITY.toString());
+//                Node svcAllowedNode = JcrUtil.getOrCreateNode(securityNode, "services", JcrAllowedActions.NODE_TYPE);
+//
+//                allowedModuleActionsProvider().createEntityAllowedActions("services", svcAllowedNode);
+//            }, MetadataAccess.SERVICE);
+//        }
+//    }
 }

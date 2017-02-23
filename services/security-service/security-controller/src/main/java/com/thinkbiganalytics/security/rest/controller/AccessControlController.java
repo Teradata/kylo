@@ -24,7 +24,7 @@ import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.action.Action;
-import com.thinkbiganalytics.security.action.AllowedModuleActionsProvider;
+import com.thinkbiganalytics.security.action.AllowedEntityActionsProvider;
 import com.thinkbiganalytics.security.rest.model.ActionGroup;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange.ChangeType;
@@ -72,7 +72,7 @@ public class AccessControlController {
     private MetadataAccess metadata;
 
     @Inject
-    private AllowedModuleActionsProvider actionsProvider;
+    private AllowedEntityActionsProvider actionsProvider;
 
     @Inject
     @Named("actionsModelTransform")

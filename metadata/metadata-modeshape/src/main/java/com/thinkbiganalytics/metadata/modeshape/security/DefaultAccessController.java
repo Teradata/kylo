@@ -26,7 +26,7 @@ package com.thinkbiganalytics.metadata.modeshape.security;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.action.Action;
-import com.thinkbiganalytics.security.action.AllowedModuleActionsProvider;
+import com.thinkbiganalytics.security.action.AllowedEntityActionsProvider;
 
 import java.security.AccessControlException;
 import java.util.Arrays;
@@ -45,7 +45,7 @@ public class DefaultAccessController implements AccessController {
     private MetadataAccess metadata;
 
     @Inject
-    private AllowedModuleActionsProvider actionsProvider;
+    private AllowedEntityActionsProvider actionsProvider;
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.security.AccessController#checkPermission(java.lang.String, com.thinkbiganalytics.security.action.Action, com.thinkbiganalytics.security.action.Action[])

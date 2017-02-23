@@ -27,6 +27,7 @@ import com.thinkbiganalytics.metadata.modeshape.common.JcrPropertyConstants;
 import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.security.UsernamePrincipal;
 import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.security.action.AllowableAction;
 import com.thinkbiganalytics.security.action.AllowedActions;
@@ -175,10 +176,10 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
             }
         }
     }
-
-    public JcrAllowedActions copy(Node allowedNode, JcrAllowedActions src, Principal principal, String... privilegeNames) {
+    
+    public JcrAllowedActions copy(Node allowedNode, Principal principal, String... privilegeNames) {
         try {
-            for (Node actionNode : JcrUtil.getNodesOfType(src.getNode(), JcrAllowableAction.NODE_TYPE)) {
+            for (Node actionNode : JcrUtil.getNodesOfType(getNode(), JcrAllowableAction.NODE_TYPE)) {
                 copyAction(actionNode, allowedNode, principal, privilegeNames);
             }
 
@@ -220,7 +221,7 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
                     return JcrAccessControlUtil.removeRecursivePermissions(node, JcrAllowableAction.NODE_TYPE, principal, Privilege.JCR_READ);
                 }
             })
-            .orElseThrow(() -> new AccessControlException("Not authorized to " + (add ? "endable" : "disable") + " the action: " + action));
+            .orElseThrow(() -> new AccessControlException("Not authorized to " + (add ? "enable" : "disable") + " the action: " + action));
     }
 
     private Optional<Node> findActionNode(Action action) {

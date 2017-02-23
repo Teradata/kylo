@@ -6,8 +6,6 @@ package com.thinkbiganalytics.metadata.modeshape;
 import java.security.Principal;
 import java.util.Collections;
 import java.util.Set;
-import java.util.Spliterator;
-import java.util.Spliterators;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -16,11 +14,9 @@ import javax.jcr.Node;
 
 import com.thinkbiganalytics.metadata.api.security.RoleAssignments;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
-import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.security.role.JcrSecurityRole;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
-import com.thinkbiganalytics.metadata.modeshape.user.JcrUserGroup;
 import com.thinkbiganalytics.security.GroupPrincipal;
 import com.thinkbiganalytics.security.UsernamePrincipal;
 import com.thinkbiganalytics.security.role.SecurityRole;
@@ -30,7 +26,6 @@ import com.thinkbiganalytics.security.role.SecurityRole;
  */
 public class JcrRoleAssignments extends JcrObject implements RoleAssignments {
 
-    public static final String NODE_NAME = "tba:allowedActions";
     public static final String MEMBERSHIPS = "tba:roleMemberships";
     public static final String MEMBERSHIP_TYPE = "tba:roleMembership";
     public static final String ROLE = "tba:role";
