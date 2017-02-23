@@ -268,7 +268,7 @@ echo "    - Install kylo-spark-shell application"
 
 cat << EOF > $rpmInstallDir/kylo-services/bin/run-kylo-spark-shell.sh
 #!/bin/bash
-SPARK_PROFILE="v"\$(spark-submit --version 2>&1 | grep -o "version [0-9]" | grep -o "[0-9]")
+SPARK_PROFILE="v"\$(spark-submit --version 2>&1 | grep -o "version [0-9]" | grep -o "[0-9]" | head -1)
 spark-submit --conf spark.driver.userClassPathFirst=true --class com.thinkbiganalytics.spark.SparkShellApp --driver-class-path /opt/kylo/kylo-services/conf --driver-java-options -Dlog4j.configuration=log4j-spark.properties $rpmInstallDir/kylo-services/lib/app/kylo-spark-shell-client-\${SPARK_PROFILE}-*.jar --pgrep-marker=$pgrepMarkerKyloSparkShell
 EOF
 chmod +x $rpmInstallDir/kylo-services/bin/run-kylo-spark-shell.sh
