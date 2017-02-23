@@ -292,23 +292,23 @@ public class NifiFlowProcessor implements Serializable {
      */
     public void print() {
 
-        print(0);
+        print(0, null);
     }
 
     /**
      * prints the flow id for the processor and its destinations
      */
-    public void print(Integer level) {
+    public void print(Integer level, Set<String> printed) {
 
         log.info(flowId + ", " + level + ". " + getName());
         System.out.println(level + ". " + getName());
-        Set<String> printed = new HashSet<>();
+        printed = printed == null ? new HashSet<>() : printed;
         printed.add(this.getId());
         Integer nextLevel = level + 1;
 
         for (NifiFlowProcessor child : getDestinations()) {
             if (!child.containsDestination(this) && !child.containsDestination(child) && !child.equals(this) && !printed.contains(child.getId())) {
-                child.print(nextLevel);
+                child.print(nextLevel, printed);
                 printed.add(child.getId());
             }
         }
@@ -342,7 +342,7 @@ public class NifiFlowProcessor implements Serializable {
         printed.add(this.getId());
 
         for (NifiFlowProcessor child : getSortedDestinations()) {
-            if (!child.containsDestination(this) && !child.containsDestination(child) && !child.equals(this) && !printed.contains(child.getId())) {
+            if (StringUtils.isBlank(child.getFlowId()) && !child.containsDestination(this) && !child.containsDestination(child) && !child.equals(this) && !printed.contains(child.getId())) {
                 flowId = child.assignFlowIds(flowId);
                 printed.add(child.getId());
             }
@@ -356,12 +356,23 @@ public class NifiFlowProcessor implements Serializable {
      * @return the number of distinct destination processor nodes
      */
     public Integer countNodes() {
+        return countNodes(null);
+    }
+
+    /**
+     * Count the number of distinct destination processor nodes
+     *
+     * @param printed a set containing those nodes that were already printed
+     * @return the number of distinct destination processor nodes
+     */
+    public Integer countNodes(Set<String> printed) {
         Integer count = getDestinations().size();
-        Set<String> printed = new HashSet<>();
+        printed = printed == null ? new HashSet<>() : printed;
         printed.add(this.getId());
         for (NifiFlowProcessor child : getDestinations()) {
-            if (!child.containsDestination(this) && !child.containsDestination(child) && !child.equals(this) && !printed.contains(child.getId())) {
-                count += child.countNodes();
+            if (!child.containsDestination(this) && !child.containsDestination(child) && !child.equals(this) && !printed
+                .contains(child.getId())) {
+                count += child.countNodes(printed);
                 printed.add(child.getId());
             }
         }
