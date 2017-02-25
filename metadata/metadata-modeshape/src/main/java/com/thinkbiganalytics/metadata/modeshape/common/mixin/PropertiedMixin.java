@@ -1,7 +1,17 @@
 /**
  *
  */
-package com.thinkbiganalytics.metadata.modeshape.common;
+package com.thinkbiganalytics.metadata.modeshape.common.mixin;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.jcr.Node;
+import javax.jcr.Property;
+import javax.jcr.RepositoryException;
+import javax.jcr.nodetype.ConstraintViolationException;
+
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /*-
  * #%L
@@ -24,40 +34,24 @@ package com.thinkbiganalytics.metadata.modeshape.common;
  */
 
 import com.thinkbiganalytics.metadata.api.Propertied;
-import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrProperties;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
-
-import org.apache.commons.lang3.exception.ExceptionUtils;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.jcr.Node;
-import javax.jcr.Property;
-import javax.jcr.RepositoryException;
-import javax.jcr.nodetype.ConstraintViolationException;
 
 /**
  *
  */
-public class JcrPropertiesEntity extends JcrEntity implements Propertied {
+public interface PropertiedMixin extends NodeObjectMixin, Propertied {
 
     public static final String PROPERTIES_NAME = "tba:properties";
 
-    /**
-     *
-     */
-    public JcrPropertiesEntity(Node node) {
-        super(node);
+
+    default JcrProperties getPropertiesObject() {
+        return JcrUtil.getOrCreateNode(getNode(), PROPERTIES_NAME, JcrProperties.NODE_TYPE, JcrProperties.class);
     }
 
-    public JcrProperties getPropertiesObject() {
-        return JcrUtil.getOrCreateNode(this.node, PROPERTIES_NAME, JcrProperties.NODE_TYPE, JcrProperties.class);
-    }
-
-    public void clearAdditionalProperties() {
+    default void clearAdditionalProperties() {
         try {
             Node propsNode = getPropertiesObject().getNode();
             Map<String, Object> props = getPropertiesObject().getProperties();
@@ -78,7 +72,7 @@ public class JcrPropertiesEntity extends JcrEntity implements Propertied {
      * All primary properties should be defined as getter/setter on the base object
      * You can call the getAllProperties to return the complete set of properties as a map
      */
-    public Map<String, Object> getProperties() {
+    default Map<String, Object> getProperties() {
 
         JcrProperties props = getPropertiesObject();
         if (props != null) {
@@ -87,7 +81,7 @@ public class JcrPropertiesEntity extends JcrEntity implements Propertied {
         return null;
     }
 
-    public void setProperties(Map<String, Object> properties) {
+    default void setProperties(Map<String, Object> properties) {
 
         //add the properties as attrs
         for (Map.Entry<String, Object> entry : properties.entrySet()) {
@@ -99,7 +93,7 @@ public class JcrPropertiesEntity extends JcrEntity implements Propertied {
     /**
      * Get the Nodes Properties along with the extra mixin properties
      */
-    public Map<String, Object> getAllProperties() {
+    default Map<String, Object> getAllProperties() {
 
         //first get the other extra mixin properties
         Map<String, Object> properties = getProperties();
@@ -107,7 +101,7 @@ public class JcrPropertiesEntity extends JcrEntity implements Propertied {
             properties = new HashMap<>();
         }
         //merge in this nodes properties
-        Map<String, Object> thisProperties = super.getProperties();
+        Map<String, Object> thisProperties = NodeObjectMixin.super.getProperties();
         if (thisProperties != null)
 
         {
@@ -116,7 +110,7 @@ public class JcrPropertiesEntity extends JcrEntity implements Propertied {
         return properties;
     }
 
-    public <T> T getProperty(String name, T defValue) {
+    default <T> T getProperty(String name, T defValue) {
         if (hasProperty(name)) {
             return getProperty(name, (Class<T>) defValue.getClass(), false);
         } else {
@@ -124,9 +118,9 @@ public class JcrPropertiesEntity extends JcrEntity implements Propertied {
         }
     }
 
-    public boolean hasProperty(String name) {
+    default boolean hasProperty(String name) {
         try {
-            if (this.node.hasProperty(name)) {
+            if (getNode().hasProperty(name)) {
                 return true;
             } else {
                 return getPropertiesObject().getNode().hasProperty(name);
@@ -136,23 +130,23 @@ public class JcrPropertiesEntity extends JcrEntity implements Propertied {
         }
     }
 
-    public <T> T getProperty(String name, Class<T> type) {
+    default <T> T getProperty(String name, Class<T> type) {
         return getProperty(name, type, true);
     }
 
 
     @Override
-    public <T> T getProperty(String name, Class<T> type, boolean allowNotFound) {
+    default <T> T getProperty(String name, Class<T> type, boolean allowNotFound) {
         try {
-            if ("nt:frozenNode".equalsIgnoreCase(this.node.getPrimaryNodeType().getName())) {
-                T item = super.getProperty(name, type, true);
+            if ("nt:frozenNode".equalsIgnoreCase(getNode().getPrimaryNodeType().getName())) {
+                T item = NodeObjectMixin.super.getProperty(name, type, true);
                 if (item == null) {
                     item = getPropertiesObject().getProperty(name, type, allowNotFound);
                 }
                 return item;
             } else {
-                if (JcrPropertyUtil.hasProperty(this.node.getPrimaryNodeType(), name)) {
-                    return super.getProperty(name, type, allowNotFound);
+                if (JcrPropertyUtil.hasProperty(getNode().getPrimaryNodeType(), name)) {
+                    return NodeObjectMixin.super.getProperty(name, type, allowNotFound);
                 } else {
                     return getPropertiesObject().getProperty(name, type, allowNotFound);
                 }
@@ -167,10 +161,10 @@ public class JcrPropertiesEntity extends JcrEntity implements Propertied {
      * Override
      * if the incoming name matches that of a primary property on this Node then set it, otherwise add it the mixin bag of properties
      */
-    public void setProperty(String name, Object value) {
+    default void setProperty(String name, Object value) {
         try {
-            if (JcrPropertyUtil.hasProperty(this.node.getPrimaryNodeType(), name)) {
-                super.setProperty(name, value);
+            if (JcrPropertyUtil.hasProperty(getNode().getPrimaryNodeType(), name)) {
+                NodeObjectMixin.super.setProperty(name, value);
             } else {
                 getPropertiesObject().setProperty(name, value);
             }
@@ -183,7 +177,7 @@ public class JcrPropertiesEntity extends JcrEntity implements Propertied {
      * Merges any new properties in with the other Extra Properties
      */
     @Override
-    public Map<String, Object> mergeProperties(Map<String, Object> props) {
+    default Map<String, Object> mergeProperties(Map<String, Object> props) {
         Map<String, Object> newProps = new HashMap<>();
         Map<String, Object> origProps = getProperties();
         if (origProps != null) {
@@ -192,7 +186,6 @@ public class JcrPropertiesEntity extends JcrEntity implements Propertied {
         if (props != null) {
             newProps.putAll(props);
         }
-        
         JcrProperties properties = getPropertiesObject();
         for (Map.Entry<String, Object> entry : newProps.entrySet()) {
             try {
@@ -208,14 +201,14 @@ public class JcrPropertiesEntity extends JcrEntity implements Propertied {
         return newProps;
     }
 
-    public Map<String, Object> replaceProperties(Map<String, Object> props) {
+    default Map<String, Object> replaceProperties(Map<String, Object> props) {
         clearAdditionalProperties();
         setProperties(props);
         return props;
     }
 
     @Override
-    public void removeProperty(String key) {
+    default void removeProperty(String key) {
         setProperty(key, null);
     }
 }

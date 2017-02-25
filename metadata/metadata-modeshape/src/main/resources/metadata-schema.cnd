@@ -144,7 +144,7 @@
 [tba:rolesFolder] > nt:folder
     + * (tba:securityRole)
 
-[tba:securityRole] > mix:title, mix:lastModified
+[tba:securityRole] > mix:title, mix:lastModified, mix:referenceable
     - tba:systemName (STRING) mandatory
 
 [tba:roleMembership]
@@ -215,31 +215,31 @@
 	+ * (tba:feed) sns
 
 [tba:feed] > tba:extensibleEntity, mix:referenceable, tba:accessControlled
-    + tba:summary (tba:feedSummary)
-    + tba:data (tba:feedData)
+    + tba:summary (tba:feedSummary) = tba:feedSummary autocreated mandatory
+    + tba:data (tba:feedData) = tba:feedData autocreated mandatory
 
-[tba:feedSummary] > mix:title   //, mix:versionable
+[tba:feedSummary] > tba:extensibleEntity, mix:title, tba:propertied, tba:taggable   //, mix:versionable
     - tba:systemName (STRING) mandatory
     - tba:category (REFERENCE) mandatory
-    + tba:details (tba:feedDetails)
+    + tba:details (tba:feedDetails) = tba:feedDetails autocreated mandatory
 
-[tba:feedDetails] > mix:title, tba:propertied
+[tba:feedDetails] > nt:hierarchyNode, tba:propertied
     - tba:feedTemplate (REFERENCE)
     - tba:slas (WEAKREFERENCE) multiple
     - tba:dependentFeeds (WEAKREFERENCE) multiple
     - tba:usedByFeeds (WEAKREFERENCE) multiple
+    - tba:json (STRING)
     + tba:sources (tba:feedSource) sns
     + tba:destinations (tba:feedDestination) sns
     + tba:precondition (tba:feedPrecondition)
 
-[tba:feedData] > tba:propertied
-    + tba:highWaterMarks (tba:waterMarks)
-    + tba:initialization (tba:initialization)
+[tba:feedData] > nt:hierarchyNode, tba:propertied
     - tba:state (STRING) = 'ENABLED'
-    - tba:json (STRING)
     - tba:schedulingPeriod (STRING)
     - tba:schedulingStrategy (STRING)
     - tba:securityGroups (WEAKREFERENCE) multiple
+    + tba:highWaterMarks (tba:waterMarks)
+    + tba:initialization (tba:initialization)
 
 [tba:feedPrecondition] > nt:hierarchyNode, mix:lastModified
     - tba:slaRef (REFERENCE)

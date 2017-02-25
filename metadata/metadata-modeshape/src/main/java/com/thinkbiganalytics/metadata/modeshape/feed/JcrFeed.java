@@ -1,5 +1,18 @@
 package com.thinkbiganalytics.metadata.modeshape.feed;
 
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+
+import javax.annotation.Nonnull;
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+
+import org.joda.time.DateTime;
+
 /*-
  * #%L
  * thinkbig-metadata-modeshape
@@ -21,7 +34,6 @@ package com.thinkbiganalytics.metadata.modeshape.feed;
  */
 
 import com.thinkbiganalytics.metadata.api.category.Category;
-import com.thinkbiganalytics.metadata.api.category.CategoryNotFoundException;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
@@ -37,32 +49,12 @@ import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
-import com.thinkbiganalytics.metadata.modeshape.security.JcrHadoopSecurityGroup;
+import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
-import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplate;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.security.action.AllowedActions;
-
-import org.joda.time.DateTime;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nonnull;
-import javax.jcr.Node;
-import javax.jcr.NodeIterator;
-import javax.jcr.RepositoryException;
-import javax.jcr.Value;
 
 /**
  * An implementation of {@link Feed} backed by a JCR repository.
@@ -73,34 +65,15 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
 
     public static final String PRECONDITION_TYPE = "tba:feedPrecondition";
 
-    public static final String PRECONDITION = "tba:precondition";
-    public static final String DEPENDENTS = "tba:dependentFeeds";
-    public static final String USED_BY_FEEDS = "tba:usedByFeeds";
     public static final String NODE_TYPE = "tba:feed";
-    public static final String SOURCE_NAME = "tba:sources";
-    public static final String DESTINATION_NAME = "tba:destinations";
-    public static final String CATEGORY = "tba:category";
-    public static final String HIGH_WATER_MARKS = "tba:highWaterMarks";
-    public static final String WATER_MARKS_TYPE = "tba:waterMarks";
+    
+    public static final String SUMMARY = "tba:summary";
+    public static final String DATA = "tba:data";
 
-    public static final String INITIALIZATION_TYPE = "tba:initialization";
-    public static final String INIT_STATUS_TYPE = "tba:initStatus";
-    public static final String INITIALIZATION = "tba:initialization";
-    public static final String INIT_HISTORY = "tba:history";
-    public static final int MAX_INIT_HISTORY = 10;
-    public static final String INIT_STATE = "tba:state";
-    public static final String CURRENT_INIT_STATUS = "tba:currentStatus";
-
-    public static final String STATE = INIT_STATE;
-
-    public static final String TEMPLATE = "tba:template";
-    public static final String SCHEDULE_PERIOD = "tba:schedulingPeriod"; // Cron expression, or Timer Expression
-    public static final String SCHEDULE_STRATEGY = "tba:schedulingStrategy"; //CRON_DRIVEN, TIMER_DRIVEN
-    public static final String SLA = "tba:slas";
-    public static final String HADOOP_SECURITY_GROUPS = "tba:securityGroups";
-
-    public static final String USR_PREFIX = "usr:";
-
+    
+    private FeedSummary<C> summary;
+    private FeedData data;
+    
     
     private JcrAccessControlledSupport accessControlSupport;
 
@@ -111,56 +84,150 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
 
     public JcrFeed(Node node, JcrCategory category) {
         this(node);
-        setProperty(CATEGORY, category);
+        getFeedSummary().ifPresent(s -> s.setProperty(FeedSummary.CATEGORY, category));
     }
-
+    
+    
+    
+    // -=-=--=-=- Delegate Propertied methods to data -=-=-=-=-=-
     
     @Override
-    public FeedId getId() {
-        try {
-            return new JcrFeed.FeedId(getObjectId());
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Failed to retrieve the entity id", e);
-        }
+    public Map<String, Object> getProperties() {
+        return getFeedData().map(d -> d.getProperties()).orElse(Collections.emptyMap());
+    }
+    
+    @Override
+    public void setProperties(Map<String, Object> properties) {
+        getFeedData().ifPresent(d -> d.setProperties(properties));
+    }
+    
+    @Override
+    public void setProperty(String name, Object value) {
+        getFeedData().ifPresent(d -> d.setProperty(name, value));
+    }
+    
+    @Override
+    public void removeProperty(String key) {
+        getFeedData().ifPresent(d -> d.removeProperty(key));
     }
 
-    protected C getCategory(Class<? extends JcrCategory> categoryClass) {
-        C category = null;
-        try {
-            category = (C) getProperty(JcrFeed.CATEGORY, categoryClass);
-        } catch (Exception e) {
-            if (category == null) {
-                try {
-                    category = (C) JcrUtil.constructNodeObject(node.getParent(), categoryClass, null);
-                } catch (Exception e2) {
-                    throw new CategoryNotFoundException("Unable to find category on Feed for category type  " + categoryClass + ". Exception: " + e.getMessage(), null);
-                }
-            }
-        }
-        if (category == null) {
-            throw new CategoryNotFoundException("Unable to find category on Feed ", null);
-        }
-        return category;
+    @Override
+    public Map<String, Object> mergeProperties(Map<String, Object> props) {
+        return getFeedData().map(d -> d.mergeProperties(props)).orElse(Collections.emptyMap());
     }
+    
+    @Override
+    public Map<String, Object> replaceProperties(Map<String, Object> props) {
+        return getFeedData().map(d -> d.replaceProperties(props)).orElse(Collections.emptyMap());
+    }
+
+
+    // -=-=--=-=- Delegate taggable methods to summary -=-=-=-=-=-
+    
+    @Override
+    public Set<String> addTag(String tag) {
+        return getFeedSummary().map(s -> s.addTag(tag)).orElse(Collections.emptySet());
+    }
+    
+    @Override
+    public Set<String> getTags() {
+        return getFeedSummary().map(s -> s.getTags()).orElse(Collections.emptySet());
+    }
+    
+    @Override
+    public void setTags(Set<String> tags) {
+        getFeedSummary().ifPresent(s -> s.setTags(tags));
+    }
+    
+    @Override
+    public boolean hasTag(String tag) {
+        return getFeedSummary().map(s -> s.hasTag(tag)).orElse(false);
+    }
+    
+    
+    // -=-=--=-=- Delegate AbstractJcrAuditableSystemEntity methods to summary -=-=-=-=-=-
+    
+    @Override
+    public DateTime getCreatedTime() {
+        return getFeedSummary().map(s -> s.getCreatedTime()).orElse(null);
+    }
+
+    @Override
+    public void setCreatedTime(DateTime createdTime) {
+        getFeedSummary().ifPresent(s -> s.setCreatedTime(createdTime));
+    }
+
+    @Override
+    public DateTime getModifiedTime() {
+        return getFeedSummary().map(s -> s.getModifiedTime()).orElse(null);
+    }
+
+    @Override
+    public void setModifiedTime(DateTime modifiedTime) {
+        getFeedSummary().ifPresent(s -> s.setModifiedTime(modifiedTime));
+    }
+
+    @Override
+    public String getCreatedBy() {
+        return getFeedSummary().map(s -> s.getCreatedBy()).orElse(null);
+    }
+
+    @Override
+    public String getModifiedBy() {
+        return getFeedSummary().map(s -> s.getModifiedBy()).orElse(null);
+    }
+
+    // -=-=--=-=- Delegate AbstractJcrSystemEntity methods to summary -=-=-=-=-=-
+    
+    @Override
+    public String getDescription() {
+        return getFeedSummary().map(s -> s.getDescription()).orElse(null);
+    }
+    
+    @Override
+    public void setDescription(String description) {
+        getFeedSummary().ifPresent(s -> s.setDescription(description));
+    }
+    
+    @Override
+    public String getSystemName() {
+        return getFeedSummary().map(s -> s.getSystemName()).orElse(null);
+    }
+    
+    @Override
+    public void setSystemName(String systemName) {
+        getFeedSummary().ifPresent(s -> s.setSystemName(systemName));
+    }
+    
+    @Override
+    public String getTitle() {
+        return getFeedSummary().map(s -> s.getTitle()).orElse(null);
+    }
+    
+    @Override
+    public void setTitle(String title) {
+        getFeedSummary().ifPresent(s -> s.setTitle(title));
+    }
+    
 
     public C getCategory() {
-        return (C) getCategory(JcrCategory.class);
+        return getFeedSummary().map(d -> d.getCategory(JcrCategory.class)).orElse(null);
     }
 
     public FeedManagerTemplate getTemplate() {
-        return getProperty(TEMPLATE, JcrFeedTemplate.class);
+        return getFeedDetails().map(d -> d.getTemplate()).orElse(null);
     }
 
     public void setTemplate(FeedManagerTemplate template) {
-        setProperty(TEMPLATE, template);
+        getFeedDetails().ifPresent(d -> d.setTemplate(template));
     }
 
     public List<? extends FeedSource> getSources() {
-        return JcrUtil.getJcrObjects(this.node, SOURCE_NAME, JcrFeedSource.class);
+        return getFeedDetails().map(d -> d.getSources()).orElse(null);
     }
 
     public List<? extends FeedDestination> getDestinations() {
-        return JcrUtil.getJcrObjects(this.node, DESTINATION_NAME, JcrFeedDestination.class);
+        return getFeedDetails().map(d -> d.getDestinations()).orElse(null);
     }
 
     @Override
@@ -185,325 +252,136 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
 
     @Override
     public State getState() {
-        return getProperty(STATE, Feed.State.ENABLED);
+        return getFeedData().map(d -> d.getState()).orElse(null);
     }
 
     @Override
     public void setState(State state) {
-        setProperty(STATE, state);
+        getFeedData().ifPresent(d -> d.setState(state));
     }
 
     @Override
     public boolean isInitialized() {
-        return false;
+        return getFeedData().map(d -> d.isInitialized()).orElse(null);
     }
 
     @Override
     public InitializationStatus getCurrentInitStatus() {
-        if (JcrUtil.hasNode(getNode(), INITIALIZATION)) {
-            Node initNode = JcrUtil.getNode(getNode(), INITIALIZATION);
-            Node statusNode = JcrPropertyUtil.getProperty(initNode, CURRENT_INIT_STATUS);
-            return createInitializationStatus(statusNode);
-        } else {
-            return new InitializationStatus(InitializationStatus.State.PENDING);
-        }
+        return getFeedData().map(d -> d.getCurrentInitStatus()).orElse(null);
     }
 
     @Override
     public void updateInitStatus(InitializationStatus status) {
-        try {
-            Node initNode = JcrUtil.getOrCreateNode(getNode(), INITIALIZATION, INITIALIZATION, true);
-            Node statusNode = initNode.addNode(INIT_HISTORY, INIT_STATUS_TYPE);
-            statusNode.setProperty(INIT_STATE, status.getState().toString());
-            initNode.setProperty(CURRENT_INIT_STATUS, statusNode);
-
-            // Trim the history if necessary
-            NodeIterator itr = initNode.getNodes(INIT_HISTORY);
-            if (itr.getSize() > MAX_INIT_HISTORY) {
-                long excess = itr.getSize() - MAX_INIT_HISTORY;
-                for (int cnt = 0; cnt < excess; cnt++) {
-                    Node node = itr.nextNode();
-                    node.remove();
-                }
-            }
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Failed to access initializations statuses", e);
-        }
+        getFeedData().ifPresent(d -> d.updateInitStatus(status));
     }
 
     @Override
     public List<InitializationStatus> getInitHistory() {
-        Node initNode = JcrUtil.getNode(getNode(), INITIALIZATION);
-
-        if (initNode != null) {
-            return JcrUtil.getNodeList(initNode, INIT_HISTORY).stream()
-                .map(n -> createInitializationStatus(n))
-                .sorted(Comparator.comparing(InitializationStatus::getTimestamp).reversed())
-                .limit(MAX_INIT_HISTORY)
-                .collect(Collectors.toList());
-        } else {
-            return Collections.emptyList();
-        }
+        return getFeedData().map(d -> d.getInitHistory()).orElse(Collections.emptyList());
     }
 
     @Override
     public FeedPrecondition getPrecondition() {
-        try {
-            if (this.node.hasNode(PRECONDITION)) {
-                return new JcrFeedPrecondition(this.node.getNode(PRECONDITION), this);
-            } else {
-                return null;
-            }
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Failed to retrieve the feed precondition", e);
-        }
+        return getFeedDetails().map(d -> d.getPrecondition()).orElse(null);
     }
 
     public void setPrecondition(JcrServiceLevelAgreement sla) {
 //        Node precondNode
     }
 
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.feed.Feed#getWaterMarkNames()
-     */
     @Override
     public Set<String> getWaterMarkNames() {
-        if (JcrUtil.hasNode(getNode(), HIGH_WATER_MARKS)) {
-            Node wmNode = JcrUtil.getNode(getNode(), HIGH_WATER_MARKS);
-            return JcrPropertyUtil.streamProperties(wmNode)
-                .map(JcrPropertyUtil::getName)
-                .filter(name -> name.startsWith(USR_PREFIX))
-                .map(name -> name.replace(USR_PREFIX, ""))
-                .collect(Collectors.toSet());
-        } else {
-            return Collections.emptySet();
-        }
+        return getFeedData().map(d -> d.getWaterMarkNames()).orElse(Collections.emptySet());
     }
 
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.feed.Feed#getWaterMarkValue(java.lang.String)
-     */
     @Override
     public Optional<String> getWaterMarkValue(String waterMarkName) {
-        if (JcrUtil.hasNode(getNode(), HIGH_WATER_MARKS)) {
-            Node wmNode = JcrUtil.getNode(getNode(), HIGH_WATER_MARKS);
-            return JcrPropertyUtil.findProperty(wmNode, USR_PREFIX + waterMarkName).map(JcrPropertyUtil::toString);
-        } else {
-            return Optional.empty();
-        }
+        return getFeedData().flatMap(d -> d.getWaterMarkValue(waterMarkName));
     }
 
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.feed.Feed#setWaterMarkValue(java.lang.String, java.lang.String)
-     */
     @Override
     public void setWaterMarkValue(String waterMarkName, String value) {
-        Node wmNode = JcrUtil.getOrCreateNode(getNode(), HIGH_WATER_MARKS, WATER_MARKS_TYPE);
-        JcrPropertyUtil.setProperty(wmNode, USR_PREFIX + waterMarkName, value);
-        ;
+        getFeedData().ifPresent(d -> d.setWaterMarkValue(waterMarkName, value));
     }
 
     @Override
     public List<Feed<C>> getDependentFeeds() {
-        List<Feed<C>> deps = new ArrayList<>();
-        Set<Node> depNodes = JcrPropertyUtil.getSetProperty(this.node, DEPENDENTS);
-
-        for (Node depNode : depNodes) {
-            deps.add(new JcrFeed<C>(depNode));
-        }
-
-        return deps;
+        return getFeedDetails().map(d -> d.getDependentFeeds()).orElse(Collections.emptyList());
     }
 
     @Override
     public boolean addDependentFeed(Feed<?> feed) {
-        JcrFeed<?> dependent = (JcrFeed<?>) feed;
-        Node depNode = dependent.getNode();
-        feed.addUsedByFeed(this);
-
-        return JcrPropertyUtil.addToSetProperty(this.node, DEPENDENTS, depNode);
+        return getFeedDetails().map(d -> d.addDependentFeed(feed)).orElse(false);
     }
 
     @Override
     public boolean removeDependentFeed(Feed<?> feed) {
-        JcrFeed<?> dependent = (JcrFeed<?>) feed;
-        Node depNode = dependent.getNode();
-        feed.removeUsedByFeed(this);
-        return JcrPropertyUtil.removeFromSetProperty(this.node, DEPENDENTS, depNode);
+        return getFeedDetails().map(d -> d.removeDependentFeed(feed)).orElse(false);
     }
 
     @Override
     public List<Feed<C>> getUsedByFeeds() {
-        List<Feed<C>> deps = new ArrayList<>();
-        Set<Node> depNodes = JcrPropertyUtil.getSetProperty(this.node, USED_BY_FEEDS);
-
-        for (Node depNode : depNodes) {
-            deps.add(new JcrFeed<C>(depNode));
-        }
-
-        return deps;
+        return getFeedDetails().map(d -> d.getUsedByFeeds()).orElse(Collections.emptyList());
     }
 
     @Override
     public boolean addUsedByFeed(Feed<?> feed) {
-        JcrFeed<?> dependent = (JcrFeed<?>) feed;
-        Node depNode = dependent.getNode();
-
-        return JcrPropertyUtil.addToSetProperty(this.node, USED_BY_FEEDS, depNode);
+        return getFeedDetails().map(d -> d.addUsedByFeed(feed)).orElse(false);
     }
-
-//
-//    @Override
-//    public FeedSource getSource(final FeedSource.ID id) {
-//        @SuppressWarnings("unchecked")
-//        List<FeedSource> sources = (List<FeedSource>) getSources();
-//        FeedSource source = null;
-//
-//        if (sources != null && !sources.isEmpty()) {
-//            source = Iterables.tryFind(sources, new Predicate<FeedSource>() {
-//                @Override
-//                public boolean apply(FeedSource jcrSource) {
-//                    return jcrSource.getId().equals(id);
-//                }
-//            }).orNull();
-//        }
-//        return source;
-//
-//    }
 
     @Override
     public boolean removeUsedByFeed(Feed<?> feed) {
-        JcrFeed<?> dependent = (JcrFeed<?>) feed;
-        Node depNode = dependent.getNode();
-
-        return JcrPropertyUtil.removeFromSetProperty(this.node, USED_BY_FEEDS, depNode);
+        return getFeedDetails().map(d -> d.removeUsedByFeed(feed)).orElse(false);
     }
-//
-//    @Override
-//    public FeedDestination getDestination(final FeedDestination.ID id) {
-//        @SuppressWarnings("unchecked")
-//        List<FeedDestination> destinations = (List<FeedDestination>) getDestinations();
-//        FeedDestination destination = null;
-//
-//        if (destinations != null && !destinations.isEmpty()) {
-//            destination = Iterables.tryFind(destinations, new Predicate<FeedDestination>() {
-//                @Override
-//                public boolean apply(FeedDestination jcrDestination) {
-//                    return jcrDestination.getId().equals(id);
-//                }
-//            }).orNull();
-//        }
-//        return destination;
-//    }
 
     @Override
     public FeedSource getSource(final Datasource.ID id) {
-        List<? extends FeedSource> sources = getSources();
-        if (sources != null) {
-            return sources.stream().filter(feedSource -> feedSource.getDatasource().getId().equals(id)).findFirst().orElse(null);
-        }
-        return null;
-
-        /*
-        return JcrUtil.getNodeList(this.node, SOURCE_NAME).stream()
-                .filter(node -> JcrPropertyUtil.isReferencing(node, JcrFeedConnection.DATASOURCE, id.toString()))
-                .findAny()
-                .map(node -> new JcrFeedSource(node))
-                .orElse(null);
-                */
+        return getFeedDetails().map(d -> d.getSource(id)).orElse(null);
     }
 
     @Override
     public FeedDestination getDestination(final Datasource.ID id) {
-        List<? extends FeedDestination> destinations = getDestinations();
-        if (destinations != null) {
-            return destinations.stream().filter(feedDestination -> feedDestination.getDatasource().getId().equals(id)).findFirst().orElse(null);
-        }
-        return null;
-
-        /*
-
-        return JcrPropertyUtil.getReferencedNodeSet(this.node, DESTINATION_NAME).stream()
-                .filter(node -> JcrPropertyUtil.isReferencing(this.node, JcrFeedConnection.DATASOURCE, id.toString()))
-                .findAny()
-                .map(node -> new JcrFeedDestination(node))
-                .orElse(null);
-                */
+        return getFeedDetails().map(d -> d.getDestination(id)).orElse(null);
     }
 
     public String getSchedulePeriod() {
-        return getProperty(SCHEDULE_PERIOD, String.class);
+        return getFeedData().map(d -> d.getSchedulePeriod()).orElse(null);
     }
 
     public void setSchedulePeriod(String schedulePeriod) {
-        setProperty(SCHEDULE_PERIOD, schedulePeriod);
+        getFeedData().ifPresent(d -> d.setSchedulePeriod(schedulePeriod));
     }
 
     public String getScheduleStrategy() {
-        return getProperty(SCHEDULE_STRATEGY, String.class);
+        return getFeedData().map(d -> d.getScheduleStrategy()).orElse(null);
     }
 
     public void setScheduleStrategy(String scheduleStrategy) {
-        setProperty(SCHEDULE_STRATEGY, scheduleStrategy);
+        getFeedData().ifPresent(d -> d.setScheduleStrategy(scheduleStrategy));
     }
 
     public List<? extends ServiceLevelAgreement> getServiceLevelAgreements() {
-        Set<Node> list = JcrPropertyUtil.getReferencedNodeSet(this.node, SLA);
-        List<JcrServiceLevelAgreement> serviceLevelAgreements = new ArrayList<>();
-        if (list != null) {
-            for (Node n : list) {
-                serviceLevelAgreements.add(JcrUtil.createJcrObject(n, JcrServiceLevelAgreement.class));
-            }
-        }
-        return serviceLevelAgreements;
+        return getFeedDetails().map(d -> d.getServiceLevelAgreements()).orElse(Collections.emptyList());
     }
 
     public void setServiceLevelAgreements(List<? extends ServiceLevelAgreement> serviceLevelAgreements) {
-        setProperty(SLA, serviceLevelAgreements);
+        getFeedDetails().ifPresent(d -> d.setServiceLevelAgreements(serviceLevelAgreements));
     }
 
     public List<? extends HadoopSecurityGroup> getSecurityGroups() {
-        Set<Node> list = JcrPropertyUtil.getReferencedNodeSet(this.node, HADOOP_SECURITY_GROUPS);
-        List<HadoopSecurityGroup> hadoopSecurityGroups = new ArrayList<>();
-        if (list != null) {
-            for (Node n : list) {
-                hadoopSecurityGroups.add(JcrUtil.createJcrObject(n, JcrHadoopSecurityGroup.class));
-            }
-        }
-        return hadoopSecurityGroups;
+        return getFeedData().map(d -> d.getSecurityGroups()).orElse(Collections.emptyList());
     }
 
     public void setSecurityGroups(List<? extends HadoopSecurityGroup> hadoopSecurityGroups) {
-        JcrPropertyUtil.setProperty(this.node, HADOOP_SECURITY_GROUPS, null);
-
-        for (HadoopSecurityGroup securityGroup : hadoopSecurityGroups) {
-            Node securityGroupNode = ((JcrHadoopSecurityGroup) securityGroup).getNode();
-            JcrPropertyUtil.addToSetProperty(this.node, HADOOP_SECURITY_GROUPS, securityGroupNode, true);
-        }
+        getFeedData().ifPresent(d -> d.setSecurityGroups(hadoopSecurityGroups));
     }
 
     public void removeServiceLevelAgreement(ServiceLevelAgreement.ID id) {
-        try {
-            Set<Node> nodes = JcrPropertyUtil.getSetProperty(this.node, SLA);
-            Set<Value> updatedSet = new HashSet<>();
-            for (Node node : nodes) {
-                if (!node.getIdentifier().equalsIgnoreCase(id.toString())) {
-                    Value value = this.node.getSession().getValueFactory().createValue(node, true);
-                    updatedSet.add(value);
-                }
-            }
-            node.setProperty(SLA, (Value[]) updatedSet.stream().toArray(size -> new Value[size]));
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Unable to remove reference to SLA " + id + "from feed " + this.getId());
-        }
-
+        getFeedDetails().ifPresent(d -> d.removeServiceLevelAgreement(id));
     }
 
     public boolean addServiceLevelAgreement(ServiceLevelAgreement sla) {
-        JcrServiceLevelAgreement jcrServiceLevelAgreement = (JcrServiceLevelAgreement) sla;
-        Node node = jcrServiceLevelAgreement.getNode();
-        //add a ref to this node
-        return JcrPropertyUtil.addToSetProperty(this.node, SLA, node, true);
+        return getFeedDetails().map(d -> d.addServiceLevelAgreement(sla)).orElse(false);
     }
 
     @Nonnull
@@ -531,16 +409,83 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
         return accessControlSupport;
     }
 
-    private InitializationStatus createInitializationStatus(Node statusNode) {
-        InitializationStatus.State state = InitializationStatus.State.valueOf(JcrPropertyUtil.getString(statusNode, INIT_STATE));
-        DateTime timestamp = JcrPropertyUtil.getProperty(statusNode, "jcr:created");
-        return new InitializationStatus(state, timestamp);
-    }
-
     public static class FeedId extends JcrEntity.EntityId implements Feed.ID {
 
         public FeedId(Serializable ser) {
             super(ser);
         }
+    }
+
+    protected Optional<FeedSummary<C>> getFeedSummary() {
+        if (this.summary == null) {
+            if (JcrUtil.hasNode(getNode(), SUMMARY)) {
+                this.summary = JcrUtil.getJcrObject(getNode(), SUMMARY, FeedSummary.class);
+                return Optional.of(this.summary);
+            } else {
+                return Optional.empty();
+            }
+        } else {
+            return Optional.of(this.summary);
+        }
+    }
+    
+    protected Optional<FeedDetails> getFeedDetails() {
+        Optional<FeedSummary<C>> summary = getFeedSummary();
+        
+        if (summary.isPresent()) {
+            return summary.get().getFeedDetails();
+        } else {
+            return Optional.empty();
+        }
+    }
+    
+    protected Optional<FeedData> getFeedData() {
+        if (this.data == null) {
+            if (JcrUtil.hasNode(getNode(), DATA)) {
+                this.data = JcrUtil.getJcrObject(getNode(), DATA, FeedData.class);
+                return Optional.of(this.data);
+            } else {
+                return Optional.empty();
+            }
+        } else {
+            return Optional.of(this.data);
+        }
+    }
+    
+    @Override
+    public FeedId getId() {
+        try {
+            return new JcrFeed.FeedId(getObjectId());
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to retrieve the entity id", e);
+        }
+    }
+
+    protected JcrFeedSource ensureFeedSource(JcrDatasource datasource) {
+        return getFeedDetails().map(d -> d.ensureFeedSource(datasource)).orElse(null);
+    }
+    
+    protected JcrFeedDestination ensureFeedDestination(JcrDatasource datasource) {
+        return getFeedDetails().map(d -> d.ensureFeedDestination(datasource)).orElse(null);
+    }
+    
+    protected void removeFeedSource(JcrFeedSource source) {
+        getFeedDetails().ifPresent(d -> d.removeFeedSource(source));
+    }
+    
+    protected void removeFeedDestination(JcrFeedDestination dest) {
+        getFeedDetails().ifPresent(d -> d.removeFeedDestination(dest));
+    }
+    
+    protected void removeFeedSources() {
+        getFeedDetails().ifPresent(d -> d.removeFeedSources());
+    }
+    
+    protected void removeFeedDestinations() {
+        getFeedDetails().ifPresent(d -> d.removeFeedDestinations());
+    }
+    
+    protected Node createNewPrecondition() {
+        return getFeedDetails().map(d -> d.createNewPrecondition()).orElse(null);
     }
 }

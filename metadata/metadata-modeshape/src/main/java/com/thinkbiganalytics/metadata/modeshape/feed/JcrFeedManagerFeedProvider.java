@@ -114,7 +114,7 @@ public class JcrFeedManagerFeedProvider extends BaseJcrProvider<FeedManagerFeed,
 
     @Override
     public List<? extends FeedManagerFeed> findByTemplateId(FeedManagerTemplate.ID templateId) {
-        String query = "SELECT * from " + EntityUtil.asQueryProperty(JcrFeed.NODE_TYPE) + " as e WHERE e." + EntityUtil.asQueryProperty(JcrFeedManagerFeed.TEMPLATE) + " = $id";
+        String query = "SELECT * from " + EntityUtil.asQueryProperty(JcrFeed.NODE_TYPE) + " as e WHERE e." + EntityUtil.asQueryProperty(FeedDetails.TEMPLATE) + " = $id";
         Map<String, String> bindParams = new HashMap<>();
         bindParams.put("id", templateId.toString());
         return JcrQueryUtil.find(getSession(), query, JcrFeedManagerFeed.class);
@@ -124,7 +124,7 @@ public class JcrFeedManagerFeedProvider extends BaseJcrProvider<FeedManagerFeed,
     public List<? extends FeedManagerFeed> findByCategoryId(FeedManagerCategory.ID categoryId) {
 
         String query = "SELECT * from " + EntityUtil.asQueryProperty(JcrFeed.NODE_TYPE) + " as e "
-                       + "WHERE e." + EntityUtil.asQueryProperty(JcrFeedManagerFeed.CATEGORY) + " = $id";
+                       + "WHERE e." + EntityUtil.asQueryProperty(FeedSummary.CATEGORY) + " = $id";
 
         Map<String, String> bindParams = new HashMap<>();
         bindParams.put("id", categoryId.toString());

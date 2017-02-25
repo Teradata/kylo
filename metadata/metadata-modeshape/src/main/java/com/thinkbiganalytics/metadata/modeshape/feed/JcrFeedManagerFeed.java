@@ -32,9 +32,9 @@ import javax.jcr.Node;
  */
 public class JcrFeedManagerFeed<C extends JcrFeedManagerCategory> extends JcrFeed<C> implements FeedManagerFeed<C> {
 
-    public static String FEED_JSON = "tba:json";
-    public static String PROCESS_GROUP_ID = "tba:processGroupId";
-    public static String FEED_TEMPLATE = "tba:feedTemplate";
+//    public static String FEED_JSON = "tba:json";
+//    public static String PROCESS_GROUP_ID = "tba:processGroupId";
+//    public static String FEED_TEMPLATE = "tba:feedTemplate";
 
 
     public JcrFeedManagerFeed(Node node) {
@@ -47,32 +47,31 @@ public class JcrFeedManagerFeed<C extends JcrFeedManagerCategory> extends JcrFee
 
     @Override
     public String getJson() {
-        return getProperty(FEED_JSON, String.class);
+        return getFeedDetails().map(d -> d.getJson()).orElse(null);
     }
 
     @Override
     public void setJson(String json) {
-        setProperty(FEED_JSON, json);
+        getFeedDetails().ifPresent(d -> d.setJson(json));
     }
 
     @Override
     public FeedManagerTemplate getTemplate() {
-        return getProperty(FEED_TEMPLATE, JcrFeedTemplate.class, true);
+        return getFeedDetails().map(d -> d.getTemplate()).orElse(null);
     }
 
     @Override
     public void setTemplate(FeedManagerTemplate template) {
-        setProperty(FEED_TEMPLATE, template);
-        template.addFeed(this);
+        getFeedDetails().ifPresent(d -> d.setTemplate(template));
     }
 
     @Override
     public String getNifiProcessGroupId() {
-        return getProperty(PROCESS_GROUP_ID, String.class);
+        return getFeedDetails().map(d -> d.getNifiProcessGroupId()).orElse(null);
     }
 
     public void setNifiProcessGroupId(String id) {
-        setProperty(PROCESS_GROUP_ID, id);
+        getFeedDetails().ifPresent(d -> d.setNifiProcessGroupId(id));
     }
 
     public void setVersion(Integer version) {
@@ -81,8 +80,7 @@ public class JcrFeedManagerFeed<C extends JcrFeedManagerCategory> extends JcrFee
 
 
     public C getCategory() {
-
-        return (C) getCategory(JcrFeedManagerCategory.class);
+        return getFeedSummary().map(s -> (C) s.getCategory(JcrFeedManagerCategory.class)).orElse(null);
     }
 
 }

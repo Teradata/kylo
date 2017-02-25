@@ -1,5 +1,25 @@
 package com.thinkbiganalytics.metadata.modeshape.feed;
 
+import java.io.Serializable;
+import java.security.Principal;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Consumer;
+
+import javax.annotation.Nonnull;
+import javax.inject.Inject;
+import javax.jcr.Node;
+import javax.jcr.NodeIterator;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+
+import org.joda.time.DateTime;
+import org.springframework.security.core.context.SecurityContextHolder;
+
 /*-
  * #%L
  * thinkbig-metadata-modeshape
@@ -74,26 +94,6 @@ import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
-import org.joda.time.DateTime;
-import org.springframework.security.core.context.SecurityContextHolder;
-
-import java.io.Serializable;
-import java.security.Principal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Consumer;
-
-import javax.annotation.Nonnull;
-import javax.inject.Inject;
-import javax.jcr.Node;
-import javax.jcr.NodeIterator;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-
 /**
  * A JCR provider for {@link Feed} objects.
  */
@@ -149,82 +149,30 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
     public void removeFeedSources(Feed.ID feedId) {
         JcrFeed<?> feed = (JcrFeed) findById(feedId);
-        try {
-
-            List<? extends FeedSource> sources = feed.getSources();
-            if (sources != null && !sources.isEmpty()) {
-                //checkout the feed
-                JcrVersionUtil.checkout(feed.getNode());
-                sources.stream().forEach(source -> {
-                    try {
-                        Node sourceNode = ((JcrFeedSource) source).getNode();
-                        ((JcrDatasource) ((JcrFeedSource) source).getDatasource()).removeSourceNode(sourceNode);
-                        sourceNode.remove();
-                    } catch (RepositoryException e) {
-                        e.printStackTrace();
-                    }
-                });
-            }
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("unable to remove feed sources for feed " + feed.getSystemName(), e);
-        }
+        feed.removeFeedSources();
     }
 
     public void removeFeedSource(Feed.ID feedId, Datasource.ID dsId) {
         JcrFeed<?> feed = (JcrFeed) findById(feedId);
-        FeedSource source = feed.getSource(dsId);
+        JcrFeedSource source = (JcrFeedSource) feed.getSource(dsId);
 
         if (source != null) {
-            try {
-                JcrVersionUtil.checkout(((JcrFeedSource) source).getNode().getParent());
-                ((JcrFeedSource) source).getNode().remove();
-
-                //  JcrVersionUtil.checkin(((JcrFeedSource) source).getNode().getParent());
-            } catch (RepositoryException e) {
-                throw new MetadataRepositoryException("Unable to remove FeedSource for Feed: " + feedId + ", Datasource: " + dsId);
-            }
+            feed.removeFeedSource(source);
         }
     }
 
     public void removeFeedDestination(Feed.ID feedId, Datasource.ID dsId) {
         JcrFeed<?> feed = (JcrFeed) findById(feedId);
-        FeedDestination dest = feed.getDestination(dsId);
-
+        JcrFeedDestination dest = (JcrFeedDestination) feed.getDestination(dsId);
+    
         if (dest != null) {
-            try {
-                JcrVersionUtil.checkout(((JcrFeedDestination) dest).getNode().getParent());
-                ((JcrFeedDestination) dest).getNode().remove();
-            } catch (RepositoryException e) {
-                throw new MetadataRepositoryException("Unable to remove FeedDestination for Feed: " + feedId + ", Datasource: " + dsId);
-            }
+            feed.removeFeedDestination(dest);
         }
     }
 
     public void removeFeedDestinations(Feed.ID feedId) {
         JcrFeed<?> feed = (JcrFeed) findById(feedId);
-        List<? extends FeedDestination> destinations = feed.getDestinations();
-        try {
-            JcrVersionUtil.checkout(feed.getNode());
-
-            if (destinations != null && !destinations.isEmpty()) {
-                destinations.stream().forEach(dest -> {
-                    try {
-
-                        Node destNode = ((JcrFeedDestination) dest).getNode();
-                        ((JcrDatasource) ((JcrFeedDestination) dest).getDatasource()).removeDestinationNode(destNode);
-                        destNode.remove();
-
-                        ((JcrFeedDestination) dest).getNode().remove();
-                    } catch (RepositoryException e) {
-                        e.printStackTrace();
-                    }
-                });
-
-
-            }
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("unable to remove feed destinations for feed " + feed.getSystemName(), e);
-        }
+        feed.removeFeedDestinations();
     }
 
     @Override
@@ -236,8 +184,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             JcrDatasource datasource = (JcrDatasource) datasourceProvider.getDatasource(dsId);
 
             if (datasource != null) {
-                Node feedSrcNode = JcrUtil.addNode(feed.getNode(), JcrFeed.SOURCE_NAME, JcrFeedSource.NODE_TYPE);
-                JcrFeedSource jcrSrc = new JcrFeedSource(feedSrcNode, datasource);
+                JcrFeedSource jcrSrc = feed.ensureFeedSource(datasource);
 
                 save();
                 return jcrSrc;
@@ -264,8 +211,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             JcrDatasource datasource = (JcrDatasource) datasourceProvider.getDatasource(dsId);
 
             if (datasource != null) {
-                Node feedDestNode = JcrUtil.addNode(feed.getNode(), JcrFeed.DESTINATION_NAME, JcrFeedDestination.NODE_TYPE);
-                JcrFeedDestination jcrDest = new JcrFeedDestination(feedDestNode, datasource);
+                JcrFeedDestination jcrDest = feed.ensureFeedDestination(datasource);
 
                 save();
                 return jcrDest;
@@ -368,20 +314,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     private PreconditionBuilder buildPrecondition(JcrFeed<?> feed) {
         try {
             if (feed != null) {
-                Node feedNode = feed.getNode();
-                Node precondNode = JcrUtil.getOrCreateNode(feedNode, JcrFeed.PRECONDITION, JcrFeed.PRECONDITION_TYPE, true);
-
-                if (precondNode.hasProperty(JcrFeedPrecondition.SLA_REF)) {
-                    precondNode.getProperty(JcrFeedPrecondition.SLA_REF).remove();
-                }
-                if (precondNode.hasNode(JcrFeedPrecondition.SLA)) {
-                    precondNode.getNode(JcrFeedPrecondition.SLA).remove();
-                }
-                //    if (precondNode.hasNode(JcrFeedPrecondition.LAST_ASSESSMENT)) {
-                //        precondNode.getNode(JcrFeedPrecondition.LAST_ASSESSMENT).remove();
-                //    }
-
-                Node slaNode = precondNode.addNode(JcrFeedPrecondition.SLA, JcrFeedPrecondition.SLA_TYPE);
+                Node slaNode = feed.createNewPrecondition();
                 ServiceLevelAgreementBuilder slaBldr = ((JcrServiceLevelAgreementProvider) this.slaProvider).builder(slaNode);
 
                 return new JcrPreconditionbuilder(slaBldr, feed);
@@ -583,33 +516,29 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
     @Override
     public Map<String, Object> mergeFeedProperties(ID feedId, Map<String, Object> properties) {
-        try {
-            JcrFeed feed = (JcrFeed) getFeed(feedId);
-            JcrMetadataAccess.ensureCheckoutNode(feed.getNode());
-
-            List<String> securityGroupNames = new ArrayList<>();
-            for (Object o : feed.getSecurityGroups()) {
-                HadoopSecurityGroup securityGroup = (HadoopSecurityGroup) o;
-                securityGroupNames.add(securityGroup.getName());
-            }
-            PropertyChange change = new PropertyChange(feed.getId().getIdValue(), feed.getCategory().getName(), feed.getSystemName(), securityGroupNames, feed.getProperties(), properties);
-            this.metadataEventService.notify(new FeedPropertyChangeEvent(change));
-
-            return feed.mergeProperties(properties);
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Unable to merge Feed Properties for Feed " + feedId, e);
+        JcrFeed feed = (JcrFeed) getFeed(feedId);
+        List<String> securityGroupNames = new ArrayList<>();
+        for (Object o : feed.getSecurityGroups()) {
+            HadoopSecurityGroup securityGroup = (HadoopSecurityGroup) o;
+            securityGroupNames.add(securityGroup.getName());
         }
+        
+        Map<String, Object> merged = feed.mergeProperties(properties);
+        
+        PropertyChange change = new PropertyChange(feed.getId().getIdValue(), 
+                                                   feed.getCategory().getName(), 
+                                                   feed.getSystemName(), 
+                                                   securityGroupNames, 
+                                                   feed.getProperties(), 
+                                                   properties);
+        this.metadataEventService.notify(new FeedPropertyChangeEvent(change));
+        
+        return merged;
     }
 
     public Map<String, Object> replaceProperties(ID feedId, Map<String, Object> properties) {
-        try {
-            JcrFeed feed = (JcrFeed) getFeed(feedId);
-            JcrMetadataAccess.ensureCheckoutNode(feed.getNode());
-            return feed.replaceProperties(properties);
-
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Unable to replace Feed Properties for Feed " + feedId, e);
-        }
+        JcrFeed feed = (JcrFeed) getFeed(feedId);
+        return feed.replaceProperties(properties);
     }
 
     @Nonnull
@@ -703,7 +632,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             if (this.category != null) {
                 //TODO FIX SQL
                 join.append(
-                    " join [" + JcrCategory.NODE_TYPE + "] as c on e." + EntityUtil.asQueryProperty(JcrFeed.CATEGORY) + "." + EntityUtil.asQueryProperty(JcrCategory.SYSTEM_NAME) + " = c."
+                    " join [" + JcrCategory.NODE_TYPE + "] as c on e." + EntityUtil.asQueryProperty(FeedSummary.CATEGORY) + "." + EntityUtil.asQueryProperty(JcrCategory.SYSTEM_NAME) + " = c."
                     + EntityUtil
                         .asQueryProperty(JcrCategory.SYSTEM_NAME));
                 cond.append(" c." + EntityUtil.asQueryProperty(JcrCategory.SYSTEM_NAME) + " = $category ");
