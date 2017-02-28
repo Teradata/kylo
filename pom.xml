@@ -90,6 +90,10 @@
     <!-- Plugin Versions -->
     <plugin.surefire.version>2.19.1</plugin.surefire.version>
     <plugin.license.version>1.12</plugin.license.version>
+    <plugin.xml-maven.version>1.0</plugin.xml-maven.version>
+    <plugin.findbugs.version>3.0.1</plugin.findbugs.version>
+    <plugin.findbugs-report.version>3.0.4</plugin.findbugs-report.version>
+    <plugin.maven-project-info-reports.version>2.9</plugin.maven-project-info-reports.version>
   </properties>
   <modules>
     <module>commons</module>
@@ -810,6 +814,94 @@
   <build>
     <plugins>
       <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>findbugs-maven-plugin</artifactId>
+        <version>${plugin.findbugs.version}</version>
+        <configuration>
+          <!-- Enables analysis which takes more memory but finds more bugs.
+              If you run out of memory, changes the value of the effort element to 'Low'. -->
+          <effort>Max</effort>
+
+          <!-- Location of FindBugs exclude filter file -->
+          <excludeFilterFile>findbugs-exclude.xml</excludeFilterFile>
+
+          <!-- Build shall NOT fail if problems are found: we examine the report at the end -->
+          <failOnError>false</failOnError>
+
+          <!-- Reports all bugs (other values are medium and max) -->
+          <threshold>Low</threshold>
+
+          <!-- Produces XML report -->
+          <xmlOutput>true</xmlOutput>
+
+          <!-- Configures the directory in which the XML report is created -->
+          <findbugsXmlOutputDirectory>${project.build.directory}/findbugs</findbugsXmlOutputDirectory>
+        </configuration>
+        <executions>
+          <!-- Ensures that FindBugs inspects source code when project is compiled. -->
+          <execution>
+            <id>analyze-compile</id>
+            <phase>compile</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>xml-maven-plugin</artifactId>
+        <version>${plugin.xml-maven.version}</version>
+        <configuration>
+          <transformationSets>
+            <transformationSet>
+              <!-- Configures the source directory of XML files. -->
+              <dir>${project.build.directory}/findbugs</dir>
+              <includes>
+                <!-- only transform findbugsXml.xml to generate FindBugs HTML report -->
+                <include>findbugsXml.xml</include>
+              </includes>
+
+              <!-- Configures the directory in which the FindBugs report is written. -->
+              <outputDir>${project.build.directory}/findbugs</outputDir>
+
+              <!-- Selects the used stylesheet. -->
+              <!-- <stylesheet>fancy-hist.xsl</stylesheet> -->
+              <!--<stylesheet>default.xsl</stylesheet> -->
+              <!--<stylesheet>plain.xsl</stylesheet> -->
+              <stylesheet>fancy.xsl</stylesheet>
+              <!--<stylesheet>summary.xsl</stylesheet> -->
+              <fileMappers>
+                <!-- Configures the file extension of the output files. -->
+                <fileMapper
+                        implementation="org.codehaus.plexus.components.io.filemappers.FileExtensionMapper">
+                  <targetExtension>.html</targetExtension>
+                </fileMapper>
+              </fileMappers>
+            </transformationSet>
+          </transformationSets>
+        </configuration>
+        <executions>
+          <!-- Ensures that the XSLT transformation is run when the project
+              is compiled. -->
+          <execution>
+            <phase>compile</phase>
+            <goals>
+              <goal>transform</goal>
+            </goals>
+          </execution>
+        </executions>
+        <dependencies>
+          <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>findbugs</artifactId>
+            <version>${plugin.findbugs.version}</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
       </plugin>
@@ -901,6 +993,33 @@
       </plugins>
     </pluginManagement>
   </build>
+
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>plugin.maven-project-info-reports</artifactId>
+        <version>${plugin.maven-project-info-reports.version}</version>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>findbugs-maven-plugin</artifactId>
+        <version>${plugin.findbugs-report.version}</version>
+        <configuration>
+          <!-- Enables analysis which takes more memory but finds more bugs. If
+              you run out of memory, changes the value of the effort element to 'low'. -->
+          <effort>Max</effort>
+          <!-- Reports all bugs (other values are medium and max) -->
+          <threshold>Low</threshold>
+
+          <!-- Produces XML report -->
+          <xmlOutput>true</xmlOutput>
+        </configuration>
+      </plugin>
+
+    </plugins>
+  </reporting>
 
 
 </project>
