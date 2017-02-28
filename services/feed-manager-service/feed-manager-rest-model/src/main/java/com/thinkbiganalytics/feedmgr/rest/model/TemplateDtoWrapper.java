@@ -37,6 +37,10 @@ public class TemplateDtoWrapper extends TemplateDTO {
     private TemplateDTO templateDto;
     private String registeredTemplateId;
 
+    public TemplateDtoWrapper() {
+        templateDto = new TemplateDTO();
+    }
+
     public TemplateDtoWrapper(TemplateDTO dto) {
         this.templateDto = dto;
     }

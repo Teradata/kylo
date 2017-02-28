@@ -36,8 +36,10 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
 @Api(tags = "Operations Manager - Services", produces = "application/json")
-@Path("/v1/service-monitor")
+@Path(ServiceMonitorRestController.V1_SERVICE_MONITOR)
 public class ServiceMonitorRestController {
+
+    static final String V1_SERVICE_MONITOR = "/v1/service-monitor";
 
     @Inject
     private ServiceMonitorRepository serviceRepository;

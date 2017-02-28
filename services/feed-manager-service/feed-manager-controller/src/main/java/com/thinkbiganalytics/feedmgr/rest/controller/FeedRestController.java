@@ -101,18 +101,20 @@ import io.swagger.annotations.SwaggerDefinition;
 import io.swagger.annotations.Tag;
 
 @Api(tags = "Feed Manager - Feeds", produces = "application/json")
-@Path("/v1/feedmgr/feeds")
+@Path(FeedRestController.BASE)
 @Component
 @SwaggerDefinition(tags = @Tag(name = "Feed Manager - Feeds", description = "manages feeds"))
 public class FeedRestController {
 
     private static final Logger log = LoggerFactory.getLogger(FeedRestController.class);
+    static final String BASE = "/v1/feedmgr/feeds";
 
     /**
      * Messages for the default locale
      */
     private static final ResourceBundle STRINGS = ResourceBundle.getBundle("com.thinkbiganalytics.feedmgr.rest.controller.FeedMessages");
     private static final int MAX_LIMIT = 1000;
+    public static final String NAMES = "/names";
 
     @Autowired
     @Qualifier("nifiRestClient")
@@ -212,7 +214,7 @@ public class FeedRestController {
     }
 
     @GET
-    @Path("/names")
+    @Path(NAMES)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the list of feed summaries.")
     @ApiResponses(

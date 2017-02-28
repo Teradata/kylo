@@ -37,6 +37,8 @@ public class NifiFeed {
     private List<String> errorMessages;
 
 
+    public NifiFeed() {}
+
     public NifiFeed(FeedMetadata feedMetadata, NifiProcessGroup feedProcessGroup) {
         this.feedMetadata = feedMetadata;
         this.feedProcessGroup = feedProcessGroup;

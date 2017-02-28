@@ -1,8 +1,8 @@
-package com.thinkbiganalytics.feedmgr.rest.model;
+package com.thinkbiganalytics.servicemonitor.rest.controller;
 
 /*-
  * #%L
- * thinkbig-feed-manager-rest-model
+ * kylo-service-monitor-controller
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
@@ -20,28 +20,19 @@ package com.thinkbiganalytics.feedmgr.rest.model;
  * #L%
  */
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.thinkbiganalytics.test.FunctionalTest;
+
+import org.junit.Test;
 
 /**
+ * Functional Test
  */
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class Tag {
+public class ServiceMonitorRestControllerFT extends FunctionalTest {
 
-    private String name;
-
-    public Tag() {
-
-    }
-
-    public Tag(String name) {
-        this.name = name;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
+    @Test
+    public void basicPingTest() {
+        given()
+            .when().get(ServiceMonitorRestController.V1_SERVICE_MONITOR)
+            .then().log().all().statusCode(200);
     }
 }

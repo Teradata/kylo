@@ -22,5 +22,6 @@
     <module>commons-spark</module>
     <module>commons-hive</module>
     <module>commons-test-persistence</module>
+    <module>commons-test</module>
   </modules>
 </project>

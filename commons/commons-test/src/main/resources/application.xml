@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+
+    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="location" value="classpath:functional-test.properties"/>
+    </bean>
+
+    <bean class="com.thinkbiganalytics.test.KyloConfig">
+        <property name="host" value="${kylo.host}"/>
+        <property name="port" value="${kylo.port}"/>
+        <property name="basePath" value="${kylo.basePath}"/>
+        <property name="username" value="${kylo.username}"/>
+        <property name="password" value="${kylo.password}"/>
+    </bean>
+
+    <bean class="com.thinkbiganalytics.test.SshConfig">
+        <property name="host" value="${ssh.host}"/>
+        <property name="port" value="${ssh.port}"/>
+        <property name="username" value="${ssh.username}"/>
+        <property name="password" value="${ssh.password}"/>
+        <property name="knownHosts" value="${ssh.known-hosts}"/>
+    </bean>
+
+</beans>
