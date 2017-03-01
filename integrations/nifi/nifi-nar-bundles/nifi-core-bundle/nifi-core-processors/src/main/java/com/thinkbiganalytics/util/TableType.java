@@ -73,7 +73,7 @@ public enum TableType {
         return HiveUtils.quoteIdentifier(source.trim(), deriveTablename(entity.trim()));
     }
 
-    public String deriveLocationSpecification(Path tableLocation, String source, String entity) {
+    public String deriveLocationSpecification(Path tableLocation, String source, String entity, String storageFormat, String s3bucket, String s3protocol) {
 
         Validate.notNull(tableLocation, "tableLocation expected");
         Validate.notNull(source, "source expected");
@@ -82,8 +82,16 @@ public enum TableType {
         Path path = tableLocation.resolve(source).resolve(entity).resolve(tableSuffix);
 
         StringBuffer sb = new StringBuffer();
-        sb.append(" LOCATION '")
-            .append(path.toAbsolutePath().toString()).append("'");
+        sb.append(" LOCATION '");
+
+        if (storageFormat.equalsIgnoreCase(StorageType.S3.toString())) {
+            sb.append(s3protocol).append("://").append(s3bucket).append(path);
+        } else {
+            sb.append(path.toAbsolutePath().toString());
+        }
+
+        sb.append("'");
+
         return sb.toString();
     }
 

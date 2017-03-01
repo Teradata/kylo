@@ -28,9 +28,11 @@ import com.klarna.hiverunner.annotations.HiveRunnerSetup;
 import com.klarna.hiverunner.annotations.HiveSQL;
 import com.klarna.hiverunner.config.HiveRunnerConfig;
 import com.thinkbiganalytics.util.ColumnSpec;
+import com.thinkbiganalytics.util.StorageType;
 import com.thinkbiganalytics.util.TableType;
 
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -113,10 +115,31 @@ public class TableRegisterSupportTest {
             String
                 ddl =
                 support.createDDL("bar", "employee", specs, parts, "ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'", "stored as orc", "tblproperties (\"orc.compress\"=\"SNAPPY\")",
-                                  tableType);
+                                  tableType, StorageType.HDFS.toString(), null,null);
             // Hack to make a legal file root
             ddl = ddl.replace("LOCATION '", "LOCATION '${hiveconf:MY.HDFS.DIR}");
             hiveShell.execute(ddl);
+        }
+    }
+
+    @Test
+    public void testTableCreateS3() {
+        ColumnSpec[] specs = ColumnSpec.createFromString("id|bigint|my comment\nname|string\ncompany|string|some description\nzip|string\nphone|string\nemail|string\ncountry|string\nhired|date");
+        ColumnSpec[] parts = ColumnSpec.createFromString("year|int\ncountry|string");
+
+        TableRegisterSupport support = new TableRegisterSupport(connection);
+        TableType[] tableTypes = new TableType[]{TableType.FEED, TableType.INVALID, TableType.VALID, TableType.MASTER};
+        for (TableType tableType : tableTypes) {
+            String
+                    ddl =
+                    support.createDDL("bar", "employee", specs, parts, "ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'", "stored as orc", "tblproperties (\"orc.compress\"=\"SNAPPY\")",
+                            tableType, StorageType.S3.toString(), "testBucket", "s3a");
+            String location = StringUtils.substringBetween(ddl, "LOCATION '", "'");
+            if(tableType.toString().equalsIgnoreCase("master")){
+                assertEquals("Master location does not match", "s3a://testBucket/app/warehouse/bar/employee", location);
+            } else {
+                assertEquals("Locations do not match", "s3a://testBucket/model.db/bar/employee/" + tableType.toString().toLowerCase(), location);
+            }
         }
     }
 
