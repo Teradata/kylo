@@ -87,32 +87,32 @@ public class TestFeedManagerFeed {
 
     private boolean deleteTemplate(String templateName) {
         //try to delete the template.  This should fail since there are feeds attached to it
-        return metadata.commit(new AdminCredentials(), () -> {
+        return metadata.commit(() -> {
             FeedManagerTemplate template = feedTestUtil.findOrCreateTemplate(templateName);
             return feedManagerTemplateProvider.deleteTemplate(template.getId());
 
-        });
+        }, MetadataAccess.SERVICE);
     }
 
     private void setupFeedAndTemplate(String categorySystemName, String feedName, String templateName) {
         //first create the category
-        metadata.commit(new AdminCredentials(), () -> {
+        metadata.commit(() -> {
             Category category = feedTestUtil.findOrCreateCategory(categorySystemName);
             return category.getId();
-        });
+        }, MetadataAccess.SERVICE);
 
         //creqte the feed
-        metadata.commit(new AdminCredentials(), () -> {
+        metadata.commit(() -> {
             Feed feed = feedTestUtil.findOrCreateFeed(categorySystemName, feedName, templateName);
             return feed.getId();
-        });
+        }, MetadataAccess.SERVICE);
 
         //ensure the feed relates to the template
-        metadata.read(new AdminCredentials(), () -> {
+        metadata.read(() -> {
             FeedManagerTemplate template = feedTestUtil.findOrCreateTemplate(templateName);
             List<Feed> feeds = template.getFeeds();
             Assert.assertTrue(feeds != null && feeds.size() > 0);
-        });
+        }, MetadataAccess.SERVICE);
     }
 
     /**

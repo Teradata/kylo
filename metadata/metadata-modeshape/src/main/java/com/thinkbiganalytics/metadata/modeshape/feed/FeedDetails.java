@@ -183,6 +183,7 @@ public class FeedDetails extends JcrPropertiesEntity {
 
     public void setTemplate(FeedManagerTemplate template) {
         setProperty(TEMPLATE, template);
+        template.addFeed(getParentFeed());
     }
 
     public List<ServiceLevelAgreement> getServiceLevelAgreements() {
