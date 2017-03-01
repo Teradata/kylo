@@ -1,0 +1,158 @@
+package com.thinkbiganalytics.spark.dataquality.output;
+
+/*-
+ * #%L
+ * thinkbig-spark-job-dataquality-app
+ * %%
+ * Copyright (C) 2017 ThinkBig Analytics
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
+import java.io.Serializable;
+
+import com.thinkbiganalytics.spark.dataquality.rule.DataQualityRule;
+
+/**
+ * Class to represent a row in data quality output<br>
+ * Format of output:<br>
+ *
+ * RuleName, Description, Status, Comments
+ */
+@SuppressWarnings("serial")
+public class DataQualityRow implements Serializable {
+
+    private String ruleName;
+    private String description;
+    private boolean status;
+    private String comment;
+
+    /**
+     * No-argument constructor
+     */
+    public DataQualityRow() {
+        ruleName = null;
+        description = null;
+        status = false;
+        comment = null;
+    }
+
+
+    /**
+     */
+    public DataQualityRow(DataQualityRule rule) {
+        this.ruleName = rule.getName();
+        this.description = rule.getDescription();
+        this.setStatus(rule.getStatus());
+        this.comment = rule.getSummary().toJSONString();
+    }
+
+
+    /**
+     * Get the rule name
+     *
+     * @return rule name
+     */
+    public String getRuleName() {
+        return ruleName;
+    }
+
+
+    /**
+     * Set the rule name
+     *
+     * @param ruleName name of the rule
+     */
+    public void setRuleName(String ruleName) {
+        this.ruleName = ruleName;
+    }
+
+
+    /**
+     * Get the rule description
+     *
+     * @return rule description
+     */
+    public String getDescription() {
+        return description;
+    }
+
+
+    /**
+     * Set the rule description
+     *
+     * @param description description of the data quality rule
+     */
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    /**
+     * Get the rule status
+     *
+     * @return rule status
+     */
+    public boolean getStatus() {
+        return status;
+    }
+
+
+    /**
+     * Set the rule status
+     *
+     * @param status The status of the rule (pass or fail)
+     */
+    public void setStatus(boolean status) {
+        this.status = status;
+    }
+
+
+    /**
+     * Set the rule comments
+     *
+     * @return rule comments
+     */
+    public String getComment() {
+        return comment;
+    }
+
+
+    /**
+     * Set the rule comemnts
+     *
+     * @param comment The comments of the rule
+     */
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+
+    /**
+     * Print verbose description of row to console
+     */
+    @Override
+    public String toString() {
+        return "DataQualityRow [ruleName=" + ruleName
+               + ", description="
+               + description
+               + ", status="
+               + status
+               + ", comment="
+               + comment
+               + "]";
+    }
+
+
+
+}
