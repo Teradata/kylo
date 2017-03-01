@@ -391,9 +391,11 @@ public class Validator implements Serializable {
                 newValues[idx] = val;
             } else {
                 String fieldValue = (val != null ? val.toString() : null);
-                if (StringUtils.isEmpty(fieldValue)) {
+
+                if (fieldValue == null) {
                     nulls++;
                 }
+
                 // Perform cleansing operations
                 fieldValue = standardizeField(fieldPolicy, fieldValue);
                 newValues[idx] = fieldValue;
