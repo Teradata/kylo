@@ -9,10 +9,12 @@ import java.util.Optional;
 import java.util.Set;
 
 import javax.inject.Inject;
+import javax.jcr.ItemNotFoundException;
 import javax.jcr.Property;
 import javax.jcr.PropertyIterator;
 import javax.jcr.RepositoryException;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
@@ -60,6 +62,8 @@ import com.thinkbiganalytics.metadata.api.user.UserProvider;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaOpsManagerFeed;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedManagerFeed;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
+import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplate;
 import com.thinkbiganalytics.security.action.AllowedModuleActionsProvider;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
@@ -181,16 +185,29 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
 
             //ensure the templates have the feed relationships
             List<FeedManagerFeed> feeds = feedManagerFeedProvider.findAll();
+            Map<String, FeedManagerTemplate> templateMap = new HashMap<>();
             if (feeds != null) {
                 feeds.stream().forEach(feed -> {
-                    FeedManagerTemplate template = feed.getTemplate();
-                    if (template != null) {
-                        //ensure the template has feeds
-                        if (template.getFeeds() == null || !template.getFeeds().contains(feed)) {
-                            template.addFeed(feed);
-                            feedManagerTemplateProvider.update(template);
+                        FeedManagerTemplate template = feed.getTemplate();
+                        if (template != null) {
+                            //ensure the template has feeds.
+                            List<FeedManagerFeed> templateFeeds = null;
+                            try {
+                                templateFeeds =  template.getFeeds();
+                            }catch(MetadataRepositoryException e){
+                                //templateFeeds are weak references.
+                                //if the template feeds return itemNotExists we need to reset it
+                                Throwable rootCause = ExceptionUtils.getRootCause(e);
+                                if(rootCause != null && rootCause instanceof ItemNotFoundException ) {
+                                    //reset the reference collection.  It will be rebuilt in the subsequent call
+                                    JcrPropertyUtil.removeAllFromSetProperty(((JcrFeedTemplate) template).getNode(), JcrFeedTemplate.FEEDS);
+                                }
+                            }
+                            if (templateFeeds == null || !templateFeeds.contains(feed)) {
+                                template.addFeed(feed);
+                                feedManagerTemplateProvider.update(template);
+                            }
                         }
-                    }
                 });
 
             }
