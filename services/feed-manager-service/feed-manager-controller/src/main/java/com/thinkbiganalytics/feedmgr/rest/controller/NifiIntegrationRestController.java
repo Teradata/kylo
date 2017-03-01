@@ -78,7 +78,7 @@ import io.swagger.annotations.SwaggerDefinition;
 import io.swagger.annotations.Tag;
 
 @Api(tags = "Feed Manager - NiFi", produces = "application/json")
-@Path("/v1/feedmgr/nifi")
+@Path(NifiIntegrationRestController.BASE)
 @Component
 @SwaggerDefinition(tags = @Tag(name = "Feed Manager - NiFi", description = "integration with NiFi"))
 public class NifiIntegrationRestController {
@@ -89,6 +89,9 @@ public class NifiIntegrationRestController {
      * Messages for the default locale
      */
     private static final ResourceBundle STRINGS = ResourceBundle.getBundle("com.thinkbiganalytics.feedmgr.rest.controller.NiFiIntegrationMessages");
+    static final String BASE = "/v1/feedmgr/nifi";
+    static final String FLOWS = "/flows";
+    static final String REUSABLE_INPUT_PORTS = "/reusable-input-ports";
     @Inject
     DBCPConnectionPoolTableInfo dbcpConnectionPoolTableInfo;
     @Inject
@@ -198,7 +201,7 @@ public class NifiIntegrationRestController {
 
     //walk entire graph
     @GET
-    @Path("/flows")
+    @Path(FLOWS)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets a list of all flows.")
     @ApiResponses({
@@ -231,7 +234,7 @@ public class NifiIntegrationRestController {
     }
 
     @GET
-    @Path("/reusable-input-ports")
+    @Path(REUSABLE_INPUT_PORTS)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the input ports to reusable templates.")
     @ApiResponses({

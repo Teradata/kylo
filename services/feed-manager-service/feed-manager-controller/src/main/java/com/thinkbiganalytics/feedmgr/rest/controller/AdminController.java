@@ -63,7 +63,8 @@ import io.swagger.annotations.Tag;
 public class AdminController {
 
     static final String BASE = "/v1/feedmgr/admin";
-    public static final String IMPORT_TEMPLATE = "/import-template";
+    static final String IMPORT_TEMPLATE = "/import-template";
+    static final String IMPORT_FEED = "/import-feed";
 
     @Inject
     ExportImportTemplateService exportImportTemplateService;
@@ -116,7 +117,7 @@ public class AdminController {
     }
 
     @POST
-    @Path("/import-feed")
+    @Path(IMPORT_FEED)
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Imports a feed zip file.")

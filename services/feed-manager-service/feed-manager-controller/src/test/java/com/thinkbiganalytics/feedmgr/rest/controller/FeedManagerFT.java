@@ -37,12 +37,14 @@ import com.thinkbiganalytics.feedmgr.rest.model.schema.PartitionField;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.TableOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.TableSetup;
 import com.thinkbiganalytics.feedmgr.service.ExportImportTemplateService;
+import com.thinkbiganalytics.feedmgr.service.feed.ExportImportFeedService;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.policy.rest.model.FieldPolicy;
 import com.thinkbiganalytics.policy.rest.model.FieldStandardizationRule;
 import com.thinkbiganalytics.policy.rest.model.FieldValidationRule;
 import com.thinkbiganalytics.test.FunctionalTest;
 
+import org.apache.nifi.web.api.dto.PortDTO;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -61,8 +63,10 @@ public class FeedManagerFT extends FunctionalTest {
     private static final String SAMPLES_DIR = "/samples";
     private static final String DATA_SAMPLES_DIR = SAMPLES_DIR + "/sample-data/";
     private static final String TEMPLATE_SAMPLES_DIR = SAMPLES_DIR + "/templates/nifi-1.0/";
+    private static final String FEED_SAMPLES_DIR = SAMPLES_DIR + "/feeds/nifi-1.0/";
     private static final String VAR_DROPZONE = "/var/dropzone";
-    private static final String USERDATA1_CSV = "/userdata1.csv";
+    private static final String USERDATA1_CSV = "userdata1.csv";
+    private String feedsPath;
     private String templatesPath;
     private String usersDataPath;
     private FieldStandardizationRule toUpperCase = new FieldStandardizationRule();
@@ -72,6 +76,7 @@ public class FeedManagerFT extends FunctionalTest {
     public void setup() throws URISyntaxException {
         String path = getClass().getResource(".").toURI().getPath();
         String basedir = path.substring(0, path.indexOf("services"));
+        feedsPath = basedir + FEED_SAMPLES_DIR;
         templatesPath = basedir + TEMPLATE_SAMPLES_DIR;
         usersDataPath = basedir + DATA_SAMPLES_DIR;
 
@@ -95,17 +100,12 @@ public class FeedManagerFT extends FunctionalTest {
         //create new category
         FeedCategory category = createCategory("Functional Tests");
 
-        //assert template is not there
-        RegisteredTemplate[] templates = getRegisteredTemplates();
-        Assert.assertTrue(templates.length == 0);
-
         //import standard ingest template
         ExportImportTemplateService.ImportTemplate ingest = importTemplate("data_ingest.zip");
         Assert.assertEquals("data_ingest.zip",  ingest.getFileName());
         Assert.assertTrue(ingest.isSuccess());
-
         //assert new template is there
-        templates = getRegisteredTemplates();
+        RegisteredTemplate[] templates = getRegisteredTemplates();
         Assert.assertTrue(templates.length == 1);
 
         //create standard ingest feed
@@ -114,36 +114,80 @@ public class FeedManagerFT extends FunctionalTest {
         Assert.assertEquals(feed.getFeedName(), response.getFeedName());
 
         //drop files in dropzone to run the feed
-        scp(usersDataPath + USERDATA1_CSV, VAR_DROPZONE);
-//        ssh(String.format("chown -R nifi:nifi %s", VAR_DROPZONE));
-
-    }
-
-    @Test
-    public void testSSH() {
-        //drop files in dropzone to run the feed
-        scp(usersDataPath + USERDATA1_CSV, VAR_DROPZONE);
+        scp(usersDataPath + "/" + USERDATA1_CSV, VAR_DROPZONE);
         ssh(String.format("chown -R nifi:nifi %s", VAR_DROPZONE));
     }
 
     private void startClean() {
-        //start clean - delete all feeds
-        FeedSummary[] feeds = getAllFeeds();
-        for (FeedSummary feed : feeds) {
-            deleteFeed(feed.getFeedId());
-        }
+        deleteExistingReusableVersionedFlows();
+        deleteExistingFeeds();
+        deleteExistingTemplates();
+        deleteExistingCategories();
+        importSystemFeeds();
+    }
 
+    @Test
+    public void importSystemFeeds() {
+        importFeed("index_schema_service.zip");
+        importFeed("index_text_service.zip");
+    }
+
+    public void deleteExistingReusableVersionedFlows() {
+        //otherwise if we don't delete each time we import a new template
+        // exiting templates are versioned off and keep piling up
+        PortDTO[] ports = getReusableInputPorts();
+        for (PortDTO port : ports) {
+            deleteVersionedNifiFlow(port.getParentGroupId());
+        }
+    }
+
+    private void deleteVersionedNifiFlow(String groupId) {
+        Response response = given(NifiIntegrationRestController.BASE)
+            .when()
+            .get("/cleanup-versions/" + groupId);
+
+        response.then().log().all().statusCode(200);
+    }
+
+    private PortDTO[] getReusableInputPorts() {
+        Response response = given(NifiIntegrationRestController.BASE)
+            .when()
+            .get(NifiIntegrationRestController.REUSABLE_INPUT_PORTS);
+
+        response.then().log().all().statusCode(200);
+
+        return response.as(PortDTO[].class);
+    }
+
+    private void deleteExistingCategories() {
+        //start clean - delete all categories if there
+        FeedCategory[] categories = getCategories();
+        for (FeedCategory category : categories) {
+            deleteCategory(category.getId());
+        }
+        categories = getCategories();
+        Assert.assertTrue(categories.length == 0);
+    }
+
+    private void deleteExistingTemplates() {
         //start clean - delete all templates if there
         RegisteredTemplate[] templates = getRegisteredTemplates();
         for (RegisteredTemplate template : templates) {
             deleteTemplate(template.getId());
         }
+        //assert there are no templates
+        templates = getRegisteredTemplates();
+        Assert.assertTrue(templates.length == 0);
+    }
 
-        //start clean - delete all categories if there
-        FeedCategory[] categories = getAllCategories();
-        for (FeedCategory category : categories) {
-            deleteCategory(category.getId());
+    private void deleteExistingFeeds() {
+        //start clean - delete all feeds
+        FeedSummary[] feeds = getFeeds();
+        for (FeedSummary feed : feeds) {
+            deleteFeed(feed.getFeedId());
         }
+        feeds = getFeeds();
+        Assert.assertTrue(feeds.length == 0);
     }
 
     private FeedMetadata createFeedRequest(FeedCategory category, ExportImportTemplateService.ImportTemplate template, String name) {
@@ -317,7 +361,7 @@ public class FeedManagerFT extends FunctionalTest {
     }
 
 
-    private FeedCategory[] getAllCategories() {
+    private FeedCategory[] getCategories() {
         Response response = given(FeedCategoryRestController.BASE)
             .when()
             .get();
@@ -354,10 +398,23 @@ public class FeedManagerFT extends FunctionalTest {
     }
 
 
-    private ExportImportTemplateService.ImportTemplate importTemplate(String path) {
+    private ExportImportFeedService.ImportFeed importFeed(String feedName) {
         Response post = given(AdminController.BASE)
             .contentType("multipart/form-data")
-            .multiPart(new File(templatesPath + path))
+            .multiPart(new File(feedsPath + feedName))
+            .multiPart("overwrite", true)
+            .multiPart("importConnectingReusableFlow", ImportOptions.IMPORT_CONNECTING_FLOW.YES)
+            .when().post(AdminController.IMPORT_FEED);
+
+        post.then().statusCode(200);
+
+        return post.as(ExportImportFeedService.ImportFeed.class);
+    }
+
+    private ExportImportTemplateService.ImportTemplate importTemplate(String templateName) {
+        Response post = given(AdminController.BASE)
+            .contentType("multipart/form-data")
+            .multiPart(new File(templatesPath + templateName))
             .multiPart("overwrite", true)
             .multiPart("createReusableFlow", false)
             .multiPart("importConnectingReusableFlow", ImportOptions.IMPORT_CONNECTING_FLOW.YES)
@@ -368,7 +425,7 @@ public class FeedManagerFT extends FunctionalTest {
         return post.as(ExportImportTemplateService.ImportTemplate.class);
     }
 
-    private FeedSummary[] getAllFeeds() {
+    private FeedSummary[] getFeeds() {
         Response response = given(FeedRestController.BASE)
             .when()
             .get();

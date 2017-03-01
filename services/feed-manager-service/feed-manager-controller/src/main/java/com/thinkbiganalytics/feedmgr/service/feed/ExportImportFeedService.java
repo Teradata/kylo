@@ -235,7 +235,7 @@ public class ExportImportFeedService {
         }
     }
 
-    public class ImportFeed {
+    public static class ImportFeed {
 
         private boolean success;
         private String fileName;
@@ -243,6 +243,8 @@ public class ExportImportFeedService {
         private ExportImportTemplateService.ImportTemplate template;
         private NifiFeed nifiFeed;
         private String feedJson;
+
+        public ImportFeed() {}
 
         public ImportFeed(String fileName) {
             this.fileName = fileName;
