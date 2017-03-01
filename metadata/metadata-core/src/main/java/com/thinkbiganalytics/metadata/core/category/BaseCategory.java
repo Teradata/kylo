@@ -166,13 +166,34 @@ public class BaseCategory implements Category {
         return null;
     }
 
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.security.AccessControlled#getRoleAssignments()
-     */
     @Override
     public RoleAssignments getRoleAssignments() {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    @Override
+    public String getIcon() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public void setIcon(String icon) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public String getIconColor() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public void setIconColor(String iconColor) {
+        // TODO Auto-generated method stub
+        
     }
 
     private static class BaseId {

@@ -16,7 +16,7 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 /**
  *
  */
-public class FeedSummary<C extends Category> extends AbstractJcrAuditableSystemEntity {
+public class FeedSummary extends AbstractJcrAuditableSystemEntity {
 
     public static final String DETAILS = "tba:details";
 
@@ -46,14 +46,14 @@ public class FeedSummary<C extends Category> extends AbstractJcrAuditableSystemE
         }
     }
     
-    protected C getCategory(Class<? extends JcrCategory> categoryClass) {
-        C category = null;
+    protected Category getCategory(Class<? extends JcrCategory> categoryClass) {
+        Category category = null;
         try {
-            category = (C) getProperty(CATEGORY, categoryClass);
+            category = (Category) getProperty(CATEGORY, categoryClass);
         } catch (Exception e) {
             if (category == null) {
                 try {
-                    category = (C) JcrUtil.constructNodeObject(node.getParent(), categoryClass, null);
+                    category = (Category) JcrUtil.constructNodeObject(node.getParent(), categoryClass, null);
                 } catch (Exception e2) {
                     throw new CategoryNotFoundException("Unable to find category on Feed for category type  " + categoryClass + ". Exception: " + e.getMessage(), null);
                 }

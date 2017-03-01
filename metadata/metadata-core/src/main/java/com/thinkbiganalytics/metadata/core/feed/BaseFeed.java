@@ -20,23 +20,6 @@ package com.thinkbiganalytics.metadata.core.feed;
  * #L%
  */
 
-import com.thinkbiganalytics.metadata.api.category.Category;
-import com.thinkbiganalytics.metadata.api.datasource.Datasource;
-import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
-import com.thinkbiganalytics.metadata.api.feed.Feed;
-import com.thinkbiganalytics.metadata.api.feed.FeedConnection;
-import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
-import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
-import com.thinkbiganalytics.metadata.api.feed.FeedSource;
-import com.thinkbiganalytics.metadata.api.feed.InitializationStatus;
-import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
-import com.thinkbiganalytics.metadata.api.security.RoleAssignments;
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
-import com.thinkbiganalytics.security.action.AllowedActions;
-
-import org.joda.time.DateTime;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -52,12 +35,30 @@ import java.util.UUID;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import org.joda.time.DateTime;
+
+import com.thinkbiganalytics.metadata.api.category.Category;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource;
+import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
+import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.feed.FeedConnection;
+import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
+import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
+import com.thinkbiganalytics.metadata.api.feed.FeedSource;
+import com.thinkbiganalytics.metadata.api.feed.InitializationStatus;
+import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
+import com.thinkbiganalytics.metadata.api.security.RoleAssignments;
+import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
+import com.thinkbiganalytics.security.action.AllowedActions;
+
 /**
  * A POJO implementation of {@link Feed}.
  *
- * @param <C> the type of parent category
+ * @param  the type of parent category
  */
-public class BaseFeed<C extends Category> implements Feed<C> {
+public class BaseFeed implements Feed {
 
     private ID Id;
     private String name;
@@ -66,7 +67,7 @@ public class BaseFeed<C extends Category> implements Feed<C> {
     private State state;
     private boolean initialized;
     private DateTime createdTime;
-    private Set<Feed<?>> dependentFeeds = new HashSet<>();
+    private Set<Feed> dependentFeeds = new HashSet<>();
     private Set<FeedSource> sources = new HashSet<>();
     private Set<FeedDestination> destinations = new HashSet<>();
     private FeedPreconditionImpl precondition;
@@ -74,6 +75,9 @@ public class BaseFeed<C extends Category> implements Feed<C> {
     private List<ServiceLevelAgreement> feedServiceLevelAgreements;
     private List<? extends HadoopSecurityGroup> hadoopSecurityGroups;
     private Map<String, String> waterMarkValues = new HashMap<>();
+    private String json;
+    private FeedManagerTemplate template;
+    private String nifiProcessGroupId;
 
     /**
      * User-defined properties
@@ -95,7 +99,7 @@ public class BaseFeed<C extends Category> implements Feed<C> {
 
     @Override
     @SuppressWarnings("unchecked")
-    public List<Feed<C>> getDependentFeeds() {
+    public List<Feed> getDependentFeeds() {
         return new ArrayList(this.dependentFeeds);
     }
 
@@ -111,17 +115,17 @@ public class BaseFeed<C extends Category> implements Feed<C> {
 
 
     @Override
-    public List<Feed<C>> getUsedByFeeds() {
+    public List<Feed> getUsedByFeeds() {
         return null;
     }
 
     @Override
-    public boolean addUsedByFeed(Feed<?> feed) {
+    public boolean addUsedByFeed(Feed feed) {
         return false;
     }
 
     @Override
-    public boolean removeUsedByFeed(Feed<?> feed) {
+    public boolean removeUsedByFeed(Feed feed) {
         return false;
     }
 
@@ -208,7 +212,7 @@ public class BaseFeed<C extends Category> implements Feed<C> {
     }
 
     @Override
-    public C getCategory() {
+    public Category getCategory() {
         return null;
     }
 
@@ -294,7 +298,7 @@ public class BaseFeed<C extends Category> implements Feed<C> {
     }
 
     @Override
-    public List<? extends ServiceLevelAgreement> getServiceLevelAgreements() {
+    public List<ServiceLevelAgreement> getServiceLevelAgreements() {
         return feedServiceLevelAgreements;
     }
 
@@ -404,6 +408,43 @@ public class BaseFeed<C extends Category> implements Feed<C> {
         return null;
     }
 
+    
+    @Override
+    public String getJson() {
+        return json;
+    }
+
+    @Override
+    public void setJson(String json) {
+        this.json = json;
+    }
+
+    public FeedManagerTemplate getTemplate() {
+        return template;
+    }
+
+    @Override
+    public void setTemplate(FeedManagerTemplate template) {
+        this.template = template;
+    }
+
+    @Override
+    public String getNifiProcessGroupId() {
+        return nifiProcessGroupId;
+    }
+
+    @Override
+    public void setNifiProcessGroupId(String nifiProcessGroupId) {
+        this.nifiProcessGroupId = nifiProcessGroupId;
+    }
+
+    @Override
+    public void setVersionName(String version) {
+        // TODO Auto-generated method stub
+        
+    }
+
+
     private static class BaseId {
 
         private final UUID uuid;
@@ -466,7 +507,7 @@ public class BaseFeed<C extends Category> implements Feed<C> {
         }
 
         @Override
-        public Feed<?> getFeed() {
+        public Feed getFeed() {
             return this.feed;
         }
 

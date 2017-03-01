@@ -26,9 +26,8 @@ import com.thinkbiganalytics.feedmgr.service.UserPropertyTransform;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedModelTransform;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryNotFoundException;
+import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
-import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
-import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryProvider;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroupProvider;
 import com.thinkbiganalytics.metadata.modeshape.security.JcrHadoopSecurityGroup;
@@ -55,7 +54,7 @@ public class CategoryModelTransform {
      * Provider for categories
      */
     @Inject
-    FeedManagerCategoryProvider categoryProvider;
+    CategoryProvider categoryProvider;
 
     /**
      * Transform functions for feeds
@@ -73,7 +72,7 @@ public class CategoryModelTransform {
      * @return the Feed Manager category
      */
     @Nullable
-    public FeedCategory domainToFeedCategory(@Nullable final FeedManagerCategory domainCategory) {
+    public FeedCategory domainToFeedCategory(@Nullable final Category domainCategory) {
         return domainToFeedCategory(domainCategory, categoryProvider.getUserFields());
     }
 
@@ -84,7 +83,7 @@ public class CategoryModelTransform {
      * @return the Feed Manager categories
      */
     @Nonnull
-    public List<FeedCategory> domainToFeedCategory(@Nonnull final Collection<FeedManagerCategory> domain) {
+    public List<FeedCategory> domainToFeedCategory(@Nonnull final Collection<Category> domain) {
         final Set<UserFieldDescriptor> userFields = categoryProvider.getUserFields();
         return domain.stream().map(c -> domainToFeedCategory(c, userFields)).collect(Collectors.toList());
     }
@@ -97,7 +96,7 @@ public class CategoryModelTransform {
      * @return the Feed Manager category
      */
     @Nullable
-    private FeedCategory domainToFeedCategory(@Nullable final FeedManagerCategory domainCategory, @Nonnull final Set<UserFieldDescriptor> userFields) {
+    private FeedCategory domainToFeedCategory(@Nullable final Category domainCategory, @Nonnull final Set<UserFieldDescriptor> userFields) {
         if (domainCategory != null) {
             FeedCategory category = new FeedCategory();
             category.setId(domainCategory.getId().toString());
@@ -145,7 +144,7 @@ public class CategoryModelTransform {
      * @return the Feed Manager category
      */
     @Nullable
-    public FeedCategory domainToFeedCategorySimple(@Nullable final FeedManagerCategory domainCategory) {
+    public FeedCategory domainToFeedCategorySimple(@Nullable final Category domainCategory) {
         if (domainCategory != null) {
             FeedCategory category = new FeedCategory();
             category.setId(domainCategory.getId().toString());
@@ -169,7 +168,7 @@ public class CategoryModelTransform {
      * @return the Feed Manager categories
      */
     @Nonnull
-    public List<FeedCategory> domainToFeedCategorySimple(@Nonnull final Collection<FeedManagerCategory> domain) {
+    public List<FeedCategory> domainToFeedCategorySimple(@Nonnull final Collection<Category> domain) {
         return domain.stream().map(this::domainToFeedCategorySimple).collect(Collectors.toList());
     }
 
@@ -180,7 +179,7 @@ public class CategoryModelTransform {
      * @return the Metadata category
      */
     @Nonnull
-    public FeedManagerCategory feedCategoryToDomain(@Nonnull final FeedCategory feedCategory) {
+    public Category feedCategoryToDomain(@Nonnull final FeedCategory feedCategory) {
         final Set<UserFieldDescriptor> userFields = categoryProvider.getUserFields();
         return feedCategoryToDomain(feedCategory, userFields);
     }
@@ -191,7 +190,7 @@ public class CategoryModelTransform {
      * @param feedCategories the Feed Manager categories
      * @return the Metadata categories
      */
-    public List<FeedManagerCategory> feedCategoryToDomain(Collection<FeedCategory> feedCategories) {
+    public List<Category> feedCategoryToDomain(Collection<FeedCategory> feedCategories) {
         final Set<UserFieldDescriptor> userFields = categoryProvider.getUserFields();
         return feedCategories.stream().map(c -> feedCategoryToDomain(c, userFields)).collect(Collectors.toList());
     }
@@ -204,9 +203,9 @@ public class CategoryModelTransform {
      * @return the Metadata category
      */
     @Nonnull
-    private FeedManagerCategory feedCategoryToDomain(@Nonnull final FeedCategory feedCategory, @Nonnull final Set<UserFieldDescriptor> userFields) {
+    private Category feedCategoryToDomain(@Nonnull final FeedCategory feedCategory, @Nonnull final Set<UserFieldDescriptor> userFields) {
         Category.ID domainId = feedCategory.getId() != null ? categoryProvider.resolveId(feedCategory.getId()) : null;
-        FeedManagerCategory category = null;
+        Category category = null;
         if (domainId != null) {
             category = categoryProvider.findById(domainId);
             if (category != null && !feedCategory.getSystemName().equals(category.getName())) {

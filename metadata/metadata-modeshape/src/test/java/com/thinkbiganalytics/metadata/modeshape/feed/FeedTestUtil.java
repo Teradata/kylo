@@ -20,20 +20,18 @@ package com.thinkbiganalytics.metadata.modeshape.feed;
  * #L%
  */
 
-import com.thinkbiganalytics.metadata.api.category.Category;
-import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
-import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
-import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryProvider;
-import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
-import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
-import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
-import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
-import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
-import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
+import javax.inject.Inject;
 
 import org.springframework.stereotype.Component;
 
-import javax.inject.Inject;
+import com.thinkbiganalytics.metadata.api.category.Category;
+import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
+import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
+import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
+import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 
 /**
  */
@@ -48,13 +46,10 @@ public class FeedTestUtil {
     FeedProvider feedProvider;
 
     @Inject
-    FeedManagerFeedProvider feedManagerFeedProvider;
-
-    @Inject
     FeedManagerTemplateProvider feedManagerTemplateProvider;
 
     @Inject
-    FeedManagerCategoryProvider feedManagerCategoryProvider;
+    CategoryProvider feedManagerCategoryProvider;
 
     @Inject
     private JcrMetadataAccess metadata;
@@ -79,17 +74,17 @@ public class FeedTestUtil {
         return cat;
     }
 
-    public FeedManagerFeed findOrCreateFeed(String categorySystemName, String feedSystemName, String feedTemplate) {
+    public Feed findOrCreateFeed(String categorySystemName, String feedSystemName, String feedTemplate) {
         Category category = findOrCreateCategory(categorySystemName);
-        FeedManagerFeed feed = feedManagerFeedProvider.ensureFeed(category.getId(), feedSystemName);
+        Feed feed = feedProvider.ensureFeed(category.getId(), feedSystemName);
         feed.setDisplayName(feedSystemName);
         FeedManagerTemplate template = findOrCreateTemplate(feedTemplate);
         feed.setTemplate(template);
-        return feedManagerFeedProvider.update(feed);
+        return feedProvider.update(feed);
     }
 
-    public FeedManagerFeed findOrCreateFeed(Category category, String feedSystemName,FeedManagerTemplate template) {
-        FeedManagerFeed feed = feedManagerFeedProvider.ensureFeed(category.getId(), feedSystemName);
+    public Feed findOrCreateFeed(Category category, String feedSystemName,FeedManagerTemplate template) {
+        Feed feed = feedManagerFeedProvider.ensureFeed(category.getId(), feedSystemName);
         feed.setDisplayName(feedSystemName);
         feed.setTemplate(template);
         feed.setJson(sampleFeedJson());
@@ -100,8 +95,8 @@ public class FeedTestUtil {
         return "";
     }
 
-    public FeedManagerFeed findFeed(String categorySystemName, String feedSystemName) {
-        FeedManagerFeed feed = feedManagerFeedProvider.findBySystemName(categorySystemName, feedSystemName);
+    public Feed findFeed(String categorySystemName, String feedSystemName) {
+        Feed feed = feedProvider.findBySystemName(categorySystemName, feedSystemName);
         return feed;
     }
 

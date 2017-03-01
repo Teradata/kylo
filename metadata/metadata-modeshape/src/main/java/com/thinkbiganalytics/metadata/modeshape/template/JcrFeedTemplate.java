@@ -20,17 +20,6 @@ package com.thinkbiganalytics.metadata.modeshape.template;
  * #L%
  */
 
-import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
-import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
-import com.thinkbiganalytics.metadata.api.security.RoleAssignments;
-import com.thinkbiganalytics.metadata.modeshape.JcrAccessControlledSupport;
-import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
-import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedManagerFeed;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
-import com.thinkbiganalytics.security.action.AllowedActions;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +27,17 @@ import java.util.Set;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+
+import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.security.RoleAssignments;
+import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
+import com.thinkbiganalytics.metadata.modeshape.JcrAccessControlledSupport;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
+import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
+import com.thinkbiganalytics.security.action.AllowedActions;
 
 /**
  */
@@ -177,26 +177,26 @@ public class JcrFeedTemplate extends AbstractJcrAuditableSystemEntity implements
         setProperty(STATE, State.DISABLED);
     }
 
-    public List<FeedManagerFeed> getFeeds() {
-        List<FeedManagerFeed> feeds = new ArrayList<>();
+    public List<Feed> getFeeds() {
+        List<Feed> feeds = new ArrayList<>();
         Set<Node> feedNodes = JcrPropertyUtil.getSetProperty(this.node, FEEDS);
 
         for (Node depNode : feedNodes) {
-            feeds.add(new JcrFeedManagerFeed(depNode));
+            feeds.add(new JcrFeed(depNode));
         }
 
         return feeds;
     }
 
-    public boolean addFeed(FeedManagerFeed<?> feed) {
-        JcrFeedManagerFeed<?> jcrFeed = (JcrFeedManagerFeed<?>) feed;
+    public boolean addFeed(Feed feed) {
+        JcrFeed jcrFeed = (JcrFeed) feed;
         Node feedNode = jcrFeed.getNode();
 
         return JcrPropertyUtil.addToSetProperty(this.node, FEEDS, feedNode);
     }
 
-    public boolean removeFeed(FeedManagerFeed<?> feed) {
-        JcrFeedManagerFeed<?> jcrFeed = (JcrFeedManagerFeed<?>) feed;
+    public boolean removeFeed(Feed feed) {
+        JcrFeed jcrFeed = (JcrFeed) feed;
         Node feedNode = jcrFeed.getNode();
 
         return JcrPropertyUtil.removeFromSetProperty(this.node, FEEDS, feedNode);

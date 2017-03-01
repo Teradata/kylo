@@ -1,25 +1,5 @@
 package com.thinkbiganalytics.metadata.modeshape.feed;
 
-import java.io.Serializable;
-import java.security.Principal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Consumer;
-
-import javax.annotation.Nonnull;
-import javax.inject.Inject;
-import javax.jcr.Node;
-import javax.jcr.NodeIterator;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-
-import org.joda.time.DateTime;
-import org.springframework.security.core.context.SecurityContextHolder;
-
 /*-
  * #%L
  * thinkbig-metadata-modeshape
@@ -39,6 +19,27 @@ import org.springframework.security.core.context.SecurityContextHolder;
  * limitations under the License.
  * #L%
  */
+
+import java.io.Serializable;
+import java.security.Principal;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Consumer;
+
+import javax.annotation.Nonnull;
+import javax.inject.Inject;
+import javax.jcr.Node;
+import javax.jcr.NodeIterator;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.query.QueryResult;
+
+import org.joda.time.DateTime;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.google.common.base.Predicate;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
@@ -65,6 +66,7 @@ import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.api.feed.PreconditionBuilder;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
+import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.modeshape.AbstractMetadataCriteria;
 import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
@@ -80,8 +82,8 @@ import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedEntity
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrVersionUtil;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup.Condition;
@@ -100,7 +102,7 @@ import com.thinkbiganalytics.support.FeedNameUtil;
 public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements FeedProvider {
 
     @Inject
-    private CategoryProvider<Category> categoryProvider;
+    private CategoryProvider categoryProvider;
 
     @Inject
     private ServiceLevelAgreementProvider slaProvider;
@@ -129,9 +131,6 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     @Inject
     private MetadataEventService metadataEventService;
 
-    @Inject
-    private JcrFeedUtil jcrFeedUtil;
-
     @Override
     public String getNodeType(Class<? extends JcrEntity> jcrEntityType) {
         return JcrFeed.NODE_TYPE;
@@ -148,12 +147,12 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     }
 
     public void removeFeedSources(Feed.ID feedId) {
-        JcrFeed<?> feed = (JcrFeed) findById(feedId);
+        JcrFeed feed = (JcrFeed) findById(feedId);
         feed.removeFeedSources();
     }
 
     public void removeFeedSource(Feed.ID feedId, Datasource.ID dsId) {
-        JcrFeed<?> feed = (JcrFeed) findById(feedId);
+        JcrFeed feed = (JcrFeed) findById(feedId);
         JcrFeedSource source = (JcrFeedSource) feed.getSource(dsId);
 
         if (source != null) {
@@ -162,7 +161,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     }
 
     public void removeFeedDestination(Feed.ID feedId, Datasource.ID dsId) {
-        JcrFeed<?> feed = (JcrFeed) findById(feedId);
+        JcrFeed feed = (JcrFeed) findById(feedId);
         JcrFeedDestination dest = (JcrFeedDestination) feed.getDestination(dsId);
     
         if (dest != null) {
@@ -171,13 +170,13 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     }
 
     public void removeFeedDestinations(Feed.ID feedId) {
-        JcrFeed<?> feed = (JcrFeed) findById(feedId);
+        JcrFeed feed = (JcrFeed) findById(feedId);
         feed.removeFeedDestinations();
     }
 
     @Override
     public FeedSource ensureFeedSource(Feed.ID feedId, Datasource.ID dsId) {
-        JcrFeed<?> feed = (JcrFeed) findById(feedId);
+        JcrFeed feed = (JcrFeed) findById(feedId);
         FeedSource source = feed.getSource(dsId);
 
         if (source == null) {
@@ -204,7 +203,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
     @Override
     public FeedDestination ensureFeedDestination(Feed.ID feedId, com.thinkbiganalytics.metadata.api.datasource.Datasource.ID dsId) {
-        JcrFeed<?> feed = (JcrFeed) findById(feedId);
+        JcrFeed feed = (JcrFeed) findById(feedId);
         FeedDestination source = feed.getDestination(dsId);
 
         if (source == null) {
@@ -251,17 +250,41 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         Node feedNode = findOrCreateEntityNode(categoryPath, feedSystemName, getJcrEntityClass());
         boolean versionable = JcrUtil.isVersionable(feedNode);
 
-        JcrFeed<?> feed = new JcrFeed(feedNode, category);
+        JcrFeed feed = new JcrFeed(feedNode, category);
 
         feed.setSystemName(feedSystemName);
 
         if (newFeed) {
             this.actionsProvider.getAllowedActions("feed")
                 .ifPresent(actions -> feed.getAccessControlSupport().initializeActions((JcrAllowedActions) actions));
-            jcrFeedUtil.addPostFeedChangeAction(feed, ChangeType.CREATE);
+            addPostFeedChangeAction(feed, ChangeType.CREATE);
         }
 
         return feed;
+    }
+
+    /**
+     * Registers an action that produces a feed change event upon a successful transaction commit.
+     *
+     * @param feed the feed to being created
+     */
+    private void addPostFeedChangeAction(Feed feed, ChangeType changeType) {
+        Feed.State state = feed.getState();
+        Feed.ID id = feed.getId();
+        String desc = feed.getQualifiedName();
+        final Principal principal = SecurityContextHolder.getContext().getAuthentication() != null
+                                    ? SecurityContextHolder.getContext().getAuthentication()
+                                    : null;
+
+        Consumer<Boolean> action = (success) -> {
+            if (success) {
+                FeedChange change = new FeedChange(changeType, desc,id, state);
+                FeedChangeEvent event = new FeedChangeEvent(change, DateTime.now(), principal);
+                metadataEventService.notify(event);
+            }
+        };
+
+        JcrMetadataAccess.addPostTransactionAction(action);
     }
 
     @Override
@@ -289,7 +312,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
     @Override
     public Feed createPrecondition(Feed.ID feedId, String descr, List<Metric> metrics) {
-        JcrFeed<?> feed = (JcrFeed<?>) findById(feedId);
+        JcrFeed feed = (JcrFeed) findById(feedId);
 
         ServiceLevelAgreementBuilder slaBldr = buildPrecondition(feed)
             .name("Precondition for feed " + feedId)
@@ -306,12 +329,12 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
     @Override
     public PreconditionBuilder buildPrecondition(ID feedId) {
-        JcrFeed<?> feed = (JcrFeed<?>) findById(feedId);
+        JcrFeed feed = (JcrFeed) findById(feedId);
 
         return buildPrecondition(feed);
     }
 
-    private PreconditionBuilder buildPrecondition(JcrFeed<?> feed) {
+    private PreconditionBuilder buildPrecondition(JcrFeed feed) {
         try {
             if (feed != null) {
                 Node slaNode = feed.createNewPrecondition();
@@ -327,14 +350,14 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     }
 
     @Override
-    public Feed<?> addDependent(ID targetId, ID dependentId) {
-        JcrFeed<?> target = (JcrFeed<?>) getFeed(targetId);
+    public Feed addDependent(ID targetId, ID dependentId) {
+        JcrFeed target = (JcrFeed) getFeed(targetId);
 
         if (target == null) {
             throw new FeedNotFoundExcepton("The target feed to be assigned the dependent does not exists", targetId);
         }
 
-        JcrFeed<?> dependent = (JcrFeed<?>) getFeed(dependentId);
+        JcrFeed dependent = (JcrFeed) getFeed(dependentId);
 
         if (dependent == null) {
             throw new FeedNotFoundExcepton("The dependent feed does not exists", dependentId);
@@ -345,14 +368,14 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     }
 
     @Override
-    public Feed<?> removeDependent(ID feedId, ID dependentId) {
-        JcrFeed<?> target = (JcrFeed<?>) getFeed(feedId);
+    public Feed removeDependent(ID feedId, ID dependentId) {
+        JcrFeed target = (JcrFeed) getFeed(feedId);
 
         if (target == null) {
             throw new FeedNotFoundExcepton("The target feed to be assigned the dependent does not exists", feedId);
         }
 
-        JcrFeed<?> dependent = (JcrFeed<?>) getFeed(dependentId);
+        JcrFeed dependent = (JcrFeed) getFeed(dependentId);
 
         if (dependent == null) {
             throw new FeedNotFoundExcepton("The dependent feed does not exists", dependentId);
@@ -407,6 +430,34 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         }
         return null;
     }
+    
+
+    @Override
+    public List<? extends Feed> findByTemplateId(FeedManagerTemplate.ID templateId) {
+        String query = "SELECT * from " + EntityUtil.asQueryProperty(JcrFeed.NODE_TYPE) + " as e WHERE e." + EntityUtil.asQueryProperty(FeedDetails.TEMPLATE) + " = $id";
+        Map<String, String> bindParams = new HashMap<>();
+        bindParams.put("id", templateId.toString());
+        return JcrQueryUtil.find(getSession(), query, JcrFeed.class);
+    }
+
+    @Override
+    public List<? extends Feed> findByCategoryId(Category.ID categoryId) {
+
+        String query = "SELECT * from " + EntityUtil.asQueryProperty(JcrFeed.NODE_TYPE) + " as e "
+                       + "WHERE e." + EntityUtil.asQueryProperty(FeedSummary.CATEGORY) + " = $id";
+
+        Map<String, String> bindParams = new HashMap<>();
+        bindParams.put("id", categoryId.toString());
+
+        try {
+            QueryResult result = JcrQueryUtil.query(getSession(), query, bindParams);
+            return JcrQueryUtil.queryResultToList(result, JcrFeed.class);
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to getFeeds for Category ", e);
+        }
+
+    }
+
 //
 //    @Override
 //    public FeedSource getFeedSource(com.thinkbiganalytics.metadata.api.feed.FeedSource.ID id) {
@@ -490,19 +541,33 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
     @Override
     public void deleteFeed(ID feedId) {
-        JcrFeed<?> feed = (JcrFeed<?>) getFeed(feedId);
+        JcrFeed feed = (JcrFeed) getFeed(feedId);
 
         if (feed != null) {
-            jcrFeedUtil.addPostFeedChangeAction(feed, ChangeType.DELETE);
+            addPostFeedChangeAction(feed, ChangeType.DELETE);
             deleteById(feedId);
         }
+    }
+
+    @Override
+    public void delete(Feed feed) {
+        addPostFeedChangeAction(feed, ChangeType.DELETE);
+
+        // Remove dependent feeds
+        final Node node = ((JcrFeed) feed).getNode();
+        feed.getDependentFeeds().forEach(dep -> dep.removeDependentFeed((JcrFeed) dep));
+        JcrMetadataAccess.getCheckedoutNodes().removeIf(node::equals);
+
+        // Delete feed
+        feed.getTemplate().removeFeed(feed);
+        super.delete(feed);
     }
 
     public Feed.ID resolveId(Serializable fid) {
         return new JcrFeed.FeedId(fid);
     }
 
-    protected JcrFeed<?> setupPrecondition(JcrFeed<?> feed, ServiceLevelAgreement sla) {
+    protected JcrFeed setupPrecondition(JcrFeed feed, ServiceLevelAgreement sla) {
 //        this.preconditionService.watchFeed(feed);
         feed.setPrecondition((JcrServiceLevelAgreement) sla);
         return feed;
@@ -592,7 +657,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
                     catItr = feedsNode.getNodes();
                 }
 
-                List<Feed<?>> list = new ArrayList<Feed<?>>();
+                List<Feed> list = new ArrayList<Feed>();
 
                 while (catItr.hasNext()) {
                     Node catNode = (Node) catItr.next();
@@ -674,7 +739,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
                 return false;
             }
             if (!this.destIds.isEmpty()) {
-                List<FeedDestination> destinations = input.getDestinations();
+                List<? extends FeedDestination> destinations = input.getDestinations();
                 for (FeedDestination dest : destinations) {
                     if (this.destIds.contains(dest.getDatasource().getId())) {
                         return true;
@@ -684,7 +749,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             }
 
             if (!this.sourceIds.isEmpty()) {
-                List<FeedSource> sources = input.getSources();
+                List<? extends FeedSource> sources = input.getSources();
                 for (FeedSource src : sources) {
                     if (this.sourceIds.contains(src.getDatasource().getId())) {
                         return true;
@@ -730,9 +795,9 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     private class JcrPreconditionbuilder implements PreconditionBuilder {
 
         private final ServiceLevelAgreementBuilder slaBuilder;
-        private final JcrFeed<?> feed;
+        private final JcrFeed feed;
 
-        public JcrPreconditionbuilder(ServiceLevelAgreementBuilder slaBuilder, JcrFeed<?> feed) {
+        public JcrPreconditionbuilder(ServiceLevelAgreementBuilder slaBuilder, JcrFeed feed) {
             super();
             this.slaBuilder = slaBuilder;
             this.feed = feed;

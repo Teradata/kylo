@@ -20,17 +20,6 @@ package com.thinkbiganalytics.metadata.api.feed;
  * #L%
  */
 
-import com.thinkbiganalytics.metadata.api.MissingUserPropertyException;
-import com.thinkbiganalytics.metadata.api.Propertied;
-import com.thinkbiganalytics.metadata.api.category.Category;
-import com.thinkbiganalytics.metadata.api.datasource.Datasource;
-import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
-import com.thinkbiganalytics.metadata.api.security.AccessControlled;
-import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
-
-import org.joda.time.DateTime;
-
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
@@ -40,12 +29,24 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import org.joda.time.DateTime;
+
+import com.thinkbiganalytics.metadata.api.MissingUserPropertyException;
+import com.thinkbiganalytics.metadata.api.Propertied;
+import com.thinkbiganalytics.metadata.api.category.Category;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource;
+import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
+import com.thinkbiganalytics.metadata.api.security.AccessControlled;
+import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
+import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+
 /**
  * A feed is a specification for how data should flow into and out of a system.
  *
- * @param <C> the type of parent category
+ * @param  the type of parent category
  */
-public interface Feed<C extends Category> extends Propertied, AccessControlled, Serializable {
+public interface Feed extends Propertied, AccessControlled, Serializable {
 
     ID getId();
 
@@ -75,19 +76,19 @@ public interface Feed<C extends Category> extends Propertied, AccessControlled, 
 
     FeedPrecondition getPrecondition();
 
-    List<Feed<C>> getDependentFeeds();
+    List<Feed> getDependentFeeds();
 
-    boolean addDependentFeed(Feed<?> feed);
+    boolean addDependentFeed(Feed feed);
 
-    boolean removeDependentFeed(Feed<?> feed);
+    boolean removeDependentFeed(Feed feed);
 
-    List<Feed<C>> getUsedByFeeds();
+    List<Feed> getUsedByFeeds();
 
-    boolean addUsedByFeed(Feed<?> feed);
+    boolean addUsedByFeed(Feed feed);
 
-    boolean removeUsedByFeed(Feed<?> feed);
+    boolean removeUsedByFeed(Feed feed);
 
-    C getCategory();
+    Category getCategory();
 
     String getVersionName();
 
@@ -95,7 +96,7 @@ public interface Feed<C extends Category> extends Propertied, AccessControlled, 
 
     DateTime getModifiedTime();
 
-    List<? extends ServiceLevelAgreement> getServiceLevelAgreements();
+    List<ServiceLevelAgreement> getServiceLevelAgreements();
 
     /**
      * Gets the user-defined properties for this feed.
@@ -156,6 +157,20 @@ public interface Feed<C extends Category> extends Propertied, AccessControlled, 
      * @param tags set of tags
      */
     void setTags(@Nullable Set<String> tags);
+
+    String getJson();
+
+    void setJson(String json);
+
+    FeedManagerTemplate getTemplate();
+
+    void setTemplate(FeedManagerTemplate template);
+
+    String getNifiProcessGroupId();
+
+    void setNifiProcessGroupId(String nifiProcessGroupId);
+
+    void setVersionName(String version);
 
     enum State {ENABLED, DISABLED, DELETED}
 

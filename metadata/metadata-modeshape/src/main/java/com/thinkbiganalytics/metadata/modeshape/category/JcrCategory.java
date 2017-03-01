@@ -53,6 +53,8 @@ public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Cat
     public static final String HADOOP_SECURITY_GROUPS = "tba:securityGroups";
     public static String CATEGORY_NAME = "tba:category";
     public static String NODE_TYPE = "tba:category";
+    public static String ICON = "tba:icon";
+    public static String ICON_COLOR = "tba:iconColor";
 
     private JcrAccessControlledSupport accessControlled;
 
@@ -123,6 +125,25 @@ public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Cat
     public RoleAssignments getRoleAssignments() {
         return this.accessControlled.getRoleAssignments();
     }
+
+    @Override
+    public String getIcon() {
+        return getProperty(ICON, String.class, true);
+    }
+
+    public void setIcon(String icon) {
+        setProperty(ICON, icon);
+    }
+
+    @Override
+    public String getIconColor() {
+        return getProperty(ICON_COLOR, String.class, true);
+    }
+
+    public void setIconColor(String iconColor) {
+        setProperty(ICON_COLOR, iconColor);
+    }
+
 
     public List<? extends HadoopSecurityGroup> getSecurityGroups() {
         Set<Node> list = JcrPropertyUtil.getReferencedNodeSet(this.node, HADOOP_SECURITY_GROUPS);

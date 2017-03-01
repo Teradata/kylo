@@ -20,19 +20,6 @@ package com.thinkbiganalytics.feedmgr.service.category;
  * #L%
  */
 
-import com.thinkbiganalytics.feedmgr.InvalidOperationException;
-import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
-import com.thinkbiganalytics.feedmgr.rest.model.UserField;
-import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
-import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
-import com.thinkbiganalytics.feedmgr.service.UserPropertyTransform;
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.MetadataCommand;
-import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
-import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
-import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryProvider;
-import com.thinkbiganalytics.security.AccessController;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -41,13 +28,26 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
 
+import com.thinkbiganalytics.feedmgr.InvalidOperationException;
+import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
+import com.thinkbiganalytics.feedmgr.rest.model.UserField;
+import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
+import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
+import com.thinkbiganalytics.feedmgr.service.UserPropertyTransform;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.MetadataCommand;
+import com.thinkbiganalytics.metadata.api.category.Category;
+import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
+import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
+import com.thinkbiganalytics.security.AccessController;
+
 /**
- * An implementation of {@link FeedManagerCategoryService} backed by a {@link FeedManagerCategoryProvider}.
+ * An implementation of {@link FeedManagerCategoryService} backed by a {@link CategoryProvider}.
  */
 public class DefaultFeedManagerCategoryService implements FeedManagerCategoryService {
 
     @Inject
-    FeedManagerCategoryProvider categoryProvider;
+    CategoryProvider categoryProvider;
 
     @Inject
     CategoryModelTransform categoryModelTransform;
@@ -63,7 +63,7 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
         return metadataAccess.read((MetadataCommand<Collection<FeedCategory>>) () -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_CATEGORIES);
 
-            List<FeedManagerCategory> domainCategories = categoryProvider.findAll();
+            List<Category> domainCategories = categoryProvider.findAll();
             return categoryModelTransform.domainToFeedCategory(domainCategories);
         });
     }
@@ -73,8 +73,8 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
         return metadataAccess.read(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_CATEGORIES);
 
-            final FeedManagerCategory.ID domainId = categoryProvider.resolveId(id);
-            final FeedManagerCategory domainCategory = categoryProvider.findById(domainId);
+            final Category.ID domainId = categoryProvider.resolveId(id);
+            final Category domainCategory = categoryProvider.findById(domainId);
             return categoryModelTransform.domainToFeedCategory(domainCategory);
         });
     }
@@ -84,14 +84,14 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
         return metadataAccess.read(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_CATEGORIES);
 
-            final FeedManagerCategory domainCategory = categoryProvider.findBySystemName(name);
+            final Category domainCategory = categoryProvider.findBySystemName(name);
             return categoryModelTransform.domainToFeedCategory(domainCategory);
         });
     }
 
     @Override
     public void saveCategory(final FeedCategory category) {
-        final FeedManagerCategory.ID domainId = metadataAccess.commit(() -> {
+        final Category.ID domainId = metadataAccess.commit(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_CATEGORIES);
 
             // Determine the system name
@@ -109,7 +109,7 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
             }
 
             // Update the domain entity
-            final FeedManagerCategory domainCategory = categoryProvider.update(categoryModelTransform.feedCategoryToDomain(category));
+            final Category domainCategory = categoryProvider.update(categoryModelTransform.feedCategoryToDomain(category));
 
             // Repopulate identifier
             category.setId(domainCategory.getId().toString());
@@ -125,7 +125,7 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
     public boolean deleteCategory(final String categoryId) throws InvalidOperationException {
         this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_CATEGORIES);
 
-        final FeedManagerCategory.ID domainId = metadataAccess.read(() -> categoryProvider.resolveId(categoryId));
+        final Category.ID domainId = metadataAccess.read(() -> categoryProvider.resolveId(categoryId));
         categoryProvider.deleteById(domainId);
         return true;
     }

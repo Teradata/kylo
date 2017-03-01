@@ -1,5 +1,25 @@
 package com.thinkbiganalytics.metadata.upgrade;
 
+/*-
+ * #%L
+ * thinkbig-operational-metadata-upgrade-service
+ * %%
+ * Copyright (C) 2017 ThinkBig Analytics
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,46 +42,24 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
 import com.thinkbiganalytics.jobrepo.security.OperationsAccessControl;
-
-/*-
- * #%L
- * thinkbig-operational-metadata-upgrade-service
- * %%
- * Copyright (C) 2017 ThinkBig Analytics
- * %%
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *     http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * #L%
- */
-
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
 import com.thinkbiganalytics.metadata.api.app.KyloVersion;
 import com.thinkbiganalytics.metadata.api.app.KyloVersionProvider;
+import com.thinkbiganalytics.metadata.api.category.Category;
+import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
+import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
-import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
-import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryProvider;
-import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
-import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
-import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
-import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
+import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
+import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.api.user.User;
 import com.thinkbiganalytics.metadata.api.user.UserGroup;
 import com.thinkbiganalytics.metadata.api.user.UserProvider;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaOpsManagerFeed;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedManagerFeed;
+import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplate;
 import com.thinkbiganalytics.security.action.AllowedEntityActionsProvider;
@@ -78,13 +76,11 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
     @Inject
     private KyloVersionProvider kyloVersionProvider;
     @Inject
-    private FeedManagerFeedProvider feedManagerFeedProvider;
-    @Inject
     private FeedProvider feedProvider;
     @Inject
     private FeedManagerTemplateProvider feedManagerTemplateProvider;
     @Inject
-    private FeedManagerCategoryProvider feedManagerCategoryProvider;
+    private CategoryProvider categoryProvider;
     @Inject
     private UserProvider userProvider;
     @Inject
@@ -185,14 +181,13 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
         metadataAccess.commit(() -> {
 
             //ensure the templates have the feed relationships
-            List<FeedManagerFeed> feeds = feedManagerFeedProvider.findAll();
-            Map<String, FeedManagerTemplate> templateMap = new HashMap<>();
+            List<Feed> feeds = feedProvider.findAll();
             if (feeds != null) {
                 feeds.stream().forEach(feed -> {
                         FeedManagerTemplate template = feed.getTemplate();
                         if (template != null) {
                             //ensure the template has feeds.
-                            List<FeedManagerFeed> templateFeeds = null;
+                            List<Feed> templateFeeds = null;
                             try {
                                 templateFeeds =  template.getFeeds();
                             }catch(MetadataRepositoryException e){
@@ -228,12 +223,12 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
         if (!propertiesToRemove.isEmpty()) {
             metadataAccess.commit(() -> {
 
-                List<FeedManagerFeed> domainFeeds = feedManagerFeedProvider.findAll();
-                for (FeedManagerFeed feedManagerFeed : domainFeeds) {
+                List<Feed> domainFeeds = feedProvider.findAll();
+                for (Feed feedManagerFeed : domainFeeds) {
 
                     final PropertyIterator iterator;
                     try {
-                        iterator = ((JcrFeedManagerFeed) feedManagerFeed).getNode().getProperties();
+                        iterator = ((JcrFeed) feedManagerFeed).getNode().getProperties();
                     } catch (RepositoryException e) {
                         throw new MetadataRepositoryException("Failed to get properties for node: " + feedManagerFeed, e);
                     }
@@ -263,17 +258,17 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
 
         return metadataAccess.commit(() -> metadataAccess.commit(() -> {
 
-            for (FeedManagerCategory category : feedManagerCategoryProvider.findAll()) {
+            for (Category category : categoryProvider.findAll()) {
                 // Ensure each category has an allowedActions (gets create if not present.)
                 category.getAllowedActions();
             }
 
             // get all feeds defined in feed manager
-            List<FeedManagerFeed> domainFeeds = feedManagerFeedProvider.findAll();
-            Map<String, FeedManagerFeed> feedManagerFeedMap = new HashMap<>();
+            List<Feed> domainFeeds = feedProvider.findAll();
+            Map<String, Feed> feedManagerFeedMap = new HashMap<>();
             if (domainFeeds != null && !domainFeeds.isEmpty()) {
                 List<OpsManagerFeed.ID> opsManagerFeedIds = new ArrayList<OpsManagerFeed.ID>();
-                for (FeedManagerFeed feedManagerFeed : domainFeeds) {
+                for (Feed feedManagerFeed : domainFeeds) {
                     opsManagerFeedIds.add(opsManagerFeedProvider.resolveId(feedManagerFeed.getId().toString()));
                     feedManagerFeedMap.put(feedManagerFeed.getId().toString(), feedManagerFeed);
 
@@ -289,7 +284,7 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
                 }
 
                 List<OpsManagerFeed> feedsToAdd = new ArrayList<>();
-                for (FeedManagerFeed feed : feedManagerFeedMap.values()) {
+                for (Feed feed : feedManagerFeedMap.values()) {
                     String fullName = FeedNameUtil.fullName(feed.getCategory().getName(), feed.getName());
                     OpsManagerFeed.ID opsManagerFeedId = opsManagerFeedProvider.resolveId(feed.getId().toString());
                     OpsManagerFeed opsManagerFeed = new JpaOpsManagerFeed(opsManagerFeedId, fullName);

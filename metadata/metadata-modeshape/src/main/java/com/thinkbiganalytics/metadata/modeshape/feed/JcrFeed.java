@@ -41,9 +41,9 @@ import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.api.feed.InitializationStatus;
-import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
 import com.thinkbiganalytics.metadata.api.security.RoleAssignments;
+import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.modeshape.JcrAccessControlledSupport;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
@@ -59,9 +59,9 @@ import com.thinkbiganalytics.security.action.AllowedActions;
 /**
  * An implementation of {@link Feed} backed by a JCR repository.
  *
- * @param <C> the type of parent category
+ * @param  the type of parent category
  */
-public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntity implements Feed<C> {
+public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed {
 
     public static final String PRECONDITION_TYPE = "tba:feedPrecondition";
 
@@ -71,7 +71,7 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
     public static final String DATA = "tba:data";
 
     
-    private FeedSummary<C> summary;
+    private FeedSummary summary;
     private FeedData data;
     
     
@@ -210,7 +210,7 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
     }
     
 
-    public C getCategory() {
+    public Category getCategory() {
         return getFeedSummary().map(d -> d.getCategory(JcrCategory.class)).orElse(null);
     }
 
@@ -251,7 +251,7 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
     }
 
     @Override
-    public State getState() {
+    public Feed.State getState() {
         return getFeedData().map(d -> d.getState()).orElse(null);
     }
 
@@ -305,32 +305,32 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
     }
 
     @Override
-    public List<Feed<C>> getDependentFeeds() {
+    public List<Feed> getDependentFeeds() {
         return getFeedDetails().map(d -> d.getDependentFeeds()).orElse(Collections.emptyList());
     }
 
     @Override
-    public boolean addDependentFeed(Feed<?> feed) {
+    public boolean addDependentFeed(Feed feed) {
         return getFeedDetails().map(d -> d.addDependentFeed(feed)).orElse(false);
     }
 
     @Override
-    public boolean removeDependentFeed(Feed<?> feed) {
+    public boolean removeDependentFeed(Feed feed) {
         return getFeedDetails().map(d -> d.removeDependentFeed(feed)).orElse(false);
     }
 
     @Override
-    public List<Feed<C>> getUsedByFeeds() {
+    public List<Feed> getUsedByFeeds() {
         return getFeedDetails().map(d -> d.getUsedByFeeds()).orElse(Collections.emptyList());
     }
 
     @Override
-    public boolean addUsedByFeed(Feed<?> feed) {
+    public boolean addUsedByFeed(Feed feed) {
         return getFeedDetails().map(d -> d.addUsedByFeed(feed)).orElse(false);
     }
 
     @Override
-    public boolean removeUsedByFeed(Feed<?> feed) {
+    public boolean removeUsedByFeed(Feed feed) {
         return getFeedDetails().map(d -> d.removeUsedByFeed(feed)).orElse(false);
     }
 
@@ -360,7 +360,7 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
         getFeedData().ifPresent(d -> d.setScheduleStrategy(scheduleStrategy));
     }
 
-    public List<? extends ServiceLevelAgreement> getServiceLevelAgreements() {
+    public List<ServiceLevelAgreement> getServiceLevelAgreements() {
         return getFeedDetails().map(d -> d.getServiceLevelAgreements()).orElse(Collections.emptyList());
     }
 
@@ -416,7 +416,7 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
         }
     }
 
-    protected Optional<FeedSummary<C>> getFeedSummary() {
+    protected Optional<FeedSummary> getFeedSummary() {
         if (this.summary == null) {
             if (JcrUtil.hasNode(getNode(), SUMMARY)) {
                 this.summary = JcrUtil.getJcrObject(getNode(), SUMMARY, FeedSummary.class);
@@ -430,7 +430,7 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
     }
     
     protected Optional<FeedDetails> getFeedDetails() {
-        Optional<FeedSummary<C>> summary = getFeedSummary();
+        Optional<FeedSummary> summary = getFeedSummary();
         
         if (summary.isPresent()) {
             return summary.get().getFeedDetails();
@@ -487,5 +487,26 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
     
     protected Node createNewPrecondition() {
         return getFeedDetails().map(d -> d.createNewPrecondition()).orElse(null);
+    }
+
+    @Override
+    public String getJson() {
+        return getFeedDetails().map(d -> d.getJson()).orElse(null);
+    }
+
+    @Override
+    public void setJson(String json) {
+        getFeedDetails().ifPresent(d -> d.setJson(json));
+        
+    }
+
+    @Override
+    public String getNifiProcessGroupId() {
+        return getFeedDetails().map(d -> d.getNifiProcessGroupId()).orElse(null);
+    }
+
+    @Override
+    public void setNifiProcessGroupId(String id) {
+        getFeedDetails().ifPresent(d -> d.setNifiProcessGroupId(id));
     }
 }

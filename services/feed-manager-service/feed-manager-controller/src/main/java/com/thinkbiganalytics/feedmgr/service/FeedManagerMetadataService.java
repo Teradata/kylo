@@ -41,7 +41,6 @@ import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.event.feed.CleanupTriggerEvent;
 import com.thinkbiganalytics.metadata.api.event.feed.FeedOperationStatusEvent;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
-import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
 import com.thinkbiganalytics.metadata.api.op.FeedOperation;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiComponentState;
@@ -173,7 +172,7 @@ public class FeedManagerMetadataService implements MetadataService {
         // Step 3: Delete hadoop authorization security policies if they exists
         if (hadoopAuthorizationService != null) {
             metadataAccess.read(() -> {
-                FeedManagerFeed domainFeed = feedModelTransform.feedToDomain(feed);
+                Feed domainFeed = feedModelTransform.feedToDomain(feed);
                 String hdfsPaths = (String) domainFeed.getProperties().get(HadoopAuthorizationService.REGISTRATION_HDFS_FOLDERS);
 
                 hadoopAuthorizationService.deleteHivePolicy(feed.getSystemCategoryName(), feed.getSystemFeedName());

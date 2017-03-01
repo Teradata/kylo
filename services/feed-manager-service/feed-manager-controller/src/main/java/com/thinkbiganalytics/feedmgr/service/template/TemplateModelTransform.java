@@ -25,9 +25,9 @@ import com.google.common.collect.Collections2;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.service.EncryptionService;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
-import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
-import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
-import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
+import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
+import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
 import java.util.ArrayList;
@@ -166,7 +166,7 @@ public class TemplateModelTransform {
                 template.setId(domain.getId().toString());
                 template.setState(domain.getState().name());
                 template.setNifiTemplateId(domain.getNifiTemplateId());
-                List<FeedManagerFeed> feeds = domain.getFeeds();
+                List<Feed> feeds = domain.getFeeds();
                 template.setFeedsCount(feeds == null ? 0 : feeds.size());
                 template.setStream(domain.isStream());
                 if (includeFeedNames && feeds != null) {

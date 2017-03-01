@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.metadata.api.feed;
 
+import com.thinkbiganalytics.metadata.api.BaseProvider;
+
 /*-
  * #%L
  * thinkbig-metadata-api
@@ -23,6 +25,7 @@ package com.thinkbiganalytics.metadata.api.feed;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
+import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 
@@ -33,7 +36,7 @@ import java.util.Set;
 
 import javax.annotation.Nonnull;
 
-public interface FeedProvider {
+public interface FeedProvider extends BaseProvider<Feed, Feed.ID> {
 
     FeedSource ensureFeedSource(Feed.ID feedId, Datasource.ID dsId);
 
@@ -67,9 +70,9 @@ public interface FeedProvider {
 
     List<Feed> getFeeds(FeedCriteria criteria);
 
-    Feed<?> addDependent(Feed.ID targetId, Feed.ID dependentId);
+    Feed addDependent(Feed.ID targetId, Feed.ID dependentId);
 
-    Feed<?> removeDependent(Feed.ID feedId, Feed.ID depId);
+    Feed removeDependent(Feed.ID feedId, Feed.ID depId);
 
     void populateInverseFeedDependencies();
 
@@ -127,6 +130,10 @@ public interface FeedProvider {
      * @since 0.4.0
      */
     void setUserFields(@Nonnull Set<UserFieldDescriptor> userFields);
+
+    List<? extends Feed> findByTemplateId(FeedManagerTemplate.ID templateId);
+
+    List<? extends Feed> findByCategoryId(Category.ID categoryId);
 
     // TODO Methods to add policy info to source
 }

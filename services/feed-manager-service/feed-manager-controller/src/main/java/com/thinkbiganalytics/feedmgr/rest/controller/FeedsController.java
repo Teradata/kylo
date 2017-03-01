@@ -133,7 +133,7 @@ public class FeedsController {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
 
             com.thinkbiganalytics.metadata.api.feed.Feed.ID feedId = feedProvider.resolveFeed(feedIdStr);
-            com.thinkbiganalytics.metadata.api.feed.Feed<?> feed = feedProvider.getFeed(feedId);
+            com.thinkbiganalytics.metadata.api.feed.Feed feed = feedProvider.getFeed(feedId);
 
             if (feed != null) {
                 return Model.DOMAIN_TO_INIT_STATUS.apply(feed.getCurrentInitStatus());
@@ -158,7 +158,7 @@ public class FeedsController {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
 
             com.thinkbiganalytics.metadata.api.feed.Feed.ID feedId = feedProvider.resolveFeed(feedIdStr);
-            com.thinkbiganalytics.metadata.api.feed.Feed<?> feed = feedProvider.getFeed(feedId);
+            com.thinkbiganalytics.metadata.api.feed.Feed feed = feedProvider.getFeed(feedId);
 
             if (feed != null) {
                 return new ArrayList<>(Collections2.transform(feed.getInitHistory(), Model.DOMAIN_TO_INIT_STATUS));
@@ -186,7 +186,7 @@ public class FeedsController {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
 
             com.thinkbiganalytics.metadata.api.feed.Feed.ID feedId = feedProvider.resolveFeed(feedIdStr);
-            com.thinkbiganalytics.metadata.api.feed.Feed<?> feed = feedProvider.getFeed(feedId);
+            com.thinkbiganalytics.metadata.api.feed.Feed feed = feedProvider.getFeed(feedId);
 
             if (feed != null) {
                 com.thinkbiganalytics.metadata.api.feed.InitializationStatus.State newState
@@ -213,7 +213,7 @@ public class FeedsController {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
 
             com.thinkbiganalytics.metadata.api.feed.Feed.ID feedId = feedProvider.resolveFeed(feedIdStr);
-            com.thinkbiganalytics.metadata.api.feed.Feed<?> feed = feedProvider.getFeed(feedId);
+            com.thinkbiganalytics.metadata.api.feed.Feed feed = feedProvider.getFeed(feedId);
 
             if (feed != null) {
                 List<String> list = feed.getWaterMarkNames().stream().collect(Collectors.toList());
@@ -241,7 +241,7 @@ public class FeedsController {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
 
             com.thinkbiganalytics.metadata.api.feed.Feed.ID feedId = feedProvider.resolveFeed(feedIdStr);
-            com.thinkbiganalytics.metadata.api.feed.Feed<?> feed = feedProvider.getFeed(feedId);
+            com.thinkbiganalytics.metadata.api.feed.Feed feed = feedProvider.getFeed(feedId);
 
             if (feed != null) {
                 return feed.getWaterMarkValue(waterMarkName)
@@ -270,7 +270,7 @@ public class FeedsController {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
 
             com.thinkbiganalytics.metadata.api.feed.Feed.ID feedId = feedProvider.resolveFeed(feedIdStr);
-            com.thinkbiganalytics.metadata.api.feed.Feed<?> feed = feedProvider.getFeed(feedId);
+            com.thinkbiganalytics.metadata.api.feed.Feed feed = feedProvider.getFeed(feedId);
 
             if (feed != null) {
                 feed.setWaterMarkValue(waterMarkName, value);
@@ -297,7 +297,7 @@ public class FeedsController {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
 
             com.thinkbiganalytics.metadata.api.feed.Feed.ID feedId = feedProvider.resolveFeed(feedIdStr);
-            com.thinkbiganalytics.metadata.api.feed.Feed<?> feed = feedProvider.getFeed(feedId);
+            com.thinkbiganalytics.metadata.api.feed.Feed feed = feedProvider.getFeed(feedId);
 
             if (feed != null) {
                 feed.setWaterMarkValue(waterMarkName, null);
@@ -344,7 +344,7 @@ public class FeedsController {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
 
             com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.resolveFeed(feedId);
-            com.thinkbiganalytics.metadata.api.feed.Feed<?> domain = feedProvider.getFeed(domainId);
+            com.thinkbiganalytics.metadata.api.feed.Feed domain = feedProvider.getFeed(domainId);
 
             return model.domainToFeed(domain);
         });
@@ -416,7 +416,7 @@ public class FeedsController {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
 
             com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.resolveFeed(feedId);
-            com.thinkbiganalytics.metadata.api.feed.Feed<?> startDomain = feedProvider.getFeed(domainId);
+            com.thinkbiganalytics.metadata.api.feed.Feed startDomain = feedProvider.getFeed(domainId);
 
             if (startDomain != null) {
                 return collectFeedDependencies(startDomain, assessPrecond);
@@ -507,7 +507,7 @@ public class FeedsController {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
 
             com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.resolveFeed(feedId);
-            com.thinkbiganalytics.metadata.api.feed.Feed<?> domain = feedProvider.getFeed(domainId);
+            com.thinkbiganalytics.metadata.api.feed.Feed domain = feedProvider.getFeed(domainId);
 
             if (domain != null) {
                 return new ArrayList<>(Collections2.transform(domain.getSources(), model::domainToFeedSource));
@@ -526,7 +526,7 @@ public class FeedsController {
 //        return this.metadata.read(() -> {
 //            com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.resolveFeed(feedId);
 //            com.thinkbiganalytics.metadata.api.feed.FeedSource.ID domainSrcId = feedProvider.resolveSource(srcId);
-//            com.thinkbiganalytics.metadata.api.feed.Feed<?> domain = feedProvider.getFeed(domainId);
+//            com.thinkbiganalytics.metadata.api.feed.Feed domain = feedProvider.getFeed(domainId);
 //
 //            if (domain != null) {
 //                com.thinkbiganalytics.metadata.api.feed.FeedSource domainSrc = domain.getSource(domainSrcId);
@@ -558,7 +558,7 @@ public class FeedsController {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
 
             com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.resolveFeed(feedId);
-            com.thinkbiganalytics.metadata.api.feed.Feed<?> domain = feedProvider.getFeed(domainId);
+            com.thinkbiganalytics.metadata.api.feed.Feed domain = feedProvider.getFeed(domainId);
 
             if (domain != null) {
                 return new ArrayList<>(Collections2.transform(domain.getDestinations(), model::domainToFeedDestination));
@@ -577,7 +577,7 @@ public class FeedsController {
 //        return this.metadata.read(() -> {
 //            com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.resolveFeed(feedId);
 //            com.thinkbiganalytics.metadata.api.feed.FeedDestination.ID domainDestId = feedProvider.resolveDestination(destId);
-//            com.thinkbiganalytics.metadata.api.feed.Feed<?> domain = feedProvider.getFeed(domainId);
+//            com.thinkbiganalytics.metadata.api.feed.Feed domain = feedProvider.getFeed(domainId);
 //
 //            if (domain != null) {
 //                com.thinkbiganalytics.metadata.api.feed.FeedDestination domainDest = domain.getDestination(domainDestId);
@@ -609,7 +609,7 @@ public class FeedsController {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
 
             com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.resolveFeed(feedId);
-            com.thinkbiganalytics.metadata.api.feed.Feed<?> domain = feedProvider.getFeed(domainId);
+            com.thinkbiganalytics.metadata.api.feed.Feed domain = feedProvider.getFeed(domainId);
 
             if (domain != null) {
                 return Model.DOMAIN_TO_FEED_PRECOND.apply(domain.getPrecondition());
@@ -635,7 +635,7 @@ public class FeedsController {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
 
             com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.resolveFeed(feedId);
-            com.thinkbiganalytics.metadata.api.feed.Feed<?> domain = feedProvider.getFeed(domainId);
+            com.thinkbiganalytics.metadata.api.feed.Feed domain = feedProvider.getFeed(domainId);
 
             if (domain != null) {
                 com.thinkbiganalytics.metadata.api.feed.FeedPrecondition precond = domain.getPrecondition();
@@ -685,7 +685,7 @@ public class FeedsController {
             Collection<com.thinkbiganalytics.metadata.api.feed.Feed> existing = feedProvider.getFeeds(crit);
 
             if (existing.isEmpty()) {
-                com.thinkbiganalytics.metadata.api.feed.Feed<?> domainFeed = feedProvider.ensureFeed(feed.getCategory().getSystemName(), feed.getSystemName(), feed.getDescription());
+                com.thinkbiganalytics.metadata.api.feed.Feed domainFeed = feedProvider.ensureFeed(feed.getCategory().getSystemName(), feed.getSystemName(), feed.getDescription());
 
                 ensureDependentDatasources(feed, domainFeed);
                 ensurePrecondition(feed, domainFeed);
@@ -721,7 +721,7 @@ public class FeedsController {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_FEEDS);
 
             com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.resolveFeed(feedId);
-            com.thinkbiganalytics.metadata.api.feed.Feed<?> domain = feedProvider.getFeed(domainId);
+            com.thinkbiganalytics.metadata.api.feed.Feed domain = feedProvider.getFeed(domainId);
 
             if (domain != null) {
                 domain = model.updateDomain(feed, domain);
@@ -754,7 +754,7 @@ public class FeedsController {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
 
             String[] parts = feedId.split("\\.", 2);
-            com.thinkbiganalytics.metadata.api.feed.Feed<?> domain = (parts.length == 2) ? feedProvider.findBySystemName(parts[0], parts[1]) : feedProvider.getFeed(feedProvider.resolveFeed(feedId));
+            com.thinkbiganalytics.metadata.api.feed.Feed domain = (parts.length == 2) ? feedProvider.findBySystemName(parts[0], parts[1]) : feedProvider.getFeed(feedProvider.resolveFeed(feedId));
 
             if (domain != null) {
                 return domain.getProperties();
@@ -788,7 +788,7 @@ public class FeedsController {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_FEEDS);
 
             String[] parts = feedId.split("\\.", 2);
-            com.thinkbiganalytics.metadata.api.feed.Feed<?> domain = (parts.length == 2) ? feedProvider.findBySystemName(parts[0], parts[1]) : feedProvider.getFeed(feedProvider.resolveFeed(feedId));
+            com.thinkbiganalytics.metadata.api.feed.Feed domain = (parts.length == 2) ? feedProvider.findBySystemName(parts[0], parts[1]) : feedProvider.getFeed(feedProvider.resolveFeed(feedId));
 
             if (domain != null) {
                 return updateProperties(props, domain, false);
@@ -816,7 +816,7 @@ public class FeedsController {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_FEEDS);
 
             com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.resolveFeed(feedId);
-            com.thinkbiganalytics.metadata.api.feed.Feed<?> domain = feedProvider.getFeed(domainId);
+            com.thinkbiganalytics.metadata.api.feed.Feed domain = feedProvider.getFeed(domainId);
 
             if (domain != null) {
                 Map<String, Object> domainProps = updateProperties(props, domain, true);
@@ -966,7 +966,7 @@ public class FeedsController {
                 .map((metric) -> metric)
                 .collect(Collectors.toList());
 
-            com.thinkbiganalytics.metadata.api.feed.Feed<?> domainFeed
+            com.thinkbiganalytics.metadata.api.feed.Feed domainFeed
                 = feedProvider.createPrecondition(domainFeedId, "", domainMetrics);
 
             return model.domainToFeed(domainFeed);
@@ -975,7 +975,7 @@ public class FeedsController {
 
 
     private Map<String, Object> updateProperties(final Properties props,
-                                                 com.thinkbiganalytics.metadata.api.feed.Feed<?> domain,
+                                                 com.thinkbiganalytics.metadata.api.feed.Feed domain,
                                                  boolean replace) {
         return metadata.commit(() -> {
             Map<String, Object> newProperties = new HashMap<String, Object>();
@@ -996,7 +996,7 @@ public class FeedsController {
         return ServiceLevelAgreementModelTransform.DOMAIN_TO_SLA_ASSMT.apply(assmt);
     }
 
-    private void ensurePrecondition(Feed feed, com.thinkbiganalytics.metadata.api.feed.Feed<?> domainFeed) {
+    private void ensurePrecondition(Feed feed, com.thinkbiganalytics.metadata.api.feed.Feed domainFeed) {
         FeedPrecondition precond = feed.getPrecondition();
 
         if (precond != null) {
@@ -1011,7 +1011,7 @@ public class FeedsController {
 
     }
 
-    private void ensureDependentDatasources(Feed feed, com.thinkbiganalytics.metadata.api.feed.Feed<?> domainFeed) {
+    private void ensureDependentDatasources(Feed feed, com.thinkbiganalytics.metadata.api.feed.Feed domainFeed) {
         for (FeedSource src : feed.getSources()) {
             Datasource.ID dsId = this.datasetProvider.resolve(src.getId());
             feedProvider.ensureFeedSource(domainFeed.getId(), dsId);
@@ -1023,7 +1023,7 @@ public class FeedsController {
         }
     }
 
-    private void ensureProperties(Feed feed, com.thinkbiganalytics.metadata.api.feed.Feed<?> domainFeed) {
+    private void ensureProperties(Feed feed, com.thinkbiganalytics.metadata.api.feed.Feed domainFeed) {
         Map<String, Object> domainProps = domainFeed.getProperties();
         Properties props = feed.getProperties();
 
@@ -1058,11 +1058,11 @@ public class FeedsController {
     }
 
     private FeedDependencyGraph collectFeedDependencies(com.thinkbiganalytics.metadata.api.feed.Feed currentFeed, boolean assessPrecond) {
-        List<com.thinkbiganalytics.metadata.api.feed.Feed<?>> domainDeps = currentFeed.getDependentFeeds();
+        List<com.thinkbiganalytics.metadata.api.feed.Feed> domainDeps = currentFeed.getDependentFeeds();
         FeedDependencyGraph feedDep = new FeedDependencyGraph(model.domainToFeed(currentFeed), null);
 
         if (!domainDeps.isEmpty()) {
-            for (com.thinkbiganalytics.metadata.api.feed.Feed<?> depFeed : domainDeps) {
+            for (com.thinkbiganalytics.metadata.api.feed.Feed depFeed : domainDeps) {
                 FeedDependencyGraph childDep = collectFeedDependencies(depFeed, assessPrecond);
                 feedDep.addDependecy(childDep);
             }

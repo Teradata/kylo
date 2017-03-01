@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.metadata.api.feedmgr.template;
+package com.thinkbiganalytics.metadata.api.template;
 
 /*-
  * #%L
@@ -20,21 +20,22 @@ package com.thinkbiganalytics.metadata.api.feedmgr.template;
  * #L%
  */
 
-import com.thinkbiganalytics.metadata.api.MetadataException;
+import com.thinkbiganalytics.metadata.api.BaseProvider;
 
 /**
  */
-public class TemplateDeletionException extends MetadataException {
+public interface FeedManagerTemplateProvider extends BaseProvider<FeedManagerTemplate, FeedManagerTemplate.ID> {
 
-    private static final long serialVersionUID = 1L;
+    FeedManagerTemplate findByName(String name);
 
-    String templateName;
-    String templateId;
+    FeedManagerTemplate findByNifiTemplateId(String nifiTemplateId);
 
+    FeedManagerTemplate ensureTemplate(String name);
 
-    public TemplateDeletionException(String templateName, String templateId, String message) {
-        super("Unable to delete the template with the name " + templateName + ", id: " + templateId + " " + (message != null ? message : ""));
-        this.templateName = templateName;
-        this.templateId = templateId;
-    }
+    FeedManagerTemplate enable(FeedManagerTemplate.ID id);
+
+    FeedManagerTemplate disable(FeedManagerTemplate.ID id);
+
+    boolean deleteTemplate(FeedManagerTemplate.ID id) throws TemplateDeletionException;
+
 }

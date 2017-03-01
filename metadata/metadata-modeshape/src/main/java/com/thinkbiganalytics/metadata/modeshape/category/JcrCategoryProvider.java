@@ -50,7 +50,7 @@ import javax.jcr.RepositoryException;
 /**
  * A JCR provider for {@link Category} objects.
  */
-public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> implements CategoryProvider<Category> {
+public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> implements CategoryProvider {
 
     /**
      * JCR node type manager

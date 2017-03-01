@@ -20,37 +20,6 @@ package com.thinkbiganalytics.feedmgr.nifi;
  * #L%
  */
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.util.concurrent.Uninterruptibles;
-import com.thinkbiganalytics.DateTimeUtil;
-import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
-import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
-import com.thinkbiganalytics.feedmgr.service.MetadataService;
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
-import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
-import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheConnectionData;
-import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheSync;
-import com.thinkbiganalytics.metadata.rest.model.nifi.NifiFlowCacheSnapshot;
-import com.thinkbiganalytics.nifi.provenance.NiFiProvenanceConstants;
-import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
-import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
-import com.thinkbiganalytics.nifi.rest.model.flow.NiFiFlowConnectionConverter;
-import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowConnection;
-import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
-import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessor;
-import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.nifi.web.api.dto.ConnectionDTO;
-import org.apache.nifi.web.api.dto.ControllerServiceDTO;
-import org.apache.nifi.web.api.dto.ProcessorDTO;
-import org.apache.nifi.web.api.dto.ReportingTaskDTO;
-import org.joda.time.DateTime;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -68,6 +37,37 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.web.api.dto.ConnectionDTO;
+import org.apache.nifi.web.api.dto.ControllerServiceDTO;
+import org.apache.nifi.web.api.dto.ProcessorDTO;
+import org.apache.nifi.web.api.dto.ReportingTaskDTO;
+import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.util.concurrent.Uninterruptibles;
+import com.thinkbiganalytics.DateTimeUtil;
+import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
+import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
+import com.thinkbiganalytics.feedmgr.service.MetadataService;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
+import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
+import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheConnectionData;
+import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheSync;
+import com.thinkbiganalytics.metadata.rest.model.nifi.NifiFlowCacheSnapshot;
+import com.thinkbiganalytics.nifi.provenance.NiFiProvenanceConstants;
+import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
+import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
+import com.thinkbiganalytics.nifi.rest.model.flow.NiFiFlowConnectionConverter;
+import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowConnection;
+import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
+import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessor;
+import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 
 /**
  * Cache processor definitions in a flow for use by the KyloProvenanceReportingTask
@@ -87,7 +87,7 @@ public class NifiFlowCache implements NifiConnectionListener, PostMetadataConfig
     @Inject
     MetadataService metadataService;
     @Inject
-    FeedManagerFeedProvider feedManagerFeedProvider;
+    FeedProvider feedProvider;
     @Inject
     MetadataAccess metadataAccess;
     @Inject

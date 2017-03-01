@@ -69,7 +69,7 @@ public interface FeedManagerTemplateService {
     boolean deleteRegisteredTemplate(String templateId);
 
     /**
-     * change the state of the template to be {@link com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate.State#ENABLED}
+     * change the state of the template to be {@link com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate.State#ENABLED}
      *
      * @param templateId the template id
      * @return the updated template
@@ -77,7 +77,7 @@ public interface FeedManagerTemplateService {
     RegisteredTemplate enableTemplate(String templateId);
 
     /**
-     * change the state of the template to be {@link com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate.State#DISABLED}
+     * change the state of the template to be {@link com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate.State#DISABLED}
      *
      * @param templateId the template id
      * @return the updated template

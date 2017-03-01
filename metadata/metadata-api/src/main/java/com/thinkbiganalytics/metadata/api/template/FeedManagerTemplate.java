@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.metadata.api.feedmgr.template;
+package com.thinkbiganalytics.metadata.api.template;
 
 /*-
  * #%L
@@ -20,23 +20,23 @@ package com.thinkbiganalytics.metadata.api.feedmgr.template;
  * #L%
  */
 
-import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
-import com.thinkbiganalytics.metadata.api.security.AccessControlled;
+import java.io.Serializable;
+import java.util.List;
 
 import org.joda.time.DateTime;
 
-import java.io.Serializable;
-import java.util.List;
+import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.security.AccessControlled;
 
 /**
  */
 public interface FeedManagerTemplate extends AccessControlled {
 
-    List<FeedManagerFeed> getFeeds();
+    List<Feed> getFeeds();
 
-    boolean addFeed(FeedManagerFeed<?> feed);
+    boolean addFeed(Feed feed);
 
-    boolean removeFeed(FeedManagerFeed<?> feed);
+    boolean removeFeed(Feed feed);
 
     ID getId();
 

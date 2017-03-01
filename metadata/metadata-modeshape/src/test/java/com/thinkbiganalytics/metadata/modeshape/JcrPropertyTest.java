@@ -29,13 +29,8 @@ import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
-import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
-import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryProvider;
-import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
-import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
-import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
+import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
-import com.thinkbiganalytics.metadata.modeshape.category.JcrFeedManagerCategory;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDerivedDatasource;
@@ -81,11 +76,9 @@ public class JcrPropertyTest {
     @Inject
     FeedProvider feedProvider;
     @Inject
-    FeedManagerFeedProvider feedManagerFeedProvider;
-    @Inject
     FeedManagerTemplateProvider feedManagerTemplateProvider;
     @Inject
-    FeedManagerCategoryProvider feedManagerCategoryProvider;
+    CategoryProvider feedManagerCategoryProvider;
     @Inject
     TagProvider tagProvider;
     @Inject
@@ -268,11 +261,11 @@ public class JcrPropertyTest {
         });
 
         metadata.read(new AdminCredentials(), () -> {
-            List<FeedManagerCategory> c = feedManagerCategoryProvider.findAll();
+            List<Category> c = feedManagerCategoryProvider.findAll();
             if (c != null) {
-                for (FeedManagerCategory cat : c) {
-                    JcrFeedManagerCategory jcrFeedManagerCategory = (JcrFeedManagerCategory) cat;
-                    List<? extends Feed> categoryFeeds = jcrFeedManagerCategory.getFeeds();
+                for (Category cat : c) {
+                    Category jcrCategory = (Category) cat;
+                    List<? extends Feed> categoryFeeds = jcrCategory.getFeeds();
                     if (categoryFeeds != null) {
                         for (Feed feed : categoryFeeds) {
                             log.info("Feed for category {} is {}", cat.getName(), feed.getName());
@@ -287,8 +280,8 @@ public class JcrPropertyTest {
 
     @Test
     public void testFeedManager() {
-        FeedManagerFeed feed = metadata.read(new AdminCredentials(), () -> {
-            List<FeedManagerFeed> feeds = feedManagerFeedProvider.findAll();
+        Feed feed = metadata.read(new AdminCredentials(), () -> {
+            List<Feed> feeds = feedProvider.findAll();
             if (feeds != null) {
                 return feeds.get(0);
             }

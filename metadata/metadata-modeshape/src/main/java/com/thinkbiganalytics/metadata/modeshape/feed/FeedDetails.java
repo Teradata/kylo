@@ -18,7 +18,7 @@ import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
-import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
+import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrPropertiesEntity;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
@@ -32,7 +32,7 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 /**
  *
  */
-public class FeedDetails<C extends Category> extends JcrPropertiesEntity {
+public class FeedDetails extends JcrPropertiesEntity {
 
     public static final String FEED_JSON = "tba:json";
     public static final String PROCESS_GROUP_ID = "tba:processGroupId";
@@ -54,7 +54,7 @@ public class FeedDetails<C extends Category> extends JcrPropertiesEntity {
         super(node);
     }
 
-    protected JcrFeed<C> getParentFeed() {
+    protected JcrFeed getParentFeed() {
         try {
             return new JcrFeed(this.node.getParent().getParent());
         } catch (RepositoryException e) {
@@ -78,52 +78,52 @@ public class FeedDetails<C extends Category> extends JcrPropertiesEntity {
         return JcrUtil.getJcrObjects(this.node, DESTINATION_NAME, JcrFeedDestination.class);
     }
 
-    public <C extends Category> List<Feed<C>> getDependentFeeds() {
-        List<Feed<C>> deps = new ArrayList<>();
+    public <C extends Category> List<Feed> getDependentFeeds() {
+        List<Feed> deps = new ArrayList<>();
         Set<Node> depNodes = JcrPropertyUtil.getSetProperty(this.node, DEPENDENTS);
 
         for (Node depNode : depNodes) {
-            deps.add(new JcrFeed<C>(depNode));
+            deps.add(new JcrFeed(depNode));
         }
 
         return deps;
     }
 
-    public boolean addDependentFeed(Feed<?> feed) {
-        JcrFeed<?> dependent = (JcrFeed<?>) feed;
+    public boolean addDependentFeed(Feed feed) {
+        JcrFeed dependent = (JcrFeed) feed;
         Node depNode = dependent.getNode();
         feed.addUsedByFeed(getParentFeed());
 
         return JcrPropertyUtil.addToSetProperty(this.node, DEPENDENTS, depNode);
     }
     
-    public boolean removeDependentFeed(Feed<?> feed) {
-        JcrFeed<?> dependent = (JcrFeed<?>) feed;
+    public boolean removeDependentFeed(Feed feed) {
+        JcrFeed dependent = (JcrFeed) feed;
         Node depNode = dependent.getNode();
         feed.removeUsedByFeed(getParentFeed());
         return JcrPropertyUtil.removeFromSetProperty(this.node, DEPENDENTS, depNode);
     }
 
-    public boolean addUsedByFeed(Feed<?> feed) {
-        JcrFeed<?> dependent = (JcrFeed<?>) feed;
+    public boolean addUsedByFeed(Feed feed) {
+        JcrFeed dependent = (JcrFeed) feed;
         Node depNode = dependent.getNode();
 
         return JcrPropertyUtil.addToSetProperty(this.node, USED_BY_FEEDS, depNode);
     }
 
-    public List<Feed<C>> getUsedByFeeds() {
-        List<Feed<C>> deps = new ArrayList<>();
+    public List<Feed> getUsedByFeeds() {
+        List<Feed> deps = new ArrayList<>();
         Set<Node> depNodes = JcrPropertyUtil.getSetProperty(this.node, USED_BY_FEEDS);
 
         for (Node depNode : depNodes) {
-            deps.add(new JcrFeed<C>(depNode));
+            deps.add(new JcrFeed(depNode));
         }
 
         return deps;
     }
 
-    public boolean removeUsedByFeed(Feed<?> feed) {
-        JcrFeed<?> dependent = (JcrFeed<?>) feed;
+    public boolean removeUsedByFeed(Feed feed) {
+        JcrFeed dependent = (JcrFeed) feed;
         Node depNode = dependent.getNode();
 
         return JcrPropertyUtil.removeFromSetProperty(this.node, USED_BY_FEEDS, depNode);
@@ -165,9 +165,9 @@ public class FeedDetails<C extends Category> extends JcrPropertiesEntity {
         setProperty(TEMPLATE, template);
     }
 
-    public List<? extends ServiceLevelAgreement> getServiceLevelAgreements() {
+    public List<ServiceLevelAgreement> getServiceLevelAgreements() {
         Set<Node> list = JcrPropertyUtil.getReferencedNodeSet(this.node, SLA);
-        List<JcrServiceLevelAgreement> serviceLevelAgreements = new ArrayList<>();
+        List<ServiceLevelAgreement> serviceLevelAgreements = new ArrayList<>();
         if (list != null) {
             for (Node n : list) {
                 serviceLevelAgreements.add(JcrUtil.createJcrObject(n, JcrServiceLevelAgreement.class));

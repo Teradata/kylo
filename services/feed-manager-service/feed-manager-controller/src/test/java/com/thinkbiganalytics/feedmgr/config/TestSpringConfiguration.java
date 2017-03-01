@@ -133,11 +133,6 @@ public class TestSpringConfiguration {
     }
 
     @Bean
-    public FeedManagerFeedProvider feedManagerFeedProvider() {
-        return Mockito.mock(FeedManagerFeedProvider.class);
-    }
-
-    @Bean
     public MetadataJcrConfigurator metadataJcrConfigurator() {
         return Mockito.mock(MetadataJcrConfigurator.class);
     }

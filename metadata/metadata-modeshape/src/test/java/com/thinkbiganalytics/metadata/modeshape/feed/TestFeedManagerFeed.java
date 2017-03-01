@@ -29,12 +29,9 @@ import com.thinkbiganalytics.metadata.api.datasource.DerivedDatasource;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
-import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryProvider;
-import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
-import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
-import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
-import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
-import com.thinkbiganalytics.metadata.api.feedmgr.template.TemplateDeletionException;
+import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
+import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
+import com.thinkbiganalytics.metadata.api.template.TemplateDeletionException;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.JcrPropertyTest;
 import com.thinkbiganalytics.metadata.modeshape.JcrTestConfig;
@@ -73,13 +70,10 @@ public class TestFeedManagerFeed {
     FeedProvider feedProvider;
 
     @Inject
-    FeedManagerFeedProvider feedManagerFeedProvider;
-
-    @Inject
     FeedManagerTemplateProvider feedManagerTemplateProvider;
 
     @Inject
-    FeedManagerCategoryProvider feedManagerCategoryProvider;
+    CategoryProvider feedManagerCategoryProvider;
 
     @Inject
     private DatasourceProvider datasourceProvider;
@@ -109,14 +103,14 @@ public class TestFeedManagerFeed {
 
         //creqte the feed
         metadata.commit(new AdminCredentials(), () -> {
-            FeedManagerFeed feed = feedTestUtil.findOrCreateFeed(categorySystemName, feedName, templateName);
+            Feed feed = feedTestUtil.findOrCreateFeed(categorySystemName, feedName, templateName);
             return feed.getId();
         });
 
         //ensure the feed relates to the template
         metadata.read(new AdminCredentials(), () -> {
             FeedManagerTemplate template = feedTestUtil.findOrCreateTemplate(templateName);
-            List<FeedManagerFeed> feeds = template.getFeeds();
+            List<Feed> feeds = template.getFeeds();
             Assert.assertTrue(feeds != null && feeds.size() > 0);
         });
     }
@@ -212,7 +206,7 @@ public class TestFeedManagerFeed {
             Assert.assertNotNull(feed.getDestinations());
             Assert.assertTrue(feed.getDestinations().size() == 1, "Feed Destinations should be 1");
 
-            List<FeedDestination> feedDestinations = feed.getDestinations();
+            List<? extends FeedDestination> feedDestinations = feed.getDestinations();
             if (feedDestinations != null) {
                 FeedDestination feedDestination = feedDestinations.get(0);
                 Datasource ds = feedDestination.getDatasource();
@@ -244,16 +238,16 @@ public class TestFeedManagerFeed {
 
         //try to delete the feed
         metadata.commit(new AdminCredentials(), () -> {
-            FeedManagerFeed feed = feedTestUtil.findFeed(categorySystemName, feedName);
+            Feed feed = feedTestUtil.findFeed(categorySystemName, feedName);
             Assert.assertNotNull(feed);
             if (feed != null) {
-                feedManagerFeedProvider.delete(feed);
+                feedProvider.delete(feed);
             }
         });
 
         //ensure it is deleted
         metadata.read(new AdminCredentials(), () -> {
-            FeedManagerFeed feed = feedTestUtil.findFeed(categorySystemName, feedName);
+            Feed feed = feedTestUtil.findFeed(categorySystemName, feedName);
             Assert.assertNull(feed);
         });
 

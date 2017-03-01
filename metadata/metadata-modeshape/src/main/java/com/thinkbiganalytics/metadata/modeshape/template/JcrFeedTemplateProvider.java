@@ -20,26 +20,6 @@ package com.thinkbiganalytics.metadata.modeshape.template;
  * #L%
  */
 
-import com.thinkbiganalytics.metadata.api.event.MetadataChange.ChangeType;
-import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
-import com.thinkbiganalytics.metadata.api.event.template.TemplateChange;
-import com.thinkbiganalytics.metadata.api.event.template.TemplateChangeEvent;
-import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
-import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
-import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
-import com.thinkbiganalytics.metadata.api.feedmgr.template.TemplateDeletionException;
-import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
-import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
-import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
-
-import org.apache.commons.lang3.StringUtils;
-import org.joda.time.DateTime;
-import org.springframework.security.core.context.SecurityContextHolder;
-
 import java.io.Serializable;
 import java.security.Principal;
 import java.util.HashMap;
@@ -48,12 +28,28 @@ import java.util.function.Consumer;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
+import org.springframework.security.core.context.SecurityContextHolder;
+
+import com.thinkbiganalytics.metadata.api.event.MetadataChange.ChangeType;
+import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
+import com.thinkbiganalytics.metadata.api.event.template.TemplateChange;
+import com.thinkbiganalytics.metadata.api.event.template.TemplateChangeEvent;
+import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
+import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
+import com.thinkbiganalytics.metadata.api.template.TemplateDeletionException;
+import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+
 /**
  */
 public class JcrFeedTemplateProvider extends BaseJcrProvider<FeedManagerTemplate, FeedManagerTemplate.ID> implements FeedManagerTemplateProvider {
-
-    @Inject
-    FeedManagerFeedProvider feedManagerFeedProvider;
 
     @Inject
     private MetadataEventService metadataEventService;
