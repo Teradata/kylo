@@ -20,6 +20,7 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
  * #L%
  */
 
+import com.google.common.util.concurrent.Uninterruptibles;
 import com.jayway.restassured.response.Response;
 import com.thinkbiganalytics.discovery.model.DefaultDataTypeDescriptor;
 import com.thinkbiganalytics.discovery.model.DefaultField;
@@ -38,6 +39,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.schema.TableOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.TableSetup;
 import com.thinkbiganalytics.feedmgr.service.ExportImportTemplateService;
 import com.thinkbiganalytics.feedmgr.service.feed.ExportImportFeedService;
+import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.policy.rest.model.FieldPolicy;
 import com.thinkbiganalytics.policy.rest.model.FieldStandardizationRule;
@@ -54,6 +56,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Functional Test for Feed Manager
@@ -66,6 +69,7 @@ public class FeedManagerFT extends FunctionalTest {
     private static final String FEED_SAMPLES_DIR = SAMPLES_DIR + "/feeds/nifi-1.0/";
     private static final String VAR_DROPZONE = "/var/dropzone";
     private static final String USERDATA1_CSV = "userdata1.csv";
+    private static final int PROCESSOR_STOP_WAIT_DELAY = 20;
     private String feedsPath;
     private String templatesPath;
     private String usersDataPath;
@@ -100,33 +104,45 @@ public class FeedManagerFT extends FunctionalTest {
         //create new category
         FeedCategory category = createCategory("Functional Tests");
 
-        //import standard ingest template
-        ExportImportTemplateService.ImportTemplate ingest = importTemplate("data_ingest.zip");
-        Assert.assertEquals("data_ingest.zip",  ingest.getFileName());
-        Assert.assertTrue(ingest.isSuccess());
-        //assert new template is there
-        RegisteredTemplate[] templates = getRegisteredTemplates();
-        Assert.assertTrue(templates.length == 1);
+        ExportImportTemplateService.ImportTemplate ingest = importFeedTemplate("data_ingest.zip");
 
         //create standard ingest feed
-        FeedMetadata feed = createFeedRequest(category, ingest, "Users");
+        FeedMetadata feed = getCreateFeedRequest(category, ingest, "Users");
         FeedMetadata response = createFeed(feed);
         Assert.assertEquals(feed.getFeedName(), response.getFeedName());
 
         //drop files in dropzone to run the feed
         scp(usersDataPath + "/" + USERDATA1_CSV, VAR_DROPZONE);
         ssh(String.format("chown -R nifi:nifi %s", VAR_DROPZONE));
+
+        //wait for feed completion using ops manager api by waiting for certain amount of time and then
+        //query ops manager and ensure x amount of steps and data is in hive etc
     }
 
-    private void startClean() {
-        deleteExistingReusableVersionedFlows();
+    private ExportImportTemplateService.ImportTemplate importFeedTemplate(String templateName) {
+        //get number of templates already there
+        int existingTemplateNum = getRegisteredTemplates().length;
+
+        //import standard feedTemplate template
+        ExportImportTemplateService.ImportTemplate feedTemplate = importTemplate(templateName);
+        Assert.assertEquals(templateName, feedTemplate.getFileName());
+        Assert.assertTrue(feedTemplate.isSuccess());
+
+        //assert new template is there
+        RegisteredTemplate[] templates = getRegisteredTemplates();
+        Assert.assertTrue(templates.length == existingTemplateNum + 1);
+        return feedTemplate;
+    }
+
+    public void startClean() {
+        disableExistingFeeds();
         deleteExistingFeeds();
+        deleteExistingReusableVersionedFlows();
         deleteExistingTemplates();
         deleteExistingCategories();
         importSystemFeeds();
     }
 
-    @Test
     public void importSystemFeeds() {
         importFeed("index_schema_service.zip");
         importFeed("index_text_service.zip");
@@ -180,6 +196,21 @@ public class FeedManagerFT extends FunctionalTest {
         Assert.assertTrue(templates.length == 0);
     }
 
+    public void disableExistingFeeds() {
+        //start clean - disable all feeds before deleting them - this
+        // will give time for processors to stop before they are deleted, otherwise
+        // will get an error if processor is still running while we try to delete the process group
+        FeedSummary[] feeds = getFeeds();
+        for (FeedSummary feed : feeds) {
+            disableFeed(feed.getFeedId());
+            stopFeed(feed.getFeedId());
+        }
+        //give time for processors to stop
+        System.out.println(String.format("Waiting %s seconds for processors to stop...", PROCESSOR_STOP_WAIT_DELAY));
+        Uninterruptibles.sleepUninterruptibly(PROCESSOR_STOP_WAIT_DELAY, TimeUnit.SECONDS);
+        System.out.println(String.format("Finished waiting %s seconds for processors to stop", PROCESSOR_STOP_WAIT_DELAY));
+    }
+
     private void deleteExistingFeeds() {
         //start clean - delete all feeds
         FeedSummary[] feeds = getFeeds();
@@ -190,7 +221,7 @@ public class FeedManagerFT extends FunctionalTest {
         Assert.assertTrue(feeds.length == 0);
     }
 
-    private FeedMetadata createFeedRequest(FeedCategory category, ExportImportTemplateService.ImportTemplate template, String name) {
+    private FeedMetadata getCreateFeedRequest(FeedCategory category, ExportImportTemplateService.ImportTemplate template, String name) {
         FeedMetadata feed = new FeedMetadata();
         feed.setFeedName(name);
         feed.setSystemFeedName(name.toLowerCase());
@@ -435,6 +466,17 @@ public class FeedManagerFT extends FunctionalTest {
         return response.as(FeedSummary[].class);
     }
 
+    private void disableFeed(String feedId) {
+        String url = String.format("/disable/%s", feedId);
+        Response response = given(FeedRestController.BASE)
+            .when()
+            .post(url);
+
+        response.then().statusCode(200);
+        FeedSummary feed = response.as(FeedSummary.class);
+        Assert.assertEquals(Feed.State.DISABLED.name(), feed.getState());
+    }
+
     private void deleteFeed(String feedId) {
         String url = String.format("/%s", feedId);
         Response response = given(FeedRestController.BASE)
@@ -447,6 +489,13 @@ public class FeedManagerFT extends FunctionalTest {
 //        } else {
             response.then().statusCode(204);
 //        }
+    }
+
+    private void stopFeed(String feedId) {
+        //this is a workaround to stop all processors in a feed - delete call fails to delete, but stops all processors
+        given(FeedRestController.BASE)
+            .when()
+            .delete(String.format("/%s", feedId));
     }
 
     private RegisteredTemplate[] getRegisteredTemplates() {
