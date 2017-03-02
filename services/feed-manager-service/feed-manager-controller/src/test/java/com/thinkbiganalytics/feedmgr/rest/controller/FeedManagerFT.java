@@ -287,6 +287,7 @@ public class FeedManagerFT extends FunctionalTest {
         policies.add(newPolicyWithProfileAndIndex("first_name", toUpperCase));
         policies.add(newPolicyWithProfileAndIndex("last_name"));
         policies.add(newPolicyWithValidation("email", email));
+        policies.add(newEmptyPolicy("gender"));
         policies.add(newEmptyPolicy("ip_address"));
         policies.add(newEmptyPolicy("cc"));
         policies.add(newEmptyPolicy("country"));
