@@ -55,7 +55,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.UserField;
 import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
-import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
+import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.UserPropertyTransform;
 import com.thinkbiganalytics.feedmgr.service.feed.datasource.DerivedDatasourceFactory;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
@@ -93,6 +93,7 @@ import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 import com.thinkbiganalytics.policy.rest.model.PreconditionRule;
 import com.thinkbiganalytics.rest.model.LabelValue;
 import com.thinkbiganalytics.security.AccessController;
+import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
 public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedService implements FeedManagerFeedService {
@@ -158,9 +159,24 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     }
 
     @Override
+    public boolean checkFeedPermission(String id, Action action, Action... more) {
+        return metadataAccess.read(() -> {
+            Feed.ID domainId = feedProvider.resolveId(id);
+            Feed domainFeed = feedProvider.findById(domainId);
+
+            if (domainFeed != null) {
+                domainFeed.getAllowedActions().checkPermission(action, more);
+                return true;
+            } else {
+                return false;
+            }
+        });
+    }
+
+    @Override
     public FeedMetadata getFeedByName(final String categoryName, final String feedName) {
         FeedMetadata feedMetadata = metadataAccess.read(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
 
             Feed domainFeed = feedProvider.findBySystemName(categoryName, feedName);
             if (domainFeed != null) {
@@ -174,7 +190,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     @Override
     public FeedMetadata getFeedById(final String id) {
         return metadataAccess.read(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
 
             return getFeedById(id, false);
         });
@@ -184,7 +200,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     @Override
     public FeedMetadata getFeedById(final String id, final boolean refreshTargetTableSchema) {
         return metadataAccess.read(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
 
             FeedMetadata feedMetadata = null;
             Feed.ID domainId = feedProvider.resolveId(id);
@@ -205,7 +221,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     @Override
     public Collection<FeedMetadata> getFeeds() {
         return metadataAccess.read(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
 
             Collection<FeedMetadata> feeds = null;
             List<Feed> domainFeeds = feedProvider.findAll();
@@ -231,7 +247,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     public List<FeedSummary> getFeedSummaryData() {
 
         return metadataAccess.read(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
 
             List<FeedSummary> feeds = null;
             Collection<? extends Feed> domainFeeds = feedProvider.findAll();
@@ -246,7 +262,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     @Override
     public List<FeedSummary> getFeedSummaryForCategory(final String categoryId) {
         return metadataAccess.read(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
 
             List<FeedSummary> summaryList = new ArrayList<>();
             Category.ID categoryDomainId = categoryProvider.resolveId(categoryId);
@@ -265,7 +281,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     @Override
     public List<FeedMetadata> getFeedsWithTemplate(final String registeredTemplateId) {
         return metadataAccess.read(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
 
             List<FeedMetadata> feedMetadatas = null;
             FeedManagerTemplate.ID templateDomainId = templateProvider.resolveId(registeredTemplateId);
@@ -309,7 +325,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
             feed.setIsNew(true);
         }
         metadataAccess.commit(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_FEEDS);
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_FEEDS);
 
             List<? extends HadoopSecurityGroup> previousSavedSecurityGroups = null;
             // Store the old security groups before saving beccause we need to compare afterward
@@ -470,7 +486,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     @Override
     public void deleteFeed(@Nonnull final String feedId) {
         metadataAccess.commit(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ADMIN_FEEDS);
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_FEEDS);
 
             Feed feed = feedProvider.getFeed(feedProvider.resolveFeed(feedId));
             //unschedule any SLAs
@@ -484,7 +500,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     @Override
     public void enableFeedCleanup(@Nonnull String feedId) {
         metadataAccess.commit(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_FEEDS);
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_FEEDS);
 
             final Feed.ID id = feedProvider.resolveFeed(feedId);
             return feedProvider.mergeFeedProperties(id, ImmutableMap.of(FeedProperties.CLEANUP_ENABLED, "true"));
@@ -493,7 +509,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
 
     private boolean enableFeed(final Feed.ID feedId) {
         return metadataAccess.commit(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_FEEDS);
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_FEEDS);
             boolean enabled = feedProvider.enableFeed(feedId);
             Feed domainFeed = feedProvider.findById(feedId);
             FeedMetadata feedMetadata = null;
@@ -516,7 +532,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     // @Transactional(transactionManager = "metadataTransactionManager")
     private boolean disableFeed(final Feed.ID feedId) {
         return metadataAccess.commit(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_FEEDS);
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_FEEDS);
 
             boolean disabled = feedProvider.disableFeed(feedId);
             Feed domainFeed = feedProvider.findById(feedId);
@@ -538,7 +554,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
 
     public FeedSummary enableFeed(final String feedId) {
         return metadataAccess.commit(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_FEEDS);
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_FEEDS);
 
             if (StringUtils.isNotBlank(feedId)) {
                 FeedMetadata feedMetadata = getFeedById(feedId);
@@ -563,7 +579,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
 
     public FeedSummary disableFeed(final String feedId) {
         return metadataAccess.commit(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_FEEDS);
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_FEEDS);
 
             if (StringUtils.isNotBlank(feedId)) {
                 FeedMetadata feedMetadata = getFeedById(feedId);
@@ -608,7 +624,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     @Override
     public Set<UserField> getUserFields() {
         return metadataAccess.read(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
 
             return UserPropertyTransform.toUserFields(feedProvider.getUserFields());
         });
@@ -616,7 +632,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
 
     @Override
     public void setUserFields(@Nonnull final Set<UserField> userFields) {
-        this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ADMIN_FEEDS);
+        this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_FEEDS);
 
         feedProvider.setUserFields(UserPropertyTransform.toUserFieldDescriptors(userFields));
     }
@@ -625,7 +641,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     @Override
     public Optional<Set<UserProperty>> getUserFields(@Nonnull final String categoryId) {
         return metadataAccess.read(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
 
             final Optional<Set<UserFieldDescriptor>> categoryUserFields = categoryProvider.getFeedUserFields(categoryProvider.resolveId(categoryId));
             final Set<UserFieldDescriptor> globalUserFields = feedProvider.getUserFields();

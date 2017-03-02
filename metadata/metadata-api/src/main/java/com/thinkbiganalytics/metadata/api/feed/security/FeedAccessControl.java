@@ -23,64 +23,38 @@ package com.thinkbiganalytics.metadata.api.feed.security;
 import com.thinkbiganalytics.security.action.Action;
 
 /**
- * Actions involving feeds.
+ * Actions involving an individual feed.
  */
 public interface FeedAccessControl {
     
-    Action VIEW_DESCRIPTION = Action.create("viewDescription",
-                                            "View Description",
-                                            "View basic details about the feed");
-    
-    Action VIEW_DETAILS = VIEW_DESCRIPTION.subAction("viewDetails",
-                                                       "View Details",
-                                                       "View the full details about the feed");
-   
-    
-
-    Action FEEDS_SUPPORT = Action.create("accessFeedsSupport",
-                                         "Access Feed Support",
-                                         "Allows access to feeds and feed-related functions");
-
-    Action ACCESS_CATEGORIES = FEEDS_SUPPORT.subAction("accessCategories",
-                                                       "Access Categories",
-                                                       "Allows access to categories");
-    Action EDIT_CATEGORIES = ACCESS_CATEGORIES.subAction("editCategories",
-                                                         "Edit Categories",
-                                                         "Allows creating and editing new categories");
-    Action ADMIN_CATEGORIES = ACCESS_CATEGORIES.subAction("adminCategories",
-                                                          "Administer Categories",
-                                                          "Allows the administration of a category");
-
-    Action ACCESS_FEEDS = FEEDS_SUPPORT.subAction("accessFeeds",
-                                                  "Access Feeds",
-                                                  "Allows access to feeds");
-    Action EDIT_FEEDS = ACCESS_FEEDS.subAction("editFeeds",
-                                               "Edit Feeds",
-                                               "Allows creating and editing new feeds");
-    Action IMPORT_FEEDS = ACCESS_FEEDS.subAction("importFeeds",
-                                                 "Import Feeds",
-                                                 "Allows importing of previously exported feeds");
-    Action EXPORT_FEEDS = ACCESS_FEEDS.subAction("exportFeeds",
-                                                 "Export Feeds",
-                                                 "Allows exporting feeds definitions");
-    Action ADMIN_FEEDS = ACCESS_FEEDS.subAction("adminFeeds",
-                                                "Administer Feeds",
-                                                "Allows the administration of a feed");
-
-    Action ACCESS_TEMPLATES = FEEDS_SUPPORT.subAction("accessTemplates",
-                                                      "Access Templates",
-                                                      "Allows access to feed templates");
-    Action EDIT_TEMPLATES = ACCESS_TEMPLATES.subAction("editTemplates",
-                                                       "Edit Templates",
-                                                       "Allows creating and editing new feed templates");
-    Action IMPORT_TEMPLATES = ACCESS_TEMPLATES.subAction("importTemplates",
-                                                         "Import Templates",
-                                                         "Allows importing of previously exported templates");
-    Action EXPORT_TEMPLATES = ACCESS_TEMPLATES.subAction("exportTemplates",
-                                                         "Export Templates",
-                                                         "Allows exporting template definitions");
-    Action ADMIN_TEMPLATES = ACCESS_TEMPLATES.subAction("adminTemplates",
-                                                        "Administer Templates",
-                                                        "Allows the administration of a feed template");
-
+    Action ACCESS_FEED = Action.create("accessFeed",
+                                            "Access Feed",
+                                            "Allows the ability to view the feed and see basic summary information about it");
+    Action EDIT_SUMMARY = ACCESS_FEED.subAction("editFeedSummary",
+                                                 "Edit Summary",
+                                                 "Allows editing of the summary information about the feed");
+    Action ACCESS_DETAILS = ACCESS_FEED.subAction("accessFeedDetails",
+                                                 "Access Details",
+                                                 "Allows viewing the full details about the feed");
+    Action EDIT_DETAILS = ACCESS_DETAILS.subAction("editFeedDetails",
+                                                   "Edit Details",
+                                                    "Allows editing of the details about the feed");
+    Action DELETE = ACCESS_DETAILS.subAction("deleteFeed",
+                                             "Delete",
+                                             "Allows deleting the feed");
+    Action ENABLE_DISABLE = ACCESS_DETAILS.subAction("enableFeed",
+                                                     "Enable/Disable",
+                                                     "Allows enabling and disabling the feed");
+    Action EXPORT = ACCESS_DETAILS.subAction("exportFeed",
+                                             "Export",
+                                             "Allows exporting the feed");
+//    Action SCHEDULE_FEED = ACCESS_DETAILS.subAction("scheduleFeed",
+//                                                    "Change Schedule",
+//                                                    "Allows the ability to change the execution schedule of the feed");
+    Action ACCESS_OPS = ACCESS_FEED.subAction("accessFeedOperations",
+                                                   "Access Operations",
+                                                   "Allows the ability to see the operational history of the feed");
+    Action CHANGE_PERMS = ACCESS_FEED.subAction("changeFeedPermissions",
+                                                "Change Permissions",
+                                                "Allows editing of the permissions that grant access to the feed");
 }

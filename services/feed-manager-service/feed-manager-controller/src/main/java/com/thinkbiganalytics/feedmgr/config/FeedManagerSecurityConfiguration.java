@@ -23,9 +23,11 @@ package com.thinkbiganalytics.feedmgr.config;
  * #L%
  */
 
-import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
+import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
+import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
+import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.config.ActionsModuleBuilder;
 
 import org.springframework.context.annotation.Bean;
@@ -51,24 +53,36 @@ public class FeedManagerSecurityConfiguration {
 
         return () -> metadata.commit(() -> {
             return builder
-                            .module("services")
-                                .action(FeedsAccessControl.FEEDS_SUPPORT)
-                                .action(FeedsAccessControl.ACCESS_FEEDS)
-                                .action(FeedsAccessControl.EDIT_FEEDS)
-                                .action(FeedsAccessControl.IMPORT_FEEDS)
-                                .action(FeedsAccessControl.EXPORT_FEEDS)
-                                .action(FeedsAccessControl.ADMIN_FEEDS)
-                                .action(FeedsAccessControl.ACCESS_CATEGORIES)
-                                .action(FeedsAccessControl.EDIT_CATEGORIES)
-                                .action(FeedsAccessControl.ADMIN_CATEGORIES)
+                            .module(AllowedActions.SERVICES)
+                                .action(FeedServicesAccessControl.FEEDS_SUPPORT)
+                                .action(FeedServicesAccessControl.ACCESS_FEEDS)
+                                .action(FeedServicesAccessControl.EDIT_FEEDS)
+                                .action(FeedServicesAccessControl.IMPORT_FEEDS)
+                                .action(FeedServicesAccessControl.EXPORT_FEEDS)
+                                .action(FeedServicesAccessControl.ADMIN_FEEDS)
+                                .action(FeedServicesAccessControl.ACCESS_CATEGORIES)
+                                .action(FeedServicesAccessControl.EDIT_CATEGORIES)
+                                .action(FeedServicesAccessControl.ADMIN_CATEGORIES)
                                 .action(FeedsAccessControl.ACCESS_DATASOURCES)
                                 .action(FeedsAccessControl.EDIT_DATASOURCES)
                                 .action(FeedsAccessControl.ADMIN_DATASOURCES)
-                                .action(FeedsAccessControl.ACCESS_TEMPLATES)
-                                .action(FeedsAccessControl.EDIT_TEMPLATES)
-                                .action(FeedsAccessControl.IMPORT_TEMPLATES)
-                                .action(FeedsAccessControl.EXPORT_TEMPLATES)
-                                .action(FeedsAccessControl.ADMIN_TEMPLATES)
+                                .action(FeedServicesAccessControl.ACCESS_TEMPLATES)
+                                .action(FeedServicesAccessControl.EDIT_TEMPLATES)
+                                .action(FeedServicesAccessControl.IMPORT_TEMPLATES)
+                                .action(FeedServicesAccessControl.EXPORT_TEMPLATES)
+                                .action(FeedServicesAccessControl.ADMIN_TEMPLATES)
+                                .add()
+                            .module(AllowedActions.FEED)
+                                .action(FeedAccessControl.ACCESS_FEED)
+                                .action(FeedAccessControl.EDIT_SUMMARY)
+                                .action(FeedAccessControl.ACCESS_DETAILS)
+                                .action(FeedAccessControl.EDIT_DETAILS)
+                                .action(FeedAccessControl.DELETE)
+                                .action(FeedAccessControl.ENABLE_DISABLE)
+                                .action(FeedAccessControl.EXPORT)
+                                .action(FeedAccessControl.SCHEDULE_FEED)
+                                .action(FeedAccessControl.ACCESS_OPS)
+                                .action(FeedAccessControl.CHANGE_PERMS)
                                 .add()
                             .build();
             }, MetadataAccess.SERVICE);

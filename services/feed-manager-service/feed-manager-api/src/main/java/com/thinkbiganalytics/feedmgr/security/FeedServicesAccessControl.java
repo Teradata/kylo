@@ -25,7 +25,7 @@ import com.thinkbiganalytics.security.action.Action;
 /**
  * Actions involving feeds.
  */
-public interface FeedsAccessControl {
+public interface FeedServicesAccessControl {
 
     Action FEEDS_SUPPORT = Action.create("accessFeedsSupport",
                                          "Access Feed Support",

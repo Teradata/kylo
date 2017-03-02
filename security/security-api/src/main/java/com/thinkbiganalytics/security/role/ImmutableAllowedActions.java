@@ -116,6 +116,14 @@ public class ImmutableAllowedActions implements AllowedActions {
     public boolean enableOnly(Principal principal, AllowedActions actions) {
         throw new UnsupportedOperationException("Changing permissions is not supported by this type of " + AllowedActions.class.getSimpleName());
     }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.security.action.AllowedActions#enableAll(java.security.Principal)
+     */
+    @Override
+    public boolean enableAll(Principal principal) {
+        throw new UnsupportedOperationException("Changing permissions is not supported by this type of " + AllowedActions.class.getSimpleName());
+    }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.security.action.AllowedActions#disable(java.security.Principal, com.thinkbiganalytics.security.action.Action, com.thinkbiganalytics.security.action.Action[])
@@ -141,4 +149,11 @@ public class ImmutableAllowedActions implements AllowedActions {
         throw new UnsupportedOperationException("Changing permissions is not supported by this type of " + AllowedActions.class.getSimpleName());
     }
 
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.security.action.AllowedActions#deisableAll(java.security.Principal)
+     */
+    @Override
+    public boolean deisableAll(Principal principal) {
+        throw new UnsupportedOperationException("Changing permissions is not supported by this type of " + AllowedActions.class.getSimpleName());
+    }
 }

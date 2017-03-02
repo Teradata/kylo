@@ -30,7 +30,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.UserFieldCollection;
 import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
-import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
+import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.category.FeedManagerCategoryService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedModelTransform;
@@ -48,6 +48,7 @@ import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 import com.thinkbiganalytics.security.AccessController;
+import com.thinkbiganalytics.security.action.Action;
 
 import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
@@ -108,6 +109,12 @@ public class FeedManagerMetadataService implements MetadataService {
      */
     @Inject
     private NiFiRestClient nifiClient;
+    
+    
+    @Override
+    public boolean checkFeedPermission(String id, Action action, Action... more) {
+        return feedProvider.checkFeedPermission(id, action, more);
+    }
 
     @Override
     public RegisteredTemplate registerTemplate(RegisteredTemplate registeredTemplate) {
@@ -155,7 +162,7 @@ public class FeedManagerMetadataService implements MetadataService {
     @Override
     public void deleteFeed(@Nonnull final String feedId) {
         // First check if this should be allowed.
-        this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ADMIN_FEEDS);
+        this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_FEEDS);
 
         // Step 1: Fetch feed metadata
         final FeedMetadata feed = feedProvider.getFeedById(feedId);

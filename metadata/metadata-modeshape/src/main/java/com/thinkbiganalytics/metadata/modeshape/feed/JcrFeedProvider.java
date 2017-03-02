@@ -59,6 +59,7 @@ import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.Feed.ID;
+import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
 import com.thinkbiganalytics.metadata.api.feed.FeedCriteria;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedNotFoundExcepton;
@@ -94,6 +95,7 @@ import com.thinkbiganalytics.metadata.sla.spi.ObligationGroupBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 import com.thinkbiganalytics.security.AccessController;
+import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
 /**
@@ -255,7 +257,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         feed.setSystemName(feedSystemName);
 
         if (newFeed) {
-            this.actionsProvider.getAllowedActions("feed")
+            this.actionsProvider.getAllowedActions(AllowedActions.FEED)
                 .ifPresent(actions -> feed.getAccessControlSupport().initializeActions((JcrAllowedActions) actions));
             addPostFeedChangeAction(feed, ChangeType.CREATE);
         }
@@ -506,6 +508,9 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     @Override
     public boolean enableFeed(Feed.ID id) {
         Feed feed = getFeed(id);
+        
+        feed.getAllowedActions().checkPermission(FeedAccessControl.ENABLE_DISABLE);
+        
         if (!feed.getState().equals(Feed.State.ENABLED)) {
             feed.setState(Feed.State.ENABLED);
             //Enable any SLAs on this feed
@@ -524,6 +529,9 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     @Override
     public boolean disableFeed(Feed.ID id) {
         Feed feed = getFeed(id);
+        
+        feed.getAllowedActions().checkPermission(FeedAccessControl.ENABLE_DISABLE);
+        
         if (!feed.getState().equals(Feed.State.DISABLED)) {
             feed.setState(Feed.State.DISABLED);
             //disable any SLAs on this feed
@@ -542,7 +550,9 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     @Override
     public void deleteFeed(ID feedId) {
         JcrFeed feed = (JcrFeed) getFeed(feedId);
-
+        
+        feed.getAllowedActions().checkPermission(FeedAccessControl.ENABLE_DISABLE);
+        
         if (feed != null) {
             addPostFeedChangeAction(feed, ChangeType.DELETE);
             deleteById(feedId);
@@ -551,6 +561,8 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
     @Override
     public void delete(Feed feed) {
+        feed.getAllowedActions().checkPermission(FeedAccessControl.ENABLE_DISABLE);
+        
         addPostFeedChangeAction(feed, ChangeType.DELETE);
 
         // Remove dependent feeds

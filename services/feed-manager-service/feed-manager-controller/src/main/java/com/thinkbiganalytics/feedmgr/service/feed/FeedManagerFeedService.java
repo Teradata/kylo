@@ -1,5 +1,14 @@
 package com.thinkbiganalytics.feedmgr.service.feed;
 
+import java.io.Serializable;
+import java.security.AccessControlException;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+import javax.annotation.Nonnull;
+
 /*-
  * #%L
  * thinkbig-feed-manager-controller
@@ -28,19 +37,23 @@ import com.thinkbiganalytics.feedmgr.rest.model.UserField;
 import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
-
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import javax.annotation.Nonnull;
+import com.thinkbiganalytics.security.action.Action;
 
 /**
  * Common Feed Manager actions
  */
 public interface FeedManagerFeedService {
+    
+    /**
+     * Checks the current security context has been granted permission to perform the specified action(s) 
+     * on the feed with the specified feed ID.  If the feed does not exist then no check is made.
+     * @param id the feed ID
+     * @param action an action to check
+     * @param more any additional actions to check
+     * @return true if the feed existed, otherwise false
+     * @throws AccessControlException thrown if the feed exists and the action(s) checked are not permitted
+     */
+    boolean checkFeedPermission(String id, Action action, Action... more);
 
     /**
      * Return a feed matching its system category and system feed name

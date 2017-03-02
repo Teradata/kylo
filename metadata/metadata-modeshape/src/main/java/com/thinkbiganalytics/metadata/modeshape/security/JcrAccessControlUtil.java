@@ -3,6 +3,28 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.security;
 
+import java.security.Principal;
+import java.util.ArrayDeque;
+import java.util.Arrays;
+import java.util.Deque;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.UnsupportedRepositoryOperationException;
+import javax.jcr.security.AccessControlEntry;
+import javax.jcr.security.AccessControlException;
+import javax.jcr.security.AccessControlList;
+import javax.jcr.security.AccessControlManager;
+import javax.jcr.security.AccessControlPolicy;
+import javax.jcr.security.AccessControlPolicyIterator;
+import javax.jcr.security.Privilege;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
 /*-
  * #%L
  * thinkbig-metadata-modeshape
@@ -25,24 +47,7 @@ package com.thinkbiganalytics.metadata.modeshape.security;
 
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
-
-import java.security.Principal;
-import java.util.ArrayDeque;
-import java.util.Arrays;
-import java.util.Deque;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.jcr.UnsupportedRepositoryOperationException;
-import javax.jcr.security.AccessControlEntry;
-import javax.jcr.security.AccessControlException;
-import javax.jcr.security.AccessControlList;
-import javax.jcr.security.AccessControlManager;
-import javax.jcr.security.AccessControlPolicy;
-import javax.jcr.security.AccessControlPolicyIterator;
-import javax.jcr.security.Privilege;
+import com.thinkbiganalytics.security.UsernamePrincipal;
 
 /**
  *
@@ -51,6 +56,15 @@ public final class JcrAccessControlUtil {
 
     private JcrAccessControlUtil() {
         throw new AssertionError(JcrAccessControlUtil.class + " is a static utility class");
+    }
+    
+    public Optional<UsernamePrincipal> getCurrentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null) {
+            return Optional.of(new UsernamePrincipal(auth.getName()));
+        } else {
+            return Optional.empty();
+        }
     }
 
     public static boolean addPermissions(Node node, Principal principal, String... privilegeNames) {

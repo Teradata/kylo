@@ -117,7 +117,8 @@ public class ExportImportFeedService {
      * @return object containing the zip file with data about the feed.
      */
     public ExportFeed exportFeed(String feedId) throws IOException {
-        this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EXPORT_FEEDS);
+        this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EXPORT_FEEDS);
+        this.metadataService.checkFeedPermission(feedId, FeedAccessControl.EXPORT);
 
         // Prepare feed metadata
         final FeedMetadata feed = metadataService.getFeedById(feedId);

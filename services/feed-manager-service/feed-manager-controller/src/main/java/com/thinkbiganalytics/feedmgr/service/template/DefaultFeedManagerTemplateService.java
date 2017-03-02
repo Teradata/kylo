@@ -25,7 +25,7 @@ import com.thinkbiganalytics.feedmgr.nifi.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplateRequest;
 import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
-import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
+import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.event.MetadataChange;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
@@ -186,7 +186,7 @@ public class DefaultFeedManagerTemplateService  implements FeedManagerTemplateSe
 
     public boolean deleteRegisteredTemplate(final String templateId) {
         return metadataAccess.commit(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_TEMPLATES);
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_TEMPLATES);
 
             FeedManagerTemplate.ID domainId = templateProvider.resolveId(templateId);
             return templateProvider.deleteTemplate(domainId);
@@ -212,7 +212,7 @@ public class DefaultFeedManagerTemplateService  implements FeedManagerTemplateSe
     @Override
     public RegisteredTemplate enableTemplate(String templateId) {
         return metadataAccess.commit(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ADMIN_TEMPLATES);
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_TEMPLATES);
             FeedManagerTemplate.ID domainId = templateProvider.resolveId(templateId);
             if (domainId != null) {
                 FeedManagerTemplate template = templateProvider.enable(domainId);
@@ -227,7 +227,7 @@ public class DefaultFeedManagerTemplateService  implements FeedManagerTemplateSe
     @Override
     public RegisteredTemplate disableTemplate(String templateId) {
         return metadataAccess.commit(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ADMIN_TEMPLATES);
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_TEMPLATES);
             FeedManagerTemplate.ID domainId = templateProvider.resolveId(templateId);
             if (domainId != null) {
                 FeedManagerTemplate template = templateProvider.disable(domainId);

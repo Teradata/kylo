@@ -23,8 +23,6 @@ package com.thinkbiganalytics.metadata.modeshape;
  * #L%
  */
 
-import java.nio.file.attribute.UserPrincipal;
-
 import javax.jcr.Node;
 import javax.jcr.security.Privilege;
 

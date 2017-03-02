@@ -126,6 +126,17 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
                               .flatMap(avail -> avail.stream())
                               .collect(Collectors.toSet()));
     }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.security.action.AllowedActions#enableAll(java.security.Principal)
+     */
+    @Override
+    public boolean enableAll(Principal principal) {
+        return enableOnly(principal, 
+                          getAvailableActions().stream()
+                              .flatMap(avail -> avail.stream())
+                              .collect(Collectors.toSet()));
+    }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.security.action.AllowedActions#disableAccess(com.thinkbiganalytics.security.action.Action, java.security.Principal[])
@@ -152,6 +163,17 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
     public boolean disable(Principal principal, AllowedActions actions) {
         return disable(principal, 
                        actions.getAvailableActions().stream()
+                            .flatMap(avail -> avail.stream())
+                            .collect(Collectors.toSet()));
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.security.action.AllowedActions#deisableAll(java.security.Principal)
+     */
+    @Override
+    public boolean deisableAll(Principal principal) {
+        return disable(principal, 
+                       getAvailableActions().stream()
                             .flatMap(avail -> avail.stream())
                             .collect(Collectors.toSet()));
     }
@@ -202,26 +224,26 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
         return dest;
     }
 
-    private boolean togglePermission(Iterable<Action> actions, Principal principal, boolean add) {
+    private boolean togglePermission(Iterable<Action> actions, Principal principal, boolean enable) {
         boolean result = false;
 
         for (Action action : actions) {
-            result |= togglePermission(action, principal, add);
+            result |= togglePermission(action, principal, enable);
         }
 
         return result;
     }
 
-    private boolean togglePermission(Action action, Principal principal, boolean add) {
+    private boolean togglePermission(Action action, Principal principal, boolean enable) {
         return findActionNode(action)
             .map(node -> {
-                if (add) {
+                if (enable) {
                     return JcrAccessControlUtil.addHierarchyPermissions(node, principal, this.node, Privilege.JCR_READ);
                 } else {
                     return JcrAccessControlUtil.removeRecursivePermissions(node, JcrAllowableAction.NODE_TYPE, principal, Privilege.JCR_READ);
                 }
             })
-            .orElseThrow(() -> new AccessControlException("Not authorized to " + (add ? "enable" : "disable") + " the action: " + action));
+            .orElseThrow(() -> new AccessControlException("Not authorized to " + (enable ? "enable" : "disable") + " the action: " + action));
     }
 
     private Optional<Node> findActionNode(Action action) {

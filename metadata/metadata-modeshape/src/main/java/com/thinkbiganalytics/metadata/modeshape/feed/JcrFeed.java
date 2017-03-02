@@ -396,6 +396,27 @@ public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed {
     }
 
     @Override
+    public String getJson() {
+        return getFeedDetails().map(d -> d.getJson()).orElse(null);
+    }
+
+    @Override
+    public void setJson(String json) {
+        getFeedDetails().ifPresent(d -> d.setJson(json));
+        
+    }
+
+    @Override
+    public String getNifiProcessGroupId() {
+        return getFeedDetails().map(d -> d.getNifiProcessGroupId()).orElse(null);
+    }
+
+    @Override
+    public void setNifiProcessGroupId(String id) {
+        getFeedDetails().ifPresent(d -> d.setNifiProcessGroupId(id));
+    }
+
+    @Override
     public AllowedActions getAllowedActions() {
         return this.accessControlSupport.getAllowedActions();
     }
@@ -409,14 +430,7 @@ public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed {
         return accessControlSupport;
     }
 
-    public static class FeedId extends JcrEntity.EntityId implements Feed.ID {
-
-        public FeedId(Serializable ser) {
-            super(ser);
-        }
-    }
-
-    protected Optional<FeedSummary> getFeedSummary() {
+    public Optional<FeedSummary> getFeedSummary() {
         if (this.summary == null) {
             if (JcrUtil.hasNode(getNode(), SUMMARY)) {
                 this.summary = JcrUtil.getJcrObject(getNode(), SUMMARY, FeedSummary.class);
@@ -429,7 +443,7 @@ public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed {
         }
     }
     
-    protected Optional<FeedDetails> getFeedDetails() {
+    public Optional<FeedDetails> getFeedDetails() {
         Optional<FeedSummary> summary = getFeedSummary();
         
         if (summary.isPresent()) {
@@ -439,7 +453,7 @@ public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed {
         }
     }
     
-    protected Optional<FeedData> getFeedData() {
+    public Optional<FeedData> getFeedData() {
         if (this.data == null) {
             if (JcrUtil.hasNode(getNode(), DATA)) {
                 this.data = JcrUtil.getJcrObject(getNode(), DATA, FeedData.class);
@@ -489,24 +503,10 @@ public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed {
         return getFeedDetails().map(d -> d.createNewPrecondition()).orElse(null);
     }
 
-    @Override
-    public String getJson() {
-        return getFeedDetails().map(d -> d.getJson()).orElse(null);
-    }
-
-    @Override
-    public void setJson(String json) {
-        getFeedDetails().ifPresent(d -> d.setJson(json));
-        
-    }
-
-    @Override
-    public String getNifiProcessGroupId() {
-        return getFeedDetails().map(d -> d.getNifiProcessGroupId()).orElse(null);
-    }
-
-    @Override
-    public void setNifiProcessGroupId(String id) {
-        getFeedDetails().ifPresent(d -> d.setNifiProcessGroupId(id));
+    public static class FeedId extends JcrEntity.EntityId implements Feed.ID {
+    
+        public FeedId(Serializable ser) {
+            super(ser);
+        }
     }
 }

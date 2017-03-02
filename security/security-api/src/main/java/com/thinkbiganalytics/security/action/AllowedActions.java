@@ -33,6 +33,13 @@ import java.util.Set;
  * of the active security context.
  */
 public interface AllowedActions {
+    
+    // TODO find a better place to define the types of entities that can have associated actions.
+    String SERVICES = "services";
+    String FEED = "feed";
+    String CATEGORY = "category";
+    String TEMPLATE = "template";
+    
 
     /**
      * Retrieves the hierarchical set of allowable actions.
@@ -109,9 +116,17 @@ public interface AllowedActions {
     boolean enableOnly(Principal principal, AllowedActions actions);
 
     /**
+     * Enables all actions for the specified principals.
+     * 
+     * @param principal the principal to which the actions are granted
+     * @return true if not all actions had already been granted to that principal, otherwise false.
+     */
+    boolean enableAll(Principal principal);
+    
+    /**
      * Updates this object to disable the given action(s) for the specified principal.
      *
-     * @param principal the principal to which the action(s) are granted
+     * @param principal the principal to which the action(s) are revoked
      * @param action    an action to revoke
      * @param more      optional additional actions to revoke
      * @return true if actions at least 1 action has been revoked for that principal, otherwise false.
@@ -121,7 +136,7 @@ public interface AllowedActions {
     /**
      * Updates this object to disable the given action(s) for the specified principal.
      *
-     * @param principal the principal to which the action(s) are granted
+     * @param principal the principal to which the action(s) are revoked
      * @param actions   the set of actions to revoke
      * @return true if actions at least 1 action has been revoked for that principal, otherwise false.
      */
@@ -130,9 +145,17 @@ public interface AllowedActions {
     /**
      * Updates this object disable all actions for the principal contained in the given AllowedActions.
      * 
-     * @param principal the principal to which the action(s) are granted
+     * @param principal the principal to which the action(s) are revoked
      * @param actions   the set of actions to revoke
      * @return true if actions at least 1 action has been revoked for that principal, otherwise false.
      */
     boolean disable(Principal principal, AllowedActions actions);
+
+    /**
+     * Disables all actions for the specified principals.
+     * 
+     * @param principal the principal to which the actions are revoked
+     * @return true if not all actions had already been revoked from that principal, otherwise false.
+     */
+    boolean deisableAll(Principal principal);
 }

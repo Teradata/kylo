@@ -27,6 +27,7 @@ import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedNotFoundExcepton;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
+import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
 import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
@@ -226,6 +227,9 @@ public class ServiceLevelAgreementService implements ServicesApplicationStartupL
         return metadataAccess.commit(() -> {
 
             if (serviceLevelAgreement != null) {
+                feedManagerFeedService.checkFeedPermission(feed.getId(), FeedAccessControl.EDIT_DETAILS);
+                // TODO Also check access to the SLA itself
+              
                 ServiceLevelAgreementMetricTransformerHelper transformer = new ServiceLevelAgreementMetricTransformerHelper();
                 if (feed != null) {
                     transformer.applyFeedNameToCurrentFeedProperties(serviceLevelAgreement, feed.getCategory().getSystemName(), feed.getSystemFeedName());

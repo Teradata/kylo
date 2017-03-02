@@ -40,7 +40,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
+import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.jobrepo.security.OperationsAccessControl;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
@@ -149,27 +149,27 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
                             .ifPresent((allowed) -> {
                                 allowed.enable(opsGroup.getRootPrincial(), 
                                                OperationsAccessControl.ADMIN_OPS,
-                                               FeedsAccessControl.ACCESS_CATEGORIES,
-                                               FeedsAccessControl.ACCESS_FEEDS,
-                                               FeedsAccessControl.ACCESS_TEMPLATES);
+                                               FeedServicesAccessControl.ACCESS_CATEGORIES,
+                                               FeedServicesAccessControl.ACCESS_FEEDS,
+                                               FeedServicesAccessControl.ACCESS_TEMPLATES);
                                 allowed.enable(designersGroup.getRootPrincial(), 
                                                OperationsAccessControl.ACCESS_OPS,
-                                               FeedsAccessControl.EDIT_FEEDS,
-                                               FeedsAccessControl.IMPORT_FEEDS,
-                                               FeedsAccessControl.EXPORT_FEEDS,
-                                               FeedsAccessControl.EDIT_CATEGORIES,
-                                               FeedsAccessControl.EDIT_DATASOURCES,
-                                               FeedsAccessControl.EDIT_TEMPLATES,
-                                               FeedsAccessControl.IMPORT_TEMPLATES,
-                                               FeedsAccessControl.EXPORT_TEMPLATES,
-                                               FeedsAccessControl.ADMIN_TEMPLATES);
+                                               FeedServicesAccessControl.EDIT_FEEDS,
+                                               FeedServicesAccessControl.IMPORT_FEEDS,
+                                               FeedServicesAccessControl.EXPORT_FEEDS,
+                                               FeedServicesAccessControl.EDIT_CATEGORIES,
+                                               FeedServicesAccessControl.CREATE_DATASOURCES,
+                                               FeedServicesAccessControl.EDIT_TEMPLATES,
+                                               FeedServicesAccessControl.IMPORT_TEMPLATES,
+                                               FeedServicesAccessControl.EXPORT_TEMPLATES,
+                                               FeedServicesAccessControl.ADMIN_TEMPLATES);
                                 allowed.enable(analystsGroup.getRootPrincial(), 
                                                OperationsAccessControl.ACCESS_OPS,
-                                               FeedsAccessControl.EDIT_FEEDS,
-                                               FeedsAccessControl.IMPORT_FEEDS,
-                                               FeedsAccessControl.EXPORT_FEEDS,
-                                               FeedsAccessControl.EDIT_CATEGORIES,
-                                               FeedsAccessControl.ACCESS_TEMPLATES);
+                                               FeedServicesAccessControl.EDIT_FEEDS,
+                                               FeedServicesAccessControl.IMPORT_FEEDS,
+                                               FeedServicesAccessControl.EXPORT_FEEDS,
+                                               FeedServicesAccessControl.EDIT_CATEGORIES,
+                                               FeedServicesAccessControl.ACCESS_TEMPLATES);
                             });
         }, MetadataAccess.SERVICE);
     }
