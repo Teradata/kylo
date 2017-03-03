@@ -39,7 +39,6 @@ define([
         this.password;
         this.error = '';
         var self = this;
-        console.log('LOGIN!!!!')
 
         this.init = function() {
             // reset login status
