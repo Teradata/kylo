@@ -43,7 +43,7 @@ public class FlowAttributesTest {
     @Test
     public void testLoadAttributes() {
 
-        String expectedVal = "78";
+        String expectedVal = "110";
         int expectedAttrCount = 38;
 
         try {

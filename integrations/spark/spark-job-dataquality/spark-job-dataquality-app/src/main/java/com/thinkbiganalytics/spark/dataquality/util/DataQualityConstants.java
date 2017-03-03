@@ -37,27 +37,30 @@ public class DataQualityConstants {
     /**
      *  Nifi Attributes coming from FlowFile
      */
-	public static String CATEGORY_ATTRIBUTE = "category";
-	public static String FEED_ATTRIBUTE = "feed";
-	public static String PROCESSING_DTTM_ATTRIBUTE = "feedts";
-	public static String SOURCE_ROW_COUNT_ATTRIBUTE = "source.row.count";
-	public static String SQOOP_ROW_COUNT_ATTRIBUTE = "sqoop.record.count";
+	public static final String CATEGORY_ATTRIBUTE = "category";
+	public static final String FEED_ATTRIBUTE = "feed";
+	public static final String PROCESSING_DTTM_ATTRIBUTE = "feedts";
+	public static final String SOURCE_ROW_COUNT_ATTRIBUTE = "source.row.count";
+	public static final String SQOOP_ROW_COUNT_ATTRIBUTE = "sqoop.record.count";
 	
 
 	/**
 	 *  Derived Attributes used by DQ code
 	 */
-	public static String DQ_FEED_ROW_COUNT_ATTRIBUTE = "dq.feed.count";
-	public static String DQ_VALID_ROW_COUNT_ATTRIBUTE = "dq.valid.count";
-	public static String DQ_INVALID_ROW_COUNT_ATTRIBUTE = "dq.invalid.count";
-	public static String DQ_INVALID_ALLOWED_COUNT_ATTRIBUTE = "dq.invalid.allowcnt";
-	public static String DQ_INVALID_ALLOWED_PERCENT_ATTRIBUTE = "dq.invalid.pctcnt";
+	public static final String DQ_FEED_ROW_COUNT_ATTRIBUTE = "dq.feed.count";
+	public static final String DQ_VALID_ROW_COUNT_ATTRIBUTE = "dq.valid.count";
+	public static final String DQ_INVALID_ROW_COUNT_ATTRIBUTE = "dq.invalid.count";
+	public static final String DQ_INVALID_ALLOWED_COUNT_ATTRIBUTE = "dq.invalid.allowcnt";
+	public static final String DQ_INVALID_ALLOWED_PERCENT_ATTRIBUTE = "dq.invalid.allowpct";
+	public static final String DQ_ACTIVE_RULES_ATTRIBUTE = "dq.active.rules";
 	
 	/**
 	 * Default Values used by DQ code
 	 */
-    public static final long DEFAULT_INVALID_ALLOWED_COUNT_VALUE = 0;
-    public static final long DEFAULT_INVALID_ALLOWED_PERCENT_VALUE = 0;
+    public static final String DEFAULT_INVALID_ALLOWED_COUNT_VALUE = "0";
+    public static final String DEFAULT_INVALID_ALLOWED_PERCENT_VALUE = "0";
+    public static final String DEFAULT_DQ_ACTIVE_RULES_VALUE = "ALL";
+    
     
 
 }

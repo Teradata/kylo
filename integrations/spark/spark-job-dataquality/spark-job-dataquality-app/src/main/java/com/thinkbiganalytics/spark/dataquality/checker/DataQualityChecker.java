@@ -24,6 +24,7 @@ import com.thinkbiganalytics.spark.SparkContextService;
 
 import com.thinkbiganalytics.spark.dataquality.util.FlowAttributes;
 import com.thinkbiganalytics.spark.dataquality.util.MissingAttributeException;
+import com.thinkbiganalytics.spark.dataquality.util.MissingRuleException;
 import com.thinkbiganalytics.spark.dataquality.util.DataQualityConstants;
 import com.thinkbiganalytics.spark.dataquality.output.DataQualityRow;
 import com.thinkbiganalytics.spark.dataquality.output.DataQualityWriter;
@@ -48,7 +49,9 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * This class performs the Data Quality Checks. This is done by executing various Data Quality rules
@@ -71,10 +74,10 @@ public class DataQualityChecker {
     private HiveContext hiveContext;
 
     private FlowAttributes flowAttributes;
+    private Map<String, DataQualityRule> availableRules;
     private List<DataQualityRule> ruleList;
 
     public static void main(String[] args) {
-
         log.info("Running DataQualityChecker with these command line args: " + StringUtils.join(args, ","));
 
         if (args.length < 1) {
@@ -87,40 +90,66 @@ public class DataQualityChecker {
             DataQualityChecker app = ctx.getBean(DataQualityChecker.class);
 
             app.setArguments(args[0]);
-            
-            app.addRules();
+            app.setAvailableRules();
+            app.setActiveRules();
 
-            boolean isSucess = app.doDataQualityChecks();
-
-            if (isSucess) {
-                log.info("DataQualityChecker has passed successfully.");
+            boolean isSuccess = app.doDataQualityChecks();
+            if (isSuccess) {
+                log.info("DataQualityChecker has PASSED.");
             } else {
                 log.info("DataQualityChecker has FAILED.");
                 System.exit(1);
             }
 
+        } catch (MissingRuleException e) {
+            log.error("One or more rules are not available: {}", e.getMessage());
+            System.exit(1);
         } catch (Exception e) {
             log.error("Failed to perform data quality checks: {}", e.getMessage());
             System.exit(1);
         }
-
     }
 
     public DataQualityChecker() {
         flowAttributes = new FlowAttributes();
         ruleList = new ArrayList<DataQualityRule>();
-    }
-    
-    /**
-     * Adds all the data quality rules used by the checker 
-     */
-    public void addRules() {
-        addDataQualityRule(new SourceToFeedCountRuleImpl());
-        addDataQualityRule(new RowCountRuleImpl());
-        addDataQualityRule(new InvalidRowTotalCountRuleImpl());
-        addDataQualityRule(new InvalidRowPercentRuleImpl());
+        availableRules = new HashMap<>();
     }
 
+    /**
+     * Add all the available rules Adds all the data quality rules used by the checker
+     */
+    protected void setAvailableRules() {
+        addAvailableRule(new SourceToFeedCountRuleImpl());
+        addAvailableRule(new RowCountRuleImpl());
+        addAvailableRule(new InvalidRowTotalCountRuleImpl());
+        addAvailableRule(new InvalidRowPercentRuleImpl());
+    }
+
+    /**
+     * Sets the active rules based on the available rule list. The flow attribute dq.active.rules is
+     * used to specify active rules. If this attribute does not exist, all available rules are
+     * used.<br>
+     * If any rule does not exist, an exception is thrown
+     * 
+     * @throws MissingRuleException
+     */
+    protected void setActiveRules() throws MissingRuleException {
+
+        String activeRuleStr = flowAttributes.getAttributeValue(DataQualityConstants.DQ_ACTIVE_RULES_ATTRIBUTE,
+                                                                DataQualityConstants.DEFAULT_DQ_ACTIVE_RULES_VALUE);
+
+        if (activeRuleStr.equals(DataQualityConstants.DEFAULT_DQ_ACTIVE_RULES_VALUE)) {
+            log.info("All available Data Quality Rules will be used");
+            ruleList = new ArrayList<>(availableRules.values());
+        } else {
+            String[] parsedRuleStr = activeRuleStr.split(",");
+
+            for (String str : parsedRuleStr) {
+                addDataQualityRule(getAvailableRule(str.trim()));
+            }
+        }
+    }
 
     /**
      * Main method that conducts the data quality check. This is done by getting row counts and
@@ -157,17 +186,22 @@ public class DataQualityChecker {
             boolean dqAllRulePass = true;
             for (DataQualityRule rule : ruleList) {
 
+                log.info("Executing rule: " + rule.getName());
+
                 if (rule.loadAttributes(flowAttributes)) {
                     rulePass = rule.evaluate();
                 } else {
                     rulePass = false;
                 }
 
+                if (!rulePass) {
+                    log.error("Rule: " + rule.getName() + " has FAILED. Rule desc: " + rule.getDescription());
+                } else {
+                    log.info("Rule: " + rule.getName() + " has PASSED");
+                }
+
                 dqAllRulePass = dqAllRulePass && rulePass;
 
-                if (!rulePass) {
-                    log.error("FAILED rule " + rule.getName() + " - " + rule.getDescription());
-                }
             }
 
             outputToHive();
@@ -191,6 +225,71 @@ public class DataQualityChecker {
         }
 
         return isSuccessful;
+    }
+
+    /**
+     * This method will set the source row count if it does not already exists. This happens when
+     * other processors are used to pull data, such as ImportSqoop
+     * 
+     * If ImportSqoop Nifi processor is used, it updates the source.row.count value with the sqoop
+     * count
+     */
+    protected void setSourceRowCount() {
+        try {
+            if (flowAttributes.containsAttribute(DataQualityConstants.SQOOP_ROW_COUNT_ATTRIBUTE)) {
+                String sqoopRowCount = flowAttributes.getAttributeValue(DataQualityConstants.SQOOP_ROW_COUNT_ATTRIBUTE);
+                flowAttributes.addAttribute(DataQualityConstants.SOURCE_ROW_COUNT_ATTRIBUTE, sqoopRowCount);
+            }
+        } catch (MissingAttributeException e) {
+            log.error("Required Attribute missing");
+        }
+    }
+
+    /**
+     * Given the passed in arguments, calculates the row counts
+     * 
+     * @param databaseName Name of the Hive database
+     * @param tableName Name of the Hive table
+     * @param whereClause Additional filters
+     * @return row count for the table
+     */
+    protected long getRowCount(String databaseName, String tableName, String whereClause) {
+        try {
+
+            SparkContext sparkContext = SparkContext.getOrCreate();
+            hiveContext = new org.apache.spark.sql.hive.HiveContext(sparkContext);
+
+            String query = "SELECT COUNT(*) FROM " + databaseName
+                           + "."
+                           + tableName
+                           + " ";
+
+            if (whereClause != "") {
+                query = query + "WHERE " + whereClause;
+            }
+
+            log.info("Executing hive query: " + query);
+
+            DataFrame countDF = hiveContext.sql(query);
+
+            // Only take the first value which contains the row count
+            Long rowCount = countDF.collect()[0].getLong(0);
+
+            return rowCount;
+
+        } catch (Exception e) {
+            log.error("ERROR - Error while getting row count. Parameters were " +
+                      " database = "
+                      + databaseName
+                      +
+                      " table = "
+                      + tableName
+                      +
+                      " whereClause = "
+                      + whereClause, e);
+
+            throw e;
+        }
     }
 
     /**
@@ -260,9 +359,40 @@ public class DataQualityChecker {
         ruleList.add(rule);
     }
 
+    /**
+     * Add to the available Data Quality rules
+     * 
+     * @param rule
+     */
+    protected void addAvailableRule(DataQualityRule rule) {
+        availableRules.put(rule.getName(), rule);
+    }
+
+    /**
+     * Gets the DataQualityRule object based on the passed in rule name. If the rule does not exist,
+     * an exception is thrown
+     * 
+     * @param ruleName Name of the rule
+     * @return DataQualityRule object
+     * @throws MissingRuleException
+     */
+    protected DataQualityRule getAvailableRule(String ruleName) throws MissingRuleException {
+        DataQualityRule rule = availableRules.get(ruleName);
+
+        if (rule == null) {
+            String msg = "Rule: " + ruleName + " is not an available rule";
+            throw new MissingRuleException(msg);
+        }
+
+        return rule;
+    }
 
     protected FlowAttributes getAttributes() {
         return flowAttributes;
+    }
+
+    protected void setAttributes(FlowAttributes flowAttr) {
+        flowAttributes = flowAttr;
     }
 
     protected HiveContext getHiveContext() {
@@ -277,65 +407,11 @@ public class DataQualityChecker {
         this.ruleList = ruleList;
     }
 
-    /**
-     * This method will set the source row count if it does not already exists. This happens when
-     * other processors are used to pull data, such as ImportSqoop
-     */
-    protected void setSourceRowCount() {
-        try {
-            if (flowAttributes.containsAttribute(DataQualityConstants.SQOOP_ROW_COUNT_ATTRIBUTE)) {
-                String sqoopRowCount = flowAttributes.getAttributeValue(DataQualityConstants.SQOOP_ROW_COUNT_ATTRIBUTE);
-                flowAttributes.addAttribute(DataQualityConstants.SOURCE_ROW_COUNT_ATTRIBUTE, sqoopRowCount);
-            }
-        } catch (MissingAttributeException e) {
-            log.error("Required Attribute missing");
-        }
+    public Map<String, DataQualityRule> getAvailableRules() {
+        return availableRules;
     }
 
-    /**
-     * Given the passed in arguments, calculates the row counts
-     * 
-     * @param databaseName Name of the Hive database
-     * @param tableName Name of the Hive table
-     * @param whereClause Additional filters
-     * @return row count for the table
-     */
-    protected long getRowCount(String databaseName, String tableName, String whereClause) {
-        try {
-
-            SparkContext sparkContext = SparkContext.getOrCreate();
-            hiveContext = new org.apache.spark.sql.hive.HiveContext(sparkContext);
-
-            String query = "SELECT COUNT(*) FROM " + databaseName
-                           + "."
-                           + tableName
-                           + " ";
-
-            if (whereClause != "") {
-                query = query + "WHERE " + whereClause;
-            }
-
-            log.info("Executing hive query: " + query);
-
-            DataFrame countDF = hiveContext.sql(query);
-
-            // Only take the first value which contains the row count
-            Long rowCount = countDF.collect()[0].getLong(0);
-
-            return rowCount;
-
-        } catch (Exception e) {
-            log.error("ERROR - Error while getting row count. Parameters were " +
-                      " database = "
-                      + databaseName
-                      +
-                      " table = "
-                      + tableName
-                      +
-                      " whereClause = "
-                      + whereClause, e);
-
-            throw e;
-        }
+    public void setAvailableRules(Map<String, DataQualityRule> availableRules) {
+        this.availableRules = availableRules;
     }
 }

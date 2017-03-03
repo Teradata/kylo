@@ -29,7 +29,7 @@ import com.thinkbiganalytics.spark.dataquality.util.FlowAttributes;
 import com.thinkbiganalytics.spark.dataquality.util.MissingAttributeException;
 
 /**
- * Data Quality Rule to ensure that:  <br>
+ * Data Quality Rule to ensure that: <br>
  * Number of Source rows = Valid row count + Invalid row count
  */
 public class RowCountRuleImpl implements DataQualityRule {
@@ -45,7 +45,7 @@ public class RowCountRuleImpl implements DataQualityRule {
 
     public RowCountRuleImpl() {
         this.name = "ROW_COUNT_TOTAL_RULE";
-        this.description = "Rule Desc: Source Row Count == (Valid and Invalid Row Counts)";
+        this.description = "Source Row Count == (Valid and Invalid Row Counts)";
         this.status = false;
     }
 
@@ -100,7 +100,6 @@ public class RowCountRuleImpl implements DataQualityRule {
     @Override
     public boolean evaluate() {
         try {
-            // Execute rule
             status = (sourceRowCount == (invalidRowCount + validRowCount));
             if (!status) {
                 log.error("Source Row Count = " + sourceRowCount

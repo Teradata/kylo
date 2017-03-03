@@ -24,6 +24,7 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
+import com.thinkbiganalytics.spark.dataquality.util.DataQualityConstants;
 import com.thinkbiganalytics.spark.dataquality.util.FlowAttributes;
 
 public class InvalidRowTotalCountRuleTest extends DataQualityRuleTest {
@@ -43,4 +44,21 @@ public class InvalidRowTotalCountRuleTest extends DataQualityRuleTest {
                    runRule(InvalidRowCountRuleImpl));
     }
 
+    @Test
+    public void testInvalidRows() {
+        flowAttributes.addAttribute(DataQualityConstants.DQ_INVALID_ROW_COUNT_ATTRIBUTE, "10");
+        flowAttributes.addAttribute(DataQualityConstants.DQ_INVALID_ALLOWED_COUNT_ATTRIBUTE, "0");
+        
+        assertTrue("Invalid Rows do not exist",
+                   !runRule(InvalidRowCountRuleImpl));
+    }
+    
+    @Test
+    public void testAcceptablePercentInvalidRows() {
+        flowAttributes.addAttribute(DataQualityConstants.DQ_INVALID_ROW_COUNT_ATTRIBUTE, "10");
+        flowAttributes.addAttribute(DataQualityConstants.DQ_INVALID_ALLOWED_COUNT_ATTRIBUTE, "10");
+        
+        assertTrue("Invalid Row count larger than accepted threshold",
+                   runRule(InvalidRowCountRuleImpl));
+    }
 }

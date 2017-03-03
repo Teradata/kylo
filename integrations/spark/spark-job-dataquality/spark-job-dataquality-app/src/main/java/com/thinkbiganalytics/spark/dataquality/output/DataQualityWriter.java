@@ -162,7 +162,7 @@ public class DataQualityWriter implements Serializable {
     private void createOutputTableIfNotExists(SparkContextService scs, String outputTable) {
         String createTableSQL = "CREATE TABLE IF NOT EXISTS " + outputTable
                                 + "\n"
-                                + "(rulename STRING, description STRING, status BOOLEAN, comment STRING)\n"
+                                + "(rule_name STRING, rule_description STRING, status BOOLEAN, rule_resultdetail STRING)\n"
                                 + "PARTITIONED BY ( processing_dttm STRING)\n";
 
         scs.sql(hiveContext, createTableSQL);
@@ -181,7 +181,7 @@ public class DataQualityWriter implements Serializable {
                                 + " PARTITION ( processing_dttm = "
                                 + partitionValue
                                 + ")"
-                                + " SELECT rulename, description, status, comment"
+                                + " SELECT ruleName, description, status, resultDetail"
                                 + " FROM "
                                 + tempTable;
 

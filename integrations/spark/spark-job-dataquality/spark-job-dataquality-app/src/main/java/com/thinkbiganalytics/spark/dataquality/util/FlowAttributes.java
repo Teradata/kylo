@@ -77,7 +77,25 @@ public class FlowAttributes {
 
         return val;
     }
-
+    
+    /**
+     * Returns the value of the attribute passed in. If the attribute does not exist, then the
+     * passed in default value is used
+     * 
+     * @param attribute Name of the attribute
+     * @param defaultValue Value used if attribute does not exist
+     * @return String value of the attribute
+     */
+    public String getAttributeValue(String attribute, String defaultValue) {
+        if (!attributeMap.containsKey(attribute)) {
+            addAttribute(attribute, defaultValue);
+            return defaultValue;
+        }
+        else {
+            return attributeMap.get(attribute);
+        }
+    }
+    
     /**
      * Converts the string value of an attribute to data type long
      * 
@@ -89,17 +107,21 @@ public class FlowAttributes {
     public long getAttributeValueLong(String attribute) throws MissingAttributeException {
         String val = getAttributeValue(attribute);
 
-        long longVal = Long.MIN_VALUE;
-        try {
-            longVal = Long.parseLong(val);
-        } catch (NumberFormatException e) {
-            log.error("Error while converting attribute: " + attribute
-                      +
-                      " to long", e);
-            throw e;
-        }
+        return convertStringtoLong(attribute, val);
+    }
+    
+    /**
+     * Converts the string value of an attribute to data type long
+     * 
+     * @param attribute Name of the attribute
+     * @return Long value of the attribute. If the value is not converted, Long.MIN_VALUE is
+     *         returned
+     * @throws MissingAttributeException
+     */
+    public long getAttributeValueLong(String attribute, String defaultValue) {
+        String val = getAttributeValue(attribute, defaultValue);
 
-        return longVal;
+        return convertStringtoLong(attribute, val);
     }
 
     /**
@@ -130,5 +152,19 @@ public class FlowAttributes {
             log.error("Error setting attributes. Check JSON in path: " + attributesJsonPath, e);
         }
 
+    }
+    
+    private long convertStringtoLong(String attrName, String val) {
+        long longVal = Long.MIN_VALUE;
+        try {
+            longVal = Long.parseLong(val);
+        } catch (NumberFormatException e) {
+            log.error("Error while converting attribute: " + attrName
+                      +
+                      " to long", e);
+            throw e;
+        }
+
+        return longVal;
     }
 }

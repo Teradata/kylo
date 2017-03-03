@@ -33,7 +33,7 @@ public interface DataQualityRule {
      * If a required attribute is missing, this will return false
      * 
      * @param flowAttr Attributes coming from the Flow file
-     * @return Boolean indicating result of the loade
+     * @return Boolean indicating result of the load
      */
     boolean loadAttributes(FlowAttributes flowAttr);
 

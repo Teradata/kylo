@@ -33,29 +33,29 @@ import com.thinkbiganalytics.spark.dataquality.rule.DataQualityRule;
 @SuppressWarnings("serial")
 public class DataQualityRow implements Serializable {
 
-    private String ruleName;
-    private String description;
+    private String rule_name;
+    private String rule_description;
     private boolean status;
-    private String comment;
+    private String rule_resultdetail;
 
     /**
      * No-argument constructor
      */
     public DataQualityRow() {
-        ruleName = null;
-        description = null;
+        rule_name = null;
+        rule_description = null;
         status = false;
-        comment = null;
+        rule_resultdetail = null;
     }
 
 
     /**
      */
     public DataQualityRow(DataQualityRule rule) {
-        this.ruleName = rule.getName();
-        this.description = rule.getDescription();
-        this.setStatus(rule.getStatus());
-        this.comment = rule.getSummary().toJSONString();
+        this.rule_name = rule.getName();
+        this.rule_description = rule.getDescription();
+        this.status = rule.getStatus();
+        this.rule_resultdetail = rule.getSummary().toJSONString();
     }
 
 
@@ -65,7 +65,7 @@ public class DataQualityRow implements Serializable {
      * @return rule name
      */
     public String getRuleName() {
-        return ruleName;
+        return rule_name;
     }
 
 
@@ -75,7 +75,7 @@ public class DataQualityRow implements Serializable {
      * @param ruleName name of the rule
      */
     public void setRuleName(String ruleName) {
-        this.ruleName = ruleName;
+        this.rule_name = ruleName;
     }
 
 
@@ -85,7 +85,7 @@ public class DataQualityRow implements Serializable {
      * @return rule description
      */
     public String getDescription() {
-        return description;
+        return rule_description;
     }
 
 
@@ -95,7 +95,7 @@ public class DataQualityRow implements Serializable {
      * @param description description of the data quality rule
      */
     public void setDescription(String description) {
-        this.description = description;
+        this.rule_description = description;
     }
 
     /**
@@ -119,22 +119,22 @@ public class DataQualityRow implements Serializable {
 
 
     /**
-     * Set the rule comments
+     * Set the rule result details
      *
-     * @return rule comments
+     * @return rule result details
      */
-    public String getComment() {
-        return comment;
+    public String getResultDetail() {
+        return rule_resultdetail;
     }
 
 
     /**
-     * Set the rule comemnts
+     * Set the rule result details
      *
-     * @param comment The comments of the rule
+     * @param resultDetail The result details
      */
-    public void setComment(String comment) {
-        this.comment = comment;
+    public void setResultDetail(String resultDetail) {
+        this.rule_resultdetail = resultDetail;
     }
 
 
@@ -143,13 +143,13 @@ public class DataQualityRow implements Serializable {
      */
     @Override
     public String toString() {
-        return "DataQualityRow [ruleName=" + ruleName
+        return "DataQualityRow [ruleName=" + rule_name
                + ", description="
-               + description
+               + rule_description
                + ", status="
                + status
-               + ", comment="
-               + comment
+               + ", resultDetail ="
+               + rule_resultdetail
                + "]";
     }
 

@@ -33,23 +33,23 @@ import com.thinkbiganalytics.spark.dataquality.util.MissingAttributeException;
  * Number of Source rows = Number of Feed rows
  */
 public class SourceToFeedCountRuleImpl implements DataQualityRule {
-	private static final Logger log = LoggerFactory.getLogger(SourceToFeedCountRuleImpl.class);
-			
-	private String name;
+    private static final Logger log = LoggerFactory.getLogger(SourceToFeedCountRuleImpl.class);
+
+    private String name;
     private String description;
     private boolean status;
-	    
-	long feedRowCount;
-	long sourceRowCount;
+
+    long feedRowCount;
+    long sourceRowCount;
 
     public SourceToFeedCountRuleImpl() {
         this.name = "SOURCE_TO_FEED_COUNT_RULE";
-        this.description = "Rule Desc: Source Row Count = Feed Row Count";
+        this.description = "Source Row Count = Feed Row Count";
         this.status = false;
     }
-	
-	@Override
-	public boolean loadAttributes(FlowAttributes flowAttr) {
+
+    @Override
+    public boolean loadAttributes(FlowAttributes flowAttr) {
         try {
             feedRowCount = flowAttr.getAttributeValueLong(DataQualityConstants.DQ_FEED_ROW_COUNT_ATTRIBUTE);
             sourceRowCount = flowAttr.getAttributeValueLong(DataQualityConstants.SOURCE_ROW_COUNT_ATTRIBUTE);
@@ -58,8 +58,8 @@ public class SourceToFeedCountRuleImpl implements DataQualityRule {
             return false;
         }
         return true;
-	}
-	
+    }
+
     @Override
     public String getName() {
         return name;
@@ -74,11 +74,11 @@ public class SourceToFeedCountRuleImpl implements DataQualityRule {
     public boolean getStatus() {
         return status;
     }
-	
-	@SuppressWarnings("unchecked")
+
+    @SuppressWarnings("unchecked")
     @Override
-	public JSONObject getSummary() {
-		
+    public JSONObject getSummary() {
+
         JSONObject jsonAttrs = new JSONObject();
         jsonAttrs.put("Source Row Count", sourceRowCount);
         jsonAttrs.put("Feed Row Count", feedRowCount);
@@ -89,20 +89,22 @@ public class SourceToFeedCountRuleImpl implements DataQualityRule {
         jsonObject.put("ATTRIBUTES", jsonAttrs);
 
         return jsonObject;
-	}
+    }
 
-	@Override
-	public boolean evaluate() {
-		try {			
-			status = (feedRowCount == sourceRowCount);
-			if (!status) {
-				log.error("Feed Row Count = " + feedRowCount +
-						" Source Row Count = " + sourceRowCount);
-			}
-			return status;
-		} catch (Exception e) {
-			log.error("Error while evaluating rule", e);
-		}
-		return false;
-	}
+    @Override
+    public boolean evaluate() {
+        try {
+            status = (feedRowCount == sourceRowCount);
+            if (!status) {
+                log.error("Feed Row Count = " + feedRowCount
+                          +
+                          " Source Row Count = "
+                          + sourceRowCount);
+            }
+            return status;
+        } catch (Exception e) {
+            log.error("Error while evaluating rule", e);
+        }
+        return false;
+    }
 }
