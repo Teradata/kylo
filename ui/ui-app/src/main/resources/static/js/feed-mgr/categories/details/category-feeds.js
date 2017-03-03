@@ -22,7 +22,7 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
          * @param {Object} feed the feed to navigate to
          */
         self.onFeedClick = function(feed) {
-            StateService.FeedManager().Category().navigateToFeedDetails(feed.id);
+            StateService.FeedManager().Feed().navigateToFeedDetails(feed.id);
         };
     }
 

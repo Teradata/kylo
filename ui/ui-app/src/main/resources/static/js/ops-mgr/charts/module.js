@@ -28,11 +28,7 @@ define(['angular','ops-mgr/charts/module-name', 'kylo-utils/LazyLoadUtil','kylo-
         });
 
 
-        module.run(['$ocLazyLoad',function($ocLazyLoad){
-            $ocLazyLoad.load({name:'kylo',files:['bower_components/c3/c3.css',
-                                                 'bower_components/pivottable/dist/pivot.min.css'
-            ]})
-        }])
+
 
         function lazyLoadController(path){
             return lazyLoadUtil.lazyLoadController(path,['ops-mgr/charts/module-require']);
@@ -43,6 +39,12 @@ define(['angular','ops-mgr/charts/module-name', 'kylo-utils/LazyLoadUtil','kylo-
         }
 
     }]);
+
+    module.run(['$ocLazyLoad',function($ocLazyLoad){
+        $ocLazyLoad.load({name:'kylo',files:['bower_components/c3/c3.css',
+                                             'js/ops-mgr/charts/pivot.css'
+        ]})
+    }])
     return module;
 });
 

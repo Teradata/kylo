@@ -8,8 +8,8 @@ define(['angular','common/module-name'], function (angular,moduleName) {
                 '  aria-controls="docs-menu-{{section.text}}"\n' +
                 '  flex layout="row"\n' +
                 '  aria-expanded="{{isOpen()}}" ng-if="section.hidden == false">\n' +
-                ' <span class="toggle-label layout-padding-left-16" flex>{{section.text}}</span> ' +
-                '  <ng-md-icon md-icon icon="{{section.expandIcon}}"></ng-md-icon>'+
+                ' <span class="toggle-label layout-padding-left-8" flex>{{section.text}}</span> ' +
+                '  <ng-md-icon md-icon icon="{{section.expandIcon}}" ng-if="!isCollapsed()"></ng-md-icon>'+
                 '<span flex="5"></span>' +
                 '</md-button>' +
                 '</div>\n' +
@@ -39,14 +39,16 @@ define(['angular','common/module-name'], function (angular,moduleName) {
                         }
                     });
 
+                    scope.isCollapsed= controller.isCollapsed;
+
                     scope.$watch('section.collapsed',function(newVal,oldVal){
                         if(newVal == true){
-                            element.find('.toggle-label').addClass('collapsed-toggle-header').removeClass('layout-padding-left-16');
-                            element.find('.menu-link').removeClass('layout-padding-left-16');
+                            element.find('.toggle-label').addClass('collapsed-toggle-header').removeClass('layout-padding-left-8');
+                            element.find('.menu-link').removeClass('layout-padding-left-8');
                         }
                         else {
-                            element.find('.toggle-label').removeClass('collapsed-toggle-header').addClass('layout-padding-left-16')
-                            element.find('.menu-link').addClass('layout-padding-left-16');
+                            element.find('.toggle-label').removeClass('collapsed-toggle-header').addClass('layout-padding-left-8')
+                            element.find('.menu-link').addClass('layout-padding-left-8');
                         }
                     })
 

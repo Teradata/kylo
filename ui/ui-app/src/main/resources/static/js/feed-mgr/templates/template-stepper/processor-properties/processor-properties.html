@@ -38,9 +38,9 @@
                                                  md-top-index="vm.topIndex">
 
                         <div md-virtual-repeat="property in vm.allProperties " layout="column" layout-fill>
-                            <div ng-if="property.firstProperty" layout="row" class="layout-padding-left-16">
+                            <div ng-if="property.firstProperty" layout="row" class="layout-padding-left-16 layout-padding-top-bottom" style="background-color:#F9F9F9;">
                                 <a id="{{property.processor.id}}" name="{{property.processor.name}}"></a>
-                                <md-subheader class="md-subhead left-aligned">{{property.processor.name}}</md-subheader>
+                                <span class="primary-color-1 md-subhead left-aligned">{{property.processor.name}}</span>
                             </div>
                             <div layout="row" style="padding-left:30px;">
                                 <md-input-container style="height:30px;margin-bottom:5px;"
@@ -193,8 +193,8 @@
             <md-virtual-repeat-container md-auto-shrink="true" md-auto-shrink-min="5" style="height:300px;"
                      layout-align="start start" layout="column" md-item-size="30">
 
-                <div md-virtual-repeat="processor in vm.processors " layout="column" layout-align="start start" style="text-transform: capitalize;">
-                    <md-button ng-click="vm.scrollToProcessor(processor)" >
+                <div md-virtual-repeat="processor in vm.processors " >
+                    <md-button ng-click="vm.scrollToProcessor(processor)" class="grey" style="text-transform: capitalize;" >
                     {{processor.name}}
                     </md-button>
                     <md-divider ng-if="!$last"></md-divider>

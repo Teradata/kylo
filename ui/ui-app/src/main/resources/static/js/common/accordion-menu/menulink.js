@@ -6,7 +6,7 @@ define(['angular','common/module-name'], function (angular,moduleName) {
             $templateCache.put('menu-link.tmpl.html',
             '<md-button flex ui-sref="{{section.sref}}" ng-click="selectMenuItem()" class="nav-btn" \n ' +
             'ng-class="{\'selected\' : section === selectedMenuItem, \'nav-btn\': selected !== selectedMenuItem }"  > \n' +
-            '<div class="layout-padding-left-16 menu-link"><ng-md-icon md-icon icon="{{section.icon}}"  class="{{sectionClass()}}"></ng-md-icon> \n '+
+            '<div class="layout-padding-left-8 menu-link"><ng-md-icon md-icon icon="{{section.icon}}"  class="{{sectionClass()}}"></ng-md-icon> \n '+
             '<md-tooltip md-direction="right" ng-if="isCollapsed()">{{section.text}}</md-tooltip>'+
             '<span style="padding-left:10px;" ng-if="!isCollapsed()">{{section.text}}</span> '
             + '</div>'

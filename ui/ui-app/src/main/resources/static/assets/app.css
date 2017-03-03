@@ -235,12 +235,14 @@ md-autocomplete.md-default-theme, md-autocomplete {
 
 md-list.padding-left md-list-item {
   padding-left: 25px !important;
-
 }
 
 .md-subheader.left-aligned .md-subheader-inner {
   padding-left: 0px;
 }
+
+
+
 
 /*  Options Menu (more_vert selection menu) */
 
@@ -715,6 +717,10 @@ Status styles
 .accent-color, .accent-color-1 {
   color: #E4682C;
   fill: #E4682C;
+}
+
+.grey {
+  color:rgba(0, 0, 0, 0.54);
 }
 
 .accent-color-2 {

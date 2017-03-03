@@ -47,7 +47,7 @@ define(['angular','side-nav/module-name'], function (angular,moduleName) {
                  * @param allowed
                  */
                 function buildFeedManagerMenu() {
-                    var menu = ({type:'toggle', text: "Feed Manager",narrowText:'Feed',expanded:true});
+                    var menu = ({type:'toggle', text: "Feed Manager",narrowText:'',expanded:true});
                     var links = [];
                     links.push({sref: "feeds",type:'link', icon: "linear_scale", text: "Feeds", defaultActive: false, fullscreen: false, permission: AccessControlService.FEEDS_ACCESS});
                     links.push({sref: "categories",type:'link', icon: "folder_special", text: "Categories", defaultActive: false, fullscreen: false, permission: AccessControlService.CATEGORIES_ACCESS});
@@ -64,13 +64,13 @@ define(['angular','side-nav/module-name'], function (angular,moduleName) {
                  * @param allowed
                  */
                 function buildOpsManagerMenu() {
-                       var menu = ({type:'toggle', text: "Operations",narrowText:'Ops',expanded:true});
+                       var menu = ({type:'toggle', text: "Operations",narrowText:'',expanded:true});
                        var links = [];
-                       links.push({sref: "dashboard",type:'link', icon: "home", text: "Dashboard", defaultActive: false, permission: AccessControlService.OPERATIONS_MANAGER_ACCESS});
+                       links.push({sref: "dashboard",type:'link', icon: "dashboard", text: "Dashboard", defaultActive: false, permission: AccessControlService.OPERATIONS_MANAGER_ACCESS});
                        links.push({sref: "service-health",type:'link', icon: "vector_triangle", text: "Services", defaultActive: false, permission: AccessControlService.OPERATIONS_MANAGER_ACCESS});
                        links.push({sref: "jobs",type:'link', icon: "settings", text: "Jobs", defaultActive: false, permission: AccessControlService.OPERATIONS_MANAGER_ACCESS});
                        links.push({sref: "alerts", icon: "notifications", text: "Alerts", defaultActive: false, permission: AccessControlService.OPERATIONS_MANAGER_ACCESS});
-                       links.push({sref: "scheduler",type:'link', icon: "today", text: "Scheduler", defaultActive: false, permission: AccessControlService.OPERATIONS_MANAGER_ACCESS});
+                       links.push({sref: "scheduler",type:'link', icon: "today", text: "SLA Schedule", defaultActive: false, permission: AccessControlService.OPERATIONS_MANAGER_ACCESS});
                        links.push({sref: "charts",type:'link', icon: "insert_chart", text: "Charts", defaultActive: false, permission: AccessControlService.OPERATIONS_MANAGER_ACCESS});
                        menu.links = links;
                     return menu;
@@ -82,7 +82,7 @@ define(['angular','side-nav/module-name'], function (angular,moduleName) {
                  */
                 function buildAdminMenu(allowed) {
 
-                    var menu = ({type:'toggle', text: "Admin",narrowText:'Admin',expanded:true});
+                    var menu = ({type:'toggle', text: "Admin",narrowText:'',expanded:true});
                     var links = [];
                     links.push({sref: "business-metadata", type:'link', icon: "business", text: "Properties", defaultActive: false, permission: AccessControlService.CATEGORIES_ADMIN});
                     links.push({sref: "registered-templates",type:'link', icon: "layers", text: "Templates", defaultActive: false, permission: AccessControlService.TEMPLATES_ACCESS});
