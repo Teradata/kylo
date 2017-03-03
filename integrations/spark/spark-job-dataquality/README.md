@@ -131,6 +131,6 @@ To add the Data Quality Job, the following changes need to be done to the standa
     ```
 4. Add a **ExecuteSparkJob** processor which will execute the Spark job
     * Populate all the necessary Spark attributes
-        * __ApplicationJar__ = /path/to/jar/kylo-spark-job-dataquality-spark-v1-<version>-jar-with-dependencies.jar
+        * __ApplicationJar__ = /path/to/jar/kylo-spark-job-dataquality-spark-v1-\<version>\-jar-with-dependencies.jar
         * __MainClass__ =  com.thinkbiganalytics.spark.dataquality.checker.DataQualityChecke
         * __MainArgs__ to ${attribute.json.path}
