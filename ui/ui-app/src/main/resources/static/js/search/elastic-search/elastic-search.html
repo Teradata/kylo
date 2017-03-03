@@ -1,0 +1,141 @@
+<!--
+  #%L
+  thinkbig-ui-feed-manager
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+      http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<div>
+
+
+    <div layout="row" layout-align="center start">
+        <div layout="column" flex class="layout-max-width">
+
+            <card-layout   class="centered" body-css="md-padding">
+                <header-section layout="row" layout-align="space-between-center" flex>
+                    <div class="card-title" flex>Search Results</div><h2 class="md-subheader"></h2>
+                </header-section>
+
+                <body-section>
+
+                    <div ng-if="vm.searchResult != null">
+                    Displaying {{vm.searchResult.from}} to {{vm.searchResult.to}} of {{vm.searchResult.totalHits}}  <span class="hint">({{(vm.searchResult.tookInMillis/1000).toFixed(3)}} seconds)</span>
+                    <Br/>
+
+<br/><br/>
+                        <div  ng-if="vm.searchResult.searchHits.length >0 ">
+                            <md-list flex layout-fill >
+                                <md-list-item class="md-3-line layout-padding-top-bottom" dir-paginate="searchHit in vm.searchResult.searchHits|itemsPerPage:vm.paginationData.rowsPerPage" pagination-id="search"  total-items="vm.searchResult.totalHits" current-page="vm.paginationData.currentPage"  ng-click="vm.onSearchResultItemClick($event,searchHit)">
+
+                                    <div layout="column" layout-fill>
+                                        <div class="layout-padding-bottom">
+                                            Type:{{searchHit.type}}, Index: {{searchHit.index}}
+                                        </div>
+
+                                        <div ng-if="searchHit.type == 'tweets'">
+                                            <ng-md-icon icon="twitter" style="fill:#607d8b"></ng-md-icon>
+                                            {{searchHit.source.text | maskProfanity}}<br/>
+                                            <div g-if="searchHit.source.source" ng-bind-html="vm.renderHtml(searchHit.source.source)"></div>
+                                        </div>
+
+                                        <div ng-if="searchHit.source.query">
+                                            {{searchHit.source.query}}
+                                        </div>
+                                        <div ng-if="searchHit.type == 'feed'">
+                                            <ng-md-icon icon="link" style="fill:#607d8b"></ng-md-icon>
+                                            {{searchHit.source.feedName}}, {{searchHit.source.businessUnit}}
+                                            <br/>
+                                            <span class="hint">{{searchHit.source.description}}</span>
+                                            <br/>
+                                            <span class="hint">Created: {{searchHit.source.createDate}}</span>
+                                        </div>
+
+                                        <div ng-if="searchHit.type == 'table-metadata'">
+                                            <ng-md-icon icon="layers" style="fill:#607d8b"></ng-md-icon>
+                                            Table: <span class="md-subhead">{{searchHit.source.tableName}}</span>
+                                            <br/>
+                                            <span class="hint">{{searchHit.source.description}}</span>
+                                            <ul style="padding-left:30px;list-style-type: none;">
+                                                   <li ng-repeat="field in searchHit.source.fields">
+                                                       {{field.name}}   {{field.datatype}}
+                                                       <br/>
+                                                       <span class="hint">{{field.description}}</span>
+                                                   </li>
+                                            </ul>
+                                        </div>
+                                        <!--
+                                        <div>
+                                            <ng-md-icon icon="{{vm.categoryForIndex(searchHit.index).icon}}" style="fill:{{vm.categoryForIndex(searchHit.index).iconColor}};float:left;" ng-if="vm.categoryForIndex(searchHit.index) != null"></ng-md-icon>
+                                        <ul style="list-style-type: none;margin-top:0px;" flex ng-if="vm.isGenericSearchHitDisplay(searchHit)"  data-type="{{searchHit.type}}">
+                                            <li ng-repeat="(key,value) in searchHit.source" flex style="padding:5px;" >
+                                              </tr></table> <div ng-if="key == 'post_date'">
+                                                   <span>{{key}}</span><span style="padding-left:20px;" flex>{{value | date:"MM/dd/yyyy 'at' h:mma"}}</span>
+                                               </div>
+                                                <div ng-if="key != 'post_date'">
+                                                    <span>{{key}}</span><span style="padding-left:20px;" flex>{{value}}</span>
+                                                </div>
+                                            </li>
+
+                                        </ul>
+                                        </div>
+                                        -->
+                                        <div>
+                                            <ng-md-icon title="{{vm.categoryForIndex(searchHit.index).name}} -  {{vm.categoryForIndex(searchHit.index).description}}" icon="{{vm.categoryForIndex(searchHit.index).icon}}" style="fill:{{vm.categoryForIndex(searchHit.index).iconColor}};float:left;" ng-if="vm.categoryForIndex(searchHit.index) != null"></ng-md-icon>
+                                            <table class="elastic-search-property-table" style="margin-top:0px;" flex ng-if="vm.isGenericSearchHitDisplay(searchHit)"  data-type="{{searchHit.type}}">
+                                                <tr ng-repeat="(key,value) in searchHit.source" flex  >
+                                                   <td ng-if="key == 'post_date'">
+                                                    <span>{{key}}</span>
+                                                   </td>
+                                                    <td ng-if="key == 'post_date'">
+                                                        <span>{{value | date:"MM/dd/yyyy 'at' h:mma"}}</span>
+                                                    </td>
+                                                    <td ng-if="key != 'post_date'">
+                                                        <span>{{key}}</span>
+                                                    </td>
+                                                    <td ng-if="key != 'post_date'">
+                                                        <span>{{value}}</span>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+
+                                    </div>
+                                    <md-divider ng-if="!$last"></md-divider>
+                                </md-list-item>
+                                <md-divider></md-divider>
+                                <md-list-item   layout-align="end center"  layout-row class="pagination-list-item">
+                                    <dir-pagination-controls pagination-id="search"
+                                                             auto-hide="false"
+                                                             max-size="5"
+                                                             direction-links="true"
+                                                             boundary-links="false"
+                                                             template-url="js/common/dir-pagination/dirPagination.tpl.html"
+                                                             on-page-change="vm.onPaginationChange(newPageNumber)"
+                                                             label="Rows per page"
+                                                             rows-per-page="vm.paginationData.rowsPerPage"
+                                                             rows-per-page-options="vm.paginationData.rowsPerPageOptions"
+                                                             class="pagination-row">
+                                    </dir-pagination-controls>
+                                </md-list-item>
+                            </md-list>
+                        </div>
+                    </div>
+                </body-section>
+             </card-layout>
+
+
+            </div>
+        </div>
+    </div>

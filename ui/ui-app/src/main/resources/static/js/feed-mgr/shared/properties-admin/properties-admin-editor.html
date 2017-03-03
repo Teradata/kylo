@@ -1,0 +1,77 @@
+<!--
+  #%L
+  thinkbig-ui-feed-manager
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+      http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<ul class="user-field-list" dnd-list="fieldList">
+    <li layout="column" ng-repeat="field in fieldList">
+        <div layout="row">
+            <div layout="column">
+                <md-button class="md-icon-button user-field-move-up" md-no-ink="true" ng-disabled="$first" ng-click="vm.moveUp($index)">
+                    <md-icon aria-label="Move up">arrow_drop_up</md-icon>
+                </md-button>
+                <md-button class="md-icon-button user-field-move-down" md-no-ink="true" ng-disabled="$last" ng-click="vm.moveDown($index)">
+                    <md-icon aria-label="Move down">arrow_drop_down</md-icon>
+                </md-button>
+            </div>
+
+            <md-input-container flex="45">
+                <label>Name</label>
+                <input ng-model="field.displayName" ng-change="vm.updateSystemName(field)">
+                <div ng-messages="field.$error" md-auto-hide="false">
+                    <div ng-message="duplicate">Names must be unique.</div>
+                    <div ng-message="missingName">A name is required.</div>
+                </div>
+            </md-input-container>
+
+            <span flex="5"></span>
+
+            <md-input-container flex="40">
+                <label>System Name</label>
+                <input ng-model="field.systemName" ng-readonly="!field.$isNew">
+            </md-input-container>
+
+            <md-button flex="5" class="md-icon-button user-field-delete" aria-label="Delete" ng-click="vm.removeField($index)">
+                <md-icon>delete</md-icon>
+            </md-button>
+        </div>
+
+        <div layout="row">
+            <span flex="5"></span>
+
+            <md-input-container flex="90">
+                <label>Description</label>
+                <input ng-model="field.description">
+            </md-input-container>
+
+            <span flex="5"></span>
+        </div>
+
+        <div layout="row">
+            <span flex="5"></span>
+
+            <md-input-container layout="column" flex="90" class="md-input-has-value">
+                <label>Required?</label>
+                <md-checkbox ng-model="field.required"></md-checkbox>
+            </md-input-container>
+
+            <span flex="5"></span>
+        </div>
+    </li>
+</ul>
+
+<md-button class="md-primary md-raised" ng-click="vm.addField()">Add Property</md-button>

@@ -1,0 +1,43 @@
+<!--
+  #%L
+  thinkbig-ui-feed-manager
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+      http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<!--<ul class="list-group expression-properties">
+    <li mentio-menu-item="property" ng-repeat="property in items" class="list-group-item" layout-fill layout-column>
+        <div layout="row">
+        <span ng-bind-html="property.key | mentioHighlight:typedTerm:'menu-highlighted' | unsafe"></span>
+        <span style="padding-left:15px;color:#cccccc" ng-bind="property.dataType"></span>
+        <span style="padding-left:15px;" ng-bind="property.value"></span>
+        </div>
+        <span class="hint">{{property.description}}</span>
+        <md-divider ng-if="!$last"></md-divider>
+    </li>
+</ul>
+-->
+
+<div class="expression-properties">
+    <div mentio-menu-item="property" ng-repeat="property in items" layout-column
+         class="expression-property" flex>
+        <div layout="row">
+            <span ng-bind-html="property.key | mentioHighlight:typedTerm:'menu-highlighted' | unsafe"></span>
+            <span style="padding-left:15px;color:#cccccc" ng-bind="property.dataType"></span>
+            <span style="padding-left:15px;" ng-bind="property.value"></span>
+        </div>
+        <span class="hint">{{property.description}}</span>
+    </div>
+</div>

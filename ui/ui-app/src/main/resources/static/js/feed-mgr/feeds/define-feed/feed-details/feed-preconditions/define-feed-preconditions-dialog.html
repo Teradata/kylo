@@ -1,0 +1,55 @@
+<!--
+  #%L
+  thinkbig-ui-feed-manager
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+      http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<md-dialog aria-label="Validation Results"  ng-cloak>
+    <ng-form name="preconditionForm">
+        <div  class="md-toolbar-tools">
+            <h4 class="md-title">
+                <span>{{title}} for {{feed.feedName}}</span></h4>
+            <span flex></span>
+        </div>
+        <md-dialog-content layout="column" style="min-width:500px;" layout-padding>
+
+             <div class="edit-form">
+
+                <md-input-container class="md-block layout-padding-top-bottom">
+                    <label class="md-container-ignore label-small layout-padding-top">Select Rule Type</label>
+                    <md-select ng-model="ruleType" ng-model-options="{trackBy: '$value.name'}" ng-change="onRuleTypeChange()" aria-label="Rule Type">
+                        <md-option ng-value="opt" ng-repeat="opt in options">{{ opt.name }}</md-option>
+                    </md-select>
+                    <span class="hint">{{editRule.shortDescription}}</span>
+                </md-input-container>
+                 <thinkbig-policy-input-form the-form="preconditionForm" rule="editRule" mode="ruleMode" feed="feed"></thinkbig-policy-input-form>
+            </div>
+
+        </md-dialog-content>
+        <md-dialog-actions layout="row" layout-align="start stretch" flex>
+            <md-button class="md-raised md-warn" ng-if="editMode == 'EDIT'" ng-click="deletePrecondition($event)">
+                Delete
+            </md-button>
+            <span flex></span>
+            <md-button ng-click="cancel($event)">
+                Cancel
+            </md-button>
+            <md-button class="md-raised md-primary" ng-click="addPolicy($event)" ng-disabled="preconditionForm.$invalid">
+                Done
+            </md-button>
+        </md-dialog-actions>
+    </ng-form>
+</md-dialog>

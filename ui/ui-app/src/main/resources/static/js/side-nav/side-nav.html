@@ -1,0 +1,33 @@
+<md-sidenav class="site-sidenav"
+            md-component-id="left"
+            md-whiteframe="4"
+            md-is-locked-open="$mdMedia('gt-md') && sideNavService.isLockOpen"
+            layout-fill>
+
+  <md-toolbar class="md-hue-2 layout-column" style="" layout="column">
+    <div layout="row" layout-wrap="" layout-align="space-between-center" style="margin: auto;" class="layout-wrap layout-align-space-between-center layout-row">
+      <img src="assets/images/kylo-logo-rev.png" height="50px" ng-if="!collapsed">
+      <img src="assets/images/k_logo.png" height="30px" width="30px" ng-if="collapsed">
+    </div>
+    <div layout="row" layout-wrap="" layout-align="space-between-center" class="layout-wrap layout-align-space-between-center layout-row">
+      <span style="font-size:12px;"></span>
+    </div>
+  </md-toolbar>
+  <md-content layout="column" flex style="overflow:hidden">
+<div flex style="overflow-y:scroll;overflow-x:hidden">
+    <accordion-menu menu="menu" collapsed="collapsed"></accordion-menu>
+</div>
+
+
+
+    <md-list class="bottom-align" >
+      <md-list-item>
+        <md-button flex ng-click="expandCollapseSideNavList($event)" class="nav-btn">
+          <ng-md-icon md-icon icon="keyboard_arrow_left" class="nav-btn" ng-if="!collapsed"></ng-md-icon>
+          <ng-md-icon md-icon icon="keyboard_arrow_right" class="nav-btn" ng-if="collapsed"></ng-md-icon>
+          <span style="padding-left:10px;"  ng-if="!collapsed">Collapse</span>
+        </md-button>
+      </md-list-item>
+    </md-list>
+  </md-content>
+</md-sidenav>
