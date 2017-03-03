@@ -27,7 +27,6 @@ define(['angular','common/module-name'], function (angular,moduleName) {
             controller: ['$scope', '$element', 'TableOptionsService',function ($scope, $element, TableOptionsService) {
                 var self = this;
                 self.filterModelOptions = self.filterModelOptions || {};
-                console.log(' CARD FILTER HEADER ',self.cardTitle, _.clone(self))
 
                 self.renderHelp = angular.isDefined(self.onShowFilterHelp);
 

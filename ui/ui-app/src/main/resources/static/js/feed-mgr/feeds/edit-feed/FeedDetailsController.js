@@ -52,7 +52,6 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         this.uploadFile = null;
         this.uploading = false;
         this.uploadAllowed = false;
-        console.log('LOADING FEED DETAILS!!!!',$transition$.params())
 
         /** flag to indicate if we get a valid connection back from NiFi.  Initially to true. it will be rechecked on load **/
         this.isNiFiRunning = true;

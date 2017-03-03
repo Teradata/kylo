@@ -1,6 +1,5 @@
 define(['angular','angular-ui-router'], function (angular) {
-    console.log('LazyController');
-  var  lazyModule = angular.module('lazy', ['ui.router']);
+    var  lazyModule = angular.module('lazy', ['ui.router']);
 
 
 lazyModule.config(function($stateProvider) {

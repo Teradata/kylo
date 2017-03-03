@@ -15,7 +15,6 @@ define(['angular','feed-mgr/categories/module-name'], function (angular,moduleNa
          * @type {boolean} {@code true} if the category is being loaded, or {@code false} if it has finished loading
          */
         self.loadingCategory = true;
-        console.log('$transition$',$transition$)
 
         /**
          * Category data.

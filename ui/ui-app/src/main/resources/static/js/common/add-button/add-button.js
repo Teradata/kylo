@@ -6,12 +6,6 @@ define(['angular','common/module-name'], function (angular,moduleName) {
             scope:{},
             template: '<md-button class="md-fab md-fab-top-right" aria-label="Add" ng-click="onClickAddButton($event)"><ng-md-icon icon="add"></ng-md-icon></md-button>',
             link: function ($scope, element, attrs) {
-                console.log('RENDERING ADD BUTTON!!!', element)
-                function AddButtonDirectiveTag() {
-                }
-
-                this.__tag = new AddButtonDirectiveTag();
-
 
                 $scope.currentState = '';
 

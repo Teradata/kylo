@@ -18,7 +18,6 @@
  * #L%
  */
 define(['angular','services/module-name'], function (angular,moduleName) {
-    console.log('LOADED Utils');
     angular.module(moduleName).factory('Utils', ["$timeout", function ($timeout) {
 
         var waitForDomRetryCounts = {};

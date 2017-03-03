@@ -87,12 +87,10 @@ define(['angular','ops-mgr/service-health/module-name'], function (angular,modul
          * @param option
          */
         this.selectedTableOption = function(option) {
-            console.log('SET SORT TO BE ', option, self.pageName)
             var sortString = TableOptionsService.toSortString(option);
             var savedSort = PaginationDataService.sort(self.pageName, sortString);
             var updatedOption = TableOptionsService.toggleSort(self.pageName, option);
             TableOptionsService.setSortOption(self.pageName, sortString);
-            console.log('SET SORT TO BE ', option, sortString, self.pageName)
         }
 
 

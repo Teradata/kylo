@@ -9,8 +9,6 @@ define(['angular','common/module-name'], function (angular,moduleName) {
             },
             templateUrl: 'js/common/card-layout/card-layout.html',
             link: function (scope, iElem, iAttrs, ctrl, transcludeFn) {
-                console.log('test')
-
             }
         };
     });

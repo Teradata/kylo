@@ -243,26 +243,6 @@ define(['angular','services/module-name'], function (angular,moduleName) {
             return data;
         }
 
-/*
-
-        this.navigateToCheckDataJobs = function () {
-            $state.go('jobs.checkDataJobs', {resetDataTables: true});
-        }
-        this.navigateToAllJobsWithJobStatus = function (jobStatus) {
-            $state.go('jobs.allJobs', {jobStatus: jobStatus, resetDataTables: true});
-        }
-        this.navigateToAllJobsWithJobType = function (jobType) {
-            $state.go('jobs.allJobs', {jobType: jobType, resetDataTables: true});
-        }
-        this.navigateToFeedsWithFeed = function (feed) {
-            $state.go('feeds', {feed: feed, resetDataTables: true});
-        }
-        this.navigateToFeedsWithExitCode = function (exitCode) {
-            $state.go('feeds', {exitCode: exitCode, resetDataTables: true});
-        }
-        */
-
-
 
 
         var OpsManagerStates = function(){
@@ -285,7 +265,6 @@ define(['angular','services/module-name'], function (angular,moduleName) {
          data.FeedManager = FeedManagerStates;
          data.OpsManager = OpsManagerStates;
          data.go = function(state,params){
-             console.log('go to ',state)
              $state.go(state,params);
          }
          /**

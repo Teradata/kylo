@@ -68,7 +68,6 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         this.feedFormat = '';
 
         $scope.$evalAsync(function() {
-            console.log('********************************************************async update!!!')
             self.calcTableState();
             if (self.model.table.tableSchema.fields && self.model.table.tableSchema.fields.length > 0) {
                 self.syncFeedsColumns();
@@ -119,7 +118,6 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         }
 
         this.addHistoryItem = function(columnDef) {
-            console.log('ADD HISTORY FOR ',columnDef)
             var historyItem = createHistoryRecord(columnDef);
             columnDef.history.push(historyItem);
         }

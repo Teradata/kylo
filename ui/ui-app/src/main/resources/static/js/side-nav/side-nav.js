@@ -185,7 +185,6 @@ define(['angular','side-nav/module-name'], function (angular,moduleName) {
                     menu.push(buildFeedManagerMenu());
                     menu.push(buildAdminMenu());
                     $scope.menu = menu;
-                    console.log('MENU IS ',$scope.menu);
                 }
                 buildSideNavMenu();
 

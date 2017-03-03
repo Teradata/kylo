@@ -45,7 +45,6 @@ define(['angular','common/module-name'], function (angular,moduleName) {
         this.steppers = {};
         this.newNameIndex = 0;
         this.registerStepper = function (name, totalSteps) {
-            console.log('REGISTER stepper ',name,totalSteps)
             var steps = [];
             self.steppers[name] = steps;
             var lastIndex = totalSteps - 1;
@@ -233,7 +232,6 @@ define(['angular','common/module-name'], function (angular,moduleName) {
             var nextEnabledStep = null;
             var nextEnabledStepIndex = null;
             var steps = self.steppers[stepperName];
-            console.log('NEXT ',stepperName,index,self.steppers)
             if (nextIndex < steps.length) {
                 for (var i = nextIndex; i < steps.length; i++) {
                     var step = steps[i];

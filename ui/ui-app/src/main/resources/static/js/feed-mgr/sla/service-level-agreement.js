@@ -88,7 +88,6 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
             self.addingSlaCondition = false;
             self.editSlaIndex = null;
             if(requery && requery == true){
-                console.log('requery!!!')
                 loadSlas();
             }
             //Requery?

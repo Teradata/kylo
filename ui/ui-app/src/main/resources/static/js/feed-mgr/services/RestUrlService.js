@@ -96,7 +96,6 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
         }
 
         this.DISABLE_REGISTERED_TEMPLATE_URL = function (templateId) {
-            console.log('DISABLE URL ', self.GET_REGISTERED_TEMPLATES_URL + "/" + templateId + "/disable")
             return self.GET_REGISTERED_TEMPLATES_URL + "/" + templateId + "/disable";
         }
         this.ENABLE_REGISTERED_TEMPLATE_URL = function (templateId) {

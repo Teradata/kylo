@@ -35,7 +35,6 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
 
         this.registeredTemplateId = this.model.id;
         this.nifiTemplateId = this.model.nifiTemplateId;
-        console.log('THIS@@@@@ ',this)
 
         this.isValid = this.registeredTemplateId !== null;
 

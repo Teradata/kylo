@@ -33,7 +33,6 @@ define(['angular','feed-mgr/business-metadata/module-name','kylo-utils/LazyLoadU
     }]);
 
     function lazyLoadController(path){
-        console.log('lazyLoadProvider',lazyLoadUtil)
         return lazyLoadUtil.lazyLoadController(path,'feed-mgr/business-metadata/module-require');
     }
 

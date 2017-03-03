@@ -10,8 +10,6 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
      */
     function OverviewController($scope, $mdDialog, AccessControlService, HttpService,ServicesStatusData,OpsManagerFeedService) {
         var self = this;
-        console.log('OVERVIE CONTROLLER!!!!!!')
-
         /**
          * Indicates that the user is allowed to access the Operations Manager.
          * @type {boolean}

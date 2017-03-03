@@ -49,17 +49,13 @@ define(['angular','common/module-name','kylo-services'], function (angular,modul
             $$tlb: true,
             link: function ($scope, $element, $attr, ctrl, $transclude) {
                 var block, childScope, previousElements;
-                console.log('ATTRS ',$attr)
                 $attr.$observe('ngIfPermission', function(value,old) {
                     var value2 = $attr.ngIfPermission;
-                    console.log('VALUE  ',value,value2)
                     if(value != undefined) {
 
                         var permissions = value.split(',');
                         AccessControlService.getUserAllowedActions()
                             .then(function (actionSet) {
-
-                                console.log('RESOLVING!!! ',$attr,actionSet);
 
                                 if (AccessControlService.hasAnyAction(permissions, actionSet.actions)) {
                                     if (!childScope) {

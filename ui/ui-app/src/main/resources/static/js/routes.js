@@ -1,7 +1,6 @@
 define(['angular', 'kylo-common','kylo-services',
     'main/IndexController'], function (angular,app,lazyLoadUtil) {
     'use strict';
-    console.log('app',app,angular, lazyLoadUtil);
    app.config(["$ocLazyLoadProvider","$stateProvider","$urlRouterProvider",function ($ocLazyLoadProvider,$stateProvider, $urlRouterProvider) {
 
 

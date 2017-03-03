@@ -69,9 +69,6 @@ define(['angular','common/module-name'], function (angular,moduleName) {
         this.showProgress = false;
         this.height = 80;
 
-        console.log('NEW STEPPER start ',_.clone(this), this.totalSteps,this.stepperName)
-
-
         $scope.templateUrl = this.templateUrl;
         $scope.stepperName = this.stepperName;
         $scope.totalSteps = this.totalSteps;
@@ -85,7 +82,6 @@ define(['angular','common/module-name'], function (angular,moduleName) {
         if (self.stepperName == undefined || self.stepperName == '') {
             self.stepperName = StepperService.newStepperName();
         }
-        console.log('NEW STEPPER ', self.totalSteps,self.stepperName)
         StepperService.registerStepper(self.stepperName, self.totalSteps);
         this.steps = StepperService.getSteps(self.stepperName);
 
@@ -131,7 +127,6 @@ define(['angular','common/module-name'], function (angular,moduleName) {
         }
 
         this.onStepSelect = function (index) {
-            console.log('SELECTED ', self.selectedStepIndex, index);
         }
 
         this.resetAndGoToFirstStep = function () {

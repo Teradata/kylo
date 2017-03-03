@@ -80,7 +80,6 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                 self.totalSteps = 4;
                 self.stepperUrl = 'js/feed-mgr/feeds/define-feed/define-feed-no-table-stepper.html'
             }
-            console.log('SELECTED TEMPLATE!!!!! ',template,self.model)
         }
 
         self.cancelStepper = function () {

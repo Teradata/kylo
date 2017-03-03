@@ -27,7 +27,6 @@ define(['angular','common/module-name','angular-ui-router'], function (angular,m
                 */
                 $transitions.onSuccess({},function(transition){
                    var toState = transition.to();
-                   console.log('on Success',transition,transition.to())
                    var toParams = transition.to().params;
                    if(toState.data !== undefined ) {
                        if (toState.data.noBreadcrumb && toState.data.noBreadcrumb == true) {

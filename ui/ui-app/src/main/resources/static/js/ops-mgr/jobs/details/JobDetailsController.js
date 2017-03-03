@@ -1,7 +1,6 @@
 define(['angular','ops-mgr/jobs/details/module-name'], function (angular,moduleName) {
 
     var controller = function($transition$){
-        console.log("JOB DETAILS CONTROLLER ",$transition$)
     var self = this;
     this.executionId = $transition$.params().executionId;
     };

@@ -4,7 +4,6 @@ define(['angular','feed-mgr/feeds/module-name', 'kylo-utils/LazyLoadUtil','angul
 
     var module = angular.module(moduleName, []);
 
-    console.log('LOADING feeds module',module,moduleName)
 
     module.config(['$stateProvider',function ($stateProvider) {
         $stateProvider.state('feeds', {

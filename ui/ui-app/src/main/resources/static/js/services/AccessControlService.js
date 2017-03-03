@@ -252,7 +252,6 @@ define(['angular','services/module-name'], function (angular,moduleName) {
                 if(!isExecuting) {
                      defer = $q.defer();
                     self.executingAllowedActions[safeModule] = defer;
-                    console.log('EXECUTE PERMISSIONS')
 
                     var promise = $http.get(CommonRestUrlService.SECURITY_BASE_URL + "/actions/" + safeModule + "/allowed")
                         .then(function (response) {

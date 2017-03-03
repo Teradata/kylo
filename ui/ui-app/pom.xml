@@ -36,25 +36,8 @@
     </dependencies>
   </dependencyManagement>
 
-  <dependencies>
-    <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>kylo-ui-common</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-<!--
-    <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>kylo-ui-operations-manager</artifactId>
-      <version>${project.version}</version>
-    </dependency>
+    <dependencies>
 
-    <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>kylo-ui-feed-manager</artifactId>
-      <version>${project.version}</version>
-    </dependency>
--->
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>kylo-commons-rest-model</artifactId>

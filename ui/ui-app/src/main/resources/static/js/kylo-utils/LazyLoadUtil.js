@@ -23,7 +23,6 @@ define([], function () {
                     }
 
                     //reverse sort and add
-                    console.log('About to sort ',dependencies);
                     dependencies.sort(function (a, b) {
                         if (a < b) return 1;
                         if (b < a) return -1;
@@ -39,7 +38,6 @@ define([], function () {
                     })
 
                 }
-                console.log('about to load ',path);
                 return $ocLazyLoad.load(path, {serie: true})
             }]
         }

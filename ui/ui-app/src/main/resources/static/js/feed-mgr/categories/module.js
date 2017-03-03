@@ -54,7 +54,6 @@ define(['angular','feed-mgr/categories/module-name','kylo-utils/LazyLoadUtil','a
     }]);
 
     function lazyLoadController(path){
-        console.log('lazyLoadProvider',lazyLoadUtil)
         return lazyLoadUtil.lazyLoadController(path,'feed-mgr/categories/module-require');
     }
 

@@ -25,7 +25,6 @@ define(['angular', 'feed-mgr/sla/module-name','kylo-utils/LazyLoadUtil','kylo-co
         })
 
         function lazyLoadController(path){
-            console.log('lazyLoadProvider',lazyLoadUtil)
             return lazyLoadUtil.lazyLoadController(path,'feed-mgr/sla/module-require');
         }
 

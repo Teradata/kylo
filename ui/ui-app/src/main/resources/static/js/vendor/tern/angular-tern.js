@@ -2,7 +2,6 @@ define(["angular","ocLazyLoad","underscore", "vendor/tern/plugin/acorn"], functi
 
     angular.module("tern", ['oc.lazyLoad'])
         .run(['$ocLazyLoad', function ($ocLazyLoad) {
-console.log('loading tern');
 /*            $ocLazyLoad.load({serie:true,files:[
                               "vendor/tern/plugin/acorn",
                               "vendor/tern/plugin/acorn_loose",

@@ -87,7 +87,6 @@ define(['angular','ops-mgr/feeds/module-name'], function (angular,moduleName) {
         };
 
         function fixChartWidth() {
-            console.log('FIX THE WIDTH!!!!~')
             var chartWidth = parseInt($($('.nvd3-svg')[0]).find('rect:first').attr('width'));
             if(chartWidth < 100){
                 self.updateChart();

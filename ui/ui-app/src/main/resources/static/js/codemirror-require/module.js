@@ -1,6 +1,4 @@
 define(['angular','codemirror-require/module-name','kylo-utils/LazyLoadUtil', 'codemirror', 'angular-ui-codemirror'], function (angular,moduleName,lazyLoadUtil,CodeMirror) {
-
-    console.log('GOT IT codemirror ',CodeMirror)
     window.CodeMirror = CodeMirror;
     var module = angular.module(moduleName, []);
 

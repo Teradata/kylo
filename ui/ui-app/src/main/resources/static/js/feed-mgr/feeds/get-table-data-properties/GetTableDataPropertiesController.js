@@ -375,7 +375,6 @@ define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
          */
         function onSaveSuccessEditNifiProperties(model) {
             //update the model with the properties
-            console.log('model ',model)
         }
         /**
          * on edit describe the table for incremental load to populate the tableField options

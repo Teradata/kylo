@@ -40,7 +40,6 @@ define(['angular','ops-mgr/overview/module-name', 'kylo-utils/LazyLoadUtil','kyl
 
 
         function lazyLoadController(path){
-            console.log('lazyLoadProvider',lazyLoadUtil)
             return lazyLoadUtil.lazyLoadController(path,'ops-mgr/overview/module-require',true);
         }
 

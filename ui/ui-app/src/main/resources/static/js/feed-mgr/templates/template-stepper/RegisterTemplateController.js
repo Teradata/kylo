@@ -4,7 +4,6 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
 
         var self = this;
 
-        console.log("$transition$",$transition$)
         /**
          * Reference to the RegisteredTemplate Kylo id passed when editing a template
          * @type {null|*}
@@ -17,7 +16,6 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
          */
         this.nifiTemplateId = $transition$.params().nifiTemplateId || null;
 
-        console.log('self', self,'trans',$transition$.params())
 
         /**
          * The model being edited/created

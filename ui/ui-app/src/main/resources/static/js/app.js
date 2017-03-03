@@ -21,11 +21,9 @@ define([
     'kylo-services',
     'kylo-side-nav'], function (angular,lazyLoad,SVGMorpheus,d3,moment) {
     'use strict';
-    console.log('configure kylo')
     window.SVGMorpheus = SVGMorpheus;
     //d3 is needed here as nv.d3 isnt correctly getting it via its internal require call
     window.d3 = d3;
-    console.log('d3',d3)
     if(!window.moment){
         window.moment = moment;
     }

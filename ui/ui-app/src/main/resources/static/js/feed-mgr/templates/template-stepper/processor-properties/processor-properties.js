@@ -160,7 +160,6 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
         this.scrollToProcessor = function(processor){
             var topIndex = processor.topIndex;
             self.topIndex = topIndex;
-            console.log('SETTING TOP INDEX to be ',self.topIndex,processor)
         }
 
 

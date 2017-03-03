@@ -21,7 +21,6 @@
  * Controller for the Main App index.html
  */
 define(['angular'], function (angular) {
-    console.log('DEFINE INDEX ')
 
         var controller = function ($scope, $http, $location, $window, $mdSidenav, $mdMedia, $mdBottomSheet, $log, $q, $element, $rootScope, $transitions,StateService, ElasticSearchService,
                                    SideNavService) {
