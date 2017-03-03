@@ -42,7 +42,7 @@
       <artifactId>kylo-ui-common</artifactId>
       <version>${project.version}</version>
     </dependency>
-
+<!--
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>kylo-ui-operations-manager</artifactId>
@@ -54,7 +54,7 @@
       <artifactId>kylo-ui-feed-manager</artifactId>
       <version>${project.version}</version>
     </dependency>
-
+-->
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>kylo-commons-rest-model</artifactId>

@@ -1,0 +1,93 @@
+<!--
+  #%L
+  thinkbig-ui-feed-manager
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+      http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<vertical-section-layout section-title="Feed Definition" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancelEdit()" allow-edit="vm.allowEdit"
+                         editable="vm.editableSection" keep-editable-after-save="true" the-form="vm.editFeedDefinitionForm">
+
+    <readonly-section>
+        <div layout="row" class="layout-padding-top-bottom">
+            <span flex="25" class="property-name">Feed Name</span>
+            <div flex>
+                {{vm.model.feedName}}
+            </div>
+        </div>
+        <div layout="row" class="layout-padding-top-bottom">
+            <span flex="25" class="property-name">System Name</span>
+
+            <div flex>
+                {{vm.model.systemFeedName}}
+            </div>
+        </div>
+        <div layout="row" class="layout-padding-top-bottom">
+            <span flex="25" class="property-name">Description</span>
+
+            <div flex>
+                {{vm.model.description}}
+            </div>
+        </div>
+        <div layout="row" class="layout-padding-top-bottom">
+            <span flex="25" class="property-name">Feed Type</span>
+
+            <div flex>
+                {{vm.model.templateName}}
+            </div>
+        </div>
+        <div layout="row" class="layout-padding-top-bottom">
+            <span flex="25" class="property-name">Flow Processing</span>
+
+            <div ng-if="vm.model.isStream" layout="column" layout-align="start start">
+                <span><ng-md-icon icon="tune" style="fill:#3483BA"></ng-md-icon> Stream</span>
+                <span class="hint">Kylo will only track key metrics.  Individual jobs and steps will not be tracked.</span>
+            </div>
+
+            <div ng-if="!vm.model.isStream" layout="column" layout-align="start start">
+                <span><ng-md-icon icon="trending_flat" style="fill:#3483BA"></ng-md-icon> Batch</span>
+                <span class="hint">Kylo will track individual jobs and steps.</span>
+            </div>
+        </div>
+    </readonly-section>
+    <editable-section>
+        <ng-form name="vm.editFeedDefinitionForm">
+        <div layout="row" layout-align="space-between start">
+            <md-input-container flex="45" class="condensed">
+                <label>Display Name</label>
+                <input required ng-model="vm.editModel.feedName" name="feedName" />
+
+                <div ng-show="vm.editFeedDefinitionForm.feedName.$touched && vm.editFeedDefinitionForm.feedName.$invalid" ng-messages="vm.editFeedDefinitionForm.feedName.$error">
+                    <div ng-show="vm.editFeedDefinitionForm.feedName.$error.required" ng-message="required">Required.</div>
+                </div>
+            </md-input-container>
+            <div flex="10"></div>
+            <md-input-container flex="45" class="condensed">
+                <label>System Name</label>
+                <input  readonly ng-model="vm.editModel.systemFeedName"/>
+            </md-input-container>
+        </div>
+
+        <md-input-container class="md-block condensed">
+            <label>Description</label>
+            <textarea ng-model="vm.editModel.description"></textarea>
+        </md-input-container>
+        <md-input-container flex="45" class="condensed">
+            <label>Feed Type</label>
+            <input  readonly ng-model="vm.model.templateName"/>
+        </md-input-container>
+        </ng-form>
+    </editable-section>
+</vertical-section-layout>

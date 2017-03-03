@@ -1,0 +1,157 @@
+<!--
+  #%L
+  thinkbig-ui-feed-manager
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+      http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<div>
+
+  <card-layout header-css="filter-header" class="centered">
+
+    <header-section>
+      <div layout="row" layout-align="center start">
+        <div class="card-title">Import a Feed</div>
+        <span flex></span>
+        <ng-md-icon icon="file_upload" style="fill:#F08C38;padding-right:16px;" size="30"></ng-md-icon>
+      </div>
+    </header-section>
+
+
+    <body-section>
+
+
+      <div layout="column" flex class="md-padding">
+        <div>
+          <div class="md-subheader">Import a Feed Archive.</div>
+        </div>
+        <div class="layout-padding-indent">
+          <md-list flex layout-fill class="list-item-table list-condensed">
+
+            <md-list-item>
+              <div layout="row" layout-fill>
+                <div flex="20" class="md-list-item-text hint">
+                  Type
+                </div>
+                <div flex="10" class="md-list-item-text hint">
+                  File type
+                </div>
+                <div flex="60" class="md-list-item-text hint">
+                  Description
+                </div>
+
+              </div>
+            </md-list-item>
+
+            <md-list-item>
+              <div layout="row" layout-fill>
+                <div flex="20" class="md-list-item-text ">
+                  Archive
+                </div>
+                <div flex="10" class="md-list-item-text ">
+                  ZIP
+                </div>
+                <div flex="60" class="md-list-item-text ">
+                  An archive contains both Nifi and Kylo Feed Data.
+                  <Br/>
+                  This will import into Nifi and register the feed and respective template in Kylo .
+                </div>
+              </div>
+            </md-list-item>
+          </md-list>
+        </div>
+
+        <div flex="100" layout="column" layout-align="start" style="padding-top:15px;"
+             class="layout-padding-indent">
+          <upload-file upload-file-model="vm.feedFile"></upload-file>
+            <div layout="row" class="feed import category">
+                <md-autocomplete flex ng-disabled="vm.model.id != null"
+                                 md-input-name="category"
+                                 md-selected-item="vm.category"
+                                 md-search-text-change="vm.categorySearchTextChanged(vm.categorySearchText)"
+                                 md-search-text="vm.categorySearchText"
+                                 md-selected-item-change="vm.categorySelectedItemChange(item)"
+                                 md-items="item in vm.categoriesService.querySearch(vm.categorySearchText)"
+                                 md-item-text="item.name"
+                                 md-min-length="0"
+                                 md-floating-label="Category"
+                                 md-require-match="true"
+                                 md-select-on-match="true"
+                                 md-menu-class="autocomplete-categories-template">
+                  <md-item-template>
+                      <span class="item-title">
+                           <ng-md-icon icon="{{item.icon}}" style="fill:{{item.iconColor}}"></ng-md-icon>
+                        <span> {{item.name}} </span>
+                      </span>
+                      <span class="item-metadata">
+                        <span class="item-metastat">
+                          <strong>{{item.relatedFeeds}}</strong> Related Feeds
+                        </span>
+                      </span>
+                  </md-item-template>
+                  <md-not-found>
+                    No categories matching "{{vm.categorySearchText}}" were found.
+                  </md-not-found>
+                </md-autocomplete>
+            </div>
+          <md-input-container class="condensed-no-float md-block layout-padding-bottom">
+            <md-checkbox ng-model="vm.overwrite" aria-label="Overwrite if exists">
+              Overwrite
+            </md-checkbox>
+            <div class="hint" style="margin-top:-10px">
+              If the Feed already exists it will be replaced.
+            </div>
+          </md-input-container>
+          <md-input-container class="condensed-no-float md-block layout-padding-bottom"
+                              ng-if="vm.verifyToCreateConnectingReusableTemplate == true">
+            <md-checkbox ng-model="vm.createConnectingReusableTemplate" aria-label="Import Connecting Reusable Flow">
+              Import Connecting Reusable Flow
+            </md-checkbox>
+            <div class="hint" style="margin-top:-10px">
+              The Feed you are importing also contains its reusable flow. Do you want to also import the reusable flow and version that as well?
+            </div>
+          </md-input-container>
+                <span style="padding-top:10px">
+                <md-button class="md-raised md-primary" ng-click="vm.importFeed()" ng-if="vm.feedFile != null"
+                           ng-disabled="vm.importBtnDisabled">
+                  Import Feed
+                </md-button>
+                    </span>
+        </div>
+
+
+        <div ng-if="vm.importResult != null" class="layout-padding-indent layout-padding-top">
+          <div layout="row">
+            <ng-md-icon icon="{{vm.importResultIcon}}"
+                        style="fill:{{vm.importResultIconColor}}"></ng-md-icon>
+            <span style="padding-left:15px;">{{vm.message}}</span>
+            <span flex></span>
+          </div>
+          <md-list class="padding-left" ng-repeat="(severity,errors)  in vm.errorMap">
+            <md-list-item class="md-2-line" ng-repeat="error in errors track by $index">
+              <div class="md-list-item-text">
+                <div ng-if="error.processorName != null && error.processorName != '' "
+                     style="color:grey">Processor: {{::error.processorName}}
+                </div>
+                <div class="md-warn-text">{{::error.message}}</div>
+              </div>
+              <md-divider ng-if="!$last"></md-divider>
+            </md-list-item>
+          </md-list>
+        </div>
+      </div>
+    </body-section>
+  </card-layout>
+</div>

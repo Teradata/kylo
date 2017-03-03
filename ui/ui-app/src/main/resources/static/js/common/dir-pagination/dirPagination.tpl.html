@@ -1,0 +1,23 @@
+<div>
+    <span class="label">{{label}}</span>
+    <md-select ng-model="rowsPerPage" md-container-class="md-pagination-select" placeholder="{{rowsPerPage ? rowsPerPageOptions[0] : 5}}">
+        <md-option ng-repeat="x in rowsPerPageOptions" value="{{x}}">
+            {{x}}
+        </md-option>
+    </md-select>
+    <span>{{range.lower}} - {{range.upper}} of {{range.total}}</span>
+</div>
+<div>
+        <md-button ng-if="boundaryLinks" type="button" ng-click="setCurrent(1)" ng-disabled="pagination.current == 1" aria-label="First">
+            <md-icon md-svg-icon="templates.navigate-first.html"></md-icon>
+        </md-button>
+        <md-button type="button" ng-click="setCurrent(pagination.current - 1)" ng-disabled="pagination.current == 1" aria-label="Previous">
+            <md-icon md-svg-icon="templates.navigate-before.html"></md-icon>
+        </md-button>
+        <md-button type="button"  ng-click="setCurrent(pagination.current + 1)" ng-disabled="pagination.current == pagination.last" aria-label="Next">
+            <md-icon md-svg-icon="templates.navigate-next.html"></md-icon>
+        </md-button>
+        <md-button ng-if="boundaryLinks" type="button"  ng-click="setCurrent(pagination.last)" ng-disabled="pagination.current == pagination.last"  aria-label="Last">
+            <md-icon md-svg-icon="templates.navigate-last.html"></md-icon>
+        </md-button>
+</div>

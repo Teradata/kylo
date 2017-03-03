@@ -1,0 +1,347 @@
+<!--
+  #%L
+  thinkbig-ui-operations-manager
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+      http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<div flex layout="row">
+  <card-layout flex>
+    <header-section transclude-to="head" flex layout>
+      <div style="white-space:nowrap" class="card-title" flex>{{vm.cardTitle}}</div>
+      <!-- <span class="md-caption" layout-align="end top">Job {{vm.relatedJobIndex+1}} of {{vm.relatedJobs.length}}</span> -->
+    </header-section>
+    <body-section transclude-to="body" transclude-replace="true">
+      <md-content>
+        <div layout="column" class="layout-padding-bottom layout-padding-left-16">
+          <div layout="row">
+
+            <div flex="40" layout="column">
+                   <span class="item-title">
+                   {{vm.jobData.name}}
+                   </span>
+                  <span class="column-title-bottom {{vm.jobData.cssStatusClass}}">
+                                                       <ng-md-icon ng-if="vm.jobData.statusIcon" class="{{vm.jobData.tabIconStyle}}" icon="{{vm.jobData.statusIcon}}" size="20">
+                                                       </ng-md-icon>{{vm.jobData.displayStatus}}</span>
+
+
+            </div>
+
+            <div flex="30" layout="column">
+                                               <span class="item-title">{{vm.jobData.startTime | date:'MMM d, yyyy HH:mm:ss'}}
+                                               </span>
+              <span class="column-title column-title-bottom">Start Time</span>
+            </div>
+            <div flex="30" layout="column">
+                                               <span class="item-title">
+                                                   <tba-timer ng-if="vm.jobData.running"
+                                                              start-time="vm.jobData.runTime"></tba-timer>
+                                                   <span ng-if="vm.jobData.running == false">{{vm.jobData.runTime | time }}</span>
+                                               </span>
+              <span class="column-title column-title-bottom">Run Time</span>
+            </div>
+          </div>
+
+          <div class="item-title" style="padding-top:10px;padding-bottom:4px;">Exit Description</div>
+          <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;white-space:pre-wrap;" ng-text-truncate="vm.jobData.exitDescription"
+               ng-tt-chars-threshold="150">
+          </div>
+        </div>
+        <md-tabs class="job-details-tabs" flex md-selected="vm.tabMetadata.selectedIndex"
+                 md-align-tabs="{{vm.tabMetadata.bottom ? 'bottom' : 'top'}}" layout-fill md-dynamic-height>
+
+          <md-tab flex>
+            <md-tab-label>
+                   <span class="column-title-bottom {{vm.jobData.cssStatusClass}}">
+                                                       <ng-md-icon ng-if="vm.jobData.statusIcon" class="{{vm.jobData.tabIconStyle}}" icon="{{vm.jobData.statusIcon}}" size="20">
+                                                       </ng-md-icon>Job Details</span>
+            </md-tab-label>
+            <md-tab-body>
+              <md-divider></md-divider>
+              <div flex layout="column" class="tab-content layout-padding-top">
+
+
+                <div layout="row" layout-align="end center">
+                                    <span class="md-button-group" layout="row" layout-align="end center">
+                                          <span flex></span>
+                                    <md-button class="border-btn" style="max-width:200px;" ng-class="{'selected': vm.showJobParameters == true}" ng-click="vm.toggleJobParameters('JobParameters')">Job
+                                      Parameters
+                                    </md-button>
+                                    <md-button class="border-btn" style="max-width:200px;" ng-class="{'selected': vm.showJobParameters == false}" ng-click="vm.toggleJobParameters('ExecutionContext')">
+                                      Execution Context Data
+                                    </md-button>
+                                        </span>
+
+                </div>
+                <md-list flex layout-fill ng-show="vm.loading == false" class="list-item-table">
+                  <md-divider></md-divider>
+                  <md-list-item ng-if="vm.showJobParameters == true">
+                    <div flex="30" class="item-column md-list-item-text accent-color-3">
+                      Parameters
+                    </div>
+                    <div flex="70" class="item-column md-list-item-text accent-color-3">
+                      Values
+                    </div>
+                    <md-divider></md-divider>
+                  </md-list-item>
+                  <md-list-item ng-if="vm.showJobParameters == true"
+                                ng-repeat="item in vm.jobData.jobParametersArray | orderBy:'key'">
+                    <div flex="30" style="word-wrap:break-word;" class="item-column md-list-item-text ">
+                      {{item.key}}
+                    </div>
+                    <div flex="70" class="item-column md-list-item-text " style="word-wrap: break-word;">
+                      {{item.value}}
+                    </div>
+                    <md-divider ng-if="!$last"></md-divider>
+                  </md-list-item>
+                  <md-list-item ng-if="vm.showJobParameters == false">
+                    <div flex="30" class="item-column md-list-item-text accent-color-3">
+                      Context Parameters
+                    </div>
+                    <div flex="70" class="item-column md-list-item-text accent-color-3">
+                      Values
+                    </div>
+                    <md-divider></md-divider>
+                  </md-list-item>
+                  <md-list-item ng-if="vm.showJobParameters == false" ng-repeat="item in vm.jobData.executionContextArray | orderBy:'key'">
+                    <div flex="30" style="word-wrap:break-word;" class="item-column md-list-item-text ">
+                      {{item.key}}
+                    </div>
+                    <div flex="70" class="item-column md-list-item-text ">
+                      {{item.value}}
+                    </div>
+                    <md-divider ng-if="!$last"></md-divider>
+                  </md-list-item>
+                </md-list>
+
+                <md-divider></md-divider>
+
+
+              </div>
+
+            </md-tab-body>
+          </md-tab>
+
+          <md-tab flex>
+            <md-tab-label>
+              <span class="column-title-bottom">Step Details</span>
+            </md-tab-label>
+            <md-tab-body>
+              <md-divider></md-divider>
+              <div flex layout="column" class="tab-content">
+
+                  <div layout="column" ng-repeat="step in vm.allSteps">
+
+
+                    <div layout="row" ng-click="step.content.open == true ? step.content.open = false : step.content.open = true"
+                         class="md-list-item-text hover-highlight-pointer layout-padding-top layout-padding-bottom layout-padding-left-16 " flex layout-fill>
+
+                      <div flex="40" layout="column">
+                   <span class="item-title">
+                    <ng-md-icon icon="{{step.content.open == true ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}}" size="20">
+                    </ng-md-icon>   {{step.title}} - {{step.content.name}}
+                   </span>
+                  <span class="column-title-bottom {{step.content.cssStatusClass}}">
+                                                       <ng-md-icon ng-if="step.content.statusIcon" class="{{step.content.tabIconStyle}}" icon="{{step.content.statusIcon}}" size="20">
+                                                       </ng-md-icon>{{step.content.displayStatus}}</span>
+
+
+                      </div>
+
+                      <div flex="30" layout="column">
+                                               <span class="item-title">{{step.content.startTime | date:'MMM d, yyyy HH:mm:ss'}}
+                                               </span>
+                        <span class="column-title column-title-bottom">Start Time</span>
+                      </div>
+                      <div flex="30" layout="column">
+                                               <span class="item-title">
+                                                   <tba-timer ng-if="step.content.running"
+                                                              start-time="step.content.runTime"></tba-timer>
+                                                   <span ng-if="step.content.running == false">{{step.content.runTime | time }}</span>
+                                               </span>
+                        <span class="column-title column-title-bottom">Run Time</span>
+                      </div>
+                    </div>
+
+                    <div ng-if="step.content.open" class="fade-in-out layout-padding-left-16" layout-fill flex>
+
+                      <div class="item-title" style="padding-top:10px;padding-bottom:4px;">Exit Description</div>
+                      <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;" ng-text-truncate="step.content.exitDescription"
+                           ng-tt-chars-threshold="150">
+                      </div>
+                      <md-list flex layout-fill ng-show="vm.loading == false" class="list-item-table">
+                        <md-divider></md-divider>
+                        <md-list-item>
+                          <div flex="30" class="item-column md-list-item-text accent-color-3">
+                            Context Parameters
+                          </div>
+                          <div flex="70" class="item-column md-list-item-text accent-color-3">
+                            Values
+                          </div>
+                          <md-divider></md-divider>
+                        </md-list-item>
+                        <md-list-item ng-repeat="item in step.content.executionContextArray | orderBy:key">
+                          <div flex="30" style="word-wrap:break-word;" class="item-column md-list-item-text ">
+                            {{item.key}}
+                          </div>
+                          <div flex="70" class="item-column md-list-item-text ">
+                            {{item.value}}
+                          </div>
+                          <md-divider ng-if="!$last"></md-divider>
+                        </md-list-item>
+                      </md-list>
+
+                    </div>
+                    <md-divider></md-divider>
+                  </div>
+                </div>
+            </md-tab-body>
+          </md-tab>
+        </md-tabs>
+
+
+      </md-content>
+    </body-section>
+  </card-layout>
+
+  <card-layout flex="30" header-css="job-details-header" body-css="job-details-right-body">
+    <header-section transclude-to="head" flex layout>
+      <div style="white-space:nowrap" class="card-title">Job Details</div>
+      <span flex></span>
+    </header-section>
+    <body-section transclude-to="body">
+      <md-content flex md-scroll-y>
+        <div class="card-content">
+          <!--
+            <md-button class="border-btn action-btn" ng-if="vm.jobData.status =='FAILED'"
+                       ng-click="vm.restartJob($event)">RESTART
+            </md-button>
+            <md-button class="border-btn action-btn"
+                       ng-disabled="true"
+                       ng-if="vm.jobData.status =='STARTED' || vm.jobData.status =='STARTING'"
+                       ng-click="vm.stopJob($event)">STOP
+            </md-button>
+            -->
+          <md-button class="border-btn action-btn"
+                     ng-if="vm.jobData.status !='COMPLETED' && vm.jobData.status !='FAILED'"
+                     ng-click="vm.failJob($event)">FAIL
+          </md-button>
+          <md-button class="border-btn action-btn" ng-if="vm.jobData.status =='FAILED'"
+                     ng-click="vm.abandonJob($event)">ABANDON
+          </md-button>
+        </div>
+        <div ng-if="vm.jobData.errorMessage != ''" class="error">
+          {{vm.jobData.errorMessage }}
+        </div>
+
+        <md-list flex layout-fill layout="column" class="list-item-table">
+          <md-list-item>
+
+            <div layout="column" class="item-column md-list-item-text ">
+                                                         <span class="item-title">
+                                                           {{vm.jobData.name}}
+                                                       </span>
+                                                             <span class="column-title-bottom {{vm.jobData.cssStatusClass}}">
+                                                               <ng-md-icon
+                                                                   icon="{{vm.jobData.statusIcon}}"
+                                                                   class="{{vm.jobData.tabIconStyle}}"
+                                                                   size="20">
+                                                               </ng-md-icon>{{vm.jobData.displayStatus}}</span>
+
+            </div>
+          </md-list-item>
+          <md-divider></md-divider>
+          <md-list-item>
+
+            <div layout="column" class="item-column md-list-item-text ">
+                                               <span class="item-title">{{vm.jobData.jobType}}
+                                               </span>
+              <span class="column-title column-title-bottom">Type</span>
+            </div>
+          </md-list-item>
+          <md-divider></md-divider>
+          <md-list-item>
+            <div layout="column" class="item-column md-list-item-text ">
+                                               <span class="item-title">{{vm.jobData.startTime | date:'MMM d, yyyy HH:mm:ss'}}
+                                               </span>
+              <span class="column-title column-title-bottom">Start Time</span>
+            </div>
+          </md-list-item>
+          <md-divider></md-divider>
+          <md-list-item ng-if="vm.jobData.endTime != null && vm.jobData.running == false">
+            <div layout="column" class="item-column md-list-item-text ">
+                                               <span class="item-title">{{vm.jobData.endTime | date:'MMM d, yyyy HH:mm:ss'}}
+                                               </span>
+              <span class="column-title column-title-bottom">End Time</span>
+            </div>
+          </md-list-item>
+          <md-divider></md-divider>
+          <md-list-item>
+            <div layout="column" class="item-column md-list-item-text ">
+                                               <span class="item-title">
+                                                   <tba-timer ng-if="vm.jobData.running"
+                                                              start-time="vm.jobData.runTime"></tba-timer>
+                                                   <span ng-if="vm.jobData.running == false">{{vm.jobData.runTime | time }}</span>
+                                               </span>
+              <span class="column-title column-title-bottom">Run Time</span>
+            </div>
+          </md-list-item>
+          <md-divider></md-divider>
+          <md-list-item>
+            <div layout="column" class="item-column md-list-item-text ">
+                                               <span class="item-title">{{vm.jobData.exitCode}}
+                                               </span>
+              <span class="column-title column-title-bottom">Exit Code</span>
+            </div>
+          </md-list-item>
+          <!--
+          <md-list-item>
+              <div layout="column">
+                                     <span class="item-title">{{vm.jobData.instanceId}}
+                                     </span>
+                  <span class="column-title column-title-bottom">Instance Id</span>
+              </div>
+          </md-list-item>
+          <md-list-item>
+              <div layout="column">
+                                     <span class="item-title">{{vm.jobData.executionId}}
+                                     </span>
+                  <span class="column-title column-title-bottom">Execution Id</span>
+              </div>
+          </md-list-item>
+          -->
+          <md-divider></md-divider>
+          <!-- not used now... unhide later once replay is integrated
+          <md-list-item ">
+            <div layout="column" class="item-column md-list-item-text ">
+              <span class="item-title">Related Jobs</span>
+              <md-input-container>
+                <label>Job</label>
+                <md-select ng-model="vm.relatedJob" ng-change="vm.changeRelatedJob(vm.relatedJob)">
+                  <md-option ng-repeat="relatedJob in vm.relatedJobs" value="{{relatedJob.jobExecutionId}}">
+                    {{$index +1}}. {{relatedJob.startTime | date:'MMM d, yyyy HH:mm:ss'}}
+                  </md-option>
+                </md-select>
+              </md-input-container>
+            </div>
+          </md-list-item>
+           -->
+        </md-list>
+
+
+      </md-content>
+    </body-section>
+  </card-layout>
+</div>

@@ -1,0 +1,37 @@
+<!--
+  #%L
+  thinkbig-ui-feed-manager
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+      http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<div class="edit-form" style="padding-top:0px;">
+  <md-progress-linear md-mode="indeterminate" ng-if="loadingPolicies"></md-progress-linear>
+
+  <md-input-container class="md-block layout-padding-top-bottom" style="margin-top:0px;">
+    <label class="md-container-ignore label-small layout-padding-top">{{selectLabel}}</label>
+    <md-select ng-model="ruleType" ng-model-options="{trackBy: '$value.name'}" ng-change="onRuleTypeChange()" aria-label="{{selectLabel}}">
+      <md-option ng-value="opt" ng-repeat="opt in options">{{ opt.name }}</md-option>
+    </md-select>
+    <span class="hint">{{field.description}}</span>
+  </md-input-container>
+  <a href="" ng-if="showAdvancedOptions" ng-click="toggleAdvancedOptions()">Advanced Formatting Options</a>
+
+  <div class="layout-padding-indent-20" ng-if="expandAdvancedOptions == true">
+    <thinkbig-policy-input-form the-form="policyForm" rule="field" mode="ruleMode" feed="feed"></thinkbig-policy-input-form>
+  </div>
+
+
+</div>

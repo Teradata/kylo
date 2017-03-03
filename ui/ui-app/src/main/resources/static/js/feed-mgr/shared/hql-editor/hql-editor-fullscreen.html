@@ -1,0 +1,36 @@
+<!--
+  #%L
+  thinkbig-ui-feed-manager
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+      http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<md-dialog aria-label="Browse Hive Data"  ng-cloak style="width:100%;height:100%;" class="md-dialog-fullscreen-fixed">
+    <div  class="md-toolbar-tools">
+        <h4 class="md-title">
+            <span>Browse Hive</span></h4>
+        <span flex></span>
+    </div>
+    <md-dialog-content layout="column" layout-padding style="width:100%;height:100%;">
+        <thinkbig-hql-editor ng-model="vm.hql" scroll-results="true" mode="fullscreen" default-schema-name="{{vm.defaultSchemaName}}" default-table-name="{{vm.defaultTableName}}"
+                             allow-database-browse="vm.allowDatabaseBrowse" allow-execute-query="vm.allowExecuteQuery"></thinkbig-hql-editor>
+    </md-dialog-content>
+        <md-dialog-actions layout="row" layout-align="start center" flex>
+            <span flex></span>
+            <md-button ng-click="cancel($event)">
+                Close
+            </md-button>
+        </md-dialog-actions>
+</md-dialog>
