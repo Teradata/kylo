@@ -553,7 +553,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                 showFeedSavingDialog: function (ev, message, feedName) {
                     $mdDialog.show({
                         controller: 'FeedSavingDialogController',
-                        templateUrl: 'js/feed-details/details/feed-saving-dialog.html',
+                        templateUrl: 'js/feed-mgr/feeds/edit-feed/details/feed-saving-dialog.html',
                         parent: angular.element(document.body),
                         targetEvent: ev,
                         clickOutsideToClose: false,

@@ -122,7 +122,7 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
 
                 $mdDialog.show({
                     controller: 'FeedErrorDialogController',
-                    templateUrl: 'js/define-feed/feed-error-dialog.html',
+                    templateUrl: 'js/feed-mgr/feeds/define-feed/feed-error-dialog.html',
                     parent: angular.element(document.body),
                     clickOutsideToClose: false,
                     fullscreen: true,
