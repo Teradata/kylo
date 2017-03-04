@@ -1,0 +1,134 @@
+<!--
+  #%L
+  thinkbig-ui-feed-manager
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+      http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<div>
+    <md-progress-linear md-mode="indeterminate" ng-if="vm.loading"></md-progress-linear>
+    <card-layout body-css="md-padding" class="centered" ng-if="!vm.loading">
+        <header-section>
+            <div layout="row" layout-align="center start">
+                <div class="card-title">User Details</div>
+                <span flex></span>
+                <ng-md-icon icon="person" style="padding-right: 16px" size="30"></ng-md-icon>
+            </div>
+        </header-section>
+        <body-section>
+            <form name="userForm">
+                <vertical-section-layout section-title="Details" on-delete="vm.onDelete()" allow-delete="vm.canDelete()" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancel()"
+                                         editable="vm.isEditable" is-valid="vm.isValid && userForm.$valid" allow-edit="vm.allowAdmin">
+                    <readonly-section>
+                        <div layout="row" class="layout-padding-top-bottom">
+                            <span flex="25" class="property-name">Username</span>
+
+                            <div flex>
+                                {{vm.model.systemName}}
+                            </div>
+                        </div>
+                        <div layout="row" class="layout-padding-top-bottom">
+                            <span flex="25" class="property-name">Display Name</span>
+
+                            <div flex>
+                                {{vm.model.displayName}}
+                            </div>
+                        </div>
+                        <div layout="row" class="layout-padding-top-bottom">
+                            <span flex="25" class="property-name">Email</span>
+
+                            <div flex>
+                                {{vm.model.email}}
+                            </div>
+                        </div>
+                        <div layout="row" class="layout-padding-top-bottom" layout-align="start start">
+                            <span flex="25" class="property-name">Status</span>
+
+                            <div class="enabled" flex ng-if="vm.model.enabled">
+                                <ng-md-icon icon="check_circle" size="20"></ng-md-icon> Active
+                            </div>
+                            <div class="disabled" flex ng-if="!vm.model.enabled">
+                                <ng-md-icon icon="block" size="20"></ng-md-icon> Disabled
+                            </div>
+                        </div>
+                        <div layout="row" class="layout-padding-top-bottom">
+                            <span flex="25" class="property-name">Groups</span>
+
+                            <div flex>
+                                {{vm.getGroupTitles().join(', ')}}
+                            </div>
+                        </div>
+                    </readonly-section>
+                    <editable-section>
+                        <md-input-container class="md-block" ng-if="vm.model.systemName === null">
+                            <label>Username</label>
+                            <input name="username" type="text" ng-model="vm.editModel.systemName"/>
+                            <div ng-messages="vm.$error" md-auto-hide="false">
+                                <div ng-message="duplicateUser">That username is already in use.</div>
+                                <div ng-message="missingUser">A username is required.</div>
+                            </div>
+                        </md-input-container>
+                        <div layout="row" class="layout-padding-top-bottom" ng-if="vm.model.systemName !== null">
+                            <span flex="25" class="property-name">Username</span>
+
+                            <div flex>
+                                {{vm.editModel.systemName}}
+                            </div>
+                        </div>
+
+                        <md-input-container class="md-block">
+                            <label>Display Name</label>
+                            <input ng-model="vm.editModel.displayName"/>
+                        </md-input-container>
+
+                        <md-input-container class="md-block">
+                            <label>Email Address</label>
+                            <input name="email" type="email" ng-model="vm.editModel.email"/>
+                            <div ng-messages="userForm.email.$error" md-auto-hide="false">
+                                <div ng-message="email">Email address is not valid.</div>
+                            </div>
+                        </md-input-container>
+
+                        <md-input-container class="md-block">
+                            <label>Status</label>
+                            <md-select ng-model="vm.editModel.enabled">
+                                <md-option ng-value="true">Active</md-option>
+                                <md-option ng-value="false">Disabled</md-option>
+                            </md-select>
+                        </md-input-container>
+
+                        <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm">
+                            <label class="label-small md-container-ignore">Group</label>
+                            <md-chips ng-model="vm.editModel.groups" md-require-match="true">
+                                <md-autocomplete md-items="group in vm.queryGroups(vm.groupSearchText)" md-item-text="vm.getGroupTitle(group)" placeholder="Type a name and press enter"
+                                                 style="min-width: 250px;" md-no-cache="true" md-search-text="vm.groupSearchText">
+                                    <span md-highlight-text="vm.findGroupSearchText(group)">{{vm.getGroupTitle(group)}}</span>
+                                </md-autocomplete>
+                                <md-chip-template>
+                                    <span>
+                                        <strong>{{vm.getGroupTitle($chip)}}</strong>
+                                    </span>
+                                </md-chip-template>
+                            </md-chips>
+                            <div ng-messages="vm.$error" md-auto-hide="false">
+                                <div ng-message="missingGroup">At least one group is required.</div>
+                            </div>
+                        </md-input-container>
+                    </editable-section>
+                </vertical-section-layout>
+            </form>
+        </body-section>
+    </card-layout>
+</div>

@@ -1,0 +1,123 @@
+/*
+Generic reset.
+*/
+
+.flowchart * {
+	padding: 0;
+	margin: 0;
+}
+
+/*
+Styles for nodes and connectors.
+*/
+
+.flowchart .node-rect {
+	stroke: grey;
+	stroke-width: 2;
+}
+
+.flowchart .mouseover-node-rect {
+	stroke: grey;
+	stroke-width: 4;
+}
+
+.flowchart .selected-node-rect {
+	stroke: #3483BA;
+	stroke-width: 3;
+}
+
+.flowchart .connector-circle {
+    fill: white;
+    stroke: grey;
+    stroke-width: 2;
+}
+
+.flowchart .mouseover-connector-circle {
+    fill: white;
+    stroke: grey;
+    stroke-width: 3;
+}
+
+/*
+Style for connections.
+*/
+
+.flowchart .connection {
+}
+
+.flowchart .connection-line {
+	stroke: grey;
+	stroke-width: 4;
+	fill: transparent;
+}
+
+.flowchart .mouseover-connection-line {
+	stroke: grey;
+	stroke-width: 6;
+	fill: transparent;
+}
+
+.flowchart .selected-connection-line {
+	stroke: #3483BA;
+	stroke-width: 4;
+	fill: transparent;
+}
+
+.flowchart .connection-endpoint {
+	fill: gray;
+}
+
+.flowchart .selected-connection-endpoint {
+	fill: #3483BA;
+}
+
+.flowchart .mouseover-connection-endpoint {
+	fill: gray;
+}
+
+.flowchart .connection-name{
+	fill: #F08C38;
+}
+
+.flowchart .selected-connection-name{
+	fill: #3483BA;
+}
+
+.flowchart .mouseover-connection-name{
+	fill: grey;
+}
+/*
+Style for the connection being dragged out.
+*/
+
+.flowchart .dragging-connection {
+	pointer-events: none;
+}
+
+.flowchart .dragging-connection-line {
+	stroke: grey;
+	stroke-width: 3;
+	fill: transparent;
+}
+
+.flowchart .dragging-connection-endpoint {
+	fill: grey;
+}
+
+/*
+The element (in this case the SVG element) that contains the draggable elements.
+*/
+
+.flowchart .draggable-container {
+	border: solid 1px blue;
+}
+
+/*
+Drag selection rectangle.
+*/
+
+.flowchart .drag-selection-rect {
+	stroke: #3483BA;
+	stroke-width: 2;
+	fill: transparent;
+}

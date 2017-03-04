@@ -1,0 +1,139 @@
+<!--
+  #%L
+  thinkbig-ui-feed-manager
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+      http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<div >
+
+  <card-layout header-css="filter-header" class="centered">
+    <header-section tba-card-filter-header flex layout card-title="vm.cardTitle" page-name="{{vm.pageName}}" view-type="vm.viewType" sort-options="vm.sortOptions"
+                    on-selected-option="vm.selectedTableOption" filter-model="vm.filter">
+    </header-section>
+
+    <body-section>
+      <div ng-if="vm.loading">
+        <md-progress-linear md-mode="indeterminate"></md-progress-linear>
+        <span class="md-body-2 layout-padding-left">Loading feeds</span>
+      </div>
+      <div ng-hide="vm.viewType != 'list'" ng-show="vm.viewType == 'list' && !vm.loading">
+        <md-list flex layout-fill class="list-item-table">
+          <md-list-item class="md-secondary" dir-paginate="feed in vm.feedData |orderBy:vm.paginationData.sort |filter:vm.filter|itemsPerPage:vm.paginationData.rowsPerPage"
+                        pagination-id="feeds"
+                        current-page="vm.currentPage">
+            <div layout="row" layout-fill>
+              <div flex="30" layout="column" class="item-column md-list-item-text " ng-click="vm.feedDetails($event,feed)" title="{{feed.feedName}} - {{feed.state}}">
+                                     <span class="item-title" title="{{feed.feedName}} - {{feed.state}}" ng-class="{'disabled':feed.state == 'DISABLED'}">
+                                      {{feed.feedName}}
+                                   </span>
+                                   <span class="column-title column-title-bottom" ng-class="{'disabled':feed.state == 'DISABLED'}">
+                                     <span ng-if="feed.state == 'DISABLED'">
+                                          <ng-md-icon icon="{{feed.stateIcon}}" size="20" hide-xs>
+                                          </ng-md-icon>
+                                       </span> Feed Name
+                                   </span>
+
+              </div>
+              <div flex="30" layout="column" class="item-column md-list-item-text ">
+                                   <span class="item-title">{{feed.category.name}}
+                                   </span>
+                              <span class="column-title column-title-bottom">
+                                          <ng-md-icon icon="{{feed.category.icon}}" size="20" hide-xs style="fill:{{feed.category.iconColor}}">
+                                          </ng-md-icon>
+                                    Category
+                                   </span>
+              </div>
+              <div flex="30" layout="column" class="item-column md-list-item-text ">
+                                   <span class="item-title">{{feed.templateName}}
+                                   </span>
+                <span class="column-title column-title-bottom">Type</span>
+              </div>
+              <div flex="15" layout="column" class="item-column md-list-item-text " ng-if="vm.allowExport">
+                <md-button href="{{feed.exportUrl}}" layout-align="center">
+                  <ng-md-icon icon="file_download" size="20" style="fill:#F08C38"></ng-md-icon>
+                  <span style="padding-left:10px;">Export</span>
+                </md-button>
+              </div>
+            </div>
+            <md-divider ng-if="!$last"></md-divider>
+          </md-list-item>
+          <md-list-item ng-show="vm.loading == false && vm.feedData.length ==0" class="md-list-item with-padding">
+            No results found
+          </md-list-item>
+          <md-divider></md-divider>
+          <md-list-item layout-align="end center" layout-row class="pagination-list-item">
+            <dir-pagination-controls pagination-id="feeds"
+                                     auto-hide="false"
+                                     max-size="5"
+                                     direction-links="true"
+                                     boundary-links="false"
+                                     template-url="js/common/dir-pagination/dirPagination.tpl.html"
+                                     on-page-change="vm.onPaginationChange(newPageNumber)"
+                                     label="Rows per page"
+                                     rows-per-page="vm.paginationData.rowsPerPage"
+                                     rows-per-page-options="vm.paginationData.rowsPerPageOptions"
+                                     class="pagination-row">
+            </dir-pagination-controls>
+          </md-list-item>
+        </md-list>
+      </div>
+      <div ng-hide="vm.viewType != 'table'" ng-show="vm.viewType == 'table' && !vm.loading">
+        <md-table-container>
+          <table md-table md-progress="vm.deferred.promise">
+            <thead md-head md-order="vm.paginationData.sort" md-on-reorder="vm.onOrderChange">
+            <tr md-row>
+              <th md-column name="Feed" md-order-by="feedName">Feed</th>
+              <th md-column name="State" md-order-by="state">State</th>
+              <th md-column name="Category" md-order-by="category.name">Category</th>
+              <th md-column name="Type" md-order-by="templateName">Type</th>
+              <th md-column name="Last Updated" md-order-by="updateDate">Last Updated</th>
+            </tr>
+            </thead>
+            <tbody md-body>
+            <tr md-row
+                ng-repeat="feed in vm.feedData | orderBy: vm.paginationData.sort | filter:vm.filter | limitTo: vm.paginationData.rowsPerPage: (vm.currentPage - 1) * vm.paginationData.rowsPerPage"
+                ng-click="vm.feedDetails($event,feed)">
+              <td md-cell>{{feed.feedName}}</td>
+              <td md-cell>
+                                    <span ng-class="{'enabled':feed.state == 'ENABLED','disabled':feed.state == 'DISABLED'}">
+                                       <ng-md-icon icon="{{feed.stateIcon}}" size="20">
+                                       </ng-md-icon>
+                                       <span>{{feed.state}}</span></span>
+
+              </td>
+              <td md-cell>
+                <ng-md-icon icon="{{feed.category.icon}}" size="20" style="fill:{{feed.category.iconColor}}">
+                </ng-md-icon>
+                {{feed.category.name}}
+              </td>
+              <td md-cell>{{feed.templateName }}</td>
+              <td md-cell>{{feed.updateDate | date: 'MM/dd/yyyy @ h:mm:ssa' }}</td>
+            </tr>
+            </tbody>
+          </table>
+        </md-table-container>
+
+        <md-table-pagination md-limit="vm.paginationData.rowsPerPage" md-page="vm.currentPage" md-total="{{vm.feedData.length}}" md-on-paginate="vm.onPaginationChange"
+                             md-limit-options="[5,10,20,50,'ALL']"></md-table-pagination>
+
+      </div>
+
+
+
+    </body-section>
+
+  </card-layout>
+</div>

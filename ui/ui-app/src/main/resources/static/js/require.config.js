@@ -1,0 +1,52 @@
+require.config({
+  shim: {
+
+  },
+  paths: {
+    angular: "../bower_components/angular/angular",
+    "angular-cookies": "../bower_components/angular-cookies/angular-cookies",
+    "angular-material": "../bower_components/angular-material/angular-material",
+    "angular-animate": "../bower_components/angular-animate/angular-animate",
+    "angular-aria": "../bower_components/angular-aria/angular-aria",
+    "angular-messages": "../bower_components/angular-messages/angular-messages",
+    "angular-material-data-table": "../bower_components/angular-material-data-table/dist/md-data-table",
+    "angular-material-expansion-panel": "../bower_components/angular-material-expansion-panel/dist/md-expansion-panel",
+    "angular-material-icons": "../bower_components/angular-material-icons/angular-material-icons.min",
+    "angular-nvd3": "../bower_components/angular-nvd3/dist/angular-nvd3",
+    d3: "../bower_components/d3/d3",
+    nvd3: "../bower_components/nvd3/build/nv.d3",
+    "angular-ui-codemirror": "../bower_components/angular-ui-codemirror/ui-codemirror",
+    codemirror: "../bower_components/codemirror/lib/codemirror",
+    "angular-ui-grid": "../bower_components/angular-ui-grid/ui-grid",
+    "angular-ui-router": "../bower_components/angular-ui-router/release/angular-ui-router",
+    "angular-utils-pagination": "../bower_components/angular-utils-pagination/dirPagination",
+    "angular-visjs": "../bower_components/angular-visjs/angular-vis",
+    vis: "../bower_components/vis/dist/vis",
+    angularAMD: "../bower_components/angularAMD/angularAMD",
+    requirejs: "../bower_components/requirejs/require",
+    angularLocalStorage: "../bower_components/angularLocalStorage/dist/angularLocalStorage.min",
+    c3: "../bower_components/c3/c3",
+    draggabilly: "../bower_components/draggabilly/draggabilly",
+    "get-size": "../bower_components/get-size/get-size",
+    unidragger: "../bower_components/unidragger/unidragger",
+    unipointer: "../bower_components/unipointer/unipointer",
+    "ev-emitter": "../bower_components/ev-emitter/ev-emitter",
+    jquery: "../bower_components/jquery/dist/jquery",
+    "lz-string": "../bower_components/lz-string/libs/lz-string.min",
+    "ment.io": "../bower_components/ment.io/dist/mentio",
+    moment: "../bower_components/moment/moment",
+    oclazyload: "../bower_components/oclazyload/dist/ocLazyLoad",
+    pivottable: "../bower_components/pivottable/dist/pivot",
+    "svg-morpheus": "../bower_components/svg-morpheus/compile/minified/svg-morpheus",
+    "ui-router-extras": "../bower_components/ui-router-extras/release/ct-ui-router-extras",
+    underscore: "../bower_components/underscore/underscore",
+    "angular-drag-and-drop-lists": "../bower_components/angular-drag-and-drop-lists/angular-drag-and-drop-lists",
+    "angular-fx": "../bower_components/angular-fx/dist/angular-fx.min",
+    "jquery-ui": "../bower_components/jquery-ui/jquery-ui",
+    ngFx: "../bower_components/ngFx/dist/ngFx",
+    gsap: "../bower_components/gsap/src/uncompressed/TweenMax"
+  },
+  packages: [
+
+  ]
+});

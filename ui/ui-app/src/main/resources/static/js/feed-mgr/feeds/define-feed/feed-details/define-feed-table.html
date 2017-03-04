@@ -1,0 +1,435 @@
+<!--
+  #%L
+  thinkbig-ui-feed-manager
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+      http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<style>
+  .strike {
+    text-decoration: line-through;
+  }
+</style>
+<ng-form name="vm.defineFeedTableForm">
+  <div layout="row">
+    <card-layout body-css="md-padding" flex="70">
+      <header-section>
+
+        <div layout="row" layout-align="space-between-center" flex>
+          <div class="card-title" flex>Table</div>
+          <h2 class="md-subheader">{{vm.stepNumber}} of {{vm.totalSteps}}</h2>
+        </div>
+        <div layout="row" class="layout-padding-top-bottom" layout-align="space-between-center" flex>
+          <div class="md-subheader" flex>Define the target Hive table</div>
+          <thinkbig-feed-errors-card-header></thinkbig-feed-errors-card-header>
+        </div>
+      </header-section>
+      <body-section>
+        <md-expansion-panel-group>
+          <md-expansion-panel md-component-id="panelOne" ng-if="vm.showMethodPanel">
+            <md-expansion-panel-collapsed>
+              <div flex class="md-subhead layout-padding-top">
+                <span ng-if="vm.model.table.method == 'SAMPLE_FILE'">Choose method: sample file </span>
+                <span ng-if="vm.model.table.method == 'MANUAL'">Choose method: manual </span>
+                <span ng-if="vm.model.table.method != 'MANUAL' && vm.model.table.method != 'SAMPLE_FILE'">Choose method</span>
+              </div>
+              <md-button aria-label="Expand panel" class="md-info" ng-click="$panel.collapse()">Expand</md-button>
+            </md-expansion-panel-collapsed>
+            <md-expansion-panel-expanded>
+
+              <md-expansion-panel-header md-no-sticky>
+                <div class="md-subhead layout-padding">Method</div>
+              </md-expansion-panel-header>
+              <md-expansion-panel-content>
+                <div layout="column" layout-align="start start" class="layout-padding-top-bottom">
+                  <div class="layout-padding-indent-20" style="padding-top:8px;">
+                    <md-radio-group ng-model="vm.model.table.method" layout="row">
+                      <md-radio-button aria-label="Select option" ng-repeat="method in vm.tableCreateMethods"
+                                       ng-value="method.type"
+                                       aria-label="{{method.name}}"
+                                       ng-click="vm.updateSelectedMethod()">
+                        {{method.name}}
+                      </md-radio-button>
+                    </md-radio-group>
+
+                    <div ng-if="vm.model.table.method == 'SAMPLE_FILE'" layout="column" style="margin-left: 40px" layout-align="center stretch">
+
+                      <inline-field-policy-form ng-model="vm.schemaParser" policy-parameter="schemaParser" default-value="CSV" select-label="Choose format"></inline-field-policy-form>
+
+                      <div layout="row" layout-align="start start">
+                        <upload-file upload-file-model="vm.sampleFile" input-size="20"></upload-file>
+                      </div>
+                      <!--
+                      <md-checkbox ng-model="vm.useUnderscoreInsteadOfSpaces" aria-label="Standardize field names">
+                        Standardize field names
+                      </md-checkbox>
+                      -->
+                      <md-button aria-label="Upload sample file" id="upload-sample-file-btn" class="md-raised md-block md-primary" ng-click="vm.uploadSampleFile();" ng-if="vm.sampleFile != null"
+                                 ng-disabled="vm.uploadBtnDisabled">
+                        Upload
+                      </md-button>
+                    </div>
+                  </div>
+                </div>
+              </md-expansion-panel-content>
+
+              <md-expansion-panel-footer md-no-sticky>
+                <div flex></div>
+                <md-button class="md-warn" aria-label="Collapse panel" ng-click="$panel.collapse()">Collapse</md-button>
+              </md-expansion-panel-footer>
+
+            </md-expansion-panel-expanded>
+          </md-expansion-panel>
+          <md-expansion-panel md-component-id="panelTwo">
+            <md-expansion-panel-collapsed>
+              <div flex class="md-subhead layout-padding-top">
+                <span ng-if="vm.model.table.tableSchema.fields.length ==0">Define table schema</span>
+                <span ng-if="vm.model.table.tableSchema.fields.length >0">Table schema: {{vm.model.table.tableSchema.fields.length}} fields</span>
+              </div>
+              <md-button class="md-info" aria-label="Expand panel" ng-click="$panel.collapse()">Expand</md-button>
+            </md-expansion-panel-collapsed>
+            <md-expansion-panel-expanded>
+              <md-expansion-panel-header md-no-sticky>
+                <div class="md-subhead layout-padding" layout-fill layout="row" layout-align="start top">Table schema
+                  <span flex></span>
+                </div>
+              </md-expansion-panel-header>
+              <md-expansion-panel-content>
+                <div ng-show="vm.model.table.tableSchema.fields.length ==0" class="hint layout-padding-top-bottom layout-padding-indent-20">
+                  No fields are defined. Click <i>Add Field</i> to define a new field for this table.
+                </div>
+                <div ng-show="vm.model.table.tableSchema.fields.length >0" class="layout-padding-indent-20">
+                  <div flex layout-fill class="list-item-table list-condensed">
+
+
+                    <div layout="row" layout-fill>
+                      <div flex="30" class="md-list-item-text hint">
+                        Field Name
+                      </div>
+                      <div flex="20" class="md-list-item-text hint" style="padding-left:5px;">
+                        Data Type
+                      </div>
+                      <div flex="10" class="md-list-item-text hint" layout-align="start center" layout="column">
+                        Primary
+                        <md-tooltip md-direction="top">
+                          Indicates field is the primary key for the record
+                        </md-tooltip>
+                      </div>
+                      <div flex="10" class="md-list-item-text hint" layout-align="start center" layout="column">
+                        <span>Created<br/>Date</span>
+                        <md-tooltip md-direction="top">
+                          Is this field an indicator of when the row was created?
+                        </md-tooltip>
+                      </div>
+                      <div flex="10" class="md-list-item-text hint" layout-align="start center" layout="column">
+                        <span>Updated<br/>Date</span>
+                        <md-tooltip md-direction="top">
+                          Is this field an indicator of when the row was updated?
+                        </md-tooltip>
+                      </div>
+                      <div flex="20" class="md-list-item-text hint" hide-sm>
+
+                      </div>
+
+                    </div>
+                    <div id="define-feed-dest-schema-container"
+                         style="overflow-x:hidden ">
+                      <div layout="row" class="no-outline" ng-repeat="columnDef in vm.model.table.tableSchema.fields"
+                           ng-click="vm.onSelectedColumn(columnDef)">
+                        <div flex="30" class="md-list-item-text  ">
+                          <md-input-container md-no-float class="md-block condensed" flex-gt-sm>
+                            <input ng-model="columnDef.name" placeholder="Field Name" required name="name_{{columnDef._id}}" ng-change="vm.onFieldChange(columnDef)"
+                                   ng-model-options="{updateOn: 'blur'}"
+                                   ng-pattern="/^[a-zA-Z0-9_-\s\)\(]*$/"
+                                   ng-disabled="vm.tableLocked || columnDef.deleted"
+                                   ng-class="{strike: columnDef.deleted}"
+                            />
+
+                            <div ng-messages="vm.defineFeedTableForm['name_'+columnDef._id].$error" md-auto-hide="false">
+                              <div ng-message="notUnique">Name must be unique</div>
+                              <div ng-message="required">Name is required</div>
+                              <div ng-message="pattern">Name cannot contain special characters</div>
+                            </div>
+                          </md-input-container>
+                        </div>
+                        <div flex="20" class="md-list-item-text " style="padding-left:5px;">
+                          <div layout="column">
+                            <md-input-container class="md-block md-dense condensed" flex-gt-sm>
+                              <md-select ng-model="columnDef.derivedDataType" placeholder="Data Type" name="datatype_{{columnDef._id}}" required
+                                         ng-disabled="vm.dataTypeLocked || columnDef.deleted" ng-change="vm.onNameFieldChange(columnDef)"
+                                         ng-model-options="{updateOn: 'blur'}">
+                                <md-option ng-repeat="dataType in vm.availableDefinitionDataTypes | orderBy:'toString()' track by $index" value="{{dataType}}" aria-label="{{dataType}}">
+                                  {{dataType}}
+                                </md-option>
+                              </md-select>
+                              <div ng-messages="vm.defineFeedTableForm['datatype_'+columnDef._id].$error" md-auto-hide="false">
+                                <div ng-message="required">Data type is required</div>
+                              </div>
+                            </md-input-container>
+                            <md-input-container class="md-dense md-block condensed" flex-gt-sm style="margin-top:10px;" ng-show="columnDef.derivedDataType == 'decimal'">
+                              <label>Precision</label>
+                              <input ng-model="columnDef.precisionScale" placeholder="10,0" ng-pattern="/^\d+,\d+$/" name="precisionScale_{{columnDef._id}}" style="width:120px;"
+                                     ng-disabled="vm.dataTypeLocked" ng-change="vm.onFieldChange(columnDef)"/>
+
+                              <div ng-messages="vm.defineFeedTableForm['precisionScale_'+columnDef._id].$error" md-auto-hide="false">
+                                <div ng-message="pattern">Format expected in form precision, scale (e.g. 10,0)</div>
+                              </div>
+                            </md-input-container>
+                          </div>
+                        </div>
+
+                        <div flex="10" class="md-list-item-text " layout-align="start center" layout="column">
+                          <md-checkbox flex-gt-sm ng-model="columnDef.primaryKey" aria-label="Primary" class="table-schema-checkbox"
+                                       ng-disabled="(columnDef.dataTypeDescriptor.complex || columnDef.deleted)" ng-change="vm.onFieldChange(columnDef)">
+                          </md-checkbox>
+                        </div>
+                        <div flex="10" class="md-list-item-text " layout-align="start center" layout="column">
+                          <md-checkbox flex-gt-sm ng-model="columnDef.createdTracker" aria-label="createdTracker"
+                                       ng-disabled="(!(columnDef.derivedDataType == 'date' || columnDef.derivedDataType == 'timestamp') || columnDef.deleted)"
+                                       class="table-schema-checkbox" ng-change="vm.onFieldChange(columnDef)">
+                          </md-checkbox>
+                        </div>
+
+                        <div flex="10" class="md-list-item-text " layout-align="start center" layout="column">
+                          <md-checkbox flex-gt-sm ng-model="columnDef.updatedTracker" aria-label="lastModified"
+                                       ng-disabled="(!(columnDef.derivedDataType == 'date' || columnDef.derivedDataType == 'timestamp') || columnDef.deleted)"
+                                       class="table-schema-checkbox"  ng-change="vm.onFieldChange(columnDef)"></md-checkbox>
+                        </div>
+                        <div flex="20" class="md-list-item-text" hide-sm>
+                          <md-button aria-label="Remove field" class="md-icon-button" ng-click="vm.removeColumn($index)"
+                                     ng-disabled="(!vm.canRemoveFields || columnDef.deleted)">
+                            <ng-md-icon md-icon icon="delete" style="fill:gray"></ng-md-icon>
+                          </md-button>
+                          <md-button aria-label="Include field" class="md-icon-button" ng-click="vm.undoColumn($index)"  ng-show="columnDef.history.length > 1">
+                            <ng-md-icon md-icon icon="undo"></ng-md-icon>
+                          </md-button>
+                          <span ng-if="vm.model.table.method == 'SAMPLE_FILE'"></span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="layout-padding-top-bottom layout-padding-indent-20" ng-if="vm.model.table.method == 'MANUAL'">
+                  <md-button aria-label="New field" class="md-raised" ng-click="vm.addColumn()">
+                    Add Field
+                  </md-button>
+                </div>
+              </md-expansion-panel-content>
+
+              <md-expansion-panel-footer md-no-sticky>
+                <div flex></div>
+                <md-button aria-label="Collapse panel" class="md-warn" ng-click="$panel.collapse()">Collapse</md-button>
+              </md-expansion-panel-footer>
+
+            </md-expansion-panel-expanded>
+
+          </md-expansion-panel>
+          <md-expansion-panel md-component-id="panelThree">
+            <md-expansion-panel-collapsed>
+              <div flex class="md-subhead layout-padding-top">
+                <span ng-if="vm.model.table.partitions.length ==0">Define table partitions</span>
+                <span ng-if="vm.model.table.partitions.length >0">Table partitions: {{vm.model.table.partitions.length}} partitions</span>
+              </div>
+              <md-button aria-label="Expand panel" class="md-info" ng-click="$panel.collapse()">Expand</md-button>
+            </md-expansion-panel-collapsed>
+            <md-expansion-panel-expanded>
+
+              <md-expansion-panel-header md-no-sticky>
+                <div class="md-subhead layout-padding">Table partitions</div>
+              </md-expansion-panel-header>
+
+              <md-expansion-panel-content>
+                <div ng-if="vm.model.table.partitions.length ==0" class=" hint layout-padding-top-bottom layout-padding-indent-20">
+                  No partition fields are defined. Click <i>Add Partition</i> below to define a new partition.
+                </div>
+                <div ng-if="vm.model.table.partitions.length >0" class="layout-padding-indent-20">
+
+                  <md-list flex layout-fill class="list-item-table list-condensed">
+
+                    <md-list-item class="md-secondary">
+                      <div layout="row" layout-fill>
+                        <div flex="30" class="md-list-item-text hint">
+                          Source Field
+                        </div>
+                        <div flex="30" class="md-list-item-text hint">
+                          Partition Formula
+                        </div>
+                        <div flex="30" class="md-list-item-text hint">
+                          Partition Name
+                        </div>
+                        <div class="md-list-item-text hint" flex="none" style="width:50px;min-width:50px;max-width:50px;">
+
+                        </div>
+                      </div>
+                    </md-list-item>
+
+
+                    <md-list-item ng-repeat="partition in vm.model.table.partitions">
+                      <div layout="row" layout-fill>
+
+                        <div flex="30" class="md-list-item-text ">
+                          <md-input-container class="md-block condensed" flex-gt-sm>
+                            <md-select ng-model="partition.columnDef" placeholder="Source Field" ng-change="vm.onPartitionSourceFieldChange(partition)" name="partition_sourceField{{partition._id}}"
+                                       required>
+                              <md-option ng-repeat="field in vm.model.table.tableSchema.fields | filter:{deleted:false} track by $index" ng-value="field" aria-label="{{field.name}}">
+                                {{field.name}}
+                              </md-option>
+                            </md-select>
+                            <div ng-messages="vm.defineFeedTableForm['partition_sourceField'+partition._id].$error" md-auto-hide="false">
+                              <div ng-message="required">Source field is required</div>
+                            </div>
+                          </md-input-container>
+                        </div>
+                        <div flex="30" class="md-list-item-text ">
+                          <md-input-container class="md-block condensed" flex-gt-sm>
+                            <md-select ng-model="partition.formula" placeholder="Partition Formula" ng-change="vm.onPartitionFormulaChange(partition)" name="partition_formula{{partition._id}}"
+                                       required>
+                              <md-option ng-repeat="formula in vm.partitionFormulas | orderBy:'toString()' | filterPartitionFormula:partition" value="{{formula}}" aria-label="{{formula}}">
+                                {{formula}}()
+                              </md-option>
+                            </md-select>
+                            <div ng-messages="vm.defineFeedTableForm['partition_formula'+partition._id].$error" md-auto-hide="false">
+                              <div ng-message="required">Partition formula is required</div>
+                            </div>
+                          </md-input-container>
+                        </div>
+
+
+                        <div flex="30" class="md-list-item-text ">
+                          <md-input-container md-no-float class="md-block condensed" flex-gt-sm>
+                            <input ng-model="partition.field" placeholder="Partition Name" ng-disabled="partition.formula == 'val'" required name="partition_name{{partition._id}}"
+                                   ng-change="vm.onPartitionNameChange(partition)" ng-pattern="/^[a-zA-Z0-9_-\s]*$/"/>
+
+                            <div ng-messages="vm.defineFeedTableForm['partition_name'+partition._id].$error" md-auto-hide="false">
+                              <div ng-message="required">Partition name is required</div>
+                              <div ng-message="notUnique">Partition name must not match a field name unless using the val() formula</div>
+                              <div ng-message="pattern">Partition name cannot contain special characters</div>
+                            </div>
+                          </md-input-container>
+                        </div>
+
+
+                        <div class="md-list-item-text">
+                          <md-button aria-label="Remove partition" class="md-icon-button" ng-click="vm.removePartitionField($index)">
+                            <ng-md-icon md-icon icon="clear"></ng-md-icon>
+                          </md-button>
+                        </div>
+                      </div>
+                    </md-list-item>
+                  </md-list>
+                </div>
+                <div class="layout-padding-bottom layout-padding-indent-20">
+                  <md-button aria-label="Add partition" class="md-raised" ng-click="vm.addPartitionField()">
+                    Add Partition
+                  </md-button>
+                </div>
+              </md-expansion-panel-content>
+
+
+              <md-expansion-panel-footer md-no-sticky>
+                <div flex></div>
+                <md-button aria-label="Collapse panel" class="md-warn" ng-click="$panel.collapse()">Collapse</md-button>
+              </md-expansion-panel-footer>
+
+            </md-expansion-panel-expanded>
+          </md-expansion-panel>
+
+          <md-expansion-panel md-component-id="panelFour" ng-if="(!vm.tableLocked  && vm.model.allowSkipHeaderOption)">
+            <md-expansion-panel-collapsed>
+              <div flex class="md-subhead layout-padding-top">
+                <span>Define feed options</span>
+              </div>
+              <md-button aria-label="Expand panel" class="md-info" ng-click="$panel.collapse()">Expand</md-button>
+            </md-expansion-panel-collapsed>
+            <md-expansion-panel-expanded>
+
+              <md-expansion-panel-header md-no-sticky>
+                <div class="md-subhead layout-padding">Feed options</div>
+              </md-expansion-panel-header>
+
+              <md-expansion-panel-content>
+
+
+                <md-input-container>
+                  <div layout="row">
+                    <md-checkbox ng-model="vm.model.options.skipHeader" aria-label="Skip Header" ng-disabled="(vm.model.dataTransformationFeed || vm.model.allowSkipHeaderOption == false)">
+                      Skip header row
+                    </md-checkbox>
+                  </div>
+                </md-input-container>
+              </md-expansion-panel-content>
+
+              <md-expansion-panel-footer md-no-sticky>
+                <div flex></div>
+                <md-button aria-label="Collapse panel" class="md-warn" ng-click="$panel.collapse()">Collapse</md-button>
+              </md-expansion-panel-footer>
+
+            </md-expansion-panel-expanded>
+          </md-expansion-panel>
+
+        </md-expansion-panel-group>
+
+        <div class="layout-padding-top" ng-if="!vm.tableLocked">
+          <a href="" ng-click="vm.showRecordFormat=!vm.showRecordFormat">Advanced Options</a>
+
+          <div class="layout-padding-indent-20">
+            <md-input-container class="md-block" ng-if="vm.showRecordFormat">
+              <label>Raw Storage Format</label>
+              <textarea ng-model="vm.model.table.feedFormat"></textarea>
+
+              <div class="hint">Specify the storage format clause for feed Hive table</div>
+            </md-input-container>
+          </div>
+        </div>
+
+        <thinkbig-step-buttons can-continue="vm.isValid" step-index="{{vm.stepIndex}}"></thinkbig-step-buttons>
+      </body-section>
+    </card-layout>
+
+    <card-layout flex="30" body-css="md-padding" ng-if="vm.selectedColumn != null" sticky scroll-selector="#content" style="width:100%;right:10px;" id="selectedColumnPanel">
+
+      <header-section>
+        <div class="card-title" flex>Field Details</div>
+        <div layout="column" class="layout-padding-top-bottom">
+          <span class="item-title orange">{{vm.selectedColumn.name}}</span>
+        </div>
+      </header-section>
+
+      <body-section>
+        <div layout="column" class="layout-padding-top-bottom">
+          <span>Sample field values</span>
+          <span class="hint"> <md-input-container class="md-block condensed" flex-gt-sm>
+                      <md-select ng-model="vm.selectedColumn.selectedSampleValue" placeholder="Preview Data" ng-model-options="{trackBy: '$value'}">>
+                        <md-option ng-repeat="data in vm.selectedColumn.sampleValues | unique" ng-value="data" aria-label="{{data}}">
+                          {{data}}
+                        </md-option>
+                      </md-select>
+                    </md-input-container></span>
+        </div>
+        <div layout="column" class="layout-padding-top">
+          <div layout="column" class="layout-padding-top-bottom">
+            <span>Field Description</span>
+            <textarea ng-model="vm.selectedColumn.description" rows="5" md-select-on-focus=""></textarea>
+          </div>
+        </div>
+        <div layout="column" class="layout-align-start-start layout-padding-top-bottom">
+          <md-button aria-label="Remove field" ng-click="vm.removeColumnUsingReference(vm.selectedColumn)" aria-label="Remove Field"
+                     ng-if="!vm.tableLocked && vm.model.table.method != 'SAMPLE_FILE' && vm.model.dataTransformationFeed == false">Remove
+          </md-button>
+        </div>
+      </body-section>
+    </card-layout>
+  </div>
+</ng-form>
