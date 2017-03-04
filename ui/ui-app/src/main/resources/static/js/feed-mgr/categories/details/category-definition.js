@@ -1,23 +1,5 @@
-/*-
- * #%L
- * thinkbig-ui-feed-manager
- * %%
- * Copyright (C) 2017 ThinkBig Analytics
- * %%
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *     http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * #L%
- */
-(function() {
+
+define(['angular','feed-mgr/categories/module-name'], function (angular,moduleName) {
     /**
      * Manages the Category Definition section of the Category Details page.
      *
@@ -105,7 +87,7 @@
          */
         self.onCancel = function() {
             if (!angular.isString(self.model.id)) {
-                StateService.navigateToCategories();
+                StateService.FeedManager().Category().navigateToCategories();
             }
         };
 
@@ -122,7 +104,7 @@
                         .hideDelay(3000)
                 );
                 //redirect
-                StateService.navigateToCategories();
+                StateService.FeedManager().Category().navigateToCategories();
             }, function(err) {
                 $mdDialog.show(
                     $mdDialog.alert()
@@ -150,17 +132,17 @@
             var exists = false;
             FeedService.getSystemName(newVal)
                 .then(function (response) {
-                            var systemName = response.data;
+                    var systemName = response.data;
                     if (self.editModel.id == undefined) {
                         self.editModel.systemName = systemName;
                     }
                     exists = _.some(CategoriesService.categories, function (category) {
                         return ((self.editModel.id == null || (self.editModel.id != null && category.id != self.editModel.id)) && (category.systemName === systemName || (newVal && category.name
                                                                                                                                                                                     == newVal)));
-                            });
+                    });
 
                     var reservedCategoryName = newVal && _.indexOf(reservedCategoryNames, newVal.toLowerCase()) >= 0;
-                    if (self.categoryForm['categoryName']) {
+                    if (self.categoryForm && self.categoryForm['categoryName']) {
                         self.categoryForm['categoryName'].$setValidity('duplicateName', !exists);
                         self.categoryForm['categoryName'].$setValidity('reservedCategoryName', !reservedCategoryName);
                     }
@@ -198,7 +180,7 @@
             var self = this;
             $mdDialog.show({
                 controller: 'IconPickerDialog',
-                templateUrl: 'js/shared/icon-picker-dialog/icon-picker-dialog.html',
+                templateUrl: 'js/common/icon-picker-dialog/icon-picker-dialog.html',
                 parent: angular.element(document.body),
                 clickOutsideToClose: false,
                 fullscreen: true,
@@ -206,19 +188,19 @@
                     iconModel: self.editModel
                 }
             })
-            .then(function(msg) {
-                if (msg) {
-                    self.editModel.icon = msg.icon;
-                    self.editModel.iconColor = msg.color;
-                }
-            });
+                .then(function(msg) {
+                    if (msg) {
+                        self.editModel.icon = msg.icon;
+                        self.editModel.iconColor = msg.color;
+                    }
+                });
         };
 
         // Fetch the allowed actions
         AccessControlService.getAllowedActions()
-                .then(function(actionSet) {
-                    self.allowEdit = AccessControlService.hasAction(AccessControlService.CATEGORIES_EDIT, actionSet.actions);
-                });
+            .then(function(actionSet) {
+                self.allowEdit = AccessControlService.hasAction(AccessControlService.CATEGORIES_EDIT, actionSet.actions);
+            });
 
         // Fetch the existing categories
         CategoriesService.reload().then(function (response) {
@@ -229,8 +211,8 @@
 
         // Watch for changes to name
         $scope.$watch(
-                function() {return self.editModel.name},
-                self.onNameChange
+            function() {return self.editModel.name},
+            self.onNameChange
         );
     }
 
@@ -245,10 +227,10 @@
             controllerAs: "vm",
             restrict: "E",
             scope: {},
-            templateUrl: "js/categories/details/category-definition.html"
+            templateUrl: "js/feed-mgr/categories/details/category-definition.html"
         };
     }
 
-    angular.module(MODULE_FEED_MGR).controller('CategoryDefinitionController', CategoryDefinitionController);
-    angular.module(MODULE_FEED_MGR).directive('thinkbigCategoryDefinition', thinkbigCategoryDefinition);
-})();
+    angular.module(moduleName).controller('CategoryDefinitionController', ["$scope","$mdDialog","$mdToast","AccessControlService","CategoriesService","StateService","FeedSecurityGroups","FeedService",CategoryDefinitionController]);
+    angular.module(moduleName).directive('thinkbigCategoryDefinition', thinkbigCategoryDefinition);
+});
