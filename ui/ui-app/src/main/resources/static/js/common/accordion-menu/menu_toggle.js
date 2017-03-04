@@ -1,24 +1,27 @@
 define(['angular','common/module-name'], function (angular,moduleName) {
     angular.module(moduleName)
         .run(['$templateCache', function ($templateCache) {
+
             $templateCache.put('menu-toggle.tmpl.html',
-                '<div style="width:100%;background-color:#F9F9F9;" flex layout-align="start space-between" layout="column">\n'+
-                '<md-button class="md-button-toggle" '+
-                '  ng-click="toggle()"\n' +
-                '  aria-controls="docs-menu-{{section.text}}"\n' +
-                '  flex layout="row"\n' +
-                '  aria-expanded="{{isOpen()}}" ng-if="section.hidden == false">\n' +
-                ' <span class="toggle-label layout-padding-left-8" flex>{{section.text}}</span> ' +
-                '  <ng-md-icon md-icon icon="{{section.expandIcon}}" ng-if="!isCollapsed()"></ng-md-icon>'+
-                '<span flex="5"></span>' +
-                '</md-button>' +
-                '</div>\n' +
-                '<md-list ng-show="isOpen()" id="docs-menu-{{section.text}}" class="menu-toggle-list fx-fade-up fx-dur-600 fx-ease-none" >\n' +
-                '  <md-list-item ng-repeat="item in section.links" ng-if-permission="{{item.permission}}">\n' +
-                '    <menu-link section="item"></menu-link>\n' +
-                '  </md-list-item>\n' +
-                '</md-list>\n' +
-                '');
+            '<div class="collapsible-item" ng-class="{open: section.expanded}" ng-if="section.hidden == false" id="{{section.elementId}}">'
+            + '<div class="title" ng-class="{disabled: section.disabled}" ng-click="toggle()" flex layout-align="start start" layout="row">'
+            + '   <span flex>{{section.text}}</span>'
+            + '   <ng-md-icon md-icon icon="{{section.expandIcon}}" ng-if="!isCollapsed()"></ng-md-icon>'
+            + '</div>'
+            + ' <div class="accordion-body">'
+            + ' <md-list id="menu-{{section.text}}" class="accordion-list">\n'
+            + '  <md-list-item ng-repeat="item in section.links" ng-if-permission="{{item.permission}}">\n'
+            + '    <menu-link section="item"></menu-link>\n'
+            + '  </md-list-item>\n'
+            + '</md-list> '
+            + ' </div>'
+            + '</div>');
+
+
+
+
+
+
         }])
         .directive('menuToggle', ['$timeout','AccessControlService', function ($timeout,AccessControlService) {
             return {
@@ -28,16 +31,18 @@ define(['angular','common/module-name'], function (angular,moduleName) {
                 require: '^accordionMenu',
                 templateUrl: 'menu-toggle.tmpl.html',
                 link: function (scope, element,attrs,controller) {
-
                     scope.section.hidden = true;
-                    scope.$watch('section.expanded',function(newVal,oldVal){
-                        if(newVal == true){
-                            scope.section.expandIcon = 'expand_less';
-                        }
-                        else {
-                            scope.section.expandIcon = 'expand_more';
-                        }
-                    });
+
+                    scope.isOpened = scope.section.expanded;
+
+
+                    if(scope.isOpened) {
+                        scope.section.expandIcon = 'expand_less';
+                    }
+                    else {
+                        scope.section.expandIcon = 'expand_more';
+                    }
+
 
                     scope.isCollapsed= controller.isCollapsed;
 
@@ -76,11 +81,16 @@ define(['angular','common/module-name'], function (angular,moduleName) {
                     checkPermissions();
 
 
-                    scope.isOpen = function () {
-                        return controller.isOpen(scope.section);
-                    };
+
                     scope.toggle = function () {
-                        controller.toggleOpen(scope.section);
+                        if(!scope.section.expanded) {
+                            controller.openToggleItem(scope.section);
+                        }
+                        else {
+                            scope.section.expanded = false;
+                            scope.section.expandIcon = 'expand_more';
+                        }
+
                     };
 
                 }

@@ -64,7 +64,7 @@ define(['angular','side-nav/module-name'], function (angular,moduleName) {
                  * @param allowed
                  */
                 function buildOpsManagerMenu() {
-                       var menu = ({type:'toggle', text: "Operations",narrowText:'',expanded:true});
+                       var menu = ({type:'toggle', text: "Operations",narrowText:'',expanded:false});
                        var links = [];
                        links.push({sref: "dashboard",type:'link', icon: "dashboard", text: "Dashboard", defaultActive: false, permission: AccessControlService.OPERATIONS_MANAGER_ACCESS});
                        links.push({sref: "service-health",type:'link', icon: "vector_triangle", text: "Services", defaultActive: false, permission: AccessControlService.OPERATIONS_MANAGER_ACCESS});
@@ -82,7 +82,7 @@ define(['angular','side-nav/module-name'], function (angular,moduleName) {
                  */
                 function buildAdminMenu(allowed) {
 
-                    var menu = ({type:'toggle', text: "Admin",narrowText:'',expanded:true});
+                    var menu = ({type:'toggle', text: "Admin",narrowText:'',expanded:false});
                     var links = [];
                     links.push({sref: "business-metadata", type:'link', icon: "business", text: "Properties", defaultActive: false, permission: AccessControlService.CATEGORIES_ADMIN});
                     links.push({sref: "registered-templates",type:'link', icon: "layers", text: "Templates", defaultActive: false, permission: AccessControlService.TEMPLATES_ACCESS});
