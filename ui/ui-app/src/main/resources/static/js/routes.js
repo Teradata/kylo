@@ -7,7 +7,7 @@ define(['angular', 'kylo-common','kylo-services',
         $ocLazyLoadProvider.config({
             modules: ['kylo','kylo.common','kylo.services','kylo.feedmgr','kylo.feedmgr.templates','kylo.opsmgr'],
             asyncLoader: require,
-            debug:true
+            debug:false
         });
 
         $urlRouterProvider.otherwise("/home");

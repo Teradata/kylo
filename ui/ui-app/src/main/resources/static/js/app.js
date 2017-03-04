@@ -68,11 +68,6 @@ define([
     }])
 
 
-    //    <script type="text/javascript" src="/ui-common/js/vendor/svg-morpheus/svg-morpheus.js"></script>
-    //
-    // <link rel="stylesheet" href="/ui-common/js/vendor/angular-material-icons/angular-material-icons.css"/>
-
-
 
 });
 
