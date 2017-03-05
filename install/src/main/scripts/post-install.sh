@@ -80,7 +80,7 @@ echo "   - Created kylo-ui script '$rpmInstallDir/kylo-ui/bin/run-kylo-ui.sh'"
 
 # header of the service file depends on system used
 if [ "$linux_type" == "chkonfig" ]; then
-cat << EOF > /etc/init.d/kylo-spark-shell
+cat << EOF > /etc/init.d/kylo-ui
 #! /bin/sh
 # chkconfig: 345 98 22
 # description: kylo-ui
@@ -218,7 +218,7 @@ echo "   - Created kylo-services script '$rpmInstallDir/kylo-services/bin/run-ky
 
 # header of the service file depends on system used
 if [ "$linux_type" == "chkonfig" ]; then
-cat << EOF > /etc/init.d/kylo-spark-shell
+cat << EOF > /etc/init.d/kylo-services
 #! /bin/sh
 # chkconfig: 345 98 21
 # description: kylo-services
