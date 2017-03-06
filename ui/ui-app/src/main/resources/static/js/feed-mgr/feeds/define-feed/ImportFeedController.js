@@ -70,8 +70,8 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             var file = self.feedFile;
             var uploadUrl = RestUrlService.ADMIN_IMPORT_FEED_URL;
             var successFn = function (response) {
-
-                if (response.template.verificationToReplaceConnectingResuableTemplateNeeded) {
+                var responseData = response.data;
+                if (responseData.template.verificationToReplaceConnectingResuableTemplateNeeded) {
                     showVerifyReplaceReusableTemplateDialog();
                     return;
                 }
@@ -80,11 +80,11 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
 
                 var count = 0;
                 var errorMap = {"FATAL": [], "WARN": []};
-                self.importResult = response;
-                //if(response.templateResults.errors) {
-                if (response.template.controllerServiceErrors) {
-                    //angular.forEach(response.templateResults.errors, function (processor) {
-                    angular.forEach(response.template.controllerServiceErrors, function (processor) {
+                self.importResult = responseData;
+                //if(responseData.templateResults.errors) {
+                if (responseData.template.controllerServiceErrors) {
+                    //angular.forEach(responseData.templateResults.errors, function (processor) {
+                    angular.forEach(responseData.template.controllerServiceErrors, function (processor) {
                         if (processor.validationErrors) {
                             angular.forEach(processor.validationErrors, function (error) {
                                 var copy = {};
@@ -98,11 +98,11 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                     });
 
                 }
-                if (response.nifiFeed == null || response.nifiFeed == undefined) {
+                if (responseData.nifiFeed == null || responseData.nifiFeed == undefined) {
                     errorMap["FATAL"].push({message: "Unable to import feed"});
                 }
-                if (response.nifiFeed && response.nifiFeed) {
-                    count += FeedCreationErrorService.parseNifiFeedErrors(response.nifiFeed, errorMap);
+                if (responseData.nifiFeed && responseData.nifiFeed) {
+                    count += FeedCreationErrorService.parseNifiFeedErrors(responseData.nifiFeed, errorMap);
                 }
                 self.errorMap = errorMap;
                 self.errorCount = count;
@@ -113,14 +113,14 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                     self.importResultIcon = "check_circle";
                     self.importResultIconColor = "#009933";
 
-                    self.message = "Successfully imported the feed " + response.feedName + ".";
+                    self.message = "Successfully imported the feed " + responseData.feedName + ".";
                     self.overwrite = false;
                     self.verifiedToCreateConnectingReusableTemplate = false;
                     self.createConnectingReusableTemplate = false;
                 }
                 else {
-                    if (response.success) {
-                        self.message = "Successfully imported and registered the feed " + response.feedName + " but some errors were found. Please review these errors";
+                    if (responseData.success) {
+                        self.message = "Successfully imported and registered the feed " + responseData.feedName + " but some errors were found. Please review these errors";
                         self.importResultIcon = "warning";
                         self.importResultIconColor = "#FF9901";
                         self.overwrite = false;
@@ -130,7 +130,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                     else {
                         self.importResultIcon = "error";
                         self.importResultIconColor = "#FF0000";
-                        self.message = "Unable to import and register the feed " + response.feedName + ".  Errors were found. ";
+                        self.message = "Unable to import and register the feed " + responseData.feedName + ".  Errors were found. ";
                         self.verifiedToCreateConnectingReusableTemplate = false;
                         self.createConnectingReusableTemplate = false;
 
@@ -139,7 +139,8 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
 
                 self.importBtnDisabled = false;
             }
-            var errorFn = function (data) {
+            var errorFn = function (response) {
+                var data = response.data
                 hideProgress();
                 self.importResult = {};
                 self.importBtnDisabled = false;

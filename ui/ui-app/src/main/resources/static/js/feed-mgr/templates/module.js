@@ -70,7 +70,7 @@ define(['angular', 'feed-mgr/templates/module-name','kylo-utils/LazyLoadUtil','a
                 displayName:'Register Template',
                 module:moduleName
             }
-        }).state('register-template.register-template-complete', {
+        }).state('register-template-complete', {
             url: '/register-template-complete',
             params: {
                 message: '',
@@ -97,13 +97,13 @@ define(['angular', 'feed-mgr/templates/module-name','kylo-utils/LazyLoadUtil','a
             },
             views: {
                 'content': {
-                    templateUrl:  'js/feed-mgr/templates/template-stepper/import-template/import-template.html',
+                    templateUrl:  'js/feed-mgr/templates/import-template/import-template.html',
                     controller:'ImportTemplateController',
                     controllerAs:'vm'
                 }
             },
             resolve: {
-                loadMyCtrl: lazyLoadController(['feed-mgr/templates/template-stepper/import-template/ImportTemplateController'])
+                loadMyCtrl: lazyLoadController(['feed-mgr/templates/import-template/ImportTemplateController'])
             },
             data:{
                 breadcrumbRoot:false,
