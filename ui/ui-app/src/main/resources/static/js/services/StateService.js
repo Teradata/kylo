@@ -65,8 +65,8 @@ define(['angular','services/module-name'], function (angular,moduleName) {
 
         var TemplateStates = function() {
             var data = {};
-            data.navigateToRegisterTemplate = function () {
-                $state.go('register-template');
+            data.navigateToRegisterNewTemplate = function () {
+                $state.go('register-new-template');
             }
 
             data.navigateToRegisterTemplateComplete = function (message, templateModel, error) {

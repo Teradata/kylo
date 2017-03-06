@@ -26,7 +26,7 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
                     if (AccessControlService.hasAction(AccessControlService.TEMPLATES_IMPORT, actionSet.actions)) {
                         AddButtonService.registerAddButton("registered-templates", function() {
                             RegisterTemplateService.resetModel();
-                            StateService.FeedManager().Template().navigateToRegisterTemplate();
+                            StateService.FeedManager().Template().navigateToRegisterNewTemplate();
                         });
                     }
                 });
