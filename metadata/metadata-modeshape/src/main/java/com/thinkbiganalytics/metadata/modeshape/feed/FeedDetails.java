@@ -54,6 +54,8 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
  */
 public class FeedDetails extends JcrPropertiesEntity {
 
+    public static final String NODE_TYPE = "tba:feedDetails";
+
     public static final String FEED_JSON = "tba:json";
     public static final String PROCESS_GROUP_ID = "tba:processGroupId";
     public static final String FEED_TEMPLATE = "tba:feedTemplate";
@@ -114,7 +116,7 @@ public class FeedDetails extends JcrPropertiesEntity {
         Node depNode = dependent.getNode();
         feed.addUsedByFeed(getParentFeed());
 
-        return JcrPropertyUtil.addToSetProperty(this.node, DEPENDENTS, depNode);
+        return JcrPropertyUtil.addToSetProperty(this.node, DEPENDENTS, depNode, true);
     }
     
     public boolean removeDependentFeed(Feed feed) {
@@ -128,7 +130,7 @@ public class FeedDetails extends JcrPropertiesEntity {
         JcrFeed dependent = (JcrFeed) feed;
         Node depNode = dependent.getNode();
 
-        return JcrPropertyUtil.addToSetProperty(this.node, USED_BY_FEEDS, depNode);
+        return JcrPropertyUtil.addToSetProperty(this.node, USED_BY_FEEDS, depNode, true);
     }
 
     public List<Feed> getUsedByFeeds() {

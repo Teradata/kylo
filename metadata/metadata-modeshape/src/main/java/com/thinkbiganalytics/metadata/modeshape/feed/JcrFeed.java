@@ -50,6 +50,8 @@ import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
+import com.thinkbiganalytics.metadata.modeshape.security.action.feed.JcrFeedAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
@@ -418,7 +420,8 @@ public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed {
 
     @Override
     public AllowedActions getAllowedActions() {
-        return this.accessControlSupport.getAllowedActions();
+        JcrAllowedActions allowed = (JcrAllowedActions) this.accessControlSupport.getAllowedActions();
+        return new JcrFeedAllowedActions(this, allowed.getNode());
     }
 
     @Override

@@ -27,7 +27,6 @@ import com.thinkbiganalytics.classnameregistry.ClassNameChangeRegistry;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
-import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -55,6 +54,8 @@ import javax.jcr.nodetype.NoSuchNodeTypeException;
 import javax.jcr.nodetype.NodeType;
 
 /**
+ * Utility and convenience methods for accessing and manipulating nodes in the JCR API.  Some 
+ * methods are duplicates of their JCR equivalents but do not throw the non-runtime RepositoryException.
  */
 public class JcrUtil {
 
@@ -123,6 +124,14 @@ public class JcrUtil {
             return node.getPrimaryNodeType().isNodeType(typeName);
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the type of node: " + node, e);
+        }
+    }
+
+    public static Node getParent(Node node) {
+        try {
+            return node.getParent();
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to retrieve the parent of node: " + node, e);
         }
     }
 

@@ -24,6 +24,7 @@ package com.thinkbiganalytics.security;
  */
 
 import com.thinkbiganalytics.security.action.Action;
+import com.thinkbiganalytics.security.action.AllowedActions;
 
 import java.util.Set;
 
@@ -37,7 +38,7 @@ public interface AccessController {
     /**
      * The default services module name
      */
-    static final String SERVICES = "services";
+    static final String SERVICES = AllowedActions.SERVICES;
 
     /**
      * Checks whether permission is granted to perform the given action(s) defined in the named module.

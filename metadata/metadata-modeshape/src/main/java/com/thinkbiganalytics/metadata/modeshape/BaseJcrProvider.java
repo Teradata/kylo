@@ -43,6 +43,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.StreamSupport;
 
+import javax.jcr.AccessDeniedException;
 import javax.jcr.ItemNotFoundException;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
@@ -190,6 +191,9 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
             } else {
                 return null;
             }
+        } catch (AccessDeniedException e) {
+            log.debug("Access denided to feed with ID: {}", id, e);
+            return null;
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failure while finding entity by ID: " + id, e);
         }

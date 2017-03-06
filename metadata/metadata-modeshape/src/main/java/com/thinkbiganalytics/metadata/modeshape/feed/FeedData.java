@@ -53,6 +53,8 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
  */
 public class FeedData extends JcrPropertiesEntity {
 
+    public static final String NODE_TYPE = "tba:feedData";
+
     public static final String HIGH_WATER_MARKS = "tba:highWaterMarks";
     public static final String WATER_MARKS_TYPE = "tba:waterMarks";
 

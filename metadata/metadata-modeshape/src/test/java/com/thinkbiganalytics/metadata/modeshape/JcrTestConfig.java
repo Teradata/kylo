@@ -3,6 +3,8 @@
  */
 package com.thinkbiganalytics.metadata.modeshape;
 
+import java.io.IOException;
+
 /*-
  * #%L
  * thinkbig-metadata-modeshape
@@ -23,13 +25,6 @@ package com.thinkbiganalytics.metadata.modeshape;
  * #L%
  */
 
-import com.thinkbiganalytics.alerts.api.AlertProvider;
-import com.thinkbiganalytics.alerts.spi.AlertManager;
-import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
-import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
-import com.thinkbiganalytics.metadata.api.op.FeedOperationsProvider;
-import com.thinkbiganalytics.scheduler.JobScheduler;
-
 import org.mockito.Mockito;
 import org.modeshape.jcr.RepositoryConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -37,10 +32,28 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.io.ClassPathResource;
 
-import java.io.IOException;
+import com.thinkbiganalytics.alerts.api.AlertProvider;
+import com.thinkbiganalytics.alerts.spi.AlertManager;
+import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
+import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
+import com.thinkbiganalytics.metadata.api.datasource.DatasourceDefinitionProvider;
+import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
+import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntityProvider;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
+import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
+import com.thinkbiganalytics.metadata.api.op.FeedOperationsProvider;
+import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementProvider;
+import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
+import com.thinkbiganalytics.metadata.api.user.UserProvider;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedEntityActionsProvider;
+import com.thinkbiganalytics.metadata.modeshape.tag.TagProvider;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
+import com.thinkbiganalytics.scheduler.JobScheduler;
+import com.thinkbiganalytics.security.AccessController;
 
 /**
- *
+ * Defines mocks for most JCR-based providers and other components, and configures a ModeShape test repository.
  */
 @Configuration
 public class JcrTestConfig {
@@ -49,6 +62,12 @@ public class JcrTestConfig {
     public RepositoryConfiguration metadataRepoConfig() throws IOException {
         ClassPathResource res = new ClassPathResource("/test-metadata-repository.json");
         return RepositoryConfiguration.read(res.getURL());
+    }
+
+    @Bean(name = "servicesModeShapeLoginConfiguration")
+    @Primary
+    public LoginConfiguration restModeShapeLoginConfiguration() {
+        return Mockito.mock(LoginConfiguration.class);
     }
 
     @Bean
@@ -75,13 +94,80 @@ public class JcrTestConfig {
     public MetadataEventService metadataEventService() {
         return Mockito.mock(MetadataEventService.class);
     }
-
-
-    @Bean(name = "servicesModeShapeLoginConfiguration")
-    @Primary
-    public LoginConfiguration restModeShapeLoginConfiguration() {
-        return Mockito.mock(LoginConfiguration.class);
+    
+    @Bean
+    public CategoryProvider categoryProvider() {
+        return Mockito.mock(CategoryProvider.class);
     }
 
+    @Bean
+    public ServiceLevelAgreementProvider slaProvider() {
+        return Mockito.mock(ServiceLevelAgreementProvider.class);
+    }
+
+    @Bean
+    public DatasourceProvider datasourceProvider() {
+        return Mockito.mock(DatasourceProvider.class);
+    }
+
+    @Bean
+    public ExtensibleTypeProvider extensibleTypeProvider() {
+        return Mockito.mock(ExtensibleTypeProvider.class);
+    }
+
+    @Bean
+    public AccessController accessController() {
+        return Mockito.mock(AccessController.class);
+    }
+    
+    @Bean
+    public JcrAllowedEntityActionsProvider allowedEntityActionsProvider() {
+        return Mockito.mock(JcrAllowedEntityActionsProvider.class);
+    }
+
+    @Bean
+    public UserProvider userProvider() {
+        return Mockito.mock(UserProvider.class);
+    }
+
+    @Bean
+    public ExtensibleEntityProvider extensibleEntityProvider() {
+        return Mockito.mock(ExtensibleEntityProvider.class);
+    }
+
+    @Bean
+    public FeedProvider feedProvider() {
+        return Mockito.mock(FeedProvider.class);
+    }
+
+    @Bean
+    public TagProvider tagProvider() {
+        return Mockito.mock(TagProvider.class);
+    }
+
+    @Bean
+    public CategoryProvider feedManagerCategoryProvider() {
+        return Mockito.mock(CategoryProvider.class);
+    }
+
+    @Bean
+    public FeedManagerTemplateProvider feedManagerTemplateProvider() {
+        return Mockito.mock(FeedManagerTemplateProvider.class);
+    }
+
+    @Bean
+    public DatasourceDefinitionProvider datasourceDefinitionProvider() {
+        return Mockito.mock(DatasourceDefinitionProvider.class);
+    }
+
+    @Bean
+    public FeedServiceLevelAgreementProvider jcrFeedSlaProvider() {
+        return Mockito.mock(FeedServiceLevelAgreementProvider.class);
+    }
+
+    @Bean
+    public JcrMetadataAccess metadataAccess() {
+        return Mockito.mock(JcrMetadataAccess.class);
+    }
 
 }

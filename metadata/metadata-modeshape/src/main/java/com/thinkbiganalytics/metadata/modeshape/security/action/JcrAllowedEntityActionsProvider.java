@@ -90,7 +90,7 @@ public class JcrAllowedEntityActionsProvider implements AllowedEntityActionsProv
                      Principal mgmtPrincipal = new ModeShapeAdminPrincipal();
                      JcrAllowedActions jcrProtoAllowed = (JcrAllowedActions) protoAllowed;
                      Node securityNode = JcrUtil.getNode(JcrMetadataAccess.getActiveSession(), SecurityPaths.SECURITY.toString());
-                     Node svcAllowedNode = JcrUtil.getOrCreateNode(securityNode, "services", JcrAllowedActions.NODE_TYPE);
+                     Node svcAllowedNode = JcrUtil.getOrCreateNode(securityNode, AllowedActions.SERVICES, JcrAllowedActions.NODE_TYPE);
                      
                      JcrAllowedActions entityAllowed = jcrProtoAllowed.copy(svcAllowedNode, mgmtPrincipal, Privilege.JCR_ALL);
                      

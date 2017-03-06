@@ -46,6 +46,7 @@ import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedAction
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedEntityActionsProvider;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.AccessController;
+import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.config.ActionsModuleBuilder;
 
 /**
@@ -64,11 +65,11 @@ public class ModeShapeAuthConfig {
     }
 
     @Bean
-    public JcrAllowedEntityActionsProvider allowedModuleActionsProvider() {
+    public JcrAllowedEntityActionsProvider allowedEntityActionsProvider() {
         return new JcrAllowedEntityActionsProvider();
     }
 
-    @Bean(name = "prototypesActionGroupsBuilder")
+    @Bean
     @Scope("prototype")
     public ActionsModuleBuilder prototypesActionGroupsBuilder() {
         return new JcrActionsGroupBuilder(SecurityPaths.PROTOTYPES.toString());
@@ -80,9 +81,9 @@ public class ModeShapeAuthConfig {
         // This action copies the prototype services actions to the single instance set of actions for all services access control. 
         return () -> metadata.commit(() -> { 
             Node securityNode = JcrUtil.getNode(JcrMetadataAccess.getActiveSession(), SecurityPaths.SECURITY.toString());
-            Node svcAllowedNode = JcrUtil.getOrCreateNode(securityNode, "services", JcrAllowedActions.NODE_TYPE);
+            Node svcAllowedNode = JcrUtil.getOrCreateNode(securityNode, AllowedActions.SERVICES, JcrAllowedActions.NODE_TYPE);
 
-            allowedModuleActionsProvider().createEntityAllowedActions("services", svcAllowedNode);
+            allowedEntityActionsProvider().createEntityAllowedActions(AllowedActions.SERVICES, svcAllowedNode);
         }, MetadataAccess.SERVICE);
     }
 
@@ -96,9 +97,9 @@ public class ModeShapeAuthConfig {
 //        public void run() {
 //            metadata.commit(() -> { 
 //                Node securityNode = JcrUtil.getNode(JcrMetadataAccess.getActiveSession(), SecurityPaths.SECURITY.toString());
-//                Node svcAllowedNode = JcrUtil.getOrCreateNode(securityNode, "services", JcrAllowedActions.NODE_TYPE);
+//                Node svcAllowedNode = JcrUtil.getOrCreateNode(securityNode, AllowedActions.SERVICES, JcrAllowedActions.NODE_TYPE);
 //
-//                allowedModuleActionsProvider().createEntityAllowedActions("services", svcAllowedNode);
+//                allowedModuleActionsProvider().createEntityAllowedActions(AllowedActions.SERVICES, svcAllowedNode);
 //            }, MetadataAccess.SERVICE);
 //        }
 //    }

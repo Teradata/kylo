@@ -22,6 +22,7 @@ import javax.jcr.security.AccessControlPolicy;
 import javax.jcr.security.AccessControlPolicyIterator;
 import javax.jcr.security.Privilege;
 
+import org.modeshape.jcr.security.SimplePrincipal;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -50,7 +51,7 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.UsernamePrincipal;
 
 /**
- *
+ * Utilities to apply JCR access control changes to nodes and node hierarchies.
  */
 public final class JcrAccessControlUtil {
 
@@ -107,7 +108,11 @@ public final class JcrAccessControlUtil {
                 acl = (AccessControlList) acm.getPolicies(path)[0];
             }
 
-            boolean added = acl.addAccessControlEntry(principal, privileges);
+            // ModeShape reads back all principals as SimplePrincipals after they are stored, so we have to used
+            // the same principal type here or the entry will treated as a new one instead of adding privileges to the 
+            // to an existing principal.  This can be considered a bug in ModeShape.
+            SimplePrincipal simple = SimplePrincipal.newInstance(principal.getName());
+            boolean added = acl.addAccessControlEntry(simple, privileges);
             acm.setPolicy(path, acl);
 
             return added;
@@ -118,6 +123,16 @@ public final class JcrAccessControlUtil {
 
     }
 
+    /**
+     * Adds the specified privilege to the node hierarchy starting at a child node and proceeding through its parents until
+     * the destination node is reached.  The privilege assignment excludes the destination node.
+     * 
+     * @param node the starting node on which the privilege is assigned
+     * @param principal the principal being given the privilege
+     * @param toNode the ending parent node 
+     * @param privilegeNames the privilege being assigned
+     * @return true if any of the nodes had their privilege change for the principle (i.e. the priviledge had not already existed)
+     */
     public static boolean addHierarchyPermissions(Node node, Principal principal, Node toNode, String... privilegeNames) {
         try {
             Node endNode = toNode;
@@ -156,6 +171,23 @@ public final class JcrAccessControlUtil {
         }
 
         return privs;
+    }
+
+    public static boolean removePermissions(Node node, Principal principal, String... privilegeNames) {
+        try {
+            return removePermissions(node.getSession(), node.getPath(), principal, privilegeNames);
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to remove permission(s) from node " + node + ": " + privilegeNames, e);
+        }
+    }
+
+    public static boolean removePermissions(Node node, Principal principal, Privilege... privileges) {
+        try {
+            return removePermissions(node.getSession(), node.getPath(), principal, privileges);
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to remove permission(s) from node " + node + ": " + privileges, e);
+        }
+
     }
 
     public static boolean removePermissions(Session session, String path, Principal principal, Privilege... removes) {

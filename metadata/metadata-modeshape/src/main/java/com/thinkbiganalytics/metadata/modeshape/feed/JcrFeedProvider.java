@@ -248,7 +248,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             throw new CategoryNotFoundException("Unable to find Category for " + categorySystemName, null);
         }
 
-        boolean newFeed = hasEntityNode(categoryPath, feedSystemName);
+        boolean newFeed = ! hasEntityNode(categoryPath, feedSystemName);
         Node feedNode = findOrCreateEntityNode(categoryPath, feedSystemName, getJcrEntityClass());
         boolean versionable = JcrUtil.isVersionable(feedNode);
 
@@ -257,8 +257,12 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         feed.setSystemName(feedSystemName);
 
         if (newFeed) {
-            this.actionsProvider.getAllowedActions(AllowedActions.FEED)
-                .ifPresent(actions -> feed.getAccessControlSupport().initializeActions((JcrAllowedActions) actions));
+            this.actionsProvider.getAvailableActions(AllowedActions.FEED)
+                            .ifPresent(actions -> {
+                                feed.getAccessControlSupport().initializeActions((JcrAllowedActions) actions);
+                                feed.getAllowedActions().enable(JcrMetadataAccess.getActiveUser(), FeedAccessControl.EDIT_DETAILS);
+                                feed.getAllowedActions().enable(JcrMetadataAccess.ADMIN, FeedAccessControl.EDIT_DETAILS);
+                            });
             addPostFeedChangeAction(feed, ChangeType.CREATE);
         }
 
@@ -571,7 +575,11 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         JcrMetadataAccess.getCheckedoutNodes().removeIf(node::equals);
 
         // Delete feed
-        feed.getTemplate().removeFeed(feed);
+        FeedManagerTemplate template = feed.getTemplate();
+        if (template != null) {
+            template.removeFeed(feed);
+        }
+        
         super.delete(feed);
     }
 

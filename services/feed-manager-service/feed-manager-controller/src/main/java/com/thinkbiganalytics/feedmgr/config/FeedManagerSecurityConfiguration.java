@@ -80,7 +80,7 @@ public class FeedManagerSecurityConfiguration {
                                 .action(FeedAccessControl.DELETE)
                                 .action(FeedAccessControl.ENABLE_DISABLE)
                                 .action(FeedAccessControl.EXPORT)
-                                .action(FeedAccessControl.SCHEDULE_FEED)
+//                                .action(FeedAccessControl.SCHEDULE_FEED)
                                 .action(FeedAccessControl.ACCESS_OPS)
                                 .action(FeedAccessControl.CHANGE_PERMS)
                                 .add()

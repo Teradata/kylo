@@ -32,9 +32,12 @@ import javax.jcr.Node;
 import javax.jcr.security.Privilege;
 
 import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
+import com.thinkbiganalytics.metadata.modeshape.feed.FeedData;
+import com.thinkbiganalytics.metadata.modeshape.feed.FeedDetails;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.security.action.AllowedActions;
 
@@ -86,44 +89,76 @@ public class JcrFeedAllowedActions extends JcrAllowedActions {
 
     protected void enableEntityAccess(Principal principal, Stream<? extends Action> actions) {
         actions.forEach(action -> {
-            if (action.implies(FeedAccessControl.ACCESS_FEED)) {
-                this.feed.getFeedSummary().ifPresent(s -> JcrAccessControlUtil.addHierarchyPermissions(s.getNode(), principal, feed.getNode(), Privilege.JCR_ALL));
-            }
-            if (action.implies(FeedAccessControl.ACCESS_DETAILS)) {
-                this.feed.getFeedDetails().ifPresent(d -> JcrAccessControlUtil.addHierarchyPermissions(d.getNode(), principal, feed.getNode(), Privilege.JCR_ALL));
+            if (action.implies(FeedAccessControl.EDIT_DETAILS)) {
+                this.feed.getFeedDetails().ifPresent(d -> JcrAccessControlUtil.addHierarchyPermissions(d.getNode(), principal, JcrUtil.getParent(feed.getNode()), Privilege.JCR_ALL, Privilege.JCR_READ));
+                this.feed.getFeedData().ifPresent(d -> JcrAccessControlUtil.addHierarchyPermissions(d.getNode(), principal, JcrUtil.getParent(feed.getNode()), Privilege.JCR_ALL, Privilege.JCR_READ));
+            } else if (action.implies(FeedAccessControl.EDIT_SUMMARY)) {
+                this.feed.getFeedSummary().ifPresent(s -> JcrAccessControlUtil.addHierarchyPermissions(s.getNode(), principal, JcrUtil.getParent(feed.getNode()), Privilege.JCR_ALL, Privilege.JCR_READ));
+            } else if (action.implies(FeedAccessControl.ACCESS_DETAILS)) {
+                this.feed.getFeedDetails().ifPresent(d -> JcrAccessControlUtil.addHierarchyPermissions(d.getNode(), principal, JcrUtil.getParent(feed.getNode()), Privilege.JCR_READ));
+                this.feed.getFeedData().ifPresent(d -> JcrAccessControlUtil.addHierarchyPermissions(d.getNode(), principal, JcrUtil.getParent(feed.getNode()), Privilege.JCR_READ));
+            } else if (action.implies(FeedAccessControl.ACCESS_FEED)) {
+                this.feed.getFeedSummary().ifPresent(s -> JcrAccessControlUtil.addHierarchyPermissions(s.getNode(), principal, JcrUtil.getParent(feed.getNode()), Privilege.JCR_READ));
             }
         });
     }
     
     protected void enableOnlyEntityAccess(Principal principal, Stream<? extends Action> actions) {
-        AtomicBoolean summary = new AtomicBoolean(false);
-        AtomicBoolean details = new AtomicBoolean(false);
+        AtomicBoolean summaryAccess = new AtomicBoolean(false);
+        AtomicBoolean detailsAccess = new AtomicBoolean(false);
+        AtomicBoolean summaryEdit = new AtomicBoolean(false);
+        AtomicBoolean detailsEdit = new AtomicBoolean(false);
         
         actions.forEach(action -> {
-            summary.compareAndSet(false, action.implies(FeedAccessControl.ACCESS_FEED));
-            details.compareAndSet(false, action.implies(FeedAccessControl.ACCESS_DETAILS));
+            summaryAccess.compareAndSet(false, action.implies(FeedAccessControl.ACCESS_FEED));
+            detailsAccess.compareAndSet(false, action.implies(FeedAccessControl.ACCESS_DETAILS));
+            summaryEdit.compareAndSet(false, action.implies(FeedAccessControl.EDIT_SUMMARY));
+            detailsEdit.compareAndSet(false, action.implies(FeedAccessControl.EDIT_DETAILS));
         });
         
-        if (summary.get()) {
-            this.feed.getFeedSummary().ifPresent(s -> JcrAccessControlUtil.addHierarchyPermissions(s.getNode(), principal, feed.getNode(), Privilege.JCR_ALL));
+        if (detailsEdit.get()) {
+            this.feed.getFeedDetails().ifPresent(s -> JcrAccessControlUtil.addHierarchyPermissions(s.getNode(), principal, JcrUtil.getParent(feed.getNode()), Privilege.JCR_ALL));
+            this.feed.getFeedData().ifPresent(s -> JcrAccessControlUtil.addHierarchyPermissions(s.getNode(), principal, JcrUtil.getParent(feed.getNode()), Privilege.JCR_ALL));
         } else {
-            this.feed.getFeedSummary().ifPresent(s -> JcrAccessControlUtil.removeHierarchyPermissions(s.getNode(), principal, feed.getNode(), Privilege.JCR_ALL));
+            this.feed.getFeedDetails().ifPresent(s -> JcrAccessControlUtil.removeHierarchyPermissions(s.getNode(), principal, JcrUtil.getParent(feed.getNode()), Privilege.JCR_ALL));
+            this.feed.getFeedData().ifPresent(s -> JcrAccessControlUtil.removeHierarchyPermissions(s.getNode(), principal, JcrUtil.getParent(feed.getNode()), Privilege.JCR_ALL));
         }
         
-        if (summary.get()) {
-            this.feed.getFeedDetails().ifPresent(s -> JcrAccessControlUtil.addHierarchyPermissions(s.getNode(), principal, feed.getNode(), Privilege.JCR_ALL));
+        if (summaryEdit.get()) {
+            this.feed.getFeedSummary().ifPresent(s -> JcrAccessControlUtil.addHierarchyPermissions(s.getNode(), principal, JcrUtil.getParent(feed.getNode()), Privilege.JCR_ALL));
         } else {
-            this.feed.getFeedDetails().ifPresent(s -> JcrAccessControlUtil.removeHierarchyPermissions(s.getNode(), principal, feed.getNode(), Privilege.JCR_ALL));
+            this.feed.getFeedSummary().ifPresent(s -> JcrAccessControlUtil.removeHierarchyPermissions(s.getNode(), principal, JcrUtil.getParent(feed.getNode()), Privilege.JCR_ALL));
+        }
+        
+        if (detailsAccess.get()) {
+            this.feed.getFeedDetails().ifPresent(s -> JcrAccessControlUtil.addHierarchyPermissions(s.getNode(), principal, JcrUtil.getParent(feed.getNode()), Privilege.JCR_READ));
+            this.feed.getFeedData().ifPresent(s -> JcrAccessControlUtil.addHierarchyPermissions(s.getNode(), principal, JcrUtil.getParent(feed.getNode()), Privilege.JCR_READ));
+        } else {
+            this.feed.getFeedDetails().ifPresent(s -> JcrAccessControlUtil.removeHierarchyPermissions(s.getNode(), principal, JcrUtil.getParent(feed.getNode()), Privilege.JCR_READ));
+            this.feed.getFeedData().ifPresent(s -> JcrAccessControlUtil.removeHierarchyPermissions(s.getNode(), principal, JcrUtil.getParent(feed.getNode()), Privilege.JCR_READ));
+        }
+        
+        if (summaryAccess.get()) {
+            this.feed.getFeedSummary().ifPresent(s -> JcrAccessControlUtil.addHierarchyPermissions(s.getNode(), principal, JcrUtil.getParent(feed.getNode()), Privilege.JCR_READ));
+        } else {
+            this.feed.getFeedSummary().ifPresent(s -> JcrAccessControlUtil.removeHierarchyPermissions(s.getNode(), principal, JcrUtil.getParent(feed.getNode()), Privilege.JCR_READ));
         }
     }
     
     protected void disableEntityAccess(Principal principal, Stream<? extends Action> actions) {
         actions.forEach(action -> {
-            if (action.implies(FeedAccessControl.ACCESS_FEED)) {
-                this.feed.getFeedSummary().ifPresent(s -> JcrAccessControlUtil.removeHierarchyPermissions(s.getNode(), principal, feed.getNode(), Privilege.JCR_ALL));
-            }
-            if (action.implies(FeedAccessControl.ACCESS_DETAILS)) {
-                this.feed.getFeedDetails().ifPresent(d -> JcrAccessControlUtil.removeHierarchyPermissions(d.getNode(), principal, feed.getNode(), Privilege.JCR_ALL));
+            if (action.implies(FeedAccessControl.EDIT_DETAILS)) {
+                this.feed.getFeedDetails().ifPresent(d -> JcrAccessControlUtil.removePermissions(d.getNode(), principal, Privilege.JCR_ALL));
+                this.feed.getFeedData().ifPresent(d -> JcrAccessControlUtil.removePermissions(d.getNode(), principal, Privilege.JCR_ALL));
+            } else if (action.implies(FeedAccessControl.EDIT_SUMMARY)) {
+                this.feed.getFeedSummary().ifPresent(s -> JcrAccessControlUtil.removeRecursivePermissions(s.getNode(), FeedDetails.NODE_TYPE, principal, Privilege.JCR_ALL));
+                this.feed.getFeedSummary().ifPresent(s -> JcrAccessControlUtil.removeRecursivePermissions(s.getNode(), FeedData.NODE_TYPE, principal, Privilege.JCR_ALL));
+            } else if (action.implies(FeedAccessControl.ACCESS_DETAILS)) {
+                this.feed.getFeedDetails().ifPresent(d -> JcrAccessControlUtil.removePermissions(d.getNode(), principal, Privilege.JCR_ALL, Privilege.JCR_READ));
+                this.feed.getFeedData().ifPresent(d -> JcrAccessControlUtil.removePermissions(d.getNode(), principal, Privilege.JCR_ALL, Privilege.JCR_READ));
+            } else if (action.implies(FeedAccessControl.ACCESS_FEED)) {
+                this.feed.getFeedSummary().ifPresent(s -> JcrAccessControlUtil.removeRecursivePermissions(s.getNode(), FeedDetails.NODE_TYPE, principal, Privilege.JCR_ALL, Privilege.JCR_READ));
+                this.feed.getFeedSummary().ifPresent(s -> JcrAccessControlUtil.removeRecursivePermissions(s.getNode(), FeedData.NODE_TYPE, principal, Privilege.JCR_ALL, Privilege.JCR_READ));
             }
         });
     }

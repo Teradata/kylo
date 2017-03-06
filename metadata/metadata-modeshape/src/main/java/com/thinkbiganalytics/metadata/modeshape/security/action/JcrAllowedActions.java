@@ -201,6 +201,8 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
     
     public JcrAllowedActions copy(Node allowedNode, Principal principal, String... privilegeNames) {
         try {
+            JcrAccessControlUtil.addPermissions(allowedNode, principal, privilegeNames);
+            
             for (Node actionNode : JcrUtil.getNodesOfType(getNode(), JcrAllowableAction.NODE_TYPE)) {
                 copyAction(actionNode, allowedNode, principal, privilegeNames);
             }

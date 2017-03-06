@@ -24,6 +24,7 @@ import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.action.Action;
+import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.AllowedEntityActionsProvider;
 import com.thinkbiganalytics.security.rest.model.ActionGroup;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange;
@@ -93,7 +94,7 @@ public class AccessControlController {
         
         return metadata.read(() -> {
             return actionsProvider.getAvailableActions(moduleName)
-                .map(this.actionsTransform.availableActionsToActionSet("services"))
+                .map(this.actionsTransform.availableActionsToActionSet(AllowedActions.SERVICES))
                 .orElseThrow(() -> new WebApplicationException("The available service actions were not found",
                                                                Status.NOT_FOUND));
         });
@@ -118,7 +119,7 @@ public class AccessControlController {
         // Retrieve the allowed actions by executing the query as the specified user/groups 
         return metadata.read(() -> {
             return actionsProvider.getAllowedActions(moduleName)
-                .map(this.actionsTransform.availableActionsToActionSet("services"))
+                .map(this.actionsTransform.availableActionsToActionSet(AllowedActions.SERVICES))
                 .orElseThrow(() -> new WebApplicationException("The available service actions were not found",
                                                                Status.NOT_FOUND));
         }, principals);

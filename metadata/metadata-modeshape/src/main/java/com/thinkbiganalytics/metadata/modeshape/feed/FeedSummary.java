@@ -38,6 +38,8 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
  */
 public class FeedSummary extends AbstractJcrAuditableSystemEntity {
 
+    public static final String NODE_TYPE = "tba:feedSummary";
+
     public static final String DETAILS = "tba:details";
 
     public static final String CATEGORY = "tba:category";

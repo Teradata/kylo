@@ -70,6 +70,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import javax.annotation.Nonnull;
+import javax.jcr.AccessDeniedException;
 import javax.jcr.Binary;
 import javax.jcr.ItemNotFoundException;
 import javax.jcr.Node;
@@ -345,7 +346,7 @@ public class JcrPropertyUtil {
 //    }
 
     @SuppressWarnings("unchecked")
-    public static <T> T asValue(Value value, Session session) {
+    public static <T> T asValue(Value value, Session session) throws AccessDeniedException {
         try {
             switch (value.getType()) {
                 case PropertyType.DECIMAL:
@@ -375,6 +376,8 @@ public class JcrPropertyUtil {
                 default:
                     return (T) value.getString();
             }
+        } catch (AccessDeniedException e) {
+            throw e;
         } catch (RepositoryException | IOException e) {
             throw new MetadataRepositoryException("Failed to access property type", e);
         }
@@ -398,8 +401,13 @@ public class JcrPropertyUtil {
                 Value[] values = prop.getValues();
                 if (values != null) {
                     for (Value value : values) {
-                        T o = asValue(value, prop.getSession());
-                        list.add(o);
+                        try {
+                            T o = asValue(value, prop.getSession());
+                            list.add(o);
+                        } catch (AccessDeniedException e) {
+                            // We are not allowd to see the value (likely a node reference) then
+                            // just ignore this value in the result list.
+                        }
                     }
                 }
                 if (list.size() > 0) {
@@ -419,7 +427,12 @@ public class JcrPropertyUtil {
                 } else if (code == PropertyType.PATH) {
                     return (T) prop.getPath();
                 } else if (code == PropertyType.REFERENCE || code == PropertyType.WEAKREFERENCE) {
-                    return (T) prop.getNode();
+                    try {
+                        return (T) prop.getNode();
+                    } catch (AccessDeniedException e) {
+                        // We are not allowd to see the referenced node so return null;
+                        return null;
+                    }
                 } else {
                     return (T) asValue(prop.getValue(), prop.getSession());
                 }
@@ -539,7 +552,14 @@ public class JcrPropertyUtil {
 
             if (node.hasProperty(propName)) {
                 return Arrays.stream(node.getProperty(propName).getValues())
-                    .map(v -> (Node) JcrPropertyUtil.asValue(v, session))
+                    .map(v -> { 
+                            try {
+                                return (Node) JcrPropertyUtil.asValue(v, session);
+                            } catch (AccessDeniedException e) {
+                                // Not allowed to see the referenced node so return null.
+                                return null;
+                            } 
+                        })
                     .filter(n -> n != null)  // weak refs can produce null nodes
                     .collect(Collectors.toSet());
             } else {

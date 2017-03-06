@@ -62,6 +62,7 @@ import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplate;
+import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.AllowedEntityActionsProvider;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
@@ -145,7 +146,7 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
             usersGroup.addUser(operator);
             
             // Setup initial group access control.  Administrators group already has all rights.
-            actionsProvider.getAllowedActions("services")
+            actionsProvider.getAllowedActions(AllowedActions.SERVICES)
                             .ifPresent((allowed) -> {
                                 allowed.enable(opsGroup.getRootPrincial(), 
                                                OperationsAccessControl.ADMIN_OPS,

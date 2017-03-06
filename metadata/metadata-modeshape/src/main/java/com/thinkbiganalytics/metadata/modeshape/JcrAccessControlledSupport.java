@@ -26,15 +26,14 @@ package com.thinkbiganalytics.metadata.modeshape;
 import javax.jcr.Node;
 import javax.jcr.security.Privilege;
 
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.security.AccessControlled;
 import com.thinkbiganalytics.metadata.api.security.RoleAssignments;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
+import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowableAction;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
-import com.thinkbiganalytics.security.UsernamePrincipal;
 import com.thinkbiganalytics.security.action.AllowedActions;
 
 /**
@@ -71,8 +70,8 @@ public class JcrAccessControlledSupport extends JcrObject implements AccessContr
 
     
     public void initializeActions(JcrAllowedActions prototype) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         JcrAllowedActions allowed = (JcrAllowedActions) getAllowedActions();
-        prototype.copy(allowed.getNode(), new UsernamePrincipal(auth.getName()), Privilege.JCR_ALL);
+        prototype.copy(allowed.getNode(), JcrMetadataAccess.getActiveUser(), Privilege.JCR_ALL);
+        JcrAccessControlUtil.addRecursivePermissions(allowed.getNode(), JcrAllowableAction.NODE_TYPE, MetadataAccess.ADMIN, Privilege.JCR_ALL);
     }
 }
