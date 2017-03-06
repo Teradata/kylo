@@ -15,8 +15,9 @@
     "bower_components"
   ],
   "dependencies": {
-    "angular":"~1.6.2",
+    "angular":"~1.6.2",3
     "angular-cookies":"~1.4.1",
+    "angular-sanitize":"latest",
     "angular-drag-and-drop-lists":"~2.1.0",
     "angular-material":"~1.1.3",
     "angular-material-data-table":"~0.10.10",

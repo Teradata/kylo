@@ -13,6 +13,7 @@ define([
     'angular-material-expansion-panel',
     'angular-material-icons',
     'angular-material-data-table',
+    'angular-sanitize',
     'angular-ui-grid',
     'dirPagination',
     'ng-fx',
@@ -28,7 +29,7 @@ define([
         window.moment = moment;
     }
 
-     var module = angular.module("kylo", ['ui.router', 'oc.lazyLoad', 'ngMaterial','material.components.expansionPanels','md.data.table','ngMdIcons','angularUtils.directives.dirPagination','kylo.common','kylo.services','kylo.side-nav','ngFx','ngAnimate']);
+     var module = angular.module("kylo", ['ui.router', 'oc.lazyLoad', 'ngMaterial','material.components.expansionPanels','md.data.table','ngMdIcons','angularUtils.directives.dirPagination','kylo.common','kylo.services','kylo.side-nav','ngFx','ngAnimate','ngSanitize']);
 
     module.config(['$mdThemingProvider','$mdIconProvider',function($mdThemingProvider, $mdIconProvider){
         var primaryBlue = $mdThemingProvider.extendPalette('blue', {

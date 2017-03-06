@@ -7,6 +7,7 @@ require.config({
         "angular-material-expansion-panel":"../bower_components/angular-material-expansion-panel/dist/md-expansion-panel",
         "angular-material-icons":"vendor/angular-material-icons/angular-material-icons",
         "angular-nvd3":"../bower_components/angular-nvd3/dist/angular-nvd3",
+        "angular-sanitize":"../bower_components/angular-sanitize/angular-sanitize",
         "angular-ui-codemirror":"../bower_components/angular-ui-codemirror/ui-codemirror",
         "angular-ui-grid":"../bower_components/angular-ui-grid/ui-grid",
         "angular-ui-router":"../bower_components/angular-ui-router/release/angular-ui-router",
@@ -67,6 +68,7 @@ require.config({
         'angular-material-icons':['angular'],
         'angular-material-data-table':['angular'],
         "angular-nvd3":['angular','nvd3'],
+        "angular-sanitize":["angular"],
         'angular-ui-grid':['angular','angularAnimate'],
         'angular-ui-codemirror':['angular','codemirror'],
         'angular-visjs':['angular','vis'],
@@ -101,7 +103,7 @@ require.config({
         'nvd3':{deps:['d3'],exports:'nv'},
         'pivottable':{deps:['c3','jquery']},
         'vis;':{exports:"vis"},
-        'app':{deps:['ocLazyLoad','underscore','angularMaterial','jquery'], exports:'app'},
+        'app':{deps:['ocLazyLoad','underscore','angularMaterial','jquery','angular-sanitize'], exports:'app'},
         'routes':{deps:['app'], exports:'routes'}
     },
     deps: ['routes']
