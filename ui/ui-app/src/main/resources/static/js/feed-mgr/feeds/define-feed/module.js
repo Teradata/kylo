@@ -32,6 +32,30 @@ define(['angular','feed-mgr/feeds/define-feed/module-name','kylo-utils/LazyLoadU
             }
         });
 
+        $stateProvider.state('define-feed-complete', {
+            url: '/define-feed-complete',
+            params: {
+                templateId: null
+            },
+            views: {
+                'content': {
+                    templateUrl: 'js/feed-mgr/feeds/define-feed/feed-details/define-feed-complete.html',
+                    controller: 'DefineFeedCompleteController',
+                    controllerAs: 'vm'
+                }
+            },
+            resolve: {
+                loadMyCtrl: lazyLoadController(['feed-mgr/feeds/define-feed/feed-details/DefineFeedCompleteController'])
+            },
+            data: {
+                breadcrumbRoot: false,
+                displayName: 'Define Feed',
+                module:moduleName
+            }
+        });
+
+
+
         $stateProvider.state('import-feed', {
             url: '/import-feed',
             params: {},
