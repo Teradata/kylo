@@ -51,8 +51,8 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
             var file = self.templateFile;
             var uploadUrl = RestUrlService.ADMIN_IMPORT_TEMPLATE_URL;
             var successFn = function (response) {
-
-                if(response.verificationToReplaceConnectingResuableTemplateNeeded){
+                var responseData = response.data;
+                if(responseData.verificationToReplaceConnectingResuableTemplateNeeded){
                     showVerifyReplaceReusableTemplateDialog();
                     return;
                 }
@@ -60,11 +60,11 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
 
                 var count = 0;
                 var errorMap = {"FATAL": [], "WARN": []};
-                self.importResult = response;
-                //if(response.templateResults.errors) {
-                if (response.controllerServiceErrors) {
-                    //angular.forEach(response.templateResults.errors, function (processor) {
-                    angular.forEach(response.controllerServiceErrors, function (processor) {
+                self.importResult = responseData;
+                //if(responseData.templateResults.errors) {
+                if (responseData.controllerServiceErrors) {
+                    //angular.forEach(responseData.templateResults.errors, function (processor) {
+                    angular.forEach(responseData.controllerServiceErrors, function (processor) {
                         if (processor.validationErrors) {
                             angular.forEach(processor.validationErrors, function (error) {
                                 var copy = {};
@@ -84,11 +84,11 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
                 if (count == 0) {
                     self.importResultIcon = "check_circle";
                     self.importResultIconColor = "#009933";
-                    if (response.zipFile == true) {
-                        self.message = "Successfully imported and registered the template " + response.templateName;
+                    if (responseData.zipFile == true) {
+                        self.message = "Successfully imported and registered the template " + responseData.templateName;
                     }
                     else {
-                        self.message = "Successfully imported the template " + response.templateName + " into Nifi"
+                        self.message = "Successfully imported the template " + responseData.templateName + " into Nifi"
                     }
                     self.createReusableFlow = false;
                     self.overwrite = false;
@@ -96,8 +96,8 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
                     self.createConnectingReusableTemplate = false;
                 }
                 else {
-                    if (response.success) {
-                        self.message = "Successfully imported " + (response.zipFile == true ? "and registered " : "") + " the template " + response.templateName + " but some errors were found. Please review these errors";
+                    if (responseData.success) {
+                        self.message = "Successfully imported " + (responseData.zipFile == true ? "and registered " : "") + " the template " + responseData.templateName + " but some errors were found. Please review these errors";
                         self.importResultIcon = "warning";
                         self.importResultIconColor = "#FF9901";
                         self.createReusableFlow = false;
@@ -108,7 +108,7 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
                     else {
                         self.importResultIcon = "error";
                         self.importResultIconColor = "#FF0000";
-                        self.message = "Unable to import " + (response.zipFile == true ? "and register " : "") + " the template " + response.templateName + ".  Errors were found.  You may need to fix the template or go to Nifi to fix the Controller Services and then try to import again.";
+                        self.message = "Unable to import " + (responseData.zipFile == true ? "and register " : "") + " the template " + responseData.templateName + ".  Errors were found.  You may need to fix the template or go to Nifi to fix the Controller Services and then try to import again.";
                         self.verifiedToCreateConnectingReusableTemplate = false;
                         self.createConnectingReusableTemplate = false;
                     }

@@ -639,9 +639,10 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             }
             var uploadUrl = RestUrlService.UPLOAD_SAMPLE_TABLE_FILE;
             var successFn = function (response) {
+                var responseData = response.data;
                 resetColumns();
                 self.availableDefinitionDataTypes = self.columnDefinitionDataTypes.slice();
-                angular.forEach(response.fields, function (field) {
+                angular.forEach(responseData.fields, function (field) {
                     var col = newColumnDefinition();
                     col = angular.extend(col, field)
                     // add exotic data type to available columns if needed
@@ -652,8 +653,8 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                 });
                 FeedService.syncTableFieldPolicyNames();
                 //set the feedFormat property
-                self.model.table.feedFormat = response.hiveFormat;
-                self.model.table.structured = response.structured;
+                self.model.table.feedFormat = responseData.hiveFormat;
+                self.model.table.structured = responseData.structured;
                 if (self.schemaParser.allowSkipHeader) {
                     self.model.allowSkipHeaderOption = true;
                     self.model.skipHeader = true;
