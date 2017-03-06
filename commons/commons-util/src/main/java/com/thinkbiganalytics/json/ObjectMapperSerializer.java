@@ -21,6 +21,7 @@ package com.thinkbiganalytics.json;
  */
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -28,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+
 
 /**
  * Jackson2 JSON parser
@@ -76,7 +78,7 @@ public class ObjectMapperSerializer {
     /**
      * deserialize an string as JSON converting it to an object of the supplied class type
      *
-     * @param json  the JSON sgtring representing the object
+     * @param json  the JSON string representing the object
      * @param clazz the class describing the type of object to return
      * @param <T>   the type of object that should be returned
      * @return the deserialized object converted from JSON
@@ -87,5 +89,24 @@ public class ObjectMapperSerializer {
         } catch (IOException e) {
             throw new RuntimeException("error de-serializing object", e);
         }
+    }
+
+    /**
+     * Deserialize JSON with a specific type.
+     * Example
+     *  List<MyPojo> list = ObjectMapperSerializer.deserialize(json,//new TypeReference<List<MyPojo>>(){});
+     *
+     * @param json  the JSON string representing the object
+     * @param typeReference the type of class to return
+     * @param <T> the object type to return
+     * @return the deserialized object converted from JSON
+     */
+    public static <T> T deserialize(String json, TypeReference<T> typeReference){
+        try {
+            return getMapper().readValue(json, typeReference);
+        } catch (IOException e) {
+            throw new RuntimeException("error de-serializing object", e);
+        }
+
     }
 }
