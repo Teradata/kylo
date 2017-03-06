@@ -218,7 +218,7 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
         nifiFlowCache.updateRegisteredTemplate(template);
         //notify audit of the change
 
-        FeedManagerTemplate.State state = FeedManagerTemplate.State.valueOf(registeredTemplate.getState());
+        FeedManagerTemplate.State state = FeedManagerTemplate.State.valueOf(template.getState());
         FeedManagerTemplate.ID id = templateProvider.resolveId(registeredTemplate.getId());
         MetadataChange.ChangeType changeType = isNew ? MetadataChange.ChangeType.CREATE : MetadataChange.ChangeType.UPDATE;
         notifyTemplateStateChange(registeredTemplate,id,state,changeType);
