@@ -270,7 +270,7 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
 
             $mdDialog.show({
                 controller: 'IconPickerDialog',
-                templateUrl: 'js/shared/icon-picker-dialog/icon-picker-dialog.html',
+                templateUrl: 'js/common/icon-picker-dialog/icon-picker-dialog.html',
                 parent: angular.element(document.body),
                 clickOutsideToClose: false,
                 fullscreen: true,
