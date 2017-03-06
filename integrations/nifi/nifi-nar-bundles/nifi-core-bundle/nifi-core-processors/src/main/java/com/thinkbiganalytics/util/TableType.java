@@ -92,7 +92,7 @@ public enum TableType {
         // Hack for now. Need a better way to identify if this is text file (no schema enforced or schema enforced)
         if (allStrings && feedFormatOptions != null) {
             String urawFormatOptions = feedFormatOptions.toUpperCase();
-            if (urawFormatOptions.contains(" PARQUET") || urawFormatOptions.contains(" ORC") || urawFormatOptions.contains(" AVRO")) {
+            if (urawFormatOptions.contains(" PARQUET") || urawFormatOptions.contains(" ORC") || urawFormatOptions.contains(" AVRO") || urawFormatOptions.contains("JSON")) {
                 // Structured file so we will use native
                 allStrings = false;
             }

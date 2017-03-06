@@ -520,6 +520,8 @@ public class ExportImportTemplateService {
         private boolean verificationToReplaceConnectingResuableTemplateNeeded;
 
 
+        public ImportTemplate() {}
+
         public ImportTemplate(String fileName) {
             this.fileName = fileName;
         }

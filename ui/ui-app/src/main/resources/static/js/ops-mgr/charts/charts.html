@@ -1,0 +1,89 @@
+<!--
+  #%L
+  thinkbig-ui-operations-manager
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+      http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<div flex layout="row">
+    <card-layout flex>
+        <header-section style="white-space:nowrap" transclude-to="head" class="card-title">Pivot Charts</header-section>
+
+            <body-section layout-fill transclude-to="body" >
+                <div ng-if="vm.loading" style="width:100%">
+                    <md-progress-linear md-mode="indeterminate"></md-progress-linear>
+                    <br/>
+                </div>
+                <div id="charts_tab_pivot_chart" style="width:100%" class="layout-padding-left-right">
+
+                </div>
+        </body-section>
+    </card-layout>
+
+    <card-layout flex="20" class="filter-chart">
+        <header-section style="white-space:nowrap" transclude-to="head" class="card-title">Filter Chart</header-section>
+        <body-section transclude-to="body" flex layout="column">
+            <div ng-if="vm.message != ''" ng-class="{'error':vm.isWarning}" style="padding-left:25px;">
+                {{vm.message}}
+            </div>
+            <form role="form">
+            <md-list flex  class="layout-padding-top-bottom" layout="column" class="list-item-table">
+                <md-list-item >
+                    <div layout-align="space-between start" layout="column" class="item-column md-list-item-text ">
+                    <md-input-container>
+                        <label>Feed</label>
+                        <md-select multiple ng-model="vm.selectedFeedNames" >
+                            <md-option ng-repeat="feedName in vm.feedNames" value="{{feedName}}">
+                                {{feedName}}
+                            </md-option>
+                        </md-select>
+                    </md-input-container>
+                        </div>
+                </md-list-item>
+                <md-divider></md-divider>
+                <md-list-item>
+                    <div layout-align="space-between start" layout="column" class="item-column md-list-item-text ">
+                  <md-datepicker ng-model="vm.startDate" md-placeholder="Start date"></md-datepicker>
+                        </div>
+                </md-list-item>
+                <md-list-item>
+                    <div layout-align="space-between start" layout="column" class="item-column md-list-item-text ">
+                        <md-datepicker ng-model="vm.endDate" md-placeholder="End date"></md-datepicker>
+                        </div>
+                </md-list-item>
+                <md-divider></md-divider>
+                <md-list-item >
+                    <div layout-align="space-between start" layout="column" class="item-column md-list-item-text ">
+                    <md-input-container>
+                        <label>Limit</label>
+                        <md-select ng-model="vm.limitRows" >
+                            <md-option ng-repeat="limit in vm.limitOptions" value="{{limit}}">
+                                {{limit}}
+                            </md-option>
+                        </md-select>
+                    </md-input-container>
+                        </div>
+                </md-list-item>
+                <md-divider></md-divider>
+                <md-list-item layout-align="space-between start" layout="column">
+                    <div layout-align="space-between start" layout="column" class="item-column md-list-item-text ">
+                    <md-button class="border-btn" ng-click="vm.refreshPivotTable()">Update</md-button>
+                        </div>
+                    </md-list-item>
+            </md-list>
+            </form>
+        </body-section>
+    </card-layout>
+</div>

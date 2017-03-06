@@ -1,0 +1,31 @@
+<!--
+  #%L
+  thinkbig-ui-feed-manager
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+      http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<md-dialog aria-label="Delete Template" ng-cloak>
+  <md-dialog-content class="md-dialog-content">
+    <h2 class="md-title">Delete {{vm.model.templateName}}?</h2>
+
+    <div>This template will be permanently deleted.</div>
+  </md-dialog-content>
+  <md-dialog-actions>
+    <md-progress-circular md-diameter="36px" ng-if="vm.model.state == 'DELETED'"></md-progress-circular>
+    <md-button class="md-warn" ng-click="vm.deleteTemplate()" aria-label="Delete" ng-if="vm.model.state == 'DISABLED'">Delete</md-button>
+    <md-button class="md-primary" aria-label="Cancel" ng-click="dialog.hide()" ng-disabled="vm.model.state == 'DELETED'">Cancel</md-button>
+  </md-dialog-actions>
+</md-dialog>

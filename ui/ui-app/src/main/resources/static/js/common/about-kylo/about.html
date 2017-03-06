@@ -1,0 +1,52 @@
+<!--
+  #%L
+  thinkbig-ui-common
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+      http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<!--
+  About Kylo popup page
+-->
+<md-dialog aria-label="About Kylo" flex="35">
+  <md-dialog-content>
+    <p style="text-align:center;"><img src="/assets/images/kylo-logo-orange.png" style="width:300px;"/></p>
+    <p style="text-align:center;"><b>Version:</b> {{version}}</p>
+    <table cellpadding="10">
+      <tr>
+        <td>
+            <p style="text-align:justify; padding:10px">The Kylo framework simplifies building, configuring, deploying and monitoring data pipelines.
+              It enables data profiling, data discovery and data science. Businesses can quickly start leveraging value from their enterprise data lakes.
+              <br><br>
+              For enterprise support options, please visit <a href="https://www.thinkbiganalytics.com/kylo/" target="_blank">Think Big</a>.
+              <br><br>
+              <textarea class="scrollabletextbox" name="apache-licence" readonly="true" rows="7" cols="55" style="text-align:justify; color: black; background-color: #F6DDCC; padding:10px;">
+Copyright 2017 Teradata Corporation
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+          </textarea>
+            </p>
+        </td>
+      </tr>
+    </table>
+  </md-dialog-content>
+  <md-dialog-actions>
+    <md-button ng-click="cancel();" class="md-primary">Close</md-button>
+  </md-dialog-actions>
+</md-dialog>

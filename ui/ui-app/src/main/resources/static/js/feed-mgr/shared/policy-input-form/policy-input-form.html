@@ -1,0 +1,132 @@
+<!--
+  #%L
+  thinkbig-ui-feed-manager
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+      http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<div ng-repeat="group in vm.rule.groups" class="layout-padding-left-right" layout="{{group.layout}}">
+
+  <div ng-repeat="property in group.properties" ng-if="property.hidden == false">
+    <md-input-container class="md-block condensed-medium  "
+                        ng-if="property.type == 'number' || property.type =='string' || property.type == 'regex' || property.type == 'select' || property.type == 'feedSelect' || property.type == 'email' || property.type == 'currentFeed' ">
+      <label>{{property.displayName}}</label>
+      <input name="{{property.formKey}}" string-to-number type="number" ng-if="property.type == 'number'" ng-model="property.value" md-placeholder="property.placeholder"
+             ng-pattern="property.patternRegExp"
+             ng-required="property.required" ng-disabled="!vm.rule.editable"/>
+      <input name="{{property.formKey}}" ng-if="property.type == 'email'" ng-model="property.value" md-placeholder="property.placeholder" ng-pattern="property.patternRegExp"
+             ng-required="property.required" ng-disabled="!vm.rule.editable" type="email"/>
+      <input name="{{property.formKey}}" ng-if="property.type == 'string' || property.type =='regex'" ng-model="property.value" md-placeholder="property.placeholder"
+             ng-pattern="property.patternRegExp"
+             ng-required="property.required" ng-disabled="!vm.rule.editable" type="text"/>
+      <md-select ng-model="property.value" ng-if="(property.type == 'select' || property.type == 'feedSelect' || property.type == 'currentFeed' )" ng-required="property.required"
+                 name="{{property.formKey}}"
+                 ng-disabled="!vm.rule.editable || (property.type == 'currentFeed' && (vm.feed != null || (vm.rule.mode != undefined && vm.rule.mode == 'EDIT')))">
+        <md-option ng-repeat="value in property.selectableValues" value="{{value.value}}">
+          {{value.label}}
+        </md-option>
+      </md-select>
+
+      <div ng-if="property.hint" class="hint">
+        {{property.hint}}
+      </div>
+      <div ng-messages="vm.theForm[property.formKey].$error " md-auto-hide="false">
+        <div ng-message="required">This field is required.</div>
+        <div ng-message="pattern">{{property.patternInvalidMessage}}</div>
+      </div>
+    </md-input-container>
+
+    <md-input-container class="md-block condensed-medium  " ng-if="property.type == 'cron'">
+      <label>{{property.displayName}}</label>
+      <input required ng-model="property.value" name="{{property.formKey}}"
+             cron-expression-validator
+             ng-model-options="{ updateOn: 'default blur', debounce: {'default': 300, 'blur': 0} }"/>
+
+      <div ng-if="property.hint" class="hint">
+        {{property.hint}}
+      </div>
+      <div ng-messages="vm.theForm[property.formKey].$error ">
+        <div ng-message="required">This field is required.</div>
+      </div>
+
+      <div ng-show="vm.theForm[property.formKey].$touched && vm.theForm[property.formKey].$invalid"
+           ng-messages="vm.theForm[property.formKey].$error">
+        <div ng-show="vm.theForm[property.formKey].$error.cronExpression"
+             ng-message="cronExpression">Invalid Cron Expression.
+        </div>
+      </div>
+      <cron-expression-preview cron-expression="property.value"
+                               ng-if="vm.theForm[property.formKey].$valid"></cron-expression-preview>
+    </md-input-container>
+
+    <div ng-if="property.type == 'date' ">
+      <md-datepicker name="{{property.formKey}}" ng-required="property.required" ng-if="property.type == 'date' " ng-model="property.value" md-placeholder="property.placeholder"
+                     ng-disabled="!vm.rule.editable">
+      </md-datepicker>
+      <div ng-if="property.hint && property.type == 'date' " class="hint">
+        {{property.hint}}
+      </div>
+      <div ng-messages="vm.theForm[property.formKey].$error " ng-if="property.type == 'date' " md-auto-hide="false">
+        <div ng-message="required">This field is required.</div>
+      </div>
+    </div>
+    <div ng-if="property.type == 'regex'">
+      <span>Test your Regex Pattern</span>
+      <md-input-container class="md-block condensed-medium ">
+        <label>Sample String</label>
+        <input name="{{property.formKey}}" ng-model="property.regexSampleString" md-placeholder="Sample String" ng-required="property.required" ng-disabled="!vm.rule.editable"/>
+
+        <div ng-messages="vm.theForm[property.formKey].$error ">
+          <div ng-message="required">This field is required.</div>
+        </div>
+      </md-input-container>
+      <div>
+        {{property.regexValid}}
+      </div>
+    </div>
+    <div ng-if="property.type == 'chips' || property.type == 'feedChips'">
+      <md-input-container class="md-block flex-gt-sm condensed-medium " flex-gt-sm="" style="" md-is-error="property.invalid == true">
+        <label class="label-small md-container-ignore">{{property.displayName}}</label>
+        <md-chips name="{{property.formKey}}" ng-model="property.values" md-autocomplete-snap md-on-add="vm.validateRequiredChips(property)"
+                  md-on-remove="vm.validateRequiredChips(property) "
+                  md-transform-chip="vm.transformChip($chip)"
+                  md-require-match="true">
+          <md-autocomplete
+              md-selected-item="vm.editChips.selectedItem"
+              md-search-text="vm.editChips.searchText"
+              md-items="item in vm.queryChipSearch(property,vm.editChips.searchText)"
+              md-item-text="item.label"
+              md-min-length="0"
+              placeholder="{{property.placeholder}}"
+              ng-disabled="!vm.rule.editable">
+            <span md-highlight-text="editChips.searchText">{{item.label}}</span>
+          </md-autocomplete>
+          <md-chip-template>
+                                        <span>
+                                          <strong>{{$chip.label}}</strong>
+                                        </span>
+          </md-chip-template>
+        </md-chips>
+        <div ng-if="property.hint" class="hint">
+          {{property.hint}}
+        </div>
+        <div ng-messages="vm.theForm[property.formKey].$error " ng-if="property.invalid == true" md-auto-hide="false">
+          <div ng-message="required">This field is required.</div>
+        </div>
+      </md-input-container>
+    </div>
+
+  </div>
+</div>

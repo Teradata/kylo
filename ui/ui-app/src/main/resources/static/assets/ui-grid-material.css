@@ -1,0 +1,21 @@
+.ui-grid-cell-contents{
+    display: flex;
+    align-items: center;
+    font-family: 'Roboto', sans-serif;
+    line-height: 1.5;
+    font-family: "Roboto", sans-serif;
+    color: rgba(0, 0, 0, 0.87);
+}
+.ui-grid-row-selected > [ui-grid-row] > .ui-grid-cell {
+    background-color: #f2f2f2 !important;
+}
+.ui-grid-viewport{
+    overflow: auto!important;
+}
+.ui-grid-icon-angle-down{
+    display:none;
+}
+
+.ui-grid-header-cell {
+    outline:none;
+}

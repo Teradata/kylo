@@ -44,7 +44,7 @@ import java.util.TimeZone;
 public class DateTimeStandardizer implements StandardizationPolicy {
 
     private static final Logger log = LoggerFactory.getLogger(DateTimeStandardizer.class);
-    @PolicyProperty(name = "Date Format", hint = "Format Example: MM/dd/YYYY", required = true)
+    @PolicyProperty(name = "Date Format", hint = "Format Example: MM/dd/YYYY.  If converting from Unix timestamp leave empty.")
     private String inputDateFormat;
     @PolicyProperty(name = "Output Format", hint = "Choose an output format", type = PolicyPropertyTypes.PROPERTY_TYPE.select,
                     selectableValues = {"DATE_ONLY", "DATETIME", "DATETIME_NOMILLIS"}, required = true)
@@ -214,7 +214,7 @@ public class DateTimeStandardizer implements StandardizationPolicy {
                     break;
             }
             this.outputFormatter = formatterForTimezone(this.outputFormatter, outputTimezone);
-            if (inputDateFormat != null) {
+            if (StringUtils.isNotBlank(inputDateFormat)) {
                 this.inputFormatter = DateTimeFormat.forPattern(this.inputDateFormat);
                 this.inputFormatter = formatterForTimezone(this.inputFormatter, inputTimezone);
             }

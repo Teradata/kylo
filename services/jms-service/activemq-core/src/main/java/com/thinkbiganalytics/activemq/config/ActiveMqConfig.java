@@ -31,12 +31,14 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.PropertySources;
 import org.springframework.core.env.Environment;
 import org.springframework.jms.annotation.EnableJms;
 import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
 import org.springframework.jms.config.JmsListenerContainerFactory;
+import org.springframework.jms.connection.UserCredentialsConnectionFactoryAdapter;
 import org.springframework.jms.core.JmsMessagingTemplate;
 import org.springframework.jms.support.converter.SimpleMessageConverter;
 
@@ -82,6 +84,21 @@ public class ActiveMqConfig {
         factory.setMessageConverter(new SimpleMessageConverter());
         return factory;
     }
+
+    /*
+    @Bean
+    @Profile("activemq-credentials")
+    public UserCredentialsConnectionFactoryAdapter jmsUserCredentialsConnectionFactoryAdapter(ConnectionFactory connectionFactory){
+        UserCredentialsConnectionFactoryAdapter userCredentialsConnectionFactoryAdapter = new UserCredentialsConnectionFactoryAdapter();
+        userCredentialsConnectionFactoryAdapter.setTargetConnectionFactory(connectionFactory);
+        String username = env.getProperty("jms.activemq.broker.username");
+        String password = env.getProperty("jms.activemq.broker.password");
+        userCredentialsConnectionFactoryAdapter.setUsername(username);
+        userCredentialsConnectionFactoryAdapter.setUsername(password);
+        return userCredentialsConnectionFactoryAdapter;
+    }
+    */
+
 
     @Bean
     public ObjectMapperSerializer objectMapperSerializer() {

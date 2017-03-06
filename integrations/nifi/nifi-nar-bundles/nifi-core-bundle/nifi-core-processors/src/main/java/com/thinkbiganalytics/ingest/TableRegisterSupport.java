@@ -2,7 +2,7 @@ package com.thinkbiganalytics.ingest;
 
 /*-
  * #%L
- * thinkbig-nifi-core-processors
+ * kylo-nifi-core-processors
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%

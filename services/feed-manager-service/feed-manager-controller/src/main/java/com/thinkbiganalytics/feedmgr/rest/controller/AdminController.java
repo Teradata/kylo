@@ -58,9 +58,13 @@ import io.swagger.annotations.Tag;
  * REST API for administrative functions.
  */
 @Api(tags = "Feed Manager - Administration", produces = "application/json")
-@Path("/v1/feedmgr/admin")
+@Path(AdminController.BASE)
 @SwaggerDefinition(tags = @Tag(name = "Feed Manager - Administration", description = "administrator operations"))
 public class AdminController {
+
+    static final String BASE = "/v1/feedmgr/admin";
+    static final String IMPORT_TEMPLATE = "/import-template";
+    static final String IMPORT_FEED = "/import-feed";
 
     @Inject
     ExportImportTemplateService exportImportTemplateService;
@@ -113,7 +117,7 @@ public class AdminController {
     }
 
     @POST
-    @Path("/import-feed")
+    @Path(IMPORT_FEED)
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Imports a feed zip file.")
@@ -137,7 +141,7 @@ public class AdminController {
     }
 
     @POST
-    @Path("/import-template")
+    @Path(IMPORT_TEMPLATE)
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Imports a template xml or zip file.")

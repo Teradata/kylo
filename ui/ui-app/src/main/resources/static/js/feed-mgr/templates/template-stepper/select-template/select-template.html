@@ -1,0 +1,102 @@
+<!--
+  #%L
+  thinkbig-ui-feed-manager
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+      http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<div layout="row" layout-align="center start">
+
+    <card-layout style="max-width:980px;width:980px;" flex="initial">
+
+        <header-section>
+        <div layout="row" layout-align="space-between-center" flex>
+            <div class="card-title" flex>Select Template</div><h2 class="md-subheader">1 of 4</h2>
+        </div>
+    </header-section >
+
+    <body-section class="md-padding">
+        <md-input-container>
+            <label>Template</label>
+            <md-select ng-model="vm.nifiTemplateId" ng-disabled="vm.templateSelectionDisabled" ng-change="vm.changeTemplate()">
+                <md-option test="test" ng-repeat="template in vm.templates | orderBy:'name'" value="{{template.id}}">
+                    {{template.name}}
+                </md-option>
+            </md-select>
+        </md-input-container>
+        <div class="error md-caption layout-padding" ng-if="vm.errorMessage != null && !vm.isValid">{{vm.errorMessage}}</div>
+        <br/><br/><br/>
+        <thinkbig-step-buttons can-continue="vm.isValid && !vm.model.loading" step-index="{{::vm.stepIndex}}"></thinkbig-step-buttons>
+    </body-section>
+
+</card-layout>
+
+    <card-layout offsetleftfromprevious top="8" card-css="layout-fill" body-css="md-padding"
+                 style="max-width:250px;width:250px;min-width:250px;" flex="initial">
+        <header-section>
+            <div class="card-title">Template</div>
+            <div layout="column" class="layout-padding-top-bottom">
+            <span class="item-title" ng-if="!vm.model.loading">
+                 <ng-md-icon icon="{{vm.model.icon.title}}" size="20" hide-xs style="fill:{{vm.model.icon.color}}" ng-if="vm.model.icon && vm.model.state != 'NOT REGISTERED'">
+                 </ng-md-icon>
+                {{vm.model.templateName}}</span>
+            </div>
+        </header-section>
+
+        <body-section>
+            <div layout="column" class="layout-padding-top" ng-if="vm.model.loading">
+                Loading Template ...
+            </div>
+            <div layout="column" class="layout-padding-top" ng-if="!vm.model.loading">
+                <md-button ng-if="vm.model.state == 'ENABLED' && vm.allowAdmin" ng-disabled="vm.disabling" ng-click="vm.disableTemplate()" class="border-btn">
+                    DISABLE TEMPLATE
+                </md-button>
+                <md-button ng-if="vm.model.state == 'DISABLED' && vm.allowAdmin" ng-disabled="vm.enabling" ng-click="vm.enableTemplate()" class="border-btn">
+                    ENABLE TEMPLATE
+                </md-button>
+                <md-button ng-if="vm.model.state == 'DISABLED' && vm.allowAdmin && vm.model.feedsCount ==0" ng-click="vm.confirmDeleteTemplate()" class="border-btn-warn">
+                    DELETE TEMPLATE
+                </md-button>
+                <md-progress-linear md-mode="indeterminate" ng-if="vm.enabling || vm.disabling"></md-progress-linear>
+                <div layout="column" class="layout-padding-top-bottom" >
+                <span ng-class="{'enabled':vm.model.state == 'ENABLED','disabled':vm.model.state != 'ENABLED'}">
+                    <ng-md-icon icon="{{vm.model.stateIcon}}" size="20" ng-if="vm.model.state != 'NOT REGISTERED'"></ng-md-icon> {{vm.model.state}}</span>
+                    <span class="hint">State</span>
+                </div>
+
+                <div layout="column" class="layout-padding-top-bottom">
+                    <span>{{vm.model.updateDate | date: 'MM/dd/yyyy h:mm:ssa'}}</span>
+                                             <span class="hint">
+                                             Last Updated
+                                           </span>
+                </div>
+                <div layout="column" class="layout-padding-top-bottom">
+                    <span>  {{vm.model.feedsCount}}</span>
+                    <span class="hint">Feeds</span>
+                </div>
+
+                <div flex="20" layout="column" class="item-column md-list-item-text" ng-if="vm.allowExport && vm.model.id != null">
+                    <md-button href="{{vm.model.exportUrl}}">
+                        <ng-md-icon icon="file_download" size="20" style="fill:#F08C38"></ng-md-icon>
+                        <span style="padding-left:10px;">Export</span>
+                    </md-button>
+                </div>
+            </div>
+
+        </body-section>
+
+    </card-layout>
+
+</div>
