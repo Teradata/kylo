@@ -7,7 +7,6 @@ define([
     'angularMaterial',
     'angularAnimate',
     'angularAria',
-    'angular-fx',
     'angularMessages',
     'angular-ui-router',
     'angular-material-expansion-panel',

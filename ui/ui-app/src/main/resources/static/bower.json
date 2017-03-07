@@ -15,7 +15,7 @@
     "bower_components"
   ],
   "dependencies": {
-    "angular":"~1.6.2",3
+    "angular":"~1.6.2",
     "angular-cookies":"~1.4.1",
     "angular-sanitize":"latest",
     "angular-drag-and-drop-lists":"~2.1.0",
@@ -38,6 +38,7 @@
     "ment.io":"~0.9.24",
     "moment":"~2.17.1",
     "ngFx":"~1.1.0",
+    "nvd3":"1.8.1",
     "oclazyload":"~1.1.0",
     "pivottable":"~2.7.0",
     "requirejs":"~2.1.18",
@@ -52,3 +53,4 @@
   "license": "Apache 2",
   "private": true
 }
+

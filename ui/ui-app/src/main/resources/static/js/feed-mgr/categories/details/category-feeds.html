@@ -33,8 +33,8 @@
                     </div>
                 </div>
             </md-list-item>
-            <md-list-item ng-repeat="feed in vm.model.relatedFeedSummaries" ng-click="vm.onFeedClick(feed)">
-                <div layout="row" layout-fill>
+            <md-list-item ng-repeat="feed in vm.model.relatedFeedSummaries" >
+                <div layout="row" class="hover" layout-fill ng-click="vm.onFeedClick(feed)">
                     <div flex="50" class="md-list-item-text">
                         <md-input-container class="md-block" flex-gt-sm>
                             <div>{{feed.feedName}}</div>

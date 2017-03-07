@@ -45,6 +45,15 @@ md-content.md-kylo-theme{
   background-color: #ffffff !important;
 }
 
+.hover:hover {
+  background-color: rgba(158, 158, 158, 0.2);
+  -webkit-transition: opacity ease-in-out .5s;
+  -moz-transition: opacity ease-in-out .5s;
+  -ms-transition: opacity ease-in-out .5s;
+  -o-transition: opacity ease-in-out .5s;
+  transition: opacity ease-in-out .5s;
+}
+
 .bottom-align {
   box-sizing: border-box;
   border-top: 1px solid #ccc;
@@ -553,10 +562,12 @@ card-layout .card-toolbar.filter-header {
   padding-right: 0px !important;
 }
 
-.define-feed card-layout section, card-layout section {
+
+.define-feed card-layout section {
   margin-left: 16px;
   margin-right: 16px;
 }
+
 
 card-layout md-list md-list-item md-divider {
   border-top-width: 1px !important;
