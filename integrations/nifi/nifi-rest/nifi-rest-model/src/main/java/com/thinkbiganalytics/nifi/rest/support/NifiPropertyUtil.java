@@ -236,6 +236,19 @@ public class NifiPropertyUtil {
     }
 
     /**
+     * Groups the properties by their {@see NifiProperty#getIdKey}
+     * @param properties the properties to inspect
+     * @return a map with the property idKey (the processgroup+processorId+propertyKey, property)
+     */
+    public static Map<String,NifiProperty> groupPropertiesByIdKey(List<NifiProperty> properties) {
+        Map<String, NifiProperty> map = new HashMap();
+        if(properties != null){
+            map = properties.stream().collect(Collectors.toMap(p -> p.getIdKey(), p-> p));
+        }
+        return map;
+    }
+
+    /**
      * Return all properties for a given processor
      *
      * @param properties  the properties to inspect
@@ -458,6 +471,10 @@ public class NifiPropertyUtil {
         propertyToUpdate.setUserEditable(nifiProperty.isUserEditable());
         propertyToUpdate.setSelected(nifiProperty.isSelected());
         propertyToUpdate.setRenderType(nifiProperty.getRenderType());
+        propertyToUpdate.setSensitive(nifiProperty.isSensitive());
+        if(nifiProperty.getPropertyDescriptor() != null) {
+            propertyToUpdate.setPropertyDescriptor(nifiProperty.getPropertyDescriptor());
+        }
         if (nifiProperty.getRenderOptions() != null) {
             propertyToUpdate.setRenderOptions(nifiProperty.getRenderOptions());
         }

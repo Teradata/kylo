@@ -455,4 +455,14 @@ public class FeedMetadata implements UIFeed {
     public static enum STATE {
         NEW, ENABLED, DISABLED
     }
+
+    @JsonIgnore
+    public List<NifiProperty> getSensitiveProperties(){
+        return getProperties().stream().filter(NifiProperty::isSensitive).collect(Collectors.toList());
+    }
+
+    @JsonIgnore
+    public List<NifiProperty> getEnvironmentConfigurationProperties(){
+        return getProperties().stream().filter(NifiProperty::isContainsConfigurationVariables).collect(Collectors.toList());
+    }
 }

@@ -359,6 +359,29 @@ public class JerseyRestClient {
         return obj;
     }
 
+    /**
+     * Perform a GET request.  if it returns an exception the message will not be logged.
+     *
+     * @param path   the path to access
+     * @param params key, value parameters to add to the request
+     * @param clazz  the class type to return as the response from the GET request
+     * @param <T>    the returned class type
+     * @return the returned object of the specified Class
+     */
+    public <T> T getWithoutErrorLogging(String path, Map<String, Object> params, Class<T> clazz) {
+        WebTarget target = buildTarget(path, params);
+        T obj = null;
+
+        try {
+            obj = target.request(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE, MediaType.APPLICATION_XML_TYPE).get(clazz);
+        } catch (Exception e) {
+            if (e instanceof NotAcceptableException) {
+                obj = handleNotAcceptableGetRequestJsonException(target, clazz);
+            }
+        }
+        return obj;
+    }
+
 
     /**
      * Sometimes QueryParams dont fit the model of key,value pairs.

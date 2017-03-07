@@ -23,6 +23,8 @@ package com.thinkbiganalytics.feedmgr.service.template;
 import com.google.common.collect.Sets;
 import com.thinkbiganalytics.feedmgr.nifi.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
+import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplateRequest;
+import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
 import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.event.MetadataChange;
@@ -31,10 +33,26 @@ import com.thinkbiganalytics.metadata.api.event.template.TemplateChange;
 import com.thinkbiganalytics.metadata.api.event.template.TemplateChangeEvent;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
+import com.thinkbiganalytics.nifi.feedmgr.TemplateCreationHelper;
+import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
+import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
+import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
+import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptorTransform;
+import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
+import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
+import com.thinkbiganalytics.nifi.rest.support.NifiConnectionUtil;
+import com.thinkbiganalytics.nifi.rest.support.NifiFeedConstants;
+import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
+import com.thinkbiganalytics.nifi.rest.support.NifiTemplateUtil;
 import com.thinkbiganalytics.security.AccessController;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.web.api.dto.ConnectableDTO;
+import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.apache.nifi.web.api.dto.PortDTO;
+import org.apache.nifi.web.api.dto.ProcessGroupDTO;
+import org.apache.nifi.web.api.dto.ProcessorDTO;
+import org.apache.nifi.web.api.dto.TemplateDTO;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,9 +62,12 @@ import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -54,7 +75,7 @@ import javax.inject.Inject;
 
 /**
  */
-public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTemplateService implements FeedManagerTemplateService {
+public class DefaultFeedManagerTemplateService  implements FeedManagerTemplateService {
 
     private static final Logger log = LoggerFactory.getLogger(DefaultFeedManagerTemplateService.class);
 
@@ -77,8 +98,19 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
     @Inject
     private AccessController accessController;
 
-    @Override
-    //@Transactional(transactionManager = "metadataTransactionManager")
+    @Inject
+    private NiFiPropertyDescriptorTransform propertyDescriptorTransform;
+
+    @Inject
+    private LegacyNifiRestClient nifiRestClient;
+
+
+    @Inject
+    private RegisteredTemplateService registeredTemplateService;
+
+    @Inject
+    RegisteredTemplateUtil registeredTemplateUtil;
+
     protected RegisteredTemplate saveRegisteredTemplate(final RegisteredTemplate registeredTemplate) {
         List<String> templateOrder = registeredTemplate.getTemplateOrder();
         RegisteredTemplate savedTemplate = metadataAccess.commit(() -> {
@@ -86,7 +118,7 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
 
             //ensure that the incoming template name doesnt already exist.
             //if so remove and replace with this one
-            RegisteredTemplate template = getRegisteredTemplateByName(registeredTemplate.getTemplateName());
+            RegisteredTemplate template = registeredTemplateService.getRegisteredTemplate(RegisteredTemplateRequest.requestByTemplateName(registeredTemplate.getTemplateName()));
             if (registeredTemplate.getId() == null && template != null) {
                 registeredTemplate.setId(template.getId());
             }
@@ -101,7 +133,9 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
 
                 FeedManagerTemplate domain = templateModelTransform.REGISTERED_TEMPLATE_TO_DOMAIN.apply(registeredTemplate);
                 ensureNifiTemplateId(domain);
-                log.info("Domain Object is {} ({}), nifi template Id of {}", domain.getName(), domain.getId(), domain.getNifiTemplateId());
+                if(domain != null ) {
+                    log.info("Domain Object is {} ({}), nifi template Id of {}", domain.getName(), domain.getId(), domain.getNifiTemplateId());
+                }
                 domain = templateProvider.update(domain);
                 //query it back to display to the ui
                 domain = templateProvider.findById(domain.getId());
@@ -158,7 +192,7 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
     public List<RegisteredTemplate.Processor> getRegisteredTemplateProcessors(String templateId, boolean includeReusableProcessors) {
         List<RegisteredTemplate.Processor> processorProperties = new ArrayList<>();
 
-        RegisteredTemplate template = getRegisteredTemplateWithAllProperties(templateId, null);
+        RegisteredTemplate template = registeredTemplateService.getRegisteredTemplate(new RegisteredTemplateRequest.Builder().templateId(templateId).nifiTemplateId(templateId).includeAllProperties(true).build());
         if (template != null) {
             template.initializeProcessors();
             processorProperties.addAll(template.getInputProcessors());
@@ -226,28 +260,6 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
     }
 
 
-    @Override
-    public RegisteredTemplate getRegisteredTemplate(final String templateId) {
-        return metadataAccess.read(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_TEMPLATES);
-
-            RegisteredTemplate registeredTemplate = null;
-            FeedManagerTemplate.ID domainId = templateProvider.resolveId(templateId);
-            FeedManagerTemplate domainTemplate = templateProvider.findById(domainId);
-            if (domainTemplate != null) {
-                //transform it
-                registeredTemplate = templateModelTransform.DOMAIN_TO_REGISTERED_TEMPLATE.apply(domainTemplate);
-            }
-            if (registeredTemplate != null) {
-                registeredTemplate.initializeProcessors();
-                ensureNifiTemplate(registeredTemplate);
-            }
-
-            return registeredTemplate;
-        });
-
-    }
-
     public boolean deleteRegisteredTemplate(final String templateId) {
         return metadataAccess.commit(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_TEMPLATES);
@@ -258,42 +270,17 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
 
     }
 
-    @Override
-    public RegisteredTemplate getRegisteredTemplateByName(final String templateName) {
-        return metadataAccess.read(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_TEMPLATES);
 
-            RegisteredTemplate registeredTemplate = null;
-            FeedManagerTemplate template = templateProvider.findByName(templateName);
-            if (template != null) {
-                //transform it
-                registeredTemplate = templateModelTransform.DOMAIN_TO_REGISTERED_TEMPLATE.apply(template);
-            }
-            return registeredTemplate;
-        });
+    public RegisteredTemplate getRegisteredTemplate(final String templateId) {
+       return registeredTemplateService.getRegisteredTemplate(RegisteredTemplateRequest.requestByTemplateId(templateId));
 
     }
 
-    @Override
-    public RegisteredTemplate getRegisteredTemplateForNifiProperties(final String nifiTemplateId, final String nifiTemplateName) {
-        return metadataAccess.read(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_TEMPLATES);
-
-            RegisteredTemplate registeredTemplate = null;
-            FeedManagerTemplate template = templateProvider.findByNifiTemplateId(nifiTemplateId);
-            if (template == null) {
-                template = templateProvider.findByName(nifiTemplateName);
-            }
-            if (template != null) {
-                registeredTemplate = templateModelTransform.DOMAIN_TO_REGISTERED_TEMPLATE.apply(template);
-            }
-            return registeredTemplate;
-        });
 
 
-    }
 
-    public FeedManagerTemplate ensureNifiTemplateId(FeedManagerTemplate feedManagerTemplate) {
+
+    private FeedManagerTemplate ensureNifiTemplateId(FeedManagerTemplate feedManagerTemplate) {
         if (feedManagerTemplate.getNifiTemplateId() == null) {
             String nifiTemplateId = nifiTemplateIdForTemplateName(feedManagerTemplate.getName());
             feedManagerTemplate.setNifiTemplateId(nifiTemplateId);
@@ -366,6 +353,259 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
         TemplateChangeEvent event = new TemplateChangeEvent(change, DateTime.now(), principal);
         metadataEventService.notify(event);
     }
+
+
+
+
+
+
+
+    /**
+     * Return the NiFi template id for the incoming template name
+     *
+     * @param templateName the name of the template
+     * @return the NiFi template id for the incoming template name, null if not found
+     */
+    public String nifiTemplateIdForTemplateName(String templateName) {
+
+        TemplateDTO templateDTO = null;
+        templateDTO = nifiRestClient.getTemplateByName(templateName);
+
+        if (templateDTO != null) {
+            return templateDTO.getId();
+        }
+        return null;
+    }
+
+    /**
+     * Return properties registered for a template
+     *
+     * @param templateId a RegisteredTemplate id
+     * @return the properties registered for the template
+     */
+    public List<NifiProperty> getTemplateProperties(String templateId) {
+        List<NifiProperty> list = new ArrayList<>();
+        RegisteredTemplate template = registeredTemplateService.getRegisteredTemplate(RegisteredTemplateRequest.requestByTemplateId(templateId));
+        if (template != null) {
+            list = template.getProperties();
+        }
+        return list;
+    }
+
+    /**
+     * Return the processors in RegisteredTemplate that are input processors ( processors without any incoming connections).
+     * This will call out to NiFi to inspect and obtain the NiFi template if it doesn't exist on the registeredTemplate
+     *
+     * @param registeredTemplate the template to inspect
+     * @return the processors in RegisteredTemplate that are input processors without any incoming connections
+     */
+    public List<RegisteredTemplate.Processor> getInputProcessorsInNifTemplate(RegisteredTemplate registeredTemplate) {
+        TemplateDTO nifiTemplate = registeredTemplate.getNifiTemplate();
+        if (nifiTemplate == null) {
+            nifiTemplate = registeredTemplateUtil.ensureNifiTemplate(registeredTemplate);
+        }
+        return getInputProcessorsInNifTemplate(nifiTemplate);
+    }
+
+    /**
+     * Return the input processors (processors without any incoming connections) in a NiFi template object
+     *
+     * @param nifiTemplate the NiFi template
+     * @return the input processors (processors without any incoming connections) in a NiFi template object
+     */
+    public List<RegisteredTemplate.Processor> getInputProcessorsInNifTemplate(TemplateDTO nifiTemplate) {
+        List<RegisteredTemplate.Processor> processors = new ArrayList<>();
+        if (nifiTemplate != null) {
+            List<ProcessorDTO> inputProcessors = NifiTemplateUtil.getInputProcessorsForTemplate(nifiTemplate);
+            if (inputProcessors != null) {
+                inputProcessors.stream().forEach(processorDTO -> {
+                    RegisteredTemplate.Processor p = toRegisteredTemplateProcessor(processorDTO, false);
+                    p.setInputProcessor(true);
+                    processors.add(p);
+                });
+            }
+        }
+        return processors;
+    }
+
+
+
+
+    /**
+     * Ensure that the NiFi template Ids are correct and match our metadata for the Template Name
+     *
+     * @param template a registered template
+     * @return the updated template with the {@link RegisteredTemplate#nifiTemplateId} correctly matching NiFi
+     */
+    public RegisteredTemplate syncTemplateId(RegisteredTemplate template) {
+        String oldId = template.getNifiTemplateId();
+        if (oldId == null) {
+            oldId = "";
+        }
+        String nifiTemplateId = nifiTemplateIdForTemplateName(template.getTemplateName());
+        if (nifiTemplateId != null && !oldId.equalsIgnoreCase(nifiTemplateId)) {
+            template.setNifiTemplateId(nifiTemplateId);
+
+            RegisteredTemplate t = registeredTemplateService.getRegisteredTemplate(new RegisteredTemplateRequest.Builder().templateId(template.getId()).includeAllProperties(true).build());
+            template.setProperties(t.getProperties());
+            if (!oldId.equalsIgnoreCase(template.getNifiTemplateId())) {
+                log.info("Updating Registered Template {} with new Nifi Template Id.  Old Id: {}, New Id: {} ", template.getTemplateName(), oldId, template.getNifiTemplateId());
+            }
+            RegisteredTemplate updatedTemplate = saveRegisteredTemplate(template);
+            if (!oldId.equalsIgnoreCase(template.getNifiTemplateId())) {
+                log.info("Successfully updated and synchronized Registered Template {} with new Nifi Template Id.  Old Id: {}, New Id: {} ", template.getTemplateName(), oldId,
+                         template.getNifiTemplateId());
+            }
+            return updatedTemplate;
+        } else {
+            return template;
+        }
+    }
+
+
+
+
+
+    /**
+     * @return all input ports under the {@link TemplateCreationHelper#REUSABLE_TEMPLATES_PROCESS_GROUP_NAME} process group
+     */
+    public Set<PortDTO> getReusableFeedInputPorts() {
+        Set<PortDTO> ports = new HashSet<>();
+        ProcessGroupDTO processGroup = nifiRestClient.getProcessGroupByName("root", TemplateCreationHelper.REUSABLE_TEMPLATES_PROCESS_GROUP_NAME);
+        if (processGroup != null) {
+            //fetch the ports
+            Set<PortDTO> inputPortsEntity = nifiRestClient.getInputPorts(processGroup.getId());
+            if (inputPortsEntity != null && !inputPortsEntity.isEmpty()) {
+                ports.addAll(inputPortsEntity);
+            }
+        }
+        return ports;
+    }
+
+
+    /**
+     * Return a list of Processors and their properties for the incoming template
+     *
+     * @param nifiTemplateId a NiFi template id
+     * @return a list of Processors and their properties for the incoming template
+     */
+    public List<RegisteredTemplate.Processor> getNiFiTemplateProcessorsWithProperties(String nifiTemplateId) {
+        Set<ProcessorDTO> processorDTOs = nifiRestClient.getProcessorsForTemplate(nifiTemplateId);
+        List<RegisteredTemplate.Processor> processorProperties = processorDTOs.stream().map(processorDTO -> toRegisteredTemplateProcessor(processorDTO, true)).collect(Collectors.toList());
+        return processorProperties;
+
+    }
+
+
+    /**
+     * For a given Template and its related connection info to the reusable templates, walk the graph to return the Processors.
+     * The system will first walk the incoming templateid.  If the {@code connectionInfo} parameter is set it will make the connections to the incoming template and continue walking those processors
+     *
+     * @param nifiTemplateId the NiFi templateId required to start walking the flow
+     * @param connectionInfo the connections required to connect
+     * @return a list of all the processors for a template and possible connections
+     */
+    public List<RegisteredTemplate.FlowProcessor> getNiFiTemplateFlowProcessors(String nifiTemplateId, List<ReusableTemplateConnectionInfo> connectionInfo) {
+
+        TemplateDTO templateDTO = nifiRestClient.getTemplateById(nifiTemplateId);
+
+        //make the connection
+        if (connectionInfo != null && !connectionInfo.isEmpty()) {
+            Set<PortDTO> templatePorts = templateDTO.getSnippet().getOutputPorts();
+            Map<String, PortDTO> outputPorts = templateDTO.getSnippet().getOutputPorts().stream().collect(Collectors.toMap(portDTO -> portDTO.getName(), Function.identity()));
+            Map<String, PortDTO> inputPorts = getReusableFeedInputPorts().stream().collect(Collectors.toMap(portDTO -> portDTO.getName(), Function.identity()));
+            connectionInfo.stream().forEach(reusableTemplateConnectionInfo -> {
+                PortDTO outputPort = outputPorts.get(reusableTemplateConnectionInfo.getFeedOutputPortName());
+                PortDTO inputPort = inputPorts.get(reusableTemplateConnectionInfo.getReusableTemplateInputPortName());
+
+                ConnectionDTO connectionDTO = new ConnectionDTO();
+                ConnectableDTO source = new ConnectableDTO();
+                source.setName(reusableTemplateConnectionInfo.getFeedOutputPortName());
+                source.setType(outputPort.getType());
+                source.setId(outputPort.getId());
+                source.setGroupId(outputPort.getParentGroupId());
+
+                ConnectableDTO dest = new ConnectableDTO();
+                dest.setName(inputPort.getName());
+                dest.setType(inputPort.getType());
+                dest.setId(inputPort.getId());
+                dest.setGroupId(inputPort.getParentGroupId());
+
+                connectionDTO.setSource(source);
+                connectionDTO.setDestination(dest);
+                connectionDTO.setId(UUID.randomUUID().toString());
+                templateDTO.getSnippet().getConnections().add(connectionDTO);
+
+            });
+        }
+
+        NifiFlowProcessGroup template = nifiRestClient.getTemplateFeedFlow(templateDTO);
+        return template.getProcessorMap().values().stream().map(flowProcessor -> {
+            RegisteredTemplate.FlowProcessor p = new RegisteredTemplate.FlowProcessor(flowProcessor.getId());
+            p.setGroupId(flowProcessor.getParentGroupId());
+            p.setType(flowProcessor.getType());
+            p.setName(flowProcessor.getName());
+            p.setFlowId(flowProcessor.getFlowId());
+            p.setIsLeaf(flowProcessor.isLeaf());
+            return p;
+        }).collect(Collectors.toList());
+    }
+
+    /**
+     * Return all the processors that are connected to a given NiFi input port
+     *
+     * @param inputPortIds the ports to inspect
+     * @return all the processors that are connected to a given NiFi input port
+     */
+    public List<RegisteredTemplate.Processor> getReusableTemplateProcessorsForInputPorts(List<String> inputPortIds) {
+        Set<ProcessorDTO> processorDTOs = new HashSet<>();
+        if (inputPortIds != null && !inputPortIds.isEmpty()) {
+            ProcessGroupDTO processGroup = nifiRestClient.getProcessGroupByName("root", TemplateCreationHelper.REUSABLE_TEMPLATES_PROCESS_GROUP_NAME);
+            if (processGroup != null) {
+                //fetch the Content
+                ProcessGroupDTO content = nifiRestClient.getProcessGroup(processGroup.getId(), true, true);
+                processGroup.setContents(content.getContents());
+                Set<PortDTO> ports = getReusableFeedInputPorts();
+                ports.stream()
+                    .filter(portDTO -> inputPortIds.contains(portDTO.getId()))
+                    .forEach(port -> {
+                        List<ConnectionDTO> connectionDTOs = NifiConnectionUtil.findConnectionsMatchingSourceId(processGroup.getContents().getConnections(), port.getId());
+                        if (connectionDTOs != null) {
+                            connectionDTOs.stream().forEach(connectionDTO -> {
+                                String processGroupId = connectionDTO.getDestination().getGroupId();
+                                Set<ProcessorDTO> processors = nifiRestClient.getProcessorsForFlow(processGroupId);
+                                if (processors != null) {
+                                    processorDTOs.addAll(processors);
+                                }
+                            });
+                        }
+                    });
+
+            }
+        }
+
+        List<RegisteredTemplate.Processor> processorProperties = processorDTOs.stream().map(processorDTO -> toRegisteredTemplateProcessor(processorDTO, true)).collect(Collectors.toList());
+        return processorProperties;
+    }
+
+    /**
+     * convert a NiFi processor to a RegisteredTemplate processor object
+     *
+     * @param processorDTO  the NiFi processor
+     * @param setProperties true to set the properties on the RegisteredTemplate.Processor, false to skip
+     * @return a NiFi processor to a RegisteredTemplate processor object
+     */
+    private RegisteredTemplate.Processor toRegisteredTemplateProcessor(ProcessorDTO processorDTO, boolean setProperties) {
+        RegisteredTemplate.Processor p = new RegisteredTemplate.Processor(processorDTO.getId());
+        p.setGroupId(processorDTO.getParentGroupId());
+        p.setType(processorDTO.getType());
+        p.setName(processorDTO.getName());
+        if (setProperties) {
+            p.setProperties(NifiPropertyUtil.getPropertiesForProcessor(new ProcessGroupDTO(), processorDTO, propertyDescriptorTransform));
+        }
+        return p;
+    }
+
 
 
 }

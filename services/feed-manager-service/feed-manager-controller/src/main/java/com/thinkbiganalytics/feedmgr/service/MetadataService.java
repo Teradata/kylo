@@ -64,41 +64,6 @@ public interface MetadataService {
     List<NifiProperty> getTemplateProperties(String templateId);
 
     /**
-     * Return a registered template by its id
-     *
-     * @param templateId a template id
-     * @return a registered template, or null if not found
-     */
-    RegisteredTemplate getRegisteredTemplate(String templateId);
-
-    /**
-     * Return a template matching the incoming name
-     *
-     * @param templateName a template name
-     * @return a template matching the incoming name
-     */
-    RegisteredTemplate getRegisteredTemplateByName(String templateName);
-
-    /**
-     * Return a template with both the registered properties, and then adding in all the other properties (not registered in Kylo) that exist in NiFi for every processor
-     *
-     * @param templateId   a registered template id, or a nifi template id (for new nifi templates (not yet registered in Kylo)
-     * @param templateName the name of the template
-     * @return a template with both the registered properties, and then adding in all the other properties (not registered in Kylo) that exist in NiFi for every processor
-     */
-    RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId, String templateName);
-
-    /**
-     * Return a template matching just on the NiFi templateId .
-     * This will only call out to NiFi and match on the Nifi template id.
-     *
-     * @param nifiTemplateId   the NiFi template id
-     * @param nifiTemplateName the name of the template
-     * @return a template matching the NiFi templateId .
-     */
-    RegisteredTemplate getRegisteredTemplateForNifiProperties(final String nifiTemplateId, final String nifiTemplateName);
-
-    /**
      * Deletes a template
      *
      * @param templateId a registered template id
@@ -208,7 +173,6 @@ public interface MetadataService {
      * @return a feed matching the feedId
      */
     FeedMetadata getFeedById(String feedId, boolean refreshTargetTableSchema);
-
 
     /**
      * Return the categories

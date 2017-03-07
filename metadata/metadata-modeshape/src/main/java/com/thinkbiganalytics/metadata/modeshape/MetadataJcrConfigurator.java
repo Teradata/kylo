@@ -81,6 +81,8 @@ public class MetadataJcrConfigurator {
     }
 
     public void configure() {
+        log.info("SKIPPING CONFIGURATION ");
+
         this.metadataAccess.commit(() -> {
             try {
                 Session session = JcrMetadataAccess.getActiveSession();
@@ -104,7 +106,7 @@ public class MetadataJcrConfigurator {
         }, MetadataAccess.SERVICE);
 
         this.configured.set(true);
-        firePostConfigActions();
+       firePostConfigActions();
     }
 
     private void removeVersionableFeedType(Session session) throws RepositoryException {

@@ -20,12 +20,16 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
  * #L%
  */
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.thinkbiganalytics.feedmgr.rest.model.ImportFeedProperty;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportFeedOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.UserFieldCollection;
 import com.thinkbiganalytics.feedmgr.service.ExportImportTemplateService;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.feed.ExportImportFeedService;
+import com.thinkbiganalytics.json.ObjectMapperSerializer;
+import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -33,6 +37,8 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
@@ -63,9 +69,9 @@ import io.swagger.annotations.Tag;
 @SwaggerDefinition(tags = @Tag(name = "Feed Manager - Administration", description = "administrator operations"))
 public class AdminController {
 
-    public static final String BASE = "/v1/feedmgr/admin";
-    public static final String IMPORT_TEMPLATE = "/import-template";
-    public static final String IMPORT_FEED = "/import-feed";
+    static final String BASE = "/v1/feedmgr/admin";
+    static final String IMPORT_TEMPLATE = "/import-template";
+    static final String IMPORT_FEED = "/import-feed";
 
     @Inject
     ExportImportTemplateService exportImportTemplateService;
@@ -131,13 +137,18 @@ public class AdminController {
                                @FormDataParam("overwrite") @DefaultValue("false") boolean overwrite,
                                @FormDataParam("overwriteFeedTemplate") @DefaultValue("false") boolean overwriteFeedTemplate,
                                @FormDataParam("categorySystemName") String categorySystemName,
-                               @FormDataParam("importConnectingReusableFlow") @DefaultValue("NOT_SET") ImportOptions.IMPORT_CONNECTING_FLOW importConnectingFlow)
+                               @FormDataParam("importConnectingReusableFlow") @DefaultValue("NOT_SET") ImportOptions.IMPORT_CONNECTING_FLOW importConnectingFlow,
+                               @FormDataParam("properties") String properties)
         throws Exception {
         ImportFeedOptions options = new ImportFeedOptions();
         options.setOverwrite(overwrite);
         options.setImportConnectingFlow(importConnectingFlow);
         options.setCategorySystemName(categorySystemName);
         options.setOverwriteFeedTemplate(overwriteFeedTemplate);
+        if(properties != null) {
+            options.setProperties(ObjectMapperSerializer.deserialize(properties, new TypeReference<List<ImportFeedProperty>>() {
+            }));
+        }
         ExportImportFeedService.ImportFeed importFeed = exportImportFeedService.importFeed(fileMetaData.getFileName(), fileInputStream, options);
 
         return Response.ok(importFeed).build();
