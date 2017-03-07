@@ -85,8 +85,8 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
         this.getDataConfidenceSummary = function () {
             if (self.refreshing == false) {
                 self.refreshing = true;
-                var successFn = function (data) {
-
+                var successFn = function (response) {
+                    var data = response.data;
                     if (self.dataLoaded == false) {
                         self.dataLoaded = true;
                     }
