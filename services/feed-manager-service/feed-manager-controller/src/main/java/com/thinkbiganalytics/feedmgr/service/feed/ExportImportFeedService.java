@@ -20,10 +20,12 @@ package com.thinkbiganalytics.feedmgr.service.feed;
  * #L%
  */
 
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportFeedOptions;
+import com.thinkbiganalytics.feedmgr.rest.model.ImportFeedProperty;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
@@ -33,6 +35,9 @@ import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.support.ZipFileUtil;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
+import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
+import com.thinkbiganalytics.rest.model.LabelValue;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
@@ -44,7 +49,10 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -158,6 +166,7 @@ public class ExportImportFeedService {
 
         //verify this feed and if it exists should we overwrite/proceed
         final ImportFeed feed = readFeedJson(fileName, content);
+        feed.setImportOptions(importOptions);
         FeedMetadata metadata = ObjectMapperSerializer.deserialize(feed.getFeedJson(), FeedMetadata.class);
 
         String feedCategory = optionsCategory != null ? optionsCategory.getSystemName() : metadata.getSystemCategoryName();
@@ -170,6 +179,30 @@ public class ExportImportFeedService {
             feed.addErrorMessage(existingFeed, "The feed " + FeedNameUtil.fullName(feedCategory, metadata.getSystemFeedName())
                                                + " already exists.  If you would like to proceed with this import please check the box to 'Overwrite' this feed");
             return feed;
+        }
+        //detect any sensitive properties and prompt for input before proceeding
+        if(!metadata.getSensitiveProperties().isEmpty()) {
+            //if this is the first time populate the import options with the necessary properties
+            if(importOptions.getProperties().isEmpty()) {
+                importOptions.setProperties(metadata.getSensitiveProperties().stream().map(p -> new ImportFeedProperty(p.getProcessorName(),p.getProcessorId(),p.getKey(),p.getValue())).collect(
+                    Collectors.toList()));
+            }
+            if(importOptions.getProperties().stream().anyMatch(map -> StringUtils.isBlank(map.getPropertyValue()))) {
+                feed.setSuccess(false);
+                ExportImportTemplateService.ImportTemplate importTemplate = new ExportImportTemplateService.ImportTemplate(fileName);
+                feed.setTemplate(importTemplate);
+                feed.addErrorMessage(existingFeed, "The feed " + FeedNameUtil.fullName(feedCategory, metadata.getSystemFeedName())
+                                                   + " needs additional properties to be supplied before importing.");
+                 return feed;
+            }
+            else {
+                metadata.getSensitiveProperties().forEach(nifiProperty -> {
+                    ImportFeedProperty userSuppliedValue = importOptions.getProperties().stream().filter(importFeedProperty -> nifiProperty.getProcessorId().equalsIgnoreCase(importFeedProperty.getProcessorId()) && nifiProperty.getKey().equalsIgnoreCase(importFeedProperty.getPropertyKey())).findFirst().orElse(null);
+                    //deal with nulls?
+                     nifiProperty.setValue(userSuppliedValue.getPropertyValue());
+                });
+            }
+
         }
         //if we get here set the import overwrite to be true to allow for the template to be overwritten
         //set this so we will overwrite the template, if specified.
@@ -247,6 +280,7 @@ public class ExportImportFeedService {
         private ExportImportTemplateService.ImportTemplate template;
         private NifiFeed nifiFeed;
         private String feedJson;
+        private ImportOptions importOptions;
 
         public ImportFeed() {}
 
@@ -307,6 +341,14 @@ public class ExportImportFeedService {
                 nifiFeed = new NifiFeed(feedMetadata, null);
             }
             nifiFeed.addErrorMessage(errorMessage);
+        }
+
+        public ImportOptions getImportOptions() {
+            return importOptions;
+        }
+
+        public void setImportOptions(ImportOptions importOptions) {
+            this.importOptions = importOptions;
         }
     }
 

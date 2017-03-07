@@ -138,6 +138,20 @@
               The Feed you are importing also contains its reusable flow. Do you want to also import the reusable flow and version that as well?
             </div>
           </md-input-container>
+
+          <div ng-if="vm.userSuppliedProperties">
+            <div ng-repeat="prop in vm.userSuppliedProperties" layout="column" layout-align="start start">
+              <span>{{prop.processorName}}</span>
+              <md-input-container>
+                <label>{{prop.propertyKey}}</label>
+                <input type="password" ng-model="prop.propertyValue">
+              </md-input-container>
+            </div>
+
+          </div>
+
+
+          <span style="padding-top:10px">
           <div layout="row" class="layout-padding-top">
                 <md-button class="md-raised md-primary" ng-click="vm.importFeed()" ng-if="vm.feedFile != null"
                            ng-disabled="vm.importBtnDisabled">
