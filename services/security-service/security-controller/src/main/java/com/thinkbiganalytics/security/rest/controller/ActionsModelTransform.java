@@ -33,6 +33,7 @@ import com.thinkbiganalytics.security.rest.model.PermissionsChange;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange.ChangeType;
 
 import java.security.Principal;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -50,7 +51,7 @@ public class ActionsModelTransform {
                                                                                            Set<String> users,
                                                                                            Set<String> groups) {
         return (allowed) -> {
-            ActionGroup actionSet = availableActionsToActionSet(name).apply(allowed);
+            ActionGroup actionSet = allowedActionsToActionSet(name).apply(allowed);
             PermissionsChange change = new PermissionsChange(changeType, actionSet);
             change.setUsers(users);
             change.setGroups(groups);
@@ -58,7 +59,7 @@ public class ActionsModelTransform {
         };
     }
 
-    public Function<AllowedActions, ActionGroup> availableActionsToActionSet(String module) {
+    public Function<AllowedActions, ActionGroup> allowedActionsToActionSet(String module) {
         return (allowed) -> {
             List<Action> list = allowed.getAvailableActions().stream()
                 .map(allowableActionToActionSet())
@@ -120,10 +121,14 @@ public class ActionsModelTransform {
             addHierarchy(actionSet, action.getHierarchy().iterator());
         }
     }
+    
+    public Principal toUserPrincipal(String username) {
+        return new UsernamePrincipal(username);
+    }
 
     public Set<Principal> toUserPrincipals(Set<String> userNames) {
         return userNames.stream()
-            .map(name -> new UsernamePrincipal(name))
+            .map(name -> toUserPrincipal(name))
             .collect(Collectors.toSet());
     }
 
@@ -132,4 +137,49 @@ public class ActionsModelTransform {
             .map(name -> new GroupPrincipal(name))
             .collect(Collectors.toSet());
     }
+    
+
+    public Set<Principal> collectPrincipals(PermissionsChange changes) {
+        Set<Principal> set = new HashSet<>();
+
+        set.addAll(toUserPrincipals(changes.getUsers()));
+        set.addAll(toGroupPrincipals(changes.getGroups()));
+
+        return set;
+    }
+
+    /**
+     * Creates a set of domain actions from the REST model actions.  The resulting set will
+     * contain only the leaf actions from the domain action hierarchy.
+     */
+    public Set<com.thinkbiganalytics.security.action.Action> collectActions(PermissionsChange changes) {
+        Set<com.thinkbiganalytics.security.action.Action> set = new HashSet<>();
+
+        for (Action modelAction : changes.getActionSet().getActions()) {
+            loadActionSet(modelAction, 
+                          com.thinkbiganalytics.security.action.Action.create(modelAction.getSystemName(), 
+                                                                              modelAction.getTitle(), 
+                                                                              modelAction.getDescription()), 
+                          set);
+        }
+
+        return set;
+    }
+
+    /**
+     * Adds a new domain action to the set if the REST model action represents a leaf of the action hierarchy.
+     * Otherwise, it loads the child actions recursively.
+     */
+    public void loadActionSet(Action modelAction, 
+                               com.thinkbiganalytics.security.action.Action action, 
+                               Set<com.thinkbiganalytics.security.action.Action> set) {
+        if (modelAction.getActions().isEmpty()) {
+            set.add(action);
+        } else {
+            for (Action modelChild : modelAction.getActions()) {
+                loadActionSet(modelChild, action.subAction(modelChild.getSystemName(), modelChild.getTitle(), modelChild.getDescription()), set);
+            }
+        }
+    }
+
 }

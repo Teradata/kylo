@@ -94,7 +94,7 @@ public class AccessControlController {
         
         return metadata.read(() -> {
             return actionsProvider.getAvailableActions(moduleName)
-                .map(this.actionsTransform.availableActionsToActionSet(AllowedActions.SERVICES))
+                .map(this.actionsTransform.allowedActionsToActionSet(AllowedActions.SERVICES))
                 .orElseThrow(() -> new WebApplicationException("The available service actions were not found",
                                                                Status.NOT_FOUND));
         });
@@ -119,7 +119,7 @@ public class AccessControlController {
         // Retrieve the allowed actions by executing the query as the specified user/groups 
         return metadata.read(() -> {
             return actionsProvider.getAllowedActions(moduleName)
-                .map(this.actionsTransform.availableActionsToActionSet(AllowedActions.SERVICES))
+                .map(this.actionsTransform.allowedActionsToActionSet(AllowedActions.SERVICES))
                 .orElseThrow(() -> new WebApplicationException("The available service actions were not found",
                                                                Status.NOT_FOUND));
         }, principals);
@@ -209,7 +209,7 @@ public class AccessControlController {
 
     /**
      * Creates a set of domain actions from the REST model actions.  The resulting set will
-     * contain only the leaf actions from domain action hierarchy.
+     * contain only the leaf actions from the domain action hierarchy.
      */
     private Set<Action> collectActions(PermissionsChange changes) {
         Set<Action> set = new HashSet<>();
