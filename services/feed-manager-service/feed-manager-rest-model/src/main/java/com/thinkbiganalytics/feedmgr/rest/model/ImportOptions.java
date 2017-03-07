@@ -20,6 +20,13 @@ package com.thinkbiganalytics.feedmgr.rest.model;
  * #L%
  */
 
+import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
+import com.thinkbiganalytics.rest.model.LabelValue;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 /**
  */
 public class ImportOptions {
@@ -27,6 +34,13 @@ public class ImportOptions {
     private String categorySystemName;
     private boolean createReusableFlow;
     private boolean overwrite;
+
+    /**
+     * Indicates any sensitive properties were set by the end user
+     *
+     */
+    private List<ImportFeedProperty> properties;
+
     private IMPORT_CONNECTING_FLOW importConnectingFlow;
 
     /**
@@ -65,6 +79,17 @@ public class ImportOptions {
 
     public void setImportConnectingFlow(IMPORT_CONNECTING_FLOW importConnectingFlow) {
         this.importConnectingFlow = importConnectingFlow;
+    }
+
+    public List<ImportFeedProperty> getProperties() {
+        if(properties == null){
+            properties = new ArrayList<>();
+        }
+        return properties;
+    }
+
+    public void setProperties(List<ImportFeedProperty> properties) {
+        this.properties = properties;
     }
 
     public enum IMPORT_CONNECTING_FLOW {

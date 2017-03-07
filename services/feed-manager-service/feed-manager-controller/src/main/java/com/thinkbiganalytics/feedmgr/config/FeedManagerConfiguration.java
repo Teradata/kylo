@@ -28,6 +28,7 @@ import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.SpringCloudContextEnvironmentChangedListener;
 import com.thinkbiganalytics.feedmgr.nifi.SpringEnvironmentProperties;
 import com.thinkbiganalytics.feedmgr.service.DefaultJobService;
+import com.thinkbiganalytics.feedmgr.service.EncryptionService;
 import com.thinkbiganalytics.feedmgr.service.ExportImportTemplateService;
 import com.thinkbiganalytics.feedmgr.service.FeedManagerMetadataService;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
@@ -43,6 +44,8 @@ import com.thinkbiganalytics.feedmgr.service.feed.FeedModelTransform;
 import com.thinkbiganalytics.feedmgr.service.feed.datasource.DerivedDatasourceFactory;
 import com.thinkbiganalytics.feedmgr.service.template.DefaultFeedManagerTemplateService;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
+import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
+import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateUtil;
 import com.thinkbiganalytics.feedmgr.service.template.TemplateModelTransform;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
 import com.thinkbiganalytics.jobrepo.service.JobService;
@@ -203,6 +206,21 @@ public class FeedManagerConfiguration {
     @Bean
     public JobService jobService() {
         return new DefaultJobService();
+    }
+
+    @Bean
+    public EncryptionService encryptionService(){
+        return new EncryptionService();
+    }
+
+    @Bean
+    public RegisteredTemplateService registeredTemplateService(){
+        return new RegisteredTemplateService();
+    }
+
+    @Bean
+    public RegisteredTemplateUtil registeredTemplateUtil() {
+        return new RegisteredTemplateUtil();
     }
 
 }

@@ -26,8 +26,11 @@ import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
+import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplateRequest;
 import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
 import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
+import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
+import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
 import com.thinkbiganalytics.nifi.feedmgr.FeedRollbackException;
 import com.thinkbiganalytics.nifi.feedmgr.InputOutputPort;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
@@ -65,13 +68,20 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
     private AccessController accessController;
 
     @Inject
+    private FeedModelTransform feedModelTransform;
+
+    @Inject
     private NiFiPropertyDescriptorTransform propertyDescriptorTransform;
+
+    @Inject
+    private FeedManagerTemplateService feedManagerTemplateService;
+
+    @Inject
+    private RegisteredTemplateService registeredTemplateService;
 
     @Value("${nifi.remove.inactive.versioned.feeds:true}")
     private boolean removeInactiveNifiVersionedFeedFlows;
 
-
-    protected abstract RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId);
 
     /**
      * Create/Update a Feed in NiFi
@@ -82,6 +92,8 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
     public NifiFeed createFeed(FeedMetadata feedMetadata) {
         this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_FEEDS);
 
+
+
         NifiFeed feed = null;
         if (StringUtils.isBlank(feedMetadata.getId())) {
             feedMetadata.setIsNew(true);
@@ -90,17 +102,16 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
         if (feedMetadata.getTable() != null) {
             feedMetadata.getTable().updateMetadataFieldValues();
         }
-        if (feedMetadata.getSchedule() != null) {
-            //     feedMetadata.getSchedule().updateDependentFeedNamesString();
-        }
+
 
         if (feedMetadata.getProperties() == null) {
             feedMetadata.setProperties(new ArrayList<NifiProperty>());
         }
+        //decrypt the metadata
+        feedModelTransform.decryptSensitivePropertyValues(feedMetadata);
 
         //get all the properties for the metadata
-        RegisteredTemplate
-            registeredTemplate = getRegisteredTemplateWithAllProperties(feedMetadata.getTemplateId());
+        RegisteredTemplate registeredTemplate = registeredTemplateService.getRegisteredTemplate(new RegisteredTemplateRequest.Builder().templateId(feedMetadata.getTemplateId()).templateName(feedMetadata.getTemplateName()).isFeedEdit(true).includeSensitiveProperties(true).build());
 
         List<NifiProperty> matchedProperties = NifiPropertyUtil
             .matchAndSetPropertyByIdKey(registeredTemplate.getProperties(), feedMetadata.getProperties(), NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_ALL_PROPERTIES);
