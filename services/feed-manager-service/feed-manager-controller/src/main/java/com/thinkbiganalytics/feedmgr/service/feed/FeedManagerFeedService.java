@@ -67,6 +67,7 @@ public interface FeedManagerFeedService {
      */
     FeedMetadata getFeedById(String id, boolean refreshTargetTableSchema);
 
+
     /**
      * @return a list of all the feeds in the system
      */

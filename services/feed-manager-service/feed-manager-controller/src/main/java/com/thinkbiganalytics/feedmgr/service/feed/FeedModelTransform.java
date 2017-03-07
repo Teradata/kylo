@@ -28,6 +28,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.Tag;
 import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
+import com.thinkbiganalytics.feedmgr.service.EncryptionService;
 import com.thinkbiganalytics.feedmgr.service.UserPropertyTransform;
 import com.thinkbiganalytics.feedmgr.service.category.CategoryModelTransform;
 import com.thinkbiganalytics.feedmgr.service.template.TemplateModelTransform;
@@ -90,17 +91,39 @@ public class FeedModelTransform {
     @Inject
     private HadoopSecurityGroupProvider hadoopSecurityGroupProvider;
 
+    @Inject
+    private EncryptionService encryptionService;
+
     /**
      *
      * @param feedMetadata
      */
-    private void simplifyFeedMetadataForSerialization(FeedMetadata feedMetadata) {
+    private void prepareForSave(FeedMetadata feedMetadata) {
 
         if (feedMetadata.getTable() != null) {
             feedMetadata.getTable().simplifyFieldPoliciesForSerialization();
         }
         feedMetadata.setRegisteredTemplate(null);
 
+        //reset all those properties that contain config variables back to the string with the config options
+        feedMetadata.getProperties().stream().filter(property -> property.isContainsConfigurationVariables()).forEach(property -> property.setValue(property.getTemplateValue()));
+        //reset all sensitive properties
+        //ensure its encrypted
+        encryptSensitivePropertyValues(feedMetadata);
+
+
+    }
+
+    private void clearSensitivePropertyValues(FeedMetadata feedMetadata){
+        feedMetadata.getProperties().stream().filter(property -> property.isSensitive()).forEach(nifiProperty -> nifiProperty.setValue(""));
+    }
+
+    private void encryptSensitivePropertyValues(FeedMetadata feedMetadata){
+        feedMetadata.getProperties().stream().filter(property -> property.isSensitive()).forEach(nifiProperty -> nifiProperty.setValue(encryptionService.encrypt(nifiProperty.getValue())));
+    }
+
+    public void decryptSensitivePropertyValues(FeedMetadata feedMetadata){
+        feedMetadata.getProperties().stream().filter(property -> property.isSensitive()).forEach(nifiProperty -> nifiProperty.setValue(encryptionService.decrypt(nifiProperty.getValue())));
     }
 
     /**
@@ -149,7 +172,7 @@ public class FeedModelTransform {
         domain.setNifiProcessGroupId(feedMetadata.getNifiProcessGroupId());
 
         //clear out the state as that
-        simplifyFeedMetadataForSerialization(feedMetadata);
+        prepareForSave(feedMetadata);
 
         domain.setJson(ObjectMapperSerializer.serialize(feedMetadata));
 
@@ -207,10 +230,17 @@ public class FeedModelTransform {
         return domain.stream().map(f -> domainToFeedMetadata(f, userFieldMap)).collect(Collectors.toList());
     }
 
-    public FeedMetadata deserializeFeedMetadata(FeedManagerFeed domain) {
+    public FeedMetadata deserializeFeedMetadata(FeedManagerFeed domain, boolean clearSensitiveProperties) {
         String json = domain.getJson();
         FeedMetadata feedMetadata = ObjectMapperSerializer.deserialize(json, FeedMetadata.class);
+        if(clearSensitiveProperties){
+            clearSensitivePropertyValues(feedMetadata);
+        }
         return feedMetadata;
+    }
+
+    public FeedMetadata deserializeFeedMetadata(FeedManagerFeed domain) {
+      return  deserializeFeedMetadata(domain,true);
     }
 
 

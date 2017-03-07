@@ -27,9 +27,11 @@ import com.thinkbiganalytics.feedmgr.nifi.NifiTemplateParser;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
+import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplateRequest;
 import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
 import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
 import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
+import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.nifi.feedmgr.ReusableTemplateCreationCallback;
@@ -105,6 +107,10 @@ public class ExportImportTemplateService {
     @Inject
     private AccessController accessController;
 
+    @Inject
+    private RegisteredTemplateService registeredTemplateService;
+
+
     /**
      * Called when the system imports a Reusable template either from a ZIP file or an xml file uploaded in kylo.
      */
@@ -115,7 +121,7 @@ public class ExportImportTemplateService {
     public ExportTemplate exportTemplate(String templateId) {
         this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EXPORT_TEMPLATES);
 
-        RegisteredTemplate template = metadataService.getRegisteredTemplate(templateId);
+        RegisteredTemplate template = registeredTemplateService.getRegisteredTemplate(new RegisteredTemplateRequest.Builder().templateId(templateId).nifiTemplateId(templateId).includeSensitiveProperties(true).build());
         if (template != null) {
             List<String> connectingReusableTemplates = new ArrayList<>();
             Set<String> connectedTemplateIds = new HashSet<>();
@@ -227,7 +233,8 @@ public class ExportImportTemplateService {
 
         //1 ensure this template doesnt already exist
         importTemplate.setTemplateName(template.getTemplateName());
-        RegisteredTemplate existingTemplate = metadataService.getRegisteredTemplateByName(template.getTemplateName());
+
+        RegisteredTemplate existingTemplate =  registeredTemplateService.getRegisteredTemplate(RegisteredTemplateRequest.requestByTemplateName(template.getTemplateName()));
         if (existingTemplate != null) {
             if (!importOptions.isOverwrite()) {
                 throw new UnsupportedOperationException(
@@ -275,11 +282,8 @@ public class ExportImportTemplateService {
                 //register it in the system
                 metadataService.registerTemplate(template);
                 //get the new template
-                if (StringUtils.isNotBlank(template.getId())) {
-                    template = metadataService.getRegisteredTemplate(template.getId());
-                } else {
-                    template = metadataService.getRegisteredTemplateByName(template.getTemplateName());
-                }
+
+                template = registeredTemplateService.getRegisteredTemplate(new RegisteredTemplateRequest.Builder().templateId(template.getId()).templateName(template.getTemplateName()).build());
                 importTemplate.setTemplateId(template.getId());
 
 

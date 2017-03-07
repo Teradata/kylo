@@ -120,30 +120,9 @@ public class FeedManagerMetadataService implements MetadataService {
         return templateProvider.getTemplateProperties(templateId);
     }
 
-    @Override
-    public RegisteredTemplate getRegisteredTemplate(String templateId) {
-        return templateProvider.getRegisteredTemplate(templateId);
-    }
 
-    @Override
-    public RegisteredTemplate getRegisteredTemplateByName(String templateName) {
-        return templateProvider.getRegisteredTemplateByName(templateName);
-    }
 
-    @Override
-    //@Transactional(transactionManager = "metadataTransactionManager")
-    public RegisteredTemplate getRegisteredTemplateWithAllProperties(final String templateId, String templateName) {
-        return metadataAccess.commit(() -> {
-            return templateProvider.getRegisteredTemplateWithAllProperties(templateId, templateName);
-        });
-    }
 
-    @Override
-    public RegisteredTemplate getRegisteredTemplateForNifiProperties(final String nifiTemplateId, final String nifiTemplateName) {
-        return metadataAccess.commit(() -> {
-            return templateProvider.getRegisteredTemplateForNifiProperties(nifiTemplateId, nifiTemplateName);
-        });
-    }
 
     public void deleteRegisteredTemplate(String templateId) {
         templateProvider.deleteRegisteredTemplate(templateId);

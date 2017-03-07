@@ -30,6 +30,7 @@ import com.thinkbiganalytics.nifi.rest.client.NiFiProcessGroupsRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiProcessorsRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiReportingTaskRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
+import com.thinkbiganalytics.nifi.rest.client.NiFiSnippetsRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiTemplatesRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClientConfig;
 import com.thinkbiganalytics.nifi.rest.model.NiFiClusterSummary;
@@ -104,6 +105,9 @@ public class NiFiRestClientV1 extends JerseyRestClient implements NiFiRestClient
      */
     @Nullable
     private NiFiReportingTaskRestClientV1 reportingTasks;
+
+
+    private NiFiSnippetsRestClient snippets;
 
     /**
      * Constructs a {@code NiFiRestClientV1} with the specified NiFi REST client configuration.
@@ -228,7 +232,16 @@ public class NiFiRestClientV1 extends JerseyRestClient implements NiFiRestClient
         if (reportingTasks == null) {
             return new NiFiReportingTaskRestClientV1(this);
         }
-        return reportingTasks();
+        return reportingTasks;
+    }
+
+    @Nonnull
+    @Override
+    public NiFiSnippetsRestClient snippets() {
+        if (snippets == null) {
+            return new NiFiSnippetsRestClientV1(this);
+        }
+        return snippets;
     }
 
     @Override

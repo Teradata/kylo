@@ -50,7 +50,8 @@
                                     </div>
                                 </md-input-container>
                                 <div class="register-template-property md-padding" layout="column" layout-fill>
-                                    <h3>{{property.key}}</h3>
+                                    <h3 ng-class="{'md-warn':property.sensitive}">{{property.key}}</h3>
+                                    <span class="hint" ng-if="property.sensitive">This is a sensitive property</span>
                                     <span class="md-warn" ng-show="property.requiredEmpty">This is a required field.  You need to either allow the user to input data, or supply a default value.</span>
 
                                     <div>{{property.propertyDescriptor.description}}</div>

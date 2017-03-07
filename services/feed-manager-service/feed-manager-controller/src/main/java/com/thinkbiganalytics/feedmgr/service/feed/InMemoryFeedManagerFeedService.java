@@ -156,9 +156,7 @@ public class InMemoryFeedManagerFeedService extends AbstractFeedManagerFeedServi
                 //set the template to the feed
 
                 RegisteredTemplate registeredTemplate = templateProvider.getRegisteredTemplate(feed.getTemplateId());
-                if (registeredTemplate == null) {
-                    registeredTemplate = templateProvider.getRegisteredTemplateByName(feed.getTemplateName());
-                }
+
                 if (registeredTemplate != null) {
                     RegisteredTemplate copy = new RegisteredTemplate(registeredTemplate);
                     copy.getProperties().clear();
@@ -204,10 +202,6 @@ public class InMemoryFeedManagerFeedService extends AbstractFeedManagerFeedServi
         }
     }
 
-    @Override
-    protected RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId) {
-        return templateProvider.getRegisteredTemplateWithAllProperties(templateId, null);
-    }
 
     @Override
     public void saveFeed(FeedMetadata feed) {

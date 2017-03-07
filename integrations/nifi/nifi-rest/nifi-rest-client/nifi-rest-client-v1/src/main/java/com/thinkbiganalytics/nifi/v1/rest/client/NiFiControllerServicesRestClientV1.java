@@ -67,15 +67,27 @@ public class NiFiControllerServicesRestClientV1 implements NiFiControllerService
     @Nonnull
     @Override
     public Optional<ControllerServiceDTO> delete(@Nonnull final String id) {
-        return findEntityById(id)
-            .flatMap(controllerService -> {
-                final Long version = controllerService.getRevision().getVersion();
-                try {
-                    return Optional.of(client.delete(BASE_PATH + id, ImmutableMap.of("version", version), ControllerServiceEntity.class).getComponent());
-                } catch (final NotFoundException e) {
-                    return Optional.empty();
-                }
-            });
+
+       Optional<ControllerServiceEntity> controllerServiceEntity = null;
+       try {
+           controllerServiceEntity = findEntityById(id);
+       }catch (Exception e){
+           return Optional.empty();
+       }
+if(controllerServiceEntity.isPresent()) {
+    return controllerServiceEntity
+        .flatMap(controllerService -> {
+            final Long version = controllerService.getRevision().getVersion();
+            try {
+                return Optional.of(client.delete(BASE_PATH + id, ImmutableMap.of("version", version), ControllerServiceEntity.class).getComponent());
+            } catch (final NotFoundException e) {
+                return Optional.empty();
+            }
+        });
+}
+else {
+    return Optional.empty();
+}
     }
 
     @Nonnull
@@ -135,7 +147,7 @@ public class NiFiControllerServicesRestClientV1 implements NiFiControllerService
     @Nonnull
     private Optional<ControllerServiceEntity> findEntityById(@Nonnull final String id) {
         try {
-            return Optional.ofNullable(client.get(BASE_PATH + id, null, ControllerServiceEntity.class));
+            return Optional.ofNullable(client.getWithoutErrorLogging(BASE_PATH + id, null, ControllerServiceEntity.class));
         } catch (final NotFoundException e) {
             return Optional.empty();
         }

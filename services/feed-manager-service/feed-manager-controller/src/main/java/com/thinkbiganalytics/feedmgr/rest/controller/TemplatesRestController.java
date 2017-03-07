@@ -29,6 +29,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.NiFiTemplateFlowRequest;
 import com.thinkbiganalytics.feedmgr.rest.model.NiFiTemplateFlowResponse;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
+import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplateRequest;
 import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
 import com.thinkbiganalytics.feedmgr.rest.model.TemplateDtoWrapper;
 import com.thinkbiganalytics.feedmgr.rest.model.TemplateOrder;
@@ -37,6 +38,7 @@ import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceService;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
+import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
 import com.thinkbiganalytics.metadata.rest.model.data.DatasourceDefinition;
 import com.thinkbiganalytics.nifi.feedmgr.TemplateCreationHelper;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
@@ -103,6 +105,9 @@ public class TemplatesRestController {
     DatasourceService datasourceService;
 
     @Inject
+    RegisteredTemplateService registeredTemplateService;
+
+    @Inject
     NifiFlowCache nifiFlowCache;
 
     private MetadataService getMetadataService() {
@@ -121,7 +126,9 @@ public class TemplatesRestController {
         Set<TemplateDTO> nifiTemplates = nifiRestClient.getTemplates(includeDetails);
         Set<TemplateDtoWrapper> dtos = new HashSet<>();
         for (final TemplateDTO dto : nifiTemplates) {
-            RegisteredTemplate match = metadataService.getRegisteredTemplateForNifiProperties(dto.getId(), dto.getName());
+
+            RegisteredTemplate match = registeredTemplateService.getRegisteredTemplate(
+                RegisteredTemplateRequest.requestByNiFiTemplateProperties(dto.getId(), dto.getName()));
             TemplateDtoWrapper wrapper = new TemplateDtoWrapper(dto);
             if (match != null) {
                 wrapper.setRegisteredTemplateId(match.getId());
@@ -141,11 +148,12 @@ public class TemplatesRestController {
                   })
     public Response getUnregisteredTemplates(@QueryParam("includeDetails") boolean includeDetails) {
         Set<TemplateDTO> nifiTemplates = nifiRestClient.getTemplates(includeDetails);
-        List<RegisteredTemplate> registeredTemplates = metadataService.getRegisteredTemplates();
+        //List<RegisteredTemplate> registeredTemplates = metadataService.getRegisteredTemplates();
 
         Set<TemplateDtoWrapper> dtos = new HashSet<>();
         for (final TemplateDTO dto : nifiTemplates) {
-            RegisteredTemplate match = metadataService.getRegisteredTemplateForNifiProperties(dto.getId(), dto.getName());
+            RegisteredTemplate match = registeredTemplateService.getRegisteredTemplate(
+                RegisteredTemplateRequest.requestByNiFiTemplateProperties(dto.getId(), dto.getName()));
             if (match == null) {
                 dtos.add(new TemplateDtoWrapper(dto));
             }
@@ -401,7 +409,7 @@ public class TemplatesRestController {
     /**
      * get a registeredTemplate
      *
-     * @
+     * 
      */
     @GET
     @Path("/registered/{templateId}")
@@ -415,14 +423,15 @@ public class TemplatesRestController {
                                           @QueryParam("templateName") String templateName) {
         RegisteredTemplate registeredTemplate = null;
         if (allProperties) {
-            registeredTemplate = getMetadataService().getRegisteredTemplateWithAllProperties(templateId, templateName);
+            registeredTemplate = registeredTemplateService.getRegisteredTemplate(RegisteredTemplateRequest.requestForTemplateCreation(templateId,templateName));
         } else {
-            registeredTemplate = getMetadataService().getRegisteredTemplate(templateId);
+            registeredTemplate = registeredTemplateService.getRegisteredTemplate(RegisteredTemplateRequest.requestByTemplateId(templateId));
         }
 
         log.info("Returning Registered template for id {} as {} ", templateId, (registeredTemplate != null ? registeredTemplate.getTemplateName() : null));
 
         //if savedFeedId is passed in merge the properties with the saved values
+        /*
         if (feedName != null) {
             //TODO pass in the Category to this method
             FeedMetadata feedMetadata = getMetadataService().getFeedByName("", feedName);
@@ -436,6 +445,7 @@ public class TemplatesRestController {
                                                                                   feedMetadata.getProperties());
             }
         }
+        */
         Set<PortDTO> ports = null;
         // fetch ports for this template
         try {

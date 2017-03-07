@@ -245,6 +245,9 @@ public class PropertyExpressionResolver {
             if (configValue != null) {
                 hasConfig = true;
                 isModified = true;
+                //todo do we need to check if the user supplied a value?
+                property.setTemplateValue(property.getValue());
+                property.setContainsConfigurationVariables(true);
                 matcher.appendReplacement(result, Matcher.quoteReplacement(configValue));
                 continue;
             }

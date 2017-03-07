@@ -20,8 +20,11 @@ package com.thinkbiganalytics.nifi.rest.client;
  * #L%
  */
 
+import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
+
 import org.apache.nifi.web.api.dto.TemplateDTO;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -94,4 +97,5 @@ public interface NiFiTemplatesRestClient {
      */
     @Nonnull
     Optional<TemplateDTO> findByName(@Nonnull String name);
+
 }

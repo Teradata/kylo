@@ -23,6 +23,7 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
 import com.google.common.collect.Lists;
 import com.mifmif.common.regex.Generex;
 import com.thinkbiganalytics.discovery.schema.QueryResult;
+import com.thinkbiganalytics.feedmgr.rest.model.EditFeedEntity;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
@@ -34,6 +35,7 @@ import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceService;
 import com.thinkbiganalytics.feedmgr.service.feed.DuplicateFeedNameException;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerPreconditionService;
+import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
 import com.thinkbiganalytics.hive.service.HiveService;
 import com.thinkbiganalytics.hive.util.HiveUtils;
@@ -136,8 +138,36 @@ public class FeedRestController {
     @Inject
     ServiceLevelAgreementService serviceLevelAgreementService;
 
+    @Inject
+    RegisteredTemplateService registeredTemplateService;
+
     private MetadataService getMetadataService() {
         return metadataService;
+    }
+
+
+
+
+
+
+    /**
+     * Creates a new Feed using the specified metadata.
+     *
+     * @param editFeedEntity the feed metadata
+     * @return the feed
+     */
+    @POST
+    @Path("/edit/{feedId}")
+    @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Creates or updates a feed.")
+    @ApiResponses(
+        @ApiResponse(code = 200, message = "Returns the feed including any error messages.", response = NifiFeed.class)
+    )
+    @Nonnull
+    public Response editFeed(@Nonnull final EditFeedEntity editFeedEntity) {
+return createFeed(editFeedEntity.getFeedMetadata());
+
     }
 
     /**
@@ -162,7 +192,7 @@ public class FeedRestController {
             log.info("Failed to create a new feed due to another feed having the same category/feed name: " + feedMetadata.getCategoryAndFeedDisplayName());
 
             // Create an error message
-            String msg = "A feed already exists in the cantegory \"" + e.getCategoryName() + "\" with name name \"" + e.getFeedName() + "\"";
+            String msg = "A feed already exists in the category \"" + e.getCategoryName() + "\" with name name \"" + e.getFeedName() + "\"";
 
             // Add error message to feed
             feed = new NifiFeed(feedMetadata, null);
@@ -305,77 +335,12 @@ public class FeedRestController {
                       @ApiResponse(code = 500, message = "The feed could not be updated.", response = RestResponseStatus.class)
                   })
     public Response mergeTemplate(@PathParam("feedId") String feedId, FeedMetadata feed) {
-        //gets the feed data and then gets the latest template associated with that feed and merges the properties into the feed
-        RegisteredTemplate registeredTemplate = null;
-        try {
-            registeredTemplate = getMetadataService().getRegisteredTemplateWithAllProperties(feed.getTemplateId(), feed.getTemplateName());
-        } catch (Exception e) {
-            registeredTemplate = getMetadataService().getRegisteredTemplateByName(feed.getTemplateName());
-            if (registeredTemplate != null) {
-                feed.setTemplateId(registeredTemplate.getId());
-            }
-        }
-        if (registeredTemplate != null) {
-            NifiPropertyUtil
-                .matchAndSetPropertyByProcessorName(registeredTemplate.getProperties(), feed.getProperties(), NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_NON_EXPRESSION_PROPERTIES);
-
-            //detect template properties that dont match the feed.properties from the registeredtemplate
-            ensureFeedPropertiesExistInTemplate(feed, registeredTemplate);
-            feed.setProperties(registeredTemplate.getProperties());
-
-        }
-        registeredTemplate.initializeProcessors();
-        feed.setRegisteredTemplate(registeredTemplate);
-
+        registeredTemplateService.mergeTemplatePropertiesWithFeed(feed);
         return Response.ok(feed).build();
     }
 
 
-    /**
-     * If a Template changes the Processor Names the Feed Properties will no longer be associated to the correct processors This will match any feed properties to a whose processor name has changed in
-     * the template to the template processor/property based upon the template processor type.
-     */
-    private void ensureFeedPropertiesExistInTemplate(FeedMetadata feed, RegisteredTemplate registeredTemplate) {
-        Set<String> templateProcessors = registeredTemplate.getProperties().stream().map(property -> property.getProcessorName()).collect(Collectors.toSet());
 
-        //Store the template Properties
-        Map<String, String> templateProcessorIdProcessorNameMap = new HashMap<>();
-        Map<String, String> templateProcessorTypeProcessorIdMap = new HashMap<>();
-        registeredTemplate.getProperties().stream().filter(property -> !templateProcessorIdProcessorNameMap.containsKey(property.getProcessorId())).forEach(property1 -> {
-            templateProcessorIdProcessorNameMap.put(property1.getProcessorId(), property1.getProcessorName());
-            templateProcessorTypeProcessorIdMap.put(property1.getProcessorType(), property1.getProcessorId());
-        });
-
-        Map<String, Map<String, NifiProperty>> templatePropertiesByProcessorIdMap = new HashMap<>();
-        registeredTemplate.getProperties().stream().forEach(property -> {
-            templatePropertiesByProcessorIdMap.computeIfAbsent(property.getProcessorId(), key -> new HashMap<String, NifiProperty>()).put(property.getKey(), property);
-        });
-
-        //store the Feed Properties
-        Map<String, String> processorIdProcessorTypeMap = new HashMap<>();
-        feed.getProperties().stream().filter(property -> !processorIdProcessorTypeMap.containsKey(property.getProcessorId())).forEach(property1 -> {
-            processorIdProcessorTypeMap.put(property1.getProcessorId(), property1.getProcessorType());
-        });
-
-        feed.getProperties().stream().filter(property -> !templateProcessors.contains(property.getProcessorName())).forEach(property -> {
-            //if the property doesn't match the template but the type matches try to merge in the feed properties overwriting the template ones
-            String processorType = processorIdProcessorTypeMap.get(property.getProcessorId());
-            if (processorType != null) {
-                String templateProcessorId = templateProcessorTypeProcessorIdMap.get(processorType);
-
-                if (templateProcessorId != null && templateProcessorIdProcessorNameMap.containsKey(templateProcessorId)) {
-                    NifiProperty templateProperty = templatePropertiesByProcessorIdMap.get(templateProcessorId).get(property.getKey());
-                    if (templateProperty != null) {
-                        templateProperty.setValue(property.getValue());
-                        templateProperty.setRenderType(property.getRenderType());
-                        templateProperty.setRenderOptions(property.getRenderOptions());
-                    }
-                }
-            }
-        });
-
-
-    }
 
     @GET
     @Path("/{feedId}/profile-summary")

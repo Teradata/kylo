@@ -281,15 +281,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
         });
     }
 
-    @Override
-    protected RegisteredTemplate getRegisteredTemplateWithAllProperties(final String templateId) {
-        return metadataAccess.read(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
 
-            return templateRestProvider.getRegisteredTemplate(templateId);
-        });
-
-    }
 
     @Override
     public Feed.ID resolveFeed(@Nonnull Serializable fid) {
@@ -510,7 +502,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
             FeedManagerFeed domainFeed = feedManagerFeedProvider.findById(feedId);
             FeedMetadata feedMetadata = null;
             if (domainFeed != null) {
-                feedMetadata = feedModelTransform.deserializeFeedMetadata(domainFeed);
+                feedMetadata = feedModelTransform.deserializeFeedMetadata(domainFeed,true);
                 feedMetadata.setState(FeedMetadata.STATE.ENABLED.name());
                 domainFeed.setJson(ObjectMapperSerializer.serialize(feedMetadata));
                 feedManagerFeedProvider.update(domainFeed);
@@ -534,7 +526,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
             FeedManagerFeed domainFeed = feedManagerFeedProvider.findById(feedId);
             FeedMetadata feedMetadata = null;
             if (domainFeed != null) {
-                feedMetadata = feedModelTransform.deserializeFeedMetadata(domainFeed);
+                feedMetadata = feedModelTransform.deserializeFeedMetadata(domainFeed,false);
                 feedMetadata.setState(FeedMetadata.STATE.DISABLED.name());
                 domainFeed.setJson(ObjectMapperSerializer.serialize(feedMetadata));
                 feedManagerFeedProvider.update(domainFeed);
