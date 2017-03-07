@@ -8,7 +8,7 @@ define(['angular','common/module-name','angular-ui-router'], function (angular,m
         module = angular.module(moduleName);
 
 
-    module.directive('uiRouterBreadcrumbs', ['$interpolate', '$state','$transitions', function($interpolate, $state,$transitions) {
+    module.directive('uiRouterBreadcrumbs', ['$interpolate', '$state','$transitions','$state', function($interpolate, $state,$transitions) {
         return {
             restrict: 'E',
             templateUrl: function(elem, attrs) {
@@ -25,9 +25,13 @@ define(['angular','common/module-name','angular-ui-router'], function (angular,m
                     updateBreadcrumbsArray();
                 }
                 */
+
+
+
+
                 $transitions.onSuccess({},function(transition){
                    var toState = transition.to();
-                   var toParams = transition.to().params;
+                   var toParams = transition.params();
                    if(toState.data !== undefined ) {
                        if (toState.data.noBreadcrumb && toState.data.noBreadcrumb == true) {
                            //console.log('Skipping breadcrumb for ',toState)
@@ -38,17 +42,7 @@ define(['angular','common/module-name','angular-ui-router'], function (angular,m
 
 
                 });
-/*
-                $scope.$on('$stateChangeSuccess',function(event, toState, toParams, fromState, fromParams) {
-                    //if the to State exists in the breadcrumb trail, reverse back to that, otherwise add it
-                    if(toState.data.noBreadcrumb && toState.data.noBreadcrumb == true ){
-                     //console.log('Skipping breadcrumb for ',toState)
-                    }else {
-                        updateBreadcrumbs(toState, toParams);
-                    }
-                //    console.log('crumbs ',$scope.breadcrumbs)
-                });
-                */
+
 
 
                 function updateLastBreadcrumbs(){
