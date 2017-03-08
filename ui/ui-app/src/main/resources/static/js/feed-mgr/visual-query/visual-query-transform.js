@@ -143,10 +143,10 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
          * Creates a Tern server.
          */
         function createTernServer() {
-            $http.get('js/vendor/tern/defs/tableFunctions.json').then(function(code) {
-                self.sparkShellService.setFunctionDefs(code);
+            $http.get('js/vendor/tern/defs/tableFunctions.json').then(function(response) {
+                self.sparkShellService.setFunctionDefs(response.data);
 
-                self.ternServer = new CodeMirror.TernServer({defs: [code]});
+                self.ternServer = new CodeMirror.TernServer({defs: [response.data]});
                 self.ternServer.server.addDefs(self.sparkShellService.getColumnDefs());
 
                 var _editor = self.codemirrorEditor;
