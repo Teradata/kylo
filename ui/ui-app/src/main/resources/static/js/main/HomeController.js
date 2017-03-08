@@ -42,23 +42,14 @@ define(['angular'], function (angular) {
          * @param actions the allowed actions
          */
         self.onLoad = function(actions) {
-            // Determine if Feed Manager is allowed at all
-            if (!AccessControlService.hasAction(AccessControlService.FEED_MANAGER_ACCESS, actions) && !AccessControlService.hasAction(AccessControlService.USERS_GROUPS_ACCESS, actions)) {
-                self.loading = false;
-                $mdDialog.show(
-                        $mdDialog.alert()
-                                .clickOutsideToClose(true)
-                                .title("Access Denied")
-                                .textContent("You do not have access to the Feed Manager.")
-                                .ariaLabel("Access denied to feed manager")
-                                .ok("OK")
-                );
-                return;
-            }
+
 
             // Determine the home page
             if (AccessControlService.hasAction(AccessControlService.FEEDS_ACCESS, actions)) {
-            //    return StateService.navigateToFeeds();
+                return StateService.navigateToFeeds();
+            }
+            if (AccessControlService.hasAction(AccessControlService.OPERATIONS_MANAGER_ACCESS, actions)) {
+                return StateService.OpsManager().dashboard();
             }
             if (AccessControlService.hasAction(AccessControlService.CATEGORIES_ACCESS, actions)) {
                 return StateService.FeedManager().Category().navigateToCategories();
@@ -72,6 +63,22 @@ define(['angular'], function (angular) {
             if (AccessControlService.hasAction(AccessControlService.GROUP_ACCESS, actions)) {
                 return StateService.Auth().navigateToGroups();
             }
+
+/*
+            // Determine if Feed Manager is allowed at all
+            if (!AccessControlService.hasAction(AccessControlService.FEED_MANAGER_ACCESS, actions) && !AccessControlService.hasAction(AccessControlService.USERS_GROUPS_ACCESS, actions)) {
+                self.loading = false;
+                $mdDialog.show(
+                    $mdDialog.alert()
+                        .clickOutsideToClose(true)
+                        .title("Access Denied")
+                        .textContent("You do not have access to the Feed Manager.")
+                        .ariaLabel("Access denied to feed manager")
+                        .ok("OK")
+                );
+                return;
+            }
+            */
 
             // Otherwise, let the user pick
             self.loading = false;
