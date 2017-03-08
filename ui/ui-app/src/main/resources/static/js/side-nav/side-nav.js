@@ -1,19 +1,20 @@
 define(['angular','side-nav/module-name'], function (angular,moduleName) {
 
-    var directive = function ( $mdSidenav, $mdDialog,$rootScope,$transitions,$timeout, SideNavService, AccessControlService, StateService) {
+    var directive = function ( $mdSidenav, $mdDialog,$rootScope,$transitions,$timeout, SideNavService, AccessControlService, StateService,AccordionMenuService) {
         return {
             restrict: "E",
             scope:{},
             templateUrl: 'js/side-nav/side-nav.html',
-            link: function ($scope) {
+            link: function ($scope,$element) {
                 $scope.sideNavService = SideNavService;
 
+                /**
+                 * a pointer to the highlighted menu item
+                 * @type {null}
+                 */
+                var currentMenuLink = null;
+
                 $scope.menuTitle = '';
-
-                var MODULES = {"FEED_MGR":{name:"kylo.feedmgr",icon:"business_center",text:"Feed Manager"},"OPS_MGR":{name:"kylo.opsmgr",icon:"dashboard",text:"Operations Manager",link:"dashboard"}};
-
-                var defaultModule = MODULES.OPS_MGR;
-
 
 
                 /**
@@ -37,7 +38,38 @@ define(['angular','side-nav/module-name'], function (angular,moduleName) {
                 $scope.feedManagerTitle = "Feed Manager";
                 $scope.opsManagerTitle = "Operations";
 
+                /**
+                 * A map with the sref,parent menu toggle text
+                 * this is used to determine what Accordion group should be open given the current state
+                 * @type {{}}
+                 */
+                var menuStateToMenuToggleMap = {};
 
+                /**
+                 * Map of the state (sref) to the menu item
+                 * @type {{}}
+                 */
+                var menuStateMap = {};
+
+                /**
+                 * Array of the top level accordion toggle menu items (i.e. Feed Manager, Operations, Admin)
+                 * @type {Array}
+                 */
+                var toggleSections = [];
+
+                /**
+                 * the <accordion-menu> html $element
+                 * @type {null}
+                 */
+                var $accordionElement = null;
+
+                /**
+                 * A map with the moduleName
+                 * @type {{}}
+                 */
+                var menuMap = {};
+
+                var MENU_KEY = {"OPS_MGR":"OPS_MGR","FEED_MGR":"FEED_MGR","ADMIN":"ADMIN"}
 
 
 
@@ -46,14 +78,15 @@ define(['angular','side-nav/module-name'], function (angular,moduleName) {
                  * @param allowed
                  */
                 function buildFeedManagerMenu() {
-                    var menu = ({type:'toggle', text: "Feed Manager",narrowText:'',expanded:true});
+                    var menu = ({type:'toggle', text: "Feed Manager",narrowText:'',expanded:true,elementId:'toggle_feed_manager'});
                     var links = [];
-                    links.push({sref: "feeds",type:'link', icon: "linear_scale", text: "Feeds", defaultActive: false, fullscreen: false, permission: AccessControlService.FEEDS_ACCESS});
-                    links.push({sref: "categories",type:'link', icon: "folder_special", text: "Categories", defaultActive: false, fullscreen: false, permission: AccessControlService.CATEGORIES_ACCESS});
-                    links.push({sref: "tables",type:'link', icon: "grid_on", text: "Tables", defaultActive: false, fullscreen: false, permission: AccessControlService.FEED_MANAGER_ACCESS});
-                    links.push({sref: "service-level-agreements",type:'link', icon: "beenhere", text: "SLA", defaultActive: false, fullscreen: false, permission: AccessControlService.FEEDS_ACCESS});
+                    links.push({sref: "feeds",type:'link', icon: "linear_scale", text: "Feeds", permission: AccessControlService.FEEDS_ACCESS});
+                    links.push({sref: "categories",type:'link', icon: "folder_special", text: "Categories", permission: AccessControlService.CATEGORIES_ACCESS});
+                    links.push({sref: "tables",type:'link', icon: "grid_on", text: "Tables", permission: AccessControlService.FEED_MANAGER_ACCESS});
+                    links.push({sref: "service-level-agreements",type:'link', icon: "beenhere", text: "SLA", permission: AccessControlService.FEEDS_ACCESS});
                   //  links.push({sref: "visual-query",type:'link', icon: "transform", text: "Visual Query", defaultActive: false, fullscreen: true, permission: AccessControlService.FEED_MANAGER_ACCESS});
                     menu.links = links;
+                    menuMap[MENU_KEY.FEED_MGR] = menu;
                  return menu;
 
                 }
@@ -72,6 +105,7 @@ define(['angular','side-nav/module-name'], function (angular,moduleName) {
                        links.push({sref: "scheduler",type:'link', icon: "today", text: "SLA Schedule", defaultActive: false, permission: AccessControlService.OPERATIONS_MANAGER_ACCESS});
                        links.push({sref: "charts",type:'link', icon: "insert_chart", text: "Charts", defaultActive: false, permission: AccessControlService.OPERATIONS_MANAGER_ACCESS});
                        menu.links = links;
+                    menuMap[MENU_KEY.OPS_MGR] = menu;
                     return menu;
                 }
 
@@ -79,7 +113,7 @@ define(['angular','side-nav/module-name'], function (angular,moduleName) {
                  * Build the Admin Menu
                  * @param allowed
                  */
-                function buildAdminMenu(allowed) {
+                function buildAdminMenu() {
 
                     var menu = ({type:'toggle', text: "Admin",narrowText:'',expanded:false});
                     var links = [];
@@ -88,6 +122,7 @@ define(['angular','side-nav/module-name'], function (angular,moduleName) {
                     links.push({sref: "users",type:'link', icon: "account_box", text: "Users", defaultActive: false, permission: AccessControlService.USERS_ACCESS});
                     links.push({sref: "groups",type:'link', icon: "group", text: "Groups", defaultActive: false, permission: AccessControlService.GROUP_ACCESS});
                     menu.links = links;
+                    menuMap[MENU_KEY.ADMIN] = menu;
                   return menu
                 }
 
@@ -183,52 +218,81 @@ define(['angular','side-nav/module-name'], function (angular,moduleName) {
                     menu.push(buildOpsManagerMenu());
                     menu.push(buildFeedManagerMenu());
                     menu.push(buildAdminMenu());
+                    buildMenuStateMap(menu);
+
+                    toggleSections = _.filter(menu,function(item){
+                        return item.type == 'toggle';
+                    });
+
                     $scope.menu = menu;
                 }
+
+                function buildMenuStateMap(menu){
+                    menuStateToMenuToggleMap = {};
+                    menuStateMap = {}
+                    _.each(menu,function(menuToggle) {
+                        _.each(menuToggle.links,function(item){
+                            menuStateToMenuToggleMap[item.sref] = menuToggle;
+                            menuStateMap[item.sref] = item;
+                        });
+                    });
+                }
+
                 buildSideNavMenu();
 
+                function menuToggleItemForModuleName(moduleName){
+                    if(moduleName.indexOf('opsmgr') >=0){
+                        return menuMap[MENU_KEY.OPS_MGR];
+                    }
+                    else if(moduleName.indexOf('feedmgr') >=0 && moduleName != 'kylo.feedmgr.templates'){
+                        return menuMap[MENU_KEY.FEED_MGR];
+                    }
+                    else if(moduleName.indexOf('auth') >=0 || moduleName == 'kylo.feedmgr.templates'){
+                        return menuMap[MENU_KEY.ADMIN];
+                    }
+                    else {
+                        return null;
+                    }
+                }
 
-/*
+
+
                 $transitions.onSuccess({},function(transition){
-                    currentState = transition.to();
-                    console.log('CURRENT STATE ',currentState,transition)
-                    var currentModule = null;
-                    if(currentState.data != undefined && currentState.data.module !== undefined && currentState.data.module.indexOf(MODULES.FEED_MGR.name) >=0) {
-                        currentModule = MODULES.FEED_MGR;
-                    }
-                    else if(currentState.data != undefined && currentState.data.module !== undefined && currentState.data.module.indexOf(MODULES.OPS_MGR.name) >=0) {
-                        currentModule = MODULES.OPS_MGR;
-                    }
-                    if(sideNavModule == null && currentModule == null){
-                        //set the default module
-                        currentModule = defaultModule;
+                    var currentState = transition.to();
+                    var parentMenu = menuStateToMenuToggleMap[currentState.name];
+                    var menuLink = menuStateMap[currentState.name];
+                    if(menuLink != undefined ){
+                        if(currentMenuLink != null && currentMenuLink != menuLink) {
+                            currentMenuLink.selected = false;
+                        }
+                        currentMenuLink = menuLink;
+                        currentMenuLink.selected = true;
                     }
 
-                    if(sideNavModule == null || (currentModule != null &&  sideNavModule != currentModule)) {
-                        sideNavModule = currentModule.name;
-                        var otherModule = MODULES.FEED_MGR.name == currentModule.name ? MODULES.OPS_MGR : MODULES.FEED_MGR;
-                        //change happened... rebuild nav
-
-                            buildSideNavMenu();
-                           $scope.otherModule = otherModule;
-                           $timeout(function(){
-                               $scope.showMenu = true;
-                               if(!$scope.collapsed) {
-                                   angular.element('md-sidenav').css('overflow', 'auto')
-                                   angular.element('md-sidenav > md-content').css('overflow', 'auto')
-                               }
-                           },500)
-
+                    if($accordionElement == null){
+                        $accordionElement = $element.find('accordion-menu');
                     }
-
-
-
+                    if(parentMenu == undefined && currentState != undefined && currentState.data != undefined) {
+                        //attempt to locate the menu based upon the moduleName defined on the state
+                        var moduleName = currentState.data.module;
+                        if(moduleName != undefined) {
+                            var menuToggle = menuToggleItemForModuleName(moduleName);
+                            if(menuToggle != null){
+                                parentMenu = menuToggle;
+                            }
+                        }
+                    }
+                    if(parentMenu != undefined && $accordionElement != null && $accordionElement != undefined){
+                        if(!parentMenu.expanded){
+                            AccordionMenuService.openToggleItem(parentMenu,$accordionElement,false,toggleSections);
+                        }
+                    }
                 });
-                */
+
 
             }
         }
     };
 
-    angular.module(moduleName).directive('kyloSideNav', ['$mdSidenav','$mdDialog','$rootScope','$transitions','$timeout','SideNavService','AccessControlService','StateService', directive]);
+    angular.module(moduleName).directive('kyloSideNav', ['$mdSidenav','$mdDialog','$rootScope','$transitions','$timeout','SideNavService','AccessControlService','StateService','AccordionMenuService', directive]);
 });

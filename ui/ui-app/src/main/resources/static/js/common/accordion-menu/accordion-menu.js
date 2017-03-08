@@ -10,11 +10,9 @@ define(['angular','common/module-name'], function (angular,moduleName) {
             ' <menu-toggle section="section" ng-if="section.type === \'toggle\'" style="width:100%"></menu-toggle>\n' +
                 '<md-divider></md-divider>' +
             ' </md-list-item>\n'
-                + '</md-list>' +
-
-                                                                                      '');
+                + '</md-list>' + '');
         }])
-        .directive('accordionMenu', ['$location','$timeout',function ($location,$timeout) {
+        .directive('accordionMenu', ['$location','$timeout','AccordionMenuService',function ($location,$timeout, AccordionMenuService) {
             return {
                 bindToController: {
                     menu: '=',
@@ -62,8 +60,9 @@ define(['angular','common/module-name'], function (angular,moduleName) {
                             else {
                                 section.expandIcon = 'expand_more';
                             }
-
-                            section.elementId = section.text.toLowerCase().split(' ').join('_');
+                            if(section.elementId == undefined) {
+                                section.elementId = section.text.toLowerCase().split(' ').join('_');
+                            }
                         })
                     }
 
@@ -89,31 +88,10 @@ define(['angular','common/module-name'], function (angular,moduleName) {
                      * @param section
                      */
                     self.openToggleItem = function (section) {
-
-                        //disable scroll when opening
-                        $element.parent().css('overflow-y','hidden');
-
-                      if (!self.allowMultipleOpen) {
-                            angular.forEach(self.toggleSections, function (openSection) {
-                                openSection.expanded = false;
-                                openSection.expandIcon = 'expand_more';
-                            });
-                        }
-                        section.expanded = true;
-                        section.expandIcon = 'expand_less';
-
-                        $timeout(function(){
-                            $element.parent().css('overflow-y','auto');
-                        },500)
-
+                        AccordionMenuService.openToggleItem(section,$element,self.allowMultipleOpen,self.toggleSections);
 
                     }
 
-                    self.selectPage = function (section, page) {
-                        page && page.url && $location.path(page.url);
-                        self.currentSection = section;
-                        self.currentPage = page;
-                    }
                 }
             };
         }])
