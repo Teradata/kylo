@@ -2069,10 +2069,34 @@
     "!spark": "functions.countDistinct(%c%,*c)",
     "!sparkType": "column"
   },
+  "covar_pop": {
+    "!type": "fn(column1: Column, column2: Column) -> Column",
+    "!doc": "Aggregate function: returns the population covariance for two columns. (Spark 2.0)",
+    "!spark": "functions.covar_pop(%c, %c)",
+    "!sparkType": "column"
+  },
+  "covar_samp": {
+    "!type": "fn(column1: Column, column2: Column) -> Column",
+    "!doc": "Aggregate function: returns the sample covariance for two columns. (Spark 2.0)",
+    "!spark": "functions.covar_samp(%c, %c)",
+    "!sparkType": "column"
+  },
   "first": {
     "!type": "fn(e: Column) -> Column",
     "!doc": "Aggregate function: returns the first value in a group.",
     "!spark": "functions.first(%c)",
+    "!sparkType": "column"
+  },
+  "grouping": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Aggregate function: indicates whether a specified column in a GROUP BY list is aggregated or not, returns 1 for aggregated or 0 for not aggregated in the result set. (Spark 2.0)",
+    "!spark": "functions.grouping(%c)",
+    "!sparkType": "column"
+  },
+  "grouping_id": {
+    "!type": "fn(cols_varargs: Column) -> Column",
+    "!doc": "Aggregate function: returns the level of grouping. (Spark 2.0)",
+    "!spark": "functions.grouping_id(%*c)",
     "!sparkType": "column"
   },
   "kurtosis": {
@@ -2174,6 +2198,12 @@
     "!spark": "functions.explode(%c)",
     "!sparkType": "column"
   },
+  "from_json": {
+    "!type": "fn(e: Column, schema: string) -> Column",
+    "!doc": "Parses a column containing a JSON string into a StructType with the specified schema. Returns null, in the case of an unparseable string. (Spark 2.1)",
+    "!spark": "functions.from_json(%c, %s, Map())",
+    "!sparkType": "column"
+  },
   "get_json_object": {
     "!type": "fn(e: Column, path: string) -> Column",
     "!doc": "Extracts json object from a json string based on json path specified, and returns json string of the extracted json object.",
@@ -2186,6 +2216,12 @@
     "!spark": "functions.json_tuple(%c%,*s)",
     "!sparkType": "column"
   },
+  "posexplode": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Creates a new row for each element with position in the given array or map column. (Spark 2.1)",
+    "!spark": "functions.posexplode(%c)",
+    "!sparkType": "column"
+  },
   "size": {
     "!type": "fn(e: Column) -> Column",
     "!doc": "Returns length of array or map.",
@@ -2196,6 +2232,12 @@
     "!type": "fn(e: Column, opt_asc: boolean) -> Column",
     "!doc": "Sorts the input array for the given column in ascending / descending order, according to the natural ordering of the array elements.",
     "!spark": "functions.sort_array(%c%,?b)",
+    "!sparkType": "column"
+  },
+  "to_json": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Converts a column containing a StructType into a JSON string with the specified schema. (Spark 2.1)",
+    "!spark": "functions.to_json(%c)",
     "!sparkType": "column"
   },
 
@@ -2291,6 +2333,12 @@
     "!spark": "functions.month(%c)",
     "!sparkType": "column"
   },
+  "months_between": {
+    "!type": "fn(date1: Column, date2: Column) -> Column",
+    "!doc": "Number of months between date1 and date2.",
+    "!spark": "functions.months_between(%c, %c)",
+    "!sparkType": "column"
+  },
   "next_day": {
     "!type": "fn(e: Column, dayOfWeek: string) -> Column",
     "!doc": "Given a date column, returns the first date which is later than the value of the date column that is on the specified day of the week.",
@@ -2339,6 +2387,12 @@
     "!spark": "functions.weekofyear(%c)",
     "!sparkType": "column"
   },
+  "window": {
+    "!type": "fn(timeColumn: Column, windowDuration: string, opt_slideDuration: string, opt_startTime: string) -> Column",
+    "!doc": "Bucketize rows into one or more time windows given a timestamp specifying column. (Spark 2.0)",
+    "!spark": "functions.window(%c, %s%,?s%,?s)",
+    "!sparkType": "column"
+  },
   "year": {
     "!type": "fn(e: Column) -> Column",
     "!doc": "Extracts the year as an integer from a given date/timestamp/string.",
@@ -2376,6 +2430,12 @@
     "!type": "fn(e: Column) -> Column",
     "!doc": "An expression that returns the string representation of the binary value of the given long column.",
     "!spark": "functions.bin(e)",
+    "!sparkType": "column"
+  },
+  "bround": {
+    "!type": "fn(e: Column, opt_scale: number) -> Column",
+    "!doc": "Round the value of e to scale (defaults to 0) decimal places with HALF_EVEN round mode. (Spark 2.0)",
+    "!spark": "functions.bround(%c%,?d)",
     "!sparkType": "column"
   },
   "cbrt": {
@@ -2579,6 +2639,12 @@
     "!spark": "functions.crc32(%c)",
     "!sparkType": "column"
   },
+  "hash": {
+    "!type": "fn(cols_varargs: Column) -> Column",
+    "!doc": "Calculates the hash code of given columns, and returns the result as an int column. (Spark 2.0)",
+    "!spark": "functions.hash(%*c)",
+    "!sparkType": "column"
+  },
   "md5": {
     "!type": "fn(e: Column) -> Column",
     "!doc": "Calculates the MD5 digest of a binary column and returns the value as a 32 character hex string.",
@@ -2660,6 +2726,12 @@
     "!spark": "functions.least(%*c)",
     "!sparkType": "column"
   },
+  "map": {
+    "!type": "fn(cols_varargs: Column) -> Column",
+    "!doc": "Creates a new map column. (Spark 2.0)",
+    "!spark": "functions.map(%*c)",
+    "!sparkType": "column"
+  },
   "monotonically_increasing_id": {
     "!type": "fn() -> Column",
     "!doc": "Generates monotonically increasing 64-bit integers.",
@@ -2720,13 +2792,37 @@
   "asc": {
     "!type": "fn(columnName: string) -> Column",
     "!doc": "Returns a sort expression based on ascending order of the column.",
-    "!spark": "functions.asc(%c)",
+    "!spark": "functions.asc(%s)",
+    "!sparkType": "column"
+  },
+  "asc_nulls_first": {
+    "!type": "fn(columnName: string) -> Column",
+    "!doc": "Returns a sort expression based on ascending order of the column, and null values return before non-null values. (Spark 2.1)",
+    "!spark": "functions.asc_nulls_first(%s)",
+    "!sparkType": "column"
+  },
+  "asc_nulls_last": {
+    "!type": "fn(columnName: string) -> Column",
+    "!doc": "Returns a sort expression based on ascending order of the column, and null values appear after non-null values. (Spark 2.1)",
+    "!spark": "functions.asc_nulls_last(%s)",
     "!sparkType": "column"
   },
   "desc": {
     "!type": "fn(columnName: string) -> Column",
     "!doc": "Returns a sort expression based on descending order of the column.",
-    "!spark": "functions.desc(%c)",
+    "!spark": "functions.desc(%s)",
+    "!sparkType": "column"
+  },
+  "desc_nulls_first": {
+    "!type": "fn(columnName: string) -> Column",
+    "!doc": "Returns a sort expression based on the descending order of the column, and null values appear before non-null values. (Spark 2.1)",
+    "!spark": "functions.desc_nulls_first(%s)",
+    "!sparkType": "column"
+  },
+  "desc_nulls_last": {
+    "!type": "fn(columnName: string) -> Column",
+    "!doc": "Returns a sort expression based on the descending order of the column, and null values appear after non-null values. (Spark 2.1)",
+    "!spark": "functions.desc_nulls_last(%s)",
     "!sparkType": "column"
   },
 
@@ -2964,15 +3060,6 @@
     "!sparkType": "column"
   },
 
-  "!UNGROUPED": "Functions not assigned to a group.",
-
-  "months_between": {
-    "!type": "fn(date1: Column, date2: Column) -> Column",
-    "!doc": "Number of months between date1 and date2.",
-    "!spark": "functions.months_between(%c, %c)",
-    "!sparkType": "column"
-  },
-
   "!COLUMN_EXPRESSION_OPERATORS": "Functions for Column objects.",
 
   "add": {
@@ -3146,10 +3233,52 @@
 
   "!DATA_FRAME_FUNCTIONS": "Functions on DataFrame objects.",
 
+  "agg": {
+    "!type": "fn(expr: Column, exprs_varargs: Column) -> DataFrame",
+    "!doc": "Aggregates on the entire DataFrame without groups.",
+    "!spark": ".agg(%c%,*c)",
+    "!sparkType": "dataframe"
+  },
+  "crossJoin": {
+    "!type": "fn(right: DataFrame) -> DataFrame",
+    "!doc": "Explicit cartesian join with another DataFrame. (Spark 2.1)",
+    "!spark": ".crossJoin(%r)",
+    "!sparkType": "dataframe"
+  },
+  "crosstab": {
+    "!type": "fn(col1: string, col2: string) -> DataFrame",
+    "!doc": "Computes a pair-wise frequency table of the given columns.",
+    "!spark": ".stat.crosstab(%s, %s)",
+    "!sparkType": "dataframe"
+  },
+  "cube": {
+    "!type": "fn(cols_varargs: Column) -> GroupedData",
+    "!doc": "Create a multi-dimensional cube for the current DataFrame using the specified columns, so we can run aggregation on them.",
+    "!spark": ".cube(%*c)",
+    "!sparkType": "GroupedData"
+  },
+  "describe": {
+    "!type": "fn(cols_varargs: string) -> DataFrame",
+    "!doc": "Computes statistics for numeric and string columns, including count, mean, stddev, min, and max. (Spark 1.6)",
+    "!spark": ".describe(%*s)",
+    "!sparkType": "dataframe"
+  },
   "drop": {
     "!type": "fn(colName: string) -> DataFrame",
     "!doc": "Drops the specified column.",
     "!spark": ".drop(%s)",
+    "!sparkType": "dataframe"
+  },
+  "dropDuplicates": {
+    "!type": "fn(cols_varargs: string) -> DataFrame",
+    "!doc": "Returns a new Dataset with duplicate rows removed, considering only the subset of columns.",
+    "!spark": ".dropDuplicates(%*s)",
+    "!sparkType": "dataframe"
+  },
+  "except": {
+    "!type": "fn(other: DataFrame) -> DataFrame",
+    "!doc": "Returns a new Dataset containing rows in this Dataset but not in another Dataset. (Spark 2.0)",
+    "!spark": ".except(%r)",
     "!sparkType": "dataframe"
   },
   "filter": {
@@ -3158,16 +3287,88 @@
     "!spark": ".filter(%c)",
     "!sparkType": "dataframe"
   },
+  "freqItems": {
+    "!type": "fn(cols: [string], support: number) -> DataFrame",
+    "!doc": "Finding frequent items for columns, possibly with false positives.",
+    "!spark": ".stat.freqItems(%@s%,?f)",
+    "!sparkType": "dataframe"
+  },
   "groupBy": {
     "!type": "fn(col1: Column, cols_varargs: Column) -> GroupedData",
     "!doc": "Groups using the specified columns.",
     "!spark": ".groupBy(%*c)",
     "!sparkType": "GroupedData"
   },
+  "intersect": {
+    "!type": "fn(other: DataFrame) -> DataFrame",
+    "!doc": "Returns a new Dataset containing rows only in both this Dataset and another Dataset. (Spark 2.0)",
+    "!spark": ".intersect(%r)",
+    "!sparkType": "dataframe"
+  },
+  "join": {
+    "!type": "fn(right: DataFrame, joinExprs: Column, opt_joinType: string) -> DataFrame",
+    "!doc": "Join with another DataFrame, using the given join expression.",
+    "!spark": ".join(%r, %c%,?s)",
+    "!sparkType": "dataframe"
+  },
+  "limit": {
+    "!type": "fn(n: number) -> DataFrame",
+    "!doc": "Returns a new DataFrame by taking the first n rows.",
+    "!spark": ".limit(%d)",
+    "!sparkType": "dataframe"
+  },
+  "repartition": {
+    "!type": "fn(partitionExprs_varargs: Column) -> DataFrame",
+    "!doc": "Returns a new DataFrame partitioned by the given partitioning expressions preserving the existing number of partitions. (Spark 1.6)",
+    "!spark": ".repartition(%*c)",
+    "!sparkType": "dataframe"
+  },
+  "rollup": {
+    "!type": "fn(cols_varargs: Column) -> GroupedData",
+    "!doc": "Create a multi-dimensional rollup for the current DataFrame using the specified columns, so we can run aggregation on them.",
+    "!spark": ".rollup(%*c)",
+    "!sparkType": "dataframe"
+  },
+  "sample": {
+    "!type": "fn(withReplacement: boolean, fraction: number, opt_seed: number) -> DataFrame",
+    "!doc": "Returns a new DataFrame by sampling a fraction of rows.",
+    "!spark": ".sample(%b, %f%,?d)",
+    "!sparkType": "dataframe"
+  },
   "select": {
     "!type": "fn(cols_varargs: Column) -> DataFrame",
     "!doc": "Selects a set of column based expressions.",
     "!spark": ".select(%*c)",
+    "!sparkType": "dataframe"
+  },
+  "sort": {
+    "!type": "fn(sortExprs_varargs: Column) -> DataFrame",
+    "!doc": "Returns a new DataFrame sorted by the given expressions.",
+    "!spark": ".sort(%*c)",
+    "!sparkType": "dataframe"
+  },
+  "sortWithinPartitions": {
+    "!type": "fn(sortExprs_varargs: Column) -> DataFrame",
+    "!doc": "Returns a new DataFrame with each partition sorted by the given expressions. (Spark 1.6)",
+    "!spark": ".sortWithinPartitions(%*c)",
+    "!sparkType": "dataframe"
+  },
+  "unionAll": {
+    "!type": "fn(other: DataFrame) -> DataFrame",
+    "!doc": "Returns a new DataFrame containing union of rows in this frame and another frame.",
+    "!spark": ".unionAll(%r)",
+    "!sparkType": "dataframe"
+  },
+  "withColumn": {
+    "!type": "fn(colName: string, col: Column) -> DataFrame",
+    "!doc": "Returns a new DataFrame by adding a column or replacing the existing column that has the same name.",
+    "!spark": ".withColumn(%s, %c)",
+    "!sparkType": "dataframe"
+  },
+  "withColumnRenamed": {
+    "!type": "fn(existingName: string, newName: string) -> DataFrame",
+    "!doc": "Returns a new DataFrame with a column renamed.",
+    "!spark": ".withColumnRenamed(%s, %s)",
     "!sparkType": "dataframe"
   },
 
