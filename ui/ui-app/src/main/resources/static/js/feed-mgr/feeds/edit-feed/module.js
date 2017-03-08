@@ -34,8 +34,9 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name','kylo-utils/LazyLoadUti
         }
     }]);
 
-
-
+    module.run(['$ocLazyLoad',function($ocLazyLoad){
+        $ocLazyLoad.load({name:'kylo',files:['js/vendor/font-awesome/css/font-awesome.min.css'],serie: true})
+    }]);
 
 return module;
 

@@ -18,7 +18,7 @@ define(['angular','ops-mgr/jobs/module-name',  'kylo-utils/LazyLoadUtil','kylo-c
                 loadPage: lazyLoad()
             },
             data:{
-                breadcrumbRoot:true,
+                breadcrumbRoot:false,
                 displayName:'Jobs',
                 module:moduleName
             }
