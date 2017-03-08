@@ -1,4 +1,5 @@
 require.config({
+    waitSeconds: 0,
     baseUrl: "js",
     paths: {
         "angular":"../bower_components/angular/angular.min",
