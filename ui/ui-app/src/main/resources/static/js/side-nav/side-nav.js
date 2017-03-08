@@ -3,8 +3,7 @@ define(['angular','side-nav/module-name'], function (angular,moduleName) {
     var directive = function ( $mdSidenav, $mdDialog,$rootScope,$transitions,$timeout, SideNavService, AccessControlService, StateService) {
         return {
             restrict: "E",
-            scope: {
-            },
+            scope:{},
             templateUrl: 'js/side-nav/side-nav.html',
             link: function ($scope) {
                 $scope.sideNavService = SideNavService;

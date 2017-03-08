@@ -417,8 +417,8 @@ define(['angular','ops-mgr/jobs/module-name'], function (angular,moduleName) {
             var instanceId = job.instanceId;
             clearRefreshTimeout(instanceId);
             triggerJobActionListener('restartJob', job);
-            var xhr = OpsManagerJobService.restartJob(job.executionId, {}, function(data) {
-                updateJob(instanceId, data)
+            var xhr = OpsManagerJobService.restartJob(job.executionId, {}, function(response) {
+                updateJob(instanceId, response.data)
                 //  getRunningJobExecutionData(instanceId,data.executionId);
             }, function(errMsg) {
                 addJobErrorMessage(executionId, errMsg);
@@ -431,8 +431,8 @@ define(['angular','ops-mgr/jobs/module-name'], function (angular,moduleName) {
             var instanceId = job.instanceId;
             clearRefreshTimeout(instanceId);
             triggerJobActionListener('stopJob', job);
-            OpsManagerJobService.stopJob(job.executionId, {}, function(data) {
-                updateJob(instanceId, data)
+            OpsManagerJobService.stopJob(job.executionId, {}, function(response) {
+                updateJob(instanceId, response.data)
                 //  getRunningJobExecutionData(instanceId,data.executionId);
             })
         };
@@ -443,9 +443,9 @@ define(['angular','ops-mgr/jobs/module-name'], function (angular,moduleName) {
             var instanceId = job.instanceId;
             clearRefreshTimeout(instanceId);
             triggerJobActionListener('abandonJob', job);
-            OpsManagerJobService.abandonJob(job.executionId, {}, function(data) {
-                updateJob(instanceId, data)
-                triggerJobActionListener('abandonJob', data);
+            OpsManagerJobService.abandonJob(job.executionId, {}, function(response) {
+                updateJob(instanceId, response.data)
+                triggerJobActionListener('abandonJob', response.data);
             })
         };
 
@@ -455,9 +455,9 @@ define(['angular','ops-mgr/jobs/module-name'], function (angular,moduleName) {
             var instanceId = job.executionId;
             clearRefreshTimeout(instanceId);
             triggerJobActionListener('failJob', job);
-            OpsManagerJobService.failJob(job.executionId, {}, function(data) {
+            OpsManagerJobService.failJob(job.executionId, {}, function(response) {
                 updateJob(instanceId, data)
-                triggerJobActionListener('failJob', job);
+                triggerJobActionListener('failJob', response.data);
             })
         };
 

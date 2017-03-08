@@ -41,6 +41,7 @@ require.config({
         "ment-io":"vendor/ment.io/mentio.min",
         "moment":"../bower_components/moment/min/moment.min",
         'ng-fx':"../bower_components/ngFx/dist/ngFx.min",
+        "ng-text-truncate":"vendor/ng-text-truncate/ng-text-truncate",
         "nvd3": "../bower_components/nvd3/build/nv.d3.min",
         "ocLazyLoad":"../bower_components/oclazyload/dist/ocLazyLoad.require.min",
         "pivottable": "../bower_components/pivottable/dist/pivot.min",
@@ -99,10 +100,11 @@ require.config({
         'kylo-side-nav':{deps:['angular','kylo-services','jquery','angular-material-icons','kylo-side-nav-module'], exports:'kylo-side-nav'},
         'ment-io':['angular'],
         "ng-fx":{deps:["gsap"]},
+        "ng-text-truncate":["angular"],
         'nvd3':{deps:['d3'],exports:'nv'},
         'pivottable':{deps:['c3','jquery']},
         'vis;':{exports:"vis"},
-        'app':{deps:['ocLazyLoad','underscore','angularMaterial','jquery','angular-sanitize'], exports:'app'},
+        'app':{deps:['ocLazyLoad','underscore','angularMaterial','jquery','angular-sanitize','ng-text-truncate'], exports:'app'},
         'routes':{deps:['app'], exports:'routes'}
     },
     deps: ['routes']

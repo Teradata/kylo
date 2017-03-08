@@ -247,11 +247,12 @@ table.hive-table th:last-child, table.hive-table td:last-child {
   text-overflow: ellipsis;
 }
 
-/*NOT USED??*/
+/*NOT USED
 card-layout .register-nifi-template-header {
   height: inherit !important;;
   max-height: inherit !important;
 }
+*/
 
 /**
  * Categories autocomplete
@@ -458,8 +459,4 @@ md-list-item .md-list-item-inner > md-checkbox.permissions-indent-1 {
 
 md-list-item .md-list-item-inner > md-checkbox.permissions-indent-2 {
   margin-left: 115px;
-}
-
-ng-md-icon > svg > path:first-child {
-  fill:"";
 }

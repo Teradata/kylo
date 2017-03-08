@@ -146,7 +146,7 @@
 
 
                     <div layout="row" ng-click="step.content.open == true ? step.content.open = false : step.content.open = true"
-                         class="md-list-item-text hover-highlight-pointer layout-padding-top layout-padding-bottom layout-padding-left-16 " flex layout-fill>
+                         class="md-list-item-text hover-highlight-pointer layout-padding-top-bottom " flex layout-fill>
 
                       <div flex="40" layout="column">
                    <span class="item-title">
@@ -175,7 +175,7 @@
                       </div>
                     </div>
 
-                    <div ng-if="step.content.open" class="fade-in-out layout-padding-left-16" layout-fill flex>
+                    <div ng-if="step.content.open" class="fade-in-out layout-padding-left-16">
 
                       <div class="item-title" style="padding-top:10px;padding-bottom:4px;">Exit Description</div>
                       <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;" ng-text-truncate="step.content.exitDescription"

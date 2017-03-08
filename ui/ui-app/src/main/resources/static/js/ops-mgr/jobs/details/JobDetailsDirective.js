@@ -431,8 +431,8 @@ define(['angular','ops-mgr/jobs/details/module-name'], function (angular,moduleN
             event.stopPropagation();
             event.preventDefault();
             var executionId = self.jobData.executionId;
-            var xhr = OpsManagerJobService.restartJob(self.jobData.executionId, {includeSteps: true}, function(data) {
-                        updateJob(executionId, data);
+            var xhr = OpsManagerJobService.restartJob(self.jobData.executionId, {includeSteps: true}, function(response) {
+                        updateJob(executionId, response.data);
                         //  loadJobs(true);
                     }, function(errMsg) {
                         addJobErrorMessage(executionId, errMsg);
@@ -444,8 +444,8 @@ define(['angular','ops-mgr/jobs/details/module-name'], function (angular,moduleN
             event.stopPropagation();
             event.preventDefault();
             var executionId = self.jobData.executionId;
-            OpsManagerJobService.stopJob(self.jobData.executionId, {includeSteps: true}, function(data) {
-                updateJob(executionId, data)
+            OpsManagerJobService.stopJob(self.jobData.executionId, {includeSteps: true}, function(response) {
+                updateJob(executionId, response.data)
                 //  loadJobs(true);
             })
         };
@@ -454,8 +454,8 @@ define(['angular','ops-mgr/jobs/details/module-name'], function (angular,moduleN
             event.stopPropagation();
             event.preventDefault();
             var executionId = self.jobData.executionId;
-            OpsManagerJobService.abandonJob(self.jobData.executionId, {includeSteps: true}, function(data) {
-                updateJob(executionId, data)
+            OpsManagerJobService.abandonJob(self.jobData.executionId, {includeSteps: true}, function(response) {
+                updateJob(executionId, response.data)
                 //  loadJobs(true);
             })
         };
@@ -464,8 +464,8 @@ define(['angular','ops-mgr/jobs/details/module-name'], function (angular,moduleN
             event.stopPropagation();
             event.preventDefault();
             var executionId = self.jobData.executionId;
-            OpsManagerJobService.failJob(self.jobData.executionId, {includeSteps: true}, function(data) {
-                updateJob(executionId, data)
+            OpsManagerJobService.failJob(self.jobData.executionId, {includeSteps: true}, function(response) {
+                updateJob(executionId, response.data)
                 //  loadJobs(true);
             })
         };
