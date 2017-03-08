@@ -59,11 +59,14 @@ angular.module(moduleName).factory("SparkShellService", ["$http","$mdDialog","$q
     // URL to the API server
     var API_URL = RestUrlService.SPARK_SHELL_SERVICE_URL;
 
+    /** Name of the variable containing the DataFrame */
+    var DATA_FRAME_VARIABLE = "df";
+
     /** TernJS directive for defined types */
     var DEFINE_DIRECTIVE = "!define";
 
     /** Regular expression for conversion strings */
-    var FORMAT_REGEX = /%([?*,]*)([bcdfsw])/g;
+    var FORMAT_REGEX = /%([?*,@]*)([bcdfors])/g;
 
     /** TernJS directive for the Spark code */
     var SPARK_DIRECTIVE = "!spark";
@@ -321,7 +324,7 @@ angular.module(moduleName).factory("SparkShellService", ["$http","$mdDialog","$q
             var sparkScript = "import org.apache.spark.sql._\n";
 
             if (start === 0) {
-                sparkScript += "sqlContext.sql(\"" + this.source_ + "\")";
+                sparkScript += "var " + DATA_FRAME_VARIABLE + " = sqlContext.sql(\"" + this.source_ + "\")";
                 if (sample && this.limitBeforeSample_ && this.limit_ > 0) {
                     sparkScript += ".limit(" + this.limit_ + ")";
                 }
@@ -331,14 +334,17 @@ angular.module(moduleName).factory("SparkShellService", ["$http","$mdDialog","$q
                 if (sample && !this.limitBeforeSample_ && this.limit_ > 0) {
                     sparkScript += ".limit(" + this.limit_ + ")";
                 }
+                sparkScript += "\n";
+                ++start;
             } else {
-                sparkScript += "parent";
+                sparkScript += "var " + DATA_FRAME_VARIABLE + " = parent\n";
             }
 
             for (var i = start; i < end; ++i) {
-                sparkScript += this.states_[i].script;
+                sparkScript += DATA_FRAME_VARIABLE + " = " + DATA_FRAME_VARIABLE + this.states_[i].script + "\n";
             }
 
+            sparkScript += DATA_FRAME_VARIABLE + "\n";
             return sparkScript;
         },
 
@@ -636,23 +642,33 @@ angular.module(moduleName).factory("SparkShellService", ["$http","$mdDialog","$q
      * @enum {string}
      */
     var SparkType = {
+        /** Represents a Scala array */
+        ARRAY: "array",
+
         /** Represents a Spark SQL Column */
         COLUMN: "column",
 
         /** Represents a chain of {@code when} function calls */
-        CONDITION_CHAIN: "conditionchain",
+        CONDITION_CHAIN: "ConditionChain",
 
         /** Represents a Spark SQL DataFrame */
         DATA_FRAME: "dataframe",
 
-        /** Represents a Spark SQL GroupedData */
-        GROUPED_DATA: "groupeddata",
-
         /** Represents a Scala number or string literal */
         LITERAL: "literal",
 
-        /** Represents a Spark SQL WindowSpec */
-        WINDOW_SPEC: "windowspec",
+        /** Represents a function that takes a DataFrame and returns a DataFrame */
+        TRANSFORM: "transform",
+
+        /**
+         * Indicates if the specified type is an object type.
+         *
+         * @param {SparkType} sparkType the Spark type
+         * @returns {boolean} true if the type is an object type, or false otherwise
+         */
+        isObject: function(sparkType) {
+            return (sparkType !== SparkType.ARRAY && sparkType !== SparkType.LITERAL && sparkType !== SparkType.TRANSFORM)
+        },
 
         /**
          * Gets the TernJS definition name for the specified type.
@@ -661,22 +677,7 @@ angular.module(moduleName).factory("SparkShellService", ["$http","$mdDialog","$q
          * @returns {string|null}
          */
         toTernjsName: function(sparkType) {
-            switch (sparkType) {
-                case SparkType.COLUMN:
-                    return TERNJS_COLUMN_TYPE;
-
-                case SparkType.CONDITION_CHAIN:
-                    return "ConditionChain";
-
-                case SparkType.GROUPED_DATA:
-                    return "GroupedData";
-
-                case SparkType.WINDOW_SPEC:
-                    return "WindowSpec";
-
-                default:
-                    return null;
-            }
+            return (sparkType === SparkType.COLUMN) ? TERNJS_COLUMN_TYPE : sparkType;
         }
     };
 
@@ -706,7 +707,7 @@ angular.module(moduleName).factory("SparkShellService", ["$http","$mdDialog","$q
     function SparkExpression(source, type, start, end) {
         /**
          * Spark source code.
-         * @type {string}
+         * @type {string|Array}
          */
         this.source = source;
 
@@ -801,6 +802,7 @@ angular.module(moduleName).factory("SparkShellService", ["$http","$mdDialog","$q
          */
         replace: function(context, match, flags, type) {
             // Parse flags
+            var arrayType = null;
             var comma = false;
             var end = context.index + 1;
 
@@ -816,6 +818,11 @@ angular.module(moduleName).factory("SparkShellService", ["$http","$mdDialog","$q
 
                     case "*":
                         end = context.args.length;
+                        break;
+
+                    case "@":
+                        arrayType = type;
+                        type = "@";
                         break;
 
                     default:
@@ -860,12 +867,20 @@ angular.module(moduleName).factory("SparkShellService", ["$http","$mdDialog","$q
                         result += SparkExpression.toDouble(arg);
                         break;
 
+                    case "o":
+                        result += SparkExpression.toObject(arg);
+                        break;
+
+                    case "r":
+                        result += SparkExpression.toDataFrame(arg);
+                        break;
+
                     case "s":
                         result += SparkExpression.toString(arg);
                         break;
 
-                    case "w":
-                        result += SparkExpression.toWindowSpec(arg);
+                    case "@":
+                        result += SparkExpression.toArray(arg, arrayType);
                         break;
 
                     default:
@@ -874,6 +889,28 @@ angular.module(moduleName).factory("SparkShellService", ["$http","$mdDialog","$q
             }
 
             return result;
+        },
+
+        /**
+         * Converts the specified Spark expression to an array.
+         *
+         * @private
+         * @static
+         * @param {SparkExpression} expression the Spark expression
+         * @param {string} type the type specifier
+         * @returns {string} the Spark code for the array
+         * @throws {ParseException} if the expression cannot be converted to an array
+         */
+        toArray: function(expression, type) {
+            if (expression.type === SparkType.ARRAY) {
+                return "Array(" + expression.source
+                        .map(function(e) {
+                            return SparkExpression.format("%" + type, e);
+                        })
+                        .join(", ") + ")";
+            } else {
+                throw new ParseException("Expression cannot be converted to an array: " + expression.type, expression.start);
+            }
         },
 
         /**
@@ -916,6 +953,25 @@ angular.module(moduleName).factory("SparkShellService", ["$http","$mdDialog","$q
         },
 
         /**
+         * Converts the specified Spark expression to a DataFrame type.
+         *
+         * @private
+         * @static
+         * @param {SparkExpression} expression the Spark expression
+         * @returns {string} the Spark code for the new type
+         * @throws {ParseException} if the expression cannot be converted to a DataFrame
+         */
+        toDataFrame: function(expression) {
+            switch (expression.type) {
+                case SparkType.DATA_FRAME:
+                    return DATA_FRAME_VARIABLE + expression.source;
+
+                default:
+                    throw new ParseException("Expression cannot be converted to a DataFrame: " + expression.type, expression.start);
+            }
+        },
+
+        /**
          * Converts the specified Spark expression to a double.
          *
          * @private
@@ -950,6 +1006,23 @@ angular.module(moduleName).factory("SparkShellService", ["$http","$mdDialog","$q
         },
 
         /**
+         * Converts the specified Spark expression to an object.
+         *
+         * @private
+         * @static
+         * @param {SparkExpression} expression the Spark expression
+         * @returns {string} the Spark code for the object
+         * @throws {ParseException} if the expression cannot be converted to an object
+         */
+        toObject: function(expression) {
+            if (SparkType.isObject(expression.type)) {
+                return expression.source;
+            } else {
+                throw new ParseException("Expression cannot be converted to an object: " + expression.type, expression.start);
+            }
+        },
+
+        /**
          * Converts the specified Spark expression to a string literal.
          *
          * @private
@@ -967,25 +1040,25 @@ angular.module(moduleName).factory("SparkShellService", ["$http","$mdDialog","$q
                 return "\"" + expression.source.substr(1, expression.source.length - 2).replace(/"/g, "\\\"") + "\"";
             }
             return "\"" + expression.source + "\"";
-        },
-
-        /**
-         * Converts the specified Spark expression to a window spec.
-         *
-         * @private
-         * @static
-         * @param {SparkExpression} expression the Spark expression
-         * @returns {string} the Spark code for the window spec
-         * @throws {ParseException} if the expression cannot be converted to a window spec
-         */
-        toWindowSpec: function(expression) {
-            if (expression.type === SparkType.WINDOW_SPEC) {
-                return expression.source;
-            } else {
-                throw new ParseException("Expression cannot be converted to a window spec: " + expression.type, expression.start);
-            }
         }
     });
+
+    /**
+     * Converts an array expression node to a Spark expression.
+     *
+     * @param {acorn.Node} node the array expression node
+     * @param {SparkShellService} sparkShellService the Spark shell service
+     * @returns {SparkExpression} the Spark expression
+     * @throws {Error} if a function definition is not valid
+     * @throws {ParseException} if the node is not valid
+     */
+    function parseArrayExpression(node, sparkShellService) {
+        var source = node.elements
+            .map(function(e) {
+                return toSpark(e, sparkShellService);
+            });
+        return new SparkExpression(source, SparkType.ARRAY, node.start, node.end);
+    }
 
     /**
      * Converts a binary expression node to a Spark expression.
@@ -1213,6 +1286,9 @@ angular.module(moduleName).factory("SparkShellService", ["$http","$mdDialog","$q
                 var column = SparkExpression.format("%c", spark);
                 return ".select(new Column(\"*\"), " + column + ")";
 
+            case SparkType.TRANSFORM:
+                return ".transform(" + spark.source + ")";
+
             default:
                 throw new Error("Result type not supported: " + spark.type);
         }
@@ -1229,6 +1305,9 @@ angular.module(moduleName).factory("SparkShellService", ["$http","$mdDialog","$q
      */
     function toSpark(node, sparkShellService) {
         switch (node.type) {
+            case "ArrayExpression":
+                return parseArrayExpression(node, sparkShellService);
+
             case "BinaryExpression":
                 return parseBinaryExpression(node, sparkShellService);
 
