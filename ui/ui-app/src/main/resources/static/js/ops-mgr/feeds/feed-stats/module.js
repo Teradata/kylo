@@ -23,7 +23,7 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name',  'kylo-utils/LazyLoadU
                 loadMyCtrl: lazyLoadController(['ops-mgr/feeds/feed-stats/feed-stats'])
             },
             data:{
-                breadcrumbRoot:true,
+                breadcrumbRoot:false,
                 displayName:'Feed Stats',
                 module:moduleName
             }
