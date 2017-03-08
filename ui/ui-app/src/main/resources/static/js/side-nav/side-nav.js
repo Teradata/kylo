@@ -52,7 +52,7 @@ define(['angular','side-nav/module-name'], function (angular,moduleName) {
                     links.push({sref: "categories",type:'link', icon: "folder_special", text: "Categories", defaultActive: false, fullscreen: false, permission: AccessControlService.CATEGORIES_ACCESS});
                     links.push({sref: "tables",type:'link', icon: "grid_on", text: "Tables", defaultActive: false, fullscreen: false, permission: AccessControlService.FEED_MANAGER_ACCESS});
                     links.push({sref: "service-level-agreements",type:'link', icon: "beenhere", text: "SLA", defaultActive: false, fullscreen: false, permission: AccessControlService.FEEDS_ACCESS});
-                    links.push({sref: "visual-query",type:'link', icon: "transform", text: "Visual Query", defaultActive: false, fullscreen: true, permission: AccessControlService.FEED_MANAGER_ACCESS});
+                  //  links.push({sref: "visual-query",type:'link', icon: "transform", text: "Visual Query", defaultActive: false, fullscreen: true, permission: AccessControlService.FEED_MANAGER_ACCESS});
                     menu.links = links;
                  return menu;
 
