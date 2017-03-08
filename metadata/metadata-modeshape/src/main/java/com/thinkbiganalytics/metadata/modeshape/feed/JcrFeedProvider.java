@@ -565,7 +565,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
     @Override
     public void delete(Feed feed) {
-        feed.getAllowedActions().checkPermission(FeedAccessControl.ENABLE_DISABLE);
+        feed.getAllowedActions().checkPermission(FeedAccessControl.DELETE);
         
         addPostFeedChangeAction(feed, ChangeType.DELETE);
 

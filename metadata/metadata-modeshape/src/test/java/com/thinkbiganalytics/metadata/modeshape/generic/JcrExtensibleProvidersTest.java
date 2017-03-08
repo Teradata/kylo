@@ -42,7 +42,7 @@ import javax.inject.Inject;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringApplicationConfiguration(classes = {ModeShapeEngineConfig.class, JcrTestConfig.class})
+@SpringApplicationConfiguration(classes = {ModeShapeEngineConfig.class, JcrTestConfig.class, JcrExtensibleProvidersTestConfig.class})
 public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests {
     // @formatter:off
 

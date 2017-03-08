@@ -3,7 +3,11 @@
  */
 package com.thinkbiganalytics.metadata.modeshape;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.when;
+
 import java.io.IOException;
+import java.util.Optional;
 
 /*-
  * #%L
@@ -122,7 +126,10 @@ public class JcrTestConfig {
     
     @Bean
     public JcrAllowedEntityActionsProvider allowedEntityActionsProvider() {
-        return Mockito.mock(JcrAllowedEntityActionsProvider.class);
+        JcrAllowedEntityActionsProvider provider = Mockito.mock(JcrAllowedEntityActionsProvider.class);
+        when(provider.getAllowedActions(any(String.class))).thenReturn(Optional.empty());
+        when(provider.getAvailableActions(any(String.class))).thenReturn(Optional.empty());
+        return provider;
     }
 
     @Bean
@@ -163,11 +170,6 @@ public class JcrTestConfig {
     @Bean
     public FeedServiceLevelAgreementProvider jcrFeedSlaProvider() {
         return Mockito.mock(FeedServiceLevelAgreementProvider.class);
-    }
-
-    @Bean
-    public JcrMetadataAccess metadataAccess() {
-        return Mockito.mock(JcrMetadataAccess.class);
     }
 
 }

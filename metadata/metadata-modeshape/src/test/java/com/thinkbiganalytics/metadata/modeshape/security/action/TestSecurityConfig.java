@@ -61,6 +61,12 @@ public class TestSecurityConfig {
 
     @Inject
     private ActionsModuleBuilder builder;
+    
+    
+    @Bean
+    public JcrAllowedEntityActionsProvider allowedEntityActionsProvider() {
+        return new JcrAllowedEntityActionsProvider();
+    }    
 
     @Bean
     public PostMetadataConfigAction configAuthorization() {

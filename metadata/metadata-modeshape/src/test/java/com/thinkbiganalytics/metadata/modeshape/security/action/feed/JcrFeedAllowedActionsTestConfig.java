@@ -28,7 +28,6 @@ import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
-import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategoryProvider;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedProvider;
 import com.thinkbiganalytics.security.action.AllowedActions;
@@ -48,10 +47,13 @@ public class JcrFeedAllowedActionsTestConfig {
 
     @Inject
     private ActionsModuleBuilder builder;
+    
+    @Inject
+    private MetadataAccess metadataAccess;
 
     @Bean
     public PostMetadataConfigAction configAuthorization() {
-        return () -> metadataAccess().commit(() -> {
+        return () -> metadataAccess.commit(() -> {
             //@formatter:off
 
             return builder
@@ -84,12 +86,6 @@ public class JcrFeedAllowedActionsTestConfig {
     @Primary
     public CategoryProvider categoryProvider() {
         return new JcrCategoryProvider();
-    }
-
-    @Bean
-    @Primary
-    public JcrMetadataAccess metadataAccess() {
-        return new JcrMetadataAccess();
     }
 
 }
