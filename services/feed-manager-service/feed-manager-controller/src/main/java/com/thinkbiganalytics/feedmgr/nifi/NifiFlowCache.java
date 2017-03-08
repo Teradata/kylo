@@ -28,9 +28,8 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
-import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailability;
-import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailabilityListener;
 import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheConnectionData;
 import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheSync;
 import com.thinkbiganalytics.metadata.rest.model.nifi.NifiFlowCacheSnapshot;
@@ -78,13 +77,10 @@ import javax.inject.Inject;
  *
  * @see com.thinkbiganalytics.nifi.rest.visitor.NifiConnectionOrderVisitor
  */
-public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabilityListener, NiFiProvenanceConstants {
+public class NifiFlowCache implements NifiConnectionListener, PostMetadataConfigAction, NiFiProvenanceConstants {
 
     private static final Logger log = LoggerFactory.getLogger(NifiFlowCache.class);
 
-
-    @Inject
-    ModeShapeAvailability modeShapeAvailability;
 
     @Inject
     LegacyNifiRestClient nifiRestClient;
@@ -158,15 +154,14 @@ public class NifiFlowCache implements NifiConnectionListener, ModeShapeAvailabil
     @PostConstruct
     private void init() {
         nifiConnectionService.subscribeConnectionListener(this);
-        modeShapeAvailability.subscribe(this);
         initExpireTimerThread();
     }
 
     /**
-     * Modeshape is available
+     * Metadata is available
      */
     @Override
-    public void modeShapeAvailable() {
+    public void run() {
         this.modeShapeAvailable = true;
         checkAndInitializeCache();
     }

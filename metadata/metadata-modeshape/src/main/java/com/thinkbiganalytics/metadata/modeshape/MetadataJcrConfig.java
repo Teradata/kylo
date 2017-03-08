@@ -38,7 +38,6 @@ import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.api.user.UserProvider;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategoryProvider;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrFeedManagerCategoryProvider;
-import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailability;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasourceDefinitionProvider;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasourceProvider;
 import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensibleEntityProvider;
@@ -149,12 +148,6 @@ public class MetadataJcrConfig {
     @Bean
     public JcrFeedUtil jcrFeedUtil(){
         return new JcrFeedUtil();
-    }
-
-
-    @Bean
-    public ModeShapeAvailability modeShapeAvailability() {
-        return new ModeShapeAvailability();
     }
 
 
