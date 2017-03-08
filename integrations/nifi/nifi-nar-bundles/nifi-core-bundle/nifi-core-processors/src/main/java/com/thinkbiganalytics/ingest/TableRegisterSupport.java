@@ -96,7 +96,7 @@ public class TableRegisterSupport {
      * @return {@code true} if the table was registered, or {@code false} if there was an error
      */
     public boolean registerTable(String source, String tableEntity, ColumnSpec[] feedColumnSpecs, String feedFormatOptions, String targetFormatOptions, ColumnSpec[] partitions, ColumnSpec[]
-        columnSpecs, String targetTableProperties, String storageFormat, String s3bucket, String s3protocol, TableType tableType, boolean registerDatabase) {
+        columnSpecs, String targetTableProperties, TableType tableType, boolean registerDatabase) {
         Validate.notNull(conn);
 
         ColumnSpec[] useColumnSpecs = (tableType == TableType.FEED ? feedColumnSpecs : columnSpecs);
@@ -107,7 +107,7 @@ public class TableRegisterSupport {
         }
 
         // Register the table
-        String ddl = createDDL(source, tableEntity, useColumnSpecs, partitions, feedFormatOptions, targetFormatOptions, targetTableProperties, tableType, storageFormat, s3bucket, s3protocol);
+        String ddl = createDDL(source, tableEntity, useColumnSpecs, partitions, feedFormatOptions, targetFormatOptions, targetTableProperties, tableType);
         return createTable(ddl);
     }
 
@@ -139,31 +139,31 @@ public class TableRegisterSupport {
         }
     }
 
-    public boolean registerProfileTable(String source, String tableEntity, String targetFormatOptions, String storageFormat, String s3bucket, String s3protocol) {
+    public boolean registerProfileTable(String source, String tableEntity, String targetFormatOptions) {
 
         String tableName = TableType.PROFILE.deriveQualifiedName(source, tableEntity);
         String columnSQL = " `columnname` string,`metrictype` string,`metricvalue` string";
         String formatSQL = TableType.PROFILE.deriveFormatSpecification("NOT_USED", targetFormatOptions);
         String partitionSQL = TableType.PROFILE.derivePartitionSpecification(null);
-        String locationSQL = TableType.PROFILE.deriveLocationSpecification(config.pathForTableType(TableType.PROFILE), source, tableEntity, storageFormat, s3bucket, s3protocol);
+        String locationSQL = TableType.PROFILE.deriveLocationSpecification(config.pathForTableType(TableType.PROFILE), source, tableEntity);
 
         String ddl = createDDL(tableName, columnSQL, partitionSQL, formatSQL, locationSQL, "", TableType.PROFILE.isExternal());
         return createTable(ddl);
     }
 
     public boolean registerStandardTables(String source, String tableEntity, ColumnSpec[] feedColumnSpecs, String feedFormatOptions, String targetFormatOptions, ColumnSpec[] partitions, ColumnSpec[]
-        columnSpecs, String tblProperties, String storageFormat, String s3bucket, String s3protocol) {
+        columnSpecs, String tblProperties) {
         boolean result = true;
         registerDatabase(source);
         Set<String> existingTables = fetchExisting(source, tableEntity);
         TableType[] tableTypes = new TableType[]{TableType.FEED, TableType.INVALID, TableType.VALID, TableType.MASTER};
         for (TableType tableType : tableTypes) {
             if (!existingTables.contains(tableType.deriveTablename(tableEntity))) {
-                result = registerTable(source, tableEntity, feedColumnSpecs, feedFormatOptions, targetFormatOptions, partitions, columnSpecs, tblProperties, storageFormat, s3bucket, s3protocol, tableType, false) && result;
+                result = registerTable(source, tableEntity, feedColumnSpecs, feedFormatOptions, targetFormatOptions, partitions, columnSpecs, tblProperties, tableType, false) && result;
             }
         }
         if (!existingTables.contains(TableType.PROFILE.deriveTablename(tableEntity))) {
-            result = registerProfileTable(source, tableEntity, targetFormatOptions, storageFormat, s3bucket, s3protocol) && result;
+            result = registerProfileTable(source, tableEntity, targetFormatOptions) && result;
         }
         return result;
     }
@@ -179,11 +179,11 @@ public class TableRegisterSupport {
     }
 
     protected String createDDL(String source, String entity, ColumnSpec[] columnSpecs, ColumnSpec[] partitions, String feedFormatOptions, String targetFormatOptions, String targetTableProperties,
-                               TableType tableType, String storageFormat, String s3bucket, String s3protocol) {
+                               TableType tableType) {
         String tableName = tableType.deriveQualifiedName(source, entity);
         String partitionSQL = tableType.derivePartitionSpecification(partitions);
         String columnsSQL = tableType.deriveColumnSpecification(columnSpecs, partitions, feedFormatOptions);
-        String locationSQL = tableType.deriveLocationSpecification(config.pathForTableType(tableType), source, entity, storageFormat, s3bucket, s3protocol);
+        String locationSQL = tableType.deriveLocationSpecification(config.pathForTableType(tableType), source, entity);
         String formatOptionsSQL = tableType.deriveFormatSpecification(feedFormatOptions, targetFormatOptions);
         String tblPropertiesSQL = tableType.deriveTableProperties(targetTableProperties);
 

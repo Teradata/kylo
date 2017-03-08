@@ -25,7 +25,6 @@ import com.thinkbiganalytics.ingest.TableRegisterSupport;
 import com.thinkbiganalytics.nifi.processor.AbstractNiFiProcessor;
 import com.thinkbiganalytics.nifi.v2.thrift.ThriftService;
 import com.thinkbiganalytics.util.ColumnSpec;
-import com.thinkbiganalytics.util.StorageType;
 import com.thinkbiganalytics.util.TableRegisterConfiguration;
 import com.thinkbiganalytics.util.TableType;
 
@@ -110,38 +109,6 @@ public class RegisterFeedTables extends AbstractNiFiProcessor {
         .allowableValues(TableType.FEED.toString(), TableType.VALID.toString(), TableType.INVALID.toString(), TableType.PROFILE.toString(), TableType.MASTER.toString(), ALL_TABLES)
         .defaultValue(ALL_TABLES)
         .build();
-    /**
-     * Property indicating which file system is to back hive tables
-     */
-    public static final PropertyDescriptor STORAGE_FORMAT = new PropertyDescriptor.Builder()
-        .name("Storage Type")
-        .description("Specifies if the hive tables are to be backed by HDFS or S3.")
-        .required(true)
-        .allowableValues(StorageType.S3.toString(), StorageType.HDFS.toString())
-        .defaultValue(StorageType.HDFS.toString())
-        .build();
-
-    private static String S3N = "s3n";
-    private static String S3A = "s3a";
-    /**
-     * Property indicating which protocol is to be used if using s3
-     */
-    public static final PropertyDescriptor S3_PROTOCOL = new PropertyDescriptor.Builder()
-            .name("S3 Protocol")
-            .description("Specifies which S3 protocol is to be used if using S3 storage.")
-            .required(false)
-            .allowableValues(S3N, S3A)
-            .defaultValue(S3A)
-            .build();
-
-    public static final PropertyDescriptor S3_BUCKET = new PropertyDescriptor.Builder()
-        .name("S3 Bucket")
-        .description("Specifies an S3 bucket to be used to store hive data. Required when Storage Type is set to S3.")
-        .required(false)
-        .defaultValue("${s3.bucket}")
-        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .expressionLanguageSupported(true)
-        .build();
 
     // Relationships
     private final Set<Relationship> relationships;
@@ -167,9 +134,6 @@ public class RegisterFeedTables extends AbstractNiFiProcessor {
         pds.add(FEED_ROOT);
         pds.add(PROFILE_ROOT);
         pds.add(MASTER_ROOT);
-        pds.add(STORAGE_FORMAT);
-        pds.add(S3_BUCKET);
-        pds.add(S3_PROTOCOL);
 
         propDescriptors = Collections.unmodifiableList(pds);
     }
@@ -206,15 +170,6 @@ public class RegisterFeedTables extends AbstractNiFiProcessor {
             .map(ColumnSpec::createFromString)
             .orElse(new ColumnSpec[0]);
         final String tableType = context.getProperty(TABLE_TYPE).getValue();
-
-        final String storageFormat = context.getProperty(STORAGE_FORMAT).getValue();
-        final String s3bucket = context.getProperty(S3_BUCKET).evaluateAttributeExpressions(flowFile).getValue();
-        if (s3bucket == null && storageFormat.equalsIgnoreCase(StorageType.S3.toString())){
-            getLog().error("Missing S3 bucket");
-            session.transfer(flowFile, IngestProperties.REL_FAILURE);
-        }
-
-        final String s3protocol = context.getProperty(S3_PROTOCOL).getValue();
 
         final ColumnSpec[] columnSpecs = Optional.ofNullable(context.getProperty(FIELD_SPECIFICATION).evaluateAttributeExpressions(flowFile).getValue())
             .filter(StringUtils::isNotEmpty)
@@ -263,9 +218,9 @@ public class RegisterFeedTables extends AbstractNiFiProcessor {
 
             final boolean result;
             if (ALL_TABLES.equals(tableType)) {
-                result = register.registerStandardTables(source, entity, feedColumnSpecs, feedFormatOptions, targetFormatOptions, partitions, columnSpecs, targetTableProperties, storageFormat, s3bucket, s3protocol);
+                result = register.registerStandardTables(source, entity, feedColumnSpecs, feedFormatOptions, targetFormatOptions, partitions, columnSpecs, targetTableProperties);
             } else {
-                result = register.registerTable(source, entity, feedColumnSpecs, feedFormatOptions, targetFormatOptions, partitions, columnSpecs, targetTableProperties, storageFormat, s3bucket, s3protocol, TableType.valueOf(tableType),
+                result = register.registerTable(source, entity, feedColumnSpecs, feedFormatOptions, targetFormatOptions, partitions, columnSpecs, targetTableProperties, TableType.valueOf(tableType),
                                                 true);
             }
 

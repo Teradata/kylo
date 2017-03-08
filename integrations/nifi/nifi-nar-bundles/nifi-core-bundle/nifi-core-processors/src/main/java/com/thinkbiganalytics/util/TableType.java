@@ -25,6 +25,7 @@ import com.thinkbiganalytics.hive.util.HiveUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 
+import java.net.URI;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
@@ -73,24 +74,16 @@ public enum TableType {
         return HiveUtils.quoteIdentifier(source.trim(), deriveTablename(entity.trim()));
     }
 
-    public String deriveLocationSpecification(Path tableLocation, String source, String entity, String storageFormat, String s3bucket, String s3protocol) {
+    public String deriveLocationSpecification(String tableLocation, String source, String entity) {
 
         Validate.notNull(tableLocation, "tableLocation expected");
         Validate.notNull(source, "source expected");
         Validate.notNull(entity, "entity expected");
 
-        Path path = tableLocation.resolve(source).resolve(entity).resolve(tableSuffix);
-
         StringBuffer sb = new StringBuffer();
         sb.append(" LOCATION '");
 
-        if (storageFormat.equalsIgnoreCase(StorageType.S3.toString())) {
-            sb.append(s3protocol).append("://").append(s3bucket).append(path);
-        } else {
-            sb.append(path.toAbsolutePath().toString());
-        }
-
-        sb.append("'");
+        sb.append(tableLocation).append("/").append(source).append("/").append(entity).append("/").append(tableSuffix).append("'");
 
         return sb.toString();
     }

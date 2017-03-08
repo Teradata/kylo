@@ -22,6 +22,7 @@ package com.thinkbiganalytics.util;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -49,16 +50,16 @@ public class TableRegisterConfiguration {
         this.masterRoot = StringUtils.defaultIfEmpty(masterRoot, DEFAULT_MASTER);
     }
 
-    public Path pathForTableType(TableType type) {
+    public String pathForTableType(TableType type) {
         switch (type) {
             case FEED:
             case INVALID:
             case VALID:
-                return Paths.get(feedRoot);
+                return feedRoot;
             case PROFILE:
-                return Paths.get(profileRoot);
+                return profileRoot;
             case MASTER:
-                return Paths.get(masterRoot);
+                return masterRoot;
             default:
                 throw new RuntimeException("Unsupported table type [" + type.toString() + "]. Needs to be added to class?");
         }
