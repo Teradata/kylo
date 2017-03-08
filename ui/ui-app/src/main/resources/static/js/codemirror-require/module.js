@@ -14,6 +14,7 @@ define(['angular','codemirror-require/module-name','kylo-utils/LazyLoadUtil', 'c
                                              'codemirror/mode/shell/shell',
                                              'codemirror/mode/javascript/javascript',
                                              'codemirror/mode/sql/sql',
+                                             'codemirror/mode/tern/tern',
                                              'codemirror/addon/hint/show-hint',
                                              'codemirror/addon/hint/sql-hint',
                                              'codemirror/addon/hint/xml-hint',
