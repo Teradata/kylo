@@ -137,6 +137,13 @@ md-list md-datepicker .md-button.md-icon-button {
   width: inherit;
 }
 
+md-sidenav .collapse-btn {
+  padding: 10px;
+  color: #3483BA;
+  background-color: #F9F9F9;
+  cursor: pointer;
+}
+
 /* Primary content area */
 
 #content {
@@ -856,47 +863,46 @@ angular nvd3 styles
 
 /** md-list pagination **/
 
-.pagination-row {
+dir-pagination-controls {
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
-}
-
-@media all and (max-width: 600px) {
-  .pagination-row {
-    -webkit-flex-direction: column;
-    -ms-flex-direction: column;
-    flex-direction: column;
-    -webkit-align-items: stretch;
-    -ms-flex-align: stretch;
-    align-items: stretch;
-  }
-}
-
-.pagination-row > div {
-  display: -webkit-flex;
-  display: -ms-flexbox;
-  display: flex;
+  -webkit-flex: 1;
+  -webkit-box-flex: 1;
+  flex: 1;
   -webkit-align-items: center;
   -ms-flex-align: center;
   align-items: center;
   -webkit-justify-content: flex-end;
   -ms-flex-pack: end;
   justify-content: flex-end;
-  min-height: 56px;
-  font-size: 12px;
-  font-weight: 500;
-  color: rgba(0, 0, 0, 0.54);
+  -webkit-flex-wrap: wrap-reverse;
+  -ms-flex-wrap: wrap-reverse;
+  flex-wrap: wrap-reverse;
   box-sizing: border-box;
+  padding: 0 24px;
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.54);
+  border-top: 1px rgba(0, 0, 0, 0.12) solid;
 }
 
-@media all and (min-width: 601px) {
-  .pagination-row > div:nth-child(1) {
-    -webkit-flex: 1 1 auto;
-    -ms-flex: 1 1 auto;
-    flex: 1 1 auto;
-  }
+
+dir-pagination-controls > * {
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+  align-items: center;
+  height: 56px;
 }
+
+.pagination-row {
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+}
+
 
 .pagination-row > div:nth-child(1) > .label {
   white-space: nowrap;

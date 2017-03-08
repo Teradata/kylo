@@ -21,7 +21,7 @@ require.config({
         "c3":"../bower_components/c3/c3.min",
         "cardLayout":"common/card-layout/card-layout",
         "d3":"../bower_components/d3/d3.min",
-        "dirPagination":"../bower_components/angular-utils-pagination/dirPagination",
+        "dirPagination":"vendor/dirPagination/dirPagination",
         "draggabilly":"../bower_components/draggabilly/dist/draggabilly.pkgd.min",
         "gsap": "../bower_components/gsap/src/uncompressed/TweenMax",
         "jquery":"../bower_components/jquery/dist/jquery.min",

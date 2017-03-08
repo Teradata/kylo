@@ -15,14 +15,14 @@
         <accordion-menu menu="menu" collapsed="collapsed"></accordion-menu>
     </div>
 
-    <md-list class="bottom-align" >
-      <md-list-item>
-        <md-button flex ng-click="expandCollapseSideNavList($event)" class="nav-btn">
+    <div>
+      <md-divider></md-divider>
+    <div class="collapse-btn" ng-click="expandCollapseSideNavList($event)" layout-align="start start" layout="row" role="button">
+
+      <span flex></span>
           <ng-md-icon md-icon icon="chevron_left" class="nav-btn" ng-if="!collapsed"></ng-md-icon>
           <ng-md-icon md-icon icon="chevron_right" class="nav-btn" ng-if="collapsed"></ng-md-icon>
-          <span style="padding-left:10px;"  ng-if="!collapsed">Collapse</span>
-        </md-button>
-      </md-list-item>
-    </md-list>
+    </div>
+    </div>
   </md-content>
 </md-sidenav>

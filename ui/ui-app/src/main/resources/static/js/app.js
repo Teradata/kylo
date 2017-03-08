@@ -62,7 +62,6 @@ define([
                                              'bower_components/angular-material-expansion-panel/dist/md-expansion-panel.css',
                                              'bower_components/angular-material-data-table/dist/md-data-table.css',
                                              'bower_components/nvd3/build/nv.d3.css',
-                                             'js/common/dir-pagination/pagination.css',
                                              'bower_components/codemirror/lib/codemirror.css',
                                              'bower_components/vis/dist/vis.min.css'
         ]})
