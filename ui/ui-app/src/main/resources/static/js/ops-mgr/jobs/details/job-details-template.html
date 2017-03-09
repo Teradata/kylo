@@ -46,8 +46,8 @@
             </div>
             <div flex="30" layout="column">
                                                <span class="item-title">
-                                                   <tba-timer ng-if="vm.jobData.running"
-                                                              start-time="vm.jobData.runTime"></tba-timer>
+                                                   <kylo-timer ng-if="vm.jobData.running"
+                                                              start-time="vm.jobData.runTime"></kylo-timer>
                                                    <span ng-if="vm.jobData.running == false">{{vm.jobData.runTime | time }}</span>
                                                </span>
               <span class="column-title column-title-bottom">Run Time</span>
@@ -167,8 +167,8 @@
                       </div>
                       <div flex="30" layout="column">
                                                <span class="item-title">
-                                                   <tba-timer ng-if="step.content.running"
-                                                              start-time="step.content.runTime"></tba-timer>
+                                                   <kylo-timer ng-if="step.content.running"
+                                                              start-time="step.content.runTime"></kylo-timer>
                                                    <span ng-if="step.content.running == false">{{step.content.runTime | time }}</span>
                                                </span>
                         <span class="column-title column-title-bottom">Run Time</span>
@@ -291,8 +291,8 @@
           <md-list-item>
             <div layout="column" class="item-column md-list-item-text ">
                                                <span class="item-title">
-                                                   <tba-timer ng-if="vm.jobData.running"
-                                                              start-time="vm.jobData.runTime"></tba-timer>
+                                                   <kylo-timer ng-if="vm.jobData.running"
+                                                              start-time="vm.jobData.runTime"></kylo-timer>
                                                    <span ng-if="vm.jobData.running == false">{{vm.jobData.runTime | time }}</span>
                                                </span>
               <span class="column-title column-title-bottom">Run Time</span>
