@@ -411,7 +411,7 @@
         <div layout="column" class="layout-padding-top-bottom">
           <span>Sample field values</span>
           <span class="hint"> <md-input-container class="md-block condensed" flex-gt-sm>
-                      <md-select ng-model="vm.selectedColumn.selectedSampleValue" placeholder="Preview Data" ng-model-options="{trackBy: '$value'}">>
+                      <md-select ng-model="vm.selectedColumn.selectedSampleValue" placeholder="Preview Data" ng-model-options="{trackBy: '$value'}">
                         <md-option ng-repeat="data in vm.selectedColumn.sampleValues | unique" ng-value="data" aria-label="{{data}}">
                           {{data}}
                         </md-option>
