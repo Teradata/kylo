@@ -35,7 +35,10 @@ define([
                                           'ui.grid.moveColumns',
                                           'ui.grid.pagination']);
 
-    module.config(['$mdThemingProvider','$mdIconProvider',function($mdThemingProvider, $mdIconProvider){
+    module.config(['$mdAriaProvider','$mdThemingProvider','$mdIconProvider',function($mdAriaProvider,$mdThemingProvider, $mdIconProvider){
+       //disable the aria-label warnings in the console
+        $mdAriaProvider.disableWarnings();
+
         var primaryBlue = $mdThemingProvider.extendPalette('blue', {
             '500': '3483BA',
             '900':'2B6C9A'
@@ -61,6 +64,8 @@ define([
 
 
 
+
+
     module.run(['$ocLazyLoad',function($ocLazyLoad){
         $ocLazyLoad.load({name:'kylo',files:['bower_components/angular-material-icons/angular-material-icons.css',
                                              'bower_components/angular-material-expansion-panel/dist/md-expansion-panel.css',
@@ -70,6 +75,8 @@ define([
                                              'bower_components/vis/dist/vis.min.css'
         ]})
     }])
+
+
 
 
 
