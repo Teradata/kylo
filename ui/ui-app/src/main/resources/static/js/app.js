@@ -33,7 +33,7 @@ define([
                                           'ui.grid.resizeColumns',
                                           'ui.grid.autoResize',
                                           'ui.grid.moveColumns',
-                                          'ui.grid.pagination']);
+                                          'ui.grid.pagination', 'ngMessages']);
 
     module.config(['$mdAriaProvider','$mdThemingProvider','$mdIconProvider',function($mdAriaProvider,$mdThemingProvider, $mdIconProvider){
        //disable the aria-label warnings in the console
