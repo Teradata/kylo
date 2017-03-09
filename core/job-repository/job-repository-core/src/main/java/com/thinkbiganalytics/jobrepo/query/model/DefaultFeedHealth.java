@@ -34,12 +34,24 @@ import java.util.Map;
  */
 public class DefaultFeedHealth implements FeedHealth {
 
+    private String feedId;
     private String feed;
     private ExecutedFeed lastOpFeed;
     private Long avgRuntime;
     private Long healthyCount;
     private Long unhealthyCount;
     private Date lastUnhealthyTime;
+
+
+    @Override
+    public String getFeedId() {
+        return feedId;
+    }
+
+    @Override
+    public void setFeedId(String feedId) {
+        this.feedId = feedId;
+    }
 
     @JsonIgnore
     public static List<FeedHealth> parseToList(List<ExecutedFeed> latestOpFeeds, Map<String, Long> avgRunTimes) {

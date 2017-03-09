@@ -51,8 +51,10 @@ public class JpaOpsManagerFeedHealth implements FeedHealth {
 
     @Column(name = "FEED_NAME", insertable = false, updatable = false)
     String feedName;
+
     @EmbeddedId
     private OpsManagerFeedHealthFeedId feedId;
+    
     @Column(name = "JOB_EXECUTION_ID", insertable = false, updatable = false)
     private Long jobExecutionId;
 
