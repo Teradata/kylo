@@ -25,7 +25,6 @@ import com.thinkbiganalytics.hive.util.HiveUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 
-import java.net.URI;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
