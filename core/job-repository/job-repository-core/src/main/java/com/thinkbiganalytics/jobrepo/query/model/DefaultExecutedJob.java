@@ -20,6 +20,8 @@ package com.thinkbiganalytics.jobrepo.query.model;
  * #L%
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import org.joda.time.DateTime;
 
 import java.io.Serializable;
@@ -32,6 +34,7 @@ import java.util.Map;
  * @see com.thinkbiganalytics.jobrepo.query.model.transform.JobModelTransform
  */
 @SuppressWarnings("UnusedDeclaration")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class DefaultExecutedJob implements Serializable, ExecutedJob {
 
     private static final long serialVersionUID = 3327858118326404823L;

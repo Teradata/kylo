@@ -22,6 +22,8 @@ package com.thinkbiganalytics.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.jsontype.NamedType;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.internal.mapping.Jackson2Mapper;
@@ -60,16 +62,28 @@ public class FunctionalTest {
         RestAssured.port = kyloConfig.getPort();
         RestAssured.basePath = kyloConfig.getBasePath();
 
+        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
 
         Jackson2ObjectMapperFactory factory = (aClass, s) -> {
             ObjectMapper om = new ObjectMapper();
             om.registerModule(new JodaModule());
             om.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, true);
             om.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+
+            configureObjectMapper(om);
+
             return om;
         };
         com.jayway.restassured.mapper.ObjectMapper objectMapper = new Jackson2Mapper(factory);
         RestAssured.objectMapper(objectMapper);
+    }
+
+    /**
+     * Do nothing implementation, but subclasses may override to add extra
+     * json serialisation/de-serialisation modules
+     */
+    protected void configureObjectMapper(ObjectMapper om) {
+
     }
 
     protected RequestSpecification given() {

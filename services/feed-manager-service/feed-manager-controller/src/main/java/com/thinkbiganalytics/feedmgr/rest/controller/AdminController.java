@@ -62,9 +62,9 @@ import io.swagger.annotations.Tag;
 @SwaggerDefinition(tags = @Tag(name = "Feed Manager - Administration", description = "administrator operations"))
 public class AdminController {
 
-    static final String BASE = "/v1/feedmgr/admin";
-    static final String IMPORT_TEMPLATE = "/import-template";
-    static final String IMPORT_FEED = "/import-feed";
+    public static final String BASE = "/v1/feedmgr/admin";
+    public static final String IMPORT_TEMPLATE = "/import-template";
+    public static final String IMPORT_FEED = "/import-feed";
 
     @Inject
     ExportImportTemplateService exportImportTemplateService;

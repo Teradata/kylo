@@ -87,7 +87,7 @@ import io.swagger.annotations.Tag;
 public class TemplatesRestController {
 
     private static final Logger log = LoggerFactory.getLogger(TemplatesRestController.class);
-    static final String BASE = "/v1/feedmgr/templates";
+    public static final String BASE = "/v1/feedmgr/templates";
     public static final String REGISTERED = "/registered";
 
     @Autowired

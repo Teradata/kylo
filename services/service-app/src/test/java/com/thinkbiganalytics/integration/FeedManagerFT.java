@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.feedmgr.rest.controller;
+package com.thinkbiganalytics.integration;
 
 /*-
  * #%L
@@ -20,12 +20,20 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
  * #L%
  */
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.common.util.concurrent.Uninterruptibles;
+import com.jayway.restassured.path.json.JsonPath;
 import com.jayway.restassured.response.Response;
 import com.thinkbiganalytics.discovery.model.DefaultDataTypeDescriptor;
 import com.thinkbiganalytics.discovery.model.DefaultField;
 import com.thinkbiganalytics.discovery.model.DefaultTableSchema;
 import com.thinkbiganalytics.discovery.schema.Field;
+import com.thinkbiganalytics.feedmgr.rest.controller.AdminController;
+import com.thinkbiganalytics.feedmgr.rest.controller.FeedCategoryRestController;
+import com.thinkbiganalytics.feedmgr.rest.controller.FeedRestController;
+import com.thinkbiganalytics.feedmgr.rest.controller.NifiIntegrationRestController;
+import com.thinkbiganalytics.feedmgr.rest.controller.TemplatesRestController;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSchedule;
@@ -39,6 +47,12 @@ import com.thinkbiganalytics.feedmgr.rest.model.schema.TableOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.TableSetup;
 import com.thinkbiganalytics.feedmgr.service.ExportImportTemplateService;
 import com.thinkbiganalytics.feedmgr.service.feed.ExportImportFeedService;
+import com.thinkbiganalytics.jobrepo.query.model.DefaultExecutedJob;
+import com.thinkbiganalytics.jobrepo.query.model.DefaultExecutedStep;
+import com.thinkbiganalytics.jobrepo.query.model.ExecutedStep;
+import com.thinkbiganalytics.jobrepo.query.model.ExecutionStatus;
+import com.thinkbiganalytics.jobrepo.query.model.ExitStatus;
+import com.thinkbiganalytics.jobrepo.rest.controller.JobsRestController;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.policy.rest.model.FieldPolicy;
@@ -50,10 +64,14 @@ import org.apache.nifi.web.api.dto.PortDTO;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -63,6 +81,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class FeedManagerFT extends FunctionalTest {
 
+    private static final Logger LOG = LoggerFactory.getLogger(FeedManagerFT.class);
+
     private static final String SAMPLES_DIR = "/samples";
     private static final String DATA_SAMPLES_DIR = SAMPLES_DIR + "/sample-data/";
     private static final String TEMPLATE_SAMPLES_DIR = SAMPLES_DIR + "/templates/nifi-1.0/";
@@ -70,11 +90,20 @@ public class FeedManagerFT extends FunctionalTest {
     private static final String VAR_DROPZONE = "/var/dropzone";
     private static final String USERDATA1_CSV = "userdata1.csv";
     private static final int PROCESSOR_STOP_WAIT_DELAY = 20;
+    private static final int FEED_COMPLETION_WAIT_DELAY = 180;
     private String feedsPath;
     private String templatesPath;
     private String usersDataPath;
     private FieldStandardizationRule toUpperCase = new FieldStandardizationRule();
     private FieldValidationRule email = new FieldValidationRule();
+
+
+    @Override
+    protected void configureObjectMapper(ObjectMapper om) {
+        SimpleModule m = new SimpleModule();
+        m.addAbstractTypeMapping(ExecutedStep.class, DefaultExecutedStep.class);
+        om.registerModule(m);
+    }
 
     @Before
     public void setup() throws URISyntaxException {
@@ -98,8 +127,10 @@ public class FeedManagerFT extends FunctionalTest {
     }
 
     @Test
-    public void testDataIngestFeed() {
+    public void testDataIngestFeed() throws IOException {
         startClean();
+
+        copyDataToDropzone();
 
         //create new category
         FeedCategory category = createCategory("Functional Tests");
@@ -107,16 +138,69 @@ public class FeedManagerFT extends FunctionalTest {
         ExportImportTemplateService.ImportTemplate ingest = importFeedTemplate("data_ingest.zip");
 
         //create standard ingest feed
-        FeedMetadata feed = getCreateFeedRequest(category, ingest, "Users");
+        FeedMetadata feed = getCreateFeedRequest(category, ingest, "Users1");
         FeedMetadata response = createFeed(feed);
         Assert.assertEquals(feed.getFeedName(), response.getFeedName());
 
-        //drop files in dropzone to run the feed
-        scp(usersDataPath + "/" + USERDATA1_CSV, VAR_DROPZONE);
-        ssh(String.format("chown -R nifi:nifi %s", VAR_DROPZONE));
+        waitForFeedToComplete();
 
-        //wait for feed completion using ops manager api by waiting for certain amount of time and then
-        //query ops manager and ensure x amount of steps and data is in hive etc
+        assertExecutedJobs(feed);
+
+    }
+
+    private void waitForFeedToComplete() {
+        //wait for feed completion by waiting for certain amount of time and then
+        waitFor(FEED_COMPLETION_WAIT_DELAY, TimeUnit.SECONDS, "for feed to complete");
+    }
+
+    private void copyDataToDropzone() {
+        //drop files in dropzone to run the feed
+        scp(usersDataPath + USERDATA1_CSV, VAR_DROPZONE);
+        ssh(String.format("chown -R nifi:nifi %s", VAR_DROPZONE));
+    }
+
+    public void assertExecutedJobs(FeedMetadata feed) throws IOException {
+        //assert there are 3 completed jobs: userdata ingest job, schema and text system jobs
+        DefaultExecutedJob[] jobs = getJobs();
+        Assert.assertEquals(3, jobs.length);
+
+        DefaultExecutedJob ingest = Arrays.stream(jobs).filter(job -> ("functional_tests." + feed.getFeedName().toLowerCase()).equals(job.getFeedName())).findFirst().get();
+        Assert.assertEquals(ExecutionStatus.COMPLETED, ingest.getStatus());
+        Assert.assertEquals(ExitStatus.COMPLETED.getExitCode(), ingest.getExitCode());
+
+        //assert user data jobs has expected number of steps
+        DefaultExecutedJob job = getJobWithSteps(ingest.getExecutionId());
+        Assert.assertEquals(ingest.getExecutionId(), job.getExecutionId());
+        List<ExecutedStep> steps = job.getExecutedSteps();
+        Assert.assertEquals(23, steps.size());
+        for (ExecutedStep step : steps) {
+            Assert.assertEquals(ExitStatus.COMPLETED.getExitCode(), step.getExitCode());
+        }
+
+        //assert data in hive
+
+    }
+
+    private DefaultExecutedJob getJobWithSteps(long executionId) {
+        //http://localhost:8400/proxy/v1/jobs
+        Response response = given(JobsRestController.BASE)
+            .when()
+            .get(String.format("/%s?includeSteps=true", executionId));
+
+        response.then().statusCode(200);
+
+        return response.as(DefaultExecutedJob.class);
+    }
+
+    private DefaultExecutedJob[] getJobs() {
+        //http://localhost:8400/proxy/v1/jobs
+        Response response = given(JobsRestController.BASE)
+            .when()
+            .get();
+
+        response.then().statusCode(200);
+
+        return JsonPath.from(response.asString()).getObject("data", DefaultExecutedJob[].class);
     }
 
     private ExportImportTemplateService.ImportTemplate importFeedTemplate(String templateName) {
@@ -162,7 +246,7 @@ public class FeedManagerFT extends FunctionalTest {
             .when()
             .get("/cleanup-versions/" + groupId);
 
-        response.then().log().all().statusCode(200);
+        response.then().statusCode(200);
     }
 
     private PortDTO[] getReusableInputPorts() {
@@ -170,7 +254,7 @@ public class FeedManagerFT extends FunctionalTest {
             .when()
             .get(NifiIntegrationRestController.REUSABLE_INPUT_PORTS);
 
-        response.then().log().all().statusCode(200);
+        response.then().statusCode(200);
 
         return response.as(PortDTO[].class);
     }
@@ -206,9 +290,13 @@ public class FeedManagerFT extends FunctionalTest {
             stopFeed(feed.getFeedId());
         }
         //give time for processors to stop
-        System.out.println(String.format("Waiting %s seconds for processors to stop...", PROCESSOR_STOP_WAIT_DELAY));
-        Uninterruptibles.sleepUninterruptibly(PROCESSOR_STOP_WAIT_DELAY, TimeUnit.SECONDS);
-        System.out.println(String.format("Finished waiting %s seconds for processors to stop", PROCESSOR_STOP_WAIT_DELAY));
+        waitFor(PROCESSOR_STOP_WAIT_DELAY, TimeUnit.SECONDS, "for processors to stop");
+    }
+
+    private void waitFor(int delay, TimeUnit timeUnit, String msg) {
+        LOG.info("Waiting {} {} {}...", delay, timeUnit, msg);
+        Uninterruptibles.sleepUninterruptibly(delay, timeUnit);
+        LOG.info("Finished waiting {} {} {}", delay, timeUnit, msg);
     }
 
     private void deleteExistingFeeds() {
@@ -325,7 +413,7 @@ public class FeedManagerFT extends FunctionalTest {
             .when()
             .post();
 
-        response.then().log().all().statusCode(200);
+        response.then().statusCode(200);
 
         NifiFeed nifiFeed = response.as(NifiFeed.class);
         return nifiFeed.getFeedMetadata();
@@ -398,7 +486,7 @@ public class FeedManagerFT extends FunctionalTest {
             .when()
             .get();
 
-        response.then().log().all().statusCode(200);
+        response.then().statusCode(200);
 
         return response.as(FeedCategory[].class);
     }
@@ -424,7 +512,7 @@ public class FeedManagerFT extends FunctionalTest {
             .when()
             .post();
 
-        response.then().log().all().statusCode(200);
+        response.then().statusCode(200);
 
         return response.as(FeedCategory.class);
     }
@@ -462,7 +550,7 @@ public class FeedManagerFT extends FunctionalTest {
             .when()
             .get();
 
-        response.then().log().all().statusCode(200);
+        response.then().statusCode(200);
 
         return response.as(FeedSummary[].class);
     }
@@ -503,7 +591,7 @@ public class FeedManagerFT extends FunctionalTest {
         Response response = given(TemplatesRestController.BASE)
             .when().get(TemplatesRestController.REGISTERED);
 
-        response.then().log().all().statusCode(200);
+        response.then().statusCode(200);
 
         return response.as(RegisteredTemplate[].class);
     }

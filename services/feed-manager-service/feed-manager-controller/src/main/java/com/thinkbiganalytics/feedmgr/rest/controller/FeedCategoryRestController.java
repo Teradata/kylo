@@ -64,7 +64,7 @@ import io.swagger.annotations.Tag;
 @SwaggerDefinition(tags = @Tag(name = "Feed Manager - Categories", description = "manages categories"))
 public class FeedCategoryRestController {
 
-    static final String BASE = "/v1/feedmgr/categories";
+    public static final String BASE = "/v1/feedmgr/categories";
 
     @Autowired
     MetadataService metadataService;
