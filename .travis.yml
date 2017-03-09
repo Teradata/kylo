@@ -1,0 +1,23 @@
+language: java
+
+# Use Ubuntu Trusty with latest JDK 8
+dist: trusty
+sudo: required
+
+addons:
+  apt:
+    packages:
+    - rpm
+
+before_install: "[ -e $HOME/.m2/repository ] || curl https://s3-us-west-2.amazonaws.com/thinkbig.kylo/m2.tgz | tar xzC $HOME"
+
+cache:
+  directories:
+  - $HOME/.m2
+
+jdk:
+- oraclejdk8
+
+# Notifications will come from Jenkins so are disabled in Travis CI
+notifications:
+  email: false
