@@ -257,6 +257,12 @@ md-list.padding-left md-list-item {
   padding-left: 0px;
 }
 
+.card-sub-header {
+  color:rgba(0, 0, 0, 0.54);
+  font-weight: normal;
+  font-sizei: 14px;
+}
+
 
 
 
