@@ -50,16 +50,16 @@ public class TableRegisterConfiguration {
         this.masterRoot = StringUtils.defaultIfEmpty(masterRoot, DEFAULT_MASTER);
     }
 
-    public String pathForTableType(TableType type) {
+    public Path pathForTableType(TableType type) {
         switch (type) {
             case FEED:
             case INVALID:
             case VALID:
-                return feedRoot;
+                return Paths.get(feedRoot);
             case PROFILE:
-                return profileRoot;
+                return Paths.get(profileRoot);
             case MASTER:
-                return masterRoot;
+                return Paths.get(masterRoot);
             default:
                 throw new RuntimeException("Unsupported table type [" + type.toString() + "]. Needs to be added to class?");
         }

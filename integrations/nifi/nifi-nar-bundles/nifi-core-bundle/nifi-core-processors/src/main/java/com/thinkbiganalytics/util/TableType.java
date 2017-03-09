@@ -74,16 +74,19 @@ public enum TableType {
         return HiveUtils.quoteIdentifier(source.trim(), deriveTablename(entity.trim()));
     }
 
-    public String deriveLocationSpecification(String tableLocation, String source, String entity) {
+    public String deriveLocationSpecification(Path tableLocation, String source, String entity) {
 
         Validate.notNull(tableLocation, "tableLocation expected");
         Validate.notNull(source, "source expected");
         Validate.notNull(entity, "entity expected");
 
+        Path path = tableLocation.resolve(source).resolve(entity).resolve(tableSuffix);
+        String location = path.toString().replace(":/","://");
+
         StringBuffer sb = new StringBuffer();
         sb.append(" LOCATION '");
 
-        sb.append(tableLocation).append("/").append(source).append("/").append(entity).append("/").append(tableSuffix).append("'");
+        sb.append(location).append("'");
 
         return sb.toString();
     }
