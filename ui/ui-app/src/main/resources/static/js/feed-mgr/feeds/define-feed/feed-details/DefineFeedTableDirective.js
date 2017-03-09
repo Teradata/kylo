@@ -79,6 +79,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         BroadcastService.subscribe($scope, 'DATA_TRANSFORM_SCHEMA_LOADED', onDataTransformSchemaLoaded);
 
         function onDataTransformSchemaLoaded() {
+            self.syncFeedsColumns();
             validate();
         }
 
