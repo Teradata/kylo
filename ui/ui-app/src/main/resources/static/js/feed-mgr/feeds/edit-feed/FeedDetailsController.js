@@ -132,7 +132,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
                     fullscreen: true,
                     parent: angular.element(document.body),
                     scope: $dialogScope,
-                    templateUrl: "js/feed-mgr/edit-feed/feed-details-delete-dialog.html"
+                    templateUrl: "js/feed-mgr/feeds/edit-feed/feed-details-delete-dialog.html"
                 });
             }
         };
