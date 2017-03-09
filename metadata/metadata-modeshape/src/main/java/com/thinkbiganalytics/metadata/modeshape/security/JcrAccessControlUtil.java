@@ -125,7 +125,7 @@ public final class JcrAccessControlUtil {
 
     /**
      * Adds the specified privilege to the node hierarchy starting at a child node and proceeding through its parents until
-     * the destination node is reached.  The privilege assignment excludes the destination node.
+     * the destination node is reached.
      * 
      * @param node the starting node on which the privilege is assigned
      * @param principal the principal being given the privilege
@@ -137,13 +137,20 @@ public final class JcrAccessControlUtil {
         try {
             Node endNode = toNode;
             Node current = node;
+            Node rootNode = toNode.getSession().getRootNode();
             Deque<Node> stack = new ArrayDeque<>();
             AtomicBoolean added = new AtomicBoolean(false);
 
             do {
                 stack.push(current);
                 current = current.getParent();
-            } while (!current.equals(endNode) && !current.equals(toNode.getSession().getRootNode()));
+            } while (!current.equals(endNode) && !current.equals(rootNode));
+            
+            if (current.equals(rootNode) && ! toNode.equals(rootNode)) {
+                throw new IllegalArgumentException("addHierarchyPermissions: The \"toNode\" argument is not in the \"node\" argument's hierarchy: " + toNode);
+            } else {
+                stack.push(current);
+            }
 
             stack.stream().forEach((n) -> added.set(addPermissions(n, principal, privilegeNames) || added.get()));
 

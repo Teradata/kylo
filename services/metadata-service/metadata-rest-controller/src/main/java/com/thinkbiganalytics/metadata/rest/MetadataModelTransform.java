@@ -37,6 +37,8 @@ import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedSource;
 import com.thinkbiganalytics.metadata.rest.model.feed.InitializationStatus;
 import com.thinkbiganalytics.metadata.rest.model.op.FeedOperation;
+import com.thinkbiganalytics.security.rest.controller.ActionsModelTransform;
+import com.thinkbiganalytics.security.rest.model.ActionGroup;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -45,10 +47,15 @@ import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import javax.inject.Inject;
+
 /**
  * Convenience functions and methods to transform between the metadata domain model and the REST model.
  */
 public class MetadataModelTransform {
+    
+    @Inject
+    private ActionsModelTransform actionsTransform;
 
     public Function<com.thinkbiganalytics.metadata.api.feed.InitializationStatus, InitializationStatus> domainToInitStatus() {
         return (domain) -> {
@@ -152,9 +159,9 @@ public class MetadataModelTransform {
             feed.setSystemName(domain.getName());
             feed.setDisplayName(domain.getDisplayName());
             feed.setDescription(domain.getDescription());
-            feed.setState(Feed.State.valueOf(domain.getState().name()));
-            feed.setCreatedTime(domain.getCreatedTime());
-            feed.setCurrentInitStatus(domainToInitStatus().apply(domain.getCurrentInitStatus()));
+            if (domain.getState() != null) feed.setState(Feed.State.valueOf(domain.getState().name()));
+            if (domain.getCreatedTime() != null) feed.setCreatedTime(domain.getCreatedTime());
+            if (domain.getCurrentInitStatus() != null) feed.setCurrentInitStatus(domainToInitStatus().apply(domain.getCurrentInitStatus()));
             
             if (domain.getCategory() != null) {
                 feed.setCategory(domainToFeedCategory().apply(domain.getCategory()));
@@ -173,6 +180,9 @@ public class MetadataModelTransform {
                     feed.getProperties().setProperty(entry.getKey(), entry.getValue().toString());
                 }
             }
+            
+            ActionGroup allowed = actionsTransform.allowedActionsToActionSet(null).apply(domain.getAllowedActions());
+            feed.setAllowedActions(allowed);
 
             return feed;
         };

@@ -225,11 +225,11 @@ public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed {
     }
 
     public List<? extends FeedSource> getSources() {
-        return getFeedDetails().map(d -> d.getSources()).orElse(null);
+        return getFeedDetails().map(d -> d.getSources()).orElse(Collections.emptyList());
     }
 
     public List<? extends FeedDestination> getDestinations() {
-        return getFeedDetails().map(d -> d.getDestinations()).orElse(null);
+        return getFeedDetails().map(d -> d.getDestinations()).orElse(Collections.emptyList());
     }
 
     @Override

@@ -200,11 +200,15 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
     }
     
     public JcrAllowedActions copy(Node allowedNode, Principal principal, String... privilegeNames) {
+        return copy(allowedNode, false, principal, privilegeNames);
+    }
+    
+    public JcrAllowedActions copy(Node allowedNode, boolean includeDescr, Principal principal, String... privilegeNames) {
         try {
             JcrAccessControlUtil.addPermissions(allowedNode, principal, privilegeNames);
             
             for (Node actionNode : JcrUtil.getNodesOfType(getNode(), JcrAllowableAction.NODE_TYPE)) {
-                copyAction(actionNode, allowedNode, principal, privilegeNames);
+                copyAction(actionNode, allowedNode, includeDescr, principal, privilegeNames);
             }
 
             return new JcrAllowedActions(allowedNode);
@@ -213,14 +217,18 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
         }
     }
 
-    private Node copyAction(Node src, Node destParent, Principal principal, String... privilegeNames) throws RepositoryException {
+    private Node copyAction(Node src, Node destParent, boolean includeDescr, Principal principal, String... privilegeNames) throws RepositoryException {
         Node dest = JcrUtil.getOrCreateNode(destParent, src.getName(), JcrAllowableAction.NODE_TYPE);
-        JcrPropertyUtil.copyProperty(src, dest, JcrPropertyConstants.TITLE);
-        JcrPropertyUtil.copyProperty(src, dest, JcrPropertyConstants.DESCRIPTION);
+        
+        if (includeDescr) {
+            JcrPropertyUtil.copyProperty(src, dest, JcrPropertyConstants.TITLE);
+            JcrPropertyUtil.copyProperty(src, dest, JcrPropertyConstants.DESCRIPTION);
+        }
+
         JcrAccessControlUtil.addPermissions(dest, principal, privilegeNames);
 
         for (Node child : JcrUtil.getNodesOfType(src, JcrAllowableAction.NODE_TYPE)) {
-            copyAction(child, dest, principal, privilegeNames);
+            copyAction(child, dest, includeDescr, principal, privilegeNames);
         }
 
         return dest;

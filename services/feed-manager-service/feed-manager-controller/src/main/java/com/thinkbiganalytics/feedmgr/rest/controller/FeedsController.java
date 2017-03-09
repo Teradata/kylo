@@ -233,7 +233,7 @@ public class FeedsController {
     }
 
     @GET
-    @Path("{name}/actions/change/allowed")
+    @Path("{id}/actions/change/allowed")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Constructs and returns a permission change request for a set of users/groups containing the actions that the requester may permit or revoke.")
     @ApiResponses({
@@ -501,10 +501,7 @@ public class FeedsController {
             com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.resolveFeed(feedId);
             com.thinkbiganalytics.metadata.api.feed.Feed domain = feedProvider.getFeed(domainId);
 
-            Feed feed = this.metadataTransform.domainToFeed().apply(domain);
-            ActionGroup allowed = actionsTransform.allowedActionsToActionSet(null).apply(domain.getAllowedActions());
-            feed.setAllowedActions(allowed);
-            return feed;
+            return this.metadataTransform.domainToFeed().apply(domain);
         });
     }
 
