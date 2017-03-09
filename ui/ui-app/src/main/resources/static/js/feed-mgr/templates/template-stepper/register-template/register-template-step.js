@@ -406,7 +406,7 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
     }
 
     angular.module(moduleName).controller("RegisterCompleteRegistrationController",["$scope","$http","$mdToast","$mdDialog","RestUrlService","StateService","RegisterTemplateService", RegisterCompleteRegistrationController]);
-    angular.module(moduleName).controller("RegisterTemplateCompleteController", ["StateService","$transition$",RegisterTemplateCompleteController]);
+    angular.module(moduleName).controller("RegisterTemplateCompleteController", ["StateService",RegisterTemplateCompleteController]);
 
     angular.module(moduleName).directive("thinkbigRegisterCompleteRegistration", directive);
 });
@@ -426,11 +426,10 @@ function RegistrationInProgressDialogController($scope, templateName) {
     $scope.templateName = templateName;
 }
 
-function RegisterTemplateCompleteController(StateService, $transition$) {
+function RegisterTemplateCompleteController(StateService) {
 
     var self = this;
-    self.message = $transition$.params().message;
-    self.model = $transition$.params().templateModel;
+
 
     this.gotIt = function () {
         StateService.FeedManager().Template().navigateToRegisteredTemplates();

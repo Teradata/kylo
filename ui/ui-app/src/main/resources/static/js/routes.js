@@ -74,8 +74,23 @@ define(['angular', 'kylo-common','kylo-services',
                    return err;
                });;
            }
-       });
-
+       }).state({
+           name:'edit-feed.**',
+           url:'/edit-feed/{feedId}',
+           params: {
+               feedId: null
+           },
+           lazyLoad: function(transition,state) {
+               transition.injector().get('$ocLazyLoad').load('feed-mgr/feeds/edit-feed/module').then(function success(args) {
+                   //upon success go back to the state
+                   $stateProvider.stateService.go('edit-feed',transition.params())
+                   return args;
+               }, function error(err) {
+                   console.log("Error loading edit-feed",err);
+                   return err;
+               });;
+           }
+       })
 
 
        $stateProvider.state({

@@ -253,7 +253,7 @@
       <span flex="25" class="property-name">Data Transformations</span>
     </div>
     <div layout="row">
-      <md-button class="md-raised" href="#/edit-feed/{{vm.model.feedId}}" ng-if="vm.model.registeredTemplate.dataTransformation">Edit Transformations...</md-button>
+      <md-button class="md-raised" ng-click="vm.navigateToEditFeedInStepper()" ng-if="vm.model.registeredTemplate.dataTransformation">Edit Transformations...</md-button>
     </div>
 
     <div layout="row" class="layout-padding-top-bottom">

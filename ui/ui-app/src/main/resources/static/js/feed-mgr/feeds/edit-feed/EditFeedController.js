@@ -56,7 +56,7 @@ define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
                 // Update stepper based on template
                 if (self.model.registeredTemplate.defineTable) {
                     self.selectedStepIndex = 2;
-                    self.stepperUrl = "js/define-feed/define-feed-stepper.html";
+                    self.stepperUrl = "js/feed-mgr/feeds/define-feed/define-feed-stepper.html";
                     self.totalSteps = 6;
                 } else if (self.model.registeredTemplate.dataTransformation) {
                     VisualQueryService.resetModel();
@@ -96,4 +96,6 @@ define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
     };
 
     angular.module(moduleName).controller("EditFeedController", ["$scope","$http","$mdDialog","$transition$","FeedService","RestUrlService","StateService","VisualQueryService",EditFeedController]);
+
+
 });

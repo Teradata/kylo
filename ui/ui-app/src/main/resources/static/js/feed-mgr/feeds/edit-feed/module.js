@@ -1,4 +1,4 @@
-define(['angular','feed-mgr/feeds/edit-feed/module-name','kylo-utils/LazyLoadUtil','vis','kylo-feedmgr','feed-mgr/feeds/module','feed-mgr/sla/module','angular-ui-router','kylo-feedmgr','feed-mgr/visual-query/module','angular-nvd3'], function (angular,moduleName,lazyLoadUtil, vis) {
+define(['angular','feed-mgr/feeds/edit-feed/module-name','kylo-utils/LazyLoadUtil','vis','kylo-feedmgr','feed-mgr/feeds/module','feed-mgr/sla/module','feed-mgr/visual-query/module','angular-nvd3'], function (angular,moduleName,lazyLoadUtil, vis) {
     //LAZY LOADED into the application
     var module = angular.module(moduleName, []);
       // load vis in the global state
@@ -34,9 +34,14 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name','kylo-utils/LazyLoadUti
                 },
                 views: {
                     'content': {
-                        templateUrl: 'js/edit-feed/edit-feed.html'
+                        templateUrl: 'js/feed-mgr/feeds/edit-feed/edit-feed.html',
+                        controller: 'EditFeedController',
+                        controllerAs: 'vm'
                     }
                 },
+               resolve: {
+                   loadMyCtrl: lazyLoadController(['feed-mgr/feeds/edit-feed/EditFeedController'])
+               },
                 data:{
                     breadcrumbRoot: false,
                     displayName: 'Edit Feed'

@@ -15,7 +15,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         };
     }
 
-    var controller = function ($scope, $mdDialog, $timeout, AccessControlService, FeedService) {
+    var controller = function ($scope, $mdDialog, $timeout, AccessControlService, FeedService, StateService) {
 
         var self = this;
 
@@ -113,6 +113,10 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
          */
         this.onChangePrimaryKey = function () {
             validateMergeStrategies();
+        }
+
+        this.navigateToEditFeedInStepper = function(){
+            StateService.FeedManager().Feed().navigateToEditFeedInStepper(self.model.feedId);
         }
 
         this.onChangeMergeStrategy = function () {
@@ -240,7 +244,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
                 });
     };
 
-    angular.module(moduleName).controller('FeedDataPoliciesController', ["$scope","$mdDialog","$timeout","AccessControlService","FeedService",controller]);
+    angular.module(moduleName).controller('FeedDataPoliciesController', ["$scope","$mdDialog","$timeout","AccessControlService","FeedService","StateService",controller]);
 
     angular.module(moduleName)
         .directive('thinkbigFeedDataPolicies', directive);
