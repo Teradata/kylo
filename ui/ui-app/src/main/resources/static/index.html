@@ -25,6 +25,14 @@
   <script src="js/vendor/tern/lib/infer.js"></script>
   <script src="js/vendor/tern/plugin/doc_comment.js"></script>
 
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/images/favicons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="assets/images/favicons/favicon-32x32.png" sizes="32x32">
+  <link rel="icon" type="image/png" href="assets/images/favicons/favicon-16x16.png" sizes="16x16">
+  <link rel="manifest" href="assets/images/favicons/manifest.json">
+  <link rel="mask-icon" href="assets/images/favicons/safari-pinned-tab.svg" color="#ec881d">
+  <meta name="apple-mobile-web-app-title" content="Kylo">
+  <meta name="application-name" content="Kylo">
+
 
 </head>
 <body ng-controller="IndexController as mc" ng-cloak layout-fill>
@@ -43,12 +51,12 @@
       <ui-router-breadcrumbs style="padding-left:25px;" displayname-property="data.displayName" template-url="js/common/ui-router-breadcrumbs/uiBreadcrumbs.tpl.html" flex
                              md-truncate></ui-router-breadcrumbs>
       <div layout="row" layout-fill layout-align="center"
-           flex hide-xs>
+           flex hide-xs ng-class="mc.searchContainerCss">
         <ng-md-icon icon="search"></ng-md-icon>
         <md-input-container class="condensed-no-float md-block global-search" md-no-float style="margin-top:8px;margin-bottom:-15px;" flex>
           <input ng-model="mc.searchQuery" ng-keypress="mc.onSearchKeypress($event)" placeholder="Global Search" style="color:white">
         </md-input-container>
-        <md-button  ng-click="mc.search()">
+        <md-button  ng-click="mc.search()"  ng-class="mc.searchButtonCss">
           Search
         </md-button>
 
