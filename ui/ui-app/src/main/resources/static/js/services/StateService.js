@@ -103,6 +103,10 @@ define(['angular','services/module-name'], function (angular,moduleName) {
                 $state.go('feed-details', {feedId: feedId, tabIndex: tabIndex});
             }
 
+            data.navigateToEditFeedInStepper = function(feedId){
+                $state.god('edit-feed',{feedId:feedId});
+            }
+
             data.navigateToDefineFeed = function (templateId) {
                 $state.go('define-feed', {templateId: templateId});
             }

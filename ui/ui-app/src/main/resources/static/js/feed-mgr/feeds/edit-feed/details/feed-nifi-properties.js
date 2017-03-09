@@ -15,7 +15,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         };
     }
 
-    var controller = function ($scope, $http,RestUrlService,AccessControlService, FeedService, EditFeedNifiPropertiesService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper, BroadcastService) {
+    var controller = function ($scope, $http,RestUrlService,AccessControlService, FeedService, EditFeedNifiPropertiesService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper, BroadcastService,StateService) {
 
         var self = this;
 
@@ -153,6 +153,10 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         }
 
 
+        this.navigateToEditFeedInStepper = function(){
+            StateService.FeedManager().Feed().navigateToEditFeedInStepper(self.model.feedId);
+        }
+
 
         function findProperty(key) {
             return _.find(self.model.allProperties, function (property) {
@@ -247,7 +251,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
                 });
     };
 
-    angular.module(moduleName).controller('FeedNifiPropertiesController', ["$scope","$http","RestUrlService","AccessControlService","FeedService","EditFeedNifiPropertiesService","FeedInputProcessorOptionsFactory","FeedDetailsProcessorRenderingHelper","BroadcastService",controller]);
+    angular.module(moduleName).controller('FeedNifiPropertiesController', ["$scope","$http","RestUrlService","AccessControlService","FeedService","EditFeedNifiPropertiesService","FeedInputProcessorOptionsFactory","FeedDetailsProcessorRenderingHelper","BroadcastService","StateService",controller]);
 
     angular.module(moduleName)
         .directive('thinkbigFeedNifiProperties', directive);

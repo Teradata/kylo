@@ -169,7 +169,27 @@ define(['angular', 'kylo-common','kylo-services',
                    return err;
                });;
            }
+       }).state({
+           name: 'table.**',
+           url: '/tables/{schema}/{tableName}',
+           params: {
+               schema:null,
+               tableName:null
+           },
+           lazyLoad: function(transition) {
+               transition.injector().get('$ocLazyLoad').load('feed-mgr/tables/module').then(function success(args) {
+                   //upon success go back to the state
+                   $stateProvider.stateService.go('table',transition.params())
+                   return args;
+               }, function error(err) {
+                   console.log("Error loading table ",err);
+                   return err;
+               });;
+           }
        });
+
+
+
 
        $stateProvider.state({
            name: 'users.**',

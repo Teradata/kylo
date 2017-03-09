@@ -61,10 +61,10 @@ define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
                 } else if (self.model.registeredTemplate.dataTransformation) {
                     VisualQueryService.resetModel();
                     self.selectedStepIndex = 2;
-                    self.stepperUrl = "js/define-feed/define-feed-data-transform-stepper.html";
+                    self.stepperUrl = "js/feed-mgr/feeds/define-feed/define-feed-data-transform-stepper.html";
                     self.totalSteps = 8;
                 } else {
-                    self.stepperUrl = "js/define-feed/define-feed-no-table-stepper.html";
+                    self.stepperUrl = "js/feed-mgr/feeds/define-feed/define-feed-no-table-stepper.html";
                     self.totalSteps = 4;
                 }
             };

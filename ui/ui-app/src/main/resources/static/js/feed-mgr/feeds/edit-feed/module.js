@@ -27,7 +27,21 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name','kylo-utils/LazyLoadUti
                 displayName:'Edit Feed',
                 module:moduleName
             }
-        })
+        }).state('edit-feed',{
+                url:'/edit-feed/{feedId}',
+                params: {
+                    feedId: null
+                },
+                views: {
+                    'content': {
+                        templateUrl: 'js/edit-feed/edit-feed.html'
+                    }
+                },
+                data:{
+                    breadcrumbRoot: false,
+                    displayName: 'Edit Feed'
+                }
+            })
 
         function lazyLoadController(path){
             return lazyLoadUtil.lazyLoadController(path,['feed-mgr/feeds/edit-feed/module-require','feed-mgr/sla/module-require','feed-mgr/visual-query/module-require','angular-visjs']);

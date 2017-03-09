@@ -83,7 +83,7 @@
                 <span flex="25" class="property-name">Query</span>
             </div>
             <div layout="row">
-                <md-button class="md-raised" href="#/edit-feed/{{vm.model.feedId}}" ng-if="vm.model.registeredTemplate.dataTransformation">Edit Query...</md-button>
+                <md-button class="md-raised" ng-click="vm.navigateToEditFeedInStepper()" ng-if="vm.model.registeredTemplate.dataTransformation">Edit Query...</md-button>
             </div>
 
             <div flex ng-if="vm.editModel.inputProcessor != null && (vm.editModel.inputProcessor.feedPropertiesUrl == null || vm.editModel.inputProcessor.feedPropertiesUrl == undefined)">
