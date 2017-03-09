@@ -29,7 +29,11 @@ define([
         window.moment = moment;
     }
 
-     var module = angular.module("kylo", ['ui.router', 'oc.lazyLoad', 'ngMaterial','material.components.expansionPanels','md.data.table','ngMdIcons','angularUtils.directives.dirPagination','kylo.common','kylo.services','kylo.side-nav','ngFx','ngAnimate','ngSanitize','ngTextTruncate']);
+     var module = angular.module("kylo", ['ui.router', 'oc.lazyLoad', 'ngMaterial','material.components.expansionPanels','md.data.table','ngMdIcons','angularUtils.directives.dirPagination','kylo.common','kylo.services','kylo.side-nav','ngFx','ngAnimate','ngSanitize','ngTextTruncate',    'ui.grid',
+                                          'ui.grid.resizeColumns',
+                                          'ui.grid.autoResize',
+                                          'ui.grid.moveColumns',
+                                          'ui.grid.pagination']);
 
     module.config(['$mdThemingProvider','$mdIconProvider',function($mdThemingProvider, $mdIconProvider){
         var primaryBlue = $mdThemingProvider.extendPalette('blue', {

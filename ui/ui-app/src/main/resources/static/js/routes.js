@@ -452,149 +452,6 @@ define(['angular', 'kylo-common','kylo-services',
            }
        });
 
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-   .state('alerts', {
-           url: '/alerts',
-           params: {
-               tab: null
-           },
-           views: {
-               'content': {
-                   templateUrl: 'js/alerts/alerts-table.html'
-               }
-           },
-           data: {
-               breadcrumbRoot: true,
-               displayName: 'Alerts'
-           }
-       })
-           .state('scheduler', {
-               url:'/scheduler',
-               views: {
-                   'content': {
-                       templateUrl: 'js/scheduler/scheduler.html'
-                   }
-               },
-               data:{
-                   breadcrumbRoot:true,
-                   displayName:'Scheduler'
-               }
-           })
-           .state('feed-stats', {
-           url: '/feed-stats/:feedName',
-           params: {
-               executionId: null
-           },
-           views: {
-               'content': {
-                   templateUrl: 'js/feeds/feed-stats/feed-stats.html'
-               }
-           },
-           data: {
-               displayName: 'Job Details'
-           }
-       })
-
-         .state('service-health',{
-           url:'/service-health',
-           views: {
-               'content': {
-                   templateUrl: 'js/service-health/service-health.html'
-               }
-           },
-           data:{
-               breadcrumbRoot:true,
-               displayName:'Service Health'
-           }
-       }).state('service-details',{
-           url:'/service-details/:serviceName',
-           params: {
-               serviceName: null
-           },
-           views: {
-               'content': {
-                   templateUrl: 'js/service-health/service-detail.html'
-               }
-           },
-           data:{
-               displayName:'Service Details'
-           }
-       }).state('service-component-details',{
-           url:'/service-details/:serviceName/:componentName',
-           params: {
-               serviceName: null,
-               componentName:null
-           },
-           views: {
-               'content': {
-                   templateUrl: 'js/service-health/service-component-detail.html'
-               }
-           },
-           data:{
-               displayName:'Service Component'
-           }
-       }).state('charts',{
-           url:'/charts',
-           views: {
-               'content': {
-                   templateUrl: 'js/charts/charts.html'
-               }
-           },
-           data:{
-               breadcrumbRoot:true,
-               displayName:'Charts'
-           }
-       }).state("alert-details",{
-           url:"/alert-details/:alertId",
-           params: {
-               alertId: null
-           },
-           views: {
-               'content': {
-                   templateUrl: 'js/alerts/alert-details.html'
-               }
-           },
-           data:{
-               displayName:'Alert Details'
-           }
-       })
-       */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
    }]);
 
 
@@ -603,7 +460,6 @@ define(['angular', 'kylo-common','kylo-services',
                    function ($rootScope,   $state, $location) {
 
                        $rootScope.$state = $state;
-                       //$rootScope.$transition$ = $transition$;
                        $rootScope.$location = $location;
 
                        $rootScope.typeOf = function(value) {
@@ -612,14 +468,6 @@ define(['angular', 'kylo-common','kylo-services',
                    }
         ]
     );
-/*
-    app.run(function($trace) {
-        $trace.enable(1);
-    });
-*/
-
-
-
 
     return angular.bootstrap(document,['kylo']);
 

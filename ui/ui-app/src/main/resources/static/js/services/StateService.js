@@ -248,6 +248,9 @@ define(['angular','services/module-name'], function (angular,moduleName) {
         var OpsManagerStates = function(){
 
             var data = {};
+            data.dashboard = function () {
+                $state.go('dashboard');
+            }
             data.Feed = OpsManagerFeedStates;
             data.Job = OpsManagerJobStates;
             data.ServiceStatus = OpsManagerServiceStates

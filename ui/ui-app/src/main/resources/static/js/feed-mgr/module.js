@@ -1,5 +1,5 @@
-define(['angular', 'feed-mgr/module-name', 'codemirror-require/module', 'angular-ui-grid', 'kylo-common', 'kylo-services'], function (angular, moduleName) {
-    var module = angular.module(moduleName, ['ui.codemirror', 'ui.grid', 'ui.grid.resizeColumns', 'ui.grid.autoResize', 'ui.grid.moveColumns', 'ui.grid.pagination']);
+define(['angular', 'feed-mgr/module-name', 'codemirror-require/module', 'kylo-common', 'kylo-services'], function (angular, moduleName) {
+    var module = angular.module(moduleName, ['ui.codemirror']);
 
     module.run(['$ocLazyLoad', function ($ocLazyLoad) {
         $ocLazyLoad.load({

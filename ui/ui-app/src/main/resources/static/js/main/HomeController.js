@@ -46,7 +46,7 @@ define(['angular'], function (angular) {
 
             // Determine the home page
             if (AccessControlService.hasAction(AccessControlService.FEEDS_ACCESS, actions)) {
-                return StateService.navigateToFeeds();
+                return StateService.FeedManager().Feed().navigateToFeeds();
             }
             if (AccessControlService.hasAction(AccessControlService.OPERATIONS_MANAGER_ACCESS, actions)) {
                 return StateService.OpsManager().dashboard();
