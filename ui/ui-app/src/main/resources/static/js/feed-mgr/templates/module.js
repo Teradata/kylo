@@ -83,9 +83,6 @@ define(['angular', 'feed-mgr/templates/module-name','kylo-utils/LazyLoadUtil','a
                     controllerAs:'vm'
                 }
             },
-            resolve: {
-                loadMyCtrl: lazyLoadController(['feed-mgr/templates/template-stepper/register-template/RegisterTemplateCompleteController'])
-            },
             data: {
                 breadcrumbRoot: false,
                 displayName: 'Register Template',

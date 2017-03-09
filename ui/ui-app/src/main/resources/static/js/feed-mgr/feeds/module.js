@@ -29,7 +29,7 @@ define(['angular','feed-mgr/feeds/module-name', 'kylo-utils/LazyLoadUtil','angul
         });
 
         function lazyLoadController(path){
-            return lazyLoadUtil.lazyLoadController(path);
+            return lazyLoadUtil.lazyLoadController(path,['feed-mgr/feeds/module-require']);
         }
 
 

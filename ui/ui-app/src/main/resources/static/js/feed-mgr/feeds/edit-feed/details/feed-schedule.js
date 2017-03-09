@@ -297,7 +297,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         this.showPreconditionDialog = function (index) {
             $mdDialog.show({
                 controller: 'FeedPreconditionsDialogController',
-                templateUrl: 'js/define-feed/feed-details/feed-preconditions/define-feed-preconditions-dialog.html',
+                templateUrl: 'js/feed-mgr/feeds/shared/define-feed-preconditions-dialog.html',
                 parent: angular.element(document.body),
                 clickOutsideToClose: false,
                 fullscreen: true,
