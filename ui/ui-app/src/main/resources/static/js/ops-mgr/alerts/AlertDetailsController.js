@@ -4,12 +4,13 @@ define(['angular','ops-mgr/alerts/module-name'], function (angular,moduleName) {
         return {
             restrict: "EA",
             bindToController: {
-                cardTitle: "@"
+                cardTitle: "@",
+                alertId:"="
             },
             controllerAs: "vm",
             scope: true,
             templateUrl: "js/ops-mgr/alerts/alert-details-template.html",
-            controller: "AlertDetailsController"
+            controller: "AlertDetailsDirectiveController"
         };
     };
 
@@ -19,13 +20,11 @@ define(['angular','ops-mgr/alerts/module-name'], function (angular,moduleName) {
      * @param $scope the Angular scope
      * @param $http the HTTP service
      * @param $mdDialog the dialog server
-     * @param $transition$ the state parameters
      * @param AccessControlService the access control service
      * @param OpsManagerRestUrlService the REST URL service
      */
-    function AlertDetailsController($scope, $http, $mdDialog, $transition$, AccessControlService, OpsManagerRestUrlService) {
+    function AlertDetailsDirectiveController($scope, $http, $mdDialog, AccessControlService, OpsManagerRestUrlService) {
         var self = this;
-
         /**
          * Indicates that admin operations are allowed.
          * @type {boolean}
@@ -107,8 +106,9 @@ define(['angular','ops-mgr/alerts/module-name'], function (angular,moduleName) {
          * @param {string} alertId the id of the alert
          */
         self.loadAlert = function(alertId) {
-            $http.get(OpsManagerRestUrlService.ALERT_DETAILS_URL(alertId))
-                    .then(function(response) {
+            if(alertId) {
+                $http.get(OpsManagerRestUrlService.ALERT_DETAILS_URL(alertId))
+                    .then(function (response) {
                         self.alertData = response.data;
 
                         // Set time since created
@@ -124,13 +124,14 @@ define(['angular','ops-mgr/alerts/module-name'], function (angular,moduleName) {
                         }
 
                         if (angular.isArray(self.alertData.events)) {
-                            angular.forEach(self.alertData.events, function(event) {
+                            angular.forEach(self.alertData.events, function (event) {
                                 event.stateClass = self.getStateClass(event.state);
                                 event.stateIcon = self.getStateIcon(event.state);
                                 event.stateText = self.getStateText(event.state);
                             });
                         }
                     });
+            }
         };
 
         /**
@@ -145,7 +146,7 @@ define(['angular','ops-mgr/alerts/module-name'], function (angular,moduleName) {
                 },
                 parent: angular.element(document.body),
                 targetEvent: $event,
-                templateUrl: "js/alerts/event-dialog.html"
+                templateUrl: "js/ops-mgr/alerts/event-dialog.html"
             }).then(function(result) {
                 if (result) {
                     self.loadAlert(self.alertData.id);
@@ -154,7 +155,7 @@ define(['angular','ops-mgr/alerts/module-name'], function (angular,moduleName) {
         };
 
         // Fetch alert details
-        self.loadAlert($transition$.params().alertId);
+        self.loadAlert(this.alertId);
 
         // Fetch allowed permissions
         AccessControlService.getAllowedActions()
@@ -209,7 +210,12 @@ define(['angular','ops-mgr/alerts/module-name'], function (angular,moduleName) {
         };
     }
 
-    angular.module(moduleName).controller("AlertDetailsController", ["$scope","$http","$mdDialog","$transition$","AccessControlService","OpsManagerRestUrlService",AlertDetailsController]);
+    function AlertDetailsController($transition$) {
+        this.alertId = $transition$.params().alertId;
+    }
+
+    angular.module(moduleName).controller("AlertDetailsController",["$transition$",AlertDetailsController]);
+    angular.module(moduleName).controller("AlertDetailsDirectiveController", ["$scope","$http","$mdDialog","AccessControlService","OpsManagerRestUrlService",AlertDetailsDirectiveController]);
     angular.module(moduleName).directive("tbaAlertDetails", directive);
 
     angular.module(moduleName).controller("EventDialogController", ["$scope","$http","$mdDialog","OpsManagerRestUrlService","alert",EventDialogController]);

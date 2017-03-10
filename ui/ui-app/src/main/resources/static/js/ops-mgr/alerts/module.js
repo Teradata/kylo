@@ -22,12 +22,19 @@ define(['angular','ops-mgr/alerts/module-name', 'kylo-utils/LazyLoadUtil','kylo-
                 module:moduleName
             }
         }).state("alert-details",{
-            url:"/alert-details/:alertId",
+            url:"/alert-details/{alertId}",
+            views: {
+                'content': {
+                    templateUrl: 'js/ops-mgr/alerts/alert-details.html',
+                    controller:'AlertDetailsController',
+                    controllerAs:'vm'
+                }
+            },
             params: {
                 alertId: null
             },
             resolve: {
-                loadPage: lazyLoad()
+                loadMyCtrl: lazyLoadController(['ops-mgr/alerts/AlertDetailsController'])
             },
             data:{
                 displayName:'Alert Details',

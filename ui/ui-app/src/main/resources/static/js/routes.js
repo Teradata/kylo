@@ -465,7 +465,7 @@ define(['angular', 'kylo-common','kylo-services',
                    $stateProvider.stateService.go('alert-details',transition.params())
                    return args;
                }, function error(err) {
-                   console.log("Error loading alert-detailss ",err);
+                   console.log("Error loading alert-details ",err);
                    return err;
                });
            }
