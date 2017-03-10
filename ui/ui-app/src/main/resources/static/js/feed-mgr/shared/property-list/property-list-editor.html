@@ -27,7 +27,8 @@
 -->
   <md-input-container class="md-block" flex-gt-sm ng-if="property.locked">
     <label>{{property.displayName}}</label>
-    <input  ng-model="property.value"/>
+    <input ng-model="property.value" ng-required="property.required"/>
+    <div class="hint" ng-if="property.description">{{property.description}}</div>
     <div ng-messages="property.$error" md-auto-hide="false">
       <div ng-message="missingValue">A value is required.</div>
     </div>
