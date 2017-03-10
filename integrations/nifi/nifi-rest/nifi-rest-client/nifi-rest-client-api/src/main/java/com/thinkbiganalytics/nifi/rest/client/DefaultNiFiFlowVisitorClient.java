@@ -194,7 +194,27 @@ public class DefaultNiFiFlowVisitorClient implements NiFiFlowVisitorClient {
         parentProcessGroup.setParentGroupId(UUID.randomUUID().toString());
         parentProcessGroup.setName(template.getName());
         parentProcessGroup.setContents(template.getSnippet());
-        NifiVisitableProcessGroup visitableGroup = getFlowOrder(parentProcessGroup, new NifiConnectionOrderVisitorCache());
+        NifiConnectionOrderVisitorCache cache = new NifiConnectionOrderVisitorCache();
+        Collection<ProcessGroupDTO> groups = NifiProcessUtil.getProcessGroups(parentProcessGroup);
+        cache.add(parentProcessGroup);
+        //add the snippet as its own process group
+        if(template.getSnippet().getProcessors() != null) {
+            //find the first processor and get its parent group id
+            Optional<ProcessorDTO> firstProcessor = template.getSnippet().getProcessors().stream().findFirst();
+            if(firstProcessor.isPresent()){
+                String groupId = firstProcessor.get().getParentGroupId();
+                ProcessGroupDTO snippetGroup = new ProcessGroupDTO();
+                snippetGroup.setId(groupId);
+                snippetGroup.setParentGroupId(template.getGroupId());
+                snippetGroup.setContents(template.getSnippet());
+                cache.add(snippetGroup);
+            }
+
+        }
+        if(groups != null){
+            groups.stream().forEach(group -> cache.add(group));
+        }
+        NifiVisitableProcessGroup visitableGroup = getFlowOrder(parentProcessGroup,cache);
         NifiFlowProcessGroup flow = new NifiFlowBuilder().build(visitableGroup);
         return flow;
     }
