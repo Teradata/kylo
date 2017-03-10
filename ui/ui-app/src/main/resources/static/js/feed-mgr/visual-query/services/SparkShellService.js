@@ -1017,6 +1017,12 @@ angular.module(moduleName).factory("SparkShellService", ["$http","$mdDialog","$q
         toObject: function(expression) {
             if (SparkType.isObject(expression.type)) {
                 return expression.source;
+            } else if (expression.type == SparkType.LITERAL) {
+                if (expression.source.charAt(0) === "\"" || expression.source.charAt(0) === "'") {
+                    return SparkExpression.toString(expression);
+                } else {
+                    return expression.source;
+                }
             } else {
                 throw new ParseException("Expression cannot be converted to an object: " + expression.type, expression.start);
             }

@@ -3135,9 +3135,9 @@
     "!sparkType": "column"
   },
   "getItem": {
-    "!type": "fn(e: Column, key: Column) -> Column",
+    "!type": "fn(e: Column, key: Object) -> Column",
     "!doc": "Gets at item out of an array or a map.",
-    "!spark": "%c.getItem(%c)",
+    "!spark": "%c.getItem(%o)",
     "!sparkType": "column"
   },
   "greaterThan": {
