@@ -91,11 +91,15 @@ tba-alerts card-layout {
 @media (min-width: 600px) {
   .kpi-row.layout-row > .kpi.flex-gt-md-25 {
     flex: 1 1 45%;
+    -webkit-box-flex: 1;
+    -webkit-flex: 1 1 45%;
   }
 }
 @media (min-width: 1280px) {
   .kpi-row.layout-row > .kpi.flex-gt-md-25 {
     flex: 1 1 10%;
+    -webkit-box-flex: 1;
+    -webkit-flex: 1 1 10%;
   }
 }
 .kpi-row.layout-align-space-between-center > * {
