@@ -1,4 +1,5 @@
 define(['angular','angular-ui-router','kylo-common','kylo-feedmgr','feed-mgr/feeds/get-table-data-properties/GetTableDataPropertiesController',
+        'feed-mgr/feeds/edit-feed/details/feed-additional-properties',
         'feed-mgr/feeds/edit-feed/details/feed-data-policies',
         'feed-mgr/feeds/edit-feed/details/feed-definition',
         'feed-mgr/feeds/edit-feed/details/feed-info',
