@@ -116,17 +116,11 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
                 },
                 font: {align: 'horizontal'}
             },
-            "physics": {
-                "enabled": true,
-                "barnesHut": {
-                    "springLength": 200
-                }
-            },
             layout: {
-                randomSeed:2,
                 hierarchical: {
-                    direction: "RL",
-                    nodeSpacing:200
+                    direction: "LR",
+                    nodeSpacing:200,
+                    sortMethod:'directed'
                 }
             },
             nodes: {
@@ -536,7 +530,8 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
             else {
                 self.selectedNode = SELECT_A_NODE;
             }
-            //console.log(self.selectedNode);
+            $scope.$apply()
+            //console.log(;self.selectedNode);
             //force angular to refresh selection
             angular.element('#hiddenSelectedNode').html(self.selectedNode.name)
         };
@@ -579,8 +574,8 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         self.events = {
             onload: onLoad,
             selectNode: onSelect,
-            stabilized:stabilized,
-            stabilizationIterationsDone: stabilizationIterationsDone
+            stabilized:stabilized
+          //  stabilizationIterationsDone: stabilizationIterationsDone
         };
 
         /**
