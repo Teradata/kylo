@@ -123,7 +123,12 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
                 }
             },
             layout: {
-                randomSeed:2
+                randomSeed:2,
+                interaction: {dragNodes :false},
+                hierarchical: {
+                    direction: "RL",
+                    nodeSpacing:200
+                }
             },
             nodes: {
                 shape: 'box',
@@ -534,7 +539,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
             }
             //console.log(self.selectedNode);
             //force angular to refresh selection
-            jQuery('#hiddenSelectedNode').html(self.selectedNode.name)
+            angular.element('#hiddenSelectedNode').html(self.selectedNode.name)
         };
 
         self.navigateToFeed = function () {
@@ -550,20 +555,32 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
          */
         var onLoad = function(network){
             self.network = network;
+           // stabilizationIterationsDone();
+        }
+        var stabilized = function(){
+            stabilizationIterationsDone();
         }
 
         var stabilizationIterationsDone = function () {
             self.options.physics.enabled = false;
             if (self.network) {
                 self.network.setOptions({
-                    physics: {enabled: false}
+                    physics: {enabled: false, stabilization: false},
+                    interaction: {dragNodes: true},
+                    layout: {
+                        hierarchical: {
+                            enabled: false
+                        }
+                    }
                 });
             }
         }
 
+
         self.events = {
             onload: onLoad,
             selectNode: onSelect,
+            stabilized:stabilized,
             stabilizationIterationsDone: stabilizationIterationsDone
         };
 
@@ -573,19 +590,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         getFeedLineage(self.model.id);
     };
 
-    var FeedLineageSelectedNode = function () {
-        return {
-            restrict: "E",
-            templateUrl: 'js/feed-details/lineage/selected-node.html',
-            link: function ($scope, element, attrs) {
 
-            }
-
-        };
-    }
-
-    angular.module(moduleName)
-        .directive('thinkbigFeedLineageSelectedNode', FeedLineageSelectedNode);
 
 
     angular.module(moduleName).controller('FeedLineageController', ["$scope","$element","$http","$mdDialog","$timeout","AccessControlService","FeedService","RestUrlService","VisDataSet","Utils","BroadcastService","StateService",controller]);
