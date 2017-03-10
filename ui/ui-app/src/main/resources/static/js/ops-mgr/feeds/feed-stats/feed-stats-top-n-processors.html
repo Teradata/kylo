@@ -85,9 +85,7 @@
       </div>
       <nvd3 flex options="vm.processorDurationChartOptions" data="vm.processorDurationChartData" api="vm.chartApi" config="{deepWatchOptions:true}"></nvd3>
     </div>
-    <div ng-if="!vm.dataLoaded" class="kpi-loading">
-      <md-progress-circular md-mode="indeterminate" md-diameter="96"></md-progress-circular>
-    </div>
+    <div  ng-if="!vm.dataLoaded" class="kpi-loading" layout-align="center center" layout="column">  <md-progress-circular md-mode="indeterminate" md-diameter="60"></md-progress-circular>
 
   </body-section>
 </card-layout>
