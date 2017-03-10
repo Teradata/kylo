@@ -5,7 +5,10 @@ define(['angular','feed-mgr/feeds/module-name', 'kylo-utils/LazyLoadUtil','angul
     var module = angular.module(moduleName, []);
 
 
-    module.config(['$stateProvider',function ($stateProvider) {
+    module.config(['$stateProvider','$compileProvider',function ($stateProvider,$compileProvider) {
+        //preassign modules until directives are rewritten to use the $onInit method.
+        //https://docs.angularjs.org/guide/migration#migrating-from-1-5-to-1-6
+        $compileProvider.preAssignBindingsEnabled(true);
         $stateProvider.state('feeds', {
             url: '/feeds',
             params: {

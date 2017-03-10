@@ -5,7 +5,11 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name','kylo-utils/LazyLoadUti
         if(window.vis === undefined) {
             window.vis = vis;
         }
-    module.config(['$stateProvider',function ($stateProvider) {
+    module.config(['$stateProvider','$compileProvider',function ($stateProvider,$compileProvider) {
+        //preassign modules until directives are rewritten to use the $onInit method.
+        //https://docs.angularjs.org/guide/migration#migrating-from-1-5-to-1-6
+        $compileProvider.preAssignBindingsEnabled(true);
+
         $stateProvider.state('feed-details',{
             url:'/feed-details/{feedId}',
             params: {
