@@ -126,6 +126,8 @@ public class JcrTestConfig {
     
     @Bean
     public JcrAllowedEntityActionsProvider allowedEntityActionsProvider() {
+        
+        
         JcrAllowedEntityActionsProvider provider = Mockito.mock(JcrAllowedEntityActionsProvider.class);
         when(provider.getAllowedActions(any(String.class))).thenReturn(Optional.empty());
         when(provider.getAvailableActions(any(String.class))).thenReturn(Optional.empty());

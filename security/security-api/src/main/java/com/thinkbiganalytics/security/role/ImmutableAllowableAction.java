@@ -24,7 +24,9 @@ package com.thinkbiganalytics.security.role;
  */
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.thinkbiganalytics.security.action.Action;
@@ -36,13 +38,20 @@ import com.thinkbiganalytics.security.action.AllowableAction;
 public class ImmutableAllowableAction implements AllowableAction {
 
     private final Action action;
-    private final List<AllowableAction> subactions = new ArrayList<>();
+    private final List<AllowableAction> subactions;
     
-    public ImmutableAllowableAction(AllowableAction action) {
-        super();
-        this.action = new ImmutableAllowableAction(action);
-        
-        action.getSubActions().forEach(a -> subactions.add(new ImmutableAllowableAction(a)));
+    public ImmutableAllowableAction(AllowableAction allowable) {
+        this(allowable, 
+             allowable.getSubActions().stream()
+                 .map(a -> new ImmutableAllowableAction(a))
+                 .collect(Collectors.toList()));
+    }
+    
+    public ImmutableAllowableAction(Action action, List<ImmutableAllowableAction> subActions) {
+        List<Action> hierarchy = action.getHierarchy();
+        Action[] parents = hierarchy.subList(0, hierarchy.size() - 1).toArray(new Action[hierarchy.size() - 1]);
+        this.action = Action.create(action.getSystemName(), action.getTitle(), action.getDescription(), parents);
+        this.subactions = Collections.unmodifiableList(subActions);
     }
 
     @Override
