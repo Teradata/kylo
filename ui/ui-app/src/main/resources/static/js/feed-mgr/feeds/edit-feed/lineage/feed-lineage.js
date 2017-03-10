@@ -124,7 +124,6 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
             },
             layout: {
                 randomSeed:2,
-                interaction: {dragNodes :false},
                 hierarchical: {
                     direction: "RL",
                     nodeSpacing:200
