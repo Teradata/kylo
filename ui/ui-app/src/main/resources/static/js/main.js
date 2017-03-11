@@ -39,7 +39,7 @@ require.config({
         "kylo-side-nav-module":"side-nav/module",
         "kyloTimer":"common/timer/kylo-timer",
         "lz-string": "../bower_components/lz-string/libs/lz-string.min",
-        "ment-io":"vendor/ment.io/mentio.min",
+        "ment-io":"vendor/ment.io/mentio",
         "moment":"../bower_components/moment/min/moment.min",
         'ng-fx':"../bower_components/ngFx/dist/ngFx.min",
         "ng-text-truncate":"vendor/ng-text-truncate/ng-text-truncate",
