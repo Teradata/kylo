@@ -24,7 +24,9 @@ define(['angular',
         'feed-mgr/shared/feed-field-policy-rules/FeedFieldPolicyRuleDialog',
         'feed-mgr/shared/feed-field-policy-rules/inline-field-policy-form',
         'feed-mgr/shared/nifi-property-input/nifi-property-timunit-input',
-        'feed-mgr/shared/nifi-property-input/nifi-property-input'],function() {
+        'feed-mgr/shared/nifi-property-input/nifi-property-input',
+        'feed-mgr/shared/cron-expression-validator/cron-expression-validator',
+        'feed-mgr/shared/cron-expression-preview/cron-expression-preview'],function() {
 
 });
 

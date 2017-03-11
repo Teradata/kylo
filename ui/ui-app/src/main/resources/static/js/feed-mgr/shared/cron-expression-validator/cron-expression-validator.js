@@ -1,5 +1,6 @@
-define(['angular'], function (angular) {
-    angular.module("kylo.feedmgr.definefeed").directive('cronExpressionValidator', ['RestUrlService', '$q', '$http', function (RestUrlService, $q, $http) {
+define(['angular',"feed-mgr/module-name"], function (angular,moduleName) {
+
+    angular.module(moduleName).directive('cronExpressionValidator', ['RestUrlService', '$q', '$http', function (RestUrlService, $q, $http) {
         return {
             restrict: 'A',
             require: 'ngModel',
