@@ -20,6 +20,8 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
         self.errorMap = null;
         self.errorCount = 0;
 
+        self.showReorderList = false;
+
 
         function showVerifyReplaceReusableTemplateDialog(ev) {
             // Appending dialog to document.body to cover sidenav in docs app
@@ -45,6 +47,7 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
 
 
         this.importTemplate = function () {
+            self.showReorderList = false;
             self.importInProgress = true;
             self.importResult = null;
             showProgress();
@@ -82,6 +85,7 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
                 hideProgress();
 
                 if (count == 0) {
+                    self.showReorderList = true;
                     self.importResultIcon = "check_circle";
                     self.importResultIconColor = "#009933";
                     if (responseData.zipFile == true) {
@@ -97,6 +101,7 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
                 }
                 else {
                     if (responseData.success) {
+                        self.showReorderList = true;
                         self.message = "Successfully imported " + (responseData.zipFile == true ? "and registered " : "") + " the template " + responseData.templateName + " but some errors were found. Please review these errors";
                         self.importResultIcon = "warning";
                         self.importResultIconColor = "#FF9901";
@@ -116,9 +121,16 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
 
                 self.importInProgress = false;
             }
-            var errorFn = function (data) {
+            var errorFn = function (response) {
                 hideProgress();
+                self.importResult = response.data;
                 self.importInProgress = false;
+                self.importResultIcon = "error";
+                self.importResultIconColor = "#FF0000";
+                var msg = response.data.message != undefined ? response.data.message : "Unable to import the template.";
+                self.message = msg;
+                self.verifiedToCreateConnectingReusableTemplate = false;
+                self.createConnectingReusableTemplate = false;
             }
             var createConnectingReusableFlow = 'NOT_SET';
             if(self.verifiedToCreateConnectingReusableTemplate && self.createConnectingReusableTemplate) {

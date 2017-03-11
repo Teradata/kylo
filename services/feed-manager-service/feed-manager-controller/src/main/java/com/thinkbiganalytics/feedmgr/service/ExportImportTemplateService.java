@@ -207,12 +207,12 @@ public class ExportImportTemplateService {
             importTemplate.setVerificationToReplaceConnectingResuableTemplateNeeded(true);
             return importTemplate;
         }
-        log.info("Importing Zip file template {}, overwrite: {}, reusableFlow: {}", fileName, importOptions.isOverwrite());
+        log.info("Importing Zip file template {}, overwrite: {}, reusableFlow: {}", fileName, importOptions.isOverwrite(), importOptions.getImportConnectingFlow());
         List<ImportTemplate> connectingTemplates = new ArrayList<>();
         if (importTemplate.hasConnectingReusableTemplate() && ImportOptions.IMPORT_CONNECTING_FLOW.YES.equals(importOptions.getImportConnectingFlow())) {
             log.info("Importing Zip file template {}. first importing reusable flow from zip");
             for (String reusableTemplateXml : importTemplate.getNifiConnectingReusableTemplateXmls()) {
-                ImportTemplate connectingTemplate = importNifiTemplateWithTemplateString(importTemplate.getFileName(), reusableTemplateXml, importOptions.isOverwrite(), true,
+                ImportTemplate connectingTemplate = importNifiTemplateWithTemplateString(importTemplate.getFileName(), reusableTemplateXml, true, true,
                                                                                          false);
                 if (!connectingTemplate.isSuccess()) {
                     //return with exception
@@ -229,7 +229,7 @@ public class ExportImportTemplateService {
         importTemplate.setTemplateName(template.getTemplateName());
         RegisteredTemplate existingTemplate = metadataService.getRegisteredTemplateByName(template.getTemplateName());
         if (existingTemplate != null) {
-            if (!importOptions.isOverwrite()) {
+            if (!importOptions.isOverwrite() && !importOptions.isContinueIfExists()) {
                 throw new UnsupportedOperationException(
                     "Unable to import the template " + template.getTemplateName() + " because it is already registered.  Please click the overwrite box and try again");
             }
@@ -241,28 +241,35 @@ public class ExportImportTemplateService {
         //Check to see if this template doesnt already exist in Nifi
         String templateName = null;
         String oldTemplateXml = null;
-
+        TemplateDTO dto = null;
         try {
             templateName = NifiTemplateParser.getTemplateName(importTemplate.getNifiTemplateXml());
             importTemplate.setTemplateName(templateName);
-            TemplateDTO templateDTO = nifiRestClient.getTemplateByName(templateName);
-            if (templateDTO != null) {
-                oldTemplateXml = nifiRestClient.getTemplateXml(templateDTO.getId());
+            dto = nifiRestClient.getTemplateByName(templateName);
+            if (dto != null) {
+                oldTemplateXml = nifiRestClient.getTemplateXml(dto.getId());
+                template.setNifiTemplateId(dto.getId());
                 if (importOptions.isOverwrite()) {
-                    nifiRestClient.deleteTemplate(templateDTO.getId());
-                } else {
+                    nifiRestClient.deleteTemplate(dto.getId());
+                } else if(!importOptions.isContinueIfExists()){
+                    //if the user didnt want to continue, then throw the exception
                     throw new UnsupportedOperationException(
-                        "Unable to import Template " + templateName + ".  It already exists in Nifi.  Please check that you wish to overwrite this template and try to import again.");
+                        "Unable to import Template " + templateName + ".  It already exists in NiFi.  Please check that you wish to overwrite this template and try to import again.");
                 }
             }
         } catch (ParserConfigurationException | XPathExpressionException | SAXException e) {
-            throw new UnsupportedOperationException("The Xml File you are trying to import is not a valid Nifi Template.  Please Try again. " + e.getMessage());
+            throw new UnsupportedOperationException("The xml file you are trying to import is not a valid NiFi template.  Please try again. " + e.getMessage());
         }
 
-        log.info("Attempting to import Nifi Template: {} for file {}", templateName, fileName);
-        TemplateDTO dto = nifiRestClient.importTemplate(template.getTemplateName(), importTemplate.getNifiTemplateXml());
-        template.setNifiTemplateId(dto.getId());
+        boolean register = (dto == null || (dto != null && importOptions.isOverwrite()));
+        //attempt to import the xml into NiFi if its new, or if the user said to overwrite
+        if(register) {
+            log.info("Attempting to import Nifi Template: {} for file {}", templateName, fileName);
+            dto = nifiRestClient.importTemplate(template.getTemplateName(), importTemplate.getNifiTemplateXml());
+            template.setNifiTemplateId(dto.getId());
+        }
 
+        //Create the new instance of the template in NiFi
         Map<String, Object> configProperties = propertyExpressionResolver.getStaticConfigProperties();
         NifiProcessGroup newTemplateInstance =
             nifiRestClient.createNewTemplateInstance(template.getNifiTemplateId(), configProperties, false, new NifiFlowCacheReusableTemplateCreationCallback(false));
@@ -272,13 +279,15 @@ public class ExportImportTemplateService {
 
             try {
                 importTemplate.setNifiTemplateId(template.getNifiTemplateId());
-                //register it in the system
-                metadataService.registerTemplate(template);
-                //get the new template
-                if (StringUtils.isNotBlank(template.getId())) {
-                    template = metadataService.getRegisteredTemplate(template.getId());
-                } else {
-                    template = metadataService.getRegisteredTemplateByName(template.getTemplateName());
+                if(register) {
+                    //register it in the system
+                    metadataService.registerTemplate(template);
+                    //get the new template
+                    if (StringUtils.isNotBlank(template.getId())) {
+                        template = metadataService.getRegisteredTemplate(template.getId());
+                    } else {
+                        template = metadataService.getRegisteredTemplateByName(template.getTemplateName());
+                    }
                 }
                 importTemplate.setTemplateId(template.getId());
 

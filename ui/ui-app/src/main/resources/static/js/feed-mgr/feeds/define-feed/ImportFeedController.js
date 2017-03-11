@@ -6,7 +6,11 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         this.feedFile = null;
         this.fileName = null;
         this.importBtnDisabled = false;
+
+        /** overwrite the feed **/
         this.overwrite = false;
+
+        this.overwriteFeedTemplate = false;
 
         this.verifiedToCreateConnectingReusableTemplate = false;
         this.createConnectingReusableTemplate = false;
@@ -63,6 +67,8 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         };
 
 
+
+
         this.importFeed = function () {
             self.importBtnDisabled = true;
             self.importResult = null;
@@ -108,29 +114,32 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                 self.errorCount = count;
 
                 hideProgress();
+                var feedName =  responseData.feedName != null ?  responseData.feedName : "";
 
                 if (count == 0) {
                     self.importResultIcon = "check_circle";
                     self.importResultIconColor = "#009933";
 
-                    self.message = "Successfully imported the feed " + responseData.feedName + ".";
+                    self.message = "Successfully imported the feed "+feedName+".";
                     self.overwrite = false;
+                    self.overwriteFeedTemplate = false;
                     self.verifiedToCreateConnectingReusableTemplate = false;
                     self.createConnectingReusableTemplate = false;
                 }
                 else {
                     if (responseData.success) {
-                        self.message = "Successfully imported and registered the feed " + responseData.feedName + " but some errors were found. Please review these errors";
+                        self.message = "Successfully imported and registered the feed "+feedName+" but some errors were found. Please review these errors";
                         self.importResultIcon = "warning";
                         self.importResultIconColor = "#FF9901";
                         self.overwrite = false;
+                        self.overwriteFeedTemplate = false;
                         self.verifiedToCreateConnectingReusableTemplate = false;
                         self.createConnectingReusableTemplate = false;
                     }
                     else {
                         self.importResultIcon = "error";
                         self.importResultIconColor = "#FF0000";
-                        self.message = "Unable to import and register the feed " + responseData.feedName + ".  Errors were found. ";
+                        self.message = "Unable to import and register the feed.  Errors were found. ";
                         self.verifiedToCreateConnectingReusableTemplate = false;
                         self.createConnectingReusableTemplate = false;
 
@@ -173,6 +182,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
 
             FileUpload.uploadFileToUrl(file, uploadUrl, successFn, errorFn, {
                 overwrite: self.overwrite,
+                overwriteFeedTemplate: self.overwriteFeedTemplate,
                 categorySystemName: angular.isDefined(self.model.category.systemName) && self.model.category.systemName != null ? self.model.category.systemName : "",
                 importConnectingReusableFlow: createConnectingReusableFlow
             });

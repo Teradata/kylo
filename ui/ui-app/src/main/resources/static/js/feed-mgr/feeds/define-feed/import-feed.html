@@ -106,14 +106,29 @@
                   </md-not-found>
                 </md-autocomplete>
             </div>
+          <div layout="row">
           <md-input-container class="condensed-no-float md-block layout-padding-bottom">
             <md-checkbox ng-model="vm.overwrite" aria-label="Overwrite if exists">
-              Overwrite
+              Overwrite Feed
             </md-checkbox>
             <div class="hint" style="margin-top:-10px">
               If the Feed already exists it will be replaced.
             </div>
           </md-input-container>
+            <span flex="5"></span>
+
+            <md-input-container class="condensed-no-float md-block layout-padding-bottom">
+              <md-checkbox ng-model="vm.overwriteFeedTemplate" aria-label="Overwrite if exists">
+                Overwrite Feed Template
+              </md-checkbox>
+              <div class="hint" style="margin-top:-10px">
+                If the Feed template exists it will be replaced.
+              </div>
+            </md-input-container>
+
+
+
+          </div>
           <md-input-container class="condensed-no-float md-block layout-padding-bottom"
                               ng-if="vm.verifyToCreateConnectingReusableTemplate == true">
             <md-checkbox ng-model="vm.createConnectingReusableTemplate" aria-label="Import Connecting Reusable Flow">
@@ -123,16 +138,16 @@
               The Feed you are importing also contains its reusable flow. Do you want to also import the reusable flow and version that as well?
             </div>
           </md-input-container>
-                <span style="padding-top:10px">
+          <div layout="row" class="layout-padding-top">
                 <md-button class="md-raised md-primary" ng-click="vm.importFeed()" ng-if="vm.feedFile != null"
                            ng-disabled="vm.importBtnDisabled">
                   Import Feed
                 </md-button>
-                    </span>
+            <md-progress-circular md-diameter="20px" md-mode="indeterminate" ng-if="vm.importBtnDisabled"></md-progress-circular>
         </div>
 
 
-        <div ng-if="vm.importResult != null" class="layout-padding-indent layout-padding-top">
+        <div ng-if="vm.importResult != null" class="layout-padding-top">
           <div layout="row">
             <ng-md-icon icon="{{vm.importResultIcon}}"
                         style="fill:{{vm.importResultIconColor}}"></ng-md-icon>

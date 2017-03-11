@@ -20,6 +20,7 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
  * #L%
  */
 
+import com.thinkbiganalytics.feedmgr.rest.model.ImportFeedOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.UserFieldCollection;
 import com.thinkbiganalytics.feedmgr.service.ExportImportTemplateService;
@@ -128,13 +129,15 @@ public class AdminController {
     public Response uploadFeed(@NotNull @FormDataParam("file") InputStream fileInputStream,
                                @NotNull @FormDataParam("file") FormDataContentDisposition fileMetaData,
                                @FormDataParam("overwrite") @DefaultValue("false") boolean overwrite,
+                               @FormDataParam("overwriteFeedTemplate") @DefaultValue("false") boolean overwriteFeedTemplate,
                                @FormDataParam("categorySystemName") String categorySystemName,
                                @FormDataParam("importConnectingReusableFlow") @DefaultValue("NOT_SET") ImportOptions.IMPORT_CONNECTING_FLOW importConnectingFlow)
         throws Exception {
-        ImportOptions options = new ImportOptions();
+        ImportFeedOptions options = new ImportFeedOptions();
         options.setOverwrite(overwrite);
         options.setImportConnectingFlow(importConnectingFlow);
         options.setCategorySystemName(categorySystemName);
+        options.setOverwriteFeedTemplate(overwriteFeedTemplate);
         ExportImportFeedService.ImportFeed importFeed = exportImportFeedService.importFeed(fileMetaData.getFileName(), fileInputStream, options);
 
         return Response.ok(importFeed).build();
