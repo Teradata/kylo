@@ -328,6 +328,20 @@ public class JerseyRestClient {
      * @return the returned object of the specified Class
      */
     public <T> T get(String path, Map<String, Object> params, Class<T> clazz) {
+        return get(path, params, clazz, true);
+    }
+
+    /**
+     * Perform a GET request.  Exceptions will not be logged
+     *
+     * @param path     the path to access
+     * @param params   key, value parameters to add to the request
+     * @param clazz    the class type to return as the response from the GET request
+     * @param logError true to log an exceptions, false to not
+     * @param <T>      the returned class type
+     * @return the returned object of the specified Class
+     */
+    public <T> T get(String path, Map<String, Object> params, Class<T> clazz, boolean logError) {
         WebTarget target = buildTarget(path, params);
         T obj = null;
 
@@ -336,10 +350,10 @@ public class JerseyRestClient {
         } catch (Exception e) {
             if (e instanceof NotAcceptableException) {
                 obj = handleNotAcceptableGetRequestJsonException(target, clazz);
-            } else {
+            }
+            if (logError) {
                 log.error("Failed to process request " + path, e);
             }
-
         }
         return obj;
     }

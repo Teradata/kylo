@@ -126,6 +126,20 @@ public interface NiFiProcessGroupsRestClient {
     @Nonnull
     Optional<ProcessGroupDTO> findById(@Nonnull String processGroupId, boolean recursive, boolean verbose);
 
+
+    /**
+     * Gets a process group.
+     *
+     * @param processGroupId      the process group id
+     * @param recursive           {@code true} to include all encapsulated components, or {@code false} for just the immediate children
+     * @param verbose             {@code true} to include any encapsulated components, or {@code false} for just details about the process group
+     * @param logRestAccessErrors {@code true} log any REST access exception when getting the Entity, or {@code false} will not log the error.
+     * @return the process group, if found
+     */
+    @Nonnull
+    Optional<ProcessGroupDTO> findById(@Nonnull final String processGroupId, final boolean recursive, final boolean verbose, boolean logRestAccessErrors);
+
+
     /**
      * Gets the child process group with the specified name, optionally including all sub-components.
      *

@@ -196,7 +196,11 @@ public class NiFiProcessGroupsRestClientV1 extends AbstractNiFiProcessGroupsRest
     @Nonnull
     @Override
     public Optional<ProcessGroupDTO> findById(@Nonnull final String processGroupId, final boolean recursive, final boolean verbose) {
-        return findEntityById(processGroupId).filter(processGroupEntity -> processGroupEntity != null)
+        return findById(processGroupId, recursive, verbose, true);
+    }
+
+    public Optional<ProcessGroupDTO> findById(@Nonnull final String processGroupId, final boolean recursive, final boolean verbose, boolean logRestAccessErrors) {
+        return findEntityById(processGroupId, logRestAccessErrors).filter(processGroupEntity -> processGroupEntity != null)
             .map(ProcessGroupEntity::getComponent)
             .map(processGroup -> {
                 if (verbose) {
@@ -214,13 +218,24 @@ public class NiFiProcessGroupsRestClientV1 extends AbstractNiFiProcessGroupsRest
      */
     @Nonnull
     public Optional<ProcessGroupEntity> findEntityById(@Nonnull final String processGroupId) {
+        return findEntityById(processGroupId, true);
+    }
+
+    /**
+     * Gets a process group entity.
+     *
+     * @param processGroupId      the process group id
+     * @param logRestAccessErrors true to log any REST exceptions.  false will not log exceptions
+     * @return the process group entity, if found
+     */
+    @Nonnull
+    public Optional<ProcessGroupEntity> findEntityById(@Nonnull final String processGroupId, boolean logRestAccessErrors) {
         try {
-            return Optional.ofNullable(client.get(BASE_PATH + processGroupId, null, ProcessGroupEntity.class));
+            return Optional.ofNullable(client.get(BASE_PATH + processGroupId, null, ProcessGroupEntity.class, logRestAccessErrors));
         } catch (final NotFoundException e) {
             return Optional.empty();
         }
     }
-
 
     public Optional<ProcessGroupStatusDTO> getStatus(String processGroupId) {
         return Optional.ofNullable(findEntityById(processGroupId).map(processGroupEntity -> processGroupEntity.getStatus()).orElse(null));

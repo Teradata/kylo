@@ -111,7 +111,7 @@ public class PropertyExpressionResolver {
 
     public Map<String, Object> getStaticConfigProperties() {
         Map<String, Object> props = environmentProperties.getPropertiesStartingWith(configPropertyPrefix);
-        if(props == null){
+        if (props == null) {
             props = new HashMap<>();
         }
         Map<String, Object> nifiProps = environmentProperties.getPropertiesStartingWith("nifi.");
@@ -321,6 +321,10 @@ public class PropertyExpressionResolver {
                 if (configValue != null) {
                     hasConfig[0] = true;
                     isModified[0] = true;
+                    if (!property.isContainsConfigurationVariables()) {
+                        property.setTemplateValue(property.getValue());
+                        property.setContainsConfigurationVariables(true);
+                    }
                     return configValue;
                 }
 
