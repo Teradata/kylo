@@ -22,11 +22,13 @@ package com.thinkbiganalytics.security.rest.controller;
 
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
+import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.security.action.AllowedModuleActionsProvider;
 import com.thinkbiganalytics.security.rest.model.ActionGroup;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange.ChangeType;
+import com.thinkbiganalytics.security.service.user.UsersGroupsAccessContol;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
@@ -75,6 +77,9 @@ public class AccessControlController {
     @Inject
     @Named("actionsModelTransform")
     private ActionsModelTransform actionsTransform;
+    
+    @Inject
+    private AccessController accessController;
 
     @GET
     @Path("{name}/available")
@@ -85,6 +90,7 @@ public class AccessControlController {
                       @ApiResponse(code = 404, message = "The given name was not found.", response = RestResponseStatus.class)
                   })
     public ActionGroup getAvailableActions(@PathParam("name") String moduleName) {
+        
         return metadata.read(() -> {
             return actionsProvider.getAvailableActions(moduleName)
                 .map(this.actionsTransform.availableActionsToActionSet("services"))
@@ -104,10 +110,12 @@ public class AccessControlController {
     public ActionGroup getAllowedActions(@PathParam("name") String moduleName,
                                          @QueryParam("user") Set<String> userNames,
                                          @QueryParam("group") Set<String> groupNames) {
+        
         Set<Principal> users = this.actionsTransform.toUserPrincipals(userNames);
         Set<Principal> groups = this.actionsTransform.toGroupPrincipals(groupNames);
         Principal[] principals = Stream.concat(users.stream(), groups.stream()).toArray(Principal[]::new);
 
+        // Retrieve the allowed actions by executing the query as the specified user/groups 
         return metadata.read(() -> {
             return actionsProvider.getAllowedActions(moduleName)
                 .map(this.actionsTransform.availableActionsToActionSet("services"))
@@ -127,6 +135,9 @@ public class AccessControlController {
                   })
     public ActionGroup postPermissionsChange(@PathParam("name") String moduleName,
                                              PermissionsChange changes) {
+        // Check if changing permissions is permitted by this user
+        accessController.checkPermission(AccessController.SERVICES, UsersGroupsAccessContol.ADMIN_GROUPS);
+        
         Set<Action> actionSet = collectActions(changes);
         Set<Principal> principals = collectPrincipals(changes);
         final Consumer<Principal> permChange;
@@ -148,10 +159,10 @@ public class AccessControlController {
                 });
         }
 
+        // Currently the permission changes must be done using privileged credentials
         metadata.commit(() -> {
             principals.stream().forEach(permChange);
-            return null;
-        });
+        }, MetadataAccess.SERVICE);
 
         return getAllowedActions(moduleName, changes.getUsers(), changes.getGroups());
     }
@@ -170,6 +181,9 @@ public class AccessControlController {
                                                          @QueryParam("type") String changeType,
                                                          @QueryParam("user") Set<String> users,
                                                          @QueryParam("group") Set<String> groups) {
+        
+        accessController.checkPermission(AccessController.SERVICES, UsersGroupsAccessContol.ADMIN_GROUPS);
+
         if (StringUtils.isBlank(changeType)) {
             throw new WebApplicationException("The query parameter \"type\" is required", Status.BAD_REQUEST);
         }
