@@ -141,9 +141,9 @@
             <md-tab-body>
               <md-divider></md-divider>
               <div flex layout="column" class="tab-content">
-
-                  <div layout="column" ng-repeat="step in vm.allSteps">
-
+                  <md-list>
+                  <md-list-item ng-repeat="step in vm.allSteps" class="with-padding item-column">
+                   <div  layout="column" layout-fill>
 
                     <div layout="row" ng-click="step.content.open == true ? step.content.open = false : step.content.open = true"
                          class="md-list-item-text hover-highlight-pointer layout-padding-top-bottom " flex layout-fill>
@@ -205,7 +205,9 @@
 
                     </div>
                     <md-divider></md-divider>
-                  </div>
+                   </div>
+                  </md-list-item>
+                  </md-list>
                 </div>
             </md-tab-body>
           </md-tab>
