@@ -51,18 +51,18 @@
       <ui-router-breadcrumbs style="padding-left:25px;" displayname-property="data.displayName" template-url="js/common/ui-router-breadcrumbs/uiBreadcrumbs.tpl.html" flex
                              md-truncate></ui-router-breadcrumbs>
       <div layout="row" layout-fill layout-align="center"
-           flex hide-xs ng-class="mc.searchContainerCss">
+           flex hide-xs class="global-search-container">
         <ng-md-icon icon="search"></ng-md-icon>
         <md-input-container class="condensed-no-float md-block global-search" md-no-float style="margin-top:8px;margin-bottom:-15px;" flex>
-          <input ng-model="mc.searchQuery" ng-keypress="mc.onSearchKeypress($event)" placeholder="Global Search" style="color:white">
+          <input ng-model="mc.searchQuery" ng-keypress="mc.onSearchKeypress($event)" class="global-search-input" placeholder="Global Search" style="color:white">
         </md-input-container>
-        <md-button  ng-click="mc.search()"  ng-class="mc.searchButtonCss">
+        <md-button  ng-click="mc.search()" class="border-btn-white">
           Search
         </md-button>
 
       </div>
       <span flex></span>
-      <div>
+      <div  layout="column" layout-align="center start">
         <kylo-options class="ng-isolate-scope" style="margin-right: -20px;"></kylo-options>
       </div>
     </div>
