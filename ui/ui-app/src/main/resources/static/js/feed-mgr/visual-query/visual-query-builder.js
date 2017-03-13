@@ -93,7 +93,7 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
             },
             searchText: '',
             selectedTable: null,
-            noCache: false,
+            noCache: true,
             searchTextChange: function(text) {
 
             },
@@ -107,9 +107,7 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
             refreshCache: function(){
                 HiveService.init();
                 var searchText = this.searchText.trim();
-                this.noCache = true;
                 angular.element('#tables-auto-complete').focus().val(searchText).trigger('change')
-                this.noCache = false;
             }
         };
 
