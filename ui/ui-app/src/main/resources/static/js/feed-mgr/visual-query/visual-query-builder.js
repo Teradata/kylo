@@ -93,6 +93,7 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
             },
             searchText: '',
             selectedTable: null,
+            noCache: false,
             searchTextChange: function(text) {
 
             },
@@ -102,8 +103,19 @@ define(['angular',"feed-mgr/visual-query/module-name"], function (angular,module
             querySearch: function(txt) {
                 return HiveService.queryTablesSearch(txt);
 
+            },
+            refreshCache: function(){
+                HiveService.init();
+                var searchText = this.searchText.trim();
+                this.noCache = true;
+                angular.element('#tables-auto-complete').focus().val(searchText).trigger('change')
+                this.noCache = false;
             }
         };
+
+        this.refreshAutocompleteCache = function(){
+            self.tablesAutocomplete.refreshCache();
+        }
 
         this.onAddTable = function() {
             SideNavService.hideSideNav();

@@ -21,6 +21,8 @@
      ng-class="{'visual-query-auto-complete-centered':$vq.chartViewModel.data.nodes.length ==0,'visual-query-auto-complete-top':$vq.chartViewModel.data.nodes.length >0}">
     <div layout="row" flex layout-fill layout-align="center center" ng-hide="$vq.advancedMode" class="layout-padding-top-bottom">
         <md-autocomplete flex="30"
+                             md-input-id="tables-auto-complete"
+                             md-no-cache="$vq.tablesAutocomplete.noCache"
                              md-selected-item="$vq.tablesAutocomplete.selectedTable"
                              md-search-text-change="$vq.tablesAutocomplete.searchTextChange($vq.tablesAutocomplete.searchText)"
                              md-search-text="$vq.tablesAutocomplete.searchText"
@@ -44,7 +46,7 @@
                     </span>
                 </md-item-template>
                 <md-not-found>
-                    No tables matching "{{$vq.tablesAutocomplete.searchText}}" were found.
+                    No tables matching "{{$vq.tablesAutocomplete.searchText}}" were found.  Try <a href="" ng-click="$vq.refreshAutocompleteCache()">refreshing</a> the cache.
                 </md-not-found>
             </md-autocomplete>
           <md-button flex="5" ng-click="$vq.onAddTable()" class="md-raised md-accent" ng-disabled="!$vq.tablesAutocomplete.selectedTable">Add Table</md-button>
