@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.thinkbiganalytics.metadata.modeshape.security.action.feed;
+package com.thinkbiganalytics.metadata.modeshape.feed.security;
 
 import java.security.Principal;
 import java.util.Set;
@@ -32,12 +32,14 @@ import javax.jcr.Node;
 import javax.jcr.security.Privilege;
 
 import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.feed.FeedData;
 import com.thinkbiganalytics.metadata.modeshape.feed.FeedDetails;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.security.UsernamePrincipal;
 import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.security.action.AllowedActions;
 
@@ -52,9 +54,9 @@ public class JcrFeedAllowedActions extends JcrAllowedActions {
     /**
      * @param allowedActionsNode
      */
-    public JcrFeedAllowedActions(JcrFeed feed, Node allowedActionsNode) {
+    public JcrFeedAllowedActions(Node allowedActionsNode) {
         super(allowedActionsNode);
-        this.feed = feed;
+        this.feed = JcrUtil.getJcrObject(JcrUtil.getParent(allowedActionsNode), JcrFeed.class);
     }
 
     @Override
@@ -85,6 +87,17 @@ public class JcrFeedAllowedActions extends JcrAllowedActions {
     public boolean disable(Principal principal, AllowedActions actions) {
         disableEntityAccess(principal, actions.getAvailableActions().stream());
         return super.disable(principal, actions);
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions#setupAccessControl(com.thinkbiganalytics.security.UsernamePrincipal)
+     */
+    @Override
+    public void setupAccessControl(UsernamePrincipal owner) {
+        super.setupAccessControl(owner);
+        
+        enable(JcrMetadataAccess.getActiveUser(), FeedAccessControl.EDIT_DETAILS);
+        enable(JcrMetadataAccess.ADMIN, FeedAccessControl.EDIT_DETAILS);
     }
 
     protected void enableEntityAccess(Principal principal, Stream<? extends Action> actions) {

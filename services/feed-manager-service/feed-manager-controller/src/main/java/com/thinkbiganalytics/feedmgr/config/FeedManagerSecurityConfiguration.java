@@ -26,6 +26,7 @@ package com.thinkbiganalytics.feedmgr.config;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
+import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessControl;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.config.ActionsModuleBuilder;
@@ -83,6 +84,16 @@ public class FeedManagerSecurityConfiguration {
 //                                .action(FeedAccessControl.SCHEDULE_FEED)
                                 .action(FeedAccessControl.ACCESS_OPS)
                                 .action(FeedAccessControl.CHANGE_PERMS)
+                                .add()
+                            .module(AllowedActions.CATEGORY)
+                                .action(CategoryAccessControl.ACCESS_CATEGORY)
+                                .action(CategoryAccessControl.EDIT_SUMMARY)
+                                .action(CategoryAccessControl.ACCESS_DETAILS)
+                                .action(CategoryAccessControl.EDIT_DETAILS)
+                                .action(CategoryAccessControl.DELETE)
+                                .action(CategoryAccessControl.EXPORT)
+                                .action(CategoryAccessControl.CREATE_FEED)
+                                .action(CategoryAccessControl.CHANGE_PERMS)
                                 .add()
                             .build();
             }, MetadataAccess.SERVICE);

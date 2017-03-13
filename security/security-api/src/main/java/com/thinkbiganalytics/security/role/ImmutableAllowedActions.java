@@ -153,7 +153,7 @@ public class ImmutableAllowedActions implements AllowedActions {
      * @see com.thinkbiganalytics.security.action.AllowedActions#deisableAll(java.security.Principal)
      */
     @Override
-    public boolean deisableAll(Principal principal) {
+    public boolean disableAll(Principal principal) {
         throw new UnsupportedOperationException("Changing permissions is not supported by this type of " + AllowedActions.class.getSimpleName());
     }
 }

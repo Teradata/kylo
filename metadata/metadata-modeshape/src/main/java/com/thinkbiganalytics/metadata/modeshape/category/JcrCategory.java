@@ -24,21 +24,19 @@ import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
-import com.thinkbiganalytics.metadata.api.security.RoleAssignments;
-import com.thinkbiganalytics.metadata.modeshape.JcrAccessControlledSupport;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.category.security.JcrCategoryAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
-import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
-import com.thinkbiganalytics.metadata.modeshape.security.JcrHadoopSecurityGroup;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
+import com.thinkbiganalytics.metadata.modeshape.security.mixin.AccessControlledMixin;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
-import com.thinkbiganalytics.security.action.AllowedActions;
 
 import java.io.Serializable;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
@@ -48,24 +46,91 @@ import javax.jcr.RepositoryException;
 /**
  * An implementation of {@link Category} backed by a JCR repository.
  */
-public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Category {
+public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Category, AccessControlledMixin {
 
-    public static final String HADOOP_SECURITY_GROUPS = "tba:securityGroups";
+    public static final String DETAILS = "tba:categoryDetails";
+
     public static String CATEGORY_NAME = "tba:category";
     public static String NODE_TYPE = "tba:category";
     public static String ICON = "tba:icon";
     public static String ICON_COLOR = "tba:iconColor";
 
-    private JcrAccessControlledSupport accessControlled;
+    private CategoryDetails details;
 
     public JcrCategory(Node node) {
         super(node);
-        this.accessControlled = new JcrAccessControlledSupport(node);
+    }
+    
+    // -=-=--=-=- Delegate Propertied methods to details -=-=-=-=-=-
+    
+    @Override
+    public Map<String, Object> getProperties() {
+        return getDetails().map(d -> d.getProperties()).orElse(Collections.emptyMap());
+    }
+    
+    @Override
+    public void setProperties(Map<String, Object> properties) {
+        getDetails().ifPresent(d -> d.setProperties(properties));
+    }
+    
+    @Override
+    public void setProperty(String name, Object value) {
+        getDetails().ifPresent(d -> d.setProperty(name, value));
+    }
+    
+    @Override
+    public void removeProperty(String key) {
+        getDetails().ifPresent(d -> d.removeProperty(key));
     }
 
+    @Override
+    public Map<String, Object> mergeProperties(Map<String, Object> props) {
+        return getDetails().map(d -> d.mergeProperties(props)).orElse(Collections.emptyMap());
+    }
+    
+    @Override
+    public Map<String, Object> replaceProperties(Map<String, Object> props) {
+        return getDetails().map(d -> d.replaceProperties(props)).orElse(Collections.emptyMap());
+    }
+
+    
+    
+    
+    public Optional<CategoryDetails> getDetails() {
+        if (this.details == null) {
+            if (JcrUtil.hasNode(getNode(), DETAILS)) {
+                this.details = JcrUtil.getJcrObject(getNode(), DETAILS, CategoryDetails.class);
+                return Optional.of(this.details);
+            } else {
+                return Optional.empty();
+            }
+        } else {
+            return Optional.of(this.details);
+        }
+    }
+
+    
     public List<? extends Feed> getFeeds() {
-        List<JcrFeed> feeds = JcrUtil.getChildrenMatchingNodeType(this.node, "tba:feed", JcrFeed.class);
-        return feeds;
+        return getDetails().map(d -> d.getFeeds()).orElse(Collections.emptyList());
+    }
+
+    @Nonnull
+    @Override
+    public Map<String, String> getUserProperties() {
+        return getDetails().map(d -> d.getUserProperties()).orElse(Collections.emptyMap());
+    }
+
+    @Override
+    public void setUserProperties(@Nonnull final Map<String, String> userProperties, @Nonnull final Set<UserFieldDescriptor> userFields) {
+        getDetails().ifPresent(d -> d.setUserProperties(userProperties, userFields));
+    }
+
+    public List<? extends HadoopSecurityGroup> getSecurityGroups() {
+        return getDetails().map(d -> d.getSecurityGroups()).orElse(Collections.emptyList());
+    }
+
+    public void setSecurityGroups(List<? extends HadoopSecurityGroup> hadoopSecurityGroups) {
+        getDetails().ifPresent(d -> d.setSecurityGroups(hadoopSecurityGroups));
     }
 
     @Override
@@ -104,28 +169,6 @@ public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Cat
         return null;
     }
 
-    @Nonnull
-    @Override
-    public Map<String, String> getUserProperties() {
-        return JcrPropertyUtil.getUserProperties(node);
-    }
-
-    @Override
-    public void setUserProperties(@Nonnull final Map<String, String> userProperties, @Nonnull final Set<UserFieldDescriptor> userFields) {
-        JcrPropertyUtil.setUserProperties(node, userFields, userProperties);
-    }
-
-
-    @Override
-    public AllowedActions getAllowedActions() {
-        return this.accessControlled.getAllowedActions();
-    }
-
-    @Override
-    public RoleAssignments getRoleAssignments() {
-        return this.accessControlled.getRoleAssignments();
-    }
-
     @Override
     public String getIcon() {
         return getProperty(ICON, String.class, true);
@@ -144,25 +187,9 @@ public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Cat
         setProperty(ICON_COLOR, iconColor);
     }
 
-
-    public List<? extends HadoopSecurityGroup> getSecurityGroups() {
-        Set<Node> list = JcrPropertyUtil.getReferencedNodeSet(this.node, HADOOP_SECURITY_GROUPS);
-        List<HadoopSecurityGroup> hadoopSecurityGroups = new ArrayList<>();
-        if (list != null) {
-            for (Node n : list) {
-                hadoopSecurityGroups.add(JcrUtil.createJcrObject(n, JcrHadoopSecurityGroup.class));
-            }
-        }
-        return hadoopSecurityGroups;
-    }
-
-    public void setSecurityGroups(List<? extends HadoopSecurityGroup> hadoopSecurityGroups) {
-        JcrPropertyUtil.setProperty(this.node, HADOOP_SECURITY_GROUPS, null);
-
-        for (HadoopSecurityGroup securityGroup : hadoopSecurityGroups) {
-            Node securityGroupNode = ((JcrHadoopSecurityGroup) securityGroup).getNode();
-            JcrPropertyUtil.addToSetProperty(this.node, HADOOP_SECURITY_GROUPS, securityGroupNode, true);
-        }
+    @Override
+    public Class<? extends JcrAllowedActions> getJcrAllowedActionsType() {
+        return JcrCategoryAllowedActions.class;
     }
 
     public static class CategoryId extends JcrEntity.EntityId implements Category.ID {

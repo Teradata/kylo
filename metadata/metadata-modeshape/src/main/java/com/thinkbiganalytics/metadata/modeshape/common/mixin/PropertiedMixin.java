@@ -40,9 +40,12 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
 /**
- *
+ * A mixin interface corresponding to the Kylo JCR mixin type tba:propertied.  Provides default
+ * implementations for entity types which have JCR node types that include tba:propertied.
+ * 
+ * TODO Not currently used - the JcrObject hierarchy should be refactored to use mixin interfaces such as this one.
  */
-public interface PropertiedMixin extends NodeObjectMixin, Propertied {
+public interface PropertiedMixin extends NodeEntityMixin, Propertied {
 
     public static final String PROPERTIES_NAME = "tba:properties";
 
@@ -101,7 +104,7 @@ public interface PropertiedMixin extends NodeObjectMixin, Propertied {
             properties = new HashMap<>();
         }
         //merge in this nodes properties
-        Map<String, Object> thisProperties = NodeObjectMixin.super.getProperties();
+        Map<String, Object> thisProperties = NodeEntityMixin.super.getProperties();
         if (thisProperties != null)
 
         {
@@ -139,14 +142,14 @@ public interface PropertiedMixin extends NodeObjectMixin, Propertied {
     default <T> T getProperty(String name, Class<T> type, boolean allowNotFound) {
         try {
             if ("nt:frozenNode".equalsIgnoreCase(getNode().getPrimaryNodeType().getName())) {
-                T item = NodeObjectMixin.super.getProperty(name, type, true);
+                T item = NodeEntityMixin.super.getProperty(name, type, true);
                 if (item == null) {
                     item = getPropertiesObject().getProperty(name, type, allowNotFound);
                 }
                 return item;
             } else {
                 if (JcrPropertyUtil.hasProperty(getNode().getPrimaryNodeType(), name)) {
-                    return NodeObjectMixin.super.getProperty(name, type, allowNotFound);
+                    return NodeEntityMixin.super.getProperty(name, type, allowNotFound);
                 } else {
                     return getPropertiesObject().getProperty(name, type, allowNotFound);
                 }
@@ -164,7 +167,7 @@ public interface PropertiedMixin extends NodeObjectMixin, Propertied {
     default void setProperty(String name, Object value) {
         try {
             if (JcrPropertyUtil.hasProperty(getNode().getPrimaryNodeType(), name)) {
-                NodeObjectMixin.super.setProperty(name, value);
+                NodeEntityMixin.super.setProperty(name, value);
             } else {
                 getPropertiesObject().setProperty(name, value);
             }

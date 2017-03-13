@@ -42,28 +42,25 @@ import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.api.feed.InitializationStatus;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
-import com.thinkbiganalytics.metadata.api.security.RoleAssignments;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
-import com.thinkbiganalytics.metadata.modeshape.JcrAccessControlledSupport;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
-import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
-import com.thinkbiganalytics.metadata.modeshape.security.action.feed.JcrFeedAllowedActions;
+import com.thinkbiganalytics.metadata.modeshape.feed.security.JcrFeedAllowedActions;
+import com.thinkbiganalytics.metadata.modeshape.security.mixin.AccessControlledMixin;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
-import com.thinkbiganalytics.security.action.AllowedActions;
 
 /**
  * An implementation of {@link Feed} backed by a JCR repository.
  *
  * @param  the type of parent category
  */
-public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed {
+public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed, AccessControlledMixin {
 
     public static final String PRECONDITION_TYPE = "tba:feedPrecondition";
 
@@ -71,17 +68,12 @@ public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed {
     
     public static final String SUMMARY = "tba:summary";
     public static final String DATA = "tba:data";
-
     
     private FeedSummary summary;
     private FeedData data;
     
-    
-    private JcrAccessControlledSupport accessControlSupport;
-
     public JcrFeed(Node node) {
         super(node);
-        this.accessControlSupport = new JcrAccessControlledSupport(node);
     }
 
     public JcrFeed(Node node, JcrCategory category) {
@@ -418,19 +410,12 @@ public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed {
         getFeedDetails().ifPresent(d -> d.setNifiProcessGroupId(id));
     }
 
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.modeshape.security.mixin.AccessControlledMixin#getJcrAllowedActionsType()
+     */
     @Override
-    public AllowedActions getAllowedActions() {
-        JcrAllowedActions allowed = (JcrAllowedActions) this.accessControlSupport.getAllowedActions();
-        return new JcrFeedAllowedActions(this, allowed.getNode());
-    }
-
-    @Override
-    public RoleAssignments getRoleAssignments() {
-        return this.accessControlSupport.getRoleAssignments();
-    }
-
-    public JcrAccessControlledSupport getAccessControlSupport() {
-        return accessControlSupport;
+    public Class<JcrFeedAllowedActions> getJcrAllowedActionsType() {
+        return JcrFeedAllowedActions.class;
     }
 
     public Optional<FeedSummary> getFeedSummary() {

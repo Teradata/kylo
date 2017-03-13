@@ -331,19 +331,30 @@ public class JcrUtil {
         }
         return list;
     }
+    
+    /**
+     * Get a creates a Wrapper object around the given node
+     */
+    public static <T extends JcrObject> T getJcrObject(Node node, Class<T> type) {
+        T entity = null;
+        try {
+            entity = ConstructorUtils.invokeConstructor(type, node);
+        } catch (InvocationTargetException | NoSuchMethodException | InstantiationException | IllegalAccessException e) {
+            throw new MetadataRepositoryException("Failed to wrap the given node", e);
+        }
+        return entity;
+    }
 
     /**
      * Get a child node relative to the parentNode and create the Wrapper object
      */
     public static <T extends JcrObject> T getJcrObject(Node parentNode, String name, Class<T> type) {
-        T entity = null;
         try {
             Node n = parentNode.getNode(name);
-            entity = ConstructorUtils.invokeConstructor(type, n);
-        } catch (RepositoryException | InvocationTargetException | NoSuchMethodException | InstantiationException | IllegalAccessException e) {
+            return getJcrObject(n, type);
+        } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the Node named" + name, e);
         }
-        return entity;
     }
 
     /**

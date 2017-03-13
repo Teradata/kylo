@@ -59,13 +59,13 @@ import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.Feed.ID;
-import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
 import com.thinkbiganalytics.metadata.api.feed.FeedCriteria;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedNotFoundExcepton;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.api.feed.PreconditionBuilder;
+import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.modeshape.AbstractMetadataCriteria;
@@ -258,11 +258,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
         if (newFeed) {
             this.actionsProvider.getAvailableActions(AllowedActions.FEED)
-                            .ifPresent(actions -> {
-                                feed.getAccessControlSupport().initializeActions((JcrAllowedActions) actions);
-                                feed.getAllowedActions().enable(JcrMetadataAccess.getActiveUser(), FeedAccessControl.EDIT_DETAILS);
-                                feed.getAllowedActions().enable(JcrMetadataAccess.ADMIN, FeedAccessControl.EDIT_DETAILS);
-                            });
+                            .ifPresent(actions -> feed.setupAccessControl((JcrAllowedActions) actions, JcrMetadataAccess.getActiveUser()));
             addPostFeedChangeAction(feed, ChangeType.CREATE);
         }
 

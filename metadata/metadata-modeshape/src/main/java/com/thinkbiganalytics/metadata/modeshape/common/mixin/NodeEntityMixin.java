@@ -43,8 +43,10 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
 /**
  *
+ * TODO: Refactor hierarchy of JcrObject so that JCR-based entity objects implement 
+ * this interface (or one or more mixin subtypes) instead.
  */
-public interface NodeObjectMixin {
+public interface NodeEntityMixin {
 
     Node getNode();
     

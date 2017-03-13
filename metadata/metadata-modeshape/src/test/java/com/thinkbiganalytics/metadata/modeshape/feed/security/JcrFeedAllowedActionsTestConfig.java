@@ -1,7 +1,7 @@
 /**
  *
  */
-package com.thinkbiganalytics.metadata.modeshape.security.action.feed;
+package com.thinkbiganalytics.metadata.modeshape.feed.security;
 
 /*-
  * #%L
@@ -26,6 +26,7 @@ package com.thinkbiganalytics.metadata.modeshape.security.action.feed;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
+import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessControl;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategoryProvider;
@@ -68,6 +69,16 @@ public class JcrFeedAllowedActionsTestConfig {
     //                            .action(FeedAccessControl.SCHEDULE_FEED)
                                 .action(FeedAccessControl.ACCESS_OPS)
                                 .action(FeedAccessControl.CHANGE_PERMS)
+                                .add()
+                            .module(AllowedActions.CATEGORY)
+                                .action(CategoryAccessControl.ACCESS_CATEGORY)
+                                .action(CategoryAccessControl.EDIT_SUMMARY)
+                                .action(CategoryAccessControl.ACCESS_DETAILS)
+                                .action(CategoryAccessControl.EDIT_DETAILS)
+                                .action(CategoryAccessControl.DELETE)
+                                .action(CategoryAccessControl.EXPORT)
+                                .action(CategoryAccessControl.CREATE_FEED)
+                                .action(CategoryAccessControl.CHANGE_PERMS)
                                 .add()
                             .build();
 

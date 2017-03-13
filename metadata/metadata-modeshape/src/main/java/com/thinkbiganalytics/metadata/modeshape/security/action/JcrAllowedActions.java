@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.metadata.modeshape.security.action;
 
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+
 /*-
  * #%L
  * thinkbig-metadata-modeshape
@@ -171,7 +173,7 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
      * @see com.thinkbiganalytics.security.action.AllowedActions#deisableAll(java.security.Principal)
      */
     @Override
-    public boolean deisableAll(Principal principal) {
+    public boolean disableAll(Principal principal) {
         return disable(principal, 
                        getAvailableActions().stream()
                             .flatMap(avail -> avail.stream())
@@ -197,6 +199,10 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
                 current = JcrUtil.getNode(current, parent.getSystemName());
             }
         }
+    }
+    
+    public void setupAccessControl(UsernamePrincipal owner) {
+        JcrAccessControlUtil.addRecursivePermissions(getNode(), JcrAllowableAction.NODE_TYPE, MetadataAccess.ADMIN, Privilege.JCR_ALL);
     }
     
     public JcrAllowedActions copy(Node allowedNode, Principal principal, String... privilegeNames) {

@@ -207,12 +207,17 @@
     - tba:order (LONG)
     - tba:isStream (BOOLEAN) = 'false'
 
-[tba:category] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied, tba:accessControlled
+
+[tba:category] > tba:extensibleEntity, mix:referenceable, mix:title, tba:accessControlled
 	- tba:systemName (STRING) mandatory
-	- tba:securityGroups (WEAKREFERENCE) multiple
 	- tba:state (LONG)
+	+ tba:details (tba:categoryDetails) = tba:categoryDetails autocreated mandatory
+
+[tba:categoryDetails] > tba:propertied
 	- tba:initialized (BOOLEAN) = 'false'
+	- tba:securityGroups (WEAKREFERENCE) multiple
 	+ * (tba:feed) sns
+
 
 [tba:feed] > tba:extensibleEntity, mix:referenceable, tba:accessControlled
     + tba:summary (tba:feedSummary) = tba:feedSummary autocreated mandatory

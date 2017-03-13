@@ -157,5 +157,5 @@ public interface AllowedActions {
      * @param principal the principal to which the actions are revoked
      * @return true if not all actions had already been revoked from that principal, otherwise false.
      */
-    boolean deisableAll(Principal principal);
+    boolean disableAll(Principal principal);
 }
